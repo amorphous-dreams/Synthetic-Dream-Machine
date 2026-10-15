@@ -352,11 +352,12 @@ export interface CustodyStatusRow {
   readonly custody:  CarrierEntry["custody"];
   readonly keyClass: CarrierEntry["keyClass"];
   readonly reading:  VkCarrierReading;
-  /** The law this row rests outside the vessel key under; null on a hot or cold row. */
+  /** The law this row rests outside the vessel key under; null on a serving, hot, cold or outbox row. */
   readonly bare:     string | null;
   /**
-   * True where the file breaks its own row's law: a hot or cold row that reads anything but `sealed`; a floor or
-   * floor-plain row under the vessel key's seal, which no rotation re-seals; a file that fails the name its row
+   * True where the file breaks its own row's law: a serving, hot or cold row that reads anything but `sealed`; an
+   * outbox row whose bytes fail its own check (a name its bytes fail, bytes that frame as no outbox seal); a floor
+   * or floor-plain row under the vessel key's seal, which no rotation re-seals; a file that fails the name its row
    * derives from its bytes.
    */
   readonly fault:    boolean;
@@ -389,9 +390,13 @@ export async function custodyStatus(args: { readonly io: CustodyIo; readonly hom
     const bytes = await args.io.read(e.path);
     const reading = readVkCarrier(bytes);
     const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
+    // An outbox parcel rests under the outbox key's own seal, never the vessel key's: its row's check reads that seal.
+    const failsHolds = e.holds !== null && bytes !== null && !e.holds(e.file, bytes);
     const fault = underKey
       ? reading !== "sealed"
-      : (!opaque.has(e.row) && reading !== "bare" && reading !== "absent") || (e.holds !== null && bytes !== null && !e.holds(e.file, bytes));
+      : e.custody === "outbox"
+        ? bytes === null || failsHolds
+        : (!opaque.has(e.row) && reading !== "bare" && reading !== "absent") || failsHolds;
     rows.push({ row: e.row, name: e.name, home: e.home, file: e.file, custody: e.custody, keyClass: e.keyClass, reading, bare: e.bare, fault });
   }
   return { tree, rows, outside: outsideTheTable(args.homes) };

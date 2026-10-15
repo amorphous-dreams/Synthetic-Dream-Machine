@@ -288,6 +288,10 @@ export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
 export const NEXUS_KEY_HAND_OVER_DOMAIN = mint("nexus-key-hand-over");
 /** A KEY PARCEL: one lockbox, its key version record and the wrap's public operations, for one reader. */
 export const SEALED_KEY_PARCEL_DOMAIN = mint("sealed-key-parcel");
+/** An OUTBOX PARCEL'S SEAL: the image a parcel and its reader ride in under the outbox key, and the AAD it binds. */
+export const SEALED_OUTBOX_PARCEL_DOMAIN = mint("sealed-outbox-parcel");
+/** The AEAD key an OUTBOX KEY derives for its parcels' seals (HKDF `info`). */
+export const SEALED_OUTBOX_KEY_INFO = mint("sealed-outbox-key");
 /** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_MEMORY_IMPORT_DOMAIN = mint("sealed-memory-import");
 /** A backup bundle's MEMORY SECTION: the image of its entries, each a bag's id, its locator, a key version
@@ -304,13 +308,17 @@ export const MEMORY_ASK_DOMAIN = mint("memory-ask");
 // ── THE BACKUP BUNDLE ───────────────────────────────────────────────────────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle.
 /** The BACKUP BUNDLE's own name: its SHA-256 prefix stands as the format mark, and it leads the associated
- *  data of the bundle's sealed body. A changed format takes a new name. */
-export const FACE_BUNDLE_DOMAIN = mint("face-bundle");
+ *  data of the bundle's sealed body. A changed format takes a new name: the body that carries the face's
+ *  enrolled guardian set took this one. */
+export const FACE_BUNDLE_DOMAIN = mint("face-bundle-guardian-set");
 /** The HKDF `info` a bundle's BODY KEY derives under, from the bundle key. */
 export const FACE_BUNDLE_BODY_INFO = mint("face-bundle-body");
 /** The HKDF `info` a bundle's MEMORY SECTION key pair derives under, from the bundle key. Apart from the
  *  body key's name, so the pair's secret half never equals the key that opens the body. */
 export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
+/** A PARTY'S OWN LOG VIEW of one face: the head a guardian, a seated chair or a sibling device holds for that
+ *  face's key history, signed by the party's own key. A restored face stands provisional until one agrees. */
+export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and

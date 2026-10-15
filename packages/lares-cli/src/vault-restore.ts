@@ -11,10 +11,15 @@
  * body still SEALED and the bundle key; the vessel opens the body behind its own door, so the face's root reaches
  * no receipt, outcome, argument digest or log line. With no vessel standing the same act runs in this process.
  *
+ * THE ROOT CARDS (`--cards`). The card reader rebuilds the root and builds the face's body in this process; the body
+ * crosses sealed under a fresh bundle key, through the same `bundle.restore` act, so the cards' seed never rides an
+ * argument in the clear and the restore runs every check a bundle's body passes.
+ *
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
 import { readFileSync } from "node:fs";
-import { hex, openBundleKey, readFaceBundle, type Credential } from "@lararium/mesh";
+import { canonicalJsonBytes, hex, mintBundleKey, openBundleKey, readFaceBundle, sealFaceBundleBody, type Credential } from "@lararium/mesh";
+import { CardRestoreRefused, buildCardBody, type FaceNamed, type PresentedCard } from "@lararium/node";
 import { SEALED_BYTES_LINE } from "./vault-backup.js";
 
 /** A restore or an import that refused, under the name the command or the vessel gave it. */
@@ -29,6 +34,8 @@ export interface RestoreLanded {
   readonly prefix: string;
   readonly resumed: boolean;
   readonly checked: { readonly seq: number; readonly from: "board" | "bundle" };
+  readonly guardianSet: "none" | "landed" | "held" | "absent";
+  readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed: { readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean; readonly handleBook: { readonly landed: number; readonly kept: number } };
   readonly holds: ReadonlyArray<{ readonly bagId: string; readonly founding: string; readonly keyVersion: string }>;
 }
@@ -72,11 +79,43 @@ export async function restoreFromBundle(args: {
       return { ok: false, reason: result["refused"], message: typeof result["message"] === "string" ? result["message"] : "the vessel refused" };
     }
     if (args.memory) return { ok: true, kind: "import", face: result["face"] as ImportLanded["face"], results: (result["results"] ?? []) as ImportLanded["results"] };
-    return {
-      ok: true, kind: "restore", via, face: result["face"] as RestoreLanded["face"], prefix: String(result["prefix"]), resumed: result["resumed"] === true,
-      checked: result["checked"] as RestoreLanded["checked"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
-    };
+    return landedOf(result, via);
   } finally { opened.bundleKey.fill(0); }
+}
+
+/** A restore's answer, as the act gave it. */
+function landedOf(result: Record<string, unknown>, via: "vessel" | "direct"): RestoreLanded {
+  return {
+    ok: true, kind: "restore", via, face: result["face"] as RestoreLanded["face"], prefix: String(result["prefix"]), resumed: result["resumed"] === true,
+    checked: result["checked"] as RestoreLanded["checked"], guardianSet: (result["guardianSet"] ?? "none") as RestoreLanded["guardianSet"],
+    provisional: (result["provisional"] ?? { couldConfirm: [] }) as RestoreLanded["provisional"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
+  };
+}
+
+/**
+ * Rebuild a face's root from its split cards and run its restore at `as`. Refuses by name: the card reader's own
+ * refusals (too few cards, one custodian, a malformed or repeated card, no face named, another root), then
+ * whatever the vessel's own act refuses. The face lands with no names, proof keys, handle-book or memory: paper
+ * restores a root, never memory.
+ */
+export async function restoreFromCards(args: {
+  readonly cards: readonly PresentedCard[];
+  readonly face:  FaceNamed;
+  readonly as:    number;
+  readonly run:   RunAct;
+}): Promise<RestoreLanded | RestoreRefusal> {
+  let plain: Uint8Array;
+  try { plain = canonicalJsonBytes(await buildCardBody({ cards: args.cards, face: args.face, as: args.as })); }
+  catch (err) { if (err instanceof CardRestoreRefused) return { ok: false, reason: err.reason, message: err.message }; throw err; }
+  const bundleKey = mintBundleKey();
+  try {
+    const body = Buffer.from(sealFaceBundleBody(plain, bundleKey)).toString("base64");
+    const { result, via } = await args.run("bundle.restore", { body, key: hex(bundleKey), as: args.as });
+    if (typeof result["refused"] === "string") {
+      return { ok: false, reason: result["refused"], message: typeof result["message"] === "string" ? result["message"] : "the vessel refused" };
+    }
+    return landedOf(result, via);
+  } finally { plain.fill(0); bundleKey.fill(0); }
 }
 
 /** The lines a landed restore prints: the face, its NEW seat, the head the check read, and what the import still owes. */
@@ -89,6 +128,9 @@ export function restoreLines(landed: RestoreLanded): string[] {
     landed.checked.from === "board"
       ? `  key history: this vessel's own board held the face's history, and its newest head (sequence ${landed.checked.seq}) still accepts this root.`
       : `  key history: this vessel's board held no history for the face, so the check read the bundle's own log, as far as its cut (sequence ${landed.checked.seq}). A rotation that landed after the cut shows only on a board: every reader that holds the newer head refuses this seat at its own gate.`,
+    ...guardianLines(landed.guardianSet),
+    "  PROVISIONAL: the face reads, recovers and serves its own content, and signs no act that changes who holds authority until a party to its relation shows its own view of the head above and that view agrees (`lares persona confirm`). Who could confirm:",
+    ...landed.provisional.couldConfirm.map((line) => `    ${line}`),
     landed.via === "vessel"
       ? "  the face mounts when the vessel stands again: `lares vessel stand --restart`, then `lares vault unlock`."
       : "  the face mounts when the vessel stands: `lares vessel stand`, then `lares vault unlock`.",
@@ -100,6 +142,16 @@ export function restoreLines(landed: RestoreLanded): string[] {
   }
   lines.push(`  ${SEALED_BYTES_LINE}`);
   return lines;
+}
+
+/** What a restore says of the face's guardian set, where its key history commits one. */
+function guardianLines(set: RestoreLanded["guardianSet"]): string[] {
+  if (set === "landed") return ["  guardians: the bundle carried the set the face's key history commits, and this vessel holds its sealed row."];
+  if (set === "held") return ["  guardians: this vessel already held the set the face's key history commits; it stays as it stood."];
+  if (set === "absent") {
+    return ["  guardians: the face's key history commits a guardian set this bundle did not carry (it was cut before the enrolment). The guardians still hold their own keys; cut a fresh bundle from a vessel that holds the set to carry it."];
+  }
+  return [];
 }
 
 /** The lines an import prints: each version's outcome, and the half the bundle never held. */

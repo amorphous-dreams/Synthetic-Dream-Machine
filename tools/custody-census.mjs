@@ -3,7 +3,7 @@
 //
 // `custodyReading` answers the command's own `custody` object: one reading of each standing file the table names,
 // and every private file it does not name. `custodyBreaches` turns a reading into one line per breach:
-//   · a hot or cold row that reads anything but sealed;
+//   · a serving, hot or cold row that reads anything but sealed (an outbox row reads its own seal, so its fault mark alone speaks);
 //   · a file outside the vessel key that breaks its own row's law (a seal no rotation re-seals, a name its bytes fail);
 //   · a row outside the vessel key that names no law for resting bare;
 //   · a private file no row names (an owner-only file, a file under the vessel key's seal, a writer's sidecar).
@@ -32,11 +32,13 @@ export function custodyReading(root, env = {}) {
 export function custodyBreaches(custody) {
   const out = [];
   for (const r of custody.rows) {
-    const underKey = r.custody === "serving" || r.custody === "hot" || r.custody === "cold";
-    if (underKey && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);
+    const underVk = r.custody === "serving" || r.custody === "hot" || r.custody === "cold";
+    // An outbox parcel rests under the outbox key the vessel key wraps: under a key, yet framed by its own seal.
+    const underKey = underVk || r.custody === "outbox";
+    if (underVk && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);
     if (underKey !== (r.bare === null)) out.push(`no law: ${r.home}/${r.file} (${r.custody}) ${underKey ? "names a law for resting bare" : "rests outside the vessel key and names no law"}`);
-    if (underKey && !r.fault && r.reading !== "sealed") out.push(`fault misread: ${r.home}/${r.file} (${r.custody}, ${r.reading}) reads fault=${r.fault}`);
-    if (!underKey && r.fault) out.push(`fault: ${r.home}/${r.file} (${r.custody}) reads ${r.reading} and breaks its row's law`);
+    if (underVk && !r.fault && r.reading !== "sealed") out.push(`fault misread: ${r.home}/${r.file} (${r.custody}, ${r.reading}) reads fault=${r.fault}`);
+    if (!underVk && r.fault) out.push(`fault: ${r.home}/${r.file} (${r.custody}) reads ${r.reading} and breaks its row's law`);
   }
   for (const o of custody.outside) out.push(`outside: ${o.home}/${o.file} (${o.why})`);
   return out;

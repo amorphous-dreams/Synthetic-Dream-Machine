@@ -2,7 +2,7 @@
  * vault-carriers — THE ONE CARRIER TABLE. Every carrier a vessel keeps at rest names its home, its custody
  * class, its secret kind and its writer in exactly one row here.
  *
- * ── FIVE CUSTODY CLASSES ────────────────────────────────────────────────────────────────────────
+ * ── SIX CUSTODY CLASSES ─────────────────────────────────────────────────────────────────────────
  *   `floor`       — outside the vessel KEK (VK): the floor key, its own log, the slot tree that wraps the VK, and
  *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any VK
  *                   opens, so nothing here may need one.
@@ -14,6 +14,10 @@
  *                   stands yet: the rows move under SK with the ember's serving tier.
  *   `hot`         — sealed under the VK, opened once at unlock and held for the process life.
  *   `cold`        — sealed under the VK, opened for one act and then dropped.
+ *   `outbox`      — sealed under the outbox key, which the VK wraps in its own hot row (`outbox-key`); an unlock hands
+ *                   that key to the daemon island, which seals and opens the parcels for the life of the unlock. The
+ *                   bytes frame as the outbox seal and never as the VK's, so no VK rotation re-seals one: it re-seals
+ *                   the outbox key's row alone (custody#/the-table, the outbox).
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
  * at rest (petnames, the handle book, the anchors).
  *
@@ -32,7 +36,7 @@
  *
  * ── A ROW OUTSIDE THE VESSEL KEY NAMES ITS LAW ──────────────────────────────────────────────────
  * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the VK. A serving,
- * hot or cold row states none: such a file that reads bare reads as a fault.
+ * hot, cold or outbox row states none: such a file that reads bare reads as a fault.
  *
  * ── THE CENSUS NAMES WHAT STANDS OUTSIDE THE TABLE ──────────────────────────────────────────────
  * `outsideTheTable` walks the three homes whole and names each file there that reads private and matches no row:
@@ -68,15 +72,16 @@ import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } fro
 import { basename, join } from "node:path";
 import {
   REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, VK_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexRow, readKeyParcel, readLockboxRecord, readVkCarrier, restNameHolds, rotateVk,
+  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readVkCarrier, restNameHolds, rotateVk,
   type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey,
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
+import { outboxKeyPath } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
-export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold"] as const;
+export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox"] as const;
 export type CustodyClass = (typeof CUSTODY_CLASSES)[number];
 
 /** The homes a row may name. */
@@ -195,7 +200,7 @@ const HOSTING = "hosting/[0-9a-f]{32}/";
  * outside the vessel key states its law, and a row under it states none.
  */
 type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds">>
-  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" });
+  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
 type IdentityRowSpec = RowSpec extends infer R ? (R extends unknown ? Omit<R, "home" | "under"> : never) : never;
@@ -210,15 +215,15 @@ const REST_CARRIED = REST_KINDS.filter((kind) => kind !== "own" && kind !== "out
 const REST_NAME = "[0-9a-z][0-9a-z.-]{0,254}";
 /**
  * A rest file holds its row's law: the digest at the end of its name commits to its bytes, and the bytes read whole
- * as the kind its shelf names (a lockbox, a record of that kind, an index row, a key parcel). Bytes of any other
- * shape under a rest's spelling, a clear key named by its own digest among them, fail it.
+ * as the kind its shelf names (a lockbox, a record of that kind, an index row, an outbox seal). Bytes of any other
+ * shape under a rest's spelling, a clear key or a clear parcel named by its own digest among them, fail it.
  */
 const restFileHolds = (file: string, bytes: Uint8Array): boolean => {
   const [, kind, name] = file.split("/");
   if (kind === undefined || name === undefined || !restNameHolds(name, bytes)) return false;
   if (kind === "lockbox") return readLockboxRecord(bytes) !== null;
   if (kind === "index") return readIndexRow(bytes) !== null;
-  if (kind === "outbox") return readKeyParcel(bytes) !== null;
+  if (kind === "outbox") return readsAsOutboxSeal(bytes);
   return readCarriedRecord(bytes)?.kind === kind;
 };
 
@@ -274,10 +279,6 @@ function buildTable(): readonly CarrierRow[] {
     row({ row: "sealed-own", home: "storage", under: "sealed", match: new RegExp(`^sealed/own/${REST_NAME}$`),
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a note holds opaque ids of the sealed store, a one-byte mark or nothing, under an opaque name, and no secret, name or key" }),
-    // The parcels a vessel wrapped for a reader, until the member lane takes them. They stay on their vessel.
-    row({ row: "sealed-outbox", home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
-          custody: "floor-plain", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds,
-          bare: "a parcel holds no key: it holds public Keyhive operations that name reader identifiers, it stays on its vessel, and the island that writes it holds no vessel key" }),
     // The Keyhive chunks a provider tracks per bag (`sealed-store-fs`): one ciphertext per content reference.
     row({ row: "sealed-chunk", home: "storage", under: "sealed", match: /^sealed\/keyhive-chunks\/[0-9a-f]{1,128}\/[0-9a-f]{1,128}$/,
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
@@ -317,10 +318,14 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store", bundle: "lines" }),
     // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
-    // rotation reveals, and what another face's enrolment reads to refuse a shared key. It stays on its vessel
-    // until the bundle's body carries a guardian set.
+    // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
+    // it whole wherever the face's log commits it, and a restore lands it beside the root.
     id({ row: "guardian-set", match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
-         writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf }),
+         writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
+    // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
+    id({ row: "face-provisional", match: /^face-provisional-h(\d+)\.json$/, custody: "hot", keyClass: null,
+         writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
     row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
@@ -342,6 +347,17 @@ function buildTable(): readonly CarrierRow[] {
     // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
     row({ row: "cofound", home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
           custody: "hot", keyClass: null, writer: "cofound-record" }),
+
+    // The vessel's outbox key (`outbox-key`): minted once, at the first unlocked composition, and handed to the daemon
+    // island at each unlock. It seals the outbox's parcels and nothing beside them; it stays on its vessel.
+    id({ row: "outbox-key", match: exact(outboxKeyPath()), custody: "hot", keyClass: "device-minted",
+         writer: "outbox-key" }),
+
+    // ── outbox: sealed under the outbox key the VK wraps ───────────────────────────────────────
+    // The parcels a vessel wrapped for a reader, until the member lane takes them: each sealed whole, its reader
+    // inside the seal, under a random name (`sealed-store-rest`). They stay on their vessel.
+    row({ row: "sealed-outbox", home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
+          custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",

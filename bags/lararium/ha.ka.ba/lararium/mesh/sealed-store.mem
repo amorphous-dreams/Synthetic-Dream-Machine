@@ -343,7 +343,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 * ''The key lineage's base rule and the roll for each founding'' (`packages/lararium-mesh/src/content-key-lineage.ts`).
 * ''The raises a vessel counts'': the seat counts a raise where the island's own count answered it, and reads the vessel's ledger through `countedRaises` where a composer hands that in. Caller: a door beside the dyad's own, from the island to the vessel's fold of its fleet board. Until it stands, a vessel that restarts hands its kept rolls back through the `sealed-rolls` verb before it reads a removal's version.
 * ''The admission act's call'': `sealed-admit` mints the from-now version and `sealed-hand-over` hands a shareable span. Caller: the face join, once it seats a device. A from-now admission also asks the document store for its fresh base. The seat hands the holder no `freshBase` port, since nothing cuts a fresh base before step three, so every from-now admission refuses `fresh-base-unavailable` on a seated vessel until then.
-* ''The outbox'' (`packages/lararium-mesh/src/sealed-store-rest.ts`): the `sealed-hand-over`, `sealed-parcels` and `sealed-serve` verbs rest each parcel there and answer its name and a count. Nothing reads a parcel out. Caller: the member lane of step four. A parcel rests in the clear there under a name that leads with a digest of its reader; the sealed outbox under the outbox key stands owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/what-the-code-holds">>).
+* ''The outbox'' (`packages/lararium-mesh/src/sealed-store-rest.ts`): the `sealed-hand-over`, `sealed-parcels` and `sealed-serve` verbs seal each parcel whole there under the outbox key an unlock handed the daemon island, its reader inside the seal, under a random name, and answer its name and a count; with no key handed each refuses `outbox-shut` before any key act. Nothing reads a parcel out. Caller: the member lane of step four. The outbox key's row, its hand-off and the crash law read at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/what-the-code-holds">>.
 
 ''No per-Nexus shared secret stands'' (operator ruling). The code holds no convergence secret, no keyring row and no delivery of one, and no reader derives from one. A bag's content key reaches its readers by lockbox alone, and the `cad-seal` verb reads no keyring.
 
@@ -382,6 +382,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0zSFnbHmZy4E3gJr1ZQgRl7BKERjvs6XdWnmxrBreqE
+<<^ code="&#x0003;">>ni:///sha-256;4waYDuNhe3M1N-gWDPM4E2OWMTr5MKABQRvN7pdqVyg
 
 <<^ code="&#x0004;" -> to="?">>

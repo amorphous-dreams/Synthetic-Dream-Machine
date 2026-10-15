@@ -19,19 +19,24 @@
  *                    own key, its cold next key printed on a card and read back), and the face that binds the
  *                    charter's Nexus AID. Needs --name '<label>' (persona zero's private label); --chair '<label>'
  *                    names the chair privately.
+ *   --restore FILE   (with --hearth) A RESTORE AS PERSONA ZERO: the act lands the face a backup bundle carries as
+ *                    persona zero, at a fresh seed charter and a fresh chair, instead of minting a fresh root. The
+ *                    bundle's own route reads on a terminal; --name may stay off (the bundle's pet-name lands).
  *
  * THREE ROADS, ONE VERB. Bare, it founds a PLACE with no face (a herm's rite); `--admit` founds a joiner through
  * its admit; `--hearth` runs the Stable founding act. A face founds at a hearth alone: `persona new 0` on a place
  * with no seed charter refuses by name.
  */
 
-import { OldShapeRefusal, assertNoOldCustodyShape, seatFingerprint, type SlotSpec } from "@lararium/mesh";
+import { readFileSync } from "node:fs";
+import { OldShapeRefusal, assertNoOldCustodyShape, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
   CustodyLockRefused, HearthFoundingRefused, NameTooLong, vkSealedCarriers, vkSlotsPath,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
-import { CredentialTtyRefusal, gatherFoundingRoute } from "../custody-prompt.js";
+import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "../custody-prompt.js";
+import { restoreLines, type RestoreLanded } from "../vault-restore.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 
@@ -46,6 +51,14 @@ import { emit } from "../render.js";
 export type FoundingRoute = () => Promise<readonly SlotSpec[]>;
 let gatherRoute: FoundingRoute = gatherFoundingRoute;
 export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = gather; }
+
+/**
+ * The bundle's route, for a restore as persona zero: the passphrase or paper sheet the bundle got sealed under, read
+ * on a TTY by default. A test installs its own; no flag and no env var carries it.
+ */
+export type BundleRoute = () => Promise<readonly Credential[]>;
+let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore");
+export function setFoundingBundleRoute(gather: BundleRoute): void { gatherBundle = gather; }
 
 /** The refusals a founding names on one line each, with their advice; every other error keeps its own voice. */
 function foundingRefusal(err: unknown): { name: string; advice: string } | null {
@@ -63,7 +76,7 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
     return { name: "CustodyLockRefused", advice: "another process holds this custody; let it finish, then found again." };
   }
   if (err instanceof HearthFoundingRefused) {
-    return { name: "HearthFoundingRefused", advice: "" };
+    return { name: "HearthFoundingRefused", advice: err.restoreRefusal ? "a restore refuses before its commit row; one that stopped after it completes when the same founding runs again with the same bundle." : "" };
   }
   // The card printer loads at the act, so its refusal reads by name here.
   if (err instanceof Error && err.name === "CardReadBackRefused") {
@@ -118,32 +131,60 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
 async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDir: string; slots: readonly SlotSpec[] }): Promise<number> {
   if (args.options["admit"]) throw new HearthFoundingRefused("--hearth founds a hearth of its own; a joiner founds through --admit alone. Nothing was written.");
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
-  if (name.length === 0) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing was written.");
+  const restoreFile = typeof args.options["restore"] === "string" ? args.options["restore"] : undefined;
+  if (name.length === 0 && restoreFile === undefined) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing was written.");
+  const restore = restoreFile === undefined ? undefined : await openRestoreBundle(restoreFile);
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   // The card's terminal read-back rides the one cold-card printer. It loads here, at the act, so a founding's
   // module graph (which a test's setup file loads before the test's own mocks) stays as light as the bare road's.
   const { readBack } = await import("../cold-card-readback.js");
   let printed: Array<Record<string, string>> = [];
-  const founded = await ownedStore(at.storageDir, (repo) => runFoundHearth({
-    repo, storageDir: at.storageDir, genesisDir: at.genesisDir, custody: { slots: at.slots },
-    ...(args.flags["force"] ? { force: true } : {}),
-    name, ...(chair ? { chair } : {}),
-    readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },
-  }));
+  let founded: Awaited<ReturnType<typeof runFoundHearth>>;
+  try {
+    founded = await ownedStore(at.storageDir, (repo) => runFoundHearth({
+      repo, storageDir: at.storageDir, genesisDir: at.genesisDir, custody: { slots: at.slots },
+      ...(args.flags["force"] ? { force: true } : {}),
+      name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
+      readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },
+    }));
+  } finally { restore?.bundleKey.fill(0); }
+  const restored: RestoreLanded | null = founded.restored === null ? null : { ok: true, kind: "restore", via: "direct", ...founded.restored };
   emit(args, {
     ok: true,
     data: {
       nexusAid: founded.nexusAid, seatKey: founded.seatKey, seatFingerprint: founded.seatKey ? seatFingerprint(founded.seatKey) : null,
       nextDigest: founded.nextDigest, charterSeated: founded.charterSeated, posture: "private", cards: printed,
       personaGroupId: founded.face.personaGroupId, faceStood: founded.face.alreadyStood,
+      ...(restored ? { restored } : {}),
     },
     human: () => {
       console.log(`[lares vessel found --hearth] the hearth stands: ${founded.nexusAid}`);
       console.log(`  seed charter  one seat, threshold one, PRIVATE${founded.charterSeated ? "" : " (it stood from an earlier run)"}`);
       if (founded.seatKey) console.log(`  seat          ${seatFingerprint(founded.seatKey)}  (its key rests sealed here; its next key rests on the card alone)`);
+      if (restored) {
+        console.log("  persona zero  the restored face; its edge binds this hearth, and its fresh chair holds the seat");
+        for (const line of restoreLines(restored)) console.log(`  ${line}`);
+        return;
+      }
       console.log(`  persona zero  "${name}"${founded.face.alreadyStood ? " (it stood from an earlier run)" : ""}; its edge binds this hearth`);
       console.log("  stand it:     lares vessel stand");
     },
   });
   return 0;
+}
+
+/**
+ * Open the bundle a restore as persona zero names, in this process: read the file, open its slot tree under the
+ * bundle's own route, and hand the body still sealed, beside the bundle key, to the founding act. Refuses by name
+ * before any byte of the founding moves. The caller zero-fills the key.
+ */
+async function openRestoreBundle(file: string): Promise<{ readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array }> {
+  let bytes: Uint8Array;
+  try { bytes = new Uint8Array(readFileSync(file)); }
+  catch (err) { throw new HearthFoundingRefused(`bundle-unreadable: no bundle reads at ${file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"}). Nothing was written.`); }
+  const read = readFaceBundle(bytes);
+  if (read.reading !== "readable") throw new HearthFoundingRefused(`bundle-malformed: ${file} reads as no backup bundle (${read.why}). Nothing was written.`);
+  const opened = openBundleKey(read.tree, await gatherBundle());
+  if (opened.reading !== "opens") throw new HearthFoundingRefused(`no-slot-opens: no route of the bundle opens under what was presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing was written.`);
+  return { sealedBody: read.sealedBody, bundleKey: opened.bundleKey };
 }

@@ -20,6 +20,18 @@
  *   R8  a restore lands additively: a name this vessel holds stays.
  *   R9  a history longer than its inception seats whole on the fresh vessel's board: a contested rotation the
  *       face vetoed stays vetoed.                    control: the open contest alone refuses `root-superseded`
+ *   R10 a restore after guardian enrolment: a bundle cut after the face enrolled carries its set, lands, and seats
+ *       the face's sealed set row at the target index; a bundle cut BEFORE the enrolment still restores over a
+ *       board that holds the enrolment, and says the set rode no bundle. A guardians' rotation that moves the set
+ *       cuts both off (`root-superseded`); a carried set its own log does not commit refuses `bundle-inconsistent`;
+ *       a carried key another face of this vessel guards with refuses `guardian-key-serves-another-face`; a set
+ *       row at the target under another set refuses `row-conflict`. Each refusal lands before any write.
+ *   R11 a restored face stands PROVISIONAL: the restore lands the mark beside the root, an enrolment refuses
+ *       `face-provisional` on its own door and through the sealed act door, and names who could confirm. A view
+ *       refuses by name where it reads as none, names another face, fails its signature, names a key that stands as
+ *       no such party (a chair this vessel holds among them), names a sibling (owed), or disagrees with the head;
+ *       each refusal keeps the mark. A guardian's own agreeing view lifts it.
+ *                                                    control: a face this vessel founded carries no mark
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
@@ -30,15 +42,19 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, attestAndRotate, canonicalJsonBytes, deriveSelfRecoveryKey, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
+  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
   openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
-import { removeCustodyRow, seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
+import { guardianOffer, guardianSetFile, readGuardianSet, runGuardianEnrolment } from "../src/guardian-enrolment.js";
+import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
+import { readNexusDoc } from "../src/nexus-doc.js";
+import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -48,7 +64,7 @@ import {
 import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain, readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "../src/persona-admit-flow.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
-import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
+import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
@@ -101,9 +117,33 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
 interface Cut {
   readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody;
   readonly rootKey: string; readonly prefix: string; readonly group: string; readonly veilTag: string; readonly vesselKey: string;
+  /** Where the face enrolled guardians before the cut: the bundle cut BEFORE that enrolment, each guardian's own half, and A's board after it. */
+  readonly enrolled?: {
+    readonly early: { readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody };
+    readonly guardians: readonly { readonly code: string; readonly recoveryPubKey: string }[];
+    readonly kel: readonly PersonaKelEvent[];
+  };
 }
-/** Found vessel A, light a face, give it names, a proof key and a recognised friend, cut its bundle, and DESTROY A. */
-async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", proofFill = 3): Promise<Cut> {
+/** Cut face 0's bundle on the standing vessel under a fresh key, with an empty memory section. */
+async function cutHere(): Promise<{ sealedBody: Uint8Array; bundleKey: Uint8Array; body: FaceBundleBody }> {
+  const bundleKey = mintBundleKey();
+  const cut = await cutFaceBundle({
+    face: 0, bundleKey,
+    door: {
+      wornFace: () => 0, ownEdgeShadowed: async () => false,
+      cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
+      kel: (prefix) => withRepo((repo) => readLocalPersonaKelChain(repo, prefix)),
+      memoryDoor: null, importMemory: null,
+    },
+  });
+  return { sealedBody: cut.sealedBody, bundleKey, body: readFaceBundleBody(openFaceBundleBody(cut.sealedBody, bundleKey)!)! };
+}
+/**
+ * Found vessel A, light a face, give it names, a proof key and a recognised friend, cut its bundle, and DESTROY A.
+ * With `guardians` above zero the face first cuts an early bundle, then enrols that many guardians at that
+ * threshold by its typed first event, and cuts after.
+ */
+async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", proofFill = 3, guardians = 0): Promise<Cut> {
   const root = await foundVessel(label);
   const rootKey = (await listPersonaRosterLines()).find((l) => l.handleIndex === 0)!.verifyingKey;
   await (await makeNodePersonaPetnameStore()).set(0, faceLabel);
@@ -116,19 +156,20 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   book.setPetname(friend.nym, "Ana", rootKey);
   await saveNodeHandleBook(book);
   const anchors = (await loadIdentityAnchors(0))!;
-  const bundleKey = mintBundleKey();
-  const cut = await cutFaceBundle({
-    face: 0, bundleKey,
-    door: {
-      wornFace: () => 0, ownEdgeShadowed: async () => false,
-      cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
-      kel: (prefix) => withRepo((repo) => readLocalPersonaKelChain(repo, prefix)),
-    },
-  });
-  const body = readFaceBundleBody(openFaceBundleBody(cut.sealedBody, bundleKey)!)!;
+  let enrolled: Cut["enrolled"];
+  if (guardians > 0) {
+    const early = await cutHere();
+    const offers = await Promise.all(Array.from({ length: guardians }, () => guardianOffer(anchors.personaKelPrefix!)));
+    await withRepo((repo) => runGuardianEnrolment({ repo, handleIndex: 0, offers: offers.map((o) => o.offer), threshold: guardians }));
+    enrolled = {
+      early, guardians: offers.map((o) => ({ code: o.code, recoveryPubKey: o.recoveryPubKey })),
+      kel: await withRepo((repo) => readLocalPersonaKelChain(repo, anchors.personaKelPrefix!)),
+    };
+  }
+  const cut = await cutHere();
   const out: Cut = {
-    sealedBody: cut.sealedBody, bundleKey, body, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
-    veilTag: anchors.veilTag!, vesselKey: await loadVesselVerifyingKey(),
+    ...cut, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
+    veilTag: anchors.veilTag!, vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
   };
   // DESTROY THE SCRATCH HOME: nothing of vessel A survives but the bundle in hand.
   await leave();
@@ -384,6 +425,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect([...RESTORE_REFUSALS]).toEqual([
       "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
       "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
+      "guardian-key-serves-another-face", "hearth-stands",
     ]);
   });
 
@@ -461,5 +503,132 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(restored.landed.petname).toBe(false);
     expect(restored.landed.handle).toBe(true);
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBe("a name kept here");
+  });
+
+  test("R10 — a restore after guardian enrolment carries the face's set, and an earlier bundle still restores", async () => {
+    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 2);
+    const { early, guardians, kel } = a.enrolled!;
+    const setHash = sealKeySetHash(guardians.map((g) => g.recoveryPubKey), 2);
+    expect(kel.map((e) => e.kind ?? "plain"), "CONTROL: A's board heads at the typed first enrolment").toEqual(["plain", "guardian-enrolment"]);
+    expect(early.body.guardianSet, "the early cut carries no set: its log stood one-of-one").toBeNull();
+    expect(a.body.guardianSet?.guardianSetHash, "the later cut carries the set its log commits").toBe(setHash);
+    expect(a.body.guardianSet?.guardians.map((g) => g.recoveryPubKey)).toEqual(guardians.map((g) => g.recoveryPubKey));
+
+    // THE LATER BUNDLE lands, and seats the face's sealed set row at the target index.
+    await foundVessel("b");
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    expect(restored.checked).toEqual({ seq: 1, from: "bundle" });
+    expect(restored.guardianSet).toBe("landed");
+    expect(await readGuardianSet(1)).toEqual({ prefix: a.prefix, ...a.body.guardianSet });
+    expect((await loadIdentityAnchors(1))?.personaKelPrefix).toBe(a.prefix);
+
+    // THE EARLY BUNDLE restores over a board that holds the enrolment the root itself signed; the set rode no bundle.
+    await foundVessel("c");
+    await withRepo((repo) => seatLocalPersonaKelChain(repo, kel));
+    const late = await restoreFaceBundle({ sealedBody: early.sealedBody, bundleKey: early.bundleKey, as: 1, withRepo });
+    expect(late.checked).toEqual({ seq: 1, from: "board" });
+    expect(late.guardianSet).toBe("absent");
+    expect(await readGuardianSet(1)).toBeNull();
+
+    // A GUARDIANS' ROTATION that moves the set cuts every earlier bundle off.
+    const moved = await attestAndRotate({
+      head: kel[1]!, freshOpKeyDid: `0x${a.rootKey}`, guardianRecoveryKeys: guardians.map((g) => g.recoveryPubKey), recoveryThreshold: 2,
+      guardianSigners: guardians.map((g) => ({ signer: g.recoveryPubKey, sign: (bytes: Uint8Array) => ed.signAsync(bytes, coldKeySeedFromCode(g.code)).then(hex) })),
+      next: { guardians: [guardianRecoveryRegistrationCard("guardian-a", await publicOf(secretOf(61)), "a new guardian")], threshold: 1 },
+    });
+    if (!moved.ok) throw new Error(`setup: the guardians' rotation refused: ${moved.reason}`);
+    await foundVessel("d");
+    await withRepo((repo) => seatLocalPersonaKelChain(repo, [...kel, moved.event]));
+    let before = homeTree();
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("root-superseded");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: early.sealedBody, bundleKey: early.bundleKey, as: 1, withRepo }))).toBe("root-superseded");
+    expect(homeTree()).toBe(before);
+
+    // A CARRIED SET ITS OWN LOG DOES NOT COMMIT: another digest beside the enrolment, and a set beside a one-of-one log.
+    await foundVessel("e");
+    before = homeTree();
+    const other = { ...a.body.guardianSet!, guardianSetHash: sealKeySetHash([guardians[0]!.recoveryPubKey], 1), threshold: 1, guardians: [a.body.guardianSet!.guardians[0]!] };
+    expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...a.body, guardianSet: other }), as: 1, withRepo }))).toBe("bundle-inconsistent");
+    expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...early.body, guardianSet: a.body.guardianSet }), as: 1, withRepo }))).toBe("bundle-inconsistent");
+    // A set whose registrations do not recompute the digest it names.
+    const bent = { ...a.body.guardianSet!, guardians: [a.body.guardianSet!.guardians[1]!, a.body.guardianSet!.guardians[1]!] };
+    expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...a.body, guardianSet: bent }), as: 1, withRepo }))).toBe("bundle-inconsistent");
+    expect(homeTree()).toBe(before);
+
+    // A CARRIED KEY ANOTHER FACE OF THIS VESSEL GUARDS WITH refuses, naming that face.
+    const shared = { prefix: "persona-" + "00".repeat(32), guardianSetHash: sealKeySetHash([guardians[1]!.recoveryPubKey], 1), threshold: 1, guardians: [a.body.guardianSet!.guardians[1]!] };
+    await writeCustodyRow("identity", guardianSetFile(0), new TextEncoder().encode(JSON.stringify(shared)));
+    before = homeTree();
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("guardian-key-serves-another-face");
+    expect(homeTree()).toBe(before);
+
+    // A SET ROW AT THE TARGET under another set refuses `row-conflict`; the same set there lands beside it.
+    await foundVessel("f");
+    const fresh = await publicOf(secretOf(71));
+    const stale = { prefix: a.prefix, guardianSetHash: sealKeySetHash([fresh], 1), threshold: 1, guardians: [guardianRecoveryRegistrationCard("guardian-a", fresh, null)] };
+    await writeCustodyRow("identity", guardianSetFile(1), new TextEncoder().encode(JSON.stringify(stale)));
+    before = homeTree();
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("row-conflict");
+    expect(homeTree()).toBe(before);
+    expect(pendingStands()).toBe(false);
+    await writeCustodyRow("identity", guardianSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.guardianSet })));
+    expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).guardianSet).toBe("held");
+  });
+  test("R11 — a restored face stands provisional until a party's own view agrees with its head", async () => {
+    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 1);
+    const { guardians, kel } = a.enrolled!;
+    await foundVessel("b");
+    expect(await readProvisionalMark(0), "CONTROL: the face this vessel founded carries no mark").toBeNull();
+    await expect(refuseWhileProvisional(0, "a control act")).resolves.toBeUndefined();
+
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    const head = { seq: 1, eventCid: kel[1]!.eventCid };
+    expect(await readProvisionalMark(1)).toEqual({ prefix: a.prefix, head, from: "bundle" });
+    expect(restored.provisional.couldConfirm.some((l) => l.includes(guardians[0]!.recoveryPubKey.slice(0, 16)))).toBe(true);
+
+    // AN ENROLMENT REFUSES by name, on its own door and through the sealed act door; nothing lands on the board.
+    const offer = (await guardianOffer(a.prefix)).offer;
+    const provisionalOf = async (p: Promise<unknown>): Promise<string> => {
+      const e = await p.then(() => null, (err: unknown) => err);
+      return e instanceof FaceProvisional ? `provisional:${e.act}` : e instanceof SealedActRefused ? `sealed:${e.reason}` : `other:${String(e)}`;
+    };
+    expect(await provisionalOf(withRepo((repo) => runGuardianEnrolment({ repo, handleIndex: 1, offers: [offer], threshold: 1 })))).toBe("provisional:guardian enrolment");
+    const ctx = { kelHead: null, personaSelves: null, walk: null, hosting: { withRepo } } as unknown as Parameters<typeof runSealedAct>[2];
+    expect(await provisionalOf(runSealedAct("persona.guardian.enrol", { handleIndex: 1, offers: offer, threshold: 1 }, ctx))).toBe("sealed:face-provisional");
+    expect((await withRepo((repo) => readLocalPersonaKelChain(repo, a.prefix))).length).toBe(2);
+    expect(await runSealedAct("persona.provisional", { handleIndex: 1 }, ctx)).toMatchObject({ provisional: true, head, from: "bundle" });
+
+    // EVERY VIEW THAT DOES NOT CONFIRM refuses by name and keeps the mark.
+    const guardianSeed = coldKeySeedFromCode(guardians[0]!.code);
+    const strangerSeed = secretOf(91);
+    const confirmOf = async (view: string): Promise<string> => {
+      const e = await confirmProvisional({ handleIndex: 1, view }).then(() => null, (err: unknown) => err);
+      return e === null ? "CONFIRMED" : e instanceof ConfirmRefused ? e.reason : `threw: ${String(e)}`;
+    };
+    const viewOf = async (over: Partial<{ prefix: string; seq: number; eventCid: string; party: "guardian" | "chair" | "sibling"; seed: Uint8Array }>): Promise<string> =>
+      faceLogViewLine(await signFaceLogView({ prefix: a.prefix, ...head, party: "guardian", seed: guardianSeed, ...over }));
+    const ownSeatKey = readNexusDoc(larSealHome())!.kahu.find((k) => k.verifyingKey)!.verifyingKey!;
+    expect(await confirmOf("lar-log-view:not-a-view")).toBe("view-malformed");
+    expect(await confirmOf(await viewOf({ prefix: "persona-" + "00".repeat(32) }))).toBe("view-other-face");
+    const signed = await signFaceLogView({ prefix: a.prefix, ...head, party: "guardian", seed: guardianSeed });
+    expect(await confirmOf(faceLogViewLine({ ...signed, seq: 0 }))).toBe("view-unsigned");
+    expect(await confirmOf(await viewOf({ seed: strangerSeed }))).toBe("party-not-standing");
+    expect(await confirmOf(await viewOf({ party: "chair", seed: strangerSeed }))).toBe("party-not-standing");
+    const ownChair = await withRepo((repo) => chairLogView({ repo, prefix: a.prefix, seatKey: ownSeatKey }));
+    expect(ownChair).toMatchObject({ ...head, party: "chair" });
+    expect(await confirmOf(faceLogViewLine(ownChair)), "a chair this vessel holds speaks for this vessel, never as another party").toBe("party-not-standing");
+    expect(await confirmOf(await viewOf({ party: "sibling" }))).toBe("party-unread");
+    expect(await confirmOf(await viewOf({ seq: 0, eventCid: kel[0]!.eventCid }))).toBe("view-disagrees");
+    expect(await readProvisionalMark(1), "every refusal keeps the mark").toEqual({ prefix: a.prefix, head, from: "bundle" });
+
+    // A GUARDIAN'S OWN AGREEING VIEW lifts the mark: the head its view names comes off a board (`persona.head`), and
+    // its card signs it; a second confirm finds none.
+    const boardHead = await runSealedAct("persona.head", { prefix: a.prefix }, ctx);
+    expect(boardHead).toEqual({ prefix: a.prefix, ...head });
+    const guardianView = await viewOf({ seq: Number(boardHead["seq"]), eventCid: String(boardHead["eventCid"]) });
+    expect(await runSealedAct("persona.confirm", { handleIndex: 1, view: guardianView }, ctx)).toMatchObject({ handleIndex: 1, party: "guardian", head });
+    expect(await readProvisionalMark(1)).toBeNull();
+    expect(await confirmOf(await viewOf({}))).toBe("not-provisional");
+    await expect(refuseWhileProvisional(1, "guardian enrolment")).resolves.toBeUndefined();
   });
 });

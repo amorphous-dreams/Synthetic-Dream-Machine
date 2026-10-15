@@ -34,6 +34,7 @@ import { keyLineAt } from "./nexus-carriage.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { loadVesselVerifyingKey, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
+import { refuseWhileProvisional } from "./face-provisional.js";
 
 export class NexusKeyReissueRefused extends Error {}
 
@@ -68,6 +69,8 @@ export async function runNexusKeyReissue(opts: {
   if (worn === undefined || !(await vault.hasRoot(worn))) {
     throw new NexusKeyReissueRefused("this vessel wears no face — a face re-issues its own key: `lares persona wear <N>` first");
   }
+  // A re-issue hands the face's standing at a Nexus to a new key: a restored face waits on a party's view first.
+  await refuseWhileProvisional(worn, "a key re-issue at a Nexus");
   const standing = await readNexusKey(worn, aid);
   if (standing === null) throw new NexusKeyReissueRefused(`the face at h${worn} holds no key in ${aid.slice(0, 18)}… — nothing to re-issue`);
   standing.fill(0);

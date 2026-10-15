@@ -86,6 +86,27 @@ export async function gatherCredentials(verb: string, opts: { readonly route?: R
   }
 }
 
+/** Which card a person holds, as the split named it: the root split's two off-device cards, or a guardian card. */
+const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", g: "guardian", d: "device" } as const;
+export type CardCustodian = (typeof CARD_CUSTODIANS)[keyof typeof CARD_CUSTODIANS];
+
+/**
+ * The cards of a root split, for `vault restore --cards`: for each card, the custodian it came from and its code,
+ * read hidden; a blank custodian ends the list. Refuses with no TTY. The codes leave this function in the returned
+ * array alone, which the caller hands to the card reader and drops.
+ */
+export async function gatherCards(verb: string): Promise<Array<{ readonly code: string; readonly custodian: CardCustodian }>> {
+  requireTty(verb);
+  const cards: Array<{ readonly code: string; readonly custodian: CardCustodian }> = [];
+  for (;;) {
+    const a = (await promptLine(`card ${cards.length + 1} came from [r]ecorded code, [e]scrow carrier, [g]uardian card, [d]evice (blank line when done): `)).trim().toLowerCase();
+    if (a === "") return cards;
+    const custodian = CARD_CUSTODIANS[a[0] as keyof typeof CARD_CUSTODIANS];
+    if (custodian === undefined) { say("  (choose one of the letters shown)"); continue; }
+    cards.push({ custodian, code: (await promptSecret(`  card ${cards.length + 1} code (hidden): `)).trim() });
+  }
+}
+
 /** Draft a paper pin, print its sheet(s), and bind it only after every word reads back. */
 async function newPaperPin(): Promise<PinSpec> {
   const draft = draftPaperPin({ threshold: 1, count: 1 });

@@ -133,7 +133,7 @@ import { MEMORY_CUT_SHADOW_READ, ed25519SignerFromSeed, memoryAskRefusal, mintMe
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
-import { SealedStore, readKeyParcel, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
+import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
 import { unboundMints, restingMinter } from "./resolve-binding.js";
 
 /** A daemon boot cannot stand without the daemon wiki's working layer. */
@@ -740,7 +740,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // answers a key, a plaintext or a parcel: an outcome rests in the daemon wiki, so each answers addresses,
       // opaque ids and counts alone. A body arrives as a staged address (or inline text) and an opened body
       // lands in the cleartext-local tier, the same tier the wake reads. A parcel carries the key shore's
-      // public operations, which name readers: it rests in this vessel's own outbox for the member lane.
+      // public operations, which name readers: it rests in this vessel's own outbox for the member lane, sealed
+      // whole under the outbox key an unlock handed this island, under a random name (custody#/the-table, the outbox).
       const holderFor = (verb: string): ContentKeySeat => {
         if (!contentKeys) throw new SealedStoreUnavailable(verb);
         return contentKeys;
@@ -788,9 +789,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if ("refusal" in chose) return refusedBy("sealed-choose-head", chose);
         return { verb: "sealed-choose-head", ...chose };
       });
-      /** Rest each parcel in the outbox under its reader's digest; answer the opaque names alone. */
-      const parcelsOut = async (reader: string | null, parcels: readonly KeyParcel[]): Promise<string[]> => {
-        const outbox = new SealedStore(sealedStore!.rest);
+      /** The outbox, open under the key this unlock handed the island, or a refusal by name before any key act: a
+       *  verb that would hand parcels on asks here first, so a shut outbox wraps nothing it could not rest. */
+      const outboxFor = (verb: string): SealedStore => {
+        const outboxKey = readOutboxKey(daemonAuth.outboxKey);
+        if (outboxKey === null) {
+          throw new VerbRefusal("outbox-shut", `[daemon] ${verb}: the outbox holds shut — no unlock handed this island its outbox key, so no parcel seals; unlock the vessel with \`lares vault unlock\` (nothing handed over, nothing rests).`);
+        }
+        return new SealedStore(sealedStore!.rest, { outboxKey });
+      };
+      /** Seal each parcel whole into the outbox, its reader inside the seal; answer the random names alone. */
+      const parcelsOut = async (outbox: SealedStore, reader: string | null, parcels: readonly KeyParcel[]): Promise<string[]> => {
         const names: string[] = [];
         for (const parcel of parcels) names.push(await outbox.putOutbox(reader ?? "every-reader", encodeKeyParcel(parcel)));
         return names;
@@ -800,10 +809,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!reader) throw new Error("[daemon] sealed-hand-over: `reader` (a seat's identifier on the key shore) required.");
         const from = args["from"] === undefined ? undefined : readKeyVersionId(args["from"]);
         if (from === null) throw new Error("[daemon] sealed-hand-over: `from` reads as no key version id.");
-        const handed = await holderFor("sealed-hand-over").holder.handOver({ bagId: bagOf("sealed-hand-over", args), reader, signer: signerNow(), ...(from ? { from } : {}) });
+        const holder = holderFor("sealed-hand-over").holder;
+        const outbox = outboxFor("sealed-hand-over");
+        const handed = await holder.handOver({ bagId: bagOf("sealed-hand-over", args), reader, signer: signerNow(), ...(from ? { from } : {}) });
         if ("refusal" in handed) return refusedBy("sealed-hand-over", handed);
         // The hand-over record rests with the other records; the parcels rest in the outbox for the member lane.
-        return { verb: "sealed-hand-over", outbox: await parcelsOut(reader, handed.parcels), versions: handed.record.body.versions, missing: handed.missing };
+        return { verb: "sealed-hand-over", outbox: await parcelsOut(outbox, reader, handed.parcels), versions: handed.record.body.versions, missing: handed.missing };
       });
       registry.register("sealed-admit", async (args) => {
         const act = typeof args["act"] === "string" ? args["act"] : "";
@@ -814,9 +825,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       registry.register("sealed-parcels", async (args) => {
         const reader = typeof args["reader"] === "string" ? args["reader"] : "";
-        const parcels = await holderFor("sealed-parcels").holder.parcelsFor({ bagId: bagOf("sealed-parcels", args), reader });
+        const holder = holderFor("sealed-parcels").holder;
+        const outbox = outboxFor("sealed-parcels");
+        const parcels = await holder.parcelsFor({ bagId: bagOf("sealed-parcels", args), reader });
         if ("refusal" in parcels) return refusedBy("sealed-parcels", parcels as { refusal: string });
-        return { verb: "sealed-parcels", outbox: await parcelsOut(reader, parcels as readonly KeyParcel[]) };
+        return { verb: "sealed-parcels", outbox: await parcelsOut(outbox, reader, parcels as readonly KeyParcel[]) };
       });
       registry.register("sealed-receive", async (args) => {
         const read = <T>(list: unknown, one: (bytes: Uint8Array) => T | null): T[] =>
@@ -828,9 +841,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         return { verb: "sealed-receive", parcels: parcels.length, records: records.length, bags: took.bags.length };
       });
       registry.register("sealed-serve", async () => {
-        const served = await holderFor("sealed-serve").holder.serveUnserved();
+        const holder = holderFor("sealed-serve").holder;
+        const outbox = outboxFor("sealed-serve");
+        const served = await holder.serveUnserved();
         if ("refusal" in served) return refusedBy("sealed-serve", served);
-        return { verb: "sealed-serve", outbox: await parcelsOut(null, served.parcels), owed: served.owed };
+        return { verb: "sealed-serve", outbox: await parcelsOut(outbox, null, served.parcels), owed: served.owed };
       });
       // ── A BACKUP BUNDLE'S MEMORY SECTION (sealed-store#/the-store; custody#/the-bundle) ────────────────────
       // The section leaves and enters the holder SEALED: a cut takes a public key and answers ciphertext, and an

@@ -29,7 +29,7 @@ const vesselCredentials = [{ kind: "passphrase", passphrase: VESSEL_ROUTE }] as 
 const HOLD = { bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) };
 const BODY = new TextEncoder().encode("a body the vessel sealed for this test");
 const FACE = { handleIndex: 2, verifyingKey: "ab".repeat(32) };
-const CARRIES = { keyEvents: 1, faceProofKeys: 1, handleBookRecords: 3, petname: true, handle: false };
+const CARRIES = { keyEvents: 1, faceProofKeys: 1, handleBookRecords: 3, petname: true, handle: false, guardians: 0 };
 
 let dir: string;
 beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "vault-backup-")); });

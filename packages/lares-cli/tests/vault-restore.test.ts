@@ -9,6 +9,10 @@
  *   V3  a refusal the vessel answers keeps its own name.
  *   V4  the lines a restore prints say that the face took a NEW seat, name the head the key history check read and
  *       where it read it, and say the sealed bytes must survive elsewhere; an import prints one line per version.
+ *   C1  `--cards`: the split's two off-device cards build the face's body in this process; the act carries it SEALED
+ *       under a fresh key, beside that key and the index, and no card code rides the act. The body names the root
+ *       the cards rebuild, at the index, with no names, proof key, handle-book record or memory entry.
+ *   C2  the card reader's refusals keep their names and send no act: one card, no face named, another face's root.
  *
  * Synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
@@ -16,9 +20,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey, openFaceBundleBody, sealFaceBundleBody, hexToBytes } from "@lararium/mesh";
+import { webcrypto } from "node:crypto";
+import * as ed from "@noble/ed25519";
+import { bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, splitRootAtFounding, hexToBytes } from "@lararium/mesh";
 import { SEALED_BYTES_LINE } from "../src/vault-backup.js";
-import { importLines, restoreFromBundle, restoreLines, type RestoreLanded, type RunAct } from "../src/vault-restore.js";
+import { importLines, restoreFromBundle, restoreFromCards, restoreLines, type RestoreLanded, type RunAct } from "../src/vault-restore.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -27,7 +33,7 @@ const credentials = [{ kind: "passphrase", passphrase: ROUTE }] as const;
 const BODY = new TextEncoder().encode("a body a vessel sealed for this test");
 const FACE = { handleIndex: 0, verifyingKey: "ab".repeat(32) };
 const HOLD = { bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) };
-const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
+const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, guardianSet: "none", provisional: { couldConfirm: ["a chair seated in a charter this face stands in, with its own view"] }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
 
 let dir: string;
 let file: string;
@@ -106,6 +112,8 @@ describe("a restore hands the vessel a sealed body and the bundle's own key", ()
     expect(text).toContain("--memory");
     expect(text).toContain(SEALED_BYTES_LINE);
     expect(text).toContain("lares vessel stand --restart");
+    expect(text).toContain("PROVISIONAL");
+    expect(text).toContain("a chair seated in a charter this face stands in");
     const boarded = restoreLines({ ...landed, via: "direct", checked: { seq: 4, from: "board" }, holds: [], resumed: true }).join("\n");
     expect(boarded).toContain("this vessel's own board held the face's history");
     expect(boarded).toContain("sequence 4");
@@ -117,5 +125,39 @@ describe("a restore hands the vessel a sealed body and the bundle's own key", ()
     expect(imported).toContain("key-forged");
     expect(imported).toContain(HOLD.bagId);
     expect(imported).toContain(SEALED_BYTES_LINE);
+  });
+});
+
+describe("a root split's cards restore a root through the same act", () => {
+  const seed = Uint8Array.from({ length: 32 }, (_, i) => (i * 13 + 5) & 0xff);
+  const split = splitRootAtFounding(seed, webcrypto as never);
+  const cards = [{ code: split.recordedCode, custodian: "recorded-code" as const }, { code: split.escrowCarrier, custodian: "escrow-peer" as const }];
+
+  it("C1 — the cards build the body here, and the act carries it sealed beside a fresh key; no code rides it", async () => {
+    const rootKey = hex(await ed.getPublicKeyAsync(seed));
+    const d = door(RESTORED);
+    const out = await restoreFromCards({ cards, face: { verifyingKey: `0x${rootKey}` }, as: 2, run: d.run });
+    expect(out).toMatchObject({ ok: true, kind: "restore", face: FACE });
+    expect(d.acts).toHaveLength(1);
+    expect(d.acts[0]!.act).toBe("bundle.restore");
+    expect(Object.keys(d.acts[0]!.args).sort()).toEqual(["as", "body", "key"]);
+    expect(d.acts[0]!.args["as"]).toBe(2);
+    const said = JSON.stringify(d.acts);
+    for (const c of cards) expect(said).not.toContain(c.code);
+    expect(said).not.toContain(hex(seed));
+    const plain = openFaceBundleBody(Uint8Array.from(Buffer.from(String(d.acts[0]!.args["body"]), "base64")), hexToBytes(String(d.acts[0]!.args["key"])))!;
+    const body = readFaceBundleBody(plain)!;
+    expect(body.root.verifyingKey).toBe(rootKey);
+    expect(body.rosterLine).toEqual({ handleIndex: 2, verifyingKey: rootKey });
+    expect(body).toMatchObject({ names: {}, faceProofKeys: [], handleBook: { records: [] }, guardianSet: null, memory: { holds: [] } });
+  });
+
+  it("C2 — the card reader's refusals keep their names and send no act", async () => {
+    const d = door(RESTORED);
+    const other = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9)));
+    expect(await restoreFromCards({ cards: [cards[0]!], face: { verifyingKey: other }, as: 1, run: d.run })).toMatchObject({ ok: false, reason: "cards-too-few" });
+    expect(await restoreFromCards({ cards, face: {}, as: 1, run: d.run })).toMatchObject({ ok: false, reason: "face-unnamed" });
+    expect(await restoreFromCards({ cards, face: { verifyingKey: other }, as: 1, run: d.run })).toMatchObject({ ok: false, reason: "cards-another-root" });
+    expect(d.acts).toHaveLength(0);
   });
 });

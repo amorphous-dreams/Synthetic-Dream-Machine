@@ -30,6 +30,7 @@ import {
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";
+import { refuseWhileProvisional } from "./face-provisional.js";
 import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./persona-admit-flow.js";
 
 /** One face's guardian-set record: its sealed row's filename. */
@@ -143,6 +144,8 @@ export async function runGuardianEnrolment(input: {
   const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === handleIndex);
   const prefix = (await loadIdentityAnchors(handleIndex))?.personaKelPrefix;
   if (!line || !prefix) return refuse("face-not-held", `this vessel holds no face at h${handleIndex} with a key history to enrol on`);
+  // An enrolment moves the face's recovery authority: a restored face waits on a party's view first.
+  await refuseWhileProvisional(handleIndex, "guardian enrolment");
   const offers = input.offers.map(readGuardianOffer);
 
   const fold = foldPersonaContests(await readLocalPersonaKelEvents(repo, prefix));

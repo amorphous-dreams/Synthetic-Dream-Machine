@@ -11,6 +11,14 @@
  *      its genesis; its genesis names the hearth's Nexus AID;
  *   4. persona zero's FACE (`runFoundTheFace`), whose device edge, dyad scope and cabal sentinel all bind that AID.
  *
+ * ── A RESTORE AS PERSONA ZERO ───────────────────────────────────────────────────────────────────
+ * With `restore` (a face's backup bundle, its body still sealed, and its bundle key), step 2 lands THAT face's root
+ * at h0 through the one restore (its commit row, its checks, its provisional mark) in place of a fresh root; step 3
+ * seats a fresh seed charter over it, with a fresh chair the restored face holds; step 4 lights it bound to that
+ * charter's AID. A bundle carries no seat key, so the lost hearth's chair carries no authority here. A founding that
+ * stopped part way resumes only its own root: a root that differs at h0 refuses, and nothing mints over it
+ * (stable-founding-road#/rulings, a restore as persona zero).
+ *
  * It yields no keyring: no seat act commits to a convergence secret (operator ruling). The herm's rite (a place
  * with no face, `runInit` alone) and the joiner's rite (`runInit` with an admit) stay as they stand.
  *
@@ -29,10 +37,11 @@ import {
   renameOwnPersona, type NexusDoc,
 } from "@lararium/mesh";
 import { aFaceBinds } from "../hearth-aid.js";
+import { RestoreRefused, openRestoreBody, restoreFaceBody, restorePendingRoot, type FaceBundleRestored, type RestoreRefusal } from "../face-bundle-restore.js";
 import { heldSeatKey } from "../seat-key-store.js";
 import { nexusCharterStands, readNexusDoc, writeNexusDoc } from "../nexus-doc.js";
 import {
-  generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
+  generateOrLoadPersonaGroupRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../node-vessel-identity.js";
 import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony.js";
 import { larSealHome } from "../vessel-paths.js";
@@ -46,8 +55,13 @@ export interface HearthCard {
 }
 
 export interface FoundHearthOptions extends Omit<InitOptions, "admitPayloadPath"> {
-  /** Persona zero's private pet-name. */
+  /** Persona zero's private pet-name. Under `restore` it may stand empty: the bundle's own pet-name lands. */
   readonly name:     string;
+  /**
+   * A RESTORE AS PERSONA ZERO: a face's backup bundle, its body still sealed, and the bundle key a person's route
+   * opened. The caller owns `bundleKey` and zero-fills it.
+   */
+  readonly restore?: { readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array };
   /** The private label of the one chair the seat claim stands for (default: the face's own chair label). */
   readonly chair?:   string;
   /**
@@ -66,12 +80,24 @@ export interface FoundHearthResult {
   /** Whether this run seated the charter (false where an earlier run's charter stood). */
   readonly charterSeated:  boolean;
   readonly face:           FoundFaceResult;
+  /** Under `restore`: what the restore answered, or null where an earlier run of the same founding completed it. */
+  readonly restored:       FaceBundleRestored | null;
 }
 
 /** The refusal of a Stable founding over a charter this act did not found. */
 export class HearthFoundingRefused extends Error {
   override readonly name = "HearthFoundingRefused";
-  constructor(detail: string) { super(`[lares vessel found --hearth] ${detail}`); }
+  /** Under `restore`, the restore's own refusal, by its name (custody#/the-restore). */
+  readonly restoreRefusal: RestoreRefusal | null;
+  constructor(detail: string, restoreRefusal: RestoreRefusal | null = null) {
+    super(`[lares vessel found --hearth] ${restoreRefusal ? `${restoreRefusal}: ` : ""}${detail}`);
+    this.restoreRefusal = restoreRefusal;
+  }
+}
+/** Run one step of the restore road; a restore's refusal crosses as the founding's own, keeping its name. */
+async function asFounding<T>(step: () => Promise<T> | T): Promise<T> {
+  try { return await step(); }
+  catch (err) { if (err instanceof RestoreRefused) throw new HearthFoundingRefused(err.message, err.reason); throw err; }
 }
 
 /**
@@ -111,7 +137,7 @@ export async function foundSeedCharter(opts: {
 
   // Persona zero's root, its private label, and its claim on the one chair: the roster line lands with the root.
   await generateOrLoadPersonaGroupRoot(0);
-  await renameOwnPersona(await makeNodePersonaPetnameStore(), 0, opts.name);
+  if (opts.name.length > 0) await renameOwnPersona(await makeNodePersonaPetnameStore(), 0, opts.name);
   const chair = opts.chair?.trim();
   await standForKahuSeat(await makeNodePersonaDeclarationStore(), 0, true, chair && chair.length > 0 ? chair : undefined);
 
@@ -158,12 +184,42 @@ export async function foundSeedCharter(opts: {
  * persona zero's face, which binds the charter's AID. A run that stopped anywhere runs again and completes.
  */
 export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHearthResult> {
-  if (typeof opts.name !== "string" || opts.name.trim().length === 0) {
+  const label = typeof opts.name === "string" ? opts.name.trim() : "";
+  if (label.length === 0 && !opts.restore) {
     throw new HearthFoundingRefused("persona zero needs a private label (--name '<label>'); nothing was written");
   }
-  const { name, chair, readBack, ...init } = opts;
+  const { name: _name, chair, readBack, restore, ...init } = opts;
   await runInit(init);
-  const charter = await foundSeedCharter({ name: name.trim(), ...(chair ? { chair } : {}), readBack });
-  const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0 });
-  return { nexusAid: charter.nexusAid, seatKey: charter.seatKey, nextDigest: charter.nextDigest, charterSeated: charter.seated, face };
+  const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack });
+  const light = () => runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0 });
+  const pending = await restorePendingRoot();
+
+  if (!restore) {
+    // A RESTORE THAT STANDS PENDING owns persona zero's index until it lands: a fresh root never mints over it.
+    if (pending !== null) {
+      throw new HearthFoundingRefused("a restore of a face stands pending on this vessel: run the same founding again with that face's bundle (--restore <file>), and it completes. Nothing was written.");
+    }
+    const charter = await seed();
+    const face = await light();
+    return { nexusAid: charter.nexusAid, seatKey: charter.seatKey, nextDigest: charter.nextDigest, charterSeated: charter.seated, face, restored: null };
+  }
+
+  const body = await asFounding(() => openRestoreBody(restore.sealedBody, restore.bundleKey));
+  const held = (await listPersonaRosterLines()).find((l) => l.handleIndex === 0);
+  if (pending === null && held?.verifyingKey === body.root.verifyingKey) {
+    // AN EARLIER RUN OF THIS SAME FOUNDING LANDED THE FACE: its pending row left only once the face lit, so the
+    // charter and the face stand, and each step answers what it already wrote.
+    const charter = await seed();
+    const face = await light();
+    return { nexusAid: charter.nexusAid, seatKey: charter.seatKey, nextDigest: charter.nextDigest, charterSeated: charter.seated, face, restored: null };
+  }
+  let charter: Awaited<ReturnType<typeof seed>> | null = null;
+  const restored = await asFounding(() => restoreFaceBody({
+    body, as: 0, withRepo: (act) => act(opts.repo), ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}),
+    founding: async () => { charter = await seed(); },
+  }));
+  const face = await light();
+  const seated = charter as Awaited<ReturnType<typeof seed>> | null;
+  if (seated === null) throw new Error("found-hearth: the restore landed and seated no charter");
+  return { nexusAid: seated.nexusAid, seatKey: seated.seatKey, nextDigest: seated.nextDigest, charterSeated: seated.seated, face, restored };
 }

@@ -31,8 +31,10 @@ import {
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
   declarePersonaHandle, standForKahuSeat,
-  refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
+  refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
+import { requireTty } from "../custody-prompt.js";
+import { promptSecret } from "../prompt-secret.js";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
@@ -102,6 +104,9 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "admit": return await cmdPersonaAdmit(args);
       case "reissue": return await personaReissue(args);
       case "guardian": return await personaGuardian(args);
+      case "provisional": return await personaProvisional(args);
+      case "confirm": return await personaConfirm(args);
+      case "view": return await personaView(args);
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -149,6 +154,68 @@ async function personaReissue(args: ParsedArgs): Promise<number> {
       console.log(`  to:        ${String(r["to"])}`);
       console.log(`  admitted:  ${String(r["admitted"])}  (the admit keeps naming this key; gates read the line to the new one)`);
       console.log(`  hand-over: ${String(r["handOver"])}  (on the Nexus's carriage board)`);
+    },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona provisional <index>` — whether a restored face still stands provisional, the head its restore read,
+ * and who could confirm it (custody#/the-restore).
+ */
+async function personaProvisional(args: ParsedArgs): Promise<number> {
+  const index = parseIndex(args.positional[1]);
+  const r = await sealedAct("persona.provisional", { handleIndex: index });
+  emit(args, {
+    ok: true, data: r,
+    human: () => {
+      if (r["provisional"] !== true) { console.log(`the face at h${index} stands confirmed: no provisional mark rests on it`); return; }
+      const head = r["head"] as { seq: number; eventCid: string };
+      console.log(`the face at h${index} stands PROVISIONAL: its restore read head ${head.seq} (${head.eventCid.slice(0, 24)}…) off ${r["from"] === "board" ? "this vessel's board" : "its bundle's log"}.`);
+      console.log("  it reads, recovers and serves its own content, and signs no act that changes who holds authority.");
+      console.log("  who could confirm, each with its own view (`lares persona confirm <index> <lar-log-view:…>`):");
+      for (const line of (r["couldConfirm"] ?? []) as string[]) console.log(`    ${line}`);
+    },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona confirm <index> <lar-log-view:…>` — one party's own view of the face's head confirms a provisional
+ * face where the party stands as itself on this vessel's rows and its head agrees with the one the restore read.
+ */
+async function personaConfirm(args: ParsedArgs): Promise<number> {
+  const index = parseIndex(args.positional[1]);
+  const view = args.positional[2];
+  if (typeof view !== "string" || !view.startsWith("lar-log-view:")) throw new UsageError("`persona confirm` takes the face's index and one party's view line (lar-log-view:…)");
+  const r = await sealedAct("persona.confirm", { handleIndex: index, view });
+  emit(args, {
+    ok: true, data: r,
+    human: () => {
+      const head = r["head"] as { seq: number };
+      console.log(`the face at h${index} stands CONFIRMED: a ${String(r["party"])} (${String(r["key"]).slice(0, 16)}…) holds the same head (${head.seq}).`);
+      console.log("  one agreeing party may itself sit stale: its view counts as evidence that no fork shows to it.");
+    },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona view <persona-…> --seat-key <key>` — a CHAIR this vessel holds signs its own view of a face's head, read
+ * off this vessel's board, for the restored face's vessel to confirm with.
+ */
+async function personaView(args: ParsedArgs): Promise<number> {
+  const prefix = (args.positional[1] ?? "").trim();
+  const seat = typeof args.options["seat-key"] === "string" ? args.options["seat-key"].trim().toLowerCase() : "";
+  if (!/^persona-[0-9a-f]{64}$/.test(prefix) || !/^[0-9a-f]{64}$/.test(seat)) throw new UsageError("`persona view` names the face (persona-<64 hex>) and the chair it speaks as (--seat-key <64 hex>)");
+  const r = await sealedAct("persona.view", { prefix, seat });
+  const view = r["view"] as Parameters<typeof faceLogViewLine>[0];
+  const line = faceLogViewLine(view);
+  emit(args, {
+    ok: true, data: { view, line },
+    human: () => {
+      console.log(`[lares persona view] this chair holds head ${view.seq} for ${prefix.slice(0, 24)}…; hand the face's holder this line:`);
+      console.log(`  ${line}`);
     },
   });
   return 0;
@@ -225,8 +292,37 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
+  if (verb === "view") {
+    // THE GUARDIAN'S OWN VIEW of a face's head: this vessel's board supplies the head, and the guardian's card signs
+    // it in this process alone; the card's seed crosses no socket and zero-fills before the line prints.
+    const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian view` names the face it speaks for: --prefix persona-<64 hex>");
+    const head = await sealedAct("persona.head", { prefix });
+    const code = await readGuardianCard();
+    const seed = coldKeySeedFromCode(code);
+    let line: string;
+    try {
+      line = faceLogViewLine(await signFaceLogView({ prefix, seq: Number(head["seq"]), eventCid: String(head["eventCid"]), party: "guardian", seed }));
+    } finally { seed.fill(0); }
+    emit(args, {
+      ok: true, data: { prefix, seq: head["seq"], eventCid: head["eventCid"], view: line },
+      human: () => {
+        console.log(`[lares persona guardian view] your view of ${prefix.slice(0, 24)}…: head ${String(head["seq"])}, off this vessel's own board`);
+        console.log("  hand the restored face's holder this line (`lares persona confirm <index> <line>`):");
+        console.log(`  ${line}`);
+      },
+    });
+    return 0;
+  }
   return usage(args, "guardian");
 }
+
+/** The guardian's card, read hidden on a terminal; a test installs its own. */
+let readGuardianCard: () => Promise<string> = async () => {
+  requireTty("lares persona guardian view");
+  return (await promptSecret("your guardian card (hidden): ")).trim();
+};
+export function setGuardianCardPrompt(read: () => Promise<string>): void { readGuardianCard = read; }
 
 async function personaNew(args: ParsedArgs): Promise<number> {
   const index = parseIndex(args.positional[1]);
