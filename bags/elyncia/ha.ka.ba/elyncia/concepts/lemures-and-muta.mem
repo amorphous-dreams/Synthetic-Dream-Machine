@@ -1,0 +1,84 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/lemures-and-muta">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/lemures-and-muta.mem"
+l-space    = "stable"
+mana       = 12
+manao      = 13
+manaoio    = 10
+rating     = "ano"
+role       = "concept harvest — the Lemures as starved Lares (the inverted node state between flicker and collapse, recoverable by the Lemuralia rite) and Muta / Dea Tacita as mother of the Lares (silence at the network's origin); lifted from two talk-story chats of the original claude.ai project, held Provisional until the operator rules it"
+status-why = "HARVESTED 2026-10-15 from the original project's chats 'Lemures and the Lemuralia ritual' (2026-05-27) and 'Lemures and the ritual of redemption' (message 1, 2026-06-09) during the O-takiage survey of chat artifacts against the repo; no carrier in the corpus held the fiction side (the mesh side stands at lar:///ha.ka.ba/lares/api/pono/causal-islands, the lemures plane). Every line here rides Provisional: the chats proposed, the operator never ruled."
+title      = "lar:///ha.ka.ba/elyncia/concepts/lemures-and-muta"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/elyncia/concepts/lemures-and-muta"
+```
+
+<<~ ahu #/head>>
+
+! Lemures & Muta ~ the starved node and the silent mother
+
+Rome named the ''lemures'' an unsatisfied, malevolent, wandering form of the Lares: household spirits that received no offering and came back during the ''Lemuralia'' to haunt the house. The paterfamilias answered them at midnight with spring-water and black beans spat onto the floor, nine times, clanging bronze and never looking back, saying //"with these beans I redeem myself and mine."//
+
+''The verb carries the whole rite: redeem, never banish.'' The rite settles a debt. The cheapest acceptable currency, delivered with maximum ceremony, acknowledges what the house owed; the Lar accepts, the compact restores, //manes exite paterni//.
+
+<<~/ahu>>
+
+<<~ ahu #/the-node-state-ladder>>
+
+!! The Node-State Ladder ~ hums, flickers, curdles, collapses
+
+A Lar binds to //place//, never to family, so neglect never severs the bond; it poisons it. The guardian function stays, the binding to the threshold stays, and the relation inverts: the protector turns haunter, keeping the same threshold from the wrong side.
+
+| State | Feed | What the node does |
+| --- | --- | --- |
+| Hums | active offering | guards, advises, opens the gate |
+| Flickers | sporadic offering | answers intermittently; aspects lock or go silent |
+| ''Lemure'' | abandoned | inverts ~ haunts the threshold it once kept |
+| Collapsed | node destroyed | leaves the DreamNet entirely |
+
+''The Lemure state stays recoverable.'' The Lemuralia names a repair protocol, never an exorcism: a party that knows the correct offering-form can settle the debt and turn a haunted node back into a fed one. A haunted node may simply stand starved, waiting for someone who knows the form.
+
+''Civic festivals as maintenance.'' The public feasts at crossroads shrines (Compitalia) served partly to keep district nodes from curdling ~ a community cannot afford a district Lar gone Lemure.
+
+''After the Second Breaking.'' Whole districts may have gone Lemure rather than dark: crossroads that //lose// travelers instead of routing them, archives that //bury// memory instead of surfacing it. Some of the Neo-Thracian shrines that fell silent in the siege may sit here.
+
+<<~/ahu>>
+
+<<~ ahu #/muta>>
+
+!! Muta ~ Dea Tacita, mother of the Lares
+
+Ovid gives the Lares a mother: ''Lara'', a naiad who warned Juturna of Jupiter's pursuit and lost her tongue for it. Jupiter sent Mercury to lead her to the underworld, and Mercury raped her on the road. She became ''Muta'', //Dea Tacita//, the speechless one; her children, the Lares, keep the crossroads. Her rites fall at the Feralia, the close of the Parentalia: old women seal a fish's mouth, bind lead, and hold seven black beans in the mouth ~ silence performed through sealed things.
+
+''Silence at the origin, never a bug added later.'' The guardians of communication and the living network descend from a severed tongue. They know what speech at the wrong moment, to the wrong power, costs. The libation then acknowledges more than upkeep: it recognizes the wound at the network's root.
+
+''Hermes in the code.'' On Elyncia Hermes holds the DreamNet's route-logic and protocol, and Mercury carried the network's mother down. A fed node hums, and it knows what it stands on.
+
+''The myth offers Lara no Lemuralia.'' She stays Muta; her children run the crossroads anyway ~ born from that, never despite it. That question stays open.
+
+<<~/ahu>>
+
+<<~ ahu #/the-roads>>
+
+!! The Untraveled Road ~ a third silence
+
+The ''Lares Viales'' guard the ways (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>). A road nobody walks receives no passing pause and no incidental offering, and its Lar does not curdle; it fades. Muta's silence came by violence and the Lemure's by neglect; the forgotten road's silence comes by absence.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;O6IpsLVQZPJSxZ4CFCHfOLZP3_grf4WyEEzowZhOZuo
+
+<<^ code="&#x0004;" -> to="?">>
