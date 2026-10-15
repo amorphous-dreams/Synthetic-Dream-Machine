@@ -295,6 +295,20 @@ describe("custodyStatus", () => {
     writeFileSync(file, Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 1, 1, ...new Array(60).fill(7)]), { mode: 0o600 });
     expect((await custodyStatus({ io, homes })).rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "old-shape", fault: true });
   });
+  test("RED (sweep cure): the sealed store's opaque shelves read their own law, never a seal reading — a note or a chunk that opens with seal-like bytes stands clean", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const own = join(homes.storage, "sealed", "own");
+    const chunks = join(homes.storage, "sealed", "keyhive-chunks", "ab", "cd");
+    mkdirSync(own, { recursive: true });
+    mkdirSync(join(homes.storage, "sealed", "keyhive-chunks", "ab"), { recursive: true });
+    const note = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 9]);
+    writeFileSync(join(own, `aa.bb.${restDigest(note)}`), note, { mode: 0o600 });
+    writeFileSync(chunks, VK_SEAL_MAGIC.subarray(0, 5), { mode: 0o600 });
+    const s = await custodyStatus({ io, homes });
+    const at = (row: string) => s.rows.find((r) => r.row === row);
+    expect(at("sealed-own"), "a LARK-led note stands clean").toMatchObject({ reading: "old-shape", fault: false });
+    expect(at("sealed-chunk"), "a chunk led by seal-like bytes stands clean").toMatchObject({ reading: "torn", fault: false });
+  });
   test("an unfounded home reads the tree absent", async () => {
     expect((await custodyStatus({ io, homes })).tree).toEqual({ reading: "absent" });
   });

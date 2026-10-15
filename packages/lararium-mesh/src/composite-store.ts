@@ -25,7 +25,14 @@ import {
   corpusLarUri,
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
-import { effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+
+/** Two flat field bags hold the same keys and the same values (each value read as its string). */
+function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
+}
 import { VerbRefusal } from "./verb-refusal.js";
 import type { WikiRecipe, BagPinState } from "./wiki-recipe.js";
 
@@ -301,7 +308,8 @@ export class CompositeStore implements LarTiddlerStore {
    * only a layer with no synchronous reader takes one awaited `get` (every production layer reads
    * synchronously; a layer that cannot leaves a DROP landing between that read and the write unordered).
    * A write that only ADDS records to the bag's own residency ledger passes, so the record that retires the
-   * bag lands: every member a live put of an effect record that names this bag, at an effect-record title
+   * bag lands: every member a live put of an effect record that names this bag and carries no field beside
+   * the ledger builder's own (`buildEffectRecordTiddler`), at an effect-record title
    * under this bag's ledger, never the marker's own title, at a title the layer holds no record for. No tombstone, no removal, no overwrite
    * and no deleting put passes, so nothing through this door lifts a retirement or rewrites an audit
    * record. A copy-up lands in the working layer and reads THAT layer's marker.
@@ -315,7 +323,9 @@ export class CompositeStore implements LarTiddlerStore {
     const ledgerAdd = drops.length === 0 && puts.length > 0 && puts.every((r, i) => {
       const title = titles[i]!;
       if (r.meta?.deleted || title === markerTitle || !title.startsWith(ledger) || !isEffectRecordUri(title)) return false;
-      return parseEffectRecord(r.tiddler as Record<string, unknown>)?.bag === layer.bagId;
+      // The record must read back as the one the ledger's own builder writes: no field beside the record's own.
+      const parsed = parseEffectRecord(r.tiddler as Record<string, unknown>);
+      return parsed?.bag === layer.bagId && sameFields(buildEffectRecordTiddler(parsed).tiddler, r.tiddler as Record<string, unknown>);
     });
     const refuse = (): never => {
       throw new VerbRefusal("bag-retired",

@@ -37,7 +37,7 @@ import {
 } from "@lararium/mesh";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
 import {
-  carrierCensus, outsideTheTable, rotateVesselVk, SK_REWRAP_SUFFIX, skSlotsPath, vkSealedCarriers, vkSlotsPath,
+  carrierCensus, carrierTable, outsideTheTable, rotateVesselVk, SK_REWRAP_SUFFIX, skSlotsPath, vkSealedCarriers, vkSlotsPath,
   type CarrierEntry, type CustodyHomes, type OutsideFile,
 } from "./vault-carriers.js";
 
@@ -382,13 +382,16 @@ export async function custodyStatus(args: { readonly io: CustodyIo; readonly hom
     ? { reading: "readable", slots: reading.tree.slots.map((s) => ({ id: s.id, t: s.t, pins: s.pins.map((p) => p.kind) })) }
     : reading;
   const rows: CustodyStatusRow[] = [];
+  // THE SEALED STORE'S SHELVES HOLD OPAQUE BYTES: a note, a chunk, a rest or a parcel may open with any byte, so a
+  // seal reading proves nothing there, and such a row reads its law off its own check (`holds`) alone.
+  const opaque = new Set(carrierTable().filter((r) => r.writer === "sealed-store-fs").map((r) => r.row));
   for (const e of carrierCensus(args.homes)) {
     const bytes = await args.io.read(e.path);
     const reading = readVkCarrier(bytes);
     const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
     const fault = underKey
       ? reading !== "sealed"
-      : (reading !== "bare" && reading !== "absent") || (e.holds !== null && bytes !== null && !e.holds(e.file, bytes));
+      : (!opaque.has(e.row) && reading !== "bare" && reading !== "absent") || (e.holds !== null && bytes !== null && !e.holds(e.file, bytes));
     rows.push({ row: e.row, name: e.name, home: e.home, file: e.file, custody: e.custody, keyClass: e.keyClass, reading, bare: e.bare, fault });
   }
   return { tree, rows, outside: outsideTheTable(args.homes) };
