@@ -88,6 +88,7 @@ const SOWN: Record<string, string> = {
   "identity/.persona-public-handles-joshua.json": "{}",
   "identity/.handle-book.json":                 "{}",
   "identity/guardian-set-h0.json":              "{}",
+  "identity/face-provisional-h0.json":          "{}",
   [`vessel/hosting/${HOST}/state.json`]:        "{}",
   [`vessel/hosting/${HOST}/spent-bafyepoch`]:   "n a b\n",
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
@@ -123,7 +124,7 @@ const RULED: Record<string, CustodyClass> = {
   "transition-pending": "hot", "transitions": "hot",
   "persona-root": "cold", "device-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
-  "vessel-face-key": "hot", "face-proof-key": "cold",
+  "vessel-face-key": "hot", "face-proof-key": "cold", "face-provisional": "hot",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
   "seat-key": "cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).

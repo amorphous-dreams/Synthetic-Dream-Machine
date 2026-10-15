@@ -26,6 +26,12 @@
  *       cuts both off (`root-superseded`); a carried set its own log does not commit refuses `bundle-inconsistent`;
  *       a carried key another face of this vessel guards with refuses `guardian-key-serves-another-face`; a set
  *       row at the target under another set refuses `row-conflict`. Each refusal lands before any write.
+ *   R11 a restored face stands PROVISIONAL: the restore lands the mark beside the root, an enrolment refuses
+ *       `face-provisional` on its own door and through the sealed act door, and names who could confirm. A view
+ *       refuses by name where it reads as none, names another face, fails its signature, names a key that stands as
+ *       no such party (a chair this vessel holds among them), names a sibling (owed), or disagrees with the head;
+ *       each refusal keeps the mark. A guardian's own agreeing view lifts it.
+ *                                                    control: a face this vessel founded carries no mark
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
@@ -36,7 +42,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, attestAndRotate, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
+  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
   openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -46,6 +52,9 @@ import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
 import { guardianOffer, guardianSetFile, readGuardianSet, runGuardianEnrolment } from "../src/guardian-enrolment.js";
+import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
+import { readNexusDoc } from "../src/nexus-doc.js";
+import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -55,7 +64,7 @@ import {
 import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain, readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "../src/persona-admit-flow.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
-import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
+import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
@@ -564,5 +573,58 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(pendingStands()).toBe(false);
     await writeCustodyRow("identity", guardianSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.guardianSet })));
     expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).guardianSet).toBe("held");
+  });
+  test("R11 — a restored face stands provisional until a party's own view agrees with its head", async () => {
+    const a = await cutOnDestroyedVessel("a", "the gardener", 3, 1);
+    const { guardians, kel } = a.enrolled!;
+    await foundVessel("b");
+    expect(await readProvisionalMark(0), "CONTROL: the face this vessel founded carries no mark").toBeNull();
+    await expect(refuseWhileProvisional(0, "a control act")).resolves.toBeUndefined();
+
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    const head = { seq: 1, eventCid: kel[1]!.eventCid };
+    expect(await readProvisionalMark(1)).toEqual({ prefix: a.prefix, head, from: "bundle" });
+    expect(restored.provisional.couldConfirm.some((l) => l.includes(guardians[0]!.recoveryPubKey.slice(0, 16)))).toBe(true);
+
+    // AN ENROLMENT REFUSES by name, on its own door and through the sealed act door; nothing lands on the board.
+    const offer = (await guardianOffer(a.prefix)).offer;
+    const provisionalOf = async (p: Promise<unknown>): Promise<string> => {
+      const e = await p.then(() => null, (err: unknown) => err);
+      return e instanceof FaceProvisional ? `provisional:${e.act}` : e instanceof SealedActRefused ? `sealed:${e.reason}` : `other:${String(e)}`;
+    };
+    expect(await provisionalOf(withRepo((repo) => runGuardianEnrolment({ repo, handleIndex: 1, offers: [offer], threshold: 1 })))).toBe("provisional:guardian enrolment");
+    const ctx = { kelHead: null, personaSelves: null, walk: null, hosting: { withRepo } } as unknown as Parameters<typeof runSealedAct>[2];
+    expect(await provisionalOf(runSealedAct("persona.guardian.enrol", { handleIndex: 1, offers: offer, threshold: 1 }, ctx))).toBe("sealed:face-provisional");
+    expect((await withRepo((repo) => readLocalPersonaKelChain(repo, a.prefix))).length).toBe(2);
+    expect(await runSealedAct("persona.provisional", { handleIndex: 1 }, ctx)).toMatchObject({ provisional: true, head, from: "bundle" });
+
+    // EVERY VIEW THAT DOES NOT CONFIRM refuses by name and keeps the mark.
+    const guardianSeed = coldKeySeedFromCode(guardians[0]!.code);
+    const strangerSeed = secretOf(91);
+    const confirmOf = async (view: string): Promise<string> => {
+      const e = await confirmProvisional({ handleIndex: 1, view }).then(() => null, (err: unknown) => err);
+      return e === null ? "CONFIRMED" : e instanceof ConfirmRefused ? e.reason : `threw: ${String(e)}`;
+    };
+    const viewOf = async (over: Partial<{ prefix: string; seq: number; eventCid: string; party: "guardian" | "chair" | "sibling"; seed: Uint8Array }>): Promise<string> =>
+      faceLogViewLine(await signFaceLogView({ prefix: a.prefix, ...head, party: "guardian", seed: guardianSeed, ...over }));
+    const ownSeatKey = readNexusDoc(larSealHome())!.kahu.find((k) => k.verifyingKey)!.verifyingKey!;
+    expect(await confirmOf("lar-log-view:not-a-view")).toBe("view-malformed");
+    expect(await confirmOf(await viewOf({ prefix: "persona-" + "00".repeat(32) }))).toBe("view-other-face");
+    const signed = await signFaceLogView({ prefix: a.prefix, ...head, party: "guardian", seed: guardianSeed });
+    expect(await confirmOf(faceLogViewLine({ ...signed, seq: 0 }))).toBe("view-unsigned");
+    expect(await confirmOf(await viewOf({ seed: strangerSeed }))).toBe("party-not-standing");
+    expect(await confirmOf(await viewOf({ party: "chair", seed: strangerSeed }))).toBe("party-not-standing");
+    const ownChair = await withRepo((repo) => chairLogView({ repo, prefix: a.prefix, seatKey: ownSeatKey }));
+    expect(ownChair).toMatchObject({ ...head, party: "chair" });
+    expect(await confirmOf(faceLogViewLine(ownChair)), "a chair this vessel holds speaks for this vessel, never as another party").toBe("party-not-standing");
+    expect(await confirmOf(await viewOf({ party: "sibling" }))).toBe("party-unread");
+    expect(await confirmOf(await viewOf({ seq: 0, eventCid: kel[0]!.eventCid }))).toBe("view-disagrees");
+    expect(await readProvisionalMark(1), "every refusal keeps the mark").toEqual({ prefix: a.prefix, head, from: "bundle" });
+
+    // A GUARDIAN'S OWN AGREEING VIEW lifts the mark; a second confirm finds none.
+    expect(await runSealedAct("persona.confirm", { handleIndex: 1, view: await viewOf({}) }, ctx)).toMatchObject({ handleIndex: 1, party: "guardian", head });
+    expect(await readProvisionalMark(1)).toBeNull();
+    expect(await confirmOf(await viewOf({}))).toBe("not-provisional");
+    await expect(refuseWhileProvisional(1, "guardian enrolment")).resolves.toBeUndefined();
   });
 });

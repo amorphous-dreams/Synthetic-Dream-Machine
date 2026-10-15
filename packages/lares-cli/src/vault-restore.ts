@@ -30,6 +30,7 @@ export interface RestoreLanded {
   readonly resumed: boolean;
   readonly checked: { readonly seq: number; readonly from: "board" | "bundle" };
   readonly guardianSet: "none" | "landed" | "held" | "absent";
+  readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed: { readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean; readonly handleBook: { readonly landed: number; readonly kept: number } };
   readonly holds: ReadonlyArray<{ readonly bagId: string; readonly founding: string; readonly keyVersion: string }>;
 }
@@ -75,7 +76,8 @@ export async function restoreFromBundle(args: {
     if (args.memory) return { ok: true, kind: "import", face: result["face"] as ImportLanded["face"], results: (result["results"] ?? []) as ImportLanded["results"] };
     return {
       ok: true, kind: "restore", via, face: result["face"] as RestoreLanded["face"], prefix: String(result["prefix"]), resumed: result["resumed"] === true,
-      checked: result["checked"] as RestoreLanded["checked"], guardianSet: (result["guardianSet"] ?? "none") as RestoreLanded["guardianSet"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
+      checked: result["checked"] as RestoreLanded["checked"], guardianSet: (result["guardianSet"] ?? "none") as RestoreLanded["guardianSet"],
+      provisional: (result["provisional"] ?? { couldConfirm: [] }) as RestoreLanded["provisional"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
     };
   } finally { opened.bundleKey.fill(0); }
 }
@@ -91,6 +93,8 @@ export function restoreLines(landed: RestoreLanded): string[] {
       ? `  key history: this vessel's own board held the face's history, and its newest head (sequence ${landed.checked.seq}) still accepts this root.`
       : `  key history: this vessel's board held no history for the face, so the check read the bundle's own log, as far as its cut (sequence ${landed.checked.seq}). A rotation that landed after the cut shows only on a board: every reader that holds the newer head refuses this seat at its own gate.`,
     ...guardianLines(landed.guardianSet),
+    "  PROVISIONAL: the face reads, recovers and serves its own content, and signs no act that changes who holds authority until a party to its relation shows its own view of the head above and that view agrees (`lares persona confirm`). Who could confirm:",
+    ...landed.provisional.couldConfirm.map((line) => `    ${line}`),
     landed.via === "vessel"
       ? "  the face mounts when the vessel stands again: `lares vessel stand --restart`, then `lares vault unlock`."
       : "  the face mounts when the vessel stands: `lares vessel stand`, then `lares vault unlock`.",

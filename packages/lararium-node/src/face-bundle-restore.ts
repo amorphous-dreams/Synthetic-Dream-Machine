@@ -11,8 +11,8 @@
  *   2  PREFLIGHT   every target row and every relation, before any write (each refusal below).
  *   3  COMMIT      ONE cold row, `restore-pending`, holds everything the restore will land. Before it nothing
  *                  moved; after it the restore completes, in this run or the next.
- *   4  LAND        each row from the pending row: the proof keys, the names, the handle-book records, the guardian
- *                  set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
+ *   4  LAND        each row from the pending row: the provisional mark, the proof keys, the names, the handle-book
+ *                  records, the guardian set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
  *   5  RE-ADMIT    the carried key history seats on this vessel's own board and the face lights under this
  *                  vessel's own veil: a fresh key group, the same fixed prefix, a device edge the root signs for
  *                  this vessel's key. The pending row leaves once the face stands lit.
@@ -62,6 +62,7 @@ import { IslandVerbRefused } from "./island-verb-ask.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { guardianKeysOfOtherFaces, guardianSetFile, readGuardianSet, type GuardianSetRecord } from "./guardian-enrolment.js";
+import { couldConfirm, markProvisional } from "./face-provisional.js";
 import { faceProofKeyStanding, landFaceProofKey } from "./face-key-custody.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
@@ -101,6 +102,8 @@ export interface FaceBundleRestored {
    * log commits a set no part of this bundle carried (a bundle cut before the enrolment).
    */
   readonly guardianSet: "none" | "landed" | "held" | "absent";
+  /** The face stands PROVISIONAL (custody#/the-restore): who could confirm it, in words a person reads. */
+  readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed:   {
     readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean;
     readonly handleBook: { readonly landed: number; readonly kept: number };
@@ -167,7 +170,7 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
  * must begin at the root's own inception and must not fork; its newest event, a rotation still open to contest
  * among them, must name the root as the operating key and commit recovery to the root's own recovery key.
  */
-async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEvent[], repo: Repo, signerDid: string, recoveryCommit: string): Promise<FaceBundleRestored["checked"] & { readonly enrolledSet: string | null }> {
+async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEvent[], repo: Repo, signerDid: string, recoveryCommit: string): Promise<FaceBundleRestored["checked"] & { readonly enrolledSet: string | null; readonly eventCid: string }> {
   const board = await readLocalPersonaKelEvents(repo, body.anchors.personaKelPrefix);
   const fold = foldPersonaContests([...board, ...carried].sort((a, b) => a.seq - b.seq));
   const head = fold.kel[fold.kel.length - 1];
@@ -187,7 +190,7 @@ async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEve
   // WHERE THE HEAD CAME FROM: this vessel's own board where the board itself holds that event, the bundle otherwise.
   return {
     seq: head.seq, from: board.some((event) => event.eventCid === head.eventCid) ? "board" : "bundle",
-    enrolledSet: enrolled ? head.nextRecoverySetHash : null,
+    enrolledSet: enrolled ? head.nextRecoverySetHash : null, eventCid: head.eventCid,
   };
 }
 
@@ -255,8 +258,10 @@ function guardianRecordOf(body: FaceBundleBody): GuardianSetRecord | null {
 }
 
 /** LAND each row a pending restore holds. Each lands only where nothing stands or where the same bytes stand. */
-async function land(pending: Pending): Promise<FaceBundleRestored["landed"] & { readonly guardianSet: "landed" | "held" | null }> {
+async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }): Promise<FaceBundleRestored["landed"] & { readonly guardianSet: "landed" | "held" | null }> {
   const { body, target } = pending;
+  // THE PROVISIONAL MARK lands first among the rows: a face never stands restored here without it.
+  await markProvisional(target, { prefix: body.anchors.personaKelPrefix, head: { seq: head.seq, eventCid: head.eventCid }, from: head.from });
   for (const key of body.faceProofKeys) {
     const secret = Uint8Array.from(Buffer.from(key.secret, "hex"));
     try { await landFaceProofKey(key.scope, secret, target); } finally { secret.fill(0); }
@@ -347,7 +352,7 @@ export async function restoreFaceBody(args: {
         });
       } finally { row.fill(0); }
     }
-    const { guardianSet: setLanded, ...landed } = await land(pending);
+    const { guardianSet: setLanded, ...landed } = await land(pending, checked);
     // RE-ADMIT. The carried history seats on this vessel's own board, then the face lights under this vessel's own
     // veil. `runFoundTheFace` reads the root the roster now names and founds: the same fixed prefix, a fresh key
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
@@ -361,6 +366,7 @@ export async function restoreFaceBody(args: {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
       prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,
       guardianSet: checked.enrolledSet === null ? "none" : setLanded ?? "absent", holds: pending.body.memory.holds,
+      provisional: { couldConfirm: await couldConfirm(pending.target) },
     };
   });
 }

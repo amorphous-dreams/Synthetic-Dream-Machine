@@ -298,6 +298,9 @@ export const FACE_BUNDLE_BODY_INFO = mint("face-bundle-body");
 /** The HKDF `info` a bundle's MEMORY SECTION key pair derives under, from the bundle key. Apart from the
  *  body key's name, so the pair's secret half never equals the key that opens the body. */
 export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
+/** A PARTY'S OWN LOG VIEW of one face: the head a guardian, a seated chair or a sibling device holds for that
+ *  face's key history, signed by the party's own key. A restored face stands provisional until one agrees. */
+export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and

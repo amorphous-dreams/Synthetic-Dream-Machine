@@ -27,7 +27,7 @@ const credentials = [{ kind: "passphrase", passphrase: ROUTE }] as const;
 const BODY = new TextEncoder().encode("a body a vessel sealed for this test");
 const FACE = { handleIndex: 0, verifyingKey: "ab".repeat(32) };
 const HOLD = { bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) };
-const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
+const RESTORED = { face: FACE, prefix: "E-test-prefix-0123456789", resumed: false, checked: { seq: 0, from: "bundle" }, guardianSet: "none", provisional: { couldConfirm: ["a chair seated in a charter this face stands in, with its own view"] }, landed: { faceProofKeys: 1, petname: true, handle: false, handleBook: { landed: 2, kept: 1 } }, holds: [HOLD] };
 
 let dir: string;
 let file: string;
@@ -106,6 +106,8 @@ describe("a restore hands the vessel a sealed body and the bundle's own key", ()
     expect(text).toContain("--memory");
     expect(text).toContain(SEALED_BYTES_LINE);
     expect(text).toContain("lares vessel stand --restart");
+    expect(text).toContain("PROVISIONAL");
+    expect(text).toContain("a chair seated in a charter this face stands in");
     const boarded = restoreLines({ ...landed, via: "direct", checked: { seq: 4, from: "board" }, holds: [], resumed: true }).join("\n");
     expect(boarded).toContain("this vessel's own board held the face's history");
     expect(boarded).toContain("sequence 4");

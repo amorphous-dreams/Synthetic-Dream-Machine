@@ -321,6 +321,10 @@ function buildTable(): readonly CarrierRow[] {
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
     id({ row: "guardian-set", match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
          writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
+    // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
+    id({ row: "face-provisional", match: /^face-provisional-h(\d+)\.json$/, custody: "hot", keyClass: null,
+         writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
     row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),

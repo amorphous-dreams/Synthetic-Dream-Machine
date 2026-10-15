@@ -59,6 +59,7 @@ import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./command
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
 import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
+import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark, refuseWhileProvisional } from "./face-provisional.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
@@ -137,7 +138,7 @@ export interface PersonaSelvesPlane {
     Promise<{ readonly written: boolean; readonly plane: boolean }>;
 }
 
-export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused";
+export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused" | "face-provisional";
 
 /** An act that refuses: the table names no such act, the arguments miss the row's shape, or the row said no. */
 export class SealedActRefused extends Error {
@@ -596,6 +597,23 @@ export const SEALED_ACTS = Object.freeze({
     return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
   }),
 
+  // THE PROVISIONAL STANDING of a restored face (custody#/the-restore): the mark and who could confirm; a party's own
+  // view confirms it; and a chair this vessel holds signs its own view of a face's head for another vessel.
+  "persona.provisional": act({ handleIndex: index }, async (a) => {
+    const mark = await readProvisionalMark(a.handleIndex);
+    return { handleIndex: a.handleIndex, provisional: mark !== null, ...(mark ? { head: { ...mark.head }, from: mark.from, couldConfirm: await couldConfirm(a.handleIndex) } : {}) };
+  }),
+  "persona.confirm": act({ handleIndex: index, view: text }, async (a) => {
+    try { return { ...(await confirmProvisional({ handleIndex: a.handleIndex, view: a.view })) }; }
+    catch (err) { if (err instanceof ConfirmRefused) throw refuse(`${err.reason}: ${err.message}`); throw err; }
+  }),
+  "persona.view": act({ prefix: text, seat: seatKey }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to read the face's key history from");
+    const view = await store.withRepo((repo) => chairLogView({ repo, prefix: a.prefix, seatKey: a.seat }));
+    return { view: { ...view } };
+  }),
+
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
     ...(await offerAdmitFlow({
       deviceVerifyingKey: await loadVesselVerifyingKey(),
@@ -607,6 +625,8 @@ export const SEALED_ACTS = Object.freeze({
     const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === a.handleIndex);
     if (!line) throw refuse(`this vessel holds no persona root at h${a.handleIndex} — a grant signs only as a persona it carries`);
     const personaRef: PersonaRef = { prefix: a.prefix, verifyingKey: line.verifyingKey };
+    // A grant admits a device under the face: a restored face waits on a party's view first.
+    await refuseWhileProvisional(a.handleIndex, "an admit grant");
     const seed = await loadPersonaGroupRootSeed(a.handleIndex);
     try {
       return { ...orRefuse(await grantAdmitFlow({ offerCarriage: a.offerCarriage, personaRef, personaSigner: ed25519SignerFromSeed(seed) })) };
@@ -719,5 +739,7 @@ export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedA
   }
   const row: ActRow = SEALED_ACTS[name];
   const args = readArgs(name, row.shape, rawArgs);
-  return row.run(args as never, ctx);
+  // A RESTORED FACE that still stands provisional refuses every authority-changing act by one name, from any row.
+  try { return await row.run(args as never, ctx); }
+  catch (err) { if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message); throw err; }
 }

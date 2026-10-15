@@ -456,6 +456,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona reissue --nexus <aid>    # the worn face hands its key at that Nexus on to a fresh key",
       "lares persona guardian offer --prefix <persona-…>         # a guardian cuts a fresh key for one face",
       "lares persona guardian enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first guardian set",
+      "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
+      "lares persona confirm 1 <lar-log-view:…>  # one party's own view of that head confirms the face",
+      "lares persona view <persona-…> --seat-key <key>   # a chair this vessel holds signs its view of a face's head",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
