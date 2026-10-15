@@ -760,9 +760,15 @@ class FormPalaceStore:
         from mempalace.palace import get_collection
 
         # create-or-open the SECOND ("form") collection; identity check skipped — we
-        # never run the embedder (we always pass our own dense form-vector).
+        # never run the embedder (we always pass our own dense form-vector). The name check
+        # skips too: upstream opens only its own three names unless the caller declares a
+        # deliberate second store, and `form` stands as one (FORM_COLLECTION above).
         self._col = get_collection(
-            palace_path, collection_name=FORM_COLLECTION, create=True, _skip_identity_check=True
+            palace_path,
+            collection_name=FORM_COLLECTION,
+            create=True,
+            _skip_identity_check=True,
+            _skip_name_check=True,
         )
 
     def _get_raw(self, key: str) -> dict | None:

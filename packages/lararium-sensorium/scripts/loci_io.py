@@ -183,7 +183,9 @@ def cmd_form_embeddings(args):
     ⇒ the orchestrator degrades to the one CONTENT plane (N=1)."""
     out = sys.stdout
     try:
-        col = get_collection(_palace(), collection_name=FORM_COLLECTION, _skip_identity_check=True)
+        col = get_collection(
+            _palace(), collection_name=FORM_COLLECTION, _skip_identity_check=True, _skip_name_check=True
+        )
     except Exception as exc:  # noqa: BLE001 — no form store yet ⇒ 1-plane degrade
         sys.stderr.write(f"form-embeddings: no form collection ({type(exc).__name__}: {exc}) — 0 rows\n")
         return

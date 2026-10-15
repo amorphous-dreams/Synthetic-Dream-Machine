@@ -119,9 +119,16 @@ class ContentStore:
         # hold several (the form registry writes a caller-vector `form` collection beside the base drawers),
         # so a reader that always opens the base collection reads an empty sibling and reports the plane
         # empty — a store speaks only through the collection you open. Unset falls to the base default.
+        # A named plane passes upstream's name check by the door it keeps for a deliberate second store.
         self._collection_name = collection_name
         self._col = (
-            get_collection(palace_path, collection_name=collection_name, create=True, _skip_identity_check=True)
+            get_collection(
+                palace_path,
+                collection_name=collection_name,
+                create=True,
+                _skip_identity_check=True,
+                _skip_name_check=True,
+            )
             if collection_name
             else get_collection(palace_path, create=True, _skip_identity_check=True)
         )
