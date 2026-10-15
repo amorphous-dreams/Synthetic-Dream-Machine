@@ -37,7 +37,7 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { accessSync, constants as fsConstants, existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve as resolvePath } from "node:path";
 import {
   runNexusCarryFor, NexusContractError, SealedActRefused, atomicWriteFileSync,
@@ -299,22 +299,29 @@ const PARTIAL_USAGE = "usage: lares nexus <contract | revoke> <operator-pubkey> 
  */
 function partialOutOrRefuse(out: string, from?: string): string {
   if (from !== undefined && resolvePath(out) === resolvePath(from)) throw new NexusContractError(`--out names the partial you carried (${from}); name another file, so the carried one stays as it came`);
-  if (!existsSync(dirname(resolvePath(out)))) throw new NexusContractError(`--out ${out}: its directory does not exist, so the partial could not land there`);
+  const dir = dirname(resolvePath(out));
+  if (!existsSync(dir)) throw new NexusContractError(`--out ${out}: its directory does not exist, so the partial could not land there`);
+  if (existsSync(out) && statSync(out).isDirectory()) throw new NexusContractError(`--out ${out} names a directory; name a file`);
+  try { accessSync(dir, fsConstants.W_OK); } catch { throw new NexusContractError(`--out ${out}: its directory refuses a write`); }
   return out;
 }
 
-/** Write one partial file a person carries to the other vault; it holds public material alone. */
-function writePartialFile(path: string, partial: unknown): string {
-  atomicWriteFileSync(path, `${JSON.stringify(partial, null, 2)}\n`, `${path}.writing`);
-  return path;
+/**
+ * Write one partial file a person carries to the other vault; it holds public material alone. A write that fails
+ * after the act ran never hides the act: the step still reports, and prints the partial for the person to carry.
+ */
+function writePartialFile(path: string, partial: unknown): { readonly path: string | null; readonly error?: string } {
+  try { atomicWriteFileSync(path, `${JSON.stringify(partial, null, 2)}\n`, `${path}.writing`); return { path }; }
+  catch (err) { return { path: null, error: `--out ${path}: ${err instanceof Error ? err.message : String(err)}` }; }
 }
 
 /** Report one partial step: the verdict here, the seats signed, where the file landed, and the act once it lands. */
-function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, path: string | null): number {
+function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, written: { readonly path: string | null; readonly error?: string } | null): number {
+  const path = written?.path ?? null;
   emit(args, {
     ok: true,
     data: {
-      verdict: r.verdict, signed: r.signed, path, partial: r.partial,
+      verdict: r.verdict, signed: r.signed, path, ...(written?.error ? { outError: written.error } : {}), partial: r.partial,
       landed: r.landed ? { action: r.landed.action, nym: r.landed.nym, evidenceCid: r.landed.evidenceCid, parents: r.landed.parents,
         sealEpochCid: r.landed.sealEpochCid, threshold: r.landed.threshold, boardUrl: r.landed.boardUrl,
         memberHeld: r.landed.memberHeld, bundle: r.landed.bundle, findings: r.landed.findings } : null,
@@ -323,6 +330,10 @@ function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResu
       console.log(`nexus ${step} → ${r.verdict.toUpperCase()} (${r.signed.length} seat(s) signed under ${r.partial.aid.slice(0, 22)}…)`);
       for (const s of r.signed) console.log(`    ${s.slice(0, 16)}…`);
       if (path) console.log(`  partial:     ${path}`);
+      if (written?.error) {
+        console.error(`lares nexus ${step}: the act ran, and the partial file did not land (${written.error}); carry this partial instead:`);
+        console.log(JSON.stringify(r.partial));
+      }
       if (r.landed) {
         console.log(`  landed:      act ${r.landed.evidenceCid.slice(0, 16)}… on this vessel's board (${r.landed.memberHeld ? "MEMBER" : "NOT a member"})`);
         console.log("  next:        carry the partial back, so the other vault lands the same act (`lares nexus contract --from <partial>`)");

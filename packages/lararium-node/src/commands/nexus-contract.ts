@@ -442,17 +442,18 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
     // A seat's signature awaits custody, and the board or the charter head may move meanwhile: the act lands only
     // where it still reads `complete` against the head and the board as they stand at the write.
     const fresh: ContractCore = { ...core, roster: seatedRosterOrRefuse(home) };
-    // The judge itself awaits, so it runs again until the board holds still across one whole judgement: the write
-    // then follows the last judge with no await between. Board progress ends the loop, never a clock.
-    const boardMark = (): string => carriageEntriesFromBoard(fresh.handle.doc()).map(carriageEntryActCid).sort().join(",");
+    // The judge itself awaits, so it runs again until the board AND the charter head hold still across one whole
+    // judgement: the write then follows the last judge with no await between. Progress ends the loop, never a clock.
+    const mark = (): string =>
+      `${seatedRosterOrRefuse(home).sealEpochCid}|${carriageEntriesFromBoard(fresh.handle.doc()).map(carriageEntryActCid).sort().join(",")}`;
     const landed = await landEntry(fresh, repo, act.family, act.entry, judged.signed, async () => {
       for (;;) {
-        const mark = boardMark();
-        const last = await judgeNexusActPartial(partial, partialReader(read.aid, fresh));
+        const before = mark();
+        const last = await judgeNexusActPartial(partial, partialReader(read.aid, { ...fresh, roster: seatedRosterOrRefuse(home) }));
         if (last.verdict !== "complete") {
           throw new NexusContractError(`the partial reads ${last.verdict} on this vessel at the write${last.why ? `: ${last.why}` : ""}; nothing lands.`);
         }
-        if (boardMark() === mark) return;
+        if (mark() === before) return;
       }
     });
     return { partial, verdict: judged.verdict, signed: judged.signed, landed };

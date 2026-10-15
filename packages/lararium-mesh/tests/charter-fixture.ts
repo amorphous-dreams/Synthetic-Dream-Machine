@@ -40,7 +40,7 @@ import { createPrivateKey, createPublicKey, sign as nodeSign } from "node:crypto
 import { sha256BytesSync, utf8Bytes, hex } from "../src/crypto.js";
 import {
   charterInceptionBytes, charterInceptionImage, genesisOfInception, rotateSealEpoch, sealKeySetHash, verifySealLineage,
-  type CharterFounding, type SealNext, type SealEpoch, type SealRollSigner,
+  type SealNext, type SealEpoch, type SealRollSigner,
 } from "../src/wax-stamp.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
@@ -85,9 +85,10 @@ function signBooked(key: string, bytes: Uint8Array): string {
 }
 
 /** The genesis of `keys` at `threshold`, armed by `next`, its inception signed by every seat's booked seed. A test
- *  whose subject stands as the charter doc's own shape takes one here. */
-export function bookedGenesis(keys: readonly string[], threshold: number, next: SealNext = { digests: [], threshold: 0 }, founding: CharterFounding | null = null): SealEpoch {
-  const image = charterInceptionImage(keys, threshold, next, founding);
+ *  whose subject stands as the charter doc's own shape takes one here. A household genesis alone: a joint founding
+ *  carries a cadence inception its holders sign, so it founds through the cofound door (`cofound.test.ts`). */
+export function bookedGenesis(keys: readonly string[], threshold: number, next: SealNext = { digests: [], threshold: 0 }): SealEpoch {
+  const image = charterInceptionImage(keys, threshold, next, null);
   const bytes = charterInceptionBytes(image);
   return genesisOfInception(image, image.keys.map((k) => ({ signer: k, sig: signBooked(k, bytes) })));
 }
