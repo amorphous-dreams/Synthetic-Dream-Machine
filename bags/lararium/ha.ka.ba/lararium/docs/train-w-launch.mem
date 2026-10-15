@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-w-launch"
 
 !! Contents
 
-* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Six fixed module briefs|#/briefs]] · [[Assembled cutover and proof order|#/cutover]] · [[Collision sheet|#/collisions]] · [[Red window and done when|#/done]].
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Six fixed module briefs|#/briefs]] · [[Assembled cutover and proof order|#/cutover]] · [[Slices|#/slices]] · [[Collision sheet|#/collisions]] · [[Red window and done when|#/done]].
 
 <<~/ahu>>
 
@@ -73,6 +73,26 @@ Prove in this order: pure Noise, chain, bundle and exchange vectors; two-root cu
 
 <<~/ahu>>
 
+<<~ ahu #/slices>>
+
+!! Slices ~ the assembled cutover cut into seven owners
+
+The cutover lane's handback cut the assembled cutover into seven slices. The routes the rulings shut (walker, sibling, herm; the oracle unless browser boot reads it) take the shut size.
+
+| Slice | Owns | Size |
+|---|---|---|
+| A · pure completions | mesh `sealed-carriage.ts` (new, D2), `floor-announcement.ts` (new), `gate-bundle.ts` purpose, `domains.ts`, `face-gate.ts` grant slot (where the walker converts), mesh `index.ts` | ~650 |
+| B · mesh dialers | `lar-ws-client-adapter.ts` onto `dialFaceGate`, `oracle-read-client.ts` (shut), `sibling-channel.ts` `dialSiblingHerm` (shut), `carriage-caps.ts`, mesh `tests/gate-dial-fixture.ts` | ~900 |
+| C · node gate side | `face-gate-server.ts` (new: knock dispatcher, `GateSocket`, session table), `socket-sorter.ts` onto `GateSorter`, `nexus-carriage.ts` `SocketBinding`/`leafReadingFor`, `hosting-mint.ts`, `hosting-carry.ts`, delete `daemon-auth-gate.ts`, node `tests/gate-dial-fixture.ts` | ~1,800 |
+| D · composer (lead) | `open-node-vessel.ts`, `nexus-client-dial.ts`, `hearth-gate-pins.ts` (new: the (hearth, Nexus) pair index), `main.ts`, `node-caps.ts`, `oracle-read-face.ts` (shut) | ~700 |
+| E · relay leg | `authenticated-membership-relay.ts`, `carriage-serve-loop.ts`, `carriage-relay.ts` | 150 shut / 450 convert |
+| F · browser | `open-browser-vessel.ts` dial region, a browser joined-face proof reader (new), `browser-fleet-join.ts`, `lararium-web/src/main.ts` | ~550 |
+| G · admit repin and retirement | `carriage-registry.ts`, `held-nexus-root.ts`, mesh `fleet-join.ts`, node `commands/fleet-join.ts`, `commands/nexus-contract.ts` (its admit hunk, D7), `commands/device-admit.ts`, keyhive `fleet-join-admit.ts` and `operator-daemon-behavior.ts` V3, tw5 `daemon-vm-core.ts`, the three probes, the old-wire vector suites | ~800 touched, ~2,000 deleted |
+
+Three seams freeze first, each with vectors: C's `GateSessionChannel`, which the composer and the hosting files consume; A's sealed carriage, which B, C and F consume; G's pin shape, which D's pair index and F consume. Proof then walks #/cutover's order, and `NO_OLD_WIRE_PRODUCTION_CALLER` unskips last.
+
+<<~/ahu>>
+
 <<~ ahu #/collisions>>
 
 !! Collision sheet
@@ -97,6 +117,6 @@ Done when every enabled production dial emits Noise IK first, follows one typed 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NGDhlySHLKn5ZfKDQ82cYjXFr5Tqmq5a9WZfRSTh8_E
+<<^ code="&#x0003;">>ni:///sha-256;iz3Dna2Rda-KS09OP9ZAQkkkCu2Iuzoo-mycKPlGkgw
 
 <<^ code="&#x0004;" -> to="?">>
