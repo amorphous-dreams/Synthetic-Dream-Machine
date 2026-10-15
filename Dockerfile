@@ -93,6 +93,7 @@ ENV LARES_PYTHON=/usr/local/bin/python3 \
     XDG_CACHE_HOME=/state/cache \
     HF_HOME=/state/cache/huggingface
 RUN PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/content_io.py --help >/dev/null && \
+    PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_project.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 -c 'import chromadb, mempalace; from mcp.server.mcpserver import MCPServer'
 
 COPY --from=build /app/node_modules                         ./node_modules

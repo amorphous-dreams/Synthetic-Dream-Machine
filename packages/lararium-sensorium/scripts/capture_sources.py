@@ -291,34 +291,56 @@ def _classify(role: str, text: str) -> tuple:
     return "harness", "scaffold"
 
 
-def _parse_claude(path: str) -> list:
-    """Parse a Claude `.jsonl` transcript into BLOCKS — one per message content-block, each carrying its
-    speaker and move (operator steering · agent surface/thinking/action · harness result/scaffold), its
-    record uuid + block ordinal, and the parentUuid DAG link."""
+def _parse_claude_lines(lines: Iterable[str], *, stats: "dict | None" = None) -> list:
+    """Parse Claude JSONL lines into typed blocks from either a file or custody bytes."""
     blocks: list = []
-    # errors="replace": a lone non-UTF8 byte substitutes U+FFFD, never crashes the whole pass on one
-    # line (matches structure_router's decode idiom); the bad line still JSON-parses or skips cleanly.
-    with open(path, encoding="utf-8", errors="replace") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if stats is not None:
+            stats["source_rows"] = stats.get("source_rows", 0) + 1
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            if stats is not None:
+                stats["invalid_json"] = stats.get("invalid_json", 0) + 1
+            continue
+        if not isinstance(row, dict):
+            if stats is not None:
+                stats["non_object_rows"] = stats.get("non_object_rows", 0) + 1
+            continue
+        rtype = str(row.get("type", ""))
+        if rtype not in ("user", "assistant"):
+            continue
+        if stats is not None:
+            stats["eligible_rows"] = stats.get("eligible_rows", 0) + 1
+        before = len(blocks)
+        uuid = str(row.get("uuid") or "")
+        parent = str(row.get("parentUuid") or "")
+        ts = str(row.get("timestamp") or "")
+        for speaker, function, text, bi in _claude_blocks(rtype, row.get("message")):
+            if not text.strip():
                 continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            rtype = str(row.get("type", ""))
-            if rtype not in ("user", "assistant"):
-                continue
-            uuid = str(row.get("uuid") or "")
-            parent = str(row.get("parentUuid") or "")
-            ts = str(row.get("timestamp") or "")
-            for speaker, function, text, bi in _claude_blocks(rtype, row.get("message")):
-                if not text.strip():
-                    continue
-                blocks.append({"uuid": uuid, "bi": bi, "parent": parent, "speaker": speaker,
-                              "function": function, "text": text, "ts": ts})
+            blocks.append({"uuid": uuid, "bi": bi, "parent": parent, "speaker": speaker,
+                          "function": function, "text": text, "ts": ts})
+        if stats is not None and len(blocks) == before:
+            stats["unprojected_eligible_rows"] = stats.get("unprojected_eligible_rows", 0) + 1
+            content = row.get("message")
+            content = content.get("content") if isinstance(content, dict) else content
+            tags = "+".join(sorted({str(item.get("type")) for item in content
+                                    if isinstance(item, dict)})) if isinstance(content, list) else ""
+            shape = f"{rtype}:{type(content).__name__}:{tags}"
+            shapes = stats.setdefault("unprojected_shapes", {})
+            shapes[shape] = shapes.get(shape, 0) + 1
     return blocks
+
+
+def _parse_claude(path: str) -> list:
+    """Read Claude JSONL with replacement decoding, then apply the shared block parser."""
+    # A lone non-UTF8 byte substitutes U+FFFD, matching the source parser's prior behavior.
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        return _parse_claude_lines(fh)
 
 
 def _claude_agent_id(path: str) -> "str | None":

@@ -80,6 +80,27 @@ CREATE TABLE IF NOT EXISTS content_frontier (
     observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
     parser_version TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS typed_content (
+    cid TEXT PRIMARY KEY,
+    source_key TEXT NOT NULL,
+    revision_sha256 TEXT NOT NULL,
+    parser_version TEXT NOT NULL,
+    block_index INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    metadata_json TEXT NOT NULL,
+    FOREIGN KEY (source_key, revision_sha256) REFERENCES revision(source_key, sha256),
+    UNIQUE (source_key, revision_sha256, parser_version, block_index)
+);
+CREATE TABLE IF NOT EXISTS projection_block (
+    observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
+    block_index INTEGER NOT NULL,
+    cid TEXT NOT NULL REFERENCES typed_content(cid),
+    PRIMARY KEY (observation_id, block_index)
+);
+CREATE TABLE IF NOT EXISTS projection_receipt (
+    observation_id INTEGER PRIMARY KEY REFERENCES observation(observation_id),
+    receipt_json TEXT NOT NULL
+);
 """
 
 
