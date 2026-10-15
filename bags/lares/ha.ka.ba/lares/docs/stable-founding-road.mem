@@ -340,6 +340,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * The ceremony: both found their seeds through the Stable act and stand; both found the Nexus fresh through the Nexus founding act; each signs a contract the two seats countersign; both join one shared cabal realm beside others; each wears a face; an edit crosses both ways and reads back after a restart on each machine. Probes use synthetic names; no fixture forges a cast persona's key or Handle.
 
 !!! The sealed store ~ five steps threaded through the paths (operator-approved model; step one's format stands as law and in code; each later step lands in its place before the fence, under #/the-attractor's ruling)
+''Step three's launch kit'': <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-s3-launch">>.
 * ''The model'': cleartext lives in the live wiki and in the operator's projected files alone. A private bag rests as authenticated ciphertext chunks, the same bytes at rest and in a blind carrier's hands; a node that holds the capability and stands locked rests sealed. Private bytes take randomized authenticated encryption addressed over the ciphertext, so convergent sealing leaves the private tier. A bag's content key rolls at a causal removal act, never by a clock.
 * ''Scope'' (operator ruling): the sealing covers the wiki content stores, node and browser, and the content-addressed store, in carriage as well as at rest. The memory palace, the sensorium, receipts and logs stand outside it. Public and crossroads content stays readable to whoever holds the public keys or lookups.
 * ''Faces stand as facets of one operator'' (operator steer): no per-face projection root. Each kind of reader gets named — own vessel, own facet, a friend's face, a hosted guest, a carrier that holds none — before any admission-history rule gets written. One tree on disk serves the person: a projected wiki stands as a surface a session leases, and an edit from disk returns under that session's face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). Whoever holds the disk reads every facet's projection and may link them.
@@ -611,6 +612,7 @@ Each step names the commits that hold it, as pointers into git.
 ''Riskiest'': the ember withdrawal, a new signed act a device key signs on the fleet's edge board, which the floor must verify against the one fleet root its own device edge names; and the walker arm, which at SERVING needs a grant that checks under a public half (train H).
 
 !!! O1 ~ ONE FACE's sessions (its contract landed; the working address onward waits on W's cutover)
+''Launch kit'': <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-o1-launch">>.
 # ''Landed ahead'': the session contract in mesh (`session-contract.ts`); the scoped document view (`session-document-view.ts`), the one recipe resolver's surface resolution (`surface-recipe.ts`, `resolveSurfaceRecipe`) and the pool's surface door (`mountSurface`), each specified in code and reached by no production caller.
 # The scoped document view's compose hunks: the share verdict's caller, the leaf's one-way gate and the hearth's twin.
 # The recipe resolver's compose hunks: both platforms resolve at surface mount.
@@ -624,6 +626,7 @@ Each step names the commits that hold it, as pointers into git.
 ''Riskiest'': the working address, where an attach that cannot stand refuses the boot.
 
 !!! H ~ the hosted road's re-cut (its pure introduction landed; the rest waits on K's founding act and W's cutover, and lands whole before X)
+''Launch kit'': <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-h-launch">>.
 # ''Landed ahead'': the introduction, pure (`introduction.ts`).
 # The hosting act names the operator's seat and three dials; its bytes change once, before the fence. A walker's grant in the same cut checks under a public half (`H8`), before E's walker arm.
 # A walker's token buys a knock, and earns standing by the operator's answer alone.
@@ -650,6 +653,7 @@ Each step names the commits that hold it, as pointers into git.
 # Rung 4, after X's witness.
 
 !!! X ~ TWO HEARTHS (waits on everything above)
+''Launch kit'': <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-x-launch">>.
 # The automated witness: two vessels from one image digest, no volume in common, a courier that carries files alone; it proves two seeds, one AID on both sides, each founder held at the other's gate, an edit crossing both ways and reading back after each restart and unlock, a third root ADDED as a seat and contracted as a carrier, and a dormant node that wakes, imports the lineage and presents its admit.
 # The browser leg.
 # The runbook walk.
@@ -773,6 +777,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;As2vqXSWsnqNJGCO-RpyUgBQnJ-yqQ57LxFGwtqo6kQ
+<<^ code="&#x0003;">>ni:///sha-256;Y4LICY2KIKblSQjw0jt3ldRlFL7Q2RidHrHA_k7t4_Y
 
 <<^ code="&#x0004;" -> to="?">>

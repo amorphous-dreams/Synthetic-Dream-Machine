@@ -1,0 +1,87 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-h-launch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-h-launch.mem"
+l-space   = "adjacent"
+role      = "train H launch kit: delegated hosting act, three dials, answer door and public-half walker grant"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/train-h-launch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/train-h-launch"
+```
+
+<<~ ahu #/head>>
+
+! Train H ~ the hosted road
+
+!! Contents
+
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Witness and red window|#/witness]] · [[Collision sheet|#/collisions]] · [[Done when|#/done]] · [[Rulings|#/rulings]].
+
+<<~/ahu>>
+
+<<~ ahu #/ground>>
+
+!! Ground and crew
+
+Start pure signed-act and grant vectors beside N and W on disjoint files. Start the live cut after N hands over the joint AID and W hands over gate sorting. One authority lead owns `hosting.ts` and `hosting-store.ts` through one coordinated signed-byte re-cut. A store builder owns HOT row persistence; a door builder owns introduction, answer and strangers' dial. The operator's seat signs ONE delegation to a hosting key. That key signs every hosting act and seeds every epoch. The delegation persists across sessions. A session wearing another face signs nothing for the hearth. The worn face hosts and walks; a vessel wearing none does neither.
+
+<<~/ahu>>
+
+<<~ ahu #/walk>>
+
+!! Commit walk
+
+# ''PURE: authority and dials.'' Fix the operator-seat delegation, hosting-key public identity, act image and three dial fields in one vector set. The act reader verifies the delegation and the hosting-key signature. Changing the seat, delegation, key, Nexus, epoch parent or any dial breaks verification. The hosting key seeds each epoch; an ended session changes no signed act.
+# ''PURE: H8 grant.'' Replace the keyed tag check with a signed grant shape and a public-half verifier. Derive the public halves for serving rows during the same hosting-act re-cut. Withhold every minting secret from a SERVING checker. Test grant class, Nexus, epoch, leaf, lineage, roll and revocation separately.
+# ''LIVE: one signed-byte cut.'' Move issuer, reader, hosting store and socket sorter together. Preserve each spend as one sealed HOT row and each roll as one committed state row. Re-derive hosting-doc acts from committed state. A row that refuses to open refuses by name. Keep the floor sorter free of hosting rows.
+# ''LIVE: introduction and answer.'' A token buys a knock. Only the operator's answer or a pre-answer gives standing. A walker's invitation vests at the host's next roll; a host invitation receives floor 1 at once. Wire the strangers' three-dial decision and the host door. Fold H7 invite canon after the live reader passes.
+# ''GATE: E's walker arm.'' Prove a SERVING hearth checks the walker grant with its public half and no minting secret in its serving tier. Only then arm E's walker path.
+
+<<~/ahu>>
+
+<<~ ahu #/witness>>
+
+!! Witness and red window
+
+Unskip `HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` after the coordinated act re-cut. Unskip `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` after H8. A signed-byte change can redden issuer, reader, store and sorter together; one commit moves their fixtures and consumers. Prove that a token alone grants no standing, an answer or pre-answer grants exactly the intended class, and all three dials survive roll and restart. Run the grant verifier under a serving view that holds no minting secret.
+
+<<~/ahu>>
+
+<<~ ahu #/collisions>>
+
+!! Collision sheet
+
+| Seam | H hand-off |
+|---|---|
+| N | Consume final AID and operator seat from N; leave charter and cofounding bytes with N. |
+| W | Take `socket-sorter.ts` after W's gate cutover; keep its verified face and per-Nexus gate pin. |
+| S8 and sealed-store step 3 | Keep hosting HOT rows under VK and serving rows under SK; leave selves rows and Repo value sealing to their owners. |
+| O1 | Consume the worn session face through O1's verified session. A delegated hosting key, rather than the session lifetime, sustains acts. |
+| E and X | E waits for H8's public-half verifier before its walker arm. X consumes hosted restart and strangers' dial without changing H's act image. |
+
+<<~/ahu>>
+
+<<~ ahu #/done>>
+
+!! Done when
+
+A standing operator-seat delegation authorizes one hosting key. That key signs every act and seeds each epoch. A worn face hosts and walks within that delegation. Each act binds three dials, and their decisions survive roll and restart. A token buys a knock; only an answer or pre-answer grants standing. The SERVING tier verifies walker grants through public halves alone, and E's walker arm passes that gate.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Rulings
+
+The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Its H path names the one re-cut, answer door, three dials and H8 (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>). Flag a proposed signer only when it departs from that delegation. E's walker arm waits on H8's public-half check.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;DenJCCbciux3SCPdolQAID-KYVzE9TnlY8JhVETDN08
+
+<<^ code="&#x0004;" -> to="?">>

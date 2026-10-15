@@ -513,4 +513,46 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   });
 });
 
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// ⑫ SESSION, SEALED REST AND HOSTING — the launch-kit reds awaiting production callers
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe("⑫ session, sealed rest and hosting launch gates", () => {
+  const stripped = (path: string[]): string => {
+    const source = readFileSync(join(import.meta.dirname, "..", "..", ...path), "utf8");
+    return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  };
 
+  test.skip("WORKING_ADDRESS_FOLLOWS_FACE_WIKI_SLOT — DEFERRED: `working-address.ts` lacks the face-secret derivation; O1 fixes its input bytes before two independent vessels can converge on one working document and a second face can diverge.", () => {
+    expect(Object.keys(mesh)).toContain("workingAddressForFaceWikiSlot");
+  });
+
+  test.skip("PRODUCTION_SURFACES_USE_SCOPED_VIEW — DEFERRED: `open-node-vessel.ts` and `open-browser-vessel.ts` still mount wiki islands through `mountWiki`; O1 moves both production callers to `mountSurface` after W hands over verified sessions.", () => {
+    const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
+    const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
+    expect(node).toMatch(/\.mountSurface\(/);
+    expect(browser).toMatch(/\.mountSurface\(/);
+  });
+
+  test.skip("SEALED_CHANGE_HYDRATES_ONLY_FOR_ITS_FACE — DEFERRED: `session-document-view.ts` gates live sync, but no production sealed Repo hydration reader checks the session face before returning a change or its catalog name; sealed-store step 3 lands that reader after O1 supplies the verified face.", () => {
+    expect(Object.keys(mesh)).toContain("hydrateSealedChangeForSessionFace");
+  });
+
+  test.skip("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — DEFERRED: `content-key-holder.ts` already refuses an admission without `freshBase`, but the node document store supplies no production callback that writes a fresh checkpoint before the new version's first change; sealed-store step 3 connects and witnesses that callback.", () => {
+    const node = stripped(["lararium-node", "src", "node-daemon-island.ts"]);
+    expect(node).toMatch(/freshBase\s*:/);
+  });
+
+  test.skip("HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS — DEFERRED: `hosting.ts` signs a leaf and one cap, so altered delegation and dial fields survive verification; H recuts issuer, reader, store and sorter under the operator-seat delegation together.", async () => {
+    const epoch = await mesh.mintHostingAct({ leafSeed: new Uint8Array(32).fill(41), nexusAid: "nexus-" + "a".repeat(64), prev: null, cap: 3 });
+    const altered = { ...epoch.act, operatorSeat: "different-seat", admissionDial: 1, strangerDial: 1, walkerDial: 1 };
+    expect(await mesh.verifyHostingAct(altered)).toBe(false);
+  });
+
+  test.skip("SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF — DEFERRED: `hosting.ts` verifies by calling `issueGrant` with the epoch secret; H8 adds a signed grant and public-half reader before E arms the serving walker tier.", async () => {
+    const epoch = await mesh.mintHostingAct({ leafSeed: new Uint8Array(32).fill(41), nexusAid: "nexus-" + "a".repeat(64), prev: null, cap: 3 });
+    const grant = mesh.issueGrant(epoch, { leaf: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", lineage: "d".repeat(64), survived: 0, from: "walker" });
+    const publicOnly = { ...epoch, secretKey: undefined as unknown as Uint8Array };
+    expect(mesh.grantVerifiesAt(publicOnly, grant)).toBe(true);
+  });
+
+});
