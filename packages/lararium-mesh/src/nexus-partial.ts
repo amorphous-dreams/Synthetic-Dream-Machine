@@ -1,16 +1,18 @@
 /**
  * nexus-partial — a Nexus quorum act that crosses between vaults before its threshold meets: admit, revoke,
- * kapae and the roll anchor (kapae#/edge-hands, kahu#/nexus-scale).
+ * kapae, the roll anchor and a realm's edge roll anchor (kapae#/edge-hands, kahu#/nexus-scale).
  *
  * A two-seat Nexus holds its seats in two vaults, so no vault signs a quorum act whole. One seat signs, the act
  * crosses as a PARTIAL file, and the other seat cosigns. Each act keeps its OWN canonical image and its own
  * signing domain: an admit and a revoke ride the carriage entry, a kapae rides the antigen entry, and a roll
- * anchor rides the anchor. None casts into another, and none casts into an edge act. The verdicts come from the
+ * anchor rides the anchor, and an edge roll anchor rides its own anchor under its own domain, one partial for
+ * each realm board. None casts into another, and none casts into an edge act. The verdicts come from the
  * edge door (`PartialVerdict`), so one vocabulary reads every partial in the house.
  *
  * ── A PARTIAL CARRIES THE WHOLE ACT, AND A SUBJECT A PERSON CAN READ ──────────────────────────────────
  * The act entire, with every signature gathered so far, the Nexus AID it lands under, and the subject in plain
- * keys: the nym an admit, a revoke or a kapae names, or the two epochs a roll anchor joins. The reader refuses
+ * keys: the nym an admit, a revoke or a kapae names, the two epochs a roll anchor joins, or the realm and the two
+ * epochs an edge roll anchor joins. The reader refuses
  * a partial whose subject and act disagree.
  *
  * ── WHAT A COSIGNER JUDGES, WITH NO CLOCK ───────────────────────────────────────────────────────────────
@@ -20,7 +22,8 @@
  *   · `stale`       — the act names an epoch other than the head's, or cites parents other than the heads its
  *                     line holds on this vessel's board (for an anchor, other than the closing epoch's heads).
  *   · `unavailable` — the act cites a parent this vessel cannot count, or an anchor arrives where this vessel
- *                     holds no closed roster to read it against.
+ *                     holds no closed roster to read it against, or an edge anchor names a realm whose board
+ *                     this vessel holds none of.
  *   · `ready` / `complete` — short of the threshold, or at it.
  * Causal position decides each one: the head epoch, the line's own heads, the board's own count.
  *
@@ -31,7 +34,8 @@
  *
  * CALLERS. Each family rides a two-vault door that passes the file across vaults, judges before every signature
  * and judges again right before the write: admit and revoke ride `runNexusContractOpen` / `runNexusContractPartial`,
- * the roll anchor rides `runNexusRollAnchorOpen` / `runNexusRollAnchorPartial` (all in
+ * the roll anchor rides `runNexusRollAnchorOpen` / `runNexusRollAnchorPartial` and the edge roll anchor rides
+ * `runEdgeRollAnchorOpen` / `runEdgeRollAnchorPartial` (all in
  * `packages/lararium-node/src/commands/nexus-contract.ts`), and kapae rides `runNexusKapaeOpen` /
  * `runNexusKapaePartial` (`packages/lararium-node/src/commands/nexus-kapae.ts`).
  *
@@ -47,6 +51,11 @@ import {
   KAPAE_ANTIGEN_DOMAIN, antigenActCid, antigenEntryBytes, makeMultiSigQuorumVerifier,
   type KahuQuorumSeats, type KapaeAntigenEntry, type QuorumSignature,
 } from "./kapae-antigen.js";
+import { EDGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
+import {
+  edgeRollAnchorBytes, edgeRollAnchorCid, edgeRollAnchorCounts, edgeRollAnchorParents,
+  type CountedEdgeBoard, type EdgeRollAnchor,
+} from "./edge-kapae.js";
 import type { PartialVerdict } from "./edge-partial.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
@@ -57,7 +66,8 @@ export const NEXUS_PARTIAL_KIND = "nexus-act-partial" as const;
 /** Whom or what the act names, in keys a person can read. */
 export type NexusPartialSubject =
   | { readonly kind: "nym"; readonly nym: string }
-  | { readonly kind: "roll"; readonly closes: string; readonly opens: string };
+  | { readonly kind: "roll"; readonly closes: string; readonly opens: string }
+  | { readonly kind: "edge-roll"; readonly realm: string; readonly closes: string; readonly opens: string };
 
 /** The act itself, by family; each keeps its own image. */
 export type NexusPartialAct =
@@ -65,13 +75,25 @@ export type NexusPartialAct =
    *  vaults by hand, so whichever vault lands the act can hand the subject its bundle. The board never holds it. */
   | { readonly family: "admit" | "revoke"; readonly entry: CarriageEntry; readonly opening?: AdmitOpening }
   | { readonly family: "kapae"; readonly entry: KapaeAntigenEntry }
-  | { readonly family: "roll-anchor"; readonly anchor: RollAnchor };
+  | { readonly family: "roll-anchor"; readonly anchor: RollAnchor }
+  | { readonly family: "edge-roll-anchor"; readonly anchor: EdgeRollAnchor };
+
+/** The anchor families: both ride an anchor beside the entries and join two epochs. */
+type AnchorAct = Extract<NexusPartialAct, { family: "roll-anchor" | "edge-roll-anchor" }>;
+const isAnchorAct = (act: NexusPartialAct): act is AnchorAct => act.family === "roll-anchor" || act.family === "edge-roll-anchor";
 
 export interface NexusActPartial {
   readonly kind:    typeof NEXUS_PARTIAL_KIND;
   readonly aid:     string;
   readonly subject: NexusPartialSubject;
   readonly act:     NexusPartialAct;
+}
+
+/** What a vessel holds of one realm's edge board: the board counted under the CLOSED charter (so the quorum acts of the
+ *  epoch the head's roll closed stand), and the anchors the board carries as written. */
+export interface NexusPartialEdgeBoard {
+  readonly counted: CountedEdgeBoard;
+  readonly anchors: readonly EdgeRollAnchor[];
 }
 
 /** What one cosigning vessel holds: its charter's AID and head roster, the closed roster where its head rolled,
@@ -86,6 +108,8 @@ export interface NexusPartialReader {
     readonly anchors:  readonly RollAnchor[];
     readonly antigen:  readonly KapaeAntigenEntry[];
   };
+  /** The realm edge boards this vessel holds, by realm. A realm absent here has no board on this vessel. */
+  readonly edge?: ReadonlyMap<string, NexusPartialEdgeBoard>;
 }
 
 export interface NexusPartialJudgement {
@@ -169,6 +193,20 @@ function readAnchor(v: unknown): RollAnchor | null {
     prevThreshold, parents: [...a["parents"] as string[]], signatures };
 }
 
+function readEdgeAnchor(v: unknown): EdgeRollAnchor | null {
+  const a = record(v);
+  if (!a || !exactKeys(a, ["kind", "scope", "prevEpochCid", "sealEpochCid", "prevKeys", "prevThreshold", "parents", "signatures"])) return null;
+  if (a["kind"] !== EDGE_ROLL_ANCHOR_DOMAIN || !sortedSet(a["prevKeys"], HEX64) || !sortedSet(a["parents"], HEX64)) return null;
+  const { scope, prevEpochCid, sealEpochCid, prevThreshold } = a;
+  if (typeof scope !== "string" || !HEX64.test(scope)) return null;
+  if (typeof prevEpochCid !== "string" || prevEpochCid.length === 0 || typeof sealEpochCid !== "string" || sealEpochCid.length === 0) return null;
+  if (typeof prevThreshold !== "number" || !Number.isInteger(prevThreshold) || prevThreshold < 1 || prevThreshold > (a["prevKeys"] as string[]).length) return null;
+  const signatures = readSignatures(a["signatures"]);
+  if (!signatures) return null;
+  return { kind: EDGE_ROLL_ANCHOR_DOMAIN, scope, prevEpochCid, sealEpochCid, prevKeys: [...a["prevKeys"] as string[]],
+    prevThreshold, parents: [...a["parents"] as string[]], signatures };
+}
+
 /**
  * Read a partial at its exact floor shape, from parsed JSON. Null for anything torn: a wrong tag, an AID of
  * another shape, an act that fails its own image, or a subject that names another nym or other epochs.
@@ -199,6 +237,13 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
     return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "roll", closes: anchor.prevEpochCid, opens: anchor.sealEpochCid },
       act: { family, anchor } };
   }
+  if (family === "edge-roll-anchor") {
+    if (!exactKeys(a, ["family", "anchor"]) || !exactKeys(s, ["kind", "realm", "closes", "opens"]) || s["kind"] !== "edge-roll") return null;
+    const anchor = readEdgeAnchor(a["anchor"]);
+    if (!anchor || s["realm"] !== anchor.scope || s["closes"] !== anchor.prevEpochCid || s["opens"] !== anchor.sealEpochCid) return null;
+    return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "edge-roll", realm: anchor.scope, closes: anchor.prevEpochCid, opens: anchor.sealEpochCid },
+      act: { family, anchor } };
+  }
   return null;
 }
 
@@ -206,7 +251,9 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
 export function nexusActPartial(aid: string, act: NexusPartialAct): NexusActPartial {
   const subject: NexusPartialSubject = act.family === "roll-anchor"
     ? { kind: "roll", closes: act.anchor.prevEpochCid, opens: act.anchor.sealEpochCid }
-    : { kind: "nym", nym: act.entry.nym };
+    : act.family === "edge-roll-anchor"
+      ? { kind: "edge-roll", realm: act.anchor.scope, closes: act.anchor.prevEpochCid, opens: act.anchor.sealEpochCid }
+      : { kind: "nym", nym: act.entry.nym };
   const partial = readNexusActPartial(JSON.parse(JSON.stringify({ kind: NEXUS_PARTIAL_KIND, aid, subject, act })));
   if (!partial) throw new Error("nexus-partial: the act, its Nexus and its subject do not read as one partial");
   return partial;
@@ -215,15 +262,16 @@ export function nexusActPartial(aid: string, act: NexusPartialAct): NexusActPart
 /** The bytes the act's own quorum signs. */
 export function nexusPartialBytes(act: NexusPartialAct): Uint8Array {
   if (act.family === "roll-anchor") { const { signatures: _s, ...body } = act.anchor; return rollAnchorBytes(body); }
+  if (act.family === "edge-roll-anchor") { const { signatures: _s, ...body } = act.anchor; return edgeRollAnchorBytes(body); }
   if (act.family === "kapae") { const { signatures: _s, ...body } = act.entry; return antigenEntryBytes(body); }
   const { signatures: _s, contractSig: _c, ...body } = act.entry;   // a carriage commitment stays in the body the quorum signs
   return carriageEntryBytes(body);
 }
 
 const actSignatures = (act: NexusPartialAct): readonly QuorumSignature[] =>
-  act.family === "roll-anchor" ? act.anchor.signatures : act.entry.signatures;
-const actEpoch = (act: NexusPartialAct): string => act.family === "roll-anchor" ? act.anchor.sealEpochCid : act.entry.sealEpochCid;
-const actParents = (act: NexusPartialAct): readonly string[] => act.family === "roll-anchor" ? act.anchor.parents : act.entry.parents;
+  isAnchorAct(act) ? act.anchor.signatures : act.entry.signatures;
+const actEpoch = (act: NexusPartialAct): string => isAnchorAct(act) ? act.anchor.sealEpochCid : act.entry.sealEpochCid;
+const actParents = (act: NexusPartialAct): readonly string[] => isAnchorAct(act) ? act.anchor.parents : act.entry.parents;
 
 /** The head roster's seats whose signature verifies over the act's bytes, one per seat, sorted. */
 export function nexusPartialSeatsSigned(act: NexusPartialAct, roster: KahuQuorumSeats): string[] {
@@ -239,7 +287,7 @@ export function nexusPartialSeatsSigned(act: NexusPartialAct, roster: KahuQuorum
 }
 
 /** The acts that count on this vessel's board in the act's own line, and the heads of that line, sorted. */
-async function lineOf(act: Exclude<NexusPartialAct, { family: "roll-anchor" }>, reader: NexusPartialReader): Promise<{ known: Set<string>; heads: string[] }> {
+async function lineOf(act: Exclude<NexusPartialAct, AnchorAct>, reader: NexusPartialReader): Promise<{ known: Set<string>; heads: string[] }> {
   const nodes = new Map<string, readonly string[]>();
   if (act.family === "kapae") {
     const verifier = makeMultiSigQuorumVerifier();
@@ -297,6 +345,35 @@ export async function judgeNexusActPartial(parsed: unknown, reader: NexusPartial
     return { verdict: signed.length >= reader.head.threshold ? "complete" : "ready", signed };
   }
 
+  if (act.family === "edge-roll-anchor") {
+    // A realm whose board this vessel holds none of reads unavailable: no hand signs what no board here can count.
+    const board = reader.edge?.get(act.anchor.scope);
+    if (!board) return { verdict: "unavailable", signed: [], why: "this vessel holds no edge board for that realm" };
+    const cid = edgeRollAnchorCid(act.anchor);
+    let landed = false;
+    for (const a of board.anchors) if (edgeRollAnchorCid(a) === cid && await edgeRollAnchorCounts(a, reader.head)) landed = true;
+    if (landed) return { verdict: "replay", signed: [], why: "that anchor already stands on this vessel's edge board" };
+    if (act.anchor.sealEpochCid !== reader.head.sealEpochCid) return { verdict: "stale", signed: [], why: "the anchor opens an epoch other than this vessel's charter head" };
+    const closing = reader.closing;
+    if (!closing) return { verdict: "unavailable", signed: [], why: "this vessel holds no closed roster to read the anchor against" };
+    if (act.anchor.prevEpochCid !== closing.sealEpochCid) return { verdict: "stale", signed: [], why: "the anchor closes an epoch other than the one this vessel's head rolled from" };
+    const closed = [...new Set(closing.keys.map((k) => k.toLowerCase()))].sort();
+    if (!sameList(act.anchor.prevKeys, closed) || act.anchor.prevThreshold !== closing.threshold) {
+      return { verdict: "invalid", signed: [], why: "the anchor names other closed seats than the closed roster" };
+    }
+    const signed = nexusPartialSeatsSigned(act, reader.head);
+    if (signed.length === 0) return { verdict: "invalid", signed, why: "no seat of the head roster signed these bytes" };
+    // The parents the anchor may cite: the quorum acts that counted at the closed epoch and the anchors that opened it.
+    const counted = new Set<string>();
+    for (const e of board.counted.acts) if (e.hand === "quorum" && e.epochCid === closing.sealEpochCid) counted.add(e.actCid);
+    for (const a of board.counted.anchors) if (a.sealEpochCid === closing.sealEpochCid) counted.add(edgeRollAnchorCid(a));
+    if (act.anchor.parents.some((p) => !counted.has(p))) return { verdict: "unavailable", signed, why: "the anchor cites a parent this vessel cannot count" };
+    if (!sameList(act.anchor.parents, edgeRollAnchorParents(board.counted, closing.sealEpochCid))) {
+      return { verdict: "stale", signed, why: "the edge board's heads moved after the first seat signed" };
+    }
+    return { verdict: signed.length >= reader.head.threshold ? "complete" : "ready", signed };
+  }
+
   const cid = act.family === "kapae" ? act.entry.actCid : carriageEntryActCid(act.entry);
   // A replay names a copy that COUNTS on this board: an uncounted copy of the same id blocks nothing.
   let onBoard = false;
@@ -343,6 +420,8 @@ export async function cosignNexusActPartial(parsed: unknown, reader: NexusPartia
   const signatures = [...actSignatures(partial.act), ...added];
   const act: NexusPartialAct = partial.act.family === "roll-anchor"
     ? { family: "roll-anchor", anchor: { ...partial.act.anchor, signatures } }
+    : partial.act.family === "edge-roll-anchor"
+      ? { family: "edge-roll-anchor", anchor: { ...partial.act.anchor, signatures } }
     : partial.act.family === "kapae"
       ? { family: "kapae", entry: { ...partial.act.entry, signatures } }
       : { ...partial.act, entry: { ...partial.act.entry, signatures } };   // an admit keeps the opening it carried

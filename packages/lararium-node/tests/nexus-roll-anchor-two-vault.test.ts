@@ -19,6 +19,10 @@
  *   R5  RED: a roll waits on its prior anchor (operator ruling 2026-10-15): the check refuses by name while the head's
  *       own roll stands with no counted anchor on the board, passes at a genesis and once the anchor lands, and its
  *       store row answers under the row's own name; no seat signs on the refusal.
+ *   R6  The realm edge anchors cross as their own partials, one per realm (kapae#/rolls): the opener signs each realm
+ *       board it keeps a quorum act for; a vault that holds no board for the realm reads `unavailable` and signs
+ *       nothing; a board whose heads moved reads `stale`; the cosigner lands the anchor and the first vault lands the
+ *       completed partial; the store rows answer per realm where they said the edge anchors stayed owed.
  *   R4  RED: the same anchor again (`replay`), a partial under another Nexus, a torn file and a kapae partial sign
  *       and land nothing.
  */
@@ -33,8 +37,13 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
 import {
   foundingRoster, carriageDocUrl, materializeSharedLarDoc, rollAnchorsFromBoard, rollAnchorCid, presentationFromBoardDoc,
   nexusAidOf, nexusActPartial, KAPAE_ANTIGEN_DOMAIN, antigenActCid, type KapaeAntigenEntry,
+  realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard, signEdgeKapae, writeEdgeKapae, ed25519SignerFromSeed,
 } from "@lararium/mesh";
-import { NexusContractError, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck } from "../src/commands/nexus-contract.js";
+import {
+  NexusContractError, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchorOpen,
+  runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck,
+} from "../src/commands/nexus-contract.js";
+import { noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../src/edge-board.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
@@ -45,7 +54,7 @@ import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { restEvery, restingRepo, type RestingRepo } from "./resting-repo.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
-import { chairKey, seatChairs } from "./seat-fixture.js";
+import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -215,7 +224,8 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const again = await rows(B)["nexus-roll-anchor-partial"]({ partial: courier(opened["partial"]) }, {} as never);
     expect(again["refusal"]).toBe("nexus-roll-anchor-partial-refused");
     expect(String(again["refused"])).toMatch(/reads replay/);
-    expect(cosigned["edgeAnchors"]).toBe("owed");
+    // No realm edge board holds a quorum act here, so no edge anchor stands owed.
+    expect(cosigned["edgeAnchors"]).toEqual([]);
     const landed = await rows(A)["nexus-roll-anchor-partial"]({ partial: courier(cosigned["partial"]) }, {} as never);
     expect(landed["verdict"]).toBe("complete");
     // A board that holds the counted anchor opens no second one, and no seat signs.
@@ -256,5 +266,103 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const done = await check(A);
     expect(done.state).toBe("anchored");
     expect(done.anchorCid).toBe(cosigned.landed?.anchorCid);
+  });
+
+  const REALM = "ab".repeat(32);
+  /** A quorum act at the genesis epoch on the realm's edge board, signed by both founders' genesis seats by hand
+   *  (no door signs it whole across two vaults), written to each vault's replica as sync would carry it. */
+  async function raiseAt(vaults: readonly Vault[], aid: string, edgeByte: number): Promise<string> {
+    const signers = await Promise.all([0, 1].map(async (face) => ({ signer: await chairKey(face), sign: ed25519SignerFromSeed(chairSeed(face)) })));
+    let actCid = "";
+    for (const v of vaults) {
+      at(v);
+      const vesselKey = await loadVesselVerifyingKey();
+      const genesisEpoch = readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
+      const act = await signEdgeKapae({ edgeId: edgeByte.toString(16).padStart(2, "0").repeat(32), raised: true, hand: "quorum", parents: [], epochCid: genesisEpoch }, signers);
+      actCid = act.actCid;
+      const board = await materializeSharedLarDoc(v.repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      board.change((d) => writeEdgeKapae(d, act));
+      await noteVesselRealm(v.repo, vesselKey, REALM, aid);
+      // A vessel that reads the board at its head keeps the counted act in its own ledger.
+      await readVesselEdgeBoard({ repo: v.repo, scope: REALM, kind: "realm", boardUrl: realmEdgeBoardDocUrl(REALM), label: "board:edge-kapae", vesselKey,
+        authorityFor: () => ({ quorum: true }), charter: vesselEdgeCharter(REALM, larSealHome(), aid) });
+      await v.repo.flush();
+    }
+    return actCid;
+  }
+  const edgeAnchorsAt = async (v: Vault): Promise<string[]> => {
+    at(v);
+    const board = await materializeSharedLarDoc(v.repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    return edgeRollAnchorsFromBoard(board.doc()).map((a) => a.parents.join(","));
+  };
+
+  test("R6 — a realm's edge anchor crosses as its own partial: A opens one for each realm it keeps, B cosigns where it holds the board, and both land it", async () => {
+    const A = await vault("anc-ea"), B = await vault("anc-eb");
+    const { aid, next, roll } = await twoVaultCharter(A, B);
+    // The first act reaches A (which keeps it in its ledger at the genesis head) before the roll; B has not met the realm.
+    const first = await raiseAt([A], aid, 7);
+    roll();
+
+    at(A);
+    const opened = await runEdgeRollAnchorOpen({ sealHome: larSealHome(), repo: A.repo, aid });
+    expect(opened.map((o) => [o.realm, o.verdict, o.signed, o.landed])).toEqual([[REALM, "ready", [next[0]], null]]);
+    expect(opened[0]!.partial.act.family === "edge-roll-anchor" && opened[0]!.partial.act.anchor.parents).toEqual([first]);
+    expect(await edgeAnchorsAt(A)).toEqual([]);
+
+    // B holds no board for the realm: unavailable, no seat signs, nothing lands.
+    at(B);
+    const before = signing.calls;
+    expect(await refusal(runEdgeRollAnchorPartial({ partial: courier(opened[0]!.partial), sealHome: larSealHome(), repo: B.repo }))).toMatch(/unavailable.*no edge board/);
+    expect(signing.calls).toBe(before);
+    expect(await edgeAnchorsAt(B)).toEqual([]);
+
+    // B meets the realm's board, and it holds a second head the anchor never cited: stale, and no seat signs.
+    await raiseAt([B], aid, 7);
+    const second = await raiseAt([B], aid, 9);
+    at(B);
+    expect(await refusal(runEdgeRollAnchorPartial({ partial: courier(opened[0]!.partial), sealHome: larSealHome(), repo: B.repo }))).toMatch(/stale/);
+    expect(signing.calls).toBe(before);
+
+    // The second act reaches A too; A opens again, citing both heads, and B cosigns and lands.
+    await raiseAt([A], aid, 9);
+    at(A);
+    const reopened = await runEdgeRollAnchorOpen({ sealHome: larSealHome(), repo: A.repo, aid });
+    expect(reopened[0]!.partial.act.family === "edge-roll-anchor" && reopened[0]!.partial.act.anchor.parents).toEqual([first, second].sort());
+    at(B);
+    const cosigned = await runEdgeRollAnchorPartial({ partial: courier(reopened[0]!.partial), sealHome: larSealHome(), repo: B.repo });
+    expect(cosigned.verdict).toBe("complete");
+    expect(cosigned.signed).toEqual([...next].sort());
+    expect(cosigned.landed?.parents).toEqual([first, second].sort());
+    expect(await edgeAnchorsAt(B)).toEqual([[first, second].sort().join(",")]);
+
+    at(A);
+    const landed = await runEdgeRollAnchorPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo });
+    expect(landed.verdict).toBe("complete");
+    expect(landed.landed?.anchorCid).toBe(cosigned.landed?.anchorCid);
+    expect(await edgeAnchorsAt(A)).toEqual([[first, second].sort().join(",")]);
+    // The same completed partial again reads replay on the vault that landed it.
+    expect(await refusal(runEdgeRollAnchorPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo }))).toMatch(/replay/);
+  });
+
+  test("R7 — the store rows open the edge partials as a list and route a partial by its family; the answers name each realm", async () => {
+    const A = await vault("anc-fa"), B = await vault("anc-fb");
+    const { aid, roll } = await twoVaultCharter(A, B);
+    const first = await raiseAt([A, B], aid, 7);
+    roll();
+    const rows = (v: Vault) => { at(v); return storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo: v.repo }); };
+    const carriage = await rows(A)["nexus-roll-anchor-open"]({}, {} as never);
+    // The carriage partial answers as it stood, and says which realms still owe an anchor.
+    expect(carriage["verdict"]).toBe("ready");
+    const edge = await rows(A)["nexus-roll-anchor-edge-open"]({}, {} as never) as { partials: Array<{ realm: string; verdict: string }> };
+    expect(edge.partials.map((p) => [p.realm, p.verdict])).toEqual([[REALM, "ready"]]);
+    const step = await rows(B)["nexus-roll-anchor-partial"]({ partial: courier((edge.partials[0] as any).partial) }, {} as never);
+    expect(step["verdict"]).toBe("complete");
+    expect(step["edgeAnchors"]).toEqual([{ realm: REALM, state: "anchored", anchorCid: (step["landed"] as any).anchorCid }]);
+    // The carriage step on B reports the realm as anchored there, and A's own standing still owes it.
+    const cosigned = await rows(B)["nexus-roll-anchor-partial"]({ partial: courier(carriage["partial"]) }, {} as never);
+    expect(cosigned["edgeAnchors"]).toEqual([{ realm: REALM, state: "anchored", anchorCid: (step["landed"] as any).anchorCid }]);
+    const owed = await rows(A)["nexus-roll-anchor-partial"]({ partial: courier(cosigned["partial"]) }, {} as never);
+    expect(owed["edgeAnchors"]).toEqual([{ realm: REALM, state: "owed" }]);
+    expect(first).toHaveLength(64);
   });
 });

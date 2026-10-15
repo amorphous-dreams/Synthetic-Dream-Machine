@@ -231,7 +231,7 @@ export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/rai
 export type { RaiseSignResult } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   runNexusContractOpen, runNexusContractPartial, type NexusContractPartialResult,
-  runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck, type NexusRollPriorAnchor, type NexusRollAnchorPartialResult, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
+  runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, type NexusRollPriorAnchor, type NexusEdgeRollAnchorPartialResult, type NexusEdgeRollAnchorStanding, type NexusRollAnchorPartialResult, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
 export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,
   carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,

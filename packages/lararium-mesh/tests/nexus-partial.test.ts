@@ -1,5 +1,5 @@
 /**
- * nexus-partial — admit, revoke, kapae and roll-anchor partials cross between two vaults as files; a judge
+ * nexus-partial — admit, revoke, kapae, roll-anchor and edge-roll-anchor partials cross between two vaults as files; a judge
  * runs before every signature, and each grown act counts on the real fold of its own family.
  */
 import { describe, expect, test } from "vitest";
@@ -10,6 +10,7 @@ import {
   type CarriageEntry, type RollAnchor,
 } from "../src/carriage-registry.js";
 import { makeMultiSigQuorumVerifier, signAntigenEntry, type KapaeAntigenEntry } from "../src/kapae-antigen.js";
+import { edgeRollAnchorCounts, signEdgeKapae, signEdgeRollAnchor, type EdgeRollAnchor } from "../src/edge-kapae.js";
 import {
   NexusPartialRefusal, cosignNexusActPartial, judgeNexusActPartial, nexusActPartial, readNexusActPartial,
   type NexusActPartial, type NexusPartialReader,
@@ -211,5 +212,73 @@ describe("roll anchor", () => {
     // CONTROL: the anchor that cites the moved head reads ready.
     const cites = await signRollAnchor({ ...anchor, parents: [carriageEntryActCid(admit)] }, [seats[0]!]);
     expect((await judgeNexusActPartial(courier(nexusActPartial(g1.aid, { family: "roll-anchor", anchor: cites })), moved)).verdict).toBe("ready");
+  });
+});
+
+describe("edge roll anchor", () => {
+  const REALM = "ab".repeat(32);
+  const OTHER = "cd".repeat(32);
+
+  /** A rolled 2-of-2 charter with one quorum act raised at the closed epoch on the realm's edge board. */
+  async function rolled() {
+    const g0 = await seatedCharter({ seats: 2, threshold: 2, seed: 47 });
+    const g1 = await g0.roll();
+    const seats = await g1.signers();
+    const act = await signEdgeKapae({ edgeId: "ef".repeat(32), raised: true, hand: "quorum", parents: [], epochCid: g0.head.epochCid }, await g0.signers());
+    const board = { counted: { acts: [act], anchors: [] }, anchors: [] as EdgeRollAnchor[] };
+    const reader: NexusPartialReader = { aid: g1.aid, head: g1.roster, closing: g0.roster, board: empty, edge: new Map([[REALM, board]]) };
+    const sign = (parents: string[], scope = REALM) => signEdgeRollAnchor({ scope, prevEpochCid: g0.head.epochCid, sealEpochCid: g1.head.epochCid,
+      prevKeys: g0.keys, prevThreshold: g0.threshold, parents }, [seats[0]!]);
+    const anchor = await sign([act.actCid]);
+    return { g0, g1, seats, act, board, reader, sign, anchor, partial: courier(nexusActPartial(g1.aid, { family: "edge-roll-anchor", anchor })) };
+  }
+
+  test("the opened epoch's seats sign one realm's anchor across vaults, and the grown anchor counts under the opened roster", async () => {
+    const { g1, seats, reader, partial } = await rolled();
+    const read = readNexusActPartial(partial)!;
+    expect(read.subject).toEqual({ kind: "edge-roll", realm: REALM, closes: (read.act as { anchor: EdgeRollAnchor }).anchor.prevEpochCid, opens: g1.head.epochCid });
+    expect(await judgeNexusActPartial(partial, reader)).toMatchObject({ verdict: "ready", signed: [seats[0]!.signer] });
+    const grown = await cosignNexusActPartial(partial, reader, [seats[1]!]);
+    expect((await judgeNexusActPartial(courier(grown), reader)).verdict).toBe("complete");
+    expect(await edgeRollAnchorCounts((grown.act as { anchor: EdgeRollAnchor }).anchor, g1.roster)).toBe(true);
+  });
+
+  test("a vessel with no board for the realm, moved heads, a parent it cannot count and a replay refuse before a hand signs", async () => {
+    const { g1, seats, act, board, reader, sign, anchor, partial } = await rolled();
+    const calls = { n: 0 };
+    const b = counting(seats[1]!, calls);
+    // No board for this realm here (a board of another realm only, or none at all): unavailable.
+    const elsewhere: NexusPartialReader = { ...reader, edge: new Map([[OTHER, board]]) };
+    const { edge: _e, ...bare } = reader;
+    expect((await judgeNexusActPartial(partial, elsewhere)).verdict).toBe("unavailable");
+    expect((await judgeNexusActPartial(partial, bare)).verdict).toBe("unavailable");
+    // The anchor cites nothing while this board holds the quorum act's head: stale. A parent no board counts: unavailable.
+    const blind = courier(nexusActPartial(g1.aid, { family: "edge-roll-anchor", anchor: await sign([]) }));
+    expect((await judgeNexusActPartial(blind, reader)).verdict).toBe("stale");
+    const unknown = courier(nexusActPartial(g1.aid, { family: "edge-roll-anchor", anchor: await sign(["12".repeat(32)]) }));
+    expect((await judgeNexusActPartial(unknown, reader)).verdict).toBe("unavailable");
+    // A copy the board carries and counts under the head reads replay.
+    const landed = (await cosignNexusActPartial(partial, reader, [seats[1]!])).act as { anchor: EdgeRollAnchor };
+    const done: NexusPartialReader = { ...reader, edge: new Map([[REALM, { ...board, anchors: [landed.anchor] }]]) };
+    expect((await judgeNexusActPartial(partial, done)).verdict).toBe("replay");
+    // An uncounted copy (one seat's signature) blocks nothing.
+    expect((await judgeNexusActPartial(partial, { ...reader, edge: new Map([[REALM, { ...board, anchors: [anchor] }]]) })).verdict).toBe("ready");
+    for (const at of [elsewhere, bare]) await expect(cosignNexusActPartial(partial, at, [b])).rejects.toBeInstanceOf(NexusPartialRefusal);
+    await expect(cosignNexusActPartial(blind, reader, [b])).rejects.toMatchObject({ code: "stale" });
+    expect(calls.n).toBe(0);
+    expect(act.actCid).toHaveLength(64);
+  });
+
+  test("an edge anchor never casts into the carriage family, nor the reverse, nor into another realm", async () => {
+    const { g1, g0, seats, partial } = await rolled();
+    const p = partial as Record<string, any>;
+    expect(readNexusActPartial(p)).not.toBeNull();
+    expect(readNexusActPartial({ ...p, act: { ...p.act, family: "roll-anchor" } })).toBeNull();
+    expect(readNexusActPartial({ ...p, subject: { kind: "roll", closes: p.subject.closes, opens: p.subject.opens } })).toBeNull();
+    expect(readNexusActPartial({ ...p, subject: { ...p.subject, realm: OTHER } })).toBeNull();
+    expect(readNexusActPartial({ ...p, act: { ...p.act, anchor: { ...p.act.anchor, extra: 1 } } })).toBeNull();
+    const carriage = await signRollAnchor({ prevEpochCid: g0.head.epochCid, sealEpochCid: g1.head.epochCid, prevKeys: g0.keys, prevThreshold: g0.threshold, parents: [] }, [seats[0]!]);
+    const c = courier(nexusActPartial(g1.aid, { family: "roll-anchor", anchor: carriage })) as Record<string, any>;
+    expect(readNexusActPartial({ ...c, act: { ...c.act, family: "edge-roll-anchor" } })).toBeNull();
   });
 });

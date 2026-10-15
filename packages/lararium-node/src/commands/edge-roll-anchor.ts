@@ -22,7 +22,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   edgeRollAnchorParents, signEdgeRollAnchor, edgeRollAnchorCounts, edgeRollAnchorCid, writeEdgeRollAnchor,
   keptFromLedger, ledgerScopes, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
-  type KahuQuorumSeats,
+  type KahuQuorumSeats, type LarDoc,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -38,6 +38,15 @@ export interface EdgeRollAnchorLanded {
   readonly anchorCid: string;
   readonly parents:   readonly string[];
   readonly boardUrl:  string;
+}
+
+/**
+ * The realm boards a roll of the Nexus `rolling` anchors: each realm that stands under that Nexus at this vessel
+ * and holds a quorum act the vessel's ledger kept. Sorted. Another Nexus's roll anchors nothing there.
+ */
+export function edgeRollAnchorRealms(ledger: LarDoc | undefined | null, rolling: string): string[] {
+  return ledgerScopes(ledger).filter((scope) =>
+    realmNexusIn(ledger, scope) === rolling && keptFromLedger(ledger, scope).acts.some((a) => a.hand === "quorum"));
 }
 
 export async function runEdgeRollAnchors(opts: {
@@ -57,8 +66,7 @@ export async function runEdgeRollAnchors(opts: {
   // The roll belongs to the charter at `sealHome`: a realm standing under any other Nexus takes no anchor from it.
   const rolling = primaryNexusAid(opts.sealHome);
   if (rolling === null) return [];
-  const realms = ledgerScopes(ledger.doc()).filter((scope) =>
-    realmNexusIn(ledger.doc(), scope) === rolling && keptFromLedger(ledger.doc(), scope).acts.some((a) => a.hand === "quorum"));
+  const realms = edgeRollAnchorRealms(ledger.doc(), rolling);
   if (realms.length === 0) return [];
 
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new EdgeRollAnchorError(
