@@ -204,6 +204,35 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
     } finally { child.kill("SIGKILL"); }
   });
 
+  test("RED: a holder that leaves during the last wait spends no look: the contender enters, never refuses — CONTROL: one that stays refuses", async () => {
+    // maxWaits 0: the budget holds ONE look. The holder leaves inside that look's wait (the port's wait releases only
+    // once it exited), so the look ends on the name falling quiet and the contender claims it rather than naming a
+    // live holder that no longer answers.
+    let onAsk: () => void = () => undefined;
+    const pace = () => new Promise<void>((release) => { onAsk = release; asked(); });
+    let asked: () => void = () => undefined;
+    const askedOnce = new Promise<void>((res) => { asked = res; });
+    const io = new FsCustodyIo(homes, { maxWaits: 0, pollMs: 10, pace });
+    const child = holderChild(io.claimPath());
+    try {
+      await heldBy(child);
+      let ran = false;
+      const second = io.exclusive(async () => { ran = true; });
+      await askedOnce;
+      child.kill("SIGTERM");
+      await gone(child);
+      onAsk();
+      await second;
+      expect(ran).toBe(true);
+    } finally { child.kill("SIGKILL"); }
+    const io2 = new FsCustodyIo(homes, { maxWaits: 0, pollMs: 10 });
+    const stays = holderChild(io2.claimPath());
+    try {
+      await heldBy(stays);
+      await expect(io2.exclusive(async () => undefined)).rejects.toBeInstanceOf(CustodyLockRefused);
+    } finally { stays.kill("SIGKILL"); }
+  });
+
   test("a holder SIGKILLed mid-section leaves a corpse the next claimant reaps", async () => {
     const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
     const child = holderChild(io.claimPath());

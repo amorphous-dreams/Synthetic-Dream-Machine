@@ -141,26 +141,44 @@ export class FsCustodyIo implements CustodyIo {
     } finally { anchor.release(); }
   }
 
-  /** Claim the name, or look again while a live holder answers; `maxWaits` looks, then refuse by name. */
+  /**
+   * Claim the name, or look again while a live holder answers; `maxWaits` looks, then refuse by name. A LOOK counts
+   * only when a holder still answers once its wait ends: a holder that leaves inside the wait, or between the claim
+   * and the look, spends nothing, and the next claim takes the quiet name. A name that keeps changing hands between
+   * the claim and the look (a holder answers the claim and none answers the look) gets `HANDOFF_PATIENCE` tries and
+   * then refuses as such, never as a holder that kept it.
+   */
   private async acquire(path: string) {
-    for (let wait = 0; wait <= this.maxWaits; wait++) {
+    let looks = 0;
+    let handoffs = 0;
+    for (;;) {
       try { return await claimName(path); }
       catch (err) {
         if (!(err instanceof NameHeld)) throw err;
-        if (await answers(path)) {
-          // Pacing only: one wait per look, cut short when the holder releases or dies. A holder hangs up on every
-          // caller at once, so a closed connection alone says nothing: the look ends early only when the name
-          // stopped answering. A look that returned on the hang-up alone would spend the whole budget in the time
-          // the kernel takes to connect `maxWaits` times, and refuse a holder that had barely begun.
-          const paced = this.pace(this.pollMs);
-          await Promise.race([letGo(path), paced]);
-          if (await answers(path)) await paced;
+        if (!(await answers(path))) {
+          if (++handoffs > HANDOFF_PATIENCE) {
+            throw new CustodyLockRefused(this.claimPath(), `the custody claim changed hands ${HANDOFF_PATIENCE} times between a claim and its look; nothing was seized`);
+          }
+          continue;
+        }
+        // Pacing only: one wait per look, cut short when the holder releases or dies. A holder hangs up on every
+        // caller at once, so a closed connection alone says nothing: the look ends early only when the name
+        // stopped answering. A look that returned on the hang-up alone would spend the whole budget in the time
+        // the kernel takes to connect `maxWaits` times, and refuse a holder that had barely begun.
+        const paced = this.pace(this.pollMs);
+        await Promise.race([letGo(path), paced]);
+        if (!(await answers(path))) continue;
+        await paced;
+        if (++looks > this.maxWaits) {
+          throw new CustodyLockRefused(this.claimPath(), `a live holder kept the custody claim through ${this.maxWaits} looks; nothing was seized`);
         }
       }
     }
-    throw new CustodyLockRefused(this.claimPath(), `a live holder kept the custody claim through ${this.maxWaits} looks; nothing was seized`);
   }
 }
+
+/** Tries a contender gives a name that a holder answered at the claim and none answered at the look. A count, never an age. */
+const HANDOFF_PATIENCE = 200;
 
 function writeFileSyncAll(fd: number, bytes: Uint8Array): void {
   let off = 0;
