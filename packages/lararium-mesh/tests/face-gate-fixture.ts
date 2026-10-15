@@ -341,9 +341,14 @@ export async function sibling(of: Presenter, label: string, profile: CapabilityP
 
 // ── Dialing ─────────────────────────────────────────────────────────────────────────────────────
 
+/** A dial its own side refused before any flight left: no gate ran, so no gate refusal stands to report. */
+export const UNREACHED = Object.freeze({ outcome: "unreached" } as const);
+/** What the gate came to, or that no flight ever reached it. */
+export type GateReading = GateOutcome | typeof UNREACHED;
+
 export interface Dialed {
   readonly outcome: FaceDialOutcome;
-  readonly gate:    GateOutcome;
+  readonly gate:    GateReading;
   readonly log:     WireLog;
 }
 
@@ -357,7 +362,7 @@ export async function dial(w: World, p: Presenter, over: Partial<FaceDialArgs> =
   // The gate's own run ends by itself on an honest dial: it answers, or it reaches its silence and waits.
   const accepting = accepted.then((gateSocket) => w.gate.accept(gateSocket));
   const early = await Promise.race([accepting.then(() => null), outcome]);
-  if (early !== null && early.state === "refused") return { outcome: early, gate: { outcome: "silence", reason: "no flight reached the gate" }, log, cutsBeforeLapse: log.cuts, pendingBeforeLapse: w.gate.pending };
+  if (early !== null && early.state === "refused") return { outcome: early, gate: UNREACHED, log, cutsBeforeLapse: log.cuts, pendingBeforeLapse: w.gate.pending };
   const gate = await accepting;
   await settle();
   const cutsBeforeLapse = log.cuts, pendingBeforeLapse = w.gate.pending;
@@ -459,12 +464,12 @@ export async function place(w: World, label: string): Promise<Place> {
 }
 
 /** One honest dial of a place, start to end, as `dial` runs a face's. */
-export async function dialPlace(w: World, pl: Place, over: { arm?: PlaceArm | null; audience?: string; tier?: GateTier } = {}): Promise<{ outcome: PlaceDialOutcome; gate: GateOutcome; log: WireLog; cutsBeforeLapse: number; pendingBeforeLapse: number }> {
+export async function dialPlace(w: World, pl: Place, over: { arm?: PlaceArm | null; audience?: string; tier?: GateTier } = {}): Promise<{ outcome: PlaceDialOutcome; gate: GateReading; log: WireLog; cutsBeforeLapse: number; pendingBeforeLapse: number }> {
   const { dial: socket, accepted, log } = wire();
   const outcome = dialPlaceGate({ pin: w.pin, tier: w.pin.tier, socket, audience: over.audience ?? AUDIENCE, placeKey: pl.key, sign: pl.sign, arm: over.arm === undefined ? pl.arm : over.arm, deadlines: handDeadlines(), ...(over.tier ? { tier: over.tier } : {}) });
   const accepting = accepted.then((gateSocket) => w.gate.accept(gateSocket));
   const early = await Promise.race([accepting.then(() => null), outcome]);
-  if (early !== null && early.state === "refused") return { outcome: early, gate: { outcome: "silence", reason: "no flight reached the gate" }, log, cutsBeforeLapse: log.cuts, pendingBeforeLapse: w.gate.pending };
+  if (early !== null && early.state === "refused") return { outcome: early, gate: UNREACHED, log, cutsBeforeLapse: log.cuts, pendingBeforeLapse: w.gate.pending };
   const gate = await accepting;
   await settle();
   const cutsBeforeLapse = log.cuts, pendingBeforeLapse = w.gate.pending;
