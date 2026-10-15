@@ -305,7 +305,20 @@ export async function restoreFaceBundle(args: {
   readonly as?:        number;
   readonly withRepo:   <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
 }): Promise<FaceBundleRestored> {
-  const body = openRestoreBody(args.sealedBody, args.bundleKey);
+  return restoreFaceBody({ body: openRestoreBody(args.sealedBody, args.bundleKey), ...(args.as !== undefined ? { as: args.as } : {}), withRepo: args.withRepo });
+}
+
+/**
+ * Restore one face from a body already opened: the steps after OPEN, for every door that hands the restore a
+ * face (a bundle's sealed body, or a body another reader built). The body still passes every check a bundle's
+ * body passes, and lands through the same one commit row.
+ */
+export async function restoreFaceBody(args: {
+  readonly body:     FaceBundleBody;
+  readonly as?:      number;
+  readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+}): Promise<FaceBundleRestored> {
+  const { body } = args;
   const { signerDid, recoveryCommit } = await consistent(body);
 
   let pending = await readPending();
