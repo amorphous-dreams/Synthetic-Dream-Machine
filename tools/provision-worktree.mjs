@@ -69,7 +69,7 @@ function relinkModules(source, destination, rel) {
     if (!canNest(source, target)) continue;
     const mapped = join(destination, relative(source, target));
     rmSync(link);
-    symlinkSync(relative(dirname(link), mapped), link);
+    symlinkSync(relative(dirname(link), mapped) || '.', link); // a link naming its own parent maps to '.', never ''
     rewritten++;
   }
   return rewritten;

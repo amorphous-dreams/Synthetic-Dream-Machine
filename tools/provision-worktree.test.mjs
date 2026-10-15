@@ -110,6 +110,16 @@ test('copied module links target the destination, while external links stay exte
   } finally { f.close(); }
 });
 
+test('a module link that names its own parent directory relinks to ".", never an empty target', () => {
+  const f = fixture();
+  try {
+    const rootModules = join(f.source, 'node_modules');
+    symlinkSync(rootModules, join(rootModules, 'node_modules'));
+    provision({ source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
+    assert.equal(readlinkSync(join(f.destination, 'node_modules/node_modules')), '.');
+  } finally { f.close(); }
+});
+
 test('refuses to finish when a later step leaves a link into the source', () => {
   const f = fixture();
   try {
