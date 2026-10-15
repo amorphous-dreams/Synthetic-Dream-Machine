@@ -15,6 +15,7 @@ mempalace/website
 mempalace/landing
 mempalace/docs
 mempalace/uv.lock
+packages/lararium-sensorium/fixtures/claude-week-2026-10-07
 VSCode-TW5-Syntax
 .env
 .env.*

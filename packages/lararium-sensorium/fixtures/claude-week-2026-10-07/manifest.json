@@ -1,0 +1,43 @@
+{
+  "schema": "lararium.sensorium.fixture.claude-week.v1",
+  "window": {
+    "start_inclusive": "2026-10-07T00:00:00-07:00",
+    "end_exclusive": "2026-10-14T00:00:00-07:00"
+  },
+  "selection": "one parent session slice and one complete linked subagent source; not all native chat history",
+  "format": "original frozen Claude JSONL bytes, no transcript rewriting",
+  "sources": [
+    {
+      "role": "main",
+      "path": "sources/claude/7bdba225-5131-4cfb-a258-6d3e7da875f9.jsonl",
+      "scope": "partial session",
+      "bytes": 9848331,
+      "sha256": "c84088c89fdd5e07af0c49e2c630e095a64e9cc1adf8ccf1670e0c7d3a94662a",
+      "rows": 3813,
+      "rows_by_type": {
+        "queue-operation": 444,
+        "user": 749,
+        "attachment": 964,
+        "assistant": 1289,
+        "system": 137,
+        "file-history-delta": 15,
+        "pr-link": 215
+      },
+      "projection_policy": "only user/assistant rows enter current Claude content parser"
+    },
+    {
+      "role": "subagent",
+      "path": "sources/claude/7bdba225-5131-4cfb-a258-6d3e7da875f9/subagents/agent-a876d2adbe9a4390a.jsonl",
+      "scope": "whole source",
+      "bytes": 512903,
+      "sha256": "c6ca32ba7770a92011ddf2533b8715d2ba21e60c41aae8ac749355d1d3f686a8",
+      "rows": 46,
+      "rows_by_type": {
+        "user": 9,
+        "attachment": 23,
+        "assistant": 14
+      },
+      "projection_policy": "only user/assistant rows enter current Claude content parser"
+    }
+  ]
+}
