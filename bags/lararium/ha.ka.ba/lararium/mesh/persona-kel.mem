@@ -147,9 +147,9 @@ names it rather than meet a chain already cleaned.
 
 !! Frozen for alpha ~ the primitives the sibling grammar builds on
 
-The persona-KEL ''freezes after the provisional/veto change'' — its bytes stop moving, and the handle-KEL is
-built on the frozen primitives (identity-classes). The typed first enrolment (#/the-enrolment) adds one kind
-under a house ruling that lands it before the fence; an event that names no kind keeps the bytes it held. The freeze is what lets a SIBLING grammar reuse the shape
+The persona-KEL ''freezes after the provisional/veto change'' but for one ruled kind: the typed first enrolment
+(#/the-enrolment) lands under a house ruling before the fence, and an event that names no kind keeps the bytes it
+held. The handle-KEL builds on the frozen primitives (identity-classes). The freeze is what lets a SIBLING grammar reuse the shape
 by structure rather than chase a moving target: the armed inception, the rolling commitment, the content
 -addressed cid, the sig-outside pattern all stand fixed. TRUE k-of-n graft governance and the Binding-Gate
 wiring ride DECLARED above the freeze, not folded into it.
@@ -181,6 +181,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;bfkMmvyIpjiFWp4M-aoKzKm-m9VjGjGVhmGo1FYkTFo
+<<^ code="&#x0003;">>ni:///sha-256;-55aeY-yENnEC4aTjFP7C7v0UfvIoaZky1ZvOdKLJOk
 
 <<^ code="&#x0004;" -> to="?">>

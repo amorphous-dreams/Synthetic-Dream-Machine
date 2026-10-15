@@ -474,7 +474,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // domain-separated leaf. The multitude-of-one, NAMED: whoever holds the seed holds recovery,
   // which an empty commit already meant in practice while forbidding the rotation that acts on it.
   // `mintPersonaRotation` therefore works from day one (lose the device, hold the seed, rotate);
-  // a real guardian set grafts in by a later rotation's rolling commitment.
+  // a real guardian set arrives by the face's typed first enrolment, which its own current key signs
+  // (`mintGuardianEnrolment`), and every later change takes the guardians' rotation.
   const seatedEvents: readonly PersonaKelEvent[] = input.binding.mode === "self-stood"
     ? [provisionThresholdRecoveryAtFounding({
         foundingOpKeyDid:  signerDid,

@@ -30,8 +30,10 @@ import {
   buildDeviceDelegation,
   buildAuthResponse,
   ed25519SignerFromSeed,
+  deriveSelfRecoveryKey,
   mintPersonaInception,
   mkDaemonVerifyRequest,
+  sealKeySetHash,
   type AuthProofWire,
   type DeviceDelegationTiddler,
   type DaemonMsg_VerifyResult,
@@ -152,9 +154,9 @@ async function main(): Promise<void> {
   const operatorVk = await vkOfSeed(daemonSeed);
   const signerDid  = `0x${operatorVk}`;
   const selfEdge   = await mintEdge(daemonSeed, operatorVk); // founding self-delegation (Binding Gate)
-  // The persona-KEL the gate pins + walks: an unarmed inception over the founding op-key (== signerDid). At
-  // inception the head IS signerDid, so the pin-move is behavior-identical here (and a rotation would move it).
-  const inception  = mintPersonaInception(signerDid, "");
+  // The persona-KEL the gate pins + walks: the founding op-key (== signerDid) over its own one-of-one recovery
+  // digest, as every face founds (no prefix incepts unarmed). At inception the head IS signerDid.
+  const inception  = mintPersonaInception(signerDid, sealKeySetHash([(await deriveSelfRecoveryKey(daemonSeed)).verifyingKey], 1));
 
   const daemonAuth: NonNullable<IslandMsg_Manifest["daemonAuth"]> = {
     seed:                   daemonSeed,

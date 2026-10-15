@@ -157,12 +157,13 @@ describe("⑨ the dyad, specified and unwired", () => {
   });
 
   // KEPT 2026-09-08 — A VETO RIDES THE CHAIN, NEVER A ROSTER greened by the G2 settlement: the
-  // provisional marker + the veto kind landed as the persona-KEL's LAST bytes-change (mintVeto ·
+  // provisional marker + the veto kind landed as the persona-KEL's last untyped bytes-change (mintVeto ·
   // foldPersonaContests · headOpKey's provisional restraint · the board's {prefix}/{seq}/{eventCid}
   // contest keying with the veto-beats-provisional fold). All four walked clauses stand witnessed in
   // tests/provisional-veto.test.ts — including the late veto killing a hardened provisional's
   // descendants, and the idle observer whose patience is the resting state. THE GRAMMAR IS FROZEN
-  // for the alpha; the handle-KEL builds as a sibling on these primitives, no bytes-change (G3).
+  // for the alpha but for one ruled kind, the typed first guardian enrolment, whose absence leaves every
+  // other event's bytes as they stood; the handle-KEL builds as a sibling on these primitives (G3).
 
   test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
     expect(Object.keys(mesh)).toContain("commitmentFreshness");
@@ -172,10 +173,10 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("riteContingency");
   });
 
-  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS greened by guardian enrolment's verb core: a key offered to one
-  // face that this vessel already holds in another face's set refuses `guardian-key-serves-another-face`, naming that
-  // face (persona-policy#/distinct-recovery; the check reads this vessel's own faces and builds no roster). Witnessed
-  // in tests/guardian-enrolment.test.ts (the red, its control, and the check's own verdict).
+  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS greened in the library: the enrolment's core refuses a key the
+  // caller names as held in another face's set (`guardian-key-serves-another-face`, persona-policy#/distinct-recovery).
+  // Witnessed in tests/guardian-enrolment.test.ts. The vessel path that gathers every other face's set, and so
+  // enforces it on a live enrolment, rides `lares persona guardian enrol` (SPECIFIED: H/keel-compose-1.patch).
   test("the guardian compartment check is exported", () => {
     expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
   });
