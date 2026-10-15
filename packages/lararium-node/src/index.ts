@@ -229,6 +229,7 @@ export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";
 export type { RaiseSignResult } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
+  runNexusContractOpen, runNexusContractPartial, type NexusContractPartialResult,
   runNexusRollAnchor, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
 export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,

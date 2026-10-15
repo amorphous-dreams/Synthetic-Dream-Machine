@@ -16,7 +16,8 @@
  * this test measures the SOURCE STRUCTURE (the same class of proof the device-admit weld already
  * trusts) rather than driving each verb's full ceremony.
  *
- * `nexus-contract.ts` carries THREE `carriageDocUrl(` calls - the admit WRITE (`runNexusContract`), the
+ * `nexus-contract.ts` carries THREE `carriageDocUrl(` calls - the admit and revoke WRITE (`carriageBoardFor`, which
+ * `runNexusContract` and the two-vault door share), the
  * roll-anchor WRITE (`runNexusRollAnchor`) and the members-list READ (`runNexusMembersList`). All read the
  * resolved island over the home holding the charter, so the writes and the read land on one board; a bare
  * vessel key at any one splits them.

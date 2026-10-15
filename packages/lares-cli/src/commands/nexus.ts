@@ -37,10 +37,11 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve as resolvePath } from "node:path";
 import {
-  runNexusCarryFor, NexusContractError, SealedActRefused,
-  AdmitBundleError, type NexusContractResult, type NexusMembersListResult,
+  runNexusCarryFor, NexusContractError, SealedActRefused, atomicWriteFileSync,
+  AdmitBundleError, type NexusContractResult, type NexusContractPartialResult, type NexusMembersListResult,
 } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
 import { larSealHome, vesselDid } from "../env.js";
@@ -230,6 +231,8 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
  * FAIL CLOSED: an unseated charter, a sub-quorum, or a missing / invalid seal REFUSES and writes nothing.
  */
 async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
+  if (args.options["from"] !== undefined) return await cmdContractPartial(args, action);
+  if (args.options["out"] !== undefined) return await cmdContractOpen(args, action);
   const place = action === "carry" || action === "uncarry";
   const nym = args.positional[1];
   if (!nym) {
@@ -240,10 +243,12 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
   try {
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
     const carrierSig  = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
+    const aid = args.options["nexus"];
     const { output } = await storeVerb("nexus-contract", {
       action, nym,
       ...(contractSig ? { contractSig } : {}),
       ...(carrierSig ? { carrierSig } : {}),
+      ...(aid ? { aid } : {}),
     }, NexusContractError);
     const r = output as unknown as NexusContractResult;
     emit(args, {
@@ -282,6 +287,102 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
     const msg  = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
     emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action}: ${msg}`) });
+    return exitFor(failure.code);
+  }
+}
+
+const PARTIAL_USAGE = "usage: lares nexus <contract | revoke> <operator-pubkey> [--sig <hex>] [--nexus <aid>] --out <partial> | lares nexus contract --from <partial> [--out <file>]";
+
+/**
+ * Refuse an `--out` the write could not take BEFORE the act runs: a landed act whose grown partial never reached
+ * its file would strand the other vault (a retry here reads replay). The input file stays as the person carried it.
+ */
+function partialOutOrRefuse(out: string, from?: string): string {
+  if (from !== undefined && resolvePath(out) === resolvePath(from)) throw new NexusContractError(`--out names the partial you carried (${from}); name another file, so the carried one stays as it came`);
+  if (!existsSync(dirname(resolvePath(out)))) throw new NexusContractError(`--out ${out}: its directory does not exist, so the partial could not land there`);
+  return out;
+}
+
+/** Write one partial file a person carries to the other vault; it holds public material alone. */
+function writePartialFile(path: string, partial: unknown): string {
+  atomicWriteFileSync(path, `${JSON.stringify(partial, null, 2)}\n`, `${path}.writing`);
+  return path;
+}
+
+/** Report one partial step: the verdict here, the seats signed, where the file landed, and the act once it lands. */
+function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, path: string | null): number {
+  emit(args, {
+    ok: true,
+    data: {
+      verdict: r.verdict, signed: r.signed, path, partial: r.partial,
+      landed: r.landed ? { action: r.landed.action, nym: r.landed.nym, evidenceCid: r.landed.evidenceCid, parents: r.landed.parents,
+        sealEpochCid: r.landed.sealEpochCid, threshold: r.landed.threshold, boardUrl: r.landed.boardUrl,
+        memberHeld: r.landed.memberHeld, bundle: r.landed.bundle, findings: r.landed.findings } : null,
+    },
+    human: () => {
+      console.log(`nexus ${step} → ${r.verdict.toUpperCase()} (${r.signed.length} seat(s) signed under ${r.partial.aid.slice(0, 22)}…)`);
+      for (const s of r.signed) console.log(`    ${s.slice(0, 16)}…`);
+      if (path) console.log(`  partial:     ${path}`);
+      if (r.landed) {
+        console.log(`  landed:      act ${r.landed.evidenceCid.slice(0, 16)}… on this vessel's board (${r.landed.memberHeld ? "MEMBER" : "NOT a member"})`);
+        console.log("  next:        carry the partial back, so the other vault lands the same act (`lares nexus contract --from <partial>`)");
+      } else {
+        console.log("  next:        carry the partial to the vault that holds another seat (`lares nexus contract --from <partial> --out <file>`)");
+      }
+    },
+  });
+  return 0;
+}
+
+/**
+ * THE TWO-VAULT DOOR (kapae#/edge-hands). A Nexus whose seats rest in two vaults signs an admit or a revoke whole
+ * in neither. `contract|revoke <nym> --nexus <aid> --out <file>` signs with every seat of the head roster this
+ * vessel holds and writes the act as a PARTIAL file; nothing lands. FAIL CLOSED: a vessel holding the whole quorum,
+ * or no seat, opens none.
+ */
+async function cmdContractOpen(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
+  const nym = args.positional[1];
+  const out = args.options["out"]!;
+  if (!nym || (action !== "admit" && action !== "revoke")) { console.error(PARTIAL_USAGE); return 2; }
+  try {
+    partialOutOrRefuse(out);
+    const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
+    const aid = args.options["nexus"];
+    const { output } = await storeVerb("nexus-contract-open", {
+      action, nym, ...(contractSig ? { contractSig } : {}), ...(aid ? { aid } : {}),
+    }, NexusContractError);
+    const r = output as unknown as NexusContractPartialResult;
+    return emitPartial(args, `${action === "admit" ? "contract" : "revoke"} --out`, r, writePartialFile(out, r.partial));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} --out: ${msg}`) });
+    return exitFor(failure.code);
+  }
+}
+
+/**
+ * `contract --from <partial> [--out <file>]` takes a partial the other vault wrote. This vessel judges it against
+ * its OWN charter head and board before any signature: `ready` takes the signature of every seat this vessel holds
+ * that has not signed, `complete` lands the act on this vessel's board, and any other verdict refuses by name with
+ * nothing signed or landed. `--out` writes the grown partial for the other vault.
+ */
+async function cmdContractPartial(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
+  const from = args.options["from"]!;
+  const out = args.options["out"];
+  if (action !== "admit" && action !== "revoke") { console.error(PARTIAL_USAGE); return 2; }
+  try {
+    if (out !== undefined) partialOutOrRefuse(out, from);
+    let partial: unknown;
+    try { partial = JSON.parse(readFileSync(from, "utf8")); }
+    catch { throw new NexusContractError(`cannot read ${from} as a partial file`); }
+    const { output } = await storeVerb("nexus-contract-partial", { partial }, NexusContractError);
+    const r = output as unknown as NexusContractPartialResult;
+    return emitPartial(args, "contract --from", r, out !== undefined ? writePartialFile(out, r.partial) : null);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} --from: ${msg}`) });
     return exitFor(failure.code);
   }
 }

@@ -20,6 +20,14 @@
  *   · ≥ threshold founding-kahu quorum signatures (the steward act — identical to the antigen's).
  * A REVOKE needs the kahu quorum ONLY (an uncooperative member cannot veto its own removal).
  *
+ * TWO VAULTS, ONE ACT (kapae#/edge-hands). A Nexus whose seats rest in two vaults (a two-founder Nexus) signs no
+ * admit or revoke whole in either. `runNexusContractOpen` signs with every seat this vessel holds and hands back a
+ * PARTIAL (`nexus-partial`) that carries the whole act and writes no board; the other vault's
+ * `runNexusContractPartial` judges it against its own charter head and board, cosigns with the seats it holds
+ * only where the judge reads `ready`, and lands the act once it reads `complete`. The first vault lands the
+ * completed partial the same way. A stale head, a moved line, a replay or a foreign Nexus writes no signature and
+ * no board act. `aid` names a charter this vessel carries (a joint Nexus files under its own AID beside the seed).
+ *
  * TRACK CONTRACTS, NEVER IDENTITIES: the writer takes an operator PUBKEY nym + (for admit) a carriage contract-sig.
  * No name / email / device / behavior is read, asked, or written — the FLOOR alone lands on the board.
  *
@@ -35,8 +43,10 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
+  judgeNexusActPartial, cosignNexusActPartial, nexusActPartial, readNexusActPartial, NexusPartialRefusal,
+  type NexusActPartial, type NexusPartialReader, type PartialVerdict,
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
-  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
+  signCarrierContract, verifyCarrierContract, verifyCarriageConsent, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
@@ -50,6 +60,7 @@ import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
+import { heldSeatSigners } from "../held-quorum.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
@@ -72,6 +83,8 @@ export interface NexusContractOptions {
   readonly sealHome:    string;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:        Repo;
+  /** The Nexus the act lands under, where this vessel carries its charter beside the primary; absent names the primary. */
+  readonly aid?:        string;
 }
 
 export interface NexusContractResult {
@@ -141,7 +154,15 @@ async function resolveContractIn(
   opts: NexusContractOptions, nym: string, sealEpochCid: string,
 ): Promise<{ contractSig: QuorumSignature; how: "supplied" | "self" }> {
   if (opts.contractSig) {
-    return { contractSig: { signer: nym, sig: opts.contractSig.trim().toLowerCase() }, how: "supplied" };
+    // Prove the operator's consent BEFORE any seat signs: no seat signs an admit its operator never consented to.
+    const sig = opts.contractSig.trim().toLowerCase();
+    if (!(await verifyCarriageConsent({ nym, sealEpochCid, contractSig: sig }))) {
+      throw new NexusContractError(
+        "admit REFUSED (fail-closed): the supplied contract-in does not verify as this operator's 'accepts carriage' " +
+        "for the head epoch, so no seat signs.",
+      );
+    }
+    return { contractSig: { signer: nym, sig }, how: "supplied" };
   }
   // multitude-of-one: is the admitted nym one of this vessel's leaves for this Nexus? Then self-sign with it.
   for (const leaf of await heldNexusLeaves(nexusAidOrRefuse(opts.sealHome))) {
@@ -206,6 +227,104 @@ export async function runNexusCarryFor(opts: {
   return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig };
 }
 
+/** The charter home an act reads: the carried charter `aid` names, else the primary. Refuses an AID this vessel never carried. */
+function charterHomeOrRefuse(sealHome: string, aid: string | undefined): string {
+  if (aid === undefined) return sealHome;
+  const home = charterHomeFor(sealHome, aid.trim().toLowerCase());
+  if (home === null) throw new NexusContractError(`this vessel holds no charter for ${aid.slice(0, 18)}… — import or found it first.`);
+  return home;
+}
+
+/** Everything an act needs before its seats sign: the subject, the charter home and roster, the subject's own seal,
+ *  the board it lands on and the causal heads it cites there. */
+interface ContractCore {
+  readonly nym:      string;
+  readonly home:     string;
+  readonly roster:   KahuQuorumSeats;
+  readonly contract: { contractSig: QuorumSignature; how: "supplied" | "self" } | null;
+  readonly gateKey:  string;
+  readonly boardUrl: string;
+  readonly handle:   Awaited<ReturnType<typeof materializeSharedLarDoc>>;
+  readonly parents:  readonly string[];
+}
+
+/** The carriage board one charter home's island names on this vessel, with the gate key that resolved the island. */
+async function carriageBoardFor(repo: Repo, home: string): Promise<Pick<ContractCore, "gateKey" | "boardUrl" | "handle">> {
+  const gateKey  = await loadVesselVerifyingKey();
+  const boardUrl = carriageDocUrl(nodeNexusIsland({ ownVesselKey: gateKey, sealHome: home }));
+  const handle   = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
+  return { gateKey, boardUrl, handle };
+}
+
+async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
+  const nym = opts.nym.trim().toLowerCase();
+  if (!NYM_RE.test(nym)) {
+    throw new NexusContractError(`"${opts.nym}" reads as no operator nym — expected a 64-hex ed25519 verifying key.`);
+  }
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const roster = seatedRosterOrRefuse(home);
+  const homed = { ...opts, sealHome: home };
+  // The subject's own wax-seal — an ADMIT takes the operator's persona-signed contract-in, a CARRY takes the
+  // place's vessel-signed carrier seal, and a REVOKE / UNCARRY takes none.
+  let contract: ContractCore["contract"] = null;
+  if (opts.action === "admit") contract = await resolveContractIn(homed, nym, roster.sealEpochCid);
+  else if (opts.action === "carry") contract = { contractSig: await resolveCarrierIn(homed, nym, roster.sealEpochCid), how: "supplied" };
+  const { gateKey, boardUrl, handle } = await carriageBoardFor(opts.repo, home);
+  const boardFold = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
+  const parents  = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
+  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents };
+}
+
+/**
+ * Land one signed entry on the board: it must COUNT against the roster first (a dead admit would read as enforced
+ * while granting nothing), then one fold of the written board answers both projections and, for an admit, the
+ * carried bundle.
+ */
+async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction, entry: CarriageEntry, signers: readonly string[],
+  beforeWrite?: () => Promise<void>): Promise<NexusContractResult> {
+  if (!(await carriageEntryCounts(entry, core.roster))) {
+    throw new NexusContractError(
+      action === "admit"
+        ? "refusing to write: the signed admit does not COUNT (the kahu quorum or the operator contract-in failed to verify against the seated roster)."
+        : action === "carry"
+        ? "refusing to write: the signed carry does not COUNT (the kahu quorum or the place's own carrier seal failed to verify against the seated roster)."
+        : "refusing to write: the signed removal does not verify against the seated roster (fail-closed).",
+    );
+  }
+  const { handle, nym, roster } = core;
+  // The last check reads the board as it stands at the write; the write follows it with no await between.
+  if (beforeWrite) await beforeWrite();
+  handle.change((d) => writeCarriageEntry(d, entry));
+  await repo.flush();
+
+  // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
+  // separate sets and never union. A `carry` moves the carrier observation and never `memberHeld` — the
+  // structural half of the class law, reported so a caller reads which relation it actually landed.
+  const after       = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
+  const memberHeld  = holdsCarriage(nym, after.members);
+  const carrierHeld = holdsCarrier(nym, after.carriers);
+
+  // THE BUNDLE. The admit just signed cites every causal head for the nym, so it stands as the board's one
+  // admit head for that nym; its lineage comes off the board it landed on. A head that reads otherwise
+  // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
+  let bundle: AdmitBundle | null = null;
+  let findings: readonly PresentationFinding[] = [];
+  if (action === "admit") {
+    const read = await presentationFromBoardDoc(handle.doc(), nym, roster);
+    findings = read.findings;
+    const presented = read.presentation;
+    if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
+      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: core.gateKey.toLowerCase(), admit: presented.admit, lineage: presented.lineage };
+    }
+  }
+  return {
+    action, nym, parents: entry.parents, evidenceCid: carriageEntryActCid(entry),
+    sealEpochCid: roster.sealEpochCid, threshold: roster.threshold, signers,
+    contractIn: entry.contractSig ? (core.contract?.how ?? "supplied") : "n/a",
+    boardUrl: core.boardUrl, memberHeld, carrierHeld, bundle, findings,
+  };
+}
+
 /**
  * ADMIT (`admit`) or REVOKE (`revoke`) an operator nym — sign a causal membership act with ≥ threshold held
  * founding seat keys (plus, for admit, the operator's contract-in) and LAND it on the always-carried members
@@ -213,89 +332,130 @@ export async function runNexusCarryFor(opts: {
  * it never derives authority from a scalar counter.
  */
 export async function runNexusContract(opts: NexusContractOptions): Promise<NexusContractResult> {
-  const nym        = opts.nym.trim().toLowerCase();
+  const nym = opts.nym.trim().toLowerCase();
   if (!NYM_RE.test(nym)) {
     throw new NexusContractError(`"${opts.nym}" is not a valid operator nym — expected a 64-hex ed25519 verifying key.`);
   }
-
-  const roster   = seatedRosterOrRefuse(opts.sealHome);
-  const selected = await selectHeldQuorumSigners(roster, subQuorum);
-
-  // The subject's own wax-seal — an ADMIT takes the operator's persona-signed contract-in, a CARRY takes the
-  // place's vessel-signed carrier seal, and a REVOKE / UNCARRY takes none.
-  let contract: { contractSig: QuorumSignature; how: "supplied" | "self" } | null = null;
-  if (opts.action === "admit") {
-    contract = await resolveContractIn(opts, nym, roster.sealEpochCid);
-  } else if (opts.action === "carry") {
-    contract = { contractSig: await resolveCarrierIn(opts, nym, roster.sealEpochCid), how: "supplied" };
-  }
-
-  const nexusPubkey = await loadVesselVerifyingKey();
-  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey, sealHome: opts.sealHome });
-  const boardUrl    = carriageDocUrl(boardIsland);
-  const repo        = opts.repo;
+  const selected = await selectHeldQuorumSigners(seatedRosterOrRefuse(charterHomeOrRefuse(opts.sealHome, opts.aid)), subQuorum);
+  const repo = opts.repo;
   try {
-    const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
-
-    const boardEntries = carriageEntriesFromBoard(handle.doc());
-    const boardFold = await foldCarriageDetails(boardEntries, roster);
-    const parents = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
-
+    const core = await contractCore(opts);
     // The quorum signs with the seats' own keys: each hand opens its one cold row for its one signature.
-    const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     const entry: CarriageEntry = await signCarriageQuorum(
-      { nym, action: opts.action, parents, sealEpochCid: roster.sealEpochCid },
-      signers,
-      contract?.contractSig,
+      { nym: core.nym, action: opts.action, parents: core.parents, sealEpochCid: core.roster.sealEpochCid },
+      selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
+      core.contract?.contractSig,
     );
+    return await landEntry(core, repo, opts.action, entry, selected.map((s) => s.verifyingKey));
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
 
-    // NEVER write an entry the fold would ignore — self-verify it COUNTS against the live roster (a dead admit
-    // would read as enforced while granting nothing). This catches a bad supplied contract-sig BEFORE the write.
-    if (!(await carriageEntryCounts(entry, roster))) {
-      throw new NexusContractError(
-        opts.action === "admit"
-          ? "refusing to write: the signed admit does not COUNT (the kahu quorum or the operator contract-in failed to verify against the seated roster)."
-          : opts.action === "carry"
-          ? "refusing to write: the signed carry does not COUNT (the kahu quorum or the place's own carrier seal failed to verify against the seated roster)."
-          : "refusing to write: the signed removal does not verify against the seated roster (fail-closed).",
-      );
+/** What a partial step answers: the partial as it stands, the judge's verdict over it here, and the act it landed. */
+export interface NexusContractPartialResult {
+  readonly partial: NexusActPartial;
+  readonly verdict: PartialVerdict;
+  /** The seats of the head roster whose signature the partial carries, sorted. */
+  readonly signed:  readonly string[];
+  /** The landed act, once the partial read `complete` here and its entry counted; null short of the threshold. */
+  readonly landed:  NexusContractResult | null;
+}
+
+/** The reader one vessel judges a partial with: its charter's AID and head roster, and its own board. */
+function partialReader(aid: string, core: Pick<ContractCore, "roster" | "handle">): NexusPartialReader {
+  const doc = core.handle.doc();
+  return { aid, head: core.roster, board: { carriage: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc), antigen: [] } };
+}
+
+const partialFamily = (action: CarriageAction): "admit" | "revoke" => {
+  if (action === "admit" || action === "revoke") return action;
+  throw new NexusContractError(`a ${action} crosses no vaults as a partial: only an admit and a revoke ride the two-vault door.`);
+};
+
+/**
+ * OPEN a two-vault act: every seat of the head roster this vessel holds signs the admit or revoke (an admit with
+ * its operator's contract-in), and the act leaves as a PARTIAL for the vault that holds the other seats. Nothing
+ * lands on any board here. A vessel that holds the whole quorum lands the act through `runNexusContract` instead.
+ */
+export async function runNexusContractOpen(opts: NexusContractOptions): Promise<NexusContractPartialResult> {
+  const family = partialFamily(opts.action);
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const roster = seatedRosterOrRefuse(home);
+  const held = heldSeatSigners(roster);
+  if (held.length === 0) throw new NexusContractError("this vessel holds no seat of the head roster, so it opens no act for it.");
+  if (held.length >= roster.threshold) {
+    throw new NexusContractError("this vessel holds the whole quorum: the act lands here whole (`nexus contract`), and no partial crosses.");
+  }
+  const repo = opts.repo;
+  try {
+    const core = await contractCore(opts);
+    const entry = await signCarriageQuorum(
+      { nym: core.nym, action: family, parents: core.parents, sealEpochCid: core.roster.sealEpochCid },
+      held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
+      core.contract?.contractSig,
+    );
+    const aid = nexusAidOrRefuse(core.home);
+    const partial = nexusActPartial(aid, { family, entry });
+    const judged = await judgeNexusActPartial(partial, partialReader(aid, core));
+    if (judged.verdict !== "ready") throw new NexusContractError(`the partial this vessel signed reads ${judged.verdict} here${judged.why ? `: ${judged.why}` : ""}; nothing crosses.`);
+    return { partial, verdict: judged.verdict, signed: judged.signed, landed: null };
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/**
+ * Take a partial another vault opened or cosigned. The judge runs against this vessel's own charter head and board
+ * BEFORE any signature: a partial that reads `ready` takes the signature of every seat this vessel holds that has
+ * not signed it; one that reads `complete` (here, or after those signatures) lands on this vessel's board. Any
+ * other verdict refuses by name, and nothing signs or lands.
+ */
+export async function runNexusContractPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo }):
+  Promise<NexusContractPartialResult> {
+  const read = readNexusActPartial(opts.partial);
+  if (!read || read.act.family === "kapae" || read.act.family === "roll-anchor") {
+    throw new NexusContractError("the file reads as no admit or revoke partial");
+  }
+  const entry0 = read.act.entry;
+  const home = charterHomeOrRefuse(opts.sealHome, read.aid);
+  const roster = seatedRosterOrRefuse(home);
+  const repo = opts.repo;
+  try {
+    const { gateKey, boardUrl, handle } = await carriageBoardFor(repo, home);
+    const core: ContractCore = { nym: entry0.nym, home, roster, contract: null, gateKey, boardUrl, handle, parents: entry0.parents };
+    const reader = partialReader(read.aid, core);
+    let partial: NexusActPartial = read;
+    let judged = await judgeNexusActPartial(partial, reader);
+    if (judged.verdict === "ready") {
+      const hands = heldSeatSigners(roster, new Set(judged.signed));
+      if (hands.length === 0) throw new NexusContractError("the partial waits on a seat this vessel does not hold; carry it to the vault that holds one.");
+      try { partial = await cosignNexusActPartial(partial, reader, hands.map((h) => ({ signer: h.verifyingKey, sign: h.sign }))); }
+      catch (err) { if (err instanceof NexusPartialRefusal) throw new NexusContractError(`the partial refuses a cosign here: ${err.message}`); throw err; }
+      judged = await judgeNexusActPartial(partial, reader);
     }
-
-    handle.change((d) => writeCarriageEntry(d, entry));
-    await repo.flush();
-
-    // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
-    // separate sets and never union. A `carry` moves the carrier observation and never `memberHeld` — the
-    // structural half of the class law, reported so a caller reads which relation it actually landed.
-    const written     = carriageEntriesFromBoard(handle.doc());
-    const after       = await foldCarriageDetails(written, roster);
-    const memberHeld  = holdsCarriage(nym, after.members);
-    const carrierHeld = holdsCarrier(nym, after.carriers);
-
-    // THE BUNDLE. The admit just signed cites every causal head for the nym, so it stands as the board's one
-    // admit head for that nym; its lineage is read off the board it landed on. A head that reads otherwise
-    // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
-    let bundle: AdmitBundle | null = null;
-    let findings: readonly PresentationFinding[] = [];
-    if (opts.action === "admit") {
-      const read = await presentationFromBoardDoc(handle.doc(), nym, roster);
-      findings = read.findings;
-      const presented = read.presentation;
-      if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
-        bundle = {
-          aid: nexusAidOrRefuse(opts.sealHome), gatePubKey: nexusPubkey.toLowerCase(),
-          admit: presented.admit, lineage: presented.lineage,
-        };
+    if (judged.verdict === "ready") return { partial, verdict: judged.verdict, signed: judged.signed, landed: null };
+    if (judged.verdict !== "complete") {
+      throw new NexusContractError(`the partial reads ${judged.verdict} on this vessel${judged.why ? `: ${judged.why}` : ""}; nothing signs or lands.`);
+    }
+    const act = partial.act as Extract<NexusActPartial["act"], { family: "admit" | "revoke" }>;
+    // A seat's signature awaits custody, and the board or the charter head may move meanwhile: the act lands only
+    // where it still reads `complete` against the head and the board as they stand at the write.
+    const fresh: ContractCore = { ...core, roster: seatedRosterOrRefuse(home) };
+    // The judge itself awaits, so it runs again until the board holds still across one whole judgement: the write
+    // then follows the last judge with no await between. Board progress ends the loop, never a clock.
+    const boardMark = (): string => carriageEntriesFromBoard(fresh.handle.doc()).map(carriageEntryActCid).sort().join(",");
+    const landed = await landEntry(fresh, repo, act.family, act.entry, judged.signed, async () => {
+      for (;;) {
+        const mark = boardMark();
+        const last = await judgeNexusActPartial(partial, partialReader(read.aid, fresh));
+        if (last.verdict !== "complete") {
+          throw new NexusContractError(`the partial reads ${last.verdict} on this vessel at the write${last.why ? `: ${last.why}` : ""}; nothing lands.`);
+        }
+        if (boardMark() === mark) return;
       }
-    }
-
-    return {
-      action: opts.action, nym, parents, evidenceCid: carriageEntryActCid(entry),
-      sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
-      signers: selected.map((s) => s.verifyingKey),
-      contractIn: contract ? contract.how : "n/a",
-      boardUrl, memberHeld, carrierHeld, bundle, findings,
-    };
+    });
+    return { partial, verdict: judged.verdict, signed: judged.signed, landed };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

@@ -5,8 +5,8 @@
  * A two-seat Nexus holds its seats in two vaults, so no vault signs a quorum act whole. One seat signs, the act
  * crosses as a PARTIAL file, and the other seat cosigns. Each act keeps its OWN canonical image and its own
  * signing domain: an admit and a revoke ride the carriage entry, a kapae rides the antigen entry, and a roll
- * anchor rides the anchor. None casts into another, and none casts into an edge act. The verdicts are the edge
- * door's (`PartialVerdict`), so one vocabulary reads every partial in the house.
+ * anchor rides the anchor. None casts into another, and none casts into an edge act. The verdicts come from the
+ * edge door (`PartialVerdict`), so one vocabulary reads every partial in the house.
  *
  * ── A PARTIAL CARRIES THE WHOLE ACT, AND A SUBJECT A PERSON CAN READ ──────────────────────────────────
  * The act entire, with every signature gathered so far, the Nexus AID it lands under, and the subject in plain
@@ -29,9 +29,10 @@
  * the head roster that have not signed may add. A stale head, a missing parent, a replay or a wrong subject
  * writes no second signature.
  *
- * SPECIFIED, NEVER CALLED. No production path reaches this module, and it stays out of the package barrel. Its
- * callers stand owed: the two-vault door of `runNexusContract`, `runNexusKapae` and `runNexusRollAnchor`
- * (`packages/lararium-node/src/commands/`), which pass the file across vaults.
+ * CALLERS. The admit and revoke families ride the two-vault contract door (`runNexusContractOpen` and
+ * `runNexusContractPartial` in `packages/lararium-node/src/commands/nexus-contract.ts`), which passes the file
+ * across vaults. The kapae and roll-anchor families stand SPECIFIED: their callers, the two-vault doors of
+ * `runNexusKapae` and `runNexusRollAnchor`, stay owed.
  *
  * Pure: no I/O, no clock. Platform-blind.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands

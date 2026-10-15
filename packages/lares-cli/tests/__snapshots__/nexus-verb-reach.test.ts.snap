@@ -27,6 +27,10 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
                                             --json emits the admit BUNDLE the joinee takes by hand
   revoke <operator-pubkey>                  revoke a member (quorum-only)
+  contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the
+                                            seats held here and write the act as a PARTIAL file; nothing lands
+  contract --from <partial> [--out <file>]  judge a partial against this vessel's own charter head and board;
+                                            ready → this vessel's seats cosign; complete → it lands here
   carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
                                             VESSEL-key seal. It NEVER enters the member set; its whole grant is
                                             the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)

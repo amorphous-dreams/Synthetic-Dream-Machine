@@ -57,7 +57,7 @@ import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
-import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
+import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -128,7 +128,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
+  "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
@@ -186,9 +186,22 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const action = args["action"] as CarriageAction;
       const r = await runNexusContract({
         action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
-        ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])),
+        ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
       });
       await awaitOnRolled(deps.onRolled?.());
+      return { ...r };
+    }),
+    // THE TWO-VAULT DOOR (kapae#/edge-hands). An open signs with the seats this vessel holds and lands nothing; a
+    // partial step judges before any signature and lands only an act that reads complete here.
+    "nexus-contract-open": (args) => answer("nexus-contract-open", async () => ({
+      ...(await runNexusContractOpen({
+        action: args["action"] as CarriageAction, nym: need("nexus-contract-open", args, "nym"), sealHome, repo,
+        ...opt("contractSig", str(args["contractSig"])), ...opt("aid", str(args["aid"])),
+      })),
+    })),
+    "nexus-contract-partial": (args) => answer("nexus-contract-partial", async () => {
+      const r = await runNexusContractPartial({ partial: args["partial"], sealHome, repo });
+      if (r.landed) await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
