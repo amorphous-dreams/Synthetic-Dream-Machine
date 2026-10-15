@@ -126,8 +126,8 @@ engines the corpus-kahu lineage contains'': Nexuses choose WHEN, never WHAT.
 ''THE CADENCE THRESHOLD STANDS AS A SELF-GOVERNING LINEAGE, seated over the operator relation.'' It
 names a threshold that operators hold, never a fourth base relation beside walking, contracting and
 seating (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). The
-lineage carries its own inception, and the founding act cites that inception ONCE, seating the first
-cadence set; from there the lineage governs itself — its own per-seat pre-rotation (#/nexus-scale), and
+lineage carries its own inception, and a Nexus's joint founding cites that inception ONCE, seating the first
+cadence set. A household seed carries no cadence inception: it serves its one holder alone, and that holder's own hand bears its reboots. From there the lineage governs itself — its own per-seat pre-rotation (#/nexus-scale), and
 its own threshold-signed seat events that seat and unseat cadence holders.
 
 ''ELIGIBILITY READS AS A PRESENTATION, never a roster.'' A candidate presents a counted operator admit
@@ -151,12 +151,9 @@ hearth that declined it.
 record carries the Nexus AID it fences, the first cadence set's per-seat next-key digests and the cadence
 threshold, and takes a content address of its own. The charter's genesis carries no cadence field, so the AID
 derives from the charter alone, and an inception written after a founding moves none of that founding's bytes.
-The founding act's one citation lands as the founding writing that record beside its seed charter.
+The joint founding's one citation writes that record beside its charter.
 
-''Owed in code'': the cadence lineage stands unbuilt — no inception, no seat event, no offer verifier — and the
-Stable founding act cites no inception yet. Its caller stands named: that act (`lares vessel found --hearth`). It
-waits on who holds a cadence share at a seed (an operator question, <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>): a cadence key of its own, apart from the
-seat key (the two thresholds never reach into each other), with its own cold card at the founding.
+''Owed in code'': the cadence lineage stands unbuilt — no inception, no seat event, no offer verifier. The joint Nexus founding act owes its one citation and each holder's separate cadence key. The household seed cites none; its one holder chooses each reboot.
 
 ''Still open'', each unruled:
 
@@ -327,7 +324,7 @@ Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu take
 !! The Nexus scale ~ a kahu quorum holds admit, kapae and seal
 
 ''FOUNDING READS AS AN ACT, NEVER A FACE.'' The founding mints the Nexus's name — the genesis AID
-over the seated keys plus the threshold — and seats the first kahu quorum. The founder then holds a
+commits the signed inception image, whose seats, rule, successor commitments and joint offer fingerprint name one founding — and seats the first kahu quorum. Every seated key signs that image. The founder then holds a
 ''kahu seat in THAT Nexus'', and nothing more: no founder face and no `found` cap outlives the act.
 `vessel found` stays a rite verb every operator runs (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found">>).
 
@@ -396,8 +393,8 @@ chair whose card stays unrevealed leaves at that roll. It returns only as an add
 as its proof of possession. ''No Guardian takes part in a routine roll.''
 
 ''A KEY THE LINEAGE SEATED NEVER SEATS AGAIN, the genesis's own among them.'' A rolled epoch names its seats in its
-roll; the genesis names its seats by a key-set hash alone, so the FIRST roll reveals the genesis seats and their
-threshold, which must hash to the genesis's key-set (`roll-genesis-unrevealed`, `roll-genesis-unbound`), and no later
+roll; the genesis inception image names its seats and threshold, and every seat signs that image. The FIRST roll reveals those seats and their
+threshold again, which must hash to the genesis's key-set (`roll-genesis-unrevealed`, `roll-genesis-unbound`), and no later
 roll carries them. Every roll then refuses a key any earlier epoch seated (`roll-reuses-a-seated-key`).
 
 ''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
@@ -447,8 +444,7 @@ seat their own key (#/seed-and-nexus).
 
 ''Retired'': the shared reserve seed and the reserve-reveal verb.
 
-''Built — the re-found's seat half.'' The per-seat commitment moved charter bytes, epoch CIDs and the Nexus AID
-once, inside the re-found. The charter carries one digest per seat; the rite prints each chair's cold-key card and
+''Built — the re-found's seat half.'' The per-seat commitment and signed inception image move charter bytes, epoch CIDs and the Nexus AID. The charter carries one digest per seat; the rite prints each chair's cold-key card and
 `seal rotate` takes the cards back; the Stable founding act founds a hearth's seed charter at one seat, threshold
 one, under its card (`found-hearth.ts`). ''Owed in code'': `seal reseat` and the catastrophe rite. The field's principles for a recovery
 object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
@@ -582,6 +578,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0wTiRHc_WD1mXCjZTamL8s9kLDi1epqrSV7V0f1d0LY
+<<^ code="&#x0003;">>ni:///sha-256;9KP0B3S5JsBOtISHucP_7PKzIZ08KzCgW8fLOImLV2g
 
 <<^ code="&#x0004;" -> to="?">>

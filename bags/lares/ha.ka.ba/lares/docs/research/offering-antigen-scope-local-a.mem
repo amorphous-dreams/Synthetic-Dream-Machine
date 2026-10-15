@@ -39,7 +39,7 @@ The distinction matters because `nexusIdentity` resolves more than one kind of i
 
 !! Internal precedents and their integrity rhymes
 
-1. `packages/lararium-mesh/src/nexus-identity.ts` makes the genesis charter epoch the shared Nexus name when a charter stands. The value is derived from the founding keys and threshold, belongs to no vessel, survives later rotation as the lineage head, and is refused when the charter is torn. This is the local KERI-shaped identity precedent: the inception material names the island.
+1. `packages/lararium-mesh/src/nexus-identity.ts` makes the genesis charter epoch the shared Nexus name when a charter stands. The AID commits the signed inception image with its seats, rule, successor commitments and joint offer fingerprint; it belongs to no vessel, survives later rotation, and refuses a torn charter. This is the local KERI-shaped identity precedent: the inception material names the island.
 
 2. `packages/lararium-mesh/src/deterministic-doc.ts` derives `kapaeAntigenDocUrl(scope)` from the resolved Nexus registry URI and scope. The board is therefore an address relation, not a portable authority claim. Every holder of one charter resolves the same board; a vessel with no readable scope must not quietly materialize a private board and call it shared.
 
@@ -99,5 +99,5 @@ This ruling gives the operator the stronger isolation property without pretendin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hQuN_LJXR9E5VcRCmXI4hjoTLLROopbs_bfMdgIZB_Y
+<<^ code="&#x0003;">>ni:///sha-256;e9nvJPtLTjYoRzL8IoS3b-wZybqIv9Na6nXCRFs5yRo
 <<^ code="&#x0004;" -> to="?">>

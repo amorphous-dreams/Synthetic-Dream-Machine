@@ -38,7 +38,7 @@ offering CID           names the collection under review
 
 The signed act SHOULD therefore carry a stable `nexusScopeCid` (or equivalent name) in its canonical
 preimage. For a charter-backed Nexus, that value is the charter's content-addressed genesis identity
-(`genesisSealEpochCid` / `genesisEpochCid` in the existing identity model), not a vessel key and not a
+(`sealEpochCidOf` on the signed joint genesis), with its offer fingerprint and fresh successor commitments, not a vessel key or
 wall-clock reading. The act SHOULD retain `sealEpochCid` as a separate field. The first field answers
 //which island//; the second answers //under which charter lineage did this quorum sign//.
 
@@ -209,6 +209,6 @@ those movements silently changes which Nexus the record speaks for.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ewInCe97iXfH3VMAhZJpLj1XZdvyA2JR1R5y5qj-Ec4
+<<^ code="&#x0003;">>ni:///sha-256;5xDA2oLGF7UQZyOVMQoHacEvdsSK76JQtVww3iOJc-0
 
 <<^ code="&#x0004;" -> to="?">>

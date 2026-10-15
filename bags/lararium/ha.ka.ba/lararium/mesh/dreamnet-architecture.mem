@@ -288,7 +288,7 @@ Every bag declares its sealing posture as self-describing, tighten-only data ove
 
 !!! The name — a KERI AID
 
-The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) content-addresses the charter's genesis epoch: its seated key-set, threshold and successor commitments — ''prior art: a KERI Autonomic Identifier'', "cryptographically derived from its very first key event" (`nexus-identity.ts:4-7`, quote license). Every charter holder derives the identical value from public material; it names no vessel and survives rotation because the genesis sits at the head of the lineage rather than its end (`nexus-identity.ts:38-41`).
+The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) content-addresses the charter's genesis epoch and its signed inception image: its seated keys, rule, successor commitments and joint offer fingerprint — ''prior art: a KERI Autonomic Identifier'', "cryptographically derived from its very first key event" (`nexus-identity.ts:4-7`, quote license). Every charter holder derives the identical value from public material; it names no vessel and survives rotation because the genesis sits at the head of the lineage rather than its end (`nexus-identity.ts:38-41`).
 
 !!! The three-state gradient
 
@@ -638,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YHL1TeVLJ03K_2BC6ymRiN8jepfGE8Oy7k3v0_X9cRw
+<<^ code="&#x0003;">>ni:///sha-256;OYQCyX98bDmi96F9zvdUuPhUEXSKDrMKHRm2J3P9bd4
 
 <<^ code="&#x0004;" -> to="?">>

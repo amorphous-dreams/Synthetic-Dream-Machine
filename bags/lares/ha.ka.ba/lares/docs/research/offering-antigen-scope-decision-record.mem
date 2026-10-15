@@ -24,15 +24,15 @@ uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-recor
 
 ! Offering Antigen scope — decision record for the receiving relation
 
-!! What the code establishes today
+!! What the code establishes
 
 `OfferingKapaeEntry` signs `pluginsCid`, `action`, `actCid`, canonical `parents`, and `sealEpochCid`. The verifier requires the entry's `sealEpochCid` to equal the one `KahuRoster.sealEpochCid` supplied to the fold, checks the quorum signatures, and then folds by offering CID. The act carries no stable Nexus-scope field, and the fold receives no expected Nexus identity or board address.
 
 The deterministic Offering Antigen board is addressed from a Nexus scope. `nexusIdentity` distinguishes `charter`, `anchor`, `own`, `explicit`, and `torn`; `nexusScopeOrThrow` refuses a torn identity instead of quietly making a private fallback. Board address, signed act, roster selection, and receiver fold are therefore distinct seams in the current source.
 
-`sealEpochCid` is not a timeless label in the general charter model. `genesisSealEpochCid` names the stable charter genesis and is used as the initial epoch identity; later seal rolls create further epoch identities. The existing Offering fold accepts one roster and exact epoch equality. Its tests establish that a different epoch is ignored, but do not establish charter lineage handling for historical acts or a receiver's resolved Nexus scope.
+`sealEpochCid` names the epoch that authorizes an act; later rolls create further epoch identities. `sealEpochCidOf` on the genesis mints the stable Nexus AID from the signed inception image. The joint AID commits the seats, rule, successors and offer fingerprint. The Offering fold accepts one roster and exact epoch equality. Its tests establish that a different epoch gets ignored, but leave charter lineage handling for historical acts and a receiver's resolved Nexus scope unproved.
 
-The fold is deliberately not called by production code today. `offering-antigen.test.ts` guards that absence and the module header says READY, not enforced. The present receiver-replication E2E work is a distinct observation seam and does not settle this contract.
+The fold has no production caller. `offering-antigen.test.ts` guards that absence and the module header says READY, not enforced. The present receiver-replication E2E work is a distinct observation seam and does not settle this contract.
 
 !! Two local readings, and the unresolved distinction
 
@@ -81,7 +81,7 @@ The board and act tests should distinguish carriage from authority. A copied rec
 * **OAuth Resource Indicators (RFC 8707)** let a request name the protected resource so a token can be audience-restricted; the security rationale is that a token meant for one resource must not be reusable at another. This supports binding an authorization statement to the resource it affects. OAuth's issuer/token-service model and URI resource semantics are not the DreamNet peer or Nexus model.
 * **UCAN 1.0** separates issuer, audience, subject/resource, command, and proof chain. Delegations attenuate authority, and a cryptographically valid chain can still be semantically wrong unless the resource checks ownership at execution. UCAN revocation names a delegation by CID; revocations are immutable and monotone and can propagate through eventually consistent stores. The specification provides no universal delivery deadline; a local replica cannot infer that it has seen every revocation. UCAN also defines validity intervals, which this design must not copy as wall-clock truth.
 * **Matrix federation** signs events at their origin and requires a receiving server to validate signatures and room authorization context. Its room event/auth graphs are a mature example of a signed act carried through federation while each receiving domain still checks whether it belongs in its local room graph. It also has server names, a server/client API split, and timestamp fields; those are context-specific and not DreamNet design rules.
-* **KERI** distinguishes a persistent identifier from the key state that changes through its verifiable event log. Its inception and rotation events provide a signed lineage connecting stable identifier to evolving control keys. This rhymes with separating stable Nexus identity from the exact seal epoch that authorized one act. The repository's current `genesisSealEpochCid` is a local hash over `NEXUS_DOC_DOMAIN`, the sorted seated key set, and threshold; it is not by itself a full KERI inception/KEL.
+* **KERI** distinguishes a persistent identifier from the key state that changes through its verifiable event log. Its inception and rotation events provide a signed lineage connecting stable identifier to evolving control keys. This rhymes with separating stable Nexus identity from the exact seal epoch that authorized one act. The repository's `sealEpochCidOf` on a genesis hashes the inception image alongside the epoch fields; every seat signs that image. The joint AID commits the offer fingerprint and fresh successor commitments.
 
 !!! Inference for DreamNet
 
@@ -103,7 +103,7 @@ The receiver then compares the signed authority scope with its locally resolved 
 
 The scope field is a **subject binding**, not a capability. It does not authorize a signer, grant board access, or make a receiver adopt the verdict. Separate relations continue to govern (1) board carriage/read, (2) Kahu quorum authority, and (3) receiver-local consultation or later adoption.
 
-One local identity premise needs operator attention before naming B's value: `genesisSealEpochCid` currently hashes only the Nexus domain tag, seated keys, and threshold. If the same founding quorum and threshold intentionally define the same Nexus everywhere, that is a stable content-addressed identity. If two independently governed Nexuses may intentionally start with the same roster and threshold, that formula aliases them. In that case, `nexusScopeCid` must name a distinct, canonical charter-inception relation that also commits to the shared identity statement the operators actually agreed on; it must not be a random vessel key, board URL, mutable label, or newly invented numeric epoch. This is a model question, not something prior art decides for the operator.
+The stable scope reads the joint AID that commits the inception image. Two joint foundings with the same seats and threshold, but fresh successor commitments or distinct offer fingerprints, mint distinct AIDs. `sealEpochCid` still names the exact authorizing epoch. A board URL, vessel key, mutable label or numeric epoch supplies no stable charter scope.
 
 !! Expanded red-first matrix
 
@@ -152,6 +152,6 @@ This record prepares a decision; it does not make it. No production field, fold,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9xLR8Bw0Nwec3GUWgfGoXWLB_AbcIHH2NX8EjvnjN7s
+<<^ code="&#x0003;">>ni:///sha-256;CewAbev3S8V6vdncS4KMoOIaV-FzujS9eKdKXd18RRc
 
 <<^ code="&#x0004;" -> to="?">>

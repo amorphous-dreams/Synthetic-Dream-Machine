@@ -39,19 +39,19 @@ The ruling gives the two words distinct jobs. This carrier measures how far the 
 
 <<~ ahu #/one-value-two-words>>
 
-!! The structural fact ~ both words presently name ONE value
+!! The structural fact ~ both words name ONE value
 
-`genesisSealEpochCid(seatedKeys, threshold)` returns `epoch0-<sha256(canonicalJson({kind: NEXUS_DOC_DOMAIN, keys, threshold}))>` (`nexus-seal-seed.ts:164-166`). That one string serves twice:
+`sealEpochCidOf` on a genesis returns a `nexus-` AID over its authority fields and inception-image digest (`wax-stamp.ts`). The image names every seat, rule, successor commitment and a joint founding's offer fingerprint; every seat signs it. One roster and rule can found distinct AIDs. That one AID serves twice:
 
-* as the ''Nexus island scope'' — `nexus-identity.ts:70` pins its shape (`/^epoch0-[0-9a-f]{64}$/`) and `:113-118` returns it as the scope every shared plane addresses under;
-* as the ''realm id'' — `realmIdOfCharter()` returns `doc.sealLineage?.[0]?.epochCid` (`realm-bag.ts:82-87`), the same string, which `realmDocUrl()` seeds the realm doc from (`:88-90`).
+* as the ''Nexus island scope'' — `nexus-identity.ts` pins its `nexus-` shape and returns it as the scope every shared plane addresses under;
+* as the ''realm id'' — `realmIdOfCharter()` reads the charter genesis AID, which `realmDocUrl()` uses to seed the realm doc.
 
 So the two ''PLANES'' already stand correctly separated: the public boards derive off `nexusRegistryUri`/`nexusHandlesUri`/`CROSSROADS_DOC_URI`, the private realm doc off `REALM_DOC_URI`. Only the ''WORDS'' cross-cut. That reads as good news for the ruling: it asks for a vocabulary sweep over an architecture that already sorts.
 
 !!! And a sharper hazard sits beside it ~ `realm` names TWO id spaces
 
 * `realmDocIdHex` — a 64-hex Keyhive sentinel DocId (`cabal-realm.ts:56`), matched by `/^[0-9a-f]{64}$/` at `cabal-realm-verbs.ts:42` and `lares-cli/src/commands/cabal.ts:62`.
-* `realmId` — an `epoch0-<64hex>` seal genesis cid (`realm-bag.ts:60-88`), matched by a different regex at `nexus-identity.ts:70`.
+* `realmId` — a `nexus-<64hex>` seal genesis AID, matched by `NEXUS_AID_PATTERN` in `nexus-identity.ts`.
 
 Different shapes, one word, adjacent files. This reads as a latent ''correctness'' seam rather than a naming one, and an unblur pass MUST resolve it before touching vocabulary.
 
@@ -190,7 +190,7 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 # ''RECONCILE FIVE NON-IDENTICAL DECOMPOSITIONS'' into one, citing the sorting test: `cabal-realm.mem:29` (place / vessel / realm) · the three-plane ruling · `dreamnet-architecture.mem:11` (INFRA·FLOW ⊥ SOCIAL·WHO — the word `realm` appears zero times in that file) · `first-realm-arc.mem:74-85` (cabal-realm / nexus / kahu cabal) · `dreamnet-architecture.mem:138` (a Nexus as a CONFORMANCE-VECTOR SET — a fourth sense). `first-realm-arc.mem:72` states the axiom the ruling now overrides: "A realm and a Nexus name different things, and neither contains the other." Name precisely WHICH joint remains open: `cabal-realm.mem:165` holds that the split runs through STORAGE and not through AUTHORITY.
 # ''FIX THE VERBATIM-PARALLEL PROSE'' — one law, two nouns, identical sentence: `cabal-realm.mem:183` ("two sealed REALMS interoperate only at the content-address floor") beside `nexus-topology.mem:169` ("two NEXUSES interoperate only at the content-address floor"). The blur in its purest form.
 # ''DISAMBIGUATE THE TWO `realm` ID SPACES'' in prose and type names (#/one-value-two-words) — a correctness seam wearing a naming coat.
-# ''RENAME THE `nexusPubkey` PARAMETER'' at `deterministic-doc.ts:32,37,48,60,71,83,95` · `lar-uris.ts:414,429` · `federation-gate.ts:81-87`. It names no pubkey: the 2026-09-13 cure resolves it through `nexusIdentity`, so it carries a genesis epoch cid whenever a charter stands. A parameter name only; nothing hashes it.
+# ''RENAME THE `nexusPubkey` PARAMETER'' at `deterministic-doc.ts:32,37,48,60,71,83,95` · `lar-uris.ts:414,429` · `federation-gate.ts:81-87`. It names no pubkey: the 2026-09-13 cure resolves it through `nexusIdentity`, so it carries the joint AID that commits the signed inception image whenever a charter stands. A parameter name only; nothing hashes it.
 
 !!! Move second ~ surfaces, still no keys
 
@@ -209,6 +209,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U-LuXjRCMj7wMMoeYkp0fTN0FopIDUeDm8RifoISEjU
+<<^ code="&#x0003;">>ni:///sha-256;M2c7RmJtPvTT3_2u2Texg-kdV1eixGl604wxnhP0N0I
 
 <<^ code="&#x0004;" -> to="?">>

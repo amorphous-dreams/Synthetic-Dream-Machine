@@ -113,7 +113,7 @@ HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 
 !! 5 · Found the first node
 
-One act founds the hearth, before `up`: `found --hearth`. Under ONE human route, typed on the attached terminal (a passphrase, a paper pin, or both), it mints the custody (the vessel key, the serving key and the custody root), the place, and persona zero with its private label and a claim on one chair. It then mints that chair's own seat key, prints the chair's NEXT key as a cold-key card, and asks the card back before the charter moves. Only then does it write the PRIVATE seed charter (one seat, threshold one, the card's digest committed) and persona zero's face, which binds the charter's Nexus AID: the device edge, the dyad scope and the face's cabal sentinel all name that AID. No keyring rides the act. A run that stops anywhere runs again and completes; a card that never reads back writes no charter and no face (`CardReadBackRefused`). `--name` carries persona zero's private label; `--chair` labels the chair privately.
+One act founds the hearth, before `up`: `found --hearth`. Under ONE human route, typed on the attached terminal (a passphrase, a paper pin, or both), it mints the custody (the vessel key, the serving key and the custody root), the place, and persona zero with its private label and a claim on one chair. It then mints that chair's own seat key, prints the chair's NEXT key as a cold-key card, and asks the card back before the charter moves. Only then does its one seat sign the inception image through the custody door's `seal.incept`, and the act writes the PRIVATE seed charter (one seat, threshold one, the card's digest committed) and persona zero's face, which binds the charter's Nexus AID: the device edge, the dyad scope and the face's cabal sentinel all name that AID. No keyring rides the act. A run that stops anywhere runs again and completes; a card that never reads back writes no charter and no face (`CardReadBackRefused`). `--name` carries persona zero's private label; `--chair` labels the chair privately.
 
 ''The card.'' It prints 64 hex characters and a checksum in groups of four, with its purpose, the chair's label, its generation and a short charter fingerprint. Write it onto paper, then type it back; three readings that never match refuse. No copy rests on the node, and the act's answer carries the card's digest and confirm phrase alone. A live card prints on a terminal and never into `--json`, a redirect or a log; on a marked scratch root alone the read-back stands in, and the JSON answer carries the staged card's code for the harness.
 
@@ -233,9 +233,9 @@ The first operator starts with a browser leaf; a tablet or phone forms a separat
 
 !! 9 · The second operator founds a seed, then both found the Nexus
 
-The second operator founds a separate SEED on their own machine (steps 2, 5 and 6), with their own state, persona, custody, seat and device keys. The Nexus founding ceremony runs in five steps: (1) each founder mints a seat key for the new Nexus in their own vault and its cold next key on paper; (2) the two exchange seat public keys and cold digests as files; (3) each reads the other's seat fingerprint aloud, in person; (4) both compose the same fresh genesis at two of two and compare its Nexus AID; (5) each signs a carriage contract and both seats countersign it.
+The second operator founds a separate SEED on their own machine (steps 2, 5 and 6), with their own state, persona, custody, seat and device keys. The Nexus founding ceremony runs in five steps: (1) each founder mints a seat key for the new Nexus in their own vault and its cold next key on paper; (2) the two exchange seat public keys and cold digests as files; (3) each reads the other's seat fingerprint aloud, in person; (4) both compose one fresh inception image at two of two, compare its Nexus AID, and each signs that image through their custody door's `seal.incept` after their cards read back; (5) each signs a carriage contract and both seats countersign it.
 
-▢ ''OWED — the Nexus founding act.'' The CLI lacks a verb to mint and exchange independent seat keys, verify the in-person fingerprints, compose a fresh two-seat genesis, and countersign founder carriage contracts.
+▢ ''OWED — the Nexus founding act.'' Pure offer, join and signed-inception images stand. The CLI still owes cofound open, join and seal verbs across two vaults, the live joint signing ceremony, and both founders' countersigned carriage contracts.
 
 !!! Carriage into one household's seed (built)
 
@@ -355,6 +355,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6GG7IXqxXK1VpJImDI6bpByr68XDMOimZAPy6vgQQ-Q
+<<^ code="&#x0003;">>ni:///sha-256;qCTAWlD21OwZ8c67Brw9ofI6i4UkqKv0tLZCtqf9b9M
 
 <<^ code="&#x0004;" -> to="?">>
