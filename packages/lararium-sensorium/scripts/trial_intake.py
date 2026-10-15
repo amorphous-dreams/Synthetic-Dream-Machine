@@ -140,8 +140,13 @@ def _load_frozen(receipt_path: Path, source_host: str) -> tuple[dict, bytes, str
     receipt_path = receipt_path.resolve()
     with receipt_path.open(encoding="utf-8") as handle:
         freeze = json.load(handle)
-    if freeze.get("schema") != "lararium.sensorium.trial-freeze.claude.v1":
+    schema = freeze.get("schema")
+    fixture = schema == "lararium.sensorium.trial-freeze.claude-fixture.v1"
+    if schema not in ("lararium.sensorium.trial-freeze.claude.v1",
+                      "lararium.sensorium.trial-freeze.claude-fixture.v1"):
         raise ValueError("unsupported freeze receipt")
+    if fixture and not source_host.startswith("fixture-"):
+        raise ValueError("repository fixture requires a fixture- source host namespace")
     if freeze.get("handoff_schema") is not None:
         if (freeze["handoff_schema"] != "lararium.sensorium.trial-handoff.v1"
                 or freeze.get("source_host") != source_host):
@@ -189,30 +194,41 @@ def _load_frozen(receipt_path: Path, source_host: str) -> tuple[dict, bytes, str
         raise ValueError("frozen row counts or producer IDs disagree with receipt")
     session = next(iter(sessions))
     agent = next(iter(agents), None)
-    native = Path(freeze["native_source"])
+    native = Path(freeze["fixture_source"] if fixture else freeze["native_source"])
+    if fixture and (native.is_absolute() or ".." in native.parts or not freeze.get("fixture_id")):
+        raise ValueError("fixture source must have a relative locator and fixture id")
     if agent:
         if native.stem != f"agent-{agent}" or native.parent.name != "subagents" or native.parent.parent.name != session:
             raise ValueError("sub-agent producer IDs disagree with native locator")
-        native_root = native.parents[3]
+        native_root = receipt_path.parent if fixture else native.parents[3]
     elif native.stem != session:
         raise ValueError("main producer ID disagrees with native locator")
     else:
-        native_root = native.parents[1]
+        native_root = receipt_path.parent if fixture else native.parents[1]
     source_key = f"claude:{source_host}:{session}" + (f".{agent}" if agent else "")
     # Stage paths never enter retry identity. Native location remains provenance;
     # producer IDs, bytes, event window and source generation decide intent reuse.
     identity_manifest = {
         "source_key": source_key, "source_host": source_host,
         "revision_sha256": digest, "evidence_bytes": len(raw),
-        "window": window, "native_size": freeze["native_size"],
-        "native_mtime_ns": freeze["native_mtime_ns"],
+        "window": window,
         "rows_by_type": counts, "rows_without_event_time": freeze["rows_without_event_time"],
         "invalid_json": freeze["invalid_json"], "scope": freeze["scope"],
     }
+    if fixture:
+        identity_manifest.update({"provenance_kind": "repository-fixture",
+                                  "fixture_id": freeze["fixture_id"],
+                                  "fixture_source": native.as_posix()})
+    else:
+        identity_manifest.update({"native_size": freeze["native_size"],
+                                  "native_mtime_ns": freeze["native_mtime_ns"]})
     manifest_sha = hashlib.sha256(_canonical(identity_manifest).encode()).hexdigest()
-    source_manifest = {**identity_manifest, "native_locator": str(native),
-                       "native_root": str(native_root),
-                       "frozen_evidence": str(evidence), "freeze_receipt": str(receipt_path)}
+    source_manifest = {**identity_manifest, "frozen_evidence": str(evidence),
+                       "freeze_receipt": str(receipt_path)}
+    if fixture:
+        source_manifest["fixture_root"] = str(native_root)
+    else:
+        source_manifest.update({"native_locator": str(native), "native_root": str(native_root)})
     return source_manifest, raw, source_key, session, agent, digest, manifest_sha
 
 
@@ -225,7 +241,7 @@ def intake_frozen(state_root: Path | str, receipt_path: Path | str, intent_id: s
     state_root = Path(state_root).resolve()
     receipt_path = Path(receipt_path).resolve()
     manifest, raw, source_key, session, agent, digest, manifest_sha = _load_frozen(receipt_path, source_host)
-    native_root = Path(manifest["native_root"]).resolve()
+    native_root = Path(manifest.get("native_root", manifest.get("fixture_root"))).resolve()
     repo_root = Path(__file__).resolve().parents[3]
     if state_root.is_relative_to(native_root) or state_root.is_relative_to(repo_root):
         raise ValueError("trial state must stay outside native history and repository")

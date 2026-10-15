@@ -16,7 +16,7 @@ def stage_frozen(receipt_path: Path, handoff_root: Path, *, source_host: str) ->
     receipt_path = receipt_path.resolve()
     handoff_root = handoff_root.resolve()
     source_manifest, raw, source_key, _, _, digest, _ = _load_frozen(receipt_path, source_host)
-    native_root = Path(source_manifest["native_root"]).resolve()
+    native_root = Path(source_manifest.get("native_root", source_manifest.get("fixture_root"))).resolve()
     repo_root = Path(__file__).resolve().parents[3]
     if (handoff_root.is_relative_to(native_root) or handoff_root.is_relative_to(repo_root)
             or handoff_root.is_relative_to(receipt_path.parent)
