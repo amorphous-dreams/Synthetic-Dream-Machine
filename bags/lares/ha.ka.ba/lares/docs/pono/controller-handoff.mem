@@ -89,7 +89,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 
 !! State ~ the controller trues this section at every handoff
 
-''As of 2026-10-15.'' The road lands on `main` by one merge commit from `feature/lararium-node-5`, and the next span runs on `feature/green-jello-dinosaur-5` as cloud sessions; this carrier, the roadmap and git hold every state a session needs.
+''As of 2026-10-15.'' The road landed on `main` by one merge commit (pull request #39), and the branch `feature/green-jello-dinosaur-5`, cut from that merge, carries the span to a persistent Lararium on two machines, the first Nexus of the DreamNet, as cloud sessions; this carrier, the roadmap and git hold every state a session needs. The first two lanes: train W's live admit and socket cutover, and train N's remaining doors and witness.
 
 * ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8.
 * ''Train N'': the seal record's shape stands closed (every genesis carries its signed inception, the Nexus AID commits it, seal records name a predecessor set); two operators found one Nexus across two vaults with `lares nexus seal cofound open|join|seal`; two vaults admit and revoke through one judged partial. Owed: the kapae and roll-anchor two-vault doors, the two-root witness, rolls with fresh successors and chairs, the Offering act's scope field (roadmap `#/the-trains`, N).
@@ -118,6 +118,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-aeFud6F3IFa5sZOIPo8gl1Ans6cd1QuXd-dfk0gLHM
+<<^ code="&#x0003;">>ni:///sha-256;uXLNPk71SIAdaYjmvCMkgAzDu0DzmP8mpOq85MFlpRc
 
 <<^ code="&#x0004;" -> to="?">>
