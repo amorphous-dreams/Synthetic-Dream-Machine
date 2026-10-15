@@ -102,8 +102,9 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    write door instead (`CompositeStore`: a save, a delete, the delete `lares shore remove`
    makes, a write into a named bag), and that door reads the target layer's marker before
    anything lands: a write into a retired bag refuses by the same name, lands nothing, and the
-   island holds the hand owed on its alert rail. A write that names only the bag's own
-   residency ledger passes, so the record that retires the bag lands. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
+   island holds the hand owed on its alert rail. A write that only adds new live effect records naming that
+   bag to its own residency ledger passes, so the record that retires the bag lands; no tombstone,
+   removal, overwrite or write of the marker's own title passes. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
    row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
    recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
 
@@ -139,6 +140,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iNcgIPBznUcm_2ZBUorFReVY0xGqVCJnvevrfJGeetA
+<<^ code="&#x0003;">>ni:///sha-256;kp9Xm41YRDzZInHQl7D-ROZG001QDZQdnki9YXdgC7A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -388,7 +388,7 @@ export async function custodyStatus(args: { readonly io: CustodyIo; readonly hom
     const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
     const fault = underKey
       ? reading !== "sealed"
-      : reading === "sealed" || reading === "torn" || (e.holds !== null && bytes !== null && !e.holds(e.file, bytes));
+      : (reading !== "bare" && reading !== "absent") || (e.holds !== null && bytes !== null && !e.holds(e.file, bytes));
     rows.push({ row: e.row, name: e.name, home: e.home, file: e.file, custody: e.custody, keyClass: e.keyClass, reading, bare: e.bare, fault });
   }
   return { tree, rows, outside: outsideTheTable(args.homes) };

@@ -16,7 +16,8 @@
 
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider } from "@lararium/keyhive";
-import { KeyhiveIdentitySlot } from "@lararium/keyhive/keyhive-identity-slot";
+// The slot stands out of the package barrel and its export map (specified in code), so its tests read its source.
+import { KeyhiveIdentitySlot } from "../../lararium-keyhive/src/keyhive-identity-slot.js";
 
 const memStore = () => ({ put: async () => {}, list: async () => [] });
 const BAG = "lar:///ha.ka.ba/bags/test/keyhive-identity-slot";

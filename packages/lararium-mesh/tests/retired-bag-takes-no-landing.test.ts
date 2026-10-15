@@ -121,6 +121,20 @@ describe("★ a retired bag takes no landing through the composite ★", () => {
       expect(isVerbRefusal(err) && (err as { reason: string }).reason).toBe("bag-retired");
     }
     expect((await store.get(audit))?.tiddler["text"]).toBe("audit");
+    // A new ledger-shaped title carrying no effect record of this bag takes no landing either.
+    const plain = effectRecordUri(BAG, "evt-plain");
+    const foreign = buildEffectRecordTiddler({
+      eventId: "evt-foreign", archivalVerb: "disposition", actionVerb: "DROP", requestId: "req-f",
+      bag: OTHER, actor: "did:test", timestamp: "0", disposition: "bag-retired",
+    });
+    for (const write of [
+      composite.put(rec(plain, "ordinary words"), origin, { bag: BAG }),
+      composite.put({ ...foreign, tiddler: { ...foreign.tiddler, title: effectRecordUri(BAG, "evt-foreign") } }, origin, { bag: BAG }),
+    ]) {
+      const err = await refusal(write);
+      expect(isVerbRefusal(err) && (err as { reason: string }).reason).toBe("bag-retired");
+    }
+    expect(await store.get(plain)).toBeNull();
     expect(await store.get(`${BAG}/ledger/residency/fake/content`)).toBeNull();
     expect(await store.get("lar:///t/plain")).toBeNull();
   });

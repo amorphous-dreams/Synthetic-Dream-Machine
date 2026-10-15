@@ -287,6 +287,14 @@ describe("custodyStatus", () => {
     const control = await custodyStatus({ io, homes });
     expect(control.rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "bare", custody: "floor", fault: false });
   });
+  test("RED (sweep): a floor row whose file holds any seal reading — another house seal, a LARK frame — reads as a fault", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const file = join(homes.identity, ".vessel-key.json");
+    writeFileSync(file, new TextEncoder().encode("lares-xy-seal\u0001"), { mode: 0o600 });
+    expect((await custodyStatus({ io, homes })).rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "unopenable", fault: true });
+    writeFileSync(file, Uint8Array.from([0x4c, 0x41, 0x52, 0x4b, 1, 1, ...new Array(60).fill(7)]), { mode: 0o600 });
+    expect((await custodyStatus({ io, homes })).rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "old-shape", fault: true });
+  });
   test("an unfounded home reads the tree absent", async () => {
     expect((await custodyStatus({ io, homes })).tree).toEqual({ reading: "absent" });
   });
