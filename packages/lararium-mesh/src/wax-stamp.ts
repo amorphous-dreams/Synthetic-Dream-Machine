@@ -10,9 +10,9 @@
  * carries a ROLL signed by the revealed quorum, the seated quorum, and each added seat. It lists
  * KEYS/THRESHOLDS, never a roster. A stamp attests a PAST ("sealed under epoch N"), never present standing.
  *
- * A KEY A CHARTER SEATED NEVER RETURNS. A rolled epoch names its seats in its roll; the genesis names its own by
- * a hash alone, so the FIRST roll reveals the genesis seats (`SealRoll.genesis`), which must hash to the
- * genesis's key-set. Every later roll then reads every key the lineage ever seated, the genesis's among them.
+ * A KEY A CHARTER SEATED NEVER RETURNS. A rolled epoch names its seats in its roll, and the genesis names its own
+ * in its inception image; the FIRST roll reveals the genesis seats again (`SealRoll.genesis`), which must hash to
+ * the genesis's key-set. Every later roll then reads every key the lineage ever seated, the genesis's among them.
  *
  * The honest wall, kept lit: "valid trace to lineage L" is a HARD crypto fact (decided here); "L is the
  * legitimate org" is HIGHER-ORDER social acceptance (NOT decided here — a fork yields two internally-valid
