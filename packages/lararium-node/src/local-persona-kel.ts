@@ -66,7 +66,7 @@ export async function seatLocalPersonaKelChain(repo: Repo, events: readonly Pers
 /**
  * L11 — a persona KEL's CURRENT head op-key (the KEL's structure and rotation quorums verified) and that head
  * event's own sequence, off ONE board materialize, so the two can never straddle a sync. Both read null where the
- * prefix is unknown or unsynced (fail-closed). The `persona-kel-head` store door answers through it.
+ * prefix reads unknown or unsynced (fail-closed). The `persona-kel-head` store door answers through it.
  */
 export async function makeLocalPersonaKelHeadAndSeqResolver(
   repo: Repo,

@@ -16,9 +16,9 @@
  *            secret and the face's record, and founds onto its place through the admit it carried.
  *
  * THE ROOT HOLDS NO LEDGER. Each answer reads its request against the scopes that stand when the operator runs
- * it, so an answer is an operator's act over a file the operator carried; nothing here answers a request by
- * itself. A joined vessel holds no root bytes and no private face key: the address secret is the one secret that
- * crosses, sealed to a key the request named.
+ * it, so an answer stands as an operator's act over a file the operator carried; nothing here answers a request by
+ * itself. A joined vessel holds no root bytes and no private face key: the address secret alone crosses, sealed
+ * to a key the request named.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
@@ -75,7 +75,7 @@ function bootstrapPersonaGroup(): string {
 /** The PersonaGroup root's verifying key, where this vessel holds the root. */
 async function heldRootKey(): Promise<string> {
   const key = (await loadPersonaGroupRootVerifyingKey(FACE))?.toLowerCase().replace(/^0x/, "");
-  if (!key) throw new FleetJoinRefused("root-absent", "this vessel holds no PersonaGroup root; a fleet join is answered from the vessel that holds it.");
+  if (!key) throw new FleetJoinRefused("root-absent", "this vessel holds no PersonaGroup root; the vessel that holds it answers a fleet join.");
   return key;
 }
 

@@ -8,13 +8,13 @@
  *            answer seals to. The request goes back by the same hands.
  *   LAND     read the answer under the root key the KEPT offer named, land the face's address secret and the
  *            face's record, and hand back the admit the answer carried. The caller boots the vessel on it, as the
- *            admit door always has; the gate pin and the canon list rode INSIDE the root's signature.
+ *            admit door does; the gate pin and the canon list ride INSIDE the root's signature.
  *   SETTLE   once that boot stands, the landed join leaves. Until then the same answer lands again, so a boot
  *            that never came up retries from the same paste.
  *
  * The request composes through the one composer the node's door uses (`composeFleetJoinRequest`), and the admit
  * reads through the one reader (`carriedAdmitOfFleetJoin`), so a browser and a node spell one join alike. This
- * browser receives no root bytes and no private face key: its face-scoped keys are born here and stay here.
+ * browser receives no root bytes and no private face key: it mints its own face-scoped keys and keeps them here.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
@@ -206,7 +206,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
           stillPending.onsuccess = () => {
             const p = stillPending.result as PendingJoin | undefined;
             if (p?.request?.nonce !== request.nonce || p.request.sealKey !== request.sealKey) {
-              refuse(new BrowserFleetJoinRefused("join-absent", "the join this answer lands no longer stands pending here.")); return;
+              refuse(new BrowserFleetJoinRefused("join-absent", "no join pending here matches the request this answer lands.")); return;
             }
             os.put(Uint8Array.from(addressSecret), secretRow);
             os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);

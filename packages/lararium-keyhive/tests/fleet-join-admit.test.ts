@@ -32,7 +32,7 @@ describe("the admit a fleet-join answer carries", () => {
     expect("hearthIslandKind" in admit || "hearthIslandScope" in admit).toBe(false);
   });
 
-  test("an edge that is no device admit, an edge of another face, or an unknown island kind refuses by name", () => {
+  test("an edge reading as no device admit, an edge of another face, or an unknown island kind refuses by name", () => {
     expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "other" } }))).toEqual({ refusal: "edge-malformed" });
     expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "device-admit/v1", personaGroupId: "0x00" } }))).toEqual({ refusal: "edge-other-face" });
     expect(carriedAdmitOfFleetJoin(answer({ reach: { syncUrl: null, islandKind: "torn", islandScope: null } }))).toEqual({ refusal: "reach-malformed" });

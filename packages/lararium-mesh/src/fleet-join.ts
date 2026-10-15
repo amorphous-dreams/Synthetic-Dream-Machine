@@ -17,7 +17,7 @@
  *
  * The invariants:
  *   · A JOINED VESSEL RECEIVES NO ROOT BYTES AND NO PRIVATE FACE KEY. It mints its own face-scoped keys; the
- *     only secret that crosses is the face's address secret, sealed to a key the request named.
+ *     face's address secret alone crosses, sealed to a key the request named.
  *   · ONE NONCE BINDS THE THREE FILES, AT THE JOINING VESSEL. Its request answers the offer it kept, and it lands
  *     only the answer to the request it kept: a stale or a foreign file refuses there by name. The root keeps no
  *     ledger of the nonces it offered, so it may answer an old request again; that answer opens nothing without
@@ -66,12 +66,12 @@ export const FLEET_JOIN_REFUSALS = [
   "answer-malformed",
   "answer-other-request",      // the answer names another nonce, vessel key or PersonaGroup than the request
   "answer-unsigned",           // the PersonaGroup root's signature over the answer refuses
-  "answer-root-reused",        // the root key is the joinee's vessel key, one of its face-scoped keys, or a face key
+  "answer-root-reused",        // the root key equals the joinee's vessel key, one of its face-scoped keys, or a face key
   "certificate-refused",       // a certificate refuses, or certifies no key the request asked for
   "certificate-missing",       // a requested scope carries no certificate
   "grant-refused",             // a grant refuses under the root, or names a scope no certificate carries
   "grant-missing",             // a certified scope carries no grant
-  "seal-secret-other",         // the seal secret the caller holds is not the one behind the request's seal key
+  "seal-secret-other",         // the seal secret the caller holds differs from the one behind the request's seal key
   "secret-unopened",           // the sealed address secret opens to nothing under the request's key
 ] as const;
 export type FleetJoinRefusalName = (typeof FLEET_JOIN_REFUSALS)[number];
@@ -187,7 +187,7 @@ function isSealKey(v: unknown): v is string {
   try { x25519.getSharedSecret(SEAL_PROBE, hexToBytes(v)); return true; } catch { return false; }
 }
 
-/** A deep-frozen copy of a value through canonical JSON, or undefined past the bound: the bytes digested are the
+/** A deep-frozen copy of a value through canonical JSON, or undefined past the bound: the bytes digested match the
  *  bytes handed on, whatever accessor or `toJSON` the carried value wore. */
 function snapshot(v: unknown, bound: number): unknown {
   const text = canonicalJson(v);
@@ -364,7 +364,7 @@ function readReach(value: unknown): FleetJoinReach | null {
  * requested for it, and every certified scope one grant under the root.
  *
  * `rootKey` and `personaGroup` MUST come from outside the answer: the offer the joinee kept, or the operator's own
- * word. The answer authenticates under the key it is read with, and binds nothing to it.
+ * word. The answer authenticates under the key that reads it, and binds nothing to it.
  * The root key, the vessel key and every face-scoped and face key stand apart from one another here whatever
  * `apart` names.
  */

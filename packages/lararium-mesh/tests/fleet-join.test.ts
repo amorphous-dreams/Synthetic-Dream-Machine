@@ -134,7 +134,7 @@ describe("the fleet-join door's files", () => {
     return { ...a, signature: await signHex(fleetJoinAnswerImage(a), by) };
   };
 
-  test("KEYS STAND APART ACROSS SCOPES: a face-scoped key at one Nexus that is the face key at another, or repeats, refuses", async () => {
+  test("KEYS STAND APART ACROSS SCOPES: a face-scoped key at one Nexus that serves as the face key at another, or repeats, refuses", async () => {
     const w = await world();
     const crossed = await signRequest(w, { ...body(w), requests: [await asking(w.a.scope, w.b.face), w.b.request] });
     expect(readFleetJoinRequest(crossed, w.offer)).toEqual({ refusal: "request-key-reused" });
@@ -179,7 +179,7 @@ describe("the fleet-join door's files", () => {
     expect(read(w, await resigned(w, {}, w.a.face), w.a.face.key)).toEqual({ refusal: "answer-root-reused" });
   });
 
-  test("THE SECRET IS BOUND TO THE NONCE AND THE VESSEL: one sealed for another request refuses though the root signed it", async () => {
+  test("THE SECRET BINDS TO THE NONCE AND THE VESSEL: one sealed for another request refuses though the root signed it", async () => {
     const w = await world();
     const otherNonce = sealAddressSecret({ secret: SECRET, request: { ...w.request, nonce: "ef".repeat(32) } });
     expect(read(w, await resigned(w, { secret: otherNonce }))).toEqual({ refusal: "secret-unopened" });
@@ -212,7 +212,7 @@ describe("the fleet-join door's files", () => {
     expect(readFaceKeyGrant(ga, w.root.key)).toEqual(ga);
   });
 
-  test("THE EDGE HANDED ON IS THE EDGE DIGESTED: a frozen canonical copy, and an oversized edge refuses", async () => {
+  test("THE EDGE HANDED ON MATCHES THE EDGE DIGESTED: a frozen canonical copy, and an oversized edge refuses", async () => {
     const w = await world();
     let reads = 0;
     const shifting = { kind: "device-admit/v1", get deviceEdge() { reads += 1; return reads === 1 ? "synthetic" : "swapped"; } };

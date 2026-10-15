@@ -64,8 +64,8 @@ import { larSealHome } from "./vessel-paths.js";
 export interface SealedActContext {
   /**
    * One read of a persona KEL's head off the local board: its operating key and its sequence, both null when the
-   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor). No act reads it since
-   * the persona admission retired (`lares fleet join` took its place); it leaves with the context's next cut.
+   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor). No act reads it:
+   * `lares fleet join` carries a persona's admission.
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
   /**

@@ -114,7 +114,7 @@ describe("the relation class — a secret only the other party re-issues", () =>
     } finally { v.drop(); }
   });
 
-  test("every relation row in the table is exactly the six", () => {
+  test("the table names exactly the six relation rows", () => {
     expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(RELATION_ROWS);
   });
 });

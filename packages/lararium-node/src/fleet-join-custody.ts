@@ -11,7 +11,7 @@
  *                        answer seals to. One join stands pending at a time; the landing removes it.
  *   face-join-record     HOT. What a joined vessel keeps of its answer, one row per face: the PersonaGroup, its
  *                        root key, the certificates over this vessel's face-scoped keys and the root's grants. A
- *                        session's face reads them (`session-face`); the grants are the face's private record.
+ *                        session's face reads them (`session-face`); the grants form the face's private record.
  *
  * ── A STORE NEVER LANDS OVER ANOTHER SECRET ─────────────────────────────────────────────────────
  * Each write reads, decides and writes under one custody holder: nothing standing takes the bytes, the same bytes

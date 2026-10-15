@@ -12,7 +12,7 @@
  *   lares fleet join abandon                                 on the joining place: the pending join leaves
  *
  * THREE FILES BY COURIER, and the order carries the property: the joining vessel mints first, so its private keys
- * are born on it and stay there, and the one secret that crosses (the address secret) crosses sealed to a key its
+ * mint on it and stay there, and the one secret that crosses (the address secret) crosses sealed to a key its
  * request named. The joinee reads the answer under the root key its kept offer named, so the courier carries that
  * key before the answer exists.
  *

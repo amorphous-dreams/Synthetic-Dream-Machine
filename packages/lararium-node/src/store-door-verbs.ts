@@ -369,7 +369,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
     // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two
-    // reads. `seq` is ADVISORY-ONLY end to end: omitted when the resolver found none, a hint and never a verdict.
+    // reads. `seq` reads ADVISORY-ONLY end to end: omitted when the resolver found none, a hint and never a verdict.
     "persona-kel-head": (args) => answer("persona-kel-head", async () => {
       const prefix = need("persona-kel-head", args, "prefix");
       const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);

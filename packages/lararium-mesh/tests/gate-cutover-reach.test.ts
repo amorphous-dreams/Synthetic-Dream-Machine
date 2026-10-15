@@ -1,10 +1,10 @@
 /**
- * Source inventory until the W built-image negative probe can exercise every live dial.
+ * Source inventory alone: exercising every live dial falls to the W built-image negative probe.
  *
  * The inventory derives from the tree, never from a list: every non-test source under each package's `src`
  * that names one of the old wire's five symbols in code, its comments and string bodies stripped. A
  * symbol's own declaration counts as no site; every call, construction, import, re-export and type use
- * does, so a gate retired by a type alias or a barrel line still reads red.
+ * does, so a gate hidden behind a type alias or a barrel line still reads red.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -81,7 +81,7 @@ describe("W cutover reach", () => {
     expect(sitesIn("x.ts", "const runPeerHandshakeLater = 1; mkLarChallengeX();")).toEqual([]);
   });
 
-  test("CONTROL: the inventory reads the tree and names today's old-wire reach by every symbol", () => {
+  test("CONTROL: the inventory reads the tree and names the old-wire reach the tree holds, by every symbol", () => {
     const files = productionSources();
     expect(files.length).toBeGreaterThan(300);
     expect(files.some((file) => /tests\//.test(file))).toBe(false);

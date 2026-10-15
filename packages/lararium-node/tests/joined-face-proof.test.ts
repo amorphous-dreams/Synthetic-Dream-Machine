@@ -5,7 +5,7 @@
  * the mesh's own session table, as the dial will.
  *
  *   J1  the face's join record and this vessel's custody row open a live session whose signer's certificate
- *       names the custody row's key, and that certificate verifies under it; the face's planes are the planes
+ *       names the custody row's key, and that certificate verifies under it; the face's planes match the planes
  *       the founding seeded under the group's `0x` id
  *   J2  a record carrying a sibling vessel's certificate (same face, same Nexus) opens nothing: the custody row
  *       names another key, so `chain-other-vessel`, and the table stays empty

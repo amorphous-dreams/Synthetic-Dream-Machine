@@ -677,7 +677,7 @@ export interface JoineeOptions {
 
 /** Where the fleet-join door's three files rest under B's root. */
 export interface FleetJoinFiles { readonly offer: string; readonly request: string; readonly answer: string }
-/** The device edge B's join carried: the signed edge inside the fleet-join answer, or the one the old admit file named. */
+/** The device edge B's join carried: the signed edge inside the fleet-join answer, or the one B's `admit.json` named. */
 export function joinedDeviceEdge(pair: Pick<StagedJoinee, "fleet" | "rootB">): unknown {
   if (pair.fleet) return (JSON.parse(readFileSync(pair.fleet.answer, "utf8")) as { edge?: { deviceEdge?: unknown } }).edge?.deviceEdge;
   return (JSON.parse(readFileSync(join(pair.rootB, "admit.json"), "utf8")) as { deviceEdge?: unknown }).deviceEdge;

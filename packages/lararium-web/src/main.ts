@@ -165,8 +165,7 @@ function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "f
  * Mount the identity + admit surface: this vessel names its own key, writes the command that starts a fleet join,
  * and takes the files back as pastes. THE FLEET-JOIN DOOR: the root holder's offer pastes in, and this browser
  * answers with its request (its face-scoped keys mint here); the root holder's answer pastes in, and this browser
- * lands it and re-enters boot on the admit it carried. A bare `#admit=` carriage still reads until that door
- * retires.
+ * lands it and re-enters boot on the admit it carried. A bare `#admit=` carriage reads too.
  *
  * The alternative path costs a human a devtools console on a phone. The key, the command, and the door
  * all live on the page instead — the vessel says the one thing only it holds, and reads back the one
@@ -205,7 +204,7 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   const stashAndReboot = (carriage: string): void => {
     try { sessionStorage.setItem(ADMIT_STASH_KEY, carriage); }
     catch {
-      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot be handed to boot here.";
+      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot reach boot here.";
       statusEl.className = "err";
       return;
     }

@@ -10,7 +10,7 @@
  *   V2 — an answer whose pin a carrier moved refuses `answer-unsigned`, and the landing writes nothing
  *   V3 — the offer names the root's key and the scope the face stands at, and the answer carries one certificate
  *        and one grant there
- *   V4 — a second landing of the same answer refuses: the join no longer stands pending
+ *   V4 — a second landing of the same answer refuses: the first landing cleared the pending join
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -69,7 +69,7 @@ describe("the fleet-join door, end to end", () => {
     expect(scopes).toEqual([stoodAt]);
     const asked = (request["requests"] as Array<{ vesselFaceKey: string }>).map((q) => q.vesselFaceKey);
     expect((answer["certificates"] as Array<{ vesselFaceKey: string }>).map((c) => c.vesselFaceKey)).toEqual(asked);
-    // B's face-scoped key is its own: neither its vessel key nor the face key.
+    // B's face-scoped key stands apart: neither its vessel key nor the face key.
     expect(asked[0]).not.toBe(request["vesselKey"]);
     expect(asked[0]).not.toBe(stoodAt?.faceKey);
     expect((answer["certificates"] as unknown[]).length).toBe(scopes.length);
