@@ -21,6 +21,8 @@ import { join } from "node:path";
 
 const anchorStep = vi.hoisted(() => ({
   fault: null as null | (() => Error),
+  /** Answers the anchor step as landed while landing nothing: the head it lets through stands with no anchor. */
+  skipLanding: false,
   charterDepthAtAnchor: [] as number[],
 }));
 
@@ -37,6 +39,7 @@ vi.mock("../src/store-door.js", async (importOriginal) => {
         const { larSealHome } = await import("../src/env.js");
         anchorStep.charterDepthAtAnchor.push(readNexusDoc(larSealHome())?.sealLineage?.length ?? 0);
         if (anchorStep.fault) throw anchorStep.fault();
+        if (anchorStep.skipLanding) return { output: { anchorCid: "00".repeat(32), parents: [] }, via: "direct" as const };
       }
       return real.storeVerb(verb, args, Refusal);
     },
@@ -68,6 +71,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     prior = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = root;
     anchorStep.fault = null;
+    anchorStep.skipLanding = false;
     anchorStep.charterDepthAtAnchor = [];
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -149,5 +153,28 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const r = await rite.rotate();
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
+  });
+
+  test("★ a roll waits on its prior anchor: a rotate over an anchorless head refuses by name and writes nothing ★", async () => {
+    await seatedGenesis();
+    const path = nexusCharterDocPath(larSealHome());
+
+    // CONTROL: the single-vault rotate anchors inside itself, so a second rotate over that head opens.
+    expect((await rite.rotate()).code).toBe(0);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
+    expect((await rite.rotate()).code).toBe(0);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(3);
+
+    // RED: a head whose roll landed no anchor (the step answered, nothing reached the board) blocks the next roll.
+    anchorStep.skipLanding = true;
+    expect((await rite.rotate()).code).toBe(0);
+    anchorStep.skipLanding = false;
+    const depth = readNexusDoc(larSealHome())!.sealLineage!.length;
+    const before = readFileSync(path);
+    const r = await rite.rotate();
+    expect(r.code).not.toBe(0);
+    expect(JSON.stringify(r.out)).toMatch(/prior-roll-unanchored/);
+    expect(readFileSync(path).equals(before)).toBe(true);
+    expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(depth);
   });
 });

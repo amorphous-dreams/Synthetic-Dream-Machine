@@ -20,6 +20,10 @@
  *       complete on both, and after a second independent restart both hearths read one new head and its two seats.
  *       (An admit made before the roll carries only as a presented lineage through the anchor, never by the board's
  *       own fold at the new head; the node's anchor vectors read that carry.)
+ *   T7  A DORMANT ROOT CATCHES UP (N5): a third hearth C carries the charter in and takes a third chair the head
+ *       never committed (two of three); that roll's anchor crosses A and B; B goes dormant, its daemon stopped, while
+ *       A and C roll on and B's chair passes. B restands one head behind, re-imports the newest charter along the
+ *       one lineage (`extended`), reads the head A and C hold, and refuses the charter behind it.
  *   T5  BOTH SEEDS INTACT: each hearth's own household seed charter reads byte-identical to its bytes before the
  *       founding, through every act and restart above.
  */
@@ -45,6 +49,7 @@ const RELEASE = {
 interface Hearth { lar: LarInstance; daemon: ChildProcess | null; log: string }
 let A: Hearth;
 let B: Hearth;
+let C: Hearth | undefined;
 let courier = "";
 let aid = "";
 /** Each founder's cold successor card code, as the staged read-back stand-in answers it (test roots alone). */
@@ -57,6 +62,7 @@ const seedBytes = (h: Hearth): string => readFileSync(nexusCharterDocPath(sealHo
 const carriedBytes = (h: Hearth): string => readFileSync(nexusCharterDocPath(join(sealHome(h), "carried", aid)), "utf8");
 const file = (name: string): string => join(courier, name);
 const data = (r: CliResult): Record<string, unknown> => (r.json?.["data"] ?? {}) as Record<string, unknown>;
+const firstCard = (r: CliResult): string => String((data(r)["cards"] as Array<{ code: string }>)[0]!.code);
 const said = (r: CliResult): string => `rc ${r.code}\n${r.stdout.slice(-600)}\n${r.stderr.slice(-600)}`;
 
 /** Run one CLI act on one hearth and require it to land. */
@@ -123,7 +129,7 @@ beforeAll(async () => {
 }, 600_000);
 
 afterAll(async () => {
-  for (const h of [A, B]) {
+  for (const h of [A, B, C]) {
     if (!h) continue;
     if (h.daemon) { await stopChild(h.daemon); rmSync(h.lar.root, { recursive: true, force: true }); }
     else await h.lar.stop();
@@ -212,6 +218,9 @@ describe("two hearths found one Nexus with files as the only courier", () => {
     expect(data(opened)["verdict"]).toBe("ready");
     const joined = await ok(B, ["nexus", "seal", "roll", "join", file("circle-1.json"), "--face", "0", "--cold-key", cards.get(B.lar.root)!, "--out", file("circle-2.json")]);
     expect(data(joined)["chairs"]).toBe(2);
+    // Each founder keeps the fresh successor card its contribution printed: the next roll reveals it (T7).
+    cards.set(A.lar.root, firstCard(opened));
+    cards.set(B.lar.root, firstCard(joined));
     const chairs = JSON.parse(readFileSync(file("circle-2.json"), "utf8"))["chairs"] as Array<{ seat: string }>;
     const aChair = (JSON.parse(readFileSync(file("circle-1.json"), "utf8"))["chairs"] as Array<{ seat: string }>)[0]!.seat;
     const bChair = chairs.find((c) => c.seat !== aChair)!.seat;
@@ -238,6 +247,68 @@ describe("two hearths found one Nexus with files as the only courier", () => {
     }
     expect(heads.size).toBe(1);
   }, 900_000);
+
+  test("T7 — a dormant root catches up: B sits a roll out, then re-imports the newest charter along the one lineage", async () => {
+    C = { lar: await openStaged({ tag: "two-root-c" }), daemon: null, log: "" };
+    const head = async (h: Hearth): Promise<string> => String(data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]))["sealEpochCid"]);
+    /** The chairs' seats a carried circle file holds, in contribution order. */
+    const chairsOf = (name: string): string[] => (JSON.parse(readFileSync(file(name), "utf8"))["chairs"] as Array<{ seat: string }>).map((c) => c.seat);
+
+    // C carries the charter in as a file, at the head A and B hold.
+    writeFileSync(file("charter-2.mem"), carriedBytes(A));
+    expect(data(await ok(C, ["nexus", "seal", "import", "--carry", file("charter-2.mem")]))["aid"]).toBe(aid);
+    expect(await head(C)).toBe(await head(A));
+
+    // THE ADD ROLL: A and B reveal their cards, C takes a chair the head never committed; the rule reads two of three.
+    const aOpen = await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", cards.get(A.lar.root)!, "--out", file("circle-5.json")]);
+    const bJoin = await ok(B, ["nexus", "seal", "roll", "join", file("circle-5.json"), "--face", "0", "--cold-key", cards.get(B.lar.root)!, "--out", file("circle-6.json")]);
+    const cJoin = await ok(C, ["nexus", "seal", "roll", "join", file("circle-6.json"), "--face", "0", "--added", "--out", file("circle-7.json")]);
+    expect(data(bJoin)["chairs"]).toBe(2);
+    expect(data(cJoin)["chairs"]).toBe(3);
+    const aSeat = chairsOf("circle-5.json")[0]!;
+    const bSeat = chairsOf("circle-6.json").find((s) => s !== aSeat)!;
+    const cSeat = chairsOf("circle-7.json").find((s) => s !== aSeat && s !== bSeat)!;
+    const heard = (own: string): string => [aSeat, bSeat, cSeat].filter((s) => s !== own).map(seatFingerprint).join(",");
+    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-7.json"), "--heard-threshold", "2", "--heard", heard(aSeat), "--out", file("circle-8.json")]);
+    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-8.json"), "--heard-threshold", "2", "--heard", heard(bSeat), "--out", file("circle-9.json")]);
+    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-9.json"), "--heard-threshold", "2", "--heard", heard(cSeat), "--out", file("circle-10.json")]))["verdict"]).toBe("complete");
+    for (const h of [A, B, C]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-10.json")]))["outcome"]).toBe("extended");
+    const added = await head(A);
+    for (const h of [B, C]) expect(await head(h)).toBe(added);
+    writeFileSync(file("charter-3.mem"), carriedBytes(A));
+    // The add roll's anchor crosses A and B, whose boards hold the same acts; the next roll waits on it.
+    expect(data(await ok(A, ["nexus", "seal", "anchor", "--nexus", aid, "--out", file("anchor-3.json")]))["verdict"]).toBe("ready");
+    expect(data(await ok(B, ["nexus", "seal", "anchor", "--from", file("anchor-3.json"), "--out", file("anchor-4.json")]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", "--from", file("anchor-4.json")]))["verdict"]).toBe("complete");
+
+    // B GOES DORMANT: its daemon stops, and A and C roll on without it; B's chair passes.
+    if (B.daemon) await stopChild(B.daemon); else await B.lar.stopDaemonOnly();
+    await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", firstCard(aOpen), "--out", file("circle-11.json")]);
+    await ok(C, ["nexus", "seal", "roll", "join", file("circle-11.json"), "--face", "0", "--cold-key", firstCard(cJoin), "--out", file("circle-12.json")]);
+    const aPass = chairsOf("circle-11.json")[0]!;
+    const cPass = chairsOf("circle-12.json").find((s) => s !== aPass)!;
+    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-12.json"), "--heard-threshold", "2", "--heard", seatFingerprint(cPass), "--out", file("circle-13.json")]);
+    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-13.json"), "--heard-threshold", "2", "--heard", seatFingerprint(aPass), "--out", file("circle-14.json")]))["verdict"]).toBe("complete");
+    for (const h of [A, C]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-14.json")]))["outcome"]).toBe("extended");
+    const passed = await head(A);
+    expect(await head(C)).toBe(passed);
+    expect(passed).not.toBe(added);
+
+    // B WAKES one head behind. A charter it already passed refuses; the newest extends along the one lineage.
+    await restand(B);
+    expect(await head(B)).toBe(added);
+    writeFileSync(file("charter-4.mem"), carriedBytes(A));
+    const caught = data(await ok(B, ["nexus", "seal", "import", "--carry", file("charter-4.mem")]));
+    expect(caught["outcome"]).toBe("extended");
+    expect(caught["epoch"]).toBe(passed);
+    expect(await head(B)).toBe(passed);
+    await refused(B, ["nexus", "seal", "import", "--carry", file("charter-3.mem")]);
+    expect(data(await ok(B, ["nexus", "seal", "import", "--carry", file("charter-4.mem")]))["outcome"]).toBe("same");
+    // The head B caught up to seats A's and C's chairs alone, at the rule they rolled.
+    const read = data(await ok(B, ["nexus", "members", "--list", "--nexus", aid]));
+    expect(read["threshold"]).toBe(2);
+    expect(read["seatedKeys"]).toBe(2);
+  }, 1_200_000);
 
   test("T5 — both household seeds stand byte-identical", () => {
     for (const h of [A, B]) expect(seedBytes(h)).toBe(seeds.get(h.lar.root));

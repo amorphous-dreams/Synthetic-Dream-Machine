@@ -161,6 +161,20 @@ export const HOSTING_KEY_DOMAIN = mint("hosting-key");
 export const HOSTING_TOKEN_DOMAIN = mint("hosting-token");
 /** The POPRF `info` a HOSTING GRANT's keyed tag evaluates under, with its Nexus and its epoch. */
 export const HOSTING_GRANT_DOMAIN = mint("hosting-grant");
+/** The operator SEAT's one DELEGATION to a hosting key in one Nexus: the seat signs the Nexus, itself and the
+ *  hosting key, and nothing that moves per epoch or per session. Its own name: a delegation never verifies as a
+ *  hosting act, a charter roll or any other seat signature. */
+export const HOSTING_DELEGATION_DOMAIN = mint("hosting-delegation");
+/** A DELEGATED hosting act: the hosting key signs the Nexus, the seat and its delegation, itself, the act's POPRF
+ *  public key, the act it rolls from and the three dials. Apart from `hosting-act`, the leaf-signed shape the live
+ *  cut retires: neither verifies as the other. */
+export const HOSTING_DELEGATED_ACT_DOMAIN = mint("hosting-delegated-act");
+/** The HKDF `info`, over the Nexus and the epoch, of the Ed25519 key that signs a walker's grant at that epoch,
+ *  derived from the hosting key's seed. Its public half alone reaches a serving checker. */
+export const HOSTING_GRANT_KEY_INFO = mint("hosting-grant-key");
+/** A walker's SIGNED grant (H8): the epoch's grant key signs the Nexus, the epoch, the walker's leaf, its lineage,
+ *  the epochs survived and its class. Apart from `hosting-grant`, the keyed POPRF tag's `info`. */
+export const HOSTING_WALKER_GRANT_DOMAIN = mint("hosting-walker-grant");
 /** A lineage's MINT MARKER at one hosting epoch: the hearth burns a digest of the lineage and the epoch under
  *  this name, so a lineage mints its whole allowance once per epoch and a replayed grant refills nothing. The
  *  marker names no one: the lineage is opaque to anyone who holds no claim. */

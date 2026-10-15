@@ -51,6 +51,9 @@ import {
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
   admitCarriageCommit, openAdmitCarriage,
+  realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
+  edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
+  type CountedEdgeBoard, type EdgeRollAnchor,
   type AdmitOpening, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
 } from "@lararium/mesh";
@@ -63,6 +66,8 @@ import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
 import { heldSeatSigners } from "../held-quorum.js";
 import { judgeStillBeforeWrite } from "../partial-landing.js";
+import { realmNexusIn } from "../edge-board.js";
+import { edgeRollAnchorRealms } from "./edge-roll-anchor.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 import { admitCanonDocs } from "./device-admit.js";
 
@@ -430,7 +435,7 @@ export async function runNexusContractOpen(opts: NexusContractOptions): Promise<
 export async function runNexusContractPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo }):
   Promise<NexusContractPartialResult> {
   const read = readNexusActPartial(opts.partial);
-  if (!read || read.act.family === "kapae" || read.act.family === "roll-anchor") {
+  if (!read || read.act.family === "kapae" || read.act.family === "roll-anchor" || read.act.family === "edge-roll-anchor") {
     throw new NexusContractError("the file reads as no admit or revoke partial");
   }
   const entry0 = read.act.entry;
@@ -508,15 +513,9 @@ export async function runNexusRollAnchor(opts: {
     `roll anchor REFUSED (fail-closed): the vessel holds ${held} seat key(s) the new roster seats, but the anchor ` +
     `carries ${k} distinct signatures of the NEW quorum — the closing keys never sign it.`,
   ));
-  // The board keys on the charter's genesis island — a rotating vessel holds a charter, and a charter outranks
-  // every lower rung of the gradient. The vessel key rides in only as that gradient's floor, so a seal home
-  // whose vessel holds no key of its own still anchors on its charter's board.
-  const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
-  const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome: opts.sealHome });
-  const boardUrl     = carriageDocUrl(boardIsland);
   const repo         = opts.repo;
   try {
-    const handle  = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
+    const { boardUrl, handle } = await rollAnchorBoardFor(repo, opts.sealHome);
     const parents = await rollAnchorParents(
       carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), opts.closing);
     const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
@@ -570,6 +569,61 @@ function rolledRostersOrRefuse(home: string): { readonly opened: KahuQuorumSeats
   return { opened, closing: { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: prev.epochCid } };
 }
 
+/**
+ * The carriage board a roll anchor rides. The board keys on the charter's genesis island — a rotating vessel holds a
+ * charter, and a charter outranks every lower rung of the gradient. The vessel key rides in only as that gradient's
+ * floor, so a seal home whose vessel holds no key of its own still anchors on its charter's board.
+ */
+async function rollAnchorBoardFor(repo: Repo, sealHome: string): Promise<Pick<ContractCore, "boardUrl" | "handle">> {
+  const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
+  const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome });
+  const boardUrl     = carriageDocUrl(boardIsland);
+  return { boardUrl, handle: await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts") };
+}
+
+/** What the roll's open reads of the head's own roll: no prior roll (a genesis), no anchor owed, or the counted anchor that stands. */
+export interface NexusRollPriorAnchor {
+  readonly state:      "no-prior-roll" | "nothing-to-anchor" | "anchored";
+  /** The counted anchor that joins the head to the epoch it closed, once one stands. */
+  readonly anchorCid?: string;
+}
+
+/**
+ * A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15; roadmap `#/rulings`). A seal roll refuses by name
+ * while the head's own roll stands with no counted anchor on this vessel's carriage board: an admit carries across a
+ * roll only through its roll anchors, and a roll laid over an anchorless one strands every admit between them. The
+ * roll's open (`lares nexus seal rotate`, `seal roll open`) asks here before any card reads or any seat signs, and the
+ * custody door's two roll opens (`seat.arm-roll`, `roll-circle.open`) ask again against the store their door lends.
+ *
+ * A genesis closes no roll, so the first roll opens. A head that closed an epoch reading no seats, or a reunion
+ * head joining two branches, carries no anchor this door can ask for, so neither waits. The single-vault rotate
+ * anchors inside itself and so leaves a counted anchor for the next open to find.
+ */
+export async function runNexusRollPriorAnchorCheck(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+  Promise<NexusRollPriorAnchor> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const doc = readNexusDoc(home);
+  const lineage = doc?.sealLineage ?? [];
+  const head = lineage[lineage.length - 1];
+  if (!head || head.predecessors.length === 0) return { state: "no-prior-roll" };
+  const opened = foundingRoster(doc);
+  const closed = head.predecessors.length === 1 ? lineage.find((e) => e.epochCid === head.predecessors[0]) : undefined;
+  if (!closed || !epochSeats(closed) || opened.sealEpochCid.length === 0 || opened.keys.length < opened.threshold) return { state: "nothing-to-anchor" };
+  try {
+    const { handle } = await rollAnchorBoardFor(opts.repo, home);
+    for (const a of rollAnchorsFromBoard(handle.doc())) {
+      if (a.prevEpochCid === closed.epochCid && a.sealEpochCid === opened.sealEpochCid && await rollAnchorCounts(a, opened)) {
+        return { state: "anchored", anchorCid: rollAnchorCid(a) };
+      }
+    }
+  } finally {
+    await opts.repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+  throw new NexusContractError(
+    "roll REFUSED (prior-roll-unanchored): the head's own roll stands with no counted anchor on this board, so a roll laid " +
+    "over it would strand every admit between them. Land the head's anchor first (`lares nexus seal anchor`), then roll.");
+}
+
 /** The reader one vessel judges a roll-anchor partial with: the head it holds, the epoch that head closed, and its board. */
 function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartialReader {
   const aid = nexusAidOrRefuse(home);
@@ -584,11 +638,11 @@ function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartia
  * heads there. The act leaves as a PARTIAL for the vault that holds the other new seats; nothing lands here. Where
  * the seats rest in two vaults no rotate signs its anchor whole, so the anchor follows the rolled head rather than
  * preceding it: an admit made at the closed epoch reads stranger at the new head until the anchor lands. The door
- * anchors the head to the ONE epoch it closed, so a second roll before this anchor lands leaves the first roll
- * unanchored for good: carry the anchor before the next roll. It anchors the carriage board alone; the realm edge
- * boards the single-vault rotate also anchors (`runEdgeRollAnchors`) stay OWED across two vaults, and the store
- * row says so in its answer. A vessel that holds the whole new quorum anchors through `runNexusRollAnchor`, inside
- * its rotate.
+ * anchors the head to the ONE epoch it closed, so a second roll before this anchor lands would leave the first roll
+ * unanchored for good: the next roll's open refuses by name until this anchor lands (`runNexusRollPriorAnchorCheck`).
+ * It anchors the carriage board alone; the realm edge boards the single-vault rotate also anchors (`runEdgeRollAnchors`)
+ * cross as their own partials, one for each realm (`runEdgeRollAnchorOpen` / `runEdgeRollAnchorPartial`). A vessel
+ * that holds the whole new quorum anchors through `runNexusRollAnchor`, inside its rotate.
  */
 export async function runNexusRollAnchorOpen(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
   Promise<NexusRollAnchorPartialResult> {
@@ -670,6 +724,208 @@ export async function runNexusRollAnchorPartial(opts: { readonly partial: unknow
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
+}
+
+// ── the realm edge anchors across two vaults (kapae#/rolls) ───────────────────────────────────────────────
+
+/** What one realm's step of a two-vault edge roll anchor answers: the partial as it stands, the judge's verdict over it
+ *  here, and the anchor it landed on the realm's edge board. */
+export interface NexusEdgeRollAnchorPartialResult {
+  readonly realm:   string;
+  readonly partial: NexusActPartial;
+  readonly verdict: PartialVerdict;
+  /** The seats of the head (opened) roster whose signature the partial carries, sorted. */
+  readonly signed:  readonly string[];
+  readonly landed:  { readonly anchor: EdgeRollAnchor; readonly anchorCid: string; readonly parents: readonly string[]; readonly boardUrl: string } | null;
+}
+
+/** Where one realm's anchor stands on this vessel: landed on its edge board, or owed. */
+export interface NexusEdgeRollAnchorStanding {
+  readonly realm:      string;
+  readonly state:      "anchored" | "owed";
+  readonly anchorCid?: string;
+}
+
+/** One realm's edge board as a roll's reader holds it: the replica, the ledger, the board counted under the CLOSED charter. */
+interface EdgeRollView {
+  readonly handle:  Awaited<ReturnType<typeof materializeSharedLarDoc>>;
+  readonly ledger:  Awaited<ReturnType<typeof materializeSharedLarDoc>>;
+  readonly counted: CountedEdgeBoard;
+  readonly anchors: readonly EdgeRollAnchor[];
+}
+
+/** The vessel key that names this vessel's own edge ledger (no board address); empty where the vessel holds none. */
+const edgeLedgerKey = (): Promise<string> => loadVesselVerifyingKey().catch(() => "");
+
+async function edgeVesselKeyOrRefuse(): Promise<string> {
+  const key = await edgeLedgerKey();
+  if (!key) throw new NexusContractError("this vessel surfaces no verifying key — it keeps no ledger to read an edge board against.");
+  return key;
+}
+
+/**
+ * Read one realm's edge board where the roll stands: the board counts under the charter as it stood BEFORE the head's
+ * roll (the lineage less its head), so the quorum acts of the closed epoch stand as the anchor's parents. The read
+ * writes nothing: a vessel that first meets an act after its epoch rolled earns no seen-at-head mark from it.
+ */
+async function edgeBoardAtClosing(repo: Repo, home: string, vesselKey: string, realm: string, closing: KahuQuorumSeats): Promise<EdgeRollView> {
+  const handle = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(realm), "board:edge-kapae");
+  const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
+  const kept = keptFromLedger(ledger.doc(), realm);
+  const lineage = readNexusDoc(home)?.sealLineage ?? [];
+  const read = await readEdgeBoard({
+    board: handle.doc(), kept, authorityFor: () => ({ quorum: true }), charter: { scope: realm, head: closing, sealLineage: lineage.slice(0, -1) },
+  });
+  return { handle, ledger, counted: read.counted, anchors: mergeEdgeRollAnchors([...kept.anchors, ...edgeRollAnchorsFromBoard(handle.doc())]) };
+}
+
+const anchoredAtHead = async (anchors: readonly EdgeRollAnchor[], closing: KahuQuorumSeats, opened: KahuQuorumSeats): Promise<EdgeRollAnchor | null> => {
+  for (const a of anchors) if (a.prevEpochCid === closing.sealEpochCid && a.sealEpochCid === opened.sealEpochCid && await edgeRollAnchorCounts(a, opened)) return a;
+  return null;
+};
+
+/**
+ * OPEN the realm edge anchors of a rolled head (kapae#/rolls), one PARTIAL for each realm board this vessel keeps a
+ * quorum act for under this Nexus. The OPENER reads each board counted at the closed epoch, cites its causal heads, and
+ * signs with every seat of the head roster it holds; nothing lands here. A realm whose edge board already carries a
+ * counted anchor for this roll takes no second one. Where this vessel keeps no quorum act for any realm, the list stands
+ * empty. A vessel that holds the whole new quorum anchors through `runEdgeRollAnchors`, inside its rotate.
+ */
+export async function runEdgeRollAnchorOpen(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+  Promise<readonly NexusEdgeRollAnchorPartialResult[]> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const { opened, closing } = rolledRostersOrRefuse(home);
+  const aid = nexusAidOrRefuse(home);
+  const vesselKey = await edgeVesselKeyOrRefuse();
+  const repo = opts.repo;
+  const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
+  const realms = edgeRollAnchorRealms(ledger.doc(), aid);
+  if (realms.length === 0) return [];
+  const held = heldSeatSigners(opened);
+  if (held.length === 0) throw new NexusContractError("this vessel holds no seat of the head roster, so it opens no edge anchor for it.");
+  if (held.length >= opened.threshold) {
+    throw new NexusContractError("this vessel holds the whole new quorum: the edge anchors land here whole, inside the rotate, and no partial crosses.");
+  }
+  const out: NexusEdgeRollAnchorPartialResult[] = [];
+  try {
+    for (const realm of realms) {
+      const view = await edgeBoardAtClosing(repo, home, vesselKey, realm, closing);
+      if (await anchoredAtHead(view.anchors, closing, opened)) continue;
+      const anchor = await signEdgeRollAnchor({
+        scope: realm, prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold,
+        parents: edgeRollAnchorParents(view.counted, closing.sealEpochCid),
+      }, held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })));
+      const partial = nexusActPartial(aid, { family: "edge-roll-anchor", anchor });
+      const { reader } = await edgeAnchorReader(home, repo, vesselKey, partial);
+      const judged = await judgeNexusActPartial(partial, reader);
+      if (judged.verdict !== "ready") throw new NexusContractError(`the partial this vessel signed for realm ${realm.slice(0, 12)}… reads ${judged.verdict} here${judged.why ? `: ${judged.why}` : ""}; nothing crosses.`);
+      out.push({ realm, partial, verdict: judged.verdict, signed: judged.signed, landed: null });
+    }
+    return out;
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/**
+ * The reader one vessel judges an edge-roll-anchor partial with: the head it holds, the epoch that head closed, and the
+ * partial's realm board counted at the closed epoch. A realm this vessel's ledger does not hold under this Nexus has
+ * no board here, so the reader carries none and the judge reads `unavailable`.
+ */
+async function edgeAnchorReader(home: string, repo: Repo, vesselKey: string, partial: NexusActPartial):
+  Promise<{ readonly reader: NexusPartialReader; readonly view: EdgeRollView | null }> {
+  const aid = nexusAidOrRefuse(home);
+  const { opened, closing } = rolledRostersOrRefuse(home);
+  const base: NexusPartialReader = { aid, head: opened, closing, board: { carriage: [], anchors: [], antigen: [] } };
+  if (partial.act.family !== "edge-roll-anchor") return { reader: base, view: null };
+  const realm = partial.act.anchor.scope;
+  const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
+  const doc = ledger.doc();
+  const holds = realmNexusIn(doc, realm) === aid && (ledgerRealms(doc).includes(realm) || ledgerScopes(doc).includes(realm));
+  if (!holds) return { reader: base, view: null };
+  const view = await edgeBoardAtClosing(repo, home, vesselKey, realm, closing);
+  return { reader: { ...base, edge: new Map([[realm, { counted: view.counted, anchors: view.anchors }]]) }, view };
+}
+
+/**
+ * Take an edge-roll-anchor partial another vault opened or cosigned. The judge reads it against this vessel's own
+ * rolled head, the epoch that head closed and its own board for that realm BEFORE any signature: `ready` takes the
+ * signature of every seat of the head this vessel holds that has not signed; `complete` lands the anchor on the realm's
+ * edge board once a fresh judgement against the head and the board as they stand at the write still reads `complete`.
+ * A realm whose board this vessel holds none of reads `unavailable`; moved heads read `stale`. Any other verdict
+ * refuses by name, and nothing signs or lands.
+ */
+export async function runEdgeRollAnchorPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo }):
+  Promise<NexusEdgeRollAnchorPartialResult> {
+  const read = readNexusActPartial(opts.partial);
+  if (!read || read.act.family !== "edge-roll-anchor") throw new NexusContractError("the file reads as no edge-roll-anchor partial");
+  const home = charterHomeOrRefuse(opts.sealHome, read.aid);
+  const { opened } = rolledRostersOrRefuse(home);
+  const vesselKey = await edgeVesselKeyOrRefuse();
+  const repo = opts.repo;
+  const realm = read.act.anchor.scope;
+  try {
+    let partial: NexusActPartial = read;
+    const { reader, view } = await edgeAnchorReader(home, repo, vesselKey, partial);
+    let judged = await judgeNexusActPartial(partial, reader);
+    if (judged.verdict === "ready") {
+      const hands = heldSeatSigners(opened, new Set(judged.signed));
+      if (hands.length === 0) throw new NexusContractError("the partial waits on a seat this vessel does not hold; carry it to the vault that holds one.");
+      try { partial = await cosignNexusActPartial(partial, reader, hands.map((h) => ({ signer: h.verifyingKey, sign: h.sign }))); }
+      catch (err) { if (err instanceof NexusPartialRefusal) throw new NexusContractError(`the partial refuses a cosign here: ${err.message}`); throw err; }
+      judged = await judgeNexusActPartial(partial, reader);
+    }
+    if (judged.verdict === "ready") return { realm, partial, verdict: judged.verdict, signed: judged.signed, landed: null };
+    if (judged.verdict !== "complete" || view === null) {
+      throw new NexusContractError(`the partial reads ${judged.verdict} on this vessel${judged.why ? `: ${judged.why}` : ""}; nothing signs or lands.`);
+    }
+    const anchor = (partial.act as Extract<NexusActPartial["act"], { family: "edge-roll-anchor" }>).anchor;
+    if (!(await edgeRollAnchorCounts(anchor, opened))) {
+      throw new NexusContractError("refusing to write: the edge roll anchor does not count under the head roster (fail-closed).");
+    }
+    const marked = (): string => {
+      const doc = view.handle.doc();
+      return `${rolledRostersOrRefuse(home).opened.sealEpochCid}|${edgeKapaeActsFromBoard(doc).map((a) => a.actCid).sort().join(",")}|${edgeRollAnchorsFromBoard(doc).map(edgeRollAnchorCid).sort().join(",")}`;
+    };
+    await judgeStillBeforeWrite({
+      mark: marked,
+      judge: async () => judgeNexusActPartial(partial, (await edgeAnchorReader(home, repo, vesselKey, partial)).reader),
+      refuse: (message) => new NexusContractError(message),
+    });
+    view.handle.change((d) => writeEdgeRollAnchor(d, anchor));
+    view.ledger.change((d) => { keepInLedger(d, realm, { acts: [], anchors: [anchor] }); });
+    await repo.flush();
+    return {
+      realm, partial, verdict: judged.verdict, signed: judged.signed,
+      landed: { anchor, anchorCid: edgeRollAnchorCid(anchor), parents: anchor.parents, boardUrl: realmEdgeBoardDocUrl(realm) },
+    };
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/**
+ * Where each realm's edge anchor of the head's roll stands on this vessel: `anchored` once its edge board carries a
+ * counted anchor for the roll, `owed` while it does not. Only realms this vessel keeps a quorum act for appear. A head
+ * that rolled from nothing (a genesis) owes none.
+ */
+export async function runEdgeRollAnchorStanding(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+  Promise<readonly NexusEdgeRollAnchorStanding[]> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  let rosters: ReturnType<typeof rolledRostersOrRefuse>;
+  try { rosters = rolledRostersOrRefuse(home); }
+  catch (err) { if (err instanceof NexusContractError) return []; throw err; }
+  const { opened, closing } = rosters;
+  const vesselKey = await edgeLedgerKey();
+  if (!vesselKey) return [];
+  const ledger = await materializeSharedLarDoc(opts.repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
+  const out: NexusEdgeRollAnchorStanding[] = [];
+  for (const realm of edgeRollAnchorRealms(ledger.doc(), nexusAidOrRefuse(home))) {
+    const view = await edgeBoardAtClosing(opts.repo, home, vesselKey, realm, closing);
+    const anchor = await anchoredAtHead(view.anchors, closing, opened);
+    out.push(anchor ? { realm, state: "anchored", anchorCid: edgeRollAnchorCid(anchor) } : { realm, state: "owed" });
+  }
+  return out;
 }
 
 /**

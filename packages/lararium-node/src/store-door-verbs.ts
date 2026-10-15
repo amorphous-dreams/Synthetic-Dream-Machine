@@ -55,9 +55,9 @@
 import type { Repo } from "@automerge/automerge-repo";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
+import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
-import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
+import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
@@ -128,7 +128,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-members-list",
+  "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
@@ -230,12 +230,23 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-roll-anchor-open": (args) => answer("nexus-roll-anchor-open", async () => ({
       ...(await runNexusRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
     })),
+    // THE REALM EDGE ANCHORS OF THE SAME ROLL: one partial for each realm board this vessel keeps a quorum act for.
+    "nexus-roll-anchor-edge-open": (args) => answer("nexus-roll-anchor-edge-open", async () => ({
+      partials: await runEdgeRollAnchorOpen({ sealHome, repo, ...opt("aid", str(args["aid"])) }),
+    })),
+    // One door takes either family of the roll's anchors: a partial routes by its own family, and the answer names
+    // where each realm's edge anchor stands on this vessel.
     "nexus-roll-anchor-partial": (args) => answer("nexus-roll-anchor-partial", async () => {
-      const r = await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
+      const read = readNexusActPartial(args["partial"]);
+      const edge = read?.act.family === "edge-roll-anchor";
+      const r = edge ? await runEdgeRollAnchorPartial({ partial: args["partial"], sealHome, repo }) : await runNexusRollAnchorPartial({ partial: args["partial"], sealHome, repo });
       if (r.landed) await awaitOnRolled(deps.onRolled?.());
-      // The realm edge boards take no anchor through this door yet: the answer says so, never a silent green.
-      return { ...r, edgeAnchors: "owed" };
+      return { ...r, edgeAnchors: await runEdgeRollAnchorStanding({ sealHome, repo, ...(read ? { aid: read.aid } : {}) }) };
     }),
+    // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the roll's open asks here before any card reads.
+    "nexus-roll-prior-anchor": (args) => answer("nexus-roll-prior-anchor", async () => ({
+      ...(await runNexusRollPriorAnchorCheck({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
+    })),
     "nexus-members-list": (args) => answer("nexus-members-list", async () => ({
       ...(await runNexusMembersList({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
     })),

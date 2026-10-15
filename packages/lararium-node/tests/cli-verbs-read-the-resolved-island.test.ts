@@ -84,13 +84,14 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
     }
   });
 
-  test("CONTROL - nexus-contract.ts reads the vessel key once per board feed and once for the carry-for nym", () => {
+  test("CONTROL - nexus-contract.ts reads the vessel key once per board feed, once for the carry-for nym and once for the edge ledger", () => {
     // Three reads FEED the island resolution (the admit write, the roll-anchor write, the members-list read);
-    // one is the carry-for nym, a bystander that names a place rather than a board. Pinned so a refactor that
+    // one reads the carry-for nym, a bystander that names a place rather than a board, and one names the vessel's own
+    // edge ledger for the realm edge anchors, which addresses no carriage board. Pinned so a refactor that
     // adds a bare read updates this test rather than silently drifting the count.
     const code = stripComments(read("commands/nexus-contract.ts"));
     const bareReads = [...code.matchAll(/loadVesselVerifyingKey\(\)/g)];
-    expect(bareReads.length, "nexus-contract.ts's bare loadVesselVerifyingKey count drifted from the 4 expected (three board feeds + carry-for nym)").toBe(4);
+    expect(bareReads.length, "nexus-contract.ts's bare loadVesselVerifyingKey count drifted from the 5 expected (three board feeds + carry-for nym + edge ledger)").toBe(5);
     // No vessel-key variable survives as a board address.
     expect(code).not.toMatch(/carriageDocUrl\(\s*ownKey\s*\)/);
   });

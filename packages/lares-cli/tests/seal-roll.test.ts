@@ -126,6 +126,18 @@ describe("lares nexus seal roll", () => {
       expect(head(B, aid)).toBe(newHead);
       // Filed, no circle stands open here: abandon moves nothing.
       expect((await roll(["abandon"], { nexus: aid })).out["data"]).toMatchObject({ abandoned: false, retired: [] });
+
+      // A ROLL WAITS ON ITS PRIOR ANCHOR: the filed head stands with no anchor, so a next circle refuses by name
+      // on either vault, before any card reads and with no circle file written.
+      const c5 = join(courier, "c5.json");
+      const aNext = opened.out["data"]["cards"][0]["code"] as string;
+      at(A);
+      const seats = listSeatKeys().length;
+      const waits = await roll(["open"], { nexus: aid, threshold: "2", "cold-key": aNext, out: c5 });
+      expect(waits.code).not.toBe(0);
+      expect(waits.out["error"]["message"]).toMatch(/prior-roll-unanchored/);
+      expect(existsSync(c5)).toBe(false);
+      expect(listSeatKeys().length).toBe(seats);
     } finally { rmSync(courier, { recursive: true, force: true }); }
   });
 
@@ -173,6 +185,10 @@ describe("lares nexus seal roll", () => {
       expect((await anchor({ out: courier })).out["error"]["message"]).toMatch(/names a directory/);
       expect((await anchor({ from: p1, out: p1 })).out["error"]["message"]).toMatch(/--out names the partial you carried/);
       expect((await anchor({ from: join(courier, "absent.json") })).out["error"]["message"]).toMatch(/cannot read .* as a partial file/);
+      // The edge opener checks its --out the same way, before any act runs.
+      const edge = (options: Record<string, string>) => run(nexus(["anchor"], options, { edge: true }));
+      expect((await edge({ out: join(courier, "no-such-dir", "p.json") })).out["error"]["message"]).toMatch(/its directory does not exist/);
+      expect((await edge({ out: courier })).out["error"]["message"]).toMatch(/names a directory/);
       // CONTROL: a carried file that reads as no partial reaches the door, which names it.
       expect((await anchor({ from: p1 })).out["error"]["message"]).toMatch(/reads as no roll-anchor partial/);
     } finally { rmSync(courier, { recursive: true, force: true }); }

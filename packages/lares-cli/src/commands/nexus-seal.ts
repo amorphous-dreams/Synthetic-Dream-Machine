@@ -585,6 +585,22 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const { doc, head } = sealedCharterOrRefuse(sealHome, "rotate");
   const depth = doc.sealLineage?.length ?? 0;
 
+  // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the head's own roll stands anchored before any
+  // card reads, so no roll stacks over a step its readers cannot carry across a removal.
+  try { await storeVerb("nexus-roll-prior-anchor", {}, NexusContractError); }
+  catch (err) {
+    if (!(err instanceof NexusContractError)) throw err;
+    emit(args, {
+      ok: false,
+      error: { code: "prior-roll-unanchored", message: `rotation REFUSED (fail-closed): ${err.message}` },
+      human: () => {
+        console.error(`nexus seal rotate REFUSED (fail-closed): ${err.message}`);
+        console.error(`  the chain stays at depth ${depth}; nothing written.`);
+      },
+    });
+    return exitFor("prior-roll-unanchored");
+  }
+
   // REVEAL, behind the door: the next key-set the head committed rests on this vessel as sealed seat keys, and
   // the arming finds it by its digest. THE ROSTER BECOMES EXACTLY WHAT STANDS — the succession door. A kahu
   // steps down by no longer standing; a new one takes a chair by standing and signs with a fresh key of its own.
@@ -1163,6 +1179,12 @@ async function rollContributeVerb(args: ParsedArgs, which: "open" | "join"): Pro
     readCircleFile(input);
   }
   const out = rollOut(args, input);
+  // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): a circle opens over a head whose own roll stands
+  // anchored on this vault's board, before any card reads. A join steps from the circle already open.
+  if (which === "open") {
+    try { await storeVerb("nexus-roll-prior-anchor", { aid: nexusAid }, NexusContractError); }
+    catch (err) { if (err instanceof NexusContractError) throw new UsageError(err.message); throw err; }
+  }
   const { face, cards } = await rollContribution(args);
   const { digest, printed } = await cofoundCard(args, "your chair in the rolled Nexus");
   const base = cards ? { face, cards, next: digest } : { face, next: digest };

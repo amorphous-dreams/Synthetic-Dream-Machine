@@ -42,7 +42,7 @@ import {
 import { CarriedCharterError, carriedReadings } from "./carried-set.js";
 import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
 import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, openRollCircleAct, signRollCircleAct } from "./roll-circle-ceremony.js";
-import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
+import { NexusContractError, runNexusAcceptCarriage, runNexusRollPriorAnchorCheck } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import { clearPersonaAdmitPending, listAdmittedPersonas } from "./node-persona-admit-store.js";
 import {
@@ -308,6 +308,24 @@ async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof HostRefusal) throw refuse(err.message); throw err; }
 }
 
+/**
+ * A ROLL WAITS ON ITS PRIOR ANCHOR at this door too (operator ruling 2026-10-15). The roll's two opens, `seat.arm-roll`
+ * and `roll-circle.open`, ask the check the store row answers, against the store the composition lends, before any
+ * card reads; so a caller who drives either act straight through this door meets the same refusal the command's own
+ * open meets. A door that lends no store (a herm floor, a vector's bare context) reads no board, and the command's
+ * open still asks its store row.
+ */
+async function priorAnchorOrRefuse(ctx: SealedActContext, aid?: string): Promise<void> {
+  const store = ctx.hosting;
+  if (!store) return;
+  try {
+    await store.withRepo((repo) => runNexusRollPriorAnchorCheck({ sealHome: larSealHome(), repo, ...(aid !== undefined ? { aid } : {}) }));
+  } catch (err) {
+    if (err instanceof NexusContractError) throw refuse(err.message);
+    throw err;
+  }
+}
+
 async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; }
   catch (err) { if (err instanceof NexusKeyReissueRefused) throw refuse(err.message); throw err; }
@@ -407,8 +425,9 @@ export const SEALED_ACTS = Object.freeze({
   "seat.arm-genesis": act({ threshold: optional(count) }, async (a) => ({
     ...(await ceremonyOrRefuse(armGenesis(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
   })),
-  "seat.arm-roll": act({ cards: coldCards, threshold: optional(count) }, async (a) => {
+  "seat.arm-roll": act({ cards: coldCards, threshold: optional(count) }, async (a, ctx) => {
     try {
+      await priorAnchorOrRefuse(ctx);
       return { ...(await ceremonyOrRefuse(armRoll({ cards: a.cards, ...(a.threshold !== undefined ? { threshold: a.threshold } : {}) }))) };
     } finally { for (const card of a.cards) card.fill(0); }
   }),
@@ -441,8 +460,9 @@ export const SEALED_ACTS = Object.freeze({
   })),
   // THE ROLL CIRCLE (`roll-circle-ceremony`). Each vault speaks for its own chairs and signs one image; the cards a
   // person typed back cross this door once and zero-fill here.
-  "roll-circle.open": act({ aid: text, face: index, cards: optional(coldCards), next: digest, threshold: count }, async (a) => {
+  "roll-circle.open": act({ aid: text, face: index, cards: optional(coldCards), next: digest, threshold: count }, async (a, ctx) => {
     try {
+      await priorAnchorOrRefuse(ctx, a.aid);
       const card = cardOf(a.cards);
       return { ...(await foundingOrRefuse(openRollCircleAct({ aid: a.aid, face: a.face, next: a.next, threshold: a.threshold, ...(card ? { card } : {}) }))) };
     } finally { for (const c of a.cards ?? []) c.fill(0); }
