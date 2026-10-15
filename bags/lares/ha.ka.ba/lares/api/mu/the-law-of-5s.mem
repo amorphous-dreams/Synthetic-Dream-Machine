@@ -14,7 +14,7 @@ manao     = 17
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/the-law-of-5s"
@@ -201,6 +201,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rmokugmyB_LfeZ2Z3Fb2ypHeZ_Q6nLsCbKb9cfihhzk
+<<^ code="&#x0003;">>ni:///sha-256;7tu9OzyXO3DsOZcb3Su2It5cZEi49YT_4b6_pZHSULk
 
 <<^ code="&#x0004;" -> to="?">>

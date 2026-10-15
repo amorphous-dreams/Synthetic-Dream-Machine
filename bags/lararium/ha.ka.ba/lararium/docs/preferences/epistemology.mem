@@ -11,7 +11,7 @@ mana      = 17
 manao     = 17
 manaoio   = 18
 role      = "staging docs shelf for epistemic residue, promotion planning, and the still-unsettled register/stance and degraded-weather material left after foundation-braid migration"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/epistemology"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/epistemology"
@@ -224,6 +224,6 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;emjeHDhJETbH7IIl0ERm5dPBmd6Y10mlTDHLbS5GpP8
+<<^ code="&#x0003;">>ni:///sha-256;ZBFSFfSMqA0m_59KBW-H7UwKjgG5eE16CeLpv7GyRrI
 
 <<^ code="&#x0004;" -> to="?">>

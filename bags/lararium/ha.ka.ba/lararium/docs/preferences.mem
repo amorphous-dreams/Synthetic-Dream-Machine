@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "extraction shelf for durable concepts recovered from Lares_Preferences.system-prompt and adjacent lararium witnesses"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences"
@@ -80,6 +80,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qPpl4mGkw3ekghStSJGgYgDGdTv4c3M69ZrC2Igqtfo
+<<^ code="&#x0003;">>ni:///sha-256;dyEkyWYhgV1BQrs4rdIhnyB2m6__Xg89BQk-xKYRRcs
 
 <<^ code="&#x0004;" -> to="?">>

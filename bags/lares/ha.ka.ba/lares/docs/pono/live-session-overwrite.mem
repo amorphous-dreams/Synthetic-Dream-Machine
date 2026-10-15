@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 13
 role      = "docs sister for Live-Session Overwrite — bug anatomy, test vector, and mitigation notes"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/live-session-overwrite"
@@ -101,6 +101,6 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AX50B5nqnaMCQiNFIDmr3H6wd4YBB7TjMQAmwtPvvQY
+<<^ code="&#x0003;">>ni:///sha-256;rOGi9CIJoWKkRAEJVr-yWIdDduTdXUDdCKbo-WN16mc
 
 <<^ code="&#x0004;" -> to="?">>

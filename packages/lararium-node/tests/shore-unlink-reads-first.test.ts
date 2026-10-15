@@ -211,7 +211,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
   });
 
-  test("a foreign title the loci law sites nowhere still gets read at its base's path after a restart", async () => {
+  test("a foreign title the address siting rule sites nowhere still gets read at its base's path after a restart", async () => {
     const s = stand();
     const TITLE = "My Notes";
     const live = { on: true };

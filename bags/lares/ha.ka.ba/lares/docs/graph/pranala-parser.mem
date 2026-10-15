@@ -1,6 +1,6 @@
 !! Terminology Note
 
-//A "meme" is any carrier of a lar URI and is the default node in the graph. A "locus" is a meme WEARING `loci` in its has-stack — a component it holds, never a type it is.//
+//A "meme" is a carrier with a `lar:` title; the title carries identity outside the has-stack.//
 
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
@@ -16,7 +16,7 @@ manaoio     = 16
 open-gate   = "closed: fragment-level resolution (Option A) confirmed by canonical pranala kānāwai"
 role        = "parser design for pranala block and inline forms, sugar expansion, ? -> resolution, and field normalization"
 status-date = "2026-04-24"
-tags        = ["api/pono/meme", "api/pono/loci"]
+tags        = ["api/pono/meme"]
 title       = "lar:///ha.ka.ba/lares/docs/graph/pranala-parser"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/pranala-parser"
@@ -204,7 +204,7 @@ The TO expression in both block and inline forms takes three shapes:
 | Full URI with fragment | `lar:///ha.ka.ba/lares/api/mu#/entry` | split into `to_uri` and `to_socket` |
 | Relative path | `mu/chao` | prepend current carrier's root (`lar:///ha.ka.ba/lares/api/`) |
 
-Relative path resolution follows loci law: the root comes from the carrier's own `uri-path` prefix up to the first named segment after the tuple root.
+Relative path resolution follows the carrier's `lar:` address: the root comes from its `uri-path` prefix up to the first named segment after the tuple root.
 
 Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an exception.
 
@@ -221,6 +221,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l6WhnVco29MKL0_Xx2iMmNdE83mFAZLU5I-pXUqyFlc
+<<^ code="&#x0003;">>ni:///sha-256;r5v5ucYVVf2xoj_f9Ii2YOZA1ETv7Ubp_WqXs63ffPI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 16
 role      = "KAIROS as an instrument — the iterative posture reviewer that surfaces drift to one operator; gate, budget, check anatomy, decay, trust ledger"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/kairos"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/kairos"
@@ -321,6 +321,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hcjzGbjll34qkpfyWDpdb-dSMJaaz3wD0qm2y-xnskM
+<<^ code="&#x0003;">>ni:///sha-256;_CXOTFrAL6qDBVA6258g4nH4aMAM4e2va72SsM2vRZ8
 
 <<^ code="&#x0004;" -> to="?">>

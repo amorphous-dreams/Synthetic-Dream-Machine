@@ -333,7 +333,7 @@ export class LarDiskProjector {
    * The stock filesystem adaptor keeps the same memory as `$tw.boot.files`: a delete runs after
    * the tiddler has gone, so the path a `$:/config/FileSystemPaths` rule named can no longer be
    * recomputed — the last siting answers, and a title never flushed this session falls back to
-   * the loci law. A rule that moves a carrier unlinks its previous files (`cleanupTiddlerFiles`).
+   * the address siting rule. A rule that moves a carrier unlinks its previous files (`cleanupTiddlerFiles`).
    */
   private readonly sited = new Map<string, string>();
 
@@ -984,7 +984,7 @@ export class LarDiskProjector {
       if (holdingBags?.has(mirror.bagId)) continue;
       this._leaveStandoff(mirror.bagId, title, "sides");
       if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
-      // A title the loci law sites nowhere (a foreign title) names no file by itself; the base still may.
+      // A title the address siting rule sites nowhere (a foreign title) names no file by itself; the base still may.
       const homes = (this.mirrorCarrierFiles(mirror, title) ?? []).map((f) => LarDiskProjector.contentOf(f));
       // A sibling (the ingest gesture, another island) may have pinned a base for this carrier since this
       // projector loaded the tree: the directory answers before the homes get collected.
@@ -1311,7 +1311,7 @@ export class LarDiskProjector {
       ? file.relPath.slice(0, file.relPath.length - file.ext.length)
       : null;
     let base = ruledBase ?? carrierBaseRelPath(tiddlerUri);
-    // The flatten reaches ONLY a name the loci law does not govern. Inside the `lar:` family a null
+    // The flatten reaches ONLY a name the address siting rule does not govern. Inside the `lar:` family a null
     // base is a DELIBERATE refusal (a fragment owns no file — its carrier root does; a bag manifest
     // belongs to the declare verb), never a name left un-sited for want of a path, so flattening one
     // would resurrect exactly what those refusals withhold.

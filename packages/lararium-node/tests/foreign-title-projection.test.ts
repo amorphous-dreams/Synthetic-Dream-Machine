@@ -186,7 +186,7 @@ describe("foreign-title projection — the CONTROLs", () => {
     const { projector, root } = rig(() => ({
       ext: ".mem",
       body: "# note",
-      // the flattened default rides now, and the loci law MUST still win
+      // the flattened default rides now, and the address siting rule MUST still win
       defaultRelPath: "lar___ha.ka.ba_lares_parity_note.mem",
     }));
     await projector.flush("wiki", LAR);

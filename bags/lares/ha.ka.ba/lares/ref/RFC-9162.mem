@@ -12,7 +12,7 @@ manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 9162 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-9162"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-9162"
@@ -43,6 +43,6 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bvrKn-uWsPi7UYrMtd1yEy3NMRengpqbmeIJy1zNF4Q
+<<^ code="&#x0003;">>ni:///sha-256;zJMc2Kx3u6ihudEKz9tzXQ9j5eP5s9wVi2_q1llomYs
 
 <<^ code="&#x0004;" -> to="?">>

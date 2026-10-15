@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 13
 role      = "docs sister for l-space trust law — explanation, examples, and implementation pressure"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/l-space-trust"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/l-space-trust"
@@ -151,6 +151,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0QnXMr7pxtw3PY1goYcIDXXD964MtQE7iayRMxBU1D0
+<<^ code="&#x0003;">>ni:///sha-256;dBYkZ1Lg3jqO5cRMsZD13PkjBG7on5t4n5JYiYHUQ6g
 
 <<^ code="&#x0004;" -> to="?">>

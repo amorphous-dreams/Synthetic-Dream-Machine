@@ -13,7 +13,7 @@ manao         = 16
 manaoio       = 16
 revision-note = "the standing brief. Operator-stated and load-bearing: this infrastructure exists for groups that need shelter against empire. Every trade downstream re-weights against it"
 role          = "the WHY the rest of the graph reasons toward. Names who this serves, what empire does structurally, and the three design consequences that follow — the recently-arrived case as ACCEPTANCE TEST, categorisation as THE threat, and fluid-not-frozen rank as a survival property"
-tags          = ["api/pono/meme", "api/pono/loci"]
+tags          = ["api/pono/meme"]
 title         = "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/shelter-against-empire"
@@ -169,6 +169,6 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ec4uk5O53uzpZ5c-UmKtXFTaghcAdp7krPnXutxGfVU
+<<^ code="&#x0003;">>ni:///sha-256;iqQ1BIvTm9hYfXL3nembGV9INzvqypHiVy3pHvIJBf4
 
 <<^ code="&#x0004;" -> to="?">>

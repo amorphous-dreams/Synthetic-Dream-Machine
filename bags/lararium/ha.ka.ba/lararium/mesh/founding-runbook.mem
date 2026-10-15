@@ -75,6 +75,26 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 <<~/ahu>>
 
+<<~ ahu #/the-hands>>
+
+!! 2a · The operator's hands before the two-hearth day
+
+Each act below waits on a person and a machine; no session performs one. Check each off in order, and read its ''See'' before the next.
+
+# ''The registrar key'': limit it to the one household domain, switch on its API access, and place the two credential files outside both mounts on the always-on node. ''See'': the one-shot issuer completes its first live issuance.
+# ''The router'': hand out the node's resolver address to the LAN. ''See'': a LAN device resolves the household names through it.
+# ''The node's ports'': 53 (UDP and TCP), 443 (TCP) and 5353 (UDP, mDNS) stand free on the node's LAN interface (`ss -lntup`). ''See'': nothing else listens there.
+# ''A WSL2 node'': WSL runs with `networkingMode=mirrored` and `dnsTunneling=false` in `%USERPROFILE%\.wslconfig`, so the node sits on the real LAN; with `firewall=true`, Windows Firewall governs WSL traffic, so inbound allow rules for UDP and TCP 53, TCP 443 and UDP 5353 stand on the private LAN profile. ''See'': the second machine pings the node's LAN address and reaches its port 443.
+# ''The devices'': run `tools/capability-probe/` on the tablet and on one phone before browser custody hardens. ''See'': each device's measured row.
+# ''One real-LAN discovery run'': mDNS offers its unauthoritative candidates on the household LAN. ''See'': the second machine lists the node.
+# ''The second machine'': docker stands, and it pulls the product image by the digest the release manifest names. ''See'': `docker image inspect` shows that digest.
+# ''The ember's anchor'': choose a hardware freshness anchor for unattended raises, or accept that every raise asks a person's confirm; the day needs neither, since reach stays LAN only.
+# ''The release index'': push and sign it after the last genesis re-bake and the last wire change.
+# ''The fresh start'', on both machines: move the old homes aside by rename, never delete (#/fresh-state).
+# ''The dress rehearsal'' with synthetic names, every cold-key card read back with `lares nexus seal cold rehearse`; then the ceremony (#/second-operator).
+
+<<~/ahu>>
+
 <<~ ahu #/decisions>>
 
 !! 3 · Decide names and custody before typing
@@ -355,6 +375,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AZKLCOXxQhO6ftRFogkMue9xZ_ZxBNBZ2R9BcFAXcEw
+<<^ code="&#x0003;">>ni:///sha-256;HaEjequylLOMG_HSvShd8QRPGq-kAWyOwICoUgQ9XcY
 
 <<^ code="&#x0004;" -> to="?">>

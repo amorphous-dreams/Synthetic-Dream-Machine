@@ -30,6 +30,8 @@ import sys
 
 from loci import open_loci  # our loci/imago shore — the nakama drawer-store is its first schema
 from mempalace.palace import get_collection  # direct, for the FORM store (a plane, not a locus-schema)
+from mempalace.backends import CollectionNotInitializedError, PalaceNotFoundError
+from chromadb.errors import NotFoundError
 
 # This batch CLI's cap-stack is light: it #has the shared NDJSON record reader and
 # the store-readback cap (no serve loop / flock / idle-reap — those belong to the
@@ -174,8 +176,8 @@ def cmd_embeddings(args):
 def cmd_form_embeddings(args):
     """Read STORED form-vectors back out of the FORM collection — the FFZ Measure
     servo's FORM-plane feed (the SECOND plane of the two-planes braid). Same shared
-    `read_stored_embeddings` cap (NEVER re-embeds), against `get_collection(PALACE,
-    collection_name="form")`. The form entry's id ALREADY == its verbatim_sha (the
+    `read_stored_embeddings` cap (NEVER re-embeds), against the default collection
+    in the explicitly named owned Form root. The form entry's id ALREADY == its verbatim_sha (the
     cross-graph join key), so we project only the explicit `verbatim_sha` metadata for
     parity. Dumped FLAT — NO sort: form has no chunk_index/source_file ordering; the
     orchestrator joins each form vector on verbatim_sha against the content readback's
@@ -183,10 +185,8 @@ def cmd_form_embeddings(args):
     ⇒ the orchestrator degrades to the one CONTENT plane (N=1)."""
     out = sys.stdout
     try:
-        col = get_collection(
-            _palace(), collection_name=FORM_COLLECTION, _skip_identity_check=True, _skip_name_check=True
-        )
-    except Exception as exc:  # noqa: BLE001 — no form store yet ⇒ 1-plane degrade
+        col = get_collection(_palace(), create=False, _skip_identity_check=True)
+    except (PalaceNotFoundError, CollectionNotInitializedError, NotFoundError) as exc:
         sys.stderr.write(f"form-embeddings: no form collection ({type(exc).__name__}: {exc}) — 0 rows\n")
         return
     rows = read_stored_embeddings(col, {"verbatim_sha": "lar_verbatim_sha"})

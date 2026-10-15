@@ -69,7 +69,7 @@ Queries the carrier's worn components: relative names qualify against each carri
 
 ```text
 [stack[]]                                 a carrier's qualified worn components
-[stack:has[api/pono/loci]]           carriers wearing the invariant component
+[stack:has[api/pono/meme]]           carriers wearing the meme component
 [stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]   kernel-injectable modules
 ```
 
@@ -227,6 +227,6 @@ Systematic find-replace for authors migrating TW5 content:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l6-T0iTQiNQmdQbzaDt4Ey02EpOPCchqwCC_ErFGQJM
+<<^ code="&#x0003;">>ni:///sha-256;oRYdo3tffEZ51_oc7Dz_cgwrtym7MshQDZ-xb0Qf5bM
 
 <<^ code="&#x0004;" -> to="?">>

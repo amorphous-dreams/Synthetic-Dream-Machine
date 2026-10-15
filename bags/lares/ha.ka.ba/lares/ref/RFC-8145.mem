@@ -12,7 +12,7 @@ manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 8145 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-8145"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-8145"
@@ -40,6 +40,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EmzNcXY3GFZGe5jWaps_8N3yiCn_K7RA4YCTbYhAVY4
+<<^ code="&#x0003;">>ni:///sha-256;7fkJq-pKDo2OXC4N4Rg5qobhDY46LQFhL7_VSpRiIo4
 
 <<^ code="&#x0004;" -> to="?">>

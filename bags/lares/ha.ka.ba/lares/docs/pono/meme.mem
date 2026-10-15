@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 15
 role      = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/meme"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/meme"
@@ -126,6 +126,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RqEn7FYQn8jsjvd6KYi-RaolYP4hiohZLgpn-N7Wmb8
+<<^ code="&#x0003;">>ni:///sha-256;K-8WdyhdYpZueRujsNCYTDhB_MlPgWPHX8M66eXQcDg
 
 <<^ code="&#x0004;" -> to="?">>

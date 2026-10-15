@@ -11,7 +11,7 @@ mana      = 14
 manao     = 14
 manaoio   = 13
 role      = "docs companion to the HUD law — line composition, glyph and tool tables, the Syadasti confidence reading rule, and field-annotation thresholds"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/hud"
@@ -192,6 +192,6 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mkcqUiOgFnM-r5wZ_grp5Py4yw0Q3w148jxuqqqzR0I
+<<^ code="&#x0003;">>ni:///sha-256;Ba4TIsrIxrtATNiILpoOVsqIFggR9tIL3AH3MBsqYWs
 
 <<^ code="&#x0004;" -> to="?">>

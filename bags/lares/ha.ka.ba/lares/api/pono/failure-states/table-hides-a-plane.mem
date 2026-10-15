@@ -11,7 +11,7 @@ manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — two entities sharing a table row when they ride different planes, so the row hides the seam"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane"
@@ -73,6 +73,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6a75_JbyCc1DKuzi8aJCtTNJvusmUevS59LGt2DhLt0
+<<^ code="&#x0003;">>ni:///sha-256;d9GLwZahcfLZlHfzmlfkBFBy25G4y6eIBX1tJYIZhH0
 
 <<^ code="&#x0004;" -> to="?">>

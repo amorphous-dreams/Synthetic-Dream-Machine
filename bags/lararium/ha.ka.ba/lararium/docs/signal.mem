@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "parent docs shelf for lararium-side signal framing, extracted README residue, and branch routing"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal"
@@ -172,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RZxkq0lSq9Uc-WaKclGfjIwKUDtbf0YK2W6vGnVObSc
+<<^ code="&#x0003;">>ni:///sha-256;756tZhpX7lOTBOYvXJ8y_0KwJeeo9LjV2riDZcVWUAs
 
 <<^ code="&#x0004;" -> to="?">>

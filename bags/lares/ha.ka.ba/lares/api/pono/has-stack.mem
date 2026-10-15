@@ -27,7 +27,7 @@ written   = "2026-06-12"
 
 A carrier reads as a ''nameless entity'': essence lives nowhere; identity rides the address; meaning rides what the entity //wears// (its stack) and what its body //says//. Interfaces-and-implements ontology stands REJECTED whole cloth — no carrier //${copula}-a// anything; every carrier //has// things, and the carried things speak for themselves.
 
-TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter runs the type-predicate. This law governs that field's grammar; `meme` governs copy-shape; `loci` governs the address.
+TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter runs the type-predicate. This law governs that field's grammar; `meme` governs copy-shape; `lar-uri` governs address syntax and resolution.
 
 <<~/ahu>>
 
@@ -46,8 +46,8 @@ TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter 
 !! The Seven Clauses
 
 # ''One component, one entity.'' A component exists as exactly one carrier: its definition meme at its `lar:` address — self-describing, self-enacting memetic-wikitext. Shim or pointer tiddlers MUST NOT exist in the corpus at rest; any tag-tiddler a live wiki needs gets derived as `$:/temp` runtime shadow, never synced, never sited.
-# ''Short names read as relative addresses.'' Within a carrier scoped `root/@bag/version`, a path-shaped tag qualifies to `lar:///<scope>/<tag>` by derivation (the `loci` office), never by pointer. `lar:` tags pass through qualified; system (`$:/`) and free-form tags ride outside the stack. The meta `tags` field stands as the ''single source'' of the stack; body `#has` edges read as derived residue and burn at normalization.
-# ''The mandatory component rides the title.'' Every placed carrier holds exactly one intrinsic: its `lar:` address (`loci` — the transform analog). Everything else composes.
+# ''Short names read as relative addresses.'' Within a carrier scoped `root/@bag/version`, a path-shaped tag qualifies to `lar:///<scope>/<tag>` by derivation here, never by pointer. `lar:` tags pass through qualified; system (`$:/`) and free-form tags ride outside the stack. The meta `tags` field stands as the ''single source'' of the stack; body `#has` edges read as derived residue and burn at normalization.
+# ''The title carries identity.'' A placed carrier's `lar:` title names it. The address does not add a component to its has-stack; other components compose through tags.
 # ''Bare tags read fertile.'' A stack entry whose definition meme has not landed stands ''declared-unresolved'' — a lawful, promotable state, never an error. Promotion follows the rating ladder: bare entry (data-grade) → definition lands (meme) → definition carries law (ano). Open minting, judged by the ladder — never a schema registry. A fixed enum of blessed components in any law reads as the interface sneaking back; refuse it.
 # ''Families carry exclusivity.'' Component families (the directory grain) MAY declare arity in their own family meme — "at most one of mine per stack" or "many welcome." Arity semantics live in the carried family, never in the edge.
 # ''Kapu rides as a grant.'' A stack entry whose definition wears kapu MUST NOT self-add; the write shore refuses it without the operator's mint. Authority = what a carrier holds and who granted it, never what it //is//.
@@ -70,7 +70,7 @@ Field-grounded against Epic's UEFN+/Scene Graph direction (2026-06-12, two resea
 |---|---|
 | entity (empty container) | nameless carrier |
 | component (sole semantics carrier) | component definition meme |
-| default transform component | `loci` — the mandatory address |
+| default transform component | the carrier title — identity outside the component stack |
 | type-as-predicate (succeeds/fails on a value) | tag filter / rating-by-schema-compliance |
 | effect specifiers as negative promises | grants bounding what a carrier never does |
 | non-enumerable `weak_map` persistence | capability-keyed access — authority = possession |
@@ -113,6 +113,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ocUIfw3GritdXANBwHXIgyfprQ1ZHGuWldtOJ_xhfFk
+<<^ code="&#x0003;">>ni:///sha-256;uRI-Esf-zG5stPvGSBqjaDcUVWIPLiN2U8CDU0BS4r0
 
 <<^ code="&#x0004;" -> to="?">>

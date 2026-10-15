@@ -66,7 +66,7 @@ import {
 import { repoRoot } from "@lararium/mesh/node";
 
 import { resolveMempalacePython, resolveStructurePalaceSpawn, resolveHolderCapEnv } from "@lararium/mempalace";
-import { memorySensoriumStructureDir, memorySensoriumContentDir } from "@lararium/mempalace/xdg-base";
+import { memorySensoriumStructureDir, memorySensoriumContentDir, memorySensoriumFormDir } from "@lararium/mempalace/xdg-base";
 import { resolveLociIo, TelemetryUnavailable } from "./telemetry-writeback.js";
 import { mineWithServo } from "@lararium/mempalace";
 import { TIMEOUT_KILL_SIGNAL } from "@lararium/mempalace";
@@ -537,6 +537,7 @@ interface PyContext {
   /** The sovereign content plane every loci_io read/write NAMES — loci_io refuses an unnamed
    *  palace (it would reach the guest, then no-op after a pave). One value, every FFZ leg. */
   readonly contentPalace: string;
+  readonly formPalace: string;
 }
 
 /**
@@ -553,7 +554,8 @@ function pyContext(): PyContext {
   if (!existsSync(LOCI_IO)) throw new TelemetryUnavailable(`loci_io.py missing at ${LOCI_IO}`);
   const submoduleRoot = join(repoRoot, "mempalace");
   const pyEnv = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(PY) };
-  return { PY, LOCI_IO, submoduleRoot, pyEnv, contentPalace: memorySensoriumContentDir() };
+  return { PY, LOCI_IO, submoduleRoot, pyEnv, contentPalace: memorySensoriumContentDir(),
+           formPalace: memorySensoriumFormDir() };
 }
 
 /** Default {@link EmbeddingsReader} — `loci_io.py embeddings --wing W` (CONTENT plane). */
@@ -607,9 +609,9 @@ function parseFrontier(handle: string | null | undefined): string | undefined {
  * not wing-scoped); the orchestrator joins per session on the content readback's verbatim_sha.
  */
 export function pythonFormEmbeddingsReader(_wing: string): Map<string, readonly number[]> {
-  const { PY, LOCI_IO, submoduleRoot, pyEnv, contentPalace } = pyContext();
+  const { PY, LOCI_IO, submoduleRoot, pyEnv, formPalace } = pyContext();
   const out = mineWithServo("drawer-io-form-embeddings", (timeoutMs) =>
-    execFileSync(PY, [LOCI_IO, "--palace", contentPalace, "form-embeddings"], {
+    execFileSync(PY, [LOCI_IO, "--palace", formPalace, "form-embeddings"], {
       cwd: submoduleRoot, env: pyEnv, maxBuffer: 1 << 30, encoding: "utf8",
       timeout: timeoutMs, killSignal: TIMEOUT_KILL_SIGNAL,
     }),

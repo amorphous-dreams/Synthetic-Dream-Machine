@@ -342,8 +342,8 @@ def _prose_stanza(text: str) -> dict | None:
 
     The compute device rides {@link _device_cap} — the GPU is a CAP, not a dependency: on a
     card it lands `cuda`, on the QA box it lands `cpu`, the SAME tier standing either way. The
-    English constituency model auto-downloads once into ~/stanza_resources on first use
-    (matching how spaCy/nltk models bootstrap); thereafter it reuses the local copy."""
+    The English constituency model must already live in Stanza's resource cache;
+    absent assets fall through to the next tier without a network download."""
     global _stanza_nlp, _stanza_tried
     if _stanza_tried and _stanza_nlp is None:
         return None
@@ -358,6 +358,7 @@ def _prose_stanza(text: str) -> dict | None:
             _stanza_nlp = stanza.Pipeline(
                 "en", processors="tokenize,pos,constituency", verbose=False,
                 use_gpu=(device == "cuda"),
+                download_method=None,  # offline CI/container: absent assets fall through by named tier
             )
             sys.stderr.write(f"structure_router: stanza constituency on device-cap '{device}'\n")
         except Exception as exc:  # noqa: BLE001 — stanza / its model absent ⇒ spaCy tier

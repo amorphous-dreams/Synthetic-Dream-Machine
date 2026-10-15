@@ -616,7 +616,7 @@ carrier states first ([FRAMING] #declaration-register):
 
 <<~ ahu #/head>>
 Body text, with a live embed: <<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>.
-<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family="control" role="has">>
+<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri" family="control" role="has">>
 
 <<~/ahu>>
 
@@ -713,6 +713,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iv7WaSfL6OjUxMd7GfC6FXbIlLjnUx8pIUw8FhQKdiM
+<<^ code="&#x0003;">>ni:///sha-256;xKXlIo3DZv054qRp4zf2UFgOkXewXLl_Zs0x1iYQHUY
 
 <<^ code="&#x0004;" -> to="?">>

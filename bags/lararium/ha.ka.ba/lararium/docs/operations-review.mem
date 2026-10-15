@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 16
 role      = "OODA-HA extraction plan for lararium interaction protocols — frame-uncertainty, talk story, session init, and related surfaces"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/operations-review"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/operations-review"
@@ -293,6 +293,6 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0BIHuXBvUidcZMf0oPeG5iMBZLbeBDuJLQ7OkmcQPQQ
+<<^ code="&#x0003;">>ni:///sha-256;l-jW-2n_FEQ0iTyll2bsoqG5SDRVmU4z2bPyt9WmbRE
 
 <<^ code="&#x0004;" -> to="?">>

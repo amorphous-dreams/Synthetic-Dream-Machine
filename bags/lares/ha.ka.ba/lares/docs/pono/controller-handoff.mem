@@ -109,6 +109,15 @@ Kits: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">> and <<~ loulou
 # H, pure: the hosting act's image with the operator-seat delegation, the hosting key and three dials; then H8's signed walker grant and its public-half verifier (unskip `HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` and `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` as each greens). The live cut of the issuer, reader, store and sorter waits on lane `cutover`.
 Ground: the sensorium form-store scripts, `tools/turn-parity.mjs`, the seal, roll, kapae and anchor files (`seal-ceremony.ts`, `nexus-partial.ts`, `nexus-contract.ts` outside the admit carriage, the rotate paths), and mesh `hosting.ts` for its pure re-cut. Leaves alone: lane `cutover`'s files.
 
+!!! Lane `pre-fence` ~ the shapes at rest the fence wants first
+Each row changes a shape at rest or in signed bytes, so each lands before the fence (#/rulings, the fence). Red first, a control, and a vector per refusal.
+# Restore after enrolment, built to its ruling: a face's own bundle restores after it enrols guardians while its log holds the set its root enrolled by the typed first event (the restore-after-enrolment ruling); the bundle then carries an enrolled guardian set.
+# `K13`, the sealed outbox: each parcel seals under a stable outbox key the vessel key wraps, rests under a random name with its routing inside, and retries after its atomic commit (the outbox-at-rest ruling).
+# `K14`, a restored face stands provisional until a party to its relation agrees with its head (the restore's key-history ruling).
+# V3, the root-card reader: the split-root cards re-land the face's lineage and root, and open no memory; and V5, a restore as persona zero through the founding act.
+# `S2`, the engine fold's live image proof: one shard push on the rebuilt image, read with held-out.
+Ground: custody, vault, keyring and restore files, `face-bundle-restore.ts`, the outbox, and `found-hearth.ts` for V5's road. Leaves alone: the `cutover` and `nexus-host` lanes' files; it fires once either frees its slot.
+
 !!! Lane `scout` ~ the next path, read-only
 A scouting lane changes no code. It writes ONE plain report, `bags/lararium/ha.ka.ba/lararium/docs/next-path-scout.md`, commits it alone on `feature/green-jello-dinosaur-5--scout` and pushes that branch. Grounded in file-and-line reads of the tree, it reports:
 # W's remaining walk: what the socket cutover still needs, file by file against the W kit's #/cutover list; every production caller of `runPeerHandshake`, `lar:challenge` and vessel-key gate proof that still stands; the order that lands it as one assembled commit; its red window.
@@ -152,6 +161,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YAlSfa3BK0hlLCj_rClU7unbrqctZkJPM_4g_jaWfcw
+<<^ code="&#x0003;">>ni:///sha-256;sCfwGUAjWgDOYwdxeSBpPGhkf-zJSAUcQRlUAlBFxUY
 
 <<^ code="&#x0004;" -> to="?">>

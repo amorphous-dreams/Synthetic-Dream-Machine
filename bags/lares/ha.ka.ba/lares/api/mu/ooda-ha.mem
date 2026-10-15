@@ -15,7 +15,7 @@ namespace             = "&#x0950; &#x0901;"
 ooda-ha-default       = 1
 ooda-ha-loop-span     = "multi-turn"
 role                  = "invariant OODA-HA loop law, loop-visibility Level, and the loop-spans-turns phase-yield grammar"
-tags                  = ["api/pono/meme", "api/pono/loci"]
+tags                  = ["api/pono/meme"]
 title                 = "lar:///ha.ka.ba/lares/api/mu/ooda-ha"
 type                  = "text/memetic-wikitext+tiddlywiki"
 uri-path              = "ha.ka.ba/lares/api/mu/ooda-ha"
@@ -321,6 +321,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_QSO9jr459EHxaXrPoMRPa-rKS5HRrtGH2rcFKXUCGw
+<<^ code="&#x0003;">>ni:///sha-256;xcOmW6jwPRk2KWTElEmDu4z0YEgWYVIJfQQjSg6PdJk
 
 <<^ code="&#x0004;" -> to="?">>

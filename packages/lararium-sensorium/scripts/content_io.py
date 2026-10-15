@@ -119,16 +119,9 @@ class ContentStore:
         # hold several (the form registry writes a caller-vector `form` collection beside the base drawers),
         # so a reader that always opens the base collection reads an empty sibling and reports the plane
         # empty — a store speaks only through the collection you open. Unset falls to the base default.
-        # A named plane passes upstream's name check by the door it keeps for a deliberate second store.
         self._collection_name = collection_name
         self._col = (
-            get_collection(
-                palace_path,
-                collection_name=collection_name,
-                create=True,
-                _skip_identity_check=True,
-                _skip_name_check=True,
-            )
+            get_collection(palace_path, collection_name=collection_name, create=True, _skip_identity_check=True)
             if collection_name
             else get_collection(palace_path, create=True, _skip_identity_check=True)
         )
@@ -207,6 +200,18 @@ class ContentStore:
         if raw is None:
             return None
         return {"cid": raw["cid"], "document": raw["document"] or "", "metadata": raw["metadata"]}
+
+    def get_with_vector(self, cid: str) -> "dict | None":
+        """Read back the whole durable row for a projection receipt or restart witness."""
+        got = self._col.get(ids=[cid], include=["documents", "metadatas", "embeddings"])
+        ids = got.get("ids") or []
+        if not ids:
+            return None
+        vectors = got.get("embeddings")
+        vector = ([float(x) for x in vectors[0]] if vectors is not None and len(vectors)
+                  and vectors[0] is not None else None)
+        return {"cid": ids[0], "document": (got.get("documents") or [""])[0] or "",
+                "metadata": (got.get("metadatas") or [{}])[0] or {}, "embedding": vector}
 
     def put(self, cid: str, text: str, embedding: list, metadata: dict) -> dict:
         """Durable write of ONE record — validate its floors, then upsert. The floor raises land verbatim: a

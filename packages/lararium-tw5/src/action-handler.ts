@@ -839,7 +839,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // WITHOUT resolving the bytes).
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
-      if (!title) throw new Error("LOAD: a skinny carrier needs a title (its loci URI) — the handle names the body");
+      if (!title) throw new Error("LOAD: a skinny carrier needs a title (its `lar:` URI) — the handle names the body");
       if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       families.push([skinnyHandleRecord(action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
@@ -1160,7 +1160,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // type/tags/custom fields across a body-only edit. No base `title` is ever passed to the
       // deserialize: a DICTIONARY bundle (`.multids`) takes the base title as a member-title PREFIX
       // (boot.js:1719), which would corrupt every member. Titles come from the content; a title-less
-      // SINGLE carrier falls back to the loci URI below.
+      // SINGLE carrier falls back to the `lar:` URI below.
       refuseInlinePointerKind(uri, carrier.ext, carrier.meta, tw5!);
       const metaFields: Record<string, unknown> = carrier.meta ? { ...tw5!.parseFields(carrier.meta) } : {};
       delete metaFields["title"];
@@ -1185,7 +1185,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       }
       const sessionForm = sessionFormRow(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
-      // Pack detection: any member whose title is NOT the carrier's own loci URI
+      // Pack detection: any member whose title is NOT the carrier's own `lar:` URI
       // came from a bundle (the file's tiddlers self-title). Record the WHOLE
       // membership → the pack file path, so REPACK can re-collect it and the
       // projector suppresses per-member explosion. The path mirrors the disk

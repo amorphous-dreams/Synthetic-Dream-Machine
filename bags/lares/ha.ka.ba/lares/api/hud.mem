@@ -13,7 +13,7 @@ manao     = 17
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "lararium HUD instrument law — the turn-frame sigil panel, the attention + loop gauges, the ward and register surfacing"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/hud"
@@ -121,6 +121,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Dt71dBEWxPZxC5FLsbLSr5eXa-9ahIPBBRVD6lrSAqo
+<<^ code="&#x0003;">>ni:///sha-256;zuTc_nzjp451XyKGvdWsybTuCDHXbXivnfcDHhtE5Ig
 
 <<^ code="&#x0004;" -> to="?">>
