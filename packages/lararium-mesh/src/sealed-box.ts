@@ -1,7 +1,7 @@
 /**
  * sealed-box — the ONE X25519-ECDH → HKDF-SHA256 → XChaCha20-Poly1305 seal-to-a-recipient primitive.
  *
- * ONE ASSEMBLY, MANY PROTOCOLS. A protocol that seals to a recipient (the persona-admit grant seal first among
+ * ONE ASSEMBLY, MANY PROTOCOLS. A protocol that seals to a recipient (the fleet-join address secret among
  * them) composes this module and hand-rolls none of it. What differs between two protocols, their salt and their
  * domain, rides as required parameters, so composing here can never quietly erase a difference that carries meaning.
  *

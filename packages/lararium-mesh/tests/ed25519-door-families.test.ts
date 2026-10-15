@@ -41,7 +41,6 @@ import { dyadId, signDyadBinding, verifiedFleetOfGroup, type DyadRecord, type Dy
 import { signAttestation, verifiedAttestors } from "../src/re-anchoring.js";
 import { signPluginAttestation, verifyPluginAttestation } from "../src/genesis-doc.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
-import { mintEnrollmentOffer, mintJoinAck, openPersonaGrant, sealPersonaGrant, verifyJoinAck, type PersonaRef } from "../src/persona-admit.js";
 import { grantVerifiesAt, hostingEpochOf, issueGrant, mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
 import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
@@ -299,40 +298,6 @@ describe("device edge (verifyDeviceDelegation)", () => {
     const forged = { ...(await edgeBy(await honestHand(3), (await honestHand(4)).key)), personaRootDid: `0x${IDENTITY_KEY}`, signature: NOBODYS_SIGNATURE } as DeviceDelegationTiddler;
     expect(await verifyDeviceDelegation(forged, `0x${IDENTITY_KEY}`))
       .toEqual({ ok: false, reason: "personaRootDid refuses at the Ed25519 door (key-small-order)" });
-  });
-});
-
-describe("persona admit (openPersonaGrant, verifyJoinAck)", () => {
-  const PREFIX = "EpersonaAID_prefix_0001";
-  const ceremony = async (persona: Hand, device: Hand) => {
-    const personaRef: PersonaRef = { prefix: PREFIX, verifyingKey: persona.key };
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device.key });
-    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef, personaSigner: persona.sign });
-    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: (prefix) => (prefix === PREFIX ? persona.key : null) });
-    if (!opened.ok) return { opened, ack: null };
-    const { ack } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: device.sign });
-    return { opened, ack: await verifyJoinAck({ ack, sent }) };
-  };
-  test("CONTROL: grant and acknowledgement both stand", async () => {
-    const { opened, ack } = await ceremony(await honestHand(51), await honestHand(52));
-    expect(opened.ok).toBe(true);
-    expect(ack?.ok).toBe(true);
-  });
-  test("a grant signature only a lenient verifier reads admits nobody", async () => {
-    const { opened } = await ceremony(torsionHand(51), await honestHand(52));
-    expect(opened.ok).toBe(false);
-  });
-  test("an acknowledgement only a lenient verifier reads records no join", async () => {
-    const { opened, ack } = await ceremony(await honestHand(51), torsionHand(52));
-    expect(opened.ok).toBe(true);
-    expect(ack).toMatchObject({ ok: false, reason: "ACK signature does not verify against B's device key" });
-  });
-  test("a device key the door refuses never gets offered or granted, by name", async () => {
-    expect(() => mintEnrollmentOffer({ targetVesselId: IDENTITY_KEY })).toThrow(/admit-key-refused.*key-small-order/);
-    const persona = await honestHand(51);
-    const { offer } = mintEnrollmentOffer({ targetVesselId: (await honestHand(52)).key });
-    await expect(sealPersonaGrant({ offer: { ...offer, targetVesselId: IDENTITY_KEY }, personaRef: { prefix: PREFIX, verifyingKey: persona.key }, personaSigner: persona.sign }))
-      .rejects.toThrow(/admit-key-refused.*key-small-order/);
   });
 });
 
