@@ -1,10 +1,11 @@
 /**
  * Source inventory alone: exercising every live dial falls to the W built-image negative probe.
  *
- * The inventory derives from the tree, never from a list: every non-test source under each package's `src`
- * that names one of the old wire's five symbols in code, its comments and string bodies stripped. A
- * symbol's own declaration counts as no site; every call, construction, import, re-export and type use
- * does, so a gate hidden behind a type alias or a barrel line still reads red.
+ * The inventory derives from the tree, never from a list: every non-test source under each package's `src`,
+ * and beside it every non-test source under each package's `probes`, that names an old-wire symbol in code,
+ * its comments and string bodies stripped. A symbol's own declaration counts as no site; every call,
+ * construction, import, re-export and type use does, so a gate hidden behind a type alias or a barrel line
+ * still reads red, and a converted file that keeps speaking one frame of the old wire reads red by that frame.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -15,8 +16,16 @@ import { carriageAct } from "./fixtures/carriage.js";
 const red = process.env.LAR_UNBUILT_REDS === "1" ? test : test.skip;
 const root = join(import.meta.dirname, "..", "..");
 
-/** The old wire, by the names its production reach carries: the handshake, its challenge, the gate and both proofs. */
-const OLD_WIRE = ["runPeerHandshake", "mkLarChallenge", "DaemonAuthGate", "verifyLeafProof", "verifyAuthProof"] as const;
+/**
+ * The old wire, by the names its production reach carries: the handshake, its challenge, the gate and both proofs;
+ * then every frame a converted file could keep speaking: the challenge's reader, the answer's builder and judge, the
+ * auth and auth-ok frames, the auth-ok's bytes and check, and both signers.
+ */
+const OLD_WIRE = [
+  "runPeerHandshake", "mkLarChallenge", "DaemonAuthGate", "verifyLeafProof", "verifyAuthProof",
+  "isLarChallengeMsg", "buildAuthResponse", "evaluateAuthProof", "mkLarAuth", "mkLarAuthOk", "authOkBytes", "verifyAuthOk",
+  "signLeafProof", "signPresented",
+] as const;
 const NAMES = new RegExp(String.raw`\b(${OLD_WIRE.join("|")})\b`, "g");
 const DECLARES = new RegExp(String.raw`^\s*(?:export\s+)?(?:async\s+)?(?:function\s*\*?|class|const|let)\s+(${OLD_WIRE.join("|")})\b`);
 
@@ -64,11 +73,15 @@ function sourcesUnder(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const productionSources = (): string[] =>
-  readdirSync(root).filter((pkg) => { try { return statSync(join(root, pkg, "src")).isDirectory(); } catch { return false; } })
-    .flatMap((pkg) => sourcesUnder(`${pkg}/src`)).sort();
+/** Every non-test source under each package's `leaf` directory. */
+const sourcesOf = (leaf: "src" | "probes"): string[] =>
+  readdirSync(root).filter((pkg) => { try { return statSync(join(root, pkg, leaf)).isDirectory(); } catch { return false; } })
+    .flatMap((pkg) => sourcesUnder(`${pkg}/${leaf}`)).sort();
+const productionSources = (): string[] => sourcesOf("src");
+const probeSources = (): string[] => sourcesOf("probes");
 
-const oldWireSites = (): string[] => productionSources().flatMap((file) => sitesIn(file, readFileSync(join(root, file), "utf8")));
+const sitesOver = (files: readonly string[]): string[] => files.flatMap((file) => sitesIn(file, readFileSync(join(root, file), "utf8")));
+const oldWireSites = (): string[] => [...sitesOver(productionSources()), ...sitesOver(probeSources())];
 
 describe("W cutover reach", () => {
   test("CONTROL: the strip keeps code and drops comments and string bodies", () => {
@@ -85,11 +98,22 @@ describe("W cutover reach", () => {
     const files = productionSources();
     expect(files.length).toBeGreaterThan(300);
     expect(files.some((file) => /tests\//.test(file))).toBe(false);
+    const probes = probeSources();
+    expect(probes.length).toBeGreaterThan(0);
+    expect(probes.every((file) => /^[^/]+\/probes\//.test(file) && !/\.test\.|\.spec\./.test(file))).toBe(true);
     const sites = oldWireSites();
     for (const name of OLD_WIRE) expect(sites.some((site) => site.endsWith(` ${name}`)), name).toBe(true);
+    // The probes inventory reads on its own: a probe that speaks the old wire names its own site.
+    expect(sitesOver(probes).some((site) => /^[^/]+\/probes\//.test(site))).toBe(true);
+    // Each declaration in the wire's own module counts as no site: every symbol but the gate's class declares there.
+    const wire = "lararium-mesh/src/auth-wire.ts";
+    const declared = codeOnly(readFileSync(join(root, wire), "utf8")).split("\n")
+      .flatMap((line, k) => { const name = DECLARES.exec(line)?.[1]; return name ? [`${wire}:${k + 1} ${name}`] : []; });
+    expect(declared.map((site) => site.split(" ")[1]).sort()).toEqual(OLD_WIRE.filter((name) => name !== "DaemonAuthGate").sort());
+    expect(sites.filter((site) => declared.includes(site))).toEqual([]);
   });
 
-  red("NO_OLD_WIRE_PRODUCTION_CALLER: no production source reaches the retired handshake, its gate or its proofs", () => {
+  red("NO_OLD_WIRE_PRODUCTION_CALLER: no production source or probe reaches the retired handshake, its gate, its frames or its proofs", () => {
     const sites = oldWireSites();
     expect(sites, `old wire still reached at:\n  ${sites.join("\n  ")}`).toEqual([]);
   });
