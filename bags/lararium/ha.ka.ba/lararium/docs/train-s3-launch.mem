@@ -39,7 +39,7 @@ Start the live storage cut after O1 supplies a production verified face, signer 
 # ''PURE: value and lineage vectors.'' Fix sealed `change` and `checkpoint` references under the step-1 format. Include parent manifests, a random authenticated ciphertext address, a key version and a fresh checkpoint before any new-version change. A bad tag yields no bytes. A second plaintext with equal content still takes a fresh private ciphertext address.
 # ''PURE: face decision.'' Define the session-face check over every fetch, write, catalog resolution and content read. A correct key alone grants no read. A refused catalog ask reveals no name. A value the store cannot open reads as a named refusal, never as an absent value.
 # ''LIVE: sealed Repo rest.'' Connect the holder's values and lockboxes to the production document store. Seal each stored value, hydrate only after authentication and the face check, and hand the sealed-store shore to the session view. Supply `freshBase` from the document store; commit the checkpoint before the admission's first change or lockbox permits that version.
-# ''LIVE: roll and restart.'' Roll content keys at a counted seat removal, retain causal parent references and reopen sealed values after restart. Hand any key-roll re-seal question to the operator's open ruling; do not freeze a causal mapping in this step.
+# ''LIVE: roll and restart.'' Roll content keys at a counted seat removal, retain causal parent references and reopen sealed values after restart. Each replacement takes its re-seal record, signed by the face session that writes it and naming the removal act that authorized the roll (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
 
 <<~/ahu>>
 
@@ -77,10 +77,10 @@ Repo values rest under randomized authenticated sealing. Every document and cont
 
 !! Rulings
 
-The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>). The re-seal proof stays with the operator at `#/open` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>). A key roll reaches that question when old ciphertext needs a replacement; this kit names the seam and fixes no mapping.
+The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>). The re-seal proof stands ruled: its record's format lands with this step.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sFnpYQXeT0dde9231nM0z6WqPCYYIjzKDAiaIZ_zIBc
+<<^ code="&#x0003;">>ni:///sha-256;aCu9iX4qBYOv9T4k4sioyZv5koZXniWEW_fS1Iw-F3I
 
 <<^ code="&#x0004;" -> to="?">>

@@ -93,20 +93,21 @@ A cloud session opens on branch `feature/green-jello-dinosaur-5`, stands the hou
 
 A cloud lane commits on its OWN branch, `feature/green-jello-dinosaur-5--<lane>`, cut from `feature/green-jello-dinosaur-5`, and pushes that branch alone; CI and held-out fire on it. It shards each burst with `node tools/e2e-shards.mjs push <lane>-<n>` and reads `node tools/ci-verdict.mjs --head <sha>`. It never pushes `feature/green-jello-dinosaur-5` or `main`: the controller merges each lane branch after reading its three readings. Before its final push it merges `feature/green-jello-dinosaur-5` into its lane branch. It lists canon and changelog lines for the roadmap and `CHANGELOG.md` in its handback, and edits neither. It stops at a clean boundary when context runs short and hands back in the lane law's shape, with its lane branch and head.
 
-!!! Lane `wire` ~ train W's live span
-Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>, with <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>.
-# Walk step two, LIVE: one face-subject and join slice on N's landed cosign seam (`runNexusContractOpen` and `runNexusContractPartial`). `device-admit.ts` signs its canon list and gate pin inside its payload; the producer, the board verifier, `readAdmitAtHeldRoot`, the import reader and N's contract fixtures move with those bytes in one commit. Repair `supplySessionFace` after `REISSUED_FACE_OPENS_LOCAL_SESSION` reads red first. Build the fleet-join door, the vessel face-key certificate and the add-a-face grant; retire the bare import and old join doors.
-# Walk step three, LIVE: THE SOCKET CUTOVER as one assembled commit, by the kit's #/cutover list and proof order.
-# Walk step four, the sibling and herm leg, where the span carries it.
-Ground: both vessel composers, `device-admit.ts`, the admit carriage inside `nexus-contract.ts`, and every gate, socket, sorter and dial-fixture file the kit names. Leaves alone: lane `nexus`'s files.
+!!! Lane `cutover` ~ train W, to the socket cutover
+Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>, with the scout's report `bags/lararium/ha.ka.ba/lararium/docs/next-path-scout.md` section 1 as its map of the tree.
+# Step two's remainder, LIVE: the fleet-join door, the vessel face-key certificate and the add-a-face grant; `openSignedSession` and `openJoinedFaceSession` reach production; `device-admit.ts` stops carrying the gate pin and canon list beside its signed payload; the old join doors retire (the CLI and node `device-admit`, `persona-admit-cmd.ts`, `cabal-join.ts`, the `LAR_JOIN_GATE` and `LAR_JOIN_SYNC` boot path, the bare-token reader).
+# Widen `gate-cutover-reach.test.ts` to derive its inventory from source, and see it name today's old-wire sites red.
+# THE SOCKET CUTOVER, one assembled commit, in the scout's order: the funnel (both `gate-dial-fixture.ts` helpers), the narrow patches, the old wire retired, the admit pin moved to the wire key, `NO_OLD_WIRE_PRODUCTION_CALLER` unskipped, then the kit's proof order.
+# The dials, where the span carries it: one per (hearth, Nexus), and the sibling at face scope.
+Ground: both vessel composers, `device-admit.ts`, the admit carriage in `nexus-contract.ts`, every gate, socket, sorter, relay, oracle and dial file, and the probes the cutover moves. Leaves alone: lane `nexus-host`'s files.
 
-!!! Lane `nexus` ~ train N's closing span
-Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">>; the Offering Antigen scope, fork-resolve and engine cadence rulings bind it.
-# The kapae and roll-anchor two-vault doors: `nexus-partial.ts`'s two families wired into `runNexusKapae` and `runNexusRollAnchor` the way the admit and revoke doors run, each partial judged before a second seat signs and judged fresh again right before the write, bounded by a count and never a clock.
-# The two-root witness: two scratch `LAR_ROOT`s founded by the test door, files as the only courier, independent restart, one joint AID on both, an unsigned or half-signed charter refused at both imports, both seeds intact.
-# Walk steps four and five: rolls with fresh successor cards on both roots, a third chair with possession and its carriage contract, a chair passed in a later roll, and a dormant root's catch-up along one lineage.
-# The Offering act's scope field bound to the joint AID, with the receiver's check, where the span carries it.
-Ground: the cofound, charter, seal, kapae, roll-anchor and partial files (`seal-ceremony.ts`, `init.ts`, `found.ts`, `found-hearth.ts`, `wax-stamp.ts`, `cofound.ts`, `nexus-partial.ts`) and `nexus-contract.ts` outside the admit carriage. Leaves alone: lane `wire`'s files. A line one lane needs on the other's ground travels in its handback as a patch.
+!!! Lane `nexus-host` ~ the base turns green, then N's remainder and H's pure steps
+Kits: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">> and <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-h-launch">>, with the scout's report sections 2 and 3.
+# The base's two reds, first, as one burst: the sensorium's `form` collection opens with `_skip_name_check=True` at its three sites (`form_encoder.py`, `loci_io.py`, and `content_io.py` on its named-collection branch), with the fake at `test_loci.py` widened; `tools/turn-parity.mjs` skips `.jsonl` beside `.json`. Never edit the `mempalace` submodule.
+# `N4`, red first: a roll refuses by name while the prior roll stands with no anchor (operator ruling), at the roll's open and the two-vault rotate, with the single-vault rotate as the control.
+# `N2`: the realm edge anchors cross through the same two-vault partial. `N5`: a dormant vault catches up its missed board acts along one lineage, on the two-root witness.
+# H, pure: the hosting act's image with the operator-seat delegation, the hosting key and three dials; then H8's signed walker grant and its public-half verifier (unskip `HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` and `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` as each greens). The live cut of the issuer, reader, store and sorter waits on lane `cutover`.
+Ground: the sensorium form-store scripts, `tools/turn-parity.mjs`, the seal, roll, kapae and anchor files (`seal-ceremony.ts`, `nexus-partial.ts`, `nexus-contract.ts` outside the admit carriage, the rotate paths), and mesh `hosting.ts` for its pure re-cut. Leaves alone: lane `cutover`'s files.
 
 !!! Lane `scout` ~ the next path, read-only
 A scouting lane changes no code. It writes ONE plain report, `bags/lararium/ha.ka.ba/lararium/docs/next-path-scout.md`, commits it alone on `feature/green-jello-dinosaur-5--scout` and pushes that branch. Grounded in file-and-line reads of the tree, it reports:
@@ -151,6 +152,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sIzkby4woIcV8UvouEwUUDh6OMXS6xBlepzQoWLKZN0
+<<^ code="&#x0003;">>ni:///sha-256;YAlSfa3BK0hlLCj_rClU7unbrqctZkJPM_4g_jaWfcw
 
 <<^ code="&#x0004;" -> to="?">>
