@@ -60,6 +60,7 @@ import { existsSync, readFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { larSealHome } from "../env.js";
 import { storeVerb, pokeSealHomeRefold, storeFailure } from "../store-door.js";
+import { cmdSealAnchor } from "./nexus-anchor-cmd.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -104,7 +105,7 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 }
 
 const SEAL_USAGE: readonly string[] = [
-  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound | roll>",
+  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound | roll | anchor>",
   "",
   "  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key",
   "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
@@ -139,6 +140,8 @@ const SEAL_USAGE: readonly string[] = [
   "          heard from the other holders: the rule and every other chair's fingerprint [--heard-threshold <n> --heard <fp,…>]",
   "  roll file <circle>   file the rolled charter once the circle reads complete; the roll anchor crosses next",
   "  roll abandon --nexus <aid>   drop this vault's open circle and retire the seats it contributed",
+  "  anchor [--nexus <aid>] --out <partial>   once both vaults filed the roll, sign its anchor with the seats held here",
+  "  anchor --from <partial> [--out <file>]   judge the other vault's anchor partial, cosign it, land it once complete",
 ];
 
 /**
@@ -193,6 +196,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "cold":    return await sealCold(args);
       case "cofound": return await sealCofoundVerb(args);
       case "roll":    return await sealRollVerb(args);
+      case "anchor":  return await cmdSealAnchor(args);
       default:
         return refuseUsage(args, "nexus seal", SEAL_USAGE, sub ? `unknown sub-verb "${sub}"` : undefined);
     }

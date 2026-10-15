@@ -60,6 +60,7 @@ async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, a
 }
 const cofound = (step: string[], options: Record<string, string> = {}) => run(nexus(["cofound", ...step], options));
 const roll = (step: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}) => run(nexus(["roll", ...step], options, flags));
+const anchor = (options: Record<string, string>) => run(nexus(["anchor"], options));
 
 /** Found the joint Nexus across two vaults, keeping each founder's cold card code from the JSON answers. */
 async function found(courier: string): Promise<{ A: Vault; B: Vault; aid: string; aCode: string; bCode: string }> {
@@ -159,6 +160,21 @@ describe("lares nexus seal roll", () => {
       // CONTROL: the same join, honestly asked, runs.
       expect((await roll(["join", c1], { "cold-key": bCode, out: c2 })).code).toBe(0);
       expect((await roll(["nonsense"])).code).not.toBe(0);
+    } finally { rmSync(courier, { recursive: true, force: true }); }
+  });
+
+  test("L3 — `seal anchor` refuses an --out its write could not take, and a missing file, before any act runs", async () => {
+    const courier = mkdtempSync(join(tmpdir(), "lares-anchor-courier-"));
+    try {
+      await vault("anc");
+      const p1 = join(courier, "p1.json");
+      writeFileSync(p1, "{}");
+      expect((await anchor({ out: join(courier, "no-such-dir", "p.json") })).out["error"]["message"]).toMatch(/its directory does not exist/);
+      expect((await anchor({ out: courier })).out["error"]["message"]).toMatch(/names a directory/);
+      expect((await anchor({ from: p1, out: p1 })).out["error"]["message"]).toMatch(/--out names the partial you carried/);
+      expect((await anchor({ from: join(courier, "absent.json") })).out["error"]["message"]).toMatch(/cannot read .* as a partial file/);
+      // CONTROL: a carried file that reads as no partial reaches the door, which names it.
+      expect((await anchor({ from: p1 })).out["error"]["message"]).toMatch(/reads as no roll-anchor partial/);
     } finally { rmSync(courier, { recursive: true, force: true }); }
   });
 });
