@@ -106,7 +106,7 @@ function seatedRosterOrRefuse(sealHome: string): KahuQuorumSeats {
 /** The antigen door's sub-quorum refusal — it names the act a short quorum would have minted. */
 const subQuorum = (held: number, k: number): NexusKapaeError => new NexusKapaeError(
   `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seat key(s) of the seated roster, but a valid antigen act carries ${k} distinct founding-kahu signatures. ` +
-  `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
+  `Where the other seats rest in another vault, the act crosses as a partial: \`lares nexus kapae <nym> --nexus <aid> --out <file>\` here, then \`--from <file>\` there.`,
 );
 
 /** The charter home an act reads: the carried charter `aid` names, else the primary. Refuses an AID this vessel never carried. */

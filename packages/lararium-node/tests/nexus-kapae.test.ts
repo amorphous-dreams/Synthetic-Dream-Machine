@@ -11,7 +11,7 @@
  *   · the written tiddler PERSISTS across Repo instances (a fresh Repo reads the prior write back).
  *
  * The signing is the a-multitude-of-one: one operator holds all three faces' seat keys and signs the
- * quorum with two of their OWN held seats (the real-cabal collect-signatures ceremony is the surfaced fork).
+ * quorum with two of their OWN held seats; seats that rest in two vaults cross as a partial (nexus-kapae-two-vault).
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
