@@ -7,6 +7,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **A retired bag takes nothing.** A wiki save, a delete or `lares shore remove` into a bag that DROP retired refuses `bag-retired` at the write door and lands nothing; the hand stays owed on the alert rail.
+- **`vault status` names a cut seal.** A floor carrier cut inside the vessel key's magic reads `torn` and a fault, and a short frame of another house seal reads `unopenable`, never bare.
+- **The custody wait refuses only for a holder that answers.** A holder that leaves mid-wait lets the contender in.
+- **A detached wiki control does nothing.** A click or keystroke on a node a re-render detached answers `stale-target` and runs no handler.
 - **No face log incepts unarmed.** The persona log's mint and every reader refuse an empty recovery commitment, so no face stands where guardians could never arrive; an event with no kind keeps its earlier bytes.
 - **A re-lit face's name stays sealed.** `lares persona new <N> --name <label>` over a face that stands lit writes the label and Handle onto their sealed rows alone, never onto the face's persona plane, whose document rests in the clear on disk; `persona new` reports `fleet: false` and says so, `lares persona sync` refuses by name until the plane's rest seals, and `persona list` reads the sealed row first.
 - **The two-vessel mesh e2e loads again.** It imported one pin twice in a line, so the whole file failed to load and its tests never ran.
