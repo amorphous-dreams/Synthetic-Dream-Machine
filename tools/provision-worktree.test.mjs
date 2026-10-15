@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { assertDestination, provision } from './provision-worktree.mjs';
 import { stampWasm } from './stamp-build.mjs';
 
@@ -27,7 +27,7 @@ function fixture() {
     if (cmd === 'git' && args.includes('config')) return 'false\n';
     if (cmd === 'git' && args.includes('worktree') && args.includes('add')) {
       mkdirSync(destination);
-      cpSync(join(source, 'packages'), join(destination, 'packages'), { recursive: true, filter: path => !path.endsWith('.wasm') });
+      cpSync(join(source, 'packages'), join(destination, 'packages'), { recursive: true, filter: path => !path.endsWith('.wasm') && !path.endsWith('/node_modules') });
       mkdirSync(join(destination, 'tools')); writeFileSync(join(destination, 'tools/stamp-build.mjs'), '// tool');
       return '';
     }
@@ -83,6 +83,45 @@ test('fresh source builds pinned TW5 and web outputs, then stamps workspace', ()
     assert.equal(f.calls.filter(([, args]) => args.includes('--pkg')).length, 2);
     assert.deepEqual(f.calls.at(-1)[1], [join(f.destination, 'tools/stamp-build.mjs'), f.destination]);
     assert.equal(f.logs.some(line => /BUILT.*lararium-tw5.*attestation/.test(line)), true);
+  } finally { f.close(); }
+});
+
+test('copied module links target the destination, while external links stay external', () => {
+  const f = fixture();
+  try {
+    const rootModules = join(f.source, 'node_modules');
+    mkdirSync(join(rootModules, '@lararium'), { recursive: true });
+    symlinkSync(join(f.source, 'packages/lararium-mesh'), join(rootModules, '@lararium/mesh'));
+    symlinkSync('../@lararium/mesh', join(rootModules, '.bin/mesh'));
+    const packageModules = join(f.source, 'packages/lararium-tw5/node_modules');
+    mkdirSync(join(packageModules, '@lararium'), { recursive: true });
+    symlinkSync(join(f.source, 'packages/lararium-mesh'), join(packageModules, '@lararium/mesh'));
+    const outside = join(f.base, 'outside');
+    writeFileSync(outside, 'outside');
+    symlinkSync(outside, join(rootModules, 'external'));
+
+    provision({ source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
+    for (const rel of ['node_modules/@lararium/mesh', 'node_modules/.bin/mesh', 'packages/lararium-tw5/node_modules/@lararium/mesh']) {
+      const link = join(f.destination, rel);
+      assert.equal(readlinkSync(link), relative(join(link, '..'), join(f.destination, 'packages/lararium-mesh')));
+    }
+    assert.equal(readlinkSync(join(f.destination, 'node_modules/external')), outside);
+    assert.equal(f.logs.some(line => /RELINKED 3 node_modules symlinks/.test(line)), true);
+  } finally { f.close(); }
+});
+
+test('refuses to finish when a later step leaves a link into the source', () => {
+  const f = fixture();
+  try {
+    const run = (...args) => {
+      const result = f.run(...args);
+      if (args[0] === process.execPath && args[1]?.[0] === join(f.destination, 'tools/stamp-build.mjs') && args[1]?.length === 2) {
+        symlinkSync(join(f.source, 'packages/lararium-mesh'), join(f.destination, 'late-source-link'));
+      }
+      return result;
+    };
+    assert.throws(() => provision({ source: f.source, destination: f.destination, run, log: () => {} }), /destination symlink.*source tree/);
+    assert.equal(existsSync(f.destination), false);
   } finally { f.close(); }
 });
 

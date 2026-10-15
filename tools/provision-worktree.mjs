@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs';
-import { dirname, join, resolve, sep } from 'node:path';
+import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { wasmStampBody } from './stamp-build.mjs';
@@ -42,6 +42,38 @@ function copy(source, destination, rel, log, options = {}) {
   cpSync(from, to, { recursive: true, force: true, dereference: false, ...options });
   log(`COPIED ${rel} from ${from}`);
 }
+function* linksUnder(path) {
+  if (!existsSync(path)) return;
+  for (const entry of readdirSync(path, { withFileTypes: true })) {
+    const child = join(path, entry.name);
+    if (entry.isSymbolicLink()) yield child;
+    else if (entry.isDirectory()) yield* linksUnder(child);
+  }
+}
+function linkTarget(link) {
+  const target = resolve(dirname(link), readlinkSync(link));
+  try { return realpathSync(target); }
+  catch { return target; } // A dangling link still carries a target that may name the source.
+}
+function sourceLinks(source, destination) {
+  return [...linksUnder(destination)].filter(link => canNest(source, linkTarget(link)));
+}
+function assertNoSourceLinks(source, destination) {
+  const leaks = sourceLinks(source, destination);
+  if (leaks.length) throw new Error(`${leaks.length} destination symlink(s) still resolve into source tree: ${leaks.map(link => relative(destination, link)).join(', ')}`);
+}
+function relinkModules(source, destination, rel) {
+  let rewritten = 0;
+  for (const link of linksUnder(join(destination, rel))) {
+    const target = linkTarget(link);
+    if (!canNest(source, target)) continue;
+    const mapped = join(destination, relative(source, target));
+    rmSync(link);
+    symlinkSync(relative(dirname(link), mapped), link);
+    rewritten++;
+  }
+  return rewritten;
+}
 function packageOrder(destination) {
   const base = join(destination, 'packages');
   const packages = readdirSync(base).filter(name => existsSync(join(base, name, 'tsconfig.build.json')));
@@ -79,13 +111,21 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
     if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
   }
 
-  // Preserve pnpm's relative links and package-local bins. Never carry source build stamps.
+  // Rebase pnpm links onto the destination before any build can read source packages or dist.
   const modulePaths = ['node_modules', 'tests/node_modules', 'TiddlyWiki5/node_modules'];
   for (const name of readdirSync(join(source, 'packages'))) {
     const rel = `packages/${name}/node_modules`;
     if (existsSync(join(source, rel))) modulePaths.push(rel);
   }
-  for (const rel of modulePaths) if (existsSync(join(source, rel))) copy(source, destination, rel, log);
+  let rewritten = 0;
+  for (const rel of modulePaths) if (existsSync(join(source, rel))) {
+    copy(source, destination, rel, log);
+    const count = relinkModules(source, destination, rel);
+    rewritten += count;
+    log(`RELINKED ${count} symlinks in ${rel}`);
+  }
+  log(`RELINKED ${rewritten} node_modules symlinks`);
+  assertNoSourceLinks(source, destination);
   if (!existsSync(join(destination, 'node_modules'))) throw new Error('required input absent: root node_modules');
   for (const bin of ['tsc', 'tsx']) {
     if (!existsSync(join(destination, `node_modules/.bin/${bin}`)) && !existsSync(join(destination, `packages/lararium-tw5/node_modules/.bin/${bin}`))) {
@@ -128,6 +168,7 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   log('BUILT packages/lararium-web dist and Pronaos record');
   run(process.execPath, [join(destination, 'tools/stamp-build.mjs'), destination], destination);
   log('STAMPED workspace');
+  assertNoSourceLinks(source, destination);
   return { destination, head };
   } catch (error) {
     try { run('git', ['-C', source, 'worktree', 'remove', destination], source); }
