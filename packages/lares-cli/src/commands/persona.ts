@@ -14,8 +14,8 @@
  *   wear <index>                       switch the active persona (one-face-to-mesh; reboot-to-switch)
  *   list                               the private multitude-view — held indices, active marker, labels, Handles
  *
- * The pet-name stays PRIVATE (persona-petname: fleet-syncs among the human's own vessels, never PUBLICLY
- * federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
+ * The pet-name stays PRIVATE (persona-petname: rests sealed, fleet-syncs among the human's own vessels over a
+ * persona plane whose rest seals, never PUBLICLY federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
  * a PersonaGroup to a public glamour — a separate, deliberate publish, which `lares handle publish` performs.
  *
  * THREE NAMES, THREE JOBS (dyad, persona-declare). `--name` labels a compartment to its keeper and their own
@@ -230,7 +230,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       handleIndex: index, petname: name, verifyingKey: root.verifyingKey, created: root.created,
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(index) : null,
-      rootSplit: !splitRoot ? "none" : recovery?.minted ? "armed" : "standing", fleet: fleetRead.reached,
+      rootSplit: !splitRoot ? "none" : recovery?.minted ? "armed" : "standing", fleet: fleetRead.reached && fleetRead.rest === "sealed",
     },
     human: () => {
       console.log(`persona h${index} ${root.created ? "minted" : "loaded"} — "${name}"`);
@@ -238,7 +238,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       if (!splitRoot) {
         console.log("  root split: none (opt in with --split-root)");
       }
-      console.log(`  pet-name is PRIVATE — it fleet-syncs among your own vessels and never PUBLICLY federates.`);
+      console.log(`  the pet-name stays PRIVATE: it rests sealed here, rides to your own vessels only over a persona plane whose rest seals, and never PUBLICLY federates.`);
       if (declaration?.handle) {
         console.log(`  declares the Handle "${declaration.handle}" — a local intent until you announce it;`);
         console.log(`  only a publicly announced Handle binds this persona to a public glamour — announce it with \`lares handle publish\`.`);
@@ -251,6 +251,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       if (!fleetRead.reached) {
         console.log(`  NODE-LOCAL — no hearth answered (${fleetRead.why})`);
         console.log(`  the name stands here regardless; carry it to your other vessels with: lares persona sync`);
+      } else if (fleetRead.rest !== "sealed") {
+        console.log("  NODE-LOCAL — this face's persona plane rests in the clear on disk, so the name rides to no other vessel until that rest seals");
       }
     },
   });

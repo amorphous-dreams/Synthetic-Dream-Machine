@@ -110,17 +110,25 @@ export interface PersonaSelfLine {
 export type PersonaSelfNameKind = "petname" | "handle";
 
 /**
+ * Where a plane's document rests on a vessel's disk: `clear` where the storage writes the document's bytes as
+ * given, `sealed` where every stored value seals under the sealed store's format.
+ */
+export type PlaneRest = "clear" | "sealed";
+
+/**
  * Each carried face's own persona plane, read and written by the vessel's MAIN THREAD through its own Repo. A
  * plane private-federates across its one face's vessels and reaches no published or federating surface. A write
  * here leaves the record on that face's plane and nothing else anywhere: it never becomes an invocation.
  */
 export interface PersonaSelvesPlane {
+  /** Where every plane this vessel carries rests. A name rides only onto a rest that seals. */
+  readonly rest: PlaneRest;
   /** Each carried face as its own plane names it, ascending. */
   read(): Promise<readonly PersonaSelfLine[]>;
   /**
    * Write one name of the face at `handleIndex` onto that face's own plane; an empty value clears it. `plane`
    * false where this vessel carries no plane for that face; `written` false where the plane keeps what it holds
-   * (a newer write, or, under `fill`, any write at all).
+   * (a newer write, or, under `fill`, any write at all). A name throws while the rest stands clear; a clear runs.
    */
   write(handleIndex: number, name: PersonaSelfNameKind, value: string, opts?: { readonly fill?: boolean }):
     Promise<{ readonly written: boolean; readonly plane: boolean }>;
@@ -307,10 +315,11 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   carriage.readings     one reading per charter this vessel holds: whether a kept consent or a seated chair carries it
  *   petname.*             this vessel's own private labels for its faces
  *   declaration.*         each face's declared Handle, seat claim and chair label
- *   selves.read           each carried face as its own persona plane names it
+ *   selves.read           each carried face as its own persona plane names it, and where those planes rest
  *   selves.carry          carry ONE name of one held face from its sealed row up to that face's own plane; the frame
  *                         names the face and which name, and never the name itself, so a plane takes only what a
- *                         sealed row holds. `fill` lands it only where the plane never held that name
+ *                         sealed row holds. `fill` lands it only where the plane never held that name. A plane whose
+ *                         rest stands clear takes no name, and the carry refuses by that rest
  *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
  *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
  *   walk.take             keep a carried invite on the walk record of the hearth it names
@@ -419,11 +428,16 @@ export const SEALED_ACTS = Object.freeze({
   // outcome and a receipt digest, and because a locked vessel shuts every fleet lane. A carry reads the name off
   // its sealed row itself: a frame names a face and which name, and no name. Each row acts for a face this vessel
   // holds a root for and on that face's own plane alone; a carry needs the row to hold the name and a clear needs
-  // it gone, so neither act moves a plane past what the sealed row says.
-  "selves.read": act({}, async (_a, ctx) => ({ selves: (await planeOf(ctx).read()).map((s) => ({ ...s })) })),
+  // it gone, so neither act moves a plane past what the sealed row says. A carry lands only on a plane whose rest
+  // seals: a name on a clear rest would leave its sealed row for a document any holder of the disk reads.
+  "selves.read": act({}, async (_a, ctx) => {
+    const plane = planeOf(ctx);
+    return { selves: (await plane.read()).map((s) => ({ ...s })), rest: plane.rest };
+  }),
   "selves.carry": act({ handleIndex: index, name: selfName, fill: optional(flag) }, async (a, ctx) => {
     const plane = planeOf(ctx);
     await heldFace(a.handleIndex);
+    if (plane.rest !== "sealed") throw refuse(`h${a.handleIndex}'s persona plane rests in the clear on this vessel's disk, so its names stay on their sealed rows; they ride once that rest seals`);
     const held = await sealedSelfName(a.handleIndex, a.name);
     if (held === undefined) throw refuse(`the sealed row holds no ${a.name} for h${a.handleIndex}, so nothing carries; a name cleared here clears on the plane by \`selves.clear\``);
     const { written, plane: stands } = await plane.write(a.handleIndex, a.name, held, a.fill === true ? { fill: true } : {});

@@ -16,11 +16,19 @@
  *
  * The stamp beside each name orders two concurrent renames of that one field on a face's own vessels, and it
  * decides nothing else: no act runs or waits on it.
+ *
+ * A NAME RIDES ONLY ONTO A REST THAT SEALS. Both names rest sealed under the vessel key, and cleartext rests in
+ * the live wiki and the operator's projected files alone (lar:///ha.ka.ba/lararium/mesh/sealed-store). A plane
+ * names its own rest, and its write refuses any name while that rest stands clear; a clear still runs, since it
+ * moves no name onto the rest. The vessel's Repo rests each document through its own storage adapter
+ * (`durable-storage-adapter`), which writes the bytes Automerge saves, so a name on a plane rests verbatim on disk
+ * (the suite measures it). Its plane therefore rests `clear`, until the sealed store's step three seals the Repo's
+ * storage values and answers `sealed` here.
  */
 import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
 import { AutomergeDocStore, personaBagIdFor, type LarDoc, type LarTiddlerStore } from "@lararium/mesh";
 import { readPersonaSelves, writePersonaSelfName } from "@lararium/tw5";
-import type { PersonaSelfLine, PersonaSelvesPlane } from "./sealed-acts.js";
+import type { PersonaSelfLine, PersonaSelvesPlane, PlaneRest } from "./sealed-acts.js";
 
 /** One face this vessel carries a plane for: its handle-index and the store over its own plane. */
 export interface FacePlane {
@@ -29,13 +37,16 @@ export interface FacePlane {
 }
 
 /**
- * The planes of the faces a vessel carries. `faces` answers each face with its own plane's store; `stamp` answers
- * the ordering hint one write carries.
+ * The planes of the faces a vessel carries. `faces` answers each face with its own plane's store; `rest` names
+ * where those planes' documents rest; `stamp` answers the ordering hint one write carries.
  */
 export function personaSelvesPlaneOver(
-  faces: () => Promise<readonly FacePlane[]>, stamp: () => string = () => new Date().toISOString(),
+  faces: () => Promise<readonly FacePlane[]>,
+  opts: { readonly rest: PlaneRest; readonly stamp?: () => string },
 ): PersonaSelvesPlane {
+  const stamp = opts.stamp ?? (() => new Date().toISOString());
   return {
+    rest: opts.rest,
     async read() {
       const out: PersonaSelfLine[] = [];
       for (const face of await faces()) {
@@ -45,24 +56,28 @@ export function personaSelvesPlaneOver(
       }
       return out.sort((a, b) => a.handleIndex - b.handleIndex);
     },
-    async write(handleIndex, name, value, opts = {}) {
+    async write(handleIndex, name, value, writeOpts = {}) {
       const face = (await faces()).find((f) => f.handleIndex === handleIndex);
       if (!face) return { written: false, plane: false };
-      const { written } = await writePersonaSelfName(await face.store(), handleIndex, name, value, stamp(), opts);
+      if (value.trim().length > 0 && opts.rest !== "sealed") {
+        throw new Error(`h${handleIndex}'s persona plane rests in the clear on this vessel's disk, so no name rides onto it`);
+      }
+      const { written } = await writePersonaSelfName(await face.store(), handleIndex, name, value, stamp(), writeOpts);
       return { written, plane: true };
     },
   };
 }
 
 /**
- * Every face's plane off this thread's Repo. `planes` lists the plane documents the boot read (one per
- * PersonaGroup this vessel carries); `faceGroups` answers each anchored face with the group its anchors name.
+ * Each anchored face's own plane store off this thread's Repo. `planes` lists the plane documents the boot read
+ * (one per PersonaGroup this vessel carries); `faceGroups` answers each anchored face with the group its anchors
+ * name.
  */
-export function repoPersonaSelvesPlane(
+export function repoFacePlanes(
   repo: Repo,
   planes: readonly { readonly personaGroupId: string; readonly url: string }[],
   faceGroups: () => Promise<readonly { readonly handleIndex: number; readonly personaGroupId: string }[]>,
-): PersonaSelvesPlane {
+): () => Promise<readonly FacePlane[]> {
   const stores = new Map<string, Promise<LarTiddlerStore>>();
   const storeOf = (plane: { readonly personaGroupId: string; readonly url: string }): Promise<LarTiddlerStore> => {
     let store = stores.get(plane.personaGroupId);
@@ -74,12 +89,21 @@ export function repoPersonaSelvesPlane(
     }
     return store;
   };
-  return personaSelvesPlaneOver(async () => {
+  return async () => {
     const out: FacePlane[] = [];
     for (const face of await faceGroups()) {
       const plane = planes.find((p) => p.personaGroupId === face.personaGroupId);
       if (plane) out.push({ handleIndex: face.handleIndex, store: () => storeOf(plane) });
     }
     return out;
-  });
+  };
+}
+
+/** Every face's plane off this thread's Repo, which rests its documents in the clear (the head of this module). */
+export function repoPersonaSelvesPlane(
+  repo: Repo,
+  planes: readonly { readonly personaGroupId: string; readonly url: string }[],
+  faceGroups: () => Promise<readonly { readonly handleIndex: number; readonly personaGroupId: string }[]>,
+): PersonaSelvesPlane {
+  return personaSelvesPlaneOver(repoFacePlanes(repo, planes, faceGroups), { rest: "clear" });
 }

@@ -27,7 +27,11 @@
  *       refuses and leaves the plane's copy standing (a fleet-mate's name survives a vessel that never held it);
  *       a clear refuses while the row still holds the name; a clear after the row's own clear clears the plane;
  *       an index this vessel holds no root for refuses both; `fill` never replaces a name the plane holds; a
- *       vessel with no plane refuses before any row opens, and the sealed row keeps the name.
+ *       vessel with no plane refuses before any row opens, and the sealed row keeps the name. L3 and L4 run over
+ *       a plane whose rest seals, the composition the sealed store's step three stands.
+ *   L5  RED: A PLANE WHOSE REST STANDS CLEAR TAKES NO NAME. A carry refuses by the rest's own name, the plane's
+ *       own write refuses too, the plane's document holds neither name, and the sealed rows keep both.
+ *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left on the plane.
  */
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -43,7 +47,9 @@ import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 import { SEALED_ACT_NAMES, runSealedAct } from "../src/sealed-acts.js";
+import { writePersonaSelfName } from "@lararium/tw5";
 import { personaSelvesPlaneOver } from "../src/persona-selves-plane.js";
+import type { PlaneRest } from "../src/sealed-acts.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, makeNodePersonaPetnameStore } from "../src/node-vessel-identity.js";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "../src/uds-channel.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -68,7 +74,7 @@ function sendLine(socketPath: string, line: unknown): Promise<Record<string, unk
 }
 
 /** A verb socket composed as the vessel's main thread composes it: the custody door ahead of the verb seat. */
-async function stand(door: (parsed: unknown, sock: Socket) => boolean) {
+async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: PlaneRest) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -97,10 +103,12 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean) {
   const plane = personaSelvesPlaneOver(async () => [
     { handleIndex: 0, store: async () => new AutomergeDocStore(personaHandle as never, "bags/persona-leak-test-h0") },
     { handleIndex: 1, store: async () => new AutomergeDocStore(otherFaceHandle as never, "bags/persona-leak-test-h1") },
-  ]);
+  ], { rest });
   return {
     socketPath: claim.socketPath,
     plane,
+    /** h0's plane document as a store, past the plane: what an older vessel of the face left there. */
+    planeStore: () => new AutomergeDocStore(personaHandle as never, "bags/persona-leak-test-h0"),
     /** The persona plane's own document, as one text. */
     planeText: () => JSON.stringify(personaHandle.doc()),
     /** Another face's plane, as one text. */
@@ -130,7 +138,7 @@ describe("an act frame and the daemon's document", () => {
       // Each act answers a canary of its own, so a leak names the act it came from.
       runAct: async (act) => { const canary = `ANSWER-CANARY-${act}-${Math.random().toString(36).slice(2)}`; answers.set(act, canary); return { held: canary }; },
     });
-    const v = await stand(door);
+    const v = await stand(door, "clear");
     drops.push(() => v.down());
     expect(SEALED_ACT_NAMES.length).toBeGreaterThan(10);
     const args = new Map<string, string>();
@@ -173,7 +181,7 @@ describe("an act frame and the daemon's document", () => {
       onLog: (line) => logs.push(line),
       runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: null, walk: null }),
     });
-    const v = await stand(door);
+    const v = await stand(door, "clear");
     drops.push(() => v.down());
     // Every line the process prints while the acts run: a row's own node function must print no sealed content.
     const printed: string[] = [];
@@ -208,7 +216,7 @@ describe("an act frame and the daemon's document", () => {
       onLog: (line) => logs.push(line),
       runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: v.plane, walk: null }),
     });
-    v = await stand(door);
+    v = await stand(door, "sealed");
     drops.push(() => v.down());
     const printed: string[] = [];
     for (const stream of ["log", "error", "warn", "info"] as const) vi.spyOn(console, stream).mockImplementation((...a: unknown[]) => { printed.push(a.map(String).join(" ")); });
@@ -240,7 +248,7 @@ describe("an act frame and the daemon's document", () => {
     expect(v.planeText().includes(PETNAME)).toBe(true);
     expect(v.planeText().includes(HANDLE)).toBe(true);
     expect(v.planeText().includes("a private chair")).toBe(false);
-    expect(read).toEqual({ op: "act", act: "selves.read", result: { selves: [{ handleIndex: 0, petname: PETNAME, handle: HANDLE }] } });
+    expect(read).toEqual({ op: "act", act: "selves.read", result: { selves: [{ handleIndex: 0, petname: PETNAME, handle: HANDLE }], rest: "sealed" } });
     // CONTROL: the same pet-name carried as the store verb leaves the outcome and the receipt digest the search hunts.
     const verbArgs = { handleIndex: 0, petname: PETNAME };
     await sendLine(v.socketPath, { verb: "persona-label", args: verbArgs, requestedBy: "did:key:leak-test", requestId: "leak-control-3" });
@@ -261,7 +269,7 @@ describe("an act frame and the daemon's document", () => {
       holder: c.holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
       runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: lend ? v.plane : null, walk: null }),
     });
-    v = await stand(door);
+    v = await stand(door, "sealed");
     drops.push(() => v.down());
     const act = (name: string, args: Record<string, unknown>) => sendLine(v.socketPath, { op: "act", act: name, args });
     const reason = (a: Record<string, unknown>): string => `${(a["refusal"] as { reason?: string } | undefined)?.reason}: ${String(a["errorMessage"])}`;
@@ -295,5 +303,42 @@ describe("an act frame and the daemon's document", () => {
     expect((await act("selves.read", {}))["status"]).toBe("error");
     expect(await v.plane.read()).toEqual([]);
     expect(await (await makeNodePersonaPetnameStore()).get(0)).toBe("the-name-that-stays");
+  });
+
+  test("L5 — a plane whose rest stands clear takes no name: the carry refuses by name and the name stays sealed", async () => {
+    const c: SeatedScratchCustody = await seatScratchCustody("act-leak-clear-rest");
+    drops.push(() => c.drop());
+    await generateOrLoadVesselIdentity();
+    await generateOrLoadPersonaGroupRoot(0);
+    let v!: Awaited<ReturnType<typeof stand>>;
+    const door = custodyFrameHandler({
+      holder: c.holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
+      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: v.plane, walk: null }),
+    });
+    v = await stand(door, "clear");
+    drops.push(() => v.down());
+    const act = (name: string, args: Record<string, unknown>) => sendLine(v.socketPath, { op: "act", act: name, args });
+    const reason = (a: Record<string, unknown>): string => `${(a["refusal"] as { reason?: string } | undefined)?.reason}: ${String(a["errorMessage"])}`;
+    const PETNAME = `a-relit-label-${Math.random().toString(36).slice(2)}`;
+    const HANDLE = `A Re-lit Handle ${Math.random().toString(36).slice(2)}`;
+    await act("petname.set", { handleIndex: 0, petname: PETNAME });
+    await act("declaration.set", { handleIndex: 0, declaration: { handle: HANDLE } });
+    // RED: each carry refuses by the rest's own name, and neither name reaches the plane's document.
+    expect(reason(await act("selves.carry", { handleIndex: 0, name: "petname" }))).toMatch(/^act-refused: h0's persona plane rests in the clear/);
+    expect(reason(await act("selves.carry", { handleIndex: 0, name: "handle", fill: true }))).toMatch(/^act-refused: h0's persona plane rests in the clear/);
+    expect(v.planeText().includes(PETNAME) || v.planeText().includes(HANDLE)).toBe(false);
+    // The plane's own write refuses a name too, whoever calls it: the rest decides, never the door alone.
+    await expect(v.plane.write(0, "petname", PETNAME)).rejects.toThrow(/rests in the clear/);
+    expect(v.planeText().includes(PETNAME)).toBe(false);
+    // The sealed rows keep both names, and the read answers what the plane holds: nothing.
+    expect(await (await makeNodePersonaPetnameStore()).get(0)).toBe(PETNAME);
+    expect(await act("selves.read", {})).toEqual({ op: "act", act: "selves.read", result: { selves: [], rest: "clear" } });
+    // CONTROL: a clear still runs at a clear rest, since it moves no name onto it. A name an older vessel of the
+    // face left on the plane leaves it once the row's own clear landed.
+    await writePersonaSelfName(v.planeStore(), 0, "petname", "a-name-an-older-vessel-left", "t1");
+    expect(await v.plane.read()).toEqual([{ handleIndex: 0, petname: "a-name-an-older-vessel-left" }]);
+    await act("petname.clear", { handleIndex: 0 });
+    expect(await act("selves.clear", { handleIndex: 0, name: "petname" })).toEqual({ op: "act", act: "selves.clear", result: { cleared: true } });
+    expect(await v.plane.read()).toEqual([]);
   });
 });

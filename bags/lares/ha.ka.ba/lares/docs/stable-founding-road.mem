@@ -406,7 +406,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! SUBSTRATE (its state reads in #/the-road's own block)
 * `S2` The fold's live proof on the rebuilt image, with a pushed shard run reading green. S.
 * `S7` Standing leans the seal met, kept as built unless the operator overturns one: an unlock mints a fresh Keyhive document for a binding whose floor-minted document died; one contact card per stand; the browser's creator veil stays unwired; a browser founded before the Keyhive move refuses to boot. Answered by rule and still open: a resumed face founding mints a new group; a founding stopped before its anchors re-founds with a fresh veil.
-* `S8` Re-lighting a LIT face writes its private label onto its persona plane, a document that rests in the clear on disk: `lares persona new <N> --name <label>` on a standing vessel, over a face that stands lit, mirrors the label through the selves door (`persona-selves-plane.ts`, the `selves` rows of `sealed-acts.ts`), measured by the contract witness, which names its second face before that vessel stands. The house's cleartext law holds that cleartext rests in the live wiki and the operator's projected files alone (#/rulings, the sealed store; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). Owed: a re-light that leaves the plane's names as they stand, or a plane whose rest seals. The owner of the persona-plane mirror, the custody door's `selves` rows. S.
 
 !!! HARBOR
 * `A2` The renewal verb with its terminator reload, and a first live issuance. The operator supplies the domain and the two credential files. A.
@@ -686,7 +685,7 @@ Each step names the commits that hold it, as pointers into git.
 * ''Early starts beside the chain'': the node, CLI and tool fixtures funnel of train K.
 * ''Band-ladder residue'': one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
-* ''Sealed-store step 3'': sealed Repo storage values, hydration checked against the session's face, and the fresh base a from-now admission needs. It waits on a production session signer (the wire cutover's caller) and on ONE FACE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+* ''Sealed-store step 3'': sealed Repo storage values, hydration checked against the session's face, and the fresh base a from-now admission needs. A face's own names ride its persona plane only once that plane's rest seals, so `lares persona sync` carries nothing until this step lands. It waits on a production session signer (the wire cutover's caller) and on ONE FACE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
 !!! Off this road, held by name
 * ''Grammar'': tangle, the putback law and the tongue fold wait on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` against the released grammar; that regeneration also unlocks publication. A relay-stream profile (the SYN-framed batch), a carrier seal with a computed check, and EOT targeting stay held in reserve. The grammar watch reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
@@ -780,6 +779,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e2qosiHnBykqabMq8nY9uslq82dVrIkwulLK9E3Zdsg
+<<^ code="&#x0003;">>ni:///sha-256;53N5vvnQ1LPdrzzUD0LL9tTYF-RI8zdTotRX82opXZI
 
 <<^ code="&#x0004;" -> to="?">>

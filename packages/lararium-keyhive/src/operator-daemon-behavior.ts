@@ -524,8 +524,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
 
         // A FACE'S OWN NAMES ANSWER NO VERB. The private pet-name and the declared Handle ride the persona plane, and
-        // the vessel's main thread writes them there from its custody door (the node package's `sealed-acts`, rows
-        // `selves.read` and `selves.carry`). A verb's outcome rests in the daemon's document in the clear and the
+        // the vessel's main thread writes them there from its custody door, only onto a plane whose rest seals (the
+        // node package's `sealed-acts`, rows `selves.read` and `selves.carry`). A verb's outcome rests in the daemon's document in the clear and the
         // digest of its arguments rests in a receipt, so this island registers no verb that takes or answers a
         // pet-name or a declared Handle.
         // A FACELESS PLACE OFFERS NO FACE VERBS.

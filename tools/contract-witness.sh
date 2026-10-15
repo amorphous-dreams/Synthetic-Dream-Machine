@@ -594,6 +594,27 @@ step "★ CONTROL: the pre-roll presentation, carrying no anchor, reads WRONG-EP
 VE=$(s6_a verdict "$PRESENTED" 2>&1)
 if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
 
+# ── ⑪ THE RE-LIGHT ───────────────────────────────────────────────────────────────────────────────────
+# B named its face before it stood, so that label rests on B's sealed rows alone. A person who names the face
+# again while it stands lit re-lights it, and the face's persona plane stands open beside the act. That plane's
+# document rests through the vessel's own storage, in the clear, so the label never rides onto it: it rests on the
+# sealed row and nowhere else (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed). B stops before
+# the search, so every write its Repo holds reaches rest first, and nothing below needs B standing.
+say "⑪ the re-light — a lit face's new label rests sealed"
+B_RELIT="brelit-$$-qzx"
+run_b "B re-lights its lit face under a fresh label"   persona new 0 --name "$B_RELIT"
+step "the fresh label reads through B's own custody"
+if as_b persona list --json 2>/dev/null | grep -qs "$B_RELIT"; then ok
+else bad "the label names nothing under B — the absence below would measure the grep"; fi
+run_b "B stops, so its Repo's writes reach rest"       vessel stop
+step "CONTROL: the search reads B's own root"
+if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
+else bad "B's own vessel key reads nowhere under B's root"; fi
+step "★ B's re-lit label rests in no cleartext file of B's own root ★"
+if grep -rqs "$B_RELIT" "$B_ROOT" 2>/dev/null; then
+  bad "the re-lit label reads in the clear at rest: $(grep -rls "$B_RELIT" "$B_ROOT" 2>/dev/null | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+else ok; fi
+
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then
   echo "  the door opened for a key A never held, refused every forgery, read the presented admit held,"

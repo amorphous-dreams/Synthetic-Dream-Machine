@@ -23,6 +23,10 @@
  * vessel correct and merely un-carried. A command running with no vessel standing reaches no plane at all: the
  * act refuses by name before it opens any row, and the caller reads NODE-LOCAL.
  *
+ * A NAME RIDES ONLY ONTO A REST THAT SEALS. A face's plane names where its document rests, and while that rest
+ * stands clear the carry refuses by it and the name stays on its sealed row (`sealed-acts`, `selves.carry`). A
+ * read trusts a clear plane's names above no sealed row: any name there came from no carry this build makes.
+ *
  * THE REASON STILL TRAVELS. A read hands back a reached/why pair, so the caller prints WHY the names stayed
  * home. `lares persona sync` carries the names up once the hearth stands unlocked.
  *
@@ -41,9 +45,12 @@ export interface FleetSelf {
   readonly handle?: string;
 }
 
-/** What a fleet read came back with: the names it read, or why they stayed home. */
+/** Where the planes rest: a name on a `clear` plane outranks no sealed row, since no carry lands one there. */
+export type FleetRest = "clear" | "sealed";
+
+/** What a fleet read came back with: the names it read and where their planes rest, or why they stayed home. */
 export type FleetRead =
-  | { readonly reached: true;  readonly selves: readonly FleetSelf[] }
+  | { readonly reached: true;  readonly selves: readonly FleetSelf[]; readonly rest: FleetRest }
   | { readonly reached: false; readonly why: string };
 
 /** Which of a face's two riding names a carry moves. */
@@ -52,11 +59,17 @@ export type FleetName = "petname" | "handle";
 /** Read the whole fleet multitude off the persona plane, or the reason the read did not land. */
 export async function readFleetSelves(): Promise<FleetRead> {
   try {
-    const { selves } = await sealedAct<{ selves?: unknown }>("selves.read");
-    return { reached: true, selves: Array.isArray(selves) ? (selves as FleetSelf[]) : [] };
+    const { selves, rest } = await sealedAct<{ selves?: unknown; rest?: unknown }>("selves.read");
+    // A rest the vessel never named reads clear: the sealed row then reads first, which loses no name.
+    return { reached: true, selves: Array.isArray(selves) ? (selves as FleetSelf[]) : [], rest: rest === "sealed" ? "sealed" : "clear" };
   } catch (err) {
     return { reached: false, why: err instanceof Error ? err.message : String(err) };
   }
+}
+
+/** The fleet's names a read trusts above this device's sealed rows: those of a plane whose rest seals, and no others. */
+function trusted(read: FleetRead): readonly FleetSelf[] {
+  return read.reached && read.rest === "sealed" ? read.selves : [];
 }
 
 /** How one mirror move ended: the plane took it, the plane kept what it held, or no plane took the frame. */
@@ -97,8 +110,7 @@ export function clearOwnName(handleIndex: number, name: FleetName): Promise<Flee
 export function makeFleetPetnameStore(local: OwnPersonaPetnameStore): OwnPersonaPetnameStore {
   return {
     async get(handleIndex) {
-      const read = await readFleetSelves();
-      const fleet = read.reached ? read.selves.find((s) => s.handleIndex === handleIndex)?.petname : undefined;
+      const fleet = trusted(await readFleetSelves()).find((s) => s.handleIndex === handleIndex)?.petname;
       return fleet ?? await local.get(handleIndex);
     },
     async set(handleIndex, petname) {
@@ -112,7 +124,7 @@ export function makeFleetPetnameStore(local: OwnPersonaPetnameStore): OwnPersona
     async entries() {
       const read = await readFleetSelves();
       if (!read.reached) return local.entries();
-      const selves = read.selves;
+      const selves = trusted(read);
       // The fleet's view WINS where it names a persona, and the sealed row fills the rest: a persona this device
       // named while no plane stood still reads, and `persona sync` carries it up.
       const merged = new Map<number, string>(await local.entries());
@@ -136,8 +148,7 @@ export function makeFleetDeclarationStore(local: PersonaDeclarationStore): Perso
   };
   return {
     async get(handleIndex) {
-      const read = await readFleetSelves();
-      const fleetHandle = read.reached ? read.selves.find((s) => s.handleIndex === handleIndex)?.handle : undefined;
+      const fleetHandle = trusted(await readFleetSelves()).find((s) => s.handleIndex === handleIndex)?.handle;
       return compose(await local.get(handleIndex), fleetHandle);
     },
     async set(handleIndex, declaration) {
@@ -149,13 +160,11 @@ export function makeFleetDeclarationStore(local: PersonaDeclarationStore): Perso
       await clearOwnName(handleIndex, "handle");
     },
     async entries() {
-      const read = await readFleetSelves();
+      const selves = trusted(await readFleetSelves());
       const byIndex = new Map<number, PersonaDeclaration>(await local.entries());
-      if (read.reached) {
-        for (const s of read.selves) {
-          const composed = compose(byIndex.get(s.handleIndex), s.handle);
-          if (composed) byIndex.set(s.handleIndex, composed);
-        }
+      for (const s of selves) {
+        const composed = compose(byIndex.get(s.handleIndex), s.handle);
+        if (composed) byIndex.set(s.handleIndex, composed);
       }
       return [...byIndex.entries()].map(([k, v]) => [k, v] as const).sort((a, b) => a[0] - b[0]);
     },

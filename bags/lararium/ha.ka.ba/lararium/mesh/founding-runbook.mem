@@ -131,7 +131,7 @@ tools/lares-container.sh nexus seal show
 tools/lares-container.sh meme list --recipe default --json
 ```
 
-The second line declares persona zero's public Handle; skip it for a face that keeps none. Run it before `up`, with no vessel standing: the label then lands on the sealed rows alone. A face re-lit on a standing vessel writes its private label onto its persona plane, which rests in the clear (`S8` of the roadmap's loops).
+The second line declares persona zero's public Handle; skip it for a face that keeps none. The label and the Handle land on the sealed rows alone, before `up` or on a standing vessel: a face's persona plane rests in the clear on disk, so no name rides onto it until its rest seals (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key, opens the serving key through the vessel key's own entry, and composes with what the keys open. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag.
 
@@ -355,6 +355,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qCTAWlD21OwZ8c67Brw9ofI6i4UkqKv0tLZCtqf9b9M
+<<^ code="&#x0003;">>ni:///sha-256;gdXLwJeHIbAaEln0ZDR_RO50NgJvMbgtB5KRCUjWcss
 
 <<^ code="&#x0004;" -> to="?">>

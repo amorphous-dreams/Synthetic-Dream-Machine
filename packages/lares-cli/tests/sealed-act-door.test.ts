@@ -27,6 +27,9 @@
  *   D7  `lares persona sync` FILLS: each held name rides one `selves.carry` frame marked `fill`, so a name the
  *       face's plane already holds stands, and the command says which names landed and which the fleet kept.
  *                                 control: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
+ *   D11 RED: A CLEAR PLANE OUTRANKS NO SEALED ROW. While `selves.read` names its rest `clear`, the fleet stores read
+ *       the sealed row first, so a re-lit label reads over a name an older vessel left on the plane.
+ *                                 control: with the rest `sealed`, the plane's name outranks the device's copy
  *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends an arming
  *       frame that carries no key and asks whether the read-back stands in; it takes public halves back, mints each
  *       chair's cold card in its own process, and opens no key session of its own. No frame carries a card.
@@ -248,7 +251,7 @@ describe("a command beside a standing vessel", () => {
     await makeFleetPetnameStore(sealedPetnameStore()).set(0, PETNAME);
     await makeFleetDeclarationStore(sealedDeclarationStore()).set(0, { handle: HANDLE, seat: true, chair: "a private chair" });
     await makeFleetPetnameStore(sealedPetnameStore()).clear(0);
-    expect(await readFleetSelves()).toEqual({ reached: true, selves: [] });
+    expect(await readFleetSelves()).toEqual({ reached: true, selves: [], rest: "clear" });
     const frames = vessel.frames as Array<Record<string, unknown>>;
     // RED: nothing rode a verb. Every frame names `op: "act"`, and none carries a verb, a requester or a request id.
     for (const frame of frames) {
@@ -309,6 +312,29 @@ describe("a command beside a standing vessel", () => {
     // CONTROL: a rename carries with no `fill`, so it replaces.
     await makeFleetPetnameStore(sealedPetnameStore()).set(1, "a-rename-on-this-device");
     expect((vessel.frames as Array<Record<string, unknown>>).filter((f) => f["act"] === "selves.carry").pop()!["args"]).toEqual({ handleIndex: 1, name: "petname" });
+  });
+
+  test("D11 — a plane whose rest stands clear holds no name a read trusts: the sealed row reads first", async () => {
+    await stage();
+    let rest = "clear";
+    const vessel = await standVessel({ unlocked: true, table: (act) => {
+      if (act === "selves.read") return { selves: [{ handleIndex: 1, petname: "an-older-vessels-label", handle: "An Older Handle" }], rest };
+      if (act === "petname.entries") return { entries: [[1, "the-re-lit-label"]] };
+      if (act === "declaration.entries") return { entries: [[1, { handle: "The Re-lit Handle" }]] };
+      return {};
+    } });
+    const petnames = makeFleetPetnameStore(sealedPetnameStore());
+    const declarations = makeFleetDeclarationStore(sealedDeclarationStore());
+    // RED: a re-light lands on the sealed row; a name an older vessel left on a clear plane never outranks it.
+    expect(await readFleetSelves()).toMatchObject({ reached: true, rest: "clear" });
+    expect(await petnames.get(1)).toBe("the-re-lit-label");
+    expect(await petnames.entries()).toEqual([[1, "the-re-lit-label"]]);
+    expect((await declarations.get(1))?.handle).toBe("The Re-lit Handle");
+    // CONTROL: over a plane whose rest seals, the fleet's name outranks this device's copy.
+    rest = "sealed";
+    expect(await petnames.get(1)).toBe("an-older-vessels-label");
+    expect((await declarations.get(1))?.handle).toBe("An Older Handle");
+    await vessel.down();
   });
 
   test("D8 — the seat rite arms behind the door: one frame out, public halves back, no key crosses", async () => {
