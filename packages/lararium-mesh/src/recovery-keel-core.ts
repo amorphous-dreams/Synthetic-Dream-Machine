@@ -18,7 +18,9 @@
  * Meme: lar:///ha.ka.ba/lararium/api/recovery-keel-core
  */
 
-import type { RandomProvider } from "./crypto.js";
+import { canonicalJsonBytes, type RandomProvider } from "./crypto.js";
+import { GUARDIAN_POSSESSION_DOMAIN } from "./domains.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 import {
   splitToShares, assembleQuorum, reconstructFromQuorum, encodeShareBytes,
   type RecoveryShare, type CustodianTag, type ReadmissionSecret,
@@ -29,7 +31,7 @@ import { sealKeySetHash } from "./wax-stamp.js";
 import type { GuardianRecoveryRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
-  mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
+  mintGuardianEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
   type PersonaKelEvent, type PersonaRotateResult, type SealedEnrolment,
 } from "./persona-kel.js";
 
@@ -294,4 +296,108 @@ export async function attestAndRotate(input: {
     ...(input.provisional ? { provisional: true } : {}),
     ...(input.enrolments ? { enrolments: input.enrolments } : {}),
   });
+}
+
+// ── GUARDIAN ENROLMENT — the verb's core (stable-founding-road#/rulings, "Guardian enrolment's shape") ──────────
+// A face founds one-of-one; its first guardian set lands by ONE typed event its own current op-key signs
+// (`mintGuardianEnrolment`), and every later change takes the guardians' quorum (`attestAndRotate`). The core below
+// checks what the vessel and the guardians owe before that event mints: each guardian proves it holds its key, no
+// key repeats, the threshold meets the set, and no key serves another face this vessel holds
+// (persona-policy#/distinct-recovery). Count, threshold, request authentication, the veto and succession stay the
+// person's and the operator's (kahu#/seed-and-nexus, OPEN): the core sets none of them.
+
+/** The bytes a guardian signs to prove it holds the private half of `recoveryPubKey`, offered to the face `prefix`. */
+export function guardianPossessionBytes(prefix: string, recoveryPubKey: string): Uint8Array {
+  return canonicalJsonBytes({ domain: GUARDIAN_POSSESSION_DOMAIN, prefix, key: recoveryPubKey.toLowerCase() });
+}
+
+/** One guardian's offer to one face: its registration card and its possession proof over that face's prefix. */
+export interface GuardianEnrolmentOffer {
+  readonly registration:  GuardianRecoveryRegistration;
+  /** The guardian's signature over `guardianPossessionBytes(prefix, registration.recoveryPubKey)`. */
+  readonly possessionSig: string;
+}
+
+/** The guardian keys this vessel already holds in ANOTHER face's set, per face. */
+export interface GuardianKeysOfFace {
+  readonly handleIndex: number;
+  readonly keys:        readonly string[];
+}
+
+/** The compartment check's answer: every offered key stands apart, or the first that serves another face. */
+export type GuardianCompartmentVerdict =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly key: string; readonly handleIndex: number };
+
+/**
+ * NO GUARDIAN KEY EVER SERVES TWO FACES (persona-policy#/distinct-recovery): a key offered to one face that this
+ * vessel already holds in another face's set refuses, naming that face. One vault sees every face it holds, so the
+ * check stays local and reads only this vessel's own faces: it builds no roster.
+ */
+export function guardianCompartmentCheck(input: {
+  readonly offered:          readonly string[];
+  readonly heldByOtherFaces: readonly GuardianKeysOfFace[];
+}): GuardianCompartmentVerdict {
+  const held = new Map<string, number>();
+  for (const face of input.heldByOtherFaces) for (const k of face.keys) held.set(k.toLowerCase(), face.handleIndex);
+  for (const k of input.offered) {
+    const key = k.toLowerCase();
+    const handleIndex = held.get(key);
+    if (handleIndex !== undefined) return { ok: false, key, handleIndex };
+  }
+  return { ok: true };
+}
+
+/** Why an enrolment refused, by name. */
+export type GuardianEnrolRefusal =
+  | "face-holds-guardians"              // the face's rolling set already left its genesis set: the guardians change it
+  | "threshold-unmeetable"              // a threshold below one, above the set, or not a whole number
+  | "guardian-key-repeated"             // one key offered twice
+  | "possession-unproven"               // a guardian's proof fails over this face's prefix and its own key
+  | "guardian-key-serves-another-face"  // a key this vessel holds in another face's set
+  | "enrolment-refused";                // the log refused the event itself (a provisional head, a bad signature)
+
+/** An enrolment's outcome: the typed event and the digest it committed, or a refusal by name. */
+export type GuardianEnrolResult =
+  | { readonly ok: true;  readonly event: PersonaKelEvent; readonly guardianSetHash: string }
+  | { readonly ok: false; readonly refusal: GuardianEnrolRefusal; readonly reason: string };
+
+/**
+ * ENROL a one-of-one face's first guardian set. Checks in order, each refusing by name before anything mints: the face
+ * still holds its genesis set alone; the threshold meets the offered set; no key repeats; every guardian proves
+ * possession over THIS face's prefix; no key serves another face. Then the face's own current op-key signs the typed
+ * event (`mintGuardianEnrolment`). The caller writes the event to the face's KEL board and keeps the registrations:
+ * a later rotation reveals them against the digest.
+ */
+export async function enrolGuardians(input: {
+  readonly head:             PersonaKelEvent;
+  readonly guardians:        readonly GuardianEnrolmentOffer[];
+  readonly threshold:        number;
+  readonly heldByOtherFaces: readonly GuardianKeysOfFace[];
+  /** The face's CURRENT op-key's signer. */
+  readonly sign:             (bytes: Uint8Array) => Promise<string>;
+}): Promise<GuardianEnrolResult> {
+  const refuse = (refusal: GuardianEnrolRefusal, reason: string): GuardianEnrolResult => ({ ok: false, refusal, reason });
+  const { head, guardians, threshold } = input;
+  if (head.nextRecoverySetHash !== head.recoverySetHash) {
+    return refuse("face-holds-guardians", "this face already holds a guardian set: a change to it takes the guardians' quorum, by rotation");
+  }
+  if (!Number.isInteger(threshold) || threshold < 1 || threshold > guardians.length) {
+    return refuse("threshold-unmeetable", `a threshold of ${threshold} over ${guardians.length} guardian key(s) meets no quorum`);
+  }
+  const keys = guardians.map((g) => g.registration.recoveryPubKey.toLowerCase());
+  if (new Set(keys).size !== keys.length) return refuse("guardian-key-repeated", "one guardian key stands twice in the offered set");
+  for (const g of guardians) {
+    const key = g.registration.recoveryPubKey.toLowerCase();
+    let holds = false;
+    try { holds = verifyEd25519(g.possessionSig, guardianPossessionBytes(head.prefix, key), key); } catch { holds = false; }
+    if (!holds) return refuse("possession-unproven", `the guardian key ${key.slice(0, 16)}… shows no proof that its holder signs for this face`);
+  }
+  const apart = guardianCompartmentCheck({ offered: keys, heldByOtherFaces: input.heldByOtherFaces });
+  if (!apart.ok) {
+    return refuse("guardian-key-serves-another-face", `the guardian key ${apart.key.slice(0, 16)}… already serves the face at handle-index ${apart.handleIndex}: a guardian cuts a fresh key for each face`);
+  }
+  const guardianSetHash = sealKeySetHash(keys, threshold);
+  const minted = await mintGuardianEnrolment({ head, guardianSetHash, sign: input.sign });
+  return minted.ok ? { ok: true, event: minted.event, guardianSetHash } : refuse("enrolment-refused", minted.reason);
 }

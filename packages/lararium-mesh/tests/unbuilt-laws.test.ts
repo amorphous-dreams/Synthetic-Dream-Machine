@@ -172,7 +172,11 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("riteContingency");
   });
 
-  test.skip("ONE GUARDIAN SET NEVER SPANS COMPARTMENTS — a guardian holding recovery material for TWO compartments of one human silently becomes the forbidden collector (persona-circle#the-vault's single-bit law read at the guardian grain); nothing checks it anywhere", () => {
+  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS greened by guardian enrolment's verb core: a key offered to one
+  // face that this vessel already holds in another face's set refuses `guardian-key-serves-another-face`, naming that
+  // face (persona-policy#/distinct-recovery; the check reads this vessel's own faces and builds no roster). Witnessed
+  // in tests/guardian-enrolment.test.ts (the red, its control, and the check's own verdict).
+  test("the guardian compartment check is exported", () => {
     expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
   });
 

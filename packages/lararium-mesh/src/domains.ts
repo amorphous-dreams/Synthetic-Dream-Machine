@@ -88,6 +88,9 @@ export const PERSONA_SELF_RECOVERY_INFO = frozen("persona-self-recovery");
 /** The Fork-B registration handshake — DELIBERATELY apart from GUARDIAN_CONFIRM_DOMAIN: a bearer
  *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */
 export const GUARDIAN_REGISTRATION_DOMAIN = frozen("guardian-registration");
+/** A guardian's proof that it holds the private half of the recovery key it offers ONE face: its signature over
+ *  that face's prefix and that key, taken before the face's enrolment commits the key's set. */
+export const GUARDIAN_POSSESSION_DOMAIN = mint("guardian-possession");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");

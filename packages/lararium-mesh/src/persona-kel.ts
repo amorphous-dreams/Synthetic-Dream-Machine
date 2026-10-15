@@ -17,6 +17,11 @@
  * the event bytes, verified against that pre-commit. NOTHING reconstructs — no secret ever assembles. The
  * recovery authority signs ONLY rotations, never content; a thief of today's op-key learns nothing of it.
  *
+ * GUARDIAN ENROLMENT (stable-founding-road#/rulings, "Guardian enrolment's shape"): a face founds one-of-one, its
+ * genesis set naming its own recovery alone. Its first guardian set arrives by ONE typed event, `guardian-enrolment`,
+ * that the face's own CURRENT op-key signs: it keeps the prefix and the op-key and commits the set and threshold as
+ * the rolling commitment. Every later change to the set takes the guardians' quorum, by rotation.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/persona-kel
  */
 
@@ -31,6 +36,7 @@ import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 const KEY_RE = /^[0-9a-f]{64}$/;
 const SIG_RE = /^[0-9a-f]{128}$/;
 const HEX_RE = /^[0-9a-f]+$/;
+const DIGEST_RE = /^[0-9a-f]{64}$/;
 
 /** The domain the persona-KEL prefix + event bytes tag — separates a persona AID from every other hash. */
 export { PERSONA_KEL_DOMAIN } from "./domains.js";
@@ -127,6 +133,11 @@ export interface PersonaKelEvent {
   readonly vetoOfCid:         string | null;      // a VETO names the provisional it kills; null on every other kind
   readonly rotationSigs:      readonly QuorumSignature[]; // [] at inception; ≥ threshold guardian sigs on a rotation
   readonly vetoSig?:          string | null;      // the standing op-key's signature over a veto's bytes (outside the cid, like rotationSigs)
+  /** The event's type where it names one: `guardian-enrolment` alone. A rotation and a veto carry none, so their
+   *  bytes read as they always read; a kind rides the cid and every signature over it. */
+  readonly kind?:             typeof GUARDIAN_ENROLMENT_KIND;
+  /** The standing op-key's signature over an enrolment's bytes (outside the cid, like `vetoSig`). */
+  readonly enrolSig?:         string | null;
   /** The digest of the enrolment list this event carries (`enrolmentDigestOf`) — bound into the cid and the
    *  rotation's quorum bytes, so the list is attested as one with the rotation. */
   readonly enrolmentDigest:   string;
@@ -142,8 +153,11 @@ export interface PersonaKelEvent {
 type PersonaEventCore = Pick<
   PersonaKelEvent,
   "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "provisional" | "vetoOfCid"
-  | "enrolmentDigest"
+  | "enrolmentDigest" | "kind"
 >;
+
+/** The one typed event kind: a one-of-one face's first guardian set, signed by its own current op-key. */
+export const GUARDIAN_ENROLMENT_KIND = "guardian-enrolment" as const;
 
 /** The canonical bytes an event's cid commits AND each guardian rotation-signature signs over. Binding the
  *  seq + prefix + the seated op-key + the recovery-commit + the prev-link ties a guardian attestation to
@@ -160,7 +174,13 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
     provisional:     core.provisional,
     vetoOfCid:       core.vetoOfCid,
     enrolmentDigest: core.enrolmentDigest,
+    ...kindPart(core),
   });
+}
+
+/** The kind as the bound bytes carry it: present on a typed event, absent on a rotation and a veto. */
+function kindPart(core: Pick<PersonaEventCore, "kind">): { readonly kind?: string } {
+  return core.kind === undefined ? {} : { kind: core.kind };
 }
 
 /** The content-address of a persona-KEL event — a hash BINDING its authority core. A single bit-flip in any
@@ -177,6 +197,7 @@ export function personaEventCidOf(core: PersonaEventCore): string {
     provisional:     core.provisional,
     vetoOfCid:       core.vetoOfCid,
     enrolmentDigest: core.enrolmentDigest,
+    ...kindPart(core),
   }))}`;
 }
 
@@ -200,13 +221,15 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
  * self-authorized — exactly as today's founder edge self-signs; the recovery keys never sign until a
  * rotation reveals them, so a compromise of the operational PRESENT cannot forge the recovery FUTURE.
  *
- * The caller derives `recoverySetHash` from the guardians' recovery PUBLIC keys via `sealKeySetHash`
- * (order-blind, threshold-folded). An empty digest leaves recovery UNARMED — `mintPersonaRotation` then
- * refuses (nothing stands pre-committed to attest a reveal against).
+ * The caller derives `recoverySetHash` from the recovery PUBLIC keys via `sealKeySetHash` (order-blind,
+ * threshold-folded): a face founds one-of-one, its own self-recovery key alone (identity-classes#the-two-forks).
+ * NO PREFIX INCEPTS UNARMED: an empty digest names a face no recovery can ever rotate, so the mint refuses it, and
+ * so does every reader (`inceptionStructureFault`).
  */
 export function mintPersonaInception(opKeyDid: string, recoverySetHash: string): PersonaKelEvent {
   const weak = weakKeyFault("the inception's op-key", opKeyDid);
   if (weak) throw new Error(`persona inception — ${weak}`);
+  if (recoverySetHash.length === 0) throw new Error("persona inception — unarmed: the inception commits no recovery set");
   const prefix = personaPrefixOf(opKeyDid, recoverySetHash);
   // The genesis set fills BOTH slots: it is the prefix's anti-swap wall AND the first rotation's authority.
   const core: PersonaEventCore = {
@@ -316,6 +339,54 @@ export async function mintPersonaRotation(input: {
   };
 }
 
+// ── GUARDIAN ENROLMENT (stable-founding-road#/rulings, "Guardian enrolment's shape") ─────────────
+
+/** The bound core of the enrolment `head`'s op-key would sign to commit `guardianSetHash`. */
+function enrolmentCore(head: PersonaKelEvent, guardianSetHash: string): PersonaEventCore {
+  return {
+    seq:             head.seq + 1,
+    prefix:          head.prefix,               // the identifier stays FIXED
+    opKeyDid:        head.opKeyDid,             // and so does the face's key: an enrolment rotates nothing
+    recoverySetHash: head.recoverySetHash,      // the genesis wall carries forward unchanged
+    nextRecoverySetHash: guardianSetHash,       // the guardians' set, the authority of every later change
+    prevEventCid:    head.eventCid,
+    provisional:     false,
+    vetoOfCid:       null,
+    enrolmentDigest: enrolmentDigestOf([]),     // every device keeps its standing: no box rides it
+    kind:            GUARDIAN_ENROLMENT_KIND,
+  };
+}
+
+/** The exact bytes a face's current op-key signs to enrol the guardian set `guardianSetHash` over `head`. */
+export function personaEnrolmentSigningBytes(head: PersonaKelEvent, guardianSetHash: string): Uint8Array {
+  return personaEventBytes(enrolmentCore(head, guardianSetHash));
+}
+
+/**
+ * Mint a one-of-one face's FIRST guardian enrolment: the face's own current op-key signs one typed event that commits
+ * `guardianSetHash` (`sealKeySetHash` over the guardians' recovery public keys and the threshold) as the rolling
+ * recovery commitment. The prefix and the op-key stay as they stand, so every device edge and every device's
+ * secret stand too. FAILS CLOSED where the reader would refuse the event: a provisional head, a face whose rolling
+ * set already moved off its genesis set (the guardians' quorum changes it, by rotation), a set that is no digest or
+ * the genesis set again, and a signature that does not verify under the head's op-key.
+ *
+ * It sets no count and no threshold: the digest folds whatever the person chose (#/open, guardian count).
+ */
+export async function mintGuardianEnrolment(input: {
+  readonly head:            PersonaKelEvent;
+  readonly guardianSetHash: string;
+  /** The face's CURRENT op-key's signer over `personaEnrolmentSigningBytes`. */
+  readonly sign:            (bytes: Uint8Array) => Promise<string>;
+}): Promise<PersonaRotateResult> {
+  const core = enrolmentCore(input.head, input.guardianSetHash);
+  const event: PersonaKelEvent = {
+    ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [],
+    enrolSig: await input.sign(personaEventBytes(core)),
+  };
+  const fault = personaSuccessorFault(input.head, event);
+  return fault === null ? { ok: true, event } : { ok: false, reason: fault };
+}
+
 // ── The CONTEST (Fork C, the walked hardening rule — identity-classes#the-two-forks) ────────────
 
 /** The bytes a STANDING op-key signs to kill a provisional — the veto's core, binding the contested
@@ -421,6 +492,7 @@ function coreOf(e: PersonaKelEvent): PersonaEventCore {
     seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
     nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
     provisional: e.provisional, vetoOfCid: e.vetoOfCid, enrolmentDigest: e.enrolmentDigest,
+    ...(e.kind === undefined ? {} : { kind: e.kind }),
   };
 }
 
@@ -430,8 +502,10 @@ function inceptionStructureFault(e: PersonaKelEvent): string | null {
   const weak = weakKeyFault("the inception's op-key", e.opKeyDid);
   if (weak) return weak;
   if (e.prefix !== personaPrefixOf(e.opKeyDid, e.recoverySetHash)) return "the prefix does not derive from the inception's op-key and recovery set";
+  if (e.recoverySetHash.length === 0) return "unarmed: the inception commits no recovery set";
   if (e.nextRecoverySetHash !== e.recoverySetHash) return "an inception seats one recovery set in both slots";
   if (e.provisional || e.vetoOfCid !== null) return "an inception never contests";
+  if (e.kind !== undefined) return "an inception carries no kind";
   if (e.eventCid !== personaEventCidOf(e)) return "the cid does not recompute over the bound core";
   if (!enrolmentsAttested(e)) return "the enrolment list is not the one the cid commits";
   return null;
@@ -447,12 +521,34 @@ function successorStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
   if (!enrolmentsAttested(e))                     return "the enrolment list is not the one the cid commits";
   const weak = weakKeyFault("the event's op-key", e.opKeyDid);
   if (weak) return weak;
+  if (e.kind !== undefined) return enrolmentStructureFault(prev, e);
   if (e.vetoOfCid !== null) {
     // A veto competes AT its contested seq: it links the same predecessor and restores the standing head's
     // op-key and rolling commitment.
     if (e.opKeyDid !== prev.opKeyDid)                       return "a veto seats another op-key than the standing one";
     if (e.nextRecoverySetHash !== prev.nextRecoverySetHash) return "a veto moves the rolling recovery commitment";
     if (e.provisional)                                      return "a veto never reads provisional";
+  }
+  return null;
+}
+
+/**
+ * Why a typed event fails as the successor of `prev`, structurally, or null when it stands as a guardian enrolment:
+ * it keeps the face's op-key and commits a new set as the rolling commitment, over a head that stands hardened and
+ * still names the genesis set (one-of-one). It carries no reveal, no quorum and no device box: the op-key's own
+ * signature (`enrolSig`) stands as its whole authority, checked beside the link.
+ */
+function enrolmentStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): string | null {
+  if (e.kind !== GUARDIAN_ENROLMENT_KIND)                  return "an event kind the reader knows not";
+  if (e.vetoOfCid !== null || e.provisional)               return "an enrolment never contests";
+  if (prev.provisional)                                    return "an enrolment over a provisional head: a contested key signs no authority change";
+  if (prev.nextRecoverySetHash !== prev.recoverySetHash)   return "the face already holds guardians: a later change takes their quorum";
+  if (e.opKeyDid !== prev.opKeyDid)                        return "an enrolment keeps the face's op-key";
+  if (!DIGEST_RE.test(e.nextRecoverySetHash))              return "an enrolment commits a guardian-set digest";
+  if (e.nextRecoverySetHash === prev.nextRecoverySetHash)  return "an enrolment commits a set other than the genesis set";
+  if (e.enrolmentDigest !== enrolmentDigestOf([]))         return "an enrolment re-enrols no device";
+  if (e.recoveryRoster.length !== 0 || e.recoveryThreshold !== 0 || e.rotationSigs.length !== 0) {
+    return "an enrolment carries no reveal and no quorum";
   }
   return null;
 }
@@ -468,6 +564,11 @@ export function personaSuccessorFault(prev: PersonaKelEvent, e: PersonaKelEvent)
   if (structural) return structural;
   for (const sealed of e.enrolments ?? []) {
     if (!sealedEnrolmentVerifies(sealed, e.prefix, e.opKeyDid)) return "an enrolment its op-key did not seal";
+  }
+  if (e.kind !== undefined) {
+    if (!e.enrolSig) return "the guardian enrolment is unsigned";
+    return signatureHolds(e.enrolSig, personaEventBytes(coreOf(e)), verifyingKeyFromDid(prev.opKeyDid))
+      ? null : "the guardian enrolment's signature does not verify against the face's op-key";
   }
   if (e.vetoOfCid !== null) {
     if (!e.vetoSig) return "the veto is unsigned";
@@ -503,9 +604,14 @@ export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): P
   if (genesis) return { ok: false, reason: `structural integrity failed at the inception: ${genesis}` };
   for (let i = 1; i < chain.length; i++) {
     const fault = personaSuccessorFault(chain[i - 1]!, chain[i]!);
-    if (fault) return { ok: false, reason: `${chain[i]!.vetoOfCid !== null ? "veto" : "rotation"} seq ${chain[i]!.seq}: ${fault}` };
+    if (fault) return { ok: false, reason: `${eventNoun(chain[i]!)} seq ${chain[i]!.seq}: ${fault}` };
   }
   return { ok: true };
+}
+
+/** What an event names itself in a refusal: a guardian enrolment, a veto or a rotation. */
+function eventNoun(e: PersonaKelEvent): string {
+  return e.kind !== undefined ? "guardian enrolment" : e.vetoOfCid !== null ? "veto" : "rotation";
 }
 
 /**

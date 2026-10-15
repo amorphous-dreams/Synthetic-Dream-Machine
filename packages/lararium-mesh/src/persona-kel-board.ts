@@ -87,7 +87,7 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   if (typeof p["eventCid"] !== "string" || p["eventCid"].length === 0)         return null;
   if (typeof p["prefix"] !== "string" || p["prefix"].length === 0)            return null;
   if (typeof p["opKeyDid"] !== "string" || p["opKeyDid"].length === 0)         return null;
-  if (typeof p["recoverySetHash"] !== "string")                               return null; // "" allowed (unarmed)
+  if (typeof p["recoverySetHash"] !== "string")                               return null; // the walk refuses an unarmed one
   if (typeof p["nextRecoverySetHash"] !== "string")                           return null; // the rolling commitment
   if (typeof p["provisional"] !== "boolean")                                  return null; // the contest marker
   if (p["vetoOfCid"] !== null && typeof p["vetoOfCid"] !== "string")          return null; // a veto names its contested cid
@@ -108,8 +108,9 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   // walk checks the list against that digest and each box's signature, so a torn or padded list breaks the chain
   // where every reader sees it, never vanishing here as an event the board seems not to hold.
   const enrolRaw = p["enrolments"];
-  // The event carries no explicit `kind` field (persona-kel events are structural); the domain lives in the
-  // event bytes the cid commits, so a structural coercion + the downstream cid recompute is the real gate.
+  // A rotation and a veto carry no `kind`; a guardian enrolment names one, and the cid commits it. Any string rides
+  // through as the board holds it, so a kind the reader knows not refuses at the walk, where every reader sees it.
+  if (p["kind"] !== undefined && typeof p["kind"] !== "string")              return null;
   void PERSONA_KEL_DOMAIN;
   return {
     seq:               p["seq"] as number,
@@ -122,6 +123,8 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     vetoOfCid:         p["vetoOfCid"] as string | null,
     enrolmentDigest:   p["enrolmentDigest"],
     ...(typeof p["vetoSig"] === "string" ? { vetoSig: p["vetoSig"] as string } : {}),
+    ...(typeof p["kind"] === "string" ? { kind: p["kind"] as NonNullable<PersonaKelEvent["kind"]> } : {}),
+    ...(typeof p["enrolSig"] === "string" ? { enrolSig: p["enrolSig"] as string } : {}),
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,

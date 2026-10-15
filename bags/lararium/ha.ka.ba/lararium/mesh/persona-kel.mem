@@ -55,10 +55,38 @@ reveal happens at the ROTATION, never before, so a compromise of the operational
 recovery FUTURE. The inception is ''armed'' — it carries a `nextRecoverySetHash`, the rolling commitment that
 authorizes the NEXT rotation, seated equal to the genesis digest at inception and grafted per event thereafter.
 
-''Fork-B — threshold-attest'' (identity-classes#the-two-forks): inception pre-commits the k-of-n DIGEST of the
-guardians' recovery PUBLIC keys (`sealKeySetHash`); a rotation carries k guardian SIGNATURES over the event
-bytes, verified against that pre-commit. ''NOTHING reconstructs'' — no secret ever assembles. The recovery
+''No prefix incepts unarmed.'' An inception that commits no recovery digest names a face no recovery can ever
+rotate, so `mintPersonaInception` refuses it and every reader refuses it too (`unarmed`). A face founds
+one-of-one: its genesis digest names its own self-recovery key alone (identity-classes#the-two-forks).
+
+''Fork-B — threshold-attest'' (identity-classes#the-two-forks): the rolling commitment holds the k-of-n DIGEST
+of the recovery PUBLIC keys (`sealKeySetHash`), the face's own key alone from inception and the guardians' once
+the face enrols them (#/the-enrolment); a rotation carries k SIGNATURES over the event bytes, verified against
+the predecessor's commitment. ''NOTHING reconstructs'' — no secret ever assembles. The recovery
 authority signs ONLY rotations, never content.
+
+<<~/ahu>>
+
+<<~ ahu #/the-enrolment>>
+
+!! The first guardian enrolment ~ one typed event the face's own key signs
+
+A face founds one-of-one, so its guardians arrive later, and its log knows the act that brings them
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>, "Guardian enrolment's shape"). The
+one typed event, `kind = "guardian-enrolment"`, keeps the prefix AND the op-key, commits the guardians' set and
+threshold (`sealKeySetHash`) as the rolling commitment, and carries no reveal, no quorum and no device box. The
+face's CURRENT op-key signs its bound bytes (`enrolSig`, outside the cid like `vetoSig`); the kind rides the cid
+and the signed bytes, so an untyped copy reads as another event.
+
+The reader admits it only over a hardened head whose rolling commitment still names the genesis set, so it reads
+as FIRST: once the set moves, every later change takes the guardians' quorum, by rotation, and a second
+enrolment refuses. A veto never names one, since a veto kills a provisional alone. A rotation and a veto carry no
+kind, so their bytes read as they always read. Every device edge and every device's secret stand across an
+enrolment: they select by op-key, which it keeps. Before it lands, the vessel checks that each guardian proved
+possession of its key over this face's prefix, that no key repeats, that the threshold meets the set, and that no
+key serves another face this vessel holds (`enrolGuardians`; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+Count, threshold, request authentication, the veto and succession stay open
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 
 <<~/ahu>>
 
@@ -120,7 +148,8 @@ names it rather than meet a chain already cleaned.
 !! Frozen for alpha ~ the primitives the sibling grammar builds on
 
 The persona-KEL ''freezes after the provisional/veto change'' — its bytes stop moving, and the handle-KEL is
-built on the frozen primitives (identity-classes). The freeze is what lets a SIBLING grammar reuse the shape
+built on the frozen primitives (identity-classes). The typed first enrolment (#/the-enrolment) adds one kind
+under a house ruling that lands it before the fence; an event that names no kind keeps the bytes it held. The freeze is what lets a SIBLING grammar reuse the shape
 by structure rather than chase a moving target: the armed inception, the rolling commitment, the content
 -addressed cid, the sig-outside pattern all stand fixed. TRUE k-of-n graft governance and the Binding-Gate
 wiring ride DECLARED above the freeze, not folded into it.
@@ -152,6 +181,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xd7EmUGYBOPZe0J810bL_kkc2XRtHku4GkWuL94MZho
+<<^ code="&#x0003;">>ni:///sha-256;bfkMmvyIpjiFWp4M-aoKzKm-m9VjGjGVhmGo1FYkTFo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -545,8 +545,9 @@ the silence count of clause 3 and the Roughtime mark each read UNBUILT.
 ''THE ROLLING COMMITMENT (enacted with the ruling):'' every KEL event carries `nextRecoverySetHash`
 beside the genesis wall — the prefix keeps binding the GENESIS set (anti-swap survives), while each
 rotation reveals against its predecessor's rolling commitment and GRAFTS the next. Guardian sets turn
-over log-wise: 1-of-1-self → real hands → fresh hands when a guardian churns, each transition a
-signed, board-walkable event. This retires the guardian-rotation gap without spending delegation.
+over log-wise: 1-of-1-self → real hands by the face's own typed first enrolment
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>) → fresh hands by the guardians'
+rotation when a guardian churns, each transition a signed, board-walkable event. This retires the guardian-rotation gap without spending delegation.
 
 ''THE CROSSING RECORD (`reserve-transition` + `lares nexus seal grow`):'' when a multitude-of-one
 becomes real hands, the old quorum signs the handoff, the new quorum cross-signs the receipt (one
@@ -696,6 +697,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DnrIqlBs72TeHaB15F7PLIm3xXjeEpG0DUKj5EQuSzE
+<<^ code="&#x0003;">>ni:///sha-256;e8CkKPs6vM-nJr_9WWGy6LWU9QnXYPd1slMRZgmpZjU
 
 <<^ code="&#x0004;" -> to="?">>

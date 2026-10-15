@@ -260,7 +260,7 @@ Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-
 * ''An operator's own herm'' takes one signature, scoped to one place and one Nexus, and falls with a kapae of the operator's own admit.
 * ''A seat gets ADDED, never replaced'': the standing Kahu add a holder to both cabals, and the founders keep their chairs.
 * ''Paper'': the cold-key card takes the house format — 64 hex plus a checksum, in groups of four — and prints its purpose, its chair label, its generation and a short charter fingerprint.
-* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by a rotation on the face's own log.
+* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed event on the face's own log, signed by the face's own key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>).
 * ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies (#/nexus-scale).
 
 !!! OPEN ~ what the operator still owns
@@ -578,6 +578,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9KP0B3S5JsBOtISHucP_7PKzIZ08KzCgW8fLOImLV2g
+<<^ code="&#x0003;">>ni:///sha-256;b-iYx9KQduY3Y0EUC5rIHz3ozzSmlL3436Lf_q7LK0o
 
 <<^ code="&#x0004;" -> to="?">>
