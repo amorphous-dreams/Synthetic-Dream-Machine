@@ -51,7 +51,12 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 * ''Local crew'', where Codex stands (operator, 2026-10-14 and 2026-10-16): one Opus Episkopos per lane; a Sol builder and up to two Luna spirits co-build or sweep, each on a narrow one-module brief with a fixed type contract and its vectors. After each flow the lead runs Sol or a fresh Luna read-only as the aftermath sweep and closes or answers each finding before the next flow; a lane closes its span with one more sweep over everything it landed. The third-lineage eye reads a burst before its shard where the burst carries load.
 * ''Cloud crew'', where Codex stands absent (operator, 2026-10-15): one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
 * ''Observe pair.'' Before a phase designs anything: one spirit cold-reads the as-built with `file:line`; a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
-* ''Paired masks'' (operator, 2026-10-16). A pair of spirits wears contrasting masks over one question: YIN and YANG (one reads what the work claims and hunts the false line; the other reads what the work leaves out and hunts the true line dropped), or HODGE and PODGE (one builds or proposes; the other reads it fresh, having built nothing). Each reads alone, then the pair ''trades research for a second pass'': each takes the other's findings and its ground, confirms or refutes each finding against the source, and reads the other's ground for what the first pass missed. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one only a single pass raised stays a lead.
+* ''The Chao of a review'' (operator, 2026-10-16; the model stands at <<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). A pair of spirits wears the Chao's two faces over one question, and the review resolves to three, never two:
+** ''Hodge'' carries Yang and Ha, the Aneristic face: order, structure, form, what holds its shape. It asks //what is this about?// It reads what the work states as standing (each claim, each name, each contract) against the source, and finds the line that does not hold.
+** ''Podge'' carries Yin and Ka, the Eristic face: flux, drive, variation, what makes this instance this one. It asks //how does this move?// It reads what the work does under change (the race, the other caller, the epoch that rolls, the case left out, the control that never bites), and finds the motion the claims miss.
+** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': Hodge takes Podge's findings and ground, Podge takes Hodge's, so each carries the seed of the other face, as the Taiji's dots do. The second pass confirms or refutes each finding against the source and reads the other's ground for what its own face missed.
+** Spin holds both faces moving and never folds them into one verdict early. It sorts the findings: orthogonal pairs both stand, since order and flux most often run orthogonal; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
+** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. A crew that builds and reads fresh keeps the same faces: the builder wears Hodge over what it made, and the fresh reader wears Podge over how it moves.
 * ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
 * ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
@@ -78,7 +83,7 @@ GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Mi
 
 !!! Its roles
 |! Role |! Model |! When |
-| ''the low-cost pair'', the default | two low-multiplier models from different families (MAI-Code-1.1-Flash beside Claude Haiku 4.5 or GPT-5 mini), wearing YIN and YANG masks, then trading research for a second pass (#/the-shapes) | after a crew's burst lands locally, before its shard |
+| ''the low-cost pair'', the default | two low-multiplier models from different families (MAI-Code-1.1-Flash beside Claude Haiku 4.5 or GPT-5 mini), one wearing Hodge and one Podge, then the Spin's traded second pass (#/the-shapes) | after a crew's burst lands locally, before its shard |
 | a deeper single read | Gemini or a high-multiplier model, only where the low-cost pair splits on a load-bearing finding or the controller names a KAIROS pull to the operator | rarely; the operator hears the reason first |
 | Copilot code review | GitHub's PR reviewer | once per train or span-to-main PR, never per push |
 | micro-sweeps | a low-multiplier model | during aftermath: evergreen words, L-Prime, comment drift; findings only |
@@ -144,6 +149,6 @@ A prepaid allowance resets on the first of each month and carries nothing over, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ga4mQ7O8GjOQw8hCt9Pichjv45jbLZ1FLYf9eusN0ZY
+<<^ code="&#x0003;">>ni:///sha-256;CpwGm6XYlCWwpFm9lzKxQA4CsySdrlTnBlp_u0x-wA4
 
 <<^ code="&#x0004;" -> to="?">>
