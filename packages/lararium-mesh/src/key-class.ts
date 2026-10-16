@@ -16,7 +16,7 @@
  *     relation carrier the old VK cannot open is a loss no house act repairs (`sealed-writer` says so by name).
  *
  * Pure and isomorphic: the node's census (fs), keyhive's veil brand and the browser's seed wrap all read this
- * one spelling. Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/the-phone-seat
+ * one spelling. Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats
  */
 
 export const KEY_CLASSES = ["device-minted", "seed", "cloud-synced", "relation"] as const;

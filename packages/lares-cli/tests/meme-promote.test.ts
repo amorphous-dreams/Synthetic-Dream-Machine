@@ -214,6 +214,67 @@ describe("lares meme promote — the crossing moves residency, and the address h
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
+  test("RED: an unwritable receipt path refuses before the move", async () => {
+    const root = tree();
+    const receiptPath = promotionReceiptPath(join(root, SUBJECT_REL));
+    mkdirSync(receiptPath);
+    try {
+      const { seat, moves, residency } = await seated();
+      const r = await promoteCarrier(plan(root), seat);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.reason).toContain("cannot write receipt");
+      expect(moves).toEqual([]);
+      expect(residency.get(LIVE_BAG)?.has(SUBJECT_TITLE)).toBe(true);
+      expect(residency.get(CANON_BAG)?.has(SUBJECT_TITLE)).not.toBe(true);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED: a refused move removes the receipt", async () => {
+    const root = tree();
+    const receiptPath = promotionReceiptPath(join(root, SUBJECT_REL));
+    try {
+      const { seat, residency } = await seated();
+      const r = await promoteCarrier(plan(root), { ...seat, move: async () => {
+        expect(existsSync(receiptPath)).toBe(true);
+        return { ok: false, reason: "MOVE: refused" };
+      } });
+      expect(r).toEqual({ ok: false, reason: "MOVE: refused" });
+      expect(existsSync(receiptPath)).toBe(false);
+      expect(residency.get(LIVE_BAG)?.has(SUBJECT_TITLE)).toBe(true);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED: a thrown move removes the receipt and surfaces the error", async () => {
+    const root = tree();
+    const receiptPath = promotionReceiptPath(join(root, SUBJECT_REL));
+    const failure = new Error("MOVE: thrown");
+    try {
+      const { seat } = await seated();
+      await expect(promoteCarrier(plan(root), { ...seat, move: async () => {
+        expect(existsSync(receiptPath)).toBe(true);
+        throw failure;
+      } })).rejects.toBe(failure);
+      expect(existsSync(receiptPath)).toBe(false);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("CONTROL: the whole move sees its receipt and leaves it beside the carrier", async () => {
+    const root = tree();
+    const receiptPath = promotionReceiptPath(join(root, SUBJECT_REL));
+    try {
+      const { seat, moves, residency } = await seated();
+      const move = seat.move;
+      const r = await promoteCarrier(plan(root), { ...seat, move: async (m) => {
+        expect(existsSync(receiptPath)).toBe(true);
+        return move(m);
+      } });
+      expect(r.ok).toBe(true);
+      expect(existsSync(receiptPath)).toBe(true);
+      expect(moves).toHaveLength(1);
+      expect(residency.get(CANON_BAG)?.has(SUBJECT_TITLE)).toBe(true);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("CONTROL: no cap(\"admin\") on the canon bag — refused by the CAP, and nothing moves", async () => {
     const root = tree();
     try {

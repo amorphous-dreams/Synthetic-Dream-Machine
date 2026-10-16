@@ -36,7 +36,7 @@
  *   · RED: a junk, stripped or forged event revokes no one: the leaf names the KEL `unreadable` and keeps (or
  *     stands under) the standing a verified KEL gives it; a leaf holding no seal stands `unsealed`.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { arrival } from "./handshake.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -59,20 +59,47 @@ const copy = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 
 const CONTENT = "the sealed sibling channel carries this line and the relay reads none of it";
 
-async function syncOne(a: Leaf, b: Leaf, line = CONTENT): Promise<DocHandle<{ line: string }>> {
+function stageFacts(a: Leaf, b: Leaf): string {
+  const leaf = (l: Leaf) => ({
+    deviceKey: l.self.deviceKey,
+    peers: peersOf(l),
+    ready: l.adapter.isReady(),
+    stopped: l.adapter.isStopped(),
+    status: l.adapter.status(),
+    // Frames on the relay this leaf first stood on; a leaf re-stood on another herm counts there too.
+    standRelayFramesSent: l.relay.sent.filter((f) => f.from === l.self.deviceKey).length,
+    standRelayFramesReceived: l.relay.log.filter((f) => f.to === l.self.deviceKey).length,
+  });
+  return JSON.stringify({ source: leaf(a), target: leaf(b) });
+}
+
+interface StageWatch { readonly stallAfterMs?: number; readonly onStall?: (report: string) => void }
+
+/** A network stage still unsettled at its stall mark reports its label and both leaves' state, then keeps waiting:
+ *  the report names a stall, and only the test's own deadline decides pass or fail. */
+async function stage<T>(label: string, a: Leaf, b: Leaf, run: () => Promise<T>, watch: StageWatch = {}): Promise<T> {
+  const { stallAfterMs = 4000, onStall = (report: string) => console.warn(report) } = watch;
+  const timer = setTimeout(() => onStall(`stalled at ${label}; ${stageFacts(a, b)}`), stallAfterMs);
+  try { return await run(); } finally { clearTimeout(timer); }
+}
+
+async function syncOne(a: Leaf, b: Leaf, line = CONTENT, watch: StageWatch = {}): Promise<DocHandle<{ line: string }>> {
   const handle = a.repo.create<{ line: string }>({ line });
-  return b.repo.find<{ line: string }>(handle.url as AutomergeUrl);
+  return stage(`repo.find ${handle.url}`, a, b, () => b.repo.find<{ line: string }>(handle.url as AutomergeUrl), watch);
 }
 
 /** Two enrolled siblings of the founded group, standing as each other's peer. */
-async function pair() {
+async function pair(onRelay?: (relay: ReturnType<typeof memoryRelay>, xKey: string, yKey: string) => void) {
   const { inception } = await founded();
   const relay = memoryRelay();
   const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
   const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-  const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
-  const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
-  await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "both siblings to stand as peers");
+  const sx = await leafOf(SEEDS.deviceX, ex, [inception]);
+  const sy = await leafOf(SEEDS.deviceY, ey, [inception]);
+  onRelay?.(relay, sx.deviceKey, sy.deviceKey);
+  const x = standLeaf(SEEDS.deviceX, ex, sx, relay);
+  const y = standLeaf(SEEDS.deviceY, ey, sy, relay);
+  await stage("both siblings to stand as peers", x, y, () => until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "both siblings to stand as peers"));
   return { relay, x, y, inception, ex, ey };
 }
 
@@ -102,6 +129,50 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       expect([...x.refusals, ...y.refusals]).toEqual([]);
       expect(relay.sealedFrom.length).toBeGreaterThan(1);
     } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a parked sync frame reports the repo.find stage and document, and the find still lands once the frame goes", async () => {
+    let armed = false;
+    let parked = false;
+    const held: Array<() => void> = [];
+    const { relay, x, y } = await pair((relay, xKey, yKey) => {
+      const transportFor = relay.transportFor.bind(relay);
+      vi.spyOn(relay, "transportFor").mockImplementation((key) => async () => {
+        const transport = await transportFor(key)();
+        return {
+          ...transport,
+          send: (to, frame) => {
+            if (armed && key === xKey && to === yKey && frame.t === "seal") {
+              parked = true;
+              held.push(() => transport.send(to, frame));
+              return;
+            }
+            transport.send(to, frame);
+          },
+        };
+      });
+    });
+    const find = vi.spyOn(y.repo, "find");
+    const reports: string[] = [];
+    try {
+      armed = true;
+      const waiting = syncOne(x, y, "parked sync frame", { stallAfterMs: 100, onStall: (r) => reports.push(r) });
+      await until(() => find.mock.calls.length > 0, "the document find to start");
+      const docId = String(find.mock.calls[0]![0]);
+      await until(() => reports.length > 0, "the stall report");
+      expect(parked).toBe(true);
+      expect(reports[0]).toContain(`stalled at repo.find ${docId}`);
+      expect(reports[0]).toContain('"ready":true');
+      expect(reports[0]).toContain('"stopped":false');
+      expect(reports[0]).toContain('"standRelayFramesReceived":');
+      // The report never decides the test: the parked frame goes, and the same find lands.
+      armed = false;
+      for (const send of held.splice(0)) send();
+      expect((await waiting).doc()?.line).toBe("parked sync frame");
+    } finally {
+      for (const send of held) send();
+      await shutdown(x, y);
+    }
   });
 
   test("carry ⊥ read, DECODED: no frame carries the doc, an edge field or the root key in any encoding", async () => {
@@ -268,6 +339,85 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
   async function deposited(relay: ReturnType<typeof memoryRelay>, event: { eventCid: string; prevEventCid: string | null }): Promise<void> {
     await until(() => relay.stores.every((st) => st.pull(personaKelDropName(event.prevEventCid!, st.gatePubKey)).some((e) => e.eventCid === event.eventCid)), "the move deposited at both herms");
   }
+
+  test("RED: shutdown during deposit starts no transport, and the same device key catches up on redial", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const drops = siblingKelDropsOf(relay.drops);
+    let entered!: () => void;
+    let release!: () => void;
+    const depositEntered = new Promise<void>((resolve) => { entered = resolve; });
+    const depositHeld = new Promise<void>((resolve) => { release = resolve; });
+    const gatedDrops = {
+      pull: drops.pull,
+      deposit: async (kel: readonly PersonaKelEvent[]) => {
+        const result = await drops.deposit(kel);
+        entered();
+        await depositHeld;
+        return result;
+      },
+    };
+    const originalTransportFor = relay.transportFor.bind(relay);
+    const standCalls: string[] = [];
+    const transportSpy = vi.spyOn(relay, "transportFor").mockImplementation((key) => {
+      const stand = originalTransportFor(key);
+      return async () => { standCalls.push(key); return stand(); };
+    });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay, { drops: gatedDrops });
+    let xClosed = false;
+    let y: Leaf | undefined;
+    let x2: Leaf | undefined;
+    try {
+      await depositEntered;
+      await deposited(relay, chain[1]!);
+      expect(standCalls).toEqual([]);
+      await shutdown(x);
+      xClosed = true;
+      release();
+      await x.adapter.whenReady();
+      expect(standCalls, "a closed adapter never starts a transport").toEqual([]);
+      expect(relay.holds(x.self.deviceKey)).toBe(false);
+
+      y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
+      await until(() => y!.adapter.kel.length === 2, "y to pull the deposited head");
+      x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+      await until(() => peersOf(x2!).length === 1 && peersOf(y!).length === 1, "the redialled pair to stand");
+      const found = await syncOne(x2, y, "across the gated redial");
+      expect(found.doc()?.line).toBe("across the gated redial");
+      expect([...x2.refusals, ...y.refusals]).toEqual([]);
+      expect(errors.mock.calls.flat().join(" ")).not.toMatch(/sync.*decod|decod.*sync/i);
+    } finally {
+      release();
+      if (!xClosed) await shutdown(x);
+      await shutdown(...[x2, y].filter((leaf): leaf is Leaf => leaf !== undefined));
+      transportSpy.mockRestore();
+      errors.mockRestore();
+    }
+  });
+
+  test("CONTROL: a ready leaf shuts down before its device key redials and syncs", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    await x.adapter.whenReady();
+    await deposited(relay, chain[1]!);
+    await shutdown(x);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    try {
+      await until(() => peersOf(x2).length === 1 && peersOf(y).length === 1, "the ready leaf's redialled pair");
+      const found = await syncOne(x2, y, "across the ready redial");
+      expect(found.doc()?.line).toBe("across the ready redial");
+      expect([...x2.refusals, ...y.refusals]).toEqual([]);
+    } finally { await shutdown(x2, y); }
+  });
 
   test("RED: the last leaf to wake catches up from a drop — no sibling online — and the pair stands under the head", async () => {
     const { inception } = await founded();

@@ -199,7 +199,7 @@ export function memoryRelay() {
   return relay;
 }
 
-export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf }
+export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf; relay: ReturnType<typeof memoryRelay> }
 
 /** Stand a leaf on the relay: a repo whose only network is the sibling channel, sharing every doc, its drops the
  *  relay's two herms unless a test hands its own. */
@@ -235,7 +235,7 @@ export function standLeaf(
   // fills announce alone and leaves a request by id wide open.
   const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
   adapter.bindRepo(repo);
-  return { repo, adapter, refusals, self };
+  return { repo, adapter, refusals, self, relay };
 }
 
 export async function until(cond: () => boolean, label: string, ms = 3000): Promise<void> {

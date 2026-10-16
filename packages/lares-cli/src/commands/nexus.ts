@@ -331,7 +331,7 @@ function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResu
       for (const s of r.signed) console.log(`    ${s.slice(0, 16)}…`);
       if (path) console.log(`  partial:     ${path}`);
       if (written?.error) console.error(`lares nexus ${step}: the act ran, and the partial file did not land (${written.error}); carry the partial below instead`);
-      // No file holds the partial as it stands now: print it whole, so a landed or cosigned act never strands.
+      // Without an output file, print the whole partial so a landed or cosigned act remains portable.
       if (!path) console.log(`  partial (carry this): ${JSON.stringify(r.partial)}`);
       if (r.landed) {
         console.log(`  landed:      act ${r.landed.evidenceCid.slice(0, 16)}… on this vessel's board (${r.landed.memberHeld ? "MEMBER" : "NOT a member"})`);

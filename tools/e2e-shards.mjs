@@ -362,7 +362,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   }
 
   const ok = watchOk && viewed.conclusion === "success";
-  return { ok, runId, headSha, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
+  return { ok, runId, headSha, branch, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
 
 /** Seconds between the watch's looks at a run. */
@@ -379,8 +379,22 @@ function deleteBranch(repoRoot, branch) {
   spawnSync("git", ["-C", repoRoot, "push", "origin", "--delete", branch], { stdio: ["ignore", "pipe", "pipe"] });
 }
 
+/**
+ * The branch whose full CI run measures `sha`: a remote branch that carries it as its tip, never a `ci/` lane
+ * branch, since `ci.yml` ignores `ci/**` and no full run ever stands there. Exactly one such branch names
+ * itself; none or several answer null, and the hint asks for the branch rather than guess one.
+ */
+export function fullCiBranchOf(repoRoot, sha) {
+  const r = spawnSync("git", ["-C", repoRoot, "branch", "-r", "--points-at", sha, "--format=%(refname:short)"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  if (r.status !== 0) return null;
+  const names = r.stdout.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("origin/") && !l.startsWith("origin/ci/") && l !== "origin/HEAD")
+    .map((l) => l.slice("origin/".length));
+  return names.length === 1 ? names[0] : null;
+}
+
 /** The line `push` ends on, whatever the shards answered: where the other half of the verdict gets read. */
-export const HALF_VERDICT = "HALF A VERDICT: the shards ran the e2e sets alone — read the full CI workflow before calling this head green: node tools/ci-verdict.mjs --head";
+export const HALF_VERDICT = "HALF A VERDICT: the shards ran the e2e sets alone — read the full CI workflow before calling this head green: node tools/ci-verdict.mjs --branch";
 
 async function cliPush(args, repoRoot) {
   const lane = args[0];
@@ -396,7 +410,7 @@ async function cliPush(args, repoRoot) {
   // ONE HALF OF GREEN. This lane runs the e2e sets alone; the package suites, the witness fleet and the tool
   // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
   // The head this lane PUSHED, never the checkout's head at print time: other hands commit while the run goes.
-  console.log(`${HALF_VERDICT} ${result.headSha.slice(0, 9)}`);
+  console.log(`${HALF_VERDICT} ${fullCiBranchOf(repoRoot, result.headSha) ?? "<the branch this head rides>"} --head ${result.headSha.slice(0, 9)}`);
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;
 }

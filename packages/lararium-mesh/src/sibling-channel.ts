@@ -370,6 +370,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   isReady(): boolean { return this.#ready; }
+  isStopped(): boolean { return this.#stopped; }
 
   whenReady(): Promise<void> {
     return this.#ready ? Promise.resolve() : new Promise((r) => this.#readyResolvers.push(r));
@@ -611,7 +612,9 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       } else {
         await this.#catchUp();
       }
+      if (this.#stopped) { this.#markReady(); return; }
       await this.#deposit(this.#kel);
+      if (this.#stopped) { this.#markReady(); return; }
       await Promise.all(due.map((i) => this.#stand(i)));
     } finally {
       for (const i of due) this.#standing.delete(i);

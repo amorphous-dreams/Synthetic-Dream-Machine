@@ -4,8 +4,7 @@
 # ── WHY TWO, AND WHY A WITNESS RATHER THAN A REVIEW ─────────────────────────────────────────────
 # ONE STORE, ONE HOLDER, AT EVERY INSTANT (`owned-store.ts`'s own law). A door that opened its OWN
 # second Repo beside a standing vessel's never saw that vessel's live replica and was never seen by
-# its peers — the exact fault `nexus-refresh.ts` existed only to paper over with a bounded-staleness
-# poll, now retired because every door routes through the ONE held Repo instead. That leaves exactly
+# its peers — every door routes through the ONE held Repo instead. That leaves exactly
 # two lawful openers, and only two:
 #   · `open-node-vessel.ts` — the standing vessel's OWN Repo, opened once at boot and held for its
 #     whole life;

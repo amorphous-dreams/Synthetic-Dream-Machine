@@ -1,6 +1,14 @@
 import { defineConfig } from "vitest/config";
+import { alias, aliasesFor } from "../lararium-node/vitest.alias";
 
 export default defineConfig({
+  resolve: { alias: [
+    ...alias,
+    ...aliasesFor("node", "lararium-node"),
+    ...aliasesFor("mempalace", "lararium-mempalace"),
+    ...aliasesFor("sensorium", "lararium-sensorium"),
+    ...aliasesFor("memetic-frame", "lararium-memetic-frame"),
+  ] },
   test: {
     // STATED, not inherited. `isolate: true` is vitest's default, and suites here depend on it:
     // several modules hold process-global registries (a Map of holders, memo caches) that no reset

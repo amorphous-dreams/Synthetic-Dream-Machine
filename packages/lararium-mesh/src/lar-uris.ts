@@ -276,7 +276,7 @@ export const SESSIONS_NAMESPACE   = bagUri("sessions");
  *   corpusLarUri("elyncia") → "lar:///ha.ka.ba/bags/elyncia"
  *
  * Every corpus is a first-class bag at child[1] under the bag-tag rule
- * (see lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule).
+ * (see lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface).
  */
 export function corpusLarUri(slug: string): string {
   return bagUri(slug);

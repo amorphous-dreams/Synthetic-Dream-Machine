@@ -127,7 +127,7 @@ Collide each before trusting it.
 * ''Know what an import resolves to.'' `@lararium/mesh` resolves to source under the node package's test aliases and to `dist` under the CLI's, so one symbol reading "missing" may name a stale `dist`. A revert-verify that swaps source alone reads vacuous against a run of `dist`.
 * ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
 * ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
-* ''A shard-green head holds half a verdict.'' The shard lane runs the e2e sets alone; the package suites, the witness fleet and the tool self-tests answer only in the full CI workflow, and a newer push cancels that workflow's run before it reports. A cancelled run measured nothing. Read the head with `node tools/ci-verdict.mjs --head <sha>`: it answers green, red or unread, and unread never reads as green.
+* ''A shard-green head holds half a verdict.'' The shard lane runs the e2e sets alone; the package suites, the witness fleet and the tool self-tests answer only in the full CI workflow, and a newer push cancels that workflow's run before it reports. A cancelled run measured nothing. Read the head with `node tools/ci-verdict.mjs --head <sha> --branch <branch>`: it answers green, red or unread, and unread never reads as green.
 * ''`LAR_ROOT` alone isolates every XDG home''; it leaves `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin` and the harness homes untouched. Never touch `~/.local/share/lares`, and never read the passphrase file.
 * ''Check `pgrep -af vitest` and `pgrep -af witness` before a run that stages vessels''; bisect a red in a worktree, never by guessing. A lone red that clears standalone names suspect shared state before it names a defect.
 
@@ -162,6 +162,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JOCpqVN8s83N4iXZWaLryGxrGgi5bmP8qOb-D2-Q0fU
+<<^ code="&#x0003;">>ni:///sha-256;ltKGmwuvFZkvQ7FKg2BKgKRKaKpIVsIV7If0sdggkuc
 
 <<^ code="&#x0004;" -> to="?">>

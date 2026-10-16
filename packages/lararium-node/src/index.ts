@@ -75,9 +75,9 @@ export type {
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
 // the PUSHFORWARD mirror over bands/coupling (0 ⟺ the flows co-extend; positive ⟺ a localizable
-// co-obstruction), the sheaf/cosheaf dual pair now complete.
+// co-obstruction), the sheaf/cosheaf dual pair.
 // The consistency-radius organ (H⁰ li/ki dual), the cohomological gate (H¹ fusion), and the EFE organ
-// now live PLATFORM-BLIND in `@lararium/mesh` (the pono-homes lift: one hull, every tier — node, tw5,
+// live PLATFORM-BLIND in `@lararium/mesh` (one hull, every tier — node, tw5,
 // browser — reaches the same organs; py mirrors them by contract). Import them from `@lararium/mesh`.
 
 // The memetic-wikitext SENSORIUM — the concrete neither-top, co-located-peers instance: the reader
@@ -136,8 +136,8 @@ export type { JingRead, LobeRoundTrip, ReadJingOptions } from "./sensorium-squar
 
 // The auto-extraction PROJECTOR — read a poured target's child streams into a ChildSignalMV[] signal-matrix
 // (the couple_r/mismatch/flow shape), the time-series twin of the salience sidecar. Feature-gated: the
-// STRUCTURE lands now, the default reader reads a `signal.json` sidecar the re-pour lands per child; absent
-// (every real sensorium today) ⇒ the honest empty matrix, the surface names the calibration data-wait.
+// STRUCTURE uses a `signal.json` sidecar the re-pour lands per child; absent
+// ⇒ the honest empty matrix, and the surface names the calibration data-wait.
 export { extractSignalFromTarget, defaultChildSignalReader, CHILD_SIGNAL_SIDECAR } from "./sensorium-signal.js";
 export type { ChildSignalReader, SignalExtraction, ExtractSignalOptions } from "./sensorium-signal.js";
 
@@ -370,7 +370,7 @@ export { VesselIslandPool } from "./vessel-island-pool.js";
 export type { VesselIslandPoolOptions } from "./vessel-island-pool.js";
 // The consolidated sensorium file — the manifest primitive + the shared palace transport +
 // the palace CLIENTS (content/form/persistence) + the unified cap-stack. The palace transport
-// cap (the #has-stack foundation both local stores compose) lives here now.
+// cap (the #has-stack foundation both local stores compose) lives here.
 export { PalaceHolder, PalaceHolderRegistry, canonicalDirOf } from "./sensorium.js";
 export type { PalaceHolderProc, PalaceHolderSpawn, PalaceFeedCap } from "./sensorium.js";
 export { makePersistencePalace } from "./sensorium.js";

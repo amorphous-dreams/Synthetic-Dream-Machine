@@ -1,5 +1,5 @@
 /**
- * realm-steward-map — a realm's co-signed steward map, filled from co-signed `keptBy` alone; a leaf map, never
+ * realm-steward-map — a realm's co-signed steward map, filled from co-signed `keptBy` alone; a leaf map, apart from
  * the realm consult's root map.
  *
  * Proven: a co-signed record maps every name it holds; a one-steward record maps nobody; a foreign-realm

@@ -3,7 +3,8 @@
 // job view of the newest whole run. No network, no `gh`: `readVerdict` takes the JSON as data.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, chmodSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -233,13 +234,41 @@ test("the door answers exit 3 when it cannot read, never 0", () => {
   assert.match(r.stderr, /ci-verdict: could not read/);
 });
 
+test("a detached checkout refuses an unnamed branch before reading runs; an attached checkout reads its branch", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ci-verdict-branch-"));
+  const git = join(dir, "git");
+  const gh = join(dir, "gh");
+  const queried = join(dir, "queried");
+  try {
+    writeFileSync(git, '#!/bin/sh\nif [ "$2" = "--abbrev-ref" ]; then printf "%s\\n" "$TEST_BRANCH"; else printf "%040d\\n" 0; fi\n');
+    writeFileSync(gh, '#!/bin/sh\nprintf "%s\\n" "$*" >> "$TEST_QUERIED"\nprintf "[]\\n"\n');
+    chmodSync(git, 0o755);
+    chmodSync(gh, 0o755);
+    const run = (branch) => spawnSync(process.execPath, [join(HERE, "ci-verdict.mjs")], {
+      encoding: "utf8", env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, TEST_BRANCH: branch, TEST_QUERIED: queried },
+    });
+    const detached = run("HEAD");
+    assert.equal(detached.status, 3, detached.stderr);
+    assert.match(detached.stderr, /detached HEAD: name --branch/);
+    assert.doesNotMatch(detached.stdout, /UNREAD/);
+    assert.equal(existsSync(queried), false, "a detached default must not ask GitHub about branch HEAD");
+
+    const attached = run("topic/ci-reader");
+    assert.equal(attached.status, 2, attached.stderr);
+    assert.match(attached.stdout, /ci-verdict: branch topic\/ci-reader/);
+    assert.match(readFileSync(queried, "utf8"), /run list --branch topic\/ci-reader --workflow CI/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("the shard lane's push door ends on the line that names this reader", async () => {
   const { HALF_VERDICT } = await import("./e2e-shards.mjs");
-  assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --head$/);
+  assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --branch$/);
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
-  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
-    "the push door stopped naming the head it pushed (the checkout's head moves while the run goes)");
+  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{fullCiBranchOf\(repoRoot, result\.headSha\) \?\? "<the branch this head rides>"\} --head \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
+    "the push door must name the branch whose full run measures the head it pushed, never the ci/ lane");
   assert.match(src, /return \{ ok, runId, headSha, /);
 });
 

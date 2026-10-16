@@ -1,5 +1,5 @@
 /**
- * persona-group-root.test.ts — PersonaGroup-root key custody (operator-root capability).
+ * person-group-root.test.ts — PersonaGroup-root key custody (operator-root capability).
  *
  * Proves the custody helper the meshed founding consumes: a founder-only root key, minted once and
  * loaded idempotently, persisted into `<lares>/identity` — a SIBLING of the substrate a rite reforges,

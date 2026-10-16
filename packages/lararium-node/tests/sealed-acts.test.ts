@@ -116,7 +116,7 @@ describe("the sealed-act table", () => {
     const crossing = canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: "a", toEpochCid: "b" });
     const foreign: Array<[string, Record<string, unknown>]> = [
       ["bytes that spell no record", { image: hex(new TextEncoder().encode("a synthetic image to sign")) }],
-      ["a record of another name", { image: hex(canonicalJsonBytes({ kind: "lar:///ha.ka.ba/api/v0.1/pono/persona-grant", personaRef: {} })) }],
+      ["a record of another name", { image: hex(canonicalJsonBytes({ kind: "lar:///ha.ka.ba/api/v0.1/pono/foreign-rite", personaRef: {} })) }],
       ["a record with no name", { image: hex(canonicalJsonBytes({ prevEpochCid: "x" })) }],
       ["a crossing record", { image: hex(crossing) }],
       ["a list", { image: hex(canonicalJsonBytes([{ domain: RESERVE_TRANSITION_DOMAIN }])) }],

@@ -392,7 +392,7 @@ export function writeManifest(sensoriumDir: string, m: SensoriumManifest): void 
 }
 
 // ============================================================================
-// palace-holder — the SHARED palace-instance transport cap (folded from palace-holder.ts)
+// palace-holder — the SHARED palace-instance transport cap
 // ============================================================================
 /**
  * palace-holder — the SHARED palace-instance transport cap (the daemon's TS side).
@@ -737,7 +737,7 @@ export interface PalaceFeedCap {
 }
 
 // ============================================================================
-// content-palace — the Li-triple CONTENT plane (folded from content-palace.ts)
+// content-palace — the Li-triple CONTENT plane
 // ============================================================================
 /**
  * content-palace — the Li-triple's CONTENT plane for NON-MEMORY targeted content: a caller-vector
@@ -745,7 +745,7 @@ export interface PalaceFeedCap {
  * ingest target) that are NOT the operator's session-memory (the mempalace stays the private
  * interoception content). Each target gets its own content palace dir.
  *
- * THE CAP-STACK: content-palace = the SHARED transport cap ({@link composePalace}, palace-holder.ts)
+ * THE CAP-STACK: content-palace = the SHARED transport cap ({@link composePalace} in this module)
  * composed with its OWN thin op-surface — `put`/`get`/`search` over the python `content_io.py serve`
  * holder. Caller-vector (the embedding arrives on the wire, no model load) — uniform with structure/
  * form/persistence AND split-ready: the parallel-ingest embeds upstream, this commits the vector.
@@ -892,7 +892,7 @@ export function _liveContentHolderCount(): number {
 }
 
 // ============================================================================
-// formpalace — the LIVING-GRAMMAR FORM store (folded from formpalace.ts)
+// formpalace — the LIVING-GRAMMAR FORM store
 // ============================================================================
 /**
  * formpalace — the LIVING-GRAMMAR FORM store: a LOCAL, caller-vector store for the per-turn
@@ -909,7 +909,7 @@ export function _liveContentHolderCount(): number {
  * embedding model is never invoked (we always supply our own vector), mirroring `.structurepalace`.
  *
  * THE CAP-STACK (the palace-instance #has): formpalace = the SHARED palace transport
- * ({@link PalaceHolderRegistry}, palace-holder.ts) composed with its OWN op-surface —
+ * ({@link PalaceHolderRegistry} in this module) composed with its OWN op-surface —
  * `encode_store`/`query`/`filter`/`get` over the python form-encoder holder. DISTINCT from
  * structurepalace (per-turn form-vectors keyed by verbatim_sha vs per-structure AST drawers keyed by
  * structural hash, no AST payload stored here) but riding the IDENTICAL transport cap — two
@@ -1072,7 +1072,7 @@ export function _liveFormHolderCount(): number {
  * Each match carries its `verbatim_sha` (the cross-plane join key) so a multi-graph recall can fuse the
  * structure leg against content by that sha.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/dual-graph
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/multi-graph
  */
 
 /** One nearest-shape match from the structure query face. `verbatim_sha` is the cross-plane join key. */
@@ -1149,7 +1149,7 @@ export function _liveStructureHolderCount(): number {
 }
 
 // ============================================================================
-// persistence-palace — the Testimony cosheaf cap (folded from persistence-palace.ts)
+// persistence-palace — the Testimony cosheaf cap
 // ============================================================================
 /**
  * persistence-palace — the TS op-surface for a PersistencePalace instance: the cap ANY sensorium
@@ -1159,7 +1159,7 @@ export function _liveStructureHolderCount(): number {
  * store persists; the keel decides; this surface wires them over the shared holder transport.
  *
  * THE CAP-STACK: persistence-palace = the SHARED palace transport ({@link PalaceHolder} +
- * {@link PalaceHolderRegistry}, palace-holder.ts) composed with its OWN op-surface over the python
+ * {@link PalaceHolderRegistry} in this module) composed with its OWN op-surface over the python
  * `persistence_io.py serve` holder. It owns NONE of the transport machinery (that lives once in the
  * shared cap) and NONE of the lifecycle law (that lives once in the mesh keel) — a thin bridge only.
  *
@@ -1295,7 +1295,7 @@ export function _livePersistenceHolderCount(): number {
 }
 
 // ============================================================================
-// palace-caps — the UNIFIED cap-stack every palace #has (folded from palace-caps.ts)
+// palace-caps — the UNIFIED cap-stack every palace #has
 // ============================================================================
 /**
  * palace-caps — the UNIFIED cap-stack every palace entity #has. A palace is a nameless entity whose

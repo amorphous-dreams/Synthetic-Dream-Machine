@@ -73,8 +73,7 @@
  * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
  * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
  *
- * `project --to md --check <file.md | dir>` RUNS THAT PROOF, folded off `tools/submission-parity.mjs`
- * (now retired) and into this one door: re-project each named pair's source in memory through the same
+ * `project --to md --check <file.md | dir>` RUNS THAT PROOF: re-project each named pair's source in memory through the same
  * `projectSubmission`, compare against the pair on disk and its meta's `source-check`, and exit non-zero
  * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
  * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
@@ -707,9 +706,9 @@ function surveyEdges(files: string[]): number {
  * holds a dissolving act. So this reading names candidates and stops. The operator calls the sitting.
  *
  * ── THE WELD COMES FIRST AND THE FIRE SECOND, ALWAYS ────────────────────────────────────────────
- * A carrier any other carrier still names is HELD, however the stage reads. Measured on this tree:
- * moving three carriers without the weld left 66 references naming addresses that no longer answered;
- * folding 37 weld-first broke none. The corpus passed IS the universe here, exactly as it is for the
+ * A carrier any other carrier still names is HELD, however the stage reads:
+ * the weld must update every reference before a carrier moves, so every named address still answers.
+ * The corpus passed IS the universe here, exactly as it is for the
  * edges reading — so a narrow run reads as a graph with holes, and the summary states the count read.
  *
  * ── AND THE HARVEST ROOM'S EMPTINESS IS THE WITNESS ─────────────────────────────────────────────
@@ -958,7 +957,7 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 }
 
 /**
- * `project --to md --check <file.md|dir>` — THE FOLD of `tools/submission-parity.mjs` into this door.
+ * `project --to md --check <file.md|dir>` — the submission currency check.
  *
  * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
  * so the only way a pair reads current is that projecting its source again produces the same bytes.
@@ -1014,7 +1013,7 @@ function projectMdCheck(args: ParsedArgs): number {
     const title = /^title: (\S+)$/m.exec(meta)?.[1];
     const source = /^source: (\S+)$/m.exec(meta)?.[1];
     const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
-    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair was
+    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair is
     // woven for — no flag at check time, the recorded sidecar IS the instruction. Absent either
     // key, the pair stays CommonMark with no tongue (the default both channels share).
     const { variant, tongue: recordedTongue } = recordedTargetOf(meta);
@@ -1058,9 +1057,8 @@ function projectMdCheck(args: ParsedArgs): number {
  *   · THE MOVE — the same verb without `--dry-run`. `executeMove` performs the whole-carrier-group transfer;
  *     this door builds no second mover.
  *
- * IT STILL REFUSES WHEN THE CAP IS ABSENT, and that refusal now carries the daemon's own words rather than
- * this door's confession. Promotion-down stays the kahu-cabal's act, operator-triggered first: an AI nym
- * holding no admin on the canon bag meets the same closed gate it met before.
+ * A missing cap draws the daemon's own refusal. Promotion-down requires an operator-triggered kahu-cabal act;
+ * an AI nym holding no admin on the canon bag meets the closed cap gate.
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];

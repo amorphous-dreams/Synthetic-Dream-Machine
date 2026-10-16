@@ -2,8 +2,7 @@
  * H2 — `afterRoll` (open-node-vessel.ts) is awaited, serialized and truthful, never fire-and-forget.
  *
  * `afterRoll` is a closure local to `openNodeVessel` (no full boot runs cheaply in a unit test), so
- * this proof reads the real source the same way `a-reading-never-a-throw.test.ts` already does for
- * this file: it asserts the SHAPE the episkopos's H2 cure demands, each assertion load-bearing
+ * this proof reads the real source and asserts the SHAPE the episkopos's H2 cure demands, each assertion load-bearing
  * against a specific regression this iteration measured in production —
  *   · the old `void (async () => { try { … } catch {} })()` IIFE (the fire-and-forget this cure
  *     retires — the reason `represented`/`refolded` always read false) must be GONE;
