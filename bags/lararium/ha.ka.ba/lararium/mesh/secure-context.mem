@@ -126,7 +126,7 @@ Read from caps rather than from tiers, the landlord and bootstrap worries dissol
 
 !! What a key format buys, MEASURED ~ non-portability, never non-compromise
 
-A browser vessel persists its signing key as a hex seed, so a same-origin read yields raw key material. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
+A browser vessel's clear keystore persists its signing key as a hex seed, so a same-origin read yields raw key material. A bound custody slot seals that seed; the web boot and `open-browser-vessel.ts` still owe the unlock call. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
 
 ''IT WORKS.'' An Ed25519 key generated non-extractable structured-clones into IndexedDB, survives a full browser restart, signs afterward, and refuses every export. Ed25519 reached WebCrypto across the field in 2024–25 (Firefox 129, Safari 17, Chrome 137). ''One gap:'' Safari can MAKE an X25519 key and cannot PERSIST one as a CryptoKey — Ed25519 persists there, X25519 does not.
 
@@ -147,7 +147,7 @@ A browser vessel persists its signing key as a hex seed, so a same-origin read y
 <<~ has KeyClass Device "opaque/YES resurrection/through its own holder's custody slot alone — else re-mint and re-admit cure/a non-extractable handle, or a secret wrapped under the holder's own slots">>
 <<~ has KeyClass PersonaRoot "opaque/STRUCTURALLY-NO resurrection/losing it loses the persona cure/an at-rest seal">>
 
-''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed, and the seal that protects it stays owed — the code already says as much beside the store: the browser holds no seal for self-sovereign secrets, and a persona root persists cleartext exactly as the device key beside it does.
+''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed. Browser custody seals the device seed and Keyhive Archives under a bound passphrase or paper slot; the persona root still persists cleartext outside that tree and still needs its own seal.
 
 ''The instrument that fits the persona root'' reads as authenticator-derived envelope encryption — a key derived per-authenticator, wrapping one content key, one wrapped copy per device. It suits the root's needs (bytes, and multi-device recovery) and suits the device key's not at all. ''Two keys, two cures, and a design that gives both the same treatment gets one of them wrong.''
 
@@ -298,6 +298,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;knbiTDLKZAaCwKvrBAwFWKtX0d87mmE-D9ATJoijORA
+<<^ code="&#x0003;">>ni:///sha-256;raaR4E_AE-UnPN7YIq5qzkaKl39rLCeYGGpXqb5iWdI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 # The next path ~ a scout's report
 
-Later commits `1b50857`, `756eab3` and `b9a4457` supersede the report's stale join, N, H, recovery and base-red observations.
+Later commits `1b50857`, `756eab3`, `b9a4457` and `e855438c1` supersede the report's stale join, N, H, recovery, base-red and browser-custody observations.
 
 Lane `scout` (controller-handoff `#/the-cloud-lanes`), read on `feature/green-jello-dinosaur-5` at `f7f5fa0`, 2026-10-15. Read-only: this report changes no code. Every claim cites the file and line it rests on; a line marked *inferred* rests on a reading no command confirmed.
 

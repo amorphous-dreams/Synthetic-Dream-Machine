@@ -149,7 +149,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 * ''One ember key per (ember device, hearth).'' The ember device mints a fresh scalar for each hearth it serves, apart from every key it holds for anything else (its fleet key, its face keys, its leaf), so two hearths' pins never link one device and no pin names a fleet key.
 * ''The group adds points'', so the exchange can blind; the build fixes the group and its encoding under a registered domain. An answer that carries the x-coordinate alone yields two candidates, and the pin's authenticated wrap picks the one that opens. An ember that rests in a hardware enclave waits on the approved measurement of that hardware's exchange (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
 * ''The pin record rests bare'', inside the serving tree: its kind, `S`, `C`, the ember's route transport key, the device digest (#/removal), a nonce and the wrapped share, and the associated data binds the slot, the pin's place and its kind. `S` and the transport key name no device: each stands fresh for this hearth alone. The ember route seats a dialer by that transport key alone (#/the-raise).
-* ''The ember's secret rests sealed on its own device'', under that device's own route: on a node, under that vessel's VK; in a browser leaf, under the leaf's own slot (`B1` of the roadmap's loops). A leaf the browser evicts loses its ember, and the hearth keeps its human routes.
+* ''The ember's secret rests sealed on its own device'', under that device's own route: on a node, under that vessel's VK; in a browser leaf, under the leaf's own custody slot (`B1` of the roadmap's loops) once an ember row and its caller stand. A leaf the browser evicts loses its ember, and the hearth keeps its human routes.
 * ''The ember's secret never syncs.'' No passkey provider, cloud keychain, backup bundle or fleet channel carries it: an ember names one physical device, and a copy on a second device would make two embers the hearth counts as one.
 
 !!! The bind
@@ -277,7 +277,7 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 !! What the build owes, in train E's order
 
 # ''The serving tier'': the serving class, `sk-slots`, SK minted at the Stable founding, the VK entry, the serving rows moved under SK, the SK rotation, the composition at SERVING with each refusal of #/the-tiers by name. Caller: the custody door's unlock, and the ember raise.
-# ''The ember pin'': the pin kind in the serving tree alone, the exchange, the bind at a human unlock over the fleet channel, the ember's secret in the ember device's own custody (a browser leaf's after `B1`).
+# ''The ember pin'': the pin kind in the serving tree alone, the exchange, the bind at a human unlock over the fleet channel, the ember's secret in the ember device's own custody (a browser leaf's ember row and caller ride its `B1` custody slot).
 # ''The raise, the count, the record and the removal'': the ember route, the ledger with the count spent at its commit, the refill, the ember withdrawal, the fold at the floor that drops a pin, the `sk-rotation-owed` mark and the owed SK rotation.
 # ''The unattended answer'': the freshness anchor's attestation, for a hearth that holds a hardware-sealed key; every other hearth's slots answer on a confirm alone.
 # ''Canon'': the custody carrier's class table, the waking floor's expiry wording and the sealed store's key table.
@@ -297,6 +297,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cgFio9s5oCJeYXEK8jrs_6ZBiGPSEr8menVgE5O17G4
+<<^ code="&#x0003;">>ni:///sha-256;O2RoNC3PBBLSPVNSJ5MdJiFKaR8MfWaL0N6T7elq2Fk
 
 <<^ code="&#x0004;" -> to="?">>

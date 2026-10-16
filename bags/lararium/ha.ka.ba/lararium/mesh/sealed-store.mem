@@ -362,7 +362,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 * ''The join of rival foundings'': two foundings of one bag stand apart under two locators. Their join needs a rule for the locator the joined lineage carries, and a `fresh` base.
 * ''The join of unlike spans'': a writer that holds heads of unlike spans joins them onto a `fresh` base. Until step three cuts one, that join refuses by name and the fork keeps showing.
 * ''A contact card for every seat'': a wrap seats a reader by its card, and a vessel holds the cards of the devices it saw summoned. A grant that carried the cards of the seats already standing would leave no reader unserved at a mint.
-* ''The browser shore'': a rest for the store, and an Archive writer under browser custody. Until both stand the browser's island seats no holder.
+* ''The browser shore'': the Archive writer rides browser custody's slot tree and one sealed writer through its IndexedDB `CustodyIo` port (`packages/lararium-browser/src/browser-custody.ts`); the browser's island still owes a rest for this store and a caller that seats its holder.
 * ''Doors for a person'': a command that seals and opens a body in one act, and the readings that show a fork, a rival founding, an unserved reader and an uncounted version.
 * ''Range reads'': a verified read of one segment out of a large value, without hashing the whole.
 
@@ -382,6 +382,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4waYDuNhe3M1N-gWDPM4E2OWMTr5MKABQRvN7pdqVyg
+<<^ code="&#x0003;">>ni:///sha-256;-tJdkyao-ZzS3fOdembzWiUe14aZUlMB4Gltzkjkok4
 
 <<^ code="&#x0004;" -> to="?">>
