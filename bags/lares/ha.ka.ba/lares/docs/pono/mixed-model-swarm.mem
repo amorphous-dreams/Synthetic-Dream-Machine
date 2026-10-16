@@ -51,6 +51,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 * ''Local crew'', where Codex stands (operator, 2026-10-14 and 2026-10-16): one Opus Episkopos per lane; a Sol builder and up to two Luna spirits co-build or sweep, each on a narrow one-module brief with a fixed type contract and its vectors. After each flow the lead runs Sol or a fresh Luna read-only as the aftermath sweep and closes or answers each finding before the next flow; a lane closes its span with one more sweep over everything it landed. The third-lineage eye reads a burst before its shard where the burst carries load.
 * ''Cloud crew'', where Codex stands absent (operator, 2026-10-15): one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
 * ''Observe pair.'' Before a phase designs anything: one spirit cold-reads the as-built with `file:line`; a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
+* ''Paired masks'' (operator, 2026-10-16). A pair of spirits wears contrasting masks over one question: YIN and YANG (one reads what the work claims and hunts the false line; the other reads what the work leaves out and hunts the true line dropped), or HODGE and PODGE (one builds or proposes; the other reads it fresh, having built nothing). Each reads alone, then the pair ''trades research for a second pass'': each takes the other's findings and its ground, confirms or refutes each finding against the source, and reads the other's ground for what the first pass missed. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one only a single pass raised stays a lead.
 * ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
 * ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
@@ -77,7 +78,8 @@ GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Mi
 
 !!! Its roles
 |! Role |! Model |! When |
-| third-lineage reviewer of a crew's burst | MAI-Code-1.1-Flash by default; Gemini where the burst touches crypto, custody, carriage or the wire | after the burst lands locally, before its shard |
+| ''the low-cost pair'', the default | two low-multiplier models from different families (MAI-Code-1.1-Flash beside Claude Haiku 4.5 or GPT-5 mini), wearing YIN and YANG masks, then trading research for a second pass (#/the-shapes) | after a crew's burst lands locally, before its shard |
+| a deeper single read | Gemini or a high-multiplier model, only where the low-cost pair splits on a load-bearing finding or the controller names a KAIROS pull to the operator | rarely; the operator hears the reason first |
 | Copilot code review | GitHub's PR reviewer | once per train or span-to-main PR, never per push |
 | micro-sweeps | a low-multiplier model | during aftermath: evergreen words, L-Prime, comment drift; findings only |
 
@@ -90,6 +92,8 @@ GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Mi
 # ''Its config carries the house.'' `~/.copilot/copilot-instructions.md` loads the boot seed, and `~/.copilot/hooks/lares.json` stands.
 
 !!! Its budget
+The low-cost pair spends about four low-multiplier prompts per burst: two first passes and two traded passes. A run's own closing log line (`Requests … Premium`) states its spend; the entitlement cache refreshes on its own schedule, so the before-and-after reading of it can stand unchanged across a run.
+
 A prepaid allowance resets on the first of each month and carries nothing over, so an unspent request buys nothing. The controller spends it by plan: Flash reads for each burst, a few Gemini deep reads for load-bearing bursts, one code review per train, and the rest for the Episkopos's spot checks. Each handback prints the allowance left before and after, read from the account's own entitlement cache, and that reader proves itself against a known spend.
 
 <<~/ahu>>
@@ -140,6 +144,6 @@ A prepaid allowance resets on the first of each month and carries nothing over, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IsmBzaD2fillRIxbbd7VAe03HfNt-plgrPUHs8fM1J0
+<<^ code="&#x0003;">>ni:///sha-256;Ga4mQ7O8GjOQw8hCt9Pichjv45jbLZ1FLYf9eusN0ZY
 
 <<^ code="&#x0004;" -> to="?">>
