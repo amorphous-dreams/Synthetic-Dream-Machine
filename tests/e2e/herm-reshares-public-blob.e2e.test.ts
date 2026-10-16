@@ -150,8 +150,12 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     try { fleet = await openStagedFleet({ tag: "herm-reshare" }); }
     catch (err) {
       const text = err instanceof Error ? err.message : String(err);
-      standGate = (text.split("\n").find((l) => /nexus-join|fatal|failed/.test(l)) ?? text.slice(-400)).trim();
-      console.error(`herm-reshares-public-blob: the fleet never stood — every vector SKIPS. It said:\n  ${standGate}`);
+      // The refusal's own first line names the stand that broke (a daemon that never unlocked, never reached live, or
+      // exited); a fatal line from the daemon's log rides beside it. A dial's teardown line names no fault.
+      const lines = text.split("\n");
+      const fatal = lines.find((l) => /fatal|ANERGIZED|refused|REFUSED/.test(l));
+      standGate = [lines[0], fatal].filter((l): l is string => !!l).map((l) => l.trim()).join("\n  ") || text.slice(-400).trim();
+      console.error(`herm-reshares-public-blob: the fleet never stood — every vector SKIPS. It said:\n  ${standGate}\n  its tail:\n${text.slice(-3000)}`);
     }
   }, 500_000);
 

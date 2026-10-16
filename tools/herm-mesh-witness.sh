@@ -28,9 +28,8 @@ LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
 export LARES_HARNESS_IMAGE
 COMPOSE="docker compose -f docker-compose.mesh.yml"
 LARES="node packages/lares-cli/dist/src/bin/lares.js"
-CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json)
 WORK=$(mktemp -d)
-printf '%s' "$CHARTER" > "$WORK/a-charter.mem"
+CHARTER=""
 
 # refused <label> <door> <output>: a join step that did not land names its door and the tail of what it said, and the
 # witness stops there.
@@ -45,6 +44,9 @@ refused() {
 join() {
   local label="$1"; shift
   local out cf nym sig
+  # A's charter epoch moves with every carry it signs, so each join reads the charter A stands on now.
+  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null) || refused "$label" "A's nexus seal export" "$CHARTER"
+  printf '%s' "$CHARTER" > "$WORK/a-charter.mem"
   if [ "$label" != "host-reader" ]; then
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' || refused "$label" "the charter copy" ""
     out=$("$@" nexus seal import /tmp/a-charter.mem --json 2>&1) || refused "$label" "nexus seal import" "$out"
