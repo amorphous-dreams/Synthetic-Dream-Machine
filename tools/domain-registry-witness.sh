@@ -155,7 +155,8 @@ for (ap, pre), _w in ALLOW.items():
 # entries stops being a map of what the house signs.
 srcdirs = [q for q in pathlib.Path("packages").rglob("*.ts")
            if "/dist/" not in str(q) and q != REG and "/src/" in str(q)]
-blob = "\n".join(q.read_text(errors="replace") for q in srcdirs)
+# A name a comment mentions signs nothing: only code lines count as a use.
+blob = "\n".join(line for q in srcdirs for line in q.read_text(errors="replace").splitlines() if not COMMENT.match(line))
 unused = [e for e, _n in names if not re.search(rf"\b{e}\b", blob)]
 if unused:
     fail.append("registered but signed under by nothing: " + ", ".join(unused))

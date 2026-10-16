@@ -13,10 +13,10 @@ import { DOMAIN_ROOT } from "../src/domains.js";
 
 const ROOT = `${DOMAIN_ROOT}/`;
 
-/** The frozen set, sha256 over its sorted `EXPORT=string` rows, including reserved domain strings. A move here re-keys live
+/** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 37;
-const FROZEN_WELD = "49f904b786002253980508fea2a866232983e6143959f7862d9083b37b9a1a17";
+const FROZEN_COUNT = 36;
+const FROZEN_WELD = "3a0f0efd300f283efbd1a4dedc5e0fdf38dcc75c9cac50cc240178cde28f1c8c";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];

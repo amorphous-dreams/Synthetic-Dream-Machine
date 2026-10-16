@@ -143,10 +143,9 @@ export const SK_CHECK_INFO = mint("sk-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 // RETIRED with the persona admission, and never reused: `persona-enroll`, `persona-grant`, `persona-sealed-grant`,
-// `persona-join`. No protocol signs under them, and no new domain may take one of those names, so a byte string once
-// signed under one never verifies as another protocol's. Fleet join carries the admission they served.
-/** The persona grant seal's HKDF `info`, reserved with the four signing names above. */
-export const PERSONA_ADMIT_SEAL_INFO = frozen("persona-admit-grant-seal");
+// `persona-join`, and the grant seal's HKDF info `persona-admit-grant-seal`. No protocol signs or derives under them,
+// and no new domain may take one of those names, so a byte string once bound under one never verifies as another
+// protocol's. Fleet join carries the admission they served.
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
  *  and the act it rolls from. The act's CID names the hosting epoch; the act grants nothing and names no one but
  *  the hearth. Its own name: an act must never verify as a carriage act or any other signed thing. */
