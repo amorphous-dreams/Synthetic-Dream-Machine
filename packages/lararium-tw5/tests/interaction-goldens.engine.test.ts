@@ -3,7 +3,8 @@
  * camera contract's doors over a real booted engine.
  *
  * The scripts this half carries (01, the blanket preventDefault; 02, a button's modifier and popup; 03, the textarea
- * revert; 06, the toggle family; 13, the surface switch) read green only when the engine answers every step the engine half reads; the page half's expectations stand SKIPPED by
+ * revert; 06, the toggle family; 12, the host doors; 13, the surface switch) read green only when the engine
+ * answers every step the engine half reads; the page half's expectations stand SKIPPED by
  * name, and a frame line another slice's road paints stands OWED by its own words (and must still read red). Every other
  * script walks too and must still read red: its road has not landed, and a green there names one that did. A
  * control mutates each carried script into a claim the engine never makes and reads the runner red, so a green
@@ -29,7 +30,7 @@ const hooks = (): EngineRunHooks => {
 
 const scripts = goldenScripts();
 /** The scripts whose every engine-half step this island answers today. */
-const CARRIED = ["01", "02", "03", "06", "13"];
+const CARRIED = ["01", "02", "03", "06", "12", "13"];
 /**
  * The frame lines a carried script reads that another slice's road paints, by script number. Each one stays red by
  * its own words until that road lands, and nothing else may read red beside it; a line that reads green leaves.
@@ -111,6 +112,28 @@ describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
     expect(at, "the mutation found its step").toBeGreaterThan(0);
     const run = await runEngineGolden(mutate(script, at, { writes: [{ title: "lar:///t/button/target", text: "normal" }] }), hooks());
     expect(run.failures).toEqual([`step ${at + 1}: lar:///t/button/target holds text="ctrl", the script expects "normal"`]);
+  }, 120_000);
+
+  test("CONTROL 12: a script claiming print applied and asked its door reads red on both counts", async () => {
+    const script = byNumber("12");
+    const at = script.steps.findIndex((s) => JSON.stringify((s["expect"] as { answers?: string[] } | undefined)?.answers) === JSON.stringify(["refused:page-action-unavailable"]));
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { answers: ["applied"], services: [{ kind: "print", args: {} }] }), hooks());
+    const text = run.failures.join("\n");
+    expect(text).toMatch(/answers \["refused:page-action-unavailable"\], the script expects \["applied"\]/);
+    expect(text).toMatch(/services \[\], the script expects \[\{"kind":"print","args":\{\}\}\]/);
+  }, 120_000);
+
+  test("CONTROL 12: a script claiming the copy asked for other text, or a frame painting what the island never said, reads red", async () => {
+    const script = byNumber("12");
+    const copy = script.steps.findIndex((s) => (s["expect"] as { services?: { kind: string }[] } | undefined)?.services?.[0]?.kind === "clipboard");
+    const said = script.steps.findIndex((s) => (s["expect"] as { frame?: { contains?: string } } | undefined)?.frame?.contains === "Copied");
+    expect(copy, "the mutation found its step").toBeGreaterThan(0);
+    expect(said).toBeGreaterThan(copy);
+    const run = await runEngineGolden(mutate(mutate(script, copy, { services: [{ kind: "clipboard", args: { text: "other" } }] }), said, { frame: { contains: "Not copied" } }), hooks());
+    const text = run.failures.join("\n");
+    expect(text).toMatch(/services \[\{"kind":"clipboard","args":\{"text":"copy me"\}\}\], the script expects/);
+    expect(text).toMatch(/paints no "Not copied"/);
   }, 120_000);
 
   test("CONTROL: a verb the engine half never learned fails closed", async () => {

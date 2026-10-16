@@ -152,6 +152,7 @@ export interface LarMsg_ControlEvent {
 export type LarRefusal =
   | "invalid-integer" | "input-too-long" | "stale-target" | "selection-unavailable" | "geometry-unavailable"
   | "route-unresolved" | "unsupported-control" | "binding-unavailable" | "page-action-unavailable"
+  | "activation-required" | "unknown-request"
   | "unclaimed" | "actor-not-spawned" | "superseded" | "cap-refused";
 
 export type LarResultStatus = "applied" | "stale-target" | "refused";
@@ -172,14 +173,25 @@ export interface LarMsg_ControlResult {
 
 // ── Resend and services ─────────────────────────────────────────────────────────────────────────
 
-/** Surface → engine: paint me whole. The engine mints a new mount epoch and emits every key. */
+/** Surface → engine: paint me whole. The engine mints a new mount epoch and emits every key. A surface that
+ *  opens (or attaches) names its manifest here; a resend without one keeps the manifest the camera holds. */
 export interface LarMsg_Resend {
   readonly type: typeof LAR_RESEND;
   readonly cameraId: string;
+  readonly manifest?: LarSurfaceManifest;
 }
 
 /** The host doors a surface may carry; its manifest at surface-open names the ones it does. */
 export type LarServiceKind = "clipboard" | "download" | "route" | "open-surface" | "print" | "fullscreen" | "open-external";
+
+/** What a surface carries, named at surface-open: the host doors it opens. A kind outside `services` answers
+ *  `page-action-unavailable` at once on both sides (the engine raises `$:/temp/lares/alert/refused/<kind>`). */
+export interface LarSurfaceManifest {
+  readonly services: readonly LarServiceKind[];
+}
+
+/** The doors a surface carries when it names none: the three a page opens under a person's click alone. */
+export const LAR_SURFACE_DEFAULT_SERVICES: readonly LarServiceKind[] = ["clipboard", "download", "route"];
 
 /** Engine → surface: a host door the engine asks the surface to open, answered by a `lar:service-result` control event. */
 export interface LarMsg_Service {
@@ -280,6 +292,8 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
   if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
   if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;
+  // A service answer names the request it closes and its status, or it answers nothing.
+  if (v["kind"] === "lar:service-result" && (!isName(v["requestId"]) || !isName(v["status"]))) return null;
   return v as unknown as LarMsg_ControlEvent;
 }
 
@@ -320,15 +334,25 @@ export function readLarControlResult(v: unknown): LarMsg_ControlResult | null {
   return v as unknown as LarMsg_ControlResult;
 }
 
-/** Read a resend off the wire, or null: it names its camera. */
-export function readLarResend(v: unknown): LarMsg_Resend | null {
-  if (!isRecord(v) || v["type"] !== LAR_RESEND || !isName(v["cameraId"])) return null;
-  return v as unknown as LarMsg_Resend;
-}
-
 export const LAR_SERVICE_KINDS: ReadonlySet<string> = new Set<LarServiceKind>([
   "clipboard", "download", "route", "open-surface", "print", "fullscreen", "open-external",
 ]);
+
+/** Read a surface manifest, or null: a list of door kinds the house names, each once. */
+export function readLarSurfaceManifest(v: unknown): LarSurfaceManifest | null {
+  if (!isRecord(v) || !Array.isArray(v["services"])) return null;
+  const services = v["services"] as unknown[];
+  if (!services.every((k) => typeof k === "string" && LAR_SERVICE_KINDS.has(k))) return null;
+  if (new Set(services).size !== services.length) return null;
+  return v as unknown as LarSurfaceManifest;
+}
+
+/** Read a resend off the wire, or null: it names its camera, and a manifest it carries reads whole. */
+export function readLarResend(v: unknown): LarMsg_Resend | null {
+  if (!isRecord(v) || v["type"] !== LAR_RESEND || !isName(v["cameraId"])) return null;
+  if (v["manifest"] !== undefined && readLarSurfaceManifest(v["manifest"]) === null) return null;
+  return v as unknown as LarMsg_Resend;
+}
 
 /** Read a host-door ask off the wire, or null: its wiki and request named, a door the house names, primitive args, a person's activation. */
 export function readLarService(v: unknown): LarMsg_Service | null {
@@ -346,7 +370,9 @@ export function readLarService(v: unknown): LarMsg_Service | null {
 
 export function mkLarFrame(f: Omit<LarMsg_Frame, "type">): LarMsg_Frame { return { type: LAR_FRAME, ...f }; }
 export function mkLarControlResult(r: Omit<LarMsg_ControlResult, "type">): LarMsg_ControlResult { return { type: LAR_CONTROL_RESULT, ...r }; }
-export function mkLarResend(cameraId: string = LAR_CAMERA_STORY): LarMsg_Resend { return { type: LAR_RESEND, cameraId }; }
+export function mkLarResend(cameraId: string = LAR_CAMERA_STORY, manifest?: LarSurfaceManifest): LarMsg_Resend {
+  return manifest === undefined ? { type: LAR_RESEND, cameraId } : { type: LAR_RESEND, cameraId, manifest };
+}
 export function mkLarService(s: Omit<LarMsg_Service, "type" | "userActivation">): LarMsg_Service { return { type: LAR_SERVICE, userActivation: true, ...s }; }
 
 /** Build a control event, refusing a whole value past its bound at the sending shore (an over-long send names a caller bug). */

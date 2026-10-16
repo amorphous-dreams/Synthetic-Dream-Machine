@@ -21,6 +21,13 @@
  * `lar:control-event`; `dispatchLarControlEvent` resolves the render id to the node TW5 bound, runs TW5's own
  * handler, and answers every reliable act on `lar:control-result`. Frames never answer events.
  *
+ * The root layer and the host doors (dreamdom#/host-services). The house plugin's `lar-root-services` startup
+ * answers the root `tm-*` messages a worker otherwise lacks; this camera paints its records through the root
+ * layer template (modals, notifications, the scroll and focus hints), appended to the `lar:surface` key while
+ * it holds anything, and installs `$tw.lares.serviceDoor`, the one road a host door takes: an ask the surface's
+ * manifest lacks refuses at once (`page-action-unavailable`, and the act that raised it answers so), any other
+ * posts `lar:service` on `ctx.post` and settles when its `lar:service-result` lands, correlated by `requestId`.
+ *
  * Isomorphic: uses only `$tw.fakeDocument` (no window.document) — safe in @lararium/tw5.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-projection
@@ -31,11 +38,13 @@ import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camer
 import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
 import {
-  CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, mkLarControlResult, mkLarFrame,
+  CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
+  LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
   type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
-  type LarMsg_Resend, type LarRefusal, type LarResultStatus,
+  type LarMsg_Resend, type LarMsg_Service, type LarRefusal, type LarResultStatus, type LarServiceKind, type LarSurfaceManifest,
   LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_LIVE, LAR_STAMP_ON, larKeyChordName,
 } from "@lararium/mesh";
+import type { LaresServiceArgs, LaresServiceDoor } from "./types/lares-globals.js";
 
 /** Coalesce window (ms): a burst of wiki "change" events collapses to one posted frame. Small
  *  (one display frame-ish) — interactive display, not the capture-nalu's 2 s recall budget.
@@ -53,6 +62,11 @@ const STORY_MEMBERS: readonly string[] = [LAR_KEY_SURFACE, LAR_KEY_STYLE];
 
 /** How many answers a camera keeps for re-answering a repeated `eventId` within one epoch. */
 const ANSWER_RING = 256;
+
+/** The root layer the `lar-root-services` startup paints through: modals, notifications, hints. */
+export const TW5_ROOT_LAYER = "lar:///ha.ka.ba/lararium/templates/root-layer";
+/** How many host-door asks stand unanswered at once; the oldest settles `superseded` past the line. */
+const SERVICE_LEDGER = 256;
 
 /** A patched fake-DOM element: TW5's fakedom drops `addEventListener` (a no-op), severing only the
  *  DOM-node→widget binding. We patch it to STORE the handler TW5 builds + stamp a `data-lar-rid`
@@ -96,9 +110,11 @@ interface CameraScope {
   readonly sensed: Map<string, number>;
   /** The answers given within this epoch, by eventId. */
   readonly answers: Map<string, LarMsg_ControlResult>;
-  post(msg: LarMsg_Frame | LarMsg_ControlResult): void;
+  /** The host doors the surface's manifest names (at surface-open); the default set until one arrives. */
+  services: ReadonlySet<string>;
+  post(msg: LarMsg_Frame | LarMsg_ControlResult | LarMsg_Service): void;
   mark(): void;
-  resend(): void;
+  resend(manifest?: LarSurfaceManifest): void;
   alert(title: string, text: string): void;
 }
 const eventScopes = new Map<string, CameraScope>();
@@ -120,7 +136,7 @@ function mintEpoch(): number {
 
 /** The island protocol's union names the two `lar:` messages once the wire integration lands; until then this
  *  one cast stands as the seam, and nowhere else. */
-function postLar(ctx: IslandContext, msg: LarMsg_Frame | LarMsg_ControlResult): void {
+function postLar(ctx: IslandContext, msg: LarMsg_Frame | LarMsg_ControlResult | LarMsg_Service): void {
   ctx.post(msg as unknown as IslandToVesselMsg);
 }
 
@@ -441,6 +457,7 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   const scope = scopeFor(ev);
   const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
   const answer = (status: LarResultStatus, reason?: LarRefusal): LarMsg_ControlResult => {
+    dispatching = undefined;
     const result = mkLarControlResult({
       eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
       ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}),
@@ -457,13 +474,19 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
     console.warn(`[wiki-worker] stale-target: ${target}`);
     return sense ? null : answer("stale-target");
   };
+  // A host door's answer closes its request whatever epoch the page shows: the ledger keys by request, not mount.
+  if (ev.kind === "lar:service-result") {
+    const given = scope?.answers.get(ev.eventId);
+    if (given) { scope!.post(given); return given; }
+    return settleService(ev, scope, answer);
+  }
   if (!scope || ev.mountEpoch !== scope.mountEpoch) return stale();
   if (!sense) {
     const given = scope.answers.get(ev.eventId);
     if (given) { scope.post(given); return given; }
   }
 
-  if (ev.kind === "lar:write" || ev.kind === "lar:service-result") return answer("refused", "binding-unavailable");
+  if (ev.kind === "lar:write") return answer("refused", "binding-unavailable");
   const el = resolveTarget(ev, scope);
   if (!el) return stale();
   activeEventScope = scope;
@@ -480,6 +503,11 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
     return null;
   }
 
+  // An act that raised a host door the manifest lacks answers with that door's refusal, never `applied`; the
+  // answer ends the dispatch's hold on the door.
+  const acting = { scope, refusal: undefined as LarRefusal | undefined };
+  const applied = (): LarMsg_ControlResult => acting.refusal ? answer("refused", acting.refusal) : answer("applied");
+  dispatching = acting;
   switch (ev.action) {
     case "lar:click": {
       if (!claims(el, "click")) return answer("refused", "unclaimed");
@@ -499,12 +527,12 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       } finally {
         if (g) { delete el._larRect; delete el.offsetLeft; delete el.offsetTop; delete el.offsetWidth; delete el.offsetHeight; }
       }
-      return answer("applied");
+      return applied();
     }
     case "lar:key": {
       if (!claims(el, "keydown")) return answer("refused", "unclaimed");
       bubble(scope, el, "keydown", projectedEvent("keydown", el, scope, ev));
-      return answer("applied");
+      return applied();
     }
     case "lar:commit": {
       const leg = claims(el, "change") ? "change" : claims(el, "input") ? "input" : undefined;
@@ -515,7 +543,7 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       bubble(scope, el, leg, projectedEvent(leg, el, scope, ev));
       // The commit took the page's value in: the next frame says so, whether or not the store moved.
       scope.mark();
-      return answer("applied");
+      return applied();
     }
     case "lar:toggle":
     case "lar:choice": {
@@ -529,11 +557,62 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
       runListeners(scope, el, "change", projectedEvent("change", el, scope, ev));
       scope.mark();
-      return answer("applied");
+      return applied();
     }
     default:
       return answer("refused", "unsupported-control");
   }
+}
+
+// ── Host doors ──────────────────────────────────────────────────────────────────────────────────
+
+/** The act a dispatch runs now, so a door asked inside its handler answers that act. */
+let dispatching: { readonly scope: CameraScope; refusal: LarRefusal | undefined } | undefined;
+/** Every host-door ask still waiting on its `lar:service-result`, by request id, oldest first. */
+const serviceLedger = new Map<string, { readonly kind: LarServiceKind; readonly scope: CameraScope; readonly settle: (status: string) => void }>();
+let serviceSeq = 0;
+const serviceNonce = Math.random().toString(36).slice(2, 10);
+
+/**
+ * Ask the surface to open one host door for `scope`. A kind the surface's manifest lacks, a kind the house never
+ * names, or an argument past the bound refuses at once; any other posts `lar:service` and waits in the ledger.
+ */
+function askService(home: CameraScope, kind: string, args: LaresServiceArgs, settle: (status: string) => void): void {
+  const scope = dispatching?.scope ?? home;
+  const refuse = (reason: LarRefusal): void => {
+    if (dispatching) dispatching.refusal = reason;
+    settle(reason);
+  };
+  if (!LAR_SERVICE_KINDS.has(kind) || !scope.services.has(kind)) { refuse("page-action-unavailable"); return; }
+  if (Object.values(args).some((a) => typeof a === "string" && a.length > LAR_WHOLE_BYTES_MAX)) { refuse("input-too-long"); return; }
+  const requestId = `lar:service:${serviceNonce}:${++serviceSeq}`;
+  serviceLedger.set(requestId, { kind: kind as LarServiceKind, scope, settle });
+  if (serviceLedger.size > SERVICE_LEDGER) {
+    const [oldest, entry] = serviceLedger.entries().next().value!;
+    serviceLedger.delete(oldest);
+    entry.settle("superseded");
+  }
+  scope.post(mkLarService({ wikiUri: scope.wikiUri, requestId, kind: kind as LarServiceKind, args }));
+}
+
+/** Close one request by its id: `ok` or the named refusal settles the ask; an id never minted refuses `unknown-request`. */
+function settleService(
+  ev: LarMsg_ControlEvent, scope: CameraScope | undefined, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult,
+): LarMsg_ControlResult {
+  const asked = ev.requestId === undefined ? undefined : serviceLedger.get(ev.requestId);
+  if (!asked) {
+    console.warn(`[wiki-worker] lar:service-result names no open request: ${ev.requestId ?? "(none)"}`);
+    return answer("refused", "unknown-request");
+  }
+  serviceLedger.delete(ev.requestId!);
+  asked.settle(ev.status === "ok" ? "ok" : ev.status ?? "binding-unavailable");
+  asked.scope.mark();
+  if (!scope) {
+    const result = mkLarControlResult({ eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch, ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}), status: "applied" });
+    asked.scope.post(result);
+    return result;
+  }
+  return answer("applied");
 }
 
 /** Ask every camera of `msg.cameraId` (on `wikiUri`, where named) to paint itself whole under a fresh epoch. */
@@ -541,7 +620,7 @@ export function resendLarCamera(msg: LarMsg_Resend, wikiUri?: string): boolean {
   let asked = false;
   for (const camera of cameras) {
     if (camera.cameraId !== msg.cameraId || (wikiUri !== undefined && camera.wikiUri !== wikiUri)) continue;
-    camera.resend();
+    camera.resend(msg.manifest);
     asked = true;
   }
   return asked;
@@ -597,6 +676,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   // remains a complete snapshot.
   const popupRoot = fakeDoc.createElement("div");
   const storyContainer = fakeDoc.createElement("div");
+  const layerContainer = fakeDoc.createElement("div");
   /** Every key's revision rises across the mount's whole life, epochs included. */
   let surfaceRev = 0, styleRev = 0;
   const membershipRev = 1;
@@ -604,14 +684,18 @@ export function mountProjection(ctx: IslandContext): () => void {
   let lastCss: string | undefined;
   let whole = true;
   const scope: CameraScope = {
-    wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, popupRoot],
+    wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
     renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
-    mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(),
+    mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(), services: new Set(LAR_SURFACE_DEFAULT_SERVICES),
     post: (msg) => postLar(ctx, msg),
     mark: () => gate.mark(),
     // A new epoch: every act the page made under the old one now answers stale-target, the old answers leave
     // with it, and the next frame carries every key whole. The sensed revisions stay: the page still holds them.
-    resend: () => { scope.mountEpoch = mintEpoch(); scope.answers.clear(); whole = true; gate.mark(); },
+    resend: (manifest) => {
+      scope.mountEpoch = mintEpoch(); scope.answers.clear(); whole = true;
+      if (manifest) scope.services = new Set(manifest.services);
+      gate.mark();
+    },
     alert: (title, text) => tw.wiki.addTiddler(new tw.Tiddler({ title, text, tags: ["$:/tags/Alert"], component: "projection", modified: new Date() })),
   };
   activeEventScope = scope;
@@ -654,6 +738,19 @@ export function mountProjection(ctx: IslandContext): () => void {
   const styleContainer = fakeDoc.createElement("style");
   styleWidget.render(styleContainer, null);
 
+  // Root layer — the records the root-services startup keeps (modals, notifications, hints), painted beside the
+  // story so they ride the one `lar:surface` key; a layer that holds nothing adds no byte to the frame.
+  const layerWidget = tw.wiki.makeTranscludeWidget(TW5_ROOT_LAYER, {
+    document:     fakeDoc,
+    parentWidget: tw.rootWidget,
+  });
+  layerWidget.render(layerContainer, null);
+
+  // The host door the root-services startup asks through: one per island, this camera's while it stands.
+  const door: LaresServiceDoor = { ask: (kind, args, settle) => askService(scope, kind, args, settle) };
+  const lares = (tw.lares ??= {}) as Record<string, unknown>;
+  lares["serviceDoor"] = door;
+
   // Coalesce-family gate (mesh/projection-nalu): a burst of wiki changes collapses to one frame;
   // the newest snapshot wins, intermediates fade (the decay-envelope). The flush snapshots the
   // live fakeDOM lazily at the crest — `mark()` only says "the source moved".
@@ -661,7 +758,8 @@ export function mountProjection(ctx: IslandContext): () => void {
     windowMs: COALESCE_MS,
     onFlush: () => {
       stampTop();
-      const html = tw5ElementToHtml(storyContainer);
+      const layer = tw5ElementToHtml(layerContainer);
+      const html = tw5ElementToHtml(storyContainer) + (layer === "" ? "" : `<div class="lar-root-layer">${layer}</div>`);
       scope.liveIds = new Set();
       scope.controlIds = new Map();
       for (const [tag] of html.matchAll(/<[a-zA-Z][^>]*\bdata-lar-rid="[^"]+"[^>]*>/g)) {
@@ -698,6 +796,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   const onChange = (changes: Record<string, unknown>): void => {
     activeEventScope = scope;
     styleWidget.refresh(changes, styleContainer, null);
+    layerWidget.refresh(changes, layerContainer, null);
     gate.mark();
   };
   tw.wiki.addEventListener("change", onChange);
@@ -710,6 +809,8 @@ export function mountProjection(ctx: IslandContext): () => void {
     tw.wiki.removeEventListener("change", onChange);
     stopStory();
     cameras.delete(scope);
+    if (lares["serviceDoor"] === door) delete lares["serviceDoor"];
+    for (const [requestId, entry] of serviceLedger) if (entry.scope === scope) serviceLedger.delete(requestId);
     for (const renderId of scope.renderIds) {
       if (eventScopes.get(renderId) !== scope) continue;
       ridMap.delete(renderId);

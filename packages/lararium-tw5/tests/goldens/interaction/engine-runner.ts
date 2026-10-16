@@ -22,11 +22,17 @@
  *               before the delivered one.
  *   - `switch`  mounts the arriving surface's engine (first time) and sends it `lar:resend`; the frame the resend
  *               answers becomes the delivered frame.
+ *   - `service-result` answers a `lar:service` ask (`requestId: "last"` names the latest) as the page would: a
+ *               control event of kind `lar:service-result` on the document leg (`controlId: "lar:document"`).
+ *   - A world's `manifest` opens the surface with it: the mount sends `lar:resend{manifest}` before its first
+ *               frame flushes, the way a page that opens names the doors it carries.
  *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
  *               stands with those fields, and no title outside the named set took a write since the last expect),
- *               and `frame` (`sensedRevision` keyed back to the script's control names, `surface`, `epoch: "fresh"`,
- *               `contains`, `attributes`: per selector, the attribute the first named node paints, `null` for absent,
- *               and `stamps`: per selector, each named stamp carries every token the script names, `null` none).
+ *               `services` (the `lar:service` asks posted since the last expect, in order, each matching the script's
+ *               `kind` and every `args` field the script names), and `frame` (`sensedRevision` keyed back to the
+ *               script's control names, `surface`, `epoch: "fresh"`, `contains`, `attributes`: per selector, the
+ *               attribute the first named node paints, `null` for absent, and `stamps`: per selector, each named stamp
+ *               carries every token the script names, `null` none).
  *               `page` belongs to the page half: the run records it as SKIPPED by name. Any other key fails closed,
  *               so a script that grows a verb this half never learned reads red, never green.
  *
@@ -39,8 +45,9 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
   LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_KEY_SURFACE, LAR_RESEND,
-  mkLarControlEvent, mkLarResend, readLarControlResult, readLarFrame,
-  type LarGeometry, type LarKeyChord, type LarModifiers, type LarMsg_ControlResult, type LarMsg_Frame, type LarWholeValue,
+  mkLarControlEvent, mkLarResend, readLarControlResult, readLarFrame, readLarService,
+  type LarGeometry, type LarKeyChord, type LarMsg_ControlEvent, type LarModifiers, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service,
+  type LarServiceKind, type LarWholeValue,
 } from "@lararium/mesh";
 import { mountProjection } from "../../../src/tw5-projection.js";
 import { hasProjection } from "../../../src/has-island-watches.js";
@@ -54,6 +61,8 @@ export interface GoldenWorld {
   readonly tiddlers: readonly Record<string, string | string[]>[];
   readonly story: readonly string[];
   readonly root: string;
+  /** The service kinds the surface's manifest names at surface-open. */
+  readonly manifest?: { readonly services: readonly LarServiceKind[] };
 }
 export interface GoldenScript {
   readonly golden: string;
@@ -192,6 +201,9 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
   const cap = hasProjection();
   const results: LarMsg_ControlResult[] = [];
   let resultsSeen = 0;
+  /** Every `lar:service` ask the islands posted, in order. */
+  const services: LarMsg_Service[] = [];
+  let servicesSeen = 0;
   /** The script's control names by the render id each one resolved to, so a frame's keys read back in the script's words. */
   const nameOfRid = new Map<string, string>();
   const surfaces = new Map<string, Surface>();
@@ -214,6 +226,8 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
           if (frame) { frames.push(frame); return; }
           const result = readLarControlResult(msg);
           if (result) { results.push(result); return; }
+          const service = readLarService(msg);
+          if (service) { services.push(service); return; }
         },
       } as unknown as IslandContext,
     };
@@ -239,6 +253,9 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
   const mount = async (s: Surface): Promise<void> => {
     if (s.stop) return;
     s.stop = mountProjection(s.ctx);
+    if (s.world.manifest && !cap.onSignal!(LAR_RESEND, mkLarResend(LAR_CAMERA_STORY, s.world.manifest), s.ctx)) {
+      failures.push(`the projection cap left the ${s.id} surface-open ${LAR_RESEND} unclaimed`);
+    }
     await hooks.advance();
   };
   /** The epoch this surface emitted just before the one it last delivered. */
@@ -314,6 +331,20 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
         const body = step["act"] as Record<string, unknown>;
         send(surfaceOf(step, body), "lar:act", body, at);
         await hooks.settle();
+      } else if ("service-result" in step) {
+        const body = step["service-result"] as Record<string, unknown>;
+        const s = surfaceOf(step, body);
+        const asked = body["requestId"] === "last" ? services.at(-1)?.requestId : String(body["requestId"]);
+        const frame = s.delivered;
+        if (!asked || !frame) { failures.push(`${at}: no ${asked ? "frame" : "lar:service ask"} stands to answer`); continue; }
+        const ev = mkLarControlEvent({
+          eventId: `golden-${++eventSeq}`, cameraId: frame.cameraId, mountEpoch: frame.mountEpoch, kind: "lar:service-result",
+          controlId: "lar:document", action: "lar:service-result", seenFrameRev: surfaceRev(frame),
+          requestId: asked, status: body["status"] as NonNullable<LarMsg_ControlEvent["status"]>,
+        });
+        if (!cap.onSignal!(LAR_CONTROL_EVENT, ev, s.ctx)) failures.push(`${at}: the projection cap left ${LAR_CONTROL_EVENT} unclaimed`);
+        trace.push(`${at}: service-result ${asked} ${String(body["status"])}`);
+        await hooks.settle();
       } else if ("switch" in step) {
         const body = step["switch"] as Record<string, unknown>;
         const s = surfaceOf(step, body);
@@ -333,6 +364,16 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
           if (key === "answers") {
             const got = results.slice(resultsSeen).map((r) => r.status === "refused" ? `refused:${r.reason}` : r.status);
             if (!deepEqual(got, want)) failures.push(`${at}: answers ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "services") {
+            const got = services.slice(servicesSeen);
+            const wanted = want as { kind: string; args?: Record<string, unknown> }[];
+            const named = (ask: LarMsg_Service, w: { kind: string; args?: Record<string, unknown> }): boolean =>
+              ask.kind === w.kind && Object.entries(w.args ?? {}).every(([k, v]) => ask.args[k] === v);
+            if (got.length !== wanted.length || !wanted.every((w, i) => named(got[i]!, w))) {
+              failures.push(`${at}: services ${JSON.stringify(got.map((a) => ({ kind: a.kind, args: a.args })))}, the script expects ${JSON.stringify(wanted)}`);
+            }
             continue;
           }
           if (key === "writes") {
@@ -402,6 +443,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
           failures.push(`${at}: the engine half reads no expect.${key}`);
         }
         resultsSeen = results.length;
+        servicesSeen = services.length;
         for (const s of surfaces.values()) s.written.clear();
       } else {
         failures.push(`${at}: the engine half knows no verb ${Object.keys(step).join(",")}`);

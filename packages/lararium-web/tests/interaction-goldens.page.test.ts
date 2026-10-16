@@ -17,6 +17,13 @@
  * render id of its own. What this file proves belongs to the PAGE: what the sink paints, keeps, relays and
  * cancels. The island's own claims ride the engine harness.
  *
+ * THE HOST DOORS (12). A `$button message=` the stand-in answers asks `lar:service` and leaves the GATE to the
+ * page: the sink checks the activation and the manifest the script's world names, runs the door, and answers
+ * `lar:service-result`, which the stand-in takes in before it answers the act (a refused door refuses the act
+ * with the page's reason and writes the island's alert record). In this half `services` reads the doors the PAGE
+ * OPENED since the last expect (stub doors record them), `service-result` checks the page's own answer to the
+ * latest ask, and `page.<control>.refusal` reads the words beside it.
+ *
  * Steps: `frame` asks the stand-in for its next frame; `deliver: older` applies the frame the stand-in rendered
  * BEFORE taking in the last sense (a newer key revision, a lower sensed revision for that control); `sense` makes
  * a real edit (`execCommand("insertText")`, so a real input event and a real undo step; on a select, the
@@ -39,17 +46,22 @@
 import { describe, expect, test } from "vitest";
 import {
   LAR_CAMERA_STORY, LAR_FRAME, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE,
-  mkLarControlResult, type LarMsg_ControlEvent, type LarMsg_ControlResult,
+  mkLarControlResult, mkLarService, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Service, type LarRefusal,
+  type LarServiceKind,
 } from "../../lararium-mesh/src/lar-camera.js";
-import { createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
+import { LAR_REFUSAL_WORDS, createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
 import script01 from "./goldens/interaction/01-link-ordinary-modified-middle-external.json";
 import script02 from "./goldens/interaction/02-button-actions-with-modifier-and-popup.json";
 import script03 from "./goldens/interaction/03-edit-body-survives-blur.json";
 import script06 from "./goldens/interaction/06-toggle-checkbox-radio-select-multiselect.json";
+import script12 from "./goldens/interaction/12-services-copy-download-print-refuse-by-name.json";
 import script13 from "./goldens/interaction/13-switch-resend-and-epoch.json";
 
 type Fields = Record<string, string | string[]>;
-interface World { readonly tiddlers: ReadonlyArray<Fields>; readonly story: readonly string[]; readonly root: string }
+interface World {
+  readonly tiddlers: ReadonlyArray<Fields>; readonly story: readonly string[]; readonly root: string;
+  readonly manifest?: { readonly services: readonly LarServiceKind[] };
+}
 type Step = Record<string, unknown>;
 interface Script { readonly golden: string; readonly pins: string; readonly world?: World; readonly surfaces?: Record<string, { world: World }>; readonly steps: readonly Step[] }
 
@@ -82,6 +94,10 @@ class StandInIsland {
   readonly pieces: Piece[] = [];
   readonly writes: Array<Fields> = [];
   readonly sensed = new Map<string, { value?: string; localRev: number }>();
+  /** The `lar:service` asks this stand-in made, and the page's answer to each by request id. */
+  readonly asks: LarMsg_Service[] = [];
+  readonly serviceAnswers = new Map<string, string>();
+  private notice: string | null = null;
   story: string[];
   epoch = mintEpoch();
   previousEpochFrame: LarSurfaceFrame;
@@ -188,7 +204,8 @@ class StandInIsland {
       const value = sensed?.value ?? this.store.get(w.attrs["tiddler"] ?? "")?.["text"] ?? "";
       return `<${w.attrs["tag"] ?? "input"} class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>${escapeHtml(String(value))}</${w.attrs["tag"] ?? "input"}>`;
     }).join("");
-    const html = `<div data-lar-rid="${this.surface}-top"><p>${body}</p></div>`;
+    const layer = this.notice === null ? "" : `<div class="lar-root-layer"><div class="tc-notification" role="status">${escapeHtml(this.notice)}</div></div>`;
+    const html = `<div data-lar-rid="${this.surface}-top"><p>${body}</p>${layer}</div>`;
     this.rev += 1;
     const frame: LarSurfaceFrame = {
       type: LAR_FRAME, wikiUri: `lar:///golden/${this.surface}`, cameraId: LAR_CAMERA_STORY, mountEpoch: this.epoch, surface: this.surface,
@@ -225,6 +242,14 @@ class StandInIsland {
     const answer = (status: LarMsg_ControlResult["status"]): LarMsg_ControlResult =>
       mkLarControlResult({ eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: this.epoch, ...(ev.renderId ? { renderId: ev.renderId } : {}), ...(ev.controlId ? { controlId: ev.controlId } : {}), status });
     if (ev.mountEpoch !== this.epoch) return answer("stale-target");
+    if (ev.kind === "lar:service-result") {
+      const ask = this.asks.find((a) => a.requestId === ev.requestId);
+      if (!ask) return mkLarControlResult({ ...answer("refused"), reason: "unknown-request" });
+      this.serviceAnswers.set(ask.requestId, String(ev.status));
+      if (ev.status !== "ok") this.writes.push({ title: `$:/temp/lares/alert/refused/${ask.kind}` });
+      else if (ask.kind === "clipboard") this.notice = "Copied to clipboard!";
+      return answer("applied");
+    }
     if (cid === `${this.surface}-top`) return mkLarControlResult({ ...answer("refused"), reason: "unclaimed" });
     const w = this.widgets.find((x) => x.rid === cid);
     if (!w) return answer("stale-target");
@@ -258,7 +283,33 @@ class StandInIsland {
     }
     return answer("applied");
   }
+
+  /** A `$button message=` the stand-in knows as a host door: the ask it makes, or null for any other act. */
+  serviceFor(ev: LarMsg_ControlEvent): LarMsg_Service | null {
+    const w = this.widgets.find((x) => x.rid === (ev.controlId ?? ev.renderId));
+    const door = w?.kind === "button" ? DOORS[w.attrs["message"] ?? ""] : undefined;
+    if (!w || !door || ev.kind !== "lar:act" || ev.mountEpoch !== this.epoch) return null;
+    const ask = mkLarService({ wikiUri: `lar:///golden/${this.surface}`, requestId: `stand-in-${this.asks.length + 1}`, kind: door.kind, args: door.args(w.attrs["param"] ?? "") });
+    this.asks.push(ask);
+    return ask;
+  }
+
+  /** The act's answer once the page answered its ask: the page's refusal, or applied. */
+  answerServiceAct(ev: LarMsg_ControlEvent, ask: LarMsg_Service): LarMsg_ControlResult {
+    const status = this.serviceAnswers.get(ask.requestId);
+    return mkLarControlResult({
+      eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: this.epoch, ...(ev.renderId ? { renderId: ev.renderId } : {}),
+      ...(status === "ok" || status === undefined ? { status: "applied" as const } : { status: "refused" as const, reason: status as LarRefusal }),
+    });
+  }
 }
+
+/** The root messages the stand-in answers as host doors, and the args each carries. */
+const DOORS: Record<string, { kind: LarServiceKind; args: (param: string) => Record<string, string> }> = {
+  "tm-copy-to-clipboard": { kind: "clipboard", args: (param) => ({ text: param }) },
+  "tm-download-file": { kind: "download", args: (param) => ({ filename: param, text: "", type: "text/plain" }) },
+  "tm-print": { kind: "print", args: () => ({}) },
+};
 
 /** A selector in the wrap reading: `input.cb` names the input inside the node classed `cb` (TW5 classes the label). */
 const wrapped = (selector: string): string =>
@@ -293,7 +344,15 @@ async function run(script: Script): Promise<void> {
   window.addEventListener("click", readDefault);
   window.addEventListener("auxclick", readDefault);
   const prevented = new Map<string, boolean>();
-  const sink = createProjectionSink(host, { inputMaxChars: 4096 });
+  const manifest = (script.world ?? Object.values(script.surfaces ?? {})[0]?.world)?.manifest;
+  const opened: Array<{ kind: string; args: Record<string, unknown> }> = [];
+  let openedSeen = 0;
+  const record = (kind: LarServiceKind) => (args: Readonly<Record<string, unknown>>): void => { opened.push({ kind, args: { ...args } }); };
+  const sink = createProjectionSink(host, {
+    inputMaxChars: 4096,
+    ...(manifest ? { services: manifest.services } : {}),
+    doors: { clipboard: record("clipboard"), download: record("download"), print: record("print") },
+  });
   const sent: Array<{ surface: string; ev: LarMsg_ControlEvent }> = [];
   sink.arm({ sendControlEvent: (surface, ev) => { sent.push({ surface, ev }); } });
   const root = host.shadowRoot!;
@@ -351,6 +410,8 @@ async function run(script: Script): Promise<void> {
     if (result.status === "stale-target") {
       // The page half of a stale answer: the canon's words stand beside the control the person acted on.
       expect(words.map((o) => o.textContent)).toEqual(["This control changed before your action arrived. Review it and try again."]);
+    } else if (result.status === "refused") {
+      expect(words.map((o) => o.textContent), "a refusal reads beside its control in the canon's words").toEqual([LAR_REFUSAL_WORDS[result.reason!]]);
     } else {
       expect(words, "an applied answer leaves no refusal standing beside its control").toEqual([]);
     }
@@ -442,13 +503,37 @@ async function run(script: Script): Promise<void> {
         } else {
           expect(ev.mountEpoch).toBe(isl.epoch);
         }
+        const ask = isl.serviceFor(ev);
+        if (ask) {
+          // The island asks; the page gates, opens and answers on the return leg; the island takes the answer in.
+          const before = sent.length;
+          await sink.applyService({ ...ask, surface });
+          expect(sent.length, "the page answered the ask once").toBe(before + 1);
+          const reply = sent.at(-1)!.ev;
+          expect([reply.kind, reply.requestId]).toEqual(["lar:service-result", ask.requestId]);
+          const taken = isl.receive(reply);
+          if (taken) sink.applyResult(taken);
+          const result = isl.answerServiceAct(ev, ask);
+          answers.push(result.status === "refused" ? `refused:${result.reason}` : result.status);
+          sink.applyResult(result);
+          continue;
+        }
         answer(ev, surface);
+      } else if ("service-result" in step) {
+        const want = step["service-result"] as { requestId: string; status: string };
+        const isl = island(shown);
+        const ask = want.requestId === "last" ? isl.asks.at(-1) : isl.asks.find((a) => a.requestId === want.requestId);
+        expect(ask, "an ask stands for the page to have answered").toBeDefined();
+        expect(isl.serviceAnswers.get(ask!.requestId), "the page's own answer to the ask").toBe(want.status);
       } else if ("switch" in step) {
         const to = (step["switch"] as { surface: string }).surface;
         shown = to;
         deliver(island(to).resend());
       } else if ("expect" in step) {
-        const want = step["expect"] as { page?: Record<string, unknown>; frame?: Record<string, unknown>; answers?: string[]; writes?: unknown[] };
+        const want = step["expect"] as {
+          page?: Record<string, unknown>; frame?: Record<string, unknown>; answers?: string[]; writes?: unknown[];
+          services?: Array<{ kind: string; args?: Record<string, unknown> }>;
+        };
         if (want.page) {
           for (const [key, spec] of Object.entries(want.page)) {
             if (key === "surface") { expect(sink.surface()).toBe(spec); continue; }
@@ -459,9 +544,9 @@ async function run(script: Script): Promise<void> {
             }
             const s = spec as {
               value?: string; text?: string; undoDepth?: number; focus?: boolean; relays?: boolean; defaultPrevented?: boolean;
-              visible?: boolean; placedFrom?: { top: number; left: number };
+              visible?: boolean; placedFrom?: { top: number; left: number }; refusal?: LarRefusal;
             };
-            const known = ["value", "text", "undoDepth", "focus", "relays", "defaultPrevented", "visible", "placedFrom"];
+            const known = ["value", "text", "undoDepth", "focus", "relays", "defaultPrevented", "visible", "placedFrom", "refusal"];
             for (const k of Object.keys(s)) if (!known.includes(k)) throw new Error(`the page harness reads no page.${k}`);
             if (s.value !== undefined) expect(node.value, `${key} value`).toBe(s.value);
             if (s.text !== undefined) expect(node.textContent, `${key} text`).toBe(s.text);
@@ -475,6 +560,12 @@ async function run(script: Script): Promise<void> {
             }
             if (s.defaultPrevented !== undefined) expect(prevented.get(key), `${key} defaultPrevented`).toBe(s.defaultPrevented);
             if (s.visible !== undefined) expect(!node.hidden && getComputedStyle(node).display !== "none", `${key} visible`).toBe(s.visible);
+            if (s.refusal !== undefined) {
+              const id = node.getAttribute("data-control-id") ?? node.getAttribute("data-lar-rid");
+              const out = [...root.querySelectorAll<HTMLOutputElement>('output[role="status"]')].find((o) => o.dataset["larFor"] === id);
+              expect(out?.dataset["larReason"], `${key} refusal`).toBe(s.refusal);
+              expect(out?.textContent).toBe(LAR_REFUSAL_WORDS[s.refusal]);
+            }
             if (s.placedFrom !== undefined) expect({ top: parseFloat(node.style.top), left: parseFloat(node.style.left) }, `${key} placed`).toEqual(s.placedFrom);
           }
         }
@@ -512,6 +603,12 @@ async function run(script: Script): Promise<void> {
           }
         }
         if (want.answers) { expect(answers).toEqual(want.answers); }
+        if (want.services) {
+          const got = opened.slice(openedSeen);
+          expect(got.map((o) => o.kind), "the doors the page opened").toEqual(want.services.map((w) => w.kind));
+          want.services.forEach((w, i) => expect(got[i]!.args).toMatchObject(w.args ?? {}));
+        }
+        openedSeen = opened.length;
         answers = [];
         if (want.writes) {
           const writes = [...islands.values()].flatMap((i) => i.writes);
@@ -534,11 +631,24 @@ describe("★ interaction goldens, the page half ★", () => {
   test(`02 · ${script02.pins}`, async () => { await run(script02 as unknown as Script); });
   test(`03 · ${script03.pins}`, async () => { await run(script03 as unknown as Script); });
   test(`06 · ${script06.pins}`, async () => { await run(script06 as unknown as Script); });
+  test(`12 · ${script12.pins}`, async () => { await run(script12 as unknown as Script); });
   test(`13 · ${script13.pins}`, async () => { await run(script13 as unknown as Script); });
 
   test("NONSENSE CONTROL: a script whose expectation contradicts the page reds", async () => {
     const broken = structuredClone(script03) as unknown as { steps: Step[] };
     broken.steps[4] = { expect: { page: { ".body": { value: "first" } } } };     // claims the older frame repainted the edit
     await expect(run(broken as unknown as Script)).rejects.toThrow(/\.body value/);
+  });
+
+  test("CONTROL 12: a script claiming the page opened print, or opened no clipboard, reds", async () => {
+    const at = script12.steps.findIndex((s) => JSON.stringify((s as { expect?: { answers?: string[] } }).expect?.answers) === JSON.stringify(["refused:page-action-unavailable"]));
+    const copy = script12.steps.findIndex((s) => (s as { expect?: { services?: Array<{ kind: string }> } }).expect?.services?.[0]?.kind === "clipboard");
+    expect(at).toBeGreaterThan(copy);
+    const printed = structuredClone(script12) as unknown as { steps: Step[] };
+    printed.steps[at] = { expect: { services: [{ kind: "print", args: {} }] } };
+    await expect(run(printed as unknown as Script)).rejects.toThrow(/the doors the page opened/);
+    const silent = structuredClone(script12) as unknown as { steps: Step[] };
+    silent.steps[copy] = { expect: { services: [] } };
+    await expect(run(silent as unknown as Script)).rejects.toThrow(/the doors the page opened/);
   });
 });

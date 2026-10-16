@@ -6,6 +6,7 @@ import {
   LAR_WHOLE_VALUE_MAX_CHARS, boundedWholeValue, isReliableKind, mkLarControlEvent, mkLarFrame,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService, mkLarResend, mkLarService,
   larKeyChordName, readLarCancel, readLarStampTokens,
+  readLarSurfaceManifest, LAR_SURFACE_DEFAULT_SERVICES,
 } from "../src/lar-camera.js";
 
 const act = () => mkLarControlEvent({ eventId: "e1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", renderId: "7", action: "lar:click", seenFrameRev: 3 });
@@ -94,6 +95,24 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "refused" })).toBeNull();
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "refused", reason: "unclaimed" })).not.toBeNull();
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "done" })).toBeNull();
+  });
+  test("a surface names its doors at open: a resend carries a manifest of house kinds, each once; CONTROLS: a strange kind, a repeat or a bare list read null", () => {
+    expect(LAR_SURFACE_DEFAULT_SERVICES).toEqual(["clipboard", "download", "route"]);
+    expect(readLarResend(mkLarResend("lar:story", { services: ["clipboard", "print"] }))).toMatchObject({ manifest: { services: ["clipboard", "print"] } });
+    expect(mkLarResend()).not.toHaveProperty("manifest");
+    expect(readLarSurfaceManifest({ services: [] })).toEqual({ services: [] });
+    expect(readLarSurfaceManifest({ services: ["http-request"] })).toBeNull();
+    expect(readLarSurfaceManifest({ services: ["print", "print"] })).toBeNull();
+    expect(readLarSurfaceManifest(["print"])).toBeNull();
+    expect(readLarResend({ ...mkLarResend(), manifest: { services: ["teleport"] } })).toBeNull();
+  });
+  test("a service answer names the request it closes and its status; CONTROL: one lacking either reads null", () => {
+    const result = mkLarControlEvent({ eventId: "r1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:service-result", controlId: "lar:document", action: "lar:service-result", seenFrameRev: 1, requestId: "q1", status: "ok" });
+    expect(readLarControlEvent(result)).toMatchObject({ requestId: "q1", status: "ok" });
+    const { requestId: _q, ...noRequest } = result;
+    expect(readLarControlEvent(noRequest)).toBeNull();
+    const { status: _s, ...noStatus } = result;
+    expect(readLarControlEvent(noStatus)).toBeNull();
   });
 });
 

@@ -30,8 +30,12 @@ Steps, each one object with one verb:
 | `wake` | `surface` | the harness wakes a sleeping actor (D4) |
 | `expect` | `answers?`, `writes?`, `messages?`, `services?`, `want?`, `frame?`, `page?`, `refused?` | the harness reads: the answers since the last expect (`applied`, `stale-target`, or `refused:<reason>`), the records written (after the echo lands; `tombstone: true` for a deletion), the `tm-*` messages the root widget saw, the `lar:service` asks the engine made, the `want` an answer carried, the next keyed frame (`contains`, `stamps` per selector (each named stamp carries every token the script names; `null` names an absent stamp), `attributes` per selector with `null` for absent, `keys`, `sensedRevision`, `questions`, `questionSubject`, `alert`, `surface`, `epoch: "fresh"`), the page's state per selector (`value`, `undoDepth`, `focus`, `relays`, `relayed`, `relayedSenses`, `relayedActs`, `defaultPrevented`, `refusal`, `visible`, `placedFrom`, `newerVersion`, `state`, `affordances`, and `surface` for the shown surface), or `{"refused": "<reason>"}` where the surface has no road |
 
-A world may carry a `manifest` naming the service kinds the surface carries. `lar:document` names the
-page's document leg as a control; `requestId: "last"` names the latest service ask.
+A world may carry a `manifest` naming the service kinds the surface carries; the harness opens the surface
+with it (`lar:resend{manifest}`), and a world without one carries `LAR_SURFACE_DEFAULT_SERVICES`. `lar:document`
+names the page's document leg as a control, and a `service-result` crosses on it; `requestId: "last"` names the
+latest service ask. An expected service matches its `kind` and every `args` field the script names; a field the
+script leaves unnamed (the rendered text of a download, say) never reads. The page harness reads `services` as
+the doors the page opened.
 
 A control names itself by `data-control-id`, by a CSS class the script's root template sets, or by
 `tag.class`, read off the frame the harness last delivered. An act names the control's own render id, or

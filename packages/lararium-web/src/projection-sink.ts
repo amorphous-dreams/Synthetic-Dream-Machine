@@ -32,19 +32,39 @@
  *     old frame stays visible, inert, under the plate, and the plate drops in the paint that lands the first key.
  *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: the old surface's nodes, words and popup
  *     placement end with it; each surface keeps its own revisions, sheet and local revisions.
+ *   - A HOST DOOR OPENS UNDER A PERSON'S ACT AND THE SURFACE'S MANIFEST. A `lar:service` ask opens its door only
+ *     while the person's last act on the page stands fresh (or the browser's own transient activation does), one
+ *     door per act, and only for a kind the manifest the surface opened with names; any other answers by name,
+ *     with the words beside the control the person acted on. Every ask gets its `lar:service-result`.
  */
 import { Idiomorph } from "idiomorph";
 // The contract module carries no imports of its own; its own subpath keeps the mesh barrel (and its wasm) out of
 // the page sink.
 import {
-  LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_WHOLE_VALUE_MAX_CHARS,
+  LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_VALUE_MAX_CHARS,
   LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_ON,
-  larKeyChordName, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarStampTokens,
-  type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarRefusal,
+  larKeyChordName, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarService, readLarStampTokens,
+  type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service, type LarRefusal,
+  type LarServiceKind, type LarSurfaceManifest,
 } from "@lararium/mesh/lar-camera";
 
 /** A frame as the page receives it: the contract's keyed frame, plus the surface whose island emitted it. */
 export type LarSurfaceFrame = LarMsg_Frame & { readonly surface: string };
+/** A host-door ask as the page receives it, plus the surface whose island asked. */
+export type LarSurfaceService = LarMsg_Service & { readonly surface: string };
+
+/** One host door the page can open: it resolves when the door opened, and throws when the browser refused it. */
+export type LarHostDoor = (args: LarMsg_Service["args"], host: HTMLElement) => void | Promise<void>;
+export type ServiceVerdict = "opened" | "refused" | "malformed";
+
+export interface ProjectionSinkOptions {
+  readonly inputMaxChars?: number;
+  /** The doors this surface carries, named at surface-open; `LAR_SURFACE_DEFAULT_SERVICES` when absent. */
+  readonly services?: LarSurfaceManifest["services"];
+  /** The doors at hand by kind, over the page's own (clipboard, download, print, fullscreen, open-external); the
+   *  vessel hands `route` and `open-surface`, which only it can move. */
+  readonly doors?: Partial<Record<LarServiceKind, LarHostDoor>>;
+}
 
 /** The vessel's return leg, as the sink speaks it. */
 export interface ProjectionReturnDoors {
@@ -73,6 +93,11 @@ export interface ProjectionSink {
   surface(): string | null;
   /** The visible set the shown surface's membership key last named, or null before one arrived. */
   members(): readonly string[] | null;
+  /** Take an island's host-door ask: open it under a fresh act and the manifest, or refuse it by name; either
+   *  way answer `lar:service-result` on the return leg. */
+  applyService(ask: LarSurfaceService): Promise<ServiceVerdict>;
+  /** The manifest this surface opened with, for the vessel's surface-open (`lar:resend{manifest}`). */
+  manifest(): LarSurfaceManifest;
 }
 
 /** The words a person reads beside a control (page-controls#/refusals). `input-too-long` names the bound in force. */
@@ -111,7 +136,7 @@ interface SurfaceState {
 /** The target an event names: the template's control id where one stands nearest, else the render id. */
 interface Target { readonly id: string; readonly field: "controlId" | "renderId"; readonly node: Element }
 
-export function createProjectionSink(host: HTMLElement, opts: { readonly inputMaxChars?: number } = {}): ProjectionSink {
+export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOptions = {}): ProjectionSink {
   const bound = Math.min(opts.inputMaxChars ?? LAR_WHOLE_VALUE_MAX_CHARS, LAR_WHOLE_VALUE_MAX_CHARS);
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
   // The sink's own rules sit ahead of the frame's sheet, so a frame may restyle anything but the words' layer.
@@ -408,6 +433,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
       if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
     }
     doors.sendControlEvent(shownSurface, ev);
+    if (kind === "lar:act") activation = { at: performance.now(), surface: shownSurface, target: target.id };
   };
   const origin = (event: Event): Element | null => (event.composedPath?.()[0] ?? event.target) as Element | null;
 
@@ -616,9 +642,80 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     return "painted";
   };
 
+  // ── Host doors ────────────────────────────────────────────────────────────────────────────────
+
+  /** How long a person's act stands fresh for a door: the browser's own transient activation window. */
+  const ACTIVATION_MS = 5_000;
+  /** The person's last relayed act, until a door spends it. */
+  let activation: { readonly at: number; readonly surface: string; readonly target: string } | null = null;
+  const manifestKinds: readonly LarServiceKind[] = opts.services ?? LAR_SURFACE_DEFAULT_SERVICES;
+  const carried = new Set<LarServiceKind>(manifestKinds);
+  const pageDoors: Partial<Record<LarServiceKind, LarHostDoor>> = {
+    clipboard: async (args) => { await navigator.clipboard.writeText(String(args["text"] ?? "")); },
+    download: (args) => {
+      const url = URL.createObjectURL(new Blob([String(args["text"] ?? "")], { type: String(args["type"] ?? "text/plain") }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = String(args["filename"] ?? "download.txt");
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    },
+    print: () => { window.print(); },
+    fullscreen: async (args, at) => {
+      const mode = String(args["mode"] ?? "toggle");
+      if (mode === "exit" || (mode === "toggle" && document.fullscreenElement)) await document.exitFullscreen();
+      else await at.requestFullscreen();
+    },
+    "open-external": (args) => {
+      if (!window.open(String(args["url"] ?? ""), String(args["windowName"] ?? "_blank"), "noopener,noreferrer")) throw new Error("the browser opened no window");
+    },
+  };
+  const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
+  const activeAct = (surface: string): boolean =>
+    (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation?.isActive === true
+    || (activation !== null && activation.surface === surface && performance.now() - activation.at <= ACTIVATION_MS);
+  /** Answer one ask on the document leg of the surface that asked, under the epoch the page holds for it. */
+  const answerService = (ask: LarSurfaceService, status: "ok" | LarRefusal): void => {
+    const st = stateOf(ask.surface);
+    if (!doors || st.epoch === null) return;
+    const ev = mkLarControlEvent({
+      eventId: mintEventId(), cameraId: LAR_CAMERA_STORY, mountEpoch: st.epoch, kind: "lar:service-result",
+      controlId: "lar:document", action: "lar:service-result", seenFrameRev: st.revs.get(LAR_KEY_SURFACE) ?? 0,
+      requestId: ask.requestId, status,
+    });
+    pending.set(ev.eventId, { surface: ask.surface, target: "lar:document" });
+    if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
+    doors.sendControlEvent(ask.surface, ev);
+  };
+  const applyService = async (ask: LarSurfaceService): Promise<ServiceVerdict> => {
+    if (readLarService(ask) === null || typeof ask.surface !== "string" || ask.surface === "") return "malformed";
+    const act = activation;
+    const refuse = (reason: LarRefusal): ServiceVerdict => {
+      answerService(ask, reason);
+      if (act && act.surface === ask.surface && ask.surface === shownSurface) paintRefusal(act.target, reason);
+      return "refused";
+    };
+    if (ask.surface !== shownSurface) return refuse("stale-target");
+    if (!activeAct(ask.surface)) return refuse("activation-required");
+    activation = null;                                             // one act opens one door
+    if (!carried.has(ask.kind)) return refuse("page-action-unavailable");
+    const door = doorFor(ask.kind);
+    if (!door) return refuse("page-action-unavailable");
+    try {
+      await door(ask.args, host);
+    } catch (error) {
+      console.warn(`[vessel] ${ask.kind} door refused: ${error instanceof Error ? error.message : String(error)}`);
+      return refuse("page-action-unavailable");
+    }
+    answerService(ask, "ok");
+    return "opened";
+  };
+
   return {
     apply,
     applyResult,
+    applyService,
+    manifest: () => ({ services: [...manifestKinds] }),
     setBreath: (surface, breath) => { stateOf(surface).breath = breath; renderPlate(); },
     awaitSurface: (surface) => { awaited = surface === shownSurface ? null : surface; renderPlate(); },
     arm: (d) => { doors = d; },

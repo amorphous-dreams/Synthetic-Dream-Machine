@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "721c8f36482707f21b74b062713cff89e1759f8bd9971d5edeff0affdcf0c859",
+      "why": "D1 S4 root services: the lar-root-services startup module and the root-layer template join the house plugin; the next labelled GENESIS RE-BAKE carries them"
+    }
+  ]
+}
