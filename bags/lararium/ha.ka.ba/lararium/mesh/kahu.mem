@@ -264,7 +264,7 @@ Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-
 * ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed event on the face's own log, signed by the face's own key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>).
 * ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies (#/nexus-scale).
 
-!!! OPEN ~ what the operator still owns
+!!! OPEN ~ what the operator owns
 
 Each item below stands unruled. Nothing in code decides one.
 
@@ -637,6 +637,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yHPYQ27azjQs7yNnwfBYfmPmxkKQ7nykKNNGMzuwNpM
+<<^ code="&#x0003;">>ni:///sha-256;SRCCIWN1cdVEGbAhPooiRzzpYa1akTlippqXh3Uj0-Y
 
 <<^ code="&#x0004;" -> to="?">>

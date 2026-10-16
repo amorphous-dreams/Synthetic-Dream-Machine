@@ -111,12 +111,12 @@ Three seams freeze first, each with vectors: C's `GateSessionChannel`, which the
 
 !! Red window and done when
 
-The admit payload change reddens producer/verifier/import and self-contract fixtures unless one commit moves all four. The socket gate touches `gate-dial-funnel`, `live-wire-node-crossing`, `browser-crossing`, `nexus-client-dial`, `wire-hearth-crossing`, `herm-relay-port` and `sibling-herm-relay` until fixture and production paths meet. The `crossing`, `herm-mesh`, `nexus`, `quorum`, `relation`, `leaf`, `open`, `realm-crossing` and `meme` held-out cells give independent seams; add a two-Nexus cell only with its driver. Run changed package suites, both e2e shard sets, built-image crossing and held-out head; an unread head never counts green. The unregistered `.train-w-built-image.test.ts` fixes the trace assertions now and waits for a real driver.
+The admit payload change reddens producer/verifier/import and self-contract fixtures unless one commit moves all four. The socket gate touches `gate-dial-funnel`, `live-wire-node-crossing`, `browser-crossing`, `nexus-client-dial`, `wire-hearth-crossing`, `herm-relay-port` and `sibling-herm-relay` until fixture and production paths meet. The `crossing`, `herm-mesh`, `nexus`, `quorum`, `relation`, `leaf`, `open`, `realm-crossing` and `meme` held-out cells give independent seams; add a two-Nexus cell only with its driver. Run changed package suites, both e2e shard sets, built-image crossing and held-out head; an unread head never counts green. The unregistered `.train-w-built-image.test.ts` fixes the trace assertions and waits for a real driver.
 
-Done when every enabled production dial emits Noise IK first, follows one typed bundle and held charter, accepts a current face only through its verified hand-over head, opens a real signed session before frame one, preserves gate withdrawal across restart, keeps pair-indexed dials and two face grants separate, signs the floor announcement under the selected wire pin, and reaches no retired handshake. Disabled routes state their refusal. The sibling leg additionally proves sealed ask/cancel/outcome against transit-only delivery.
+Done when every enabled production dial emits Noise IK first, follows one typed bundle and held charter, accepts a current face only through its verified hand-over head, opens a real signed session before frame one, preserves gate withdrawal across restart, keeps pair-indexed dials and two face grants separate, signs the floor announcement under the selected wire pin, and speaks no handshake but the sealed face gate's. Disabled routes state their refusal. The sibling leg additionally proves sealed ask/cancel/outcome against transit-only delivery.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XzJPxn8HIxLCvauZ2ZdBCr2Vd0obzVLEDq-0MxIfoEw
+<<^ code="&#x0003;">>ni:///sha-256;EM49DG8FbgXuFVkoaI2Xy7Fs5ifHEL2TC1tFc6kVrZ4
 
 <<^ code="&#x0004;" -> to="?">>

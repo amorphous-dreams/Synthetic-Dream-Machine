@@ -8,7 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem"
 hydrate   = true
 l-space   = "stable"
-role      = "THE PONO ROADMAP — the one carrier that holds the house's road to STABLE FOUNDING and the two-hearth live test: what a cold session reads, runs and obeys, the operator's rulings, the design decisions that still shape unbuilt work, the six paths in the one order a builder walks, every open loop beside the train that closes it, the sealed-store thread, the side lanes, the fresh start, and what the operator still owns"
+role      = "THE PONO ROADMAP — the one carrier that holds the house's road to STABLE FOUNDING and the two-hearth live test: what a cold session reads, runs and obeys, the operator's rulings, the design decisions that shape unbuilt work, the six paths in the one order a builder walks, every open loop beside the train that closes it, the sealed-store thread, the side lanes, the fresh start, and what the operator owns"
 title     = "lar:///ha.ka.ba/lares/docs/stable-founding-road"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/stable-founding-road"
@@ -23,12 +23,12 @@ base state reads STABLE: a PRIVATE household SEED (its own charter, one seat) fo
 ZERO. Everything else flows downstream of it — contracting into other Nexuses and founding a Nexus with a second operator, inviting the operator's own
 PersonaGroup devices, and hosting guests who walk.
 
-This carrier holds the house's ONE roadmap, and ONLY what still binds or stays owed. A cold session that
+This carrier holds the house's ONE roadmap, and ONLY what binds or stays owed. A cold session that
 reads the boot seed and then this carrier can pick up any thread: the instruments and the law that bites
-(#/cold-start), the rulings (#/rulings), the design decisions that still shape unbuilt work (#/decisions),
+(#/cold-start), the rulings (#/rulings), the design decisions that shape unbuilt work (#/decisions),
 the six paths in one order (#/the-road), every open loop beside the train that closes it (#/the-loops),
 each train's commits in order (#/the-trains), the lanes that run beside the road (#/side-lanes), the fresh
-start (#/fresh-start), and what the operator still owns (#/open). Landed work reads in git and the
+start (#/fresh-start), and what the operator owns (#/open). Landed work reads in git and the
 CHANGELOG, never here. No count rests here: each reading names the instrument that takes it. Law lives in
 its own carrier, and this carrier points there.
 
@@ -227,7 +227,7 @@ The operator delegated these to the house: each stands as a house ruling the ope
 
 <<~ ahu #/decisions>>
 
-!! Decisions ~ what still shapes unbuilt work, and why
+!! Decisions ~ what shapes unbuilt work, and why
 
 The hosted walk's own mechanics (the token, the grant, the spent-set, the hosting doc) read in
 `lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite`. The decisions below constrain a slice
@@ -557,7 +557,7 @@ rename, scopes and founding act, then N's sealing and self-contracts, then W's t
 dials, then E, then O1's working address through its switch, then H's hosting act through its strangers' dial, then X.
 
 !!! S ~ the custody seal (SUBSTRATE; it stands)
-Its state reads in #/the-road's SUBSTRATE block, and nowhere else. The engine fold still owes its live image proof (`S2`).
+Its state reads in #/the-road's SUBSTRATE block, and nowhere else. The engine fold owes its live image proof (`S2`).
 
 !!! G ~ ground (waits on nothing; rides beside every train on disjoint files)
 The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summons cures, which touch what a verb's effect means.
@@ -716,7 +716,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~ ahu #/open>>
 
-!! Open ~ what the operator still owns
+!! Open ~ what the operator owns
 
 !!! Seats, custody and recovery
 # ''Guardians and recovery.'' The enrolment shape stands ruled (#/rulings). Guardian count and threshold at enrolment, request authentication, the veto, a person's death and succession, the catastrophe rite and any third key, and a Handle's DNS binding stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
@@ -777,6 +777,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aBiokevLCX-VUQP6waMih7EAEO5vnWZUhMQ6tjtOWlE
+<<^ code="&#x0003;">>ni:///sha-256;aXyVtg6WnKhNUBuYM4oopMoHr1NHctR7kukv3kB7_6w
 
 <<^ code="&#x0004;" -> to="?">>

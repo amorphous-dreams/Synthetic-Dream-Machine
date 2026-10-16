@@ -27,7 +27,7 @@ written           = "2026-10-16"
 
 ''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked spirit reported from reading the tree at `2e8d22d37`, before the wire-socket lane merged (PR #44), kept whole as a ''collision surface''.
 
-''What the house took from it.'' The port's kinds join the vessel and island unions in `island-protocol.ts` beside the camera's kinds, and their readers sit in `lar-camera.ts`; `port:ask` and the invoke gate belong in the island's dispatch (`wiki-behavior.ts`); `port:write` reuses the outbound record path but answers with its own `txId`. The collision map it drew no longer binds: wire-socket merged, so D2 edits the shared protocol and composer files on the merged base. Its four pure steps (the recording document and serialisers, the width and local-filter core, the invoke gate, presence expiry) stand as D2's first slices.
+''What the house took from it.'' The port's kinds join the vessel and island unions in `island-protocol.ts` beside the camera's kinds, and their readers sit in `lar-camera.ts`; `port:ask` and the invoke gate belong in the island's dispatch (`wiki-behavior.ts`); `port:write` reuses the outbound record path but answers with its own `txId`. The collision map it drew yields to the merged base: wire-socket merged, so D2 edits the shared protocol and composer files on the merged base. Its four pure steps (the recording document and serialisers, the width and local-filter core, the invoke gate, presence expiry) stand as D2's first slices.
 
 ''Read it against us, not for us.'' Collide it; do not inherit it.
 
@@ -95,6 +95,6 @@ I could not write a `-o` file: no output path appeared in the request, and this 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3-SYHFo83AwkBWOemNURflXWm07eMcqG9p03iaWTtEE
+<<^ code="&#x0003;">>ni:///sha-256;xELlNk5vlkd_m1PNaSlzqsu9lqkuRQ6Baolpri4BV-A
 
 <<^ code="&#x0004;" -> to="?">>
