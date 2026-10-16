@@ -45,12 +45,14 @@ import {
   type GenesisSeed,
   takeInvite, popInvite, hex,
   type WalkRecord, type CarryOutcome,
+  readHearthFloorCard,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
-import { browserGatePins, browserFacePresentation, type BrowserFacePresentation, dialDeadlines, fileOwnHearthPins, hearthNameOf, oracleNexusFor } from "./browser-gate-pins.js";
+import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCardPin, fileOwnHearthPins, hearthNameOf, oracleNexusFor } from "./browser-gate-pins.js";
+import { composeBrowserFacePresentation, facelessFloorPresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
-import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
 import {
@@ -213,12 +215,19 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   relayGatePubKey?: string;
   /**
-   * The sealed relay dial's three inputs, handed in until the admit and the join answer carry them (slice G):
-   * the pair index holding the full gate pin, the hex Nexus the pin is filed under, and the face this page
-   * presents at the gate. Absent → the vessel's own empty index, the Nexus its walk record names, and no
-   * presentation: the dial is idle and says which of the three is missing.
+   * The sealed relay dial's three inputs, handed in by a rig: the pair index holding the full gate pin, the hex Nexus the
+   * pin is filed under, and the face this page presents at the gate. Absent → the vessel's own index (filed from the
+   * fleet join its face carries, and a floor card), the Nexus that join's pin names, and the presentation the joined face
+   * composes (`browser-face-presentation`); a device with no face joined presents at no sovereign gate.
    */
   relayDial?: { readonly pins: HearthPinIndex; readonly nexus?: string; readonly presentation: BrowserFacePresentation };
+  /**
+   * The hearth's oracle floor card the arrival URL carried (`#floor=`, `hearthFloorCardText`): the oracle's floor pin and
+   * the key its snapshot is signed under, carried by the person's own hand off the hearth's banner. A device standing at
+   * the floor reads the oracle under it, faceless; the card seats no face and opens no sovereign gate. A torn card files
+   * nothing and says so.
+   */
+  floorCard?: string;
   /**
    * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
    * (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — leaf kind 3, a fleet in which no
@@ -455,7 +464,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
     genesisCasBaseUrl,
-    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey, relayDial,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey, relayDial, floorCard,
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
@@ -576,7 +585,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // hearth, if any.
   const gatePins = relayDial?.pins ?? browserGatePins();
   const relayPin = relayPinFor(relayUrl, relayGatePubKey);
-  if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
   const walkStore = browserWalkStore(idbName);
   const walk: WalkRecord | null = relayPin.dial ? await (async () => {
     if (walkInvite) {
@@ -754,15 +762,45 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // (house ruling "The admit's gate pin", carrier (b)), so the oracle read at this hearth holds its pin before any crossing. The
   // verified sovereign crossing files the same set again (carrier (a)). A pin the index refuses files nothing.
   fileOwnHearthPins(gatePins, relayUrl, social);
-  const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
+  // THE FLOOR CARD the arrival URL carried files the oracle's floor pin beside them, at the floor tier alone: a device
+  // with no face joined reads what the floor offers under it, and a pin the signed set already holds stays as it stood.
+  const carriedCard = floorCard === undefined ? null : readHearthFloorCard(floorCard);
+  if (floorCard !== undefined && carriedCard === null) console.warn("[lararium-browser] the floor card this URL carries does not read: no floor pin files from it");
+  else if (carriedCard !== null && !fileFloorCardPin(gatePins, relayUrl, carriedCard) && relayUrl) {
+    console.warn("[lararium-browser] the floor card names another oracle floor pin than the one this face's fleet join carried: the signed one stands");
+  }
+  // THE SOVEREIGN PIN this hearth's dial knocks with: the full pin filed for the relay's hearth at the Nexus the joined
+  // face's fleet join names. Its signing key names the gate a verified crossing proves.
+  const sovereignNexus = relayDial?.nexus ?? social.hearthGatePin?.nexus ?? (walk ? hex(new TextEncoder().encode(walk.nexusAid)) : null);
+  const relayHeld = relayUrl && sovereignNexus !== null
+    ? gatePins.get({ hearth: hearthNameOf(relayUrl), nexus: sovereignNexus, route: "/ws", tier: "sovereign" })
+    : null;
+  // THE FACE THIS SESSION WEARS. A device stands at the floor until a person joins a face to it (operator ruling,
+  // 2026-10-16); the face its boot stands on carries a fleet join where a hearth admitted it, and that face composes its
+  // presentation from what the join left in this browser's custody, under its own face-scoped key. A refusal names itself.
+  const faceJoined = relayDial !== undefined || Boolean(social.hearthGatePin);
+  const composed = relayDial !== undefined
+    ? { presentation: relayDial.presentation }
+    : relayHeld !== null && social.personaGroupId
+      ? await composeBrowserFacePresentation({ idbName, pin: relayHeld, personaGroup: social.personaGroupId })
+      : null;
+  const facePresentation: BrowserFacePresentation | null = composed !== null && "presentation" in composed ? composed.presentation : null;
+  const presentationRefusal = composed !== null && "refusal" in composed ? `${composed.refusal}${composed.detail ? `: ${composed.detail}` : ""}` : null;
+  const connectionState = createBrowserConnectionState(crossingStandingOf({
+    relayUrl, faceJoined, pinnedGateKey: relayHeld?.signingKey ?? null, presentationRefusal, hasContactCard: Boolean(social.contactCard),
+  }));
   // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
   // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
+  // The gate this crossing pins: the sovereign pin's signing key, the key a verified crossing proves.
+  const pinnedGateKey = relayHeld?.signingKey ?? null;
+  // A crossing pinned to a gate, by the sovereign pin or by the page's own gate key: its boards and WHO plane stand.
+  const relayGated = pinnedGateKey !== null || relayPin.dial;
   const crossing = hearthCrossingOf({
-    pinnedGatePubKey: relayPin.dial ? relayPin.gatePubKey : null,
+    pinnedGatePubKey: pinnedGateKey,
     hearthGatePubKey: social.hearthGatePubKey,
     holdsDeviceEdge:  Boolean(social.deviceEdge),
     hearthCanonDocs:  social.hearthCanonDocs,
-    relayGatePubKey,
+    relayGatePubKey:  pinnedGateKey,
     nexusPubkey,
   });
   const { ownHearth } = crossing;
@@ -772,9 +810,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
   // until genesis loads.
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
-  if (relayPin.dial && !social.contactCard) {
-    console.warn("[lararium-browser] no social contact card is available for the pinned relay crossing");
-  }
   // THE PROOF THIS VESSEL CARRIES TO A PEER'S ORACLE. Peers prove first: an oracle map crosses only a socket
   // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
   // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.
@@ -812,28 +847,22 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // LarWSClientAdapter and add it to the Repo: the browser dials the node's gate, runs the V3
   // handshake on the socket, and — on a passing verdict — syncs shared docs (the second spore).
   // FLOW ⊥ AUTHORITY: this is pure authority+sync; the nalu servo / ea-backpressure rides later.
-  // NOTE: the gate admits a peer holding cap=admin on the node's daemon bag, OR one the
-  // operator device-admitted that carries a valid device-delegation edge pinned to the node's
-  // hearth root. The leaf rides its own device edge (social.deviceEdge) so the in-worker keyholder
-  // can admit it at the operator's-own-device tier. The node's gate key is PROVISIONED out-of-band
-  // (relayGatePubKey) and is the only key the dial knocks with and the verdict is read under; absent,
-  // the vessel does not cross (`relayPinFor`). An un-admitted anon dials and meets silence and stays at its own
-  // floor — a correct outcome, never a throw.
-  // A WALKER presents its walk instead (the token while its invite is unsettled, else its grant), under its own
-  // per-Nexus leaf, and the walk client keeps what the hearth pushes back.
+  // THE SEALED CROSSING. The dial knocks only under the full sovereign pin the joined face's fleet join carried (filed
+  // above for the relay's hearth), presents that face under its own face-scoped key, and reads the gate's verdict under
+  // the pin's signing key. A device with no face joined dials no sovereign gate: it stands at the floor and reads what
+  // the floor offers (`readOracle`). A hearth resting at its floor stands no sovereign gate, so its dial meets silence
+  // and re-dials until a person unlocks it.
   let relayAdapter: LarWSClientAdapter | null = null;
   // THE WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`): the sealed adapter presents a face, not a walk, so the walk
   // is neither presented nor kept here, and `carryAtHearth` / `fetchFromHearth` answer null. The record the walk
   // store holds is read and never spent; the route is rebuilt, not converted, by its own slice.
-  const sovereignNexus = relayDial?.nexus ?? social.hearthGatePin?.nexus ?? (walk ? hex(new TextEncoder().encode(walk.nexusAid)) : null);
-  const facePresentation = relayDial?.presentation ?? browserFacePresentation();
-  const relayHeld = relayPin.dial && relayUrl && sovereignNexus !== null
-    ? gatePins.get({ hearth: hearthNameOf(relayUrl), nexus: sovereignNexus, route: "/ws", tier: "sovereign" })
-    : null;
-  if (relayPin.dial && relayUrl && social.contactCard && (relayHeld === null || facePresentation === null)) {
-    console.warn(`[lararium-browser] the relay dial is idle: ${relayHeld === null ? "no sovereign gate pin is held for this hearth (pin-absent)" : "no face presentation reaches this page yet (presentation-absent)"}`);
+  if (relayUrl && faceJoined && (relayHeld === null || facePresentation === null || !social.contactCard)) {
+    const why = relayHeld === null ? "no sovereign gate pin is held for this hearth (pin-absent)"
+      : !social.contactCard ? "no social contact card is available for the pinned relay crossing"
+      : `the joined face presents nothing here (${presentationRefusal ?? "presentation-absent"})`;
+    console.warn(`[lararium-browser] the relay dial is idle: ${why}`);
   }
-  if (relayPin.dial && relayUrl && social.contactCard && relayHeld !== null && facePresentation !== null && sovereignNexus !== null) {
+  if (relayUrl && social.contactCard && relayHeld !== null && facePresentation !== null && sovereignNexus !== null) {
     const adapter = new LarWSClientAdapter({
       url: relayUrl, pins: gatePins, hearth: hearthNameOf(relayUrl), nexus: sovereignNexus,
       presentation: facePresentation, audience: DAEMON_BAG_ID, deadlines: dialDeadlines(),
@@ -846,9 +875,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // attach BEFORE addNetworkAdapter so a peer is classified before any doc is announced to it.
     adapter.on("peer-candidate",    ({ peerId }: { peerId: PeerId }) => { relayPeers.add(peerId); });
     adapter.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { relayPeers.delete(peerId); });
-    // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
-    // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
-    // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
+    // Arm the deny-by-default gate for the pinned crossing: the Nexus's deterministic crossroads doc and WHO board are
+    // the public surface, widened at the face's own hearth by exactly the canon its admit names (`hearthCrossingOf`).
     fedGate = crossing.gate;
     // CANON CROSSES HEARTH TO LEAF ALONE. The gate above decides which documents this leaf FETCHES from its
     // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
@@ -1011,7 +1039,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // the ONLY thing that ever federates stays a glamour the human consciously posts, never a boot side-effect.
   // (A boot-minted card also had to name SOME key, and the only key at hand is this vessel's own — publishing
   // it would put the substrate key on the social board, the one co-surface the two-key atom forbids.)
-  const whoExtraCaps: CapModule[] = relayPin.dial ? await (async () => {
+  const whoExtraCaps: CapModule[] = relayGated ? await (async () => {
     const crossroadsHandle = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
     return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey, residency })];
   })() : [];
@@ -1099,7 +1127,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // it. Isomorphic: node + browser share registerCrossroadsInOracle, and the daemon core splices
       // the crossroads bag into the recipe + registerBags for either vessel — only the nexus key differs (here the
       // relay's gate key, so a human's two vessels register the SAME crossroads doc).
-      if (relayGatePubKey) await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
+      if (relayGated) await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
       // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
       // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
@@ -1435,7 +1463,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         return (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX;
       };
       const resolveWhoBoard = async (verb: string): Promise<DocHandle<LarDoc>> => {
-        if (!relayGatePubKey || !relayAdapter?.session) {
+        if (!relayGated || !relayAdapter?.session) {
           throw new Error(`[face-${verb}] this vessel holds no public WHO board — it has not crossed to a hearth, so it has no board to name a face on.`);
         }
         return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
@@ -1700,18 +1728,24 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     carryAtHearth: () => Promise.resolve(null),
     fetchFromHearth: () => Promise.resolve(null),
     // The oracle CONVERTS: the reader dials the peer's FLOOR gate under the pin this vessel holds for it, and reads
-    // the pointer and the snapshot as sealed messages. `gatePubKey` is the publisher's key, never the gate's.
-    readOracle: <T>(baseUrl: string, gatePubKey: string) => {
-      const presentation = relayDial?.presentation ?? browserFacePresentation();
-      // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere.
-      const nexus = oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus });
+    // the pointer and the snapshot as sealed messages. `gatePubKey` is the publisher's key, never the gate's. A joined
+    // face presents as itself; a device with no face joined presents FACELESS, under a place key minted for that one
+    // read (`facelessFloorPresentation`), which a Nexus answering strangers serves and any other meets with silence.
+    readOracle: async <T>(baseUrl: string, gatePubKey: string): Promise<OraclePullResult<T>> => {
+      const presentation = facePresentation ?? await facelessFloorPresentation();
+      // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere. A device
+      // at the floor knows its hearth's Nexus by the floor card the URL carried.
+      const nexus = oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null });
+      if (nexus === null || !relayUrl) return { ok: false, reason: "no Nexus is known for this hearth: the URL carries no floor card, and no face joined here names one (nexus-absent)" };
       // The pair index files the hearth under its relay's name, so the read asks under that same name.
-      return presentation !== null && nexus !== null && relayUrl
-        ? pullAndVerifyOracle<T>(baseUrl, {
-            pins: gatePins, hearth: hearthNameOf(relayUrl), nexus, presentation, audience: DAEMON_BAG_ID,
-            deadlines: dialDeadlines(), verifyingKey: gatePubKey,
-          })
-        : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: `no face presentation reaches this page to prove at a peer's floor gate (${presentation === null ? "presentation-absent" : "nexus-absent"})` });
+      const read = await pullAndVerifyOracle<T>(baseUrl, {
+        pins: gatePins, hearth: hearthNameOf(relayUrl), nexus, presentation, audience: DAEMON_BAG_ID,
+        deadlines: dialDeadlines(), verifyingKey: gatePubKey,
+      });
+      if (!read.ok && facePresentation === null && /said nothing/.test(read.reason ?? "")) {
+        return { ...read, reason: "silence at the floor: this hearth's Nexus answers no stranger, or the hearth stands out of reach. A face joined to this device reads what the floor holds for it" };
+      }
+      return read;
     },
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.

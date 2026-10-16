@@ -294,7 +294,7 @@ describe("nothing a request says names the vessel", () => {
     const derive = (declaredUrl: string | null) => {
       const faces = deriveReachFaces({ port: 4321, declaredUrl, interfaces });
       const entries = faces.map((face) => ({ face, composition: originCompositionForFace(face, { sameOrigin: true }, "lararium") }));
-      return { faces, relays: faces.map((f) => wsUrlForOrigin(f.origin)), banner: crossingBannerLines("lararium", entries, "ab".repeat(32)) };
+      return { faces, relays: faces.map((f) => wsUrlForOrigin(f.origin)), banner: crossingBannerLines("lararium", entries, null) };
     };
     const declared = derive(DECLARED);
     // The scheme travels with the setting: an https name carries wss, and no derivation takes a request.

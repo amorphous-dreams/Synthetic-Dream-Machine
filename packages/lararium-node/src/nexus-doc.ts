@@ -34,8 +34,8 @@ import { readFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
-  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, readCharterInception,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch, type SealRoll, type SealKeySet, type QuorumSignature,
+  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, parseNexusDoc as parseNexusText, readNexusDocFence,
+  type NexusDoc, type NexusCharterKahu, type SealEpoch,
   type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -95,13 +95,6 @@ function fenceRe(name: string): RegExp {
   return new RegExp("```json " + name + "\\r?\\n([\\s\\S]*?)\\r?\\n```");
 }
 
-/** Pull one fence's payload, or null when the fence stands absent or its JSON reads torn. */
-function readFence(body: string, name: string): unknown | null {
-  const m = fenceRe(name).exec(body);
-  if (!m) return null;
-  try { return JSON.parse(m[1]!); } catch { return null; }
-}
-
 /**
  * Swap ONE fence's payload inside a body, leaving every other byte untouched.
  *
@@ -112,126 +105,6 @@ function readFence(body: string, name: string): unknown | null {
 function swapFence(body: string, name: string, payload: unknown): string {
   const block = "```json " + name + "\n" + JSON.stringify(payload, null, 2) + "\n```";
   return fenceRe(name).test(body) ? body.replace(fenceRe(name), block) : `${body.trimEnd()}\n\n${block}\n`;
-}
-
-// ── coercion ──────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * Coerce a parsed seal-lineage payload: `undefined` when absent (a genesis-inception doc with no lineage
- * yet), the sentinel `"torn"` when malformed (which reads the WHOLE doc closed — the parser never guesses a
- * partial pre-rotation lineage into authority), or the typed `SealEpoch[]` when every epoch's shape holds.
- */
-function coerceSealLineage(raw: unknown): SealEpoch[] | "torn" | undefined {
-  if (raw === undefined || raw === null) return undefined;
-  if (!Array.isArray(raw)) return "torn";
-  const lineage: SealEpoch[] = [];
-  for (const item of raw) {
-    if (typeof item !== "object" || item === null) return "torn";
-    const e = item as Record<string, unknown>;
-    if (typeof e["epochCid"]      !== "string")    return "torn";
-    if (typeof e["keySetHash"]    !== "string")    return "torn";
-    // The previous charter shape had one commitment for the whole successor set. Keep it
-    // distinguishable at the document boundary so callers can refuse it explicitly.
-    if (Object.prototype.hasOwnProperty.call(e, "nextKeyCommit")) return "torn";
-    // The earlier link shape named one `prevEpochCid`; a seal record names a set of predecessors.
-    if (Object.prototype.hasOwnProperty.call(e, "prevEpochCid")) return "torn";
-    if (!Array.isArray(e["nextKeyDigests"]) || !(e["nextKeyDigests"] as unknown[]).every((d) => typeof d === "string" && /^[0-9a-f]{64}$/.test(d))) return "torn";
-    if (!Number.isInteger(e["nextThreshold"]) || (e["nextThreshold"] as number) < 0) return "torn";
-    const preds = e["predecessors"];
-    if (!Array.isArray(preds) || preds.length > 2 || !preds.every((p) => typeof p === "string")) return "torn";
-    const epoch: SealEpoch = {
-      epochCid:      e["epochCid"] as string,
-      keySetHash:    e["keySetHash"] as string,
-      nextKeyDigests: [...(e["nextKeyDigests"] as string[])],
-      nextThreshold: e["nextThreshold"] as number,
-      predecessors:  [...(preds as string[])],
-    };
-    if (e["roll"] !== undefined && e["inception"] !== undefined) return "torn";
-    if (e["inception"] !== undefined) {
-      // Shape only, through the mesh's strict reader: `verifySealLineage` judges the signatures.
-      const inception = readCharterInception(e["inception"]);
-      if (inception === null) return "torn";
-      lineage.push({ ...epoch, inception });
-      continue;
-    }
-    if (e["roll"] === undefined) { lineage.push(epoch); continue; }
-    const roll = coerceSealRoll(e["roll"]);
-    if (roll === "torn") return "torn";
-    lineage.push({ ...epoch, roll });
-  }
-  return lineage;
-}
-
-/** A key-set read off disk: string keys and a whole threshold, or `"torn"`. */
-function coerceKeySet(raw: unknown): SealKeySet | "torn" {
-  if (typeof raw !== "object" || raw === null) return "torn";
-  const r = raw as Record<string, unknown>;
-  if (!Array.isArray(r["keys"]) || !r["keys"].every((k) => typeof k === "string")) return "torn";
-  if (!Number.isInteger(r["threshold"])) return "torn";
-  return { keys: [...(r["keys"] as string[])], threshold: r["threshold"] as number };
-}
-
-/**
- * Coerce an epoch's signed roll. Shape only — `verifySealLineage` judges the signatures. Only the known
- * fields are copied, so a field smuggled onto the roll never reaches a verifier.
- */
-function coerceSealRoll(raw: unknown): SealRoll | "torn" {
-  const seated = coerceKeySet(raw);
-  if (seated === "torn") return "torn";
-  const r = raw as Record<string, unknown>;
-  const sigs = r["signatures"];
-  if (!Array.isArray(sigs)) return "torn";
-  const signatures: QuorumSignature[] = [];
-  for (const s of sigs) {
-    if (typeof s !== "object" || s === null) return "torn";
-    const q = s as Record<string, unknown>;
-    if (typeof q["signer"] !== "string" || typeof q["sig"] !== "string") return "torn";
-    signatures.push({ signer: q["signer"], sig: q["sig"] });
-  }
-  if (Object.prototype.hasOwnProperty.call(r, "revealed")) return "torn";
-  // The genesis seats a first roll reveals: shape here; the roll law binds them to the genesis's key-set hash.
-  if (r["genesis"] === undefined) return { ...seated, signatures };
-  const genesis = coerceKeySet(r["genesis"]);
-  if (genesis === "torn") return "torn";
-  return { ...seated, signatures, genesis };
-}
-
-/** Fold the three read blocks into one composed `NexusDoc`, or null when seal or kahu fails its guards. */
-function composeDoc(seal: unknown, kahu: unknown, practice: unknown): NexusDoc | null {
-  if (typeof seal !== "object" || seal === null) return null;
-  const s = seal as Record<string, unknown>;
-  if (s["kind"] !== NEXUS_DOC_DOMAIN) return null;
-  const epoch = s["sealEpochCid"];
-  const sealEpochCid = typeof epoch === "string" && epoch.length > 0 ? epoch : null;
-  const lineage = coerceSealLineage(s["sealLineage"]);
-  if (lineage === "torn") return null;                            // a torn lineage reads the whole doc closed
-
-  if (typeof kahu !== "object" || kahu === null) return null;
-  const k = kahu as Record<string, unknown>;
-  if (!Number.isInteger(k["threshold"]) || (k["threshold"] as number) < 1) return null;
-  if (!Array.isArray(k["kahu"])) return null;
-  const seats: NexusCharterKahu[] = [];
-  for (const raw of k["kahu"]) {
-    if (typeof raw !== "object" || raw === null) return null;     // a torn seat reads the whole doc closed
-    const seat = raw as Record<string, unknown>;
-    if (typeof seat["chairLabel"] !== "string") return null;
-    const vk = seat["verifyingKey"];
-    seats.push({
-      chairLabel:   seat["chairLabel"] as string,
-      verifyingKey: typeof vk === "string" && vk.length > 0 ? vk : null,
-    });
-  }
-
-  // PRACTICE never closes the doc — a torn dial folds to its fail-closed default downstream, so the
-  // fastest-cadence joint can never take the slow-cadence joints with it. The posture reads only the exact
-  // literal "open"; anything else folds PRIVATE via `federationPostureFromDoc`, because a torn posture must
-  // never silently open the mesh.
-  const p = (typeof practice === "object" && practice !== null ? practice : {}) as Record<string, unknown>;
-  const posture = p["federationPosture"] === "open" ? ("open" as const) : undefined;
-
-  const base: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: k["threshold"] as number, sealEpochCid, kahu: seats };
-  const withLineage = lineage === undefined ? base : { ...base, sealLineage: lineage };
-  return posture === undefined ? withLineage : { ...withLineage, federationPosture: posture };
 }
 
 // ── read ──────────────────────────────────────────────────────────────────────────────────────────
@@ -269,12 +142,12 @@ export function nexusCharterShape(bagsDir: string): NexusCharterShape {
   // where a chair carries `chairLabel`. Every charter written before the Nexus AID took its `nexus-` name carries the
   // second mark, so no reader needs the earlier name itself.
   const own = (e: unknown, key: string): boolean => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, key);
-  const seal = readFence(body, SEAL_BLOCK);
+  const seal = readNexusDocFence(body, SEAL_BLOCK);
   if (typeof seal === "object" && seal !== null) {
     const lineage = (seal as Record<string, unknown>)["sealLineage"];
     if (Array.isArray(lineage) && lineage.some((e) => own(e, "nextKeyCommit") || own(e, "prevEpochCid"))) return "earlier-shape";
   }
-  const kahu = readFence(body, KAHU_BLOCK);
+  const kahu = readNexusDocFence(body, KAHU_BLOCK);
   const seats = typeof kahu === "object" && kahu !== null ? (kahu as Record<string, unknown>)["kahu"] : undefined;
   if (Array.isArray(seats) && seats.some((s) => own(s, "displayName") && !own(s, "chairLabel"))) return "earlier-shape";
   return parseNexusDoc(body) === null ? "torn" : "whole";
@@ -282,12 +155,12 @@ export function nexusCharterShape(bagsDir: string): NexusCharterShape {
 
 /**
  * Parse charter BYTES into a composed `NexusDoc`, or null (FAIL CLOSED) when they carry no seal or kahu
- * block, or either reads torn. The one parser: the disk read below and every door holding bytes in hand
- * (an import, a carry) read through it, so a decision on incoming bytes and every later read of the file
- * agree on what it says.
+ * block, or either reads torn. The one parser stands in the mesh (`nexus-doc-text`), platform-blind: the disk
+ * read below, every door holding bytes in hand (an import, a carry) and a browser leaf's landed fleet-join
+ * answer read through it, so a decision on incoming bytes and every later read of the file agree on what it says.
  */
 export function parseNexusDoc(body: string): NexusDoc | null {
-  return composeDoc(readFence(body, SEAL_BLOCK), readFence(body, KAHU_BLOCK), readFence(body, PRACTICE_BLOCK));
+  return parseNexusText(body);
 }
 
 /**

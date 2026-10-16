@@ -229,13 +229,17 @@ export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOrigin
 }
 
 /**
- * Build the crossing URL a leaf opens: the web origin, the relay it dials, and the GATE key the dial's sealed first
- * flight is addressed to. The relay rides the SAME name the web surface came from — a phone that loaded the web surface over a LAN
- * address cannot dial `localhost` (which on that phone names the phone), and a browser on a TLS name cannot
- * dial a `ws://` relay from an `https://` page (mixed content), so a declared face carries `wss` throughout.
+ * Build the crossing URL a device opens: the web origin and the relay it dials, and, where the hearth stands an oracle
+ * floor gate, its floor card in the fragment (`hearthFloorCardText`), which never reaches a server. The URL names no gate
+ * key: a fresh device stands at the floor and reads what the floor offers under the card, and a face joined to it by the
+ * fleet-join door carries the full sovereign pin inside the root's signature. The relay rides the SAME name the web
+ * surface came from — a phone that loaded the web surface over a LAN address cannot dial `localhost` (which on that phone
+ * names the phone), and a browser on a TLS name cannot dial a `ws://` relay from an `https://` page (mixed content), so a
+ * declared face carries `wss` throughout.
  */
-export function crossingUrl(opts: { webOrigin: string; wsUrl: string; gateKey: string }): string {
-  return `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}&gate=${opts.gateKey}`;
+export function crossingUrl(opts: { webOrigin: string; wsUrl: string; floorCard: string | null }): string {
+  const base = `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}`;
+  return opts.floorCard ? `${base}#floor=${opts.floorCard}` : base;
 }
 
 /**
@@ -246,13 +250,13 @@ export function crossingUrl(opts: { webOrigin: string; wsUrl: string; gateKey: s
 export function crossingBannerLines(
   standing: OriginStanding,
   entries: readonly { readonly face: ReachFace; readonly composition: StandingOriginComposition }[],
-  gateKey: string,
+  floorCard: string | null,
 ): string[] {
   if (standing !== "lararium") return [];
   const lines: string[] = [];
   for (const { face, composition } of entries) {
     if (composition.webOrigin === undefined) continue;
-    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), gateKey })}   (${face.kind})`);
+    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), floorCard })}   (${face.kind})`);
   }
   return lines;
 }

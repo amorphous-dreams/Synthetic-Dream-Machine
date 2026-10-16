@@ -1,8 +1,7 @@
-import type { RelayPin } from "./browser-relay-pin.js";
-
 /** A visible snapshot of the browser vessel's relay crossing. */
 export type BrowserConnectionSnapshot = (
   | { readonly status: "local" }
+  | { readonly status: "floor"; readonly reason: string }
   | { readonly status: "missing-pin"; readonly reason: string }
   | { readonly status: "blocked"; readonly gatePubKey: string; readonly reason: string }
   | { readonly status: "pinned"; readonly gatePubKey: string }
@@ -76,23 +75,49 @@ function sameSnapshot(a: BrowserConnectionSnapshot, b: BrowserConnectionSnapshot
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-/** Start with the reason the vessel can or cannot dial; a live session arrives through the adapter observer. */
-export function createBrowserConnectionState(pin: RelayPin, hasContactCard: boolean): BrowserConnectionState & {
+/**
+ * What a device's crossing stands on before any dial: a relay or none, a face joined to it or none, the sovereign pin held
+ * for the relay's hearth, and the presentation the joined face composed or the reason it did not.
+ */
+export interface CrossingInputs {
+  readonly relayUrl:        string | null | undefined;
+  /** The face this vessel's boot stands on carries a fleet join: a hearth admitted it. */
+  readonly faceJoined:      boolean;
+  /** The signing key of the sovereign pin held for the relay's hearth, or null. */
+  readonly pinnedGateKey:   string | null;
+  /** Why the joined face composes no presentation, or null when it stands. */
+  readonly presentationRefusal: string | null;
+  readonly hasContactCard:  boolean;
+}
+
+/**
+ * The crossing's first snapshot, each absence by name. A device stands at the floor until a person joins a face to it
+ * (operator ruling, 2026-10-16: browser devices stand at the floor); a joined face crosses only under the full sovereign
+ * pin its fleet join carried, and only under a presentation it composed.
+ */
+export function crossingStandingOf(at: CrossingInputs): BrowserConnectionSnapshot {
+  if (!at.relayUrl) return { status: "local" };
+  if (!at.faceJoined) {
+    return { status: "floor", reason: "no face is joined to this device: it reads what the hearth's floor offers, and a person joins a face by the fleet-join door" };
+  }
+  if (at.pinnedGateKey === null) {
+    return { status: "missing-pin", reason: "no sovereign gate pin is held for this hearth: the face's fleet join with this hearth carries it" };
+  }
+  if (!at.hasContactCard) {
+    return { status: "blocked", gatePubKey: at.pinnedGateKey, reason: "no social contact card is available for the pinned relay crossing" };
+  }
+  if (at.presentationRefusal !== null) {
+    return { status: "blocked", gatePubKey: at.pinnedGateKey, reason: `the joined face presents nothing here (${at.presentationRefusal})` };
+  }
+  return { status: "pinned", gatePubKey: at.pinnedGateKey };
+}
+
+/** Start with the crossing's first snapshot; a live session arrives through the adapter observer. */
+export function createBrowserConnectionState(initial: BrowserConnectionSnapshot): BrowserConnectionState & {
   /** @internal Lifecycle writer used by observeRelayConnection. */
   transition(snapshot: BrowserConnectionSnapshot): void;
   setWikiDocUrl(url: string): void;
 } {
-  const initial: BrowserConnectionSnapshot = pin.dial
-    ? hasContactCard
-      ? { status: "pinned", gatePubKey: pin.gatePubKey }
-      : {
-          status: "blocked",
-          gatePubKey: pin.gatePubKey,
-          reason: "no social contact card is available for the pinned relay crossing",
-        }
-    : pin.reason
-      ? { status: "missing-pin", reason: pin.reason }
-      : { status: "local" };
   return new ObservableBrowserConnectionState(initial);
 }
 

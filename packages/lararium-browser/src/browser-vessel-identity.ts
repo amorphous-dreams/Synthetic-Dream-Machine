@@ -80,7 +80,7 @@ export const NEXUS_KEY_STORE        = "nexus-keys";          // `h${N}:${aid}` �
 // and never carried; and the join itself: the pending request beside its seal secret, the face's record, and the
 // face's address secret the answer delivered.
 export const VESSEL_FACE_KEY_STORE  = "vessel-face-keys";    // `${nexus}|${faceKey}` → Uint8Array(32)
-export const FLEET_JOIN_STORE       = "fleet-join";          // "pending" · `record:${group}` · `secret:${group}`
+export const FLEET_JOIN_STORE       = "fleet-join";          // "pending" · `record:${group}` · `secret:${group}` · `dial:${group}`
 const ROSTER_RECORD        = "roster";            // the single key both roster stores write under
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 

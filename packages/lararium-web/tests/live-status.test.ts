@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
@@ -43,16 +43,38 @@ describe("served-origin crossing", () => {
     });
   });
 
-  test("a failed initial dial names a local unreachable gate, while a lost session names disconnection", () => {
+  test("a device with no face joined reads at the floor, by name", () => {
+    expect(connectionPresentation({ status: "floor", reason: "no face is joined to this device" })).toMatchObject({
+      connection: "at the floor — no face is joined to this device",
+      mode: expect.stringContaining("standing at the floor"),
+    });
+  });
+
+  test("a failed initial dial names a hearth resting at its floor, while a lost session names disconnection", () => {
     const lost = { status: "disconnected", gatePubKey: "gate-1" } as const;
     expect(connectionPresentation(lost)).toMatchObject({
-      connection: "gate-unreachable — gate-1",
+      connection: "no sovereign gate answered — gate-1: the hearth rests at its floor until a person unlocks it, or stands out of reach",
       tone: "warn",
     });
     expect(connectionPresentation(lost, true)).toMatchObject({
       connection: "disconnected from gate-1",
       tone: "warn",
     });
+  });
+});
+
+describe("the floor card the arrival URL carries", () => {
+  const card = { pin: { tier: "floor", nexus: "6e", route: "/oracle", transportKey: "aa", signingKey: "bb" }, publisher: "cc" } as const;
+  const read = (text: string) => (text === "Y2FyZA" ? card : null);
+
+  test("CONTROL: a card in the fragment reaches the one reader, and reads back", () => {
+    expect(floorCardOf("#floor=Y2FyZA", read)).toEqual({ text: "Y2FyZA", card });
+  });
+
+  test("no fragment carries no card, and a torn one reads none", () => {
+    expect(floorCardOf("", read)).toBeNull();
+    expect(floorCardOf("#relay=x", read)).toBeNull();
+    expect(floorCardOf("#floor=torn", read)).toEqual({ text: "torn", card: null });
   });
 });
 
@@ -80,12 +102,14 @@ describe("the connection row publishes its mount as data", () => {
     const state = fakeState({ status: "connecting", gatePubKey: "gate-1" });
     const stop = mountLiveStatus(parent, state);
     const row = parent.querySelector<HTMLElement>('[data-live-status="connection"]')!;
+    expect(row.getAttribute("data-standing")).toBe("connecting");
     // CONTROL: a pinned, unproven crossing names no gate key and no mount.
     expect(row.hasAttribute("data-gate-key")).toBe(false);
     expect(row.hasAttribute("data-wiki-doc-url")).toBe(false);
 
     state.push({ status: "connected", peer: { gatePubKey: "gate-1" }, wikiDocUrl: "automerge:doc" });
     expect(row.getAttribute("data-gate-key")).toBe("gate-1");
+    expect(row.getAttribute("data-standing")).toBe("connected");
     expect(row.getAttribute("data-wiki-doc-url")).toBe("automerge:doc");
 
     state.push({ status: "disconnected", gatePubKey: "gate-1", wikiDocUrl: "automerge:doc" });

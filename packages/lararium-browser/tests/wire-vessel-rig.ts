@@ -80,25 +80,25 @@ export function fakeAdmitResult(): Record<string, unknown> {
   };
 }
 
-/** Options for a boot that dials `relayGatePubKey` after admission (none: no relay); the store name is unique per boot. */
 /**
- * The three inputs the sealed relay dial waits on, as the rig hands them: an index that holds a pin for any key, a
- * Nexus, and a presentation. The relay transport is a fake beneath the vessel, so none of the three is read by it;
- * they only let the vessel stand the dial, which is what the policy wire under test sits behind.
+ * The three inputs the sealed relay dial waits on, as the rig hands them: an index that holds, for any key, a pin whose
+ * signing key is `gateKey` (the gate the crossing pins), a Nexus, and a presentation. The relay transport is a fake
+ * beneath the vessel, so it reads none of the three; they let the vessel stand the dial the policy wire sits behind.
  */
-function heldRelayDial(): NonNullable<BrowserVesselOptions["relayDial"]> {
+function heldRelayDial(gateKey: string): NonNullable<BrowserVesselOptions["relayDial"]> {
   return {
-    pins: { get: () => ({ tier: "sovereign" }) } as unknown as HearthPinIndex,
+    pins: { get: () => ({ tier: "sovereign", signingKey: gateKey }), put: () => false } as unknown as HearthPinIndex,
     nexus: "ab".repeat(16),
     presentation: {} as never,
   };
 }
 
-export function bootOptions(admit: CarriedAdmitPayload, relayGatePubKey: string | null): BrowserVesselOptions {
+/** Options for a boot that dials the gate `pinnedGateKey` names after admission (none: no relay); the store name is unique per boot. */
+export function bootOptions(admit: CarriedAdmitPayload, pinnedGateKey: string | null): BrowserVesselOptions {
   return {
     idbName: `wire-rig-${crypto.randomUUID()}`,
     admit,
-    ...(relayGatePubKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayGatePubKey, relayDial: heldRelayDial() } : {}),
+    ...(pinnedGateKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayDial: heldRelayDial(pinnedGateKey) } : {}),
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
 }

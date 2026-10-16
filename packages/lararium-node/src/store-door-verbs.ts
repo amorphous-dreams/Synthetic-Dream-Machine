@@ -413,9 +413,13 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // `face` names the persona index the join serves; absent, the founding face. A face that reads as no index
     // refuses by name: an act that signs authority never falls back to the founding face.
     "fleet-join-offer": (args) => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome, ...joinFace(args) }) })),
-    "fleet-join-answer": (args) => answer("fleet-join-answer", async () => ({
-      answer: await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...joinFace(args) }),
-    })),
+    // The answer notes the certificates it issued beside the joining device; the refold it sets off resweeps a standing
+    // vessel's gates, and each sweep reads that issued book again, so the gate binds the device's face-scoped key.
+    "fleet-join-answer": (args) => answer("fleet-join-answer", async () => {
+      const issued = await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...joinFace(args) });
+      await awaitOnRolled(deps.onRolled?.());
+      return { answer: issued };
+    }),
     "handle-publish": (args) => answer("handle-publish", async () => ({
       card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])) }),
     })),

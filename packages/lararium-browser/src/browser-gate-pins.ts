@@ -1,17 +1,17 @@
 /**
- * browser-gate-pins — the browser vessel's pair index of gate pins, its dial clock, and the presentation it does not yet hold.
+ * browser-gate-pins — the browser vessel's pair index of gate pins and its dial clock.
  *
  * A dial reaches only the gate it pinned. This vessel makes ONE `hearthPinIndex` at boot and hands it to the relay
- * dial and to the oracle reader; no module holds a second. The index stays EMPTY until the admit and the join answer
- * carry the full `GateBundlePin` (slice G): the HEX64 `relayGatePubKey` the page is handed cannot be turned into one.
+ * dial and to the oracle reader; no module holds a second. The index holds what a full `GateBundlePin` carrier hands
+ * it: the sovereign pin and floor pins a joined face's fleet join carried inside the root's signature, and the oracle's
+ * floor pin a floor card carries by hand. A HEX64 key stands for no pin.
  *
- * TEMPORARY, NAMED: `hearthNameOf` files a hearth by its URL's origin (the page is handed no other true name for it).
- * `browserFacePresentation` is null until the face's certificate, signer, arm and history reach the page through the
- * keystore lane (browser-custody) — this file reads none of that custody.
+ * NAMED: `hearthNameOf` files a hearth by its URL's origin (the page is handed no other true name for it). What the
+ * vessel presents at a gate composes in `browser-face-presentation`; this file reads no custody.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-gate-pins
  */
-import { hearthPinIndex, readHearthFloorPins, type GateBundlePin, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
+import { hearthPinIndex, readHearthFloorPins, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
 
 export type BrowserFacePresentation = LarWSClientOptions["presentation"];
 
@@ -20,7 +20,7 @@ export function browserGatePins(): HearthPinIndex {
   return hearthPinIndex();
 }
 
-/** TEMPORARY: the hearth's name as the pair index files it, off the URL it dials. */
+/** The hearth's name as the pair index files it, off the URL it dials. */
 export function hearthNameOf(url: string): string {
   try { return new URL(url).origin; } catch { return url.replace(/[\r\n]/g, ""); }
 }
@@ -74,7 +74,12 @@ export function dialDeadlines(ms = 15_000): { draw(lapse: () => void): { cancel(
   };
 }
 
-/** The face presentation this page can make at a gate. Null: none reaches the page yet (owed with the keystore lane). */
-export function browserFacePresentation(): BrowserFacePresentation | null {
-  return null;
+/**
+ * File the oracle's floor pin a floor card carried, under the relay's name: the floor tier on the oracle route alone, so it
+ * seats no face. Where the index already holds another pin at that place (the signed set a joined face's fleet join
+ * carried), the index keeps what it held. Without a relay nothing files. Answers whether the index took it.
+ */
+export function fileFloorCardPin(index: HearthPinIndex, relayUrl: string | null | undefined, card: HearthFloorCard | null): boolean {
+  if (!relayUrl || card === null) return false;
+  return index.put(hearthNameOf(relayUrl), card.pin);
 }

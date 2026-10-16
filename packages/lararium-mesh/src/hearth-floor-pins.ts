@@ -14,11 +14,14 @@
  * One reader serves both: each pin reads whole, stands at floor tier and at the expected Nexus, and names a route no other
  * pin in the set names. A set that fails any of these reads as none: nothing of it files.
  *
- * A browser that holds no relation with a hearth and carries no signed set for it reads `pin-absent` at that hearth's
- * floor, by ruling (a deliberate narrowing).
+ * A third carrier stands for the oracle's floor pin alone, THE FLOOR CARD (below): the hearth's own banner prints it and the
+ * person carries it by hand. A browser that holds no relation with a hearth and carries neither a signed set nor a card for
+ * it reads `pin-absent` at that hearth's floor.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/hearth-floor-pins
  */
+import { base64UrlDecode, base64UrlEncode, utf8Bytes } from "./crypto.js";
+import { acceptEd25519Key } from "./ed25519-door.js";
 import { readGateBundlePin, type GateBundlePin } from "./gate-bundle.js";
 
 /** The session message kind the hearth's floor pin set rides under. */
@@ -54,4 +57,45 @@ export function readHearthFloorPinsBody(body: unknown, nexusHex: string): readon
   const keys = Reflect.ownKeys(body);
   if (keys.length !== 1 || keys[0] !== "pins") return null;
   return readHearthFloorPins((body as { pins: unknown }).pins, nexusHex);
+}
+
+// ── The floor card: the oracle floor pin a person carries by hand ──────────────────────────────────
+
+/**
+ * THE FLOOR CARD (carrier (c), by the person's own hand): the hearth's own banner prints its oracle floor pin beside the
+ * key its oracle snapshot is signed under, and a device's arrival URL carries the two in its fragment, which never
+ * reaches a server. The first arrival trusts the lararium's own origin (`pronaos#/the-first-arrival`); a card carried
+ * off the hearth's own console rides that same trust, as a fleet-join offer does. A card reaches the FLOOR tier on the
+ * oracle route alone: it seats no face and opens no sovereign gate, and a Nexus that answers no stranger meets a
+ * faceless reader with silence all the same.
+ */
+export interface HearthFloorCard {
+  /** The oracle's floor pin at the hearth's Nexus. */
+  readonly pin:       GateBundlePin;
+  /** The Ed25519 key the oracle's pointer is signed under: the publisher, never the gate. */
+  readonly publisher: string;
+}
+
+/** The route a floor card names: the oracle's. */
+export const HEARTH_FLOOR_CARD_ROUTE = "/oracle";
+
+/** A floor card's carried text: base64url of its JSON, no padding. */
+export function hearthFloorCardText(card: HearthFloorCard): string {
+  return base64UrlEncode(utf8Bytes(JSON.stringify({ pin: card.pin, publisher: card.publisher })));
+}
+
+/** Read a carried floor card: a whole floor pin on the oracle route, and a publisher key the one door accepts; else null. */
+export function readHearthFloorCard(text: unknown): HearthFloorCard | null {
+  try {
+    if (typeof text !== "string" || text.length === 0 || text.length > 4096 || !/^[A-Za-z0-9_-]+$/.test(text)) return null;
+    const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(base64UrlDecode(text))) as unknown;
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+    const keys = Reflect.ownKeys(value);
+    if (keys.length !== 2 || !keys.includes("pin") || !keys.includes("publisher")) return null;
+    const { pin, publisher } = value as { pin: unknown; publisher: unknown };
+    const read = readGateBundlePin(pin);
+    if (!("pin" in read) || read.pin.tier !== "floor" || read.pin.route !== HEARTH_FLOOR_CARD_ROUTE) return null;
+    if (typeof publisher !== "string" || !/^[0-9a-f]{64}$/.test(publisher) || !acceptEd25519Key(publisher).ok) return null;
+    return Object.freeze({ pin: read.pin, publisher });
+  } catch { return null; }
 }

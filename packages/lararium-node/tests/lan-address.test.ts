@@ -78,9 +78,9 @@ describe("the reach-faces a vessel answers on", () => {
         webOrigin: "http://192.168.1.42:5173",
         oracleOrigin: "http://192.168.1.42:8080",
       }),
-      wsUrl: wsUrlForOrigin(face.origin), gateKey: "ab12",
+      wsUrl: wsUrlForOrigin(face.origin), floorCard: "Y2FyZA",
     });
-    expect(url).toBe("http://192.168.1.42:5173/?relay=ws://192.168.1.42:8080/ws&gate=ab12");
+    expect(url).toBe("http://192.168.1.42:5173/?relay=ws://192.168.1.42:8080/ws#floor=Y2FyZA");
     expect(url).not.toContain("localhost");
   });
 
@@ -99,8 +99,8 @@ describe("the reach-faces a vessel answers on", () => {
     // The relay under the SAME name carries wss (mixed-content-safe from an https page).
     expect(wsUrlForOrigin(declared.origin)).toBe("wss://enyalios.home.amorphousdreams.net/ws");
     // The whole crossing URL: web surface over https, relay over wss, one name.
-    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173, { sameOrigin: true }), wsUrl: wsUrlForOrigin(declared.origin), gateKey: "beef" }))
-      .toBe("https://enyalios.home.amorphousdreams.net/?relay=wss://enyalios.home.amorphousdreams.net/ws&gate=beef");
+    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173, { sameOrigin: true }), wsUrl: wsUrlForOrigin(declared.origin), floorCard: null }))
+      .toBe("https://enyalios.home.amorphousdreams.net/?relay=wss://enyalios.home.amorphousdreams.net/ws");
   });
 
   test("split household composition names Web and oracle independently from the relay", () => {

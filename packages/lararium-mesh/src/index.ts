@@ -331,7 +331,8 @@ export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel,
 export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
-export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
+export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard } from "./hearth-floor-pins.js";
+export type { HearthFloorCard } from "./hearth-floor-pins.js";
 export {
   PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,
   placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor,
@@ -548,3 +549,6 @@ export * from "./content-key-holder.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";
+// The one parser of a Nexus seal file's text, platform-blind: the node's disk adapter and a browser leaf's landed
+// fleet-join answer read a charter through it — see `nexus-doc-text`.
+export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } from "./nexus-doc-text.js";

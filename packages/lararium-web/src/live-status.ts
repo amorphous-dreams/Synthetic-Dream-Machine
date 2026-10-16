@@ -1,4 +1,5 @@
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
+import type { HearthFloorCard } from "@lararium/mesh";
 
 export interface ServedLocation {
   readonly origin: string;
@@ -14,6 +15,19 @@ export function defaultReadFace(location: Pick<ServedLocation, "origin">): strin
 export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "host">): string {
   const scheme = location.protocol === "https:" ? "wss:" : "ws:";
   return `${scheme}//${location.host}/ws`;
+}
+
+/**
+ * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the
+ * oracle's floor pin and the key its snapshot is signed under, read by the mesh's one reader (`readHearthFloorCard`). A torn
+ * card reads none.
+ */
+export function floorCardOf(
+  hash: string,
+  read: (text: string) => HearthFloorCard | null,
+): { readonly text: string; readonly card: HearthFloorCard | null } | null {
+  const text = new URLSearchParams(hash.replace(/^#/, "")).get("floor");
+  return text ? { text, card: read(text) } : null;
 }
 
 /** A supplied relay remains explicit; a gate-pinned same-origin node derives its own WS route. */
@@ -51,8 +65,10 @@ export function connectionPresentation(snapshot: BrowserConnectionSnapshot, auth
   switch (snapshot.status) {
     case "local":
       return { connection: "local only — no node pin", mode: "browser vessel · local wiki", tone: "veil" };
+    case "floor":
+      return { connection: `at the floor — ${snapshot.reason}`, mode: "browser vessel · standing at the floor · no face", tone: "veil" };
     case "missing-pin":
-      return { connection: `not attached — ${snapshot.reason}`, mode: "crossing refused · no gate pin", tone: "warn" };
+      return { connection: `not attached — ${snapshot.reason}`, mode: "crossing idle · no gate pin", tone: "warn" };
     case "blocked":
       return {
         connection: `blocked — ${snapshot.reason}`,
@@ -69,7 +85,11 @@ export function connectionPresentation(snapshot: BrowserConnectionSnapshot, auth
       return { connection: `connected — gate ${snapshot.peer.gatePubKey}`, mode: `attached to ${snapshot.peer.gatePubKey}`, tone: "ok" };
     case "disconnected":
       if (!authenticatedBefore) {
-        return { connection: `gate-unreachable — ${snapshot.gatePubKey}`, mode: `local path to ${snapshot.gatePubKey} did not reach a gate`, tone: "warn" };
+        return {
+          connection: `no sovereign gate answered — ${snapshot.gatePubKey}: the hearth rests at its floor until a person unlocks it, or stands out of reach`,
+          mode: `local path to ${snapshot.gatePubKey} did not reach a gate`,
+          tone: "warn",
+        };
       }
       return { connection: `disconnected from ${snapshot.gatePubKey}`, mode: `node ${snapshot.gatePubKey} disconnected`, tone: "warn" };
   }
@@ -77,6 +97,8 @@ export function connectionPresentation(snapshot: BrowserConnectionSnapshot, auth
 
 /**
  * What the connection row publishes as data, for a reader that must not parse prose:
+ *   data-standing      the crossing's standing, one word (`local`, `floor`, `missing-pin`, `blocked`, `pinned`,
+ *                      `connecting`, `refused`, `connected`, `disconnected`)
  *   data-gate-key      the gate key the relay PROVED on this session; absent in every other state
  *   data-wiki-doc-url  the document the vessel mounted as its wiki; absent until a mount stands
  */
@@ -103,6 +125,7 @@ export function mountLiveStatus(parent: HTMLElement, state: BrowserConnectionSta
     connectionRow.value.textContent = presentation.connection;
     connectionRow.value.className = `v ${presentation.tone}`;
     const data = connectionData(snapshot);
+    connectionRow.value.setAttribute("data-standing", snapshot.status);
     setOrRemove(connectionRow.value, "data-gate-key", data.gateKey);
     setOrRemove(connectionRow.value, "data-wiki-doc-url", data.wikiDocUrl);
     modeRow.value.textContent = presentation.mode;

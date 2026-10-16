@@ -92,16 +92,20 @@ describe("lararium controls — the composition stays as it stood", () => {
   });
 });
 
-describe("the crossing banner (Web origin + relay + gate key) speaks only for a lararium", () => {
+describe("the crossing banner (Web origin + relay + floor card, never a gate key) speaks only for a lararium", () => {
   test("a herm composition yields no crossing line", () => {
     const herm = originCompositionForFace(DECLARED, { sameOrigin: true }, "herm");
-    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }], "beef")).toEqual([]);
+    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }], "Y2FyZA")).toEqual([]);
   });
 
   test("CONTROL: a lararium composition yields one crossing line per face", () => {
     const lar = originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium");
-    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], "beef")).toEqual([
-      "https://waystone.example/?relay=wss://waystone.example/ws&gate=beef   (declared)",
+    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], "Y2FyZA")).toEqual([
+      "https://waystone.example/?relay=wss://waystone.example/ws#floor=Y2FyZA   (declared)",
+    ]);
+    // A hearth that stands no floor gate at a Nexus hands the relay alone.
+    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], null)).toEqual([
+      "https://waystone.example/?relay=wss://waystone.example/ws   (declared)",
     ]);
   });
 });

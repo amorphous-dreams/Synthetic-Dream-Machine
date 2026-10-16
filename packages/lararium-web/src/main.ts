@@ -24,9 +24,9 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -81,18 +81,18 @@ function set(id: string, text: string, cls = ""): void {
 }
 
 // The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
-// dials the knock the peer's gate key derives and proves its key there before any map crosses; an anon page
-// reads nothing, so the read waits on the vessel standing. Config-supplied via ?oracle=… (default the node that
-// served this page) and pinned by ?oracle-gate=… (default the ?gate= relay key — the same node's vessel key).
-// A face with no pinned key is not dialed: there is no gate to knock on.
+// dials the peer's floor gate under the pin it holds and proves there before any map crosses: a joined face as itself,
+// a device at the floor faceless. The read waits on the vessel standing. The read face is the node that served this page
+// (?oracle=… names another), and the snapshot verifies under the publisher key the URL's floor card carries
+// (?oracle-gate=… names one by hand). With no publisher key the page reads nothing: nothing would verify the snapshot.
 type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
 async function readOracle(read: OracleReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const pin = params.get("oracle-gate") ?? params.get("gate");
+  const pin = floorCardOf(location.hash, readHearthFloorCard)?.card?.publisher ?? params.get("oracle-gate") ?? params.get("gate");
   const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(location, params));
   const say = (text: string, cls = ""): void => set("oracle-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
-  if (!pin) { say("no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
+  if (!pin) { say("no floor card names this hearth's oracle publisher (#floor=… from the hearth's banner) — nothing to read", "warn"); return; }
   say(`proving at ${readFace} …`);
   try {
     const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
@@ -243,11 +243,10 @@ async function bootVessel(): Promise<void> {
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
   const relayUrl = resolveRelayUrl(location, relayParams);
-  // ?gate=<hex> → the RELAY GATE's key. The dial's sealed first flight is addressed to it, and a leaf must hold it
-  // out-of-band: a key read off the wire would let any relay stand as the gate. Absent, the vessel does not cross
-  // (`relayPinFor`) — a correct refusal that looks exactly like a broken socket.
-  // The node vessel prints this key in its boot banner.
+  // ?gate=<hex> → a relay gate key named by hand; the sealed crossing reads the full pin a joined face's fleet join carries.
   const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
+  // #floor=<card> → the hearth's oracle floor card, carried by hand off its banner: what a device at the floor reads under.
+  const floor = floorCardOf(location.hash, readHearthFloorCard);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = takeStashedAdmit();
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
@@ -255,16 +254,11 @@ async function bootVessel(): Promise<void> {
   // absent crossing that reports nothing reads exactly like a crossing that worked.
   if (relayUrl) {
     console.log(`[vessel] CROSSING → ${relayUrl}`);
-    if (!relayGatePubKey) {
-      console.warn(
-        "[vessel] NO GATE KEY — the proof will bind to this vessel's OWN did and the gate will DENY it.\n" +
-        "         Add the node vessel's key:  &gate=<hex from the node's boot banner>",
-      );
-    }
+    if (floor && floor.card === null) console.warn("[vessel] the floor card this URL carries does not read: open the URL the hearth's banner prints");
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
-      `         To cross:  ?relay=${sameOriginRelayUrl(location)}&gate=<node's gate key>`,
+      "         To cross: open the URL a hearth's banner prints (`?relay=…#floor=…`); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
@@ -296,6 +290,7 @@ async function bootVessel(): Promise<void> {
       onProjection: (frame) => { projectionSink.apply(frame); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(relayGatePubKey ? { relayGatePubKey } : {}),
+      ...(floor ? { floorCard: floor.text } : {}),
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });

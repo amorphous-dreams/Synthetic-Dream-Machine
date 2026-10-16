@@ -40,7 +40,7 @@ describe("main's explicit origin composition weld", () => {
   });
 
   test("the banner uses the resolved Web and relay origins independently", () => {
-    expect(SOURCE).toContain("crossingBannerLines(\"lararium\", crossings, gateIdentity.verifyingKey)");
+    expect(SOURCE).toContain("crossingBannerLines(\"lararium\", crossings, floorCard)");
     expect(SOURCE).toContain(".relayOrigin");
     expect(SOURCE).not.toContain("webOriginForFace(");
   });
