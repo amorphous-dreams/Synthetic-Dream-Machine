@@ -92,6 +92,8 @@ These scripts live under `packages/lararium-sensorium/scripts/`. Trial manifests
 
 ''↺ Hoʻoko / aftermath.'' The first Content passage passed duplicate-text, A→B→A, post-Chroma crash retry and product-image cold restart witnesses. The frozen parent/child pair also landed 1,697 + 20 owned MiniLM rows and reached semantic frontier 1 per source. The li passage passed immutable basis replay, duplicate occurrence joins, basis drift and both precommit and per-Shape crash witnesses on a small corpus. A three-process witness now kills the parser after one Shape, completes one basis after restart and returns the same receipt on another replay. A fresh disposable replay of the frozen fixture's 20-block child then landed a full-constituency li basis with 64 forms and replayed the same `corpus_sha256` (`c683c1870b361d2de5c8bed7dc2fa46df8da59c7dfd007a1bc6cf28e21cc0853`) and `basis_sha256` (`e1fa4fec9212e6f17e7e73480ad129bfb14e9a70d8e75f62b47b2c388bec8615`) in a new process. The child reading proves a bounded real transcript slice, not the combined corpus. A five-minute full-pair Stanza run returned no li basis; a subsequent two-minute bounded run checkpointed 49 Shapes and returned no li basis. That rate and the absent container GPU path remain measured limits, never a completed lattice claim. Intake, typed-content and semantic-view frontiers remain distinct. The full li model, book and larger corpus, meaning/ki readings, live reconciliation and the founded persistent root still await their own witnesses.
 
+An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source (108,812 bytes; source SHA-256 `164550ee69ac49bb9de6d50c2b0917c0854f2bb8a4f4c0a686fd2f1cfe4ca6ad`, checked against the `library:kumulipo` anchor) crossed the legacy static corpus path under stub embedder `stub-book-excerpt/1`. Its bytes occupy source range `[3206,8937)` and hash to `6552ccd45992dd8de5f66917d3dce58a1a3ecb6182a99b38955cbc642f7e0bb3`; `/tmp/sensorium-kumulipo-book/origin-manifest.json` carries the host-local bridge from the captured excerpt to the full source. Twelve rows landed with twelve declared in-file worldline edges; a fresh replay landed zero and skipped all twelve. The legacy path skipped Structure and Form for all twelve rows. This bounded reading proves neither machine-bound raw custody nor typed-content, li or owned semantic projection; the book's custody-to-li witness still awaits its own source adapter.
+
 <<~/ahu>>
 
 <<~ ahu #/gpu-capability>>
@@ -491,6 +493,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gq3lTB8wEJlbqFakUWeVCjvatOyRqlBizqhTSl6PaKA
+<<^ code="&#x0003;">>ni:///sha-256;P96Jl3AWFqcq3qdf0ikTLhNtQKgGAHt2VPpQueaQzg0
 
 <<^ code="&#x0004;" -> to="?">>
