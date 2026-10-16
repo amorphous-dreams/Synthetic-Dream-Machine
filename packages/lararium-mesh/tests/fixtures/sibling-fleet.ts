@@ -261,11 +261,14 @@ const HEX_RE = /^(?:[0-9a-fA-F]{2})+$/;
 
 /** Does the run read as one CBOR item whose every declared length fits in the bytes that remain? Reads the heads
  *  alone and builds nothing, so a random nonce that opens with a head claiming a hundred million elements reads
- *  `false` at once, where a decoder that believes the head walks the claim for seconds and starves the event loop. */
+ *  `false` at once, where a decoder that believes the head walks the claim for seconds and starves the event loop.
+ *  Past 64 levels the reading stops and hands the run on: depth costs a decoder bytes, never a claim. */
+const CBOR_DEEP = Symbol("cbor-deep");
 function cborFits(bytes: Uint8Array): boolean {
   let at = 0;
   const item = (depth: number): boolean => {
-    if (depth > 64 || at >= bytes.length) return false;
+    if (depth > 64) throw CBOR_DEEP;
+    if (at >= bytes.length) return false;
     const head = bytes[at++]!;
     const major = head >> 5;
     const info = head & 31;
@@ -296,7 +299,7 @@ function cborFits(bytes: Uint8Array): boolean {
       default: return true;
     }
   };
-  return item(0) && at === bytes.length;
+  try { return item(0) && at === bytes.length; } catch (deep) { if (deep === CBOR_DEEP) return true; throw deep; }
 }
 
 /** Every structured reading of a byte run: JSON, CBOR, and the Automerge sync message, change or document it holds. */
