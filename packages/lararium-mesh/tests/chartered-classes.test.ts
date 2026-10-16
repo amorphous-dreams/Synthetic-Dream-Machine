@@ -111,7 +111,7 @@ describe("surfaces and coverage", () => {
     for (const s of HIGH_IMPACT_SURFACES) expect(requiredClassFor(s)).toBe("high-impact");
     expect(requiredClassFor("crossroads")).toBe("ordinary");
     // A spelling that folds onto a high-impact surface (case, edge space, `_` or a space for `-`) takes the
-    // high bar: the class reads the surface's meaning, never its byte-exact spelling (review finding D1).
+    // high bar: the class reads the surface's meaning, never its byte-exact spelling.
     for (const s of ["Charter", " charter", "charter ", "CHARTER", "Admission", "trust_root", "trust root", "Trust-Root"]) {
       expect(requiredClassFor(s)).toBe("high-impact");
     }

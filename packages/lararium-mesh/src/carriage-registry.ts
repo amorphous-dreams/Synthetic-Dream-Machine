@@ -423,7 +423,7 @@ export function isCarriageDescendant(
  *
  * `ancestry` lets an act at a CLOSED epoch count where a counted chain of roll anchors carries it to the head
  * and the act stood in every such anchor's past (`anchoredAncestryReader`); a counted parent at an ancestor
- * epoch then stays a valid parent. Absent, only acts at the head count, byte for byte as before.
+ * epoch then stays a valid parent. Absent, only acts at the head count.
  */
 export async function foldCarriageDetails(
   entries: Iterable<CarriageEntry> | undefined,
@@ -646,7 +646,7 @@ export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): bool
 /**
  * What lets the fold count an act at a CLOSED epoch: the charter's epoch lineage (genesis first, its last
  * epoch the roster's head) and the roll anchors the board holds, orphans included. Absent, the fold counts
- * acts at the head alone, exactly as it always has.
+ * acts at the head alone.
  */
 export interface CarriageAncestry {
   readonly sealLineage: readonly SealEpoch[];

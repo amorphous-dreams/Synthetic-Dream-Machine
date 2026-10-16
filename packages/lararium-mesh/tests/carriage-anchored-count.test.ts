@@ -189,7 +189,7 @@ describe("an act at the closed epoch counts through anchored ancestry", () => {
   });
 });
 
-describe("review finding F1: a flood of refused anchors spends no walk budget", () => {
+describe("a flood of refused anchors spends no walk budget", () => {
   test("three hundred forged anchors ahead of the real one leave the carried admit counted", async () => {
     const c = await charter(1);
     const admit = await carriageAct(JOINER, "admit", { kahu: OLD.slice(0, 2), epoch: c.r0.sealEpochCid });

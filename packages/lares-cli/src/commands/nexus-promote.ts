@@ -55,7 +55,7 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
           console.log(`  statement: ${r.statement}`);
           console.log(`  signed here: ${r.signed.length} seat${r.signed.length === 1 ? "" : "s"} · ${verdictLine(r.verdict)}`);
           console.log(written.path !== null ? `  approval:    ${written.path}` : `  approval: ${written.error ?? "not written"}\n${JSON.stringify(r.approval)}`);
-          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus promote sign ${out} --confirm-hash ${r.approval.bytesHash} --out <file>\``);
+          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus promote sign ${out} --confirm-statement ${r.statement} --out <file>\``);
         } });
       return 0;                                  // a partial reads as progress; `check` alone answers ok or not
     }
@@ -72,7 +72,7 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
           console.log(`  statement: ${r.statement}`);
           console.log(`  purpose:  ${r.approval.purpose} · surface: ${r.approval.surface} · class: ${r.approval.actClass}`);
           console.log(`  seats:    ${r.counted} of ${r.threshold}${r.complete ? " (complete)" : ""}`);
-          if (r.would) console.log(`  read only — confirm with \`--confirm-hash ${r.approval.bytesHash} --out <file>\` to sign with the seats held here`);
+          if (r.would) console.log(`  read only — confirm with \`--confirm-statement ${r.statement} --out <file>\` to sign with the seats held here`);
           else console.log(`  added:    ${r.added.length} seat${r.added.length === 1 ? "" : "s"}${written?.path ? ` · approval: ${written.path}` : ""}`);
         } });
       return 0;

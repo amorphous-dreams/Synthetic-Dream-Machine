@@ -187,15 +187,15 @@ describe("readPromotionApproval", () => {
   });
 });
 
-describe("review findings", () => {
-  test("D1: an ordinary approval over a charter surface spelled another way refuses at open", async () => {
+describe("surface spelling and forged signatures", () => {
+  test("an ordinary approval over a charter surface spelled another way refuses at open", async () => {
     const roster = await rosterOf(5, 3);
     for (const surface of ["Charter", " charter ", "TRUST_ROOT"]) {
       expect(() => openPromotionApproval({ bytes: BYTES, purpose: "p", surface, actClass: "ordinary", roster })).toThrow(/class-below-surface/);
     }
   });
 
-  test("D3: a forged signature under a seat never wedges that seat's real signature out", async () => {
+  test("a forged signature under a seat never wedges that seat's real signature out", async () => {
     const roster   = await rosterOf(5, 3);
     const unsigned = openPromotionApproval({ bytes: BYTES, purpose: "p", surface: "charter", actClass: "high-impact", roster });
     const seat1    = await signerOf(seed(1));

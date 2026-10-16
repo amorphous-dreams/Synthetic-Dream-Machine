@@ -154,7 +154,7 @@ describe("the board", () => {
   });
 });
 
-describe("review findings carried from P4", () => {
+describe("a carried signature that fails never holds a seat's place", () => {
   test("a forged signature under a seat never wedges that seat's real signature out", async () => {
     const roster = await rosterOf(3, 2);
     const open = openKahuCabalAct({ nexus: NEXUS, group: GROUP, action: "admit", roster });

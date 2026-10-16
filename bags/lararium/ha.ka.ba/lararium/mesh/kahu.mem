@@ -517,7 +517,7 @@ path for every reader that consults it, while the group's sentinel capability st
 a seal roll every admission stops counting (`wrong-charter-epoch`, act by act), the group's standing reads
 ''absent'', and the seats re-admit at the new head: that act cites no head and carries no lineage back to the
 closed epoch. ''Owed in
-code'': carrying cabal acts across a roll by anchored ancestry, as the carriage fold now carries a closed-epoch
+code'': carrying cabal acts across a roll by anchored ancestry, as the carriage fold carries a closed-epoch
 admit (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>).
 
 ''THE ACCESS PATH TO SHARED CANON READS BOTH FACTS'' (`kahuCabalCanonAccess`): it holds only for a group the
@@ -609,7 +609,7 @@ The Keyhive gates prove vessel identity and cabal affiliation; neither encodes k
   delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
 * Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
   belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
-  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': no access path reads it yet.
+  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': for the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and no shared-canon read calls it yet.
 
 Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
@@ -635,6 +635,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BTrIqhc061t3WSnb27xea4_kvtl1ORsGzECPlXCkq6A
+<<^ code="&#x0003;">>ni:///sha-256;fXYXAY7CwGiWtDHRcB1ffKX38VKfLkxcdhIRnrZP4pY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -215,9 +215,8 @@ export async function verifiedAttestors(r: ReAnchoring): Promise<string[]> {
  * delete, and no count presentable as a total.
  *
  * `lineage` carries the reader's OWN walked chain: epoch cids, genesis first, and an empty array when the reader
- * holds none. No global now exists, so no order stands that every reader shares; an injected `epochOrder` let a
- * caller rank records that no chain orders, and an unknown epoch ranked at -1 read as an order the reader never
- * held. `epochCid` stays a FENCE instead, and the fold surfaces concurrency rather than ranking it:
+ * holds none. No global now exists, so no order stands that every reader shares; an injected order would rank records
+ * that no chain orders, so the fold takes none and reads the lineage the reader holds. `epochCid` stays a FENCE, and the fold surfaces concurrency rather than ranking it:
  *
  *  - `anchored` holds the verified records whose `epochCid` stands on the held lineage, in lineage order
  *    (`position` = the index on that lineage). Arrival order on the board never decides it.

@@ -119,7 +119,7 @@ export async function signPromotionApproval(
   for (const s of signers) if (!seats.has(s.signer)) throw new Error("promotion-approval: signer-not-seated");
   const bytes = promotionApprovalBytes(approval);
   // Only a signature that verifies holds its seat's place: a forged or torn one carried in drops, so no carrier
-  // wedges a seat out of its own approval (review finding D3).
+  // wedges a seat out of its own approval.
   const signatures: QuorumSignature[] = approval.signatures.filter((s) => seats.has(s.signer) && verifyEd25519(s.sig, bytes, s.signer));
   const signed = new Set(signatures.map((s) => s.signer));
   for (const s of signers) {
