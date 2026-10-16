@@ -105,20 +105,21 @@ TW5 and the reaction engine occupy the ''same'' Worker thread (co-located, synch
 ''Vessel → island''
 * ''Lifecycle'': `manifest` (carries the transferred `syncPort`, the recipe, the grants and the core hash) · `hooanu` · `teardown`.
 * ''Daemon island'': `daemon:place-verb` · `telemetry:place-verb` · `structurepalace:kapae` · `daemon:derive-skeleton-request` · `daemon:worldline-compare-request` · `daemon:worldline-trajectory-request` · `daemon:verb-result` · `daemon:verify-request` · `daemon:resolve-binding-request` · `daemon:evict-result` · `daemon:residency-op-result`.
-* ''Wiki island'': `wiki:place-verb` · `wiki:dom-event` · `wiki:dom-input`.
+* ''Wiki island'': `wiki:place-verb` · `lar:control-event` · `lar:resend`.
 * ''Sensorium'': an open namespace, `sensorium:<cap-verb>` (lower-kebab). The wire admits the namespace and each cap owns its own verbs, so a new sensory act edits no central list.
 * ''Content'': `cas:block`.
 
 ''Island → vessel''
 * ''Lifecycle'': `ready` · `ea` · `breath` · `fault` · `teardown:ack`.
-* ''Events'': `event`, discriminated by `listenable`. A rendered projection frame rides here (`projection:frame`, carrying `html`, `css` and a monotone `rev`), as does a sensorium answer.
+* ''Events'': `event`, discriminated by `listenable`. A sensorium answer rides here. The camera's keyed frame never does: it rides `lar:frame` under its own name.
+* ''Camera'': `lar:frame` · `lar:control-result` · `lar:service`.
 * ''Wiki island'': `wiki:verb-result`.
 * ''Daemon island'': `daemon:delegate-verb` · `daemon:derive-skeleton-result` · `daemon:worldline-compare-result` · `daemon:worldline-trajectory-result` · `daemon:verify-result` · `daemon:resolve-binding-result` · `daemon:evict-request` · `daemon:residency-op` · `daemon:wiki-alert`.
 * ''Content'': `cas:want`.
 
 !!! The camera's two legs
 
-A browser camera renders inside the island and crosses the boundary twice. ''Out'': `event` messages carrying `projection:frame`, coalesced newest-wins. ''Back'': `wiki:dom-event` relays a main-thread DOM event by the render-id the island stamped, with primitive fields only; `wiki:dom-input` relays a text field's WHOLE current value, bounded at the island's door, never a diff and never a keycode.
+A browser camera renders inside the island and crosses the boundary twice, under the kinds of `lar:///ha.ka.ba/lararium/mesh/lar-camera`. ''Out'': `lar:frame`, the keyed absolute frame of one camera on one surface under one mount epoch, each key whole under its own monotone revision, coalesced newest-wins; `lar:control-result` answers each act `applied`, `stale-target` or `refused` with a named reason; `lar:service` asks the surface to open a host door the manifest names. ''Back'': `lar:control-event` carries one act, sense, write or service answer, addressed to one control by exactly one of a control id, a render id or an affordance id, with the frame revision seen and a WHOLE value bounded at the island's door, never a diff and never a keycode; `lar:resend` asks a whole repaint under a new mount epoch. Each kind reads whole at its door through the contract's own reader, and a malformed one vanishes there as any malformed message does. The pool places a person's act with `placeControlEvent` and asks a whole repaint with `resendProjection`, both fire-and-forget and both dropped by a cooled slot. The island's frames, answers and host-door asks reach the vessel's handler the way an `event` does: an island outside any session reaches `onWorkerEvent`, a session's island reaches its own surface door alone.
 
 !!! The thermal signals
 
@@ -137,6 +138,6 @@ A browser camera renders inside the island and crosses the boundary twice. ''Out
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F7ya7gusTtfGEnXqGKqqr6QMlbzxBc7xooBwVZ-1Prc
+<<^ code="&#x0003;">>ni:///sha-256;qD5ugQmrvGG-DdV77KWzJthgomBuy_ExNJilb4ib4YE
 
 <<^ code="&#x0004;" -> to="?">>

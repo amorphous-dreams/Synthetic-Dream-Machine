@@ -61,7 +61,8 @@ function fakeTw(initial: Record<string, Fields>) {
       fields: Fields;
       constructor(fields: Fields) { this.fields = fields; }
     },
-    modules: { define: (_text: string, _type: string, name: string) => { defined.push(name); } },
+    // TW5's own signature: define(name, moduleType, definition).
+    modules: { define: (name: string, type: string, definition: string) => { defined.push(`${type}:${name}:${definition}`); } },
   };
 
   return { tw: tw as never, tiddlers, defined };
@@ -92,7 +93,12 @@ describe("bootTrustedModules — selection by worn component", () => {
 
     const injected = tiddlers.get("lar:///ha.ka.ba/bags/test/modules/probe")!;
     expect(injected["type"]).toBe("application/javascript");   // rewritten = injected
-    expect(defined).toContain("lararium-tw5-modules");          // aggregate defined
+    // Each trusted module gets defined under its own title and module type, so TW5's module table reaches it
+    // by the name other modules `require`; no aggregate stands in for the set.
+    expect(defined).toEqual([
+      "library:lar:///ha.ka.ba/bags/test/modules/probe:exports.probe = 1;",
+      "library:lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules:exports.agg = 1;",
+    ]);
   });
 
   test("low rating, missing hash, and unworn carriers all stay un-injected", async () => {

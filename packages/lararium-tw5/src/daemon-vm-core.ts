@@ -48,7 +48,12 @@ import {
   isIslandToVesselMsg,
   CROSSROADS_DOC_URI,
   verbArgsFromPayload,
-  mkWikiDomEvent, mkWikiDomInput,
+  mkLarResend,
+  readLarControlResult,
+  readLarFrame,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
   type IslandMsg_Event,
   type VesselWorkerHandle,
   type Repo,
@@ -76,7 +81,6 @@ import {
   type IslandMsg_TeardownAck,
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
-import { PROJECTION_FRAME } from "./tw5-projection.js";
 import type { VerbTable } from "./verb-dispatcher.js";
 import type { MoveSkeleton, ConstructiconAxis } from "./form-layer/index.js";
 
@@ -295,27 +299,29 @@ export interface DaemonVmCore {
    */
   onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) => void;
   /**
-   * Projection surfacing — the daemon inherits the wiki render cap (hasProjection); once a worker entry wires
-   * onBoot (mountProjection), the daemon emits PROJECTION_FRAME like any wiki island. This forwards those
-   * frames to the boot's SHARED onProjection sink (the identical #projection surface a pinned wiki paints, so
-   * idiomorph caret-safety applies), keyed on the transport id — so a summoned daemon surfaces uniformly.
-   * Set after the boot sink exists; absent → frames silently dropped (the daemon renders dormant, unshown).
+   * Camera surfacing — the daemon inherits the wiki render cap (hasProjection); once a worker entry wires
+   * onBoot (mountProjection), the daemon's story camera emits `lar:frame` like any wiki island. This forwards
+   * each frame, read fail-closed, to the boot's SHARED sink (the identical #projection surface a pinned wiki
+   * paints), keyed on the transport id — so a summoned daemon surfaces uniformly. Set after the boot sink
+   * exists; absent → frames drop (the daemon renders dormant, unshown).
    */
-  onProjection: (fn: (frame: { html: string; css: string; rev: number }) => void) => void;
+  onFrame: (fn: (frame: LarMsg_Frame) => void) => void;
   /**
-   * The projection RETURN-leg — a main-thread DOM event posted into the daemon worker by boundary-stable
-   * render-id (never coordinates; the worker re-resolves render-id → widget and dispatches via the inherited
-   * hasProjection cap into TW5's native handler). Fire-and-forget: this channel serves click-to-navigate
-   * interactivity, never synchronous default-action arbitration (the async law the causal-island house runs).
+   * The answers to a person's acts — each `lar:control-result` the daemon's camera posts (`applied`,
+   * `stale-target` or a named refusal), read fail-closed. Frames never answer events; this door does.
    */
-  sendDomEvent: (renderId: string, eventType: string, fields: Record<string, number | boolean>) => void;
+  onControlResult: (fn: (result: LarMsg_ControlResult) => void) => void;
   /**
-   * The projection RETURN-leg's TEXT half — a relayed input/change carrying the field's whole current
-   * value, bounded at the protocol shore. It rides its OWN message kind so the click channel above keeps
-   * its primitives-only allowlist; the worker writes the value onto the resolved node and runs TW5's own
-   * handler, so an edit widget saves exactly as it saves a local keystroke.
+   * The camera's RETURN leg — a person's act, sense, write or service answer, posted whole into the daemon
+   * worker, where the inherited hasProjection cap reads it fail-closed and dispatches it into TW5's native
+   * handler by render id. Reliable kinds answer on `onControlResult`; a sense answers in a later frame.
    */
-  sendDomInput: (renderId: string, eventType: string, value: string) => void;
+  sendControlEvent: (ev: LarMsg_ControlEvent) => void;
+  /**
+   * Ask the daemon's camera to paint itself whole under a fresh mount epoch: a surface switched to it, or
+   * attached late. Acts made under the old epoch answer `stale-target`.
+   */
+  resend: (cameraId: string) => void;
   /**
    * Verb OUT-path for the daemon's OWN surface — the twin of a pool wiki's worker.event→placeVerb
    * bridge. A DOM click in the projected daemon writes a verb-carrying summon tiddler; its reaction-router
@@ -343,8 +349,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _residencyHandler: ((op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) | null = null;
   // Wiki-alert delivery — set via onWikiAlert() after the pool exists.
   let _wikiAlertHandler: ((wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) | null = null;
-  // Projection-frame forwarding — set via onProjection() after the boot sink exists.
-  let _projectionHandler: ((frame: { html: string; css: string; rev: number }) => void) | null = null;
+  // Camera forwarding — set via onFrame() / onControlResult() after the boot sink exists.
+  let _frameHandler: ((frame: LarMsg_Frame) => void) | null = null;
+  let _controlResultHandler: ((result: LarMsg_ControlResult) => void) | null = null;
   // Verb OUT-path forwarding — set via onVerbEvent() after the vessel's placeVerb exists.
   /** The one teardown handshake this VM runs: the first `shutdown` (or a hard `dispose`) settles it. */
   let _down: Promise<{ acked: boolean }> | null = null;
@@ -452,21 +459,18 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // breath/ea/fault ride the awaitIslandMsg subscription above; this listener
   // carries only the live daemon surfaces.
   worker.listen((raw: unknown) => {
+    // The camera's two kinds down — the daemon inherits the render cap (the KA·BA braid): forward each
+    // `lar:frame` to the boot's SHARED sink so a summoned daemon paints the same #projection surface pool wikis
+    // do, and each `lar:control-result` to the answer door. Both read fail-closed; the active-surface gate keys
+    // on the transport id downstream, never a payload claim.
+    const frame = readLarFrame(raw);
+    if (frame) { _frameHandler?.(frame); return; }
+    const result = readLarControlResult(raw);
+    if (result) { _controlResultHandler?.(result); return; }
     if (!isIslandToVesselMsg(raw)) return;
 
-    // Projection frames — the daemon inherits the render cap (the KA·BA braid): forward its PROJECTION_FRAME
-    // to the boot's SHARED onProjection sink so a summoned daemon paints the same #projection surface pool
-    // wikis do. The active-surface gate keys on the transport id downstream, never a payload claim.
     if (raw.type === "event") {
       const ev = raw as IslandMsg_Event;
-      if (ev.listenable === PROJECTION_FRAME) {
-        _projectionHandler?.({
-          html: String(ev.payload["html"] ?? ""),
-          css:  String(ev.payload["css"]  ?? ""),
-          rev:  Number(ev.payload["rev"]  ?? 0),
-        });
-        return;
-      }
       // Verb OUT-path: a verb-carrying verse-event from the daemon's own surface
       // (a projected switcher click). Forward it to the vessel's placeVerb bridge.
       // The summon's structured args ride the flat wire as a `verb-args` JSON string;
@@ -739,16 +743,17 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) => {
       _wikiAlertHandler = fn;
     },
-    onProjection: (fn: (frame: { html: string; css: string; rev: number }) => void) => {
-      _projectionHandler = fn;
+    onFrame: (fn: (frame: LarMsg_Frame) => void) => {
+      _frameHandler = fn;
+    },
+    onControlResult: (fn: (result: LarMsg_ControlResult) => void) => {
+      _controlResultHandler = fn;
     },
     onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => {
       _verbEventHandler = fn;
     },
-    sendDomEvent: (renderId: string, eventType: string, fields: Record<string, number | boolean>) =>
-      worker.post(mkWikiDomEvent({ renderId, eventType, fields })),
-    sendDomInput: (renderId: string, eventType: string, value: string) =>
-      worker.post(mkWikiDomInput({ renderId, eventType, value })),
+    sendControlEvent: (ev: LarMsg_ControlEvent) => worker.post(ev),
+    resend: (cameraId: string) => worker.post(mkLarResend(cameraId)),
     // A SHUTDOWN RUNS ONCE, and every later call reads its answer. A composition's teardown reaches this
     // VM by more than one road (its own dispose, then the list of what it stood). The first call runs the
     // handshake and terminates the worker; a call that sent `teardown` again would ask a terminated worker

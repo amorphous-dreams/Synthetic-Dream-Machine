@@ -12,10 +12,10 @@
 
 import { startEngineWatch } from "./engine-watch.js";
 import { startRecipeWatch } from "./recipe-watch.js";
-import { dispatchProjectedEvent, dispatchProjectedInput } from "./tw5-projection.js";
+import { dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
-import { boundedDomInputValue, type WikiMsg_DomEvent, type WikiMsg_DomInput } from "@lararium/mesh";
+import { LAR_CONTROL_EVENT, LAR_RESEND, readLarControlEvent, readLarResend } from "@lararium/mesh";
 
 /** `#has` engine-epoch drift watch — self-writes the engine-waiting alert when a new genesis
  *  merges into the live lararium doc under this running island (alert-only; reboot adopts). */
@@ -30,29 +30,28 @@ export function hasRecipeWatch(): IslandCap {
 
 /**
  * `#has` wiki-projection — the OUT=coalesce render (the `onBoot` shore mounts it: node disk / browser DOM)
- * plus the interactivity RETURN leg (a relayed main-thread DOM event → TW5's native handler). ANY TW5 VM
- * island composes this to become surfaceable — the daemon inherits the SAME cap the pinned wiki carries, so
- * "pin the daemon" and "pin any wiki" ride one path (it's all the same VM under the hood). role = capability
- * ≠ platform: the caller's onBoot supplies the disk or DOM mount; the cap stays the same.
+ * plus the camera contract's RETURN leg. ANY TW5 VM island composes this to become surfaceable — the daemon
+ * inherits the SAME cap the pinned wiki carries, so "pin the daemon" and "pin any wiki" ride one path (it's all
+ * the same VM under the hood). role = capability ≠ platform: the caller's onBoot supplies the disk or DOM mount;
+ * the cap stays the same.
  */
 export function hasProjection(onBoot?: (ctx: IslandContext) => (() => void | Promise<void>) | undefined): IslandCap {
   return {
     name: "wiki-projection",
     onEa: (ctx) => onBoot?.(ctx),
-    onSignal(type: string, raw: unknown): boolean {
-      if (type === "wiki:dom-event") {
-        const ev = raw as WikiMsg_DomEvent;
-        dispatchProjectedEvent(ev.renderId, ev.eventType, ev.fields);
+    onSignal(type: string, raw: unknown, ctx?: IslandContext): boolean {
+      // A person's act, sense, write or service answer. The reader fails closed (one target, whole revisions,
+      // a bounded whole value), and this cap CLAIMS the kind either way, so a refused read ends as a drop
+      // rather than falling through to a cap that never expected it.
+      if (type === LAR_CONTROL_EVENT) {
+        const ev = readLarControlEvent(raw);
+        if (ev) dispatchLarControlEvent(ev);
         return true;
       }
-      // The TEXT leg rides its OWN kind, so the click path above keeps its primitives-only allowlist
-      // legible. The bound re-reads here as well as at the island door: this cap CLAIMS the message
-      // (returns true) either way, so a refused value ends as a drop rather than falling through to a
-      // cap that never expected text.
-      if (type === "wiki:dom-input") {
-        const ev = raw as WikiMsg_DomInput;
-        const value = boundedDomInputValue(ev.value);
-        if (value !== null) dispatchProjectedInput(ev.renderId, ev.eventType, value);
+      // The page asks a camera to paint itself whole: a surface switched to it, or attached late.
+      if (type === LAR_RESEND) {
+        const msg = readLarResend(raw);
+        if (msg) resendLarCamera(msg, ctx?.wikiUri);
         return true;
       }
       return false;

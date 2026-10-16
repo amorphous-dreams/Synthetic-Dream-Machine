@@ -1,0 +1,22 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/8",
+  "pins": "a committing Enter that arrives after compositionend with keyCode 229 never submits, and the composed value lands once",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/ime/hit", "text": "" }, { "title": "lar:///t/ime/typed", "text": "" }],
+    "story": [],
+    "root": "<$keyboard class=\"kb\" key=\"enter\" actions=\"<$action-setfield $tiddler='lar:///t/ime/hit' text='submitted'/>\"><$edit-text class=\"field\" tiddler=\"lar:///t/ime/typed\" tag=\"input\"/></$keyboard>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "page": { "control": "input.field", "composition": "start" } },
+    { "page": { "control": "input.field", "input": "に", "composing": true } },
+    { "page": { "control": "input.field", "input": "日本", "composing": true } },
+    { "page": { "control": "input.field", "composition": "end", "value": "日本" } },
+    { "page": { "control": "input.field", "keydown": { "key": "Enter", "code": "Enter", "keyCode": 229, "isComposing": false } } },
+    { "expect": { "page": { "input.field": { "relayedSenses": 1, "relayedActs": 0 } }, "writes": [{ "title": "lar:///t/ime/typed", "text": "日本" }] } },
+    { "frame": "next" },
+    { "expect": { "writes": [], "page": { "input.field": { "value": "日本" } } } },
+    { "page": { "control": "input.field", "keydown": { "key": "Enter", "code": "Enter", "keyCode": 13, "isComposing": false } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/ime/hit", "text": "submitted" }] } }
+  ]
+}

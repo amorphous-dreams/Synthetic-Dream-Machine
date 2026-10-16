@@ -1,0 +1,23 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/10",
+  "pins": "a drop on a droppable runs its actions with the modifier and the whole dropped list; an order list writes the whole ordered list; an id absent from the order never deletes a member",
+  "world": {
+    "tiddlers": [
+      { "title": "lar:///t/drop/log", "text": "" },
+      { "title": "lar:///t/drop/order", "list": ["a", "b", "c"] }
+    ],
+    "story": [],
+    "root": "<$droppable class=\"dz\" actions=\"<$action-setfield $tiddler='lar:///t/drop/log' text={{{ [<actionTiddler>] [<modifier>] +[join[+]] }}}/>\">zone</$droppable><lar-order-list data-control-id=\"order\" data-tiddler=\"lar:///t/drop/order\" data-field=\"list\"><ol><li data-item-id=\"a\">a</li><li data-item-id=\"b\">b</li><li data-item-id=\"c\">c</li></ol></lar-order-list>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "act": { "control": ".dz", "action": "lar:drop", "wholeValue": ["lar:///t/drop/dropped"], "modifiers": { "ctrl": false, "meta": false, "alt": false, "shift": true } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/drop/log", "text": "lar:///t/drop/dropped+shift" }] } },
+    { "act": { "control": "order", "action": "lar:order", "wholeValue": ["c", "a", "b"], "controlType": "lar-order-list" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/drop/order", "list": ["c", "a", "b"] }] } },
+    { "act": { "control": "order", "action": "lar:order", "wholeValue": ["c", "a"], "controlType": "lar-order-list" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/drop/order", "list": ["c", "a", "b"] }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "contains": "data-item-id=\"b\"" } } }
+  ]
+}

@@ -71,6 +71,7 @@ import {
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
+import { preloadsFromCasBlob } from "./cas-preloads.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
@@ -401,9 +402,14 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `island cannot resolve plugin tiddler by CID ${cid.slice(0, 12)}… from the local CAS`));
         return;
       }
+      let preloads: Record<string, unknown>[];
       try {
-        pluginTiddlers.push(JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>);
-      } catch { /* malformed — skip */ }
+        preloads = preloadsFromCasBlob(bytes);
+      } catch (err) {
+        _post(mkFault(msg.wikiUri, `island cannot read plugin tiddler ${cid.slice(0, 12)}… as JSON: ${err instanceof Error ? err.message : String(err)}`));
+        return;
+      }
+      for (const t of preloads) pluginTiddlers.push(t);
     }
 
     // §6 integrity gate, enforced: the manifest's coreHash names the engine the vessel

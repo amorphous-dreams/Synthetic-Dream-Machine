@@ -16,6 +16,10 @@
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
     },
+    "./lar-camera": {
+      "import": "./dist/lar-camera.js",
+      "types": "./dist/lar-camera.d.ts"
+    },
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"

@@ -1,0 +1,23 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/7",
+  "pins": "declared keys cross with their real key and code; an undeclared key never leaves the page; a global shortcut fires from the document leg",
+  "world": {
+    "tiddlers": [
+      { "title": "lar:///t/keys/hit", "text": "" },
+      { "title": "$:/config/shortcuts/lar-golden", "text": "alt-shift-G" },
+      { "title": "lar:///t/keys/global-action", "tags": ["$:/tags/KeyboardShortcut"], "key": "((lar-golden))", "text": "<$action-setfield $tiddler='lar:///t/keys/hit' text='global'/>" }
+    ],
+    "story": [],
+    "root": "<$keyboard class=\"kb\" key=\"enter\" actions=\"<$action-setfield $tiddler='lar:///t/keys/hit' text='enter'/>\"><$edit-text class=\"search\" tiddler=\"lar:///t/keys/typed\" tag=\"input\"/></$keyboard>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "expect": { "frame": { "stamps": { ".kb": { "data-lar-keys": "enter", "data-lar-cancel": "keydown:declared" } }, "keys": { "lar:shortcuts": { "contains": "alt-shift-G" } } } } },
+    { "act": { "control": "input.search", "action": "lar:key", "key": { "key": "Enter", "code": "Enter", "keyCode": 13, "repeat": false } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/keys/hit", "text": "enter" }], "page": { "input.search": { "defaultPrevented": true } } } },
+    { "act": { "control": "input.search", "action": "lar:key", "key": { "key": "a", "code": "KeyA", "keyCode": 65, "repeat": false } } },
+    { "expect": { "refused": "the page relays no undeclared key", "page": { "input.search": { "relayed": false, "defaultPrevented": false } } } },
+    { "act": { "control": "lar:document", "action": "lar:key", "key": { "key": "G", "code": "KeyG", "keyCode": 71, "repeat": false }, "modifiers": { "ctrl": false, "meta": false, "alt": true, "shift": true } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/keys/hit", "text": "global" }] } }
+  ]
+}

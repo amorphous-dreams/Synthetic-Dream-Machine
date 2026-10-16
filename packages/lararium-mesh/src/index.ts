@@ -37,6 +37,7 @@ export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./oracle-doc.js";
 export * from "./cas.js";
+export * from "./lar-camera.js";
 export * from "./resolver.js";
 export * from "./bag-residency.js";
 // WHERE a bag's bytes rest — repository | hearth | ley — the third self-describing axis beside the cap-tier

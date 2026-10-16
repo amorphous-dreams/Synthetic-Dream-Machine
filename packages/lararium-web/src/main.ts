@@ -24,7 +24,7 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
 import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
@@ -114,7 +114,7 @@ async function readOracle(read: OracleReader): Promise<void> {
 // The projection-nalu sink: one pane, painted by whichever surface holds the vessel's projection gate. The
 // sink scopes revisions to a surface and stamps each returned event with the surface that painted its target
 // (`projection-sink`); boot arms its return leg once the vessel stands.
-const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
+const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LAR_WHOLE_VALUE_MAX_CHARS, addressBar: true });
 
 /**
  * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.
@@ -290,8 +290,9 @@ async function bootVessel(): Promise<void> {
       daemonWorkerUrl,
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
-      onPhase: paint,
-      onProjection: (frame) => { projectionSink.apply(frame); },
+      onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
+      onFrame: (frame) => { projectionSink.apply(frame); },
+      onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(relayGatePubKey ? { relayGatePubKey } : {}),
       ...(admit ? { admit } : {}),
@@ -309,12 +310,12 @@ async function bootVessel(): Promise<void> {
     }
     void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
-    projectionSink.arm({ sendDomEvent: result.sendDomEvent, sendDomInput: result.sendDomInput });
+    projectionSink.arm({ sendControlEvent: result.sendControlEvent });
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.
-    // Distinct from the daemon-scoped $:/lares/surface toggle inside the widget.
-    const summon = (): void => result.setActiveSurface(DAEMON_SURFACE_ID);
+    // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
+    const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); result.setActiveSurface(DAEMON_SURFACE_ID); };
     const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
     if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
     window.addEventListener("keydown", (e) => {
