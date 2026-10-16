@@ -37,6 +37,9 @@ function fakeTw5(): TW5Engine {
   return {
     $tw: {
       Tiddler: FakeTiddler,
+      // The seed checkpoint re-invokes the wiki's startup actions over the resident seed; a fake engine holds
+      // a root widget with none.
+      rootWidget: { invokeActionsByTag: () => {} },
       wiki: {
         getTiddlerText:      () => "",
         getTiddler:          () => undefined,

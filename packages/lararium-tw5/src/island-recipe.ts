@@ -123,7 +123,11 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  const checkpoint = adaptor.armSeedCheckpoint();
+  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed. The seed carries
+  // the bags' own startup actions, so they run once more over the resident seed.
+  const checkpoint = adaptor.armSeedCheckpoint().then(() => {
+    (tw5.$tw as unknown as { rootWidget: { invokeActionsByTag(tag: string): void } }).rootWidget.invokeActionsByTag("$:/tags/StartupAction");
+  });
   seedCheckpoints.set(tw5, checkpoint);
 
   return { adaptor, stores };

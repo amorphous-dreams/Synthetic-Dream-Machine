@@ -71,6 +71,10 @@ interface ProjectionEventScope {
 const eventScopes = new Map<string, ProjectionEventScope>();
 let activeEventScope: ProjectionEventScope | undefined;
 let ridSeq = 0;
+/** The size of the render-id and event-scope maps, for a witness that reads them across frames. */
+export function renderIdCensus(): { nodes: number; scopes: number } {
+  return { nodes: ridMap.size, scopes: eventScopes.size };
+}
 const FAKE_DOM_ANIMATION_PATCHED = Symbol("lararium.fake-dom-animation-patched");
 
 /** Patch the fake-element prototype once per worker (the RETURN-leg capability the fakedom platform
@@ -344,6 +348,17 @@ export function mountProjection(ctx: IslandContext): () => void {
     onFlush: (rev) => {
       let html = tw5ElementToHtml(storyContainer);
       scope.liveIds = new Set([...html.matchAll(/data-lar-rid="([^"]+)"/g)].map((match) => match[1]!));
+      // A node the frame no longer paints never receives an event again: the page relays by the ids the
+      // frame carries, and a detached node answers `stale-target` whatever it holds. Its map entries leave
+      // with the frame, so the maps hold the painted nodes and the roots, never every node ever bound.
+      for (const renderId of scope.renderIds) {
+        if (scope.liveIds.has(renderId)) continue;
+        const node = ridMap.get(renderId);
+        if (node && scope.roots.includes(node)) continue;
+        ridMap.delete(renderId);
+        eventScopes.delete(renderId);
+        scope.renderIds.delete(renderId);
+      }
       if (scope.pendingAnswer) {
         const answer = scope.pendingAnswer;
         const attr = (value: string): string => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");

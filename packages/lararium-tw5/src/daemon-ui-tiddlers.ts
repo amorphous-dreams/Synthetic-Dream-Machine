@@ -14,9 +14,9 @@
  *           in the daemon wiki's working layer like any hand's save, and each
  *           record carries the disk opt-out ({@link SEED_OFF_DISK}), so the
  *           workspace never receives a file the next boot would write over.
- *   STATE → LOCAL/unsynced. $:/lares/surface (which panel) matches no bag-paths
- *           cascade rule → pure in-memory. $:/temp/lares/switcher (the live list)
- *           → the volatile temp slot. Neither ever syncs cross-device.
+ *   STATE → LOCAL/unsynced. $:/temp/lares/surface (which panel) and $:/temp/lares/switcher
+ *           (the live list) both route to the volatile temp slot through the bag-paths cascade's
+ *           `$:/temp/` rule. Neither ever reaches a store, a disk, or another device.
  *
  * The parallel-cap surface is a LARES-owned switch — it never overloads TW5's
  * own $:/tags/Layout (that stays wiki-specific + untouched).
@@ -41,8 +41,8 @@ export const SEED_OFF_DISK = { "disk-projection": "no" } as const;
 // ── Titles ─────────────────────────────────────────────────────────────────
 /** The parallel-cap surface tag (organizational; the wrapper drives by state, not tag). */
 export const LARES_SURFACE_TAG   = "$:/tags/Lares/Surface";
-/** LOCAL state: which surface tiddler the wrapper shows (in-memory, never synced). */
-export const LARES_SURFACE_STATE = "$:/lares/surface";
+/** LOCAL state: which surface tiddler the wrapper shows (the volatile temp slot, never synced). */
+export const LARES_SURFACE_STATE = "$:/temp/lares/surface";
 /** LOCAL state: the live switcher list + pin/surface/recipe (volatile temp slot, never synced). */
 export const SWITCHER_STATE_TITLE = "$:/temp/lares/switcher";
 const WRAPPER_TITLE   = "$:/lares/ui/surface-switch";
@@ -57,8 +57,8 @@ const PAGECTRL_TITLE  = "$:/lares/ui/PageControls/daemon";
 const VERB_PREFIX = "lar:///lararium.local.vm/verb/";
 
 /** The LOCAL projection state: `uri` names the carrier root; `markdown` + `meta` hold the pair the
- *  button last projected. Matches no bag-paths cascade rule → in-memory, never synced. */
-export const PROJECT_STATE_TITLE = "$:/lares/state/meme-project";
+ *  button last projected. Routes to the volatile temp slot, never synced. */
+export const PROJECT_STATE_TITLE = "$:/temp/lares/state/meme-project";
 
 /** The button's action: the submission pair projected IN this wiki VM through the `meme-project`
  *  filter — the operator the face's `md` template renders through — so no verb leaves the VM. A uri

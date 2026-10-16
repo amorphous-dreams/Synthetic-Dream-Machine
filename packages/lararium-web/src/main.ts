@@ -313,7 +313,7 @@ async function bootVessel(): Promise<void> {
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.
-    // Distinct from the daemon-scoped $:/lares/surface toggle inside the widget.
+    // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
     const summon = (): void => result.setActiveSurface(DAEMON_SURFACE_ID);
     const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
     if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
