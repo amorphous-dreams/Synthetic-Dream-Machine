@@ -1,0 +1,20 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/4",
+  "pins": "a store write lands while the field holds a local revision: the page keeps its text, shows the newer version beside it, and take-theirs replaces as one undo step",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/peer/body", "text": "mine" }],
+    "story": ["lar:///t/peer/body"],
+    "root": "<$edit-text tiddler=\"lar:///t/peer/body\" field=\"text\" tag=\"textarea\" class=\"body\"/>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "sense": { "control": ".body", "wholeValue": "mine, edited", "localRev": 1 } },
+    { "write": { "txId": "peer-1", "records": [{ "title": "lar:///t/peer/body", "fields": { "text": "theirs" } }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "attributes": { ".body": { "data-lar-value": "theirs" } }, "sensedRevision": { ".body": 1 } }, "page": { ".body": { "value": "mine, edited", "undoDepth": 1, "newerVersion": "theirs" } } } },
+    { "act": { "control": ".body", "action": "lar:take-theirs" } },
+    { "expect": { "answers": ["applied"], "page": { ".body": { "value": "theirs", "undoDepth": 2 } } } },
+    { "act": { "control": ".body", "action": "lar:commit", "wholeValue": "theirs", "localRev": 2 } },
+    { "expect": { "answers": ["applied"], "writes": [] } }
+  ]
+}

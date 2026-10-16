@@ -1,0 +1,19 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/5",
+  "pins": "a toolbar operation carries the whole value and the selection as of the act; the answer carries what the engine wants; a stale revision refuses stale-target",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/toolbar/body", "text": "wrap me please" }],
+    "story": ["lar:///t/toolbar/body"],
+    "root": "<$edit-text tiddler=\"lar:///t/toolbar/body\" field=\"text\" tag=\"textarea\" class=\"body\"/><$button class=\"bold\" message=\"tm-edit-text-operation\" param=\"wrap-selection\" prefix=\"''\" suffix=\"''\">bold</$button>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "act": { "control": "button.bold", "action": "lar:edit-operation", "wholeValue": "wrap me please", "selection": { "start": 5, "end": 7 }, "localRev": 0 } },
+    { "expect": { "answers": ["applied"], "want": { "value": "wrap ''me'' please", "selStart": 7, "selEnd": 9 }, "page": { ".body": { "value": "wrap ''me'' please" } } } },
+    { "sense": { "control": ".body", "wholeValue": "wrap ''me'' please now", "localRev": 2 } },
+    { "act": { "control": "button.bold", "action": "lar:edit-operation", "wholeValue": "wrap ''me'' please", "selection": { "start": 0, "end": 4 }, "localRev": 1 } },
+    { "expect": { "answers": ["stale-target"], "page": { ".body": { "value": "wrap ''me'' please now", "refusal": "stale-target" } } } },
+    { "act": { "control": "button.bold", "action": "lar:edit-operation", "wholeValue": "wrap ''me'' please now", "selection": { "start": 0, "end": 0 }, "localRev": 2 } },
+    { "expect": { "answers": ["refused:selection-unavailable"], "page": { ".body": { "value": "wrap ''me'' please now", "refusal": "selection-unavailable" } } } }
+  ]
+}

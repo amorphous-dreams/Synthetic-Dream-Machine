@@ -1,0 +1,32 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/6",
+  "pins": "checkbox, radio, select and multi-select: each act writes the right field and the next frame paints it as an attribute; the focused select never snaps back",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/toggle/rec", "text": "", "done": "no", "colour": "red", "size": "m", "tags": [] }],
+    "story": [],
+    "root": "<$checkbox class=\"cb\" tiddler=\"lar:///t/toggle/rec\" field=\"done\" checked=\"yes\" unchecked=\"no\"/><$radio class=\"rd\" tiddler=\"lar:///t/toggle/rec\" field=\"colour\" value=\"blue\"/><$select class=\"sel\" tiddler=\"lar:///t/toggle/rec\" field=\"size\"><option value=\"s\">s</option><option value=\"m\">m</option><option value=\"l\">l</option></$select><$select class=\"multi\" tiddler=\"lar:///t/toggle/rec\" field=\"tags\" multiple=\"yes\"><option value=\"a\">a</option><option value=\"b\">b</option></$select>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "expect": { "frame": { "stamps": { "input.cb": { "data-lar-on": "change", "data-lar-cancel": "" } }, "attributes": { "input.cb": { "checked": null }, "option[value=m]": { "selected": "selected" } } } } },
+    { "act": { "control": "input.cb", "action": "lar:toggle", "checked": true } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/toggle/rec", "done": "yes" }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "attributes": { "input.cb": { "checked": "checked" } } } } },
+    { "act": { "control": "input.rd", "action": "lar:toggle", "checked": true } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/toggle/rec", "colour": "blue" }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "attributes": { "input.rd": { "checked": "checked" } } } } },
+    { "sense": { "control": "select.sel", "wholeValue": ["l"], "localRev": 1 } },
+    { "act": { "control": "select.sel", "action": "lar:choice", "wholeValue": ["l"], "localRev": 1 } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/toggle/rec", "size": "l" }] } },
+    { "deliver": "older" },
+    { "expect": { "page": { "select.sel": { "value": "l" } } } },
+    { "frame": "next" },
+    { "expect": { "frame": { "attributes": { "option[value=l]": { "selected": "selected" }, "option[value=m]": { "selected": null } } }, "page": { "select.sel": { "value": "l" } } } },
+    { "act": { "control": "select.multi", "action": "lar:choice", "wholeValue": ["a", "b"] } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/toggle/rec", "tags": ["a", "b"] }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "attributes": { "select.multi option[value=a]": { "selected": "selected" }, "select.multi option[value=b]": { "selected": "selected" } } } } }
+  ]
+}

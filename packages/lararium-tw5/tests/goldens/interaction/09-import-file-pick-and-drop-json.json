@@ -1,0 +1,23 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/9",
+  "pins": "a file pick or a drop crosses once as a bounded import offer; $:/Import parks; tm-perform-import lands the tiddlers; an oversize offer refuses input-too-long beside the zone",
+  "world": {
+    "tiddlers": [],
+    "story": [],
+    "root": "<$browse class=\"pick\"/><$dropzone class=\"zone\">drop here</$dropzone>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "expect": { "frame": { "stamps": { "input.pick": { "data-lar-on": "change", "data-lar-cancel": "" }, ".zone": { "data-lar-on": "drop", "data-lar-cancel": "dragenter dragover drop" } } } } },
+    { "act": { "control": "input.pick", "action": "lar:import-offer", "wholeValue": "[{\"title\":\"lar:///t/import/one\",\"text\":\"one\"}]", "controlType": "lar-file-picker" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/Import", "plugin-type": "import", "status": "pending" }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "contains": "lar:///t/import/one" } } },
+    { "act": { "control": "$:/Import", "action": "lar:perform-import" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/import/one", "text": "one" }] } },
+    { "act": { "control": ".zone", "action": "lar:drop", "wholeValue": "[{\"title\":\"lar:///t/import/two\",\"text\":\"two\"}]" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/Import", "plugin-type": "import", "status": "pending" }] } },
+    { "act": { "control": ".zone", "action": "lar:drop", "wholeValue": "<oversize: 9000000 bytes>" } },
+    { "expect": { "refused": "input-too-long", "page": { ".zone": { "refusal": "input-too-long" } } } }
+  ]
+}
