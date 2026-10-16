@@ -400,7 +400,7 @@ esac
   rmSync(bin, { recursive: true, force: true });
 });
 
-test("the printed CI hint reads the pushed lane from attached and detached checkouts", () => {
+test("the printed CI hint names the branch full CI runs on, from attached and detached checkouts", () => {
   const bin = mkdtempSync(join(tmpdir(), "e2e-shards-hint-"));
   const root = fileURLToPath(new URL("../", import.meta.url));
   try {
@@ -409,6 +409,7 @@ case "$*" in
   *"config --get core.bare"*) echo false ;;
   *"rev-parse --abbrev-ref HEAD"*) echo "$TEST_BRANCH" ;;
   *"rev-parse HEAD"*|*"rev-parse deadbeefcafef00d"*) echo deadbeefcafef00d ;;
+  *"branch -r --points-at"*) printf 'origin/ci/hint-probe\n%s' "$TEST_TIPS" ;;
 esac
 `);
     writeFileSync(join(bin, "gh"), `#!/usr/bin/env bash
@@ -421,20 +422,27 @@ esac
 `);
     chmodSync(join(bin, "git"), 0o755);
     chmodSync(join(bin, "gh"), 0o755);
-    const env = { ...process.env, PATH: `${bin}:${process.env.PATH}` };
-    const pushed = spawnSync(process.execPath, [join(root, "tools/e2e-shards.mjs"), "push", "hint-probe"], { cwd: root, encoding: "utf8", env });
-    assert.equal(pushed.status, 0, pushed.stderr);
-    const hint = pushed.stdout.split("\n").find((line) => line.startsWith("HALF A VERDICT:"));
-    assert.ok(hint, pushed.stdout);
-    const command = hint.slice(hint.indexOf("node tools/ci-verdict.mjs"));
-    const args = command.split(" ").slice(2);
-    for (const branch of ["ci/hint-probe", "HEAD"]) {
+    const hintFor = (tips) => {
+      const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, TEST_TIPS: tips };
+      const pushed = spawnSync(process.execPath, [join(root, "tools/e2e-shards.mjs"), "push", "hint-probe"], { cwd: root, encoding: "utf8", env });
+      assert.equal(pushed.status, 0, pushed.stderr);
+      const hint = pushed.stdout.split("\n").find((line) => line.startsWith("HALF A VERDICT:"));
+      assert.ok(hint, pushed.stdout);
+      return { env, args: hint.slice(hint.indexOf("node tools/ci-verdict.mjs")).split(" ").slice(2) };
+    };
+    // The full run stands on the feature branch the head rides; `ci.yml` never runs on a `ci/` lane branch.
+    const { env, args } = hintFor("origin/feature/hint-probe");
+    assert.ok(!args.join(" ").includes("ci/hint-probe"), args.join(" "));
+    for (const branch of ["feature/hint-probe", "HEAD"]) {
       const read = spawnSync(process.execPath, [join(root, "tools/ci-verdict.mjs"), ...args], {
         cwd: root, encoding: "utf8", env: { ...env, TEST_BRANCH: branch },
       });
       assert.equal(read.status, 2, `${branch}: ${read.stderr}`);
-      assert.match(read.stdout, /ci-verdict: branch ci\/hint-probe/);
+      assert.match(read.stdout, /ci-verdict: branch feature\/hint-probe/);
     }
+    // CONTROL: a head no non-lane branch carries names no branch, rather than the lane branch.
+    const bare = hintFor("");
+    assert.match(bare.args.join(" "), /--branch <the branch this head rides>/);
   } finally {
     rmSync(bin, { recursive: true, force: true });
   }
