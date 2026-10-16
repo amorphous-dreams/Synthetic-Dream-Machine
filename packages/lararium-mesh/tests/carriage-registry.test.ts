@@ -1,5 +1,5 @@
 /**
- * membership-registry.test.ts — the operator MEMBERS-registry (the Kapae-antigen's ALLOW-twin), FAIL-CLOSED
+ * carriage-registry.test.ts — the operator MEMBERS-registry (the Kapae-antigen's ALLOW-twin), FAIL-CLOSED
  * at every shore and holding the three Build-2 doctrine invariants.
  *
  * Proven:

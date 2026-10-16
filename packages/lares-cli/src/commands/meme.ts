@@ -957,7 +957,7 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 }
 
 /**
- * `project --to md --check <file.md|dir>` — THE FOLD of `tools/submission-parity.mjs` into this door.
+ * `project --to md --check <file.md|dir>` — the submission currency check.
  *
  * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
  * so the only way a pair reads current is that projecting its source again produces the same bytes.

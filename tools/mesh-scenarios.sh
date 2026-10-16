@@ -1559,8 +1559,8 @@ run_seal() {
 # Nothing in this house has ever put a userinfo-bearing title through it. This walk is the first.
 #
 # THE MEASURED DROP SITES, which are what leg A asserts against:
-#   island-adaptor.ts:314 / :319 — `return Promise.resolve()` (silent success)
-#   outbound-bridge.ts:64        — catch-and-drop into console.warn
+#   packages/lararium-tw5/src/island-adaptor.ts — its `return Promise.resolve()` paths (silent success)
+#   outbound-bridge.ts           — catch-and-drop into console.warn
 # A refusal down any of those reads WORSE than a stall: the author's text stands on their screen while
 # it stops existing in the store. The record must survive where its author can still see it.
 # COVERS: private/seed/unfed

@@ -4,8 +4,7 @@
 # The shelf (`bags/lares/ha.ka.ba/lares/api/pono/submissions/`) holds `<name>.md` + `<name>.md.meta`
 # PAIRS, each meta naming its `source: lar:///…` — the memetic-wikitext carrier the pair was projected
 # from. Nothing enforced that a source edit carried its pair forward until `lares meme project --to md
-# --check` folded `tools/submission-parity.mjs`'s proof into one door (`lar:///submission-parity.folds-
-# into-project-check`). This script fires that door FROM THE SOURCE SIDE, beside `meme-check-staged` —
+# --check` provides one proof door. This script fires that door FROM THE SOURCE SIDE, beside `meme-check-staged` —
 # a commit that edits a pair's source, its `.md`, or its `.md.meta` must carry a pair that still
 # re-projects byte-identical, or it refuses.
 #

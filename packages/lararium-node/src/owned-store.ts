@@ -250,7 +250,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   // back, read as only `["line"]` on a peer that hangs up while parked: the unshifted bytes sit in the readable
   // buffer unconsumed, and a readable stream holding unconsumed bytes never emits `end` — so `close` never fired,
   // `parked.delete` never ran, and the vessel replayed the line on thaw long after the caller gave up and told its
-  // own operator "failed" (`pause-eof.mjs` isolates exactly this). So `park` instead keeps consuming every byte
+  // own operator "failed". So `park` instead keeps consuming every byte
   // that arrives into its OWN buffer — the socket stays exactly as able to notice its own EOF as an unparked one
   // — and only hands that buffer back (via `unshift`, once) at the moment a real verb channel takes the socket
   // over.

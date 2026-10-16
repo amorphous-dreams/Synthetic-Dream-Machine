@@ -1,5 +1,5 @@
 /**
- * member-carry-decision.test.ts — the CARRY-SPLIT that lets the mesh BREATHE across a Nexus (operator-ruled
+ * carrier-share-decision.test.ts — the CARRY-SPLIT that lets the mesh BREATHE across a Nexus (operator-ruled
  * 2026-07-20): a cross-operator MEMBER blind-transits a PROVABLY-sealed private plane (carry the ciphertext,
  * never the read-cap); a STRANGER reaches ONLY the federatable public shelf.
  *

@@ -535,7 +535,7 @@ describe("lares meme project --to md — a bare re-project reads the pair's OWN 
 });
 
 /**
- * The fold of `tools/submission-parity.mjs` into this door: `project --to md --check <file|dir>`
+ * The `project --to md --check <file|dir>` door
  * re-projects each named pair's SOURCE (read off the meta's `source:` field, resolved against the
  * repo's `bags/lares` tree) and compares in memory — no write, no wire. `PRISM`'s own declared
  * address (`lar:///ha.ka.ba/lares/api/pono/prism`) resolves back to itself, so a pair projected

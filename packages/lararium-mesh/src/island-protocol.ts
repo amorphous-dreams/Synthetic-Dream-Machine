@@ -44,7 +44,7 @@
  *      hold or reference `TW5Engine`. Any code that calls `bootTw5()` or instantiates
  *      `TW5Engine` outside a Worker constitutes a sovereignty violation.
  *      Boot sites (all inside Workers): `node-daemon-island.ts` (Node daemon),
- *      `lar-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
+ *      `node-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
  *      `browser-daemon-island.ts` (browser daemon). Main-thread entry files carry no TW5 import.
  *
  * GP-1: every message names its `type`, and no version counter rides beside it: a vessel and its islands run

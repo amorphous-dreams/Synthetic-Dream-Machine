@@ -1,7 +1,6 @@
 /**
  * direct-repo-witness.test.mjs — proves the INSTRUMENT, over a fixture tree the real repo's own churn never
- * touches (never the live source: the live tree reads red until `nexus-refresh.ts` retires, which is a
- * different lane's act, not this witness's self-test).
+ * touches (never the live source, so this witness's self-test reads a fixed fixture).
  *
  * Proven:
  *   · CONTROL: a fixture with exactly the two lawful sites (named like the real files, comments stripped of
