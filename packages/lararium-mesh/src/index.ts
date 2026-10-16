@@ -325,7 +325,7 @@ export { GATE_MEMORY_ROW_MAX_BYTES } from "./gate-withdrawal-store.js";
 export type { GateMemoryRows } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
-export * from "./realm-root-map.js";
+export * from "./realm-steward-map.js";
 export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";

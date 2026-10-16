@@ -214,7 +214,7 @@ describe("the realm steward door", () => {
     const opts = { args: { bag: BAG }, registryDocs: () => [registryDoc()], vault: a.vault };
     await expect(runRealmBag({ plane: null, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });
     await expect(runRealmBag({ plane: unstood, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });
-    expect(await runRealmBags({ plane: null })).toEqual({ verb: "realm-bags", realm: null, realmDoc: null, realms: [], bags: [], roots: [] });
+    expect(await runRealmBags({ plane: null })).toEqual({ verb: "realm-bags", realm: null, realmDoc: null, realms: [], bags: [], stewards: [] });
     plane.dispose(); unstood.dispose();
   });
 
@@ -449,13 +449,13 @@ describe("the realm steward door", () => {
     const run = (plane: typeof planeA, who: Actor, args: Record<string, unknown>) => runRealmBag({ plane, args, vault: who.vault,
       registryDocs: () => [registryDoc()] });
     await run(planeA, a, { bag: BAG });
-    // CONTROL: one hand's own book roots nobody.
-    expect((await runRealmBags({ plane: planeA })).roots).toEqual([]);
+    // CONTROL: one hand's own book co-signs nobody.
+    expect((await runRealmBags({ plane: planeA })).stewards).toEqual([]);
     await run(planeB, b, { bag: BAG, join: true });
     await run(planeA, a, { bag: BAG, cosign: true });
     const listed = await runRealmBags({ plane: planeA });
-    expect(listed.roots).toEqual([a.worn, b.worn].sort().map((name) => ({ name, bags: [BAG] })));
-    expect((await runRealmBags({ plane: null })).roots).toEqual([]);
+    expect(listed.stewards).toEqual([a.worn, b.worn].sort().map((name) => ({ name, bags: [BAG] })));
+    expect((await runRealmBags({ plane: null })).stewards).toEqual([]);
     planeA.dispose(); planeB.dispose();
   });
 });
