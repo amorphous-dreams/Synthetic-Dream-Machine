@@ -181,13 +181,40 @@ async function operatorDid(r: string): Promise<string> {
   finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
 
-/** The herm's own vessel, as a reader that proves its key at a gate — loaded from the root it founded. */
-async function readerOf(r: string): Promise<import("../../packages/lararium-mesh/src/auth-wire.js").LeafIdentity> {
-  const { loadLeafIdentity } = await import("../../packages/lararium-node/src/leaf-identity.js");
+/**
+ * The herm's FLOOR gate, as a reader dials it: the pin its floor key derives for the Nexus it stands at on the oracle route,
+ * filed in a reader's own pair index, and a throwaway face (a chain no admit backs) to present. A floor gate answers the
+ * classes a floor sorts and no admit rides this dial (`arm: null`). The publisher's key (`verifyingKey`) is the herm's vessel
+ * key, never the gate's. UNWITNESSED HERE: it needs the oracle server's floor gates standing on the herm, at the Nexuses its gates sweep reads (`ownNexusAid()` plus the carried ones).
+ */
+async function hermFloorReader(r: string) {
+  const mesh = await import("../../packages/lararium-mesh/src/index.js");
+  const node = await import("../../packages/lararium-node/src/index.js");
+  const { ORACLE_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
+  const fx = await import("../../packages/lararium-mesh/tests/face-gate-fixture.js");
   const prior = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = r;
-  try { return await loadLeafIdentity(); }
-  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+  try {
+    const vesselKey = (await node.loadVesselVerifyingKey()).toLowerCase();
+    // THE NEXUS THE FLOOR GATE STANDS AT is the one the vessel's gates sweep reads: its OWN Nexus (the identifier its seed charter
+    // names) plus each it carries, never a Nexus derived from the vessel key. A herm that holds no charter stands no gate here.
+    const nexusAid = mesh.nexusAidOf(node.readNexusDoc(node.larSealHome()));
+    if (!nexusAid) throw new Error("the herm's seal home names no Nexus of its own: its floor stands no gate to dial");
+    const bundle = mesh.deriveGateBundle(mesh.floorGateRoot(await node.vesselFloorKeyDoor()), new TextEncoder().encode(nexusAid), mesh.floorRoute(ORACLE_SOCKET_ROUTE));
+    const pins = mesh.hearthPinIndex();
+    const hearth = "hearth-herm-floor";
+    if (!pins.put(hearth, bundle.pin)) throw new Error("the herm's floor pin did not file in the reader's index");
+    bundle.drop();
+    const w = await fx.world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: nexusAid });
+    const p = await fx.presenter(w, "herm-floor reader");
+    return {
+      verifyingKey: vesselKey,
+      pins, hearth, nexus: mesh.hex(new TextEncoder().encode(nexusAid)),
+      presentation: { certificate: p.certificate, signer: p.signer, arm: null, history: p.history },
+      audience: fx.AUDIENCE,
+      deadlines: { draw(lapse: () => void) { const t = setTimeout(lapse, 15_000); return { cancel: () => clearTimeout(t) }; } },
+    };
+  } finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
 
 beforeAll(async () => { PORT = await freePort(); });
@@ -248,13 +275,13 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // READINESS: the vessel listens before its daemon's keyholder can verify a proof, and a gate asked in that
     // window refuses ("keyhive not booted") exactly as it refuses a stranger. So the vector asks until the
     // keyholder answers, inside its own budget, and reports the last refusal if it never does.
-    // The reader proves this vessel's own key, which is also the gate key the oracle socket stands behind, so
-    // the pin it knocks with is its own.
-    const identity = await readerOf(root);
-    let read = await pullAndVerifyOracle(origin, { identity, verifyingKey: identity.peerPubKey });
+    // The reader dials the herm's FLOOR gate on the oracle route under the pin the herm's floor key derives, and reads the pointer
+    // and the snapshot as sealed messages; the pointer verifies under the herm's vessel key (the publisher's, apart from the gate's).
+    const reader = await hermFloorReader(root);
+    let read = await pullAndVerifyOracle(origin, reader);
     for (const until = Date.now() + 45_000; !read.ok && Date.now() < until; ) {
       await new Promise((r) => setTimeout(r, 1_000));
-      read = await pullAndVerifyOracle(origin, { identity, verifyingKey: identity.peerPubKey });
+      read = await pullAndVerifyOracle(origin, await hermFloorReader(root));
     }
     expect(read.ok, `a proven peer read no map on :${PORT} — the floor serves no shelf: ${read.reason}`).toBe(true);
   }, 60_000);

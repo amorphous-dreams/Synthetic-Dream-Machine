@@ -159,9 +159,17 @@ export { composeStreamSensorium, defaultStreamPlaneSink } from "./sense-stream.j
 export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
-export { DaemonAuthGate } from "./daemon-auth-gate.js";
-export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
-export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
+export { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "./socket-sorter.js";
+export type { GateSorterDeps, ShutArm, PlaceClass } from "./socket-sorter.js";
+export { gateShadowRing, faceDevicesUnbound } from "./gate-shadow-ring.js";
+export { faceDeviceBook, faceDeviceBindings, type FaceDeviceBook, type FaceDeviceSources } from "./face-device-book.js";
+export { faceFleetFacets, faceFleetViews, viewFederationGate, type FaceFleetViews } from "./face-fleet-view.js";
+export { heldRootHoldings, standingFaceScopes } from "./face-root-holdings.js";
+export type { FaceDeviceReading, GateShadowRingDeps } from "./gate-shadow-ring.js";
+export { vesselGate } from "./vessel-gates.js";
+export type { VesselGateDeps } from "./vessel-gates.js";
+export { faceGateServer, gateSessionRegistry, gatePath, wsGateSocket, timerGateDeadlines, GATE_SOCKET_QUEUE_BOUND } from "./face-gate-server.js";
+export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate, GateWire } from "./face-gate-server.js";
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
@@ -256,7 +264,6 @@ export {
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
   makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
-  dialIdentityFor,
 } from "./nexus-carriage.js";
 export type {
   NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,

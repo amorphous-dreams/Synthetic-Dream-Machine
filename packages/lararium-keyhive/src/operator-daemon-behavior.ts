@@ -30,7 +30,7 @@ import {
 } from "@lararium/tw5";
 import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
-import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
+import type { IslandMsg_Manifest } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -117,7 +117,6 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { verifyAuthProof, verifyEdgeAgainstPersonaKel } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
@@ -210,11 +209,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     await veilKh.delegate({ bagUrl, audience: faceGroup(), access });
   };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
-  // Captured at `verifierFactory` boot time (the only site this behavior sees an `IslandContext`) so the
-  // lease read below stays reachable from doors that boot supplies no ctx to (`verifyPeer`). Only the island's
-  // COMPOSITE is cached — never a snapshot of the epoch itself — so every read below is FRESH as of the moment
-  // it runs, never a stale boot-time number (a roll after boot must still bite immediately).
-  let epochCtx: { composite: IslandContext["composite"] } | null = null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -955,9 +949,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
     },
     verifierFactory: async (ctx: IslandContext) => {
-      // Cache the composite for the FRESH per-call lease reads below (verifyPeer, the joinee grant-take) —
-      // never the epoch itself, which must be read live at each door.
-      epochCtx = { composite: ctx.composite };
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
       // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
       // threads no epoch, and the gate refuses a persona-bound boot on it.
@@ -1093,126 +1084,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return keyhive;
     },
 
-    verifyPeer: async (cardBytes: Uint8Array, bagUrl: string, access: "read" | "admin", proof?: AuthProofWire, edge?: DeviceDelegationTiddler) => {
-      if (!kh) return { ok: false, reason: "keyhive not booted" };
-      const { id } = await kh.receiveContactCard(cardBytes);
-      const verdict = await kh.verify({ presenter: id, bagUrl, access });
-
-      // V3 proof-of-possession (project_verification_placement): the keyholder
-      // worker — the only place that holds BOTH the gate's own key and the peer's
-      // real key — checks the relayed signature. Conservative-caller law: derive
-      // both pubkeys from TRUSTED sources, never the wire.
-      //   gatePubKey = this gate's OWN verifying key (vesselVerifyingKey) — so a
-      //     proof signed for a different gate fails here (anti-relay).
-      //   peerPubKey = the raw ed25519 key, the suffix of the card-derived
-      //     Identifier hex (the same relationship bootDaemonKeyhive Gate A relies on:
-      //     did.endsWith(verifyingKey)).
-      let proofVerified = false;
-      let proofReason: string | undefined;   // the SPECIFIC cause — never swallowed into a generic verdict
-      if (proof) {
-        const peerPubKey = id.slice(-64); // raw 32-byte ed25519 verifying key (hex)
-        const r = await verifyAuthProof({
-          nonce:      proof.nonce,
-          gatePubKey: mintedByHex.slice(-64),
-          peerPubKey,
-          aud:        bagUrl,
-          sig:        proof.sig,
-        });
-        proofVerified = r.ok;
-        proofReason   = r.reason;
-      }
-
-      // ENFORCEMENT FLIP (V3 step D): admission requires BOTH a satisfied
-      // capability (`verdict.ok`) AND a verified proof-of-possession. Every live
-      // peer transport now sources a real proof (the CLI via LarWSClientAdapter;
-      // the browser stays passive). ESCAPE HATCH: a node operator MAY set
-      // LAR_V3_ALLOW_UNPROVEN=1 to fall back to capability-only admission (the
-      // prior advisory posture) if a live handshake regression surfaces — guarded
-      // for browser-safety (no `process` there; the browser holds no inbound peer).
-      const enforce = !(typeof process !== "undefined" && process.env?.["LAR_V3_ALLOW_UNPROVEN"] === "1");
-      if (enforce && !proofVerified) {
-        // Carry the SPECIFIC cause. "V3 proof verification failed" alone cannot tell a bad signature from a
-        // stale timestamp from a malformed field, and a gate that hides which one refused makes every
-        // handshake regression a guess. The narrow reason (bad-sig · expired · not-32-byte-hex) rides out.
-        const why = proof ? `V3 proof rejected: ${proofReason ?? "unverified"}` : "V3 proof required";
-        return { ok: false, identifier: id, proofVerified, reason: why };
-      }
-
-      // ADMIN-CAP PATH (unchanged): a satisfied capability admits directly. Under `enforce`
-      // the early return above already guaranteed proofVerified, so this admits on cap + a
-      // verified proof-of-possession exactly as before.
-      //
-      // SELF-SLOT CLASS: cap=admin on the daemon bag is held ONLY by this operator's own PersonaGroup (the
-      // founding delegates admin to personaGroupId; no foreign operator ever earns it). So an
-      // admin admit PROVES same-operator — the peer keeps full device sync. This is an UNFORGEABLE
-      // signal: a cross-operator cannot manufacture an admin@daemon grant it was never delegated.
-      if (verdict.ok) {
-        return { ...verdict, identifier: id, proofVerified, peerClass: "same-operator" as const };
-      }
-
-      // OPERATOR DEVICE-DELEGATION PATH (additive). The peer holds NO cap=admin, but a
-      // device the operator admitted carries the signed root→device edge. Admit it at the
-      // operator's-own-device tier IFF the edge verifies AND binds to THIS proven identity.
-      //
-      // MANDATORY PIN (confused-deputy cure), now on the PERSONA-KEL: the operator's own device edge MUST
-      // chain to the CURRENT head op-key the hearth's pinned identifier (`daemonAuth.personaKel.prefix`)
-      // resolves to — the same continuity anchor the Binding Gate walks in bootDaemonKeyhive. Walking the
-      // KEL (not a frozen op-key) means a device re-issued under a rotated head still admits, and a device
-      // edge signed by a SUPERSEDED op-key rejects. An absent / mis-pinned KEL is a HARD ERROR, not a skip.
-      // The presenter binding (`edge.deviceDid === id`) ties the operator's grant to the exact identity that
-      // just proved possession of its key (proofVerified, above) — a device-admitted peer STILL proves it
-      // holds its key; the edge only adds the operator's delegation, it never weakens the V3 proof.
-      if (edge) {
-        const kel = daemonAuth.personaKel;
-        if (!kel || kel.chain.length === 0 || kel.chain[0]!.prefix !== kel.prefix) {
-          return { ok: false, identifier: id, proofVerified, reason: "device-delegation: no pinned persona-KEL in scope — refusing to admit on an unpinned edge" };
-        }
-        // FRESHNESS TAKES THE LEASE, NEVER THE CLOCK ALONE (same law as gateFaceJoin, :502-509). Read the
-        // CURRENT PersonaGroup lease epoch fresh at this admission attempt — a device whose boundEpoch has
-        // rolled past denies HERE, and re-presents via the existing face-join regrant flow (:467-470).
-        // An absent/unavailable frontier is an explicit refusal: this is a mutation gate, so a valid signature
-        // plus a soft wall-clock window cannot silently stand in for the current authority relation.
-        if (!epochCtx) {
-          return { ok: false, identifier: id, proofVerified, reason: "device-delegation pending: current lease frontier unavailable" };
-        }
-        const lease = await readLeaseEpoch(epochCtx.composite);
-        if (lease.kind === "unavailable") {
-          return { ok: false, identifier: id, proofVerified, reason: `device-delegation pending: current lease frontier unavailable (${lease.why})` };
-        }
-        const expectedEpoch = lease.n;
-        const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, { expectedEpoch });
-        const deviceMatches = edge.deviceDid === id;
-        const unreadNote    = kelWalkNote(delegation);
-        if (delegation.ok && deviceMatches && proofVerified) {
-          // Admitted at the operator's-own-device tier — equivalent flow to admin (it IS the
-          // operator's delegated device). `reason` carries the provenance (survives the worker→host
-          // boundary; the gate ignores it on an ok verdict but it aids audit).
-          //
-          // SELF-SLOT CLASS: the edge chains to the persona-KEL head op-key — THIS hearth's pinned
-          // identifier's current authority — and binds to the exact identity that proved key-possession. A
-          // cross-operator cannot forge an edge chaining to a KEL it never heads, so a verified head-chained
-          // edge PROVES same-operator (the operator's own device fleet, a distinct device key under one identity).
-          // Events the walk set aside move nothing; the provenance says so rather than drop them in silence.
-          return { ok: true, identifier: id, proofVerified, reason: `admitted via operator device-delegation${unreadNote}`, peerClass: "same-operator" as const };
-        }
-        return {
-          ok: false, identifier: id, proofVerified,
-          reason: (!delegation.ok  ? `device-delegation rejected: ${delegation.reason ?? "(no reason)"}`
-                : !deviceMatches  ? "device-delegation edge not bound to the presented identity"
-                :                   "device-delegation requires a verified proof-of-possession") + unreadNote,
-        };
-      }
-
-      // A PROVEN KEY, AND NOTHING MORE. The peer holds neither cap=admin@daemon nor a valid KEL-pinned device
-      // edge, yet it proved a self-certifying identity and — the foreign surface never relaxes — possession of
-      // its key. The worker vouches exactly that: `ok` with the proven identifier and NO class. The gate's sorter
-      // then classes the socket (contracted · walker · stranger) or answers it silence; the worker never
-      // decides what a foreign key reaches. A foreign key that cannot prove possession is refused here, whatever
-      // `LAR_V3_ALLOW_UNPROVEN` says (that hatch relaxes the operator's OWN device fleet above, never a foreign
-      // presenter).
-      if (proofVerified) return { ok: true, identifier: id, proofVerified, reason: "proven key — the gate's sorter classes it" };
-      return { ...verdict, identifier: id, proofVerified, reason: verdict.reason ?? "a foreign key must prove possession" };
-    },
+    // NO verifyPeer. A peer's admission to the daemon bag was once decided here, off a V3 proof the pre-sync gate relayed.
+    // That gate is retired: a sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket itself
+    // (`socket-sorter`), so the worker no longer vouches a card, a device edge or a class for a socket.
 
     // A VESSEL BINDS ON ITS OWN KEY, AND A FACE COMPOSES ONTO THAT.
     //

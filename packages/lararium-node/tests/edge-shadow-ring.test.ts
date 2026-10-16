@@ -31,10 +31,11 @@ import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
 import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring.js";
-import { makeSocketSorter } from "../src/socket-sorter.js";
+import { makeGateSorter } from "../src/socket-sorter.js";
+import { gateShadowRing } from "../src/gate-shadow-ring.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
-import type { SortInput } from "../src/daemon-auth-gate.js";
+import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
@@ -251,6 +252,52 @@ describe("a fold a board's change overtook publishes nothing", () => {
   });
 });
 
+// ── D4: the face key a gate proves, bound to its device edge ──────────────────────────────────────────────
+const PHONE_FACE = "a1".repeat(32), PHONE_FACE_TWO = "a2".repeat(32), LAPTOP_FACE = "b1".repeat(32);
+const FACE_N = "nexus-n";
+const presenterOf = (vesselFaceKey: string, faceKey = "f1".repeat(32)) => ({ scope: { faceKey, nexus: FACE_N } as FaceScope, vesselFaceKey: vesselFaceKey as VesselFaceKey });
+const faceDevices = (pairs: Record<string, string>) => (p: { vesselFaceKey: VesselFaceKey }) =>
+  pairs[p.vesselFaceKey] !== undefined ? { device: pairs[p.vesselFaceKey]! } : { unreadable: "face-device-unbound" };
+/** What a sovereign gate hands its sorter for a face it read held, with the PersonaGroup's grant. */
+function sameOperatorInput(fleetAside: boolean): GateSortInput {
+  const faceKey = "f1".repeat(32);
+  return {
+    tier: "sovereign", scope: { faceKey, nexus: FACE_N } as FaceScope, placeKey: null, place: null, profile: "face" as GateSortInput["profile"],
+    admit: { verdict: { state: "held", reason: "held", nym: faceKey }, nexus: FACE_N, admitRef: "ref", revision: "r", head: faceKey },
+    sameGroup: { personaGroup: "0xgroup", faceKey, nexus: FACE_N, revision: "g" }, fleetAside,
+    arm: { kind: "admit", admit: {} as never, lineage: [] },
+  };
+}
+
+describe("D4 — a device set aside cuts every face it wore, across a restart", () => {
+  it("★ two faces one device wears read fleet-aside from the gate's ring, before and after the vessel restarts ★", async () => {
+    const phone = await nymOf(54), laptop = await nymOf(55);
+    const devices = faceDevices({ [PHONE_FACE]: phone, [PHONE_FACE_TWO]: phone, [LAPTOP_FACE]: laptop });
+    const faces = [presenterOf(PHONE_FACE), presenterOf(PHONE_FACE_TWO, "f2".repeat(32)), presenterOf(LAPTOP_FACE)];
+    // CONTROL: before any shadow, a folded ring reads every mapped face clear.
+    await withRing({}, async (ring) => {
+      await ring.refold();
+      expect(faces.map((f) => gateShadowRing({ ring, deviceOf: devices }).consult(f).fleetAside)).toEqual([false, false, false]);
+    });
+    await direct(runEdgeKapae)({ device: phone, raised: true });
+    await withRing({}, async (ring) => {
+      const shadows = gateShadowRing({ ring, deviceOf: devices });
+      await ring.refold();
+      expect(faces.map((f) => shadows.consult(f).fleetAside)).toEqual([true, true, false]);
+    });
+    // THE RESTART: a fresh ring over the reopened store answers closed until it folds, then reads the shadow again.
+    await withRing({}, async (ring) => {
+      const shadows = gateShadowRing({ ring, deviceOf: devices });
+      expect(faces.map((f) => shadows.consult(f))).toEqual(faces.map(() => ({ aside: true, fleetAside: true })));
+      await ring.refold();
+      expect(faces.map((f) => shadows.consult(f).fleetAside)).toEqual([true, true, false]);
+      const sorter = makeGateSorter({ posture: () => "private" });
+      expect(await sorter.sort(sameOperatorInput(shadows.consult(faces[1]!).fleetAside))).toMatchObject({ class: "contracted" });
+      expect(await sorter.sort(sameOperatorInput(shadows.consult(faces[2]!).fleetAside))).toEqual({ class: "same-operator" });
+    });
+  });
+});
+
 describe("a device the fleet root set aside — the sorter, the share verdict and carriage serve", () => {
   it("★ the device never sorts same-operator, reads no document on any lane, and draws Mu at the fetch door ★", async () => {
     const phone = await nymOf(52), laptop = await nymOf(53);
@@ -269,13 +316,13 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
       expect(ring.aside("peer-unnamed")).toBe(false);                             // a peer the wire has not named
       expect(ring.fleetBoardUrls()).toEqual([fleetEdgeBoardDocUrl(fleetRoot)]);
 
-      // THE SORTER, through its own entry point: a delegation that proves same-operator, set aside.
-      const sorter = makeSocketSorter({ readings: async () => [], carrier: () => false, primaryPosture: () => "private", deviceAside: ring.deviceAside });
-      const input = (vesselKey: string): SortInput => ({ identifier: `0x${vesselKey}`, vesselKey, sameOperator: true, challenge: { nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32) } });
-      expect(await sorter(input(phone))).toBeNull();                              // silence under PRIVATE: what a stranger meets
-      expect(await sorter(input(laptop))).toEqual({ class: "same-operator" });     // CONTROL
-      const open = makeSocketSorter({ readings: async () => [], carrier: () => false, primaryPosture: () => "open", deviceAside: ring.deviceAside });
-      expect(await open(input(phone))).toEqual({ class: "stranger" });             // under OPEN it sorts by what else it proves: nothing
+      // THE GATE (D4), through its own entry points: a face the phone wears, proven same-operator, set aside.
+      const shadows = gateShadowRing({ ring, deviceOf: faceDevices({ [PHONE_FACE]: phone, [LAPTOP_FACE]: laptop }) });
+      const sorter = makeGateSorter({ posture: () => "private" });
+      const sorted = (vesselFaceKey: string) => sorter.sort(sameOperatorInput(shadows.consult(presenterOf(vesselFaceKey)).fleetAside));
+      expect(shadows.consult(presenterOf(PHONE_FACE))).toEqual({ aside: false, fleetAside: true });
+      expect(await sorted(PHONE_FACE)).toMatchObject({ class: "contracted" });      // it sorts by what else it proves: its admit
+      expect(await sorted(LAPTOP_FACE)).toEqual({ class: "same-operator" });        // CONTROL
 
       // THE SHARE VERDICT: a socket admitted before the shadow arrived still holds its class; the verdict reads the shadow first.
       const MY_NEXUS = "11".repeat(32);
@@ -283,6 +330,8 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
         hasWsSocket: !sibling, sibling, siblingGate: { mayFederate: () => true }, peerClass: "same-operator",
         selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: null, membership: null, planeSeal: null,
         peerId, documentId, shadow: ring,
+        // D3: the gate of the face each session proved; it would hand over the face's every plane, so only the shadow refuses.
+        sessionFace: { mayFederate: () => true },
       });
       const PRIVATE = idOf(realmDocUrl("a-private-plane")), SHELF = idOf(crossroadsDocUrl(MY_NEXUS));
       for (const doc of [PRIVATE, SHELF]) {

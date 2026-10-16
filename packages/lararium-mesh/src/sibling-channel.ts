@@ -83,9 +83,7 @@ import { NetworkAdapter, cbor, type Message, type PeerId, type PeerMetadata, typ
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, hex } from "./crypto.js";
-import { MEMBERSHIP_RELAY_DOMAIN, SIBLING_CHANNEL_INFO, SIBLING_PEER_ID_INFO } from "./domains.js";
-import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
-import { knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
+import { SIBLING_CHANNEL_INFO, SIBLING_PEER_ID_INFO } from "./domains.js";
 import {
   startLeafPeerProof, answerLeafPeerProof, finishLeafPeerProof, acceptLeafPeerProof, isLeafSessionFrame,
   type LeafPeerSelf, type LeafPeerState, type LeafPeerFrame, type LeafPeerSession, type LeafSessionFrame,
@@ -100,7 +98,6 @@ import {
   depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
 } from "./persona-kel-drop.js";
 
-const KEY_RE = /^[0-9a-f]{64}$/;
 
 /** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
 export const SIBLING_JOIN_KIND = "sibling/join";
@@ -195,72 +192,20 @@ export function siblingPeerIdOf(deviceKey: string): PeerId {
 }
 
 /**
- * Dial a herm's relay as a leaf: open the knock the pinned gate key derives, prove this leaf's device key through
- * the one handshake (`runPeerHandshake` against the relay's audience, the verdict read only under the pin).
- * Resolves the transport, or rejects with the reason the handshake gave — a herm that meets a leaf with silence
- * rejects "no answer". The transport's `join` keys each channel tag with the pinned gate key.
- *
- * @param address the herm's pinned relay address, `ws://host:port#<gate key hex>`.
+ * THE SIBLING DIAL SHIPS SHUT BY NAME. House ruling "Routes at the cutover" (stable-founding-road): "Walker arms, the
+ * sibling dial and the herm membership relay ship SHUT by name ... a closed route grants no silent legacy authority."
+ * The herm's relay spoke the retired pre-sync handshake, and a sibling frame rides nothing else, so no sibling
+ * transport opens until a proven gate-native caller flips the route. The channel says so as `pins` on every dial.
  */
-export function dialSiblingHerm(opts: {
+export const SIBLING_ROUTE_SHUT = "sibling-route-shut: the sibling dial ships shut by name (house ruling \"Routes at the cutover\"); no sibling channel opens until a gate-native caller flips it";
+
+/** Dial a herm's relay as a leaf: SHUT. It opens no socket and rejects with `SIBLING_ROUTE_SHUT`. */
+export function dialSiblingHerm(_opts: {
   readonly address: string;
   readonly deviceKey: string;
   readonly sign: (bytes: Uint8Array) => Promise<string> | string;
 }): Promise<SiblingTransport> {
-  return new Promise((resolve, reject) => {
-    let pinned: { url: string; gatePubKey: string };
-    try { pinned = pinnedRelayAddress(opts.address); } catch (err) { reject(err); return; }
-    const ws = new WebSocket(knockedUrl(pinned.url, pinned.gatePubKey));
-    const frameListeners = new Set<(from: string, frame: unknown) => void>();
-    const closeListeners = new Set<() => void>();
-    const pending: unknown[] = [];
-    const waiters: Array<(v: unknown) => void> = [];
-    let verified = false;
-    let settled = false;
-    const settleReject = (err: Error): void => { if (!settled) { settled = true; reject(err); } };
-    ws.addEventListener("error", () => settleReject(new Error("the herm's socket faulted before a verdict")));
-    ws.addEventListener("close", () => {
-      while (waiters.length) waiters.shift()!(undefined);
-      settleReject(new Error("the herm's socket closed before a verdict"));
-      if (verified) for (const l of closeListeners) { try { l(); } catch { /* one listener never silences another */ } }
-    });
-    ws.addEventListener("message", (event: MessageEvent) => {
-      if (typeof event.data !== "string") return;
-      let msg: unknown;
-      try { msg = JSON.parse(event.data); } catch { return; }
-      if (!verified) { const w = waiters.shift(); if (w) w(msg); else pending.push(msg); return; }
-      if (!isLarSessionMsg(msg) || msg.kind !== SIBLING_FRAME_KIND) return;
-      const body = msg.body as { from?: unknown; frame?: unknown } | null;
-      if (!body || typeof body.from !== "string" || !KEY_RE.test(body.from)) return;
-      for (const l of frameListeners) { try { l(body.from, body.frame); } catch { /* isolated */ } }
-    });
-    const sendSession = (kind: string, body: unknown): void => {
-      if (ws.readyState !== WebSocket.OPEN) return;
-      try { ws.send(JSON.stringify(mkLarSessionMsg(kind, body))); } catch { /* closed */ }
-    };
-    ws.addEventListener("open", () => {
-      void (async () => {
-        const deviceKey = opts.deviceKey.toLowerCase();
-        const verdict = await runPeerHandshake({
-          recv: () => pending.length ? Promise.resolve(pending.shift()) : new Promise((r) => waiters.push(r)),
-          send: (m) => { try { ws.send(JSON.stringify(m)); } catch { /* closed */ } },
-          contactCard: deviceKey, peerPubKey: deviceKey, gatePubKey: pinned.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN,
-          sign: opts.sign,
-        });
-        if (settled) return;
-        if (!verdict.ok) { settled = true; try { ws.close(); } catch { /* closed */ } reject(new Error(verdict.reason)); return; }
-        verified = true;
-        settled = true;
-        resolve({
-          join: (secrets) => sendSession(SIBLING_JOIN_KIND, { channels: secrets.map((s) => siblingChannelTag(s, pinned.gatePubKey)) }),
-          send: (to, frame) => sendSession(SIBLING_FRAME_KIND, { to, frame }),
-          onFrame: (l) => { frameListeners.add(l); return () => { frameListeners.delete(l); }; },
-          onClose: (l) => { closeListeners.add(l); return () => { closeListeners.delete(l); }; },
-          close: () => { try { ws.close(); } catch { /* closed */ } },
-        });
-      })();
-    });
-  });
+  return Promise.reject(new Error(SIBLING_ROUTE_SHUT));
 }
 
 /** One sibling, as this leaf holds it. */
@@ -1008,6 +953,8 @@ export async function standSiblingChannel(opts: {
   } catch (err) {
     refusal = `a pinned herm address reads no gate key, so the channel pins nothing it can dial: ${(err as Error).message}`;
   }
+  // The route is shut: the adapter dials nothing, and says why on every dial and in `status()`.
+  refusal = `${SIBLING_ROUTE_SHUT}${refusal === undefined ? "" : ` (${refusal})`}`;
   const adapter = new SiblingNetworkAdapter({
     kel: eventsNow(),
     leaf: async (kel) => ({

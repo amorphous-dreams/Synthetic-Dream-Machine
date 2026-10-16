@@ -19,7 +19,7 @@ import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody, type With
 import { dialFaceGate, dialPlaceGate, type DialSocket, type FaceDialArgs, type FaceDialOutcome, type PlaceDialOutcome } from "../src/face-dial.js";
 import {
   makeFaceGate, memoryBackedWithdrawals, presentedAdmitReader, type FaceGate, type GateOutcome, type GateSession,
-  type GateShadowReading, type GateSocket, type GateSortInput, type GateSortVerdict, type GateWithdrawalMemory,
+  type GateDeadlines, type GateSessionTable, type GateShadowReading, type GateSocket, type GateSortInput, type GateSortVerdict, type GateWithdrawalMemory,
   type HeldNexusRoot, type GateSilenceDetail, type GateSilenceReason,
 } from "../src/face-gate.js";
 import type { FaceScope, NexusAid, VesselFaceCertificate } from "../src/face-proof-subjects.js";
@@ -203,7 +203,7 @@ export interface World {
 }
 
 /** Stand one gate for `nexus` on `route`, under the vessel root `root`. */
-export async function world(opts: { nexus?: string; route?: string; root?: GateRootDoor; tier?: GateTier; posture?: FederationPosture; maxPending?: number; audience?: string; withdrawals?: GateWithdrawalMemory; gateBundle?: (derived: GateBundle) => GateBundle; onRefuse?: (reason: GateSilenceReason, detail?: GateSilenceDetail) => void; admitRefusal?: string } = {}): Promise<World> {
+export async function world(opts: { nexus?: string; route?: string; root?: GateRootDoor; tier?: GateTier; posture?: FederationPosture; maxPending?: number; audience?: string; withdrawals?: GateWithdrawalMemory; gateBundle?: (derived: GateBundle) => GateBundle; onRefuse?: (reason: GateSilenceReason, detail?: GateSilenceDetail) => void; admitRefusal?: string; lapses?: GateDeadlines; sessions?: GateSessionTable } = {}): Promise<World> {
   const nexus = (opts.nexus ?? "nexus-a.synthetic") as NexusAid;
   const epoch = `epoch-${nexus}`;
   // Each Nexus seats its own quorum: an admit one Nexus signed counts under no other's roster.
@@ -218,7 +218,7 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
   const withdrawals = opts.withdrawals ?? memoryBackedWithdrawals();
   const w: World = {
     nexus, bundle, pin: bundle.pin, deadlines, withdrawals, epoch,
-    held: { nexus, revision: "board-heads-1", roster, denyBoard: [] as CarriageEntry[], antigen: [] as KapaeAntigenEntry[], antigenRoster, antigenVerifier: makeMultiSigQuorumVerifier() },
+    held: { nexus, revision: "board-heads-1", roster, denyBoard: [] as CarriageEntry[], antigen: [] as KapaeAntigenEntry[], antigenRoster, antigenVerifier: makeMultiSigQuorumVerifier(), handOvers: [] },
     posture: opts.posture ?? "private",
     aside: new Set(), fleetReadable: true, fleetAside: new Set(), placeAside: new Set(), grants: new Map(), sorterAnswer: null,
     asked: [], sorted: [], attached: [], abandoned: [], sentAtAttach: [], tableFault: null, seatFault: null, refusals: [],
@@ -230,7 +230,8 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
   };
   const admits = presentedAdmitReader(() => w.held);
   (w as { gate: FaceGate }).gate = makeFaceGate({
-    bundle: opts.gateBundle ? opts.gateBundle(bundle) : bundle, nexus, audience: opts.audience ?? AUDIENCE, deadlines, withdrawals,
+    // A suite that bends the deadline source hands its own to the gate; `w.deadlines` stays the hand-fired twin.
+    bundle: opts.gateBundle ? opts.gateBundle(bundle) : bundle, nexus, audience: opts.audience ?? AUDIENCE, deadlines: opts.lapses ?? deadlines, withdrawals,
     ...(opts.maxPending !== undefined ? { maxPending: opts.maxPending } : {}),
     admits: {
       read: (arm) => { w.asked.push("admit"); return opts.admitRefusal === undefined ? admits.read(arm) : Promise.resolve({ refusal: opts.admitRefusal }); },
@@ -260,7 +261,8 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
         return cls === null ? null : { class: cls, ...(nym ? { standing: { nym, aid: nexus } } : {}) };
       },
     },
-    sessions: {
+    // A suite that stands a real session table hands it in; the recording table stands otherwise.
+    sessions: opts.sessions ?? {
       attach(socket, session) {
         w.asked.push("attach");
         if (w.tableFault) throw w.tableFault;

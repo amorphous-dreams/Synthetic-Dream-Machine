@@ -265,11 +265,18 @@ describe("session contract", () => {
     ]) expect(validateSessionEnvelope(invalid)).toBeNull();
   });
 
-  test("the public barrel does not export the private session contract", () => {
+  // "A pure library names its caller. A module built ahead of its consumer stays out of the package barrel until the
+  // commit that consumes it" (stable-founding-road, the rulings). The node's dial consumes the table and the binding a
+  // session opens on (`open-node-vessel`, `dialSessions`); the barrel names those three and no other part of the contract.
+  test("the public barrel names only the session table and binding its dialer consumes", () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const barrel = readFileSync(resolve(here, "../src/index.ts"), "utf8");
     expect(barrel).toContain("island-protocol");
-    expect(barrel).not.toContain("session-contract");
+    const named = [...barrel.matchAll(/^export (?:type )?\{([^}]*)\} from "\.\/session-contract\.js";$/gm)].flatMap((m) => m[1]!.split(",").map((n) => n.trim()).filter(Boolean));
+    expect(named.sort()).toEqual(["SessionBinding", "SessionTable", "sessionBinding"]);
+    expect(barrel.match(/session-contract/g)?.length).toBe(2);
+    const caller = readFileSync(resolve(here, "../../lararium-node/src/open-node-vessel.ts"), "utf8");
+    expect(caller).toMatch(/\bSessionTable, sessionBinding\b[^;]*from "@lararium\/mesh"/);
   });
 
   test("session source has no clock, timer, or platform imports", () => {

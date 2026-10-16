@@ -40,7 +40,7 @@
  * the withdrawal memory accretes; the session table attaches. Where a gate's withdrawal memory rests
  * stands owed: `memoryBackedWithdrawals` keeps it in memory and persists nothing.
  *
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Stands specified in code until the socket cutover wires it; the package barrel names it for the cutover's slices.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
@@ -283,6 +283,13 @@ export interface GateSession {
   readonly class:         PeerClass;
   readonly standing?:     { readonly nym: string; readonly aid: string };
   readonly push:          ReadonlyArray<{ readonly kind: string; readonly body: unknown }>;
+  /** The arm as it rode, which this gate read held: an admit and its lineage, a place's contract, or null. A
+   *  refold reads it again; the gate itself reads it no further. */
+  readonly arm:           PresentationArm | PlaceArm | null;
+  /** THE PROVEN FACE VIEW's key: the PersonaGroup grant this gate's ring answered for a same-operator seat, and
+   *  null for every other class. A share verdict reads the face's documents through it (D3); the class alone
+   *  grants transport. */
+  readonly face:          FaceGrantReading | null;
   /** The sealed channel every later frame rides. */
   readonly transport:     NoiseTransport;
 }
@@ -370,7 +377,7 @@ export interface FaceGate {
 const MAX_PENDING = 50;
 
 /** One accept's standing against its deadline. */
-interface AcceptState { lapsed: boolean; attached: boolean; standDown: () => void }
+interface AcceptState { lapsed: boolean; attached: boolean; standDown: () => void; release: (() => void) | null }
 
 /** Did any gate already run its exchange on this socket? One socket carries one first flight. */
 const ACCEPTED = new WeakSet<GateSocket>();
@@ -453,23 +460,35 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
 
     /**
      * 9 · the session's seat, then the verdict, after the finish. The table takes the session first and sends
-     * nothing; the deadline then stands down, so no lapse cuts a socket whose verdict left; the verdict leaves;
-     * the seat opens.
+     * nothing; the verdict signs and leaves UNDER THE DEADLINE, so a sign that never returns is cut at the lapse,
+     * its seat abandoned and its pending place freed; the deadline stands down the moment the verdict left, so no
+     * lapse cuts a socket whose verdict left; the seat opens.
      */
     const seat = async (session: GateSession): Promise<GateOutcome> => {
       if (state.lapsed) return silence("deadline-before-verdict");
       const taken = await deps.sessions.attach(socket, Object.freeze(session));
-      if (state.lapsed) { taken.abandon(); return silence("deadline-before-verdict"); }
-      state.attached = true;
-      state.standDown();
+      let released = false;
+      const release = (): void => { if (released) return; released = true; try { taken.abandon(); } catch { /* the table already faulted */ } };
+      if (state.lapsed) { release(); return silence("deadline-before-verdict"); }
+      state.release = release;
+      let left: boolean;
       try {
-        await answer({ state: "verified" });
+        left = await answer({ state: "verified" });
       } catch (error) {
-        // The verdict could not leave and no deadline stands to cut the socket: the gate cuts it here.
-        taken.abandon();
+        // The verdict could not leave: the gate cuts the socket here, and the deadline stands down with the seat.
+        state.standDown();
+        release();
         try { socket.cut(); } catch { /* already gone */ }
         return silence("verdict-unsent");
       }
+      if (!left) {
+        // The lapse reached the sign and cut the socket: no verdict left, so no seat opens over it.
+        release();
+        return silence("deadline-before-verdict");
+      }
+      state.attached = true;
+      state.release = null;
+      state.standDown();
       try {
         taken.open();
       } catch (error) {
@@ -513,7 +532,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       return seat({
         tier: bundle.pin.tier, scope: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
         ...(sorted.standing ? { standing: sorted.standing } : {}),
-        push: Object.freeze([...(sorted.push ?? [])]), transport,
+        push: Object.freeze([...(sorted.push ?? [])]), arm: shown.arm, face: null, transport,
       });
     };
 
@@ -595,7 +614,8 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
     return seat({
       tier: bundle.pin.tier, scope, sessionKey: chain.sessionKey, placeKey: null, profile: chain.profile, class: sorted.class,
       ...(sorted.standing ? { standing: sorted.standing } : {}),
-      push: Object.freeze([...(sorted.push ?? [])]), transport,
+      push: Object.freeze([...(sorted.push ?? [])]), arm: read.arm,
+      face: sorted.class === "same-operator" ? sameGroup : null, transport,
     });
   }
 
@@ -613,13 +633,17 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       // 1 · ONE deadline, drawn at accept. Whatever follows, a socket that never attached gets cut when it lapses.
       // Until it attaches or lapses the socket holds its pending place, whatever its run came to: a refused
       // socket and a waiting one weigh alike on the bound.
-      const state: AcceptState = { lapsed: false, attached: false, standDown: () => {} };
+      const state: AcceptState = { lapsed: false, attached: false, standDown: () => {}, release: null };
       let placed = false;
       const leave = (): void => { if (placed) { placed = false; pending--; } };
       const deadline = deps.deadlines.draw(() => {
         state.lapsed = true;
         leave();
-        if (!state.attached) { try { socket.cut(); } catch { /* already gone */ } }
+        if (!state.attached) {
+          // A seat taken under a verdict that never left goes with the socket.
+          try { state.release?.(); } catch { /* a table fault decides nothing here */ }
+          try { socket.cut(); } catch { /* already gone */ }
+        }
       });
       state.standDown = () => { deadline.cancel(); leave(); };
       let outcome: GateOutcome;

@@ -39,6 +39,8 @@
 
 import { CARRIAGE_ADMIT_OPENING_DOMAIN, CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { admitGatePinDigest, readAdmitGatePin } from "./admit-gate-pin.js";
+import type { GateBundlePin } from "./gate-bundle.js";
 import type { QuorumSignature, KahuQuorumSeats } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
@@ -85,8 +87,11 @@ export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
  * small: a hearth names a handful of canon documents, never a catalog.
  */
 export interface AdmitCarriage {
-  /** The hearth's gate pin, 64 lower-case hex. */
-  readonly gatePin: string;
+  /**
+   * The hearth's FULL gate pin for its sovereign sync route at the Nexus (`readAdmitGatePin`): tier, Nexus, route, the
+   * X25519 key that answers a flight and the Ed25519 key that signs the verdict. The commitment is over its digest.
+   */
+  readonly gatePin: GateBundlePin;
   /** Canon title → document url. */
   readonly canon:   Readonly<Record<string, string>>;
 }
@@ -106,11 +111,16 @@ const plain = (v: unknown): v is Record<string, unknown> => typeof v === "object
 const exactly = (v: Record<string, unknown>, keys: readonly string[]): boolean =>
   Reflect.ownKeys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
 
-/** Read an admit's carriage at its exact shape, or null. It copies the two fields alone. */
+/**
+ * Read an admit's carriage at its exact shape, or null. It copies the two fields alone, and holds the pin to the
+ * sovereign tier and the sovereign sync route. The Nexus it stands at is held where the Nexus is known
+ * (`readAdmitGatePinAt`): the signed-bundle door and the fleet-join answer.
+ */
 export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
   if (!plain(v) || !exactly(v, ["gatePin", "canon"])) return null;
   const { gatePin, canon } = v;
-  if (typeof gatePin !== "string" || !HEX64.test(gatePin) || !plain(canon)) return null;
+  const pin = readAdmitGatePin(gatePin);
+  if (!("pin" in pin) || !plain(canon)) return null;
   const entries = Object.entries(canon);
   if (entries.length > ADMIT_CANON_BOUND) return null;
   const read: Record<string, string> = {};
@@ -118,7 +128,7 @@ export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
     if (!ADMIT_CANON_TEXT.test(title) || typeof url !== "string" || !ADMIT_CANON_TEXT.test(url)) return null;
     read[title] = url;
   }
-  return { gatePin, canon: read };
+  return { gatePin: pin.pin, canon: read };
 }
 
 /** Read an opening at its exact shape, or null. */
@@ -132,7 +142,7 @@ export function readAdmitOpening(v: unknown): AdmitOpening | null {
 /** The commitment an admit's quorum signs: one digest over the opening under its own domain. */
 export function admitCarriageCommit(opening: AdmitOpening): string {
   return sha256HexBytesSync(canonicalJsonBytes({
-    domain: CARRIAGE_ADMIT_OPENING_DOMAIN, salt: opening.salt, gatePin: opening.carriage.gatePin, canon: opening.carriage.canon,
+    domain: CARRIAGE_ADMIT_OPENING_DOMAIN, salt: opening.salt, gatePin: admitGatePinDigest(opening.carriage.gatePin), canon: opening.carriage.canon,
   }));
 }
 

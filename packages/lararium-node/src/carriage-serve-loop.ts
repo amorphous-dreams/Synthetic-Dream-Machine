@@ -1,4 +1,8 @@
 /**
+ * ROUTE SHUT at the sealed-gate cutover: the carriage-relay peering dial rides the retired challenge/auth wire, so
+ * the loop now logs the shut by name ONCE, never dials and never redials (a shut route grants nothing silently).
+ * The text below describes the retired shape and stays for the day a sealed-gate route re-opens it.
+ *
  * carriage-serve-loop — the vessel's SERVE side of the carriage: it dials a carriage relay over an authenticated
  * WS channel and answers members' `want-block`s on a clean poll interval, so a sealed cad body crosses hearth to
  * hearth. This closes the LIVE-WIRE: a member over the relay carries a sealed ciphertext; a stranger draws Mu.
@@ -30,7 +34,7 @@
  */
 
 import { MEMBERSHIP_BROADCAST, verifyCidBytes, type CasTransitTransport, type MembershipEnvelope } from "@lararium/mesh";
-import { AuthenticatedWSMembershipChannel } from "./authenticated-membership-relay.js";
+import { AuthenticatedWSMembershipChannel, MEMBERSHIP_RELAY_SHUT } from "./authenticated-membership-relay.js";
 import { serveCasWireEnvelopes, CAS_HAVE, CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, type CasWireServerDeps } from "./cas-wire.js";
 
 /** The default poll cadence — a member's want-block waits at most this long for a serve turn. */
@@ -176,6 +180,9 @@ export function startCarriageServeLoop(cfg: CarriageServeLoopConfig): CarriageSe
       }
     } catch (err) {
       if (stopped) return;
+      // THE ROUTE IS SHUT BY NAME (house ruling "Routes at the cutover"): a refusal that names it is final, so the loop says so
+      // once and does not redial — a shut route grants nothing silently, and a retry would only repeat the refusal.
+      if (String(err).includes(MEMBERSHIP_RELAY_SHUT)) { log(`carriage serve-loop ${MEMBERSHIP_RELAY_SHUT} over ${cfg.relayUrl} — not retrying`); return; }
       log(`carriage connect failed (${cfg.relayUrl}): ${String(err)} — retrying in ${reconnectDelay}ms`);
       scheduleRedial();
     }

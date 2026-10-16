@@ -22,7 +22,7 @@ import {
   dialEntryToRecord, dialEntries, type DialEntry,
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
-import { pullAndVerifyOracle } from "./oracle-read-client.js";
+import type { OraclePullResult } from "./oracle-read-client.js";
 import type { LeafIdentity } from "./auth-wire.js";
 import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
@@ -267,10 +267,15 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
  *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
  *
- *  PEERS PROVE FIRST: each pull proves `identity` at the peer's gate before any map crosses. A carriage
- *  handed no identity has nothing to prove with, so it pulls nothing — it still stands its own map. */
+ *  PEERS PROVE FIRST, AND THE PULL IS INJECTED. The old pull (`pullAndVerifyOracle`, a challenge-and-proof on a
+ *  peer's oracle socket) is gone from this cap: a carried dial names a peer's endpoint and gate KEY, never the full
+ *  gate pin a sealed dial needs, so no gate-native caller exists here yet and the route ships SHUT by name
+ *  ("carriage-peering-shut", house ruling "Routes at the cutover"). A caller that holds a gate-native pull hands it as
+ *  `pullOracle`; a carriage handed none pulls nothing — it still stands its own map. `identity` is read no more and
+ *  stays in the type only so existing call sites compile until the composer drops it. */
 export function carriageCap(deps: {
   peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
+  pullOracle?: (peer: string, gatePubKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
@@ -281,8 +286,8 @@ export function carriageCap(deps: {
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
-      const identity = deps.identity;
-      if (!identity) deps.onLog?.("carriage: no identity to prove at a peer's gate — this vessel carries in nothing");
+      const pullOracle = deps.pullOracle;
+      if (!pullOracle) deps.onLog?.("carriage: carriage-peering-shut — no gate-native pull is handed in, so this vessel carries in nothing");
       const pullOnce = async (): Promise<number> => {
         let merged = 0;
         const peers = discoverPeers(mp.handle.doc(), deps.peers, deps.selfEndpoint, deps.maxFanout ?? 16, deps.selfCoord);
@@ -304,14 +309,14 @@ export function carriageCap(deps: {
             }
           }
         }
-        if (!identity) return merged;   // nothing to prove with — nothing crosses in
+        if (!pullOracle) return merged;   // the route is shut: nothing crosses in
         for (const { endpoint: peer, gatePubKey } of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
             seenDiscovered.add(peer);
             deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
           }
           let verdict;
-          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity, verifyingKey: gatePubKey }); }
+          try { verdict = await pullOracle(peer, gatePubKey); }
           catch { continue; } // a peer down/unreachable is no error — feed-or-fade
           if (!verdict.ok || !verdict.doc) continue;
           const incoming = verdict.doc.tiddlers;
@@ -397,8 +402,10 @@ export function carriageStack(deps: {
   residency?:      BagStowage;
   self?:           MeshSelf;
   nodeSeedHex:     string;
-  /** The identity each pull proves at a peer's gate. Absent → the carriage pulls nothing. */
+  /** Read no more (the old pull is shut); kept so existing call sites compile. */
   identity?:       LeafIdentity;
+  /** A gate-native pull of a peer's public FLOW-map. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
+  pullOracle?:     (peer: string, gatePubKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
   pullIntervalMs?: number;
   onLog?:          (line: string) => void;
 }): readonly CapModule[] {
@@ -413,6 +420,7 @@ export function carriageStack(deps: {
       peers:       self?.peers ?? [],
       nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
       ...(deps.identity ? { identity: deps.identity } : {}),
+      ...(deps.pullOracle ? { pullOracle: deps.pullOracle } : {}),
       ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
       ...(self ? {
         ...(self.endpoint ? { selfEndpoint: self.endpoint } : {}), // absent → a leaf, not dial-able

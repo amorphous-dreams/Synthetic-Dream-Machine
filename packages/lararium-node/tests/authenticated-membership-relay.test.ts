@@ -1,298 +1,72 @@
 /**
- * authenticated-membership-relay.test.ts — WAVE 5: the cas-wire carry ⊥ read + Kapae-Mu proofs run GREEN over a
- * LIVE, AUTHENTICATED WS transport (real sockets), and a peer CANNOT impersonate the member gate.
+ * authenticated-membership-relay.test.ts — THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME, and its drop door stands.
  *
- * Proven over a real socket hop:
- *   · the ONE gate fronts the relay: a dial reaches it only on the knock its pinned key derives, proves its key, and
- *     reads the relay's signed verdict; a replayed or racing lar:auth meets silence or binds once,
- *   · CARRY ⊥ READ over the wire — an admitted MEMBER (proven key in the member set) carries the sealed ciphertext
- *     (verify-cap re-checked SECRET-FREE) + reads it with its bag content key; a NON-member draws Mu,
- *   · NO IMPERSONATION — a stranger that forges `from = <a member's key>` is STAMPED back to its OWN proven key by
- *     the relay, so the cas-wire gate reads it as the stranger → Mu (the forged carry never crosses),
- *   · the wire bytes match the in-memory proof (the MembershipChannel interface carries the identical messages);
- *   · THE DROP DOOR, live: junk under a real name or an invented one files nothing (F1, F2), a quarter-megabyte
- *     deposit meets silence (F3), one connection spends a bounded budget, a journal hands a restarted herm back
- *     what it verified, and a herm that never answers costs a pull or a deposit its deadline and no more (H).
+ * House ruling "Routes at the cutover": "Walker arms, the sibling dial and the herm membership relay ship SHUT by name ...
+ * a closed route grants no silent legacy authority." Never skipped to get green: a shut route's test asserts the shut.
+ *
+ * Proven over a real socket:
+ *   · a WebSocket upgrade at the relay's port — on any path, the old knock included — is destroyed before any 101, and the
+ *     relay names `membership-relay-shut` to its log and to `onShut`;
+ *   · `AuthenticatedWSMembershipChannel.connect` opens no socket and rejects, naming the shut;
+ *   · THE DROP DOOR, live (the floor voice on a plain HTTP request, apart from every proven socket): junk under a real
+ *     name or an invented one files nothing (F1, F2), a quarter-megabyte deposit meets silence (F3), one connection
+ *     spends a bounded budget, a journal hands a restarted herm back what it verified, and a herm that never answers
+ *     costs a pull or a deposit its deadline and no more (H).
  */
-import { MEMBERSHIP_RELAY_DOMAIN } from "@lararium/mesh";
-import { afterEach, beforeEach, describe, test, expect } from "vitest";
+import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import WS, { type RawData } from "ws";
-import {
-  DeterministicFederationGate, utf8Bytes, hex,
-  ed25519SignerFromSeed, knockedUrl, mkLarSessionMsg,
-  type MembershipChannel, type MembershipEnvelope,
-} from "@lararium/mesh";
-import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
-import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
-import { serveCasWire, type CasWireServerDeps } from "../src/cas-wire.js";
-import {
-  startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel,
-  type AuthenticatedMembershipRelay,
-} from "../src/authenticated-membership-relay.js";
-import { membershipOf, antigenOf, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
+import WS from "ws";
 import * as net from "node:net";
 import { request as httpRequest, Agent } from "node:http";
 import {
   provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, enrolmentDigestOf,
   personaEventCidOf, personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors, depositPersonaKelChain,
-  sha256HexSync, type PersonaKelEvent,
+  sha256HexSync, hex, knockedUrl, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { DROP_CONNECTION_BUDGET } from "../src/authenticated-membership-relay.js";
-import { dialerDouble } from "./gate-dial-fixture.js";
-import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
+import {
+  startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel, MEMBERSHIP_RELAY_SHUT, DROP_CONNECTION_BUDGET,
+  type AuthenticatedMembershipRelay,
+} from "../src/authenticated-membership-relay.js";
 
-const BODY = utf8Bytes("the sealed carrier body a member blind-transits over a real authenticated socket");
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
-/**
- * A channel with its own word for each envelope that lands in its inbox (`onEnvelope`). `next` resolves when the
- * next envelope this vector has not yet waited for has landed, so a vector reads the inbox at the channel's own
- * word and no pause stands in for "the socket delivered it".
- */
-async function hearing(url: string, seed: Uint8Array, who: string): Promise<{ ch: AuthenticatedWSMembershipChannel; next: () => Promise<void> }> {
-  let landed = 0;
-  let awaited = 0;
-  const owed: Array<{ n: number; word: Arrival<void> }> = [];
-  const ch = await AuthenticatedWSMembershipChannel.connect(url, seed, {
-    onEnvelope: () => { landed += 1; for (const o of owed) if (landed >= o.n) o.word.arrive(); },
+describe("authenticated-membership-relay — the route ships SHUT by name", () => {
+  let relay: AuthenticatedMembershipRelay | undefined;
+  afterEach(async () => { await relay?.close(); relay = undefined; vi.restoreAllMocks(); });
+
+  test("an upgrade on the old knock and on a bare path is destroyed before any 101, and the relay says `membership-relay-shut` each time", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const heard: string[] = [];
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(9), 0, undefined, { onShut: (why) => heard.push(why) });
+    const url = `ws://127.0.0.1:${relay.port}`;
+    for (const target of [knockedUrl(url, relay.gatePubKey), `${url}/`, `${url}/ws`]) {
+      const outcome = await new Promise<string>((resolve) => {
+        const ws = new WS(target);
+        ws.on("open", () => { ws.terminate(); resolve("opened"); });
+        ws.on("error", () => resolve("refused"));
+        ws.on("unexpected-response", () => resolve("refused"));
+      });
+      expect(outcome, target).toBe("refused");
+    }
+    expect(heard).toEqual([MEMBERSHIP_RELAY_SHUT, MEMBERSHIP_RELAY_SHUT, MEMBERSHIP_RELAY_SHUT]);
+    expect(log.mock.calls.filter(([line]) => String(line).includes(MEMBERSHIP_RELAY_SHUT))).toHaveLength(3);
   });
-  const next = (): Promise<void> => {
-    const n = ++awaited;
-    const word = arrival<void>(`envelope ${n} landing in ${who}'s channel (its \`onEnvelope\`)`, 10_000);
-    if (landed >= n) word.arrive(); else owed.push({ n, word });
-    return word.arrived;
-  };
-  return { ch, next };
-}
-type Hearing = Awaited<ReturnType<typeof hearing>>;
 
-/** Drive one fetch over the WS hop, each step at the receiving channel's own word: the requester offers a
- *  want-block; it lands at the holder, who serves one turn; the answer lands at the requester, who reads it. */
-async function driveFetch(args: {
-  requester: Hearing; requesterAddr: string;
-  holder: Hearing; holderAddr: string;
-  deps: CasWireServerDeps; cid: string;
-}): Promise<MembershipEnvelope | null> {
-  await args.requester.ch.offer({ kind: "cas-want-block", from: args.requesterAddr, to: args.holderAddr, payload: { cid: args.cid } });
-  await args.holder.next();
-  expect(await serveCasWire(args.holder.ch, args.holderAddr, args.deps), "the holder serves the one want that landed").toBe(1);
-  await args.requester.next();
-  return (await args.requester.ch.poll(args.requesterAddr))[0] ?? null;
-}
-
-describe("authenticated-membership-relay — cas-wire over a live authenticated WS hop", () => {
-  let relay: AuthenticatedMembershipRelay;
-  let storageDir: string;
-  beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "lares-ws-store-")); });
-  afterEach(async () => { await relay?.close(); rmSync(storageDir, { recursive: true, force: true }); });
-
-  test("an admitted MEMBER carries + reads over the wire; a NON-member draws Mu; a forged `from` is defeated", async () => {
-    // Seeds → proven keys (the relay stamps `from` with these; the cas-wire gate reads them).
-    const holderSeed = new Uint8Array(32).fill(1);
-    const memberSeed = new Uint8Array(32).fill(2);
-    const strangerSeed = new Uint8Array(32).fill(3);
-    const [holderKey, memberKey, strangerKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed), pubOf(strangerSeed)]);
-
-    // Seal a body into the cad store.
-    const registry = makeSealedPlaneRegistry();
-    const under = freshTestBodyKey();
-    const cadDir = cadSealDir(storageDir);
-    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: TEST_SCOPE });
-
-    // The member gate: memberKey is a MEMBER; strangerKey is not. (Nexus pubkey seeds the federatable set.)
-    const deps: CasWireServerDeps = {
-      cadDir, seal: registry.seal,
-      membership: membershipOf([memberKey]),
-      antigen: antigenOf([]),
-      fedGate: new DeterministicFederationGate(holderKey),
-    };
-
-    // Stand the AUTHENTICATED relay + three real socket connections (each proves possession of its key).
-    relay = await startAuthenticatedMembershipRelay(holderSeed);
-    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
-    const holder   = await hearing(url, holderSeed, "the holder");
-    const member   = await hearing(url, memberSeed, "the member");
-    const stranger = await hearing(url, strangerSeed, "the stranger");
-    const [holderCh, memberCh, strangerCh] = [holder.ch, member.ch, stranger.ch];
+  test("a channel dial opens no socket and rejects with the shut named, whatever the pin", async () => {
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(9));
+    const dials: unknown[] = [];
+    const server = net.createServer((c) => { dials.push(c); c.destroy(); });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", () => resolve()));
+    const port = (server.address() as net.AddressInfo).port;
     try {
-      // ── MEMBER carries the ciphertext over the wire + reads it. ──
-      const memberResp = await driveFetch({ requester: member, requesterAddr: memberKey, holder, holderAddr: holderKey, deps, cid: installed.cid });
-      expect(memberResp?.kind).toBe("cas-block");
-      const carried = (memberResp!.payload as { bytes?: Record<string, number> }).bytes;
-      const ciphertext = Uint8Array.from(Object.values(carried!));   // JSON round-trip of the byte array
-      expect(openAsMember(ciphertext, installed, under)).toEqual(BODY);   // opens with the bag key and pointer digest
-      expect([...ciphertext]).not.toEqual([...BODY]);                                  // carried bytes are CIPHERTEXT
-
-      // ── NON-member draws Mu (no carry). ──
-      const strangerResp = await driveFetch({ requester: stranger, requesterAddr: strangerKey, holder, holderAddr: holderKey, deps, cid: installed.cid });
-      expect(strangerResp?.kind).toBe("cas-mu");
-
-      // ── IMPERSONATION defeated: the stranger forges `from = memberKey`; the relay stamps it back to strangerKey. ──
-      await strangerCh.offer({ kind: "cas-want-block", from: memberKey /* forged */, to: holderKey, payload: { cid: installed.cid } });
-      await holder.next();
-      expect(await serveCasWire(holderCh, holderKey, deps)).toBe(1);
-      // The response is addressed to the stranger's PROVEN key (the relay overrode the forged `from`), and it is Mu.
-      await stranger.next();
-      const forgedResp: MembershipEnvelope | null = (await strangerCh.poll(strangerKey))[0] ?? null;
-      expect(forgedResp?.kind).toBe("cas-mu");
-      // The member never receives a response to a request it did not make (the forged `from` never reached the gate as memberKey).
-      expect((await memberCh.poll(memberKey)).length).toBe(0);
-    } finally {
-      holderCh.close(); memberCh.close(); strangerCh.close();
-    }
-  }, 15_000);
-
-  test("an addressed envelope reaches its addressee alone; a third proven peer sees neither its sender nor its cid", async () => {
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(21));
-    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
-    const [seedA, seedB, seedC] = [22, 23, 24].map((n) => new Uint8Array(32).fill(n)) as [Uint8Array, Uint8Array, Uint8Array];
-    const [keyA, keyB] = await Promise.all([pubOf(seedA), pubOf(seedB)]);
-    const a = await AuthenticatedWSMembershipChannel.connect(url, seedA);
-    const atBsEar = await hearing(url, seedB, "the addressee");
-    const atCsEar = await hearing(url, seedC, "the third peer");
-    const [b, c] = [atBsEar.ch, atCsEar.ch];
-    try {
-      const cid = "bafy-the-kel-event-a-sibling-asks-for";
-      await a.offer({ kind: "cas-want-block", from: keyA, to: keyB, payload: { cid } });
-      await a.offer({ kind: "cas-have", from: keyA, to: "*", payload: { cid: "bafy-announced" } });
-      // CONTROL: the addressee receives the addressed envelope, stamped with the sender's proven key.
-      await atBsEar.next();
-      await atBsEar.next();
-      const atB = await b.poll(keyB);
-      expect(atB.map((e) => [e.kind, e.from])).toEqual([["cas-want-block", keyA], ["cas-have", keyA]]);
-      // The third peer reads its socket under the ADDRESSEE's name, so nothing the wire delivered hides from it:
-      // the broadcast reaches it, the addressed envelope never does.
-      // A's one socket carried the addressed envelope before the broadcast, and the relay carries in that order:
-      // once the broadcast has landed at the third peer, nothing of the addressed envelope remains to arrive.
-      await atCsEar.next();
-      const atC = await c.poll(keyB);
-      expect(atC.map((e) => e.kind)).toEqual(["cas-have"]);
-      expect(JSON.stringify(atC)).not.toContain(cid);
-    } finally {
-      a.close(); b.close(); c.close();
-    }
-  }, 15_000);
-
-  test("the relay stands behind the one gate: a pinned, proven dial joins; no pin, a wrong pin or no knock reaches nothing", async () => {
-    const gateSeed = new Uint8Array(32).fill(7);
-    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
-    const goodSeed = new Uint8Array(32).fill(8);
-    // CONTROL: the pinned, proven dial joins.
-    const ch = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, goodSeed);
-    expect(ch).toBeInstanceOf(AuthenticatedWSMembershipChannel);
-    ch.close();
-    // An address with no pin names no gate: the dial never opens.
-    await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}`, goodSeed)).rejects.toThrow(/gate key/);
-    // A pin for another key derives another knock: the relay destroys that upgrade before any 101.
-    const otherPin = await pubOf(new Uint8Array(32).fill(99));
-    await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${otherPin}`, goodSeed)).rejects.toThrow();
-    // The bare root draws no 101 either.
-    const bare = await new Promise<boolean>((resolve) => {
-      const raw = new WS(`ws://127.0.0.1:${relay.port}/`);
-      raw.on("open", () => { raw.close(); resolve(true); });
-      raw.on("error", () => resolve(false));
-      raw.on("unexpected-response", () => resolve(false));
-    });
-    expect(bare).toBe(false);
-  }, 15_000);
-
-  test("an old signed lar:auth stays connection-scoped — a fresh challenge nonce meets it with silence", async () => {
-    const gateSeed = new Uint8Array(32).fill(11);
-    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
-    const peerSeed = new Uint8Array(32).fill(12);
-    const peerPubKey = await pubOf(peerSeed);
-    const knocked = knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey);
-    const dial = dialerDouble({ peerPubKey, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(peerSeed) });
-
-    // Hand-drive the one handshake: the challenge nonce is the connection-scoped replay boundary.
-    const first = await new Promise<{ raw: WS; auth: unknown }>((resolve, reject) => {
-      const raw = new WS(knocked);
-      let auth: unknown;
-      raw.on("error", reject);
-      raw.on("message", (data: RawData) => {
-        const frame = JSON.parse(data.toString()) as Record<string, unknown>;
-        if (dial.opens(frame)) void (async () => {
-          auth = await dial.answer(frame);
-          raw.send(JSON.stringify(auth));
-        })();
-        else if (dial.admitted(frame) && auth) resolve({ raw, auth });
-      });
-    });
-    first.raw.close();
-
-    // The same signed lar:auth cannot cross a fresh challenge: the nonce is part of the signed bytes. The gate
-    // answers nothing and cuts the socket with no close frame.
-    const end = await new Promise<{ code: number; frames: number }>((resolve, reject) => {
-      const raw = new WS(knocked);
-      const replayDial = dialerDouble({ peerPubKey, gatePubKey: relay!.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(peerSeed) });
-      let frames = 0;
-      raw.on("error", reject);
-      raw.on("message", (data: RawData) => {
-        frames += 1;
-        if (replayDial.opens(JSON.parse(data.toString()))) raw.send(JSON.stringify(first.auth));
-      });
-      raw.on("close", (code: number) => resolve({ code, frames }));
-    });
-    expect(end).toEqual({ code: 1006, frames: 1 });
-  }, 15_000);
-
-  test("two lar:auth frames on ONE socket cannot race the binding — the gate reads exactly one", async () => {
-    const gateSeed = new Uint8Array(32).fill(13);
-    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
-    const seedA = new Uint8Array(32).fill(14);
-    const seedB = new Uint8Array(32).fill(15);
-    const keyA = await pubOf(seedA);
-    const keyB = await pubOf(seedB);
-    const dialA = dialerDouble({ peerPubKey: keyA, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(seedA) });
-    const dialB = dialerDouble({ peerPubKey: keyB, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(seedB) });
-
-    // An OBSERVER peer reads the stamped `from` — the relay broadcasts to other clients, never back to the sender.
-    const observerSeed = new Uint8Array(32).fill(16);
-    const observerKey = await pubOf(observerSeed);
-    const observing = await hearing(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, observerSeed, "the observer");
-    const observer = observing.ch;
-
-    // One socket sends TWO valid lar:auth frames (different keys) back to back. Only the FIRST may bind.
-    const raw = new WS(knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey));
-    try {
-      await new Promise<void>((resolve) => {
-        raw.on("message", (data: RawData) => {
-          const frame = JSON.parse(data.toString()) as Record<string, unknown>;
-          if (dialA.opens(frame)) {
-            void (async () => {
-              // Pre-build BOTH, then send them in the SAME tick — awaiting between sends would let the first verify
-              // finish and close the window, and the race would never surface.
-              const frames: string[] = [];
-              frames.push(JSON.stringify(await dialA.answer(frame)));
-              frames.push(JSON.stringify(await dialB.answer(frame)));
-              for (const f of frames) raw.send(f);
-            })();
-          } else if (dialA.admitted(frame) || dialB.admitted(frame)) {
-            // Probe only AFTER both frames have had time to verify — otherwise the first binding is read before a
-            // racing second one could overwrite it.
-            setTimeout(() => {
-              raw.send(JSON.stringify(mkLarSessionMsg("membership/env", { kind: "probe", from: "forged", to: observerKey, payload: {} })));
-              resolve();
-            }, 250);
-          }
-        });
-        raw.on("error", () => resolve());
-      });
-
-      await observing.next();
-      const seen: MembershipEnvelope | undefined = (await observer.poll(observerKey))[0];
-      // Exactly one lar:auth bound, and it was the FIRST — the second never re-bound the socket.
-      expect(seen?.from).toBe(keyA);
-      expect(seen?.from).not.toBe(keyB);
-    } finally {
-      raw.close();
-      observer.close();
-    }
-  }, 15_000);
+      await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${port}#${relay.gatePubKey}`, new Uint8Array(32).fill(3))).rejects.toThrow(MEMBERSHIP_RELAY_SHUT);
+      await expect(AuthenticatedWSMembershipChannel.connect("not an address", new Uint8Array(32).fill(3))).rejects.toThrow(MEMBERSHIP_RELAY_SHUT);
+      expect(dials).toEqual([]);
+    } finally { await new Promise<void>((resolve) => server.close(() => resolve())); }
+  });
 });
 
 // ── THE DROP DOOR, LIVE: a herm keeps only what verifies, spends its budget on nothing else, and never hangs a leaf ──

@@ -12,19 +12,22 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { admitCarriageCommit, carriageEntryActCid, openAdmitCarriage } from "../src/carriage-registry.js";
 import { carriageAct } from "./fixtures/carriage.js";
+import { sovereignPinAt } from "./fixtures/sovereign-pin.js";
 
-const red = process.env.LAR_UNBUILT_REDS === "1" ? test : test.skip;
 const root = join(import.meta.dirname, "..", "..");
 
 /**
- * The old wire, by the names its production reach carries: the handshake, its challenge, the gate and both proofs;
+ * The old wire, by the names its production reach carried: the handshake, its challenge, the gate and both proofs;
  * then every frame a converted file could keep speaking: the challenge's reader, the answer's builder and judge, the
- * auth and auth-ok frames, the auth-ok's bytes and check, and both signers.
+ * auth and auth-ok frames and their guards, the auth-ok's bytes and check, the proofs' bytes and both signers, and the
+ * frame types. (`mkLarSessionMsg` is no name here: a session message rides the SEALED channel's `session` frame.)
  */
 const OLD_WIRE = [
   "runPeerHandshake", "mkLarChallenge", "DaemonAuthGate", "verifyLeafProof", "verifyAuthProof",
   "isLarChallengeMsg", "buildAuthResponse", "evaluateAuthProof", "mkLarAuth", "mkLarAuthOk", "authOkBytes", "verifyAuthOk",
   "signLeafProof", "signPresented",
+  "isLarAuthMsg", "isLarAuthOkMsg", "leafProofBytes", "authProofBytes", "mintLeafNonce", "presentedCid", "presentedSigner",
+  "LarChallengeMsg", "LarAuthMsg", "LarAuthOkMsg", "AuthProofWire", "PeerHandshake",
 ] as const;
 const NAMES = new RegExp(String.raw`\b(${OLD_WIRE.join("|")})\b`, "g");
 const DECLARES = new RegExp(String.raw`^\s*(?:export\s+)?(?:async\s+)?(?:function\s*\*?|class|const|let)\s+(${OLD_WIRE.join("|")})\b`);
@@ -94,26 +97,30 @@ describe("W cutover reach", () => {
     expect(sitesIn("x.ts", "const runPeerHandshakeLater = 1; mkLarChallengeX();")).toEqual([]);
   });
 
-  test("CONTROL: the inventory reads the tree and names the old-wire reach the tree holds, by every symbol", () => {
+  test("CONTROL: the inventory reads the tree, and every symbol of the old wire reads as a site wherever a source speaks it", () => {
     const files = productionSources();
     expect(files.length).toBeGreaterThan(300);
     expect(files.some((file) => /tests\//.test(file))).toBe(false);
     const probes = probeSources();
     expect(probes.length).toBeGreaterThan(0);
     expect(probes.every((file) => /^[^/]+\/probes\//.test(file) && !/\.test\.|\.spec\./.test(file))).toBe(true);
-    const sites = oldWireSites();
-    for (const name of OLD_WIRE) expect(sites.some((site) => site.endsWith(` ${name}`)), name).toBe(true);
+    // Each symbol reads as a site as a call, an import and a type use, and its own declaration reads as none.
+    for (const name of OLD_WIRE) {
+      expect(sitesIn("x.ts", `const r = ${name}(a);`), name).toEqual([`x.ts:1 ${name}`]);
+      expect(sitesIn("x.ts", `import { ${name} } from "./m.js";`), name).toEqual([`x.ts:1 ${name}`]);
+      expect(sitesIn("x.ts", `export function ${name}(a) {}`), name).toEqual([]);
+      expect(sitesIn("x.ts", `export function ${name}Later(a) {}`), name).toEqual([]);
+    }
     // The probes inventory reads on its own: a probe that speaks the old wire names its own site.
-    expect(sitesOver(probes).some((site) => /^[^/]+\/probes\//.test(site))).toBe(true);
-    // Each declaration in the wire's own module counts as no site: every symbol but the gate's class declares there.
+    expect(sitesIn("lararium-node/probes/p.ts", "const r = runPeerHandshake(a);")).toEqual(["lararium-node/probes/p.ts:1 runPeerHandshake"]);
+    // The wire's own module survives with its shapes and declares none of the old wire.
     const wire = "lararium-mesh/src/auth-wire.ts";
-    const declared = codeOnly(readFileSync(join(root, wire), "utf8")).split("\n")
-      .flatMap((line, k) => { const name = DECLARES.exec(line)?.[1]; return name ? [`${wire}:${k + 1} ${name}`] : []; });
-    expect(declared.map((site) => site.split(" ")[1]).sort()).toEqual(OLD_WIRE.filter((name) => name !== "DaemonAuthGate").sort());
-    expect(sites.filter((site) => declared.includes(site))).toEqual([]);
+    expect(oldWireSites().filter((site) => site.startsWith(`${wire}:`))).toEqual([]);
+    const declared = codeOnly(readFileSync(join(root, wire), "utf8")).split("\n").flatMap((line) => DECLARES.exec(line)?.[1] ?? []);
+    expect(declared).toEqual([]);
   });
 
-  red("NO_OLD_WIRE_PRODUCTION_CALLER: no production source or probe reaches the retired handshake, its gate, its frames or its proofs", () => {
+  test("NO_OLD_WIRE_PRODUCTION_CALLER: no production source or probe reaches the retired handshake, its gate, its frames or its proofs", () => {
     const sites = oldWireSites();
     expect(sites, `old wire still reached at:\n  ${sites.join("\n  ")}`).toEqual([]);
   });
@@ -125,9 +132,9 @@ describe("W cutover reach", () => {
 
   // ADMIT_SIGNS_CANON_AND_PIN stands built: admit-carriage.test.ts holds its two-face, two-Nexus vectors.
   test("ADMIT_SIGNS_CANON_AND_PIN: changing the carried canon or gate pin changes the signed admit image", async () => {
-    const opening = openAdmitCarriage({ gatePin: "aa".repeat(32), canon: { "bags/lares": "automerge:hearth-a" } });
+    const opening = openAdmitCarriage({ gatePin: sovereignPinAt("nexus-cutover", 1), canon: { "bags/lares": "automerge:hearth-a" } });
     const withPin = await carriageAct(new Uint8Array(32).fill(31), "admit", { kahu: [new Uint8Array(32).fill(32)], epoch: "epoch-cutover", carriageCommit: admitCarriageCommit(opening) });
-    const withOtherPin = { ...withPin, carriageCommit: admitCarriageCommit({ ...opening, carriage: { ...opening.carriage, gatePin: "bb".repeat(32) } }) };
+    const withOtherPin = { ...withPin, carriageCommit: admitCarriageCommit({ ...opening, carriage: { ...opening.carriage, gatePin: sovereignPinAt("nexus-cutover", 2) } }) };
     const withOtherCanon = { ...withPin, carriageCommit: admitCarriageCommit({ ...opening, carriage: { ...opening.carriage, canon: { "bags/lares": "automerge:hearth-b" } } }) };
     expect(carriageEntryActCid(withOtherPin)).not.toBe(carriageEntryActCid(withPin));
     expect(carriageEntryActCid(withOtherCanon)).not.toBe(carriageEntryActCid(withPin));

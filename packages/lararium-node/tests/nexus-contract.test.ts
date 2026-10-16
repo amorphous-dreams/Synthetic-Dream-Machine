@@ -32,6 +32,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
+import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   nexusAidOf, signerClass } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey, wearPersona,
@@ -64,7 +65,6 @@ import { presentationFromBoardDoc, foundingRoster, type AdmitPresentation } from
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runRaiseSign } from "../src/commands/raise-sign.js";
 import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
 import { carriageEntryActCid } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
@@ -183,7 +183,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     expect(list.members).not.toContain(joinerNym);
   });
 
-  it("★ ADMIT emits the CARRIED bundle — the entry, its lineage, the AID and this vessel's gate key; the take keeps it ★", async () => {
+  it("★ ADMIT emits the CARRIED bundle — the entry, its lineage, the AID and this hearth's sovereign gate key; the take keeps it ★", async () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
@@ -193,11 +193,15 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const aid = nexusAidOf(readNexusDoc(sealHome()));
     expect(first.bundle).not.toBeNull();
     expect(first.bundle!.aid).toBe(aid);
-    expect(first.bundle!.gatePubKey).toBe((await loadVesselVerifyingKey()).toLowerCase());
+    // The gate key is the hearth's SOVEREIGN gate's signing key for this Nexus (the admit repin), never the vessel's identity key.
+    expect(first.bundle!.gatePubKey).toBe(hearthSovereignPin(aid!).signingKey.toLowerCase());
+    expect(first.bundle!.gatePubKey).not.toBe((await loadVesselVerifyingKey()).toLowerCase());
     expect(carriageEntryActCid(first.bundle!.admit)).toBe(first.evidenceCid);
     expect(first.bundle!.lineage).toEqual([]);
-    // Public bytes only: no seed, no signing key rides the bundle.
-    expect(JSON.stringify(first.bundle)).not.toMatch(/seed|signingKey|secret/i);
+    // Public bytes only: no seed and no secret rides the bundle. The pin's `signingKey` is the gate's PUBLIC verdict key,
+    // the very key the bundle names as `gatePubKey`, and no private half of it appears anywhere.
+    expect(JSON.stringify(first.bundle)).not.toMatch(/seed|secret|private/i);
+    expect(first.bundle!.opening!.carriage.gatePin.signingKey).toBe(first.bundle!.gatePubKey);
 
     // A revoke emits none; the re-admit after it carries the admit and the revoke as its lineage.
     const rev = await direct(runNexusContract)({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
@@ -403,11 +407,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
       expect(presented).not.toBeNull();
       const aid = nexusAidOf(readNexusDoc(sealHome()))!;
       const leaf = await mintNexusLeaf(3, aid);
-      const nonce = "34".repeat(32);
-      const gatePubKey = "ee".repeat(32);
-      const vesselKey = "cd".repeat(32);
-      const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: presented!.admit, lineage: [] }, ed25519SignerFromSeed(leaf.seed));
-      await holder.present("peer-joiner", { presentedAdmit: { ...presented!, leafProof }, nonce, gatePubKey, vesselKey });
+      await holder.present("peer-joiner", { presentedAdmit: { admit: presented!.admit, lineage: presented!.lineage }, faceKey: leaf.verifyingKey });
       await holder.present("peer-kahu", null);
       await holder.present("peer-wire-nym", null);
 
@@ -617,13 +617,11 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     try {
       await holder.refold();
       expect(holder.readings().map((r) => [r.via, r.sealLineage.length])).toEqual([["seat", 2]]);
-      const nonce = "34".repeat(32), gatePubKey = "ee".repeat(32), vesselKey = "cd".repeat(32);
       const presentAs = async (peer: string, nym: string, idx: number, strip = false, by?: AdmitPresentation) => {
         const p = by ?? (await presentationFromBoardDoc(boardDoc, nym, head)).presentation;
         expect(p).not.toBeNull();
         const lineage = strip ? p!.lineage.filter((e) => !isRollAnchor(e)) : p!.lineage;
-        const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: p!.admit, lineage: [] }, ed25519SignerFromSeed((await mintNexusLeaf(idx, aid)).seed));
-        await holder.present(peer, { presentedAdmit: { admit: p!.admit, lineage, leafProof }, nonce, gatePubKey, vesselKey });
+        await holder.present(peer, { presentedAdmit: { admit: p!.admit, lineage }, faceKey: (await mintNexusLeaf(idx, aid)).verifyingKey });
       };
       await presentAs("peer-joiner", joinerNym, 3);
       await presentAs("peer-stripped", joinerNym, 3, true);
@@ -832,9 +830,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
   async function presentUnder(holder: Awaited<ReturnType<typeof standHolderAt>>["holder"], repo: Repo, nexusPubkey: string, admitted: string, seed: Uint8Array, peer: string) {
     const board = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
     const { presentation } = await presentationFromBoardDoc(board, admitted, foundingRoster(readNexusDoc(sealHome())));
-    const nonce = "35".repeat(32), gatePubKey = "ef".repeat(32), vesselKey = "ce".repeat(32);
-    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: presentation!.admit, lineage: [] }, ed25519SignerFromSeed(seed));
-    await holder.present(peer, { presentedAdmit: { ...presentation!, leafProof }, nonce, gatePubKey, vesselKey });
+    await holder.present(peer, { presentedAdmit: { admit: presentation!.admit, lineage: presentation!.lineage }, faceKey: hex(await ed.getPublicKeyAsync(seed)) });
   }
 
   it("K8a RED: a read never mints — a held face holds no key at a Nexus until an act presents it; the act's key rests in the face's sealed cold row", async () => {

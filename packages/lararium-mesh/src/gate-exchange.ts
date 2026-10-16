@@ -36,7 +36,7 @@
  * frame leads with one tag byte, and a presentation or an answer that outgrows one frame rides in parts.
  *
  * Pure: no key, no I/O, no clock, no timer, no randomness.
- * Stands specified in code until the socket cutover consumes it; out of the package barrel till then.
+ * Stands specified in code until the socket cutover consumes it; the package barrel names it for the cutover's slices.
  */
 import { sha256 } from "@noble/hashes/sha2.js";
 import { isPresentedAdmit } from "./auth-wire.js";

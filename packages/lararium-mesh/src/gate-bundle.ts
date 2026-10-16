@@ -39,7 +39,7 @@
  * for that Nexus, so a gate and its announcement never sign under two keys.
  *
  * Pure but for the keys it derives: no I/O, no clock, no timer, no randomness.
- * Stands specified in code until the socket cutover consumes it; out of the package barrel till then.
+ * Stands specified in code until the socket cutover consumes it; the package barrel names it for the cutover's slices.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */

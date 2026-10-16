@@ -23,7 +23,7 @@ import {
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
   fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
+  nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
@@ -287,10 +287,14 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const chairs = await seatChairs([0, 1, 2]);
     const quorum = chairs.hands.slice(0, 2);
     const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
-    const opening = openAdmitCarriage({ gatePin: "c3".repeat(32), canon: {} });
+    const pin = (() => {
+      const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(3) })), new TextEncoder().encode(aidP), sovereignRoute("/ws"));
+      try { return bundle.pin; } finally { bundle.drop(); }
+    })();
+    const opening = openAdmitCarriage({ gatePin: pin, canon: {} });
     const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid!,
       carriageCommit: admitCarriageCommit(opening) }, quorum, consent);
-    const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [], opening });
+    const raw = JSON.stringify({ aid: aidP, gatePubKey: pin.signingKey, admit, lineage: [], opening });
 
     const live = restingRepo(larDataDir());
     const rolled: Array<string | undefined> = [];

@@ -19,8 +19,14 @@ const seam = vi.hoisted(() => ({
   roots: new Set<number>(),
 }));
 
-vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath }));
-vi.mock("../src/carried-set.js", () => ({ readCarriedCharters: () => new Map(), primaryNexusAid: () => "nexus-a" }));
+const HOUSEHOLD = vi.hoisted(() => ({ aid: "nexus-a", admit: { nym: "d" }, lineage: [], opening: { carriage: { gatePin: "pin", canon: {} }, salt: "s" } }));
+vi.mock("../src/face-household-admit.js", () => ({ ensureFaceHouseholdLeaf: async (_s: string, face: number) => { seam.asked.push(["household-leaf", face]); return { seed: new Uint8Array(32) }; }, ensureFaceHouseholdAdmit: async (o: { face: number }) => { seam.asked.push(["household-admit", o.face]); return HOUSEHOLD; } }));
+vi.mock("../src/admit-bundle.js", () => ({ admitBundlePathFor: (h: string, aid: string) => `${h}/nexus/carriage-admit/${aid}.json`, takeAdmitBundle: async () => {  } }));
+vi.mock("../src/hearth-sovereign-pin.js", () => ({ stoodFloorPins: () => [] }));
+vi.mock("../src/nexus-doc.js", () => ({ nexusCharterDocPath: () => seam.bootstrapPath, parseNexusDoc: () => ({}) }));
+vi.mock("../src/fs-atomic.js", () => ({ atomicWriteFileSync: () => {  } }));
+vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => `${seam.bootstrapPath}.seal` }));
+vi.mock("../src/carried-set.js", () => ({ importCarriedCharter: () => {  }, readCarriedCharters: () => new Map(), primaryNexusAid: () => "nexus-a" }));
 vi.mock("../src/identity-anchors.js", () => ({
   loadIdentityAnchors: async (face: number) => { seam.asked.push(["anchors", face]); return seam.anchors.get(face) ?? null; },
 }));
@@ -30,6 +36,7 @@ vi.mock("../src/face-key-custody.js", () => ({
   nodeFaceKeyCustody: {}, nodeVesselFaceKeyCustody: {},
 }));
 vi.mock("../src/node-vessel-identity.js", () => ({
+  vesselFloorKeyDoor: async () => ({}),
   loadPersonaGroupRootVerifyingKey: async (face: number) => { seam.asked.push(["root-key", face]); return seam.roots.has(face) ? ROOT(face) : undefined; },
   loadPersonaGroupRootSeed: async (face: number) => { seam.asked.push(["root-seed", face]); return new Uint8Array(32); },
   loadVesselVerifyingKey: async () => "b".repeat(64),
@@ -47,10 +54,19 @@ vi.mock("../src/commands/device-admit.js", () => ({
 vi.mock("../src/commands/init.js", () => ({ runInit: vi.fn() }));
 vi.mock("../src/fleet-join-custody.js", () => ({
   mintFaceAddressSecret: async (group: string) => { seam.asked.push(["address-secret", group]); return new Uint8Array(32); },
+  noteIssuedFaceKeys: async (args: { personaGroup: string; rootKey: string; device: string; certificates: unknown[] }) => {
+    seam.asked.push(["issued", [args.personaGroup, args.rootKey, args.device, args.certificates.length]]);
+  },
 }));
 vi.mock("@noble/ed25519", () => ({ signAsync: async () => new Uint8Array(64) }));
 vi.mock("@lararium/keyhive", () => ({}));
 vi.mock("@lararium/mesh", () => ({
+  gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+  nexusAidOf: () => "nexus-a",
+  heldNexusRoot: () => ({ nexus: "nexus-a" }),
+  makeMultiSigQuorumVerifier: () => ({}),
+  verifySignedAdmitBundle: async () => ({ carriage: {} }),
+  readGateBundlePin: () => ({ refusal: "pin-malformed" }),
   PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
   fleetJoinOffer: (offer: unknown) => offer,
   readFleetJoinRequest: () => ({ vesselKey: "c".repeat(64), requests: [{ scope: { faceKey: "d", nexus: "nexus-a" } }] }),
@@ -78,7 +94,7 @@ describe("fleet join names its face", () => {
       "lar:///ha.ka.ba/lares/persona-group-id": { text: FOUNDING_GROUP },
     } }) }));
   });
-  afterAll(() => rmSync(seam.bootstrapPath, { force: true }));
+  afterAll(() => { rmSync(seam.bootstrapPath, { force: true }); rmSync(`${seam.bootstrapPath}.seal`, { recursive: true, force: true }); });
 
   test("CONTROL: no face named answers for the founding face, off the bootstrap's pin", async () => {
     const offer = await runFleetJoinOffer({ sealHome: "/test/seal" }) as unknown as { personaGroup: string; rootKey: string };
@@ -87,8 +103,24 @@ describe("fleet join names its face", () => {
     const answer = await answerAt();
     expect(answer.personaGroup).toBe(FOUNDING_GROUP);
     expect(askedFor("device-admit")).toEqual([0]);
-    expect(askedFor("provisional")).toEqual([0]);
+    expect(askedFor("provisional")).toEqual([0, 0]);              // the offer's guard, then the answer's
     expect(askedFor("anchors")).toEqual([]);
+    // THE ISSUED BOOK: the certificates are noted under the face's group and root, against the request's vessel key.
+    expect(askedFor("issued")).toEqual([[FOUNDING_GROUP, ROOT(0), "c".repeat(64), 1]]);
+    // THE DIAL IT CARRIES: the founding face's leaf at its household Nexus (the offer) and its admit there (the answer).
+    expect(askedFor("household-leaf")).toEqual([0]);
+    expect(askedFor("household-admit")).toEqual([0]);
+    expect((answer as unknown as { admit: { admit: { nym: string } } }).admit.admit.nym).toBe("d");
+  });
+
+  test("--face 1: the issued book notes under face 1's own group and root, never the founding face's", async () => {
+    seam.anchors.set(1, { personaGroupId: "group-face-one", meshCabalDocIdHex: "cabal-one" });
+    seam.roots.add(1);
+    const answer = await answerAt(1);
+    expect(answer.personaGroup).toBe("group-face-one");
+    expect(askedFor("issued")).toEqual([["group-face-one", ROOT(1), "c".repeat(64), 1]]);
+    // --face 1 carries face 1's admit, never the founding face's.
+    expect(askedFor("household-admit")).toEqual([1]);
   });
 
   test("FLEET_JOIN_SERVES_EVERY_FACE: face 2 carries its own group, root, scopes, guard, edge, secret and grants", async () => {
@@ -108,6 +140,8 @@ describe("fleet join names its face", () => {
     expect(askedFor("root-seed")).toEqual([2]);
     expect(askedFor("address-secret")).toEqual([SECOND_GROUP]);
     expect(askedFor("grant")).toEqual([SECOND_GROUP]);
+    expect(askedFor("issued")).toEqual([[SECOND_GROUP, ROOT(2), "c".repeat(64), 1]]);
+    expect(askedFor("household-admit")).toEqual([2]);
   });
 
   test("a face this vessel never founded refuses by name, and signs nothing", async () => {
@@ -115,6 +149,7 @@ describe("fleet join names its face", () => {
     await expect(answerAt(3)).rejects.toMatchObject({ refusal: "face-absent" });
     expect(askedFor("root-seed")).toEqual([]);
     expect(askedFor("device-admit")).toEqual([]);
+    expect(askedFor("issued")).toEqual([]);
   });
 
   test("a face with anchors and no root held here refuses root-absent", async () => {

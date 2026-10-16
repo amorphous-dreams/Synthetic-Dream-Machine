@@ -54,10 +54,11 @@ import {
   realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
   edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
   type CountedEdgeBoard, type EdgeRollAnchor,
-  type AdmitOpening, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
+import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
 import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
@@ -93,6 +94,10 @@ export interface NexusContractOptions {
   readonly repo:        Repo;
   /** The Nexus the act lands under, where this vessel carries its charter beside the primary; absent names the primary. */
   readonly aid?:        string;
+  /** The custody door the admit's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
+  readonly gateDoor?:   CustodyRootDoor;
+  /** Where this hearth listens (`ws://…/ws`): an admit's bundle carries it beside the admit, for the taker to dial. */
+  readonly syncUrl?:    string;
 }
 
 export interface NexusContractResult {
@@ -254,7 +259,7 @@ interface ContractCore {
   readonly boardUrl: string;
   readonly handle:   Awaited<ReturnType<typeof materializeSharedLarDoc>>;
   readonly parents:  readonly string[];
-  /** An admit's carriage opening: this hearth's gate key as the pin and the canon documents it names, under a fresh
+  /** An admit's carriage opening: this hearth's full sovereign sync pin and the canon documents it names, under a fresh
    *  salt. The quorum signs its commitment; the board never holds the opening. Null for every other act. */
   readonly opening:  AdmitOpening | null;
 }
@@ -286,7 +291,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
-    ? openAdmitCarriage({ gatePin: gateKey.toLowerCase(), canon: await admitCanonDocs(opts.repo) })
+    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo) })
     : null;
   return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening };
 }
@@ -297,7 +302,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
  * carried bundle.
  */
 async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction, entry: CarriageEntry, signers: readonly string[],
-  beforeWrite?: () => Promise<void>): Promise<NexusContractResult> {
+  beforeWrite?: () => Promise<void>, syncUrl?: string): Promise<NexusContractResult> {
   if (!(await carriageEntryCounts(entry, core.roster))) {
     throw new NexusContractError(
       action === "admit"
@@ -334,7 +339,7 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
     const opening = core.opening;
     if (presented && opening && admitCarriageCommit(opening) === presented.admit.carriageCommit &&
         carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
-      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: opening.carriage.gatePin, admit: presented.admit, lineage: presented.lineage, opening };
+      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: opening.carriage.gatePin.signingKey, admit: presented.admit, lineage: presented.lineage, opening, ...(syncUrl ? { syncUrl } : {}) };
     }
   }
   return {
@@ -366,7 +371,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
       selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
       core.contract?.contractSig,
     );
-    return await landEntry(core, repo, opts.action, entry, selected.map((s) => s.verifyingKey));
+    return await landEntry(core, repo, opts.action, entry, selected.map((s) => s.verifyingKey), undefined, opts.syncUrl);
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

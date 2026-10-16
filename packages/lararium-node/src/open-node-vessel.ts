@@ -2,7 +2,7 @@
  * openNodeVessel — local-first Node.js vessel factory.
  *
  * A thin opener over the composable-keel engine. Node supplies the platform atoms (NodeFS storage,
- * WS relay + DaemonAuthGate, worker_threads pool) and the capability pieces it holds (the inbound
+ * sync route behind its face gates, worker_threads pool) and the capability pieces it holds (the inbound
  * gate, the corpus loader, the residual pool/repo verbs, the main-resident BagStowage mechanism).
  *
  * `prepareNodeBoot` builds those atoms + the keel + the boot closures ONCE, and BOTH entry-points
@@ -35,7 +35,6 @@ import type {
   CompositeStore, DiskMirrorGrant,
 } from "@lararium/mesh";
 import {
-  verifyingKeyFromDid,
   emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
@@ -60,7 +59,7 @@ import { floorShadowRing, noFleetAtTheFloor } from "./floor-fleet-lanes.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
-import { realmMaintenanceFromBoard, shareConfigOf, carriageEntryActCid, type LeafIdentity } from "@lararium/mesh";
+import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, type LeafIdentity } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -84,29 +83,26 @@ import {
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
-import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
-import { wornNexusLeaf } from "./nexus-leaf.js";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
-import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, PeerClass } from "@lararium/mesh";
+import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, verifiedFleetOfGroup, DYAD_VEIL_TAG_TIDDLER, type LarDid } from "@lararium/mesh";
 import {
-  makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener, dialPresentation,
-  presentationKey, dialIdentityFor,
-  type NexusMembershipHolder, type SocketBinding, type DialPresentation, type CarriedNexusReading,
+  makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener,
+  type NexusMembershipHolder, type SocketBinding, type CarriedNexusReading,
 } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { nodeNexusStandsAt } from "./nexus-standing.js";
@@ -122,6 +118,9 @@ import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
+import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins } from "./hearth-gate-pins.js";
+import { composeDialPresentation } from "./dial-presentation.js";
+import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
@@ -168,13 +167,30 @@ import {
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
-import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
-import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
+import { socketsNoLongerHeld, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
+import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
+import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
+import { vesselGate, type VesselGateDeps }       from "./vessel-gates.js";
+import { gateShadowRing }                        from "./gate-shadow-ring.js";
+import { faceDeviceBook }                        from "./face-device-book.js";
+import { faceFleetViews }                        from "./face-fleet-view.js";
+import { heldRootHoldings }                      from "./face-root-holdings.js";
+import { gateGrantRing }                         from "./gate-rings.js";
+import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
+import { gateMemoryRows }                        from "./gate-memory-rows.js";
+import { custodyGateDoor }                       from "./custody-seat.js";
+import { vesselFloorKeyDoor }                    from "./node-vessel-identity.js";
+import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
+import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
+import type { OracleGateArgs, OracleFloorGate }  from "./oracle-read-face.js";
+import {
+  deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
+  SOVEREIGN_SYNC_ROUTE, ORACLE_SOCKET_ROUTE,
+  type GateBundle, type GateSessionTable,
+} from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
-import { serveHostingMint }                       from "./hosting-mint.js";
-import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
-import { nodeWalkStore, listWalkRecords }        from "./node-walk-store.js";
+import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
@@ -182,8 +198,6 @@ import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./no
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
  *  checked-in-by-default, so a no-config boot lands on the repo's tracked seed exactly as before. */
-/** How long a walk waits for its hearth's hosting doc to carry the act a fresh grant names. */
-const WALK_ACT_PATIENCE_MS = 15_000;
 
 function defaultGenesisDir(): string {
   return daemonGenesisDir();
@@ -321,7 +335,7 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  key). NEVER a fresh random per boot. Only read when `standCarriageRelayPort` (or its env) is set. */
   standCarriageRelayGateSeedHex?: string;
   /** The peer node's `/ws` URL (Socket A, cleartext CRDT) this vessel DIALS to sync — the same-operator device
-   *  breath. ABSENT (and `LAR_JOIN_SYNC` unset) → NO client adapter mounts, NO dial, zero change (provably inert). */
+   *  breath. ABSENT → NO client adapter mounts, NO dial, zero change (provably inert). */
   joinSyncUrl?: string;
   /** The DIALED peer's gate verifying-key hex — the gate-binding the outbound V3 proof commits to (out-of-band,
    *  NEVER trusted from the wire). REQUIRED alongside `joinSyncUrl`; absent → fail-closed to inert (no dial). */
@@ -338,6 +352,11 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
   joinDocUrl?: string;
+  /**
+   * The session table and binding the dial's face session opens on (`composeDialPresentation`). Absent → the vessel
+   * makes the dial's own table (`@lararium/mesh/session-contract`, one per boot) and opens a "socket" binding.
+   */
+  dialSessions?: Pick<Parameters<typeof composeDialPresentation>[0], "table" | "binding" | "profile">;
   /** THE WIRE PROBE — an injectable sink over every share verdict this vessel answers and every sync message
    *  its Repo generates or receives. ABSENT (and `LAR_WIRE_LOG` unset) → nothing wraps the policy and nothing
    *  listens; the boot behaves exactly as it did (provably inert). A witness arms it to read WHERE a document
@@ -363,8 +382,6 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
 export interface NodeFloor {
   readonly storageDir: string;
   readonly storeClaim: StoreClaim & { readonly holder: "vessel" };
-  /** The relay knock registers on the dispatcher once per floor: every composition's gate derives the same path. */
-  relayRegistered: boolean;
   /** Free the store's name. Idempotent. */
   readonly release: () => Promise<void>;
 }
@@ -410,7 +427,7 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
   });
   console.log(`[lararium] this vessel holds its store at ${storeClaim.socketPath}`);
   let released: Promise<void> | null = null;
-  return { storageDir, storeClaim, relayRegistered: false, release: () => (released ??= storeClaim.release()) };
+  return { storageDir, storeClaim, release: () => (released ??= storeClaim.release()) };
 }
 
 /**
@@ -441,8 +458,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** Tear this composition down whole: every island, timer, socket and listener it stood, then its Repo. The
    *  floor it was handed keeps standing; a floor it stood itself releases. */
   teardown: () => Promise<void>;
-  /** The ONE sorter this vessel's gates arm with — the oracle socket a host mounts beside the relay takes it. */
-  socketSorter: SocketSorter;
+  /** The oracle's floor gates, one per Nexus this vessel stands in — the read face a host mounts takes them. */
+  floorGates: OracleGateArgs["gates"];
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
@@ -477,8 +494,8 @@ export interface NodeHermResult {
   /** The stood carriage relay's gate verifying-key hex — the key a dialing hearth binds its proof to (out-of-band).
    *  `null` when no relay was configured. The operator hands a hearth this alongside the URL. */
   carriageRelayGatePubKey: string | null;
-  /** The ONE sorter this vessel's gates arm with. */
-  socketSorter:     SocketSorter;
+  /** The oracle's floor gates, one per Nexus this vessel stands in. */
+  floorGates:       OracleGateArgs["gates"];
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
   /** Each carried face's own persona plane off this thread's Repo; null where no face stands lit. */
@@ -533,8 +550,8 @@ interface NodeBootPrep {
   nexusPubkey:      string;
   /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
   vesselGateKey:    string;
-  /** The ONE sorter every gate of this vessel arms with. */
-  socketSorter:     SocketSorter;
+  /** The oracle's floor gates, one per Nexus this vessel stands in. */
+  floorGates:       OracleGateArgs["gates"];
   residency:        BagStowage;
   /** The carriage serve-loop (Socket B) — present ONLY when a carriage-relay URL was configured; else null (inert).
    *  The two vessel entry-points fold its `stop()` into their teardown so no timer / socket leaks past close. */
@@ -636,12 +653,21 @@ async function prepareNodeBootOn(
   // A direct act mid-flight is waited out; another vessel on this store refuses the boot by name.
   const storeClaim = floor.storeClaim;
 
-  // ── 1. Repo — NodeFS storage + WebSocket relay behind the DaemonAuthGate ─────
+  // ── 1. Repo — NodeFS storage + the sync route behind this vessel's face gates ─────
+  // One sovereign gate per Nexus on the sync route (`SOVEREIGN_SYNC_ROUTE`), each on its own knock, stood once the
+  // custody root answers (below). A dial its gate verified opens a sealed session; the registry hands each opened
+  // session to the Repo's adapter as one socket (`gate-sync-server`), so no frame reaches the Repo before the
+  // gate's verdict left.
   const storage = new DurableNodeFSStorageAdapter(storageDir);
-  const authGate = new DaemonAuthGate(wss);
-  stood.push({ what: "the relay gate", down: () => authGate.close() });
-  let mintServed = false;
-  const network  = new ListeningWSServerAdapter(authGate as unknown as typeof wss);
+  // THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): each sovereign session hears, at open, the floor pins this
+  // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
+  const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()) });
+  const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
+  const gateServer = faceGateServer({
+    onRefuse: (path, refusal) => console.warn(`[lar-gate] an upgrade on ${path.slice(0, 24)}… refused before any 101 (${refusal})`),
+  });
+  stood.push({ what: "the sync gates", down: () => { gateServer.close(); syncSessions.close(); gateSync.close(); } });
+  const network  = new ListeningWSServerAdapter(gateSync.wss as unknown as typeof wss);
   const peerIdentifierMap = new Map<string, string>();
   // The self-slot CLASS map — peerId → the class the keyholder vouched at admission. Populated in the
   // SAME microtask as peerIdentifierMap so that by the time the outer admission gate sees a peer in
@@ -649,8 +675,14 @@ async function prepareNodeBootOn(
   // an admitted same-operator peer. A WS peer absent here (or present-but-not-same-operator) reads as the
   // stricter cross-operator class at the sharePolicy (fail-closed).
   const peerClassMap = new Map<string, PeerClass>();
-  // peerId → this hearth's HOSTING DOC in the Nexus a WALKER's grant names (the one doc beyond the shelf it reaches).
-  const peerWalkerBoard = new Map<string, DocumentId>();
+  // peerId → the Nexus whose gate seated the peer's session: a refold reads that Nexus's posture for it.
+  const peerNexus = new Map<string, string | null>();
+  // D3: the bootstrap's tiddlers once the boot reads them, and one scoped view per same-operator session over the
+  // planes of the face its gate proved (`face-fleet-view`). The share verdict reads a same-operator peer through it.
+  let faceBootTiddlers: Record<string, { text?: string }> | null = null;
+  // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
+  const faceViews = faceFleetViews(() => faceBootTiddlers, () => wornMount?.personaGroupId ?? null);
+  stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
   // key and the carried set are read, below, and on every roll.
@@ -680,22 +712,20 @@ async function prepareNodeBootOn(
   network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
     queueMicrotask(() => {
       const socket = (network.sockets as Record<string, unknown>)[peerId];
-      if (socket) {
-        const identHex = authGate.getIdentifierForSocket(socket as Parameters<typeof authGate.getIdentifierForSocket>[0]);
+      const session = socket ? gateSync.sessionOf(socket) : null;
+      if (session) {
+        // The key the gate proved: the session's face key, or a faceless place's own key. No vessel key rides.
+        const identHex = session.scope?.faceKey ?? session.placeKey;
         if (identHex) peerIdentifierMap.set(peerId, identHex);
-        const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
-        if (cls) peerClassMap.set(peerId, cls);
-        // A walker reaches this hearth's hosting doc in its Nexus beside the shelf — the doc its hosting acts ride.
-        const walkerAid = cls === "walker" ? authGate.getStandingForSocket(socket as Parameters<typeof authGate.getStandingForSocket>[0])?.aid : undefined;
-        if (walkerAid) peerWalkerBoard.set(peerId, interpretAsDocumentId(hostingDocUrl(walkerAid, vesselIdentity.verifyingKey)) as DocumentId);
-        // THE LEAF SEAT. The sorter already read this socket's admit HELD before its verdict; the holder keeps the
-        // binding so every later refold re-reads it. It binds to the values this gate issued and proved for THIS
-        // socket — never to anything the peer echoed. A socket that is not contracted seats `null`.
-        const gateSocket = socket as Parameters<typeof authGate.getPresentedForSocket>[0];
-        const presented = cls === "contracted" ? authGate.getPresentedForSocket(gateSocket) : undefined;
-        const challenge = authGate.getChallengeForSocket(gateSocket);
-        const binding: SocketBinding | null = presented?.kind === "admit" && challenge && identHex
-          ? { presentedAdmit: presented, nonce: challenge.nonce, gatePubKey: challenge.gatePubKey, vesselKey: identHex.slice(-64).toLowerCase() }
+        peerClassMap.set(peerId, session.class);
+        peerNexus.set(peerId, session.scope?.nexus ?? session.standing?.aid ?? null);
+        // D3: the view of the face this session proved, for a same-operator seat alone.
+        faceViews.seat(peerId, session.class === "same-operator" ? session.face : null);
+        // THE LEAF SEAT. The gate read this session's admit HELD before its verdict; the holder keeps the admit as it
+        // rode, under the face key the gate's chain proved, so every later refold re-reads it. A session that rode no
+        // admit seats `null`.
+        const binding: SocketBinding | null = session.class === "contracted" && session.arm?.kind === "admit" && session.scope
+          ? { presentedAdmit: { admit: session.arm.admit, lineage: session.arm.lineage }, faceKey: session.scope.faceKey }
           : null;
         peerBindings.set(peerId, binding);
         void nexusMembershipHolder?.present(peerId, binding);
@@ -705,7 +735,8 @@ async function prepareNodeBootOn(
   // A socket that closes takes its presentation with it: the next socket from the same peer presents afresh.
   network.on("peer-disconnected", ({ peerId }: { peerId: string }) => {
     peerBindings.delete(peerId);
-    peerWalkerBoard.delete(peerId);
+    peerNexus.delete(peerId);
+    faceViews.drop(peerId);
     void nexusMembershipHolder?.present(peerId, null);
   });
   // The #59 antigen ring — the live Kapae-immune consult. Forward-declared here (the sharePolicy closes
@@ -752,7 +783,7 @@ async function prepareNodeBootOn(
   const repo = new Repo({
     storage,
     network: [network],
-    // Two rings: WS peers (outside) must have passed the DaemonAuthGate; the
+    // Two rings: WS peers (outside) must have passed a face gate; the
     // vessel's OWN islands (MessageChannel peers — daemon + wiki workers) are
     // house members and share freely. Without the island ring, main never
     // relays daemon-island-minted docs (personal/draft bindings) to the wiki
@@ -777,7 +808,7 @@ async function prepareNodeBootOn(
       // single byte is decided (measured: a stranger at the floor read a private plane).
       await new Promise<void>((settle) => queueMicrotask(settle));
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
-      // OUTER peer-admission gate (unchanged): a WS peer that never passed the DaemonAuthGate is not in
+      // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
       // THE SELF-SLOT SPLIT — federatable-own vs private-own, keyed on the class the keyholder vouched
@@ -802,7 +833,9 @@ async function prepareNodeBootOn(
         // body sealed by `installSealedBody` registers its docId here; the member lane then blind-transits it
         // (carry the ciphertext, never the read-cap — the read-cap rides the private keyhive lane).
         planeSeal:       sealRegistry.seal,
-        walkerBoard:     peerWalkerBoard.get(peerId) ?? null,
+        // D3: a same-operator session reads by its proven face's scoped view, never by class: the view of the
+        // PersonaGroup its gate's grant ring answered (`face-fleet-view`). A session with no view reads the shelf.
+        sessionFace:     faceViews.gateFor(peerId),
         // A walker never reads the carriage board's contract ledger; a carrier replicates this hearth's hosting docs.
         carriageBoard:   ownCarriageBoard,
         hostingDocs:     ownHostingDocs,
@@ -968,6 +1001,22 @@ async function prepareNodeBootOn(
     await readCarried(),
     await placeCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open }),
   );
+  // The Nexuses this vessel's gates stand in, as the last gate sweep read them (`standGates`, below).
+  let gateReadings: readonly CarriedNexusReading[] = [];
+  // The sync gates' sweep, set once they first stand (at the arm, below): every refold sweeps again.
+  let resweepGates: (() => Promise<void>) | null = null;
+  /** This vessel's own Nexus: the AID of the charter it keeps at its seal home, or null. */
+  const ownNexusAid = (): string | null => nexusAidOf(readNexusDoc(sealHome)) ?? null;
+  /**
+   * The posture of ONE Nexus a gate stands in. A herm answers the knock at every gate it stands; this vessel's own
+   * Nexus reads its charter; a carried one reads the charter this vessel holds for it; any other reads PRIVATE.
+   */
+  const postureOf = (nexus: string): FederationPosture => {
+    if (placeClass === "herm") return "open";
+    const aid = nexus.trim().toLowerCase();
+    if (ownNexusAid()?.toLowerCase() === aid) return ownPlacePosture(placeClass, readNexusDoc(sealHome));
+    return gateReadings.find((r) => r.aid.toLowerCase() === aid)?.posture ?? "private";
+  };
   /** A peer a contracted class holds: a leaf the membership reads held, or a PLACE whose key this board carries. */
   const contractHolds = (peerId: string): boolean => {
     const holder = nexusMembershipHolder;
@@ -984,18 +1033,22 @@ async function prepareNodeBootOn(
     if (!holder) return;
     const sockets = (network.sockets ?? {}) as Record<string, unknown>;
     const admitted = Object.entries(sockets).map(([peerId, socket]) => ({ peerId, socket, cls: peerClassMap.get(peerId) }));
-    const drop = socketsNoLongerHeld(admitted, {
-      holds: contractHolds,
-      answersStrangers: gateAnswersStrangers(ownPlacePosture(placeClass, readNexusDoc(sealHome)), holder.readings()),
-    });
-    for (const socket of drop) authGate.drop(socket as Parameters<typeof authGate.drop>[0]);
+    // One gate stands per Nexus, so each session answers to the posture of the Nexus whose gate seated it.
+    for (const entry of admitted) {
+      const nexus = peerNexus.get(entry.peerId) ?? null;
+      const drop = socketsNoLongerHeld([entry], { holds: contractHolds, answersStrangers: nexus !== null && postureOf(nexus) === "open" });
+      for (const socket of drop) (socket as GateSyncSocket).close();
+    }
   };
   const membershipHolder: NexusMembershipHolder = makeNexusMembership({
     sealHome,
     repo,
     nexusPubkey,
     readCarried,
-    onRefold:    () => { reverdict(); dropNoLongerHeld(); },
+    onRefold:    () => {
+      reverdict(); dropNoLongerHeld();
+      void resweepGates?.().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not sweep: ${err instanceof Error ? err.message : String(err)}`));
+    },
   });
   nexusMembershipHolder = membershipHolder;
   nexusMembership = membershipHolder.membership;
@@ -1068,14 +1121,6 @@ async function prepareNodeBootOn(
 
   // Replay every socket that presented before the holder stood.
   for (const [peerId, binding] of peerBindings) void membershipHolder.present(peerId, binding);
-  // THE ONE SORTER every gate of this vessel arms with — the relay `/ws` and the oracle socket alike. It reads
-  // the carried readings FRESH per socket, so a posture flipped on disk or a revoke landed by sync sorts the very
-  // next socket by it.
-  // The leaf a hearth's hosting keys derive from in N: the leaf of the face this vessel WEARS — the same face its
-  // walks present. A vessel wearing no face hosts no one.
-  const hostingLeafSeedFor = async (aid: string): Promise<Uint8Array | null> => {
-    try { return (await wornNexusLeaf(aid))?.seed ?? null; } catch { return null; }
-  };
   // The ring reads this vessel's own faces as fleet roots, the realm of its charter, and every realm its ledger
   // notes. A board that changes (a peer's act arriving by sync) refolds it, and the Repo re-reads its verdicts.
   // THE FLEET ROOTS REST SEALED. The roots this vessel serves read off the persona roster, a row under the vessel
@@ -1151,19 +1196,81 @@ async function prepareNodeBootOn(
   edgeShadows = shadowRing;
   stood.push({ what: "the edge shadow ring", down: () => shadowRing.dispose() });
   await shadowRing.refold();
-  const socketSorter: SocketSorter = makeSocketSorter({
+  // ── THE FACE GATES ─────────────────────────────────────────────────────────────────────────────
+  // One gate per (Nexus, route), every one assembled from the same readers (`vessel-gates`): the held root of its
+  // own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the
+  // withdrawal memory a sovereign gate keeps across a restart.
+  // THE WORN FACE the gates' rings read: the mount's own, or the founding face the bootstrap pins.
+  const wornGateFace = (): { readonly face: number; readonly personaGroup: string } | null => {
+    const personaGroup = wornMount?.personaGroupId ?? faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
+    return personaGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup } : null;
+  };
+  const wornFaceRecords = async () => {
+    const worn = wornGateFace();
+    const record = worn ? await readFaceJoinRecord(worn.personaGroup) : null;
+    return record ? [record] : [];
+  };
+  // D4: the device a presenting face-scoped key was certified to, off this vessel's own records: its own
+  // certificates, and on the root holder the issued book each fleet-join answer noted (`face-device-book`). A gate
+  // sweep and every refold read it again; a presenter it does not bind reads fleet-aside.
+  const deviceBook = faceDeviceBook({ records: wornFaceRecords, ownVesselKey: async () => vesselIdentity.verifyingKey });
+  const gateDeps: VesselGateDeps = {
     readings: readEveryCarried,
-    carrier:  (vesselKey) => membershipHolder.carriers().has(vesselKey.toLowerCase()),
-    // The vessel's OWN place posture: a lararium reads its charter (absent → PRIVATE); a herm answers the knock.
-    primaryPosture: () => ownPlacePosture(placeClass, readNexusDoc(sealHome)),
-    // A device set aside from the fleet never sorts same-operator, whatever its delegation proves.
-    deviceAside:    (vesselKey) => shadowRing.deviceAside(vesselKey),
-    // THE WALKER ARMS read this hearth's hosting store and the leaf its hosting keys derive from.
-    hosting: {
-      leafSeedFor: hostingLeafSeedFor,
-      onRedeemed:  (aid, count) => console.log(`[hosting] a token redeemed in ${aid.slice(0, 18)}… — ${count} this epoch`),
-    },
-  });
+    posture:  postureOf,
+    shadows:  gateShadowRing({ ring: shadowRing, deviceOf: (presenter) => deviceBook.deviceOf(presenter) }),
+    grants:   gateGrantRing({
+      joinRecords: wornFaceRecords,
+      // The root holder answers the grant its held root would sign for each scope the face stands at here.
+      rootHoldings: async () => {
+        const worn = wornGateFace();
+        return worn ? heldRootHoldings({ sealHome, faces: [worn] }) : [];
+      },
+    }),
+    withdrawals: sovereign
+      ? storedWithdrawals(gateMemoryRows(), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
+      : memoryBackedWithdrawals(),
+    deadlines: timerGateDeadlines(),
+    audience:  DAEMON_BAG_ID,
+    onRefuse:  (at, reason, detail) => console.warn(`[lar-gate] ${at.tier} ${at.route} at ${at.nexus.slice(0, 18)}… fell silent: ${reason}${detail ? ` (${detail})` : ""}`),
+    onShut:    (arm, at) => console.warn(`[lar-gate] a walker's ${arm} arm at ${at.route} reads SHUT at the cutover`),
+  };
+  /** Every Nexus a gate stands in: this vessel's own, and each it carries. */
+  const gateNexuses = async (): Promise<string[]> => {
+    gateReadings = await readEveryCarried();
+    const own = ownNexusAid();
+    return [...new Set([...(own ? [own] : []), ...gateReadings.map((r) => r.aid)])];
+  };
+  /** The oracle's floor gates, one per Nexus, each seating through the face's own table (`oracle-read-face`). */
+  const floorGates: OracleGateArgs["gates"] = async (sessions: GateSessionTable) => {
+    const door = await vesselFloorKeyDoor();
+    return (await gateNexuses()).map((nexus): OracleFloorGate => {
+      const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(ORACLE_SOCKET_ROUTE));
+      return { gate: vesselGate(gateDeps, { bundle, nexus, sessions }), pin: bundle.pin };
+    });
+  };
+  // THE SYNC GATES: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock.
+  // A sweep stands the gate of every Nexus newly read and stands down the gate of one no longer read.
+  const syncStood = new Map<string, { readonly unstand: () => void }>();
+  const standSyncGates = async (): Promise<void> => {
+    if (!sovereign) return;                      // the custody root answers a sovereign composition alone
+    // The D4 binding reads again at every sweep: a fleet-join answer's note reaches the gates at the refold its device
+    // edge sets off. A read that fails leaves the book unbound, so every presenter reads fleet-aside.
+    await deviceBook.refresh().catch((err: unknown) => console.warn(`[lar-gate] the face device book did not read: ${err instanceof Error ? err.message : String(err)}`));
+    const nexuses = new Set(await gateNexuses());
+    for (const [nexus, held] of syncStood) if (!nexuses.has(nexus)) { held.unstand(); syncStood.delete(nexus); }
+    for (const nexus of nexuses) {
+      if (syncStood.has(nexus)) continue;
+      const bundle: GateBundle = deriveGateBundle(sovereignGateRoot(custodyGateDoor()), new TextEncoder().encode(nexus), sovereignRoute(SOVEREIGN_SYNC_ROUTE));
+      const at = gateServer.stand({ gate: vesselGate(gateDeps, { bundle, nexus, sessions: syncSessions.table }), pin: bundle.pin });
+      // THE KNOCK. The dispatcher hands this path to the gate server and destroys every other upgrade before any 101.
+      const unregister = opts.dispatcher?.registerUpgrade({
+        name: `sync:${at.path}`, path: at.path,
+        handle: (req, socket, head) => { if (!gateServer.handleUpgrade(req, socket, head)) socket.destroy(); },
+      });
+      syncStood.set(nexus, { unstand: () => { unregister?.(); at.unstand(); bundle.drop(); } });
+    }
+  };
+  stood.push({ what: "the sync gates' knocks", down: () => { for (const held of syncStood.values()) held.unstand(); syncStood.clear(); } });
 
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
   // sovereign hearth (serve fire, never key). Null when the genesis is absent (nothing to hand). It pins no epoch
@@ -1196,8 +1303,8 @@ async function prepareNodeBootOn(
   // THE FLEET CLASS on Socket B (basket-one #/the-fetch-door). A peer proves its vessel key on the carriage
   // channel; it reads FLEET when the SAME key stands on Socket A as a `same-operator` peer (the keyholder vouched
   // its signed device edge at admission — `peerClassMap`), or when it names the vessel THIS one dialed under
-  // its own admit (`LAR_JOIN_GATE` — the founder a joinee stood by). A CONTRACT member never reads fleet.
-  const fleetJoinGate = (opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? "").toLowerCase();
+  // its own admit (`joinGatePubKey` — the founder a joinee stood by). A CONTRACT member never reads fleet.
+  const fleetJoinGate = (opts.joinGatePubKey ?? hearthPin?.gatePubKey ?? "").toLowerCase();
   const isFleetPeer = (peerKey: string): boolean => {
     const nym = peerKey.slice(-64).toLowerCase();
     if (fleetJoinGate && nym === fleetJoinGate) return true;
@@ -1297,17 +1404,6 @@ async function prepareNodeBootOn(
   // Automerge `/ws` relay (Socket A) — the SAME transport the server adapter answers on, SEPARATE from the carriage
   // relay (Socket B). REAL crypto: the outbound proof binds to the peer's gate key (out-of-band, never the wire) and
   // carries the operator's own identity, never a forged one. ABSENT the config → no adapter, no dial, no change.
-  /** Does THIS vessel hold the persona root that signed `edge`? True names a self-founded operator's own edge
-   *  (a contract credential toward any other hearth); false names an admit edge some hearth's root issued. */
-  const holdsRootOf = async (edge: DeviceDelegationTiddler): Promise<boolean> => {
-    let signer: string;
-    try { signer = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return false; }
-    for (const index of sovereign ? await sovereign.personaRoots() : []) {
-      const key = await loadPersonaGroupRootVerifyingKey(index);
-      if (key && key.toLowerCase() === signer) return true;
-    }
-    return false;
-  };
   // THE PINNED EDGE'S HEARTH IS THE DIAL'S DEFAULT. A joinee founded by an admit edge carries the hearth's sync
   // url + gate key in its bootstrap (hearth-dial-pin.ts); an explicit option / `LAR_JOIN_*` still wins, and a
   // vessel holding no pin and no env dials nobody — byte-identical to before.
@@ -1317,8 +1413,25 @@ async function prepareNodeBootOn(
   // THE WALK RECORDS REST SEALED, so this read belongs to a sovereign composition alone: a floor reads no walk
   // record and so dials no walked hearth, and the first unlock stands a composition that reads them.
   const walkingAt      = (sovereign ? await sovereign.walkRecords() : []).find((w) => w.record.relay) ?? null;
-  const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? hearthPin?.syncUrl    ?? walkingAt?.record.relay ?? null;
-  const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? walkingAt?.gatePubKey   ?? null;
+  // `LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer ride the env: the dial reads the pin from the pair index (`gatePins`),
+  // and a hearth is named by an option, its admit's pin or a walk record.
+  const gatePins       = hearthGatePins();
+  // THE DIAL'S URL AND PIN ARE ONE CHOICE (`chooseHearthDial`): an explicit option, the bootstrap's url, the one url the kept
+  // admit bundles agree on (`AdmitBundle.syncUrl`), then a walk record's relay; the pin is the one held for THAT hearth. Each
+  // pin files under the hearth that issued it, and a kept bundle is re-read at seeding (its opening answers its admit's
+  // commitment, its pin reads at its own Nexus and is signed by its own gate key).
+  const hearthDial     = chooseHearthDial({
+    explicitUrl: opts.joinSyncUrl ?? null,
+    hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
+    kept:        readKeptAdmitBundles(sealHome),
+    walkRelay:   walkingAt?.record.relay ?? null,
+    // THE FLOOR PINS a signed fleet-join answer carried, kept per Nexus: they file under the dialed hearth (ruling "Floor pins").
+    keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
+  });
+  for (const note of hearthDial.notes) console.log(`[nexus-join] ${note}`);
+  for (const warning of hearthDial.warnings) console.warn(`[nexus-join] ${warning}`);
+  const joinSyncUrl    = hearthDial.syncUrl;
+  const joinGatePubKey = opts.joinGatePubKey ?? hearthPin?.gatePubKey ?? walkingAt?.gatePubKey   ?? null;
   const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
@@ -1529,6 +1642,7 @@ async function prepareNodeBootOn(
           bootstrapTiddlers = packed.tiddlers ?? {};
         } catch { /* a torn bootstrap reads as none — never a fatal boot */ }
       }
+      faceBootTiddlers = bootstrapTiddlers;
       const daemonUrl = bootDaemonUrl(bootstrapTiddlers);
       // The WORN face decides which plane mounts; the Binding Gate below resolves the same face. The
       // family, the pin and every face plane read off the bootstrap alone.
@@ -1820,94 +1934,59 @@ async function prepareNodeBootOn(
     // one re-dials through the adapter's own close-and-reconnect path.
     if (joinSyncUrl) {
       try {
-        const leafIdentity = await loadLeafIdentity();
-        const selfEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER])?.tiddler as unknown as DeviceDelegationTiddler | undefined);
-        const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
-        const fleetEdge = selfEdge !== undefined && !selfSigned ? selfEdge : null;
-        const presentationNow = (): Promise<DialPresentation | null> => fleetEdge
-          ? Promise.resolve(null)
-          : dialPresentation({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, gatePubKey: joinGatePubKey, open: carriedBoards.open });
-        // THE WALK — a node walks like any leaf: the record `lares walk take` kept for the dialed hearth (the token
-        // while unsettled, then the grant) presents under the leaf of the face this vessel WEARS in the hearth's
-        // Nexus. A vessel wearing no face walks nowhere. An admit or a fleet edge outranks a walk: a proven
-        // relation to the dialed Nexus needs no hosting.
-        // A walk record rests sealed under the vessel key: a floor composition reads none and presents no walk.
-        const walkStore = nodeWalkStore();
-        const walkRecord = sovereign && joinGatePubKey ? await walkStore.read(joinGatePubKey) : null;
-        const walkLeaf = walkRecord ? await wornNexusLeaf(walkRecord.nexusAid).catch(() => null) : null;
-        if (walkRecord && !walkLeaf) console.log("[nexus-join] a walk record stands for this hearth, but this vessel wears no face — `lares persona wear <N>` to walk");
-        const walkBase: LeafIdentity = { contactCard: leafIdentity.contactCard, peerPubKey: leafIdentity.peerPubKey, sign: leafIdentity.sign };
-        const identityFor = (presented: DialPresentation | null): LeafIdentity =>
-          !presented && !fleetEdge && walkRecord && walkLeaf
-            ? walkIdentity(walkBase, walkRecord, walkLeaf) ?? dialIdentityFor(leafIdentity, presented, fleetEdge)
-            : dialIdentityFor(leafIdentity, presented, fleetEdge);
-        const describe = (presented: DialPresentation | null): string => presented
-          ? `the leaf admit ${carriageEntryActCid(presented.admit).slice(0, 16)}… for leaf ${presented.leaf.verifyingKey.slice(0, 16)}… on island ${presented.island.slice(0, 16)}… (lineage ${presented.lineage.length}; no root edge rides it)`
-          : fleetEdge  ? "the device-delegation edge (fleet)"
-          : walkRecord && walkLeaf ? `a walk at this hearth (${walkRecord.invite ? "redeeming its invite" : "its hosting grant"}) under leaf ${walkLeaf.verifyingKey.slice(0, 16)}…`
-          :              "the ContactCard alone (no admit for the dialed Nexus — a self-founded vessel presents no root edge)";
-        const presented = await presentationNow();
-        let presentedKey = presentationKey(presented);
+        // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
+        // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
+        // naming the missing piece, when either is absent.
+        // The walker route is SHUT by name: the old walk arm rode the retired challenge, and H opens walkers with its live
+        // grant reader.
+        // THE PINS. The full sovereign sync pin the admit carried rides the bootstrap beside the sync url, and each kept admit
+        // bundle opens the pin its quorum signed. Each is filed in the ONE pair index under the name of the hearth that issued
+        // it (the origin of ITS sync url: the admit carries no other true name for it), and the dial reads the index alone.
+        // The dial's pin is the one `chooseHearthDial` chose with the url.
+        const filed = fileHearthPins(gatePins, hearthDial.filings);
+        const dialPin = hearthDial.pin;
+        const dialNexus = dialPin?.nexus ?? null;
+        if (filed > 0) console.log(`[nexus-join] ${filed} gate pin(s) filed (${[...new Set(hearthDial.filings.map((f) => f.hearth))].join(", ")})`);
+        // THE PRESENTATION. The face's chain and session, composed from the joined-face proof (or the founder's lazy
+        // self-certificate) and the admit this vessel took for the pinned Nexus. Absent a session table, a pin or any piece
+        // of the proof, the dial stands idle and the log names the piece.
+        const dialSessions = opts.dialSessions ?? { table: new SessionTable(`dial-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" };
+        const composed = dialPin !== null
+          ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions })
+          : null;
+        // THE WALKER ROUTE SHIPS SHUT BY NAME (house ruling "Routes at the cutover": "Walker arms ... ship SHUT by name ... a closed route
+        // grants no silent legacy authority"): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
+        if (walkingAt && dialPin === null) console.log("[walk] walker-route-shut — the walker route ships shut by name (house ruling \"Routes at the cutover\"); this walk presents nothing at the hearth's gate");
+        if (composed !== null && !("presentation" in composed)) console.log(`[nexus-join] no presentation: ${composed.refusal}${composed.detail ? ` (${composed.detail})` : ""}`);
+        const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
         nexusDial = maybeStartNexusClientDial({
-          repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
-          identity: identityFor(presented),
+          repo, syncUrl: joinSyncUrl, pins: gatePins, hearth: hearthNameOf(joinSyncUrl), nexus: dialNexus,
+          presentation: dialPresentationNow, deadlines: dialDeadlines(),
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
           // THE RETURN ON SOCKET A — the same re-fold the carriage's own `onReconnect` runs on Socket B.
-          // A partition stales the boards this verdict reads (membership · posture · realm registrations)
-          // and the Repo caches its share verdict per (doc, peer) until something asks it to read anew, so
-          // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
           onReconnect: async () => { await afterRoll(); },
         });
-        // The walk client rides the dial: it keeps the grant the hearth pushes, settles the invite once a grant-
-        // bearing dial stands, and fills the wallet against the hearth's signed act on its hosting doc — the doc the
-        // invite's Nexus and gate key name, the one every walker of that hearth reads.
-        if (nexusDial && walkRecord && walkLeaf && joinGatePubKey && !presented && !fleetEdge) {
-          const walkDoc = hostingDocUrl(walkRecord.nexusAid, joinGatePubKey);
-          const walkDial = nexusDial;
-          walkOver({
-            transport: walkDial.adapter, store: walkStore, gatePubKey: joinGatePubKey, leaf: walkLeaf, base: walkBase,
-            actFor: async (epochCid) => {
-              const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
-              return doc ? hostingActOn(doc, epochCid, WALK_ACT_PATIENCE_MS) : null;
-            },
-            // A store that refuses under the walk (a key that locks while a grant arrives) costs that one message;
-            // the next presentation recovers a lost grant by its token.
-            onFault: (fault) => console.log(`[nexus-join] the walk dropped one ${fault.at} message: ${fault.error instanceof Error ? fault.error.message : String(fault.error)}`),
-          });
-          // A fresh invite taken for this same hearth while the dial stands re-presents at once: the token of the
-          // new invite, under the same worn leaf.
-          representWalk = async () => {
-            const now = await walkStore.read(joinGatePubKey);
-            const identity = now ? walkIdentity(walkBase, now, walkLeaf) : null;
-            if (identity) walkDial.adapter.represent(identity);
-          };
-        }
-        // Re-derive what this dial presents; re-dial only when it MOVED. Serialized, so two board changes
-        // landing together re-dial once.
-        let representing: Promise<void> = Promise.resolve();
-        representIfMoved = () => {
-          representing = representing.then(async () => {
-            if (!nexusDial) return;
-            const next = await presentationNow();
-            const key = presentationKey(next);
-            if (key === presentedKey) return;
-            presentedKey = key;
-            console.log(`[nexus-join] presenting ${describe(next)} — re-dialing to re-present`);
-            nexusDial.adapter.represent(identityFor(next));
-          }).catch((e) => { console.log(`[nexus-join] re-presentation skipped: ${e instanceof Error ? e.message : String(e)}`); });
-          return representing;
-        };
+        // A re-presentation has nothing to move while no presentation stands; the hook stays so the boards' callers keep it.
+        representIfMoved = () => Promise.resolve();
         // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
         try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
           charterHearthPeers.add(peerId);
           console.log(`[realm] the charter's hearth stands at peer ${peerId} — the realm's registered books federate back to it`);
         }); }
         catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
-        console.log(`[nexus-join] presenting ${describe(presented)}`);
       } catch (e) {
-        console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
+        console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }
+    }
+    else if (placeClass === "herm") {
+      // THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME (house ruling "Routes at the cutover", stable-founding-road: "Walker arms, the
+      // sibling dial and the herm membership relay ship SHUT by name ... a closed route grants no silent legacy authority."). A
+      // carried place dials with its carrier seal (`dialPlaceGate`) and no place presentation is composed; until a proven gate-native
+      // caller opens it, the herm says so on every boot and dials nothing.
+      console.log("[herm-relay] herm-relay-shut — the herm membership relay ships shut by name (house ruling \"Routes at the cutover\"); this herm dials nothing");
+    } else if (readKeptAdmitBundles(sealHome).length > 0) {
+      console.log("[nexus-join] dial-idle: sync-url-absent — a kept admit bundle names no address the hearth listens at (re-take a bundle issued with --sync-url)");
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
@@ -2689,16 +2768,12 @@ async function prepareNodeBootOn(
     residency.startSweeper();
     assembly.composite.attachResidency(residency);
 
-    // Inbound WS gate — the daemon island's in-worker keyhive answers each peer, and the vessel key (the gate
-    // key, never a root) signs every verdict back to the leaf.
-    authGate.arm(daemonVm.authShore, DAEMON_BAG_ID, {
-      pubKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
-    }, socketSorter);
-    // THE WALKERS' SESSION VERBS — the blind mint of the epoch's allowance and the sealed carriage, on walker sockets alone.
-    if (!mintServed) {
-      mintServed = true;
-      serveHostingMint(authGate, { leafSeedFor: hostingLeafSeedFor });
-      serveHostingCarry(authGate, { leafSeedFor: hostingLeafSeedFor, limits: hostingCarryLimits(loadLaresConfig(), DEFAULT_CARRY_LIMITS) });
+    // THE SYNC GATES stand once the island answers: one sovereign gate per Nexus, under the custody root, each
+    // signing its own verdict. The walkers' session verbs (the blind mint, the sealed carriage) stand nowhere: the
+    // walker arms ship SHUT at the cutover, so no session ever sorts as a walker.
+    if (resweepGates === null) {
+      resweepGates = standSyncGates;
+      void standSyncGates().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not stand: ${err instanceof Error ? err.message : String(err)}`));
     }
     // THE HOSTING DOC RE-DERIVES FROM THE SEALED STATE. A roll commits at its state row; an act that sealed there
     // and never reached the doc lands as this sovereign composition stands, so its walkers can read the epoch.
@@ -2717,16 +2792,6 @@ async function prepareNodeBootOn(
       };
       // Started here and settled on its own: the landing catches its own fault and stays owed to the next refold.
       void landOwedHostingActs();
-    }
-    // THE KNOCK. The relay answers an upgrade only on the path its gate key derives; the dispatcher destroys
-    // every other upgrade before any HTTP 101. Registered once — a re-armed gate keeps its key and its path.
-    const relayPath = authGate.upgradePath("/ws");
-    if (opts.dispatcher && relayPath && !floor.relayRegistered) {
-      floor.relayRegistered = true;
-      opts.dispatcher.registerUpgrade({
-        name: "relay", path: relayPath,
-        handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
-      });
     }
 
     // A raise this vessel counted before it last stopped still owes its roll: once the island answers verbs, the
@@ -2877,7 +2942,7 @@ async function prepareNodeBootOn(
   };
 
   return {
-    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, socketSorter,
+    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3065,7 +3130,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
       }
       await p.teardown();
     },
-    socketSorter: p.socketSorter,
+    floorGates: p.floorGates,
     siblingChannel: p.siblingChannel,
     storeClaim: p.storeClaim,
     mountManifest: result.assembly.mountManifest,
@@ -3115,8 +3180,7 @@ async function composeNodeHermOn(
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
-    authShore:   () => p.daemonVm().authShore,
-    sort:        p.socketSorter,
+    oracleGates: p.floorGates,
     ...(opts.meshSelf ? { meshSelf: { ...opts.meshSelf, gatePubKey: p.vesselGateKey } } : {}),
     ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
@@ -3171,7 +3235,7 @@ async function composeNodeHermOn(
     phase:            "live",
     carriageRelayPort:       p.carriageRelay?.port ?? null,
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
-    socketSorter:     p.socketSorter,
+    floorGates:       p.floorGates,
     storeClaim:       p.storeClaim,
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,

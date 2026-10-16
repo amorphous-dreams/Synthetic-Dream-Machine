@@ -466,11 +466,14 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
     expect(Object.keys(mesh)).toContain("openJoinedFaceSession");
   });
-  test.skip("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts. A real adapter must queue immediate traffic across verdict then open.", () => {
-    expect(Object.keys(mesh)).toContain("queueUntilGateSessionOpen");
+  test("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts drives a real gate and dial with an immediate frame against a held seat, and `@lararium/node` face-gate-server.test.ts drives the same law over a live WebSocket. The seat channel buffers across verdict then open.", () => {
+    for (const name of ["seatedChannel", "dialedChannel", "channelSessionTable"]) expect(Object.keys(mesh)).toContain(name);
   });
-  test.skip("EVERY PRODUCTION DIAL REJECTS THE RETIRED HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts. The built-image negative probe remains owed after the source inventory greens.", () => {
-    expect(Object.keys(mesh)).toContain("retiredHandshakeRejected");
+  test("EVERY PRODUCTION DIAL REJECTS THE RETIRED HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts reads the tree and finds no source or probe that speaks one frame of it. The wire's own module declares none of it, and a sealed gate answers a retired text frame by cutting the socket (the node gate server's text-frame vector).", async () => {
+    const wire = await import("../src/auth-wire.js");
+    for (const name of ["runPeerHandshake", "mkLarChallenge", "mkLarAuth", "mkLarAuthOk", "isLarChallengeMsg", "isLarAuthMsg", "isLarAuthOkMsg", "authOkBytes", "verifyAuthOk", "authProofBytes", "verifyAuthProof", "evaluateAuthProof", "buildAuthResponse", "leafProofBytes", "signLeafProof", "signPresented", "verifyLeafProof", "mintLeafNonce"]) {
+      expect(Object.keys(wire), name).not.toContain(name);
+    }
   });
   test("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts and floor-announcement.test.ts. The floor bundle signs `waking-floor-announce`, and the reader refuses any pin but the one it already holds; the socket and relay carriers stay owed to the cutover.", () => {
     for (const name of ["gateAnnouncementImage", "signFloorAnnouncement", "readFloorAnnouncement"]) expect(Object.keys(mesh)).toContain(name);

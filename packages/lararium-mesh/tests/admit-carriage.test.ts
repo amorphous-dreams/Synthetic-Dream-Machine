@@ -18,12 +18,14 @@ import { heldNexusRoot, readAdmitAtHeldRoot, verifySignedAdmitBundle, type HeldN
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import { carriageAct, kahuRoster } from "./fixtures/carriage.js";
+import { sovereignPinAt } from "./fixtures/sovereign-pin.js";
 import * as mesh from "../src/index.js";
+import type { GateBundlePin } from "../src/index.js";
 
-const PIN_A = "a1".repeat(32);
-const PIN_B = "b2".repeat(32);
+const PIN_A = sovereignPinAt("nexus-shape", 1);
+const PIN_B = sovereignPinAt("nexus-shape", 2);
 const CANON_A: AdmitCarriage["canon"] = { "bags/lares": "automerge:lares-a", "bags/lararium": "automerge:lararium-a" };
-const carriageOf = (gatePin: string, canon: AdmitCarriage["canon"] = CANON_A): AdmitCarriage => ({ gatePin, canon });
+const carriageOf = (gatePin: GateBundlePin, canon: AdmitCarriage["canon"] = CANON_A): AdmitCarriage => ({ gatePin, canon });
 
 async function rootOf(charter: SeatedCharter): Promise<HeldNexusRoot> {
   const doc = charter.doc({ labels: charter.keys.map((_, i) => `seat-${i}`) });
@@ -33,14 +35,15 @@ async function rootOf(charter: SeatedCharter): Promise<HeldNexusRoot> {
 }
 const admitAt = (charter: SeatedCharter, face: Uint8Array, opening?: AdmitOpening) =>
   carriageAct(face, "admit", { kahu: charter.seeds, epoch: charter.head.epochCid, ...(opening ? { carriageCommit: admitCarriageCommit(opening) } : {}) });
-const bundleOf = (charter: SeatedCharter, admit: CarriageEntry, opening?: AdmitOpening, gatePubKey = opening?.carriage.gatePin ?? PIN_A) =>
+const bundleOf = (charter: SeatedCharter, admit: CarriageEntry, opening?: AdmitOpening, gatePubKey = opening?.carriage.gatePin.signingKey ?? PIN_A.signingKey) =>
   ({ aid: charter.aid, gatePubKey, admit, lineage: [] as const, ...(opening ? { opening } : {}) });
 
 describe("an admit's carried pin and canon read only as the quorum committed to them", () => {
-  test("the shape readers take exactly a 64-hex pin with a small canon map, and a 64-hex salt beside it", () => {
+  test("the shape readers take exactly a full sovereign sync pin with a small canon map, and a 64-hex salt beside it", () => {
     expect(readAdmitCarriage(carriageOf(PIN_A))).toEqual(carriageOf(PIN_A));
     expect(readAdmitCarriage(carriageOf(PIN_A, {}))).toEqual(carriageOf(PIN_A, {}));
-    for (const bad of [null, {}, { gatePin: PIN_A }, { canon: CANON_A }, carriageOf("A1".repeat(32)), carriageOf("a1".repeat(31)),
+    for (const bad of [null, {}, { gatePin: PIN_A }, { canon: CANON_A }, carriageOf("a1".repeat(32) as never), carriageOf({ ...PIN_A, signingKey: "A1".repeat(32) }),
+      carriageOf({ ...PIN_A, tier: "floor" }), carriageOf({ ...PIN_A, route: "/oracle" }), carriageOf({ ...PIN_A, extra: 1 } as never),
       { ...carriageOf(PIN_A), extra: 1 }, carriageOf(PIN_A, { "": "automerge:x" }), carriageOf(PIN_A, { "bags/lares": "" }),
       carriageOf(PIN_A, { "bags/lares": 7 } as never), carriageOf(PIN_A, ["automerge:x"] as never)]) {
       expect(readAdmitCarriage(bad)).toBeNull();
@@ -82,14 +85,14 @@ describe("an admit's carried pin and canon read only as the quorum committed to 
     const roots = await Promise.all(nexuses.map(rootOf));
     for (const [n, charter] of nexuses.entries()) {
       for (const [f, face] of faces.entries()) {
-        const opening = openAdmitCarriage(carriageOf(n === 0 ? PIN_A : PIN_B, { "bags/lares": `automerge:lares-${n}-${f}` }));
+        const opening = openAdmitCarriage(carriageOf(sovereignPinAt(charter.aid, 1 + n), { "bags/lares": `automerge:lares-${n}-${f}` }));
         const admit = await admitAt(charter, face, opening);
         const held = await verifySignedAdmitBundle(bundleOf(charter, admit, opening), roots[n]);
         expect(held).toMatchObject({ carriage: opening.carriage, reading: { nexus: charter.aid, head: admit.nym } });
         // CONTROL: the held-root door itself names the same commitment.
         expect(await readAdmitAtHeldRoot({ admit, lineage: [] }, roots[n])).toMatchObject({ carriageCommit: admitCarriageCommit(opening) });
 
-        const otherPin = { ...opening, carriage: { ...opening.carriage, gatePin: opening.carriage.gatePin === PIN_B ? PIN_A : PIN_B } };
+        const otherPin = { ...opening, carriage: { ...opening.carriage, gatePin: sovereignPinAt(charter.aid, 77) } };
         expect(await verifySignedAdmitBundle(bundleOf(charter, admit, otherPin), roots[n])).toEqual({ refusal: "opening-differs" });
         const otherCanon = { ...opening, carriage: { ...opening.carriage, canon: { "bags/lares": "automerge:swapped" } } };
         expect(await verifySignedAdmitBundle(bundleOf(charter, admit, otherCanon), roots[n])).toEqual({ refusal: "opening-differs" });
@@ -102,6 +105,10 @@ describe("an admit's carried pin and canon read only as the quorum committed to 
         expect(await verifySignedAdmitBundle(bundleOf(charter, stripped, opening), roots[n])).toMatchObject({ refusal: "admit-not-held" });
         expect(await verifySignedAdmitBundle(bundleOf(charter, admit, opening, "cc".repeat(32)), roots[n])).toEqual({ refusal: "pin-differs" });
         expect(await verifySignedAdmitBundle(bundleOf(charter, admit, opening), roots[1 - n])).toEqual({ refusal: "bundle-other-nexus" });
+        // A pin the quorum committed to, standing at ANOTHER Nexus, hands out nothing: the admit names the Nexus it stands at.
+        const strayed = openAdmitCarriage(carriageOf(sovereignPinAt(nexuses[1 - n]!.aid, 1), { "bags/lares": `automerge:stray-${n}-${f}` }));
+        const strayedAdmit = await admitAt(charter, face, strayed);
+        expect(await verifySignedAdmitBundle(bundleOf(charter, strayedAdmit, strayed), roots[n])).toEqual({ refusal: "pin-other-nexus" });
         expect(await verifySignedAdmitBundle(bundleOf(charter, admit, opening), null)).toEqual({ refusal: "no-held-root" });
       }
     }
@@ -146,7 +153,7 @@ describe("an admit's carried pin and canon read only as the quorum committed to 
     writeCarriageEntry(doc, admit);
     const written = JSON.stringify(doc);
     expect(written).toContain(admit.carriageCommit!);                                    // CONTROL: the board holds the entry
-    for (const hidden of [PIN_A, ...Object.values(CANON_A), opening.salt]) expect(written).not.toContain(hidden);
+    for (const hidden of [PIN_A.signingKey, PIN_A.transportKey, ...Object.values(CANON_A), opening.salt]) expect(written).not.toContain(hidden);
     const [read] = carriageEntriesFromBoard(doc);
     expect(read?.carriageCommit).toBe(admit.carriageCommit);
     expect(carriageEntryActCid(read!)).toBe(carriageEntryActCid(admit));

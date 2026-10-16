@@ -7,7 +7,7 @@
  * the REAL DeterministicFederationGate hands it the federatable shelf and nothing more:
  *   · RED: PRIVATE + a proven foreign key → no class at all (the gate answers nothing);
  *   · OPEN → the stranger reaches crossroads/WHO/antigen, and is DENIED catalog/personal;
- *   · a SAME-OPERATOR peer keeps FULL device sync (no regression);
+ *   · a SAME-OPERATOR peer reads a private plane through its proven face's gate alone, never by class (D3);
  *   · a Kapae'd stranger draws Mu even for a federatable plane (the #59 antigen ahead).
  *
  * Gate: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
@@ -71,13 +71,20 @@ describe("END-TO-END — an OPEN gate's stranger reaches the federatable set, DE
   test("a no-doc-id decision is DENIED (deny-by-default)", async () => { expect(await share(undefined)).toBe(false); });
 });
 
-describe("no-same-operator-regression — a SAME-OPERATOR peer keeps FULL device sync", () => {
-  const same = (documentId: DocumentId) => selfSlotShareDecision({
+describe("D3 — a SAME-OPERATOR peer reads through its proven face, never by class", () => {
+  const faceGate = { mayFederate: (documentId: DocumentId) => documentId === PERSONAL_LIKE };
+  const same = (documentId: DocumentId, sessionFace: typeof faceGate | null = null) => selfSlotShareDecision({
     hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null,
-    membership: null, planeSeal: null, peerId: "own-device-peer", documentId,
+    membership: null, planeSeal: null, peerId: "own-device-peer", documentId, sessionFace,
   });
-  test("a PRIVATE plane (catalog-like) still crosses to my own device", async () => { expect(await same(CATALOG_LIKE)).toBe(true); });
-  test("a PRIVATE plane (personal-like) still crosses to my own device", async () => { expect(await same(PERSONAL_LIKE)).toBe(true); });
+  test("RED: a PRIVATE plane stays home from a same-operator peer with no face gate", async () => {
+    expect(await same(CATALOG_LIKE)).toBe(false);
+    expect(await same(PERSONAL_LIKE)).toBe(false);
+  });
+  test("CONTROL: its face's own plane crosses through the face gate, and no other private plane", async () => {
+    expect(await same(PERSONAL_LIKE, faceGate)).toBe(true);
+    expect(await same(CATALOG_LIKE, faceGate)).toBe(false);
+  });
   test("a federatable plane crosses too", async () => { expect(await same(CROSSROADS)).toBe(true); });
 });
 

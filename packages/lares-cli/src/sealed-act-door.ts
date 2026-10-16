@@ -42,9 +42,9 @@ const directContext: SealedActContext = {
   // No composition stands in a command's own process, so no island takes a bundle's memory section: an import
   // there refuses by name and names the standing vessel.
   backup: null,
-  // The gate key a stopped vessel's hearth dial would pin at its next stand (an admit's pin, or `LAR_JOIN_GATE`);
+  // The gate key a stopped vessel's hearth dial would pin at its next stand (an admit's pin);
   // no walk dial stands in a command's own process, so a kept invite waits for the next stand.
-  walk: { dialGate: () => process.env["LAR_JOIN_GATE"] ?? readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null, represent: null },
+  walk: { dialGate: () => readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null, represent: null },
   // A roll with no vessel standing holds the store for the moment of its act, and no live reading stands to refold.
   hosting: { withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} },
   kelHead: async (prefix) => {

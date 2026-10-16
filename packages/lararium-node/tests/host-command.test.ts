@@ -24,9 +24,8 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
-  tokenVerifiesAt, redeemClaim, makeMultiSigQuorumVerifier, type NexusDoc, type Presented,
+  tokenVerifiesAt, redeemClaim, claimDigest, type NexusDoc,
 } from "@lararium/mesh";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
@@ -35,9 +34,7 @@ import { heldNexusLeaves, mintNexusLeaf, mintWornNexusLeaf, nexusLeafFor } from 
 import { runHostRoll, runHostInvite, runHostState, landEveryHostingAct, HostRefusal } from "../src/commands/host.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { readHostingState, rollHosting, liveEpochs, hostingDir } from "../src/hosting-store.js";
-import { makeSocketSorter } from "../src/socket-sorter.js";
-import type { CarriedNexusReading } from "../src/nexus-carriage.js";
+import { readHostingState, rollHosting, liveEpochs, hostingDir, spendToken } from "../src/hosting-store.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
@@ -159,7 +156,7 @@ describe("lares host — roll, invite, state", () => {
     expect(String(overtaken.reason.message)).toMatch(/moved under this roll/);
   });
 
-  it("an invite the hearth mints redeems through its own sorter, and the state counts it", async () => {
+  it("an invite the hearth mints counts once its token is spent at the store (the walker route ships shut)", async () => {
     const { aid, doc } = await seatAndWear();
     await direct(runHostRoll)({ sealHome: sealHome() });
     const { invite, epoch } = await runHostInvite({ sealHome: sealHome(), relay: "ws://hearth:8080/ws" });
@@ -171,23 +168,14 @@ describe("lares host — roll, invite, state", () => {
     expect(live.current.cid).toBe(epoch);
     expect(tokenVerifiesAt(live.current, carried.token)).toBe(true);
 
-    // A newcomer redeems it at this hearth's gate, through the vessel's own sorter.
+    // A newcomer's redemption burns the token's nonce at the store. The walker ROUTE that carried it to the store ships
+    // SHUT ("Routes at the cutover": the gate sorts a claim as no walker); the store's own count is what stays true.
     const guestSeed = new Uint8Array(32).fill(7);
     const guestLeaf = hex(await ed.getPublicKeyAsync(guestSeed));
-    const vesselKey = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
-    const arm: Presented = { kind: "token", nexusAid: aid, token: carried.token, claim: redeemClaim(guestSeed, carried.token.n), leaf: guestLeaf };
-    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32) }), arm, async (b) => hex(await ed.signAsync(b, guestSeed)));
-    const roster = { keys: doc.kahu.map((k) => k.verifyingKey!), threshold: 2, sealEpochCid: aid };
-    const reading: CarriedNexusReading = { nexus: aid, aid, revision: "fixture", via: "seat", island: aid, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
-    const sort = makeSocketSorter({
-      readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
-      hosting: { leafSeedFor: async (a) => (await heldNexusLeaves(a))[0]?.seed ?? null },
-    });
-    const verdict = await sort({
-      identifier: `0x${vesselKey}`, vesselKey, sameOperator: false,
-      presented: { ...arm, leafProof } as Presented, challenge: { nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32) },
-    });
-    expect(verdict?.class).toBe("walker");
+    const claim = redeemClaim(guestSeed, carried.token.n);
+    expect(await spendToken({ nexusAid: aid, epochCid: epoch, n: carried.token.n, claimDigest: claimDigest(claim, guestLeaf) })).toBe("fresh");
+    // The same claim again is the same burn; a different claim on the burned nonce is a different one.
+    expect(await spendToken({ nexusAid: aid, epochCid: epoch, n: carried.token.n, claimDigest: claimDigest(claim, guestLeaf) })).toBe("retry");
     expect(await runHostState({ sealHome: sealHome() })).toEqual([{
       nexusAid: aid, epoch, previousEpoch: null, cap: 3, redeemed: 1, redeemedPrevious: 0,
     }]);

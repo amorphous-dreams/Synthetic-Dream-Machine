@@ -210,6 +210,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await runNexusContract({
         action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
         ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
+        ...opt("syncUrl", str(args["syncUrl"])),
       });
       await awaitOnRolled(deps.onRolled?.());
       return { ...r };

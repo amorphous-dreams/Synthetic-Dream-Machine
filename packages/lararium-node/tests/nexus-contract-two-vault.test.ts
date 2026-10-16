@@ -37,11 +37,12 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { admitCarriageCommit, mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
+import { hex, admitCarriageCommit, mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
   holdsCarriage, foundingRoster, KAPAE_ANTIGEN_DOMAIN, antigenActCid, nexusActPartial, type CofoundOffer, type KapaeAntigenEntry } from "@lararium/mesh";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusContractError, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";
+import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
@@ -122,11 +123,13 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const opened = await runNexusContractOpen({ action: "admit", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: A.repo, aid });
     expect(opened.verdict).toBe("ready");
     expect(opened.signed).toEqual([aSeat]);
-    // The admit's quorum signs a commitment to the opening hearth's gate pin and canon list (face-proof#/the-gate-exchange,
-    // step 5); the opening crosses with the partial, never onto a board.
-    const aGate = (await loadVesselVerifyingKey()).toLowerCase();
+    // The admit's quorum signs a commitment to the opening hearth's FULL sovereign sync pin at this Nexus and canon list
+    // (face-proof#/the-gate-exchange, step 5); the opening crosses with the partial, never onto a board.
     const opening = opened.partial.act.family === "admit" ? opened.partial.act.opening : undefined;
-    expect(opening?.carriage.gatePin).toBe(aGate);
+    const aPin = opening!.carriage.gatePin;
+    const aGate = aPin.signingKey;
+    expect(aPin).toEqual(hearthSovereignPin(aid));
+    expect([aPin.tier, aPin.route, aPin.nexus]).toEqual(["sovereign", "/ws", hex(new TextEncoder().encode(aid))]);
     expect(opened.partial.act.family === "admit" && opened.partial.act.entry.carriageCommit).toBe(admitCarriageCommit(opening!));
     expect(opened.landed).toBeNull();
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(false);
@@ -139,7 +142,7 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     expect(cosigned.landed?.memberHeld).toBe(true);
     expect(cosigned.landed?.contractIn).toBe("supplied");
     // B lands A's act, so B's bundle names the pin the admit signed, never B's own gate key.
-    const bGate = (await loadVesselVerifyingKey()).toLowerCase();
+    const bGate = hearthSovereignPin(aid).signingKey;
     expect(bGate).not.toBe(aGate);
     expect(cosigned.landed?.bundle?.gatePubKey).toBe(aGate);
 

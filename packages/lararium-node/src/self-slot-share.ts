@@ -7,9 +7,12 @@
  *     the worn face's PersonaGroup — holds STANDING, never the house: the sibling gate alone decides it (the face's
  *     own planes and the public boards; never the @daemon, never another face's planes). It decides FIRST; an id a
  *     WS socket also holds denies;
- *   · a SAME-OPERATOR WS peer — the keyholder vouched admin@daemon or a KEL-pinned device edge, both
- *     UNFORGEABLE — shares FREELY too (full device sync; the operator's own fleet carries every private plane);
- *   · every other WS peer — contracted, walker, stranger, or one with no class — rides a singleton relay ring
+ *   · a SAME-OPERATOR WS peer — a face the gate read admitted, with its PersonaGroup's grant and no fleet shadow —
+ *     holds TRANSPORT, never a blanket (D3, "Sharing after the gate"): the gate of the face the session PROVED
+ *     (`sessionFace`) decides each document, and beside it the peer reads what any admitted peer reads. Two
+ *     sessions wearing two faces read two sets of books;
+ *   · every WS peer — contracted, walker, stranger, one with no class, and a same-operator one past its face gate —
+ *     rides a singleton relay ring
  *     over the deterministic federatable shelf (crossroads · WHO · kapae-antigen · boards). A WALKER also reaches
  *     its hearth's HOSTING DOC in the Nexus its grant names — the doc that hearth's hosting acts ride, which it
  *     reads to check what the hearth published (`walkerBoard`) — and NEVER the carriage board: the carrier set is
@@ -36,7 +39,7 @@ import type { DocumentId } from "@automerge/automerge-repo";
 import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
 import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ShadowConsult } from "@lararium/mesh";
 
-/** A same-operator peer + every in-process island peer ride this empty relay ring → shared freely. */
+/** Every in-process island peer rides this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
 
 export interface SelfSlotShareInput {
@@ -69,11 +72,15 @@ export interface SelfSlotShareInput {
   /** The edge-shadow consult (kapae#/reach): a device set aside from the fleet draws Mu on EVERY lane, the
    *  same-operator and sibling lanes included. Null sets nobody aside. */
   readonly shadow?: ShadowConsult | null;
+  /** D3: the gate of the face a SAME-OPERATOR session proved — that face's own planes and the public boards. The
+   *  class grants no document; this gate does. Null → the session reads what any admitted peer reads. */
+  readonly sessionFace?: FederationGate | null;
 }
 
 /**
- * The per-peer share verdict. A sibling reaches what the sibling gate federates; a same-operator / in-process
- * peer full-syncs; every other WS peer reaches only
+ * The per-peer share verdict. A sibling reaches what the sibling gate federates; an in-process peer full-syncs;
+ * a same-operator WS peer reaches what its proven face's gate federates, and beside it, as every other WS peer,
+ * only
  * the deterministically-federatable planes (and, as a member, a provably-sealed plane's ciphertext); a Kapae'd
  * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
@@ -90,7 +97,13 @@ export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<
     if (presenterIsKapaed(input.antigenRing, input.peerId)) return false;
     return siblingShareDecision(input.siblingGate ?? null, input.peerId, input.documentId);
   }
-  if (input.hasWsSocket && input.peerClass !== "same-operator") {
+  // D3: TRANSPORT KINSHIP GRANTS NO READERSHIP. A same-operator session reads its proven face's documents through
+  // that face's gate, the antigen ahead; past it, it reads what any admitted peer reads.
+  if (input.hasWsSocket && input.peerClass === "same-operator") {
+    if (presenterIsKapaed(input.antigenRing, input.peerId)) return false;
+    if (await siblingShareDecision(input.sessionFace ?? null, input.peerId, input.documentId)) return true;
+  }
+  if (input.hasWsSocket) {
     if (input.peerClass === "walker" && input.walkerBoard && input.documentId === input.walkerBoard) {
       // Its hearth's hosting doc names only that hearth's acts; the antigen still draws Mu on a Kapae'd presenter.
       return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
@@ -115,7 +128,7 @@ export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<
       input.documentId,
     );
   }
-  // A same-operator / in-process peer: empty relay ring → shared freely (the antigen still draws Mu).
+  // An in-process peer: empty relay ring → shared freely (the antigen still draws Mu).
   return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
 }
 

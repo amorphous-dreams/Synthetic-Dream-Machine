@@ -3,7 +3,6 @@
  * aloud when it holds none: it never falls back to its own key and dials a path no gate claims.
  */
 import { describe, test, expect } from "vitest";
-import { LarWSClientAdapter, knockPath } from "@lararium/mesh";
 import { relayPinFor } from "../src/browser-relay-pin.js";
 
 const NODE_GATE = "ab".repeat(32);
@@ -20,13 +19,8 @@ describe("the relay pin", () => {
     expect(relayPinFor(undefined, undefined)).toEqual({ dial: false, reason: null });
   });
 
-  test("CONTROL: a pinned node key dials the knock that key derives", () => {
+  test("CONTROL: a well-formed pinned key is the pin, lower-cased — the full gate pin the dial needs comes from the index", () => {
     const pin = relayPinFor("ws://node:8080/ws", NODE_GATE.toUpperCase());
     expect(pin).toEqual({ dial: true, gatePubKey: NODE_GATE });
-    const adapter = new LarWSClientAdapter({
-      url: "ws://node:8080/ws", aud: "lar:///x", gatePubKey: (pin as { gatePubKey: string }).gatePubKey,
-      identity: { contactCard: "{}", peerPubKey: "cd".repeat(32), sign: async () => "00".repeat(64) },
-    });
-    expect(new URL(adapter.url).pathname).toBe(knockPath(NODE_GATE, "/ws"));
   });
 });

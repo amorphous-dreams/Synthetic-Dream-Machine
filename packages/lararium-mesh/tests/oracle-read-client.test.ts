@@ -1,180 +1,130 @@
 /**
- * oracle-read-client — peers prove first, then the reader rule runs.
+ * oracle-read-client — peers prove first at the FLOOR gate, then the reader rule runs.
  *
- * A fake channel plays the peer's gate exactly as the node face speaks: lar:challenge → (the reader's
- * lar:auth, its proof checked here) → a gate-signed lar:auth-ok → the pointer frame → the snapshot bytes — or,
- * for a reader it refuses, nothing at all. Every reader pins the publisher's key and dials its knock.
+ * A real floor-tier gate (`makeFaceGate` over a floor world on "/oracle", seating channels) plays the peer's oracle face:
+ * its seat's open hands the channel a script that sends the pointer frame and the snapshot, as the node face will.
+ * Every reader pins the gate (from the pair index) and the publisher (out of band).
  */
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
-import { exportOracleSnapshot, buildOraclePointer, type OraclePointer, type OracleSnapshot } from "../src/oracle-substrate.js";
-import {
-  pullAndVerifyOracle, oracleSocketUrl, ORACLE_POINTER_FRAME, ORACLE_SOCKET_ROUTE, type OracleChannel,
-} from "../src/oracle-read-client.js";
-import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LeafIdentity,
-} from "../src/auth-wire.js";
-import { gateDouble } from "./gate-dial-fixture.js";
-import { DAEMON_BAG_ID } from "../src/lar-uris.js";
-import { knockPath } from "../src/gate-knock.js";
+import { hearthPinIndex } from "../src/admit-gate-pin.js";
+import { channelSessionTable, type GateSessionChannel } from "../src/gate-session-channel.js";
+import { ed25519VerifyingKeyFromSeed } from "../src/auth-wire.js";
+import { buildOraclePointer, exportOracleSnapshot, type OraclePointer, type OracleSnapshot } from "../src/oracle-substrate.js";
+import { ORACLE_POINTER_FRAME, ORACLE_SOCKET_ROUTE, oracleSocketUrl, pullAndVerifyOracle } from "../src/oracle-read-client.js";
+import { dialSocketTo, gateOver } from "./gate-dial-fixture.js";
+import { AUDIENCE, handDeadlines, presenter, world } from "./face-gate-fixture.js";
 
-const SEED   = Uint8Array.from({ length: 32 }, (_, i) => i + 1);     // the peer's vessel key (gate + publisher)
-const OTHER  = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);   // another vessel
-const READER = Uint8Array.from({ length: 32 }, (_, i) => 90 + i);    // the dialer
+const SEED  = Uint8Array.from({ length: 32 }, (_, i) => i + 1);     // the publisher's vessel key
+const OTHER = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
+const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 
-async function serve(seed = SEED, parents: readonly string[] = [], text = "the constitution"):
-  Promise<{ snap: OracleSnapshot; ptr: OraclePointer }> {
+async function publish(seed = SEED, text = "the constitution"): Promise<{ snap: OracleSnapshot; ptr: OraclePointer }> {
   const snap = await exportOracleSnapshot(A.from({ tiddlers: { oracle: { text } } }));
-  const ptr = await buildOraclePointer({ snapshot: snap, parents, signerSeed: seed });
-  return { snap, ptr };
+  return { snap, ptr: await buildOraclePointer({ snapshot: snap, parents: [], signerSeed: seed }) };
 }
 
-/** The reader's pin: the publisher's vessel key, known out of band. */
-const pin = (): Promise<string> => ed25519VerifyingKeyFromSeed(SEED);
-
-async function readerIdentity(seed = READER): Promise<LeafIdentity> {
-  const pub = await ed25519VerifyingKeyFromSeed(seed);
-  // The fake gate reads the card as the reader's key — the shape the keyholder derives from a real card.
-  return { contactCard: pub, peerPubKey: pub, sign: ed25519SignerFromSeed(seed) };
+interface Face {
+  readonly ptr?: OraclePointer | null;
+  readonly bytes?: Uint8Array;
+  readonly snapshotKind?: "session" | "sync" | "none";
+  readonly stallAfterPointer?: boolean;
 }
 
-interface GateScript {
-  readonly gateSeed?:   Uint8Array;            // the key the gate holds
-  readonly ptr?:        OraclePointer | null;  // null → the face publishes nothing
-  readonly bytes?:      Uint8Array;
-  readonly deny?:       boolean;               // the shore refuses the reader
-  readonly unsigned?:   boolean;               // auth-ok carries a signature of a key the gate never named
-}
-
-/** A channel whose far end is a peer's gate and oracle face. Records whether any map frame left. */
-function gateChannel(script: GateScript): { open: (url: string) => Promise<OracleChannel>; sentMap: () => boolean; dialed: () => string } {
-  let mapSent = false;
-  let dialedUrl = "";
-  const open = async (url: string): Promise<OracleChannel> => {
-    dialedUrl = url;
-    const gateSeed = script.gateSeed ?? SEED;
-    const gate = await gateDouble({ gateSeed, aud: DAEMON_BAG_ID, proof: "check", ...(script.unsigned ? { verdictSeed: OTHER } : {}) });
-    const exchange = gate.accept();
-    const out: Array<string | Uint8Array | null> = [exchange.opening];
-    let waiter: ((f: string | Uint8Array | null) => void) | null = null;
-    const push = (f: string | Uint8Array | null): void => { if (waiter) { const w = waiter; waiter = null; w(f); } else out.push(f); };
-    return {
-      recv: () => out.length ? Promise.resolve(out.shift()!) : new Promise((r) => { waiter = r; }),
-      close: () => {},
-      send: (text) => {
-        void (async () => {
-          const result = await exchange.answer(text);
-          if (script.deny || !result.verdict) { push(null); return; }   // a refusal is silence, then the cut
-          push(result.verdict);
-          if (!script.ptr) { push(null); return; }
-          mapSent = true;
-          push(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: script.ptr }));
-          push(script.bytes ?? new Uint8Array());
-          push(null);
-        })();
-      },
-    };
+async function rig(face: Face, over: { silent?: boolean } = {}) {
+  const sent = { pointer: false };
+  const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+  const p = await presenter(w, "oracle reader");
+  if (over.silent) w.held = null;
+  const served = await publish();
+  const ptr = face.ptr === undefined ? served.ptr : face.ptr;
+  const gate = gateOver(w, channelSessionTable((channel: GateSessionChannel) => {
+    if (ptr !== null) channel.send("session", enc(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: ptr })));
+    sent.pointer = ptr !== null;
+    if (ptr !== null && !face.stallAfterPointer && face.snapshotKind !== "none") {
+      channel.send(face.snapshotKind ?? "session", face.bytes ?? served.snap.bytes);
+    }
+    if (ptr === null || face.snapshotKind === "none") channel.close();
+  }));
+  const pins = hearthPinIndex();
+  pins.put("hearth-1", w.pin);
+  const urls: string[] = [];
+  const deadlines = handDeadlines();
+  const opts = {
+    pins, hearth: "hearth-1", nexus: w.pin.nexus, audience: AUDIENCE, deadlines, verifyingKey: "",
+    presentation: { certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history },
+    dialSocket: (url: string) => { urls.push(url); return dialSocketTo(gate).socket; },
   };
-  return { open, sentMap: () => mapSent, dialed: () => dialedUrl };
+  return { sent, w, opts: { ...opts, verifyingKey: await ed25519VerifyingKeyFromSeed(SEED) }, urls, pins, deadlines };
 }
 
-describe("oracle-read-client — peers prove first", () => {
-  test("a proven reader verifies and loads; the dial rides the oracle socket", async () => {
-    const { snap, ptr } = await serve();
-    const g = gateChannel({ ptr, bytes: snap.bytes });
-    const res = await pullAndVerifyOracle<{ tiddlers: Record<string, { text: string }> }>("http://peer:8080", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+describe("oracle-read-client over the sealed floor gate", () => {
+  test("CONTROL: a pinned dial pulls, verifies and loads the oracle; the dial went to the oracle route", async () => {
+    const r = await rig({});
+    const res = await pullAndVerifyOracle<{ tiddlers: Record<string, { text: string }> }>("http://peer:8080", r.opts);
     expect(res.ok, res.reason).toBe(true);
-    expect(res.cid).toBe(snap.cid);
-    expect(res.doc!.tiddlers.oracle.text).toBe("the constitution");
-    expect(g.dialed()).toBe(`ws://peer:8080${knockPath(await ed25519VerifyingKeyFromSeed(SEED), ORACLE_SOCKET_ROUTE)}`);
+    expect(res.doc?.tiddlers["oracle"]?.text).toBe("the constitution");
+    expect(r.urls).toEqual([oracleSocketUrl("http://peer:8080")]);
+    expect(r.urls[0]).toBe("ws://peer:8080/oracle");
   });
 
-  test("a reader the gate refuses reads nothing, and no map frame leaves the face", async () => {
-    const { snap, ptr } = await serve();
-    const g = gateChannel({ ptr, bytes: snap.bytes, deny: true });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+  test("the snapshot may ride a sync message as well", async () => {
+    const r = await rig({ snapshotKind: "sync" });
+    expect((await pullAndVerifyOracle("http://peer", r.opts)).ok).toBe(true);
+  });
+
+  test("a hearth and Nexus the index holds no floor pin for dial nothing", async () => {
+    const r = await rig({});
+    const res = await pullAndVerifyOracle("http://peer", { ...r.opts, pins: hearthPinIndex() });
     expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/gate refused/);
-    expect(g.sentMap()).toBe(false);
+    expect(res.reason).toMatch(/pin-absent/);
+    expect(r.urls).toEqual([]);
   });
 
-  test("a reader whose proof does not hold its claimed key is refused", async () => {
-    const { snap, ptr } = await serve();
-    const g = gateChannel({ ptr, bytes: snap.bytes });
-    const forged = { ...(await readerIdentity()), sign: ed25519SignerFromSeed(OTHER) };
-    const res = await pullAndVerifyOracle("http://peer", { identity: forged, verifyingKey: await pin(), openChannel: g.open });
+  test("a pointer signed by another key than the pinned publisher is rejected", async () => {
+    const r = await rig({});
+    const res = await pullAndVerifyOracle("http://peer", { ...r.opts, verifyingKey: await ed25519VerifyingKeyFromSeed(OTHER) });
     expect(res.ok).toBe(false);
-    expect(g.sentMap()).toBe(false);
+    expect(res.reason).toMatch(/pointer rejected/);
   });
 
-  test("a verdict the named gate key never signed reads as a refusal", async () => {
-    const { snap, ptr } = await serve();
-    const g = gateChannel({ ptr, bytes: snap.bytes, unsigned: true });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+  test("a face with no pointer yet closes without a message", async () => {
+    const r = await rig({ ptr: null });
+    const res = await pullAndVerifyOracle("http://peer", r.opts);
     expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/gate refused/);
+    expect(res.reason).toBe("peer published no pointer");
   });
 
-  test("a pointer signed by a key other than the gate this socket proved to is refused", async () => {
-    const foreign = await serve(OTHER);
-    const g = gateChannel({ ptr: foreign.ptr, bytes: foreign.snap.bytes });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/unpinned/);
-  });
-
-  test("a gate holding another key cannot answer for the pinned publisher", async () => {
-    const { snap, ptr } = await serve();
-    const g = gateChannel({ gateSeed: OTHER, ptr, bytes: snap.bytes });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: ptr.pub, openChannel: g.open });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/gate refused/);
-  });
-
-  test("missing causal parent is unavailable", async () => {
-    const { snap, ptr } = await serve(SEED, ["f".repeat(64)]);
-    const g = gateChannel({ ptr, bytes: snap.bytes });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), knownPointerIds: [], verifyingKey: await pin(), openChannel: g.open });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/unavailable/);
-  });
-
-  test("corrupted snapshot bytes fail the content address", async () => {
-    const { snap, ptr } = await serve();
-    const bytes = new Uint8Array([...snap.bytes].map((b, i) => i === 0 ? b ^ 0xff : b));
-    const g = gateChannel({ ptr, bytes });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+  test("a snapshot whose bytes do not hash to the pointer's cid is refused", async () => {
+    const forged = await publish(SEED, "another constitution");
+    const r = await rig({ bytes: forged.snap.bytes });
+    const res = await pullAndVerifyOracle("http://peer", r.opts);
     expect(res.ok).toBe(false);
     expect(res.reason).toMatch(/hash mismatch/);
   });
 
-  test("a signed pointer with a mismatched Automerge frontier is refused", async () => {
-    const honest = await serve();
-    const forged = await buildOraclePointer({ snapshot: { ...honest.snap, heads: ["f".repeat(64)] }, parents: [], signerSeed: SEED });
-    const g = gateChannel({ ptr: forged, bytes: honest.snap.bytes });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+  test("a face that sends the pointer and never the snapshot is waited on only until the reader's deadline", async () => {
+    const r = await rig({ stallAfterPointer: true });
+    const pulling = pullAndVerifyOracle("http://peer", r.opts);
+    // The dial's own deadline cancels once it verified; the first wait cancels after the pointer; the second wait stands.
+    while (!r.sent.pointer) await new Promise((resolve) => setImmediate(resolve));
+    for (let i = 0; i < 16; i++) await new Promise((resolve) => setImmediate(resolve));
+    while (r.deadlines.standing < 1) await new Promise((resolve) => setImmediate(resolve));
+    r.deadlines.fire();
+    const res = await pulling;
     expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/heads mismatch/);
+    expect(res.reason).toBe("peer sent no snapshot");
   });
 
-  test("a face with no pointer yet sends no map", async () => {
-    const g = gateChannel({ ptr: null });
-    const res = await pullAndVerifyOracle("http://peer", { identity: await readerIdentity(), verifyingKey: await pin(), openChannel: g.open });
+  test("a gate that refuses says nothing: the reader's dial lapses and reads no map", async () => {
+    const r = await rig({}, { silent: true });
+    const pulling = pullAndVerifyOracle("http://peer", r.opts);
+    while (r.deadlines.standing < 1) await new Promise((resolve) => setImmediate(resolve));
+    for (let i = 0; i < 4; i++) await new Promise((resolve) => setImmediate(resolve));
+    r.deadlines.fire();
+    const res = await pulling;
     expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/no pointer/);
-  });
-
-  test("dead peer fails closed", async () => {
-    const res = await pullAndVerifyOracle("http://peer", {
-      identity: await readerIdentity(), verifyingKey: await pin(), openChannel: async () => { throw new Error("ECONNREFUSED"); },
-    });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/dial failed: ECONNREFUSED/);
-  });
-
-  test("the socket URL maps http(s) to ws(s) and keeps a ws base", () => {
-    expect(oracleSocketUrl("http://a:1/")).toBe("ws://a:1/oracle");
-    expect(oracleSocketUrl("https://a")).toBe("wss://a/oracle");
-    expect(oracleSocketUrl("ws://a:2")).toBe("ws://a:2/oracle");
+    expect(res.reason).toMatch(/dial failed/);
+    r.w.deadlines.fire();
   });
 });

@@ -244,8 +244,10 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
     const carrierSig  = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
     const aid = args.options["nexus"];
+    const syncUrl = action === "admit" ? args.options["sync-url"] : undefined;
     const { output } = await storeVerb("nexus-contract", {
       action, nym,
+      ...(syncUrl ? { syncUrl } : {}),
       ...(contractSig ? { contractSig } : {}),
       ...(carrierSig ? { carrierSig } : {}),
       ...(aid ? { aid } : {}),

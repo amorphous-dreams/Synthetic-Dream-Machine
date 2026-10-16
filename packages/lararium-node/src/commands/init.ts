@@ -282,7 +282,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
         kind:  payload.hearthIslandKind,
         scope: payload.hearthIslandScope,
-      }),
+      }, payload.hearthGatePin),
     }), null, 2), "utf8");
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.

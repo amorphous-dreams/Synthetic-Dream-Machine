@@ -2,7 +2,7 @@
  * antigen-ring.test.ts — the #59 node holder that makes the Kapae-antigen breathe on the live sharePolicy.
  *
  * Proven:
- *   · presenterNym is the main↔worker BRIDGE — it surfaces the DaemonAuthGate's proven Identifier hex as
+ *   · presenterNym is the main↔worker BRIDGE — it surfaces the gate's proven identifier hex as
  *     the ed25519 nym (`id.slice(-64)`, lowercased); an unauthenticated / malformed peer → null (no false deny),
  *   · the LIVE refold: a real 2-of-3 signed ban in the always-carried board + a seated charter roster on disk
  *     → the victim's nym stands Kapae'd → carryContractShareDecision draws `false` (Mu) for that presenter,
@@ -54,7 +54,7 @@ async function waitFor(pred: () => boolean, ms = 2000): Promise<void> {
 }
 
 describe("presenterNym — the proven-nym bridge (no re-authentication)", () => {
-  test("surfaces the DaemonAuthGate identifier's ed25519 suffix as the nym; unknown/malformed → null", () => {
+  test("surfaces the gate's proven identifier's ed25519 suffix as the nym; unknown/malformed → null", () => {
     const RAW_NYM = "cafebabe".repeat(8);                       // 64 hex — the raw ed25519 key
     const peerMap = new Map<string, string>([
       ["peer-a", `keyhive-prefix:${RAW_NYM}`],                  // Identifier hex → last 64 chars are the nym

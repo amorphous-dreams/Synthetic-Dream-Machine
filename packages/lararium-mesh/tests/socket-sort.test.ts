@@ -7,7 +7,6 @@
 import { describe, expect, test } from "vitest";
 import * as mesh from "../src/index.js";
 import { classifySocket, answersStrangers } from "../src/federation-gate.js";
-import { isLarAuthMsg, mkLarChallenge, mkLarAuth, runPeerHandshake } from "../src/auth-wire.js";
 import { knockPath, knockedUrl, knockSegment } from "../src/gate-knock.js";
 import { carriageAct } from "./fixtures/carriage.js";
 
@@ -45,33 +44,6 @@ describe("classifySocket — four classes, and silence", () => {
     for (const gone of ["classifyCrossOperatorAdmission", "postureGatesCrossOperator", "admitCrossOperatorUnderPosture"]) {
       expect(gone in mesh, gone).toBe(false);
     }
-  });
-});
-
-describe("the wire confesses nothing", () => {
-  test("RED: the challenge names no gate key, and no refusal message exists", () => {
-    expect(Object.keys(mkLarChallenge("ab".repeat(32))).sort()).toEqual(["nonce", "type"]);
-    for (const gone of ["mkLarAuthDenied", "isLarAuthDeniedMsg"]) expect(gone in mesh, gone).toBe(false);
-  });
-
-  test("RED: one presentation slot — the retired `presentedAdmit` field is refused, `presented` carries the admit", async () => {
-    const admit = await carriageAct(new Uint8Array(32).fill(5), "admit", { kahu: [new Uint8Array(32).fill(3)], epoch: "e".repeat(64), parents: [] });
-    const base = mkLarAuth("card", "ab".repeat(32), "cd".repeat(64), "ef".repeat(32));
-    expect(isLarAuthMsg({ ...base, presented: { kind: "admit", admit, lineage: [] } })).toBe(true);
-    expect(isLarAuthMsg({ ...base, presentedAdmit: { admit, lineage: [] } })).toBe(false);
-    expect(isLarAuthMsg({ ...base, presented: { kind: "admit", admit, lineage: [] }, edge: {} })).toBe(false);
-    expect(isLarAuthMsg({ ...base, presented: { kind: "nothing" } })).toBe(false);
-    expect(isLarAuthMsg(base)).toBe(true);   // CONTROL: a bare proof parses
-  });
-
-  test("RED: a gate that answers nothing ends the handshake as no answer, never a hang", async () => {
-    const frames: unknown[] = [mkLarChallenge("ab".repeat(32))];
-    const verdict = await runPeerHandshake({
-      recv: async () => frames.shift(), send: () => {},
-      contactCard: "{}", peerPubKey: "aa".repeat(32), gatePubKey: "bb".repeat(32), aud: "lar:///x",
-      sign: () => "00".repeat(64),
-    });
-    expect(verdict).toEqual({ ok: false, reason: "no answer" });
   });
 });
 

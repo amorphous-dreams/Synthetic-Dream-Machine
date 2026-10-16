@@ -9,7 +9,7 @@
  * url (an `automerge:` address) and dials nothing.
  *
  * So the two ride the bootstrap beside the sentinel ids, packed at admission (`hearthDialTiddlers`) and read
- * at boot (`readHearthDialPin`): the dial's default where no `LAR_JOIN_SYNC` / `LAR_JOIN_GATE` rides the env.
+ * at boot (`readHearthDialPin`): the hearth the dial names (an explicit option outranks it; the environment no longer does).
  * Absent on a vessel that founded its own face — such a vessel IS the hearth. FAIL CLOSED: a torn pin (one
  * half), a malformed key, an unreadable bootstrap → no pin → no dial (byte-identical to a vessel never admitted).
  *
@@ -17,12 +17,14 @@
  */
 
 import { readFileSync } from "node:fs";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID, readAdmitGatePin, type GateBundlePin } from "@lararium/mesh";
 
 /** The hearth's `ws://…/ws` relay — where this joinee dials. */
 export const HEARTH_SYNC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/sync-url`;
-/** The hearth's gate verifying-key hex — the gate-binding the joinee's V3 proof commits to. */
+/** The hearth's gate verifying-key hex: the signing key of the pin below, kept as the one key the anchor and the hosting address read. */
 export const HEARTH_GATE_KEY_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-key`;
+/** The hearth's FULL sovereign sync pin (JSON): what the joinee files in its pair index and knocks with. Its signing key IS the gate key above. */
+export const HEARTH_GATE_PIN_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-pin`;
 /** The founder's RESOLVED NexusIdentity kind at admit time — a SNAPSHOT, never re-resolved live. */
 export const HEARTH_ISLAND_KIND_TIDDLER  = `${DAEMON_BAG_ID}/hearth/island-kind`;
 /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
@@ -34,6 +36,8 @@ const KIND_RE = /^(own|anchor|charter|explicit)$/;
 export interface HearthDialPin {
   readonly syncUrl:    string;
   readonly gatePubKey: string;
+  /** The full pin the admit carried, when it carried one; its `signingKey` is `gatePubKey`. */
+  readonly gatePin?: GateBundlePin;
   /** The founder's resolved island kind/scope at admit time, when the admit carried one. Absent on an
    *  older payload — a reader without it falls back to anchor-by-gate-key, unchanged from before this
    *  pin existed. */
@@ -48,9 +52,11 @@ export function hearthDialTiddlers(
   syncUrl: string | null | undefined,
   gatePubKey: string | null | undefined,
   island?: { readonly kind?: string | null | undefined; readonly scope?: string | null | undefined } | null,
+  gatePin?: GateBundlePin | null,
 ): Record<string, { title: string; text: string; kind: string }> {
   if (!syncUrl || !gatePubKey) return {};
   const base = {
+    ...(gatePin ? { [HEARTH_GATE_PIN_TIDDLER]: { title: HEARTH_GATE_PIN_TIDDLER, text: JSON.stringify(gatePin), kind: "hearth-door" } } : {}),
     [HEARTH_SYNC_URL_TIDDLER]: { title: HEARTH_SYNC_URL_TIDDLER, text: syncUrl, kind: "hearth-door" },
     [HEARTH_GATE_KEY_TIDDLER]: { title: HEARTH_GATE_KEY_TIDDLER, text: gatePubKey.toLowerCase(), kind: "hearth-door" },
   };
@@ -80,16 +86,27 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
     const kindRaw  = packed.tiddlers?.[HEARTH_ISLAND_KIND_TIDDLER]?.text;
     const scopeRaw = packed.tiddlers?.[HEARTH_ISLAND_SCOPE_TIDDLER]?.text;
     const islandPresent = kindRaw !== undefined || scopeRaw !== undefined;
-    if (!islandPresent) return { syncUrl: syncUrl.trim(), gatePubKey };
-    if (typeof kindRaw !== "string" || !KIND_RE.test(kindRaw) ||
-        typeof scopeRaw !== "string" || scopeRaw.trim().length === 0) {
+    if (islandPresent && (typeof kindRaw !== "string" || !KIND_RE.test(kindRaw) ||
+        typeof scopeRaw !== "string" || scopeRaw.trim().length === 0)) {
       return null;   // a torn island half — the whole pin refuses, never a silent partial read
     }
-    return {
-      syncUrl: syncUrl.trim(),
-      gatePubKey,
-      islandKind:  kindRaw as "own" | "anchor" | "charter" | "explicit",
-      islandScope: scopeRaw.trim(),
-    };
+    const island = islandPresent
+      ? { islandKind: kindRaw as "own" | "anchor" | "charter" | "explicit", islandScope: (scopeRaw as string).trim() }
+      : null;
+
+    // The full pin, when the bootstrap holds one, reads as an ADMIT's pin (`readAdmitGatePin`): the sovereign tier, the
+    // sovereign sync route, and the Nexus where the bootstrap names it (a charter island's scope is its genesis, the
+    // Nexus its hearth's gate stands at). It must be the pin of the carried key. A torn, foreign or misplaced pin
+    // refuses the whole dial, never a silent fall back to the key alone.
+    const pinRaw = packed.tiddlers?.[HEARTH_GATE_PIN_TIDDLER]?.text;
+    let gatePin: GateBundlePin | undefined;
+    if (pinRaw !== undefined) {
+      if (typeof pinRaw !== "string") return null;
+      const nexus = island?.islandKind === "charter" ? island.islandScope : undefined;
+      const reading = readAdmitGatePin(JSON.parse(pinRaw), nexus !== undefined ? { nexus } : {});
+      if (!("pin" in reading) || reading.pin.signingKey !== gatePubKey) return null;
+      gatePin = reading.pin;
+    }
+    return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}) };
   } catch { return null; }
 }

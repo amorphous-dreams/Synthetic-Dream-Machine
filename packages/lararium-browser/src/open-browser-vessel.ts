@@ -40,18 +40,19 @@ import {
   climbNexusBoards, carryPersonaKelUpTheGradient,
   readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, edgeStandingOf, raisesSeenThrough, type EdgeReading,
   type CapModule,
-  type LarDoc, type LarariumVesselOptions, type VesselResult,
-  type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
+  type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex,
+  type VesselBootstrap, type VesselCoreAssembly, type GateBundlePin, type DeviceDelegationTiddler,
   type GenesisSeed,
-  takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActOn, hostingDocUrl,
-  type WalkRecord, type WalkFault, type HostingAct, type CarryOutcome,
+  takeInvite, popInvite, hex,
+  type WalkRecord, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
+import { browserGatePins, browserFacePresentation, type BrowserFacePresentation, dialDeadlines, fileOwnHearthPins, hearthNameOf, oracleNexusFor } from "./browser-gate-pins.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
-import { browserWalkStore, browserWalkLeaf, requireAdmittedFaceIsland } from "./browser-walk.js";
+import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
 import {
   MemoryTiddlerStore,
   selectActiveWikiSlug,
@@ -111,7 +112,8 @@ import {
 import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
-import { holdVesselLock, ambientLocks } from "./vessel-lock.js";
+import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
+import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 import { attachBrowserDyadDoor, type BrowserDyadDoor } from "./browser-dyad-door.js";
@@ -138,6 +140,11 @@ interface BrowserBootstrap extends VesselBootstrap {
   /** The gate key of the HEARTH that admitted this vessel, as its admit named it. Null/absent when the vessel
    *  founded its own face. A crossing pinned to this key reaches the vessel's own hearth (`hearth-canon`). */
   hearthGatePubKey?:     string | null;
+  /** The hearth's FULL sovereign sync pin its admit carried (the pin whose `signingKey` is `hearthGatePubKey`): what the relay dial files in the pair index and knocks with. */
+  hearthGatePin?:        GateBundlePin | null;
+  /** The hearth's FLOOR pins at that pin's Nexus, which the root-signed fleet-join answer carried (house ruling "Floor
+   *  pins", carrier (b)): the oracle read at the vessel's own hearth files them beside the sovereign pin. */
+  hearthFloorPins?:      readonly GateBundlePin[] | null;
   /** The canon documents that hearth's admit named (canon title → document url). A crossing to the vessel's
    *  own hearth federates exactly these, and the vessel's oracle replica points at them. */
   hearthCanonDocs?:      HearthCanonDocs;
@@ -183,6 +190,8 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
   idbName?:        string;
+  /** The Web Locks host the one-holder-per-store law rides; the platform's own when omitted (the test door). */
+  locks?:          LockHost | null;
   displayName?:    string;
   /**
    * The PLAIN-DATA genesis seed (seed.json) — the oracle doc's initial state the
@@ -204,6 +213,13 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * this vessel's own verifying key (the same-operator leaf, the prior behavior — back-compat).
    */
   relayGatePubKey?: string;
+  /**
+   * The sealed relay dial's three inputs, handed in until the admit and the join answer carry them (slice G):
+   * the pair index holding the full gate pin, the hex Nexus the pin is filed under, and the face this page
+   * presents at the gate. Absent → the vessel's own empty index, the Nexus its walk record names, and no
+   * presentation: the dial is idle and says which of the three is missing.
+   */
+  relayDial?: { readonly pins: HearthPinIndex; readonly nexus?: string; readonly presentation: BrowserFacePresentation };
   /**
    * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
    * (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — leaf kind 3, a fleet in which no
@@ -247,6 +263,8 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * engine without SharedWorker → the floor: the dedicated-worker path exactly as before.
    */
   sharedHolderUrl?: URL;
+  /** How long a failed boot waits on each thing it stood to come down before it reads as one that will not (default 5000). */
+  teardownBudgetMs?: number;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
   /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
@@ -424,12 +442,21 @@ export function browserOfferingLookup(crossroadsDoc: LarDoc | undefined | null):
 }
 
 export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<BrowserVesselResult> {
+  // THE LOCK LIVES AS LONG AS THE BOOT STANDS: a boot that throws takes down what it stood (the Repo, the relay adapter, the
+  // shared-holder port, the daemon worker) and THEN gives the lock back, so a refused boot (`sealed-locked` and the rest)
+  // can retry in the same page over one copy of the store. A boot that cannot take its things down keeps the lock and
+  // refuses by name (`BootTeardownRefusal`). A booted vessel keeps both.
+  const held: BootHold = { lock: null, stood: [] };
+  return guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
+}
+
+async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<BrowserVesselResult> {
   const {
     wikiId,
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
     genesisCasBaseUrl,
-    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey, relayDial,
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
@@ -449,7 +476,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     ? await attachSharedHolder({ holderUrl: sharedHolderUrl })
     : null;
   if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
-  const lockHold = await holdVesselLock(idbName, ambientLocks(), { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null });
+  const lockHold = await holdVesselLock(idbName, opts.locks === undefined ? ambientLocks() : opts.locks, { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null });
+  held.lock = lockHold;
+  if (holder?.kind === "attached") held.stood.push({ what: "shared holder port", down: () => holder.port.close() });
   if (lockHold.attached) console.log(`[vessel] attached to the shared holder (${lockHold.holder}); island boots ${holder?.kind === "attached" ? holder.hello.islandBoots : "?"}, tabs ${holder?.kind === "attached" ? holder.hello.tabs : "?"}`);
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
@@ -506,6 +535,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       aside: (peerId) => siblingAside(peerId),
     }),
   });
+  held.stood.push({ what: "repo", down: () => repo.shutdown() });
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
@@ -545,6 +575,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // vessel's own included) would reach no gate and sit dark. A carried invite for the pinned hearth is written
   // DURABLY to this vessel's own store before any dial; otherwise the record this vessel already holds for that
   // hearth, if any.
+  const gatePins = relayDial?.pins ?? browserGatePins();
   const relayPin = relayPinFor(relayUrl, relayGatePubKey);
   if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
   const walkStore = browserWalkStore(idbName);
@@ -672,6 +703,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       contactCard: a.contactCardJson,
       hearthDaemonUrl: a.hearthDaemonUrl,
       hearthGatePubKey: admit.hearthGatePubKey ?? null,
+      hearthGatePin: admit.hearthGatePin ?? null,
+      hearthFloorPins: admit.hearthFloorPins ?? null,
       hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs, nexusPubkey),
     };
     bootKeyWrites.bootstrap = bootstrap;
@@ -717,6 +750,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const social = bootstrap;   // narrowed (defined past this point)
   // A pin chooses which gate to knock; the local contact card supplies peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
+  // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
+  // admit carries no other true name for it): the sovereign pin, and the floor pins at its Nexus the signed answer carried
+  // (house ruling "Floor pins", carrier (b)), so the oracle read at this hearth holds its pin before any crossing. The
+  // verified sovereign crossing files the same set again (carrier (a)). A pin the index refuses files nothing.
+  fileOwnHearthPins(gatePins, relayUrl, social);
   const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
   // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
   // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
@@ -785,37 +823,25 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // A WALKER presents its walk instead (the token while its invite is unsettled, else its grant), under its own
   // per-Nexus leaf, and the walk client keeps what the hearth pushes back.
   let relayAdapter: LarWSClientAdapter | null = null;
-  let walkLeaf: Awaited<ReturnType<typeof browserWalkLeaf>> | null = null;
-  if (relayPin.dial && relayUrl && social.contactCard) {
-    const base: LeafIdentity = { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) };
-    // A walker is a person: it walks under the leaf of the face this vessel WEARS, never one picked for it. A
-    // vessel wearing no face walks nowhere, and says so.
-    const worn = walk ? await loadBrowserActivePersona(idbName) : undefined;
-    walkLeaf = walk && worn !== undefined ? await browserWalkLeaf(idbName, walk.nexusAid, worn).catch(() => null) : null;
-    if (walk && worn === undefined) console.warn("[lararium-browser] a walk record stands for this hearth, but this vessel wears no face — wear one to walk");
-    const walking = walk && walkLeaf ? walkIdentity(base, walk, walkLeaf) : null;
-    const leaf: LeafIdentity = walking ?? (social.deviceEdge ? { ...base, edge: social.deviceEdge } : base);
+  // THE WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`): the sealed adapter presents a face, not a walk, so the walk
+  // is neither presented nor kept here, and `carryAtHearth` / `fetchFromHearth` answer null. The record the walk
+  // store holds is read and never spent; the route is rebuilt, not converted, by its own slice.
+  const sovereignNexus = relayDial?.nexus ?? social.hearthGatePin?.nexus ?? (walk ? hex(new TextEncoder().encode(walk.nexusAid)) : null);
+  const facePresentation = relayDial?.presentation ?? browserFacePresentation();
+  const relayHeld = relayPin.dial && relayUrl && sovereignNexus !== null
+    ? gatePins.get({ hearth: hearthNameOf(relayUrl), nexus: sovereignNexus, route: "/ws", tier: "sovereign" })
+    : null;
+  if (relayPin.dial && relayUrl && social.contactCard && (relayHeld === null || facePresentation === null)) {
+    console.warn(`[lararium-browser] the relay dial is idle: ${relayHeld === null ? "no sovereign gate pin is held for this hearth (pin-absent)" : "no face presentation reaches this page yet (presentation-absent)"}`);
+  }
+  if (relayPin.dial && relayUrl && social.contactCard && relayHeld !== null && facePresentation !== null && sovereignNexus !== null) {
     const adapter = new LarWSClientAdapter({
-      url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayPin.gatePubKey,
+      url: relayUrl, pins: gatePins, hearth: hearthNameOf(relayUrl), nexus: sovereignNexus,
+      presentation: facePresentation, audience: DAEMON_BAG_ID, deadlines: dialDeadlines(),
     });
     observeRelayConnection(connectionState, adapter);
     relayAdapter = adapter;
-    if (walking && walkLeaf && walk) {
-      // The wallet fills against the hearth's signed act for the grant's epoch, read off that hearth's hosting doc
-      // — the doc the Nexus and the pinned gate key name, the one every walker of it reads — and verified under the
-      // act's own leaf.
-      const walkDoc = hostingDocUrl(walk.nexusAid, relayPin.gatePubKey);
-      const actFor = async (epochCid: string): Promise<HostingAct | null> => {
-        const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
-        return doc ? hostingActOn(doc, epochCid, 15_000) : null;
-      };
-      // A store that refuses under the walk costs that one message; the next presentation recovers a lost grant.
-      const onFault = (fault: WalkFault): void => {
-        console.warn(`[lararium-browser] the walk dropped one ${fault.at} message: ${fault.error instanceof Error ? fault.error.message : String(fault.error)}`);
-      };
-      walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor, onFault });
-      watchCarryNotice(adapter, walkStore, relayPin.gatePubKey, onFault);
-    }
+    held.stood.push({ what: "relay adapter", down: () => adapter.disconnect() });
     // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
     // sharePolicy gates them while the in-process island peers keep sharing freely. Listeners
     // attach BEFORE addNetworkAdapter so a peer is classified before any doc is announced to it.
@@ -1228,6 +1254,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         },
         daemonAuth,
       });
+      held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
 
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
       // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
@@ -1670,15 +1697,23 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     connectionState,
     siblingChannel: () => siblings?.status() ?? null,
     handOutInvite: () => relayPin.dial ? popInvite(walkStore, relayPin.gatePubKey, relayUrl) : Promise.resolve(null),
-    carryAtHearth: (plaintext, withinMs) => relayPin.dial && relayAdapter && walkLeaf
-      ? carryDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, plaintext, withinMs })
-      : Promise.resolve(null),
-    fetchFromHearth: (cid, withinMs) => relayPin.dial && relayAdapter
-      ? fetchDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, cid, withinMs })
-      : Promise.resolve(null),
-    readOracle: <T>(baseUrl: string, gatePubKey: string) => oracleProof
-      ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof, verifyingKey: gatePubKey })
-      : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),
+    // Shut by name (`walker-route-shut`): no walk is presented at the sealed gate, so nothing is carried or fetched.
+    carryAtHearth: () => Promise.resolve(null),
+    fetchFromHearth: () => Promise.resolve(null),
+    // The oracle CONVERTS: the reader dials the peer's FLOOR gate under the pin this vessel holds for it, and reads
+    // the pointer and the snapshot as sealed messages. `gatePubKey` is the publisher's key, never the gate's.
+    readOracle: <T>(baseUrl: string, gatePubKey: string) => {
+      const presentation = relayDial?.presentation ?? browserFacePresentation();
+      // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere.
+      const nexus = oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus });
+      // The pair index files the hearth under its relay's name, so the read asks under that same name.
+      return presentation !== null && nexus !== null && relayUrl
+        ? pullAndVerifyOracle<T>(baseUrl, {
+            pins: gatePins, hearth: hearthNameOf(relayUrl), nexus, presentation, audience: DAEMON_BAG_ID,
+            deadlines: dialDeadlines(), verifyingKey: gatePubKey,
+          })
+        : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: `no face presentation reaches this page to prove at a peer's floor gate (${presentation === null ? "presentation-absent" : "nexus-absent"})` });
+    },
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
     sendDomEvent: returnLeg.sendDomEvent,

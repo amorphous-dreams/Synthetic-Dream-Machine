@@ -5,7 +5,8 @@
  *       against the offer, and the same offer again answers the request already kept
  *   B2  an answer the root signed lands: the admit carries the signed pin, canon and reach, the address secret and
  *       the record rest in this browser's store, and the pending join stays, landed, until the boot settles it
- *   B3  an answer whose pin a carrier moved refuses `answer-unsigned` and lands nothing; the good answer lands again
+ *   B3  an answer whose pin a carrier moved refuses `answer-admit-other-commit` (the face's admit no longer opens over it)
+ *       and lands nothing; the good answer lands again
  *       until settled, then refuses `join-absent`; a standing secret under other bytes refuses untouched
  *   B4  the custody door signs only under the key its row holds
  *   B5  a request that broke after minting retries clean over the same offer, on the key it left at rest
@@ -14,7 +15,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
+  admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
   type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
@@ -25,7 +26,14 @@ import {
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
 const GROUP = "0xb7f1c2a9d4e60381";
-const PIN = "cd".repeat(32);
+const HEARTH_NEXUS = "nexus-hearth.synthetic";
+const pinAt = (tag: number): GateBundlePin => {
+  const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(HEARTH_NEXUS), sovereignRoute("/ws"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+};
+const PIN = pinAt(5);
+const CARRIAGE = { gatePin: PIN, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } };
+const SALT = "5a".repeat(32);
 const SECRET = new Uint8Array(32).fill(7);
 let seq = 0;
 
@@ -33,7 +41,7 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
   const idbName = `lares:fleet-join-${Date.now()}-${seq++}`;
   await generateOrLoadBrowserVesselIdentity(idbName);
   const root = await pair("browser fleet root");
-  const face = await chain("browser fleet face", "nexus-browser.synthetic");
+  const face = await chain("browser fleet face", HEARTH_NEXUS);
   const nonce = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
   return { idbName, root, face, offer: fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce, scopes: [face.scope] }) };
 }
@@ -41,9 +49,13 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
 async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest, secret: Uint8Array = SECRET) {
   const body = {
     nonce: request.nonce, vesselKey: request.vesselKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic" },
-    carriage: { gatePin: PIN, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } },
-    reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: null },
+    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    carriage: CARRIAGE,
+    reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: HEARTH_NEXUS },
+    // The dial the answer carries: the hearth's charter, the face's admit committing to this carriage, its floor pins.
+    charter: "the hearth's charter",
+    admit: { admit: { nym: s.face.scope.faceKey, action: "admit", parents: [], sealEpochCid: "epoch", carriageCommit: admitCarriageCommit({ carriage: CARRIAGE, salt: SALT }) }, lineage: [], salt: SALT },
+    floorPins: [],
     secret: sealAddressSecret({ secret, request }),
   };
   const key = request.requests[0]!.vesselFaceKey as VesselFaceKey;
@@ -71,7 +83,8 @@ describe("the browser's fleet join", () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
     const { admit, answer } = await browserFleetJoinLand({ answer: JSON.parse(JSON.stringify(await answerTo(s, request))), idbName: s.idbName });
-    expect(admit.hearthGatePubKey).toBe(PIN);
+    expect(admit.hearthGatePubKey).toBe(PIN.signingKey);
+    expect(admit.hearthGatePin).toEqual(PIN);
     expect(admit.syncUrl).toBe("ws://hearth.synthetic:7777/ws");
     expect(admit.hearthIslandKind).toBe("anchor");
     expect(answer.certificates[0]!.vesselFaceKey).toBe(request.requests[0]!.vesselFaceKey);
@@ -89,8 +102,8 @@ describe("the browser's fleet join", () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
     const good = await answerTo(s, request);
-    await expect(browserFleetJoinLand({ answer: { ...good, carriage: { ...good.carriage, gatePin: "ee".repeat(32) } }, idbName: s.idbName }))
-      .rejects.toThrow(/answer-unsigned/);
+    await expect(browserFleetJoinLand({ answer: { ...good, carriage: { ...good.carriage, gatePin: pinAt(6) } }, idbName: s.idbName }))
+      .rejects.toThrow(/answer-admit-other-commit/);
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
     const bare = await openVesselIdb(s.idbName);
     try {

@@ -49,9 +49,14 @@ describe("the domain registry", () => {
     expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
   });
 
-  test("a NEW domain mints bare — the auth proof carries no version suffix", () => {
-    expect(domains.AUTH_PROOF_DOMAIN).toBe(`${DOMAIN_ROOT}/auth-proof`);
-    expect(domains.AUTH_PROOF_DOMAIN).not.toMatch(/\/v\d+$/);
+  test("a NEW domain mints bare — the gate's verdict carries no version suffix", () => {
+    expect(domains.GATE_VERDICT_DOMAIN).toBe(`${DOMAIN_ROOT}/gate-verdict`);
+    expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);
+  });
+
+  test("RETIRED at the cutover and never reused: the old handshake's names sign nothing", () => {
+    const names = domains.ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
+    for (const gone of ["auth-proof", "auth-ok", "presented-leaf-proof"]) expect(names, gone).not.toContain(gone);
   });
 
   test("WELD: the frozen strings hold byte-identical through the helper split", async () => {

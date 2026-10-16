@@ -180,12 +180,12 @@ describe("the carried invite — one string, naming no inviter", () => {
 });
 
 describe("the domain registry names the hosting relations and none of the retired ones", () => {
-  test("RED: the hosting, knock and leaf-proof names stand; the invite, countersign and session-proof names are gone", () => {
+  test("RED: the hosting and knock names stand; the invite, countersign, session-proof and leaf-proof names are gone", () => {
     const names = ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
-    for (const live of ["hosting-act", "hosting-key", "hosting-token", "hosting-grant", "gate-knock", "presented-leaf-proof"]) {
+    for (const live of ["hosting-act", "hosting-key", "hosting-token", "hosting-grant", "gate-knock"]) {
       expect(names, live).toContain(live);
     }
-    for (const gone of ["nexus-invite", "host-countersign", "host-session-proof", "presented-admit-leaf-proof"]) {
+    for (const gone of ["nexus-invite", "host-countersign", "host-session-proof", "presented-admit-leaf-proof", "presented-leaf-proof"]) {
       expect(names, gone).not.toContain(gone);
     }
     // CONTROL: a standing frozen name is untouched.

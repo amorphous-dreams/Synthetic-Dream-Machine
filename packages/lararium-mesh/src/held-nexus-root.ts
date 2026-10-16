@@ -27,6 +27,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-held-root
  */
 import { canonicalJson, sha256HexSync } from "./crypto.js";
+import { readAdmitGatePinAt } from "./admit-gate-pin.js";
 import {
   admitCarriageCommit, carriageEntryActCid, readAdmitOpening, verifyPresentedAdmit,
   type AdmitCarriage, type CarriageEntry, type PresentedAdmitVerdict, type PresentedLineageAct,
@@ -187,7 +188,8 @@ export const SIGNED_ADMIT_BUNDLE_REFUSALS = [
   "admit-not-held",         // the admit reads anything but held at that root; `state` names which
   "admit-carries-no-pin",   // the quorum signed no carriage commitment into this admit, or the bundle opens none
   "opening-differs",        // the bundle's opening hashes to another commitment than the one the quorum signed
-  "pin-differs",            // the bundle's gate key names another key than the pin the opening carries
+  "pin-other-nexus",        // the opening's pin stands at another Nexus than the bundle names
+  "pin-differs",            // the bundle's gate key names another key than the pin's verdict-signing key
 ] as const;
 export type SignedAdmitBundleRefusal = (typeof SIGNED_ADMIT_BUNDLE_REFUSALS)[number];
 
@@ -219,6 +221,7 @@ export async function verifySignedAdmitBundle(
   if (reading.verdict.state !== "held") return { refusal: "admit-not-held", state: reading.verdict.state };
   if (reading.carriageCommit === null || opening === null) return { refusal: "admit-carries-no-pin" };
   if (admitCarriageCommit(opening) !== reading.carriageCommit) return { refusal: "opening-differs" };
-  if (opening.carriage.gatePin !== gatePubKey) return { refusal: "pin-differs" };
+  if (!("pin" in readAdmitGatePinAt(opening.carriage.gatePin, aid))) return { refusal: "pin-other-nexus" };
+  if (opening.carriage.gatePin.signingKey !== gatePubKey) return { refusal: "pin-differs" };
   return { carriage: opening.carriage, reading };
 }

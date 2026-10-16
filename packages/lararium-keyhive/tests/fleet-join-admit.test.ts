@@ -1,15 +1,25 @@
 /** fleet-join-admit — the admit a verified fleet-join answer carries, in the shape a vessel founds a face by. */
 import { describe, expect, test } from "vitest";
-import type { FleetJoinAnswer } from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, sovereignGateRoot, sovereignRoute, type FleetJoinAnswer, type GateBundlePin } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin } from "../src/fleet-join-admit.js";
 
+const pinAt = (nexus: string): GateBundlePin => {
+  const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(3) })), new TextEncoder().encode(nexus), sovereignRoute("/ws"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+};
+const PIN = pinAt("epoch-0");
+const FLOOR = (() => {
+  const bundle = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(8) })), new TextEncoder().encode("epoch-0"), floorRoute("/oracle"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+})();
 const GROUP = "0xc0ffee00d15ea5e5";
 const answer = (over: Partial<FleetJoinAnswer> = {}): FleetJoinAnswer => ({
   kind: "fleet-join-answer", nonce: "ab".repeat(32), vesselKey: "cd".repeat(32), personaGroup: GROUP,
   edge: { kind: "device-admit/v1", personaGroupId: GROUP, syncUrl: "ws://stale.synthetic/ws", deviceEdge: "synthetic" },
-  carriage: { gatePin: "ef".repeat(32), canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon" } },
+  carriage: { gatePin: PIN, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon" } },
   reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "charter", islandScope: "epoch-0" },
   secret: { epk: "00".repeat(32), nonce: "00".repeat(24), ciphertext: "00" },
+  floorPins: [FLOOR],
   certificates: [], grants: [], signature: "00".repeat(64),
   ...over,
 } as FleetJoinAnswer);
@@ -19,11 +29,14 @@ describe("the admit a fleet-join answer carries", () => {
     const admit = carriedAdmitOfFleetJoin(answer());
     if ("refusal" in admit) throw new Error(admit.refusal);
     expect(admit.kind).toBe("device-admit/v1");
-    expect(admit.hearthGatePubKey).toBe("ef".repeat(32));
+    expect(admit.hearthGatePubKey).toBe(PIN.signingKey);
+    expect(admit.hearthGatePin).toEqual(PIN);
     expect(admit.hearthCanonDocs).toEqual({ "lar:///ha.ka.ba/bags/lares": "automerge:canon" });
     // The reach the root signed answers the dial, over whatever the edge itself named.
     expect(admit.syncUrl).toBe("ws://hearth.synthetic:7777/ws");
     expect([admit.hearthIslandKind, admit.hearthIslandScope]).toEqual(["charter", "epoch-0"]);
+    // House ruling "Floor pins", carrier (b): the floor pins the root signed ride beside the sovereign pin.
+    expect(admit.hearthFloorPins).toEqual([FLOOR]);
   });
 
   test("a reach naming no island leaves the island out", () => {

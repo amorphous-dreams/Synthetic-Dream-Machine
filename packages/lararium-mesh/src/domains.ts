@@ -319,24 +319,14 @@ export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
 export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
-/** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and
- *  timestamp, committed under this name so a proof can never verify as any other signed thing, nor any
- *  other signature as a proof. Ephemeral — both ends run one build, so nothing persisted rides it. */
-export const AUTH_PROOF_DOMAIN = mint("auth-proof");
-/** The LEAF'S PROOF OF POSSESSION over what a socket PRESENTS — an admit, a hosting grant or a redeemed token:
- *  the presenting leaf signs the gate's nonce, the gate key, the presenting vessel key and the presentation's
- *  CID under this name, binding that presentation to ONE socket. One relation across every arm, so one name.
- *  Apart from `auth-proof`: the vessel key signs that one and the leaf signs this one, and neither signature
- *  may verify as the other. No root signs it and no root is named in it. */
-export const PRESENTED_LEAF_PROOF_DOMAIN = mint("presented-leaf-proof");
+// RETIRED with the old socket handshake at the sealed-gate cutover, and never reused: `auth-proof` (the V3 proof of
+// possession), `presented-leaf-proof` (the leaf's proof over a socket's presentation) and `auth-ok` (the gate's signed
+// verdict). No protocol signs under them, and no new domain may take one of those names, so a byte string once signed
+// under one never verifies as another protocol's. The gate exchange carries what they served (`gate-verdict` and its kin).
 /** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its
  *  gate key) derives (`gate-knock`), so a dialer that pinned no gate key reaches no gate. A derivation, never a
  *  signature: its own name keeps the knock apart from every proof made with the same key. */
 export const GATE_KNOCK_DOMAIN = mint("gate-knock");
-/** The GATE'S VERDICT: a gate signs its `lar:auth-ok` with its own gate key over both nonces, the gate key,
- *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
- *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */
-export const AUTH_OK_DOMAIN = mint("auth-ok");
 /** A LEAF'S PROOF TO A SIBLING LEAF of one PersonaGroup: a device key signs the exchange's whole transcript —
  *  both nonces, both ephemeral keys, its role — under this name, so the proof binds to one exchange and one channel. */
 export const LEAF_PEER_PROOF_DOMAIN = mint("leaf-peer-proof");

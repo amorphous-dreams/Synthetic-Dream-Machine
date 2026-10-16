@@ -12,7 +12,7 @@
  *    composition's own `fleet:` line.
  * F4 THE COMPOSITION WEARS THIS RING AT THE FLOOR (a source weld, comments stripped, with its strip pinned): one
  *    call, on the floor arm of the sovereign choice, fed by the sibling channel's proven key; the share verdict and
- *    the sorter both read the ring that choice stood.
+ *    the sorter both read the ring that choice stood (the sorter through `gateShadowRing({ ring: shadowRing, … })`).
  */
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
@@ -107,6 +107,9 @@ describe("at the floor every fleet lane stays shut", () => {
     // The share verdict's line sits where the block-comment strip does not reach whole, so it reads off the raw
     // source, anchored at its own line start: a line comment never satisfies it.
     expect(src).toMatch(/^\s*shadow:\s+edgeShadows,\s*$/m);
-    expect(code).toMatch(/deviceAside:\s*\(vesselKey\)\s*=>\s*shadowRing\.deviceAside\(vesselKey\),/);
+    // The sorter: since the D4 rewrite the gate's sorter consults the ring through `gateShadowRing`, over the ring the
+    // sovereign choice stood (never `builtRing` past the floor arm).
+    expect(code).toMatch(/shadows:\s*gateShadowRing\(\{\s*ring:\s*shadowRing,\s*deviceOf:/);
+    expect(code).not.toMatch(/gateShadowRing\(\{\s*ring:\s*builtRing/);
   });
 });

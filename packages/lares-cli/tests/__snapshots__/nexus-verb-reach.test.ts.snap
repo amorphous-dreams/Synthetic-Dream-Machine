@@ -28,6 +28,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)
   contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
                                             --json emits the admit BUNDLE the joinee takes by hand
+  contract <operator-pubkey> --sync-url <url>   name the url the joinee dials this hearth at; the bundle carries it (admit only)
   revoke <operator-pubkey>                  revoke a member (quorum-only)
   contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the
                                             seats held here and write the act as a PARTIAL file; nothing lands

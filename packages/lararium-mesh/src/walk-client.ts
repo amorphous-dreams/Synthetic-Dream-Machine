@@ -207,7 +207,12 @@ export interface WalkTransport {
   sendSession(kind: string, body: unknown): boolean;
   represent(identity: LeafIdentity): void;
   on(event: "peer-candidate", listener: (e: { peerId: unknown }) => void): unknown;
-  readonly identity: LeafIdentity;
+  /**
+   * What the transport presents now. The sealed gate adapter presents a face, not a walk, so it carries none:
+   * the WALKER ROUTE IS SHUT BY NAME at the cutover (`walker-route-shut`) and a transport without an identity
+   * settles no invite. A walker transport that does carry one rides as before until the route is rebuilt.
+   */
+  readonly identity?: LeafIdentity;
 }
 
 /**
@@ -252,7 +257,7 @@ export function walkOver(opts: {
     });
   });
   opts.transport.on("peer-candidate", () => {
-    const presented = opts.transport.identity.presented;
+    const presented = opts.transport.identity?.presented;
     if (presented?.kind !== "grant") return;
     unawaited("settle", async () => {
       await opts.store.update(gate, (held) => {

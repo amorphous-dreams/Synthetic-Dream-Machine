@@ -582,16 +582,12 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
         // L1: `nexus refresh` is a RETIRED verb — `nexus carry` already ran as a `nexus-contract` door row
         // against A's standing vessel, which fires the SAME `afterRoll` hook every board write fires.
 
-        // The DIAL is a boot reading — `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` mount the client adapter as the vessel
-        // opens, and no running verb seats one. So the place stands again on its own root, carrying the dial.
-        const gateA = await awaitOwnGateKey(A);
-        await herm.stopDaemonOnly();
-        herm = await openStaged({
-          root: herm.root, port: portHerm, found: async () => { /* founded above; the store stands */ },
-          daemonEnv: { ...hermEnv, LAR_JOIN_SYNC: `ws://127.0.0.1:${A.port}/ws`, LAR_JOIN_GATE: gateA },
-        });
-        stood[0] = herm;
-        crossing.push(`herm re-stood dialing A: ${herm.bootLog().includes("[nexus-join]") ? "[nexus-join] seen" : "no [nexus-join] line"}`);
+        // THE HERM'S DIAL TO A IS SHUT BY NAME (house ruling "Routes at the cutover", stable-founding-road: "Walker arms, the sibling
+        // dial and the herm membership relay ship SHUT by name ... The ruling flips on a proven gate-native caller for each shut
+        // route."). `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` no longer read, and a carried place would dial with its carrier seal
+        // (`dialPlaceGate`), which no node composes. So the herm stands once, says `herm-relay-shut` on its own log, and dials
+        // nothing; the legs that need the herm to reach A assert the shut and not the crossing.
+        crossing.push(`herm relay: ${herm.bootLog().includes("herm-relay-shut") ? "herm-relay-shut seen (the ruling's shut, by name)" : "NO herm-relay-shut line"}`);
 
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
         const reg = await A.cli(["nexus", "realm-bag", "lares", "--tier", "public", "--json"]);
@@ -658,9 +654,10 @@ export interface JoineeOptions {
   /** A's own rite BEYOND the Stable founding act, run while NO daemon stands — where a suite grows the seed
    *  charter to a founding quorum (`growStagedQuorum`: chairs stand, the seed card reveals, `seal rotate`). */
   readonly riteA?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
-  /** How B learns A's dial: `"env"` (LAR_JOIN_SYNC/GATE/DOC off A's log and registry) or `"pin"`
-   *  (nothing — B boots by the hearth its signed edge names). Default `"env"`. */
-  readonly dial?: "env" | "pin";
+  /** How B learns A's dial. B ALWAYS dials by the pin its landing wrote (the hearth's sync url and full sovereign
+   *  gate pin, off A's signed answer): `LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer read. `"pin+doc"` also asks B to
+   *  request A's lares doc (`LAR_JOIN_DOC`, which still reads); `"pin"` asks for nothing. Default `"pin+doc"`. */
+  readonly dial?: "pin+doc" | "pin";
   /** Runs once A stands live and before B boots — the place a suite lands a record on A first. */
   readonly beforeB?: (A: LarInstance) => Promise<void>;
   /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
@@ -750,9 +747,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
       const requestedDoc = typeof opts.joinDocUrl === "function"
         ? await opts.joinDocUrl(A)
         : opts.joinDocUrl ?? laresA;
-      const dial = (opts.dial ?? "env") === "env"
-        ? { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, ...(requestedDoc ? { LAR_JOIN_DOC: requestedDoc } : {}) }
-        : {};
+      const dial = (opts.dial ?? "pin+doc") === "pin+doc" && requestedDoc ? { LAR_JOIN_DOC: requestedDoc } : {};
       try {
         B = await openStaged({
           tag: `${tag}B`, root: rootB, port: portB, found: async () => { /* founded by A's edge above */ },

@@ -57,7 +57,6 @@ import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.j
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 
@@ -145,11 +144,7 @@ async function standGate(h: Hearth) {
     const board = await open(carriageDocUrl(h.island), "board:carriage-contracts");
     const { presentation: presented } = await presentationFromBoardDoc(board, nym, foundingRoster(readNexusDoc(h.bags)));
     if (!presented) throw new Error(`no admit for ${nym.slice(0, 12)}… on ${h.island.slice(0, 12)}…`);
-    const nonce = "56".repeat(32);
-    const gatePubKey = h.nexusPubkey;
-    const vesselKey = "cd".repeat(32);
-    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: presented.admit, lineage: [] }, ed25519SignerFromSeed(leafSeed));
-    await holder.present(peerId, { presentedAdmit: { ...presented, leafProof }, nonce, gatePubKey, vesselKey });
+    await holder.present(peerId, { presentedAdmit: { admit: presented.admit, lineage: presented.lineage }, faceKey: await ed.getPublicKeyAsync(leafSeed).then(hex) });
   };
   return { holder, present };
 }

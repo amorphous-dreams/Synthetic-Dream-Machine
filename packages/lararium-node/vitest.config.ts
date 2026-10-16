@@ -26,17 +26,14 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
-  // real WebSocketServer + Repo + gate crossings
+  // real WebSocketServer + Repo + sealed-gate crossings
   "tests/browser-crossing.test.ts",
   "tests/carriage-relay-serve-loop.test.ts",
-  "tests/lar-ws-client-adapter.test.ts",
   "tests/nexus-client-dial.test.ts",
   "tests/live-wire-node-crossing.test.ts",
-  "tests/daemon-auth-gate.test.ts",
-  "tests/hosted-walker.test.ts",
+  "tests/crossing-matrix.test.ts",
+  "tests/sibling-channel-stand.test.ts",
   "tests/authenticated-membership-relay.test.ts",
-  "tests/carriage-heal-reconnect.test.ts",
-  "tests/carriage-reshare-sniff.test.ts",
   "tests/bulb-kindle.test.ts",
   "tests/bulb-serves-boot-cas-alone.test.ts",
   "tests/herm-reshares-public-blob.test.ts",
@@ -80,6 +77,9 @@ export const heavy = [
   "tests/daemon-vm-replica-restart.test.ts",
   "tests/daemon-vm-storage-accounting.test.ts",
   "tests/http-face-dispatcher.test.ts",
+  "tests/face-gate-server.test.ts",
+  "tests/oracle-floor-gate.test.ts",
+  "tests/own-fleet-sync.test.ts",
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",
@@ -91,6 +91,8 @@ export const heavy = [
   "tests/herm-answers-the-knock.test.ts",
   "tests/oracle-read-face-shore.test.ts",
   "tests/wire-daemon-bootstrap.test.ts",
+  // A real HTTP listener and a sealed-gate crossing (the joinee dials its hearth through the production mount).
+  "tests/dial-presentation-joinee.test.ts",
 ];
 
 /**

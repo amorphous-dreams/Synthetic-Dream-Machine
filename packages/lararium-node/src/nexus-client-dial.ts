@@ -15,10 +15,11 @@
  * server adapter answers on, cleartext CRDT behind the gate. It NEVER touches the carriage relay (Socket B,
  * ciphertext cad bodies); the two stay two.
  *
- * REAL CRYPTO, NEVER FORGED. The dial carries the operator's OWN leaf identity (its cached ContactCard +
- * bare-Ed25519 signer) and binds its V3 proof-of-possession to the DIALED peer's gate key (known
- * out-of-band, NEVER trusted from the wire — the anti-relay law). An un-admitted key ANERGIZES at the
- * peer's gate and never syncs; the deny is load-bearing, not an incidental transport failure.
+ * REAL CRYPTO, NEVER FORGED. The dial presents the face's own chain through `dialFaceGate`: a Noise IK flight to the
+ * gate's PINNED transport key, the face's certificates, the session's signed finish, and the gate's signed verdict
+ * (the pin comes from the pair index the caller injects, never from the wire or the environment). A refusal
+ * ANERGIZES at the peer's gate and never syncs; the deny is load-bearing, not an incidental transport failure.
+ * A dial with no pin in the index, or no presentation to make, stands INERT and says why by name.
  *
  * THE RETURN IS ARMED. The adapter re-dials on its own and the transport re-attaches, but a Repo re-offers
  * only the docs a live query already registered — so a `find` that settled `unavailable` during a partition
@@ -37,7 +38,10 @@
 import type { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { LarWSClientAdapter, DAEMON_BAG_ID } from "@lararium/mesh";
-import type { LeafIdentity } from "@lararium/mesh";
+import type { LarWSClientOptions } from "@lararium/mesh";
+
+/** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
+export type DialFacePresentation = LarWSClientOptions["presentation"];
 
 /** A mounted client dial — the adapter it mounted (for assertion) + a clean stop. */
 export interface NexusClientDial {
@@ -53,11 +57,16 @@ export interface NexusClientDialConfig {
   readonly repo:       Repo;
   /** The peer node's `/ws` URL (`ws://…/ws` or `wss://…/ws`) this vessel dials. */
   readonly syncUrl:    string;
-  /** The DIALED peer's gate verifying-key hex — the gate-binding the V3 proof commits to (out-of-band). */
-  readonly gatePubKey: string;
-  /** This vessel's OWN leaf identity — cached ContactCard + bare-Ed25519 signer (never a forged one). */
-  readonly identity:   LeafIdentity;
-  /** The target bag URI the proof seeks (`aud`) — defaults to the daemon bag, the gate's armed audience. */
+  /** The pair index the dial reads its pin from, injected (hearth-gate-pins): the dial keeps no global. */
+  readonly pins:       LarWSClientOptions["pins"];
+  /** The hearth the dial reaches, by its true name, and the Nexus it stands at (hex of the AID's bytes). */
+  readonly hearth:     string;
+  readonly nexus:      string;
+  /** What the dial presents. */
+  readonly presentation: DialFacePresentation;
+  /** The dial's own deadline source; the caller owns the clock. */
+  readonly deadlines:  LarWSClientOptions["deadlines"];
+  /** The audience the dial names — the daemon bag, the gate's armed audience, where none is named. */
   readonly aud?:       string;
   /** OPTIONAL: an island/doc URL to `repo.find()` once mounted — pulls the peer's doc across the socket.
    *  Consumes the device-admit payload's `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
@@ -140,10 +149,8 @@ export function armDialReconnect(input: {
 export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDial {
   const log = cfg.onLog ?? ((): void => { /* quiet */ });
   const adapter = new LarWSClientAdapter({
-    url:        cfg.syncUrl,
-    identity:   cfg.identity,
-    aud:        cfg.aud ?? DAEMON_BAG_ID,
-    gatePubKey: cfg.gatePubKey,
+    url: cfg.syncUrl, pins: cfg.pins, hearth: cfg.hearth, nexus: cfg.nexus,
+    presentation: cfg.presentation, audience: cfg.aud ?? DAEMON_BAG_ID, deadlines: cfg.deadlines,
   });
   cfg.repo.networkSubsystem.addNetworkAdapter(adapter);
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);
@@ -185,8 +192,12 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
 export interface NexusClientDialInput {
   readonly repo:        Repo;
   readonly syncUrl?:    string | null;
-  readonly gatePubKey?: string | null;
-  readonly identity:    LeafIdentity;
+  readonly pins:        LarWSClientOptions["pins"];
+  readonly hearth?:     string | null;
+  readonly nexus?:      string | null;
+  /** Null where this vessel holds nothing to present: the dial stands inert and says so. */
+  readonly presentation: DialFacePresentation | null;
+  readonly deadlines:   LarWSClientOptions["deadlines"];
   readonly aud?:        string;
   readonly docUrl?:     string | null;
   readonly onLog?:      (line: string) => void;
@@ -194,23 +205,22 @@ export interface NexusClientDialInput {
 }
 
 /**
- * The INERT gate: mount the client dial ONLY when BOTH a sync URL and a peer gate key ride the config;
- * otherwise return null — no adapter, no socket, zero behaviour change. A sync URL without a gate key
- * cannot bind the anti-relay proof, so it fails CLOSED to inert (never a gate-less dial).
+ * The INERT gate: mount the client dial ONLY when a sync URL, a hearth and Nexus, the pin the index holds for them and a
+ * presentation all ride the input; otherwise return null — no adapter, no socket, zero behaviour change — and say which
+ * is missing by name. A dial with no pin cannot reach any gate, so it fails CLOSED to inert (never a pin-less dial).
  */
 export function maybeStartNexusClientDial(input: NexusClientDialInput): NexusClientDial | null {
   const syncUrl = input.syncUrl?.trim();
-  const gate    = input.gatePubKey?.trim();
   if (!syncUrl) return null;                       // no peer configured → the leaf carries only what it pulls
-  if (!gate) {
-    input.onLog?.(`nexus dial-out SKIPPED — a sync URL (${syncUrl}) rides the config but no gate key (LAR_JOIN_GATE); a gate-less dial cannot bind the anti-relay proof (fail-closed to inert)`);
-    return null;
+  const skip = (why: string): null => { input.onLog?.(`nexus dial-out SKIPPED — a sync URL (${syncUrl}) rides the config but ${why} (fail-closed to inert)`); return null; };
+  if (!input.hearth || !input.nexus) return skip("no hearth or Nexus names the pin to dial (pin-key-absent)");
+  if (input.pins.get({ hearth: input.hearth, nexus: input.nexus, route: "/ws", tier: "sovereign" }) === null) {
+    return skip("the pair index holds no sovereign pin for that hearth and Nexus (pin-absent)");
   }
+  if (input.presentation === null) return skip("this vessel holds no face presentation to make (presentation-absent)");
   return startNexusClientDial({
-    repo:       input.repo,
-    syncUrl,
-    gatePubKey: gate,
-    identity:   input.identity,
+    repo: input.repo, syncUrl, pins: input.pins, hearth: input.hearth, nexus: input.nexus,
+    presentation: input.presentation, deadlines: input.deadlines,
     ...(input.aud ? { aud: input.aud } : {}),
     ...(input.docUrl ? { docUrl: input.docUrl } : {}),
     ...(input.onLog ? { onLog: input.onLog } : {}),

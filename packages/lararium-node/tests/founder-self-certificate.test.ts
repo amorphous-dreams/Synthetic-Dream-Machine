@@ -9,6 +9,8 @@
  *   S2  a second scope adds to the record and leaves the first standing
  *   S3  each refusal names itself and keeps nothing: provisional face, no root held, a record under another root, no face
  *       key at the scope, a certificate over a key custody does not hold
+ *   S4  RED: a face whose anchors name another PersonaGroup signs nothing for this one (root-other-group), and the record
+ *       it would have poisoned is never written; a face with no anchors owns no group. CONTROL: the owning face issues
  */
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -20,6 +22,7 @@ import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.j
 import { FaceProvisional } from "../src/face-provisional.js";
 import { keepFaceJoinRecord, readFaceJoinRecord } from "../src/fleet-join-custody.js";
 import { ensureFounderCertificate, FounderCertificateRefused, readFounderFaceProof } from "../src/founder-self-certificate.js";
+import { persistIdentityAnchors } from "../src/identity-anchors.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -50,6 +53,8 @@ const memoryAt = (scope: FaceScope): WithdrawalMemory => {
 let c: SeatedScratchCustody;
 beforeEach(async () => {
   c = await seatScratchCustody("founder-self-certificate");
+  // Face h0 owns GROUP: its anchors name it, so its root may sign GROUP's grant.
+  await persistIdentityAnchors({ personaGroupId: GROUP, meshCabalDocIdHex: "cd".repeat(16) }, 0);
   await storeFaceProofKey(scopeA, FACE_A, 0);
   await storeFaceProofKey(scopeB, FACE_B, 0);
 });
@@ -125,5 +130,17 @@ describe("the founder's self-certificate", () => {
     const before = await readFaceJoinRecord(GROUP);
     expect(await refusalOf(() => ensureFounderCertificate(args(scopeB), doors))).toBe("certificate-other-vessel");
     expect(await readFaceJoinRecord(GROUP)).toEqual(before);
+  });
+
+  test("S4 RED — face B's root never signs a grant for group A, and no record is kept under A", async () => {
+    // Face h1 owns another group; this vessel holds its root (the door hands it), yet the grant would name GROUP.
+    await persistIdentityAnchors({ personaGroupId: "0x" + "0badc0ffee000001", meshCabalDocIdHex: "ef".repeat(16) }, 1);
+    expect(await refusalOf(() => ensureFounderCertificate({ face: 1, personaGroup: GROUP, scope: scopeA }, doors))).toBe("root-other-group");
+    expect(await readFaceJoinRecord(GROUP)).toBeNull();
+    // A face with no anchors owns no group at all.
+    expect(await refusalOf(() => ensureFounderCertificate({ face: 2, personaGroup: GROUP, scope: scopeA }, doors))).toBe("root-other-group");
+    expect(await readFaceJoinRecord(GROUP)).toBeNull();
+    // CONTROL: the face that owns GROUP issues.
+    expect(await ensureFounderCertificate(args(scopeA), doors)).toEqual({ state: "issued" });
   });
 });

@@ -2,24 +2,26 @@
  * oracle-read-face — the node-side wiring of the Two-Faced Substrate.
  *
  * Serves the oracle doc's signed causal pointer and the content-addressed snapshot it names (Automerge.save)
- * to PEERS WHO PROVED FIRST, over the vessel's own gate handshake on one upgrade path — the KNOCK its gate key
- * derives under the oracle route (`knockPath(vesselKey, ORACLE_SOCKET_ROUTE)`):
- *   ws <ORACLE_SOCKET_ROUTE>/<knock> → lar:challenge · lar:auth · lar:auth-ok → pointer frame · snapshot frame · close
+ * to PEERS WHO PROVED FIRST, over the FLOOR gate this vessel stands for each Nexus it is handed, on the oracle
+ * route behind each gate's own knock (`face-gate-server`):
+ *   ws <ORACLE_SOCKET_ROUTE>/<knock> → Noise IK first flight · presentation · verdict → "session" pointer frame ·
+ *   "sync" snapshot bytes → close
  *
- * The gate arms with the vessel's ONE sorter, so the oracle socket answers exactly the classes the relay does:
- * under PRIVATE a proven stranger reads nothing at all — no verdict, no frame — exactly like a failed proof.
+ * The gates arm with the vessel's ONE sorter over each Nexus's posture, so under PRIVATE a presenter with no arm
+ * reads nothing at all — no verdict, no message — exactly like a failed proof. No auth verb rides the channel: the
+ * gate's proof is the auth.
  *
  * The face is NOT an HTTP face. It claims no request path, so every HTTP request for the oracle draws the
- * vessel's closed door, exactly as a path nobody claims; a dialer that cannot prove a key at the gate reads
- * nothing (pronaos#/the-rung-ladder: the oracle rung answers proven peers alone).
+ * vessel's closed door, exactly as a path nobody claims (pronaos#/the-rung-ladder: the oracle rung answers proven
+ * peers alone).
  *
- * The gate is the vessel's own (`DaemonAuthGate`, armed with the daemon island's verify shore and the
- * vessel key), so the pointer's signer is the very key the dialer's proof committed to: a peer learns no key
- * from the pointer that the handshake had not already named to it.
+ * THE PUBLISHER'S KEY IS NOT THE GATE'S. The floor bundle derives from the floor key; the pointer is signed by the
+ * vessel seed, and a reader names that publisher key out of band (`pullAndVerifyOracle` `verifyingKey`).
  *
  * Write-refusal is by construction: the face only sends, the bytes are named by their own hash, and there is
  * no sync session. On each oracle-doc change the face re-exports the snapshot and publishes a fresh causal
- * pointer. The local causal frontier persists to disk so a reboot can continue the same lineage.
+ * pointer. The local causal frontier persists to disk so a reboot can continue the same lineage. A served
+ * session closes when its reader closes, or once the linger lapses, so the bytes it sent flush before the cut.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  * (the content-addressed floor; Hypercore live-streaming rides above it as the
@@ -28,16 +30,15 @@
 
 import type { Server, IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
-import WebSocket from "isomorphic-ws";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
-import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
+import { faceGateServer, gateSessionRegistry } from "./face-gate-server.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
-  ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, DAEMON_BAG_ID, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed,
-  type AuthVerifierShore, type OraclePointerFrame,
+  ORACLE_POINTER_FRAME,
+  type FaceGate, type GateBundlePin, type GateSessionChannel, type GateSessionTable, type OraclePointerFrame,
 } from "@lararium/mesh";
 import {
   buildOraclePointer, oraclePointerId, verifyOraclePointer, snapshotPublicFlowMap,
@@ -54,8 +55,33 @@ interface PersistedPointerState {
 }
 
 export interface OracleReadFace {
-  /** Tear down the change-subscription + the HTTP request handler. */
+  /** Tear down the change-subscription, every floor gate and its upgrade, and every open session. */
   readonly dispose: () => void;
+}
+
+/** The oracle face on its floor gates: the upgrade pathnames they stand on, one per Nexus. */
+export interface OracleFloorFace extends OracleReadFace {
+  readonly paths: () => readonly string[];
+}
+
+/** How long a served session waits for its reader to close before the face closes it. */
+export const ORACLE_LINGER_MS = 10_000;
+
+/** One floor gate on the oracle route for one Nexus, and the pin it answers under. */
+export interface OracleFloorGate {
+  readonly gate: FaceGate;
+  readonly pin:  GateBundlePin;
+}
+
+/** The face's serving shape: its gates, built over the session table the face hands, and where they answer. */
+export interface OracleGateArgs {
+  /** Build one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`. */
+  readonly gates:       (sessions: GateSessionTable) => Promise<readonly OracleFloorGate[]> | readonly OracleFloorGate[];
+  readonly httpServer:  Server;
+  /** The vessel's dispatcher: each gate's path registers on it. Absent, one upgrade listener on `httpServer`. */
+  readonly dispatcher?: HttpFaceDispatcher;
+  /** How long a served session waits for its reader to close (`ORACLE_LINGER_MS`). */
+  readonly lingerMs?:   number;
 }
 
 /**
@@ -63,25 +89,20 @@ export interface OracleReadFace {
  * signing pointers with the vessel's seed. Idempotent in effect — re-exports only when the oracle doc's
  * content hash actually changes.
  */
-export async function mountOracleReadFace(args: {
-  readonly httpServer:   Server;
+export async function mountOracleReadFace(args: OracleGateArgs & {
   readonly oracleHandle: DocHandle<unknown>;
-  /** The VESSEL seed — it signs the pointer, and its key is the gate key a dialer proves against. */
+  /** The VESSEL seed — it signs the pointer. Its key is the publisher's, never the floor gate's. */
   readonly signerSeed:   Uint8Array;
   readonly storageDir:   string;
-  /** The daemon island's verify shore — the gate admits a dialer on its verdict, as the vessel's relay gate does. */
-  readonly authShore:    AuthVerifierShore;
-  /** The vessel's ONE sorter — every proven reader is classed by it before any verdict, or met with silence. */
-  readonly sort:         SocketSorter;
-  readonly dispatcher?:   HttpFaceDispatcher;
   readonly onLog?:       (line: string) => void;
   /** The export shore — REQUIRED, so no caller serves a raw document by omission. The oracle serve passes
    *  `snapshotPublicOracle` (the genesis-named floor) and the FLOW-map serve `snapshotPublicFlowMap`, so ONLY
    *  the public projection ever crosses the wire. A snapshot carrying a `seedCid` has it logged beside the
    *  snapshot cid. */
   readonly exportSnapshot: (doc: unknown) => Promise<OracleSnapshot & { readonly seedCid?: string }>;
-}): Promise<OracleReadFace> {
+}): Promise<OracleFloorFace> {
   const { httpServer, oracleHandle, signerSeed, storageDir, onLog } = args;
+  const lingerMs = args.lingerMs ?? ORACLE_LINGER_MS;
   const exportSnapshot = args.exportSnapshot;
   if (typeof exportSnapshot !== "function") throw new Error("oracle read-face: exportSnapshot is required; no raw document serves by omission");
   const statePath = join(storageDir, STATE_FILE);
@@ -135,41 +156,50 @@ export async function mountOracleReadFace(args: {
   const onChange = (): void => { void reissue(false); };
   oracleHandle.on("change", onChange);
 
-  // THE GATE — the vessel's own handshake on its own socket server. Only a socket that passed it reaches
-  // `connection`; every other socket met silence before a frame of the map was sent.
-  const wss  = new WebSocket.Server({ noServer: true });
-  const gate = new DaemonAuthGate(wss);
-  // The vessel key is the gate key: it signs each verdict back to the dialer, and the same key signs the pointer.
-  gate.arm(args.authShore, DAEMON_BAG_ID, {
-    pubKey: await ed25519VerifyingKeyFromSeed(signerSeed), sign: ed25519SignerFromSeed(signerSeed),
-  }, args.sort);
-  const path = gate.upgradePath(ORACLE_SOCKET_ROUTE)!;
-  gate.on("connection", (socket: WebSocket) => {
+  // THE FLOOR GATES — one per Nexus, each seating through this face's own table. Only a session whose verdict left
+  // reaches `serve`; every other socket met silence before a byte of the map was sent.
+  const serve = (channel: GateSessionChannel): void => {
     // Read the pair once, so the pointer and the bytes it names always leave together.
     const p = pointer, snap = snapshot;
-    if (!p || !snap) { socket.close(1000); return; }
+    if (!p || !snap) { channel.close(); return; }
     const frame: OraclePointerFrame = { type: ORACLE_POINTER_FRAME, pointer: p };
-    socket.send(JSON.stringify(frame));
-    socket.send(Buffer.from(snap.bytes));
-    socket.close(1000);
-  });
-  const upgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
-    wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+    channel.send("session", new TextEncoder().encode(JSON.stringify(frame)));
+    channel.send("sync", Uint8Array.from(snap.bytes));
+    // The reader closes once it holds both; a reader that never does meets the linger. Anything it sends ends it.
+    const linger = setTimeout(() => channel.close(), lingerMs);
+    linger.unref?.();
+    void channel.recv().catch(() => null).then(() => { clearTimeout(linger); channel.close(); });
   };
-  const unregister = args.dispatcher?.registerUpgrade({ name: "oracle", path, handle: upgrade });
-  // A bare server (no dispatcher) carries one listener that answers this knock alone and leaves every other.
-  const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
-    if (new URL(req.url ?? "/", "http://localhost").pathname === path) upgrade(req, socket, head);
-  };
-  if (!unregister) httpServer.on("upgrade", onUpgrade);
+  const registry = gateSessionRegistry((channel) => serve(channel));
+  const server = faceGateServer();
+  const unregisters: Array<() => void> = [];
+  try {
+    for (const entry of await args.gates(registry.table)) {
+      const stood = server.stand(entry);
+      const unregister = args.dispatcher?.registerUpgrade({
+        name: `oracle:${stood.path}`, path: stood.path,
+        handle: (req, socket, head) => { if (!server.handleUpgrade(req, socket, head)) socket.destroy(); },
+      });
+      if (unregister) unregisters.push(unregister);
+    }
+  } catch (error) {
+    for (const unregister of unregisters) unregister();
+    server.close();
+    oracleHandle.off("change", onChange);
+    throw error;
+  }
+  // A bare server (no dispatcher) carries one listener that answers the stood knocks alone and leaves every other.
+  const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => { server.handleUpgrade(req, socket, head); };
+  if (!args.dispatcher) httpServer.on("upgrade", onUpgrade);
 
   return {
+    paths: () => server.paths(),
     dispose: () => {
       oracleHandle.off("change", onChange);
-      if (unregister) unregister();
-      else httpServer.off("upgrade", onUpgrade);
-      for (const client of wss.clients) client.terminate();
-      wss.close();
+      for (const unregister of unregisters.splice(0)) unregister();
+      if (!args.dispatcher) httpServer.off("upgrade", onUpgrade);
+      registry.close();
+      server.close();
     },
   };
 }
@@ -177,26 +207,22 @@ export async function mountOracleReadFace(args: {
 /**
  * Mount a vessel's FLOW-map (the mesh-palace projection) as a read-face. The disclosure shore applies
  * BEFORE the snapshot (snapshotPublicFlowMap), so only coarse public FLOW crosses the wire — the private
- * territory never leaves. A Herm serves this as its sole substrate; a proven peer pulls it with the same
- * `pullAndVerifyOracle`. The Lares Viales floor on the wire.
+ * territory never leaves. A Herm serves this as its sole substrate, on the same floor gates; a proven peer pulls
+ * it with the same `pullAndVerifyOracle`. The Lares Viales floor on the wire.
  */
-export function mountFlowMapReadFace(args: {
-  readonly httpServer:       Server;
+export function mountFlowMapReadFace(args: OracleGateArgs & {
   readonly meshPalaceHandle: DocHandle<unknown>;
   readonly signerSeed:       Uint8Array;
   readonly storageDir:       string;
-  readonly authShore:        AuthVerifierShore;
-  readonly sort:             SocketSorter;
-  readonly dispatcher?:      HttpFaceDispatcher;
   readonly onLog?:           (line: string) => void;
-}): Promise<OracleReadFace> {
+}): Promise<OracleFloorFace> {
   return mountOracleReadFace({
     httpServer:     args.httpServer,
     oracleHandle:   args.meshPalaceHandle,
     signerSeed:     args.signerSeed,
     storageDir:     args.storageDir,
-    authShore:      args.authShore,
-    sort:           args.sort,
+    gates:          args.gates,
+    ...(args.lingerMs !== undefined ? { lingerMs: args.lingerMs } : {}),
     ...(args.dispatcher ? { dispatcher: args.dispatcher } : {}),
     ...(args.onLog ? { onLog: args.onLog } : {}),
     exportSnapshot: (doc: unknown) => snapshotPublicFlowMap(doc as LarDoc),

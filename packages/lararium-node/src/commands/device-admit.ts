@@ -27,11 +27,12 @@ import {
   leaseEpochPrefix, effectiveLeaseEpoch,
   LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
-import { larBootstrapPath } from "../vessel-paths.js";
+import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
@@ -175,12 +176,14 @@ export interface DeviceAdmitOptions {
    * own anchors, since both pin the founding face alone.
    */
   readonly face?:          number;
+  /** The custody door the hearth's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
+  readonly gateDoor?:      CustodyRootDoor;
 }
 
 /** This hearth's reading at the admit: what the fleet-join answer signs beside the edge. */
 export interface AdmitHearthReading {
-  /** The gate key a joinee pins for this hearth's dial. */
-  readonly gatePin: string;
+  /** The full sovereign sync pin a joinee files for this hearth's dial, at the island the reading names. */
+  readonly gatePin: GateBundlePin;
   /** The canon documents this hearth names, by url (`admitCanonDocs`). */
   readonly canon: Readonly<Record<string, string>>;
   /** The board island this hearth stands on, resolved as its boot resolves it; absent on a torn standing. */
@@ -353,15 +356,20 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaUrl,
   });
 
-  // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the founder's gate key, its vessel key, the binding a joinee's
-  // gate proof commits to. The fleet-join answer signs it beside the edge, with the canon this hearth names and the
-  // board island it stands on, resolved by the one canonical read (`nodeNexusStanding`). The island freezes at
-  // the admit: a founder that climbs later moves no device it admitted; that device joins again by a new act.
+  // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
+  // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's
+  // scope, which an anchor or an explicit standing points elsewhere. The fleet-join answer signs it beside the edge, with
+  // the canon this hearth names and the board island it stands on, resolved by the one canonical read
+  // (`nodeNexusStanding`). The island freezes at the admit: a founder that climbs later moves no device it admitted;
+  // that device joins again by a new act.
   const founderIdentity = nodeNexusStanding({ ownVesselKey: founderVesselKey });
+  if (founderIdentity.kind === "torn") {
+    throw new Error("[lares fleet join answer] the founder's Nexus standing reads torn — there is no Nexus to pin the hearth's gate at; resolve the charter first.");
+  }
   const hearth: AdmitHearthReading = {
-    gatePin: founderVesselKey.toLowerCase(),
+    gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
     canon:   await admitCanonDocs(repo),
-    ...(founderIdentity.kind !== "torn" ? { islandKind: founderIdentity.kind, islandScope: founderIdentity.scope } : {}),
+    islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };
 }

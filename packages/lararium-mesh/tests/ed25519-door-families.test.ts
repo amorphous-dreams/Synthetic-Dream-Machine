@@ -43,7 +43,6 @@ import { signPluginAttestation, verifyPluginAttestation } from "../src/genesis-d
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { grantVerifiesAt, hostingEpochOf, issueGrant, mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
-import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
 import { introductionBytes, newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { IDENTITY_KEY, MIXED_ORDER_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
@@ -142,15 +141,6 @@ bothHands("realm feed slot (verifyRealmFeedSlot)", async (hand) => {
 
 bothHands("witness edge (verifyWitnessSig)", async (hand) =>
   verifyWitnessSig("claim-cid", await signWitness({ claimCid: "claim-cid", signer: hand.key, frontier: "f", polarity: 1, sign: hand.sign })));
-
-bothHands("daemon proof of possession (verifyAuthProof, ed25519VerifyHex)", async (peer) => {
-  const parts = { nonce: "11".repeat(32), gatePubKey: (await honestHand(6)).key, peerPubKey: peer.key, aud: "mesh" };
-  const sig = await peer.sign(authProofBytes(parts));
-  const proof = await verifyAuthProof({ ...parts, sig });
-  const bare = await ed25519VerifyHex(sig, authProofBytes(parts), peer.key);
-  if (proof.ok !== bare) throw new Error("the two wire verifiers disagree");
-  return proof.ok;
-});
 
 describe("oracle pointer (verifyOraclePointer)", () => {
   // The builder derives its key from a seed, so the forgery re-derives the act cid over the identity key by hand.

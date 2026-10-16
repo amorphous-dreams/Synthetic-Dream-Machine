@@ -1,6 +1,6 @@
 /**
- * carriage-relay-node — the CARRIAGE relay service entrypoint (Socket B): a proof-of-possession authenticated
- * relay the family vessels dial to carry sealed cad ciphertext bodies hearth to hearth, plus the DHT-free
+ * carriage-relay-node — the CARRIAGE relay service entrypoint (Socket B): the relay the family vessels once dialed (SHUT at the sealed-gate cutover: the
+ * peering route logs and refuses by name, `carriage-peering-shut`; only the HTTP drop door serves) to carry sealed cad ciphertext bodies hearth to hearth, plus the DHT-free
  * bag-tracker. Distinct from relay-node (the Herm's OPEN membership-CEREMONY relay); this is the member-gated
  * SEALED-body cad carriage (Socket B). Both are Herm transports; NEITHER is the Automerge /ws doc relay (Socket A).
  *
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
   const relay = await startCarriageRelay({ gateSeed, port: PORT });
   console.log(`[carriage-relay-node] carriage relay up on :${String(relay.port)} — members may dial ws://<host>:${String(relay.port)}`);
-  console.log(`[carriage-relay-node] gate pubkey ${gatePubKey} (the proof-of-possession binding)`);
+  console.log(`[carriage-relay-node] gate pubkey ${gatePubKey} (the relay's gate identity; the old proof-of-possession binding is retired)`);
   // Stay up for the family's lifetime; the container/process is torn down externally.
 }
 

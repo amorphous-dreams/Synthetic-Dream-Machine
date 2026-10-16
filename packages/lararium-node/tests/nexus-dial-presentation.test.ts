@@ -5,9 +5,6 @@
  *   · with TWO carried Nexuses whose boards both hold an admit for this vessel's leaves, the dial presents the
  *     DIALED Nexus's admit — the one the kept bundle ties to the dialed gate key — and never reads the other board;
  *   · CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing;
- *   · a dial that presents a leaf admit carries no root-signed edge — and the wire would refuse one;
- *   · ONE FACE PER VESSEL PER NEXUS: with no admit, the fleet edge presents in its slot; a self-founded vessel
- *     presents the ContactCard alone, and no identity a dial builds names a contract slot;
  *   · `presentationKey` moves when the admit moves, so re-presentation fires on a board change and only then.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -16,16 +13,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, hexToBytes, nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit,
+  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
-  type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
+  custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin,
+  type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
-import { dialPresentation, dialIdentityFor, presentationKey } from "../src/nexus-carriage.js";
+import { dialPresentation, presentationKey } from "../src/nexus-carriage.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
-import { dialerDouble, gateDouble } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
@@ -38,12 +35,17 @@ async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
 }
 
 /** An admit commits to the pin of the hearth its bundle names (face-proof#/the-gate-exchange, step 5), under a fixed test salt. */
-const openingFor = (gatePin: string) => ({ carriage: { gatePin, canon: {} }, salt: "5a".repeat(32) });
-async function admitOn(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, parents: string[] = [], pin = "a1".repeat(32)): Promise<CarriageEntry> {
+const openingFor = (gatePin: GateBundlePin) => ({ carriage: { gatePin, canon: {} }, salt: "5a".repeat(32) });
+/** The hearth's sovereign sync pin at one Nexus, from a test custody door filled with `tag`. */
+const pinAt = (aid: string, tag: number): GateBundlePin => {
+  const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(aid), sovereignRoute("/ws"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+};
+async function admitOn(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, parents: string[] = [], pin?: GateBundlePin): Promise<CarriageEntry> {
   const nym = await pubOf(leafSeed);
   const epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahuSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signCarriageQuorum({ nym, action: "admit", parents, sealEpochCid: epoch, carriageCommit: admitCarriageCommit(openingFor(pin)) }, quorum,
+  return signCarriageQuorum({ nym, action: "admit", parents, sealEpochCid: epoch, carriageCommit: admitCarriageCommit(openingFor(pin ?? pinAt(nexusAidOf(doc)!, 1))) }, quorum,
     await signCarriageContract(nym, epoch, signerOf(leafSeed)));
 }
 
@@ -72,8 +74,6 @@ describe("the dial presents the DIALED island's admit only", () => {
   const C_KAHU = [seed(4), seed(5), seed(6)];
   const LEAF_AT = new Map<string, Uint8Array>();
 
-  const GATE_P = "a1".repeat(32);
-  const GATE_C = "c3".repeat(32);
 
   async function stand(opts: { primaryAdmit: boolean }) {
     const sealHome = join(root, "nexus");
@@ -91,7 +91,8 @@ describe("the dial presents the DIALED island's admit only", () => {
       return s ? [{ handleIndex: 0, verifyingKey: await pubOf(s), seed: s }] : [];
     };
     const admitP = await admitOn(primary, P_KAHU, seed(21));
-    const admitC = await admitOn(carried, C_KAHU, seed(22), [], GATE_C);
+    const gateP = pinAt(aidP, 1), gateC = pinAt(aidC, 3);
+    const admitC = await admitOn(carried, C_KAHU, seed(22), [], gateC);
     // The islands are the charters' genesis epochs: each board keys on its own Nexus.
     const boards = new Map<string, LarDoc>([
       [carriageDocUrl(aidP), boardOf(opts.primaryAdmit ? [admitP] : [])],
@@ -99,16 +100,16 @@ describe("the dial presents the DIALED island's admit only", () => {
     ]);
     const asked: string[] = [];
     const open = async (url: string) => { asked.push(url); return boards.get(url); };
-    const take = (aid: string, gatePubKey: string, admit: CarriageEntry) =>
-      takeAdmitBundle({ sealHome, raw: JSON.stringify({ aid, gatePubKey, admit, lineage: [], opening: openingFor(gatePubKey) }), leaves });
-    return { sealHome, aidP, aidC, admitP, admitC, leaves, open, asked, take };
+    const take = (aid: string, gatePin: GateBundlePin, admit: CarriageEntry) =>
+      takeAdmitBundle({ sealHome, raw: JSON.stringify({ aid, gatePubKey: gatePin.signingKey, admit, lineage: [], opening: openingFor(gatePin) }), leaves });
+    return { sealHome, aidP, aidC, admitP, admitC, leaves, open, asked, take, gateP: gateP.signingKey, gateC: gateC.signingKey, pinP: gateP, pinC: gateC };
   }
 
   test("with two carried Nexuses, the presentation names only the dialed one's admit", async () => {
     const w = await stand({ primaryAdmit: true });
-    await w.take(w.aidP, GATE_P, w.admitP);
-    await w.take(w.aidC, GATE_C, w.admitC);
-    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
+    await w.take(w.aidP, w.pinP, w.admitP);
+    await w.take(w.aidC, w.pinC, w.admitC);
+    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves });
     expect(p).not.toBeNull();
     expect(p!.aid).toBe(w.aidP);
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admitP));
@@ -118,60 +119,19 @@ describe("the dial presents the DIALED island's admit only", () => {
 
   test("CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing", async () => {
     const w = await stand({ primaryAdmit: false });
-    await w.take(w.aidC, GATE_C, w.admitC);
-    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves })).toBeNull();
+    await w.take(w.aidC, w.pinC, w.admitC);
+    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves })).toBeNull();
     expect(w.asked).toEqual([]);
   });
 
   test("presentationKey moves when the admit moves, and only then", async () => {
     const w = await stand({ primaryAdmit: true });
-    await w.take(w.aidP, GATE_P, w.admitP);
-    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
-    const again = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
+    await w.take(w.aidP, w.pinP, w.admitP);
+    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves });
+    const again = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves });
     expect(presentationKey(p)).toBe(presentationKey(again));
     expect(presentationKey(null)).toBe("");
     expect(presentationKey(p)).not.toBe("");
   });
 });
 
-describe("one face per vessel per Nexus — a dial carries no contract slot", () => {
-  const base: LeafIdentity = { contactCard: "{}", peerPubKey: "cd".repeat(32), sign: signerOf(seed(30)) };
-  const fleetEdge = { kind: "fleet-edge" } as unknown as DeviceDelegationTiddler;
-
-  async function presented() {
-    const doc = await charter([seed(1), seed(2), seed(3)]);
-    const admit = await admitOn(doc, [seed(1), seed(2), seed(3)], seed(21));
-    return {
-      admit, lineage: [], aid: nexusAidOf(doc)!, island: nexusAidOf(doc)!,
-      leaf: { handleIndex: 0, verifyingKey: await pubOf(seed(21)), seed: seed(21) },
-    };
-  }
-
-  test("with an admit: no fleet edge rides it, and the leaf signer is the admit's own key", async () => {
-    const p = await presented();
-    const id = dialIdentityFor(base, p, fleetEdge);
-    expect(id.edge).toBeUndefined();
-    expect("contractEdge" in id).toBe(false);
-    expect(id.presented).toMatchObject({ kind: "admit", admit: p.admit });
-    expect(typeof id.leafSign).toBe("function");
-    const gate = await gateDouble({ gateSeed: seed(40), aud: "lar:///x", proof: "accept" });
-    const openingFrame = JSON.parse(gate.accept().opening);
-    const msg = await dialerDouble({
-      contactCard: id.contactCard, peerPubKey: id.peerPubKey, gatePubKey: gate.gatePubKey, aud: "lar:///x",
-      // The presentation rides under a placeholder proof: this test reads which slots the answer fills, never the proof.
-      sign: id.sign, presented: id.presented!, leafSign: async () => "ab".repeat(64),
-    }).answer(openingFrame);
-    expect("contractEdge" in msg).toBe(false);
-    expect(msg.edge).toBeUndefined();
-    const sig = await id.leafSign!(new Uint8Array([1, 2, 3]));
-    expect(await ed.verifyAsync(hexToBytes(sig), new Uint8Array([1, 2, 3]), hexToBytes(p.leaf.verifyingKey))).toBe(true);
-  });
-
-  test("CONTROL: with no admit, the fleet edge presents in its slot; a self-founded vessel presents the ContactCard alone", () => {
-    expect(dialIdentityFor(base, null, fleetEdge).edge).toBe(fleetEdge);
-    const alone = dialIdentityFor(base, null, null);
-    expect(alone).toBe(base);
-    expect("contractEdge" in alone).toBe(false);
-    expect(alone.edge).toBeUndefined();
-  });
-});

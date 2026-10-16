@@ -16,8 +16,10 @@
  * An already-founded vessel therefore needs nothing run by hand: its first gate open at each scope issues and keeps the
  * certificate, and every later open finds it standing.
  *
- * WHAT IT CHECKS, BY NAME. A face standing provisional (a restored root adds no vessel to its authority), a vessel
- * that holds no root (a joiner is certified by its root holder, never by itself), a record kept under another root,
+ * WHAT IT CHECKS, BY NAME. A face standing provisional (a restored root adds no vessel to its authority), a face whose
+ * anchors do not name the PersonaGroup the grant would name (face B's root never signs a grant for group A, and so
+ * never keeps a record under group A), a vessel that holds no root (a joiner is certified by its root holder, never
+ * by itself), a record kept under another root,
  * a face key this vessel does not hold at the scope, a history that does not fold, an issue the mesh refuses, a
  * certificate that names another key than this vessel's custody row, and a grant the root's own key does not read.
  * Nothing is kept until every check passed. The chain itself (the face key's signature, the withdrawal memory) is
@@ -34,11 +36,13 @@ import { CustodyRowUnavailable } from "./custody-holder.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "./face-key-custody.js";
 import { FaceProvisional, refuseWhileProvisional } from "./face-provisional.js";
 import { keepFaceJoinRecord, readFaceJoinRecord } from "./fleet-join-custody.js";
+import { loadIdentityAnchors } from "./identity-anchors.js";
 import { readJoinedFaceProof, type JoinedFaceAbsence, type JoinedFaceProof } from "./joined-face-proof.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "./node-vessel-identity.js";
 
 export const FOUNDER_CERTIFICATE_REFUSALS = [
   "face-provisional",           // a restored face adds no vessel to its authority until a party confirms its head
+  "root-other-group",           // the face whose root would sign does not own the PersonaGroup the grant names
   "root-absent",                // this vessel holds no root for the face: a joiner is certified by its root holder
   "record-other",               // the face's record stands under another root key
   "face-key-absent",            // no face key at the scope in custody, or one that answers another key
@@ -61,7 +65,11 @@ export interface FounderCertificateDoors {
   readonly guard?:    (face: number, act: string) => Promise<void>;
   readonly loadRoot?: (face: number) => Promise<{ readonly seed: Uint8Array; readonly verifyingKey: string } | null>;
   readonly vesselKey?: () => Promise<string>;
+  /** The PersonaGroup face `face` owns (its anchors' `personaGroupId`), or null where it owns none. */
+  readonly groupOf?:  (face: number) => Promise<string | null>;
 }
+
+const defaultGroupOf = async (face: number): Promise<string | null> => (await loadIdentityAnchors(face))?.personaGroupId ?? null;
 
 const defaultRoot = async (face: number): Promise<{ seed: Uint8Array; verifyingKey: string } | null> => {
   const key = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
@@ -89,6 +97,10 @@ export async function ensureFounderCertificate(
   catch (error) {
     if (error instanceof FaceProvisional) throw new FounderCertificateRefused("face-provisional", error.message, error);
     throw error;
+  }
+  const owns = await (doors.groupOf ?? defaultGroupOf)(face);
+  if (owns !== personaGroup) {
+    throw new FounderCertificateRefused("root-other-group", `face h${face} does not own the PersonaGroup this grant would name; its root signs nothing for another face.`);
   }
   const root = await (doors.loadRoot ?? defaultRoot)(face);
   if (root === null) throw new FounderCertificateRefused("root-absent", "this vessel holds no root for the face; its root holder certifies a joiner.");

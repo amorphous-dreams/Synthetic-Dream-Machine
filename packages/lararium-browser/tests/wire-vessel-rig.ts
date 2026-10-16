@@ -9,6 +9,7 @@
 import { NetworkAdapter, generateAutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import type { PeerMetadata } from "@automerge/automerge-repo";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import type { HearthPinIndex } from "@lararium/mesh";
 import type { BrowserVesselOptions } from "../src/open-browser-vessel.js";
 
 type SharePolicy = (peerId: PeerId, documentId?: DocumentId) => boolean | Promise<boolean>;
@@ -80,11 +81,24 @@ export function fakeAdmitResult(): Record<string, unknown> {
 }
 
 /** Options for a boot that dials `relayGatePubKey` after admission (none: no relay); the store name is unique per boot. */
+/**
+ * The three inputs the sealed relay dial waits on, as the rig hands them: an index that holds a pin for any key, a
+ * Nexus, and a presentation. The relay transport is a fake beneath the vessel, so none of the three is read by it;
+ * they only let the vessel stand the dial, which is what the policy wire under test sits behind.
+ */
+function heldRelayDial(): NonNullable<BrowserVesselOptions["relayDial"]> {
+  return {
+    pins: { get: () => ({ tier: "sovereign" }) } as unknown as HearthPinIndex,
+    nexus: "ab".repeat(16),
+    presentation: {} as never,
+  };
+}
+
 export function bootOptions(admit: CarriedAdmitPayload, relayGatePubKey: string | null): BrowserVesselOptions {
   return {
     idbName: `wire-rig-${crypto.randomUUID()}`,
     admit,
-    ...(relayGatePubKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayGatePubKey } : {}),
+    ...(relayGatePubKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayGatePubKey, relayDial: heldRelayDial() } : {}),
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
 }

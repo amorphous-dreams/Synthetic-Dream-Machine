@@ -86,6 +86,9 @@ describe("the walk: one face proven at one gate", () => {
     expect(session.sessionKey).toBe(p.signer.certificate.sessionKey);
     expect(session.class).toBe("contracted");
     expect(session.standing).toEqual({ nym: p.scope.faceKey, aid: w.nexus });
+    // The arm as it rode: a refold reads the admit and its lineage again, beside the face the chain proved.
+    expect(session.arm).toEqual(p.arm);
+    expect(session.face).toBeNull();                                      // a contracted seat carries no face view
     if (run.outcome.state !== "verified") throw new Error("unreachable");
     const sealed = run.outcome.transport.send.seal(utf8Bytes("the first application frame"));
     expect(new TextDecoder().decode(session.transport.receive.open(sealed))).toBe("the first application frame");
@@ -236,6 +239,66 @@ describe("nothing leaves the gate before a valid first message", () => {
     expect(w.gate.pending).toBe(0);
     w.seatFault = null;
     expect(await run()).toEqual({ outcome: "attached", class: "contracted" });                 // CONTROL
+  });
+
+  test("RED: a verdict that never left opens no seat — a lapse the source failed to stand down abandons the seat and cuts", async () => {
+    // A deadline source whose cancel lands too late: its lapse fires after the seat was taken, while the gate signs.
+    let lapse: (() => void) | null = null;
+    let lapseDuringSign = true;
+    const late = { draw: (l: () => void) => { lapse = l; return { cancel() { /* landed too late */ } }; } };
+    const w = await world({
+      lapses: late,
+      gateBundle: (b) => Object.freeze({
+        pin: b.pin, digest: b.digest, knock: b.knock, respond: (m: Uint8Array) => b.respond(m), drop: () => b.drop(), get dropped() { return b.dropped; },
+        sign: async (image: Uint8Array) => { if (lapseDuringSign) lapse?.(); return b.sign(image); },
+      }),
+    });
+    const p = await presenter(w, "late lapse");
+    const run = async () => {
+      const { dial: socket, accepted, log } = wire();
+      const { dialFaceGate } = await import("../src/face-dial.js");
+      void dialFaceGate({ pin: w.pin, tier: "sovereign", socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: { draw: () => ({ cancel() {} }) } });
+      const outcome = await w.gate.accept(await accepted);
+      return { outcome, log };
+    };
+    const { outcome, log } = await run();
+    expect(outcome).toEqual({ outcome: "silence", reason: "deadline-before-verdict" });
+    expect(w.attached).toEqual([]);                                   // no seat opened under a verdict that never left
+    expect(w.abandoned).toHaveLength(1);
+    expect(log.toDialer.length).toBe(1);                              // message two alone: no verdict frame
+    expect(log.cuts).toBe(1);
+    lapseDuringSign = false;
+    expect((await run()).outcome).toEqual({ outcome: "attached", class: "contracted" });       // CONTROL
+  });
+});
+
+describe("a sign that never returns", () => {
+  test("RED: the deadline still stands while the verdict signs: a hung sign is cut at the lapse, its seat abandoned and its pending place freed", async () => {
+    let hang = true;
+    const w = await world({
+      maxPending: 1,
+      gateBundle: (b) => Object.freeze({
+        pin: b.pin, digest: b.digest, knock: b.knock, respond: (m: Uint8Array) => b.respond(m), drop: () => b.drop(), get dropped() { return b.dropped; },
+        sign: (image: Uint8Array) => (hang ? new Promise<Uint8Array>(() => { /* never returns */ }) : b.sign(image)),
+      }),
+    });
+    const p = await presenter(w, "hung sign");
+    const { dial: socket, accepted, log } = wire();
+    const { dialFaceGate } = await import("../src/face-dial.js");
+    void dialFaceGate({ pin: w.pin, tier: "sovereign", socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: { draw: () => ({ cancel() {} }) } });
+    const accepting = w.gate.accept(await accepted);
+    await settle(8);
+    expect(w.gate.pending).toBe(1);                                   // the sign hangs: the socket still holds its place
+    expect(w.deadlines.standing).toBe(1);                             // and its deadline still stands
+    w.deadlines.fire();
+    expect(log.cuts).toBe(1);                                          // the lapse cut the hung socket
+    expect(w.gate.pending).toBe(0);                                    // and freed its place
+    expect(w.abandoned).toHaveLength(1);                               // and the seat the table took went with it
+    expect(w.attached).toEqual([]);
+    void accepting;
+    // CONTROL: the next dial reaches the bound's one place and attaches once the sign returns.
+    hang = false;
+    expect((await dial(w, p)).gate).toEqual({ outcome: "attached", class: "contracted" });
   });
 });
 
@@ -582,7 +645,17 @@ describe("the sorter: once, inside the gate, before any answer", () => {
     const walker = await presenter(w, "class walker");
     const grant = { nexusAid: w.nexus, leaf: walker.scope.faceKey, epoch: "ab".repeat(32), lineage: "cd".repeat(32), survived: 0, from: "host" as const, tag: "ef".repeat(64) };
     expect((await dial(w, fleet)).gate).toEqual({ outcome: "attached", class: "same-operator" });
+    // D3: the same-operator seat carries the grant the ring answered, the key its face view reads by.
+    expect(w.attached.at(-1)!.session.face).toEqual(w.grants.get(fleet.scope.faceKey));
     expect((await dial(w, contracted)).gate).toEqual({ outcome: "attached", class: "contracted" });
+    expect(w.attached.at(-1)!.session.face).toBeNull();
+    // RED: a grant the ring holds for a face whose device stands aside sorts contracted, and carries no face view.
+    w.grants.set(contracted.scope.faceKey, { personaGroup: GROUP, faceKey: contracted.scope.faceKey, nexus: w.nexus, revision: "group-heads-1" });
+    w.fleetAside.add(contracted.certificate.vesselFaceKey);
+    expect((await dial(w, contracted)).gate).toEqual({ outcome: "attached", class: "contracted" });
+    expect(w.attached.at(-1)!.session.face).toBeNull();
+    w.grants.delete(contracted.scope.faceKey);
+    w.fleetAside.clear();
     expect((await dial(w, walker, { arm: { kind: "grant", grant } })).gate).toEqual({ outcome: "attached", class: "walker" });
     // Whether a grant or a claim HOLDS stays the sorter's own reading (its hosting store, its epochs, its burn):
     // the gate binds the arm to the face key and the Nexus, and a sorter that reads no walker in it draws silence.
@@ -930,6 +1003,9 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     const { session } = w.attached[0]!;
     expect(session).toMatchObject({ tier: "sovereign", scope: null, sessionKey: null, placeKey: herm.key, profile: "carriage", class: "contracted", standing: { nym: herm.key, aid: w.nexus } });
     expect(w.sorted[0]).toMatchObject({ scope: null, placeKey: herm.key, profile: "carriage", admit: null, sameGroup: null, fleetAside: true });
+    expect(session.arm).toEqual(w.sorted[0]!.arm);
+    expect(session.arm?.kind).toBe("place");
+    expect(session.face).toBeNull();
     if (run.outcome.state !== "verified") throw new Error("unreachable");
     expect(new TextDecoder().decode(session.transport.receive.open(run.outcome.transport.send.seal(utf8Bytes("sealed bytes it cannot open"))))).toBe("sealed bytes it cannot open");
   });

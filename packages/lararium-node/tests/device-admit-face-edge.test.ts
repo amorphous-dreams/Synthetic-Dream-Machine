@@ -15,7 +15,19 @@ const T = vi.hoisted(() => ({
 }));
 const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[] }));
 
-vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath }));
+vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
+// The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
+// suite reads the edge alone, so the stood pin is a fixed one read at the seal home the paths name.
+vi.mock("../src/hearth-sovereign-pin.js", async () => {
+  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  return {
+    stoodSovereignPin: (sealHome: string) => {
+      if (sealHome !== "seal-home-under-test") throw new Error(`stood pin read at ${sealHome}`);
+      const bundle = mesh.deriveGateBundle(mesh.sovereignGateRoot(mesh.custodyRootDoor({ derive: () => new Uint8Array(32).fill(7) })), new TextEncoder().encode("hearth-aid"), mesh.sovereignRoute(mesh.SOVEREIGN_SYNC_ROUTE));
+      try { return bundle.pin; } finally { bundle.drop(); }
+    },
+  };
+});
 vi.mock("../src/identity-anchors.js", () => ({
   loadIdentityAnchors: async (face: number) => {
     seam.anchorsAsked.push(face);

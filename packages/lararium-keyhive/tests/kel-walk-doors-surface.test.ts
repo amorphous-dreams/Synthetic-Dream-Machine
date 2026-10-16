@@ -5,12 +5,10 @@
  * no revocation back. Set aside in silence, though, it would hide that someone wrote it. Each door surfaces it:
  *   · the Binding Gate at boot — on the log and in its result (`boot-daemon-keyhive`, pinned in the node suite);
  *   · the face-grant verifier — in its verdict (`face-grant-record.test`);
- *   · the live admission door (`operator-daemon-behavior` `verifyPeer`) — in the verdict's provenance, through
- *     `kelWalkNote`, pinned here both by behaviour and by the door's own source.
+ *   · `kelWalkNote` (`operator-daemon-behavior`) — the note any admission verdict carries, pinned here by behaviour.
+ *     (The in-worker `verifyPeer` door retired with the old wire.)
  */
 import { describe, test, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519VerifyingKeyFromSeed, mintPersonaInception, enrolmentDigestOf, personaEventCidOf,
   verifyEdgeAgainstPersonaKel, type PersonaKelEvent,
@@ -36,10 +34,4 @@ describe("the live admission door says what the KEL walk set aside", () => {
     expect(kelWalkNote(await verifyEdgeAgainstPersonaKel(edge, [inception], { expectedEpoch: 0 }))).toBe("");
   });
 
-  test("the door threads the note into BOTH its admit and its refusal", () => {
-    const src = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
-    expect(src).toMatch(/const unreadNote\s*=\s*kelWalkNote\(delegation\)/);
-    expect(src).toMatch(/reason: `admitted via operator device-delegation\$\{unreadNote\}`/);
-    expect(src).toMatch(/"device-delegation requires a verified proof-of-possession"\) \+ unreadNote/);
-  });
 });

@@ -45,14 +45,13 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type AuthVerifierShore, type LeafIdentity,
+  type LeafIdentity,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
   type DaemonCapDeps, type VesselDaemonVm,
 } from "@lararium/tw5";
-import { mountFlowMapReadFace, type OracleReadFace } from "./oracle-read-face.js";
-import type { SocketSorter } from "./daemon-auth-gate.js";
+import { mountFlowMapReadFace, type OracleReadFace, type OracleGateArgs } from "./oracle-read-face.js";
 import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { BulbArtifact } from "./bulb.js";
@@ -85,15 +84,13 @@ export const CAP = {
 
 // ── the node-ONLY cap: the gated read-face that serves the meshpalace FLOW-map to proven peers ──────
 
-/** read-face — serves the meshpalace FLOW-map to PROVEN PEERS over the vessel's gated oracle socket (the
- *  disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon (the
- *  verify shore its gate admits on). Disposes the socket face. */
+/** read-face — serves the meshpalace FLOW-map to PROVEN PEERS over the vessel's floor gates on the oracle route
+ *  (the disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon. Disposes
+ *  the face, its gates and their sessions. */
 export function flowMapReadFaceCap(deps: {
   httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
-  /** The daemon island's inbound-peer verify shore, read once the daemon cap stands. */
-  authShore: () => AuthVerifierShore;
-  /** The vessel's ONE sorter — the oracle socket's gate classes every proven reader by it. */
-  sort:      SocketSorter;
+  /** The floor gates the face stands, one per Nexus, each seating through the face's own table. */
+  gates:     OracleGateArgs["gates"];
 }): CapModule {
   return {
     id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace, CAP.daemon],
@@ -104,8 +101,7 @@ export function flowMapReadFaceCap(deps: {
         meshPalaceHandle: mp.handle,
         signerSeed:       deps.signerSeed,
         storageDir:       deps.storageDir,
-        authShore:        deps.authShore(),
-        sort:             deps.sort,
+        gates:            deps.gates,
         ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
@@ -156,10 +152,8 @@ export interface HermStackDeps extends DaemonCapDeps {
   /** This Herm's mesh standing — derived once via deriveMeshSelf. Present → it self-announces, self-peers,
    *  re-ranks by proximity + drifts r. Absent → a leaf that only carries what it pulls (no carriage dials). */
   readonly meshSelf?:      MeshSelf;
-  /** The daemon island's inbound-peer verify shore — the read-face's gate admits a peer on its verdict. */
-  readonly authShore:      () => AuthVerifierShore;
-  /** The vessel's ONE sorter — the read-face's gate classes every proven reader by it. */
-  readonly sort:           SocketSorter;
+  /** The oracle's floor gates the read-face stands, one per Nexus this Herm stands in. */
+  readonly oracleGates:    OracleGateArgs["gates"];
   /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
   readonly identity?:      LeafIdentity;
   readonly pullIntervalMs?: number;
@@ -210,7 +204,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     flowMapReadFaceCap({
-      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, authShore: d.authShore, sort: d.sort,
+      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, gates: d.oracleGates,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),

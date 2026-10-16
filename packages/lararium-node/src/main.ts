@@ -735,14 +735,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   for (const line of crossingBannerLines("lararium", crossings, gateIdentity.verifyingKey)) console.log(`[lararium]   ${line}`);
   console.log("[lararium]   (a leaf joins by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
 
-  // The CLIENT dial-out (Socket A) — announced when a peer sync URL rides the config (the same-operator device
-  // breath: this vessel DIALS a peer node's /ws carrying the operator's own identity). Read inside the vessel;
-  // announced here so the operator sees it. Absent → no dial, no line.
-  const joinSync = process.env["LAR_JOIN_SYNC"];
-  if (joinSync) {
-    const joinGate = process.env["LAR_JOIN_GATE"];
-    console.log(`[lararium] nexus dial-out → ${joinSync}${joinGate ? "" : "   (no LAR_JOIN_GATE — fail-closed to inert; a gate-less dial cannot bind the anti-relay proof)"}`);
-  }
+  // The CLIENT dial-out (Socket A) is read inside the vessel, from the hearth pin its admit carries and the pair index
+  // of gate pins (`LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer ride the env); the vessel logs it as `[nexus-join]`.
 
   // The oracle doc's read-only substrate (the Two-Faced Substrate's content-addressed floor) — served to
   // PROVEN PEERS over THIS http server's gated oracle socket; an HTTP request for it meets the closed door.
@@ -762,8 +756,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       const floorSeedCid = genesisSeedCid(floorSeedBytes);
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
-        authShore: result.daemon.authShore,
-        sort:      result.socketSorter,
+        gates:     result.floorGates,
         dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
         exportSnapshot: (doc) => snapshotPublicOracle(doc as LarDoc, floorSeed, floorSeedCid),

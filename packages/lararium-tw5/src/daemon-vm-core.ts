@@ -10,7 +10,7 @@
  * resolve it with genuinely different strategies — node merge-on-late-arrival,
  * browser find-or-create — so that stays a wrapper concern, not the core's).
  *
- * Node-only capability proxies (authShore, resolveBinding) compose ON TOP via a
+ * Node-only capability proxies (resolveBinding) compose ON TOP via a
  * second listener on the exposed `worker` handle — they are node-ahead surface,
  * not duplication, so the core stays free of them.
  *
@@ -37,7 +37,6 @@ import {
   mkTelemetryPlaceVerb,
   mkStructurepalaceKapae,
   mkDaemonVerbResult,
-  mkDaemonVerifyRequest,
   mkDaemonResolveBindingRequest,
   mkDaemonDeriveSkeletonRequest,
   mkDaemonWorldlineCompareRequest,
@@ -55,12 +54,10 @@ import {
   type DocHandle,
   type LarDoc,
   type WikiRecipe,
-  type AuthVerifierShore,
   type IslandStorageConfig,
   type IslandMsg_Manifest,
   type IslandGrants,
   type DaemonMsg_DelegateVerb,
-  type DaemonMsg_VerifyResult,
   type DaemonMsg_ResolveBindingResult,
   type DaemonMsg_DeriveSkeletonResult,
   type DaemonMsg_WorldlineCompareResult,
@@ -244,11 +241,6 @@ export interface DaemonVmCore {
    */
   worldlineTrajectory: (input: DaemonWorldlineTrajectoryInput) => Promise<DaemonWorldlineTrajectoryResult>;
   /**
-   * Host-side inbound-peer verifier — proxies verify() to the island's
-   * keyhive via daemon:verify-request/result. Common to both vessels.
-   */
-  authShore:       AuthVerifierShore;
-  /**
    * Resolve (or mint+delegate) the operator's personal/draft binding pair for
    * a recipe fingerprint — runs island-side where keyhive lives. Common surface.
    */
@@ -393,7 +385,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const worker = host.spawnWorker(workerScriptUrl);
 
   // ── askIsland — ONE request/reply correlation primitive ─────────────────────
-  // Both vessel→island capability proxies (verify, resolveBinding) compose on
+  // Both vessel→island capability proxies (resolveBinding) compose on
   // this single piece instead of hand-rolling a pending-map each.
   let _askSeq = 0;
   const _pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
@@ -489,19 +481,6 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     // awaitIslandMsg subscription — neither needs a console echo.
     if (raw.type === "fault") {
       console.error(`[daemon-island:fault] ${JSON.stringify(raw).slice(0, 240)}`);
-    }
-
-    if (raw.type === "daemon:verify-result") {
-      const msg = raw as DaemonMsg_VerifyResult;
-      settleAsk(msg.requestId, {
-        ok: msg.ok,
-        ...(msg.identifier ? { identifier: msg.identifier } : {}),
-        ...(msg.reason ? { reason: msg.reason } : {}),
-        ...(msg.proofVerified !== undefined ? { proofVerified: msg.proofVerified } : {}),
-        // The self-slot class rides the shore's return unchanged — the gate reads it off authShore.verify.
-        ...(msg.peerClass !== undefined ? { peerClass: msg.peerClass } : {}),
-      });
-      return;
     }
 
     if (raw.type === "daemon:resolve-binding-result") {
@@ -684,14 +663,6 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     worker,
     mountMainVerbs: (registry: VerbTable) => {
       _registry = registry;
-    },
-    authShore: {
-      verify: (cardBytes, bagUrl, access, proof, edge) =>
-        askIsland("verify", (requestId) => mkDaemonVerifyRequest({
-          requestId, cardBytes, bagUrl, access,
-          ...(proof ? { proof } : {}),
-          ...(edge ? { edge } : {}),
-        })),
     },
     resolveBinding: (fingerprint, recipeTrace, wikiSlug) =>
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),

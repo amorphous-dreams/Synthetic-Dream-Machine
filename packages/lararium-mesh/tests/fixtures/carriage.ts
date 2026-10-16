@@ -12,9 +12,9 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../../src/crypto.js";
 import {
   signCarriageQuorum, signCarriageContract, signCarrierContract,
-  type CarriageAction, type CarriageEntry, type QuorumSignature,
+  type CarriageAction, type CarriageEntry,
 } from "../../src/carriage-registry.js";
-import type { KahuQuorumSeats } from "../../src/kapae-antigen.js";
+import type { KahuQuorumSeats, QuorumSignature } from "../../src/kapae-antigen.js";
 
 /** The hex-signing function a seed holds. */
 export const signerOf = (seed: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, seed).then(hex);

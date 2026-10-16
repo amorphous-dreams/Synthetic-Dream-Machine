@@ -64,7 +64,19 @@ import {
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, writeCustodyRow } from "./custody-seat.js";
 import { hostingDir, hostingRowDir, readHostingState, liveEpochs } from "./hosting-store.js";
-import type { DaemonAuthGate } from "./daemon-auth-gate.js";
+import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
+
+/**
+ * THE WALKER'S SESSION DOOR: a gate's authenticated sessions, each with its class and the hosting grant it stands
+ * on. The walker arms ship SHUT at the socket cutover (`socket-sorter` `SHUT_ARMS`), so no gate seats a walker and
+ * no composer stands this door; the carriage and mint servers keep their shape for the reader that opens them.
+ */
+export interface WalkerSessionDoor<S = unknown> {
+  onSession(listener: (socket: S, msg: LarSessionMsg) => void): () => void;
+  sendSession(socket: S, kind: string, body: unknown): boolean;
+  getClassForSocket(socket: S): PeerClass | undefined;
+  getGrantForSocket(socket: S): HostingGrant | undefined;
+}
 
 /** How much a hearth carries for walkers: per guest, and in all. */
 export interface CarryLimits {
@@ -296,8 +308,8 @@ export async function fetchCarried(nexusAid: string, key: string, cid: string): 
  * proven leaf keys. Nothing in a request names a record, and nothing in an answer hands one out. A fault (a key
  * that locked, a row that does not open) answers nothing, exactly as a refusal does.
  */
-export function serveHostingCarry(
-  gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
+export function serveHostingCarry<S>(
+  gate: WalkerSessionDoor<S>,
   deps: { readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null>; readonly limits?: CarryLimits },
 ): () => void {
   return gate.onSession((socket, msg) => {

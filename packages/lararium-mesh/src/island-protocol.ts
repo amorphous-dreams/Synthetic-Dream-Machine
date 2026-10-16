@@ -58,7 +58,6 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/island-protocol
  */
 
-import type { AuthProofWire } from "./auth-wire.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
@@ -548,37 +547,6 @@ export interface DaemonMsg_VerbResult {
   error?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Auth verify proxy (isomorphic-vessel epic, Stage 1+2)
-// ---------------------------------------------------------------------------
-// Keyhive lives in the daemon island after Stage 1, but inbound untrusted peers
-// land on the HOST transport (node WS server). The host's AuthVerifierShore asks
-// the island to verify each peer; the island answers via its keyhive. Path (b).
-
-/** Vessel → island: verify an inbound peer's capability. Host has no keyhive. */
-export interface DaemonMsg_VerifyRequest {
-  type: "daemon:verify-request";
-  requestId: string;
-  /** The peer's serialized Keyhive ContactCard bytes. */
-  cardBytes: Uint8Array;
-  /** The bag the peer wants to sync. */
-  bagUrl: string;
-  /** Access level required. */
-  access: "read" | "admin";
-  /**
-   * V3 proof-of-possession material relayed from the peer's lar:auth, for the
-   * in-worker keyholder to verify (project_verification_placement). Optional:
-   * absent until the peer transport (C) sources it; the worker reports
-   * `proofVerified` advisory-only until the enforcement flip (D).
-   */
-  proof?: AuthProofWire;
-  /**
-   * OPTIONAL device-delegation edge relayed from the peer's lar:auth. The in-worker
-   * keyholder verifies it against the PINNED hearth root and admits a device-admitted peer that
-   * holds no cap=admin. Absent → the worker takes the existing admin-cap path unchanged.
-   */
-  edge?: DeviceDelegationTiddler;
-}
 
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
@@ -598,27 +566,6 @@ export interface DaemonMsg_VerifyRequest {
  */
 export type PeerClass = "same-operator" | "contracted" | "walker" | "stranger";
 
-/** Island → vessel: the keyhive verdict for a verify-request. */
-export interface DaemonMsg_VerifyResult {
-  type: "daemon:verify-result";
-  requestId: string;
-  ok: boolean;
-  /** Peer's keyhive Identifier hex (from the island's receiveContactCard), so the
-   *  host can key its sharePolicy/peer map without a local keyhive. */
-  identifier?: string;
-  reason?: string;
-  /**
-   * V3 advisory: whether the relayed proof's Ed25519 signature verified against
-   * the card-derived key + this gate's own key. `undefined` when no proof crossed.
-   * Advisory until the enforcement flip (D) folds it into `ok`.
-   */
-  proofVerified?: boolean;
-  /**
-   * "same-operator" on an `ok` verdict that PROVES it (admin@daemon or a KEL-pinned device edge); absent on
-   * every other proven key, which the gate's sorter then classes (contracted · walker · stranger · silence).
-   */
-  peerClass?: PeerClass;
-}
 
 // ---------------------------------------------------------------------------
 // personal / draft binding resolution (isomorphic-vessel epic, Stage 1)
@@ -753,7 +700,6 @@ export type VesselToIslandMsg =
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
-  | DaemonMsg_VerifyRequest
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
@@ -1069,7 +1015,6 @@ export type IslandToVesselMsg =
   | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
   | DaemonMsg_WorldlineTrajectoryResult
-  | DaemonMsg_VerifyResult
   | DaemonMsg_ResolveBindingResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
@@ -1095,13 +1040,13 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
   if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
 }
@@ -1369,45 +1314,6 @@ export function mkDaemonVerbResult(opts: {
   return msg;
 }
 
-export function mkDaemonVerifyRequest(opts: {
-  requestId: string;
-  cardBytes: Uint8Array;
-  bagUrl:    string;
-  access:    "read" | "admin";
-  proof?:    AuthProofWire;
-  edge?:     DeviceDelegationTiddler;
-}): DaemonMsg_VerifyRequest {
-  return {
-    type: "daemon:verify-request",
-    requestId: opts.requestId,
-    cardBytes: opts.cardBytes,
-    bagUrl:    opts.bagUrl,
-    access:    opts.access,
-    ...(opts.proof ? { proof: opts.proof } : {}),
-    ...(opts.edge ? { edge: opts.edge } : {}),
-  };
-}
-
-export function mkDaemonVerifyResult(opts: {
-  requestId:      string;
-  ok:             boolean;
-  identifier?:    string;
-  reason?:        string;
-  proofVerified?: boolean;
-  peerClass?:     PeerClass;
-}): DaemonMsg_VerifyResult {
-  const msg: DaemonMsg_VerifyResult = {
-    type: "daemon:verify-result",
-    requestId: opts.requestId,
-    ok:        opts.ok,
-  };
-  if (opts.identifier    !== undefined) msg.identifier    = opts.identifier;
-  if (opts.reason        !== undefined) msg.reason        = opts.reason;
-  if (opts.proofVerified !== undefined) msg.proofVerified = opts.proofVerified;
-  if (opts.peerClass     !== undefined) msg.peerClass     = opts.peerClass;
-  return msg;
-}
-
 export function mkDaemonResolveBindingRequest(opts: {
   requestId:   string;
   fingerprint: string;
@@ -1584,21 +1490,3 @@ export function mkWikiVerbResult(opts: {
 }
 
 
-// ── AuthVerifierShore — host-side verify proxy (path b) ─────────────────────
-//
-// The host transport (node WS gate) holds no keyhive after Stage 1; it asks the
-// daemon island to verify each inbound peer (the DaemonMsg_VerifyRequest/Result
-// pair above) and keys its sharePolicy map off the returned `identifier`. Node
-// binds this to DaemonAuthGate; the browser leaves it unbound (no inbound peer yet).
-export interface AuthVerifierShore {
-  verify(
-    cardBytes: Uint8Array,
-    bagUrl: string,
-    access: "read" | "admin",
-    /** V3 proof material relayed from the peer's lar:auth; the in-worker
-     *  keyholder verifies it (advisory `proofVerified` until the D flip). */
-    proof?: AuthProofWire,
-    /** OPTIONAL device-delegation edge — admits an operator-device-admitted peer. */
-    edge?: DeviceDelegationTiddler,
-  ): Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean; peerClass?: PeerClass }>;
-}

@@ -2,7 +2,7 @@
  * antigen-ring — the node holder that makes the Kapae-antigen BREATHE on the live sharePolicy path.
  *
  * It stands the `AntigenRing` (mesh federation-gate) the node's `carryContractShareDecision` consults:
- *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The DaemonAuthGate already proved a
+ *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The sealed gate already proved a
  *     peerId↔verifying-key binding (its in-worker keyhive returned the peer's Identifier hex into
  *     `peerIdentifierMap`); this resolver SURFACES that proven nym — it never re-authenticates. The
  *     Identifier hex's last 64 hex chars ARE the raw ed25519 verifying key (operator-daemon-behavior

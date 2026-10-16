@@ -1,160 +1,219 @@
 /**
- * LarWSClientAdapter — the V3 peer transport for a sovereign LEAF actor (platform-blind).
+ * LarWSClientAdapter — the sealed-gate peer transport for a sovereign LEAF actor (platform-blind).
  *
- * The stock `WebSocketClientAdapter` opens its socket and immediately speaks Automerge — no shore for
- * a pre-sync handshake. This subclass interposes the lar:challenge → lar:auth → verdict handshake
- * (operator-peer #actor-parity) on the SAME socket the gate authenticates, THEN hands that
- * authenticated socket to the parent's Automerge machinery. It mirrors the server side, where
- * DaemonAuthGate runs the handshake on the raw socket before emitting "connection" to the adapter.
+ * The stock `WebSocketClientAdapter` opens its socket and immediately speaks Automerge — no shore for a pre-sync
+ * exchange. This subclass dials the pinned gate through `dialFaceGate` (a Noise IK flight, a sealed presentation of the
+ * face's chain, a signed finish and the gate's signed verdict), and on `verified` holds the dial's sealed transport as a
+ * `dialedChannel`. Automerge's own frames then ride that channel as "sync" messages of the sealed carriage, and a
+ * hearth's session messages (a hosting grant push, say) ride it as "session" messages; neither reaches the other's reader.
+ * What automerge-repo's network adapter sees is unchanged: a socket-shaped object that opens, carries binary frames and closes.
  *
- * Composition, not a fork: the handshake half (`runPeerHandshake`) and the leaf IDENTITY
- * (`LeafIdentity` — bare-Ed25519 signer + cached ContactCard, no keyhive) inject; the transport
- * composes them. One core, every platform that holds a leaf identity reuses it — node CLI, the
- * always-on relay's leaf legs, AND the browser vessel (the global `WebSocket` + automerge's
- * isomorphic `WebSocketClientAdapter` carry it unchanged across the worker/window boundary).
+ * THE PIN. A dial reaches only the gate it pinned. The caller injects the pair index (`pins`, a `hearthPinIndex`) and the
+ * hearth and Nexus the dial stands at; the adapter reads the sovereign sync pin at each connect and keeps no global.
+ * A pin the index does not hold dials nothing: the leaf ANERGIZES as `pin-absent` until it is re-presented.
  *
- * THE GATE PROVES ITSELF BACK. `runPeerHandshake` reads a passing verdict only when the PINNED gate key
- * signed it over this leaf's own fresh nonce. Once it has, the peer that socket's join yields is a peer whose
- * key this leaf PROVED, and `provenKeyOf(peerId)` answers that key — the proof source a leaf's PersonaGroup
- * ring reads. A peer that arrived on no verified socket reads null.
+ * WHAT A DIAL ANSWERS. `verified` opens the crossing. `silence` is a transport fault (a gate that refuses says nothing, so a
+ * dial never learns why): the socket closes and the parent's close path re-dials at its own interval. A signed answer the
+ * gate named (`unconfirmed`, `withdrawn`, `incomplete`, `forked`) and a refusal on this side (`refused`) ANERGIZE the leaf with
+ * that name, and `answer` holds the gate's unread events for the caller to fold. Anergy is a state, never a longer timer:
+ * the leaf stops dialing until `represent` hands it a new presentation.
  *
- * THE SESSION. A verified socket also carries `lar:session` messages — JSON text frames beside Automerge's
- * binary frames — for protocols that ride an authenticated session (a hearth's hosting grant push, say).
- * `session` names what both sides hold for it: the gate's challenge nonce and the pinned gate key. A text
- * frame never reaches the Automerge decoder; a session message is sent only on the verified socket.
+ * THE SESSION. A verified crossing names `handshakeHash` (hex, this exchange's own) and the pinned gate's signing key.
  *
- * THE KNOCK. The socket opens on `url` with the knock the PINNED gate key derives (`knockedUrl`), so a leaf
- * reaches only the gate it pinned; a gate keyed otherwise never answers the upgrade.
+ * READINESS. automerge's Repo lets a document settle unavailable only once every adapter reads ready, and the parent's
+ * own fallback timer never runs here (this class dials its own way). So the leaf READIES when its first dial concludes
+ * without a crossing (pin-absent, an index that cannot read, silence, any anergy) and when a crossing names its peer: an
+ * idle or anergized leaf never holds a find open. A pin index that THROWS anergizes `pin-unreadable`: no crossing ever
+ * stands in CONNECTING with no dial behind it.
  *
- * SILENCE IS AN ANSWER. A gate that refuses says nothing and cuts the socket at its own deadline. A socket
- * cut before any challenge is a transport fault (the parent re-dials); a socket cut after this leaf sent its
- * lar:auth is a refusal, and the leaf ANERGIZES exactly as it would on a spoken one.
- *
- * Wire-format note: the handshake speaks JSON text frames; Automerge speaks CBOR binary frames. The
- * two never overlap — the handshake completes (a temporary text pump) before the parent's binary
- * `onMessage` attaches and `join()` fires.
+ * Stands specified in code until the socket cutover wires its callers (slices D and F); out of the package barrel till then.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-ws-client-adapter
  */
 
 import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
-// automerge-repo 2.6's WebSocket adapter types its socket as the DOM WebSocket — a global in both
-// Node 22+ and every browser; use that, not isomorphic-ws (keeps this leaf truly platform-blind).
 import type { PeerId, PeerMetadata } from "@automerge/automerge-repo";
-import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
-import { knockedUrl } from "./gate-knock.js";
-import type { PeerHandshake, LeafIdentity, LarSessionMsg } from "./auth-wire.js";
+import { SOVEREIGN_SYNC_ROUTE, type DialPinKey } from "./admit-gate-pin.js";
+import { isLarSessionMsg, mkLarSessionMsg, type LarSessionMsg } from "./auth-wire.js";
+import { HEARTH_FLOOR_PINS_SESSION_KIND, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
+import { hex, utf8Bytes } from "./crypto.js";
+import type { WithdrawalMemory } from "./face-authority.js";
+import { dialFaceGate, type DialSocket, type FaceDialOutcome } from "./face-dial.js";
+import type { FaceWithdrawal, VesselFaceCertificate } from "./face-proof-subjects.js";
+import type { PresentationArm } from "./gate-exchange.js";
+import type { GateBundlePin, GateTier } from "./gate-bundle.js";
+import { dialedChannel, type GateSessionChannel } from "./gate-session-channel.js";
+import type { SessionSigner } from "./session-signer.js";
+import { wsDialSocket } from "./ws-dial-socket.js";
 
-/** The authenticated session a verified socket holds: the gate's challenge nonce and the pinned gate key. */
+/** The authenticated session a verified crossing holds: this exchange's handshake hash and the pinned gate's signing key. */
 export interface LarLeafSession {
-  readonly nonce:      string;
-  readonly gatePubKey: string;
+  readonly handshakeHash: string;
+  readonly gatePubKey:    string;
+}
+
+/** What the leaf presents at a dial: its chain's certificate, its session's signer, at most one arm, and its withdrawal history. */
+export interface FacePresentation {
+  readonly certificate: VesselFaceCertificate;
+  readonly signer:      SessionSigner;
+  readonly arm:         PresentationArm | null;
+  readonly history:     WithdrawalMemory;
+  readonly carry?:      readonly FaceWithdrawal[];
 }
 
 export interface LarWSClientOptions {
-  /** ws:// or wss:// URL of the relay gate's route (`…/ws`). The knock the pinned gate key derives is appended. */
+  /** ws:// or wss:// URL of the gate's route (`…/ws`). The knock the pin derives is appended as the last path segment. */
   url:        string;
-  /** The leaf's light identity — cached ContactCard + bare-Ed25519 signer. */
-  identity:   LeafIdentity;
-  /** The target bag URI the leaf seeks (the proof's `aud`). */
-  aud:        string;
   /**
-   * The relay gate's verifying-key hex — the gate-binding the proof commits to. Known out-of-band
-   * (anti-relay; NEVER trusted from the wire). For a leaf connecting to its OWN operator's relay
-   * this equals the operator verifying key (= `identity.peerPubKey`). The worker recomputes against
-   * its own key, so a mismatch fails closed.
+   * The pair index, injected: the dial reads the pin for (hearth, nexus, route, tier) from it at each connect. Where it
+   * takes `put`, the hearth's floor pin set that arrives over the verified crossing files into it (`hearth/floor-pins`).
    */
-  gatePubKey: string;
+  pins:       { get(key: DialPinKey): GateBundlePin | null; put?(hearth: string, pin: unknown): boolean };
+  /** The hearth the dial reaches, by its true name (the index's first key part). */
+  hearth:     string;
+  /** The Nexus the dial stands at, as the pin carries it (hex of the AID's bytes). */
+  nexus:      string;
+  /** The route and tier; the sovereign sync route and tier where none is named. */
+  route?:     string;
+  tier?:      GateTier;
+  /** What the leaf presents. */
+  presentation: FacePresentation;
+  /** The target the dial names (the presentation's audience). */
+  audience:   string;
+  /** The dial's own deadline source; the caller owns the clock. */
+  deadlines:  { draw(lapse: () => void): { cancel(): void } };
+  /** A fresh dial socket per connect. A WebSocket to `url` with the knock and flight in its upgrade where none is named. */
+  dialSocket?: () => DialSocket;
   /** The parent's reconnect delay (ms) after a socket closes. Defaults to the parent's own. */
   retryInterval?: number;
   /**
-   * Hears the gate's refusal at the moment this leaf ANERGIZES, after the state stands (`anergized` already reads
-   * the same reason) and before the refused socket closes. Each anergy says it once; a leaf that re-presents and
-   * meets another refusal says that one too. A hearer that throws changes nothing of the leaf.
+   * Hears the leaf's anergy at the moment it ANERGIZES, after the state stands (`anergized` already reads the same
+   * reason). Each anergy says it once. A hearer that throws changes nothing of the leaf.
    */
   onAnergy?: (reason: string) => void;
 }
 
+type Listener = (event: { data?: unknown }) => void;
+
+/** The socket-shaped object automerge's adapter holds: it opens once the dial verified, carries sealed "sync" messages, and closes. */
+class CrossingSocket {
+  static readonly CONNECTING = 0; static readonly OPEN = 1; static readonly CLOSING = 2; static readonly CLOSED = 3;
+  binaryType = "arraybuffer";
+  readyState = 0;
+  readonly #listeners = new Map<string, Set<Listener>>();
+  #channel: GateSessionChannel | null = null;
+  addEventListener(type: string, listener: Listener): void {
+    let set = this.#listeners.get(type);
+    if (!set) { set = new Set(); this.#listeners.set(type, set); }
+    set.add(listener);
+  }
+  removeEventListener(type: string, listener: Listener): void { this.#listeners.get(type)?.delete(listener); }
+  emit(type: string, event: { data?: unknown } = {}): void {
+    for (const listener of [...(this.#listeners.get(type) ?? [])]) { try { listener(event); } catch { /* one listener never silences another */ } }
+  }
+  attach(channel: GateSessionChannel): void { this.#channel = channel; this.readyState = 1; }
+  get channel(): GateSessionChannel | null { return this.#channel; }
+  send(data: ArrayBuffer | Uint8Array): void {
+    const channel = this.#channel;
+    if (this.readyState !== 1 || channel === null) throw new Error("lar-ws-client-adapter: the crossing is not open");
+    channel.send("sync", data instanceof Uint8Array ? data : new Uint8Array(data));
+  }
+  close(): void {
+    if (this.readyState === 3) return;
+    this.readyState = 3;
+    this.#channel?.close();
+    this.emit("close");
+  }
+  /** The channel ended (or the dial never verified): close once, tell the listeners. */
+  end(): void {
+    if (this.readyState === 3) return;
+    this.readyState = 3;
+    this.emit("close");
+  }
+}
+
 export class LarWSClientAdapter extends WebSocketClientAdapter {
-  #identity:            LeafIdentity;
-  readonly #aud:        string;
-  readonly #gatePubKey: string;
-  /** The gate's refusal, once it has come. A leaf that holds one has ANERGIZED and does not re-present. */
+  #presentation:        FacePresentation;
+  readonly #opts:       LarWSClientOptions;
   #anergized: string | null = null;
+  #answer: Extract<FaceDialOutcome, { state: "unconfirmed" | "withdrawn" | "incomplete" | "forked" }> | null = null;
   readonly #onAnergy: ((reason: string) => void) | undefined;
-  /** Set by `disconnect()` — the caller stood this transport down, and nothing below re-dials it. */
   #stopped = false;
-  /** The socket whose gate signed its verdict for this leaf; null while none has. */
-  #verifiedSocket: WebSocket | null = null;
-  /** peerId → the gate key that peer's socket PROVED. Entered only for a peer met on the verified socket. */
+  #verified: CrossingSocket | null = null;
   readonly #provenPeers = new Map<PeerId, string>();
-  /** The session the verified socket holds; null while none is verified. */
   #session: LarLeafSession | null = null;
+  #gateKey: string | null = null;
   readonly #sessionListeners = new Set<(msg: LarSessionMsg) => void>();
+  #ready = false;
+  #readyResolve: (() => void) | null = null;
+  readonly #readyPromise = new Promise<void>((resolve) => { this.#readyResolve = resolve; });
 
   constructor(opts: LarWSClientOptions) {
-    super(knockedUrl(opts.url, opts.gatePubKey), opts.retryInterval);
-    this.#identity   = opts.identity;
-    this.#aud        = opts.aud;
-    this.#gatePubKey = opts.gatePubKey;
-    this.#onAnergy   = opts.onAnergy;
-    // A peer counts as proven only when it arrives on the socket whose gate signed this leaf's verdict.
+    super(opts.url, opts.retryInterval);
+    this.#opts = opts;
+    this.#presentation = opts.presentation;
+    this.#onAnergy = opts.onAnergy;
     this.on("peer-candidate", ({ peerId }: { peerId: PeerId }) => {
-      if (this.#verifiedSocket !== null && this.#verifiedSocket === this.socket) {
-        this.#provenPeers.set(peerId, this.#gatePubKey.toLowerCase());
+      this.#settleReady();
+      if (this.#verified !== null && (this.#verified as unknown) === (this.socket as unknown) && this.#gateKey !== null) {
+        this.#provenPeers.set(peerId, this.#gateKey);
       }
     });
     this.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { this.#provenPeers.delete(peerId); });
   }
 
-  /** The authenticated session the open socket holds, or null while no socket's gate has proved itself. */
+  override isReady(): boolean { return this.#ready; }
+  override whenReady(): Promise<void> { return this.#readyPromise; }
+  #settleReady(): void {
+    if (this.#ready) return;
+    this.#ready = true;
+    this.#readyResolve?.();
+  }
+
+  /** The authenticated session the open crossing holds, or null while no dial has verified. */
   get session(): LarLeafSession | null { return this.#session; }
 
-  /** Hear `lar:session` messages the gate sends on the verified socket. Returns the unsubscribe. */
+  /** Hear session messages the gate sends on the verified crossing. Returns the unsubscribe. */
   onSession(listener: (msg: LarSessionMsg) => void): () => void {
     this.#sessionListeners.add(listener);
     return () => { this.#sessionListeners.delete(listener); };
   }
 
-  /** Send one session message on the verified socket. False — nothing sent — while no session stands. */
+  /** Send one session message on the verified crossing. False — nothing sent — while no session stands. */
   sendSession(kind: string, body: unknown): boolean {
-    const socket = this.#verifiedSocket;
-    if (!this.#session || !socket || socket !== this.socket || socket.readyState !== WebSocket.OPEN) return false;
-    try { socket.send(JSON.stringify(mkLarSessionMsg(kind, body))); return true; } catch { return false; }
+    const crossing = this.#verified;
+    const channel = crossing?.channel;
+    if (!this.#session || !crossing || !channel || (crossing as unknown) !== (this.socket as unknown) || crossing.readyState !== 1) return false;
+    try { channel.send("session", utf8Bytes(JSON.stringify(mkLarSessionMsg(kind, body)))); return true; } catch { return false; }
   }
 
-  /** The key `peerId` PROVED on this transport — the pinned gate key, signed over this leaf's own nonce — or
-   *  null for a peer this transport proved nothing about. */
-  provenKeyOf(peerId: PeerId): string | null {
-    return this.#provenPeers.get(peerId) ?? null;
-  }
+  /** The gate key `peerId` PROVED on this transport — the pinned gate's signing key, over this exchange — or null. */
+  provenKeyOf(peerId: PeerId): string | null { return this.#provenPeers.get(peerId) ?? null; }
 
-  /** The gate's refusal if this leaf has anergized, else null. A caller MAY read it to offer a vouch. */
+  /** The leaf's anergy if it has anergized, else null. */
   get anergized(): string | null { return this.#anergized; }
 
-  /** The identity the next handshake presents. */
-  get identity(): LeafIdentity { return this.#identity; }
+  /** What the gate named, unread, when the leaf anergized on a signed answer; the caller folds each event before it believes one. */
+  get answer(): LarWSClientAnswer { return this.#answer; }
+
+  /** The presentation the next dial makes. */
+  get presentation(): FacePresentation { return this.#presentation; }
 
   /**
-   * RE-PRESENT under a new identity — the caller's answer to a change in what it holds (a presentable admit
-   * appeared or moved on the dialed island's board, or an admit bundle was taken), never to a timer.
-   *
-   * The handshake runs once per socket, so a new presentation needs a new socket. An open socket CLOSES,
-   * and the parent's own close-and-reconnect path re-dials through `connect`, which presents the new
-   * identity. An ANERGIZED leaf refuses at its own door (`connect`) and holds no socket; the new identity is
-   * the changed thing anergy waits for, so the refusal clears and this dials at the door. Anergy never stood
-   * the parent's reconnect loop down, so every later close of that socket re-dials on the parent's path
-   * exactly as before the refusal. A transport the caller stopped (`disconnect`) stays stopped.
+   * RE-PRESENT under a new presentation — the caller's answer to a change in what it holds (a presentable admit moved, a
+   * pin landed in the index), never to a timer. An open crossing CLOSES and the parent's close path re-dials; an anergized
+   * leaf clears and dials at once. A transport the caller stopped stays stopped.
    */
-  represent(identity: LeafIdentity): void {
-    this.#identity = identity;
-    if (!this.peerId || this.#stopped) return;      // never dialed (the first connect presents it), or stopped
+  represent(presentation: FacePresentation): void {
+    this.#presentation = presentation;
+    if (!this.peerId || this.#stopped) return;
     if (this.#anergized) {
       this.#anergized = null;
+      this.#answer = null;
       this.connect(this.peerId, this.peerMetadata);
       return;
     }
-    try { this.socket?.close(1000, "re-presenting"); } catch { /* already closed — the reconnect path runs */ }
+    try { (this.socket as unknown as CrossingSocket | undefined)?.close(); } catch { /* the reconnect path runs */ }
   }
 
   override disconnect(): void {
@@ -163,131 +222,121 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   }
 
   override connect(peerId: PeerId, peerMetadata?: PeerMetadata): void {
-    // An anergized leaf does not dial. The parent's reconnect path routes back through here, so the
-    // state refuses at the DOOR: the one reconnect the refused socket's close schedules lands here and
-    // opens nothing, and with no socket open no further close schedules another.
     if (this.#anergized) return;
-    // ONE SOCKET AT A TIME. A reconnect the parent scheduled before a re-presentation dialed finds that
-    // dial's socket CONNECTING or OPEN, and opens no second one beside it.
-    const current = this.socket;
-    if (current && (current.readyState === WebSocket.CONNECTING || current.readyState === WebSocket.OPEN)) return;
+    const current = this.socket as unknown as CrossingSocket | undefined;
+    if (current && (current.readyState === 0 || current.readyState === 1)) return;
     this.#stopped = false;
-
-    this.peerId       = peerId;
+    this.peerId = peerId;
     this.peerMetadata = peerMetadata ?? {};
 
-    try { console.log(`[lar-leaf] dialing ${this.url} (aud=${this.#aud})`); } catch { /* */ }
-    const socket = new WebSocket(this.url);
-    socket.binaryType = "arraybuffer";
-    this.socket = socket;
-
-    // On open, run the auth handshake FIRST; only on a passing verdict hand the socket to the
-    // parent's Automerge flow (binary onMessage + join).
-    socket.addEventListener("open", () => { void this.#runHandshake(socket); });
-    socket.addEventListener("close", () => {
-      if (this.#verifiedSocket === socket) { this.#verifiedSocket = null; this.#session = null; }
+    const crossing = new CrossingSocket();
+    this.socket = crossing as unknown as WebSocket;
+    crossing.addEventListener("close", () => {
+      if (this.#verified === crossing) { this.#verified = null; this.#session = null; this.#gateKey = null; }
     });
-    socket.addEventListener("close", this.onClose);
-    socket.addEventListener("error", this.onError);
+    crossing.addEventListener("close", this.onClose);
+    crossing.addEventListener("error", this.onError);
+    void this.#dial(crossing).catch(() => {
+      // A dial that threw past its own guards ends as silence: the crossing closes and the parent's close path re-dials.
+      crossing.end();
+      this.#settleReady();
+    });
   }
 
-  async #runHandshake(socket: WebSocket): Promise<void> {
-    // Temporary JSON text pump — drains gate handshake frames in arrival order.
-    const queue:   unknown[] = [];
-    const waiters: Array<(v: unknown) => void> = [];
-    let ended = false;
-    const onText = (event: { data: unknown }): void => {
-      if (typeof event.data !== "string") return; // ignore any binary during handshake
-      let msg: unknown;
-      try { msg = JSON.parse(event.data); } catch { return; }
-      const w = waiters.shift();
-      if (w) w(msg); else queue.push(msg);
-    };
-    // A cut socket answers every pending and later read with nothing — the handshake ends, it never hangs.
-    const onEnd = (): void => { ended = true; while (waiters.length) waiters.shift()!(undefined); };
-    socket.addEventListener("message", onText);
-    socket.addEventListener("close", onEnd);
-    let challenged = false;
+  #anergize(crossing: CrossingSocket, reason: string): void {
+    this.#anergized = reason;
+    try { console.warn(`[lar-leaf] ANERGIZED: ${reason} — this leaf stays at the floor and will not re-present until something changes.`); } catch { /* a console is a courtesy */ }
+    try { this.#onAnergy?.(reason); } catch { /* a hearer never moves the leaf */ }
+    crossing.end();
+    this.#settleReady();
+  }
 
-    const handshake: PeerHandshake = {
-      recv:        () => {
-        const next = queue.length ? Promise.resolve(queue.shift())
-          : ended ? Promise.resolve(undefined)
-          : new Promise<unknown>((r) => waiters.push(r));
-        return next.then((m) => { if (m !== undefined) challenged = true; return m; });
-      },
-      send:        (m) => socket.send(JSON.stringify(m)),
-      contactCard: this.#identity.contactCard,
-      peerPubKey:  this.#identity.peerPubKey,
-      gatePubKey:  this.#gatePubKey,
-      aud:         this.#aud,
-      sign:        this.#identity.sign,
-      ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
-      ...(this.#identity.presented ? { presented: this.#identity.presented } : {}),
-      ...(this.#identity.leafSign ? { leafSign: this.#identity.leafSign } : {}),
-    };
-
-    let verdict: Awaited<ReturnType<typeof runPeerHandshake>>;
+  async #dial(crossing: CrossingSocket): Promise<void> {
+    const { pins, hearth, nexus } = this.#opts;
+    const tier = this.#opts.tier ?? "sovereign";
+    const route = this.#opts.route ?? SOVEREIGN_SYNC_ROUTE;
+    let pin: GateBundlePin | null;
+    try { pin = pins.get({ hearth, nexus, route, tier }); }
+    catch { return this.#anergize(crossing, "pin-unreadable"); }
+    if (pin === null) return this.#anergize(crossing, "pin-absent");
+    const presentation = this.#presentation;
+    const dialSocket = this.#opts.dialSocket ? this.#opts.dialSocket() : wsDialSocket(this.#opts.url);
+    let outcome: FaceDialOutcome;
     try {
-      verdict = await runPeerHandshake(handshake);
-    } catch {
-      socket.removeEventListener("message", onText);
-      socket.removeEventListener("close", onEnd);
-      try { socket.close(); } catch { /* closed */ }
-      return;
+      outcome = await dialFaceGate({
+        pin, tier, socket: dialSocket, audience: this.#opts.audience, certificate: presentation.certificate, signer: presentation.signer,
+        arm: presentation.arm, history: presentation.history, deadlines: this.#opts.deadlines,
+        ...(presentation.carry ? { carry: presentation.carry } : {}),
+      });
+    } catch { outcome = { state: "silence" }; }
+    if (crossing.readyState === 3) { try { dialSocket.close(); } catch { /* gone */ } return; }
+
+    switch (outcome.state) {
+      case "silence": try { dialSocket.close(); } catch { /* gone */ } crossing.end(); return this.#settleReady();
+      case "refused": return this.#anergize(crossing, `refused:${outcome.refusal}`);
+      case "unconfirmed": case "withdrawn": case "incomplete": case "forked":
+        this.#answer = outcome;
+        return this.#anergize(crossing, outcome.state);
+      case "verified": break;
     }
 
-    socket.removeEventListener("message", onText);
-    socket.removeEventListener("close", onEnd);
-    // Cut before any challenge: the gate never spoke — a transport fault, and the parent's close path re-dials.
-    if (!verdict.ok && !challenged) return;
-    if (!verdict.ok) {
-      // ANERGY, not a retry (lar:///ha.ka.ba/lares/api/pono/lararium-identity #the-siege-gate).
-      //
-      // A refusal is not a transport fault. Closing the socket and letting the parent's reconnect timer
-      // dial again treats "you carry no vouch" as "the network hiccuped" — so an un-vouched leaf hammers
-      // the gate forever, which is a Sybil flood wearing a client's face. The gate is BORN BESIEGED and
-      // the doctrine names what a refused applicant does: it ANERGIZES — stays at the floor (anon),
-      // HYPORESPONSIVE, free to re-present LATER with a vouch. Fail-closed reads stay-at-the-floor, never
-      // destroy: the vessel keeps working locally, it simply stops presenting.
-      //
-      // Anergy is a STATE, never a longer timer. Nothing about re-dialing sooner or later supplies the
-      // second signal, so the leaf stops dialing until something changes — a vouch, a delegation edge, a
-      // gate key it did not have. The state refuses at `connect`, so the reconnect the close below
-      // schedules opens nothing; the parent's loop stays armed for the socket a re-presentation opens.
-      this.#anergized = verdict.reason;
-      try {
-        console.warn(
-          `[lar-leaf] ANERGIZED: ${this.#anergized}\n` +
-          "           This leaf stays at the floor (anon, local-first) and will not re-present. A capability " +
-          "alone is signal-1; admission needs signal-2 — a VOUCH from an already-licensed member.",
-        );
-      } catch { /* a console is a courtesy, never a dependency */ }
-      try { this.#onAnergy?.(verdict.reason); } catch { /* a hearer never moves the leaf */ }
-      try { socket.close(); } catch { /* closed */ }
-      return;
+    // A throw from here on (the verdict already crossed) must not leave the drawn socket open: close it, then let the
+    // launcher's catch end the crossing as silence.
+    let channel: GateSessionChannel;
+    try {
+      channel = dialedChannel({
+        transport: outcome.transport,
+        socket: { send: (f) => dialSocket.send(f), recv: () => dialSocket.recv(), cut: () => dialSocket.close() },
+      });
+      const gateKey = pin.signingKey.toLowerCase();
+      const session = { handshakeHash: hex(outcome.transport.handshakeHash), gatePubKey: gateKey };
+      crossing.attach(channel);
+      this.#verified = crossing;
+      this.#gateKey = gateKey;
+      this.#session = session;
+    } catch (error) {
+      try { dialSocket.close(); } catch { /* gone */ }
+      throw error;
     }
-
-    // Authenticated — hand the SAME socket to the parent's Automerge machinery.
     try { console.log("[lar-leaf] verdict OK — crossing open, syncing"); } catch { /* */ }
-    this.#verifiedSocket = socket;
-    this.#session = { nonce: verdict.nonce, gatePubKey: this.#gatePubKey.toLowerCase() };
-    // Text frames are the session's; binary frames are Automerge's. Neither reaches the other's reader.
-    const deliver = (msg: unknown): void => {
-      if (!isLarSessionMsg(msg)) return;
-      for (const listener of this.#sessionListeners) {
-        try { listener(msg); } catch { /* one listener's throw never silences another */ }
-      }
-    };
-    socket.addEventListener("message", (event: MessageEvent) => {
-      if (typeof event.data !== "string") { this.onMessage(event); return; }
-      let msg: unknown;
-      try { msg = JSON.parse(event.data); } catch { return; }
-      deliver(msg);
-    });
-    // A session frame the gate sent right behind its verdict reached the handshake pump first; it is the
-    // session's, and is delivered in arrival order before any later frame.
-    for (const msg of queue.splice(0)) deliver(msg);
+    void this.#pump(crossing, channel);
     this.join();
   }
+
+  /**
+   * THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): the verified sovereign crossing is the authenticated
+   * relation, so a set at the dialed Nexus files under the dialed hearth, at floor tier, one per route. A set that reads
+   * as none files nothing; an index that takes no `put` files nothing.
+   */
+  #fileFloorPins(body: unknown): void {
+    const { pins, hearth, nexus } = this.#opts;
+    if ((this.#opts.tier ?? "sovereign") !== "sovereign" || typeof pins.put !== "function") return;
+    const set = readHearthFloorPinsBody(body, nexus);
+    if (set === null) return;
+    for (const pin of set) { try { pins.put(hearth, pin); } catch { /* an index that refuses keeps what it held */ } }
+  }
+
+  async #pump(crossing: CrossingSocket, channel: GateSessionChannel): Promise<void> {
+    for (;;) {
+      const message = await channel.recv();
+      if (message === null) break;
+      // A crossing the leaf has left (disconnect, a re-presentation, a close) delivers nothing more: a frame the channel
+      // handed over before the close lands after it, and the parent's reader asserts a socket that is gone.
+      if (this.#verified !== crossing || (this.socket as unknown) !== (crossing as unknown)) break;
+      if (message.kind === "sync") {
+        const ab = message.bytes.buffer.slice(message.bytes.byteOffset, message.bytes.byteOffset + message.bytes.byteLength) as ArrayBuffer;
+        this.onMessage({ data: ab } as MessageEvent);
+      } else if (message.kind === "session") {
+        let msg: unknown;
+        try { msg = JSON.parse(new TextDecoder().decode(message.bytes)); } catch { continue; }
+        if (!isLarSessionMsg(msg)) continue;
+        if (msg.kind === HEARTH_FLOOR_PINS_SESSION_KIND) this.#fileFloorPins(msg.body);
+        for (const listener of this.#sessionListeners) { try { listener(msg); } catch { /* one listener never silences another */ } }
+      }
+    }
+    crossing.end();
+  }
 }
+
+/** What the gate named, unread. */
+export type LarWSClientAnswer = Extract<FaceDialOutcome, { state: "unconfirmed" | "withdrawn" | "incomplete" | "forked" }> | null;
