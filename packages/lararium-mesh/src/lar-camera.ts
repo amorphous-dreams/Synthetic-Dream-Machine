@@ -139,6 +139,8 @@ export interface LarMsg_ControlEvent {
   /** The records a `lar:write` carries, with its transaction id and the basis it builds on. */
   readonly records?: readonly LarWriteRecord[];
   readonly txId?: string;
+  /** The heads the write builds on, one per bag it read; the engine answers `stale-target` when a head moved. */
+  readonly basis?: readonly string[];
   /** The `lar:service` request a `lar:service-result` answers, with its status. */
   readonly requestId?: string;
   readonly status?: "ok" | LarRefusal;
@@ -216,8 +218,22 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (!isRev(v["seenFrameRev"])) return null;
   if (v["localRev"] !== undefined && !isRev(v["localRev"])) return null;
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
+  if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
+  if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;
   return v as unknown as LarMsg_ControlEvent;
 }
+
+const isWriteRecord = (r: unknown): r is LarWriteRecord =>
+  isRecord(r) && isName(r["title"]) && isRecord(r["fields"]) && (r["tombstone"] === undefined || r["tombstone"] === true);
+
+
+/** Each payload reads by its own type: a string for html and css, a list of names for members, the literal true for a tombstone. */
+const readsAsPayload = (k: Record<string, unknown>, p: string): boolean => {
+  const v = k[p];
+  if (p === "html" || p === "css") return typeof v === "string";
+  if (p === "members") return Array.isArray(v) && v.every((m) => typeof m === "string");
+  return v === true;
+};
 
 /** Read a frame off the wire, or null: every key named, revisioned, and carrying exactly one payload. */
 export function readLarFrame(v: unknown): LarMsg_Frame | null {
@@ -226,7 +242,7 @@ export function readLarFrame(v: unknown): LarMsg_Frame | null {
   for (const k of v["keys"] as unknown[]) {
     if (!isRecord(k) || !isName(k["key"]) || !isRev(k["rev"])) return null;
     const payloads = ["html", "css", "members", "tombstone"].filter((p) => k[p] !== undefined);
-    if (payloads.length !== 1) return null;
+    if (payloads.length !== 1 || !readsAsPayload(k, payloads[0]!)) return null;
   }
   for (const rev of Object.values(v["sensedRevision"] as Record<string, unknown>)) if (!isRev(rev)) return null;
   return v as unknown as LarMsg_Frame;
@@ -239,6 +255,28 @@ export function readLarControlResult(v: unknown): LarMsg_ControlResult | null {
   if (v["status"] !== "applied" && v["status"] !== "stale-target" && v["status"] !== "refused") return null;
   if (v["status"] === "refused" && !isName(v["reason"])) return null;
   return v as unknown as LarMsg_ControlResult;
+}
+
+/** Read a resend off the wire, or null: it names its camera. */
+export function readLarResend(v: unknown): LarMsg_Resend | null {
+  if (!isRecord(v) || v["type"] !== LAR_RESEND || !isName(v["cameraId"])) return null;
+  return v as unknown as LarMsg_Resend;
+}
+
+export const LAR_SERVICE_KINDS: ReadonlySet<string> = new Set<LarServiceKind>([
+  "clipboard", "download", "route", "open-surface", "print", "fullscreen", "open-external",
+]);
+
+/** Read a host-door ask off the wire, or null: its wiki and request named, a door the house names, primitive args, a person's activation. */
+export function readLarService(v: unknown): LarMsg_Service | null {
+  if (!isRecord(v) || v["type"] !== LAR_SERVICE) return null;
+  if (!isName(v["wikiUri"]) || !isName(v["requestId"])) return null;
+  if (typeof v["kind"] !== "string" || !LAR_SERVICE_KINDS.has(v["kind"])) return null;
+  if (v["userActivation"] !== true) return null;
+  const args = v["args"];
+  if (!isRecord(args)) return null;
+  if (!Object.values(args).every((a) => typeof a === "string" || typeof a === "number" || typeof a === "boolean")) return null;
+  return v as unknown as LarMsg_Service;
 }
 
 // ── Builders ────────────────────────────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@
 import { describe, expect, test } from "vitest";
 import {
   LAR_WHOLE_VALUE_MAX_CHARS, boundedWholeValue, isReliableKind, mkLarControlEvent, mkLarFrame,
-  readLarControlEvent, readLarControlResult, readLarFrame,
+  readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService, mkLarResend, mkLarService,
 } from "../src/lar-camera.js";
 
 const act = () => mkLarControlEvent({ eventId: "e1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", renderId: "7", action: "lar:click", seenFrameRev: 3 });
@@ -41,6 +41,35 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarFrame({ ...frame, keys: [{ key: "lar:surface", rev: 1 }] })).toBeNull();
     expect(readLarFrame({ ...frame, keys: [{ key: "lar:surface", html: "" }] })).toBeNull();
     expect(readLarFrame({ ...frame, sensedRevision: { body: "4" } })).toBeNull();
+  });
+  test("a key's payload reads by type, not presence alone; CONTROL: a number for html, a number in members, a false tombstone, each reads null", () => {
+    const frame = (keys: unknown[]) => ({ type: "lar:frame", wikiUri: "lar:///w", cameraId: "lar:story", mountEpoch: 2, sensedRevision: {}, keys });
+    expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, html: 5 }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:style", rev: 1, css: {} }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:membership", rev: 1, members: [1] }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, tombstone: false }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, tombstone: true }]))).not.toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:membership", rev: 1, members: [] }]))).not.toBeNull();
+  });
+  test("a resend names its camera; a service names its wiki, request, a door the house names, primitive args and a person's activation; CONTROLS read null", () => {
+    expect(readLarResend(mkLarResend())).toMatchObject({ cameraId: "lar:story" });
+    expect(readLarResend({ type: "lar:resend", cameraId: "" })).toBeNull();
+    expect(readLarResend({ type: "lar:resend" })).toBeNull();
+    const svc = mkLarService({ wikiUri: "lar:///w", requestId: "r1", kind: "clipboard", args: { text: "hi" } });
+    expect(readLarService(svc)).toMatchObject({ kind: "clipboard", userActivation: true });
+    expect(readLarService({ ...svc, kind: "lar:http-request" })).toBeNull();
+    expect(readLarService({ ...svc, userActivation: false })).toBeNull();
+    expect(readLarService({ ...svc, args: { nested: {} } })).toBeNull();
+    expect(readLarService({ ...svc, args: [] })).toBeNull();
+    expect(readLarService({ ...svc, requestId: "" })).toBeNull();
+  });
+  test("a write names the basis it builds on; CONTROL: a basis that is not a list of names reads null", () => {
+    const write = mkLarControlEvent({ eventId: "w1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:write", controlId: "c", action: "lar:write", seenFrameRev: 1, txId: "t1", basis: ["h1", "h2"], records: [{ title: "T", fields: { text: "x" } }] });
+    expect(readLarControlEvent(write)).toMatchObject({ basis: ["h1", "h2"] });
+    expect(readLarControlEvent({ ...write, basis: "h1" })).toBeNull();
+    expect(readLarControlEvent({ ...write, basis: [1] })).toBeNull();
+    expect(readLarControlEvent({ ...write, records: "x" })).toBeNull();
+    expect(readLarControlEvent({ ...write, records: [{ fields: {} }] })).toBeNull();
   });
   test("a result names its status, and a refusal names its reason", () => {
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "applied" })).not.toBeNull();
