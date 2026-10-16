@@ -201,8 +201,9 @@ const main = async () => {
     } else if (!initialTabs.open.selected || initialTabs.recent.selected) {
       bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state no longer names the transition");
     } else {
-      // An unknown rendered id is sent through the same real host listener. The worker must safely drop it:
-      // the trace proves transport reached the worker boundary and the state must remain untouched.
+      // An unknown rendered id that declares a click binding is sent through the same real host listener (the page
+      // relays only what a `data-lar-on` stamp binds). The worker answers it stale and runs nothing: the trace
+      // proves transport reached the worker boundary and the state must remain untouched.
       const unknownId = `weld-unknown-rid-${Date.now()}`;
       const unknownMark = await traceMark(page);
       const unknownSent = await page.evaluate((rid) => {
@@ -210,6 +211,7 @@ const main = async () => {
         if (!pane) return false;
         const probe = document.createElement("button");
         probe.setAttribute("data-lar-rid", rid);
+        probe.setAttribute("data-lar-on", "click");
         pane.appendChild(probe);
         probe.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
         probe.remove();
