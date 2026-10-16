@@ -131,7 +131,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 !!! D7 · THE WIDER SURFACES ~ held by name until their gates open
 * ''QuickJS, quickjs-ng and Hermes shells'': the engine runs here (ES2020 core, pump-mode timers where no `setTimeout`), the host supplies the sink (a React Native view tree as a blocks projection with the platform's own event-count handshake on `TextInput`); the store needs Automerge lent natively through host functions or a neighbour that holds it. Gate: a native Automerge adapter, unbuilt in this house; the Node-backend PuerTS probe first because it sidesteps the split. Rides the suite's host rows (D5).
 * ''The UE6 and Verse sidecar'': a blocks sink to Scene Graph entities and UMG panels over `IWebSocket`, affordance invokes with the player as actor, edits as whole-value writes. Gate: UE6 early access (announced for late 2027); nothing public says Verse will host a long-lived VM or that UE6 embeds a JS engine; UE5 through PuerTS stands as the bounded probe. No work before early access.
-* ''The canvas camera'': a canvas root over a DOM-hosting document with one transform per layer, keyed by shape, `sense` carrying shape geometry as absolute snapshots; the object budget (~500 live, ~4000 ceiling) measured on the best shipped implementation before trusting either; TLDraw studied, never depended on (`wikispace-canvasspace-ontology#/the-surface-law`). Gate: D1's keyed contract and D5's `blocks` golden; a rasterising shortcut refuses.
+* ''The canvas camera'' (scouted in `docs/pono/infinite-canvas-scout`: one placement record per tile with a whole `placement` field, an engine-owned `lar:layout` key, membership as what the viewport sees, a `lar:viewport` sense feeding the cull, links as model entities, ten goldens, six spikes and eight questions for the operator): a canvas root over a DOM-hosting document with one transform per layer, keyed by shape, `sense` carrying shape geometry as absolute snapshots; the object budget (~500 live, ~4000 ceiling) measured on the best shipped implementation before trusting either; TLDraw studied, never depended on (`wikispace-canvasspace-ontology#/the-surface-law`). Gate: D1's keyed contract and D5's `blocks` golden; a rasterising shortcut refuses.
 * ''Other browsers and WebView shells'': the same two members as the first surface, storage named evictable (Tauri, iOS WKWebView) and a native-FS adapter shipped from day one. Rides D3.
 * ''VS Code and Obsidian, Foundry VTT, Owlbear Rodeo, editors and bots'': each a port adapter over the one port, never a bespoke protocol; any adapter that needs a new kind proposes it to the port, not to its host. Community lanes after D6.
 * ''The sensorium's gate'': percepts arrive as writes or verbs with the river as actor through the capability the vessel declared; live 3D games (a video frame stream, a perception model at interactive rates, a sub-100 ms actuator loop) wait on the sensorium finishing (operator, 2026-10-16). Not researched further here.
@@ -238,6 +238,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dW7lGEjtc2Xnr7D6qMFzkm5WaXX4bveBg60l2LoNE-k
+<<^ code="&#x0003;">>ni:///sha-256;x4ufJ1PK86ZsEU0b7nw-F5deIItic9X7p4Mi-dnfb5o
 
 <<^ code="&#x0004;" -> to="?">>
