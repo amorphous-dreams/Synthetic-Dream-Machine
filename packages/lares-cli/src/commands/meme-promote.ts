@@ -61,8 +61,9 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
+import { CROSSROADS_BAG, mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
 import { bccOf } from "@lararium/memetic-frame";
+import { exactBytesHash, promotionApprovalBytes, readPromotionApproval, type PromotionApprovalVerdict } from "@lararium/mesh";
 
 /** The residency MOVE this door asks for — `executeMove`'s own shape. The title never changes. */
 export interface PromotionMove {
@@ -84,6 +85,8 @@ export interface PromotionSeat {
   /** THE RESIDENCY MOVE, injected — the whole-carrier-group transfer, land-then-retract, title preserved. */
   move(move: PromotionMove): Promise<{ ok: true; moved: number } | { ok: false; reason: string }>;
   sign(bytes: Uint8Array): Promise<string>;
+  /** The current charter's seated verdict over the exact carrier bytes; asked only of a crossing into `@crossroads`. */
+  verifyApproval(approval: unknown, bytes: Uint8Array): PromotionApprovalVerdict | Promise<PromotionApprovalVerdict>;
 }
 
 export interface PromotionPlan {
@@ -96,6 +99,8 @@ export interface PromotionPlan {
   readonly fromBag?: string;
   /** The canon bag crossed into — the cap is read against this name. */
   readonly destBag?: string;
+  /** The seated approval a crossing into `@crossroads` carries. */
+  readonly approval?: unknown;
 }
 
 export type PromotionOutcome =
@@ -135,7 +140,8 @@ function declaredTags(src: string): string[] {
 export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): Promise<PromotionOutcome> {
   const abs = isAbsolute(plan.file) ? plan.file : join(plan.root, plan.file);
   let src: string;
-  try { src = readFileSync(abs, "utf8"); } catch { return { ok: false, reason: `cannot read ${plan.file}` }; }
+  let bytes: Uint8Array;
+  try { bytes = readFileSync(abs); src = Buffer.from(bytes).toString("utf8"); } catch { return { ok: false, reason: `cannot read ${plan.file}` }; }
 
   const uriPath = declaredUriPath(src);
   if (!uriPath) return { ok: false, reason: `${plan.file} declares no uri-path — a carrier with no address crosses nothing` };
@@ -169,11 +175,23 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
     return { ok: false, reason: `the subject stands at ${tags.filter((t) => t.startsWith("lifecycle/")).join(", ")} — only a carrier that has SETTLED crosses into canon` };
   }
 
+  // A crossing into `@crossroads` publishes for the Nexus, so the charter's seats approve its exact bytes
+  // before anything moves; a crossing into the vessel's own canon asks no charter.
+  let approvalStatementDigest: string | undefined;
+  if (destBag === CROSSROADS_BAG) {
+    const approval = readPromotionApproval(plan.approval);
+    if (approval === null) return { ok: false, reason: "malformed-approval" };
+    const approvalVerdict = await seat.verifyApproval(approval, bytes);
+    if (!approvalVerdict.ok) return { ok: false, reason: approvalVerdict.reason };
+    approvalStatementDigest = exactBytesHash(promotionApprovalBytes(approval));
+  }
+
   // THE RECEIPT FIRST. A crossing it will not record is a crossing this door will not perform. ONE subject
   // address rides it, the carrier's own, unchanged — the crossing moves the envelope's bag and nothing else.
   const minted = await mintPromotionReceipt({
     subjectUri:     title,
     carrierHash:    bccOf(src) ?? "",
+    ...(approvalStatementDigest === undefined ? {} : { approvalStatementDigest }),
     fromBag,
     toBag:          destBag,
     proposerNym:    seat.proposerNym,

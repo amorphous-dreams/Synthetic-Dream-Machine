@@ -473,6 +473,60 @@ The cabal ⊥ quorum split stands in code where it can:
 
 <<~/ahu>>
 
+<<~ ahu #/chartered-classes>>
+
+!! Chartered classes ~ the charter's own seats set every class, and a promotion approves exact bytes
+
+''THE CLASS TABLE READS OFF THE CHARTER EPOCH, AND NO CHARTER BYTE MOVES.'' With n distinct seated keys and
+the charter's threshold, the table derives (`charteredClassTable`, `packages/lararium-mesh/src/chartered-classes.ts`):
+
+* ''One seat'': every class takes that one seat.
+* ''Two seats'': every class takes both. At two seats no seat signs any Kahu act alone.
+* ''Three seats or more'': ''ordinary'' takes one; ''high-impact'' takes the larger of the charter's threshold
+  and a strict majority, capped at n; ''emergency'' takes two and leaves a review owed.
+
+A ''revocation'' takes the threshold of the act it revokes. The high-impact surfaces stand `charter`,
+`admission` and `trust-root`, read through one fold (trim, lower case, a run of space or underscore reads as a
+hyphen), so `Charter` and `TRUST_ROOT` never fall to the ordinary class.
+
+''A PROMOTION APPROVES EXACT BYTES, NEVER A NAME.'' The approval (`promotion-approval.ts`, domain
+`promotion-approval`) signs the bytes' `ni:///sha-256;` hash together with the purpose, the surface, the class
+it claims and the charter epoch it roots on. A bare CID is no approval; other bytes under the same name read
+`bytes-differ`; a class below its surface's class, another epoch, or a count short of the class threshold each
+refuse. ''No promotion rides the emergency power''. A seat signs only a statement a person confirms by its digest (the bytes hash, purpose, surface, class and epoch together), and the
+seats on two vessels each sign a carried partial (`lares nexus promote open|sign|check`).
+
+<<~/ahu>>
+
+<<~ ahu #/cabal-admission>>
+
+!! Cabal admission ~ the seats admit a PersonaGroup into the Kahu cabal; a vouch admits nobody
+
+''ADMISSION STANDS ITS OWN AUTHORITY ACT.'' A PersonaGroup enters a Nexus's Kahu cabal by an act the charter's
+seats sign at the high-impact threshold (`kahu-cabal-admission.ts`, domain `kahu-cabal-admit`). A removal
+counts at the admission's own threshold. The door cites the group's standing heads on every act it opens; a
+removal that cites no head stands concurrent with the admission, and concurrent admit and remove heads read
+''unsettled'', never held. A vouch, an invite, or any record of another kind reads `not-an-admission`.
+
+''THE ACT RESTS ON THE CARRIAGE BOARD'' every member already carries, under its own prefix
+(`$:/lar/kahu-cabal/`); the carriage reader skips it by kind. The act writes no Keyhive membership: the
+sentinel add (`sentinel/kahu-cabal`, #/nexus-scale) stays its own capability act. A removal therefore closes the access
+path for every reader that consults it, while the group's sentinel capability stands until its own removal.
+
+''A ROLL CLOSES THE EPOCH AN ACT COUNTED UNDER.'' An act counts only under the charter epoch it names, so after
+a seal roll every admission stops counting (`wrong-charter-epoch`, act by act), the group's standing reads
+''absent'', and the seats re-admit at the new head: that act cites no head and carries no lineage back to the
+closed epoch. ''Owed in
+code'': carrying cabal acts across a roll by anchored ancestry, as the carriage fold carries a closed-epoch
+admit (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>).
+
+''THE ACCESS PATH TO SHARED CANON READS BOTH FACTS'' (`kahuCabalCanonAccess`): it holds only for a group the
+seats admitted AND the sentinel holds. Admitted alone, or joined alone, refuses. The seats may rest on two
+vessels: one opens and signs a partial, the other confirms its CID, adds its seat and lands it
+(`lares nexus cabal admit|remove|cosign|standing`).
+
+<<~/ahu>>
+
 <<~ ahu #/distinction>>
 
 !! Kahu vs. cap=admin
@@ -555,7 +609,7 @@ The Keyhive gates prove vessel identity and cabal affiliation; neither encodes k
   delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
 * Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
   belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
-  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': no access path reads it yet.
+  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': for the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and no shared-canon read calls it yet.
 
 Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
@@ -581,6 +635,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7l_01pLJ07kXjY0P94Ce6sn0lqUOvZa-u6ibhpDgBaA
+<<^ code="&#x0003;">>ni:///sha-256;fXYXAY7CwGiWtDHRcB1ffKX38VKfLkxcdhIRnrZP4pY
 
 <<^ code="&#x0004;" -> to="?">>

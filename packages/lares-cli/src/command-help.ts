@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
@@ -87,6 +87,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            held apart from `kahuli`, which overturns what the MESH shares",
       "  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install",
       "  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm",
+      "  promote open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>",
+      "                                            sign the exact bytes of a promotion with the seats held here",
+      "  promote sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it",
+      "  promote check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)",
+      "  cabal <admit | remove> <group> [--nexus <aid>] [--out <partial>]",
+      "                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it",
+      "  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts",
+      "  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync",
     ],
     examples: [
       "lares nexus rite quorum",
@@ -100,6 +108,38 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares nexus offering inspect <offering-cid>",
     synopsis: "inspect one exact signed offering already carried by this Nexus Crossroads board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
     examples: ["lares nexus offering inspect sha256:<offering-cid>"],
+  },
+
+  "nexus promote": {
+    usage: "usage: lares nexus promote <open | sign | check>",
+    synopsis: "the seats' approval of ONE promotion's exact bytes, carried between vaults as a file. The approval holds public material alone; each signature comes from a seat key held in this vault.",
+    details: [
+      "  open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval.json>",
+      "  sign <approval.json> --confirm-statement <digest> [--confirm-hash <hash>] [--nexus <aid>] --out <approval.json>",
+      "  check <approval.json> <file> [--nexus <aid>]",
+      "",
+      "  --confirm-statement  the ni:///sha-256 digest of the approval's signed statement (bytes hash, purpose, surface, class,",
+      "                       epoch) that `open` prints, read by a person before a seat signs it",
+      "  --confirm-hash       optional: also name the bytes hash, the exact bytes the person approves",
+    ],
+    examples: ["lares nexus promote check ./approval.json ./page.md"],
+    meme: "lar:///ha.ka.ba/lararium/mesh/kahu#/chartered-classes",
+  },
+
+  "nexus cabal": {
+    usage: "usage: lares nexus cabal <admit | remove | cosign | standing>",
+    synopsis: "the seat quorum's admission of a PersonaGroup into a Nexus's Kahu cabal, at the high-impact threshold the charter's seats set. A vouch admits nobody; where the seats rest in several vaults the act travels as a partial file, read aloud by its act CID.",
+    details: [
+      "  admit <group> [--nexus <aid>] [--out <partial.json>]    open the admission and sign with the seats held here",
+      "  remove <group> [--nexus <aid>] [--out <partial.json>]   take the group back out, at the admission's threshold",
+      "  cosign <partial.json> --act <cid> [--nexus <aid>] [--out <partial.json>]",
+      "                                            add this vault's seats; the act lands once it counts",
+      "  standing <group> [--nexus <aid>]          admitted, removed, unsettled or absent, as of this vessel's last sync",
+      "",
+      "  --act  the act CID the partial carries, read aloud before a seat signs it",
+    ],
+    examples: ["lares nexus cabal admit <group-id> --out ./cabal-partial.json", "lares nexus cabal standing <group-id>"],
+    meme: "lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission",
   },
 
   sensorium: {
@@ -311,6 +351,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
       "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
       "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
+      "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -322,6 +363,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
+      "--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into @crossroads refuses without one",
+      "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
