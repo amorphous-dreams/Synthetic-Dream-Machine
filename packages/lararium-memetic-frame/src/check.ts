@@ -42,7 +42,7 @@
  * One lexical scan — the frame recogniser read through the fence mask, so a quoted mark never frames.
  * No grammar, no rendering, no canonicaliser: the scan reads the carrier's QUOTING, never its meaning.
  * A Herm holding `pull` and not `read` runs that scan without opening what the carrier says — the
- * relay-law exception in `ability-implies` is exactly the capability this instrument was shaped to fit.
+ * relay-law exception is exactly the capability this instrument was shaped to fit.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
