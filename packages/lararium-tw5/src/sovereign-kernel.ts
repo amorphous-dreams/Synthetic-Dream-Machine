@@ -71,6 +71,7 @@ import {
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
+import { preloadsFromCasBlob } from "./cas-preloads.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
@@ -402,7 +403,7 @@ export function runSovereignKernel(
         return;
       }
       try {
-        pluginTiddlers.push(JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>);
+        pluginTiddlers.push(...preloadsFromCasBlob(bytes));
       } catch { /* malformed — skip */ }
     }
 
