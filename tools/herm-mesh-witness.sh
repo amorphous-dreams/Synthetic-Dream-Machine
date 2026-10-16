@@ -32,19 +32,37 @@ CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json)
 WORK=$(mktemp -d)
 printf '%s' "$CHARTER" > "$WORK/a-charter.mem"
 
+# refused <label> <door> <output>: a join step that did not land names its door and the tail of what it said, and the
+# witness stops there.
+refused() {
+  echo "✗ $1 did not join A's Nexus: $2 refused" >&2
+  printf '%s\n' "$3" | tail -4 | sed 's/^/    /' >&2
+  exit 1
+}
+
 # join <label> <runner…>: the runner runs the CLI where the place stands (a container's exec, or the host reader's own).
+# Each door's answer is read before the next door opens, so a refusal names the door that refused.
 join() {
   local label="$1"; shift
-  local cf nym sig
-  if [ "$label" = "host-reader" ]; then "$@" nexus seal import "$WORK/a-charter.mem" --json >/dev/null
-  else printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' && "$@" nexus seal import /tmp/a-charter.mem --json >/dev/null; fi
-  cf=$("$@" nexus carry-for --json)
-  nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
-  sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-  printf '%s' "$cf" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$label.json"
-  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" --carrier "$sig" --floor-pin "/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json"
-  if [ "$label" = "host-reader" ]; then "$@" nexus carry-take "$WORK/bundle-$label.json" --json >/dev/null
-  else $COMPOSE exec -T "$label" sh -c 'cat > /tmp/carry-bundle.json' < "$WORK/bundle-$label.json" && "$@" nexus carry-take /tmp/carry-bundle.json --json >/dev/null; fi
+  local out cf nym sig
+  if [ "$label" != "host-reader" ]; then
+    printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' || refused "$label" "the charter copy" ""
+    out=$("$@" nexus seal import /tmp/a-charter.mem --json 2>&1) || refused "$label" "nexus seal import" "$out"
+  else
+    out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
+  fi
+  cf=$("$@" nexus carry-for --json 2>&1) || refused "$label" "nexus carry-for" "$cf"
+  nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
+  sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
+  [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
+  printf '%s' "$cf" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$label.json" || refused "$label" "the carry-for copy to A" ""
+  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" --carrier "$sig" --floor-pin "/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>&1 \
+    || refused "$label" "A's nexus carry" "$(cat "$WORK/bundle-$label.json")"
+  if [ "$label" = "host-reader" ]; then out=$("$@" nexus carry-take "$WORK/bundle-$label.json" --json 2>&1) || refused "$label" "nexus carry-take" "$out"
+  else
+    $COMPOSE exec -T "$label" sh -c 'cat > /tmp/carry-bundle.json' < "$WORK/bundle-$label.json" || refused "$label" "the bundle copy" ""
+    out=$("$@" nexus carry-take /tmp/carry-bundle.json --json 2>&1) || refused "$label" "nexus carry-take" "$out"
+  fi
   echo "  joined A's Nexus: $label (${nym:0:16}…)"
 }
 for herm in herm-source herm-relay herm-relay-2; do join "$herm" $COMPOSE exec -T "$herm" $LARES; done

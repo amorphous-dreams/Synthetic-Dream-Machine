@@ -34,7 +34,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { Repo, type AutomergeUrl, type UrlHeads } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl } from "../harness/instance.js";
+import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl, awaitOwnGateKey } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import {
   verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
@@ -232,9 +232,7 @@ describe("e2e/face-join — the join against a live hearth", () => {
     // island sees it too, runs this same verb over the same group under the same root, and would pass its own
     // gate. Two writers racing to seat one member and re-key one group. The joinee knows itself by the key it
     // just presented, and stands down.
-    const ownKey = /gate=([0-9a-f]{64})/.exec(lar.bootLog())?.[1]
-      ?? /this leaf's key: 0x([0-9a-f]{64})/.exec(lar.bootLog())?.[1] ?? "";
-    expect(ownKey).not.toBe("");
+    const ownKey = await awaitOwnGateKey(lar);
     const selfEdge = { ...(edge as DeviceDelegationTiddler), deviceVerifyingKey: ownKey, deviceDid: `0x${ownKey}` };
     const g = await summon({ contactCard: joineeCard, deviceEdge: selfEdge });
     expect(g["admitted"]).toBe(false);

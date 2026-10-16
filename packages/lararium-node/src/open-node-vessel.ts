@@ -1113,7 +1113,7 @@ async function prepareNodeBootOn(
    * `nexusAid` names the hosting doc a hosting roll just opened; every other caller passes nothing.
    *
    * H2 — AWAITED, SERIALIZED, AND TRUTHFUL (never fire-and-forget). Every caller (`store-door-verbs`'s
-   * `onRolled` hook, both `onReconnect` sites below) now awaits this call's own `Promise<boolean>`
+   * `onRolled` hook, the nexus dial-out's `onReconnect` below) awaits this call's own `Promise<boolean>`
    * rather than firing it into the void: `admit-take`'s `represented` and `seal-home-refold`'s
    * `refolded` read this SAME answer, so a fire-and-forget refold could never answer either
    * truthfully (it always finished AFTER the CLI's own answer left). A SECOND roll that lands while

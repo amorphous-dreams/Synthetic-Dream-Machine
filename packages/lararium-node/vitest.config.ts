@@ -30,12 +30,10 @@ export const heavy = [
   "tests/browser-crossing.test.ts",
   // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
   "tests/herm-carriage-relay.test.ts",
-  "tests/carriage-relay-serve-loop.test.ts",
   "tests/nexus-client-dial.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/crossing-matrix.test.ts",
   "tests/sibling-channel-stand.test.ts",
-  "tests/authenticated-membership-relay.test.ts",
   "tests/bulb-kindle.test.ts",
   "tests/bulb-serves-boot-cas-alone.test.ts",
   "tests/herm-reshares-public-blob.test.ts",
@@ -98,6 +96,10 @@ export const heavy = [
   "tests/wire-daemon-bootstrap.test.ts",
   // A real HTTP listener and a sealed-gate crossing (the joinee dials its hearth through the production mount).
   "tests/dial-presentation-joinee.test.ts",
+  // A raw HTTP listener that answers the upgrade as a gate stand-in, so the node dial socket meets real frames.
+  "tests/node-dial-socket.test.ts",
+  // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
+  "tests/herm-relay-port.test.ts",
 ];
 
 /**
