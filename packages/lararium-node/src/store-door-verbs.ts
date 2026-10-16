@@ -152,6 +152,14 @@ const strs = (v: unknown): readonly string[] | undefined =>
 const opt = <K extends string, V>(key: K, v: V | undefined): { [P in K]?: V } =>
   (v === undefined ? {} : { [key]: v }) as { [P in K]?: V };
 
+/** The face a fleet-join row names: absent, or a whole number; anything else refuses `face-malformed`. */
+function joinFace(args: Readonly<Record<string, unknown>>): { face?: number } {
+  if (args["face"] === undefined) return {};
+  const face = int(args["face"]);
+  if (face === undefined || face < 0) throw new FleetJoinRefused("face-malformed", `the row's face names no persona index: ${JSON.stringify(args["face"])}.`);
+  return { face };
+}
+
 /** The name a row's refusal answers under: the row's own verb, so no two doors share one word for "refused". */
 export const storeRefusalName = (verb: string): string => `${verb}-refused`;
 
@@ -354,9 +362,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // The fleet-join door's root half: an offer, and the answer to one carried request. The answer carries the face's
     // address secret SEALED to the request's own key; no secret rides it in the clear.
-    "fleet-join-offer": () => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome }) })),
+    // `face` names the persona index the join serves; absent, the founding face. A face that reads as no index
+    // refuses by name: an act that signs authority never falls back to the founding face.
+    "fleet-join-offer": (args) => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome, ...joinFace(args) }) })),
     "fleet-join-answer": (args) => answer("fleet-join-answer", async () => ({
-      answer: await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])) }),
+      answer: await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...joinFace(args) }),
     })),
     "handle-publish": (args) => answer("handle-publish", async () => ({
       card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])) }),

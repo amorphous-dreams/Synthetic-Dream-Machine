@@ -42,12 +42,20 @@ import {
   readPendingFleetJoin,
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselSigningSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
 
-/** The face this door joins: the founding face, as `runDeviceAdmit` signs for it. */
-const FACE = 0;
+/** The face a join names where its caller names none: the founding face. */
+export const FLEET_JOIN_DEFAULT_FACE = 0;
+
+/** The face index a caller named, read whole: a non-negative integer, or a refusal by name. */
+function faceIndex(face: number | undefined): number {
+  const index = face ?? FLEET_JOIN_DEFAULT_FACE;
+  if (!Number.isSafeInteger(index) || index < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
+  return index;
+}
 
 /** A fleet join refused by name: the mesh readers' refusal, or this door's own. */
 export class FleetJoinRefused extends Error {
@@ -59,6 +67,20 @@ export class FleetJoinRefused extends Error {
 
 const isRefusal = (v: unknown): v is { refusal: string } =>
   typeof v === "object" && v !== null && typeof (v as { refusal?: unknown }).refusal === "string";
+
+/**
+ * The PersonaGroup the named face stands in. The founding face reads its group off the bootstrap's pin; a face
+ * an operator added (`lares persona new <index>`) reads it off its own anchors, since the bootstrap pins the
+ * founding face alone. A face this vessel never founded refuses by name.
+ */
+async function facePersonaGroup(face: number): Promise<string> {
+  if (face === 0) return bootstrapPersonaGroup();
+  const anchors = await loadIdentityAnchors(face);
+  if (anchors === null || anchors.personaGroupId.length === 0) {
+    throw new FleetJoinRefused("face-absent", `this vessel holds no face at index ${face}; found one with \`lares persona new ${face}\` first.`);
+  }
+  return anchors.personaGroupId;
+}
 
 /** The PersonaGroup this vessel's bootstrap names, or a refusal: a place with no face joins no vessel to one. */
 function bootstrapPersonaGroup(): string {
@@ -73,22 +95,36 @@ function bootstrapPersonaGroup(): string {
   return group;
 }
 
+/** The PersonaGroup a joining vessel's bootstrap already pins, or null where it stands a bare place. */
+function wornJoinedGroup(): string | null {
+  const path = larBootstrapPath();
+  if (!existsSync(path)) return null;
+  try {
+    const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
+    const group = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text;
+    return typeof group === "string" && group.length > 0 ? group : null;
+  } catch {
+    // A torn bootstrap names no face this landing could keep apart from: refuse rather than write over it.
+    throw new FleetJoinRefused("bootstrap-torn", `${path} does not read; this landing writes nothing over it.`);
+  }
+}
+
 /** The PersonaGroup root's verifying key, where this vessel holds the root. */
-async function heldRootKey(): Promise<string> {
-  const key = (await loadPersonaGroupRootVerifyingKey(FACE))?.toLowerCase().replace(/^0x/, "");
+async function heldRootKey(face: number): Promise<string> {
+  const key = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
   if (!key) throw new FleetJoinRefused("root-absent", "this vessel holds no PersonaGroup root; the vessel that holds it answers a fleet join.");
   return key;
 }
 
 /** Every (face key, Nexus) scope the face stands at here: each held charter's Nexus where the face holds its
  *  per-Nexus key. Reads only; mints no key. */
-async function standingScopes(sealHome: string): Promise<FaceScope[]> {
+async function standingScopes(sealHome: string, face: number): Promise<FaceScope[]> {
   const aids = new Set<string>(readCarriedCharters(sealHome).keys());
   const primary = primaryNexusAid(sealHome);
   if (primary !== null) aids.add(primary);
   const scopes: FaceScope[] = [];
   for (const nexus of [...aids].sort()) {
-    const seed = await readNexusKey(FACE, nexus);
+    const seed = await readNexusKey(face, nexus);
     if (seed === null) continue;
     try { scopes.push({ faceKey: nexusKeyPublicOf(seed), nexus } as FaceScope); } finally { seed.fill(0); }
   }
@@ -101,11 +137,16 @@ async function signHex(image: Uint8Array, seed: Uint8Array): Promise<string> {
 
 // ── The root holder ──────────────────────────────────────────────────────────────────────────────
 
-/** The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. */
-export async function runFleetJoinOffer(opts: { readonly sealHome: string }): Promise<FleetJoinOffer> {
-  const personaGroup = bootstrapPersonaGroup();
-  const rootKey = await heldRootKey();
-  return fleetJoinOffer({ personaGroup, rootKey, nonce: randomBytes(32).toString("hex"), scopes: await standingScopes(opts.sealHome) });
+/**
+ * The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. `face` names
+ * the persona index the join serves (`--face`, default the founding face); the index stays local to this vessel and
+ * never rides the offer, which names the face by its PersonaGroup and root key.
+ */
+export async function runFleetJoinOffer(opts: { readonly sealHome: string; readonly face?: number }): Promise<FleetJoinOffer> {
+  const face = faceIndex(opts.face);
+  const personaGroup = await facePersonaGroup(face);
+  const rootKey = await heldRootKey(face);
+  return fleetJoinOffer({ personaGroup, rootKey, nonce: randomBytes(32).toString("hex"), scopes: await standingScopes(opts.sealHome, face) });
 }
 
 export interface FleetJoinAnswerOptions {
@@ -115,29 +156,32 @@ export interface FleetJoinAnswerOptions {
   readonly request:  unknown;
   /** The url the joinee dials this hearth at (`--sync-url`). */
   readonly syncUrl?: string;
+  /** The persona index the join serves (`--face`); the founding face where absent. It must name the face its offer named. */
+  readonly face?:    number;
 }
 
 /** The root holder's answer to ONE request, read against the offer rebuilt over today's scopes. */
 export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<FleetJoinAnswer> {
-  const personaGroup = bootstrapPersonaGroup();
-  const rootKey = await heldRootKey();
+  const face = faceIndex(opts.face);
+  const personaGroup = await facePersonaGroup(face);
+  const rootKey = await heldRootKey(face);
   const nonce = typeof opts.request === "object" && opts.request !== null ? (opts.request as { nonce?: unknown }).nonce : undefined;
   if (typeof nonce !== "string" || !/^[0-9a-f]{64}$/.test(nonce)) throw new FleetJoinRefused("request-malformed", "the request names no nonce.");
-  const offer = fleetJoinOffer({ personaGroup, rootKey, nonce, scopes: await standingScopes(opts.sealHome) });
+  const offer = fleetJoinOffer({ personaGroup, rootKey, nonce, scopes: await standingScopes(opts.sealHome, face) });
   const apart = [rootKey, (await loadVesselVerifyingKey()).toLowerCase()];
   const request = readFleetJoinRequest(opts.request, offer, apart);
   if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request does not read against this face's offer as it stands now.");
 
   // A restored root may read and serve this face, but cannot add a vessel to its authority.
   // Check before the device edge, certificates, grants, address secret or answer can be made.
-  try { await refuseWhileProvisional(FACE, "fleet join answer"); }
+  try { await refuseWhileProvisional(face, "fleet join answer"); }
   catch (error) {
     if (error instanceof FaceProvisional) throw new FleetJoinRefused(error.reason, error.message);
     throw error;
   }
 
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });
+  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });
 
   // ONE CERTIFICATE PER REQUESTED SCOPE, under that scope's face key. The issuer's history stands at its genesis:
   // no removal of a face-scoped key lands a withdrawal on this vessel yet.
@@ -150,7 +194,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
     certificates.push(issued.certificate);
   }
 
-  const seed = await loadPersonaGroupRootSeed(FACE);
+  const seed = await loadPersonaGroupRootSeed(face);
   try {
     const grants: FaceKeyGrant[] = [];
     for (const q of request.requests) {
@@ -236,6 +280,13 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   const admit = carriedAdmitOfFleetJoin(answer);
   if ("refusal" in admit) { addressSecret.fill(0); throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
   // Standing rows under other bytes refuse by name before anything lands, so a refused landing writes nothing.
+  // A vessel stands one joined face: a landing re-founds its bootstrap and its h0 anchors, so a second face's answer
+  // over a vessel that already wears another would overwrite the first face's mount. It refuses instead.
+  const worn = wornJoinedGroup();
+  if (worn !== null && worn !== answer.personaGroup) {
+    addressSecret.fill(0);
+    throw new FleetJoinRefused("face-other", "this vessel already stands another face of a fleet; a second joined face on one vessel stands owed.");
+  }
   const standing = await readFaceJoinRecord(answer.personaGroup);
   if (standing !== null && standing.rootKey !== offer.rootKey) {
     addressSecret.fill(0);

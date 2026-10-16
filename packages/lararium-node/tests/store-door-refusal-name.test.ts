@@ -15,6 +15,16 @@ describe("a row's refusal names itself", () => {
     expect(storeRefusalName("nexus-kapae")).toBe("nexus-kapae-refused");
   });
 
+  test("a fleet-join row refuses a face that reads as no index, before any read: never the founding face's act", async () => {
+    for (const face of ["2", 1.5, -1, null, true]) {
+      for (const verb of ["fleet-join-offer", "fleet-join-answer"] as const) {
+        const out = await run(verb, { face, request: {} });
+        expect(out["refusal"], `${verb} ${JSON.stringify(face)}`).toBe(`${verb}-refused`);
+        expect(String(out["refused"])).toMatch(/face-malformed/);
+      }
+    }
+  });
+
   test("CONTROL: a fault that belongs to no refusal class throws through the row, unnamed", async () => {
     await expect(run("persona-kel-head", {})).rejects.toThrow(/needs "prefix"/);
   });

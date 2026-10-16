@@ -598,16 +598,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   fleet: {
-    usage: "usage: lares fleet join <offer | request <offer-file> | answer <request-file> | land <answer-file> | abandon>",
+    usage: "usage: lares fleet join <offer [--face N] | request <offer-file> | answer <request-file> [--face N] | land <answer-file> | abandon>",
     synopsis:
       "THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human, by three files carried by hand. " +
       "The joining vessel founds a PLACE first and mints its own face-scoped keys there; the root holder's answer " +
       "carries the device edge, a certificate and a grant per scope, the gate pin and canon list inside the root's " +
       "signature, and the face's address secret sealed to the request. The joining vessel's acts run with no vessel standing.",
     details: [
-      "  join offer [--out FILE]                     on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  join offer [--face N] [--out FILE]          on the root holder: the face, its root key, a nonce, the scopes it stands at",
       "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
-      "  join answer <request-file> [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
+      "  join answer <request-file> [--face N] [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
       "  join land <answer-file>                     on the joining place: the face lands",
       "  join abandon                                on the joining place: the pending join leaves",
     ],
@@ -616,8 +616,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares fleet join request offer.json --out request.json       # on the new vessel, a place already founded",
       "lares fleet join answer request.json --sync-url ws://hearth:7777/ws --out answer.json",
       "lares fleet join land answer.json                            # on the new vessel",
+      "lares fleet join offer --face 1 --out offer.json             # the root holder's second face takes the vessel",
     ],
-    flags: ["--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at"],
+    flags: [
+      "--face N          which of the root holder's faces the join serves (default 0, the founding face); offer and answer name the same one",
+      "--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at",
+    ],
     next: ["lares vessel stand --with-web"],
   },
 
