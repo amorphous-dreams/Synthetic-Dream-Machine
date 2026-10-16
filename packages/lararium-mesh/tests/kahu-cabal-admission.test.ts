@@ -18,6 +18,8 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { CABAL_INVITE_DOMAIN } from "../src/domains.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
+import { signRollAnchor } from "../src/carriage-registry.js";
+import { seatedCharter } from "./charter-fixture.js";
 import {
   openKahuCabalAct, signKahuCabalAct, kahuCabalActCounts, kahuCabalActCid, kahuCabalStanding,
   kahuCabalCanonAccess, readKahuCabalAct,
@@ -99,6 +101,35 @@ describe("a vouch admits nobody", () => {
 });
 
 describe("standing and the access path to shared canon", () => {
+  test("a cabal admission carried in a counted roll stands at the head", async () => {
+    const genesis = await seatedCharter({ seats: 3, threshold: 2, seed: 812 });
+    const opened = await genesis.roll();
+    const admit = await signKahuCabalAct(
+      openKahuCabalAct({ nexus: NEXUS, group: GROUP, action: "admit", roster: genesis.roster }),
+      await genesis.signers([0, 1]), genesis.roster);
+    const anchor = await signRollAnchor({ prevEpochCid: genesis.head.epochCid, sealEpochCid: opened.head.epochCid,
+      prevKeys: genesis.keys, prevThreshold: genesis.threshold, parents: [kahuCabalActCid(admit)] },
+      await opened.signers([0, 1]));
+    const refused = Array.from({ length: 300 }, (_, i) => ({ ...anchor, signatures: [],
+      parents: [...anchor.parents, i.toString(16).padStart(64, "0")] }));
+    const ancestry = { sealLineage: opened.chain, anchors: [...refused, anchor] };
+    expect(kahuCabalStanding([admit], GROUP, opened.roster, NEXUS, ancestry).standing).toBe("admitted");
+    expect(kahuCabalCanonAccess({ group: GROUP, nexus: NEXUS, roster: opened.roster, acts: [admit], sentinelMember: true, ancestry }).held).toBe(true);
+    expect(kahuCabalStanding([admit], GROUP, opened.roster, NEXUS, { sealLineage: opened.chain, anchors: refused }).standing).toBe("absent");
+  });
+
+  test("a removal in a counted roll keeps the cabal removed", async () => {
+    const genesis = await seatedCharter({ seats: 3, threshold: 2, seed: 813 });
+    const opened = await genesis.roll();
+    const signers = await genesis.signers([0, 1]);
+    const admit = await signKahuCabalAct(openKahuCabalAct({ nexus: NEXUS, group: GROUP, action: "admit", roster: genesis.roster }), signers, genesis.roster);
+    const remove = await signKahuCabalAct(openKahuCabalAct({ nexus: NEXUS, group: GROUP, action: "remove", parents: [kahuCabalActCid(admit)], roster: genesis.roster }), signers, genesis.roster);
+    const anchor = await signRollAnchor({ prevEpochCid: genesis.head.epochCid, sealEpochCid: opened.head.epochCid,
+      prevKeys: genesis.keys, prevThreshold: genesis.threshold, parents: [kahuCabalActCid(remove)] },
+      await opened.signers([0, 1]));
+    expect(kahuCabalStanding([admit, remove], GROUP, opened.roster, NEXUS,
+      { sealLineage: opened.chain, anchors: [anchor] }).standing).toBe("removed");
+  });
   test("admitted and joined holds; admitted alone and joined alone each refuse", async () => {
     const roster = await rosterOf(3, 2);
     const admit = await act(roster, [1, 2]);

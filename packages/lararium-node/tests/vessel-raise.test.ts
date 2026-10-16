@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 
 import {
   hex, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
-  signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, makeMultiSigQuorumVerifier,
+  signRaiseGrant, emptyLarDoc, writeCarriageEntry, writeRollAnchor, signRollAnchor, carriageDocUrl, makeMultiSigQuorumVerifier,
   type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuQuorumSeats, type LarDoc, type NexusDoc,
 } from "@lararium/mesh";
 import {
@@ -23,7 +23,8 @@ import {
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
-import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { heldCharter, seatedCharter, charterSeatSeeds } from "../../lararium-mesh/tests/charter-fixture.js";
+import { carriageAct } from "../../lararium-mesh/tests/fixtures/carriage.js";
 
 const VESSEL = "vessel-key";
 const NEXUS  = "aid-of-nexus-n";
@@ -235,6 +236,30 @@ describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () =
     const open = async (url: string) => (url === carriageDocUrl(island) ? board : undefined);
     return { sealHome, place, open };
   }
+
+  test("a carrier sealed before a roll still carries its Nexus through a counted anchor", async () => {
+    const genesis = await seatedCharter({ seats: 3, threshold: 2, seed: 823 });
+    const opened = await genesis.roll();
+    const sealHome = join(root, "nexus");
+    writeNexusDoc(sealHome, opened.doc());
+    const place = await pubOf(PLACE_SEED);
+    const island = nodeNexusIsland({ ownVesselKey: place, sealHome });
+    const board = emptyLarDoc();
+    const carry = await carriageAct(PLACE_SEED, "carry", { kahu: charterSeatSeeds(823, 0, 3).slice(0, 2), epoch: genesis.head.epochCid });
+    writeCarriageEntry(board, carry);
+    const anchor = await signRollAnchor({ prevEpochCid: genesis.head.epochCid, sealEpochCid: opened.head.epochCid,
+      prevKeys: genesis.keys, prevThreshold: genesis.threshold, parents: [carriageEntryActCid(carry)] },
+      await opened.signers([0, 1]));
+    writeRollAnchor(board, anchor);
+    const open = async (url: string) => url === carriageDocUrl(island) ? board : undefined;
+    expect(await placeCarriedNexuses({ sealHome, ownVesselKey: place, open })).toHaveLength(1);
+    const forged = { ...anchor, signatures: [] };
+    const refused = emptyLarDoc();
+    writeCarriageEntry(refused, carry);
+    writeRollAnchor(refused, forged);
+    expect(await placeCarriedNexuses({ sealHome, ownVesselKey: place,
+      open: async (url) => url === carriageDocUrl(island) ? refused : undefined })).toEqual([]);
+  });
 
   test("★ a held charter whose board counts THIS place's carry reads as carried, with the board as its deny board ★", async () => {
     const admit = await act("admit");

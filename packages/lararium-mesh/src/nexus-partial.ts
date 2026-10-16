@@ -51,6 +51,7 @@ import {
   KAPAE_ANTIGEN_DOMAIN, antigenActCid, antigenEntryBytes, makeMultiSigQuorumVerifier,
   type KahuQuorumSeats, type KapaeAntigenEntry, type QuorumSignature,
 } from "./kapae-antigen.js";
+import { kahuCabalActCounts, kahuCabalActCid, type KahuCabalAct } from "./kahu-cabal-admission.js";
 import { EDGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import {
   edgeRollAnchorBytes, edgeRollAnchorCid, edgeRollAnchorCounts, edgeRollAnchorParents,
@@ -106,6 +107,7 @@ export interface NexusPartialReader {
   readonly board: {
     readonly carriage: readonly CarriageEntry[];
     readonly anchors:  readonly RollAnchor[];
+    readonly cabal?:   readonly KahuCabalAct[];
     readonly antigen:  readonly KapaeAntigenEntry[];
   };
   /** The realm edge boards this vessel holds, by realm. A realm absent here has no board on this vessel. */
@@ -336,10 +338,14 @@ export async function judgeNexusActPartial(parsed: unknown, reader: NexusPartial
     }
     const signed = nexusPartialSeatsSigned(act, reader.head);
     if (signed.length === 0) return { verdict: "invalid", signed, why: "no seat of the head roster signed these bytes" };
-    const heads = await rollAnchorParents(reader.board.carriage, reader.board.anchors, closing);
+    const carriageHeads = await rollAnchorParents(reader.board.carriage, reader.board.anchors, closing);
+    const cabal = (reader.board.cabal ?? []).filter((a) => kahuCabalActCounts(a, closing, reader.aid).counted);
+    const cited = new Set(cabal.flatMap((a) => a.parents));
+    const heads = [...new Set([...carriageHeads, ...cabal.map(kahuCabalActCid).filter((cid) => !cited.has(cid))])].sort();
     const counted = new Set<string>();
     for (const e of reader.board.carriage) if (await carriageEntryCounts(e, closing)) counted.add(carriageEntryActCid(e));
     for (const a of reader.board.anchors) if (await rollAnchorCounts(a, closing)) counted.add(rollAnchorCid(a));
+    for (const a of cabal) counted.add(kahuCabalActCid(a));
     if (act.anchor.parents.some((p) => !counted.has(p))) return { verdict: "unavailable", signed, why: "the anchor cites a parent this vessel cannot count" };
     if (!sameList(act.anchor.parents, heads)) return { verdict: "stale", signed, why: "the board's heads moved after the first seat signed" };
     return { verdict: signed.length >= reader.head.threshold ? "complete" : "ready", signed };

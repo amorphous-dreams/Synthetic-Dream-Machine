@@ -50,11 +50,12 @@ import {
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
+  kahuCabalActsFromBoard, kahuCabalActCounts, kahuCabalActCid,
   admitCarriageCommit, openAdmitCarriage,
   realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
   edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
   type CountedEdgeBoard, type EdgeRollAnchor,
-  type AdmitOpening, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  type AdmitOpening, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor, type LarDoc,
   type PresentationFinding,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -487,13 +488,22 @@ export interface NexusRollAnchorResult {
   readonly boardUrl:  string;
 }
 
+/** The roll cites each counted cabal relation head beside the carriage and anchor heads. */
+async function rollParentsWithCabal(board: LarDoc | undefined, closing: KahuQuorumSeats, nexus: string): Promise<string[]> {
+  const carriage = await rollAnchorParents(carriageEntriesFromBoard(board), rollAnchorsFromBoard(board), closing);
+  const acts = kahuCabalActsFromBoard(board).filter((act) => kahuCabalActCounts(act, closing, nexus).counted);
+  const cited = new Set(acts.flatMap((act) => act.parents));
+  const cabal = acts.map(kahuCabalActCid).filter((cid) => !cited.has(cid));
+  return [...new Set([...carriage, ...cabal])].sort();
+}
+
 /**
  * Land a seal roll's ANCHOR on this Nexus's carriage board — called by the rotate BEFORE it writes the new
  * head, so a roll whose anchor cannot land writes nothing at all. That order holds where one vessel holds the whole
  * new quorum; where the seats rest in two vaults, the anchor follows the filed head as a partial instead
  * (`runNexusRollAnchorOpen` / `runNexusRollAnchorPartial`). The anchor names the epoch `closing` heads
  * and the epoch `opened` heads, carries `closing`'s public key-set, cites the board's causal heads at the roll
- * (`rollAnchorParents`: the acts and anchors that count at the closing epoch and nothing cites), and is signed
+ * (the counted carriage, cabal, and anchor heads at the closing epoch), and is signed
  * by `opened`'s quorum out of the held seat keys it seats. The closing keys never sign it.
  *
  * FAIL CLOSED, before any write: fewer than `opened.threshold` held roots seated in `opened` → REFUSE; an
@@ -516,8 +526,7 @@ export async function runNexusRollAnchor(opts: {
   const repo         = opts.repo;
   try {
     const { boardUrl, handle } = await rollAnchorBoardFor(repo, opts.sealHome);
-    const parents = await rollAnchorParents(
-      carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), opts.closing);
+    const parents = await rollParentsWithCabal(handle.doc(), opts.closing, nexusAidOrRefuse(opts.sealHome));
     const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     const anchor = await signRollAnchor({
       prevEpochCid:  opts.closing.sealEpochCid,
@@ -629,7 +638,8 @@ function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartia
   const aid = nexusAidOrRefuse(home);
   const { opened, closing } = rolledRostersOrRefuse(home);
   const doc = handle.doc();
-  return { aid, head: opened, closing, board: { carriage: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc), antigen: [] } };
+  return { aid, head: opened, closing, board: { carriage: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc),
+    cabal: kahuCabalActsFromBoard(doc), antigen: [] } };
 }
 
 /**
@@ -663,7 +673,7 @@ export async function runNexusRollAnchorOpen(opts: { readonly sealHome: string; 
         throw new NexusContractError("this board already holds a counted anchor for this roll; nothing signs.");
       }
     }
-    const parents = await rollAnchorParents(carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), closing);
+    const parents = await rollParentsWithCabal(handle.doc(), closing, nexusAidOrRefuse(home));
     const anchor = await signRollAnchor({
       prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold, parents,
     }, held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })));

@@ -31,6 +31,8 @@ import { charteredClassTable, classThreshold, countSeatedSignatures } from "./ch
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
+import { isCarriageDescendant, isRollAnchor, rollAnchorBytes, rollAnchorCid, type CarriageAncestry, type RollAnchor } from "./carriage-registry.js";
+import { sealKeySetHash, verifySealLineage } from "./wax-stamp.js";
 
 export { KAHU_CABAL_ADMIT_DOMAIN };
 
@@ -164,20 +166,72 @@ export function kahuCabalActCounts(value: unknown, roster: KahuQuorumSeats, nexu
 
 export type KahuCabalStanding = "admitted" | "removed" | "unsettled" | "absent";
 
+/** Count a closed-epoch act only along a counted chain whose every anchor cites it in its causal past. */
+function anchoredCabalReader(acts: readonly KahuCabalAct[], head: KahuQuorumSeats, ancestry: CarriageAncestry) {
+  const lineage = ancestry.sealLineage;
+  const anchors = ancestry.anchors.filter(isRollAnchor);
+  const sound = lineage.length > 0 && verifySealLineage(lineage) && lineage[lineage.length - 1]!.epochCid === head.sealEpochCid;
+  const graph = new Map<string, { readonly parents: readonly string[] }>();
+  for (const act of acts) graph.set(kahuCabalActCid(act), act);
+  for (const anchor of anchors) graph.set(rollAnchorCid(anchor), anchor);
+  const countsMemo = new Map<RollAnchor, Map<string, boolean>>();
+  const counts = (anchor: RollAnchor, roster: KahuQuorumSeats): boolean => {
+    const key = `${roster.sealEpochCid}|${roster.threshold}|${roster.keys.join(",")}`;
+    let per = countsMemo.get(anchor);
+    if (!per) { per = new Map(); countsMemo.set(anchor, per); }
+    let counted = per.get(key);
+    if (counted === undefined) {
+      counted = anchor.sealEpochCid === roster.sealEpochCid &&
+        countSeatedSignatures(rollAnchorBytes(anchor), anchor.signatures, roster) >= roster.threshold;
+      per.set(key, counted);
+    }
+    return counted;
+  };
+  return (act: KahuCabalAct, nexus: string): boolean => {
+    if (!sound) return false;
+    const at = lineage.findIndex((e) => e.epochCid === act.sealEpochCid);
+    if (at < 0 || at === lineage.length - 1) return false;
+    const cid = kahuCabalActCid(act);
+    let steps = 0;
+    const walk = (j: number, opened: KahuQuorumSeats, later: RollAnchor | null, chain: readonly RollAnchor[]): boolean => {
+      if (j === at) return kahuCabalActCounts(act, opened, nexus).counted &&
+        chain.every((anchor) => isCarriageDescendant(rollAnchorCid(anchor), cid, graph));
+      const closed = lineage[j - 1]!;
+      const seen = new Set<string>();
+      for (const anchor of anchors) {
+        if (anchor.sealEpochCid !== lineage[j]!.epochCid || anchor.prevEpochCid !== closed.epochCid ||
+          sealKeySetHash(anchor.prevKeys, anchor.prevThreshold) !== closed.keySetHash ||
+          (later !== null && !later.parents.includes(rollAnchorCid(anchor))) || !counts(anchor, opened)) continue;
+        const anchorCid = rollAnchorCid(anchor);
+        if (seen.has(anchorCid)) continue;
+        seen.add(anchorCid);
+        if (++steps > 256) return false;
+        if (walk(j - 1, { keys: anchor.prevKeys, threshold: anchor.prevThreshold, sealEpochCid: closed.epochCid },
+          anchor, [anchor, ...chain])) return true;
+      }
+      return false;
+    };
+    return walk(lineage.length - 1, head, null, []);
+  };
+}
+
 /**
  * Fold the acts on ONE named group into its standing. Only counted acts on that group in that Nexus take
- * part; a counted act whose parent stands absent or uncounted here reads unavailable and drops. The causal
+ * part; ancestry carries a closed-epoch act only through counted anchors whose causal past holds it. A counted
+ * act whose parent stands absent or uncounted here reads unavailable and drops. The causal
  * heads decide: one or more admits → admitted, removes alone → removed, an admit beside a remove → unsettled.
  */
 export function kahuCabalStanding(
   acts: Iterable<unknown>, group: string, roster: KahuQuorumSeats, nexus: string,
+  ancestry?: CarriageAncestry,
 ): { readonly standing: KahuCabalStanding; readonly heads: readonly string[] } {
   const want = group.trim().toLowerCase();
+  const source = [...acts].map(readKahuCabalAct).filter((act): act is KahuCabalAct => act !== null);
+  const anchored = ancestry ? anchoredCabalReader(source, roster, ancestry) : null;
   const byCid = new Map<string, KahuCabalAct>();
-  for (const value of acts) {
-    const act = readKahuCabalAct(value);
-    if (act === null || act.group !== want) continue;
-    if (!kahuCabalActCounts(act, roster, nexus).counted) continue;
+  for (const act of source) {
+    if (act.group !== want) continue;
+    if (!kahuCabalActCounts(act, roster, nexus).counted && !(anchored?.(act, nexus) ?? false)) continue;
     byCid.set(kahuCabalActCid(act), act);
   }
   let pruned = true;
@@ -212,8 +266,9 @@ export interface KahuCabalAccess {
 export function kahuCabalCanonAccess(input: {
   readonly group: string; readonly nexus: string; readonly roster: KahuQuorumSeats;
   readonly acts: Iterable<unknown>; readonly sentinelMember: boolean;
+  readonly ancestry?: CarriageAncestry;
 }): KahuCabalAccess {
-  const { standing } = kahuCabalStanding(input.acts, input.group, input.roster, input.nexus);
+  const { standing } = kahuCabalStanding(input.acts, input.group, input.roster, input.nexus, input.ancestry);
   if (standing === "admitted") {
     return input.sentinelMember
       ? { held: true, standing, reason: "admitted-and-joined" }

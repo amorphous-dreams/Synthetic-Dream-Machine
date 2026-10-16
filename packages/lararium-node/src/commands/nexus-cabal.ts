@@ -21,7 +21,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   carriageDocUrl, materializeSharedLarDoc, foundingRoster, nexusAidOf,
   openKahuCabalAct, signKahuCabalAct, kahuCabalActCounts, kahuCabalActCid, kahuCabalStanding,
-  kahuCabalActsFromBoard, writeKahuCabalAct, readKahuCabalAct,
+  kahuCabalActsFromBoard, writeKahuCabalAct, readKahuCabalAct, rollAnchorsFromBoard,
   type KahuCabalAct, type KahuCabalAction, type KahuCabalStanding, type KahuQuorumSeats,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -51,6 +51,7 @@ interface CabalCore {
   readonly home:   string;
   readonly nexus:  string;
   readonly roster: KahuQuorumSeats;
+  readonly sealLineage: NonNullable<ReturnType<typeof readNexusDoc>>["sealLineage"];
   readonly handle: Awaited<ReturnType<typeof materializeSharedLarDoc>>;
 }
 
@@ -70,7 +71,7 @@ async function cabalCore(repo: Repo, sealHome: string, aid: string | undefined):
   const ownVesselKey = await loadVesselVerifyingKey();
   const boardUrl = carriageDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: home }));
   const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
-  return { home, nexus, roster, handle };
+  return { home, nexus, roster, sealLineage: doc?.sealLineage, handle };
 }
 
 /** Sign with the seats held here, then land the act where it counts. */
@@ -107,7 +108,8 @@ export async function runCabalAct(opts: {
   if (heldSeatSigners(core.roster).length === 0) {
     throw new NexusCabalError("this vessel holds no seat of the charter — only the seats admit, and a vouch admits nobody.");
   }
-  const { heads } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus);
+  const { heads } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus,
+    { sealLineage: core.sealLineage ?? [], anchors: rollAnchorsFromBoard(core.handle.doc()) });
   const act = openKahuCabalAct({ nexus: core.nexus, group, action: opts.action, parents: heads, roster: core.roster });
   return signAndMaybeLand(core, act);
 }
@@ -140,6 +142,7 @@ export async function runCabalStanding(opts: {
   const group = opts.group.trim().toLowerCase();
   if (!HEX64.test(group)) throw new NexusCabalError(`"${opts.group}" reads as no PersonaGroup id — expected 64 hex.`);
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid);
-  const { standing, heads } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus);
+  const { standing, heads } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus,
+    { sealLineage: core.sealLineage ?? [], anchors: rollAnchorsFromBoard(core.handle.doc()) });
   return { nexus: core.nexus, group, standing, heads };
 }

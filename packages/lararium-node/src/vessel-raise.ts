@@ -51,7 +51,7 @@
 import {
   mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
   leaseEpochPrefix, effectiveLeaseEpoch,
-  foundingRoster, foldCarrierSet, carriageEntriesFromBoard, antigenEntriesFromBoard, heldNexusRoot, makeMultiSigQuorumVerifier,
+  foundingRoster, foldCarrierSet, carriageEntriesFromBoard, rollAnchorsFromBoard, antigenEntriesFromBoard, heldNexusRoot, makeMultiSigQuorumVerifier,
   carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
   type RaiseNexusReading, type LarDoc,
@@ -203,7 +203,8 @@ export async function placeCarriedNexuses(opts: {
       const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard, antigen, antigenVerifier: makeMultiSigQuorumVerifier(),
         handOvers: keyLineAt(opts.sealHome, aid, carriage) });
       if ("absent" in root) continue;
-      if (!(await foldCarrierSet(root.denyBoard, root.roster)).has(self)) continue;
+      if (!(await foldCarrierSet(root.denyBoard, root.roster,
+        { sealLineage: root.sealLineage ?? [], anchors: rollAnchorsFromBoard(carriage) })).has(self)) continue;
       out.push({ ...root, sealLineage: root.sealLineage ?? [], aid, via: "carrier-seal", island, posture: federationPostureFromDoc(doc) });
     } catch { continue; }
   }
