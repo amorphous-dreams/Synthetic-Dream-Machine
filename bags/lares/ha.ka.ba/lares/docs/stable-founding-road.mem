@@ -218,6 +218,7 @@ The operator delegated these to the house: each stands as a house ruling the ope
 * ''Routes at the cutover'' (house ruling under the operator's delegation, 2026-10-15). Walker arms, the sibling dial and the herm membership relay ship SHUT by name; H opens walkers with its live grant reader, W9 opens the sibling at face scope, and an explicit Nexus opens the herm relay. The oracle read face and reader convert where browser boot reads the oracle in production; elsewhere they ship SHUT by name after measuring `pullAndVerifyOracle`'s caller. The waystone reads the Nexus's one public answer before it trusts its engine. An untested old-wire fallback counts as open. The reason: a closed route grants no silent legacy authority. The ruling flips on a proven gate-native caller for each shut route.
 * ''The floor announcement'' (house ruling under the operator's delegation, 2026-10-15). `waking-floor-announce` signs one canonical body per carried Nexus under that Nexus's floor bundle signing key: version, Nexus AID, floor route pin digest, floor standing and causal position. It travels only inside an authenticated socket or relay relation. The reader checks the already pinned floor pin, domain, Nexus, route and causal order, and treats the body as a peer hint alone. The reason: a floor hint must neither bootstrap its own trust nor replay across Nexuses. The ruling flips on a smaller body that still refuses cross-Nexus replay, stale replacement and first-contact self-certification.
 * ''Fleet join serves every face'' (house ruling under the operator's delegation, 2026-10-15). `fleet join` names its face with `--face <index>`, default `0`; a nonzero face carries that face's certificates, grants and address secret. The reason: a person wears several faces, and each face needs its own fleet relation. The ruling flips on a face-independent proof that carries the same per-face authority without mixing identities.
+* ''A realm's steward map holds leaves'' (house ruling under the operator's delegation, 2026-10-16). The co-signed `keptBy` names fill `realmStewardMap`: each name a steward's worn per-Nexus face or a Handle, with the bags it keeps. That map answers which bags a steward keeps, never a root question; the realm consult's ROOT map stays `peerContractNymMap`, filled only by a root edge proven at the wire (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>). The reason: a leaf that answers a root question links the two maps the doctrine keeps apart. The ruling flips if a root edge proven at the reading seat comes to fill a realm map, which then stands beside this one under the root map's own name.
 
 !!! The fresh start
 * ''No pave or wipe command'' — such a command carries too much risk. See #/fresh-start.
@@ -322,7 +323,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 
 * ''Realms'': a vessel stands one plane per realm, and a verb names its realm (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/many-realms">>). A cabal reads as its relation closure and takes no key or roster of its own. A cabal realm's documents cross between two operators once the realm's member consult answers for a peer.
 * ''The steward signer'': the worn face or a quorum Handle, never the root (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer">>). The seal, the fold and the steward door stand in code; the composing vessel's `realm-bag` verb takes the door through the compose owner's hand. The docker `meme` scenario then proves it by hand at "B edits, promotes", in the asker's order: B asks to keep the bag with her worn face, and A consents.
-* ''Thresholded admission and promotion'': the four chartered classes and exact-bytes promotion of #/rulings; chartered Kahu-cabal admission as its own authority act, where a vouch alone admits nobody.
+* ''Thresholded admission and promotion'' stand built: the chartered classes derive from the charter's own seats and threshold (`chartered-classes.ts`); promotion approves the exact bytes' hash with purpose, surface, class and epoch (`promotion-approval.ts`, `lares nexus promote open|sign|check`); Kahu-cabal admission stands as its own act at the high-impact threshold, where a vouch admits nobody (`kahu-cabal-admission.ts`, `lares nexus cabal`) (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/chartered-classes">>).
 
 ''R-CHARTER, the one AID train.'' Its first stage stands landed (train K of #/the-trains): the chairs sign with seat keys of their own and pre-rotate on cold cards, a Nexus answers to `nexus-<sha>`, the floor key commits no next key, per-Nexus keys mint at random, the PersonaGroup stands as a Keyhive group, and the Stable founding act founds a hearth (`lares vessel found --hearth`): the place, persona zero and a PRIVATE seed charter at one seat, with no keyring, every fleet relation bound to that charter's AID, and every harness that founds a hearth founding through it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found">>). What stays owed:
 * ''The Nexus founding act'': two founders, each from their own vault, seat one key each in a fresh joint genesis at two of two; each reads the other's seat fingerprint aloud; each seat commits its own cold next digest; each founder then signs a carriage contract that both seats countersign (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). Train N.
@@ -341,7 +342,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''Owed (b), the knock tests offline'': the knock path computes an HMAC of the public gate key (`packages/lararium-mesh/src/gate-knock.ts`, `knockSegment`); an observer holding candidate keys tests a sniffed knock offline, so not echoing the key protects only against an observer with no candidates.
 
 ''Behind the train, each waiting on R-CHARTER''.
-* ''R-KAHU'': S1, a quorum whose seats live on different vessels, and L1, the realm root map from the co-signed `keptBy`. Needs only the seat shape.
+* ''R-KAHU'' stands witnessed: a two-of-two charter whose seats live on two vessels opens, cosigns and lands a cabal admission and a promotion, each vessel under its own scratch root (`nexus-cabal.test.ts`, `nexus-promote.test.ts`). The co-signed `keptBy` fills the realm's steward map (#/rulings).
 * ''R-ENGINE, the offers'': the engine-offer lineage signs under the cadence threshold, adopted within a k-hop window along `prev`.
 * ''R-EMBER'': a household's second device lifts a resting hearth to SERVING and to nothing more (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). It needs the fleet-join door; the slot tree carries passphrase and paper pins, and the ember pin binds in a serving tree of its own.
 
@@ -432,16 +433,12 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! KAHU PLANE
 * `K8` The face-proof gate reads the admitted key's hand-over line, as the socket gate does. The key and its line stand built: a face's per-Nexus key mints at random into its sealed row and re-issues by a hand-over the carriage board carries (`nexus-leaf.ts`, `lares persona reissue`; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">>). The remainder rides the socket cutover. W.
 * `K9` The cadence lineage's seat events and its offer verifier; the joint founding's one cadence citation stands, and a household seed cites none (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). P, with the offers.
-* `K11` The registry's entry count walks anchored ancestry, where it compares `sealEpochCid` by equality. K.
 * `K12` A fresh PersonaGroup for a seat no hand can revoke (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). The PersonaGroup stands as a Keyhive group, so every other seat's revocation rolls the bags the group reaches (`persona-group-roll`); revoke authority follows the seating lineage, so a seat whose seating hand left, and the founder's own seat, leave only by a fresh group. Owed first: a name the face keeps across groups, since its plane names key on the group's id. K.
 * `K13` The sealed outbox (#/rulings; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>). Parcels rest sealed under random names in the `outbox` class. Owed: carriage shipping, idempotent receipt and local delete after ship. K.
 * `K14` The restored face's provisional standing (#/rulings; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>). The mark, guardian or chair view, confirm verbs and three authority-changing refusals stand. Owed: provisional guards at the root-signed crossing, edge kapae, device admit, two-founder act and session signer's authority purpose; a sibling view needs independent proof; the guardians' recovery path where every party stays unreachable. K, W, N.
 * `N5` A newcomer's board catch-up of acts it never saw stands outside the witnessed charter re-import along one lineage. N, X.
 * `P1` The steward signer: the composing vessel's `realm-bag` verb calls the steward door (`realm-steward.ts`); the docker `meme` scenario by hand, in the asker's order; a door for a collective Handle's seal waits on the chartered classes; the vouch door, the feed's writer and a realm's holder hand sign with the worn face's key at the Nexus the realm stands under (`cabal-face.ts`). P.
 * `P3` Many realms: the cross-operator member consult of a cabal realm waits on the face-scoped proof subject and on the vouch door naming a worn face's key. P, W.
-* `P4` The four chartered classes and exact-bytes promotion. P.
-* `P5` Kahu-cabal admission as its own act; the cabal's access path to shared canon. P.
-* `P6` R-KAHU: seats on different vessels; the realm root map from the co-signed `keptBy`. P.
 * `P7` The engine-offer lineage under the cadence threshold. Operator (cadence shares, #/open). P; may follow the ceremony.
 * `P8` One public answer per Nexus, signed by the steward; the domain's Handle table. Off the ceremony's chain by ruling. P.
 * `P9` The re-seal proof and the fork-resolve act stand ruled (#/rulings): the re-seal record builds with sealed-store step three, the fork-resolve act in train N.
@@ -451,8 +448,11 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P13` Per-meme grants; a leaf honouring a session's effective recipe. O1 for the recipe.
 * `P14` The Offering: generic adoption stays deferred, and no generic `take` or `stage` evidence gets minted; the grammar-scoped offering relation, and the receiver's Antigen consultation cap behind the scope ruling (#/open); the fold stands with no caller; a multi-vessel docker receipt for partial replication, partition and rejoin. First arrival, carriage, local inspection, adoption, grammar admission and Antigen enforcement each keep their own receipt. May follow.
 * `P15` `nexus kahuli grammar --apply` stands held, its diff-gate unbuilt. Operator (engine cadence, #/open).
-* `P16` Re-anchoring sorts dwellings by an injected `epochOrder` (`re-anchoring.ts`); it should keep `epochCid` as a fence and surface concurrent records. May follow.
 * `P17` The realm feed's writer check: the feed verb runs in the daemon island (`cabal-realm-verbs.ts`), while the worn face's key at a realm's Nexus mints on the vessel's main thread behind the custody door (`cabal-face.ts`), so the verb resolving its own writer needs a door from the island to the vessel, the shape of `dyad:ask`, which moves the capability inventory and the compose files. The one production caller, `lares cabal feed`, names that key through `cabal-face`; the residue: a caller that types any writer. P.
+* `P18` The shared-canon read consults `kahuCabalCanonAccess`, admission AND sentinel membership; until it does, a removed group keeps its Keyhive sentinel capability at every reader but that one (`boot-daemon-keyhive`). P.
+* `P19` Cabal acts across a roll: an act counts only under the epoch it names, so after a seal roll standing reads `absent` until the seats re-admit at the new head; anchored ancestry, which `lares nexus members` reads, carries them, and an `onRolled` refold for the cabal verbs follows once a live reading folds them. P.
+* `P20` The carriage gates (`carriage-board.ts`, `vessel-raise.ts`, `nexus-carriage.ts`) count at the head alone, while `lares nexus members` honours anchored ancestry, so the list can show a member a gate does not yet honour. P.
+* `P21` A promotion approval reaches no publishing act: link it to `promotion-receipt.ts` and the crossroads publication. P.
 
 !!! THE WIRE
 * `W1` A per-Nexus gate key in two tiers, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): a floor route's keys derive from the floor key and a sovereign route's from the sealed custody root, each per (tier, Nexus, route), resting nowhere. Owed: the composer that stands one gate per bundle and hands each tier its own door, and the dispatcher's knock per bundle. W.
@@ -591,7 +591,7 @@ Each step names the commits that hold it, as pointers into git.
 !!! P ~ the Kahu plane around the train (its steps before N take no identity bytes and may run beside S and K)
 # ''Landed ahead'': the steward signer, the carriage verifier's held root, and realms with selected-realm routing.
 # The member consult of a cabal realm, after W.
-# ''After N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission and the cabal access path; R-KAHU.
+# ''Built after N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission; R-KAHU witnessed across two vessels; the re-anchoring fence and the anchored ancestry count. Owed: the shared-canon read, acts across a roll, and the gates' ancestry (`P18` to `P21`).
 # The cadence offers, which may follow the ceremony.
 ''Riskiest'': the steward signer, proven by the docker `meme` scenario by hand as well as by a shard.
 
@@ -780,6 +780,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_UfTGa8kG8wDhbDklOA3T3tshc7oVAT6KgyPEwlmf6c
+<<^ code="&#x0003;">>ni:///sha-256;tEeZW5c-YICb_m0WmZdWhRmlCHGwcFm4pfWUm41vlZ0
 
 <<^ code="&#x0004;" -> to="?">>

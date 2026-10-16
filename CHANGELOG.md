@@ -14,6 +14,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Two root cards rebuild a face.** `lares vault restore --cards` reads the cards and custodians on a terminal, then runs the bundle body's checked restore path; paper opens no memory.
 - **A bundle founds a fresh hearth.** `lares vessel found --hearth --restore <bundle>` restores its face as persona zero under a fresh seed charter and chair.
 - **A realm carries its own edge roll anchor.** `lares nexus seal anchor --edge --out <partial>` opens one partial per realm for two-vault rolls; `--from` lands each and names `anchored` or `owed` per realm.
+- **The seats approve a promotion's exact bytes.** `lares nexus promote open|sign|check` carries one approval between vaults; it binds the bytes' hash with purpose, surface, class and epoch, and a seat signs only the statement a person confirms by its digest.
+- **A Nexus's Kahu cabal admits by its own act.** `lares nexus cabal admit|remove|cosign|standing` admits or removes a PersonaGroup at the charter's high-impact threshold; a vouch admits nobody.
+- **A realm lists its stewards.** `lares nexus realm bags` prints each co-signed steward beside the bags it keeps.
+- **A member list reads through a roll.** `lares nexus members` counts an admit from a closed epoch when a counted roll anchor carries it to the head.
 
 **Fixed**
 - **Retired join doors leave the CLI and browser.** `lares persona admit`, `lares device-admit`, `vessel found|stand --admit`, the browser's bare `#admit=` reader and browser-ci `qa-admit` give way to fleet join and `qa-join`. `device-admit/v1` stays as the internal edge format; `cabal-join` keeps people and realm admission.

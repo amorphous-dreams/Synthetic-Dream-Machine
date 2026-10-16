@@ -104,14 +104,8 @@ Ground: both vessel composers, the gate, socket, sorter, relay, oracle, dial, fl
 !!! Lane `browser-custody` ~ past lane
 Its custody API landed (the roadmap's `B1` row names what it built and what stays owed). Its boot caller rides with whichever lane next holds `open-browser-vessel.ts` and the web boot.
 
-!!! Lane `kahu-plane` ~ train P after N, beside the cutover
-Kit: the roadmap's #/rulings (Planes ~ cabal, realm, Nexus: exact-bytes promotion, the four chartered classes, steward signing), its 4 · KAHU PLANE block, the loop rows `P4`, `P5`, `P6`, `P16` and `K11`, and <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>.
-# `P4`: the four chartered classes as one typed table the charter sets (ordinary 1-of-1; high-impact 3-of-5 or 2-of-3 for a small body; emergency 2-of-3 with a later reviewing act; revocation at the original act's threshold), and promotion that approves the EXACT BYTES (hash, purpose, surface) under that table, refusing a CID, a clerk's edit or an active persona offered as approval (`promotion-receipt.ts` stands).
-# `P5`: Kahu-cabal admission as its own authority act at the seat quorum, where a vouch alone admits nobody; the cabal's access path to shared canon.
-# `P6`, R-KAHU: a quorum whose seats live on different vessels, and the realm root map from the co-signed `keptBy`.
-# `P16`: re-anchoring keeps `epochCid` as a fence and surfaces concurrent records rather than sorting them by an injected order (`re-anchoring.ts`). `K11`: the registry's entry count walks anchored ancestry rather than comparing `sealEpochCid` by equality.
-# Stop at the classes, promotion and admission proven by vectors and CLI, and R-KAHU witnessed across two vessels.
-Ground: the Kahu plane's mesh and node files (classes, promotion, admission, re-anchoring, the registry count, `realm-steward.ts` and `steward-seal.ts` where a class reaches them) and their CLI verbs. Leave both vessel composers, `node-caps.ts`, the gate, dial and relay files, and the admit hunk of `nexus-contract.ts` to `wire-socket`; `P1`'s composer hunk and `P3` wait on the cutover. A new signing domain carries no `/v1` tail, so the frozen weld stands; a textual meeting in `domains.ts` or `index.ts` with `wire-socket` resolves at the controller's merge.
+!!! Lane `kahu-plane` ~ past lane
+Train P after N landed: the chartered classes, exact-bytes promotion, Kahu-cabal admission, the co-signed steward map, the re-anchoring fence and the anchored ancestry count, with R-KAHU witnessed across two vessels. The roadmap's `P18` to `P21` name what stays owed.
 
 !!! Lane `scout` ~ past report
 The dated `next-path-scout.md` report records the earlier tree; its top line names the commits that supersede its stale observations.
@@ -122,11 +116,12 @@ The dated `next-path-scout.md` report records the earlier tree; its top line nam
 
 !! State ~ the controller trues this section at every handoff
 
-The merged road carries the fleet-join door, the recovery doors, N's anchor guards and witness, and H's pure delegation and grant. The live cloud briefs name the socket cutover and the Kahu plane; browser custody's API landed.
+The merged road carries the fleet-join door, the recovery doors, N's anchor guards and witness, and H's pure delegation and grant. The live cloud brief names the socket cutover; browser custody's API and the Kahu plane after N landed.
 
 * ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8; fleet join; restore after guardian enrolment; root cards; restore as persona zero.
 * ''Train N'': two-vault kapae and roll-anchor doors stand. N2's per-realm edge anchor, N4's prior-roll refusal and N5's two-root charter re-import witness stand. A newcomer's board catch-up of unseen acts stays outside N5.
 * ''Train W'': fleet join reaches node and browser. The grant ring stands uncalled. The full route pin, sealed application frames, face-scoped sharing, fleet-shadow consult and assembled socket cutover remain owed.
+* ''Train P'': the chartered classes, exact-bytes promotion and Kahu-cabal admission stand built and R-KAHU witnessed; the shared-canon read, cabal acts across a roll and the gates' ancestry stay owed.
 * ''Train H'': H2's delegation and three dials and H8's signed grant and public-half verifier stand specified. The live issuer, reader, store, sorter and serving rows remain owed.
 * ''Recovery'': guardian sets ride bundles; provisional standing and its view verbs, sealed outbox, root-card restore and restore founding stand. Parcel ship and delete, remaining provisional guards and sibling proof stay owed.
 * ''Browser custody'': the slot tree seals the device seed and the Archives, refusal and reopen witnessed; the boot unlock, the persona roots' seal and the passkey slot stay owed (`B1`).
@@ -150,6 +145,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YclrWePHQ4_vIcTdEcg6tGAHfYBzRCTI4PewMsa6hME
+<<^ code="&#x0003;">>ni:///sha-256;YpYZKe2Y2eFXfH6pKCUL2oejT2j9vhi_UPKp0OtPiZg
 
 <<^ code="&#x0004;" -> to="?">>
