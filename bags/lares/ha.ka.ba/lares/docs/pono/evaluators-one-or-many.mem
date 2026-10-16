@@ -1,0 +1,222 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/evaluators-one-or-many.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 15
+manao             = 16
+manaoio           = 14
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "evaluators-one-or-many — the house answer to open fork Q1 of the portable-engine talk story: one reference evaluator (the TW5 engine in JS) for the full wikitext and filter dialects, an evaluator-neutral conformance suite built now with that engine as its pinned oracle, the parse tree as the normative layer and each camera's serialisation as a second layer, and a certified core-subset evaluator permitted only when a host earns it. Rewritten in house prose from a tasked Fable spirit's prior-art survey (CommonMark, sqllogictest, JSONPath RFC 9535, JMESPath, golden-liquid, Mustache, test262, WPT, CEL, ink, Nix/Tvix, regorus, TiddlyWeb), with its principles, suite shape, host landing and open rulings."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/evaluators-one-or-many"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! Evaluators ~ one engine, one suite, many hosts
+
+''The fork it closes.'' The portable-engine talk story left one question standing: should the house run ''one evaluator'' of its wikitext and filter dialects everywhere, or let ''many evaluators'' grow, one per host? The operator's bet frames the answer: ''the language carries portability.'' This meme reads that bet against twenty-odd languages that tried both roads, and lands one ruling.
+
+''The question dissolves.'' Prior art never decides "one or many" first. It decides ''whether the language owns a conformance suite any evaluator can face.'' Every dialect found that lives honestly with more than one evaluator owns such a suite; every dialect that drifted lacked one, kept it optional, or shaped it after one implementation. The count of evaluators then follows from host need, and the suite decides whether a second one may exist honestly.
+
+''So the bet sharpens:'' the language carries portability, and ''its suite carries the language.''
+
+''Register.'' House prose, rewritten from a tasked Fable spirit's web survey of 2026-10-16. Source marks travel as the spirit gave them: //fetched// (read on GitHub), //search// (a search passage), //inferred// (reasoning, flagged). The spirit read the three language specs, the tree-sitter package and two sibling reports; it edited nothing and booted nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ruling>>
+
+!! The ruling, four strokes
+
+# ''One reference evaluator for the full dialects: the TW5 engine in JS,'' running wherever an engine can run ~ browsers, Node, QuickJS, Hermes, a UE6 sidecar's embedded JS. This keeps the standing frame ENGINE = TW5 VM. Lean hosts (Mudlet, MCP, chat) receive parses, results and blocks over `port:ask`; the language never travels to them.
+# ''Build the conformance suite now, evaluator-neutral, with the pinned JS engine as oracle'' ~ the sqllogictest move: run the reference over a frozen world, record, review once by eye, freeze, and diff from then on. The house filter dialect (`wikitext-filter`) names no suite today; this fills that hole first.
+# ''The parse tree carries normative force; each camera's serialisation stands second,'' with tolerance declared per test and degradation cases mandatory. TW5 already tests at the tree (`rule`, `start`, `end` on every node), and the house spec already binds normative force to parsing.
+# ''A certified subset evaluator stays permitted, never scheduled.'' A lean host that proves an offline need may grow one, green against the suite's `core` section, publishing its skip list by name. Nothing in the forward attractors asks for it today.
+
+''Why build a suite with only one evaluator?'' Because one evaluator removes ''language'' drift and leaves ''host'' drift. The same engine on V8 and on Hermes parts ways wherever `Intl`, `localeCompare`, Unicode regular expressions or `Date` differ. test262 exists for exactly this reason: one spec, many engines claiming it. A suite run per host names that drift before an operator meets it. This alone justifies the suite even if the house never writes a second evaluator.
+
+<<~/ahu>>
+
+<<~ ahu #/the-record>>
+
+!! What the record shows
+
+''TiddlyWiki's own record.'' In roughly twenty years nobody ported TW5's filter language or wikitext parser to another language and kept it in step. TiddlyWeb's Python filters, "borrowed from filterTiddlers … does not check its own syntax", became their own dialect (//fetched//). WikklyText rendered TiddlyWiki Classic only (//search//). Two Rust converters of 2025–26 translate easy constructs to Markdown and copy the rest through, named (//fetched//). Upstream's MultiWikiServer plan expects "a query syntax supporting a subset of filter operators" server-side (//search//). Each attempt ended as a subset with a divergence list, and TW5's own corpus could not certify any of them: about 75 filter cases comparing comma-joined strings, about 25 parse-tree cases, nine render cases (//fetched//).
+
+''Languages that hold many evaluators,'' each with its suite: CommonMark (500+ examples in `spec.txt`, `spec_tests.py --program`), JSONPath RFC 9535 (`cts.json`, `results` for allowed non-determinism), JMESPath (`given`/`expression`/`result`/`error`), Liquid via golden-liquid (`result`/`results`, `invalid`, tags such as `utc` and `error string`), Mustache (optional `~` modules, "Mustache-like" for partial implementations), Dhall, CEL (parse, check, eval phases; `-skip_tests` at name boundaries), test262 (`negative`, `features`, `flags`), WebAssembly (`.wast` with a reference interpreter as oracle), W3C QT3, WPT (reftests with declared `fuzzy`), sqllogictest (expectations recorded from already-correct engines, 7.2 million queries at one count).
+
+''Languages that drifted,'' each where the suite went missing or bent to one implementation: Markdown before CommonMark (fifteen renderings of one paragraph); Jinja against Nunjucks (`true` against `True`, native methods); GraphQL beyond graphql-js (divergence never measured); Datalog dialects (differential testing could not even be set up); Lua across PUC, LuaJIT and Fengari (iteration order, `\x`, integers, strings); CUE (tests "reflect properties of the current implementation"); Nix until Tvix wrote `nix_oracle` against C++ Nix 2.3; ink, whose ports broke on version lag rather than wrong code.
+
+<<~/ahu>>
+
+<<~ ahu #/golden-principles>>
+
+!! Golden principles
+
+# ''The examples form the suite, and the suite forms the spec's executable half.'' CommonMark and Dhall hold implementations to every case; a failure names an implementation bug, an underspecified standard or a bad test. `tiddlywiki-wikitext` already points at `editions/test`; the corpus behind that pointer runs thin.
+# ''A reference implementation without a shared suite leaves divergence unmeasured,'' and a suite shaped like one implementation certifies only that implementation (graphql-js, CUE).
+# ''A multi-evaluator language publishes its divergence list by name'' ~ liquidjs, gojq, jaq, JMESPath Community, Handlebars. The house's own refuse-by-name law, applied to a language.
+# ''Ports drift first at numbers, strings, ordering and truthiness.'' TW5 filters compare as strings except where `nsort` and the math operators coerce; the suite carries those cases first.
+# ''Non-determinism lives in the suite's format,'' never in an implementer's judgement: `results` lists for open orderings, a `set` tag for unordered comparison, a `utc`-style tag where the host clock matters.
+# ''Feature tags let an evaluator stand honestly partial'' ~ Mustache modules, test262 `features`, Lua's `_port`, Saxon's 415 excluded tests, regorus naming its 23 failing suites.
+# ''Errors and degradation count as conformance.'' TW5's filter tests barely touch errors ("Just don't get RSoD"; "this one is strange"; "????"). The house's total-parse law makes degradation the normal path, so the suite tests it as such.
+# ''Ports track the reference by version; lag fails them, not wrong code.'' Every suite run pins a TW5 commit, as the spec already pins its description to `69b98fc94`.
+# ''Ship the tree when the consumer only renders; embed the evaluator when the round trip dominates.'' Pandoc's JSON AST for filters in any language, then embedded Lua when the pipe cost bit; ESTree as lingua franca across Acorn, Babel and Esprima.
+# ''Differential testing needs a controlled oracle,'' or it tests dialects instead of engines (the Datalog study; SQuaLity's cross-suite runs).
+# ''Where host constructs leak into a language, portability dies.'' TW5 leaks JS at `regexp`, at sort comparison, at the `jsonget` family and through widget variables. The house dialect already fenced `!!field` and ambient `currentTiddler` (→ `[self[]]`, explicit context); the suite fences the rest with a `host-bound` tag.
+# ''The suite's grain matches the contract's grain.'' Filters compare at the result set; wikitext compares at the parse tree, then at each camera.
+
+<<~/ahu>>
+
+<<~ ahu #/the-suite>>
+
+!! The suite's shape
+
+!!! Filters (`filter-cts`)
+
+One JSON file per section, assembled by script into one `filter-cts.json`, never hand-edited at the top. A test carries:
+
+```json
+{
+  "name":       "toml/key-equals/string",
+  "filter":     "[toml:register[SC]sort[toml:title]]",
+  "world":      "worlds/pono-small",
+  "context":    { "self": "lar:///ha.ka.ba/lares/api/pono/meme" },
+  "result":     ["lar:///…", "lar:///…"],
+  "results":    null,
+  "parse":      { "runs": [] },
+  "fault":      null,
+  "tags":       ["core", "toml", "order-sensitive", "reviewed"],
+  "since":      "wikitext-filter 0.1 / tw5 69b98fc94",
+  "host-bound": false
+}
+```
+
+* ''Oracle first, eye second.'' The pinned engine writes `result`; a reviewer reads each once and tags it `reviewed`. A doubted case keeps a `strange` tag rather than vanishing.
+* ''Sections follow the dialect's own tables:'' `preserved` (TW5 operators kept), `added` (`toml:`, `stack:`, `self[]`, `ahu:id`, `edge:family`), `deprecated` (diagnostic ''and'' result), `fault` (unknown operator, unbalanced brackets, empty operand), `context` (every scope row ~ carrier `#meta`, `meme` block, `huli` variable, `wehe`/`helu` parameter).
+* ''Order gets declared per test.'' Where the dialect promises only a set, the test says so.
+* ''Host-bound operators carry the tag;'' an evaluator's skip list names them at name boundaries, and a skipped case still parses and still degrades.
+* ''Degradation forms a section.'' Each fault states the diagnostic and the result returned while continuing; an evaluator that throws fails.
+* ''Versioning'' pins the dialect version and the oracle's TW5 commit. A changed expectation lands only with a `since` bump and a ledger line, under the `host-ts/parity.mjs` discipline: a drifting hash names a disagreement, never a content edit.
+* ''Start near 250 tests'' (//inferred// from the operator tables): each operator plain, negated and empty-operand; each context row twice; each fault once. Growth follows bugs.
+
+!!! Wikitext, per camera
+
+''Layer 1, the parse tree (normative).'' Input text → tree, every node with `type`, `rule`, `start`, `end`, plus the graph-layer additions (sigil name, args, pairing, pranala edges). The carrier grammar's specimens and pinned structural hashes already run this way across two hosts; the same manifest grows upward into the TW5 inline layer. Degradation cases stay mandatory: a stray `</br>` kept as text, an unclosed `<div>` still an element, a stray `<<` left as text.
+
+''Layer 2, cameras (per target, tolerance declared).'' One golden per specimen and camera:
+
+* `html` ~ exact after a declared normaliser (attribute order, class whitespace), so TW5's whitespace sensitivity becomes a rule rather than a trap.
+* `text` ~ exact.
+* `blocks` ~ a JSON tree of heading, paragraph, list, link, field and `affordances[]`; exact on structure, affordance ids compared by position since ids live one render.
+* `label-html` (Mudlet's Qt subset) and any later canvas camera ~ checked against the same `blocks` golden through a declared projection, never a hand-written golden of their own (WPT's rule that a reference avoids the technology under test, applied to cameras).
+* ''A missing camera tests too:'' the spec says a renderer MUST degrade a missing camera visibly, and the suite records that look per camera.
+* `fuzzy` ~ only where a camera loses detail by nature (a 3D layout), bounded in difference and count, never "roughly".
+
+''Fixtures.'' TW5's 274 test tiddlers under `editions/test/data/` form the base; the house adds its `authored-*` and `wild-*` specimens. Filter tests and render tests share one frozen world, so a transclusion resolves against the same titles a filter selects.
+
+<<~/ahu>>
+
+<<~ ahu #/the-hybrid>>
+
+!! The hybrid that fits, in landing order
+
+# ''The reference stays the TW5 engine in JS,'' embedded where a host allows. Filters ride `port:ask{kind:"filter"}`; renders ride `port:ask{kind:"render", target}`. Results and trees travel; the language stays home.
+# ''The suite travels with the dialect as a submodule-grade artifact'' ~ evaluator-neutral JSON, generated, reviewed, pinned, tagged. It runs from day one on three hosts: the browser engine, Node, and each embedded JS engine the house targets, each with a skip list by name. This turns "the language carries portability" from a bet into a measurement: the contract reads as `filter-cts.json` plus the specimen manifests, and a host's conformance reads as a published row.
+# ''A certified subset evaluator, permitted, not scheduled.'' Its charter: the `core` section only (selection, tags, TOML keys, stacks, `self[]`, string `sort`, `limit`/`first`/`last`/`reverse`, Boolean steps), explicit context, no widget variables, no `regexp`, no math, nothing host-bound. Green on `core` earns the name `wikitext-filter, core`; anything less calls itself "filter-like". It evaluates against the suite's own frozen-world shape, a snapshot a lean host may already hold. A lean host that wants the carrier parse takes it from tree-sitter's per-host bindings (web-tree-sitter on WASM hosts; `ltreesitter` where Lua can `dlopen`), never from a second hand-written parser.
+
+''What the hybrid refuses:'' a second full evaluator of TW5 wikitext or filters in any language. Every record says that road ends in a subset with a divergence list, maintained forever against an upstream that moves every few months.
+
+<<~/ahu>>
+
+<<~ ahu #/host-landing>>
+
+!! Landing on the forward attractors
+
+|!Host |!Evaluator |!What travels |!Suite role |
+|Browsers |reference engine |records; the glass renders itself |full suite in CI; `html` goldens |
+|Node |reference engine |records, html, text, blocks |full suite; the oracle run that writes goldens happens here |
+|QuickJS / quickjs-ng |reference engine (ES2020, no WASM, pump-mode timers) |as Node |full suite per build; expected skips touch `Intl` |
+|Hermes |reference engine (Proxy, Intl, local eval historically thin) |as Node |full suite per build; `host-bound` earns its keep here first (//inferred//) |
+|Mudlet (Lua 5.1, no JS, no WASM) |''none'' ~ the lararium island evaluates |`text`, `label-html`, `blocks`; invoke by affordance id |`label-html` golden derived from `blocks`; a `core` subset in Lua only on a named offline need |
+|UE6 sidecar |reference engine in the sidecar's JS; Verse receives blocks |blocks, text; writes as records |sidecar build runs the suite; a 3D camera holds the one rightful `fuzzy` |
+|MCP |consumer |results, text, html |the `fault` section supplies the filter tool's error vocabulary |
+
+''Refinement over the spirit's table.'' The template insight of the floor (any root template or widget tree serves as a render target; the page DOM stands as Jeremy's most pono browser projection) lands here as one rule: ''a camera names a root template plus a serialiser,'' and the suite's camera layer keys its goldens by that pair. The browser's page template and a Mudlet pane's block template then differ only in root and serialiser, never in engine, and one suite holds both honest. The `blocks` camera waits on the Annex B widget-tree pass of `memetic-wikitext`; until it lands, the camera layer starts at `html` and `text`.
+
+<<~/ahu>>
+
+<<~ ahu #/mu>>
+
+!! Mu
+
+* ''Wand `*` (visible, ignition).'' The record runs unanimous: every honest multi-evaluator language owns a suite with results, error names, feature tags and a version pin. TW5 owns about 110 Jasmine cases and no second evaluator in two decades; the house filter dialect owns none. Ignite the suite, not a port.
+* ''Cup `?` (macro, sympathy).'' The operator's bet and the engine ruling need not fight. The single JS engine becomes the contract's first signatory, not its owner, and the suite keeps the door open for a host that cannot run JS without forcing anyone through it.
+* ''Sword `!` (micro, discernment).'' A second evaluator would drift at `regexp`, sort comparison, `nsort` coercion, widget-variable context and every plugin operator. Name them `host-bound`; keep them out of any subset charter.
+* ''Pentacle `_` (hidden, ground).'' Who re-pours the goldens when upstream TW5 moves? Pinning makes the upgrade a visible diff; without an owner for that diff the suite rots, as W3C QT3 nearly did after its working group closed.
+* ''Arcana `0` (unask).'' "One or many" dissolves into "is there a suite, and who serves as its oracle." Yes; the JS engine, pinned.
+* ''Dubious-Move `?!`, carried.'' Micro certainty says no forward attractor needs a second evaluator; macro relation says the portability bet wants the possibility alive. Resolve by building the suite now and second implementations never, until a host earns one.
+
+<<~/ahu>>
+
+<<~ ahu #/two-stories>>
+
+!! Two stories
+
+''Gaia, 2026.'' An operator reads one quest journal three ways: a browser tab, a Mudlet pane fed over GMCP, a phone shell whose JS runs on Hermes. One evening the phone's "recent quests" list comes back in another order: the filter sorts by locale, the phone engine lacks `Intl`, and "Ängsbacka" sinks to the bottom (//inferred//: a plausible drift, not a measured one). No second evaluator exists anywhere in the chain; the drift came from the host. A `host-bound` sort test with Hermes on its skip list would have named the difference first. The Mudlet pane showed the browser's order, because it received a result, never a language.
+
+''Elyncia, 5492.'' Two spirits keep one crossroads shrine. The elder holds the whole engine in orichalcum and answers every filter the district asks. The younger, a reflex spirit bound into a Lua tablet, may speak only the core rite. Before it speaks aloud it pours the libation suite, two hundred and some cups, each answer sealed in the rim; it skips the regexp cups and the number cups and says so by name at the gate, and the roll records it as "wikitext-filter, core only." When the elder gets re-cast at a new upstream commit, the rims get re-poured and diffed; three answers change, each with a ledger line. No traveller ever sees the two disagree, because the younger answers only questions the suite says both answer alike. Drift's absence looks like this: not two identical evaluators, but one contract small enough to keep, and a gate that names what each spirit may not say.
+
+<<~/ahu>>
+
+<<~ ahu #/open-rulings>>
+
+!! Rulings standing open
+
+# ''Suite strength.'' `tiddlywiki-wikitext` says a parser SHOULD pass its suite; raise to MUST for the house dialects and for any non-reference evaluator, with a published skip list.
+# ''Suite format.'' Adopt the `filter-cts` shape above (generated, then reviewed), or hand-write in the CommonMark manner at many times the cost.
+# ''The `core` charter.'' Which operators belong, and whether string `sort` belongs given the locale question.
+# ''Oracle ownership.'' Who re-pours the goldens when the engine commit moves, and whether a meaning-changing diff lands as a hoike.
+# ''Camera tolerance.'' Exact for `html` and `text`; `blocks`-derived for `label-html`; `fuzzy` for 3D only.
+# ''Mudlet offline need.'' Mudlet receives results only; reopen the subset evaluator on a named offline use.
+# ''Annex B dependency.'' Start the camera layer at `html`/`text` until the widget-tree pass lands.
+
+<<~/ahu>>
+
+<<~ ahu #/sources>>
+
+!! Sources, as the spirit reached them
+
+''Fetched on GitHub:'' commonmark/commonmark-spec · jsonpath-standard/jsonpath-compliance-test-suite · jg-rp/golden-liquid · mustache/spec · estree/estree · tc39/test262 `INTERPRETING.md` · web-platform-tests `reftests.md` · cel-expr/cel-go `conformance_test.go` · microsoft/regorus · jbmoelker/jinja-compat-tests · inkle/inkjs and inkle/ink tests · YarnSpinnerTool/YarnSpinner · tree-sitter `lib/binding_web` · euclidianace/ltreesitter · jgm/pandoc `lua-filters.md` · TiddlyWiki5 `test-filters.js`, `test-wikitext-parser.js`, `test-wikitext.js` · angeluseve/tiddlyweb `filter.py` · henry40408/noda · adoble/two.
+
+''Search passages:'' commonmark.org; LWN on Markdown variants; json-path-comparison; the jq wiki on gojq; jaq; liquidjs differences; python-liquid; cel-spec and cel-go READMEs; DuckDB and SQLite sqllogictest pages; SQuaLity (arXiv 2410.21731); the Datalog optimisation-bug study (arXiv 2402.12863); jmespath.test (both lineages); W3C QT3 results; Saxon conformance; quickjs-ng test262; the WebAssembly core test README; wasm3; wasmtime-wast; Luanti on LuaJIT; Fengari; Lua `testes/all.lua`; Inky 0.5; Inkpot; Yarn Spinner 2026 posts; Nunjucks FAQ; graphql-js; Dhall tests; CUE testdata and cuetxtar; Tvix eval; OPA compatibility; Interop 2026; DataScript; Datahike; a 2019 Hermes feature list (old); WikklyText; TiddlyWeb; TiddlyWiki forum threads on MultiWikiServer and wikitext-to-HTML.
+
+''Unreached, memory only:'' JSONPath CTS field names beyond `result`/`results`; Yarn Spinner's program format; the exact string-compare routine behind TW5 `sort`.
+
+The full survey with its prior-art table rests in the project's shared reports as `reports/tw5-worker-vm/evaluators-one-or-many.md`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wikitext-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;IcNUd1wFjZIH0XqtAKvdAPFZVIWO1DBfPLoo2dDOHuQ
+
+<<^ code="&#x0004;" -> to="?">>

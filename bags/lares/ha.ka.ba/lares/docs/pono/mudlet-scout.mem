@@ -1,0 +1,377 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/mudlet-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "mudlet-scout — VERBATIM handoff of a tasked Fable spirit: Mudlet (the Lua 5.1 MUD client) surveyed 2026-10-16 as a host where a lararium joins any game or world as a capability, never as the game. Carries Mudlet's capability surface (Lua, GMCP and its kin, HTTP without WebSocket, Geyser panes, the mapper, packages, the loopback MCP server merged into development), four integration patterns (virtual-MUD projection, proxy, package over HTTP, server-side module), the TiddlyWiki mapping across store, engine and projection, AI co-player squads under wizard approval on Islands of Myth, the sensorium and live-3D deferral, a phased plan riding the portable-engine plan, and seven open rulings. Held as a collision surface."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/mudlet-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! Mudlet ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked Fable spirit reported from a web-research pass, kept whole, as a ''collision surface'' rather than a briefing. The spirit read the web and four sibling reports; it read no repository code beyond one package description, and it booted nothing.
+
+''The operator's frame it answers'' (Telarus, 2026-10-16): the Lararium rides as a ''capability added to any setup'' ~ any game, world or experience ~ with the Islands of Myth MUD as the worked example: a player's lararium and, under wizard approval, AI characters as live co-players coordinated through it as squads. Live 3D games (Katamari Damacy) stand deferred until the sensorium finishes; this survey stays on TiddlyWiki integration.
+
+''Rulings it reads under:'' three layers held apart ~ the CRDT store as virtual backend, the TW5 VM engine, the render projections; the TW5 syncer refused as web-2.5 design; mutation-log and DOM-delta streams refused; the Web3-only law.
+
+''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, or unreached); the Islands of Myth match and its GMCP support stand inferred. Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+# Mudlet as a lararium capability: survey, integration patterns, squads
+
+Fable web researcher, tasked spirit, 2026-10-16. Inputs read in full: the boot seed (`noosphere-boot.mem`), `host-attractors.md` (its Mudlet deep dive §5 and the projection-port sketch §2.3–2.4 and §9.2), `portable-engine-plan-v2.md` (the Tiddler Port, `port:ask`, phases and rulings), `model-and-gaps.md`, and the `@lararium/sensorium` package manifest (its README does not exist; the package.json description stood in). `third-ways.md` was left alone. No repository code was read beyond that manifest; nothing in the tree was touched.
+
+**Reach in this pass.** `WebSearch` answered in both modes. `WebFetch` resolved **only `github.com`** (the Mudlet repository, its releases, pull requests and issues, the Evennia repository, tbaMUD, pycat); two guessed LIMA mudlib URLs on GitHub returned 404. Nothing on wiki.mudlet.org, mudlet.org, forums.mudlet.org, islandsofmyth.org, achaea.com or aardwolf.com was fetched; those claims rest on search-returned passages. No tool was refused outright in this pass. Marks: **[reached: fetched]** the page was read (GitHub only) · **[reached: search]** confirmed through search passages · **[unreached]** memory only, flagged where used · *(inferred)* reasoning, not evidence.
+
+**Vocabulary.** *MUD* = a multi-user text world reached over telnet. *Mudlet* = a free Qt-based MUD client scripted in Lua. *GMCP* = Generic MUD Communication Protocol, JSON messages carried out-of-band inside telnet subnegotiation, named `Package.Subpackage`. *Trigger* = a client-side pattern over incoming text that runs a script; *alias* = a pattern over outgoing commands; *timer*, *key binding* and *event* likewise. *Geyser* = Mudlet's Lua layout manager for panes. *Lararium* = one operator's node: STORE (the CRDT virtual backend, one Automerge document per bag), ENGINE (the headless TW5 VM), PROJECTIONS (render and interaction surfaces). *Port* = the Tiddler Port of v2, the engine↔projection waist (`open`, `write`, `ask`, `presence`, `close` up; `snapshot`, `changes`, `written`, `answer`, `presence`, `fault` down). *Keyhive* = the house's capability layer, which grants by key rather than by account. *Squad* = AI characters driven as live co-players through the operator's lararium.
+
+---
+
+## 1. Summary
+
+1. **Mudlet in October 2026 is a Lua 5.1 client with no sandbox, no JavaScript, no WebSocket, no listening socket, and a brand-new MCP server.** CMake asks for `Lua 5.1 EXACT` and Qt 6.8.2+ [reached: fetched]. `LuaGlobal.lua` loads `rex_pcre2`, `lpeg`, `zip`, `lfs`, uses `yajl` and `io.open`/`dofile`, and removes nothing [reached: fetched]; `DB.lua` wraps `luasql.sqlite3` into profile-local `Database_<name>.db` files [reached: fetched]. Releases: 4.19 (Dec 2025), 4.20.x (Mar 2026), 4.21.0/4.21.1 (June), 4.22.0 (July), **5.0.0 (29 Aug 2026)**, 5.0.1 (2 Sep), with public test builds between, the latest dated 15 Oct 2026 [reached: fetched]. 4.21 added the embeddable `Geyser.TextEdit`, `lpeg`, `telnet://`/`telnets://` handling, MMCP chat and MXP FRAME/DEST; 5.0 brought a GMCP/MSDP-driven starter interface shipped as an uninstallable package, 47 % faster paint, Ctrl+1..9 profile switching, OSC 8 hyperlinks and browser sign-in [reached: fetched]. **PR #8576 "Allow Mudlet to be controlled by Claude / ChatGPT" merged into `development` on 10 Oct 2026**: a loopback-only HTTP JSON-RPC MCP server on port 11235 with a bearer token, an Origin check, a single `lua` tool that executes arbitrary Lua in a profile, a `mudlet --mcp-bridge` stdio relay, no resources, no prompts, compile-time flag `WITH_MCPSERVER`, present in the 15 Oct PTB and not in 5.0.1 [reached: fetched]. The issue thread records a botting-policy dispute that the house's squad design must answer (§5).
+
+2. **Mudlet stays tier (c): projection only.** host-attractors §5 holds. Four integration patterns are weighed (§3): **(a) proxy** (lararium between Mudlet and the MUD; prior art pycat, MudProxy, Blightmud), **(b) package over local HTTP/MCP**, **(c) virtual MUD** (lararium poses as a telnet server for its own panes), **(d) server-side GMCP module** on the game. Recommendation: build **(c) first as the port carrier** (one telnet listener, `Lar.*` GMCP packages, an `.mpackage`), grow it into **(a)** by adding pass-through, and pursue **(d)** on Islands of Myth because the operator holds a wizard seat there.
+
+3. **"Isles of Myth" resolves to Islands of Myth** *(inferred: same operator, same name modulo a word)*: an LP-family MUD running since July 1996 on a "heavily modified" LIMA 1.0b3 mudlib, host `islandsofmyth.org` port 3000, with a public wizard page linking MudOS documentation and coding guides [reached: search]. Whether its mudlib negotiates GMCP today is **not confirmed** by any source reached; the FluffOS driver family supports GMCP and WebSocket natively [reached: search], which gives the wizard path a floor to stand on.
+
+4. **TiddlyWiki integration (§4) rides on two facts of the house's own design**: GMCP packages are already keyed-absolute state (P2), so `gmcp.Room.Info` and `gmcp.Char.Vitals` map onto whole-tiddler records and the presence lane respectively; and Mudlet's labels take a Qt rich-text HTML subset, so `port:ask{kind:"render", target:"label-html"}` and the blocks-plus-affordances grain (`echoLink`/right-click menus carrying affordance ids) are both reachable from Lua. The raw text river must **not** enter the CRDT at line grain; it belongs in a session log outside the store with digests promoted by verb.
+
+5. **Squads (§5) fit a two-clock design.** Combat clocks: tbaMUD/CircleMUD `PULSE_VIOLENCE (2 RL_SEC)` = a 2-second round [reached: fetched]; LPMud `heart_beat` every 2 seconds [reached: search]; Achaea balance about 4 s per sword swing, salves 1 s, elixirs 5 s [reached: search]. LLM clocks: time to first token roughly 0.35–0.8 s for Haiku-class, 1.2–5 s for Sonnet-class, 2–12 s for Opus-class [reached: search, sources conflict]. So reflexes (heal thresholds, follow, flee, parry) live in Mudlet triggers or in the island's Lua-free reflex table at the 2 s clock, and the lararium carries intent at a 10–30 s clock. Consent is a keyhive grant naming which characters a spirit drives, mirrored in-game by a visible tag, and the MUD's wizard grants it; on Aardwolf or Achaea the design would be a rules breach by construction [reached: search].
+
+6. **Sensorium and 3D (§6) are named and deferred**, per the operator.
+
+7. **Phased plan (§9)** rides v2: Phase 1's `port:ask` (filter, render with `label-html`/`text`/`blocks`, load, invoke) is the only thing Mudlet needs from the engine; a GMCP adapter in the node island, a Muddler-built `.mpackage`, a proxy mode and a LIMA-side GMCP module follow. Red/green tests and seven open rulings close the file.
+
+---
+
+## 2. Mudlet capability survey, as of October 2026
+
+### 2.1 Versions and cadence
+
+| Release | Date | What it brought (selected) | Mark |
+|---|---|---|---|
+| 4.19.0 / 4.19.1 | 26 Dec 2025 / 1 Aug (year not shown on the page) | "Mudlet is now portable" | [reached: fetched] |
+| 4.20.0 / 4.20.1 | 14 Mar 2026 | removed Windows 32-bit builds; `mpkg` command-line installs (package pages say 4.20+) | [reached: fetched; reached: search] |
+| 4.21.0 / 4.21.1 | 13 / 22 Jun 2026 | `Geyser.TextEdit`, `lpeg`, `selectAll`, `getKeyCode`, Lua memory introspection, 3rd-party Lua definition files, `permExactMatchTrigger`, `setExitWeightFilter`, `telnet://` and `telnets://`, OSC 8 context-menu titles, MMCP (MudMaster Chat Protocol), MXP FRAME/DEST, multiple map views, hidden rooms, 3D-map labels, generic-mapper room-description matching, undo/redo in the editor, blinking text; fixes: MSDP negotiation aligned to spec, GMCP media `finish` parameter, GMCP merge error reporting | [reached: fetched] |
+| 4.22.0 | 6 Jul 2026 | mapper-focused: Configure Areas dialog, stub-exit locks that survive audits | [reached: fetched] |
+| **5.0.0** | 29 Aug 2026 | "the biggest release we have ever made": starter interface that "reads what the game already sends over GMCP and MSDP" and builds health bars, a map pane and a chat window, shipped as an uninstallable package; paint time −47.1 %, throughput +26.6 %; Ctrl+Tab and Ctrl+1..9 between game profiles; OSC 8 hyperlinks; full-window background images; browser sign-in (Google, Discord, a game's own system) with the reconnect token in the OS keychain; `--offline`; new Lua: `getWindowGeometry()`, `windowVisible()`, `getLabelText()`, `remainingNamedTimer()`, `getTextFormat()`; "Every default package now ships as an mpackage" | [reached: fetched] |
+| 5.0.1 | 2 Sep 2026 | small fixes | [reached: fetched] |
+| PTB 2026-10-15 | 15 Oct 2026 | MCP server (#8576), modern 3D mapper editing and speedwalking, speech-to-text backend for scripts, more speech-recognition engines, plain-text screen-reader descriptions, MSDP group/party lists, "Games can turn off Mudlet's starter UI with a GMCP message" (#10278), `createMapLabel()` 35× faster, `getRoomsByPosition()` 100× faster | [reached: fetched] |
+
+Cadence: a stable every one to three months through 2026, a patch within days, public test builds between; a "Mudlet 5 roadmap" link exists on the README [reached: fetched].
+
+### 2.2 Lua version and sandbox
+
+- **Lua 5.1, exactly.** `find_package(Lua 5.1 EXACT)` in `CMakeLists.txt` [reached: fetched]; the manual's introduction says the same [reached: search, prior pass]. A LuaJIT experiment existed years ago and was "not intended for the common users" [reached: search]. Consequences: `setfenv`, `loadstring`, `unpack`, no integer subtype, no `goto`, 5.1 coroutines (`coroutine.create/resume/yield/wrap`).
+- **No sandbox.** `LuaGlobal.lua` conditionally `require`s `rex_pcre2`, `lpeg`, `zip`, `lfs`, uses `yajl` directly, calls `io.open(_path, "wb")` in its unzip helper and `pcall(dofile, packagePath)` per package, and removes nothing [reached: fetched]. The `DB.lua` header says databases are stored in the Mudlet configuration directory as `Database_<name>.db` through `luasql.sqlite3` [reached: fetched]. Forum code uses `io.open` with `getMudletHomeDir()` freely [reached: search]. The MCP pull request's own CMake comment says the feature "opens a port that runs arbitrary Lua" [reached: fetched]. `os.execute` availability was not confirmed by any page reached; *(inferred)* it is present, since nothing strips the `os` table and Mudlet's `spawn()` exists for processes anyway (below). For comparison, MUSHclient documents a sandbox that nils `io.open` and `os.execute`; nothing like it was found for Mudlet [reached: search].
+- **Threading and timing.** One Qt event loop; a long Lua call blocks the UI *(inferred; the general Lua rule a Wesnoth developer stated applies [reached: search])*. Coroutines are cooperative only. `tempTimer(seconds, code|function)` fires relative to creation time ("not cumulative") and accepts anonymous functions in recent versions [reached: search]; GUI timers carry a milliseconds field, and Muddler exposes the same [reached: search]; sub-second `tempTimer` decimals were not confirmed on a page reached [unreached, memory says `tempTimer(0.5, …)` works]. 5.0 adds `remainingNamedTimer()` [reached: fetched]. Practical rule: split long work into timer steps; the 2 s combat clock (§5) is coarse enough.
+
+### 2.3 Scripting API surface relevant here
+
+- **Triggers, aliases, timers, keys, scripts**: the five object classes, editable in the GUI or made at runtime (`tempTrigger`, `tempRegexTrigger`, `permExactMatchTrigger` (4.21), `tempAlias`, `tempTimer`, `tempKey`); `matches[n]`, `line`, `command` are the match globals [reached: search; reached: fetched for 4.21]. `feedTriggers()` injects text as if from the game but the developers call it a testing tool that "interferes with Mudlet's main state machine" and may desync the telnet stream [reached: search]: do **not** build the virtual-MUD projection on it (§3c).
+- **Events**: `raiseEvent(name, …)`, `registerAnonymousEventHandler(name, fn)`, named handlers in the GUI; system events include `sysConnectionEvent`, `sysDisconnectionEvent`, `sysProtocolEnabled`, `sysInstall`/`sysInstallPackage`/`sysUninstallPackage` (3.1+), `sysGetHttpDone`/`sysGetHttpError` and siblings, `sysDownloadDone`, and the `gmcp.*`/`msdp.*` package-named events [reached: fetched for `sysProtocolEnabled` in `GMCP.lua`; reached: search for the rest].
+- **GMCP**: inbound packages land in the global `gmcp` table under their dotted path and raise an event of the same name (`gmcp.Char.Vitals`); outbound `sendGMCP("Package.Name <json>")` [reached: search]. `gmod.enableModule(user, module)` reference-counts modules per user and sends `Core.Supports.Add`; `disableModule` sends `Core.Supports.Remove` when the last user leaves; `reenableModules()` re-sends the list on `sysProtocolEnabled` [reached: fetched]. `Core.Supports.Set` replaces the whole list; names are dotted, version 1 assumed if omitted [reached: search]. 5.0 PTB fixed a `__needMerge` leak in GMCP merge keys [reached: fetched].
+- **MSDP, MSSP, ATCP, MXP, MNES, CHARSET, NAWS, NEW-ENVIRON, MTTS, TLS**: all negotiated; MSDP and MNES are off by default and enabled in settings; ATCP is a legacy fallback; `addSupportedTelnetOption(n)` makes Mudlet answer DO for an option a script will handle [reached: search]. 4.21 added MXP FRAME/DEST for multi-window layouts and aligned MSDP negotiation; the PTB added MSDP group/party lists [reached: fetched].
+- **MSP / MCMP sound**: MSP is negotiated by default; the MUD Client Media Protocol (GMCP `Client.Media`) is documented on the Mudlet wiki as a standard and a 4.21 fix names the "GMCP media finish parameter" [reached: search; reached: fetched]. `playSoundFile()` exists; TTS: `ttsSpeak`, `ttsQueue`, `ttsClearQueue`, `ttsGetCurrentLine` and `ttsSpeech*` events since 3.17 [reached: search].
+- **OSC 8 hyperlinks**: rendered, selectable, with context-menu titles and ARIA in caret mode (4.21 and 5.0) [reached: fetched; reached: search]. `openUrl()` exists [reached: search, indirect].
+- **Discord rich presence**: `setDiscordApplicationID` (3.14+), `setDiscordGame`, `setDiscordDetail`, `setDiscordState`, large/small icons; shown only when the player enables Discord's "Enable Lua API" [reached: search].
+- **MMCP** (MudMaster chat between clients) added in 4.21 and documented under Networking Functions in 5.0 [reached: fetched]; a built-in IRC client exists (`getIrcConnectedHost`) [reached: fetched].
+- **Accessibility**: 4.17 (March 2023) made the main display and code editor readable by screen readers, funded by about $1,800 of Patreon bounties; the manual's `mudlet access on` / `mudlet access reader` commands exist and the manual advises games to offer an opt-in reader mode rather than fingerprinting [reached: search]. The PTB adds plain-text accessible descriptions, long-scrollback responsiveness, a dedicated password box, and a **speech-to-text backend for scripts and packages** [reached: fetched].
+- **Built-in AI/LLM**: none in any stable release. The merged PR #8576 (details in §2.5) ships in test builds only as of 15 Oct 2026 [reached: fetched].
+
+### 2.4 Networking
+
+- **Client only.** `connectToServer(host, port, [save])`, `getConnectionInfo()`, `disconnect()`, `reconnect()` [reached: search, prior pass]; Mudlet registers as the handler for `telnet://` and `telnets://` links and will create a profile on the fly [reached: search]. Multiple profiles run at once in tabs (Ctrl+1..9 in 5.0) [reached: fetched].
+- **HTTP**: `getHTTP`, `postHTTP`, `putHTTP`, `deleteHTTP`, `customHTTP` (4.10+), results on `sys*HttpDone` events, body included "if under 10k characters" [reached: search, prior pass; not re-confirmed this pass]; `downloadFile(path, url)` with `sysDownloadDone`, following redirects since the 3.x line [reached: search]. 5.0's browser sign-in opens the system browser and stores a token in the keychain [reached: fetched].
+- **No WebSocket, no listener.** No native WebSocket function was found in any release page or search; the 2022 forum how-to launched `websocat` through `spawn()` and the author fell back to HTTP; a Python bridge long-polls Mudlet's HTTP functions [reached: search]. Qt WebSockets became a build dependency only because Qt HttpServer pulls it in [reached: fetched]. Nothing lets Lua open a server socket; `spawn(readFunction, program, args…)` runs an external process and reads its stdout [unreached, memory; corroborated by the websocat thread, reached: search]. LuaSocket is not bundled; an old thread suggests a system package and `require` [reached: search, dated 2010].
+- **Raw telnet**: `sendSocket(bytes)` writes raw bytes to the game connection [unreached, memory]; `addSupportedTelnetOption` plus `sysTelnetEvent` let a script handle an unknown option [reached: search for the former only].
+
+### 2.5 The MCP server (new, and load-bearing for this report)
+
+Issue #8212 (vadi2, 13 Sep 2025): the 2025 user survey asked for AI support, easier mapping and easier scripting; goal "AIs can control Mudlet using the MCP protocol: receive text from the MUDs, send text to the MUD, and use the Lua API" [reached: fetched]. PR #8576 merged 10 Oct 2026 [reached: fetched]:
+
+- **Transport**: JSON-RPC over **HTTP POST only**, routes `/`, `/mcp`, `/mcp/<token>`; GET and DELETE answer 405 ("existed in revisions up to 2025-11-25 … neither exists now"); no SSE, no WebSocket, no initialize handshake (protocol revision string of the form "2026-07-28"); notifications answer 202; bound to `QHostAddress::LocalHost`, default port 11235 (configurable under Advanced).
+- **Auth**: a 128-bit random token accepted as the path segment or `Authorization: Bearer`, compared in constant time; an `Origin` header, if present, must parse to `localhost`, `127.0.0.1` or `::1`; no Host check in that file.
+- **Tools**: one tool, `lua` (per the commit "Slim down all tools to just one - Lua"), with a profile parameter; returns all values, tables as JSON, captures `print()`, flags syntax and runtime errors with `isError`, kills snippets that never return by deadline, truncates strings at 100 000 bytes. Capabilities "Deliberately no listChanged"; no resources, no prompts.
+- **Clients**: one-click registration with Claude Desktop and Codex (ChatGPT); `mudlet --mcp-bridge` relays stdio ↔ the running Mudlet's HTTP server via a discovery file with port and rotating token; a Copy-address button for others.
+- **Policy**: off at compile time (`WITH_MCPSERVER`); a hardening commit reads "MCP server ran arbitrary Lua for anyone on the machine, and coul…"; in the issue, jmckisson (a game admin) asked for a GMCP "server supports" toggle so a game can block AI-sent text while keeping other AI features; vadi2 answered that triggers already exist and game-side policy is the right tool; gesslar called that a false equivalence; the PTB shipped a GMCP way for games to turn off the *starter UI*, not AI sending [reached: fetched].
+
+Reading for the house: Mudlet now exposes a **local actuator port** of exactly the shape the house's MCP projection work (host-attractors §3.8) expected to *offer*, not consume. It is powerful (arbitrary Lua in the profile) and blunt (one tool, no resources, no subscriptions). It can carry Phase-2 convenience (the lararium installs its own package, reads `gmcp`, writes a label) without a socket, but it is not a port: no push, no cursor, no presence. See §3b and ruling 3.
+
+### 2.6 File I/O, database, JSON
+
+`lfs` (LuaFileSystem), `io`, `zip`, `yajl` (`yajl.to_string`/`to_value`, aliased as `json_to_value`), `rex_pcre2`, `lpeg`, `utf8` helpers (`utf8_filenames.lua`), `luasql.sqlite3` behind `db:` (`db:create` with sheets, `_index`, `_unique`, `_violations`, migrations that "must not cause any data loss") [reached: fetched]. Profile directory from `getMudletHomeDir()`; maps saved under the profile's `map/` folder at profile save [reached: search].
+
+### 2.7 UI
+
+- **Geyser** classes present in the tree: `Container`, `Label`, `MiniConsole`, `UserWindow`, `TextEdit` (4.21), `CommandLine`, `Mapper`, `Gauge`, `Button`, `HBox`, `VBox`, `ScrollBox`, `AdjustableContainer`, `StyleSheet`, `Window`, `Reposition`, `SetConstraints` [reached: fetched]. Containers take percent and negative offsets relative to the parent; labels take `rawEcho`, `createRightClickMenu`, tooltips, `echoLink`; miniconsoles take `cecho`/`decho`/`hecho` colour tags; userwindows float or dock and may hold the mapper [reached: search, prior pass]. 5.0 adds `getLabelText()`, `getWindowGeometry()`, `windowVisible()` and getters for titles, stylesheets, tooltips, scroll bars [reached: fetched].
+- **HTML in labels**: a Mudlet label is a QLabel, so it renders Qt's rich-text subset of HTML 4 with a CSS subset (fonts, colours, `background-image`, simple tables) [reached: search for Qt's subset; the QLabel link is *(inferred)*]. Images: `setBackgroundImage`, full-window background images in 5.0 [reached: fetched].
+- **Multiple profiles**: yes, tabs with shortcuts (5.0) [reached: fetched]; one Lua state per profile *(inferred, long-standing)*.
+
+### 2.8 The mapper
+
+- Generic: "only provides the display and pathway calculations", scripted per game [reached: search]. Rooms and areas: `addAreaName`, `createRoomID`, `addRoom`, `setRoomCoordinates`, `setRoomArea`, `setExit`/`addSpecialExit`, `setRoomUserData`/`getRoomUserData`, `setMapUserData` (format 17+), `connectExitStub`, `getRoomsByPosition` [reached: search; reached: fetched for the last two]. Scripts can hide the mapper's built-in right-click items and map menus can match map events (5.0) [reached: fetched].
+- Formats: binary `map.dat` with numbered versions (17 added map/area user data, 18 reorganised room storage, 3.0.1 era) and **JSON import/export functions** that make maps "human and computer readable" [reached: search]; the names `saveJsonMap`/`loadJsonMap` [unreached, memory]. A community "Mudlet Map Browser Script" renders exported maps in a web page [reached: search].
+- GMCP room data: community mappers read `gmcp.Room.Info.num` and `.zone`/`.area` to call `addRoom`/`addAreaName`; Iron Realms' Room.Info carries `num`, `name`, `area`, `environment`, `coords`, `exits` (the Achaea GMCP spec PDF exists; the field list here comes from third-party implementations) [reached: search]. 5.0's starter interface builds its map pane from exactly this traffic [reached: fetched].
+
+### 2.9 Packages and tooling
+
+- `.mpackage` = a ZIP holding XML object trees plus resources, optionally `config.lua`; `packages.mudlet.org` is the repository (launched January 2025 with a goal of ~100 packages); `mpkg install name` from 4.20; Muddler builds packages from a `src/{triggers,aliases,timers,scripts,resources}` layout of JSON descriptors beside Lua files, with a companion package for test/reload cycles; Mupdate auto-updates [reached: search]. 4.21's "3rd party definition files for Lua" let a package ship autocompletion types [reached: fetched]. 5.0: default packages ship as mpackages; games can disable the starter UI by GMCP [reached: fetched].
+
+---
+
+## 3. Integration patterns
+
+All four keep the three layers apart: the STORE never learns Mudlet exists; the ENGINE answers `port:ask`; Mudlet is a PROJECTION. The difference is **where the port carrier runs and who owns the telnet socket to the game**.
+
+### 3a. Lararium as a local telnet/GMCP proxy between Mudlet and the MUD
+
+*Shape.* The node island listens on `localhost:4000`, dials `islandsofmyth.org:3000` itself, relays the byte stream both ways, parses GMCP in flight, and injects its own `Lar.*` GMCP packages toward Mudlet. Mudlet connects to the proxy with `connectToServer` or a `telnet://localhost:4000` link.
+
+*Prior art.* pycat: "run pycat, then connect a regular basic MUD client to localhost"; GMCP over its telnet layer; keeps triggers and timers running while the frontend is away and replays the backlog on reconnect; Python scripting; GMCP automapper [reached: fetched]. DanRigby/MudProxy (.NET): several clients share one connection, the first is primary, a disconnect promotes the next; its README warns some servers "may prohibit multi-client setups" and that it prints all traffic including passwords [reached: search]. Blightmud: Rust terminal client, Lua scripting, GMCP/MSDP/MCCP2/TLS, "allows extending with new protocols and handling them in Lua" [reached: search]. TinTin++ parses GMCP as raw subnegotiation via `#event` and speaks MMCP [reached: search]; its `#port` proxy/chat command [unreached, memory]. KBtin opens sessions with `#session` [reached: search]. vadi2/gmcp-auth-mock exists as a GMCP test server [reached: search].
+
+*Layers.* STORE and ENGINE in the island (Node), the proxy as an adapter module of the island; Mudlet holds the glass.
+
+*Pros.* The lararium sees everything the player sees and sends, so GMCP-to-tiddler capture (§4) needs no Mudlet script at all; a squad's extra characters can be extra outbound sockets from the same process; triggers survive a client restart (pycat's lesson); one socket to Mudlet carries both game and `Lar.*` traffic; the game sees one ordinary client per character.
+
+*Cons.* A man-in-the-middle on the player's own login (passwords pass through: MudProxy's warning); a bug in the relay breaks play; MCCP compression and TLS must be terminated and re-originated; the telnet state machine must be exact (the Mudlet thread shows WILL/DO handshakes arriving on one line) [reached: search]; GMCP payload size: an old MUSHclient proposal capped out-of-band messages at 2 KB and Mudlet once broke on ~30 000-character payloads (fixed in 3.0) [reached: search], so chunk `Lar.Snapshot` at a few KB *(inferred)*.
+
+### 3b. Mudlet package that talks to a local lararium over HTTP or MCP
+
+*Shape.* An `.mpackage` installed in Mudlet; it polls `getHTTP("http://127.0.0.1:…/port?since=cursor")` on a timer, posts writes with `postHTTP`, and renders answers into Geyser. Inverted variant, new in 2026: the lararium is the MCP client and calls Mudlet's `lua` tool to read `gmcp` and paint labels.
+
+*Prior art.* The Mudlet Python bridge long-polls over HTTP [reached: search]; the websocat-via-`spawn` how-to [reached: search]; PR #8576 for the inverted variant [reached: fetched].
+
+*Layers.* Everything but the glass in the island; a short HTTP server in the island behind the causal-island boundary.
+
+*Pros.* No telnet surgery, no credentials in the path, works without touching the game connection; the MCP variant needs zero Lua written by the player.
+
+*Cons.* Polling (the `/updates`-every-5-s anti-pattern v2 already named) or a long-poll that ties up Mudlet's single HTTP slot; `sys*HttpDone` bodies capped near 10k characters (prior pass) force `downloadFile` for anything larger; HTTP is a web2 wire, so this bridge sits strictly behind the island boundary. The MCP variant is an *actuator* (arbitrary Lua), not a port: no push, no cursor, no presence, and the game-admin dispute in #8212 means a visible AI control channel in the player's client invites policy attention. Use (b) for one-shot loads and for development convenience; do not make it the port.
+
+### 3c. Lararium posing as the MUD for its own panes ("virtual MUD" projection)
+
+*Shape.* Exactly host-attractors §5.2: the island opens a telnet listener on localhost, negotiates GMCP, and the whole Tiddler Port rides as `Lar.Open / Snapshot / Changes / Write / Written / Render / Answer / Presence` packages; Mudlet dials it as a second profile (its own tab under Ctrl+2) and the package paints Geyser panes. No game traffic passes through it.
+
+*Prior art.* Mudlet's starter interface proves a client UI can be built purely from GMCP/MSDP [reached: fetched]; gmcp-auth-mock proves the "fake server" test shape [reached: search]; Evennia's web client speaks the same command tuples as JSON [reached: fetched].
+
+*Layers.* Island = STORE + ENGINE + the telnet port adapter; Mudlet = PROJECTION. `feedTriggers` is **not** used (the developers' warning), so the panes receive real telnet text and real GMCP.
+
+*Pros.* Cheapest honest port carrier; nothing touches the player's game login; the profile-per-wiki model matches Mudlet's profile model; triggers and aliases in that profile become a Lua scripting surface over the wiki ("`#note …`" alias → `Lar.Write`); a `telnet://localhost:…` link in any wiki page opens it.
+
+*Cons.* Two profiles to look at; GMCP capture of the *game* (rooms, vitals) still needs either (a) or a small forwarder script in the game profile that re-sends `gmcp.*` into the lararium profile through `sendGMCP` on the other connection (one Lua state per profile makes this a cross-profile call problem; *(inferred)* the clean way is the game profile posting to the island over HTTP, or pattern (a)).
+
+### 3d. The MUD server side (wizard approval path)
+
+*Islands of Myth.* LP-family, "started from LIMA 1.0b3 and runs on a heavily modified LIMA mudlib", running since July 1996, `islandsofmyth.org:3000`, PvP off, a split-body mechanic that lets one character hold multiple bodies with a cooldown, and a wizard page offering a Java builder client, web editors, a death log, MudOS documentation and coding guides for rooms, armour, weapons and monsters [reached: search]. An ArtStation entry "MUD UI Concept - Islands of Myth, Joshua Fontany" exists [reached: search]: the operator's own name. GMCP support on IoM: **not confirmed**; the only client listing names telnet, third-party clients and a web client [reached: search]. The driver is presumably MudOS-era or FluffOS *(inferred from the MudOS docs link; FluffOS is the maintained MudOS successor and "compatible with existing MudOS mudlibs" [reached: search])*. FluffOS "Supports TELNET, TLS and websocket protocol" and lists GMCP among supported protocols [reached: search]. LIMA's documentation site calls it "a FluffOS based Mudlib originally developed in the 1990's" [reached: search]; no LIMA GMCP module was found, and the two GitHub URLs I guessed for LIMA returned 404.
+
+*What a server-side module looks like elsewhere.* Evennia (Python): outgoing `caller.msg(cmdname=((args…), {kw}))`, incoming inputfuncs in `settings.INPUT_FUNC_MODULES`, automatic `foo_bar` ↔ `Foo.Bar` naming, built-ins `Core.Hello`→`client_options`, `Char.Value.Get`→`get_value`, `Char.Monitor.Update`→`monitor`; GMCP preferred over MSDP; the web client carries the same tuples as JSON arrays [reached: fetched]. Evennia also ships `contrib.rpg.llm`: an asynchronous `LLMClient` to a local model server (defaults `http://127.0.0.1:5000/api/v1/generate`), an `LLMNPC` with a 25-message per-player memory and "pondering" messages when the model is slow; "if the LLM is slow, Evennia is not affected" [reached: fetched]. LDMud: telnet negotiation can be routed to the mudlib through the master object (the MXP how-to) and `H_NOECHO` hands negotiation to the mudlib [reached: search]. gesslar's Oxidus mudlib (FluffOS, builds the driver from source) carries `.claude/skills` including "gmcp-incoming" and "gmcp-outgoing" skills [reached: fetched; reached: search]: a living example of an LPC mudlib whose GMCP layer is maintained with an LLM assistant. tbaMUD had ATCP stock in 2012; KaVir-derived MSDP snippets are public domain [reached: search].
+
+*Shape for IoM.* A `Lar` GMCP module in the mudlib: `Lar.Hello` (client declares a lararium, its persona key and a grant id), `Lar.Squad.Announce` (which characters a spirit drives, so the game can tag them), `Room.Info`/`Char.Vitals`/`Char.Items`/`Comm.Channel.Text` if not already present, and a `Lar.Policy` reply the game sends to accept or refuse (the toggle jmckisson asked Mudlet for, answered where vadi2 said it belongs: game-side). Server code never talks to the store; it talks GMCP to the player's client, which the proxy or package turns into records. *Pros*: first-class squads, visible tags enforced by the game, no man-in-the-middle needed. *Cons*: LPC work in a 30-year-old modified LIMA; GMCP negotiation in old drivers has bitten Discworld/Mudlet before [reached: search]; the operator's wizard seat makes it possible but not free.
+
+### Recommendation
+
+Build **(c)** first: it is the port carrier, needs only Phase 1's `port:ask`, and proves the Lua projection in a weekend (the prior pass's Precision `_!` test). Grow it to **(a)** by adding a pass-through socket, because squads and capture want the island on the game wire. Use **(b)** only as a one-shot load path and a developer convenience; treat Mudlet's MCP `lua` tool as a gated actuator, never as the port. Start **(d)** on IoM as a wizard project in parallel, because it alone makes squads legitimate.
+
+---
+
+## 4. TiddlyWiki-specific integration
+
+### 4.1 From MUD traffic to tiddlers
+
+Rule of grain: **GMCP is keyed-absolute state; text is a river.** The port's P2 (keyed absolute, whole record, monotone cursor) is already how `gmcp.Room.Info` behaves: each message is the whole room, superseding the last. So:
+
+| Source | Tiddler (title pattern) | Fields | Tags | Layer / bag routing *(inferred design)* |
+|---|---|---|---|---|
+| `gmcp.Room.Info` | `mud/<game>/room/<num>` | `game`, `room-num`, `area`, `environment`, `coords` (x,y,z), `exits` (JSON or `dir:num` list), `name`, `seen` | `$:/tags/MudRoom`, `area/<area>` | personal or working bag of the game (`bags/lararium/<game>/…`); STORE |
+| `gmcp.Char.Vitals` | **not a tiddler** | `hp maxhp mp … bal eq` | — | `port:presence` lane (P13): 2 s cadence, 30 s expiry, never in the CRDT |
+| `gmcp.Char.Items.List/Add/Remove` | `mud/<game>/<char>/inventory` (one record, whole list) | `items` JSON, `location` | `$:/tags/MudInventory` | personal bag; whole-record rewrite per message |
+| `gmcp.Comm.Channel.Text` | `mud/<game>/chat/<channel>/<yyyymmdd>` (append-by-day) or per-message when a verb promotes it | `channel`, `talker`, `text`, `at` | `$:/tags/MudChat` | session log by default; promoted lines land in working |
+| NPC seen / described | `mud/<game>/npc/<slug>` | `rooms` (list of room titles), `last-seen`, `notes` | `$:/tags/MudNpc` | working; player-authored body |
+| Quest | `mud/<game>/quest/<slug>` | `state`, `giver` (npc title), `steps` | `$:/tags/MudQuest` | working; drafts to the draft bag as usual |
+| Raw river (every line) | **not in the store** | — | — | a session log file beside the island (pycat's logger pattern); `$:/temp/lares/mud/river` holds the last N lines for the glass; digests promoted by verb |
+| Mudlet map export (JSON) | `mud/<game>/map/<area>` | `rooms` JSON blob, `format` | `$:/tags/MudMap` | working; large, so load skinny (`kind:"load"`) |
+| Squad plan | `squad/<name>/plan`, `squad/<name>/member/<char>` | `leader`, `members`, `intent`, `grant` | `$:/tags/Squad` | personal; see §5 |
+
+The house's bag-path cascade (temp/state/history → temp; drafts → draft; personal → personal; else working; canon only by residency verbs, per the survey §3.2) carries all of this unchanged: a game's rooms live in a game bag the way a wiki's tiddlers live in a wiki bag, and `$:/temp/lares/mud/*` never crosses. The `.mem` memetic-wikitext type can carry room notes a spirit writes; plain `text/vnd.tiddlywiki` suits player notes.
+
+Two refusals by name: vitals and prompt lines at 2 s cadence would make the CRDT grow by thousands of changes an hour, so they ride presence or the log; and chat from other players is their speech, so it stays in the log unless the operator promotes it (an Advocate's point about whose words enter a durable, syncing store).
+
+### 4.2 From tiddlers back into Mudlet panes
+
+- **`label-html` render target.** The engine's fakedom camera renders a tiddler to HTML (survey §3.4); a Qt-subset serializer keeps `<b> <i> <u> <font color> <a href> <br> <p> <table>` and drops the rest *(inferred)*; the package sets it on a `Geyser.Label` via `rawEcho`. Links become `<a href="lar:...">` that Qt emits as link activations, which the package maps to `Lar.Render` of the target *(inferred: Qt labels emit `linkActivated`; Mudlet exposes label link handling through `echoLink`/`setLabelClickCallback` [unreached, memory])*.
+- **`text` target** for `Geyser.MiniConsole` with `cecho` colour tags: headings bold, links underlined and registered with `echoLink(window, text, luaCode, hint)` so a click sends `Lar.Render`.
+- **`blocks` with `affordances[]`** (host-attractors §2.4): each affordance `{id, kind, label}` becomes either an `echoLink` (link/button) or an entry in `createRightClickMenu` on the label; the Lua side sends `Lar.Invoke {renderCursor, affordanceId, arg}`; the engine answers `stale-target` when the cursor is old. Edits go the one write grain: `Geyser.TextEdit` (4.21+) holds the body; save sends `Lar.Write {txId, basis, records:[{title, fields}]}`; the echo returns as `Lar.Changes{causedBy:[txId]}` and the package drops it as foam.
+- **Filters**: `Lar.Ask {kind:"filter", filter:"[tag[MudQuest]field:state[open]]"}` fills a quest pane; a `Geyser.ScrollBox` of labels, one per title, each clickable. Transclusion and wikitext stay in the engine; Lua never evaluates an action string (the ruling in §2.4 of the prior pass).
+- **Triggers and aliases as TW actions**: an alias `^#note (.*)$` sends `Lar.Write` creating `mud/<game>/journal/<timestamp>` with `text = matches[2]` and `room = <current room title>`; a trigger on a quest-completion line sends `Lar.Ask{kind:"verb", verb:"quest.complete", args:{slug}}`; every such act carries `actor: {personaUri, deviceKey}` and passes the capability gate (keyhive) before `invokeActions` or a write lands. Mudlet's `gmod` reference-counting pattern suggests the same for the package: `lar.enable("quests")` subscribes a pane; the last pane closing sends `Lar.Close`.
+- **Mapper ↔ TW map**: one `mud/<game>/room/<num>` tiddler per Mudlet room id, `area` ↔ Mudlet area name, `coords` ↔ `setRoomCoordinates`, `exits` ↔ `setExit`, user data ↔ `setRoomUserData("lar", title)`. Direction: GMCP → tiddlers → Mudlet mapper (the lararium owns truth; the mapper is a camera) *or* Mudlet map JSON export → one tiddler per area for bulk import. A `$:/tags/MudMap` viewer on the glass TW5 could render rooms as a `<svg>` from the same records; the 3D mapper in 5.0 PTB stays Mudlet's.
+
+### 4.3 Prior art
+
+No TiddlyWiki-plus-MUD or Mudlet-plus-wiki-notes package surfaced in any search ("TiddlyWiki MUD", "Mudlet notes package", "MUD journaling"); the results were TiddlyWiki journaling in general and roleplaying forums recommending TiddlyWiki for personal notes and MediaWiki for shared ones [reached: search]. Mudlet ships a Logger-style capability (pycat too), game communities keep MediaWiki wikis (Aardwolf, Achaea, Discworld), and the Mudlet Map Browser Script renders map exports in a page [reached: search]. So the house would be first with a tiddler-grain MUD journal; the design above is new work, not a port.
+
+---
+
+## 5. Squads: AI characters as live co-players
+
+### 5.1 Rules in the field
+
+- Aardwolf: you may own many characters "provided none of them interact with each other and nobody else has access to them"; passing items, gold or points between alts is banned; botting = "any method which provides your character with gains, without meaningful interaction from you"; kill-triggers banned; AFK in a room with an aggressive mob is botting even without triggers; the self-test is whether your triggers would carry on if you had to leave in an emergency [reached: search].
+- Achaea (Iron Realms): alts allowed but "no adventurer may ever help any other adventurer of yours in ANY WAY", including being logged in at the same time; cross-character accountability [reached: search].
+- Others: Tempora Heroica forbids two heroes online at once; BatMUD allowed alts that never interact; 4Dimensions bans AFK scripting [reached: search].
+- MudProxy's README: some servers "may prohibit multi-client setups"; the Mudlet MCP issue: a game admin wants a protocol-level way to refuse AI-sent text [reached: search; reached: fetched].
+
+Reading: **a squad is multiplaying plus automation**, the two things most MUDs forbid most firmly. It is legitimate only where the game says so, which on Islands of Myth means the operator's wizard seat and, for anyone else, an explicit grant. IoM's own split-body mechanic (one character, several bodies, cooldown) [reached: search] is a native cousin of a squad and a natural hook for a policy *(inferred)*.
+
+### 5.2 Expressing approval
+
+- **Keyhive grant** (the house's capability layer): a grant record `squad/<name>/grant` naming the granting wizard's key, the spirit's persona key, the list of character names it may drive, the game, an expiry, and the allowed verbs (`move`, `follow`, `fight`, `say`, `emote`; never `trade`, never `login-as-player`). The spirit's writes and its outbound game commands both carry `requestedBy` = that grant; the island refuses by name outside it.
+- **Game-visible tag**: the game marks each driven character (a title suffix such as `(spirit)` or `[squad:<leader>]`, a `who` flag, a `look` line) so every other player knows; the server-side `Lar.Squad.Announce` GMCP package (§3d) delivers the list and the mudlib tags it. Until the mudlib module exists, the spirit announces in its description and its `say` lines carry a prefix *(inferred stopgap)*.
+- **Audit**: a `squad/<name>/log/<day>` tiddler records every command the spirit sent, promoted from the session log by verb; a wizard can `Lar.Ask{kind:"filter"}` it over the port.
+
+### 5.3 Connections
+
+One telnet session per character. In pattern (a) the island opens N outbound sockets (Node `net`), one per spirit character, with the player's own session passed through to Mudlet; in pattern (c) alone the spirits would need Mudlet profiles of their own (Ctrl+1..9 tabs) and a cross-profile bridge, which is clumsy. So squads argue for (a) or for a headless island beside (c). Each spirit character keeps its own `gmcp` state in the island (the "virtual client" table); no character's state enters another's record except through the shared squad tiddlers.
+
+### 5.4 Shared squad state as tiddlers
+
+`squad/<name>/plan` (leader's intent, written by the human or the lead spirit), `squad/<name>/member/<char>` (role, target room, standing orders), `squad/<name>/formation` (follow graph), `mud/<game>/room/*` as shared map. Vitals, positions and "who is in combat" ride `port:presence` keyed by character, not tiddlers (P13). Peers see a member's plan change as `port:changes`; a spirit's reflex layer reads the plan tiddler once per round, not per line.
+
+### 5.5 Latency budget
+
+| Clock | Figure | Source |
+|---|---|---|
+| Diku/Circle/tbaMUD combat round | `PULSE_VIOLENCE (2 RL_SEC)` at 10 passes per second = **2 s**; mobile pulse 10 s; zone pulse 10 s | [reached: fetched] tbaMUD `structs.h` |
+| LPMud `heart_beat` | every **2 s** (older driver docs; FluffOS/LDMud current docs unreached) | [reached: search] |
+| Achaea balance/equilibrium | about **4 s** per sword swing; salves ~1 s, elixirs ~5 s; "chasing balance" is the rhythm | [reached: search] |
+| Mudlet trigger | sub-10 ms in-process *(inferred)*; 5.0 paint 47 % faster | [reached: fetched] |
+| Mudlet HTTP round trip to localhost | tens of ms *(inferred)* |
+| LLM time to first token | Haiku-class ~0.35–0.8 s; Sonnet-class ~1.2 s (one source) to ~5 s (another); Opus-class 2–12 s; "under 500 ms feels instant, over 2 s feels broken" | [reached: search, conflicting] |
+| LLM full turn with tool use | several seconds to tens of seconds *(inferred from the above)* |
+
+So a model turn spans one to five combat rounds. The design that fits: **reflexes in the fast local layer, intent in the lararium.** Reflexes (heal under 40 % hp, follow the leader's `Room.Info` change, flee at a threshold, parry/riposte sequences, re-target) run as Mudlet triggers in the player's profile and, for spirit characters, as an island-side Lua-free reflex table keyed on GMCP fields, evaluated at every message. Intent (where to go, which quest, what to say, when to stop) is a lararium verb issued every 10–30 s or on a presence event (a member's vitals cross a line), rendered as standing orders in `squad/<name>/member/<char>`. The spirit speaks through `Comm.Channel` at human cadence. Aardwolf's self-test inverts cleanly: if the human leaves, the squad's standing order is to stop, because the grant (not the triggers) is what keeps it legitimate.
+
+---
+
+## 6. Sensorium note, and the deferred 3D goal
+
+The `@lararium/sensorium` manifest describes "the perception machina (content/structure/form/persistence planes, capture, ffz enrichment, worldline, the lares MCP)", reading a pinned mempalace sidecar and never federating. What a Mudlet integration would want from it: a **capture plane** that turns the raw river plus GMCP into typed percepts (room entered, entity appeared, damage taken, speech heard) instead of regexes per game; a **worldline** that orders those percepts in time per character so a spirit's intent reads "what happened in the last three rounds" rather than three screens of text; **form** recognition for ASCII art, tables and prompts; and the structure plane as the source of the room/NPC/quest tiddlers in §4.1 so the Mudlet package stops owning parsing. Deferred per the operator; until then the package and the proxy parse GMCP only and leave text to the player's triggers.
+
+Live 3D games (Katamari Damacy, emulated or synced): would need the sensorium's capture plane on a video frame stream (screen or emulator framebuffer), a perception model that returns state at interactive rates, and a **fast actuator loop** (controller input at sub-100 ms, far below any LLM turn), with the lararium carrying intent at the same two-clock split as §5.5. None of that exists in the house yet and the operator says to finish the sensorium first. Recorded here; not researched further.
+
+---
+
+## 7. Mu
+
+Tools per the seed: Wand `*` visible feed, ignition · Cup `?` macro, relation · Sword `!` micro, discernment · Pentacle `_` hidden ground · Arcana `0` unask.
+
+**Wand `*`.** Two ignitions in the visible feed. First, Mudlet's 5.0 starter interface is a client UI built entirely from GMCP and MSDP, which is proof, shipped by the client's own authors, that a GMCP stream can drive panes without a line of game-specific Lua; the virtual-MUD projection is that move with the lararium as the game. Second, PR #8576: the MUD client the house meant to project *into* now exposes an MCP actuator of its own, merged four days ago; the hearth and the client can call each other, and the house must decide which direction carries truth (only one may).
+
+**Cup `?`.** The macro relation: GMCP packages are already the port's grain (whole keyed state, superseding), MUD rounds are already the house's action-economy beat (2 s), and a squad is already the Lararium → Nexus picture in miniature (one hearth, several figures, a confederation of intents). Seen from the Cup, Islands of Myth is a Crossroads shrine that has been running since 1996 with its own wizards; the lararium joins it as a guest with a key, not as an authority.
+
+**Sword `!`.** Seams to cut: (1) state versus river: GMCP into records, text into a log; (2) reflex versus intent: 2 s clock in Lua, 10–30 s clock in the lararium; (3) port versus actuator: the GMCP `Lar.*` packages are the port; Mudlet's MCP `lua` tool is a gated actuator behind the island boundary; (4) the player's socket versus the spirits' sockets: pass-through for the human, outbound for the squad, never shared. What must not be cut: one port for all projections (the prior pass's rule); the GMCP adapter proposes new kinds to the port, never to Mudlet.
+
+**Pentacle `_`.** Hidden ground, acknowledged, unclaimed: whether Islands of Myth's modified LIMA negotiates GMCP at all; whether `os.*` is reachable from Mudlet Lua (nothing strips it; nothing proved it); the Qt label HTML subset as actually rendered by Mudlet; GMCP payload tolerance in 5.0 (old 2 KB advice, old 30k bug); Mudlet's `sysGetHttpDone` 10k cap (prior pass, unverified here); sub-second `tempTimer`; whether the MCP server will ship in 5.1 or be flagged off by distributions; LLM turn times under tool use, where the sources disagree by a factor of four.
+
+**Arcana `0`.** "How does a MUD client show a wiki?" Unasked: **a MUD is already a wiki with a clock**: rooms are tiddlers with exits for links, `look` is transclusion, `who` is presence, the wizard's `ed` is the draft bag, and a squad is a story list with several readers. The lararium does not add a wiki to the MUD; it gives the MUD's existing records a durable, syncing, capability-gated home and gives the player's own notes the same exits.
+
+**Carries.** *Precision `_!`*: the first green stays one test, open a GMCP port, receive a skinny `Lar.Snapshot`, render one title to a Geyser label, write one field back from `Geyser.TextEdit` with a `txId`, see `Lar.Written` and the foam echo. *Dubious-Move `?!`* flagged on purpose: squads on any game but one the operator wizards are a rules breach by construction; the grant is the only thing that turns the move.
+
+---
+
+## 8. Two stories
+
+**Gaia 2026, Telarus on Islands of Myth.** Telarus opens Mudlet 5.0. Ctrl+1 is Islands of Myth through the household Pi's proxy on `localhost:4000`; Ctrl+2 is the hearth, a second profile dialled to `localhost:4001`, where the lararium poses as a game and the `lar.mpackage` has drawn three Geyser panes: the river of journal notes, the open quests filtered by `[tag[MudQuest]field:state[open]]`, and the map pane the proxy fills from `Room.Info` as he walks. He types `#note the ferryman wants a tide-stone` in the game tab; the alias posts `Lar.Write` with a `txId`, the quest pane updates a beat later with the echo named as foam. Two spirits, Haku and Lio, hold the squad grant Telarus signed as a wizard that morning; the mudlib's `Lar.Squad.Announce` module (his own LPC, three evenings' work) tags them `[squad:Telarus]` in `who`. A sea-wolf attacks on the causeway; Haku's reflex table, reading `Char.Vitals` every two-second round, drinks at 40 % without asking anyone; the lararium's intent turn, five seconds later, reads the worldline and says "fall back to the pier, Lio pulls aggro"; the standing order lands as a tiddler and both reflex layers read it next round. Telarus leaves for dinner; the grant's rule stops the squad at the pier, and `squad/causeway/log/2026-10-16` holds every command they sent for the other wizards to read.
+
+**Elyncia 5492, a ley-line world told in text.** The district node at the Second Breaking's old console hall still speaks the console tongue: rooms, exits, `look`. A keeper's orichalcum figure carries the lararium beside the hall's driver; the hall's consoles dial it on the ley-line and see their notice boards as panes. Three bound figures walk the ward roads as the keeper's squad, each wearing the ward-sigil the hall's master object stamps from the keeper's grant; citizens read it in `who` and know whose intent walks there. The figures' heartbeats ride the presence lane and expire in thirty breaths if the line drops; their intents live in the keeper's book as records with a basis cursor. When the ley-line falls, the figures finish the round on reflex, stop at the next threshold, and wait, saying so by name; when it returns, the book reopens with `since: cursor` and the ward's rooms merge without a quarrel. *(inferred throughout: fiction on the seed's shrine tiers.)*
+
+---
+
+## 9. Phased integration plan (riding v2's phases)
+
+All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per the CLAUDE.md rule.
+
+**Phase 1 (v2: Tiddler Port inside the engine) — what Mudlet needs.** Only `port:ask` with `filter`, `render` (targets `text`, `label-html`, `blocks` with `affordances[]`), `load`, `invoke`, plus `skinny` snapshots and `causedBy` echoes. Nothing else. Red/green: `ask-render-label-html-is-qt-subset` (output contains no tag outside an allowlist), `ask-render-text-keeps-links-as-handles`, `ask-invoke-stale-cursor-refused`.
+
+**Phase 1.5 — GMCP adapter in the node island (new, 1–2 weeks).** A telnet listener (Node `net`), minimal option negotiation (GMCP 201, NAWS, CHARSET UTF-8; refuse MCCP), `Lar.*` package family mirroring the ten port kinds, chunking at ~2 KB per message with a `part/of` envelope, JSON via the island's serializer. A GMCP mock client in tests (the gmcp-auth-mock shape). Red/green: `gmcp-handshake-will-do`, `gmcp-snapshot-chunks-reassemble`, `gmcp-write-txid-echo-named`, `gmcp-presence-expires-30s`, `gmcp-oversize-record-refused-by-name`.
+
+**Phase 2 (v2: glass behind a flag) — the `lar.mpackage` (1–2 weeks, Muddler).** `src/scripts` holds the port client (`lar.open/ask/write/invoke`), Geyser panes (ScrollBox of labels for filters, Label with `rawEcho` for `label-html`, MiniConsole for `text`, TextEdit editor, Mapper feed), aliases (`#note`, `#quest`, `#tag`), `sysConnectionEvent` → `Lar.Open{renders:["text","label-html"], maxRecordBytes, edits:true}`. Minimum Mudlet 4.21 (TextEdit); 5.0 recommended. Playwright has no reach into Qt; test with a headless Mudlet `--offline` profile and `feedTriggers` only in *tests* (the developers' own use), plus a Lua unit suite under Muddler's test cycle. Red/green: `pkg-renders-title-on-open`, `pkg-textedit-save-roundtrips-txid`, `pkg-affordance-click-invokes`, `pkg-filter-pane-updates-on-changes`, `pkg-refusal-paints-alert`.
+
+**Phase 3 (v2: conformance suite) — proxy mode and capture (2 weeks).** Pass-through socket to the game with GMCP tee; `Room.Info`/`Char.Items`/`Comm.Channel` → records per §4.1; river to a log file; vitals → presence. Conformance rig: a scripted fake MUD (Node) emitting IRE-shaped GMCP. Red/green: `proxy-passthrough-bytes-identical`, `proxy-room-info-becomes-record`, `proxy-vitals-never-written-to-store`, `proxy-river-not-in-crdt`, `proxy-mccp-refused-by-name`.
+
+**Phase 4 — squads (after a wizard grant exists).** Keyhive grant record, per-character outbound sockets, reflex table, intent verb, `squad/*` tiddlers, audit log promotion. Red/green: `squad-command-without-grant-refused`, `squad-stops-when-operator-absent`, `squad-reflex-under-2s-round`, `squad-intent-reads-latest-plan`, `squad-announce-visible-tag`.
+
+**Phase 5 — server side on Islands of Myth (wizard project, parallel).** Confirm the driver and whether GMCP negotiates; if not, a telnet-option hook in the LIMA master and a `Lar` module; `Lar.Policy` accept/refuse; `Lar.Squad.Announce` tagging. Red/green: `iom-gmcp-negotiates`, `iom-room-info-emitted`, `iom-squad-tag-shown-in-who`, `iom-policy-refuse-blocks-spirit-send`.
+
+**Optional (b):** `lar-mcp-actuator` behind the capability gate: the island calls Mudlet's `lua` tool only for installs and diagnostics, with every call logged as a verb; off by default.
+
+---
+
+## 10. Open rulings for the operator
+
+1. **First carrier**: virtual-MUD (c) first, then proxy (a) — as recommended — or proxy first because squads need it?
+2. **The river**: never in the CRDT (log file + `$:/temp` tail, digests by verb), or a capped session bag?
+3. **Mudlet's MCP `lua` tool**: a permitted gated actuator behind the island boundary, or refused entirely as a web2-shaped remote-eval surface?
+4. **Vitals and positions**: presence lane only (proposed), or per-character records at a throttled cadence?
+5. **Squad consent artefacts**: is a keyhive grant plus a game-visible tag plus an audit tiddler sufficient, and does the grant require a second wizard's key beyond the operator's own?
+6. **Package namespace**: adopt Iron Realms package names where they exist (`Room.Info`, `Char.Vitals`) and `Lar.*` only for the port, or namespace everything under `Lar.*`?
+7. **Minimum Mudlet**: 4.21 (TextEdit) or 5.0 (mpackage defaults, speed, GMCP starter precedent)?
+
+---
+
+## 11. Sources
+
+**Mudlet repository and releases** [reached: fetched]: Mudlet/Mudlet README; `CMakeLists.txt` (`find_package(Lua 5.1 EXACT)`, `Qt6 6.8.2`); `src/mudlet-lua/lua/` listing; `LuaGlobal.lua`; `DB.lua`; `GMCP.lua`; `geyser/` listing; `src/TMCPServer.cpp`; releases page; release tags `Mudlet-4.21.0`, `Mudlet-4.22.0`, `Mudlet-5.0.0`, `Mudlet-5.0.0-ptb-2026-10-15-6f752ea`; PR #8576 and its files view; issue #8212.
+
+**Mudlet manual and community** [reached: search]: wiki.mudlet.org Manual:Introduction, Technical Manual TOC, Lua Functions, Timer Engine, Event Engine, Supported Protocols, Mapper Functions, Discord Functions, Text-to-Speech, Screen Readers, Package Manager, Mudlet Packages, Miscellaneous Functions (`addSupportedTelnetOption`), Standards:MUD Client Media Protocol, Connection Window (`telnet://`); mudlet.org 4.17, 4.21, 4.22 and package-manager posts; forums: "Howto: Websockets in Mudlet", "Standard Lua Libraries included with Mudlet?", "Sync with online DB", "tempTimer is going off immediately", "Reconnecting and Event Handlers", "Discworld GMCP", "Basic Simple Mapping Script", map.dat threads; Launchpad mudlet-makers archive (GMCP size bug, `feedTriggers` warning, `sysDisconnectionEvent`); Muddler forum post; packages.mudlet.org pages; Mudlet Python bridge on PyPI; Qt "Supported HTML Subset".
+
+**Islands of Myth** [reached: search]: mudstats.com/World/IslandsofMyth (LIMA 1.0b3, 1996); mudconnect.com listing; topmudsites.com entry; islandsofmyth.org/wiz.html; inviocean.com listing (port 3000, split bodies); ArtStation "MUD UI Concept - Islands of Myth, Joshua Fontany".
+
+**Servers and mudlibs**: evennia/evennia `docs/source/Concepts/OOB.md` and `evennia/contrib/rpg/llm` [reached: fetched]; gesslar/oxidus-mudlib [reached: fetched]; limamudlib.readthedocs.io, fluffos.info, fluffos/fluffos, LDMud MCCP doc, Gammon LDMud MXP thread, telnetlib3 MUD options [reached: search]; tbamud/tbamud `src/structs.h` [reached: fetched]; Lysator `set_heart_beat` and `heart_beat` docs [reached: search]; Gammon ATCP/TBA thread, KaVir MSDP snippets via r/MUD [reached: search].
+
+**Proxies and clients**: cizra/pycat [reached: fetched]; DanRigby/MudProxy, Blightmud guides, KBtin man page, TinTin++ package pages, vadi2/gmcp-auth-mock [reached: search]; TinTin++ `#port` [unreached].
+
+**GMCP shapes**: MUME `gmcp_core`, Genesis GMCP forum, Icesus Mudlet package, Lusternia GMCP docs, Achaea GMCP spec PDF (TOC only), Rapture `Char.Vitals` example [reached: search].
+
+**Rules and clocks**: Aardwolf Help/Policies2, Policies7, IsThisBotting, trigbot page; Achaea help 15.3.1 Second Characters; Achaea help on balance/equilibrium and wiki timing examples; Tempora Heroica rules; 4Dimensions rules [reached: search]. LLM latency: aimultiple, morphllm, kunalganglani 2026 benchmarks, llmgateway guide, modelgrep, zenmux [reached: search].
+
+**LLM-in-MUD prior art**: brainwagon "Building a Modern MUD with LLM-Powered NPCs" (2026-07-09); Daniel Eder "Surviving in Text Worlds" (Mistle in Silberland); TextQuests (Hugging Face); LlamaTale [reached: search].
+
+**House inputs**: `noosphere-boot.mem`; `host-attractors.md` §2.3–2.4, §5, §9.2; `portable-engine-plan-v2.md` §5–8; `model-and-gaps.md` §3.2–3.3; `packages/lararium-sensorium/package.json`.
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;2IFZXAJozmr9TiOG92RVHNEo5TBlmaoOjXI-aeQsKkg
+
+<<^ code="&#x0004;" -> to="?">>
