@@ -204,7 +204,7 @@ Whole-workspace typecheck:
 pnpm -r --filter './packages/**' typecheck
 ```
 
-Focused package tests (only the four packages that ship vitest configs today):
+Focused package tests (ten packages ship vitest configs today; these four commands cover the core surfaces):
 
 ```sh
 pnpm --filter @lararium/mesh test
@@ -213,7 +213,7 @@ pnpm --filter @lararium/node test
 pnpm --filter @lararium/browser test
 ```
 
-`@lararium/keyhive` and `@lares/cli` carry no test scripts yet; typecheck covers them.
+`@lararium/keyhive` and `@lares/cli` also carry test scripts; run their focused tests from their package directories.
 
 TW5 fixture and sigil-alignment routes:
 
