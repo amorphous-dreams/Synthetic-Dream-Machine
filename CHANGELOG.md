@@ -19,6 +19,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A Nexus's Kahu cabal admits by its own act.** `lares nexus cabal admit|remove|cosign|standing` admits or removes a PersonaGroup at the charter's high-impact threshold; a vouch admits nobody.
 - **A realm lists its stewards.** `lares nexus realm bags` prints each co-signed steward beside the bags it keeps.
 - **A member list reads through a roll.** `lares nexus members` counts an admit from a closed epoch when a counted roll anchor carries it to the head.
+- **DreamDOM names the superset of cameras.** `docs/pono/dreamdom` carries the whole model: four layers, two waists, every root template over every document sink, the width dial, the Wiki Actor and the two-way contract per surface. `docs/pono/dreamdom-roadmap` orders train D, and `docs/pono/evaluators-one-or-many` and `docs/pono/mudlet-scout` stand beside it.
 
 **Fixed**
 - **Retired join doors leave the CLI and browser.** `lares persona admit`, `lares device-admit`, `vessel found|stand --admit`, the browser's bare `#admit=` reader and browser-ci `qa-admit` give way to fleet join and `qa-join`. `device-admit/v1` stays as the internal edge format; `cabal-join` keeps people and realm admission.
