@@ -2,8 +2,9 @@
  * interaction-goldens.engine — the engine half of every interaction golden beside the runner, walked through the
  * camera contract's doors over a real booted engine.
  *
- * The scripts this half carries (03, the textarea revert; 13, the surface switch) read green only when the engine
- * answers every step the engine half reads; the page half's expectations stand SKIPPED by name. Every other
+ * The scripts this half carries (03, the textarea revert; 06, the toggle family; 13, the surface switch) read green
+ * only when the engine answers every step the engine half reads; the page half's expectations stand SKIPPED by
+ * name, and a frame line another slice's road paints stands OWED by its own words (and must still read red). Every other
  * script walks too and must still read red: its road has not landed, and a green there names one that did. A
  * control mutates each carried script into a claim the engine never makes and reads the runner red, so a green
  * from the runner carries information.
@@ -28,7 +29,15 @@ const hooks = (): EngineRunHooks => {
 
 const scripts = goldenScripts();
 /** The scripts whose every engine-half step this island answers today. */
-const CARRIED = ["03", "13"];
+const CARRIED = ["03", "06", "13"];
+/**
+ * The frame lines a carried script reads that another slice's road paints: the declared-cancellation stamps
+ * (`data-lar-on`, `data-lar-cancel`) belong to the stamps slice. Each one stays red by its own words until that
+ * road lands, and nothing else may read red beside it.
+ */
+const OWED_ELSEWHERE: Readonly<Record<string, readonly RegExp[]>> = {
+  "06": [/^step 2: the frame paints input\.cb data-lar-(on|cancel)=null, the script expects /],
+};
 const byNumber = (n: string): GoldenScript => scripts.find((s) => s.file.startsWith(`${n}-`))!.script;
 /** A script whose `expect` at `index` takes `patch` in place of what it said. */
 const mutate = (script: GoldenScript, index: number, patch: Record<string, unknown>): GoldenScript => ({
@@ -45,7 +54,10 @@ describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
   for (const { file, script } of scripts.filter((s) => CARRIED.includes(s.file.slice(0, 2)))) {
     test(`${file}: ${script.pins}`, async () => {
       const run = await runEngineGolden(script, hooks());
-      expect(run.failures, run.trace.join("\n")).toEqual([]);
+      const owed = OWED_ELSEWHERE[file.slice(0, 2)] ?? [];
+      expect(run.failures.filter((f) => !owed.some((o) => o.test(f))), run.trace.join("\n")).toEqual([]);
+      // Each owed line still reads red: a green there names the road that landed, and its line leaves this table.
+      for (const o of owed) expect(run.failures.some((f) => o.test(f)), `owed line ${o} reads green: drop it`).toBe(true);
       const pageExpects = script.steps.filter((s) => s["expect"] && "page" in (s["expect"] as object)).length;
       expect(run.skipped, "the page half's expectations stand skipped by name, and nothing else").toHaveLength(pageExpects);
       expect(run.skipped.every((s) => s.endsWith("expect.page (the page half)"))).toBe(true);

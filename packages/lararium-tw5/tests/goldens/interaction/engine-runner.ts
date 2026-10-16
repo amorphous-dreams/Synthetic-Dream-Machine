@@ -14,13 +14,16 @@
  *   - `deliver: "older"` records that the frame the island emitted BEFORE the last sense carries a lower
  *               `sensedRevision` for that sense's control than the sense's `localRev` (the page's veto rests on it).
  *   - `sense` / `act` build a `lar:control-event` against the frame the harness last delivered for that surface:
- *               the control resolves by `data-control-id` or by a CSS class read off that frame; `epoch: "stale"`
+ *               the control resolves by `data-control-id` or by a selector read off that frame (a tag, classes and
+ *               `[attr=value]`, spaces for descendants; a class names its node and the nodes it wraps, since TW5's
+ *               checkbox and radio class the label around their input); `checked` rides a toggle; `epoch: "stale"`
  *               carries the epoch that surface emitted before the delivered one.
  *   - `switch`  mounts the arriving surface's engine (first time) and sends it `lar:resend`; the frame the resend
  *               answers becomes the delivered frame.
  *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
  *               stands with those fields, and no title outside the named set took a write since the last expect),
- *               and `frame` (`sensedRevision` keyed back to the script's control names, `surface`, `epoch: "fresh"`).
+ *               and `frame` (`sensedRevision` keyed back to the script's control names, `surface`, `epoch: "fresh"`,
+ *               and `attributes` / `stamps`: per selector, the attribute the first named node paints, `null` for absent).
  *               `page` belongs to the page half: the run records it as SKIPPED by name. Any other key fails closed,
  *               so a script that grows a verb this half never learned reads red, never green.
  *
@@ -94,18 +97,76 @@ interface Surface {
 const ROOT_TEMPLATE = "$:/core/ui/RootTemplate";
 const SINGLE = "lar:single";
 
-/** The render id of the first painted node the control names: `data-control-id="x"`, or a class `.x`. */
-function ridOf(html: string, control: string): string | null {
-  for (const m of html.matchAll(/<[a-zA-Z][\w-]*\b[^>]*>/g)) {
-    const tag = m[0];
-    const named = control.startsWith(".")
-      ? new RegExp(`\\bclass="[^"]*(?<![\\w-])${control.slice(1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w-])`).test(tag)
-      : tag.includes(`data-control-id="${control}"`);
-    if (!named) continue;
-    const rid = /data-lar-rid="([^"]+)"/.exec(tag);
-    if (rid) return rid[1]!;
+/** One painted node of a frame, read back off its HTML. */
+interface PaintedNode { readonly tag: string; readonly attrs: Readonly<Record<string, string>>; readonly parent: PaintedNode | null }
+
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+const decode = (v: string): string => v.replace(/&(?:#(\d+)|#x([0-9a-f]+)|(quot|amp|lt|gt|apos));/gi, (_m, d, h, n) =>
+  d ? String.fromCodePoint(Number(d)) : h ? String.fromCodePoint(parseInt(h, 16)) : ({ quot: "\"", amp: "&", lt: "<", gt: ">", apos: "'" } as Record<string, string>)[n.toLowerCase()]!);
+
+/** The frame's element nodes in document order, each knowing its parent: the reads a script's selector makes. */
+function paintedNodes(html: string): PaintedNode[] {
+  const nodes: PaintedNode[] = [];
+  const open: PaintedNode[] = [];
+  for (const m of html.matchAll(/<!--[\s\S]*?-->|<(\/?)([a-zA-Z][\w-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g)) {
+    if (m[2] === undefined) continue;
+    const tag = m[2].toLowerCase();
+    if (m[1]) {
+      const at = open.map((n) => n.tag).lastIndexOf(tag);
+      if (at !== -1) open.length = at;
+      continue;
+    }
+    const attrs: Record<string, string> = {};
+    for (const a of m[3]!.matchAll(/([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) attrs[a[1]!] = decode(a[2] ?? a[3] ?? a[4] ?? "");
+    const node: PaintedNode = { tag, attrs, parent: open.at(-1) ?? null };
+    nodes.push(node);
+    if (!VOID_TAGS.has(tag) && !/\/\s*$/.test(m[3]!)) open.push(node);
   }
-  return null;
+  return nodes;
+}
+
+/**
+ * Whether one compound of a script's selector (`tag`, `.class`, `[attr=value]`, joined) names `node`. A class
+ * names the node that carries it and the nodes it wraps: TW5's checkbox and radio set their `class` on the label
+ * around the input they bind, so `input.cb` names the input inside `label.cb`.
+ */
+function compoundNames(compound: string, node: PaintedNode): boolean {
+  const m = /^([a-zA-Z][\w-]*)?((?:\.[\w-]+)*)((?:\[[\w-]+(?:=[^\]]*)?\])*)$/.exec(compound);
+  if (!m) throw new Error(`the engine half reads no selector compound ${compound}`);
+  if (m[1] && m[1].toLowerCase() !== node.tag) return false;
+  for (const [, name, value] of m[3]!.matchAll(/\[([\w-]+)(?:=([^\]]*))?\]/g)) {
+    const held = node.attrs[name!];
+    if (held === undefined || (value !== undefined && held !== value.replace(/^["']|["']$/g, ""))) return false;
+  }
+  for (const cls of m[2]!.split(".").filter(Boolean)) {
+    let carried = false;
+    for (let n: PaintedNode | null = node; n && !carried; n = n.parent) carried = (n.attrs["class"] ?? "").split(/\s+/).includes(cls);
+    if (!carried) return false;
+  }
+  return true;
+}
+
+/** Every painted node a selector names, in document order: compounds joined by spaces read as descendants. */
+function select(nodes: readonly PaintedNode[], selector: string): PaintedNode[] {
+  const compounds = selector.trim().split(/\s+/);
+  return nodes.filter((node) => {
+    if (!compoundNames(compounds.at(-1)!, node)) return false;
+    let at = compounds.length - 2;
+    for (let n = node.parent; n && at >= 0; n = n.parent) if (compoundNames(compounds[at]!, n)) at -= 1;
+    return at < 0;
+  });
+}
+
+/** A control names a selector when it opens on a class or on a tag that a class or an attribute narrows. */
+const isSelector = (control: string): boolean => control.startsWith(".") || /^[a-zA-Z][\w-]*[.[]/.test(control);
+
+/** The render id of the first painted node the control names: `data-control-id="x"`, or a selector the script's root template sets. */
+function ridOf(html: string, control: string): string | null {
+  const nodes = paintedNodes(html);
+  const named = isSelector(control)
+    ? select(nodes, control)
+    : nodes.filter((n) => n.attrs["data-control-id"] === control);
+  return named.find((n) => n.attrs["data-lar-rid"] !== undefined)?.attrs["data-lar-rid"] ?? null;
 }
 
 const surfaceRev = (f: LarMsg_Frame): number => f.keys.find((k) => k.key === LAR_KEY_SURFACE)?.rev ?? 0;
@@ -195,6 +256,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
       seenFrameRev: surfaceRev(frame),
       ...(body["localRev"] !== undefined ? { localRev: Number(body["localRev"]) } : {}),
       ...(body["wholeValue"] !== undefined ? { wholeValue: body["wholeValue"] as LarWholeValue } : {}),
+      ...(body["checked"] !== undefined ? { checked: Boolean(body["checked"]) } : {}),
       ...(body["modifiers"] !== undefined ? { modifiers: body["modifiers"] as LarModifiers } : {}),
       ...(body["key"] !== undefined ? { key: body["key"] as LarKeyChord } : {}),
       ...(body["geometry"] !== undefined ? { geometry: body["geometry"] as LarGeometry } : {}),
@@ -277,7 +339,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
                 .wiki.getTiddler(record.title)?.fields;
               for (const [field, value] of Object.entries(record)) {
                 if (field === "title") continue;
-                if (fields?.[field] !== value) failures.push(`${at}: ${record.title} holds ${field}=${JSON.stringify(fields?.[field])}, the script expects ${JSON.stringify(value)}`);
+                if (!deepEqual(fields?.[field], value)) failures.push(`${at}: ${record.title} holds ${field}=${JSON.stringify(fields?.[field])}, the script expects ${JSON.stringify(value)}`);
               }
             }
             continue;
@@ -297,6 +359,16 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
                 const earlier = s.frames.slice(0, s.frames.indexOf(frame)).map((f) => f.mountEpoch);
                 if (earlier.length === 0) failures.push(`${at}: ${s.id}'s delivered frame stands alone; no earlier epoch to read it fresh against`);
                 else if (!earlier.every((e) => frame.mountEpoch > e)) failures.push(`${at}: ${s.id}'s frame carries epoch ${frame.mountEpoch}, not fresh against ${JSON.stringify([...new Set(earlier)])}`);
+              } else if (fk === "attributes" || fk === "stamps") {
+                const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
+                for (const [selector, named] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
+                  const node = select(painted, selector)[0];
+                  if (!node) { failures.push(`${at}: the frame paints no ${selector}`); continue; }
+                  for (const [attr, value] of Object.entries(named)) {
+                    const held = node.attrs[attr] ?? null;
+                    if (held !== value) failures.push(`${at}: the frame paints ${selector} ${attr}=${JSON.stringify(held)}, the script expects ${JSON.stringify(value)}`);
+                  }
+                }
               } else {
                 failures.push(`${at}: the engine half reads no frame.${fk}`);
               }

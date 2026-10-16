@@ -63,6 +63,11 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarControlEvent(noRev)).toBeNull();
     expect(readLarControlEvent({ ...noRev, kind: "lar:act", action: "lar:click" })).not.toBeNull();
   });
+  test("a toggle's checked reads as a boolean; CONTROL: the string \"true\" reads null", () => {
+    const toggle = mkLarControlEvent({ eventId: "t1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", controlId: "c", action: "lar:toggle", seenFrameRev: 1, checked: true });
+    expect(readLarControlEvent(toggle)).toMatchObject({ checked: true });
+    expect(readLarControlEvent({ ...toggle, checked: "true" })).toBeNull();
+  });
   test("a resend names its camera; a service names its wiki, request, a door the house names, primitive args and a person's activation; CONTROLS read null", () => {
     expect(readLarResend(mkLarResend())).toMatchObject({ cameraId: "lar:story" });
     expect(readLarResend({ type: "lar:resend", cameraId: "" })).toBeNull();

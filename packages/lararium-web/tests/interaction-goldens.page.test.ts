@@ -8,17 +8,22 @@
  * island would emit it — one `lar:surface` key holding the root template's HTML with `data-lar-rid` stamps, an
  * empty `lar:style` key, a `lar:membership` key, a mount epoch it mints at mount and on every `lar:resend`, and
  * the `sensedRevision` it took in — and it answers acts the way the contract says an island must (`applied`, or
- * `stale-target` for an act under another epoch, touching nothing). It knows exactly two widgets, the two these
- * scripts name (`$edit-text` and `$button set= setTo=`). What this file proves belongs to the PAGE: what the
- * sink paints, keeps and relays. The island's own claims ride the engine harness.
+ * `stale-target` for an act under another epoch, touching nothing). It knows the widgets these scripts name
+ * (`$edit-text`, `$button set= setTo=`, `$checkbox`, `$radio`, `$select`), each painted in TW5's own shape (a
+ * checkbox and a radio class the label around their input) with its state as attributes. What this file proves
+ * belongs to the PAGE: what the sink paints, keeps and relays. The island's own claims ride the engine harness,
+ * the declared-cancellation stamps among them (`frame.stamps` reads there; the stand-in paints none).
  *
  * Steps: `frame` asks the stand-in for its next frame; `deliver: older` applies the frame the stand-in rendered
  * BEFORE taking in the last sense (a newer key revision, a lower sensed revision for that control); `sense` makes
- * a real edit (`execCommand("insertText")`, so a real input event and a real undo step) and reads the relayed
- * event; `act` makes a real click or a real commit, reads the relayed event and feeds the stand-in's answer back
- * through `applyResult`; `switch` sends `lar:resend` to the arriving surface and applies its first frame under a
- * fresh epoch; `expect` reads the page (`value`, `text`, `undoDepth`, `focus`), the last frame, the answers and the
- * stand-in's writes since the previous `expect`.
+ * a real edit (`execCommand("insertText")`, so a real input event and a real undo step; on a select, the
+ * person's options chosen and a real `input`) and reads the relayed event; `act` makes a real click, a real
+ * commit, a real click on a toggle (`lar:toggle`) or a real choice and `change` (`lar:choice`), reads the
+ * relayed event and feeds the stand-in's answer back through `applyResult`; `switch` sends `lar:resend` to the arriving surface and applies its first frame under a
+ * fresh epoch; `expect` reads the page (`value`, `text`, `undoDepth`, `focus`), the last frame (its
+ * `attributes` read off the PAINTED node: `checked` and `selected` by the live state the page shows, any other
+ * attribute by its value), the answers and the stand-in's writes since the previous `expect`. A control or a
+ * selector names its node the way the engine half reads it: a class names its node and the nodes it wraps.
  *
  * `act` with `epoch: "stale"` re-enacts the race the script names: the person acted while the page still showed
  * the arriving surface's PREVIOUS mount (for a surface never shown before, its mount-time frame stands in), and
@@ -32,26 +37,33 @@ import {
 } from "../../lararium-mesh/src/lar-camera.js";
 import { createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
 import script03 from "./goldens/interaction/03-edit-body-survives-blur.json";
+import script06 from "./goldens/interaction/06-toggle-checkbox-radio-select-multiselect.json";
 import script13 from "./goldens/interaction/13-switch-resend-and-epoch.json";
 
-interface World { readonly tiddlers: ReadonlyArray<{ title: string; text: string }>; readonly story: readonly string[]; readonly root: string }
+type Fields = Record<string, string | string[]>;
+interface World { readonly tiddlers: ReadonlyArray<Fields>; readonly story: readonly string[]; readonly root: string }
 type Step = Record<string, unknown>;
 interface Script { readonly golden: string; readonly pins: string; readonly world?: World; readonly surfaces?: Record<string, { world: World }>; readonly steps: readonly Step[] }
 
 /** A widget the stand-in renders: its class names the control in the script, its render id names it on the wire. */
-interface Widget { readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button"; readonly attrs: Record<string, string>; readonly label: string }
+interface Widget {
+  readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button" | "checkbox" | "radio" | "select";
+  readonly attrs: Record<string, string>; readonly label: string;
+  /** A select's options, by value and label. */
+  readonly options: ReadonlyArray<{ value: string; label: string }>;
+}
 
 let epochCounter = 0;
 const mintEpoch = (): number => ++epochCounter;
 const escapeHtml = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const attrsOf = (src: string): Record<string, string> => Object.fromEntries([...src.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]));
 
-/** The engine half, standing in: a hand renderer of the two widgets these scripts name. */
+/** The engine half, standing in: a hand renderer of the widgets these scripts name. */
 class StandInIsland {
-  readonly store = new Map<string, string>();
+  readonly store = new Map<string, Fields>();
   readonly widgets: Widget[] = [];
-  readonly writes: Array<{ title: string; text: string }> = [];
-  readonly sensed = new Map<string, { value: string; localRev: number }>();
+  readonly writes: Array<Fields> = [];
+  readonly sensed = new Map<string, { value?: string; localRev: number }>();
   epoch = mintEpoch();
   previousEpochFrame: LarSurfaceFrame;
   older: LarSurfaceFrame | null = null;
@@ -59,11 +71,14 @@ class StandInIsland {
   private rev = 0;
 
   constructor(readonly surface: string, world: World) {
-    for (const t of world.tiddlers) this.store.set(t.title, t.text);
+    for (const t of world.tiddlers) this.store.set(String(t["title"]), { ...t });
     let n = 0;
-    for (const m of world.root.matchAll(/<\$edit-text([^>]*?)\/>|<\$button([^>]*)>([^<]*)<\/\$button>/g)) {
-      const attrs = attrsOf(m[1] ?? m[2] ?? "");
-      this.widgets.push({ rid: `${surface}-r${++n}`, cls: attrs["class"] ?? "", kind: m[1] !== undefined ? "edit-text" : "button", attrs, label: m[3] ?? "" });
+    const tags = /<\$(edit-text|checkbox|radio)([^>]*?)\/>|<\$(button|select)([^>]*)>([\s\S]*?)<\/\$\3>/g;
+    for (const m of world.root.matchAll(tags)) {
+      const kind = (m[1] ?? m[3]) as Widget["kind"];
+      const attrs = attrsOf(m[2] ?? m[4] ?? "");
+      const options = kind === "select" ? [...(m[5] ?? "").matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map((o) => ({ value: o[1]!, label: o[2]! })) : [];
+      this.widgets.push({ rid: `${surface}-r${++n}`, cls: attrs["class"] ?? "", kind, attrs, label: kind === "button" ? m[5] ?? "" : "", options });
     }
     // The pool mounts every surface at boot; the gate drops its frames until the vessel shows it.
     this.current = this.render();
@@ -76,11 +91,27 @@ class StandInIsland {
     return w.rid;
   }
 
+  /** The field a widget binds, as the store holds it. */
+  read(w: Widget): string | string[] | undefined {
+    return this.store.get(w.attrs["tiddler"] ?? "")?.[w.attrs["field"] ?? "text"];
+  }
+
   render(): LarSurfaceFrame {
     const html = this.widgets.map((w) => {
       if (w.kind === "button") return `<button class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}">${escapeHtml(w.label)}</button>`;
+      if (w.kind === "checkbox" || w.kind === "radio") {
+        const on = this.read(w) === (w.kind === "checkbox" ? w.attrs["checked"] : w.attrs["value"]);
+        return `<label class="tc-${w.kind} ${escapeHtml(w.cls)}"><input type="${w.kind}" data-lar-rid="${w.rid}"${on ? ' checked="checked"' : ""}><span></span></label>`;
+      }
+      if (w.kind === "select") {
+        const held = this.read(w);
+        const keys = Array.isArray(held) ? held : held === undefined ? [] : [held];
+        const multiple = w.attrs["multiple"] === "yes";
+        const opts = w.options.map((o) => `<option value="${escapeHtml(o.value)}"${keys.includes(o.value) ? ' selected="selected"' : ""}>${escapeHtml(o.label)}</option>`).join("");
+        return `<select class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${multiple ? ' multiple="multiple"' : ""}>${opts}</select>`;
+      }
       const sensed = this.sensed.get(w.rid);
-      const value = sensed?.value ?? this.store.get(w.attrs["tiddler"] ?? "") ?? "";
+      const value = sensed?.value ?? this.store.get(w.attrs["tiddler"] ?? "")?.["text"] ?? "";
       return `<${w.attrs["tag"] ?? "input"} class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}">${escapeHtml(value)}</${w.attrs["tag"] ?? "input"}>`;
     }).join("");
     this.rev += 1;
@@ -112,7 +143,8 @@ class StandInIsland {
       // Before taking the sense in, the island had rendered a frame that is still in flight: the older one.
       this.older = this.render();
       const held = this.sensed.get(cid);
-      if (!held || (ev.localRev ?? 0) > held.localRev) this.sensed.set(cid, { value: String(ev.wholeValue ?? ""), localRev: ev.localRev ?? 0 });
+      const textual = typeof ev.wholeValue === "string";
+      if (!held || (ev.localRev ?? 0) > held.localRev) this.sensed.set(cid, { ...(textual ? { value: ev.wholeValue as string } : {}), localRev: ev.localRev ?? 0 });
       return null;
     }
     const answer = (status: LarMsg_ControlResult["status"]): LarMsg_ControlResult =>
@@ -120,18 +152,31 @@ class StandInIsland {
     if (ev.mountEpoch !== this.epoch) return answer("stale-target");
     const w = this.widgets.find((x) => x.rid === cid);
     if (!w) return answer("stale-target");
+    const write = (title: string, field: string, value: string | string[]): void => {
+      this.store.set(title, { ...this.store.get(title), title, [field]: value });
+      this.writes.push({ title, [field]: value });
+    };
     if (w.kind === "button" && ev.action === "lar:click" && w.attrs["set"] !== undefined) {
-      this.store.set(w.attrs["set"], w.attrs["setTo"] ?? "");
-      this.writes.push({ title: w.attrs["set"], text: w.attrs["setTo"] ?? "" });
+      write(w.attrs["set"], "text", w.attrs["setTo"] ?? "");
     } else if (w.kind === "edit-text" && ev.action === "lar:commit" && typeof ev.wholeValue === "string") {
-      const title = w.attrs["tiddler"] ?? "";
-      this.store.set(title, ev.wholeValue);
-      this.writes.push({ title, text: ev.wholeValue });
+      write(w.attrs["tiddler"] ?? "", "text", ev.wholeValue);
       if (ev.localRev !== undefined) this.sensed.set(cid, { value: ev.wholeValue, localRev: ev.localRev });
+    } else if ((w.kind === "checkbox" || w.kind === "radio") && ev.action === "lar:toggle" && typeof ev.checked === "boolean") {
+      const value = w.kind === "checkbox" ? w.attrs[ev.checked ? "checked" : "unchecked"] : ev.checked ? w.attrs["value"] : undefined;
+      if (value !== undefined && this.read(w) !== value) write(w.attrs["tiddler"] ?? "", w.attrs["field"] ?? "text", value);
+      if (ev.localRev !== undefined) this.sensed.set(cid, { localRev: ev.localRev });
+    } else if (w.kind === "select" && ev.action === "lar:choice" && Array.isArray(ev.wholeValue)) {
+      const keys = [...(ev.wholeValue as readonly string[])];
+      write(w.attrs["tiddler"] ?? "", w.attrs["field"] ?? "text", w.attrs["multiple"] === "yes" ? keys : keys[0] ?? "");
+      if (ev.localRev !== undefined) this.sensed.set(cid, { localRev: ev.localRev });
     }
     return answer("applied");
   }
 }
+
+/** A selector in the wrap reading: `input.cb` names the input inside the node classed `cb` (TW5 classes the label). */
+const wrapped = (selector: string): string =>
+  selector.split(/\s+/).map((c) => /^([a-zA-Z][\w-]*)((?:\.[\w-]+)+)(.*)$/.exec(c)).map((m, i) => m ? `${m[2]} ${m[1]}${m[3]}` : selector.split(/\s+/)[i]!).join(" ");
 
 /** Count the undo steps the field holds, then put every one back: undo until the value stops moving, redo as many. */
 function undoDepth(field: HTMLTextAreaElement | HTMLInputElement): number {
@@ -175,9 +220,14 @@ async function run(script: Script): Promise<void> {
     expect(sink.apply(frame), `the sink paints the ${frame.surface} frame at revision ${frame.keys[0]!.rev}`).toBe("painted");
   };
   const el = (control: string): HTMLElement => {
-    const found = pane().querySelector<HTMLElement>(control);
+    const found = pane().querySelector<HTMLElement>(control) ?? pane().querySelector<HTMLElement>(wrapped(control));
     if (!found) throw new Error(`the page shows no ${control}`);
     return found;
+  };
+  /** Choose exactly the options a key set names, the way a person leaves a select. */
+  const choose = (select: HTMLSelectElement, keys: readonly string[]): void => {
+    select.focus();
+    for (const option of select.options) option.selected = keys.includes(option.value);
   };
   const relayedSince = (mark: number): LarMsg_ControlEvent => {
     expect(sent.length, "the page relayed one control event").toBe(mark + 1);
@@ -206,6 +256,15 @@ async function run(script: Script): Promise<void> {
       const older = island(shown).older;
       expect(older, "the stand-in holds a frame rendered before the last sense").not.toBeNull();
       deliver(older!);
+    } else if ("sense" in step && el((step["sense"] as { control: string }).control) instanceof HTMLSelectElement) {
+      const s = step["sense"] as { control: string; wholeValue: string[]; localRev: number };
+      const select = el(s.control) as HTMLSelectElement;
+      const mark = sent.length;
+      choose(select, s.wholeValue);
+      select.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+      const ev = relayedSince(mark);
+      expect([ev.kind, ev.action, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", "lar:sense", s.wholeValue, s.localRev]);
+      answer(ev, shown);
     } else if ("sense" in step) {
       const s = step["sense"] as { control: string; wholeValue: string; localRev: number };
       const field = el(s.control) as HTMLTextAreaElement;
@@ -222,7 +281,7 @@ async function run(script: Script): Promise<void> {
       expect([ev.kind, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", s.wholeValue, s.localRev]);
       answer(ev, shown);
     } else if ("act" in step) {
-      const a = step["act"] as { control: string; action: string; wholeValue?: string; epoch?: string; surface?: string };
+      const a = step["act"] as { control: string; action: string; wholeValue?: string | string[]; checked?: boolean; localRev?: number; epoch?: string; surface?: string };
       const surface = a.surface ?? shown;
       const isl = island(surface);
       const current = isl.current;
@@ -232,12 +291,23 @@ async function run(script: Script): Promise<void> {
       if (a.action === "lar:commit") {
         target.blur();
         if (sent.length === mark) target.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+      } else if (a.action === "lar:choice") {
+        const select = target as HTMLSelectElement;
+        if (JSON.stringify([...select.selectedOptions].map((o) => o.value)) !== JSON.stringify(a.wholeValue)) choose(select, a.wholeValue as string[]);
+        select.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+      } else if (a.action === "lar:toggle") {
+        const toggle = target as HTMLInputElement;
+        expect(toggle.checked, `${a.control} stands opposite the state the person makes`).toBe(!a.checked);
+        toggle.click();
+        expect(toggle.checked, `${a.control} holds the state the person made: the browser's default stood`).toBe(a.checked);
       } else {
         target.click();
       }
       const ev = relayedSince(mark);
       expect([ev.kind, ev.action]).toEqual(["lar:act", a.action]);
-      if (a.wholeValue !== undefined) expect(ev.wholeValue).toBe(a.wholeValue);
+      if (a.wholeValue !== undefined) expect(ev.wholeValue).toEqual(a.wholeValue);
+      if (a.checked !== undefined) expect(ev.checked, `${a.control} carries checked`).toBe(a.checked);
+      if (a.localRev !== undefined) expect(ev.localRev, `${a.control} carries its revision`).toBe(a.localRev);
       if (a.epoch === "stale") {
         expect(ev.mountEpoch, "the late act carries the epoch the page showed when the person acted").toBe(isl.previousEpochFrame.mountEpoch);
         expect(ev.mountEpoch).not.toBe(isl.epoch);
@@ -256,6 +326,10 @@ async function run(script: Script): Promise<void> {
         for (const [key, spec] of Object.entries(want.page)) {
           if (key === "surface") { expect(sink.surface()).toBe(spec); continue; }
           const node = el(key) as HTMLTextAreaElement;
+          if (node instanceof HTMLSelectElement && (spec as { value?: string }).value !== undefined) {
+            expect(node.value, `${key} value`).toBe((spec as { value: string }).value);
+            continue;
+          }
           const s = spec as { value?: string; text?: string; undoDepth?: number; focus?: boolean };
           if (s.value !== undefined) expect(node.value, `${key} value`).toBe(s.value);
           if (s.text !== undefined) expect(node.textContent, `${key} text`).toBe(s.text);
@@ -267,6 +341,20 @@ async function run(script: Script): Promise<void> {
         const f = lastFrame!;
         if (want.frame["surface"] !== undefined) expect(f.surface).toBe(want.frame["surface"]);
         if (want.frame["epoch"] === "fresh") expect(freshAtLast, "the frame carries a mount epoch this surface never showed").toBe(true);
+        for (const key of Object.keys(want.frame)) {
+          if (!["surface", "epoch", "sensedRevision", "attributes", "stamps"].includes(key)) throw new Error(`the page harness reads no frame.${key}`);
+        }
+        // The stamps are the island's own claim: the engine half reads them, and the stand-in paints none.
+        for (const [selector, named] of Object.entries((want.frame["attributes"] ?? {}) as Record<string, Record<string, string | null>>)) {
+          const node = el(selector);
+          for (const [attr, value] of Object.entries(named)) {
+            if (attr === "checked" || attr === "selected") {
+              expect((node as HTMLInputElement & HTMLOptionElement)[attr], `${selector} shows ${attr}`).toBe(value !== null);
+            } else {
+              expect(node.getAttribute(attr), `${selector} ${attr}`).toBe(value);
+            }
+          }
+        }
         if (want.frame["sensedRevision"] !== undefined) {
           const named = Object.fromEntries(Object.entries(want.frame["sensedRevision"] as Record<string, number>).map(([cls, rev]) => [island(f.surface).ridOf(cls), rev]));
           expect(f.sensedRevision).toEqual(named);
@@ -288,6 +376,7 @@ async function run(script: Script): Promise<void> {
 
 describe("★ interaction goldens, the page half ★", () => {
   test(`03 · ${script03.pins}`, async () => { await run(script03 as unknown as Script); });
+  test(`06 · ${script06.pins}`, async () => { await run(script06 as unknown as Script); });
   test(`13 · ${script13.pins}`, async () => { await run(script13 as unknown as Script); });
 
   test("NONSENSE CONTROL: a script whose expectation contradicts the page reds", async () => {

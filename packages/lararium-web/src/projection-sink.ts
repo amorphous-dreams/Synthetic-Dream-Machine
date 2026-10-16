@@ -14,8 +14,8 @@
  *     key whole whatever its numbers; a switch to another surface paints that surface's keys whole. An absent
  *     `lar:style` key keeps the sheet the sink holds for that surface.
  *   - THE PERSON'S REVISION OUTRANKS AN OLDER RENDER. The sink counts `localRev` per control, bumped on every
- *     relayed sense and commit, and keeps a live control's node, value and selection while its `localRev` runs
- *     ahead of the frame's `sensedRevision` for it, focused or not. A composing node never morphs; a field whose
+ *     relayed sense, commit, toggle and choice, and keeps a live control's node, value, selection, `checked` and
+ *     selected options while its `localRev` runs ahead of the frame's `sensedRevision` for it, focused or not. A composing node never morphs; a field whose
  *     value the bound refused never morphs, since its text lives on the page alone. Undo survives because the
  *     node stays. A control names itself by `data-control-id` where the template named one, else by render id.
  *   - EVERY ACT CARRIES WHAT THE PAGE SHOWED. A relayed event carries a minted id, the camera, the shown mount
@@ -325,6 +325,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
       painting = { st, sensed: frame.sensedRevision };
       try {
         Idiomorph.morph(paneEl, surfaceKey.html ?? "", { morphStyle: "innerHTML", callbacks: morphCallbacks });
+        paintIndeterminate();
       } finally {
         painting = null;
       }
@@ -428,6 +429,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
   });
 
   paneEl.addEventListener("click", (e) => {
+    if (leftToToggleLeg(e.target as Element | null)) return;
     const target = targetOf((e.target as Element | null) ?? null);
     if (!target || !doors || shownSurface === null) return;
     e.preventDefault();                        // a projected <a href> must not navigate the host page
@@ -468,6 +470,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     relay(target, kind === "sense" ? "lar:sense" : "lar:act", { action: kind === "sense" ? "lar:sense" : "lar:commit", wholeValue: value, localRev });
   };
   paneEl.addEventListener("input", (event) => {
+    if (relayToggleFamily(event, "sense")) return;
     const src = origin(event);
     if (!src) return;
     if (composingFields.has(src) || (event as InputEvent).isComposing) return;
@@ -478,7 +481,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     }
     relayWholeValue(event, "sense");
   });
-  paneEl.addEventListener("change", (event) => relayWholeValue(event, "commit"));
+  paneEl.addEventListener("change", (event) => { if (!relayToggleFamily(event, "commit")) relayWholeValue(event, "commit"); });
   paneEl.addEventListener("compositionstart", (event) => {
     const src = origin(event);
     if (src) composingFields.add(src);
@@ -492,6 +495,52 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     setTimeout(() => { holdKeysAfterComposition = false; }, 0);
     relayWholeValue(event, "sense", true);
   });
+
+  // ── The toggle family: checkbox, radio, select ────────────────────────────────────────────────
+  //
+  // A toggle crosses as one reliable `lar:act` / `lar:toggle` carrying `checked` as of the act; a select crosses
+  // its WHOLE key set (`wholeValue`, the selected options' values in document order) as a `lar:sense` on `input`
+  // and a `lar:act` / `lar:choice` on `change`. Each bumps the control's `localRev`, so the sensed-revision veto
+  // keeps the person's state against any frame rendered before the island took it in; the change that closes the
+  // same gesture as its input (the same key set) carries the input's revision. A click on a toggle, on a select,
+  // or on the label that works a toggle stays with the browser: its default IS the toggle, and the change carries it.
+
+  const isToggleInput = (el: Element | null): el is HTMLInputElement =>
+    el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio");
+  const isToggleFamily = (el: Element | null): el is HTMLInputElement | HTMLSelectElement =>
+    isToggleInput(el) || el instanceof HTMLSelectElement;
+  const leftToToggleLeg = (el: Element | null): boolean =>
+    isToggleFamily(el) || isToggleFamily(el?.closest?.("label")?.control ?? null) || el?.closest?.("select") != null;
+  const keySetOf = (select: HTMLSelectElement): string[] => [...select.selectedOptions].map((o) => o.value);
+  /** The key set and revision a select's `input` relayed, held for the `change` that closes the same gesture. */
+  const sensedChoice = new WeakMap<Element, { readonly keys: string; readonly localRev: number }>();
+  /** Relay a toggle-family event; true when the event belongs to the family (relayed or held), false otherwise. */
+  const relayToggleFamily = (event: Event, kind: "sense" | "commit"): boolean => {
+    const src = origin(event);
+    if (!isToggleFamily(src)) return false;
+    const target = targetOf(src);
+    if (!target || !doors || shownSurface === null) return true;
+    const st = stateOf(shownSurface);
+    const bump = (): number => { const rev = (st.localRev.get(target.id) ?? 0) + 1; st.localRev.set(target.id, rev); return rev; };
+    if (isToggleInput(src)) {
+      if (kind === "sense") return true;       // a toggle's input repeats its change: the act alone crosses
+      relay(target, "lar:act", { action: "lar:toggle", checked: src.checked, localRev: bump() });
+      return true;
+    }
+    const keys = keySetOf(src as HTMLSelectElement);
+    const held = sensedChoice.get(src);
+    sensedChoice.delete(src);
+    const localRev = kind === "commit" && held?.keys === JSON.stringify(keys) ? held.localRev : bump();
+    if (kind === "sense") sensedChoice.set(src, { keys: JSON.stringify(keys), localRev });
+    relay(target, kind === "sense" ? "lar:sense" : "lar:act", { action: kind === "sense" ? "lar:sense" : "lar:choice", wholeValue: keys, localRev });
+    return true;
+  };
+  /** After a paint: an unheld checkbox shows the indeterminate state its frame names (`data-lar-indeterminate`). */
+  const paintIndeterminate = (): void => {
+    for (const box of paneEl.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')) {
+      if (!holdsLive(box)) box.indeterminate = box.hasAttribute("data-lar-indeterminate");
+    }
+  };
 
   // ── The answer rail ───────────────────────────────────────────────────────────────────────────
 

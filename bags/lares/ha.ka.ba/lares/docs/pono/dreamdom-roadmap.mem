@@ -194,7 +194,7 @@ A ruling reaches the operator only where its answer changes who holds authority,
 * `D1` The second-boot-writes-nothing pin over a staged vessel, the vessel page's long-animation-frames observer and the heap-after-first-paint reading for both instruments. D0. Nobody owes a ruling.
 * `D2` Per-key revisions, membership, mount epoch and sensed revision in `lar:frame`; the three faults of `page-controls#/the-sink-today` closed. D1.
 * `D3` `lar:control-event` with an id and `lar:control-result` with a status; the answer ring; the reliable and droppable classes. D1.
-* `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion; the textarea revert, the blanket cancel and the toggle family green. D1. Rulings 8 and 10 for their rows.
+* `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion (`checked`, `selected`, `indeterminate`) with the toggle family green on both halves of golden 06; the textarea revert and the blanket cancel green. D1. Rulings 8 and 10 for their rows.
 * `D5` The island root-services module and `lar:service` with named refusals; `lar:resend` and epochs on switch. D1. Ruling 9.
 * `D6` The three ruled page controls built and probed in each engine; `lar-file-picker`, `lar-order-list`, the IME rules, the navigate service. D1.
 * `D7` The port's kinds on the live island with `causedBy`, width, the tier filter and the capability gate on invoke; the recording document and its three serialisers. D2. Ruling 12.
@@ -237,6 +237,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5iRL54O5fUVOcQRid6ewn354BIKeDulKqwR0pYoIrQI
+<<^ code="&#x0003;">>ni:///sha-256;aR5aP7W9S_ZMjn23qnQWKYK22d5zVslgSlhlDdevjgw
 
 <<^ code="&#x0004;" -> to="?">>

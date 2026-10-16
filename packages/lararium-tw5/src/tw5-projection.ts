@@ -28,7 +28,7 @@
 
 import type { IslandContext } from "./island-context.js";
 import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camera.js";
-import { tw5ElementToHtml } from "./fake-dom.js";
+import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
 import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, mkLarControlResult, mkLarFrame,
@@ -57,6 +57,7 @@ const ANSWER_RING = 256;
  *  DOM-node→widget binding. We patch it to STORE the handler TW5 builds + stamp a `data-lar-rid`
  *  (which rides the serialized HTML), so a returned act maps back to the live node. */
 interface RidNode {
+  tag?: string;
   attributes: Record<string, string | undefined>;
   setAttribute(name: string, value: string): void;
   _larListeners?: { type: string; handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void } }[];
@@ -64,8 +65,10 @@ interface RidNode {
   children?: RidNode[];
   /** The field's live text. TW5's edit widgets read `domNodes[0].value`, so the sense and commit legs write it here. */
   value?: string;
-  /** A toggle's state as of the act. TW5's checkbox reads `.checked` off its node. */
+  /** A toggle's state as of the act. TW5's checkbox and radio read `.checked` off their node. */
   checked?: boolean;
+  /** An option's state as of the act. TW5's multiple select reads `option.selected` off each option. */
+  selected?: boolean;
   selectionStart?: number;
   selectionEnd?: number;
   offsetLeft?: number;
@@ -155,6 +158,16 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
   proto["hasAttribute"] = function (this: RidNode, name: string): boolean {
     return this.attributes[name] !== undefined;
   };
+  // The two reads TW5's multiple select makes while it gathers a person's choice (`select.options`,
+  // `option.text`): the fake element answers them from its own children, as a browser's would.
+  Object.defineProperty(proto, "options", {
+    configurable: true,
+    get(this: RidNode) { return this.tag === "select" ? selectOptions(this) : undefined; },
+  });
+  Object.defineProperty(proto, "text", {
+    configurable: true,
+    get(this: RidNode & { textContent?: string }) { return this.textContent ?? ""; },
+  });
   // The caret verbs an edit widget calls on the node it just read. They mean nothing on a fake element
   // (the caret lives in the real DOM the main thread paints), and TW5 calls them unconditionally — so
   // they answer, and answer harmlessly, rather than throwing mid-handler and swallowing the edit.
@@ -263,6 +276,24 @@ function writeValue(el: RidNode, value: string): void {
   el.selectionStart = el.selectionEnd = value.length;
 }
 
+/** The toggle family's nodes: a checkbox or radio input, and a select. */
+const isToggle = (el: RidNode): boolean =>
+  el.tag === "input" && (el.attributes["type"] === "checkbox" || el.attributes["type"] === "radio");
+const isChoice = (el: RidNode): boolean => el.tag === "select";
+const isKeySet = (v: unknown): v is readonly string[] => Array.isArray(v) && v.every((k) => typeof k === "string");
+
+/**
+ * Land a person's whole key set on a select, the way a browser holds it: a single select's value names the one
+ * key (TW5 reads `select.value`), a multiple select's options each carry `selected` (TW5 reads `option.selected`).
+ */
+function writeChoice(el: RidNode, keys: readonly string[]): void {
+  if (el.attributes["multiple"] === undefined) {
+    el.value = keys[0] ?? "";
+    return;
+  }
+  for (const option of selectOptions(el) as RidNode[]) option.selected = keys.includes(optionKey(option));
+}
+
 /**
  * Dispatch one control event into TW5's NATIVE path and answer it.
  *
@@ -278,8 +309,12 @@ function writeValue(el: RidNode, value: string): void {
  *   - `lar:key` bubbles up the fake tree until a listener stops it, since TW5's keyboard widget binds on a wrapper.
  *   - `lar:commit` writes the whole value (and `checked`) onto the node and runs its `change` listeners; an edit
  *     engine that saves on `input` alone runs that leg, so a commit always lands the settled value.
- *   - `lar:sense` writes the whole value, records its `localRev` (newest wins), runs the `input` listeners, and
- *     answers null: the droppable class answers only through a later frame's `sensedRevision`.
+ *   - `lar:toggle` lands `checked` on a checkbox or radio and runs its `change` listeners; `lar:choice` lands the
+ *     whole key set on a select and runs its `change` listeners. The state lands BEFORE TW5's own handler runs,
+ *     so the handler reads what the person chose, and the act's `localRev` rides into `sensedRevision`.
+ *   - `lar:sense` writes the whole value (a string on a field, a key set on a select), records its `localRev`
+ *     (newest wins), runs the `input` listeners, and answers null: the droppable class answers only through a
+ *     later frame's `sensedRevision`.
  *   - A repeated `eventId` within the epoch re-answers from the ring without re-applying.
  *
  * Every answer crosses the camera's `ctx.post` as `lar:control-result`. A listener that throws (a plugin
@@ -319,9 +354,11 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   const key = ev.controlId ?? ev.renderId!;
 
   if (sense) {
-    if (typeof ev.wholeValue !== "string" || ev.localRev === undefined) return null;
+    const choice = isChoice(el) && isKeySet(ev.wholeValue);
+    if ((!choice && typeof ev.wholeValue !== "string") || ev.localRev === undefined) return null;
     if (!takeIn(scope, key, ev.localRev)) return null;
-    writeValue(el, ev.wholeValue);
+    if (choice) writeChoice(el, ev.wholeValue as readonly string[]);
+    else writeValue(el, ev.wholeValue as string);
     runListeners(scope, el, "input", projectedEvent("input", el, scope, ev));
     scope.mark();
     return null;
@@ -367,6 +404,20 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
       runListeners(scope, el, leg, projectedEvent(leg, el, scope, ev));
       // The commit took the page's value in: the next frame says so, whether or not the store moved.
+      scope.mark();
+      return answer("applied");
+    }
+    case "lar:toggle":
+    case "lar:choice": {
+      const checked = ev.action === "lar:toggle" && typeof ev.checked === "boolean" ? ev.checked : undefined;
+      const keys = ev.action === "lar:choice" && isKeySet(ev.wholeValue) ? ev.wholeValue : undefined;
+      if (checked !== undefined ? !isToggle(el) : keys === undefined || !isChoice(el)) return answer("refused", "unsupported-control");
+      if (!binds(el, "change")) return answer("refused", "unclaimed");
+      // The person's state lands on the node first: TW5's checkbox, radio and select handlers read it there.
+      if (checked !== undefined) el.checked = checked;
+      else writeChoice(el, keys!);
+      if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
+      runListeners(scope, el, "change", projectedEvent("change", el, scope, ev));
       scope.mark();
       return answer("applied");
     }

@@ -218,6 +218,7 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (!isRev(v["seenFrameRev"])) return null;
   if (v["localRev"] !== undefined && !isRev(v["localRev"])) return null;
   if (v["kind"] === "lar:sense" && v["localRev"] === undefined) return null;   // a sense without its revision cannot be ordered
+  if (v["checked"] !== undefined && typeof v["checked"] !== "boolean") return null;
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
   if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
   if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;

@@ -189,7 +189,8 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 
 |! Stock widget |! Mechanism |
 | `$edit-text` | the editor's engine seam |
-| `$reveal` · `$select` · `$checkbox` · `$radio` · `$range` · an ordinary `$list` | a wikitext override for markup, with a page binding for the input and the write |
+| `$select` · `$checkbox` · `$radio` | the stock widget's own listener answers through the toggle family (`lar:toggle`, `lar:choice`); markup needs no override |
+| `$reveal` · `$range` · an ordinary `$list` | a wikitext override for markup, with a page binding for the input and the write |
 | popups · `$button` actions · `$link` · `$scrollable` · `$browse` · storyviews · modals · notifications | page-only controls |
 | `$edit-shortcut` · `$edit` · `$password` · `$edit-bitmap` | a page-only native control for a supported schema, else a refusal |
 | `$droppable` · `$draggable` · `$dropzone` | a page-only bounded file offer; generic drag refuses |
@@ -247,6 +248,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UamJmectDCk2pC29AZJV3DHfzvyRtGswQLSzSpgNt38
+<<^ code="&#x0003;">>ni:///sha-256;e_af4MgR1HX8JEmyCq5zqlANqOU79gBduHXlJ9nzmWs
 
 <<^ code="&#x0004;" -> to="?">>
