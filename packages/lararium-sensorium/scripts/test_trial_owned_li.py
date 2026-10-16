@@ -1,6 +1,11 @@
 """Closed corpus induction keeps occurrence joins and an immutable ordered basis."""
 
+import json
+import os
 import sqlite3
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -82,3 +87,56 @@ def test_li_shape_checkpoint_resumes_without_landing_a_partial_basis(tmp_path):
     assert project_owned_li(state, [observed["observation_id"]])["occurrences"] == 2
     with sqlite3.connect(state / DB_NAME) as conn:
         assert conn.execute("SELECT count(*) FROM li_parse").fetchone()[0] == 2
+
+
+def test_li_shape_checkpoint_survives_process_death_and_replays_one_basis(tmp_path):
+    state = tmp_path / "state"
+    receipt, _ = _duplicate_source(tmp_path, "li-process-restart")
+    observed = intake_frozen(state, receipt, "li-process-restart", source_host=HOST)
+    project_observation(state, observed["observation_id"])
+    observation = observed["observation_id"]
+
+    env = dict(os.environ, PYTHONPATH=str(Path(__file__).parent))
+    die_after_shape = (
+        "import os,sys; from trial_owned_li import project_owned_li; "
+        "project_owned_li(sys.argv[1],[int(sys.argv[2])],"
+        "cut_hook=lambda stage: os._exit(37) if stage=='after_shape' else None)"
+    )
+    dead = subprocess.run(
+        [sys.executable, "-c", die_after_shape, str(state), str(observation)],
+        env=env, capture_output=True, text=True, timeout=120,
+    )
+    assert dead.returncode == 37, dead.stderr
+    with sqlite3.connect(state / DB_NAME) as conn:
+        checkpoint = conn.execute(
+            "SELECT occurrence_id,parser_identity_sha256,shape_sha256 FROM li_parse"
+        ).fetchall()
+        assert len(checkpoint) == 1
+        assert conn.execute("SELECT count(*) FROM li_basis").fetchone()[0] == 0
+
+    command = [sys.executable, str(Path(__file__).with_name("trial_owned_li.py")),
+               "--state-root", str(state), "--observation", str(observation)]
+    finished = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
+    assert finished.returncode == 0, finished.stderr
+    landed = json.loads(finished.stdout)
+    assert landed["status"] == "landed"
+    assert landed["occurrences"] == 2
+    assert landed["parser_tiers"]
+    assert landed["warrant"] in {"full-constituency", "degraded-parser"}
+
+    replay = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
+    assert replay.returncode == 0, replay.stderr
+    assert json.loads(replay.stdout) == landed
+    with sqlite3.connect(state / DB_NAME) as conn:
+        assert conn.execute(
+            "SELECT occurrence_id,parser_identity_sha256,shape_sha256 FROM li_parse "
+            "WHERE occurrence_id=?", (checkpoint[0][0],)
+        ).fetchone() == checkpoint[0]
+        assert conn.execute("SELECT count(*) FROM li_parse").fetchone()[0] == 2
+        assert conn.execute("SELECT count(*) FROM li_basis").fetchone()[0] == 1
+        for table in ("li_shape", "li_idiom"):
+            rows = conn.execute(
+                f"SELECT occurrence_id FROM {table} WHERE basis_sha256=?",
+                (landed["basis_sha256"],),
+            ).fetchall()
+            assert len({row[0] for row in rows}) == 2
