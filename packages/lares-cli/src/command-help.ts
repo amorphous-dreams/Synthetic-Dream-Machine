@@ -351,6 +351,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
       "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
       "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
+      "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -362,6 +363,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
+      "--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into @crossroads refuses without one",
+      "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +

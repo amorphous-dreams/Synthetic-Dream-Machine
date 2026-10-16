@@ -92,8 +92,8 @@ import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveT
 import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
 import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
-import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
-import { vesselDid } from "../env.js";
+import { loadVesselSigningSeed, loadVesselVerifyingKey, runPromoteCheckBytes } from "@lararium/node";
+import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { LocalWaitExpired } from "../local-connector.js";
@@ -1064,10 +1064,20 @@ function projectMdCheck(args: ParsedArgs): number {
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
-  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--approval <approval.json>] [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
   const root = process.cwd();
   const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
   const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
+  let approval: unknown;
+  if (args.options["approval"]) {
+    try { approval = JSON.parse(readFileSync(args.options["approval"], "utf8")); }
+    catch { approval = null; }
+  }
+  if (approval === null) {
+    emit(args, { ok: false, error: { code: "verb-error", message: "malformed-approval" },
+      human: () => console.error("lares meme promote: malformed-approval") });
+    return exitFor("verb-error");
+  }
 
   const did     = await vesselDid();
   const seedKey = await loadVesselVerifyingKey();
@@ -1107,11 +1117,12 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
     },
     sign: ed25519SignerFromSeed(await loadVesselSigningSeed()),
+    verifyApproval: (candidate, bytes) => runPromoteCheckBytes({ approval: candidate, bytes, sealHome: larSealHome(), ...(args.options["nexus"] ? { aid: args.options["nexus"] } : {}) }),
   };
 
   let outcome;
   try {
-    outcome = await promoteCarrier({ root, file, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
+    outcome = await promoteCarrier({ root, file, approval, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
   } catch (err) {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);

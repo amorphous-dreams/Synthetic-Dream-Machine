@@ -153,3 +153,10 @@ export async function runPromoteCheck(opts: {
 }): Promise<PromotionApprovalVerdict> {
   return verifyPromotionApproval({ approval: opts.approval, bytes: readBytes(opts.file), roster: rosterOf(opts.sealHome, opts.aid) });
 }
+
+/** Verify bytes already read by the crossing against this vessel's current charter head. */
+export function runPromoteCheckBytes(opts: {
+  readonly approval: unknown; readonly bytes: Uint8Array; readonly sealHome: string; readonly aid?: string;
+}): PromotionApprovalVerdict {
+  return verifyPromotionApproval({ approval: opts.approval, bytes: opts.bytes, roster: rosterOf(opts.sealHome, opts.aid) });
+}
