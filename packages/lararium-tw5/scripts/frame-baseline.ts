@@ -6,6 +6,10 @@
  * document, and records: the boot, the corpus ingest, the first frame's HTML and CSS bytes, the per-edit frame
  * bytes and the camera's render and refresh times across a run of edits, and the render-id census at the end.
  *
+ * The frame crosses as a keyed `lar:frame`, so the row also reads each key's SERIALISED bytes (the JSON a
+ * structured clone or a socket carries): per key, how many edit frames carried it and their mean, beside the
+ * whole frame's. `lar:style` rides only when the stylesheet moved, so its count names how often it did.
+ *
  * The timings name the house's own camera (`cameraRender`, `cameraRefresh`, `styleRefresh`), measured around
  * the same calls TW5's `render.js` wraps in a browser (`mainRender`, `mainRefresh`, `styleRefresh`): the island
  * never runs `render.js`, so the camera carries the measure. TW5's own `$tw.perf` stays off: its `utils.timer`
@@ -17,7 +21,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
-import { pluginCidsFromIslandBlobs } from "@lararium/mesh";
+import { LAR_KEY_STYLE, LAR_KEY_SURFACE, pluginCidsFromIslandBlobs, readLarFrame } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { preloadsFromCasBlob } from "../src/cas-preloads.js";
 import { mountProjection, renderIdCensus } from "../src/tw5-projection.js";
@@ -84,16 +88,23 @@ tw.wiki.makeTranscludeWidget = (title: unknown, ...rest: unknown[]) => {
   return widget;
 };
 
-const frames: { html: number; css: number; rev: number }[] = [];
+interface FrameBytes { html: number; css: number; serialised: Record<string, number>; frame: number }
+const frames: FrameBytes[] = [];
 const stop = mountProjection({
   wikiUri: "lar:///baseline/wiki",
   tw5: engine,
-  post: (msg) => {
-    if (msg.listenable !== "projection:frame") return;
-    const p = msg.payload as { html: string; css: string; rev: number };
-    frames.push({ html: Buffer.byteLength(p.html), css: Buffer.byteLength(p.css), rev: p.rev });
+  post: (msg: unknown) => {
+    const f = readLarFrame(msg);
+    if (!f) return;
+    const payload = (key: string): string => { const k = f.keys.find((x) => x.key === key); return k?.html ?? k?.css ?? ""; };
+    frames.push({
+      html: Buffer.byteLength(payload(LAR_KEY_SURFACE)),
+      css: Buffer.byteLength(payload(LAR_KEY_STYLE)),
+      serialised: Object.fromEntries(f.keys.map((k) => [k.key, Buffer.byteLength(JSON.stringify(k))])),
+      frame: Buffer.byteLength(JSON.stringify(f)),
+    });
   },
-} as IslandContext);
+} as unknown as IslandContext);
 const nextFrame = (): Promise<void> => new Promise((resolve, reject) => {
   const n = frames.length; const started = performance.now();
   const tick = (): void => {
@@ -104,7 +115,7 @@ const nextFrame = (): Promise<void> => new Promise((resolve, reject) => {
   tick();
 });
 await nextFrame();
-row["firstFrame"] = { htmlBytes: frames[0]!.html, cssBytes: frames[0]!.css };
+row["firstFrame"] = { htmlBytes: frames[0]!.html, cssBytes: frames[0]!.css, serialised: { ...frames[0]!.serialised, frame: frames[0]!.frame } };
 
 const target = story[0]!;
 const t2 = performance.now();
@@ -117,6 +128,14 @@ row["editRunMs"] = Math.round(performance.now() - t2);
 const editFrames = frames.slice(1);
 row["framesPerEdit"] = editFrames.length / EDITS;
 row["frameBytesPerEdit"] = { html: Math.round(editFrames.reduce((a, f) => a + f.html, 0) / editFrames.length), css: Math.round(editFrames.reduce((a, f) => a + f.css, 0) / editFrames.length) };
+const keyNames = [...new Set(frames.flatMap((f) => Object.keys(f.serialised)))];
+row["serialisedBytesPerEdit"] = {
+  ...Object.fromEntries(keyNames.map((key) => {
+    const carried = editFrames.filter((f) => f.serialised[key] !== undefined);
+    return [key, { frames: carried.length, avg: carried.length ? Math.round(carried.reduce((a, f) => a + f.serialised[key]!, 0) / carried.length) : 0 }];
+  })),
+  frame: { frames: editFrames.length, avg: Math.round(editFrames.reduce((a, f) => a + f.frame, 0) / editFrames.length) },
+};
 row["camera"] = Object.fromEntries(Object.entries(measures).map(([k, v]) => [k, { invocations: v.invocations, avgMs: Number((v.time / v.invocations).toFixed(2)), totalMs: Math.round(v.time) }]));
 row["renderIdCensus"] = renderIdCensus();
 stop();

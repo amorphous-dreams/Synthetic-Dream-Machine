@@ -1,17 +1,21 @@
 /**
- * projection-input-leg.test — a relayed keystroke reaches TW5 where TW5 reads a local one.
+ * projection-input-leg.test — a relayed value reaches TW5 where TW5 reads a local one.
  *
  * A projected wiki paints in a shadow root on the main thread while its widgets live in the worker, so an
  * edit only works when the value lands ON THE NODE the widget holds, before that widget's own handler
  * runs — TW5's edit widgets read `domNodes[0].value` inside the handler and never read the event. These
- * tests stand a minimal fake element (the shape TW5's fakedom presents) and drive the leg end to end,
- * with no TW5 boot, no worker, and no browser.
+ * vectors mount a real TW5 widget tree over the fake document and drive the leg through
+ * `dispatchLarControlEvent` and the projection cap's door; the caret verbs and the geometry refusal read off
+ * the patched fake element itself.
  */
-import { describe, test, expect, vi } from "vitest";
-import { patchFakeElementForEvents, dispatchProjectedInput, dispatchProjectedEvent } from "../src/tw5-projection.js";
+import { afterEach, describe, test, expect, vi } from "vitest";
+import {
+  LAR_CONTROL_EVENT, LAR_RESEND, LAR_WHOLE_VALUE_MAX_CHARS, mkLarResend,
+} from "@lararium/mesh";
+import { patchFakeElementForEvents, dispatchLarControlEvent } from "../src/tw5-projection.js";
 import { hasProjection } from "../src/has-island-watches.js";
-import { mkWikiDomInput, mkWikiDomEvent, DOM_INPUT_MAX_CHARS } from "@lararium/mesh";
-import type { IslandContext } from "../src/island-context.js";
+import { mountSurface, type Surface } from "./projection-surface.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
 
 /** The two members the patch reads off a fakedom element: an attribute bag and a setter. */
 class FakeEl {
@@ -21,56 +25,62 @@ class FakeEl {
 const fakeDoc = { createElement: (_t: string): FakeEl => new FakeEl() };
 patchFakeElementForEvents(fakeDoc as unknown as Parameters<typeof patchFakeElementForEvents>[0]);
 
-/** Stand a node that binds a handler, and hand back its render-id plus what the handler saw. */
-function boundNode(eventType: string): { rid: string; el: FakeEl; seen: { value: unknown }[] } {
-  const el = fakeDoc.createElement("textarea");
-  const seen: { value: unknown }[] = [];
-  (el as unknown as { addEventListener(t: string, h: (ev: unknown) => void): void })
-    .addEventListener(eventType, function (this: unknown, ev: unknown) {
-      // What TW5's own handler does: read the value off the NODE, not off the event.
-      const target = (ev as { target: { value?: string } }).target;
-      seen.push({ value: target.value });
-    });
-  return { rid: el.attributes["data-lar-rid"]!, el, seen };
-}
+const T = (n: string): string => `lar:///t/input-leg/${n}`;
+const text = (s: Surface, title: string): unknown => s.wiki.getTiddler(title)?.fields["text"];
+const FIELD = `<$edit-text tiddler="${T("field")}" tag="textarea" class="field"/>`;
+const CHOICE = `<$select tiddler="${T("choice")}" class="choice"><option>a</option><option>b</option></$select>`;
 
-describe("the projected input leg", () => {
-  test("the value lands on the NODE before the handler runs — TW5 reads it where it always reads it", () => {
-    const n = boundNode("input");
-    dispatchProjectedInput(n.rid, "input", "a tiddler being typed");
-    expect(n.seen).toEqual([{ value: "a tiddler being typed" }]);
-    expect(n.el).toHaveProperty("value", "a tiddler being typed");
-  });
+describe.skipIf(wikiSkip)(`the projected input leg${skipNote}`, () => {
+  let s: Surface | undefined;
+  afterEach(() => { s?.stop(); s = undefined; });
 
-  test("the caret follows the written value — a widget reading a selection reads a coherent one", () => {
-    const n = boundNode("input");
-    dispatchProjectedInput(n.rid, "input", "abcd");
-    expect(n.el).toMatchObject({ selectionStart: 4, selectionEnd: 4 });
-  });
+  test("the value lands on the NODE before the handler runs — TW5 reads it where it always reads it", async () => {
+    s = await mountSurface(FIELD, [{ title: T("field"), text: "" }]);
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:sense", action: "lar:sense", wholeValue: "a tiddler being typed", localRev: 1 }))).toBeNull();
+    await s.flush();
+    expect(text(s, T("field")), "the input handler read the value off the node it holds").toBe("a tiddler being typed");
+  }, 120_000);
 
-  test("only the handlers bound to THAT event type fire", () => {
-    const el = fakeDoc.createElement("input");
-    const onInput: string[] = [], onChange: string[] = [];
-    const add = (el as unknown as { addEventListener(t: string, h: (ev: unknown) => void): void });
-    add.addEventListener("input",  () => onInput.push("i"));
-    add.addEventListener("change", () => onChange.push("c"));
-    const rid = el.attributes["data-lar-rid"]!;
-    dispatchProjectedInput(rid, "change", "committed");
-    expect(onInput).toEqual([]);
-    expect(onChange).toEqual(["c"]);
-  });
+  test("only the handlers bound to THAT leg fire: a sense runs input, a commit runs change", async () => {
+    s = await mountSurface(CHOICE, [{ title: T("choice"), text: "a" }]);
+    expect(dispatchLarControlEvent(s.event("choice", { kind: "lar:sense", action: "lar:sense", wholeValue: "b", localRev: 1 }))).toBeNull();
+    await s.flush();
+    expect(text(s, T("choice")), "the select binds no input listener, so the sense ran nothing").toBe("a");
+    expect(dispatchLarControlEvent(s.event("choice", { kind: "lar:act", action: "lar:commit", wholeValue: "b" }))).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(text(s, T("choice"))).toBe("b");
+  }, 120_000);
 
-  test("an unknown render-id answers stale-target", () => {
+  test("an unknown render-id answers stale-target and names itself on the console", async () => {
+    s = await mountSurface(FIELD, [{ title: T("field"), text: "" }]);
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
-    expect(dispatchProjectedInput("no-such-rid", "input", "x")).toBe("stale-target");
-    expect(dispatchProjectedEvent("no-such-rid", "click", { button: 0 })).toBe("stale-target");
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:commit", wholeValue: "x", renderId: "no-such-rid" }))).toMatchObject({ status: "stale-target" });
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:click", renderId: "no-such-rid" }))).toMatchObject({ status: "stale-target" });
     expect(warning).toHaveBeenCalledWith("[wiki-worker] stale-target: no-such-rid");
     warning.mockRestore();
-  });
+  }, 120_000);
 
-  test("the caret verbs an edit widget calls answer harmlessly instead of throwing mid-handler", () => {
-    const el = fakeDoc.createElement("textarea") as unknown as Record<string, () => void>;
+  test("the CLICK leg carries the act's modifiers onto the event, untouched", async () => {
+    s = await mountSurface(`<$button class="mod" actions="""<$action-setfield $tiddler="${T("mod")}" text=<<modifier>>/>""">mod</$button>`);
+    dispatchLarControlEvent(s.event("mod", { kind: "lar:act", action: "lar:click", modifiers: { ctrl: false, meta: true, alt: false, shift: false, button: 0 } }));
+    await s.flush();
+    expect(text(s, T("mod"))).toBe("meta");
+  }, 120_000);
+
+  test("popup triggers read the click-time geometry carried onto the fake node", async () => {
+    s = await mountSurface(`<$button class="opener" popup="${T("popup")}">open</$button>`);
+    dispatchLarControlEvent(s.event("opener", { kind: "lar:act", action: "lar:click", geometry: { top: 34, left: 12, right: 112, bottom: 54, width: 100, height: 20 } }));
+    await s.flush();
+    expect(String(text(s, T("popup")))).toContain("12,34,100,20");
+  }, 120_000);
+});
+
+describe("the patched fake element", () => {
+  test("the caret verbs an edit widget calls answer harmlessly instead of throwing mid-handler, and the caret lands where set", () => {
+    const el = fakeDoc.createElement("textarea") as unknown as Record<string, (...a: number[]) => void> & { selectionStart?: number; selectionEnd?: number };
     for (const verb of ["focus", "blur", "select"]) expect(() => el[verb]!()).not.toThrow();
+    el["setSelectionRange"]!(4, 4);
+    expect(el).toMatchObject({ selectionStart: 4, selectionEnd: 4 });
   });
 
   test("an uncarried synchronous geometry read refuses by capability name", () => {
@@ -79,77 +89,59 @@ describe("the projected input leg", () => {
   });
 });
 
-describe("the projection cap's door", () => {
+describe.skipIf(wikiSkip)(`the projection cap's door${skipNote}`, () => {
+  let s: Surface | undefined;
+  afterEach(() => { s?.stop(); s = undefined; });
   const cap = hasProjection();
-  const ctx = {} as IslandContext;
 
-  test("the cap CLAIMS both legs and nothing else", () => {
-    const n = boundNode("input");
-    expect(cap.onSignal!("wiki:dom-input", mkWikiDomInput({ renderId: n.rid, eventType: "input", value: "hi" }), ctx)).toBe(true);
-    expect(cap.onSignal!("wiki:dom-event", mkWikiDomEvent({ renderId: n.rid, eventType: "click", fields: { button: 0 } }), ctx)).toBe(true);
-    expect(cap.onSignal!("daemon:place-verb", {}, ctx)).toBe(false);
-    expect(n.seen).toEqual([{ value: "hi" }]);
-  });
+  test("RED: the cap CLAIMS lar:control-event and lar:resend, and the old dom kinds no longer — CONTROL: a foreign kind stays unclaimed", async () => {
+    s = await mountSurface(FIELD, [{ title: T("field"), text: "" }]);
+    expect(cap.onSignal!(LAR_CONTROL_EVENT, s.event("field", { kind: "lar:sense", action: "lar:sense", wholeValue: "hi", localRev: 1 }), s.ctx)).toBe(true);
+    expect(cap.onSignal!(LAR_RESEND, mkLarResend(), s.ctx)).toBe(true);
+    const rid = s.rid("field");
+    // The old DOM relay shapes, spelled out by hand since no factory mints them: the cap leaves them unclaimed.
+    expect(cap.onSignal!("wiki:dom-input", { type: "wiki:dom-input", renderId: rid, eventType: "input", value: "old road" }, s.ctx)).toBe(false);
+    expect(cap.onSignal!("wiki:dom-event", { type: "wiki:dom-event", renderId: rid, eventType: "click", fields: { button: 0 } }, s.ctx)).toBe(false);
+    expect(cap.onSignal!("daemon:place-verb", {}, s.ctx)).toBe(false);
+    await s.flush();
+    expect(text(s, T("field")), "the lar:control-event landed and the old road wrote nothing").toBe("hi");
+  }, 120_000);
 
-  test("an over-bound value that reached the cap DROPS — claimed, never dispatched", () => {
-    const n = boundNode("input");
-    // Hand-built, bypassing mkWikiDomInput's throw: this stands in for a sender that never called it.
-    const forged = {
-      type: "wiki:dom-input",
-      renderId: n.rid, eventType: "input", value: "x".repeat(DOM_INPUT_MAX_CHARS + 1),
-    };
-    expect(cap.onSignal!("wiki:dom-input", forged, ctx)).toBe(true);   // claimed — it falls to no other cap
-    expect(n.seen).toEqual([]);                                        // and dispatched to nothing
-  });
-
-  test("the CLICK leg still carries its primitive fields onto the event, untouched", () => {
-    const el = fakeDoc.createElement("a");
-    const seen: Record<string, unknown>[] = [];
-    (el as unknown as { addEventListener(t: string, h: (ev: unknown) => void): void })
-      .addEventListener("click", (ev) => seen.push(ev as Record<string, unknown>));
-    dispatchProjectedEvent(el.attributes["data-lar-rid"]!, "click", { button: 0, metaKey: true });
-    expect(seen[0]).toMatchObject({ type: "click", button: 0, metaKey: true });
-  });
-
-  test("popup triggers read the click-time geometry carried onto the fake node", () => {
-    const el = fakeDoc.createElement("button") as unknown as FakeEl & {
-      getBoundingClientRect(): { top: number; left: number; width: number; height: number };
-      offsetLeft: number; offsetTop: number; offsetWidth: number; offsetHeight: number;
-      addEventListener(type: string, handler: (ev: unknown) => void): void;
-    };
-    let measured: unknown;
-    el.addEventListener("click", () => {
-      measured = { rect: el.getBoundingClientRect(), left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight };
-    });
-    dispatchProjectedEvent(el.attributes["data-lar-rid"]!, "click", {
-      button: 0, rectLeft: 12, rectTop: 34, rectRight: 112, rectBottom: 54, rectWidth: 100, rectHeight: 20,
-    });
-    expect(measured).toEqual({
-      rect: { top: 34, left: 12, right: 112, bottom: 54, width: 100, height: 20, x: 12, y: 34 },
-      left: 12, top: 34, width: 100, height: 20,
-    });
-  });
-
+  test("RED: a malformed or over-bound control event reaching the cap DROPS — claimed, never dispatched; CONTROL: the well-formed twin lands", async () => {
+    s = await mountSurface(FIELD, [{ title: T("field"), text: "kept" }]);
+    const good = s.event("field", { kind: "lar:act", action: "lar:commit", wholeValue: "landed" });
+    // Hand-built, bypassing mkLarControlEvent's throw: these stand in for a sender that never called it.
+    const twoTargets = { ...good, eventId: "two", controlId: "also-this" };
+    const overBound = { ...good, eventId: "long", wholeValue: "x".repeat(LAR_WHOLE_VALUE_MAX_CHARS + 1) };
+    const noEpoch = { ...good, eventId: "no-epoch", mountEpoch: undefined };
+    for (const forged of [twoTargets, overBound, noEpoch]) expect(cap.onSignal!(LAR_CONTROL_EVENT, forged, s.ctx)).toBe(true);
+    await s.flush();
+    expect(text(s, T("field"))).toBe("kept");
+    expect(s.results, "a refused read answers nothing: it never reached the dispatcher").toEqual([]);
+    expect(cap.onSignal!(LAR_CONTROL_EVENT, good, s.ctx)).toBe(true);
+    await s.flush();
+    expect(text(s, T("field"))).toBe("landed");
+    expect(s.results.map((r) => r.status)).toEqual(["applied"]);
+  }, 120_000);
 });
 
-describe("projected handler refusals", () => {
-  test("a throwing event listener is warned and dispatch continues — control: a healthy listener warns nothing", () => {
+describe.skipIf(wikiSkip)(`projected handler refusals${skipNote}`, () => {
+  let s: Surface | undefined;
+  afterEach(() => { s?.stop(); s = undefined; });
+
+  test("a throwing listener is warned and the act still answers — control: a healthy listener warns nothing", async () => {
+    s = await mountSurface(`<$navigator story="$:/StoryList" history="$:/HistoryList"><$link class="go" to="${T("target")}">go</$link></$navigator><$button class="plain" set="${T("plain")}" setTo="yes">plain</$button>`);
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const thrown = fakeDoc.createElement("button");
-    (thrown as unknown as { addEventListener(t: string, h: () => void): void }).addEventListener("click", () => {
-      throw new TypeError("no action");
-    });
-    expect(dispatchProjectedEvent(thrown.attributes["data-lar-rid"]!, "click", {})).toBe("dispatched");
+    // A link click with no carried geometry: TW5's layout read throws inside the handler.
+    expect(dispatchLarControlEvent(s.event("go", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "applied" });
     expect(warning).toHaveBeenCalledTimes(1);
     expect(warning.mock.calls[0]?.[0]).toContain("[wiki-worker] handler refused:");
-    expect(warning.mock.calls[0]?.[0]).toContain("TypeError");
-
+    expect(warning.mock.calls[0]?.[0]).toContain("CapabilityRefused");
     warning.mockClear();
-    const healthy = boundNode("click");
-    expect(dispatchProjectedEvent(healthy.rid, "click", {})).toBe("dispatched");
+    expect(dispatchLarControlEvent(s.event("plain", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "applied" });
     expect(warning).not.toHaveBeenCalled();
     warning.mockRestore();
-  });
+  }, 120_000);
 });
 
 describe("never-persisted core temporary titles", () => {

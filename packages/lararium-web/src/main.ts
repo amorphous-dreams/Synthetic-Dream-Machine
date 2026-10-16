@@ -290,8 +290,9 @@ async function bootVessel(): Promise<void> {
       daemonWorkerUrl,
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
-      onPhase: paint,
-      onProjection: (frame) => { projectionSink.apply(frame); },
+      onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
+      onFrame: (frame) => { projectionSink.apply(frame); },
+      onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(relayGatePubKey ? { relayGatePubKey } : {}),
       ...(admit ? { admit } : {}),
@@ -309,12 +310,12 @@ async function bootVessel(): Promise<void> {
     }
     void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
-    projectionSink.arm({ sendDomEvent: result.sendDomEvent, sendDomInput: result.sendDomInput });
+    projectionSink.arm({ sendControlEvent: result.sendControlEvent });
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.
     // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
-    const summon = (): void => result.setActiveSurface(DAEMON_SURFACE_ID);
+    const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); result.setActiveSurface(DAEMON_SURFACE_ID); };
     const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
     if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
     window.addEventListener("keydown", (e) => {

@@ -1,43 +1,52 @@
-/** The projected keyboard leg bubbles to TW5's wrapper-bound keyboard widget. */
-import { describe, test, expect, vi } from "vitest";
-import { patchFakeElementForEvents, dispatchProjectedEvent } from "../src/tw5-projection.js";
+/**
+ * projection-key-leg — a projected key bubbles up the fake tree to TW5's wrapper-bound keyboard widget, carrying
+ * the real key chord; a click stays on its own node.
+ */
+import { afterEach, describe, expect, test } from "vitest";
+import { dispatchLarControlEvent } from "../src/tw5-projection.js";
+import { mountSurface, type Surface } from "./projection-surface.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
 
-class FakeEl {
-  attributes: Record<string, string | undefined> = {};
-  setAttribute(name: string, value: string): void { this.attributes[name] = value; }
-}
-const fakeDoc = { createElement: (_tag: string): FakeEl => new FakeEl() };
-patchFakeElementForEvents(fakeDoc as unknown as Parameters<typeof patchFakeElementForEvents>[0]);
-type NodeWithEvents = FakeEl & { parentNode?: NodeWithEvents; addEventListener(type: string, handler: (ev: any) => void): void };
-function node(): NodeWithEvents { return fakeDoc.createElement("div") as NodeWithEvents; }
-/** A node the page can name: TW5 binds a click on a button, which stamps its render-id. */
-function button(): NodeWithEvents { const el = node(); el.addEventListener("click", () => {}); return el; }
+const T = (n: string): string => `lar:///t/key-leg/${n}`;
+const NO_MODS = { ctrl: false, meta: false, alt: false, shift: false };
+const ENTER = { key: "Enter", code: "Enter", keyCode: 13, repeat: false };
+const writes = (name: string): string => `<$action-setfield $tiddler="${T(name)}" text=<<event-key>>/>`;
 
-describe("the projected key leg", () => {
-  test("keydown reaches a parent wrapper — control: click remains target-only", () => {
-    const child = button(), parent = node();
-    child.parentNode = parent;
-    let keyEvent: any;
-    parent.addEventListener("keydown", (ev) => { keyEvent = ev; });
-    const clicks: unknown[] = [];
-    parent.addEventListener("click", (ev) => clicks.push(ev));
-    dispatchProjectedEvent(child.attributes["data-lar-rid"]!, "keydown", { keyCode: 13, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false });
-    expect(keyEvent).toMatchObject({ keyCode: 13, target: child, currentTarget: parent, key: "", code: "" });
-    dispatchProjectedEvent(child.attributes["data-lar-rid"]!, "click", { button: 0 });
-    expect(clicks).toEqual([]);
-  });
+describe.skipIf(wikiSkip)(`the projected key leg${skipNote}`, () => {
+  let s: Surface | undefined;
+  afterEach(() => { s?.stop(); s = undefined; });
 
-  test("stopPropagation halts the climb — control: without it both ancestors fire inner first", () => {
-    const child = button(), inner = node(), outer = node();
-    child.parentNode = inner; inner.parentNode = outer;
-    const order: string[] = [];
-    let stop = true;
-    inner.addEventListener("keydown", (ev) => { order.push("inner"); if (stop) ev.stopPropagation(); });
-    outer.addEventListener("keydown", () => order.push("outer"));
-    dispatchProjectedEvent(child.attributes["data-lar-rid"]!, "keydown", { keyCode: 65 });
-    expect(order).toEqual(["inner"]);
-    stop = false;
-    dispatchProjectedEvent(child.attributes["data-lar-rid"]!, "keydown", { keyCode: 65 });
-    expect(order.slice(1)).toEqual(["inner", "outer"]);
-  });
+  test("RED: a key reaches the parent keyboard wrapper with its real key — CONTROL: a click on the same field stays target-only", async () => {
+    s = await mountSurface([
+      `<$button class="wrapper" set="${T("clicked")}" setTo="yes">`,
+      `<$keyboard key="enter" actions="""${writes("seen")}"""><$edit-text tiddler="${T("field")}" tag="input" class="field"/></$keyboard>`,
+      `</$button>`,
+    ].join(""));
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: ENTER, modifiers: NO_MODS }))).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(s.wiki.getTiddler(T("seen"))?.fields["text"], "the wrapper read the real key, never a blank").toBe("Enter");
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "refused", reason: "unclaimed" });
+    await s.flush();
+    expect(s.wiki.getTiddler(T("clicked")), "the click never climbed to the wrapping button").toBeUndefined();
+  }, 120_000);
+
+  test("RED: a wrapper that handles the key halts the climb — CONTROL: an inner wrapper that lets it pass, the outer fires", async () => {
+    const nested = (innerKey: string): string => [
+      `<$keyboard key="enter" actions="""${writes("outer")}""">`,
+      `<$keyboard key="${innerKey}" actions="""${writes("inner")}""">`,
+      `<$edit-text tiddler="${T("field")}" tag="input" class="field"/>`,
+      `</$keyboard></$keyboard>`,
+    ].join("");
+    s = await mountSurface(nested("enter"));
+    dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: ENTER, modifiers: NO_MODS }));
+    await s.flush();
+    expect(s.wiki.getTiddler(T("inner"))?.fields["text"]).toBe("Enter");
+    expect(s.wiki.getTiddler(T("outer")), "the inner wrapper stopped the climb").toBeUndefined();
+    s.stop();
+    s = await mountSurface(nested("escape"));
+    dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: ENTER, modifiers: NO_MODS }));
+    await s.flush();
+    expect(s.wiki.getTiddler(T("inner"))).toBeUndefined();
+    expect(s.wiki.getTiddler(T("outer"))?.fields["text"]).toBe("Enter");
+  }, 120_000);
 });

@@ -217,6 +217,7 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (targets.length !== 1 || !isName(targets[0])) return null;
   if (!isRev(v["seenFrameRev"])) return null;
   if (v["localRev"] !== undefined && !isRev(v["localRev"])) return null;
+  if (v["kind"] === "lar:sense" && v["localRev"] === undefined) return null;   // a sense without its revision cannot be ordered
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
   if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
   if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;
@@ -239,8 +240,11 @@ const readsAsPayload = (k: Record<string, unknown>, p: string): boolean => {
 export function readLarFrame(v: unknown): LarMsg_Frame | null {
   if (!isRecord(v) || v["type"] !== LAR_FRAME) return null;
   if (!isName(v["wikiUri"]) || !isName(v["cameraId"]) || !isRev(v["mountEpoch"]) || !Array.isArray(v["keys"]) || !isRecord(v["sensedRevision"])) return null;
+  const seen = new Set<string>();
   for (const k of v["keys"] as unknown[]) {
     if (!isRecord(k) || !isName(k["key"]) || !isRev(k["rev"])) return null;
+    if (seen.has(k["key"])) return null;   // one key, one payload, one revision per frame
+    seen.add(k["key"]);
     const payloads = ["html", "css", "members", "tombstone"].filter((p) => k[p] !== undefined);
     if (payloads.length !== 1 || !readsAsPayload(k, payloads[0]!)) return null;
   }

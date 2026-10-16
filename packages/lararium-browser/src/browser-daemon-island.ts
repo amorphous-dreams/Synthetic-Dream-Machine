@@ -22,7 +22,7 @@ import { browserDyadAsker } from "./browser-dyad-door.js";
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
 // never a worker re-manifest (the HA·BA braid: mount-then-flip, fully live, uniform across surfaces). The
-// frames ride onProjection to the boot; the boot's active-surface gate decides whether they paint #projection.
+// frames ride onFrame to the boot; the boot's active-surface gate decides whether they paint #projection.
 runBrowserSovereignWorker((manifest) =>
   makeOperatorDaemonBehavior(manifest, {
     // The island asks through its worker shore; the vessel folds the live fleet edge.

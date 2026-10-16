@@ -51,6 +51,18 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, tombstone: true }]))).not.toBeNull();
     expect(readLarFrame(frame([{ key: "lar:membership", rev: 1, members: [] }]))).not.toBeNull();
   });
+  test("a frame names each key once; CONTROL: two keys under one name read null", () => {
+    const frame = (keys: unknown[]) => ({ type: "lar:frame", wikiUri: "lar:///w", cameraId: "lar:story", mountEpoch: 2, sensedRevision: {}, keys });
+    expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, html: "" }, { key: "lar:surface", rev: 2, html: "" }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: "lar:surface", rev: 1, html: "" }, { key: "lar:style", rev: 2, css: "" }]))).not.toBeNull();
+  });
+  test("a sense carries its local revision; CONTROL: an act carries none and reads back", () => {
+    const sense = mkLarControlEvent({ eventId: "s1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:sense", controlId: "c", action: "lar:sense", seenFrameRev: 1, localRev: 3, wholeValue: "v" });
+    expect(readLarControlEvent(sense)).toMatchObject({ localRev: 3 });
+    const { localRev: _dropped, ...noRev } = sense;
+    expect(readLarControlEvent(noRev)).toBeNull();
+    expect(readLarControlEvent({ ...noRev, kind: "lar:act", action: "lar:click" })).not.toBeNull();
+  });
   test("a resend names its camera; a service names its wiki, request, a door the house names, primitive args and a person's activation; CONTROLS read null", () => {
     expect(readLarResend(mkLarResend())).toMatchObject({ cameraId: "lar:story" });
     expect(readLarResend({ type: "lar:resend", cameraId: "" })).toBeNull();

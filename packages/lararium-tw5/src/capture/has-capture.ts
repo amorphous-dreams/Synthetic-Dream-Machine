@@ -3,7 +3,7 @@
  * isomorphic capture-engine: raw turns arrive over the island SIGNAL channel (the main thread only
  * transports — it never handles the data-plane), the engine WAL-backs + batch-flushes them to the
  * palace on the island's own server tick, and projects coalesced stats frames OUT via `ctx.post`
- * (the OUT=coalesce dendrite — the telemetry twin of the wiki island's `projection:frame`). The
+ * (the OUT=coalesce dendrite — the telemetry twin of the wiki island's `lar:frame`). The
  * capture-engine's own servo keeps the gate self-regulating.
  *
  * role = capability ≠ platform: the engine factory is INJECTED (node: makeNodeCaptureEngine wired
@@ -24,7 +24,7 @@ import type { SensoriumContract } from "@lararium/mesh/sensorium-contract";
 import type { IslandCap } from "../island-caps.js";
 import type { IslandContext } from "../island-context.js";
 
-/** The OUT-frame listenable (the telemetry twin of PROJECTION_FRAME). */
+/** The OUT-frame listenable (the telemetry twin of the story camera's `lar:frame`). */
 export const TELEMETRY_FRAME = "telemetry:frame";
 /** This cap declares capture without making any claim about its eventual sink or stream source. */
 const CAPTURE_SENSORIUM_CAP: SensoriumContract = { has: ["capture"] };

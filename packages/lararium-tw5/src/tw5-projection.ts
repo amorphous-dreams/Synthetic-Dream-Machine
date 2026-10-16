@@ -1,17 +1,25 @@
 /**
- * tw5-projection — the projection-nalu, render-side twin of the capture-nalu.
+ * tw5-projection — the projection-nalu, render-side twin of the capture-nalu: the ISLAND side of the camera
+ * contract (`@lararium/mesh` lar-camera).
  *
  * The BROWSER twin of the node disk projector (island-behaviors.ts `onBoot`): same
  * `makeWikiBehavior({ onBoot })` capability shore, same render-then-emit shape — node emits
  * rendered state TO FS, the browser emits it TO THE MAIN THREAD. role = capability ≠ platform.
  *
- * The island's TW5 engine lives in the Worker (§9), so the cameras live here: render the story
- * river + page stylesheet into `$tw.fakeDocument`, serialize to HTML+CSS, and emit COALESCED
- * `projection:frame` events. The main thread applies each frame to a shadow root. Widget handlers
- * stay live in the worker on the fake DOM; the main thread returns DOM events by render-id, and this
- * module dispatches them into the native TW5 handler. The nalu is COALESCE-to-latest (newest snapshot
- * supersedes; a burst of wiki changes collapses to one post), not the capture-nalu's
- * accumulate-every-record.
+ * The island's TW5 engine lives in the Worker (§9), so the story camera lives here: it renders the root
+ * template and the page stylesheet into `$tw.fakeDocument` and emits COALESCED `lar:frame` messages, each a
+ * set of keys carrying WHOLE state under its own monotone revision (dreamdom#/the-ruling):
+ *
+ *   - `lar:surface`    the story container's whole HTML, every frame;
+ *   - `lar:style`      the stylesheet's whole CSS, only when its text moved since the mount's last frame;
+ *   - `lar:membership` the complete key set, so an omitted key never reads as a deleted one.
+ *
+ * A frame names the `mountEpoch` the camera minted at mount (re-minted on `lar:resend`, which re-emits every
+ * key whole) and, per control, the `sensedRevision` the island had taken in before it rendered.
+ *
+ * Widget handlers stay live in the worker on the fake DOM. The page returns a person's act as a
+ * `lar:control-event`; `dispatchLarControlEvent` resolves the render id to the node TW5 bound, runs TW5's own
+ * handler, and answers every reliable act on `lar:control-result`. Frames never answer events.
  *
  * Isomorphic: uses only `$tw.fakeDocument` (no window.document) — safe in @lararium/tw5.
  *
@@ -22,10 +30,11 @@ import type { IslandContext } from "./island-context.js";
 import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camera.js";
 import { tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
-import { CoalesceGate } from "@lararium/mesh";
-
-/** The `IslandMsg_Event.listenable` discriminator for a rendered projection frame. */
-export const PROJECTION_FRAME = "projection:frame";
+import {
+  CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, mkLarControlResult, mkLarFrame,
+  type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
+  type LarMsg_Resend, type LarRefusal, type LarResultStatus,
+} from "@lararium/mesh";
 
 /** Coalesce window (ms): a burst of wiki "change" events collapses to one posted frame. Small
  *  (one display frame-ish) — interactive display, not the capture-nalu's 2 s recall budget.
@@ -38,17 +47,25 @@ export const PROJECTION_FRAME = "projection:frame";
  *  (disk-projector's KeyedCoalesceGate) servos its window. role = physics ≠ uniformity. */
 const COALESCE_MS = 24;
 
+/** The keys the story camera declares at mount, membership aside. */
+const STORY_MEMBERS: readonly string[] = [LAR_KEY_SURFACE, LAR_KEY_STYLE];
+
+/** How many answers a camera keeps for re-answering a repeated `eventId` within one epoch. */
+const ANSWER_RING = 256;
+
 /** A patched fake-DOM element: TW5's fakedom drops `addEventListener` (a no-op), severing only the
  *  DOM-node→widget binding. We patch it to STORE the handler TW5 builds + stamp a `data-lar-rid`
- *  (which rides the serialized HTML), so a relayed main-thread event maps back to the live node. */
+ *  (which rides the serialized HTML), so a returned act maps back to the live node. */
 interface RidNode {
   attributes: Record<string, string | undefined>;
   setAttribute(name: string, value: string): void;
   _larListeners?: { type: string; handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void } }[];
   parentNode?: RidNode | null;
   children?: RidNode[];
-  /** The field's live text. TW5's edit widgets read `domNodes[0].value`, so the input leg writes it here. */
+  /** The field's live text. TW5's edit widgets read `domNodes[0].value`, so the sense and commit legs write it here. */
   value?: string;
+  /** A toggle's state as of the act. TW5's checkbox reads `.checked` off its node. */
+  checked?: boolean;
   selectionStart?: number;
   selectionEnd?: number;
   offsetLeft?: number;
@@ -58,23 +75,51 @@ interface RidNode {
   _larRect?: { top: number; left: number; right: number; bottom: number; width: number; height: number; x: number; y: number };
 }
 const ridMap = new Map<string, RidNode>();
-interface ProjectionEventScope {
-  wikiUri: string;
-  popupRoot: RidNode;
+
+/** One mounted story camera: the roots it paints, the ids it painted, and its epoch, senses and answers. */
+interface CameraScope {
+  readonly wikiUri: string;
+  readonly cameraId: string;
+  readonly popupRoot: RidNode;
   readonly roots: readonly RidNode[];
   renderIds: Set<string>;
+  /** The render ids the last frame painted: the only ids an act may name. */
   liveIds: Set<string>;
-  mark?: () => void;
-  alert?: (title: string, text: string) => void;
-  pendingAnswer?: { readonly renderId: string; readonly eventType: string; readonly wikiUri: string };
+  /** Declared control ids (`data-control-id`) the last frame painted, by render id. */
+  controlIds: Map<string, string>;
+  mountEpoch: number;
+  /** Per control id, the newest page revision the island took in. */
+  readonly sensed: Map<string, number>;
+  /** The answers given within this epoch, by eventId. */
+  readonly answers: Map<string, LarMsg_ControlResult>;
+  post(msg: LarMsg_Frame | LarMsg_ControlResult): void;
+  mark(): void;
+  resend(): void;
+  alert(title: string, text: string): void;
 }
-const eventScopes = new Map<string, ProjectionEventScope>();
-let activeEventScope: ProjectionEventScope | undefined;
+const eventScopes = new Map<string, CameraScope>();
+const cameras = new Set<CameraScope>();
+let activeEventScope: CameraScope | undefined;
 let ridSeq = 0;
 /** The size of the render-id and event-scope maps, for a witness that reads them across frames. */
 export function renderIdCensus(): { nodes: number; scopes: number } {
   return { nodes: ridMap.size, scopes: eventScopes.size };
 }
+
+/** Epochs rise across every mount this worker stands, and start past the wall clock, so a page holding an
+ *  epoch from a worker that restarted never matches the new one. */
+let lastEpoch = 0;
+function mintEpoch(): number {
+  lastEpoch = Math.max(lastEpoch + 1, Date.now());
+  return lastEpoch;
+}
+
+/** The island protocol's union names the two `lar:` messages once the wire integration lands; until then this
+ *  one cast stands as the seam, and nowhere else. */
+function postLar(ctx: IslandContext, msg: LarMsg_Frame | LarMsg_ControlResult): void {
+  ctx.post(msg as unknown as IslandToVesselMsg);
+}
+
 const FAKE_DOM_ANIMATION_PATCHED = Symbol("lararium.fake-dom-animation-patched");
 
 /** Patch the fake-element prototype once per worker (the RETURN-leg capability the fakedom platform
@@ -165,133 +210,213 @@ export function patchFakeDomAnimation(tw: Record<string, any>): void {
   };
 }
 
-/**
- * Dispatch a relayed TEXT event: write the value onto the resolved node, then run TW5's own handler.
- *
- * TW5's edit widgets read `this.domNodes[0].value` inside their input handler — they never read the
- * event. So the value lands on the NODE first, and the handler that follows reads it exactly where it
- * reads a local keystroke: `saveChanges` fires, the tiddler writes, the wiki changes, the projection
- * re-renders. TW5 never learns the keystroke crossed a thread.
- *
- * The caret rides to the end of the written value, because the main thread holds the real caret and the
- * fake node holds none — a widget that reads a selection reads a coherent one rather than a stale one.
- *
- * A node detached by a re-render fires nothing, even before the next frame lands. A miss names a stale frame.
- */
-export function dispatchProjectedInput(renderId: string, eventType: string, value: string): "dispatched" | "stale-target" {
+type Listener = NonNullable<RidNode["_larListeners"]>[number]["handler"];
+
+const binds = (node: RidNode | null | undefined, type: string): boolean =>
+  (node?._larListeners ?? []).some((l) => l.type === type);
+
+/** The scope an act addresses: the camera that bound its render id, else the one camera of that id under its epoch. */
+function scopeFor(ev: LarMsg_ControlEvent): CameraScope | undefined {
+  const bound = ev.renderId !== undefined ? eventScopes.get(ev.renderId) : undefined;
+  if (bound) return bound;
+  const named = [...cameras].filter((c) => c.cameraId === ev.cameraId);
+  return named.find((c) => c.mountEpoch === ev.mountEpoch) ?? (named.length === 1 ? named[0] : undefined);
+}
+
+/** The live node an act names, or undefined: a render id the camera bound, the last frame painted, and the tree still holds. */
+function resolveTarget(ev: LarMsg_ControlEvent, scope: CameraScope): RidNode | undefined {
+  const renderId = ev.renderId ?? (ev.controlId !== undefined ? scope.controlIds.get(ev.controlId) : undefined);
+  if (renderId === undefined) return undefined;
   const el = ridMap.get(renderId);
-  const scope = eventScopes.get(renderId);
-  if (!el || (scope && (!scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)))) return answerStaleTarget(renderId, eventType, scope);
-  if (scope) activeEventScope = scope;
+  if (!el || eventScopes.get(renderId) !== scope || !scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)) return undefined;
+  return el;
+}
+
+/** The event TW5's handler reads: the target, the modifiers and the key chord as of the act, and a view that refuses. */
+function projectedEvent(type: string, el: RidNode, scope: CameraScope, ev: LarMsg_ControlEvent): Record<string, unknown> & { readonly stopped: () => boolean } {
+  let stopped = false;
+  const m = ev.modifiers;
+  return {
+    type, target: el, currentTarget: el,
+    button: m?.button ?? 0, ctrlKey: m?.ctrl ?? false, metaKey: m?.meta ?? false, altKey: m?.alt ?? false, shiftKey: m?.shift ?? false,
+    ...(ev.key ? { key: ev.key.key, code: ev.key.code, keyCode: ev.key.keyCode, which: ev.key.keyCode, repeat: ev.key.repeat } : {}),
+    // TW5 navigator.js reads event.event.view before save/cancel/rename. A worker event carries the
+    // worker-local, explicitly refusing view capability; no global `window` or DOM crosses the seam.
+    view: makeProjectedViewContract((_capability, message) => {
+      scope.alert("$:/temp/lares/alert/confirm-refused", `This wiki cannot open a blocking prompt: ${message}`);
+    }),
+    defaultPrevented: false,
+    preventDefault() { this.defaultPrevented = true; },
+    stopPropagation() { stopped = true; },
+    stopped: () => stopped,
+  };
+}
+
+function runListeners(scope: CameraScope, node: RidNode, type: string, event: Record<string, unknown>): void {
+  event.currentTarget = node;
+  for (const l of node._larListeners ?? []) if (l.type === type) invokeProjectedListener(scope, l.handler, event);
+}
+
+/** Land a whole value on the node TW5 reads it from; the caret rides to its end, since the page holds the real one. */
+function writeValue(el: RidNode, value: string): void {
   el.value = value;
   el.selectionStart = el.selectionEnd = value.length;
-  const ev = { type: eventType, target: el, currentTarget: el, preventDefault() {}, stopPropagation() {} };
-  for (const l of el._larListeners ?? []) {
-    if (l.type === eventType) invokeProjectedListener(scope, l.handler, ev);
-  }
-  return "dispatched";
 }
 
 /**
- * Dispatch a relayed main-thread DOM event into TW5's NATIVE path: resolve the fake node by its
- * render-id and invoke the handler TW5 itself stored. A node detached by a re-render fires nothing,
- * even before the next frame lands. From there (handleClickEvent → tm-navigate →
- * navigator → story change → re-project) the widget tree runs as if the event were local — TW5
- * never learns it crossed a thread. A miss answers `stale-target` to the page and marks that result
- * into the next absolute projection.
+ * Dispatch one control event into TW5's NATIVE path and answer it.
  *
- * A `keydown` BUBBLES up the fake tree until a listener stops it, because TW5's keyboard widget binds on a
- * wrapper around the focused control; a click fires on its own node alone. A listener that throws (a
- * plugin reaching for a blocking `confirm`, say) stops there and reads by name on the wiki's alert rail.
+ * TW5 never learns the act crossed a thread: the value lands on the NODE before TW5's own handler reads it
+ * there (`domNodes[0].value`), the geometry the page measured at the act answers that act's layout reads and
+ * no other, and the key chord carries the real `key`, `code` and `keyCode`.
+ *
+ *   - An act under another `mountEpoch`, on a render id no live frame painted, or on a node a re-render detached
+ *     answers `stale-target` and runs nothing (a sense in that place answers nothing and runs nothing).
+ *   - A `lar:act` whose node binds no listener of its type answers `refused: unclaimed`, so the page leaves the
+ *     browser's default alone.
+ *   - `lar:click` runs the popup closer leg, then the node's own listeners (a click stays on its node).
+ *   - `lar:key` bubbles up the fake tree until a listener stops it, since TW5's keyboard widget binds on a wrapper.
+ *   - `lar:commit` writes the whole value (and `checked`) onto the node and runs its `change` listeners; an edit
+ *     engine that saves on `input` alone runs that leg, so a commit always lands the settled value.
+ *   - `lar:sense` writes the whole value, records its `localRev` (newest wins), runs the `input` listeners, and
+ *     answers null: the droppable class answers only through a later frame's `sensedRevision`.
+ *   - A repeated `eventId` within the epoch re-answers from the ring without re-applying.
+ *
+ * Every answer crosses the camera's `ctx.post` as `lar:control-result`. A listener that throws (a plugin
+ * reaching for a blocking `confirm`, say) stops there, reads by name on the wiki's alert rail, and the act
+ * still answers.
  */
-export function dispatchProjectedEvent(renderId: string, eventType: string, fields: Record<string, number | boolean>): "dispatched" | "stale-target" {
-  const el = ridMap.get(renderId);
-  const scope = eventScopes.get(renderId);
-  if (!el || (scope && (!scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)))) return answerStaleTarget(renderId, eventType, scope);
-  if (scope) activeEventScope = scope;
-  const left = numericField(fields, "rectLeft");
-  const top = numericField(fields, "rectTop");
-  const width = numericField(fields, "rectWidth");
-  const height = numericField(fields, "rectHeight");
-  if (left !== undefined && top !== undefined && width !== undefined && height !== undefined) {
-    const right = numericField(fields, "rectRight") ?? left + width;
-    const bottom = numericField(fields, "rectBottom") ?? top + height;
-    // TW5 Popup reads the fake node's bounding box and offset dimensions while opening a popup.
-    // These whole geometry values were measured on the main thread for this exact click.
-    el._larRect = { top, left, right, bottom, width, height, x: left, y: top };
-    el.offsetLeft = left;
-    el.offsetTop = top;
-    el.offsetWidth = width;
-    el.offsetHeight = height;
-  }
-  // TW5 navigator.js reads event.event.view before save/cancel/rename. A worker event carries the
-  // worker-local, explicitly refusing view capability; no global `window` or DOM crosses the seam.
-  let propagationStopped = false;
-  const event: Record<string, unknown> = {
-    type: eventType, target: el, currentTarget: el, ...fields,
-    view: makeProjectedViewContract((_capability, message) => {
-      scope?.alert?.("$:/temp/lares/alert/confirm-refused", `This wiki cannot open a blocking prompt: ${message}`);
-    }),
-    preventDefault() { this.defaultPrevented = true; },
-    stopPropagation() { propagationStopped = true; },
+export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
+  const scope = scopeFor(ev);
+  const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
+  const answer = (status: LarResultStatus, reason?: LarRefusal): LarMsg_ControlResult => {
+    const result = mkLarControlResult({
+      eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
+      ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}),
+      ...(ev.renderId !== undefined ? { renderId: ev.renderId } : {}),
+      status, ...(reason !== undefined ? { reason } : {}),
+    });
+    if (scope && ev.mountEpoch === scope.mountEpoch) remember(scope, result);
+    if (scope) scope.post(result);
+    else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
+    return result;
   };
-  if (eventType === "keydown") { event.key = ""; event.code = ""; }
-  const ev = event;
-  // TW5 binds its popup closer on the document capture leg; run that before the target's widget
-  // handler so a click that opens a popup cannot immediately close the popup it just opened.
-  if (eventType === "click") {
-    for (const l of scope?.popupRoot._larListeners ?? []) {
-      if (l.type === "click") invokeProjectedListener(scope, l.handler, ev);
-    }
+  const sense = ev.kind === "lar:sense";
+  const stale = (): LarMsg_ControlResult | null => {
+    console.warn(`[wiki-worker] stale-target: ${target}`);
+    return sense ? null : answer("stale-target");
+  };
+  if (!scope || ev.mountEpoch !== scope.mountEpoch) return stale();
+  if (!sense) {
+    const given = scope.answers.get(ev.eventId);
+    if (given) { scope.post(given); return given; }
   }
-  let current: RidNode | null | undefined = el;
-  do {
-    event.currentTarget = current;
-    for (const l of current?._larListeners ?? []) {
-      if (l.type === eventType) invokeProjectedListener(scope, l.handler, ev);
+
+  if (ev.kind === "lar:write" || ev.kind === "lar:service-result") return answer("refused", "binding-unavailable");
+  const el = resolveTarget(ev, scope);
+  if (!el) return stale();
+  activeEventScope = scope;
+  const key = ev.controlId ?? ev.renderId!;
+
+  if (sense) {
+    if (typeof ev.wholeValue !== "string" || ev.localRev === undefined) return null;
+    if (!takeIn(scope, key, ev.localRev)) return null;
+    writeValue(el, ev.wholeValue);
+    runListeners(scope, el, "input", projectedEvent("input", el, scope, ev));
+    scope.mark();
+    return null;
+  }
+
+  switch (ev.action) {
+    case "lar:click": {
+      if (!binds(el, "click")) return answer("refused", "unclaimed");
+      const g = ev.geometry;
+      if (g) {
+        // TW5 Popup reads the fake node's bounding box and offset dimensions while opening a popup; these whole
+        // values were measured on the page for this act, and they leave with it.
+        el._larRect = { ...g, x: g.left, y: g.top };
+        el.offsetLeft = g.left; el.offsetTop = g.top; el.offsetWidth = g.width; el.offsetHeight = g.height;
+      }
+      try {
+        const event = projectedEvent("click", el, scope, ev);
+        // TW5 binds its popup closer on the document capture leg; run that before the target's widget
+        // handler so a click that opens a popup cannot immediately close the popup it just opened.
+        runListeners(scope, scope.popupRoot, "click", event);
+        event.currentTarget = el;
+        runListeners(scope, el, "click", event);
+      } finally {
+        if (g) { delete el._larRect; delete el.offsetLeft; delete el.offsetTop; delete el.offsetWidth; delete el.offsetHeight; }
+      }
+      return answer("applied");
     }
-    if (eventType !== "keydown" || propagationStopped) break;
-    current = current?.parentNode;
-  } while (current);
-  return "dispatched";
+    case "lar:key": {
+      let claimed = false;
+      for (let node: RidNode | null | undefined = el; node && !claimed; node = node.parentNode) claimed = binds(node, "keydown");
+      if (!claimed) return answer("refused", "unclaimed");
+      const event = projectedEvent("keydown", el, scope, ev);
+      for (let node: RidNode | null | undefined = el; node && !event.stopped(); node = node.parentNode) {
+        runListeners(scope, node, "keydown", event);
+      }
+      return answer("applied");
+    }
+    case "lar:commit": {
+      const leg = binds(el, "change") ? "change" : binds(el, "input") ? "input" : undefined;
+      if (!leg) return answer("refused", "unclaimed");
+      if (typeof ev.wholeValue === "string") writeValue(el, ev.wholeValue);
+      if (ev.checked !== undefined) el.checked = ev.checked;
+      if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
+      runListeners(scope, el, leg, projectedEvent(leg, el, scope, ev));
+      // The commit took the page's value in: the next frame says so, whether or not the store moved.
+      scope.mark();
+      return answer("applied");
+    }
+    default:
+      return answer("refused", "unsupported-control");
+  }
 }
 
-function answerStaleTarget(
-  renderId: string,
-  eventType: string,
-  scope = eventScopes.get(renderId) ?? activeEventScope,
-): "stale-target" {
-  if (scope) {
-    scope.pendingAnswer = { renderId, eventType, wikiUri: scope.wikiUri };
-    scope.mark?.();
+/** Ask every camera of `msg.cameraId` (on `wikiUri`, where named) to paint itself whole under a fresh epoch. */
+export function resendLarCamera(msg: LarMsg_Resend, wikiUri?: string): boolean {
+  let asked = false;
+  for (const camera of cameras) {
+    if (camera.cameraId !== msg.cameraId || (wikiUri !== undefined && camera.wikiUri !== wikiUri)) continue;
+    camera.resend();
+    asked = true;
   }
-  console.warn(`[wiki-worker] stale-target: ${renderId}`);
-  return "stale-target";
+  return asked;
 }
 
-function invokeFakeListener(handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void }, event: unknown): void {
+/** Take in a page revision for a control: newest wins by the page's own number, never by arrival. */
+function takeIn(scope: CameraScope, control: string, localRev: number): boolean {
+  if ((scope.sensed.get(control) ?? -1) >= localRev) return false;
+  scope.sensed.set(control, localRev);
+  return true;
+}
+
+/** Keep an answer for a repeated eventId; the oldest leaves once the ring fills. */
+function remember(scope: CameraScope, result: LarMsg_ControlResult): void {
+  scope.answers.set(result.eventId, result);
+  if (scope.answers.size > ANSWER_RING) scope.answers.delete(scope.answers.keys().next().value!);
+}
+
+function invokeFakeListener(handler: Listener, event: unknown): void {
   if (typeof handler === "function") handler(event);
   else handler.handleEvent(event);
 }
 
-function invokeProjectedListener(scope: ProjectionEventScope | undefined, handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void }, event: unknown): void {
+function invokeProjectedListener(scope: CameraScope, handler: Listener, event: unknown): void {
   try {
     invokeFakeListener(handler, event);
   } catch (error) {
     const refusal = error instanceof Error ? error : new Error(String(error));
     const name = refusal.name || "Error";
     console.warn(`[wiki-worker] handler refused: ${name}: ${refusal.message}`);
-    scope?.alert?.("$:/temp/lares/alert/handler-refused", `An action stopped: ${name}: ${refusal.message}`);
+    scope.alert("$:/temp/lares/alert/handler-refused", `An action stopped: ${name}: ${refusal.message}`);
   }
 }
 
-function numericField(fields: Record<string, number | boolean>, key: string): number | undefined {
-  const value = fields[key];
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
 /**
- * Mount the projection on a live wiki island. Returns a teardown (the `onBoot` contract).
+ * Mount the story camera on a live wiki island. Returns a teardown (the `onBoot` contract).
  */
 export function mountProjection(ctx: IslandContext): () => void {
   // Widen the booted $tw for the loose internal TW5 surface (fakeDocument, Tiddler) the typed
@@ -306,14 +431,28 @@ export function mountProjection(ctx: IslandContext): () => void {
   patchFakeElementForEvents(fakeDoc);
   // The worker's fake document has no browser startup, which normally stands TW5's Popup. Reuse
   // TW5's own manager over a fake root so popup state remains ordinary wiki state and every frame
-  // remains a complete HTML+CSS snapshot.
+  // remains a complete snapshot.
   const popupRoot = fakeDoc.createElement("div");
   const storyContainer = fakeDoc.createElement("div");
-  const scope: ProjectionEventScope = {
-    wikiUri: ctx.wikiUri, popupRoot, roots: [storyContainer, popupRoot], renderIds: new Set(), liveIds: new Set(),
+  /** Every key's revision rises across the mount's whole life, epochs included. */
+  let surfaceRev = 0, styleRev = 0;
+  const membershipRev = 1;
+  /** The stylesheet text the mount's last frame carried, and whether the next frame carries every key whole. */
+  let lastCss: string | undefined;
+  let whole = true;
+  const scope: CameraScope = {
+    wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, popupRoot],
+    renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
+    mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(),
+    post: (msg) => postLar(ctx, msg),
+    mark: () => gate.mark(),
+    // A new epoch: every act the page made under the old one now answers stale-target, the old answers leave
+    // with it, and the next frame carries every key whole. The sensed revisions stay: the page still holds them.
+    resend: () => { scope.mountEpoch = mintEpoch(); scope.answers.clear(); whole = true; gate.mark(); },
     alert: (title, text) => tw.wiki.addTiddler(new tw.Tiddler({ title, text, tags: ["$:/tags/Alert"], component: "projection", modified: new Date() })),
   };
   activeEventScope = scope;
+  cameras.add(scope);
   if (typeof tw.utils?.Popup !== "function") {
     throw new Error("TW5 projection cannot install its own popup manager: $tw.utils.Popup is unavailable");
   }
@@ -345,9 +484,16 @@ export function mountProjection(ctx: IslandContext): () => void {
   // live fakeDOM lazily at the crest — `mark()` only says "the source moved".
   const gate = new CoalesceGate({
     windowMs: COALESCE_MS,
-    onFlush: (rev) => {
-      let html = tw5ElementToHtml(storyContainer);
-      scope.liveIds = new Set([...html.matchAll(/data-lar-rid="([^"]+)"/g)].map((match) => match[1]!));
+    onFlush: () => {
+      const html = tw5ElementToHtml(storyContainer);
+      scope.liveIds = new Set();
+      scope.controlIds = new Map();
+      for (const [tag] of html.matchAll(/<[a-zA-Z][^>]*\bdata-lar-rid="[^"]+"[^>]*>/g)) {
+        const rid = /\bdata-lar-rid="([^"]+)"/.exec(tag)![1]!;
+        scope.liveIds.add(rid);
+        const control = /\bdata-control-id="([^"]+)"/.exec(tag)?.[1];
+        if (control !== undefined) scope.controlIds.set(control, rid);
+      }
       // A node the frame no longer paints never receives an event again: the page relays by the ids the
       // frame carries, and a detached node answers `stale-target` whatever it holds. Its map entries leave
       // with the frame, so the maps hold the painted nodes and the roots, never every node ever bound.
@@ -360,25 +506,18 @@ export function mountProjection(ctx: IslandContext): () => void {
         eventScopes.delete(renderId);
         scope.renderIds.delete(renderId);
       }
-      if (scope.pendingAnswer) {
-        const answer = scope.pendingAnswer;
-        const attr = (value: string): string => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
-        html += `<output role="status" aria-live="polite" data-lar-interaction-result="stale-target" data-lar-source-rid="${attr(answer.renderId)}" data-lar-source-event="${attr(answer.eventType)}" data-lar-source-wiki="${attr(answer.wikiUri)}">stale-target</output>`;
-        delete scope.pendingAnswer;
-      }
-      ctx.post({
-        type:           "event",
-        wikiUri:        ctx.wikiUri,
-        listenable:     PROJECTION_FRAME,
-        payload: {
-          html,
-          css:  styleContainer.textContent ?? "",
-          rev,
-        },
-      });
+      const css = styleContainer.textContent ?? "";
+      const keys: LarFrameKey[] = [{ key: LAR_KEY_SURFACE, rev: ++surfaceRev, html }];
+      if (whole || css !== lastCss) keys.push({ key: LAR_KEY_STYLE, rev: ++styleRev, css });
+      keys.push({ key: LAR_KEY_MEMBERSHIP, rev: membershipRev, members: STORY_MEMBERS });
+      lastCss = css;
+      whole = false;
+      scope.post(mkLarFrame({
+        wikiUri: ctx.wikiUri, cameraId: scope.cameraId, mountEpoch: scope.mountEpoch, keys,
+        sensedRevision: Object.fromEntries(scope.sensed),
+      }));
     },
   });
-  scope.mark = () => gate.mark();
 
   const onChange = (changes: Record<string, unknown>): void => {
     activeEventScope = scope;
@@ -394,7 +533,9 @@ export function mountProjection(ctx: IslandContext): () => void {
     gate.dispose();
     tw.wiki.removeEventListener("change", onChange);
     stopStory();
+    cameras.delete(scope);
     for (const renderId of scope.renderIds) {
+      if (eventScopes.get(renderId) !== scope) continue;
       ridMap.delete(renderId);
       eventScopes.delete(renderId);
     }

@@ -28,8 +28,8 @@ export interface DaemonReturnDoor {
 /** The wiki pool's half: `has` answers whether the pool holds an island under that id. */
 export interface PoolReturnDoor {
   has(wikiId: string): boolean;
-  placeControlEvent(wikiId: string, ev: LarMsg_ControlEvent, session?: string): void;
-  resendProjection(wikiId: string, cameraId: string, session?: string): void;
+  placeControlEvent(wikiId: string, ev: LarMsg_ControlEvent): void;
+  resendProjection(wikiId: string, cameraId: string): void;
 }
 
 export type ReturnLegVerdict = "routed" | "surface-unknown" | "event-malformed";

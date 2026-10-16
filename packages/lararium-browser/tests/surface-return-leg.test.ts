@@ -33,7 +33,9 @@ function island(name: string, live: readonly string[]) {
 }
 
 const ev = (renderId: string, action = "lar:click", mountEpoch = 1): LarMsg_ControlEvent =>
-  mkLarControlEvent({ eventId: `e-${renderId}-${action}-${mountEpoch}`, cameraId: LAR_CAMERA_STORY, mountEpoch, kind: action === "lar:sense" ? "lar:sense" : "lar:act", action, seenFrameRev: 1, renderId });
+  mkLarControlEvent({ eventId: `e-${renderId}-${action}-${mountEpoch}`, cameraId: LAR_CAMERA_STORY, mountEpoch, kind: action === "lar:sense" ? "lar:sense" : "lar:act", action, seenFrameRev: 1, renderId,
+    // a sense carries the page revision it senses at; without it the contract reads it malformed
+    ...(action === "lar:sense" ? { localRev: 1, wholeValue: "" } : {}) });
 
 function vessel() {
   const daemon = island("daemon", ["7", "8"]);

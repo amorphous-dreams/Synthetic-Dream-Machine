@@ -11,16 +11,16 @@
  *   - "yes" applies against the wiki as it then stands; "no" leaves every tiddler as it stood;
  *   - a subject that changed in content refuses on the alert rail, while a landing that re-stamps the
  *     envelope field alone still applies (`$:/config/ConfirmIgnoredFields` names `ENVELOPE_FIELDS`);
- *   - a projected frame carries the dialog and the `inert` marks, Escape crosses as a keydown, and a
- *     render-id of an answered question reads stale.
+ *   - a projected frame carries the dialog and the `inert` marks, Escape crosses as a `lar:key` with its real
+ *     key chord, and a render-id of an answered question answers `stale-target`.
  */
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import { type LarTiddlerRecord } from "@lararium/mesh";
 import { ENVELOPE_FIELDS } from "../src/envelope-fields.js";
 import { neverPersists } from "../src/island-adaptor.js";
-import { dispatchProjectedEvent, mountProjection } from "../src/tw5-projection.js";
-import type { IslandContext } from "../src/island-context.js";
-import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
+import { dispatchLarControlEvent } from "../src/tw5-projection.js";
+import { htmlOf, mountSurface, type Surface } from "./projection-surface.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
 import {
   afterDispatch, draftBag, draftTitleOf, ManualTimers, peerWrite, remote, shoreRig, storeDeleted, storeText, tempBag,
   turns, typeInto, workingBag, type Rig,
@@ -320,12 +320,11 @@ function buttonRid(html: string, cls: string): string {
 }
 
 describe.skipIf(wikiSkip)(`the confirm road through a projected frame${skipNote}`, () => {
-  let stop: (() => void) | undefined;
-  let dispose: (() => void) | undefined;
-  afterEach(() => { stop?.(); dispose?.(); stop = undefined; dispose = undefined; });
+  let s: Surface | undefined;
+  afterEach(() => { s?.stop(); s = undefined; });
 
-  test("the frame carries the wiki's own dialog and the inert marks; Escape crosses as a keydown; yes deletes; an answered button reads stale", async () => {
-    const engine = await bootTestWiki({ tiddlers: [
+  test("the frame carries the wiki's own dialog and the inert marks; Escape crosses as a key; yes deletes; an answered button reads stale", async () => {
+    s = await mountSurface(`{{${ROOT}}}`, [
       { title: SUBJECT, text: "body" },
       { title: ROOT, type: "text/vnd.tiddlywiki", text: [
         `<$navigator story="$:/StoryList" history="$:/HistoryList">`,
@@ -333,24 +332,19 @@ describe.skipIf(wikiSkip)(`the confirm road through a projected frame${skipNote}
         `</$navigator>`,
         `{{$:/core/ui/Confirmations}}`,
       ].join("") },
-    ] });
-    dispose = () => engine.dispose();
-    engine.setTiddler({ title: "$:/core/ui/RootTemplate", type: "text/vnd.tiddlywiki", text: `{{${ROOT}}}` });
-    const wiki = (engine.$tw as unknown as LooseTw).wiki;
-    const frames: string[] = [];
-    stop = mountProjection({
-      wikiUri: "lar:///test/confirm-road",
-      tw5: engine,
-      post: (msg) => { if (msg.listenable === "projection:frame") frames.push((msg.payload as { html: string }).html); },
-    } as IslandContext);
-    await vi.waitFor(() => expect(frames.length).toBeGreaterThan(0));
+    ]);
+    const wiki = s.wiki as unknown as LooseTw["wiki"];
+    const html = (): string => htmlOf(s!.last());
+    const click = (renderId: string) => dispatchLarControlEvent(s!.event("", { kind: "lar:act", action: "lar:click", renderId }));
+    expect(s.frames.length).toBeGreaterThan(0);
     // CONTROL: no question, no dialog, nothing inert.
-    expect(frames.at(-1)).not.toContain('aria-modal="true"');
-    expect(frames.at(-1)).not.toContain("inert");
+    expect(html()).not.toContain('aria-modal="true"');
+    expect(html()).not.toContain("inert");
 
-    dispatchProjectedEvent(buttonRid(frames.at(-1)!, "ask-delete"), "click", { button: 0 });
-    await vi.waitFor(() => expect(frames.at(-1)).toContain('aria-modal="true"'));
-    const asked = frames.at(-1)!;
+    expect(click(buttonRid(html(), "ask-delete"))).toMatchObject({ status: "applied" });
+    await s.flush();
+    const asked = html();
+    expect(asked).toContain('aria-modal="true"');
     expect(asked).toContain('role="alertdialog"');
     expect(asked).toMatch(/<div[^>]*class="page"[^>]*inert=""|<div[^>]*inert=""[^>]*class="page"/);
     expect(asked).toContain(`Do you wish to delete the tiddler &quot;${SUBJECT}&quot;?`.replaceAll("&quot;", '"'));
@@ -360,22 +354,29 @@ describe.skipIf(wikiSkip)(`the confirm road through a projected frame${skipNote}
     // Escape, as the page relays it from the focused declining button: it bubbles to the keyboard widget.
     const declineRid = buttonRid(asked, "tc-confirm-decline");
     const acceptRid = buttonRid(asked, "tc-confirm-accept");
-    dispatchProjectedEvent(declineRid, "keydown", { keyCode: 27, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false });
-    await vi.waitFor(() => expect(frames.at(-1)).not.toContain('aria-modal="true"'));
-    expect(frames.at(-1)).not.toContain("inert");
+    expect(dispatchLarControlEvent(s.event("", {
+      kind: "lar:act", action: "lar:key", renderId: declineRid,
+      key: { key: "Escape", code: "Escape", keyCode: 27, repeat: false },
+      modifiers: { ctrl: false, meta: false, alt: false, shift: false },
+    }))).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(html()).not.toContain('aria-modal="true"');
+    expect(html()).not.toContain("inert");
     expect(wiki.getTiddler(SUBJECT), "Escape declined").toBeDefined();
     expect(wiki.getTiddlersWithTag(QUESTION_TAG)).toEqual([]);
 
     // A late press of the answered question's button names a node no frame holds.
-    expect(dispatchProjectedEvent(acceptRid, "click", { button: 0 })).toBe("stale-target");
+    expect(click(acceptRid)).toMatchObject({ status: "stale-target" });
     expect(wiki.getTiddler(SUBJECT)).toBeDefined();
 
-    dispatchProjectedEvent(buttonRid(frames.at(-1)!, "ask-delete"), "click", { button: 0 });
-    await vi.waitFor(() => expect(frames.at(-1)).toContain('aria-modal="true"'));
-    expect(buttonRid(frames.at(-1)!, "tc-confirm-accept"), "a new question wears new render-ids").not.toBe(acceptRid);
-    dispatchProjectedEvent(buttonRid(frames.at(-1)!, "tc-confirm-accept"), "click", { button: 0 });
-    await vi.waitFor(() => expect(frames.at(-1)).not.toContain('aria-modal="true"'));
+    click(buttonRid(html(), "ask-delete"));
+    await s.flush();
+    expect(html()).toContain('aria-modal="true"');
+    expect(buttonRid(html(), "tc-confirm-accept"), "a new question wears new render-ids").not.toBe(acceptRid);
+    expect(click(buttonRid(html(), "tc-confirm-accept"))).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(html()).not.toContain('aria-modal="true"');
     expect(wiki.getTiddler(SUBJECT), "yes deleted").toBeUndefined();
-    expect(frames.at(-1)).not.toContain("inert");
+    expect(html()).not.toContain("inert");
   }, 120_000);
 });
