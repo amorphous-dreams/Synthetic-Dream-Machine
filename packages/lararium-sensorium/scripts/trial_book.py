@@ -101,6 +101,51 @@ CREATE TABLE IF NOT EXISTS content_frontier (
     observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
     parser_version TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS semantic_projection (
+    observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
+    view_key TEXT NOT NULL,
+    sensorium_root TEXT NOT NULL,
+    model_basis_sha256 TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending','landed')),
+    receipt_json TEXT,
+    PRIMARY KEY (observation_id,view_key)
+);
+CREATE TABLE IF NOT EXISTS semantic_frontier (
+    source_key TEXT NOT NULL REFERENCES book_source(source_key),
+    view_key TEXT NOT NULL,
+    frontier INTEGER NOT NULL,
+    observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
+    PRIMARY KEY (source_key,view_key)
+);
+CREATE TABLE IF NOT EXISTS li_parse (
+    parser_identity_sha256 TEXT NOT NULL,
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    text_sha256 TEXT NOT NULL,
+    shape_sha256 TEXT NOT NULL,
+    tree_json TEXT NOT NULL,
+    parser_tier TEXT NOT NULL,
+    PRIMARY KEY (parser_identity_sha256,occurrence_id)
+);
+CREATE TABLE IF NOT EXISTS li_basis (
+    basis_sha256 TEXT PRIMARY KEY,
+    corpus_sha256 TEXT NOT NULL,
+    manifest_json TEXT NOT NULL,
+    receipt_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS li_shape (
+    basis_sha256 TEXT NOT NULL REFERENCES li_basis(basis_sha256),
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    shape_sha256 TEXT NOT NULL,
+    tree_json TEXT NOT NULL,
+    parser_tier TEXT NOT NULL,
+    PRIMARY KEY (basis_sha256,occurrence_id)
+);
+CREATE TABLE IF NOT EXISTS li_idiom (
+    basis_sha256 TEXT NOT NULL REFERENCES li_basis(basis_sha256),
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    membership_json TEXT NOT NULL,
+    PRIMARY KEY (basis_sha256,occurrence_id)
+);
 """
 
 
@@ -355,6 +400,8 @@ def intake_book(state_root: Path | str, freeze_receipt: Path | str, intent_id: s
                    "revision_sha256": digest, "evidence_bytes": len(raw),
                    "manifest_sha256": manifest_sha, "observation_id": obs,
                    "frontier": frontier, "cursor_kind": "frozen-book-observation",
+                   "observed_native_path": freeze["observed_native_path"],
+                   "freeze_root": str(receipt_path.parent),
                    "edition": manifest["descriptor"]["edition"],
                    "witness_locator": manifest["descriptor"]["witness"]["locator"]}
         conn.execute("INSERT INTO intake_receipt VALUES (?,?,?)",
