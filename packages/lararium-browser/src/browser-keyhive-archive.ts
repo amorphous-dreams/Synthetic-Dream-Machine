@@ -6,9 +6,10 @@
  * its seed and the replayed events alone knows its documents and can seal nothing into them. The founding and
  * the admit therefore hand their Archives out, and this shore keeps them.
  *
- * WHERE THEY REST: the vessel's own IndexedDB `keystore`, beside the device seed, IN THE CLEAR. The seed that
- * names the identity rests there in the clear too, so the Archive adds no weaker row than the one it sits
- * beside; both leave the clear together when browser custody wraps the keystore.
+ * WHERE THEY REST: the vessel's own IndexedDB `keystore`, beside the device seed. Until a slot binds, both rest
+ * in the clear; once one does, both rest sealed under the vessel key and read only through this page's unlock
+ * (`browser-custody.ts`). Every read and write here rides that one row door, so an Archive never lands in the
+ * clear beside a slot tree, and a sealed keystore with no unlock refuses `sealed-locked` by name.
  *
  * READING: a row that never stood reads `undefined`. A row that stands and holds anything other than bytes
  * refuses `BrowserArchiveRowUnreadable` by row name: nothing reads a torn row as an empty one, and nothing
@@ -18,9 +19,8 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-keyhive-archive
  */
-import { openVesselIdb, idbGet } from "./browser-vessel-identity.js";
+import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 
-const STORE = "keystore";
 const VESSEL_ARCHIVE_ROW = "keyhive-archive";
 
 /** The row that keeps face `handleIndex`'s creator-veil Archive. */
@@ -40,36 +40,20 @@ export class BrowserArchiveRowUnreadable extends Error {
 }
 
 async function readRow(idbName: string, row: string): Promise<Uint8Array | undefined> {
-  const idb = await openVesselIdb(idbName);
-  try {
-    const held = await idbGet<unknown>(idb, STORE, row);
-    if (held === undefined) return undefined;
-    if (!(held instanceof Uint8Array) || held.byteLength === 0) throw new BrowserArchiveRowUnreadable(row);
-    return held;
-  } finally {
-    idb.close();
-  }
+  const held = await readKeystoreRow(idbName, row);
+  if (held === undefined) return undefined;
+  if (!(held instanceof Uint8Array) || held.byteLength === 0) throw new BrowserArchiveRowUnreadable(row);
+  return held;
 }
 
 async function writeRow(idbName: string, row: string, bytes: Uint8Array): Promise<void> {
   if (!(bytes instanceof Uint8Array) || bytes.byteLength === 0) {
     throw new Error(`[browser-keyhive-archive] refusing to keep an empty Archive in the ${row} row`);
   }
-  const idb = await openVesselIdb(idbName);
-  try {
-    // THE WRITE RETURNS WHEN ITS TRANSACTION COMPLETES, never at the request's success: a later write in another
-    // transaction (the bootstrap that commits a founding) may then never land ahead of this row.
-    await new Promise<void>((resolve, reject) => {
-      const tx = idb.transaction(STORE, "readwrite");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error ?? new Error(`[browser-keyhive-archive] the ${row} write aborted`));
-      // A copy: the caller's buffer may belong to a wasm heap that moves under it.
-      tx.objectStore(STORE).put(new Uint8Array(bytes), row);
-    });
-  } finally {
-    idb.close();
-  }
+  // THE WRITE RETURNS WHEN ITS TRANSACTION COMPLETES, never at the request's success: a later write in another
+  // transaction (the bootstrap that commits a founding) may then never land ahead of this row. The door copies the
+  // caller's buffer, which may belong to a wasm heap that moves under it.
+  await writeKeystoreRow(idbName, row, bytes);
 }
 
 /** A founded vessel whose keystore holds no Archive for its own individual. */
