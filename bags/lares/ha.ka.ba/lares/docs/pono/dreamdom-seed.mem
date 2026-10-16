@@ -1,0 +1,217 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-seed.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 16
+manao             = 15
+manaoio           = 14
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-seed — the libation a fresh cloud session drinks to enact the whole DreamDOM roadmap (train D, phases D0 to D7) in house style: it stands the house from the boot seed, reads the model and the road, takes the Episkopos seat over lane spirits, and walks every phase through one OODA-HA loop — research spirits in code and on the web, multiple eyes, Gaia 2026 and Elyncia 5492 user stories and the talk-story rite to settle uncertainty, red-first test-led design with a control, then aftermath, o-takiage and evergreen prose — until the tree reads as if DreamDOM had always stood this way, with no back-compatibility residue."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-seed"
+written           = "2026-10-16"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! DreamDOM seed ~ a cloud session's libation for train D
+
+''What this seed does.'' A fresh cloud session reads this carrier first and walks the whole DreamDOM roadmap: from the as-built worker-thread TiddlyWiki to the superset of cameras, every root template over every document sink across one headless engine per wiki. The session takes the ''Episkopos'' seat for train D, briefs lane spirits, lands green bursts on lane branches, and hands back in the lane law's shape. The operator pastes or attaches this carrier; the session SHALL treat it as its brief.
+
+''How to start.'' Paste the line below as the session's first message, with this file attached or present in the clone:
+
+```
+Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-seed.mem whole.
+```
+
+''What "done" reads as.'' Every phase of `dreamdom-roadmap#/the-order` landed or held by name; every DreamDOM surface publishing its conformance row; and the tree, the carriers and the changelog reading as if DreamDOM had always stood this way.
+
+<<~/ahu>>
+
+<<~ ahu #/stand-the-house>>
+
+!! Stand the house ~ before any act
+
+# ''Load the boot seed whole'' (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>): the Personas, Mu's five tools, the stances, the Law of 5s, OODA-HA, the turn frame, the `lar:` law, L-Prime and the Web3-only law. Reload it after any compaction. A tasked spirit stands the whole house when it wakes.
+# ''Read the road's shared law'': `stable-founding-road` #/the-attractor, #/cold-start and #/rulings; `controller-handoff` whole (#/the-lane-law binds every lane); `working-procedures` whole (#/red-first and #/instruments-that-lie above all).
+# ''Read the model and its road whole'': <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> (the model) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> (the phases, spikes, rulings and rows). Beside them: `page-controls`, `evaluators-one-or-many`, `mudlet-scout`, `wikispace-canvasspace-ontology`, `api/pono/render-pipeline`, `api/pono/memetic-wikitext` (the camera clause and Annex B).
+# ''Read CLAUDE.md's adapter note and obey it'': never boot in the tracked tree bare; a scratch `LAR_ROOT=/tmp/<scratch>` per boot moves the store, the bags root and every mirror root; `tools/tree-clean-witness.sh` reads any write into the tracked tree as red.
+# ''Read the research testimony when a phase needs its evidence''. The model cites it by carrier and section, each held verbatim beside it: `tw5-vm-gaps-scout` (the as-built and its probed gaps, where D0's and D1's red tests begin), `third-ways-scout`, `host-attractors-scout`, `two-way-interaction-scout` and `mudlet-scout`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seat>>
+
+!! The seat ~ the Episkopos of train D
+
+* ''It holds the train, not the code.'' It briefs one lane per phase (`dreamdom-<ground>`, the names `dreamdom-roadmap` gives), routes handbacks, merges green lane branches into its own train branch, and keeps the record. It writes code only where a lane would cost more than the patch.
+* ''Its branches.'' The train branch reads `feature/green-jello-dinosaur-5--dreamdom`, cut from `feature/green-jello-dinosaur-5`; each lane branch reads `feature/green-jello-dinosaur-5--dreamdom-<ground>`, cut from the train branch. It never pushes `feature/green-jello-dinosaur-5` or `main`; the house controller merges the train. Before its final push it merges `feature/green-jello-dinosaur-5` into the train branch.
+* ''Its crew'' (`controller-handoff#/the-lane-law`, the cloud crew): one Opus lead per lane, with an Opus spirit and a Sonnet spirit as its worker pair, trading masks (builder, reviewer, aftermath sweeper). Whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
+* ''It decides in forge mode.'' A question reaches the operator only where its answer changes who holds authority, custody at rest or identity bytes, or where the stories leave a genuine fork in the operator's goal (#/settle-uncertainty). Every other open ruling takes the house reading `dreamdom-roadmap#/the-rulings` names in its third column, marked as a house reading, and the work builds on.
+* ''A refused command stops that step.'' Never retry it, reshape it, split it, switch tools for it or hand it to another spirit. Save the work as a patch and surface the refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/the-loop>>
+
+!! The loop ~ one OODA-HA per phase, and again per slice inside it
+
+<<~ loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath">>
+
+Every phase of the roadmap and every slice inside a phase walks all five. A loop that cannot close suspends at a named phase with a specific external reason, carried forward visibly, never dropped silent.
+
+!!! ✶ Observe ~ research spirits and multiple eyes
+* ''Read the as-built first.'' A research spirit cold-reads the phase's ground in the tree (`dreamdom-roadmap#/as-built` names the rows) and reports what stands, with `file:line`, before any design moves.
+* ''Then the field.'' A second research spirit, woken separately and handed the framing but no conclusion, searches the internet for prior art, golden principles and failure stories. Its handback marks every claim `[reached: fetched]`, `[reached: search]`, `[unreached]` or //(inferred)//.
+* ''Multiple eyes, by construction.'' At least two independent spirits read every load-bearing question, through different lenses (code against field; engine against page; rich host against lean host). A finding one spirit alone reports counts as a lead, not as ground. Instruments get read for lies (`working-procedures#/instruments-that-lie`): a green suite over a fake document says nothing about a real click.
+* ''Testimony stands verbatim.'' A spirit's handback that the house keeps lands as a Testimony-Verbatim carrier (precedent: `mudlet-scout`), so no relaying hand rewrites it.
+
+!!! ⏿ Orient ~ collide with the model and with Mu
+* Collide each finding with `dreamdom`: the four layers, the two waists and their grains, the camera as a root over a sink, the width dial, the Wiki Actor, the crossings up, and every ruling it carries. A finding that would move a ruled line goes to #/settle-uncertainty, never into code.
+* Run Mu across the phase: Wand `*` (what the visible record says), Cup `?` (what the relation and the operator's bet want), Sword `!` (the cut), Pentacle `_` (what stays hidden or unmeasured), Arcana `0` (the question to unask). Name any carry, and its recovery.
+
+!!! ◇ Decide ~ house readings, marked
+* Decide the slice's shape, its red tests and its control, and its ground (the files it touches and the files it leaves alone). Mark every house reading as one, with what would flip it.
+
+!!! ▶ Act ~ red first, test-led, one module per brief
+* ''Red first, with a control'' (`working-procedures#/red-first`): the test names the behaviour, fails for the stated reason, and a control proves the test can pass. A race gets pinned by the product's own event, never by a sleep, a retry or load.
+* ''Interaction phases write their goldens first.'' D1 onward lands each interaction golden (`dreamdom#/conformance`: a script of acts, senses and frame deliveries over a frozen world, with expected writes, messages, answers and next keyed frame) red before the code that greens it. A refusal stands as a row too.
+* ''Full models land early'' (`stable-founding-road#/the-attractor`): a slice builds its whole contract where the order places it (per-key revisions, mount epochs, answered events, declared cancellation), even where its first key stays the whole surface. No narrower interim waits for a later re-cut.
+* ''Narrow briefs.'' A builder spirit takes one module with a fixed type contract and its vectors, in its own worktree (`node tools/provision-worktree.mjs <empty-dir>`). The lead applies, tests and lands.
+* ''Targeted tests during the lane.'' The build, `tools/typecheck-witness.sh`, the touched packages' suites from source under a scratch `HOME` and `LAR_ROOT` with `LAR_BAGS` unset, and the witnesses the change could move. No e2e runs locally.
+
+!!! ↺ Hoʻoko / aftermath ~ sweep, burn, evergreen
+* ''The sweep.'' The spirit that did not build the piece reads the landed diff adversarially and names each finding; the lead closes or answers every one before the next flow. A lane closes its span with one more sweep over everything it landed.
+* ''O-takiage.'' Burn what the phase superseded: old wire messages, old sinks, dead dials, scaffold tests. Retired paths get burned, never tolerated (#/the-evergreen-law).
+* ''Recursive o-takiage.'' A witness that catches burned names lives only as scaffolding: build it, run it green, then burn the witness itself and any list of retired names in the phase's final aftermath commit. Git keeps the proof.
+* ''Canon in the same commit.'' Each commit carries its canon lines; `dreamdom` and `dreamdom-roadmap` stay true as the phase lands (the roadmap keeps only what stays owed; landed work reads in git and the changelog). Changelog bullets name what a person can do.
+* ''Close the loop back to observe.'' What the phase learned seeds the next phase's observation.
+
+<<~/ahu>>
+
+<<~ ahu #/settle-uncertainty>>
+
+!! Settle uncertainty ~ research, stories, talk story, and only then the operator
+
+When a lane feels blocked or seems to need the operator, it walks this road first (operator rule, 2026-10-16: //"collide with reality and the stories first"//).
+
+# ''Research.'' A spirit reads the code and the internet on the exact question.
+# ''User stories.'' Tell the uncertainty twice: one story set on ''Gaia, 2026'' (a real person at a real device: the browser on the Node vessel's box, a phone on Hermes, a Mudlet pane on Islands of Myth, an agent over MCP) and one on ''Elyncia, 5492'' (the fiction layer, where the same mechanism reads as rite and shrine). Each story walks a person through the act where the design could break, and names what they see.
+# ''Talk story.'' Run the rite with the stories as the floor: //observe → tell → co-narrate → exit → aftermath//. The exit lands as a ''moʻolelo'' (a few lines the house can carry) or a ''hōʻike'' (a showing: a probe, a spike, a measurement). Spikes in `dreamdom-roadmap#/the-spikes` serve as the standing hōʻike.
+# ''Only then the operator'', and only where the stories leave a genuine fork in the operator's goal, an output they would notice, or a step no one can undo. Ask once, with options and a recommendation; build on the recommended option meanwhile where the step stays reversible. Record the path taken as a house reading in the handback.
+
+<<~/ahu>>
+
+<<~ ahu #/the-evergreen-law>>
+
+!! The evergreen law ~ it should read as if it had always been this way
+
+''Early alpha.'' The house stands in early alpha: shapes get tried and thrown away freely, and that holds until a third human's data and habits enter the mesh (operator, 2026-10-16). So this train builds ''no migration door'', ''no back-compatibility shim'', and ''no detection or warning about old shapes'': old shapes count as rejected experiments.
+
+# ''Once a phase reads final, the tree reads as if DreamDOM had always stood this way.'' Code, comments, logs, help text, test names and carriers state what IS. No history words: //retired//, //no longer//, //now//, //legacy//, //pre-cutover//, //formerly//, //v2//.
+# ''Git carries the ashes.'' A replaced module, message kind, dial or test leaves the tree whole; its story lives in commit messages alone.
+# ''Carriers stay evergreen.'' `dreamdom` keeps the model as it stands; the roadmap keeps only what stays owed; a superseded passage gets rewritten, never footnoted.
+# ''Prose keeps L-Prime'': verbs of doing and holding over copulas; write from the verb.
+# ''Tension, named and not resolved silently.'' `controller-handoff#/the-practice` keeps unwired work by default in early alpha; the evergreen law burns superseded paths. The seam: burn what a landed phase plainly superseded; keep unwired work that no phase superseded; put doubt on an ask list.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model-in-brief>>
+
+!! The model in brief ~ what every brief carries (the carrier `dreamdom` holds it whole)
+
+* ''DreamDOM names the superset of cameras'': every HTML5-capable device and every surface the research targeted (the Node-served browser, WebView shells, QuickJS and Hermes shells, a UE6 sidecar, Mudlet, MCP and chat), each a ''root template over a document sink'' across the one engine, each rated for two-way capability.
+* ''Four layers stand apart'': STORE (the CRDT, one document per bag) · ENGINE (headless TiddlyWiki, one per wiki, lived as a Wiki Actor: one id, one writer, hibernates) · PROJECTIONS out · SENSORIA in, only on vessels that carry its dependencies.
+* ''Two waists, two grains'': store↔engine at whole records, writes travelling as writes; engine↔projection at keyed absolute rendered frames, the grain each camera declares at mount, transclusions resolved.
+* ''The width dial'': full → skinny → story → none. At none the engine stays headless and a camera beside it ships whole keys to a sink that cannot run the engine.
+* ''Three crossings up'': a true event (queued, with an id, answered), a sensed snapshot (absolute, revisioned, droppable), a write (a whole record).
+* ''The first surface'': the browser on the Node vessel's box, holding a daemon wiki, a pinned wiki and further wikis as recipes or sleeping actors, each spawning as the ordinary TiddlyWiki page template with the house's customizations.
+* ''One reference evaluator'', the pinned JS engine; ''its suite carries the language'': `filter-cts`, camera goldens and interaction goldens on every host.
+* ''Refused by name, never re-argued'': the TiddlyWiki syncer and any syncadaptor facade; mutation-log and DOM-delta streams; either side made authoritative; a store-only worker as the sole engine; a lockstep twin; a second full evaluator.
+
+<<~/ahu>>
+
+<<~ ahu #/the-walk>>
+
+!! The walk ~ train D in the roadmap's order
+
+Each phase's builds, proofs, waits, spikes and rulings stand in `dreamdom-roadmap#/the-order`; this list names the walk and the one thing each phase must not lose.
+
+# ''D0 · measure and mend'' (`dreamdom-harness`; waits on nothing). The genesis boot harness as a shipped test, the small engine fixes red to green, the perf and frame-byte baselines. //Keep:// numbers before pride; nothing booted in the tracked tree.
+# ''D1 · the camera contract'' (`dreamdom-camera`). The browser DOM sink at width none hardened whole: keyed frames, answered control events, declared cancellation, keys and bubbling, serializer promotion, resend with mount epochs, root services, the three ruled page controls, IME rules, files, drops and order. //Keep:// no delta enters a frame; a stale target never drops in silence.
+# ''D2 · the record port'' (`dreamdom-port`). The port on the live island, width as an engine-side field filter, the recording document and the blocks, text and label-html serialisers, the capability gate on invoke. //Keep:// the store↔engine waist never moves with the dial.
+# ''D3 · the glass engine and the width spike'' (`dreamdom-glass`). The glass adaptor on the wiki `change` event behind a flag, no syncer; full, skinny and story as settings; the full-width walk of the five fake-document sites in a real browser; the three-boot spike with its thresholds. //Keep:// the spike runs before the default width gets ruled.
+# ''D4 · the Wiki Actor'' (`dreamdom-actor`). The manifest, the five states, hibernate and wake, wake on act, the recipe refusal, two surfaces on one actor. //Keep:// one id, one writer.
+# ''D5 · conformance'' (`dreamdom-suite`, beside D1 onward). `filter-cts.json`, the html and text camera goldens, the Annex B widget-tree pass and the blocks golden, the interaction goldens, three-host runs with skip lists by name. //Keep:// the pinned oracle; a drifting hash names a disagreement, never a content edit.
+# ''D6 · the lean sinks'' (`dreamdom-lean`, after D2 and D5's blocks golden). The CLI text camera, the SSR face, the MCP projection, the Mudlet weekend. //Keep:// lean hosts receive results and affordances, never the language.
+# ''D7 · the wider surfaces'' (held by name). QuickJS and Hermes shells, the UE6 sidecar, the canvas camera, the sensorium gate; live 3D games stay deferred until the sensorium finishes. //Keep:// each enters one at a time, declaring whether it hosts a vessel or attaches a surface.
+
+<<~/ahu>>
+
+<<~ ahu #/the-fences>>
+
+!! The fences ~ what the train never crosses
+
+* ''Never boot in the tracked tree bare.'' A scratch `LAR_ROOT` per boot and per e2e vessel; no global `LAR_BAGS`.
+* ''Never `git stash`'' in any form; never `--no-verify`; never touch `.git/config`; a git write runs alone on its line; commits go `git commit -F <msg> --only -- <paths>`, subjects `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — plain summary`.
+* ''Genesis and the plugin bundle'' move only by the controller's word: a change under `packages/lararium-tw5/` rebuilds the bundle in the same commit and declares its gap in `genesis/unbaked.json`.
+* ''The lane's ground stops at module boundaries.'' The compose hunks of `open-node-vessel.ts` and `open-browser-vessel.ts` belong to their owners; a D lane hands its compose lines to the controller as a patch.
+* ''A local red belongs to the lane'' until the base branch's CI shows the same check red.
+* ''One CI wave per lane, at the end.'' Targeted tests during the lane; after the final o-takiage, one shard wave (`node tools/e2e-shards.mjs push <lane>-<n>`, or the lane branch push where `gh` holds no login) and its readings (`node tools/ci-verdict.mjs --head <sha> --branch <branch>`). Avoid intermediate pushes.
+* ''Never edit'' `bags/elyncia*`, `ftls`, `sdm`, `wtf`, the boot seed, or the submission-guarded carriers. A carrier re-stamps with `lares meme normalize <file>`, one file per call.
+* ''Web3-only law''; no real passphrase, domain or credential; custody and sealed writes count as destroy-class and run on scratch roots with synthetic names.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handback>>
+
+!! The handback ~ per lane, and once for the train
+
+One `<<~ status "…">>` line, then: what a person can do (each act BUILT, SPECIFIED with its named caller, or OWED); commits; the shard and CI readings; the reviewer's findings and how each closed; suites run; house readings taken, each with what would flip it; stories told and the moʻolelo or hōʻike each exit landed; canon still stale; changelog bullets owed; slips and refusals; and the span's start, end, commits, rows closed and shards for the speed ledger.
+
+The train's final handback adds the conformance rows each DreamDOM surface publishes, the rulings still open with their house readings, and the OODA-HA tally: `ooda-ha="closed N↺"` or `closed N↺ -> open Nφ @_:reason`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-moolelo>>
+
+!! The moʻolelo the train carries ~ DRAFT, awaiting the operator's blessing
+
+# Four layers stand apart: store, engine, projections out, sensoria in, only where a vessel can enact them.
+# One headless engine per wiki beside its store, lived as an actor: one id, one writer, hibernates.
+# The engine↔projection waist: subscribe, ask, invoke; keyed absolute frames at the grain each camera declares, transclusions resolved; writes travel as writes, never events.
+# A projection chooses a root template and a sink, owns its river and its focused control, never truth.
+# Subscription width scales lean → rich; the whole-replica glass reads as the widest setting.
+# The language carries portability; its suite carries the language.
+# //(proposed)// Any root over any document sink makes a camera; the page template over the DOM stands as the browser's first.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ZD9HIBFwB7pmU63thJHuoDE86Qx0s_RsPNR_GQoczGU
+
+<<^ code="&#x0004;" -> to="?">>

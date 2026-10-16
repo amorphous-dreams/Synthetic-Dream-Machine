@@ -1,0 +1,493 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/two-way-interaction-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 13
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "two-way-interaction-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): how the DreamDOM superset keeps the full two-way interaction between a person at a surface and the wiki. Carries the inventory of every TiddlyWiki interaction by widget, message and layer with its owner, up-leg and down-leg per width and host; the up-leg contract (wiki:control-event, declared-at-mount stamps, reliable acts against droppable senses, wake on act, two surfaces on one actor); the silent-loss risks with their fixes or refusals; interaction goldens with fourteen scripts; the ten-surface two-way table; Mu, two stories, spikes and open rulings. Held as a collision surface; dreamdom carries the house's reading of it."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/two-way-interaction-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! two-way-interaction-scout ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on how the DreamDOM superset keeps two-way interaction whole across every width and every surface, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
+
+''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+
+''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+# Two-way interaction across DreamDOM: how a person's act reaches the engine and how the wiki answers
+
+Lares (Artificer) · Fable, tasked spirit · 2026-10-16. Research pass for the operator's charge: *"Now we need to ensure the 2-way interaction is preserved."* Frame: `third-ways.md` (the map after the rulings) and `model-and-gaps.md` (the as-built survey). Inputs read whole: the boot seed; `dreamdom.mem` (#/the-ruling, #/the-layers, #/the-question, #/what-a-replacement-un-skips, #/the-vectors), `page-controls.mem`, `session-contract.mem#/the-holder-protocol`, `vm-projection-bus.mem`, `render-pipeline.mem#/render-posture`, `wikispace-canvasspace-ontology.mem#/the-surface-law`; `packages/lararium-web/src/projection-sink.ts`, `packages/lararium-tw5/src/{tw5-camera,tw5-projection,has-island-watches}.ts`, `packages/lararium-mesh/src/island-protocol.ts` (the two DOM kinds); the TiddlyWiki5 submodule at `ea94ca8` (5.5.0-prerelease fork, checked out in `/home/user/gjd5`): `widgets/{widget,button,link,checkbox,radio,select,range,browse,dropzone,droppable,draggable,keyboard,eventcatcher,navigator,dialog,reveal,list,scrollable,action-*}.js`, `editor/{factory,engines/simple,engines/framed}.js`, `editor/operations/text/*`, `utils/dom/{popup,scroller,modal,notifier,dragndrop,dom}.js`, `utils/fakedom.js`, `utils/confirm.js`, `keyboard.js`, `startup/{rootwidget,story,windows,confirm,startup}.js`, `ui/PageTemplate.tid`, `ui/PageTemplate/story.tid`, `ui/EditTemplate/*`, `wiki/macros/{tag-picker,keyboard-driven-input}.tid`. Nothing edited, nothing booted; no tracked file touched.
+
+**Reach marks.** **[reached: code]** read in `/home/user/gjd5` this pass · **[reached: fetched]** page fetched this pass (GitHub raw, modelcontextprotocol.io) · **[reached: search]** confirmed only through a search passage · **[unreached]** memory or an earlier pass's claim, named · *(inferred)* reasoning, not evidence. Where a claim rests on a sibling report it names that report.
+
+**A naming ruling folded in (Telarus, 2026-10-16).** The operator pet-names the WHOLE concept **DreamDOM**. The name began as the house's replacement for `$tw.fakeDocument` (`dreamdom.mem#/head`: a document instanced twice with the thread boundary inside it). The concept has since grown: **DreamDOM now names the superset of cameras**, every HTML5-capable device AND every surface the research waves targeted (the browser on the Node vessel's box, any other browser or WebView shell, the Node-served browser and SSR face, QuickJS/Hermes shells, the UE6 sidecar, Mudlet, MCP/chat and others), each a *(root template, document sink)* over the one engine. This report uses the name that way throughout. `dreamdom.mem`'s narrower sense, the two-instance document with tight bindings, now reads as **one member of the superset**: the browser DOM sink at width none, hardened by the page-controls contract. Its rulings (keyed absolute frames, sensed snapshots up, true events queue and get answers, layer 3 belongs to the page, the five `isTiddlyWikiFakeDom` sites as a test roster) carry to every member, since each member faces the same two legs. §7 gives the per-surface table the ruling asked for.
+
+---
+
+## 1. Summary
+
+1. **TW5 interaction decomposes into three kinds of crossing, and the ruling already names all three.** (a) A *true event*: a click, a key chord, a drop, a file pick, a `tm-*` message. It queues, carries an id, and gets `applied` / `stale-target` / a named refusal. (b) A *sensed snapshot*: a field's whole value, a caret, a checked state, a select's chosen keys, a scroll offset, a geometry measured at the act. It crosses as absolute state with a page revision; the engine never asks for it synchronously. (c) A *write*: a whole record with a `txId`, which the glass engine (full/skinny/story) or a lean host (Mudlet, MCP) sends in place of events. Every TW5 widget sorts into one of these, and the sort decides which layer owns it (§2).
+
+2. **At full, skinny and story width nothing crosses per act: the person touches a stock TW5 running beside the control**, so the whole interaction surface of TiddlyWiki (editors, toolbar, tag picker, dropzone, drag and drop, keyboard manager, popups with geometry, storyviews, `$eventcatcher`, IME, undo) runs unmodified. The two-way question moves to the record waist: echo discipline (`txId`, origin stamp), a peer write into an open draft, presence, and the `localFilter` that keeps `$:/state`, `$:/temp`, StoryList and HistoryList on the glass. The one new risk at these widths reads as the `lazy-all` hole family and the root `tm-*` services that reach the vessel (download, clipboard, print) through a host door.
+
+3. **At width none (every lean DreamDOM member, and the browser DOM sink today) the UP leg stands as the whole problem.** The as-built relay carries click (always cancelled), a sliver of keydown (Esc and modifier chords, `key`/`code` blanked), `input`/`change` as a whole value, and composition guards. It carries no `checked`, no `selected`, no `files`, no `dataTransfer`, no selection range, no scroll, no plain Enter/Tab/arrows, no document-level keydown, no `tm-*` host services, and no event id. Measured against TW5's widget roster (§2), **roughly a third of the stock interactions work, a third paint but act wrongly, and a third have no road**. The fix reads as one contract, not many patches: declared cancellation at binding, a page-owned live control with a descriptor and a sensed revision, a typed host-service door with refusals by name, and an answered control event (§3).
+
+4. **Six places lose a person's work silently in the current design, and each has a named fix** (§4): the textarea revert (#23, data loss); the blanket `preventDefault` (#1, external links, native toggles, file picker); the checkbox act and radio/select paint (#4); the frame that repaints over an edit because no frame names the sensed revision; the IME commit that Safari delivers out of order; and the surface switch that leaves a frozen pane routing clicks to a hidden wiki (#13). Three further classes degrade rather than lose: keyboard (search Enter, tag-picker Enter, global shortcuts), navigation (no scroll, no permalink, no Back), and the editor toolbar/selection operations.
+
+5. **The UP-leg contract** (§3) extends `page-controls.mem#/the-wire` and `session-contract.mem#/the-holder-protocol` with: a `kind` taxonomy (`act` / `sense` / `write` / `service`), a declared-at-mount cancellation and crossing set per binding (`data-lar-on`, `data-lar-cancel`, `data-lar-keys`), as-of-act geometry on the event, reliable versus droppable classes, idempotence by `eventId` within a mount epoch, wake-on-act for sleeping actors with a parked act and a visible "waking" state, a refusal (never a spawn) for recipe wikis until the person opens them, and presence/echo rules for two surfaces on one actor.
+
+6. **Conformance gains a third family beside `filter-cts` and the camera goldens: interaction goldens.** A script of acts over a frozen world; the expected writes (records with fields), the expected messages (`tm-*` dispatched at the root), the expected answers (`applied`/`stale-target`/refusal by name) and the next keyed frame per camera. Fourteen scripts cover the roster (§5). Every DreamDOM member publishes a row, and a surface with no road for a script publishes the refusal it shows.
+
+7. **Open rulings** (§9): whether a sleeping actor wakes on an act or on a frame request; whether the browser DOM sink keeps the stock edit template over `lar-field` or ships a house edit template; which root `tm-*` services become host-service requests and which refuse; whether `$eventcatcher`/`$keyboard` stay REFUSED at width none or earn a declared-keys binding; the presence lane's home; and the per-surface default width.
+
+---
+
+## 2. The inventory: every TW5 interaction, by widget, message and layer
+
+**How to read the table.** *Owner* names the layer under the ruling: **E** the engine (the handler runs in the wiki VM wherever it sits), **P** the page or host (a page-native control or host service), **E+P** a split (page holds the live state, engine applies the act). *Up* names the crossing at width none: **event** (queued, answered), **sense** (absolute snapshot with a page revision, droppable), **write** (a whole record with `txId`), **service** (a typed request to the host), **—** (nothing crosses; the act completes on the page). *Down* names the answer: a keyed frame (the wiki re-rendered), a `control-result`, a service result, or a `$:/temp` alert. *Widths*: at **full/skinny/story** the glass engine runs the stock handler against a real document, so the row reads "stock" unless the act reaches the store or the vessel; **none** names what the lean contract must carry. *Hosts* names where the row degrades or refuses: **B** browser glass (in-page engine or DOM sink), **N** Node-served browser and SSR, **Q** QuickJS/Hermes shells, **U** UE6 sidecar, **M** Mudlet, **C** MCP/chat.
+
+### 2.1 Clicking and navigating
+
+| Interaction (code) | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| `$link` click → `tm-navigate` with `navigateFromClientRect`, `suppressNavigation` on meta/ctrl/middle; `preventDefault` only when `href` stands (`link.js:160-185` **[reached: code]**) | E, cancellation P | event `act` with modifiers + as-of-act rect | frame (StoryList changed) + `applied` | stock | binding declares `cancel: ordinary-only`; modified and middle clicks follow the browser; external `href` never cancelled | M/C: affordance `kind:link`; U: a blocks link |
+| `$button` click → `invokeActions`, `to`, `message`, `popup`, `set`; cancels only when handled; reads `$tw.keyboardManager.getEventModifierKeyDescriptor` (`button.js:96-124`) | E | event `act` + modifiers + rect | frame + `applied` | stock | cancellation declared per binding; popup geometry rides the event | M/C: `kind:button` |
+| `$action-navigate`, `$action-sendmessage`, `$action-setfield`, `$action-createtiddler`, `$action-deletetiddler`, `$action-listops`, `$action-popup`, `$action-confirm`, `$action-log`, `$action-setmultiplefields`, `$action-deletefield` (`invokeAction(triggeringWidget,event)`; `action-navigate` reads `event.metaKey/ctrlKey/button`) | E | ride the triggering event | frame | stock | the event must carry modifiers and `button`; `action-popup` needs the rect | all: engine-side, no host dependency |
+| `$navigator` (`tm-navigate`, edit, delete, save, cancel, close, new, import, perform-import, fold) (`navigator.js:29-45`) | E | the triggering event | frame; confirm road for delete/cancel/edit-shadow (`utils/confirm.js`, fork `startup/confirm.js`, no `platforms`) | stock | the engine runs it; `event.event.view` must exist (house supplies a refusing view contract, `tw5-projection.ts:243`) | all |
+| Story river order and membership (`$:/StoryList` as a tiddler; `story.tid` `$list` with `history`) | E | event (via tm-*) | the order key + membership key | stock; StoryList stays glass-local by `localFilter` | one key for order, one for membership; a late frame heals | M/C: membership as a list resource |
+| Permalink / permaview / hash / Back (`startup/story.js:40-110`, browser-only: `hashchange`, `tm-home`, `tm-permalink`, `tm-permaview`, `tm-browser-refresh`) | **P** (the page owns `location`) | service `route` | `applied` + page sets hash; `tm-home` becomes an engine write to StoryList | stock (browser `story.js` runs on the glass engine) | **absent today** (gap #12); page service `lar:navigate` with route key; permalink = page composes from the order key | N: SSR has no hash; M/C: refuse `page-action-unavailable` |
+| Storyview scroll-to-tiddler, insert/remove animation (`list.js:58` skips on fakedom; `classic.js navigateTo`) | **P** | — | page scrolls to the key the frame marks as navigated (`$:/HistoryList` tail rides the frame) | stock | page transition between two frames; a `data-lar-navigated` mark per key | M: pane scroll by Lua; C: n/a |
+| `tm-scroll`, `tm-focus-selector` (`rootwidget.js`, browser-only; `PageScroller.scrollIntoView` reads `getBoundingClientRect`) | **P** | — (engine emits a hint) | page hint `scroll-to`/`focus` by control id or key | stock | engine registers both and emits `page:hint`; never reads geometry | M: `moveCursor`; C: refuse |
+
+### 2.2 Typing and editing
+
+| Interaction | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| `$edit-text` via `SimpleEngine` (`input` + `focus` listeners; `setText` skips on fakedom, `simple.js:71-77`; `fixHeight` skips; `focus()` only `if($tw.browser)`, `factory.js:71`) | **E+P**: page holds value, caret, undo, composition; engine holds the field | sense `field` (whole value, local rev) on `input`; event `change` on commit | frame carries `data-lar-value` descriptor + `sensedRevision[controlId]`; page keeps its value while `localRev > sensed` | stock, including `FramedEngine` where `$:/config/TextEditor/EnableToolbar` | `lar-field` through the editor's engine seam (`page-controls.mem#/shadow-widgets`); **today: textarea reverts after blur (#23)** | M: `Geyser.TextEdit` saves a whole record; C: a tool `write` with the whole text; U: a UMG text box, whole value |
+| `<input>` field editors (title, fields, type, tags input through `keyboard-driven-input`) | E+P | sense + `change` | as above | stock | as above; works today for `<input>` because the value attribute paints (survey §5.1) | same |
+| Editor toolbar `tm-edit-text-operation` → `engine.createTextOperation()` reads `selectionStart/End`; ten text ops (`excise`, `focus-editor`, `insert-text`, `make-link`, `prefix-lines`, `replace-all`, `replace-selection`, `save-selection`, `wrap-lines`, `wrap-selection`); `editShowToolbar` false on fakedom (`factory.js:211`) | E+P | event `act` carrying `{value, selStart, selEnd}` as of the act | `control-result` with `{value, selStart, selEnd}` the engine wants; page applies while its rev matches | stock | the seam prototype already ran `wrap-selection` over a carried pair (`page-controls.mem`); `focus-editor`, `save-selection` need page cooperation; refusal `selection-unavailable` where the op reaches past the snapshot | M: `Geyser.TextEdit` has no selection API *(inferred)*; C: refuse |
+| IME composition (`compositionstart/end`, `isComposing`) | **P** | sense once after `compositionend`; never mid-composition | frame must not repaint a composing field (page veto) | stock (browser handles) | sink already guards; Safari's Enter-after-compositionend needs the `keyCode 229` rule (§4.8) | U/Q: host IME; M: Qt IME in the TextEdit |
+| Undo/redo | **P** (browser edit history) | — | — | stock | the page never replaces the node (morph by id, `restoreFocus`); a frame that replaces the textarea node destroys the undo stack | M: Qt undo; C: none |
+| `$edit-shortcut` (`keydown` reading `event.key`), `$password`, `$edit-bitmap` (canvas ops) | P | sense (the resulting whole value) | frame | stock | `lar-field` with schema `shortcut`; bitmap: refuse at none unless a page control exists | M/C: refuse |
+| `$range` (`mousedown`, `mouseup`, `change`, `input`; `actionValue`, `actionValueHasChanged`) | E+P | sense `input`; event `change`; mousedown/up never cross | frame | stock | `lar-field` with numeric schema; `actionValueHasChanged` computed by the page and carried | M/C: a numeric write |
+| `$checkbox` (`change` reads `this.inputDomNode.checked`, `checkbox.js`) | E+P | event `toggle` **carrying `checked`** (boolean already admitted) | frame paints `checked` attribute (works today) | stock | engine sets `el.checked` before the handler; **today: click cancelled and `.checked` unrelayed → writes `no` (#4)** | M/C: `kind:toggle` affordance |
+| `$radio` (sets `.checked` property on refresh, `radio.js:45,129`; property never serialises) | E+P | event `choice` with the whole key | frame must carry `checked` as an attribute (engine override or serializer rule) | stock | **today never paints the selection**; fix: wikitext override emitting `checked` attribute, or the serializer promotes `checked`/`selected` properties to attributes | M/C: `kind:select` |
+| `$select` single/multi (`child.children[y].selected` property; `getSelectValues` reads `options`) | E+P | event `choice` with the whole key set | frame carries `selected` per option as attribute; page veto on the focused select | stock | **today snaps back to the first option; multi throws (`options` missing)** | M/C: `kind:select`, keys |
+| Tag picker (`tag-picker.tid`: `keyboard-driven-input`, popup `$:/state/popup/tags-auto-complete`, `tm-focus-selector`, `$button popup`) | E+P | sense (the input), events (Enter/Up/Down/Escape through `$keyboard`), click on a tag button | frame: the popup list as wiki state; page places it | stock | `lar-picker` over the popup; declared keys `input-accept`, `input-up/down`, `input-cancel` on the binding; **today Enter never crosses** (gap #8) | M: a Lua completer *(inferred)*; C: a tool with enum |
+| Drafts: `th-editing-tiddler`, draft-of, autosave (`render.js` 400 ms throttle on the glass; `HandGate` in the worker) | E | write (full/skinny) or events (none) | echo under origin stamp; `causedBy: [txId]` | stock draft logic; peer write into an open draft shows the newer-base prompt *(inferred, v2 §6)* | the engine owns the draft; a peer write into the open editor must reach the page as a descriptor and the page must ask (LiveView rule: never overwrite the focused field) | M/C: edit-conflict refusal by name |
+
+### 2.3 Files, drops and drags
+
+| Interaction | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| `$browse` (`change` reads `event.target.files` → `wiki.readFiles` (FileReader) → `tm-import-tiddlers`) | **P** reads files; E imports | event `import-offer` with bounded whole bytes + names + types (`lar-file-picker`) | `$:/Import` parks; frame shows the import dialog; `tm-perform-import` as an ordinary event | stock | **broken today** (`files` undefined; click cancelled); page reads the File, validates size, posts bytes | M: `getMudletHomeDir` file read *(inferred)*; C: a resource upload; U: platform file dialog |
+| `$dropzone` (dragenter/over/leave/drop/paste/dragend; body capture listeners; `readFiles`, `importDataTransfer`; `contentTypesFilter`, `filesOnly`) | **P** | event `import-offer` (files) or `drop-data` (typed strings: `text/vnd.tiddler`, `text/plain`, `text/html`, `URL`, `text/uri-list`) | as above | stock | page binds the drop target, cancels dragover itself (declared at binding), posts the whole payload once; paste same | M: `Geyser` has drop? **[unreached]**; C: attach |
+| `$droppable` (`actions` with `actionTiddler`, `modifier`; `importDataTransfer`) | E+P | event `drop` with the whole tiddler list (parsed from `text/vnd.tiddler` on the page) + modifier | frame | stock | page resolves `dataTransfer` to titles and posts `{titles, modifier}`; the engine runs `actions` | M/C: an `order-write` of the whole list instead (`lar-order-list`) |
+| `$draggable`, `$link draggable`, `$button dragTiddler` (`makeDraggable`: `dragstart` sets `text/vnd.tiddler`, `setDragImage`, `startActions`/`endActions`) | **P** start; E actions | event `drag-start`/`drag-end` for actions only; the drag itself stays on the page | frame | stock | page performs native drag with the serialised titles stamped at render (`data-lar-drag-titles` *(proposed)*); `startActions` cross as an event | M: Qt drag between labels **[unreached]**; C: n/a |
+| Story river / list reorder (`$:/core/ui/SideBar/Open.tid`, `list.tid` macro use `$droppable`; the river itself carries no droppable) | E+P | event `drop` with position, or `order-write` with the whole list | the order key | stock | `lar-order-list` with move buttons as the base path; native DnD as enhancement | M/C: move verbs |
+
+### 2.4 Keys and catchers
+
+| Interaction | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| `$keyboard` widget (`keydown` on a wrapper; matches `keyCode` + modifiers; first asks `handleKeydownEvent(event,{onlyPriority:true})`; variables `event-key`, `event-code`; cancels when handled) (`keyboard.js:42-80`) | E, crossing set P | event `key` with `key`, `code`, `keyCode`, modifiers, `repeat`; crossing set **declared per binding** (`data-lar-keys` from `parseKeyDescriptors`) | frame + `applied`; `defaultPrevented` cannot travel back in time, so the page cancels only declared keys | stock | today only Esc and modifier chords cross with `key=""`; plain Enter, Tab, arrows never do | M: Mudlet key bindings → `Lar.Invoke`; C: n/a |
+| Global `$:/tags/KeyboardShortcut` (`startup.js:85-92` binds document `keydown` in the browser; `keyboard.js:307`) | E, crossing set P | event `key-global` on a document leg, with the declared descriptor set | frame | stock | **never fires today**; the engine publishes its shortcut descriptors as a key (`shortcuts` key, rev); the page listens on the document and posts matches | M: key bindings; C: n/a |
+| `$eventcatcher` (selector matching via `closest`/`matches`, pointer capture, `stopPropagation` at handling) | **REFUSE at none** (`page-controls.mem#/shadow-widgets`) | — | refusal `unsupported-control` shown beside the catcher | stock | a declared-selector binding could carry `{selector, type, target dataset}` as an event *(proposed, open ruling)* | M/C: refuse |
+| `$messagecatcher`, `$linkcatcher`, `$fieldmangler` (`tm-add-tag`, `tm-remove-tag`, `tm-add-field`, `tm-remove-field`) | E | ride the triggering event | frame | stock | engine-side, no host need | all |
+| `$scrollable` (`scroll` → debounced write of `{x,y}` to a bound tiddler; `tm-scroll` inside) | P senses, E records | sense `scroll` (droppable) | frame | stock | a scroll snapshot as a sensed key; never a layout read | M: n/a; C: n/a |
+
+### 2.5 Popups, dialogs, questions
+
+| Interaction | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| Popups (`$button popup` → `Popup.show` reads `offsetLeft/Top/Width/Height` up the offsetParent chain; `$reveal type=popup` positions on real DOM only, `reveal.js:45,279`; document capture click cancels) | E state, **P placement** | the opening click carries the rect (today); dismissal click crosses | frame carries the popup as wiki state (`$:/state/popup/*`); page anchors it (`lar-popover` or the fixed placement from the carried rect) | stock | works today for first-level popups; nested popups and keyboard dismissal ride the declared Esc | M: `createRightClickMenu`/label; C: a submenu as options |
+| `$dialog` (`aria-modal`, marks siblings `inert`, re-marks after refresh) and the confirm road (`$:/temp/confirm/*`, `tm-confirm`, `answerConfirmation`) (`dreamdom.mem#/the-question`) | E | the answer button click | frame; page moves focus in and back by control id | stock | wired and tested today | M: a yes/no prompt → `tm-confirm`; C: elicitation `accept/decline/cancel` maps 1:1 |
+| `tm-modal`, `tm-show-switcher` (`$tw.modal`, `rootwidget.js`, browser-only) | E render, P top layer | the close click | frame with an `aria-modal` root (`modalRoot` serialised, survey §5.3) | stock | **absent today** (#2); engine renders into a fake modal root; page's modal rule already handles focus | M: a label; C: a resource |
+| `tm-notify` (`Notifier` appends to `document.body`, times out) | E | — | frame with a notification key (droppable, time-boxed) | stock | **absent today**; `$:/temp/notification/*` + a key | M: `cecho`; C: a message |
+| Alerts (`$:/tags/Alert`) | E | dismiss click | frame | stock | works | all |
+
+### 2.6 Root `tm-*` host services (the rootwidget family, every one browser-only upstream)
+
+| Message (source) | Owner | Up (none) | Down | full/skinny/story | none | Hosts |
+|---|---|---|---|---|---|---|
+| `tm-copy-to-clipboard` (`dom.js:237`, `execCommand("copy")`) | **P** | service `clipboard` (user-activation bound) | service result → `tm-notify` success/failure | stock on the glass engine | engine registers the handler and posts `glass:service{kind:"clipboard", text}`; absent today | M: `setClipboardText` *(memory)*; C: the text in the reply; N (SSR): refuse |
+| `tm-download-file` (`saver-handler.js:103`) | P | service `download{filename, type, text}` | `applied` | stock | as above | M: write a file; C: a resource; U: refuse |
+| `tm-print`, `tm-full-screen`, `tm-open-window`, `tm-close-window`, `tm-close-all-windows`, `tm-open-external-window`, `tm-browser-refresh` | P | service, allowlisted; `tm-open-window` opens a *second camera* (the windows startup mounts a second root over `srcDocument`) | `applied` or `page-action-unavailable` | stock | refuse by name today; `tm-open-window` becomes "open a second surface on this actor" (§3.6) | M/C/U: refuse by name |
+| `tm-http-request`, `tm-http-cancel-all-requests` (`$tw.httpClient`) | **E, gated** (an authority question under Web3-only law) | — | the binding tiddlers the request names | runs on the glass engine today, ungated | refused by default; a capability-gated host fetch behind the causal-island boundary if ever allowed | all: refuse unless the manifest grants `http` |
+| `tm-rename-tiddler`, `tm-relink-tiddler`, `tm-home` | E | the triggering event | frame | stock | pure wiki logic; land worker-side in an island startup module (survey §5.3) | all |
+| `tm-save-wiki`, `tm-auto-save-wiki` (saver-handler), `tm-login/logout/server-refresh` (syncer) | **n/a** | — | — | no saver, no syncer (rejected) | refuse by name; the store saves itself | all |
+| `tm-confirm` (fork `startup/confirm.js`, no `platforms`) | E | the answer click | frame | runs everywhere | runs today | all |
+| `tm-verse-event` (`vm-projection-bus.mem`) | E → vessel | — | verb result | works | works | all |
+
+**Reading the roster.** Of fifty-odd `tm-*` kinds the core dispatches (`grep` over `core/modules` **[reached: code]**), the navigator's fifteen, the fieldmangler's four, `tm-confirm`, `tm-edit-text-operation` and `tm-verse-event` run in the engine wherever it sits. Nine (`rootwidget.js`) plus seven (`story.js`) plus three (`windows.js`) plus one (`saver-handler.js`) bind only under `platforms: ["browser"]`, and the third runtime skips them all. Half of those read as pure wiki logic the island can register itself; the other half name a host service, and each DreamDOM member says which it carries (§7).
+
+---
+
+## 3. The UP-leg contract
+
+This section extends `page-controls.mem#/the-wire` (one keyed frame down, one answered event up) and `session-contract.mem#/the-holder-protocol` (`wiki:control-event` → `projection:control-result`; `schemaVersion`, `ownerEpoch`, `sessionId`, `generation`, `surfaceId`, `mountEpoch` on every message). Nothing here reopens the rulings; it fills the fields the roster in §2 showed missing.
+
+### 3.1 Four kinds on one leg
+
+```
+wiki:control-event {
+  eventId, sessionId, surfaceId, cameraId, mountEpoch,
+  kind: "act" | "sense" | "write" | "service-result",
+  controlId | renderId | affordanceId,     // one of; renderId retires into controlId as bindings get names
+  controlType,                             // link | button | toggle | choice | field | key | key-global |
+                                           // drop | import-offer | order | scroll | drag-start | drag-end | confirm
+  action,                                  // the binding's declared act name
+  seenFrameRev,                            // the key revision the page had painted when the person acted
+  seenMembershipRev,
+  localRev?,                               // the page's own revision of a sensed control
+  wholeValue?,                             // whole string | whole key set | whole ordered id list | bounded bytes
+  modifiers?: {meta, ctrl, alt, shift, button, repeat},
+  key?: {key, code, keyCode, isComposing},
+  geometry?: {rect, scroll}                // as-of-act, answers THIS event's handler only (dreamdom ruling 4)
+}
+projection:control-result { eventId, controlId, status: "applied" | "stale-target" | "refused", reason?, want?: {value, selStart, selEnd} }
+```
+
+- **`act`** queues, carries an id, and gets exactly one answer (ruling condition 5). It names a binding the frame declared.
+- **`sense`** carries absolute page state with `localRev`; it never queues behind acts, it coalesces newest-wins, and it never gets a per-message answer: its answer reads as `sensedRevision[controlId]` in a later frame (ruling condition 4). A `sense` with an `eventId` becomes an `act` (a `change` commit).
+- **`write`** carries a whole record with `txId` and `basis` (v2 P14): the glass engine's leg at full/skinny/story, and a lean host's edit leg (Mudlet's `Lar.Write`, an MCP `write` tool). It answers `port:written` and echoes `causedBy:[txId]`. **Writes travel as writes, never as events** (the ruling), so an edit at width none ends as a `write` from the page-native control the moment the control commits, never as a replayed keystroke.
+- **`service-result`** closes a `glass:service` request the engine made (clipboard, download, route) with `ok` or a named refusal, so `tm-copy-to-clipboard` can fire its own success notification through the engine.
+
+### 3.2 Declared at mount, never decided at handling
+
+The frame carries the declarations beside each key, the way WorkerDOM put the flag in its subscribe opcode and coincident declares `invoke: "preventDefault"` at binding (`model-and-gaps.md` §5.2; WorkerDOM's compat table still marks `preventDefault()`, `stopPropagation()`, `dispatchEvent()`, `focus()` on non-inputs, `activeElement`, every `Selection.*` and `Range.*` row, `selectionStart/End`, `setSelectionRange`, `getBoundingClientRect()` and `checked` unsupported **[reached: fetched]**; Blazor reached the same shape as the `@onclick:preventDefault` attribute because its handler runs after SignalR **[reached: search]**; remote-dom declares `remoteEvents` statically on the element class and events do not bubble unless the remote side asks **[reached: fetched]**).
+
+| Stamp | Set by | Meaning |
+|---|---|---|
+| `data-lar-on="click keydown change"` | the patched `addEventListener` | the types this node binds; the page relays only these |
+| `data-lar-cancel="click:ordinary"` / `"keydown:declared"` / `"dragover"` | the widget class, through a small table (link: ordinary clicks with `href`; button: when handled, which the page cannot know, so `always` for `$button` with `actions|to|message|popup|set`; keyboard: declared keys; dropzone/droppable: dragenter/dragover/drop) | what the page cancels synchronously |
+| `data-lar-keys="enter escape alt-shift-N"` | `$keyboard` and `$edit-text` through `parseKeyDescriptors` | the crossing set; other keys never leave the page |
+| `data-lar-bubble="keydown"` | the engine | which types the engine bubbles up its fake tree (today only keydown; §4.2 asks for click to bubble to the first listener and answer `unclaimed`) |
+| `data-lar-live` + `data-lar-value` / `data-lar-checked` / `data-lar-selected` | the engine, per refresh | the descriptor the page reconciles its live control against |
+| `data-lar-drag-titles` *(proposed)* | `makeDraggable` sites at render | the `text/vnd.tiddler` payload the page sets on `dragstart` |
+| membership key `shortcuts` *(proposed)* | the engine from `$:/tags/KeyboardShortcut` | the global descriptor set the page listens for on its document |
+
+A node whose `data-lar-on` lacks the event type never relays, and the browser default stands: external links open, native toggles toggle, the file picker opens.
+
+### 3.3 Ordering, idempotence, classes
+
+- **One FIFO per surface for `act`s**, in the order the person made them; the engine applies them in arrival order and answers each. The page may pipeline (send the next before the answer) because every act names `seenFrameRev`; an act whose target key has moved past `seenFrameRev` with a *different binding at that control id* answers `stale-target`; one whose binding still stands applies (Discord's `custom_id` survives message edits the same way **[reached: search]**).
+- **Idempotence by `eventId` within a `mountEpoch`.** A resend after a lost answer carries the same id; the engine keeps a small answer ring per surface and re-answers without re-applying. The ring dies with the mount.
+- **Reliable class** (`act`, `write`, `service-result`): never dropped, retried until answered or the surface closes. **Droppable class** (`sense`, presence): newest wins, no retry, no answer.
+- **Frames never answer events.** A frame says what it sensed (`sensedRevision`); the answer travels on `control-result`. Today's `stale-target` painted into the next frame as an `<output>` (`tw5-projection.ts:330`) reaches no frame when the surface switched; the id-correlated answer fixes that (`page-controls.mem#/the-sink-today`, fault 3).
+- **Geometry rides the act, never a reply.** The link's rect, the popup anchor, the drop position answer that event's handler and no other (today's `_larRect` on the fake node persists past the event *(inferred from `tw5-projection.ts:222-227`)*; the contract scopes it to the dispatch).
+- **Netcode's shape, borrowed where it fits.** Inputs carry sequence numbers and the authority acks the last processed one; the client replays unacked inputs over fresh state **[reached: search]**. The house keeps the ids and the ack and drops the replay: both sides stay replicas (vector 4), and a page-native control already holds the person's truth, so nothing needs re-simulating.
+
+### 3.4 Sleeping and recipe actors: what an act does
+
+| Actor state | A person acts on its surface | Ruling proposed |
+|---|---|---|
+| **daemon / pinned** | normal | — |
+| **sleeping** (store persisted, engine cold) | The surface still shows the last frames (the attachment keeps `{cursor, subscriptions, width, actorKey, cameraMount}`). The act **parks** on the holder with its `eventId`, the surface shows a `waking` state beside the control (not a spinner over the page), the actor wakes, replays the attachment, re-renders, and answers the parked act against the woken frame: `applied` if the binding still stands, `stale-target` with a fresh frame if not. A `sense` during sleep stays on the page and lands as the first `sensedRevision` after wake. | **Wake on act, yes**, bounded: one parked act per surface; a second act while waking replaces the first and the first answers `superseded` *(new status, open ruling 9.1)*. |
+| **recipe** (a bag stack, no actor) | No surface exists, so no act exists; the only act reads as *open*, which spawns. A link from another wiki into a recipe wiki (`lar:` cross-wiki navigate) answers `refused: actor-not-spawned` with an affordance `spawn`. | **Never spawn on an incidental act**; spawn only on an explicit open. |
+| **hibernating mid-edit** | `page-controls` keeps the field's value on the page; the holder refuses to hibernate an actor with an unanswered reliable act; a `sense` never blocks hibernation. | the liveness budget frees resources, never drops a reliable act (`session-contract#/how-a-session-ends`). |
+
+### 3.5 Multi-tab and multi-device: two surfaces on one actor
+
+- **Two tabs, one actor, width none.** Each tab opens its own surface under its own session (`session-contract#/the-browser`); the actor mounts one camera per surface (the keyed-frame camera already holds per-mount `roots`, `renderIds`, `liveIds` in `ProjectionEventScope`). `$:/state`, popups and the confirm question live in the engine today, so **two surfaces see one popup state**; the confirm road rules this as acceptable for one question ("two tabs over one shared island both see it and either may answer", `dreamdom.mem#/the-question`), and the port's tier filter (v2 P10) moves `$:/state` per surface at full/skinny/story. At none the engine must key `$:/state/*` per surface or accept shared popups; **open ruling 9.5**.
+- **Two tabs at full/skinny.** Two replicas, one truth, one leader (v2 P15); each tab's own TW5 holds its own `$:/state`; presence tells each about the other's open draft (P13).
+- **Two devices.** The CRDT merges; a peer write into an open editor reaches the page as a descriptor with a higher engine revision while the page's `localRev` exceeds the sensed one; the page keeps the person's text and shows "a newer version landed" beside the field with a *take theirs* affordance (the LiveView rule: the client stays the source of truth for a focused input; `phx-patch-focused` opts a field into patching **[reached: fetched]**; TW5's own draft logic shows the newer-base prompt at save on the glass engine).
+- **Echo guard.** A `write` carries `txId`; the engine's `change` emits `causedBy:[txId]`; the originating adaptor drops it as foam (TW5-Yjs's origin-tagged transact, TidGi's titles-in-flight, v2 §0.3-0.5). At width none the page keeps a field's value while `localRev > sensedRevision`, which stands as the same guard at control grain.
+- **Presence.** An ephemeral lane, never a tiddler (P13): `{surfaceId, actor, editing: [titles], focused: controlId}` with a 30 s expiry. At width none the engine can render presence into the frame as a key; at full/skinny the glass renders it from the lane.
+
+### 3.6 Host services
+
+`glass:service { requestId, kind: clipboard|download|route|open-surface|print|fullscreen|open-external, args, userActivation: true }` travels engine → surface; the surface answers `service-result`. A surface's manifest at `session:surface-open` lists the kinds it carries; a kind outside the list answers `page-action-unavailable` at once and the engine raises `$:/temp/lares/alert/refused/<kind>` (vector 5). `tm-open-window` reads as `open-surface{cameraRoot, tiddler}`: a second camera on the same actor, which `dreamdom.mem#/the-position` already treats as a composition.
+
+---
+
+## 4. Where interaction gets lost or degrades: the adversarial walk
+
+Each row names the mechanism, the width where it bites, the fix, or the refusal by name. HIGH marks silent loss of a person's work; MED marks a visible failure; LOW marks a degradation with a workaround.
+
+### 4.1 The five `isTiddlyWikiFakeDom` sites (`dreamdom.mem#/what-a-replacement-un-skips`)
+
+| Site | What it skips | Width none today | Under the contract | full/skinny/story |
+|---|---|---|---|---|
+| `editor/factory.js:211` (toolbar off) | the editor toolbar and its ten text operations | toolbar never renders | the seam engine renders the toolbar; each op carries `{value,sel}`; `focus-editor` and `save-selection` need page cooperation; ops that reach past the snapshot refuse `selection-unavailable` | stock, `FramedEngine` available |
+| `simple.js:72` (`setText` guard) | the engine never pushes text into a fake node | **HIGH: textarea reverts after blur and the next keystroke overwrites earlier edits (#23)**; `updateDomNodeText` also no-ops because `value` lives in `attributes` while the textarea's child text paints | the frame carries `data-lar-value` and the page reconciles against it only while `localRev <= sensedRevision`; the seam engine's `setText` writes the descriptor, never the node | stock |
+| `simple.js:105` / `framed.js:161` (`fixHeight`) | auto-height | fixed 400 px or `rows` | page sizes its own field (`field-sizing: content` where supported, else a measured resize) | stock |
+| `list.js:58` (storyviews off) | scroll-to-navigated, insert/remove transitions | no scroll on navigate (#12) | page transition between frames; a `navigated` mark per key from `$:/HistoryList`'s tail | stock |
+| `reveal.js:45,279` (popup positioning off) | `positionPopup` and `tc-popup` class | first-level popups placed from the click rect by the sink; nested popups, keyboard-opened popups and `$:/state` restored popups land unplaced *(inferred)* | `lar-popover` anchored by the page from the control's own box; the engine never positions | stock |
+
+**The crucible rule stands**: these five un-skip together the first time a document presents as real. A DreamDOM member that keeps a fake document keeps them skipped **on purpose** and supplies the page half; a member that hosts the engine beside a real document (full/skinny/story, the Node-served browser with an in-page engine) un-skips all five and must walk them in a real browser before anything downstream gets believed.
+
+### 4.2 The blanket `preventDefault` (#1) and the unbubbled click
+
+`projection-sink.ts` cancels every click that resolves to a rid-bearing ancestor (the page template's `$dropzone` wrapper carries one, `PageTemplate.tid` **[reached: code]**), and the worker fires a click on its own node only (`tw5-projection.ts:254-262`: the loop breaks unless `keydown`). So a click on a plain checkbox inside the river cancels on the page and invokes nothing in the worker. **Loss:** external links, native toggles, the file picker, text selection by double-click in some engines, and the `<summary>` toggle. **Fix:** `data-lar-cancel` per binding (§3.2) and a worker that bubbles every type to the first listener and answers `unclaimed` so the page can leave the default alone. **Refusal:** none needed.
+
+### 4.3 Checkbox, radio, select (#4 and the select snap-back)
+
+Three different mechanisms, one descriptor fix. The checkbox act fails because the handler reads `.checked` the fake node never holds; the radio never paints because TW5 sets a *property* and fakedom serialises *attributes* only (`fakedom.js:139-146` keeps `attributes`, `value` as an attribute, no `checked`/`selected` property store **[reached: code]**); the select snaps back because Idiomorph re-syncs `option.selected` from the parsed HTML and the sink's focus guard covers only `input`/`textarea` (`projection-sink.ts:93-101` **[reached: code]**; Idiomorph offers `ignoreActive`, `ignoreActiveValue`, `restoreFocus` and the `beforeNodeMorphed`/`beforeAttributeUpdated` vetoes **[reached: fetched]**). **Fix:** the engine's serializer promotes `checked`/`selected` to attributes at flush, the event carries `checked` or the whole key set, the engine sets the fake property before invoking the handler, and `beforeNodeMorphed` returns `false` for a `data-lar-live` control whose `localRev` exceeds the frame's sensed revision. **Width:** none only; dissolves at full/skinny/story.
+
+### 4.4 The frame that repaints over an edit
+
+Without `sensedRevision` a frame rendered before a keystroke can land after it; today focus alone protects a field (`protectedValues` captured only for `shadow.activeElement` or composing fields). A field that lost focus a moment ago, a select, a checkbox, a `<details>` open state and a scroll offset all repaint from the older frame. **Fix:** condition 4 of the ruling, implemented per control: `sensedRevision[controlId]` in the frame, `localRev` on the sense, page veto while `localRev > sensed`. **Width:** none; at full/skinny the glass TW5 owns the node and TW5's own `setText` guard (`activeElement !== domNode`) covers the focused case while the port's echo covers the rest.
+
+### 4.5 The edit template end to end
+
+Walk: open a tiddler, click *edit*, type a title, type a body, open the tag picker, type `Uni`, press Enter, click a toolbar button, drop an image, press ctrl+Enter, confirm a discard. At width none today: edit opens (navigator, wired); the title `<input>` works; the body textarea **loses text on blur** (#23); the tag input works but **Enter never crosses** (gap #8) so the tag never adds by keyboard (click on the suggested tag works); the toolbar **never renders**; the drop **has no leg** (#5); ctrl+Enter crosses (modifier chord) and `$:/config/shortcuts/save-tiddler` fires only through the `$keyboard` wrapper in the edit template, not the global manager; the discard **asks through the confirm road and works**. Under the contract every step lands or refuses by name; under full/skinny/story every step runs stock.
+
+### 4.6 Dropzone, import, drag and drop
+
+`$dropzone` binds six listeners plus three body-capture listeners; `$droppable` four; `makeDraggable` two plus a drag image; `$browse` one. All read `dataTransfer`, `files`, `clientX/Y` and `setDragImage`, none of which crosses a thread, and WorkerDOM never carried them either **[reached: fetched]**. **Fix:** page-only binding of the drop targets with page-side cancellation; a single `import-offer` or `drop` event with the whole resolved payload (titles parsed from `text/vnd.tiddler` on the page by the same `importDataTransferTypes` table, or bounded bytes); `startActions`/`endActions` as `drag-start`/`drag-end` events; `lar-order-list` as the base path for list reorder. **Refusal:** generic drag between arbitrary widgets refuses (`page-controls.mem`), and drops over `data-lar-max-bytes` answer `input-too-long` beside the zone. **Width:** none; stock elsewhere. **Hosts:** Mudlet and MCP receive an `import` tool or a file path, never a drag.
+
+### 4.7 Keyboard: the manager, `$keyboard`, `$eventcatcher`
+
+`$tw.keyboardManager` exists in the third runtime (survey §5.1) but nothing binds the document leg; `$keyboard` matches on `keyCode` plus modifiers and exposes `event.key`/`event.code` as variables, which the relay blanks. Today plain Enter, Tab, Escape-without-modal, arrows and `((input-accept))` family never cross unless modified. **Fix:** declared keys per binding (`data-lar-keys` from the widget's own `parseKeyDescriptors`), real `key`/`code`/`keyCode`/`repeat` on the event, a document leg driven by a `shortcuts` key the engine publishes, and `isMac` from the surface's manifest rather than `$tw.browser` (gap #8's platform mapping). **`$eventcatcher`:** stays REFUSED at none with a visible refusal; a future declared-selector binding would carry `{selector matched, target dataset, type}` and lose pointer capture; **open ruling 9.4**. **Width:** none; stock elsewhere.
+
+### 4.8 IME composition
+
+The sink guards `compositionstart/end`, drops `input` while composing, relays once on `compositionend` and swallows the trailing duplicate `input` (`projection-sink.ts:226-258` **[reached: code]**). Two holes: Safari fires the committing Enter `keydown` *after* `compositionend` with `isComposing === false`, so a declared-Enter binding (search, tag picker) fires on the commit keystroke and submits a half-composed value; the field recommends `keyCode === 229` as the composition tell and a short deferral after `compositionend` **[reached: search, WebKit bug 165004, Square engineering, W3C uievents #202]**. And a frame landing mid-composition that *replaces* the node (morph by id usually keeps it; a template change that re-keys it does not) tears the composition. **Fix:** treat `keyCode 229` as composing on every platform; hold a declared-key act for one task after `compositionend`; `beforeNodeMorphed` returns `false` for a composing node regardless of revision. **Width:** none; at full/skinny the browser and TW5 handle it as today in stock TW5 (which has its own IME history **[unreached]**).
+
+### 4.9 Undo
+
+Undo lives in the browser's edit history for the node. A morph that keeps the node by id preserves it; a frame that replaces the textarea (the `#23` repaint today, or a re-keyed template) destroys it, and a relayed whole value re-applied by the engine never restores it. **Fix:** the page never writes a field's `value` from a frame while the field holds a local revision; a *take theirs* act replaces the value as one undoable edit. At full/skinny undo stays stock. Mudlet's `Geyser.TextEdit` carries Qt undo *(inferred)*; MCP has none.
+
+### 4.10 Navigation, permalinks, Back, scroll
+
+`story.js` binds `hashchange`, `tm-permalink`, `tm-permaview`, `tm-home`, `tm-browser-refresh` only in the browser; the island never sets `$:/info/url/*`, so `meta-startup-action.mem` reads an empty hash (survey #17). **Fix:** `lar:navigate` service with a route key; the page composes `#` from the order key and pushes history; Back posts a `route` act; the engine answers with a new order key. Scroll-to-navigated reads as a page transition keyed on `$:/HistoryList`'s tail. **Hosts:** SSR renders a permalink as a real `href`; Mudlet and MCP carry a `render` of a title and no history.
+
+### 4.11 The surface switch (#13)
+
+The gate flips, nothing re-emits, clicks still route to the old island. **Fix:** `projection:resend` on `session:surface-open` and on switch, with a new `mountEpoch`; acts carry the epoch; an act with an old epoch answers `stale-target` (never applies to the hidden wiki). **Width:** none at the DOM sink; at full/skinny a switch opens a port and takes a snapshot.
+
+### 4.12 Where a width or host loses by design, said plainly
+
+- **Width none, any host:** rich text selection operations beyond the carried pair, pointer capture, `$eventcatcher` generic capture, arbitrary drag, `tm-http-request`, synchronous layout reads. Each refuses by name.
+- **Skinny/story:** an act whose handler touches text the glass never held (`$text` on a skinny tiddler, export, a `$list` over bodies) must ask; a verb that runs on the glass against a skinny replica without an ask reads as blur (`third-ways.md` §4.1).
+- **Node-served browser, SSR face:** output-only until the page attaches a surface; every form posts as a `write` or an `act` over the holder; no hash.
+- **QuickJS/Hermes shells:** the engine runs here; the host supplies the sink; a React Native view tree as a blocks projection carries `TextInput` with the platform's own event-count handshake (a single-author analysis of controlled `TextInput` describes native keeping a counter and refusing a stale write **[reached: search]**), which reads as the same sensed-revision rule in native clothes.
+- **UE6 sidecar:** acts arrive as `blocks` affordance invokes with the player as actor; edits as whole-value writes from a UMG box; no DnD, no clipboard, no popups beyond a panel.
+- **Mudlet:** results and affordances only; `echoLink`/label click callbacks and command-line aliases invoke by id *(Mudlet UI function page unreached this pass, DNS failure; `mudlet-capabilities.md` §4.2 and memory)*; `Geyser.TextEdit` edits as whole writes; no key-level relay, no IME concerns beyond Qt's own.
+- **MCP/chat:** `tools/call` for acts, `resources` for keys, elicitation for the confirm road (form mode: flat schema, `accept`/`decline`/`cancel` **[reached: fetched, 2025-11-25 spec]**), `tools/list_changed` as the affordance set changing; Discord components invoke by `custom_id` under a 3 s acknowledge and a 15 min token **[reached: search]**, which bounds how long a parked act may wait on a sleeping actor there.
+
+---
+
+## 5. Conformance: interaction goldens
+
+The evaluator-neutral suite (`evaluators-one-or-many.md` §5: `filter-cts.json`, per-camera render goldens with declared tolerance, mandatory degradation cases) gains a third family. Shape, following the same rules (oracle first, reviewed once, frozen world, `since`, `host-bound`, degradation as a section):
+
+```
+{
+  "name": "interaction/edit/body-survives-blur",
+  "world": "worlds/pono-small",
+  "camera": {"root": "$:/core/ui/RootTemplate", "sink": "dom" | "blocks" | "text" | "label-html", "width": "none" | "skinny" | "full"},
+  "script": [
+    {"act": "navigate", "to": "Lesson 3"},
+    {"act": "edit"},
+    {"sense": {"control": "draft.text", "value": "three paragraphs", "localRev": 1}},
+    {"act": "focus", "control": "draft.tags"},
+    {"frame": "deliver-older", "rev": "before-sense"},
+    {"sense": {"control": "draft.text", "value": "three paragraphs\nfour", "localRev": 2}},
+    {"act": "save"}
+  ],
+  "expect": {
+    "writes":   [{"title": "Lesson 3", "fields": {"text": "three paragraphs\nfour"}}],
+    "messages": ["tm-edit-tiddler", "tm-save-tiddler"],
+    "answers":  [{"act": "save", "status": "applied"}],
+    "frame":    {"keys": {"Lesson 3": {"contains": "three paragraphs\nfour"}}, "membership": ["Lesson 3"]},
+    "page":     {"draft.text": {"value": "three paragraphs\nfour", "undoDepth": ">=2", "focus": "draft.tags"}}
+  },
+  "tags": ["interaction", "edit", "HIGH-23"], "host-bound": true, "since": "tw5 ea94ca8"
+}
+```
+
+Rules: the *script* speaks the contract's vocabulary (`act`, `sense`, `write`, `service-result`, `frame` delivery control) and never a DOM API, so a Lua harness, a Playwright harness and an MCP harness run the same file; *expected writes* compare as records after the echo lands; *messages* compare the `tm-*` the root widget saw; *answers* compare by act index; the *frame* compares through the camera golden's own normaliser; a surface that has no road for a step records `{"refused": "<reason>"}` and the suite checks the refusal reads beside the control (the words of `page-controls.mem#/refusals`).
+
+**The minimal set, fourteen scripts, each with the gap it pins:**
+
+1. `link/ordinary-modified-middle-external` (#1): ordinary click navigates and answers `applied`; ctrl/middle suppress navigation; external `href` never cancelled; no act for an unbound node.
+2. `button/actions-with-modifier-and-popup`: `actions` run with `modifier`; a popup opens as wiki state and the page places it from the act's geometry.
+3. `edit/body-survives-blur` (#23, above).
+4. `edit/peer-write-into-open-editor` (ruling condition 4): a store write lands while the field holds `localRev`; the page keeps its text, shows the newer version beside it, `take-theirs` replaces as one undo step.
+5. `edit/toolbar-wrap-selection-carried-pair`: `tm-edit-text-operation` with `{value, sel}`; answer carries `want`; page applies while rev matches; a stale rev refuses `stale-target`.
+6. `toggle/checkbox-radio-select-multiselect` (#4): each act writes the right field and the next frame paints it; the focused select never snaps back.
+7. `keys/search-enter-tagpicker-enter-global-shortcut` (#8): declared keys cross with `key`/`code`; an undeclared key never leaves the page; `$:/tags/KeyboardShortcut` fires from the document leg.
+8. `ime/safari-enter-after-compositionend` (§4.8): a committing Enter with `keyCode 229` never submits; the value lands once.
+9. `import/file-pick-and-drop-json` (#5): `import-offer` parks `$:/Import`; `tm-perform-import` lands the tiddlers; oversize refuses `input-too-long`.
+10. `drop/droppable-actions-and-order-write`: a drop with modifier runs `actions`; `lar-order-list` writes the whole list; an absent id never deletes a member.
+11. `confirm/delete-asks-then-applies`: the question parks, a second ask withdraws the first, `yes` re-dispatches, a changed subject answers nothing and says so.
+12. `services/copy-download-print-refuse-by-name` (#2): clipboard and download answer `applied` on a surface that carries them; print refuses `page-action-unavailable` with the alert.
+13. `switch/resend-and-epoch` (#13): switching surfaces paints the new mount's first snapshot; an act with the old epoch answers `stale-target` and touches nothing.
+14. `actor/wake-on-act-and-recipe-refusal` (§3.4): an act on a sleeping actor parks, the actor wakes, the act answers; an act into a recipe wiki refuses `actor-not-spawned`.
+
+Each script runs at width full (stock TW5 as the oracle, in Playwright), at width none over the DOM sink, and over the blocks sink (headless, vitest); Mudlet and MCP rows run the subset their manifest carries and publish refusals for the rest. **Two-way parity** for a DreamDOM member then reads as: the same expected writes and messages at every width where the script runs, and a named refusal wherever it does not.
+
+---
+
+## 6. Prior art for the UP leg, placed
+
+| Field | What it settled | What the house takes | Mark |
+|---|---|---|---|
+| WorkerDOM | a mutation stream down; events proxied up with `preventDefault` declared at subscribe; `focus`, `activeElement`, `Selection`, `Range`, `selectionStart/End`, `getBoundingClientRect`, `checked` unsupported after seven years | declare at binding; never promise programmatic focus or selection from the VM | [reached: fetched, `web_compat_table.md`] |
+| remote-dom | `remoteEvents` declared on the element class; no bubbling unless asked; host allowlist of events; `respondWith()` returns a value to the caller | the allowlist as the binding declaration; `respondWith` as the `want` field | [reached: fetched, core README] |
+| Phoenix LiveView | the JS client stays the source of truth for a focused input; `phx-patch-focused` opts in; `phx-auto-recover` re-sends `phx-change` after reconnect; submit disables inputs and restores the last focused one; invalid number inputs send no change; `beforeUpdate` runs synchronously and cannot cancel | the focused-field rule, generalised to `localRev > sensedRevision`; form recovery as the attachment's sensed state on wake; the `inputmode="numeric"` rule | [reached: fetched, form-bindings.md, js-interop.md] |
+| Hotwire/Turbo, idiomorph, htmx | morph by id keeps focus and caret; `ignoreActiveValue`, `restoreFocus`, `beforeNodeMorphed`; `hx-preserve` cannot preserve a text input's focus; Turbo needs `data-turbo-permanent` | the per-control veto in `beforeNodeMorphed`; never trust `hx-preserve`-style wholesale preservation | [reached: fetched (idiomorph README); reached: search (htmx docs); unreached (Turbo, prior pass)] |
+| Blazor Server | `@onclick:preventDefault` as an attribute because the handler runs after SignalR; frequent events slow; `@bind:event="oninput"` | the same attribute law; `input` as sense, `change` as act | [reached: search] |
+| React Native / Hermes | controlled `TextInput` guarded by a native event count; a stale write refused | a sensed revision in native clothes for a blocks sink on RN | [reached: search, single-author analysis] |
+| Game netcode | inputs with sequence numbers over a reliable lane; state snapshots droppable and relevance-culled; the server acks the last processed input | reliable acts with ids and acks beside droppable senses; no replay (both sides replicas) | [reached: search] |
+| Mudlet / GMCP | `sendGMCP` client→server with JSON payloads; clickable text and label callbacks by Lua function; OSC 8 links | affordance invoke by id over `Lar.Invoke`; results never the language | [reached: search (GMCP); unreached this pass (UI functions page, DNS failure); sibling `mudlet-capabilities.md`] |
+| Discord components | `custom_id` round-trips on click; 3 s acknowledge, 15 min follow-up token | affordance ids; a parked act's budget on chat hosts | [reached: search] |
+| MCP elicitation | `elicitation/create` with form or URL mode; flat schema; `accept`/`decline`/`cancel` | the confirm road and `lar-field` schemas map onto form mode; `cancel` = withdrawn question | [reached: fetched, 2025-11-25 spec] |
+| IME / UI Events | Safari's Enter after `compositionend` with `isComposing false`; `keyCode 229`; deferred commit | §4.8 | [reached: search; UI Events spec page unreached in full] |
+| ARIA across shadow roots | IDREFs and `activeElement` break at the boundary (`dreamdom.mem#/the-borrowed`) | refusal rows for `aria-activedescendant` patterns; light-DOM controls in `page-controls` | [unreached, prior meme] |
+
+---
+
+## 7. DreamDOM, the superset: per-surface two-way capability
+
+Each row names a (root template, document sink) over the one engine. **Capability:** *full* = every roster row runs or refuses by name under the contract; *partial* = a declared subset; *output-only* = frames or renders with no act leg yet; *none* = no camera.
+
+| DreamDOM surface | Root → sink | Width | Two-way today | Two-way under the contract | Interactions that cross up | Transport | Refuses by name |
+|---|---|---|---|---|---|---|---|
+| Browser on the Node vessel's box, in-page engine (first surface, full/skinny/story) | `$:/core/ui/RootTemplate` → `window.document` | full / skinny / story | not built (behind the spike) | **full**: stock TW5 runs beside the control | nothing per act; `write{txId}` per save; `ask{load|filter}` at skinny; presence; `glass:service` for host doors | MessageChannel to the tab's worker; holder for the store | `tm-http-request` (gated), saves/syncer, verbs the glass may not run on a skinny replica |
+| Browser DOM sink (`dreamdom.mem`'s original member, hardened) | RootTemplate → shadow-root morph sink | none | **partial**: links, buttons, text input, confirm, popups (first level), Esc/modifier chords | **full by contract**, with named refusals | `act` (click, declared keys, toggle, choice, drop, import-offer, order, confirm), `sense` (field, scroll), `service-result` | `wiki:control-event` / `projection:frame` over the surface channel | rich selection ops past the carried pair, pointer capture, `$eventcatcher`, generic drag, print/fullscreen/open-external unless the manifest carries them |
+| Any other browser or WebView shell (Tauri, iOS WKWebView, Android) | same two as above | same | as above | as above; storage named evictable | as above | same | plus clipboard/download where the shell withholds them |
+| Node-served browser: SSR face | RootTemplate or a static template → `$tw.fakeDocument` → HTML | none | **output-only** | **partial**: links as real `href` routes, forms as `write`/`act` posts over the holder, no live sense | `act` via navigation and form post; `write` | HTTP/WS to the vessel; the page attaches a surface for live mode | everything live until a surface attaches; hash routing |
+| Node CLI | a text camera | none | partial (verbs, tails) | **partial**: `act` as verbs (`lares act … --yes`), `write` from files, `ask` for filters/renders; confirm answered by `--yes` or a script reading `$:/tags/Confirmation` | verbs, writes, asks | UDS socket, session per invocation | every page control; drag; keys |
+| QuickJS / quickjs-ng / Hermes shells (the engine runs here; host supplies the sink) | RootTemplate or a house root → text / blocks sink → native views | none | none built | **partial to full** per host sink: a React Native view tree as a blocks projection with native `TextInput` (whole value + event count), native pickers for `choice`, native share for clipboard | `act` by affordance id, `sense` field values, `write` whole records, `import-offer` from the platform picker | host functions / JSI; no WASM store, so records in from a neighbour | DnD, popups beyond a sheet, keyboard manager, `$eventcatcher`, `tm-open-window` |
+| UE6 / Verse sidecar | blocks sink → Scene Graph entities / UMG panels | none | none built | **partial**: affordance invokes with the player as actor; UMG text box as a whole-value field; confirm as a two-button panel | `act` (invoke), `write` (field commit), `confirm` | `IWebSocket` to the sidecar (Node or QuickJS) | DnD, clipboard, download, print, open-window, keyboard manager, IME beyond the engine's own, scroll binding |
+| Mudlet (Lua 5.1, no JS) | pane root → text / label-html sink per Geyser container | none | none built (Phase 1.5 planned) | **partial**: links and buttons as `echoLink`/label callbacks; `Geyser.TextEdit` as the field (whole write); `createRightClickMenu` for choices; yes/no prompt for confirm; filters as asks | `Lar.Invoke{renderCursor, affordanceId}`, `Lar.Write{txId, records}`, `Lar.Ask`, `Lar.Confirm` | `Lar.*` GMCP packages over a loopback telnet listener (virtual-MUD pattern) | every DOM-shaped thing: DnD, file drop, keyboard widget, popups with geometry, selection ops, clipboard beyond `setClipboardText`, print, open-window; the language itself |
+| MCP / chat (Discord, Slack-like, an agent) | resource root → blocks or text sink | none | none built | **partial**: resources for keys; `tools/call` per affordance kind (`navigate`, `act`, `write`, `import`); elicitation for the confirm road and for `lar-field` schemas; `tools/list_changed` when the affordance set changes | `act` by affordance id, `write` whole records, `confirm` as elicitation `accept/decline/cancel` | MCP (stdio/HTTP) or a bot gateway; Discord `custom_id` with 3 s ack | keys, IME, DnD, clipboard, popups, scroll, undo; any act that needs a frame the chat cannot show (refuse with the `text` render of the key) |
+| Canvas camera (`wikispace-canvasspace`) | a canvas root → a DOM-hosting document, one transform per layer | none or in-page | not built | **full by contract**, keyed by shape; `sense` carries shape geometry as absolute snapshots | shape moves as `order`/`sense` keys; links and buttons as acts | same as the browser DOM sink | rasterised hit-testing (the surface law forbids it); synchronous layout reads |
+
+**Two rules across every row.** A surface declares at `session:surface-open` the control kinds, service kinds and key sets it carries, and the engine refuses by name what the manifest lacks (vector 5). And every surface, however lean, **reads keys and writes records**: no surface replays keystrokes into the engine (`host-attractors.md` §2.4's correction).
+
+---
+
+## 8. Mu
+
+**Wand `*`.** The visible feed says the UP leg already exists in three places and needs joining, not inventing: the patched `addEventListener` stamps identity and stores handlers; `session-contract` names the answered event with its epoch; `page-controls` names the controls, the descriptor and the refusal words. The field agrees on the one law that matters, declare at binding, and on the one rule for the focused field, the client holds it. The spark: a `data-lar-cancel`/`data-lar-keys` table of eleven widget classes turns the blanket cancel into a declared one in an afternoon, and the serializer promoting `checked`/`selected` to attributes turns radio and select green the same day.
+
+**Cup `?`.** Zoomed out, every DreamDOM member faces the same two legs, and the member's width only decides where the second leg's *handler* runs: beside the control (full/skinny/story) or across the wire (none). So the two-way question reads as one contract with two settings, like the width dial itself. The confirm road, MCP elicitation, Discord's deferred update and a Mudlet yes/no prompt all read as *one parked question, one answer, one re-dispatch*; the house already holds that shape in `$:/temp/confirm/*`.
+
+**Sword `!`.** Cut: (1) between an act and a sense (one queues and gets an answer; the other coalesces and gets a revision); (2) between the frame and the answer (a frame never answers an event); (3) between a binding's declaration and its handling (cancellation, crossing keys and bubbling all declared at mount); (4) between a surface's manifest and the engine's assumption (every refusal names the missing capability); (5) between the page's revision of a control and the engine's rendered revision (the page keeps the field while its number stands higher); (6) between an act on a sleeping actor and a spawn of a recipe (wake, yes; spawn, never incidental). Do not cut: TW5's handlers (they run unmodified in the engine wherever it sits); the CRDT as truth; the rule that writes travel as writes.
+
+**Pentacle `_`.** Unclaimed: the cost of bubbling every click through the fake tree per act; whether `$:/state/*` keyed per surface breaks `qualify`-based popups; the exact Safari and Android IME sequences under the sink in 2026 builds; whether `FramedEngine` (an iframe) survives inside a shadow root at full width; Mudlet's `Geyser.TextEdit` signal set for a commit; whether an RN blocks sink needs the event-count rule or the platform already enforces it; how `tm-open-window` as a second surface interacts with the single-holder law; who reviews the fourteen interaction goldens when the TW5 fork moves.
+
+**Arcana `0`.** "Is the two-way interaction preserved?" dissolves into "which layer owns each act, and does its answer come back named". Under the ruling the engine never owned the caret, the focus, the file or the clipboard; TiddlyWiki's third layer borrowed them from the browser for twelve years. DreamDOM, the superset, returns each to the surface that holds it and keeps for the engine what the engine always owned: the widget tree's handlers, the wiki's state, and the answer.
+
+**Dubious-Move `?!`.** Macro says the contract closes the HIGH list; micro says a contract with eleven binding classes, four kinds and a sensed revision per control still needs fourteen scripts to prove it on five sinks, and the house has run zero of them in a real browser. Keep the bet; write the goldens first.
+
+---
+
+## 9. Open rulings for the operator
+
+1. **Wake on act.** Confirm: an act on a sleeping actor parks (one per surface), the surface shows `waking` beside the control, the actor wakes and answers; a second act supersedes the first with a named status. Or: an act on a sleeping actor refuses `actor-asleep` and the page offers *wake*.
+2. **The browser DOM sink's edit template.** Keep the stock edit template rendered through the seam engine (`lar-field` under `$edit-text`), or ship a house edit template that names `lar-field`, `lar-picker` and `lar-file-picker` directly and leaves the stock one to full/skinny widths.
+3. **Root `tm-*` services.** Approve the split: worker-side now (`tm-rename/relink-tiddler`, `tm-home`, `tm-modal`, `tm-show-switcher`, `tm-notify`, `tm-scroll` and `tm-focus-selector` as hints); host services (`clipboard`, `download`, `route`, `open-surface`); refused by default (`tm-print`, `tm-full-screen`, `tm-open-external-window`, `tm-browser-refresh`, `tm-http-request`). Name `tm-http-request`'s gate under Web3-only law.
+4. **`$eventcatcher` and `$keyboard` at width none.** Keep `$eventcatcher` REFUSED, or admit a declared-selector binding (no pointer capture); confirm `$keyboard` earns a declared-keys binding (recommended) rather than refusal.
+5. **`$:/state` per surface at width none.** One engine-side state shared by two surfaces of one actor (today, and the confirm road's "either may answer"), or state keyed per surface in the engine.
+6. **The presence lane's home at width none.** Rendered into the frame by the engine as a key, or a separate droppable message the page renders.
+7. **Interaction goldens as a conformance family.** Bless the fourteen scripts of §5 as the minimal set and their `interaction/` section in the suite, with the fork commit as the oracle.
+8. **The DreamDOM name.** Confirm the superset reading for every house meme going forward, and that `dreamdom.mem`'s head gets a one-line re-pointer naming its original sense as the browser DOM sink member.
+
+---
+
+## 10. Spikes worth running
+
+1. **Declared cancellation in one afternoon**: the `data-lar-on`/`data-lar-cancel` table for `$link`, `$button`, `$keyboard`, `$dropzone`, `$droppable`, `$browse`, `$checkbox`, `$radio`, `$select`, `$edit-text`, `$range`; click bubbling to the first listener with `unclaimed`; Playwright: external link opens, native checkbox toggles, file picker opens (scripts 1 and 6).
+2. **Serializer promotion**: `checked`/`selected` properties to attributes at flush; radio paints, select holds (script 6).
+3. **Sensed revision end to end**: `localRev` on `sense`, `sensedRevision` in the frame, `beforeNodeMorphed` veto; the "type, hold the answer, deliver an older frame" probe from `page-controls.mem#/measure-first` under focus, blur, composition and a `<select>` (scripts 3, 4, 8).
+4. **The seam engine's toolbar**: render the stock toolbar through the third engine, run all ten text operations over a carried pair, list which refuse `selection-unavailable` (script 5).
+5. **Declared keys and the document leg**: `data-lar-keys` from `parseKeyDescriptors`, real `key`/`code`, a `shortcuts` key; search Enter, tag-picker Enter, a global shortcut (script 7).
+6. **`import-offer` and `drop`**: page-side parse of `text/vnd.tiddler`, bounded bytes, `$:/Import` parks and performs (scripts 9, 10).
+7. **Surface switch with epochs**: `projection:resend`, `mountEpoch` on acts, an act with an old epoch answers `stale-target` (script 13).
+8. **Blocks sink parity**: run scripts 1, 2, 6, 11 over a recording fakedom with affordances; the same expected writes and messages as the DOM sink (`third-ways.md` §9 spike 4, extended).
+9. **Hibernate mid-edit**: an actor with a parked act refuses to hibernate; a `sense` never blocks it; wake answers the parked act (script 14).
+10. **Full-width walk of the five sites**: the glass engine over `window.document` inside the shadow root; `FramedEngine`, storyviews, popup positioning, toolbar and auto-height each exercised once in a real browser before the default width gets ruled.
+
+---
+
+## 11. Two stories
+
+*Gaia, 2026, Portland.* The teacher's Chromebook runs the hearth at width none because the spike said her 4 GB cannot spare a second core. She opens *Unit 3 — Fractions*, clicks edit, types three paragraphs, clicks the tags box and types `Uni`. Under the old sink the body would have reverted when the textarea blurred; under the contract her `lar-field` holds `localRev 7`, the frame that lands names `sensedRevision 5`, and the page keeps her text. The tag picker's input declared `enter up down escape`; she presses Enter, the act crosses with `key:"Enter"`, the engine adds the tag and the frame paints it. She drags a PNG from her desktop onto the body; the page's dropzone cancels `dragover` itself, reads the file, posts one `import-offer` of 180 KB, and the frame shows `$:/Import` parked; she clicks *Import*. She presses ctrl+C on the permalink button; the engine posts `glass:service{clipboard}`, the page writes it under her activation, answers `applied`, and the engine's `tm-notify` key shows *Copied* for two seconds. Her colleague, on a phone in a Discord thread, taps *Open* on the same lesson: the bot posts the `text` key and three buttons; she taps *Mark reviewed*, the `custom_id` carries the affordance id and the render cursor, the engine applies the `$action-setfield`, and the thread's message edits itself with the new key. The actor had been asleep for an hour when she tapped; the act parked, the bot acknowledged within its 3 s, the actor woke, and the answer arrived as a follow-up inside the token's window.
+
+*Elyncia, 5492.* A keeper's crossroads node holds the harvest wiki as a pinned actor and nine sleeping ones. The hall's old text console dials the node as it dials a game: the notice board arrives as a `label-html` key per pane, each line registered as a link that invokes by affordance id. A novice clicks *Tally the eastern field*; the console sends `Lar.Invoke{renderCursor, affordanceId}`; the key had moved since the pane last painted, so the answer reads `stale-target` and the pane repaints before the novice clicks again, which the manifest promised and the console shows as a dimmed line, never a silent miss. The keeper's slate, at skinny width, edits the tally in a stock editor beside the control; her save posts one `write{txId}`; the echo returns under `causedBy` and her adaptor drops it as foam. A traveller at the gate opens the guest ledger from a recipe through the hall console; the console answers `actor-not-spawned` with a `spawn` affordance, since no incidental act may birth an actor, and the traveller chooses it. A watch-spirit reports a flood on the river's edge through a vessel whose manifest lacks `sensoria`; the engine answers `refused: cap sensoria` by name and the lamp at the gate shows the words. Late in the night the ley-line drops while the keeper types; the slate keeps its replica and its caret; on return the actor wakes, replays her attachment, and the one act she made while the line stood dark, a tag added by Enter, arrives parked with its epoch, applies, and answers. Nothing she typed, clicked or chose went anywhere without coming back named.
+
+---
+
+## 12. Sources
+
+**Reached: code (this pass, `/home/user/gjd5`, TiddlyWiki5 submodule at `ea94ca8`, 5.5.0-prerelease fork)**
+
+- `core/modules/widgets/widget.js:686-760, 895-949` (`addEventListener`, `dispatchEvent`, `invokeActions`, `invokeActionString`, `allowActionPropagation`); `button.js:90-140`; `link.js:135-190`; `checkbox.js` (`handleChangeEvent` reads `inputDomNode.checked`); `radio.js:45,92,129`; `select.js` (`selected` property, `getSelectValues`); `range.js:52-120`; `browse.js:55-80` (`event.target.files`, `readFiles`); `dropzone.js` (six listeners, body capture, `readFiles`, `importDataTransfer`); `droppable.js:48-160`; `draggable.js:62-70`; `keyboard.js:42-110` (`handleChangeEvent`, `onlyPriority`, `event-key`/`event-code`); `eventcatcher.js:60-140` (pointer capture); `navigator.js:25-60,185-200` (listeners, `$tw.utils.confirm`); `dialog.js` (`aria-modal`, `inert`); `reveal.js:40-60,270-300`; `list.js:50-70`; `scrollable.js`; `action-*.js` (`invokeAction(triggeringWidget,event)`).
+- `core/modules/editor/factory.js:57-76,147-160,211,343`; `editor/engines/simple.js:50-130`; `editor/engines/framed.js:6-180`; `editor/operations/text/*` (ten modules); `editor/operations/bitmap/*` (three).
+- `core/modules/utils/fakedom.js:139-146,205,233-238,277-330` (attributes store, `addEventListener` no-op, `value` as attribute, `innerHTML`); `utils/dom/popup.js:44-200`; `utils/dom/scroller.js`; `utils/dom/modal.js`; `utils/dom/notifier.js`; `utils/dom/dragndrop.js:22-270` (`makeDraggable`, `importDataTransfer`, `importDataTransferTypes`); `utils/dom/dom.js:237-258` (`copyToClipboard`); `utils/confirm.js:40-80`; `core/modules/keyboard.js:133-370` (`parseKeyDescriptors`, `handleKeydownEvent`, `$:/tags/KeyboardShortcut`).
+- `core/modules/startup/rootwidget.js` (browser-only root handlers); `startup/story.js:18-230` (hash, permalink, permaview, home, print, open-external, browser-refresh); `startup/windows.js:25-110`; `startup/confirm.js` (fork, `tm-confirm`, no `platforms`); `startup/startup.js:85-92` (document `keydown`); `startup/saver-handler.js:103` (`tm-download-file`).
+- `core/ui/PageTemplate.tid` (`$navigator`, `$dropzone` wrapper); `ui/PageTemplate/story.tid`; `ui/EditTemplate/{body-editor,body-toolbar-button,fields,tags,title,type}.tid`, `ui/EditTemplate/body/default.tid` (`$dropzone` in the editor); `wiki/macros/tag-picker.tid`; `wiki/macros/keyboard-driven-input.tid:121-146`; `ui/SideBar/Open.tid` and `wiki/macros/list.tid` (`$droppable`).
+- House code: `packages/lararium-web/src/projection-sink.ts` (whole file: focus-only protection, unconditional `preventDefault`, Esc/modifier keydown, whole-value input/change, composition guards, modal focus rule); `packages/lararium-tw5/src/tw5-projection.ts` (patched `addEventListener`, `_larRect`, keydown-only bubbling, popup-root capture, `stale-target` as an `<output>` in the next frame, 24 ms gate); `tw5-camera.ts`; `has-island-watches.ts:38-60`; `packages/lararium-mesh/src/island-protocol.ts:978-1030,1521-1555` (`wiki:dom-event`, `wiki:dom-input`, 65 536 bound).
+- House memes: `dreamdom.mem`, `page-controls.mem`, `session-contract.mem#/the-holder-protocol, #/the-browser, #/how-a-session-ends`, `vm-projection-bus.mem`, `render-pipeline.mem#/render-posture`, `wikispace-canvasspace-ontology.mem#/the-surface-law, #/transclusion`, `noosphere-boot.mem`.
+
+**Sibling reports (this folder)**: `third-ways.md` (the frame; §4.1 widths; §5 per-host landing; §9-10 spikes), `model-and-gaps.md` (gaps #1-#25; §5.1 Wave 2 verdicts; §5.3 the glass contract table), `portable-engine-plan-v2.md` (ten port kinds; P10, P13-P16), `host-attractors.md` §2.3-2.4 (render ask, affordance stream, two read grains one write grain), `mudlet-capabilities.md` §4.2 (panes, `Lar.*` packages), `evaluators-one-or-many.md` §5 (suite shape).
+
+**Reached: fetched (this pass)**
+
+- ampproject/worker-dom `web_compat_table.md` — https://raw.githubusercontent.com/ampproject/worker-dom/main/web_compat_table.md (first 100 000 characters)
+- Phoenix LiveView `guides/client/form-bindings.md` and `guides/client/js-interop.md` — https://github.com/phoenixframework/phoenix_live_view
+- bigskysoftware/idiomorph README — https://github.com/bigskysoftware/idiomorph
+- Shopify/remote-dom `packages/core/README.md` — https://github.com/Shopify/remote-dom
+- MCP specification 2025-11-25, client elicitation — https://modelcontextprotocol.io/specification/2025-11-25/client/elicitation
+
+**Reached: search (this pass; page unreached)**
+
+- Blazor `@on{event}:preventDefault` and async dispatch — meziantou.net, syncfusion.com FAQ, ssw.com.au rules, dotnet/aspnetcore PR 14509
+- Discord interactions: 3 s acknowledge, deferred update, 15 min token — discordjs.guide, discordpy-message-components docs, carbon.buape.com
+- Client-side prediction and reconciliation with input sequence numbers — Wikipedia, colyseus docs, gamedev.net thread, SetNet.StateSync.Prediction
+- IME: Safari `keydown` after `compositionend` with `isComposing false`, `keyCode 229` — bugs.webkit.org 165004, w3c/uievents issue 202, developer.squareup.com, dev.classmethod.jp, pierre issue 773
+- Shadow root `activeElement` retargeting — MDN `ShadowRoot.activeElement`, open-wc "mind the document.activeElement"
+- htmx `hx-preserve` limits and morph focus — htmx.org, four.htmx.org, v1.htmx.org
+- React Native controlled `TextInput` event-count handshake — hackernoon "your users type faster than your JavaScript"; Fabric threading overview mirrors
+- Mudlet GMCP `sendGMCP`, OSC 8 — wiki.mudlet.org Supported Protocols, mudlet.org GMCP tutorial, forums.mudlet.org
+- LiveView forum threads on `phx-update="ignore"` not suppressing `phx-change` — elixirforum.com
+
+**Unreached (memory or prior pass; verify)**
+
+- wiki.mudlet.org `Manual:UI_Functions` (`echoLink`, `insertLink`, `setLabelClickCallback`, `Geyser.CommandLine`, `setClipboardText`) — DNS failure this pass; sibling `mudlet-capabilities.md` carries the prior reading
+- W3C UI Events composition section (page too long to read in one fetch; the search passages above stand in)
+- Hotwire/Turbo `data-turbo-permanent` (prior pass); coincident `invoke: "preventDefault"` (survey §5.2); WICG worker input events (prior pass)
+- TiddlyWiki upstream IME history; `FramedEngine` inside a shadow root; `Geyser.TextEdit` signals; Discord developer docs (community guides reached instead)
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;m0FcfzRFkoAP_U4E4JG5QB_4Pk7aiLEcpasODCa449k
+
+<<^ code="&#x0004;" -> to="?">>

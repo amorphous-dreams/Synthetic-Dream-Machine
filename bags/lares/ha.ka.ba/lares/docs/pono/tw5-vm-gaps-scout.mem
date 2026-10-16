@@ -1,0 +1,270 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 13
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "tw5-vm-gaps-scout — VERBATIM handoff of two tasked Opus spirits, TIDDLY and WIKI, in two waves (2026-10-16): how the house turned the TiddlyWiki engine into a worker-thread VM (the third runtime, the CRDT as truth, whole frames to a shadow root, the render-id relay) and the gaps they found, many probed in scratch with file and line: the textarea revert, the blanket click preventDefault, radio and select painting, the absent root tm-* handlers, no frame resend on a surface switch, the boot-shadows push, and the layer-3 glass contract. Held as a collision surface; the red tests of dreamdom-roadmap's D0 and D1 begin from it."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! tw5-vm-gaps-scout ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on the as-built worker-thread VM and its gaps, probed in scratch, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
+
+''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+
+''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+# TW5 as a worker-thread VM: the model and its gaps
+
+Survey of `feature/green-jello-dinosaur-5` @ `b4f61e6`, read-only. Wave 1 by two tasked spirits: **TIDDLY** (worker-side engine) and **WIKI** (glass interaction wiring). Synthesis by the thread Lares. Wave 2 findings are folded in at the end.
+
+**Evidence caveat.** The `TiddlyWiki5/` submodule is not checked out, and `node_modules` is absent, so no tests ran. Both spirits read TW5 internals from the core blob that genesis actually ships, `genesis/cas/4da77b10…` (a TW5 5.5.0-prerelease fork). `core@N` means a byte offset into that blob; `boot.js:N` means a line in the boot.js extracted from it. Items marked *(inferred)* were read from code and never executed.
+
+---
+
+## 1. The model in one paragraph
+
+TW5 no longer lives in the page. It boots inside a module Web Worker (browser) or a `worker_thread` (node), as a forged **third runtime** in which `$tw.browser = $tw.node = null`. That single choice makes TW5's own platform filter skip every browser-only and node-only startup module. Truth lives in Automerge docs, one per bag, which sync between the island's Repo and the vessel's Repo over a MessageChannel. `$tw.wiki` is a materialized cache fed by a nalu landing queue, and it writes back through a `change` listener that replaces TW5's syncer entirely. The worker renders `$:/core/ui/RootTemplate` into `$tw.fakeDocument` and ships **whole HTML + CSS snapshots** to the page every 24 ms window. The page morphs each snapshot into a shadow root with Idiomorph. Human acts travel the other way as **rid-addressed synthetic events**: fake-DOM `addEventListener` is patched to stamp `data-lar-rid`, and the page relays click, a narrow slice of keydown, input, change, and composition by rid. The worker then calls TW5's own stored handler. TW5's widgets, navigator, popups, drafts and confirm road all run unmodified in the worker; whatever TW5 hangs on the real `window`/`document`/root widget is simply absent.
+
+## 2. Diagram
+
+```
+ BUILD   build-tw5-vendor → core blob (sha = hearthTrueName)   build-plugin-tiddler → memetic-wikitext plugin (44 modules) + boot-shadows
+         build-genesis-island → genesis/seed.json + cas/<sha256>
+
+ MAIN THREAD (page / node main)  ── no TW5, ever (packages/AGENTS.md §9) ──
+   openBrowserVessel: Repo(IndexedDB) · WebCrypto id · Web Lock · keyhive · federation gates · WS relay · island pool
+   projection-sink: shadow root ← Idiomorph.morph(html), style.textContent = css
+        │  ▲ projection:frame {html, css, rev}   (gated: transport id == activeSurfaceId)
+        │  │
+        │  └──────────────────────────────────────────────────────────────┐
+        ▼ wiki:dom-event / wiki:dom-input {renderId, type, fields|value}   │
+ ┌─ WORKER (module Worker | worker_thread) ─ runSovereignKernel ──────────┼────────────┐
+ │  island Repo ⇄ syncPort (MessageChannel) ⇄ vessel Repo                  │            │
+ │  CompositeStore [temp > draft > personal > working > bags/* > libraries > oracle]     │
+ │       │ IslandAdaptor → WaveLanding → $tw.lares.applyNalu                │            │
+ │  ┌────▼──── $tw (browser = node = null) ──────────────────────────┐    │            │
+ │  │ $tw.wiki ── "change" ─┬─► outbound-bridge → HandGate → bag-paths cascade → CRDT │
+ │  │                       ├─► CoalesceGate 24ms → serialize RootTemplate ─┘           │
+ │  │                       └─► reaction-router → tm-verse-event → vessel               │
+ │  │ ridMap: data-lar-rid → TW5's stored handler ◄── dispatchProjectedEvent/Input      │
+ │  └────────────────────────────────────────────────────────────────┘                  │
+ │  verbs: wiki:place-verb (ADD/COPY/MOVE/CLEAR/DROP/LOAD/REPACK), daemon:* verbs        │
+ └───────────────────────────────────────────────────────────────────────────────────┘
+ node ⇄ WS (LarWSClientAdapter, ?relay=&gate=) ⇄ vessel Repo    [CRDT sync only, never DOM]
+ node disk-projector: store → wikis/{slug} (working) and bags/* (canon via residency verbs)
+```
+
+## 3. How the engine was rewired, piece by piece
+
+### 3.1 Boot (TIDDLY)
+- Entry: node `worker-handle.ts:220-230` → `node-wiki-island.ts:26` → `runSovereignWorker` (`sovereign-island-model.ts:183`); browser `workers/wiki.worker.ts:9-12` (keyhive WASM first) → `runBrowserSovereignWorker`. Both reach `runSovereignKernel` (`lararium-tw5/src/sovereign-kernel.ts:107`).
+- The kernel resolves its slots, pulls core and plugin bytes by CID, and re-hashes them as an integrity gate (`:389-418`), then `TW5Engine.boot` (`tw5-vm.ts:45-63`).
+- The core is evaluated with `new Function("exports","module","require","window","process", src)`. `require` is an allowlist, `fs` a denying Proxy, `window` a Proxy admitting only `sjcl` and `$tw` (`tw5-host-bridge.ts:55-70, 199-323`).
+- `configureIslandRuntime` (`:345-375`, browser only) nulls both platform flags, no-ops both tiddler loaders, sets `readBrowserTiddlers = true`, sets `packageInfo.version` to the engine sha, and installs a non-exiting `utils.error`.
+- Startups that run: `load-modules` (builds `$tw.rootWidget` over `$tw.fakeDocument`), `startup`, `info`, `plugins`, `story` (non-browser half), `confirm`. Skipped: `rootwidget`, `render`, `windows`, `favicon`, `password`, `eventbus`, `browser-messaging`. No syncadaptor, so `$tw.syncer` is never built.
+
+### 3.2 Store and direction of truth (TIDDLY)
+- **Truth is the CRDT**, one Automerge doc per bag (`sovereign-kernel.ts:292-313`). `buildIslandRecipe` (`island-recipe.ts:52-130`) stacks the CompositeStore and replays every doc.
+- **In:** doc → MemeProvider → `IslandAdaptor.onUriChanged` → `WaveLanding` → `$tw.lares.applyNalu` (sync add/delete stamped `$origin-bag`).
+- **Out:** `change` → `bridgeWikiToAdaptor` (`outbound-bridge.ts:27-47`) skips "foam" (values the LandedLedger just landed), HandGate paces writes (400 ms trailing, 2 s cap, `hand-gate.ts:18-38`), and the in-wiki `bag-paths` cascade routes each title (`$:/temp`, `$:/state`, history to temp; drafts to draft; personal to personal; everything else to working). Draft save, rename and cancel are discrete acts (`island-adaptor.ts:968-1127`).
+- **Disk** is a one-way projection, store → disk (`lararium-node/src/disk-projector.ts`). `bags/*` is canon, written only by residency verbs.
+- The plugin also ships tiddlyweb routes, door-charm and backstop for a stock-TW5-server mode, a second, syncer-based integration that stays inert inside islands.
+
+### 3.3 The VM's protocol (TIDDLY + WIKI)
+- Typed postMessage envelopes in `lararium-mesh/src/island-protocol.ts`; door guard `isVesselToIslandMsg` (`:1092-1099`).
+- Lifecycle: `manifest`, `teardown`, `hooanu` in; `ready`, `breath`, `ea`, `fault`, `teardown:ack` out.
+- Wiki island: `wiki:place-verb` → VerbTable → `wiki:verb-result`; `wiki:dom-event` / `wiki:dom-input` → projection return leg (`has-island-watches.ts:38-60`). Both DOM messages are fire-and-forget, no requestId (`vessel-island-pool-core.ts:854-878`). The input value is capped at 65 536 chars, checked three times.
+- Daemon island: `daemon:place-verb` / `telemetry:place-verb` → VerbDispatcher; functors on `$tw.lares.*` (derive-skeleton, worldline-compare, verify, resolve-binding, residency-op, evict).
+- Back-channels: `cas:want/block`, `doc:rest`, `custody:write`, `dyad:ask`, `view:*`.
+- **No generic filter, render or eval RPC exists on the live island.** The only such surface, `meme-worker-script.ts`, is orphaned.
+
+### 3.4 Rendering (both)
+- `mountProjection` / `mountCamera` render RootTemplate plus PageStylesheet into fake nodes (`tw5-projection.ts:292-389`, `tw5-camera.ts:52-71`). A 24 ms CoalesceGate flushes the whole story container's `innerHTML` plus the whole CSS text on every change.
+- The page drops stale `rev`s, reassigns `style.textContent`, and morphs with Idiomorph `innerHTML` mode (`projection-sink.ts:89-121`). Because Idiomorph's `ignoreActiveValue` cannot see focus inside a shadow root, the sink snapshots and restores focused or composing field values itself (`:93-129`).
+- Popups run in the worker over a fake root; the page places the first visible `.tc-popup` as `position:fixed` from the carried rect (`:132-145`). Modals get focus plus `inert` siblings (`:149-175`). `$tw.anim` completes synchronously.
+- Storyviews are off on a fake DOM (`list.js`), so the river never scrolls to a navigated tiddler.
+- Node islands project no HTML; their `onBoot` is the disk projector.
+- Governing design: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom.mem:69-127` ("absolute frames as covenant"; TW5 page-template layers 1-2 belong to the island, layer 3 — editors, DnD, file browsing, scrolling — to the page, with page-native controls marked **OWED**).
+
+### 3.5 Acting (WIKI)
+
+| Act | State |
+|---|---|
+| Link and button clicks, tm-navigate, edit/save/cancel/new, search dropdown | **Wired**, e2e-covered (`shore-writes.e2e.test.ts:56-140`) |
+| Text input with IME guards | **Wired**. Whole value per keystroke; worker caret pinned to end (`tw5-projection.ts:183`) |
+| Confirm (`$:/temp/confirm/*`, `$dialog`) | **Wired + tested** (`confirm-road.test.ts`); `window.confirm` refused |
+| Popups / `$:/state` | **Wired** |
+| Keyboard | **Partial**: only Esc or a modifier chord crosses (`projection-sink.ts:182-194`); `key`/`code` blanked |
+| Root tm-* family | **Missing, silent** |
+| Checkbox / radio | **Broken** *(inferred)* |
+| File import (`$browse`) | **Broken** |
+| Drag/drop, dropzone paste | **Missing** |
+| Select | Single probably works; multi broken *(inferred)* |
+| Daemon surface (`Ctrl+Shift+D`, ☰) → `tm-verse-event` → `placeVerb` | **Wired** |
+
+### 3.6 Authority (WIKI + TIDDLY)
+- The worker trusts any `wiki:dom-*` on its port. Holding the page means holding the origin's **Web Lock** (`vessel-lock.ts`); a second tab refuses unless `?holder`.
+- Writes are gated by composition-layer order (canon bags refuse, onto `$:/temp/lares/alert/unrouted-save/*`, `island-adaptor.ts:393-487`), by doc-level sharing (FederationGate deny-by-default across operators, `open-browser-vessel.ts:463-508`), and by Keyhive's per-bag read/admin gate at sync time, not per write.
+- The wiki island's capability check answers `ok: true, reason: "worker-trust"` (`wiki-behavior.ts:150`).
+- Attribution: `ChangeOrigin tw-local` plus the worker instanceId. Nothing sets `$:/status/UserName`, so glass writes carry no persona name *(inferred)*.
+- Custody seal/unlock is specified but has no caller; boot unlock and `tm-clear-password` are owed (`reports/browser-custody-handback.md`, `reports/wire-socket-handback.md`).
+
+---
+
+## 4. Gaps, merged and ranked
+
+Owner column: **E** = engine/worker, **G** = glass/page, **E+G** = both shores.
+
+| # | Sev | Gap | Shore | Evidence |
+|---|---|---|---|---|
+| 1 | HIGH | **Blanket click `preventDefault`.** The page template's `$dropzone` wrapper carries a rid, so every click inside the wiki is cancelled. That kills external links, native checkbox/radio toggles and the file picker, and it breaks DreamDOM's own "declare preventDefault at binding" vector. *(Verified: the call is unconditional at `projection-sink.ts:199`.)* | G | `projection-sink.ts:196-210`, `core@1336445` |
+| 2 | HIGH | **Root tm-* services absent, nothing replaces them.** tm-notify, tm-modal, tm-show-switcher, tm-copy-to-clipboard, tm-download-file, tm-rename/relink-tiddler, tm-scroll, tm-focus-selector, tm-full-screen, tm-http-request, tm-open-window, tm-print, tm-home/permalink/permaview, tm-browser-refresh. The messages bubble to a `$tw.rootWidget` that only knows tm-confirm. This breaks DreamDOM vector 5 ("refuse where the field no-ops"). | E (+G for clipboard/download/print) | `core@918520-921613`, `core@930039`; only `tm-verse-event` is handled (`tw5-vm.ts:137`) |
+| 3 | HIGH | **Boot-shadows seed probably lands nothing** *(inferred)*. `lararium-boot-shadows` is a JSON array, the kernel pushes it as one element, and `addTiddler` drops untitled entries. `$:/palette`, the `.mem` FileTypeMapping and `$:/tags/LarariumKumu` would be lost. Its own content is stale too (a `MemeSyncAdaptor` that no longer exists; a `["browser","node"]` startup the third runtime never runs). | E | `sovereign-kernel.ts:398-406` (verified: single push), `tw5-vm.ts:52-55`, `boot.js:1187-1194, 1505-1509` |
+| 4 | HIGH | **Checkbox/radio dead.** The click is cancelled (gap 1), and even if it weren't, the handler reads `.checked`, which the fake node never holds. Hits ControlPanel settings, todo lists, `$checkbox` filters. Untested. | E+G | `core@1294084`, `core@1288232` |
+| 5 | HIGH | **No import, drag-and-drop or dropzone paste.** No drag/paste leg; `$browse` reads `event.target.files`, undefined in the worker; `fields` admits primitives only. `$droppable` reorder and `tm-import-tiddlers` are unreachable. | E+G | `core@1273686`, `island-protocol.ts:982-1031` |
+| 6 | HIGH-MED | **Projection never frees rendered nodes.** `ridMap` and `eventScopes` are module globals, every re-render mints fresh rids, and entries leave only at teardown. Detached subtrees and widget closures live for the session. | E | `tw5-projection.ts:60, 71, 83-95, 381-384` |
+| 7 | MED-HIGH | **Editor toolbar and selection absent.** `editShowToolbar=false` on the fake DOM, `executeTextOperation` a no-op, caret pinned to end; CodeMirror cannot run in this model. DreamDOM marks page-native controls as owed. | E+G | `core@396936`, `core@387666`, `dreamdom.mem:121-129` |
+| 8 | MED | **Keyboard.** Global `$:/tags/KeyboardShortcut` never fires (`if($tw.browser)`), plain Enter/arrows/Tab never cross (search Enter, tag-picker, dropdown arrows break), `event-key`/`event-code` empty, `isMac` reads "browser" so Mac modifier mapping is lost. | E+G | `core@928056`, `projection-sink.ts:182-194`, `tw5-projection.ts:234` |
+| 9 | MED | **Frame cost unmeasured.** Every frame re-sends the whole story HTML and the whole PageStylesheet, reassigns `style.textContent` (full shadow restyle per keystroke echo) and regex-scans the page. DreamDOM admits it "prices badly" and holds no numbers. | E+G | `tw5-projection.ts:344-361`, `projection-sink.ts:92`, `dreamdom.mem:73` |
+| 10 | MED | **Node boot path asymmetric.** No `utils.error` override, so TW5's `process.exit(1)` on `!$tw.browser` ends the worker thread silently; `$tw.version` undefined on node; node argv block still runs. | E | `tw5-host-bridge.ts:325-333`, `boot.js:243-246, 2430` |
+| 11 | MED | **Trusted-module gate mis-wired.** `define(moduleText, "library", name)` swaps name and body; the test fake encodes the same swap; injection runs after boot so startups never execute; errors swallowed twice. | E | `tw5-module-gate.ts:52-60` (verified), `tests/module-gate.test.ts:64`, `tw5-host-bridge.ts:503` |
+| 12 | MED | **Navigation affordances.** No river scroll to target; no permalink/hash; browser Back does not walk `$:/HistoryList`; new drafts do not autofocus. | E+G | `list.js` storyview guard, `shore-writes.e2e.test.ts:64` |
+| 13 | MED | **Switch race / blank pane** *(inferred)*. On wiki switch the gate flips at once, but a wiki island emits only on `change`, and nothing asks it to re-emit. The pane can show the old surface's frame and the next click answers `stale-target`. | G | `open-browser-vessel.ts:1321-1324` |
+| 14 | MED | **Browser vm shim hides errors.** `runInCtx` catches and returns `undefined`, so a module's real error surfaces as a generic TypeError. | E | `tw5-host-bridge.ts:89-99`, `boot.js:598-629` |
+| 15 | MED | **Direct wiki writes bypass the landing discipline.** `ingestCarrier`/`setTiddler` write straight in and read as hands, so the daemon's born-from-source UI and persona seeds rewrite working-layer records each boot, and `$:/lares/surface` ("never synced") falls through to the working bag *(inferred)*. | E | `tw5-vm.ts:92-120, 177`, `daemon-ui-tiddlers.ts:44` |
+| 16 | MED | **Capability bypass and verb duplication.** Wiki island cap answers `worker-trust`, against AGENTS.md's "capability layer is the only authority gate"; wiki islands run their own VerbTable though the dispatcher says only the daemon dispatches. No per-act signature or persona on glass writes. | E | `wiki-behavior.ts:150`, `verb-dispatcher.ts:1-40` |
+| 17 | LOW-MED | **Boot order.** TW5 startups run before the bag corpus lands, so bag-carried `$:/tags/StartupAction` and `$:/DefaultTiddlers` never fire *(inferred)*; `carrier-filetype` never registers `.mem`. | E | `modules/carrier-filetype.ts:47` |
+| 18 | LOW-MED | **Single-tab law.** A second tab refuses without `?holder`; with it, every tab shares the daemon's single fake DOM and rid space. | G | `vessel-lock.ts`, `shared-holder-core.ts:5-6` |
+| 19 | LOW | **`$eventcatcher` delegation.** Worker `target` is the nearest rid node, not the clicked child, and fake nodes lack `closest`/`matches` *(inferred)*. | E | `tw5-projection.ts:238-252` |
+| 20 | LOW | **Dead or duplicate surfaces.** Orphaned `meme-worker-script.ts` (second VM protocol, bypasses nalu, uses `self` on node); main-thread `mountPanel`/`setPalette`/`setBootSplash` contradict §9; `fake-dom.ts` VDom converter unused; coherence sink unmounted (`main.ts` passes no `onCoherence`). | E+G | `tw5-browser-surface.ts`, `index.ts:102`, `main.ts:285-299` |
+| 21 | LOW | **Docs drift.** `island-kernel.ts:219-221` says Automerge WASM never loads in the worker (it does); `island-protocol.ts:960-964` misdescribes `wiki:place-verb`; `packages/AGENTS.md` still describes the boot-shadow sync as live; `daemon-ui-tiddlers.ts:155-171` calls river navigation fatal, which reads stale. | E | as cited |
+| 22 | — | **Untested:** checkbox, radio, select, file input, external links, DnD, global shortcuts, root tm-*, boot-shadows landing, rid growth, wiki-switch repaint, two-tab holder. E2E covers new/save, stale rid, search dropdown, confirm. | E+G | `shore-writes.e2e.test.ts` |
+
+### Cross-lane readings (synthesis)
+- **Gaps 1, 2, 4, 5, 7 and 8 share one root.** The page shore has no "layer 3" yet. DreamDOM already assigns editors, DnD, file browsing, scrolling, clipboard and native controls to the page; none of them is built. The rid relay carries clicks and text faithfully, but anything that needs a real DOM property (`.checked`, `.files`, selection, clipboard, scroll position) or a real browser service has no road. A single declared "page-native control" contract, with a per-widget binding that says what the page owns, would close most of the HIGH list together.
+- **Gap 2 splits cleanly.** Half of the root tm-* family is pure wiki logic that can run in the worker today (tm-notify as a `$:/temp` notification frame, tm-modal as an `aria-modal` frame the sink already understands, tm-rename/relink-tiddler, tm-focus-selector as a hint). The other half needs a page service (clipboard, download, print, full-screen, open-window, http-request) and therefore a new outbound event kind. Registering explicit refusals for the second half would at least honour DreamDOM vector 5 now.
+- **Gaps 6 and 9 are one cost curve.** Unbounded rid growth plus whole-page frames is what makes long-lived islands expensive; measuring frame bytes and ridMap size across ~100 edits would price both at once.
+- **Gap 3 is the cheapest decisive test:** one real boot asserting `$:/palette` exists.
+
+---
+
+## 5. Wave 2: executed probes, prior art, fixes
+
+Both spirits reread this report, then went back to code and the internet. Wave 2 **executed** the real genesis core in scratch harnesses, outside the tree, so most inferred gaps now carry a run result. Neither harness could reach the Automerge-backed mesh (no `node_modules`), so the store write path stays code-read.
+- TIDDLY copied `tw5-vm.ts`, `tw5-host-bridge.ts`, `tw5-module-gate.ts`, `tw5-projection.ts`, `tw5-camera.ts` and `fake-dom.ts`, stubbed `@lararium/mesh`, and booted through the real `TW5Engine.boot` in a Node 22 `worker_thread`. It ran both host paths (plain worker, and a fake `WorkerGlobalScope` routing through `configureIslandRuntime`). Probes: `/tmp/claude-0/-home-user-Synthetic-Dream-Machine/7567695e-5f23-5b2c-b84d-2def3d0c4501/scratchpad/boot/`.
+- WIKI evaluated the core with the same third-runtime forge and the same `addEventListener` patch, then rendered widgets and fired stored handlers. Probe: `/tmp/claude-0/-home-user-Synthetic-Dream-Machine/7567695e-5f23-5b2c-b84d-2def3d0c4501/scratchpad/probe/run/probe.cjs`. The Idiomorph page side was read from source, not run in a browser.
+
+These scratch files die with this container; the probes are described well enough below to rebuild.
+
+### 5.1 Verdicts
+
+| Gap | Wave 2 verdict | What ran |
+|---|---|---|
+| #1 blanket preventDefault | **Confirmed, and worse.** The worker does not bubble clicks (only keydown, `tw5-projection.ts:249`), so a click resolving to the `$dropzone` wrapper invokes nothing *and* the page already cancelled it. External links render with no rid at all. | probe + code |
+| #2 root tm-* | **Confirmed.** At boot `rootWidget` listens for `tm-confirm` only; `pageScroller`, `modal`, `notifier`, `syncer` absent. Dispatching tm-notify / tm-modal / tm-copy-to-clipboard / tm-rename-tiddler / tm-home returns `true` (unhandled). `$tw.keyboardManager` **does** exist. | executed, both paths |
+| #3 boot-shadows | **Confirmed.** `$:/palette` = Vanilla, Kumu tag and `.mem` mapping absent. **Flattening the preload array turns it green** (gruvbox-dark lands). | executed red → green |
+| #4 checkbox/radio | **Confirmed, mechanism corrected.** Checkbox *display* is right (attribute rides the frame); only the act fails (cancelled click; handler reads unrelayed `.checked`, writes `no` regardless). **Radio never paints its selection** (TW5 sets the `.checked` property; fakedom serializes attributes only, `core@1509174`). | probe |
+| Select | **Wave 1 was wrong.** Single-select writes fine but **snaps back to the first option** on the next frame: `<select value=…>` is ignored by browsers, Idiomorph syncs `option.selected` from the new parse, and the sink's focus guard covers only input/textarea (`projection-sink.ts:95`). Multi-select throws (`.options` missing). ControlPanel palette/theme pickers show wrong values. | probe + Idiomorph source |
+| **NEW #23 textarea revert** | **HIGH, can lose data.** The worker sets `el.value`, which fakedom keeps as an attribute; the textarea's child text, which is what paints, stays at the text from when the editor opened, and `SimpleEngine.setText` returns early on fake DOM (`core@385206`). Once the body editor loses focus, the next frame repaints the old text. Typing in it again relays the reverted whole value and **overwrites the earlier edits**. Peer writes never reach an open editor. `<input>` editors are unaffected. The e2e checks only while composing. | probe |
+| #6 rid growth | **Confirmed.** One edited button: 38 rids / 23 live at first frame, **338 / 23 after 100 edits**. Frame is 11.7 KB HTML + 7.5 KB CSS, CSS unchanged yet resent each time. | executed |
+| #10 node asymmetry | **Confirmed.** Node path: `$tw.version` undefined, `utils.error("probe")` exits the worker with code 1. Browser path survives. | executed |
+| #11 module gate | **Confirmed.** Library never defined, startup never runs, aggregate defined under its own body as the module name, then throws. The gate has no working function. | executed |
+| #13 switch race | **Confirmed by code, worse.** No message asks an island to re-emit. Summon the daemon, switch back to a warm wiki: the pane keeps the daemon frame, the gate now drops daemon frames, so the **pane freezes**, while clicks still route to the daemon and mutate it unseen. Each live switch also posts a false "reboot to load it" alert (`wiki-mint-handlers.ts:140-148`). | code |
+| #14 vm shim | **Narrowed.** Only compile errors are masked (surface as `TypeError … 'apply'`); runtime throws arrive intact. | executed |
+| #15 direct writes | **Mostly refuted.** The seed rewrites are deliberate (`tests/daemon-protocol-seed-projects-nothing.test.ts:3-8`) and should be foam after the first boot *(inferred)*. What remains: `$:/lares/surface`, documented never-synced, falls through `regexp[.]` into the synced working bag, a small cross-device leak. | code |
+| #17 boot order | **Confirmed in part.** `$:/StoryList = ["GettingStarted"]` at boot. Concrete casualty: `bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-startup-action.mem` is a `$:/tags/StartupAction` that lands after startup actions ran, and reads `$:/info/url/hash`, which only browser `info` sets. | executed + code |
+| #18 holder tabs | **Raised to MED.** A second tab waits forever for a `ready` the holder broadcast once and never replays (`daemon-vm-core.ts:643-652`, `shared-holder-core.ts:110-112`); `_handleManifest` has no re-entry guard; every attached tab builds its own Repo over the same IndexedDB name. The Chromium holder test uses a fixture island, not the daemon. *(code, unexecuted)* | code |
+| #19 `$eventcatcher` | **Confirmed, stays LOW.** Fakedom lacks `matches`/`closest`/`contains`, and `target` is the catcher itself. No core or plugin user; `page-controls.mem:196` already declares it REFUSE. | code |
+| **NEW #24 globalCheck noise** | The browser path prints 67 "Global assignment detected" warnings, one per module, inferred to come from our enumerable `??=` lends (`tw5-host-bridge.ts:410-431`). Fix: lend non-enumerable, as `host-globals-lend.ts` already does. | executed |
+| **NEW #25 fork dependency** | The tm-confirm road rests on a fork-only `confirm.js` (404 on upstream master). Any upstream rebase must carry it. | upstream raw files |
+
+### 5.2 Prior art (cited by the spirits)
+
+- **Upstream TW5** builds `$tw.rootWidget` platform-agnostically in `load-modules.js` and registers handlers per platform in `rootwidget.js`; we can register our own handlers the same way ([RootWidget and Rendering Startup](https://tiddlywiki.com/dev/static/RootWidget%2520and%2520Rendering%2520Startup.html)). Fakedom is a deliberate server-render subset ([FakeDomMechanism](https://tiddlywiki.com/dev/static/FakeDomMechanism.html)); the community suggested linkedom over jsdom for richer needs ([talk.tiddlywiki.org](https://talk.tiddlywiki.org/t/is-it-possible-to-use-jsdom-to-take-place-of-tw-fakedocument/606)). We diverge by patching fakedom into a live event target, so we own every missing method. TW5's refresh is selective ([Selective Update](https://tiddlywiki.com/dev/static/Selective%2520Update.html)); our seam re-serializes it all. TidGi keeps the syncer over IPC ([TidGi-Desktop](https://github.com/tiddly-gittly/TidGi-Desktop)); we deleted it for the CRDT. No upstream "third runtime" exists; ours is novel. (Upstream issue history was out of reach in this session.)
+- **Worker-DOM systems.** WorkerDOM: synchronous `preventDefault` is unimplementable from a worker, run it on the main thread ([slides](https://speakerdeck.com/cramforce/workerdom-javascript-concurrency-and-the-dom?slide=16)). WICG: worker input listeners are always passive ([discourse](https://discourse.wicg.io/t/proposal-exposing-input-events-to-worker-threads/3479)). coincident: the worker declares `invoke: "preventDefault"` at binding and the main thread runs it ([whatwg list](https://lists.w3.org/Archives/Public/public-webapps-github/2024Aug/0532.html)), a direct model for #1. Partytown: don't chase sync DOM for forms ([trade-offs](https://partytown.qwik.dev/trade-offs/)).
+- **Morphing UIs.** Phoenix LiveView never overwrites a focused input and lets JS-owned regions opt out with `phx-update="ignore"` ([form bindings](https://phoenix-live-view.hexdocs.pm/0.17.2/form-bindings.html)). Turbo 8 needs `data-turbo-permanent` for widget state ([fly.io gotchas](https://fly.io/ruby-dispatch/8-turbo-8-gotchas/), [turbo#1083](https://github.com/hotwired/turbo/issues/1083)). Idiomorph reads `document.activeElement` and has no `<select>` value branch ([idiomorph](https://github.com/bigskysoftware/idiomorph/)).
+
+**Reading.** Absolute frames survive if the page owns a *declared* set of live controls, the way LiveView and Turbo do: the frame paints an absolute descriptor of the wiki's value, and the page reconciles its live control against that descriptor rather than against morphed children. Cancellation is declared at binding time. Services the worker cannot hold (clipboard, files, download, scroll) become typed requests.
+
+### 5.3 Proposed fixes
+
+**Glass contract for layer 3 (WIKI).**
+- *Binding declaration, replacing #1.* The patched fake `addEventListener` stamps `data-lar-on="click change …"` beside `data-lar-rid`; widgets that cancel (link, button, keyboard, draggable/droppable) also stamp `data-lar-cancel`. The sink walks `composedPath()` to the nearest node whose `data-lar-on` names the event, and calls `preventDefault()` only when that node declares it. TIDDLY adds the worker half: bubble every event type to the first listener and answer "unclaimed", so the page can leave the click alone.
+- *Page-owned live controls* marked `data-lar-live`; Idiomorph `beforeNodeMorphed` skips their live state, and the sink reconciles from a descriptor.
+
+| Control | Wire | Worker | Red → green e2e |
+|---|---|---|---|
+| checkbox/radio | `wiki:dom-event` + `checked` (booleans already admitted, so no protocol widening) | set `el.checked` before handler; serialize checked state as `data-lar-checked` | `glass-checkbox-toggles`, `glass-radio-paints-selected` |
+| select single/multi | value on `dom-input`; new `wiki:dom-select {values}` | set `.value`; fake `options` | `glass-select-holds-pick`, `glass-multiselect-writes` |
+| text editors (#23) | `dom-input` + `selStart/selEnd`; frame carries `data-lar-value` | serialize current editor value as the descriptor on refresh | `glass-textarea-survives-blur`, `glass-editor-sees-peer-write` |
+| toolbar ops | `wiki:edit-op` / `wiki:edit-op-result` | run `texteditoroperation` modules on a headless engine with the carried selection | `glass-toolbar-bold-wraps-selection` |
+| file import / drop / paste | `wiki:dom-files`, `wiki:dom-drop`, `wiki:dom-drag` (bounded) | build `files` / `dataTransfer` shapes for `$browse`, `$dropzone`, `$droppable` | `glass-import-json-lands`, `glass-drop-file-imports`, `glass-drag-tiddler-reorders-story` |
+| keyboard | keydown + `key/code/repeat`; crossing set adds keys a node declares (`data-lar-keys`); document leg `wiki:dom-key-global` | real `key/code`; existing `$tw.keyboardManager` on the global leg | `glass-search-enter-opens`, `glass-tagpicker-enter-adds`, `glass-global-shortcut-fires` |
+| clipboard, download, scroll | outbound `glass:service {kind}` (allowlisted, user-activation bound) | register tm-copy-to-clipboard, tm-download-file, tm-scroll to post requests | `glass-copy-button-copies`, `glass-export-json-downloads`, `glass-navigate-scrolls` |
+| surface switch (#13) | new `projection:resend` (vessel → island) | `gate.mark()` → fresh absolute frame | `glass-switch-back-repaints` |
+| print, full-screen, open-window, http | `glass:service` answered `refused` | each raises `$:/temp/lares/alert/refused/<msg>` (DreamDOM vector 5) | `glass-print-refuses-by-name` |
+
+**Engine fixes (TIDDLY), each with its red → green test.**
+- **#3** `sovereign-kernel.ts:404-406`: spread arrays into `pluginTiddlers`, refuse non-object/non-array by name; prune the stale `render.js` override and `lararium-bootstrap-sync.js` from the shadows. Test: `$:/palette`, Kumu tag, mapping present after boot. *Proven green in scratch.*
+- **#2** new `src/modules/island-root-services.ts` (`module-type: startup`, no `platforms`, after `load-modules`, before `story`, guard `if ($tw.browser) return`). Worker-side now: tm-rename/relink-tiddler (upstream's `makeRenameHandler`), tm-home, tm-modal and tm-show-switcher rendered into a fake `modalRoot` with `aria-modal`, tm-notify into a `notifyRoot`; `mountProjection` serializes both roots. Hints as a `page:hint` event: tm-scroll, tm-focus-selector, and scroll-on-navigate (#12). Page services as above. Refuse tm-http-request by default as an authority question. Test: each message returns `false` on the root plus its effect.
+- **#6** prune `ridMap`/`eventScopes` at flush for every rid that fails `standsAttached`; send CSS only on hash change. Test: `ridMap.size <= live + roots` after 100 edits; no `css` on unchanged frames.
+- **#10** share `utils.error`, version and `escapeCSS` forging with the node path. Test: worker survives `utils.error`, `$tw.version === sha`.
+- **#11** define per module as `define(title, type, body)` from a `th-boot-tiddlers-loaded` hook so startups run in order; fix the test fake; or delete the gate if nothing needs it.
+- **#14** drop the swallowing `try/catch` in `runInCtx` (`tw5-host-bridge.ts:89-115`), or rethrow with filename. Test: a syntax error throws `SyntaxError`.
+- **#15** route `$:/lares/surface` to temp (rename to `$:/temp/lares/surface` or add a cascade rule). Add a second-boot zero-writes test to pin the foam claim.
+- **#16** replace `worker-trust` (`wiki-behavior.ts:150`) with the admin-auth gate plus keyhive check over `requestedBy`. Test: non-admin `wiki:place-verb MOVE` refused.
+- **#17** re-invoke `$:/tags/StartupAction` after `seedDrained` (`sovereign-kernel.ts:450-466`), reopen default tiddlers only if no personal StoryList landed, drop `platforms` from `carrier-filetype.ts:47`.
+- Ship the scratch boot harness as `tests/genesis-boot.harness.ts`, skipped when the CAS is absent, so all of these can run in CI.
+
+### 5.4 Revised top of the list
+
+1. **#23 textarea revert** (data loss on a common path: type body, click tags, return to body).
+2. **#1 blanket preventDefault**, fixed by binding declaration on both shores.
+3. **#4 + select**: checkbox act, radio paint, select snap-back, multi-select throw (the descriptor contract fixes all four).
+4. **#2 root tm-* services**: half can land worker-side today in one startup module.
+5. **#13 frozen pane on surface switch**: one `projection:resend` message.
+6. **#3 boot-shadows**: a one-line fix already proven green.
+7. **#6 rid growth** and **#10 node worker exit**: both executed red, both small.
+
+### 5.5 Stories the spirits told
+- *Gaia 2026, Portland.* A teacher types three paragraphs, clicks the tags box, and watches the paragraphs vanish from the editor; she adds a line, and the save keeps the old text plus that line. The probe shows exactly this mechanism.
+- *Elyncia 5492.* A keeper opens the hearth in a second tab behind the lock to compare two wikis, and the tab waits at boot forever for a `ready` that already went by (code-read, unexecuted).
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ZylNcPepCFP96O9bV-azygDAFOK2v_iorMu-U3VMFF0
+
+<<^ code="&#x0004;" -> to="?">>

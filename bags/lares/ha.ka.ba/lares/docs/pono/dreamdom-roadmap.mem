@@ -51,7 +51,7 @@ written           = "2026-10-16"
 | the daemon surface | `tm-verse-event` → `placeVerb`; summoned by Ctrl+Shift+D or ☰ | the daemon actor, always awake |
 | the filter and render ask | none on the live island; the one such surface stands orphaned | the port's `ask` kinds, owed |
 
-The ranked gaps behind this table (the textarea revert #23, the blanket `preventDefault` #1, checkbox and radio and select #4, the root `tm-*` services #2, the frozen pane on switch #13, the boot-shadows seed #3, render-id growth #6, the Node worker exit #10, the module gate #11) stand in `reports/tw5-worker-vm/model-and-gaps.md` §4 and §5; `dreamdom#/what-a-sink-keeps` carries the six silent losses and their cures.
+The ranked gaps behind this table (the textarea revert #23, the blanket `preventDefault` #1, checkbox and radio and select #4, the root `tm-*` services #2, the frozen pane on switch #13, the boot-shadows seed #3, render-id growth #6, the Node worker exit #10, the module gate #11) stand in `docs/pono/tw5-vm-gaps-scout` §4 and §5; `dreamdom#/what-a-sink-keeps` carries the six silent losses and their cures.
 
 <<~/ahu>>
 
@@ -150,7 +150,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 # ''`import-offer` and `drop`'' (D1): page-side parse of `text/vnd.tiddler`, bounded bytes, `$:/Import` parks and performs.
 # ''Surface switch with epochs'' (D1): `projection:resend`, `mountEpoch` on acts, an act with an old epoch answers `stale-target`.
 # ''A blocks sink over a recording document'' (D2): a ~400-line document implementation that records nodes and bound listeners; render the teacher fixture's `GettingStarted` and one `$list`-bearing tiddler to `blocks`, `text` and `label-html`; a missing camera degrades visibly; interaction goldens 1, 2, 6 and 11 at parity with the DOM sink.
-# ''The three-boot width spike'' (D3; the separating experiment of `reports/tw5-worker-vm/third-ways.md` §10): one corpus, one loopback port, widths full, skinny and none, the measures and thresholds of D3 above; the fourth boot, story, only if skinny and full split.
+# ''The three-boot width spike'' (D3; the separating experiment of `docs/pono/third-ways-scout` §10): one corpus, one loopback port, widths full, skinny and none, the measures and thresholds of D3 above; the fourth boot, story, only if skinny and full split.
 # ''The full-width walk of the five sites'' (D3): the glass engine over `window.document` inside the shadow root; `FramedEngine`, storyviews, popup positioning, the toolbar and auto-height each exercised once in a real browser before the default width gets ruled.
 # ''Hibernate and wake'' (D4): an actor with two attached ports hibernates, wakes, both resume at their cursors with their widths and mounts; a third port opened during hibernation triggers the wake; a port without `sensoria` sending a percept reads `refused: cap sensoria`.
 # ''Hibernate mid-edit'' (D4): an actor with a parked act refuses to hibernate; a `sense` never blocks it; wake answers the parked act.
@@ -238,6 +238,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WCvjG8Et0BiUjlDUJP4tcVH6c022ax98YZeDgclvEFM
+<<^ code="&#x0003;">>ni:///sha-256;_CTb2030l5z1hfOdgbnVjvSG-LnAi8hIZpKBJEVy5i0
 
 <<^ code="&#x0004;" -> to="?">>
