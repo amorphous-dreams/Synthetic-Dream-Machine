@@ -36,7 +36,7 @@
  *   · RED: a junk, stripped or forged event revokes no one: the leaf names the KEL `unreadable` and keeps (or
  *     stands under) the standing a verified KEL gives it; a leaf holding no seal stands `unsealed`.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { arrival } from "./handshake.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -268,6 +268,85 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
   async function deposited(relay: ReturnType<typeof memoryRelay>, event: { eventCid: string; prevEventCid: string | null }): Promise<void> {
     await until(() => relay.stores.every((st) => st.pull(personaKelDropName(event.prevEventCid!, st.gatePubKey)).some((e) => e.eventCid === event.eventCid)), "the move deposited at both herms");
   }
+
+  test("RED: shutdown during deposit starts no transport, and the same device key catches up on redial", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const drops = siblingKelDropsOf(relay.drops);
+    let entered!: () => void;
+    let release!: () => void;
+    const depositEntered = new Promise<void>((resolve) => { entered = resolve; });
+    const depositHeld = new Promise<void>((resolve) => { release = resolve; });
+    const gatedDrops = {
+      pull: drops.pull,
+      deposit: async (kel: readonly PersonaKelEvent[]) => {
+        const result = await drops.deposit(kel);
+        entered();
+        await depositHeld;
+        return result;
+      },
+    };
+    const originalTransportFor = relay.transportFor.bind(relay);
+    const standCalls: string[] = [];
+    const transportSpy = vi.spyOn(relay, "transportFor").mockImplementation((key) => {
+      const stand = originalTransportFor(key);
+      return async () => { standCalls.push(key); return stand(); };
+    });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay, { drops: gatedDrops });
+    let xClosed = false;
+    let y: Leaf | undefined;
+    let x2: Leaf | undefined;
+    try {
+      await depositEntered;
+      await deposited(relay, chain[1]!);
+      expect(standCalls).toEqual([]);
+      await shutdown(x);
+      xClosed = true;
+      release();
+      await x.adapter.whenReady();
+      expect(standCalls, "a closed adapter never starts a transport").toEqual([]);
+      expect(relay.holds(x.self.deviceKey)).toBe(false);
+
+      y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
+      await until(() => y!.adapter.kel.length === 2, "y to pull the deposited head");
+      x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+      await until(() => peersOf(x2!).length === 1 && peersOf(y!).length === 1, "the redialled pair to stand");
+      const found = await syncOne(x2, y, "across the gated redial");
+      expect(found.doc()?.line).toBe("across the gated redial");
+      expect([...x2.refusals, ...y.refusals]).toEqual([]);
+      expect(errors.mock.calls.flat().join(" ")).not.toMatch(/sync.*decod|decod.*sync/i);
+    } finally {
+      release();
+      if (!xClosed) await shutdown(x);
+      await shutdown(...[x2, y].filter((leaf): leaf is Leaf => leaf !== undefined));
+      transportSpy.mockRestore();
+      errors.mockRestore();
+    }
+  });
+
+  test("CONTROL: a ready leaf shuts down before its device key redials and syncs", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    await x.adapter.whenReady();
+    await deposited(relay, chain[1]!);
+    await shutdown(x);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    try {
+      await until(() => peersOf(x2).length === 1 && peersOf(y).length === 1, "the ready leaf's redialled pair");
+      const found = await syncOne(x2, y, "across the ready redial");
+      expect(found.doc()?.line).toBe("across the ready redial");
+      expect([...x2.refusals, ...y.refusals]).toEqual([]);
+    } finally { await shutdown(x2, y); }
+  });
 
   test("RED: the last leaf to wake catches up from a drop — no sibling online — and the pair stands under the head", async () => {
     const { inception } = await founded();
