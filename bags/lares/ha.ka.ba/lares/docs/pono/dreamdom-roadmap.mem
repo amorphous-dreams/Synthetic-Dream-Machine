@@ -90,7 +90,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Measures'': serialised bytes per key and long animation frames across 100 edits beside the 11.7 KB plus 7.5 KB whole-frame number; a key splits (river frames plus order plus membership) only where that number asks (`dreamdom#/the-ruling`, measure first).
 * ''Waits on'': D0's harness; `session-contract#/the-holder-protocol` for the envelope fields (builds against it; refuses `binding-unavailable` where a field has no holder yet).
 * ''Spikes'': the declared-cancellation afternoon (#/the-spikes 1), serializer promotion (2), sensed revision end to end (3), the seam engine's toolbar (4), declared keys and the document leg (5), `import-offer` and `drop` (6), surface switch with epochs (7).
-* ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): the stock edit template through the seam engine; the root `tm-*` split with `tm-http-request` refused; `$eventcatcher` refused and `$keyboard` with declared keys.
+* ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): the stock edit template through the seam engine, each width naming what it cannot run; the root `tm-*` split, with `tm-http-request` as a gated door; `$eventcatcher` for declared discrete events and `$keyboard` with declared keys.
 
 !!! D2 · THE RECORD PORT ~ inside the engine (lane `dreamdom-port`; its pure steps start beside D1)
 * ''Builds'': the port's kinds on the live island: `port:open{wikiUri, width, since, actor, localFilter, renders[], edits, presence, maxRecordBytes, maxBatchBytes}`, `port:snapshot` (chunked), `port:changes` with cursors and tombstones, `port:write{txId, basis, records}` answered by `port:written` and echoed under `causedBy:[txId]`, `port:ask{kind: filter · render · load · verb · cas · invoke}` where `render` answers `html` · `text` · `blocks` (with `affordances[]`) · `label-html` and `invoke` carries a `renderCursor`, `port:presence` (30 s expiry, never persisted), `port:close`; the width field as a filter over fields on the engine side (cheap now, expensive to retrofit); the tier `localFilter` naming StoryList, HistoryList, `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser/*`; a recording fakedom-style document and the blocks, text and label-html serialisers over it; the capability gate on every invoke before `invokeActions`; the orphaned `meme-worker-script.ts` retired.
@@ -172,8 +172,8 @@ The full list with its options stands at `dreamdom#/open-rulings`; this table na
 
 |! Ruling |! Blocks |! Stands |
 | the edit template of the browser DOM sink | D1's editor rows | ruled 2026-10-16: the stock template through the seam engine, `lar-field` under `$edit-text` |
-| the root `tm-*` split and the `tm-http-request` gate | D1's services rows | ruled 2026-10-16: the split as proposed; `tm-http-request` refused |
-| `$eventcatcher` and `$keyboard` at width none | D1's keyboard rows | ruled 2026-10-16: `$eventcatcher` refused; `$keyboard` with declared keys |
+| the root `tm-*` split and the `tm-http-request` gate | D1's services rows | ruled 2026-10-16: the split as proposed; `tm-http-request` opens a gated `lar:service` door |
+| `$eventcatcher` and `$keyboard` at width none | D1's keyboard rows | ruled 2026-10-16: `$eventcatcher` for declared discrete events, continuous refused; `$keyboard` with declared keys, reserved chords refused |
 | the presence lane's home at width none | D2 | ruled 2026-10-16: a separate droppable message |
 | the default width of the first surface | D3's default flip | open, after the three-boot spike; the flag, with none as fallback, meanwhile |
 | `§9` of `packages/AGENTS.md`, re-read as no //truth// on the main thread | D3's glass engine | ruled 2026-10-16; the wording stands in `packages/AGENTS.md` |
@@ -208,6 +208,9 @@ A ruling reaches the operator only where its answer changes who holds authority,
 * `D12` The Annex B pass and the `blocks` golden; `label-html` derived. D5.
 * `D13` The interaction goldens' runner and section, green at none, full and blocks. D5. The goldens family stays open.
 * `D14` The CLI text camera, the SSR face, the MCP projection and the Mudlet weekend, each with a published row. D6. Mudlet's carrier stands ruled (2026-10-16).
+* `D15` `tm-http-request` as `lar:service{kind: http-request}`: the door law with a per-face list of allowed origins, no credential in a tiddler, private and loopback ranges refused, the response as a sensed snapshot with its provenance; its goldens run against a recorded fixture, never the network (`lar-root-services.ts` refuses it by name today). D1.
+* `D16` `$eventcatcher` bound for declared discrete events through a declared selector, with continuous streams and pointer capture refused by name; `$keyboard`'s reserved-chord refusal and a layout-aware chord test. D1.
+* `D17` Each width names beside the editor what it cannot run, and two surfaces editing one tiddler (a draft among them, since a draft is a tiddler) meet on one record, settled by the shared-state ruling and the house's conflict-surfacing law, with a red test across two surfaces of one actor. D1 and D4.
 
 <<~/ahu>>
 
@@ -242,6 +245,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fRtahEY5YZtXONZ1enxycrvnWN4KPauQbO_u6WV461w
+<<^ code="&#x0003;">>ni:///sha-256;md699a9JEq4E6ew3lxaJPUhpx7FNo9aOE_0oQvjqxcc
 
 <<^ code="&#x0004;" -> to="?">>

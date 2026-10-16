@@ -82,7 +82,7 @@ its own carrier, and this carrier points there.
 * ''One holder per store, one Lararium per human'': a second holder meets `StoreHeld` across containers and namespaces (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>).
 * ''Fragments'': every `lar:` fragment roots at `#/…`, one raw `#`, `/` nests, `$` reserved (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>).
 * ''Grammar lives in the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` generate `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` pins as information, `kanawai` pins as binding, `kahea` transcludes live.
-* ''Early alpha'': no back-compat, no shims, no legacy recovery; a stale thing aligns to the current frame and grammar, and the fence (#/rulings) ends that line (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wild-bytes">>). Derive, never enumerate. One function, one relation.
+* ''Early alpha'': no back-compat, no shims, no legacy recovery; a stale thing aligns to the current frame and grammar, and a third human's arrival ends that line (#/rulings, the fence) (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wild-bytes">>). Derive, never enumerate. One function, one relation.
 * ''A registry compiled about subjects refuses at any scope'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
 * ''A relation's evidence keeps its type'' and ''a worker keeps its own storage scope'': <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts">>.
 * ''Shared tree'': never `git stash`; commit only your paths; never `--no-verify`; a spirit spawns no helper and never juggles another hand's uncommitted hunks; read an exit code directly; prove a zero with a known positive (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths#/law">>).
@@ -96,7 +96,7 @@ its own carrier, and this carrier points there.
 
 !!! The live test and the fence
 * ''The live test runs with TWO operators on two machines from its first day'': the operator and the operator's daughter, in one house. The face-switch act, the cabal plane, the custody seal and the engine fold ALL land before it.
-* ''The fence.'' The second operator's SEAT beside the first at the first Nexus's founding ENDS the alpha line. Every destroy-class or shape-changing act lands BEFORE it: the engine re-mint and the genesis re-bake; the carrier and key-class changes; the Stable re-found (AID, charter, seat); every signed-shape change; every load-bearing rename. After it, data deserves a migration path.
+* ''The fence'' (operator ruling, 2026-10-16). Early alpha runs while one or two operators hold the mesh and ends when a third human's data and habits enter it; after that, data deserves a migration path. The second operator takes the seat beside the first as a QA tester who knows the mesh stays a sandcastle until then. As practice, not law, the destroy-class and shape-changing acts land before the second seat where they can: the engine re-mint and the genesis re-bake; the carrier and key-class changes; the Stable re-found (AID, charter, seat); every signed-shape change; every load-bearing rename.
 * ''A working Lararium comes first'': Live Wiki Browser -><- Live Node, under manual QA on one machine. Sensorium work waits behind that milestone.
 * ''A founding road carries its own succession.'' A reconstitution kit lets another competent operator stand a node and read its grammar; a rite held in one operator's head alone carries no succession.
 * ''Face plurality stands as a day-one requirement.'' Each of the two humans wears at least three faces, each with a public Handle, on the first Nexus.
@@ -784,6 +784,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wkpuiH8lHK8TbGF1ZWBVO_I2K5UuFoAYJb6rFtmVvlA
+<<^ code="&#x0003;">>ni:///sha-256;FL_XrV4Vqf6deJNe7DG_x_Xsf_WZRyzZWeOgVJ6OvSw
 
 <<^ code="&#x0004;" -> to="?">>
