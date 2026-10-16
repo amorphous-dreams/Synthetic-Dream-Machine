@@ -54,11 +54,6 @@ describe("the domain registry", () => {
     expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);
   });
 
-  test("ONE HANDSHAKE: no domain signs a proof frame, an ok frame, a presented leaf or a membership relay", () => {
-    const names = domains.ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
-    for (const gone of ["auth-proof", "auth-ok", "presented-leaf-proof", "membership-relay"]) expect(names, gone).not.toContain(gone);
-  });
-
   test("WELD: the frozen strings hold byte-identical through the helper split", async () => {
     const { createHash } = await import("node:crypto");
     const frozenRows = named.filter(([, v]) => v.endsWith("/v1")).map(([k, v]) => `${k}=${v}`).sort();

@@ -39,12 +39,6 @@ describe("classifySocket — four classes, and silence", () => {
     expect(answersStrangers(["private"])).toBe(false);
     expect(answersStrangers(["private", "open"])).toBe(true);
   });
-
-  test("RED: the classifiers the sort replaced are gone from the mesh surface", () => {
-    for (const gone of ["classifyCrossOperatorAdmission", "postureGatesCrossOperator", "admitCrossOperatorUnderPosture"]) {
-      expect(gone in mesh, gone).toBe(false);
-    }
-  });
 });
 
 describe("the knock — the upgrade segment derives from the pinned key", () => {

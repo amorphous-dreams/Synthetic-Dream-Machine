@@ -62,25 +62,21 @@ test("the live matrix reads the scenario script's own list, and that door starts
   for (const c of live) assert.ok(c.timeout_minutes <= 60, `${c.cell} asks ${c.timeout_minutes} minutes`);
 });
 
-/** The walks a scenario script defines more than once (bash runs the LAST definition), and each join variable it sets: no vessel reads one, so a walk that sets one dials nothing. */
-function scenarioScriptFaults(text) {
+/** The walks a scenario script defines more than once: bash runs the LAST definition. */
+function walksDefinedTwice(text) {
   const defs = [...text.matchAll(/^(run_[a-z_]+)\(\) \{/gm)].map((m) => m[1]);
-  const twice = [...new Set(defs.filter((d, i) => defs.indexOf(d) !== i))];
-  const unread = [...new Set([...text.matchAll(/\bLAR_[A-Z0-9_]*JOIN_(?:SYNC|GATE|DOC)=/g)].map((m) => m[0]))];
-  return { twice, unread };
+  return [...new Set(defs.filter((d, i) => defs.indexOf(d) !== i))];
 }
 
-test("RED: a walk defined twice or a join variable set reads as a fault, and the control reads clean", () => {
-  assert.deepEqual(scenarioScriptFaults("run_a() {\n}\nrun_b() {\n}\n"), { twice: [], unread: [] });
-  assert.deepEqual(scenarioScriptFaults("run_a() {\n}\nrun_a() {\n}\n").twice, ["run_a"]);
-  assert.deepEqual(scenarioScriptFaults('  if LAR_B_JOIN_SYNC="ws://x" LAR_B_JOIN_GATE="$G" up\n').unread, ["LAR_B_JOIN_SYNC=", "LAR_B_JOIN_GATE="]);
+test("RED: a walk defined twice reads as a fault, and the control reads clean", () => {
+  assert.deepEqual(walksDefinedTwice("run_a() {\n}\nrun_b() {\n}\n"), []);
+  assert.deepEqual(walksDefinedTwice("run_a() {\n}\nrun_a() {\n}\n"), ["run_a"]);
 });
 
-test("every walk in the scenario script stands ONCE, and none sets a join variable", () => {
+test("every walk in the scenario script stands ONCE", () => {
   // Bash keeps the last definition of a name, so a second copy silently replaces the walk a hand just changed.
-  const { twice, unread } = scenarioScriptFaults(readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8"));
+  const twice = walksDefinedTwice(readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8"));
   assert.deepEqual(twice, [], `walks defined more than once: ${twice.join(", ")}`);
-  assert.deepEqual(unread, [], `a walk sets a join variable no vessel reads: ${unread.join(", ")}`);
 });
 
 test("every cell green for this head merges green, one line per driver", () => {

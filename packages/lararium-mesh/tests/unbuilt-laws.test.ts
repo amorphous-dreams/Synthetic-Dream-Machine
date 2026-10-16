@@ -469,11 +469,8 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts drives a real gate and dial with an immediate frame against a held seat, and `@lararium/node` face-gate-server.test.ts drives the same law over a live WebSocket. The seat channel buffers across verdict then open.", () => {
     for (const name of ["seatedChannel", "dialedChannel", "channelSessionTable"]) expect(Object.keys(mesh)).toContain(name);
   });
-  test("EVERY PRODUCTION DIAL SPEAKS ONE HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts reads the tree and finds no source or probe that speaks a frame outside it. The presentation shapes' module declares none, and a sealed gate answers a text frame by cutting the socket (the node gate server's text-frame vector).", async () => {
-    const wire = await import("../src/leaf-presentation.js");
-    for (const name of ["runPeerHandshake", "mkLarChallenge", "mkLarAuth", "mkLarAuthOk", "isLarChallengeMsg", "isLarAuthMsg", "isLarAuthOkMsg", "authOkBytes", "verifyAuthOk", "authProofBytes", "verifyAuthProof", "evaluateAuthProof", "buildAuthResponse", "leafProofBytes", "signLeafProof", "signPresented", "verifyLeafProof", "mintLeafNonce"]) {
-      expect(Object.keys(wire), name).not.toContain(name);
-    }
+  test("EVERY PRODUCTION DIAL SPEAKS ONE HANDSHAKE — the Noise IK flight, a sealed presentation and the gate's signed verdict. One client transport dials and one face gate answers, and a sealed gate answers a text frame by cutting the socket (the node gate server's text-frame vector).", () => {
+    for (const name of ["LarWSClientAdapter", "makeFaceGate", "presentedAdmitReader"]) expect(Object.keys(mesh)).toContain(name);
   });
   test("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts and floor-announcement.test.ts. The floor bundle signs `waking-floor-announce`, and the reader refuses any pin but the one it already holds; the socket and relay carriers have no caller yet.", () => {
     for (const name of ["gateAnnouncementImage", "signFloorAnnouncement", "readFloorAnnouncement"]) expect(Object.keys(mesh)).toContain(name);

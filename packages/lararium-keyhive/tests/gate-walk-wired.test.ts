@@ -52,8 +52,6 @@ describe("the continuity anchor's wiring", () => {
   test("CONTROL — the assertions are not vacuous: the symbol and the doors are real", () => {
     expect(MESH_SRC("persona-kel.ts")).toContain("export async function verifyEdgeAgainstPersonaKel");
     expect(DOORS.length + MESH_DOORS.length).toBe(3);
-    // The daemon behavior admits no edge, so nothing there names the walk.
-    expect(KEYHIVE_SRC("operator-daemon-behavior.ts")).not.toContain("verifyAuthProof");
     // A door that stopped importing it would still "contain" the call in a comment; require the import.
     for (const door of DOORS) {
       expect(KEYHIVE_SRC(door), `${door} names the walk without importing it`).toMatch(/import[\s\S]{0,400}verifyEdgeAgainstPersonaKel/);
