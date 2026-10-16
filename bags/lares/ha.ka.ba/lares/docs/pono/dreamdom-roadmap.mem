@@ -80,7 +80,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 ''The order'': D0 → D1 → D2 → D3 → D4, with D5 beside D1 onward and D6 after D2 and D5; D7 held by name.
 
 !!! D0 · MEASURE AND MEND ~ what every phase needs (lane `dreamdom-harness`; the harness, the engine mends and the worker-side baseline stand; the rest stays owed here)
-* ''Owed'': the two browser-side baselines, a stock tab over the reference corpus reading `mainRender`, `styleRefresh` and `mainRefresh` and a long-animation-frames observer on the current page (Chromium alone carries the observer; `dreamdom-field-scout` §6), beside the worker-side numbers `pnpm --filter @lararium/tw5 measure:frames` derives; a second boot writing nothing, pinned over a staged vessel in e2e. A burr for D3's spike: TiddlyWiki's `utils.timer` reads `window.performance` wherever `$tw.node` stands null, so `$:/config/Performance/Instrumentation` throws in the island until the forge lends a timer.
+* ''Owed'': a second boot writing nothing, pinned over a staged vessel in e2e; a long-animation-frames observer on the current page (the house's own vessel page, beside the stock tab `measure:stock-tab` already observes; Chromium alone carries the observer, `dreamdom-field-scout` §6); heap after first paint for both instruments (D3's marginal-memory gate reads it). A burr for D3's spike: TiddlyWiki's `utils.timer` reads `window.performance` wherever `$tw.node` stands null, so `$:/config/Performance/Instrumentation` throws in the island until the forge lends a timer.
 * ''Waits on'': nothing. ''Spikes'': none; this phase IS the instrument. ''Rulings'': none.
 
 !!! D1 · THE CAMERA CONTRACT ~ the browser DOM sink at width none, hardened (lane `dreamdom-camera`; waits on D0's harness)
@@ -191,7 +191,7 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 !! The rows ~ one line per open loop, beside the phase that closes it
 
-* `D1` The browser-side baselines (a stock tab, a long-animation-frames observer) and the second-boot-writes-nothing pin over a staged vessel. D0. Nobody owes a ruling.
+* `D1` The second-boot-writes-nothing pin over a staged vessel, the vessel page's long-animation-frames observer and the heap-after-first-paint reading for both instruments. D0. Nobody owes a ruling.
 * `D2` Per-key revisions, membership, mount epoch and sensed revision in `projection:frame`; the three faults of `page-controls#/the-sink-today` closed. D1.
 * `D3` `wiki:control-event` with an id and `projection:control-result` with a status; the answer ring; the reliable and droppable classes. D1.
 * `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion; the textarea revert, the blanket cancel and the toggle family green. D1. Rulings 8 and 10 for their rows.
@@ -237,6 +237,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8cEUTwH50DKu6raDuc2EPRngYK_zDfUuFwU0fzTo9BQ
+<<^ code="&#x0003;">>ni:///sha-256;cuSSLDILLnurwNUI0dju3rJ7AV-OT6xDL9tVnd3O668
 
 <<^ code="&#x0004;" -> to="?">>

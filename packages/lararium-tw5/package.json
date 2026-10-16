@@ -63,7 +63,8 @@
     "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
     "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
     "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts",
-    "measure:frames": "tsx scripts/frame-baseline.ts"
+    "measure:frames": "tsx scripts/frame-baseline.ts",
+    "measure:stock-tab": "tsx scripts/stock-tab-baseline.ts"
   },
   "dependencies": {
     "@lararium/memetic-frame": "workspace:*",
