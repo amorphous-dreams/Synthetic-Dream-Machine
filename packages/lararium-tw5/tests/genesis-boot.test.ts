@@ -53,13 +53,48 @@ describe.skipIf(genesisSkip)(`the genesis boot${genesisNote}`, () => {
     expect(() => process.exit(1)).toThrow(/process\.exit\(1\)/);
   }, 120_000);
 
-  test("on the browser-worker path a syntax error throws SyntaxError; CONTROL: sound code answers its value", async () => {
+  test("on the browser-worker path a syntax error throws a fault named SyntaxError; CONTROL: sound code answers its value", async () => {
     const engine = await bootGenesisWiki({ path: "browser-worker" });
     engines.push(engine);
     const tw = loose(engine);
     expect(tw.version).toBe(genesisCoreBlob().sha256);
-    expect(() => tw.utils.evalSandboxed("this is not javascript", {}, "probe.js")).toThrow(SyntaxError);
+    let fault: unknown;
+    try { tw.utils.evalSandboxed("this is not javascript", {}, "probe.js"); } catch (error) { fault = error; }
+    expect(fault).toBeInstanceOf(Error);
+    expect((fault as Error).name).toBe("SyntaxError");
+    // The fault belongs to no built-in class, so TW5's executor reports it rather than re-throwing it.
+    expect(fault).not.toBeInstanceOf(SyntaxError);
     expect(tw.utils.evalSandboxed("exports.answer = 41 + 1;", { exports: {} }, "sound.js")).toMatchObject({ answer: 42 });
+  }, 120_000);
+
+  test("a preloaded module with a syntax error ends that module, named, and the island boots on either path; CONTROL: a sound module runs", async () => {
+    // A startup module runs at boot; a library runs on its first `require`. The broken one must run at boot
+    // to threaten the boot.
+    const broken = { title: "$:/plugins/lar/probe/broken.js", type: "application/javascript", "module-type": "startup", text: "exports.name = 'lar-probe-broken'; exports.startup = function() {}; exports.x = this is not javascript;" };
+    const sound  = { title: "$:/plugins/lar/probe/sound.js", type: "application/javascript", "module-type": "library", text: "exports.answer = 42;" };
+    for (const path of ["browser-worker", "node"] as const) {
+      const reported: string[] = [];
+      const logged = vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => { reported.push(args.map(String).join(" ")); });
+      const engine = await bootGenesisWiki({ path, tiddlers: [] , preloads: [broken, sound] });
+      engines.push(engine);
+      logged.mockRestore();
+      const tw = engine.$tw as unknown as { wiki: { getTiddler(t: string): unknown }; modules: { execute(t: string): unknown } };
+      expect(tw.wiki.getTiddler("$:/palette"), `${path}: the island booted past the broken module`).toBeDefined();
+      expect(reported.join("\n"), `${path}: the broken module reads by name`).toMatch(/broken\.js[\s\S]*SyntaxError/);
+      expect(tw.modules.execute("$:/plugins/lar/probe/sound.js")).toMatchObject({ answer: 42 });
+    }
+  }, 180_000);
+
+  test("on the node path a boot error raises an alert the frame can paint; CONTROL: the alert names the error", async () => {
+    const engine = await bootGenesisWiki({ path: "node" });
+    engines.push(engine);
+    const tw = loose(engine);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    tw.utils.error("a boot fault the vessel must hear");
+    const alerts = tw.wiki.getTiddlersWithTag("$:/tags/Alert");
+    expect(alerts.length).toBeGreaterThan(0);
+    const texts = alerts.map((t) => String(tw.wiki.getTiddler(t)?.fields["text"] ?? ""));
+    expect(texts.some((text) => text.includes("a boot fault the vessel must hear"))).toBe(true);
   }, 120_000);
 
   test("on the browser-worker path the host's lends never read as global assignments; CONTROL: a plain assignment does", async () => {

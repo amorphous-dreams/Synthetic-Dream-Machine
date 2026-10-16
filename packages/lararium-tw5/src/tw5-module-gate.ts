@@ -39,6 +39,13 @@ export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
       if (!claimedHash || !(await verifySha256(body, claimedHash))) continue;
 
       const moduleType = f["module-type"] ?? "library";
+      // A module defined after boot reaches the engine through `require` alone: TW5 applied the widget,
+      // filter and startup types during boot and never again. The gate admits libraries and refuses the
+      // rest by name.
+      if (moduleType !== "library") {
+        console.warn(`[module-gate] refused ${title}: module-type ${moduleType} applies at boot alone; the gate defines libraries`);
+        continue;
+      }
       wiki.addTiddler(new tw.Tiddler({
         title,
         type:          "application/javascript",

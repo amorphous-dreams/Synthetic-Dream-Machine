@@ -355,6 +355,7 @@ export function mountProjection(ctx: IslandContext): () => void {
         if (scope.liveIds.has(renderId)) continue;
         const node = ridMap.get(renderId);
         if (node && scope.roots.includes(node)) continue;
+        if (eventScopes.get(renderId) !== scope) { scope.renderIds.delete(renderId); continue; }
         ridMap.delete(renderId);
         eventScopes.delete(renderId);
         scope.renderIds.delete(renderId);

@@ -70,15 +70,16 @@ export function genesisPreloads(): Record<string, unknown>[] {
 }
 
 /**
- * Boot an engine from the genesis CAS on the named path. `tiddlers` seeds records the suite authors itself.
+ * Boot an engine from the genesis CAS on the named path. `tiddlers` seeds records the suite authors itself;
+ * `preloads` adds tiddlers to the boot's own preload (a probe module, a startup action), as an offering would.
  */
-export async function bootGenesisWiki(opts: { path?: EnginePath; tiddlers?: Array<Record<string, string | string[]>> } = {}): Promise<TW5Engine> {
+export async function bootGenesisWiki(opts: { path?: EnginePath; tiddlers?: Array<Record<string, string | string[]>>; preloads?: Array<Record<string, unknown>> } = {}): Promise<TW5Engine> {
   const g = globalThis as Record<string, unknown>;
   const lendSignal = opts.path === "browser-worker" && g["WorkerGlobalScope"] === undefined;
   if (lendSignal) g["WorkerGlobalScope"] = {};
   try {
     const engine = new TW5Engine();
-    await engine.boot(genesisCoreBlob(), genesisPreloads());
+    await engine.boot(genesisCoreBlob(), [...genesisPreloads(), ...(opts.preloads ?? [])]);
     for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
     return engine;
   } finally {

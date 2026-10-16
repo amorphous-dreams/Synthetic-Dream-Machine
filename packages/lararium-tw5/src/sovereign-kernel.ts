@@ -402,9 +402,14 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `island cannot resolve plugin tiddler by CID ${cid.slice(0, 12)}… from the local CAS`));
         return;
       }
+      let preloads: Record<string, unknown>[];
       try {
-        pluginTiddlers.push(...preloadsFromCasBlob(bytes));
-      } catch { /* malformed — skip */ }
+        preloads = preloadsFromCasBlob(bytes);
+      } catch (err) {
+        _post(mkFault(msg.wikiUri, `island cannot read plugin tiddler ${cid.slice(0, 12)}… as JSON: ${err instanceof Error ? err.message : String(err)}`));
+        return;
+      }
+      for (const t of preloads) pluginTiddlers.push(t);
     }
 
     // §6 integrity gate, enforced: the manifest's coreHash names the engine the vessel

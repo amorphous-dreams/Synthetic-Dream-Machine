@@ -68,7 +68,7 @@ export const PROJECT_ACTION =
 
 // ── The four CODE tiddlers ───────────────────────────────────────────────────
 
-/** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/lares/surface
+/** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/temp/lares/surface
  *  names, defaulting to the Working Surface. Driven by state, not by $:/tags/Layout. */
 const WRAPPER_BODY = `<$transclude $tiddler={{{ [{${LARES_SURFACE_STATE}}has[text]] ~[[${WORKING_TITLE}]] }}} $mode="block"/>`;
 
@@ -127,7 +127,7 @@ project
 /** The action the sidebar button fires: name the Working Surface as the active panel.
  *  It does NOT $action-navigate — the wrapper already sits open in the daemon story
  *  (seeded at boot), and navigation in a headless Worker references `window`. Toggling
- *  $:/lares/surface just re-transcludes the wrapper in place — no story navigation. */
+ *  $:/temp/lares/surface just re-transcludes the wrapper in place — no story navigation. */
 const SUMMON_ACTION = `<$action-setfield $tiddler="${LARES_SURFACE_STATE}" text="${WORKING_TITLE}"/>`;
 
 /** 3. The $:/tags/PageControls sidebar button. */

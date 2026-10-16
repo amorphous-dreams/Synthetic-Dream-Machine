@@ -87,6 +87,15 @@ export function verifyCoreBootBlob(core: TW5CoreBootBlob): void {
   }
 }
 
+/** A fault that keeps its name, message and stack and belongs to no built-in class, so `instanceof` reads it as a plain error. */
+function namedFault(error: unknown): Error {
+  if (!(error instanceof Error)) return new Error(String(error));
+  const fault = new Error(error.message);
+  fault.name = error.name;
+  if (error.stack) fault.stack = error.stack;
+  return fault;
+}
+
 function makeBrowserVmShim(): Record<string, unknown> {
   function runInCtx(code: string, ctx: Record<string, unknown> | undefined): unknown {
     const c = ctx ?? (Object.create(null) as Record<string, unknown>);
@@ -95,17 +104,23 @@ function makeBrowserVmShim(): Record<string, unknown> {
     // RETURN the script's completion value (vm.runInContext semantics). TW5's evalGlobal
     // passes a `(function(){…})` expression and then `.apply()`s the result — so the value
     // must come back; `new Function(...keys, code)` (no `return`) would discard it → undefined.
-    // A fault in the code (a SyntaxError above all) reaches the caller, as the real `vm` throws it:
-    // TW5's module executor names a syntax error by its kind and line, and a swallowed one would
-    // surface later as a TypeError on an undefined module.
-    return (new Function(...keys, "return " + code) as (...args: unknown[]) => unknown)(...vals);
+    // A fault in the code (a SyntaxError above all) reaches the caller as a NAMED fault, the way the
+    // real `vm` hands one across its realm: TW5's module executor reads a same-realm SyntaxError
+    // under V8 (no line number, no browser flag) as "throw it again", which would end the island's
+    // boot on one broken module; a plain fault that keeps the name, message and stack takes the
+    // executor's reporting branch, so the module ends by name and the island boots on.
+    try {
+      return (new Function(...keys, "return " + code) as (...args: unknown[]) => unknown)(...vals);
+    } catch (error) {
+      throw namedFault(error);
+    }
   }
   class BrowserVmScript {
     private readonly code: string;
     constructor(code: string, _options?: unknown) { this.code = code; }
     runInContext(ctx: Record<string, unknown>): unknown { return runInCtx(this.code, ctx); }
     runInNewContext(ctx?: Record<string, unknown>): unknown { return runInCtx(this.code, ctx); }
-    runInThisContext(): unknown { return new Function("return " + this.code)(); }
+    runInThisContext(): unknown { try { return new Function("return " + this.code)(); } catch (error) { throw namedFault(error); } }
   }
   return {
     Script: BrowserVmScript,
@@ -117,7 +132,7 @@ function makeBrowserVmShim(): Record<string, unknown> {
     // vm.runInThisContext RETURNS the script's completion value — for TW5's evalGlobal the
     // code is a `(function(){…})` expression it then `.apply()`s. `new Function(code)()` would
     // discard that value (→ undefined → `undefined.apply` → every module dies); `return ` keeps it.
-    runInThisContext(code: string): unknown { return new Function("return " + code)(); },
+    runInThisContext(code: string): unknown { try { return new Function("return " + code)(); } catch (error) { throw namedFault(error); } },
   };
 }
 
@@ -315,7 +330,7 @@ function loadTiddlyWikiFromBlob(
   const requireShim = env.resolveBuiltin;
 
   const g = globalThis as Record<string, unknown>;
-  const priorTw      = g["$tw"];
+  const priorTw      = Object.getOwnPropertyDescriptor(g, "$tw");
   const priorLoad    = g["_load"];
   const priorWindowDescriptor = Object.getOwnPropertyDescriptor(g, "window");
   const removeWindowAccessor = (): void => restoreGlobal(g, "window", priorWindowDescriptor);
@@ -344,7 +359,7 @@ function loadTiddlyWikiFromBlob(
     // Leave the blob's $tw on globalThis — it is the island's own sovereign TW5
     // instance; startup modules read `$tw.wiki` via globalThis.$tw. Restore only
     // the shims that were needed during blob evaluation.
-    if (priorTw !== undefined) lendGlobal(g, "$tw", priorTw);
+    if (priorTw !== undefined) restoreGlobal(g, "$tw", priorTw);
     if (priorLoad    === undefined) delete g["_load"];   else g["_load"]   = priorLoad;
     removeWindowAccessor();
     restoreGlobal(g, "require", priorRequire);
@@ -399,9 +414,17 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // provide the same CSS identifier contract as a pure worker capability instead of faking window.
   if (tw.utils) tw.utils.escapeCSS ??= escapeCssIdentifier;
   // The error reporter is the browser-XOR-node crash: `else if(!$tw.browser){ process.exit(1) }`.
-  // Headless surfaces and continues — the island never aborts the worker on a boot warning.
+  // Headless surfaces and continues — the island never aborts the worker on a boot warning — and
+  // raises the fault on the wiki's alert rail where one stands, so a surface paints it and a
+  // person reads an island that booted with a dead module as that, never as a green one.
+  let faults = 0;
   if (tw.utils) tw.utils.error = (err: unknown): void => {
-    console.error("[island-tw5]", err instanceof Error ? (err.stack ?? err.message) : String(err));
+    const text = err instanceof Error ? (err.stack ?? err.message) : String(err);
+    console.error("[island-tw5]", text);
+    const wiki = tw.wiki as { addTiddler?: (t: unknown) => void } | undefined;
+    if (typeof wiki?.addTiddler === "function" && typeof tw.Tiddler === "function") {
+      wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/boot-fault/${++faults}`, text, tags: ["$:/tags/Alert"], component: "island-boot", modified: new Date() }));
+    }
   };
 }
 

@@ -29,6 +29,26 @@ describe.skipIf(wikiSkip)(`startup actions after the seed drains${skipNote}`, ()
   let engine: TW5Engine | undefined;
   afterEach(() => { engine?.dispose(); engine = undefined; });
 
+  test("an action the boot pass already ran never runs again after the seed; CONTROL: a seeded one runs once", async () => {
+    const PRELOAD_COUNT = "$:/temp/lararium/startup-preload-count";
+    engine = await bootTestWiki({ extraPlugins: [], tiddlers: [] });
+    // A preload-borne action: it ran once at TW5's own startup pass. The vector plants it before the seed as a
+    // plain tiddler the boot pass would have run, then counts.
+    const wiki = engine.$tw.wiki;
+    engine.setTiddler({ title: PRELOAD_COUNT, text: "1" });
+    engine.setTiddler({ title: "lar:///t/startup/preloaded", tags: ["$:/tags/StartupAction"], text: `<$action-setfield $tiddler="${PRELOAD_COUNT}" text={{{ [{${PRELOAD_COUNT}}add[1]] }}}/>` });
+    const slug = "startup-once";
+    const working = wikiSlotUri(slug, "working");
+    const records: LarTiddlerRecord[] = [
+      { tiddler: { title: "lar:///t/startup/seeded", tags: ["$:/tags/StartupAction"], text: `<$action-setfield $tiddler="${PROBE}" text="seeded"/>` } },
+    ];
+    const composite = new CompositeStore();
+    buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: working, handle: handleOver(records) }] });
+    await seedDrained(engine);
+    expect(wiki.getTiddler(PROBE)?.fields["text"]).toBe("seeded");
+    expect(wiki.getTiddler(PRELOAD_COUNT)?.fields["text"], "the preload-borne action ran no second time").toBe("1");
+  }, 120_000);
+
   test("RED: a seeded StartupAction runs once the seed drains; CONTROL: the same action without the tag never runs", async () => {
     engine = await bootTestWiki();
     const slug = "startup-road";

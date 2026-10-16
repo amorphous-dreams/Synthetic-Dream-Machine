@@ -54,6 +54,9 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }>;
 } {
   const { tw5, composite, recipe, ready } = input;
+  // The titles TW5's own startup pass already ran over the preloads: these never run again.
+  const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
+  const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
 
   const handleBySlot   = new Map(ready.map((r) => [r.slot, r.handle]));
   const slots          = expandRecipe(recipe);
@@ -124,9 +127,14 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   }
 
   // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed. The seed carries
-  // the bags' own startup actions, so they run once more over the resident seed.
+  // the bags' own startup actions, so each one the boot pass never saw runs once over the resident seed;
+  // the ones that already ran stay run.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    (tw5.$tw as unknown as { rootWidget: { invokeActionsByTag(tag: string): void } }).rootWidget.invokeActionsByTag("$:/tags/StartupAction");
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
+      if (ranAtBoot.has(title)) continue;
+      tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
+    }
   });
   seedCheckpoints.set(tw5, checkpoint);
 

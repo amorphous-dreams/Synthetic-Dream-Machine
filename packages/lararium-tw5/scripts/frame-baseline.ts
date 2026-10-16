@@ -94,7 +94,15 @@ const stop = mountProjection({
     frames.push({ html: Buffer.byteLength(p.html), css: Buffer.byteLength(p.css), rev: p.rev });
   },
 } as IslandContext);
-const nextFrame = (): Promise<void> => new Promise((resolve) => { const n = frames.length; const tick = (): void => { frames.length > n ? resolve() : setTimeout(tick, 2); }; tick(); });
+const nextFrame = (): Promise<void> => new Promise((resolve, reject) => {
+  const n = frames.length; const started = performance.now();
+  const tick = (): void => {
+    if (frames.length > n) resolve();
+    else if (performance.now() - started > 10_000) reject(new Error("frame-baseline: no frame within 10 s"));
+    else setTimeout(tick, 2);
+  };
+  tick();
+});
 await nextFrame();
 row["firstFrame"] = { htmlBytes: frames[0]!.html, cssBytes: frames[0]!.css };
 
