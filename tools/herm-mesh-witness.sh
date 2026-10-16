@@ -51,13 +51,14 @@ join() {
   else
     out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
   fi
-  cf=$("$@" nexus carry-for --json 2>&1) || refused "$label" "nexus carry-for" "$cf"
+  # A --json answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
+  cf=$("$@" nexus carry-for --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
   nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
   sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
   [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
   printf '%s' "$cf" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$label.json" || refused "$label" "the carry-for copy to A" ""
-  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" --carrier "$sig" --floor-pin "/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>&1 \
-    || refused "$label" "A's nexus carry" "$(cat "$WORK/bundle-$label.json")"
+  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" --carrier "$sig" --floor-pin "/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>"$WORK/bundle-$label.err" \
+    || refused "$label" "A's nexus carry" "$(cat "$WORK/bundle-$label.json" "$WORK/bundle-$label.err")"
   if [ "$label" = "host-reader" ]; then out=$("$@" nexus carry-take "$WORK/bundle-$label.json" --json 2>&1) || refused "$label" "nexus carry-take" "$out"
   else
     $COMPOSE exec -T "$label" sh -c 'cat > /tmp/carry-bundle.json' < "$WORK/bundle-$label.json" || refused "$label" "the bundle copy" ""
