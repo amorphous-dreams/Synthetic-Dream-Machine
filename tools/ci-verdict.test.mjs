@@ -267,8 +267,8 @@ test("the shard lane's push door ends on the line that names this reader", async
   assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --branch$/);
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
-  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{result\.branch\} --head \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
-    "the push door must name the branch and head it pushed");
+  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{fullCiBranchOf\(repoRoot, result\.headSha\) \?\? "<the branch this head rides>"\} --head \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
+    "the push door must name the branch whose full run measures the head it pushed, never the ci/ lane");
   assert.match(src, /return \{ ok, runId, headSha, /);
 });
 
