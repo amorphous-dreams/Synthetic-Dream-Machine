@@ -199,7 +199,7 @@ const main = async () => {
     if (!initialTabs.open || !initialTabs.recent || !recentId) {
       bad("W3 Recent-tab", "missing exact data-tab-title Open or Recent rid-stamped sidebar target");
     } else if (!initialTabs.open.selected || initialTabs.recent.selected) {
-      bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state no longer names the transition");
+      bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state does not name the transition");
     } else {
       // An unknown rendered id that declares a click binding is sent through the same real host listener (the page
       // relays only what a `data-lar-on` stamp binds). The worker answers it stale and runs nothing: the trace
@@ -283,7 +283,7 @@ const main = async () => {
     gap("W3 Recent-tab", "skipped — W2 gave it nothing to click");
   }
 
-  // The old first-click witness remains separately named. Its current failure is product evidence about
+  // The first-click witness remains separately named. Its failure is product evidence about
   // sidebar reveal, and must never be made green by replacing the ambiguous fixture above.
   const sidebarBefore = await page.evaluate(() => {
     const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
@@ -338,7 +338,7 @@ const main = async () => {
   }
 
   // ── W4 · a KEYSTROKE reaches the wiki store ───────────────────────────────────────────────────
-  // The text leg relays the WHOLE value on `input`, so the assertion is that the wiki now holds it.
+  // The text leg relays the WHOLE value on `input`, so the assertion checks the wiki's value.
   // Reading it back out of the projection proves the round-trip rather than the dispatch.
   const typed = `weld-${Date.now()}`;
   const field = await page.evaluate(() => {

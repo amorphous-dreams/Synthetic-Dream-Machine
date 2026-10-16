@@ -231,7 +231,7 @@ export function standLeaf(
     ...(drops ? { drops } : {}),
     onRefusal: (r) => refusals.push(r),
   });
-  // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a legacy `sharePolicy`
+  // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a `sharePolicy`
   // fills announce alone and leaves a request by id wide open.
   const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
   adapter.bindRepo(repo);

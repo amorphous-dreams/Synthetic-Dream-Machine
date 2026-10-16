@@ -128,7 +128,7 @@ test("CONTROL the scan ignores block comments and non-segment names, then finds 
   } finally { s.cleanup(); }
 });
 
-test("RED the tests root still requires the CLI dist", () => {
+test("RED the tests root requires the CLI dist", () => {
   const s = scratch();
   try {
     mkdirSync(join(s.repo, "tests"));

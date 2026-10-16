@@ -12,7 +12,7 @@ export default defineConfig({
     isolate: true,
     environment: "node",
     // Offerings carry their OWN tests beside their own artifacts (R2c: `offerings/highlight/`),
-    // never inside `tests/`, so a new offering's directory is self-contained end to end.
+    // never inside `tests/`, so each offering's directory is self-contained end to end.
     include: ["tests/**/*.test.ts", "offerings/**/*.test.ts"],
   },
 });

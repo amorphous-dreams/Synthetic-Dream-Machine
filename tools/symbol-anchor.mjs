@@ -1,20 +1,20 @@
-// symbol-anchor — a carrier that NAMES a symbol should name one the source still defines.
+// symbol-anchor — a carrier that NAMES a symbol names one the source defines.
 //
-// `source-pointer` asks whether a meme still points at a FILE. This asks the next question down: the
-// `source-symbol` key names the export a carrier stands for, and a symbol the tree no longer defines
+// `source-pointer` asks whether a meme points at a FILE. This asks the next question down: the
+// `source-symbol` key names the export a carrier stands for, and a symbol absent from the tree
 // means the carrier describes an architecture that has been replaced.
 //
 // A COUNTED DEBT, NOT A FAILING GATE. A witness that fails every run is a standing failure, and a
-// standing failure shrinks a check to nothing — the same reasoning `doctype` uses for retired carriers.
+// standing failure shrinks a check to nothing — the same reasoning `doctype` uses for absent carriers.
 // The debt reads against a CEILING that only ever shrinks: a run over the ceiling fails, a run under it
-// prints the new low and asks for the ceiling to come down. So the class stays visible and cannot quietly
+// prints the measured low and asks for the ceiling to come down. So the class stays visible and cannot quietly
 // grow, while nobody is blocked on a canon sweep somebody else's hands are in.
 //
 // WHAT THE DEBT IS. Every symbol a carrier's `source-symbol` names that no tracked source file defines; each run's first
 // line prints the count, and CEILING holds the floor it may not rise above. The TW5 widget-class
 // anchors that made up the bulk (`AhuWidget`, `SigilWidget`,
-// `PranalaWidget` …) are gone — those carriers now name the `.tid` that declares each sigil and the
-// template cascade that renders it, and the ones naming a surface nothing replaced were retired. What
+// `PranalaWidget` …) do not exist — those carriers name the `.tid` that declares each sigil and the
+// template cascade that renders it, and the ones naming a surface without a replacement were removed. What
 // remains sits in `bags/lararium/**/docs/` and `bags/lares/**/api/`: MCP tool names, Mu/Law-of-5s table
 // constants, and pono-layer types. `ABILITY_LADDER` sits here too, and its sibling appearance in
 // `mesh/causal-island.mem` promises a four-level gate that never existed.
