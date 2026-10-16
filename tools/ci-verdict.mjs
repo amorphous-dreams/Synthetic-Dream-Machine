@@ -223,7 +223,9 @@ function main(argv) {
   const sh = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   let v;
   try {
-    const branch = opt("branch", null) ?? sh("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const namedBranch = opt("branch", null);
+    const branch = namedBranch ?? sh("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    if (namedBranch === null && branch === "HEAD") throw new Error("detached HEAD: name --branch");
     const head = sh("git", ["rev-parse", opt("head", "HEAD")]);
     const runs = JSON.parse(sh("gh", ["run", "list", "--branch", branch, "--workflow", opt("workflow", "CI"), "--limit", opt("limit", "30"),
       "--json", "databaseId,headSha,status,conclusion,createdAt,url"]));
