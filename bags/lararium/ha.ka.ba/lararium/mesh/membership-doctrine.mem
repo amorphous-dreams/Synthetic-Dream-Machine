@@ -179,7 +179,7 @@ The law, in five clauses:
   presented admit the verifier reads HELD against its own Nexus — the deny board and the antigen
   standing apart — together with the leaf's own proof of possession over THIS socket's challenge nonce.
   A folded board, a raw wire key, and a root edge each fill nothing.
-# The ''realm consult'' reads a separate ROOT map, filled only by a root edge proven at the seat that
+# The ''realm consult'' reads a separate ROOT map (`peerContractNymMap`), filled only by a root edge proven at the seat that
   reads it.
 # The two maps fill INDEPENDENTLY and never link. No reader joins them, no consult falls through from
   one to the other, and a leaf MUST NOT answer a root question (nor a root a leaf question). Where a seat
@@ -548,6 +548,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OFyNb44iZmKy2IMlgCH0BugG0WLPP3vmtDs58nkoITw
+<<^ code="&#x0003;">>ni:///sha-256;GMqSn2C7Ukzz2hvnCfpPfPuA2Ll6hHcapmTktJ7MZ1c
 
 <<^ code="&#x0004;" -> to="?">>

@@ -10,7 +10,7 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 13
-role      = "docs sister for the canon boundary — crossing examples, event shape, review pressure, and THE PROMOTION BOUNDARY: a crossing moves the ENVELOPE alone and hostful/hostless carries no residency signal; copy-up is free, promotion-down is the kahu quorum's act; the cap gate holds the line and the proposal/receipt record does not yet exist"
+role      = "docs sister for the canon boundary — crossing examples, event shape, review pressure, and THE PROMOTION BOUNDARY: a crossing moves the ENVELOPE alone and hostful/hostless carries no residency signal; copy-up is free, promotion-down is the kahu quorum's act; the cap gate holds the line and a signed receipt lands beside the carrier before the move; a crossing into @crossroads also carries the seats' approval"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/canon-boundary"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -104,7 +104,7 @@ The stack order makes //down// literal: ''core < canon < wiki < user < session''
 
 ✓ ''The cap gate holds the line.'' Every residency verb demands `cap("admin", destBag)`, so only a holder of admin on a canon bag reaches a promotion into it. ''Kahu = whoever holds admin on the lares/lararium canon bags'' — kahu-priest caps, held distinctly from lamplighter (infrastructure) caps even where one cabal carries both.
 
-✓ ''THE RECORD RIDES BESIDE THE CARRIER.'' Without a receipt, promotion stands PERMITTED by capability and RECORDED by nothing. `lares meme promote` performs the crossing as a residency move and mints the receipt first (`packages/lares-cli/src/promotion-receipt.ts`, `meme-promote.ts`), writing it beside the carrier and refusing any crossing it could not record; `store.put()` still never writes to `lares/` (`tiddler-store`). A cap gate decides at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt carries the audit half of the priesthood act.''
+✓ ''THE RECORD RIDES BESIDE THE CARRIER.'' Without a receipt, promotion stands PERMITTED by capability and RECORDED by nothing. `lares meme promote` performs the crossing as a residency move and mints the receipt first (`packages/lares-cli/src/promotion-receipt.ts`, `meme-promote.ts`), lands it beside the carrier before the move, and removes it again when the move refuses or throws, so no crossing stands without its receipt and no receipt names a crossing that never happened; `store.put()` still never writes to `lares/` (`tiddler-store`). A cap gate decides at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt carries the audit half of the priesthood act.'' A crossing into `@crossroads` also carries the charter seats' approval over the exact bytes, and its receipt names that approval's digest; a crossing into a vessel's own canon asks no charter.
 
 ⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsQuorum`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader stands one package over (`bagManifest` parses `cap-tier`); the gap lies in the injection.
 
@@ -205,6 +205,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Nyq83Uwdz9iHuY_4YUBdOU8oD6mF5oirI6owpDh_vZw
+<<^ code="&#x0003;">>ni:///sha-256;rJUoOoVu1vKqmIhVfb2MAt0gjI_3TPrp35EZB8TzCa0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -82,7 +82,6 @@ This ''strengthens'' the ruling and ''raises its price'': moving the public half
 # ''`NexusMembership`'' — the clearest case. `federation-gate.ts:264-278` asks "is this cross-operator peer a CONTRACTED Nexus MEMBER, or a mere STRANGER"; `isNexusMember` at `:438`, `postureGatesCrossOperator` at `:421-423`. A membership VERDICT gating the SEALED carriage lane reads on the cabal-private axis outright.
 # ''`NexusDoc` carries four membership-scoped joints'' (`nexus-seal-seed.ts:88-131`): `kahu` (the seated roster), `joinPolicy`, `admissionDials`, `threshold`. Canon holds that a public face "does NOT publish its muster roll" (`cabal-realm.mem` #/heraldry) — and the roster lives in the doc named `nexus`.
 # ''`NEXUS_SCOPE_INFO`'' (`domains.ts:164-166`) rides as the HMAC key of a HARDENED PRIVATE INDEX (`persona-identity.ts:99`) — a private-plane derivation under a public-plane word.
-# ''`nexus-convergence-keyring.ts`'' + ''`nexus-convergence-secret-store.ts`'' (`@lararium/node`) hold convergent-encryption SECRETS — the members-only lane — under the `nexus` prefix.
 # ''`raise-challenge.ts`'' binds its `nexus` field to a CARRIAGE-CONTRACTED MEMBER SET (`:24,:49,:68,:76,:113,:125`).
 # ''`social-tiddlers.ts`'' places `nexus` BELOW `public` on one ladder — `trustTier?: "local" | "nexus" | "cross-nexus" | "public"` (`:28`) — and hangs `nexusScope?: "local" | "nexus"` on a CIRCLE (`:54`). The tree admits here, in its own types, that `nexus` currently means //in-group//: the ruling's opposite.
 
@@ -209,6 +208,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M2c7RmJtPvTT3_2u2Texg-kdV1eixGl604wxnhP0N0I
+<<^ code="&#x0003;">>ni:///sha-256;lw67nsAT2qSYTplt6HnBsTO3Fi61OO0Q_5xQVA1pl20
 
 <<^ code="&#x0004;" -> to="?">>
