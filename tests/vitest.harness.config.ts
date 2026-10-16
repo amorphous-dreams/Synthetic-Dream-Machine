@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
 
 /**
  * THE HARNESS'S OWN UNIT SUITE — `harness/**` holds the harness's pure logic (scenario graphs, the
@@ -9,7 +10,9 @@ import { defineConfig } from "vitest/config";
  * because that package names no plain `test` script — never ran it at all; this config IS that script.
  */
 export default defineConfig({
+  root: fileURLToPath(new URL(".", import.meta.url)),
   test: {
+    globalSetup: ["../tools/vitest-dist-guard.mjs"],
     environment: "node",
     include: ["harness/**/*.test.ts"],
   },

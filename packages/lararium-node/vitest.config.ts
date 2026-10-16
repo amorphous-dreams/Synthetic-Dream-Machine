@@ -124,6 +124,7 @@ const testTimeout = 30_000;
 export default defineConfig({
   resolve: { alias },
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     // The host oversubscribes under default per-core parallelism: dozens of these files each spawn their OWN
     // heavy child — a WebSocketServer, a nested worker_threads TW5 island, or a live Python+chroma holder — ON
     // TOP of vitest's worker-per-core pool, so peak concurrency runs far past the core count and starves. A

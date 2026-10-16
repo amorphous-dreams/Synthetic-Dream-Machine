@@ -10,6 +10,7 @@ export default defineConfig({
     ],
   },
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     // STATED, not inherited. `isolate: true` is vitest's default, and suites here depend on it:
     // several modules hold process-global registries (a Map of holders, memo caches) that no reset
     // clears, so a fresh module registry per file is the only thing returning them to zero. Left

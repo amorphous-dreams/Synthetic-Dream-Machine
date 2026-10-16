@@ -385,6 +385,9 @@ jobs:
       # dist-plugin/ as the tw5 package's own side effect; this job's whole point is to prove
       # what SHIPS, so the pristine engine meets the TRACKED `$:/` distribution — the sibling
       # `build-freshness` job is what already proves a fresh build and the tracked copy agree.
+      # The package suites read dist stamps; this build emits dist without stamping it.
+      - name: Stamp the dependency build for the pristine suites
+        run: node tools/stamp-build.mjs .
       - name: Point dist-plugin at the committed standalone artifact
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
       - name: Install Playwright Chromium (standalone single-file suite)

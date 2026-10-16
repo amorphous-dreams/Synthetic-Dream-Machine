@@ -118,7 +118,7 @@ const freshnessCache = new Map();
 const globalDigestCache = new Map();
 
 /** Whether `repo`'s global build stamp currently covers EVERY package — the fast, whole-tree pass. */
-function globalStampFresh(repo) {
+export function globalStampFresh(repo) {
   if (!globalDigestCache.has(repo)) {
     globalDigestCache.set(repo, sourceDigest(join(repo, "packages")));
   }
@@ -128,8 +128,9 @@ function globalStampFresh(repo) {
   return stamped === digest;
 }
 
-function packageFreshness(repo, dir) {
-  if (freshnessCache.has(dir)) return freshnessCache.get(dir);
+export function packageFreshness(repo, dir) {
+  const key = `${resolve(repo)}:${dir}`;
+  if (freshnessCache.has(key)) return freshnessCache.get(key);
   const distDir = join(repo, "packages", dir, "dist");
   let result;
   if (!existsSync(distDir)) {
@@ -142,7 +143,7 @@ function packageFreshness(repo, dir) {
     try { stamped = readFileSync(packageStampPath(repo, dir), "utf8").trim(); } catch { stamped = null; }
     result = { stale: stamped !== digest };
   }
-  freshnessCache.set(dir, result);
+  freshnessCache.set(key, result);
   return result;
 }
 

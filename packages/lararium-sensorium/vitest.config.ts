@@ -15,6 +15,7 @@ export default defineConfig({
     ],
   },
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     // STATED, not inherited — the shape every sibling package writes down.
     //
     // `include` fences the run to `tests/`. Left to vitest's default glob, a stray `*.test.ts` dropped
