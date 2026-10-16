@@ -1,0 +1,100 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 14
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-port-scout — VERBATIM handoff of a tasked spirit (Codex Luna, read-only): the cold read of the as-built ground for train D's phase D2, the record port, 2026-10-16. What in the tree already does part of each port kind, what D1's camera contract gives D2 to reuse, where each new piece would land, the collision map against the wire-socket lane as it stood before it merged, and the pure steps that touch no shared file."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The cold read of D2's ground ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked spirit reported from reading the tree at `2e8d22d37`, before the wire-socket lane merged (PR #44), kept whole as a ''collision surface''.
+
+''What the house took from it.'' The port's kinds join the vessel and island unions in `island-protocol.ts` beside the camera's kinds, and their readers sit in `lar-camera.ts`; `port:ask` and the invoke gate belong in the island's dispatch (`wiki-behavior.ts`); `port:write` reuses the outbound record path but answers with its own `txId`. The collision map it drew no longer binds: wire-socket merged, so D2 edits the shared protocol and composer files on the merged base. Its four pure steps (the recording document and serialisers, the width and local-filter core, the invoke gate, presence expiry) stand as D2's first slices.
+
+''Read it against us, not for us.'' Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+<<~ status "D2 ground read; handback inline because this read-only workspace supplied no -o path">>
+
+## 1. What stands for D2
+
+- **Port protocol:** The live island’s existing message unions include `wiki:place-verb` and `wiki:verb-result`, plus camera frame/control/service kinds, but no `port:*` kinds yet. Add the port messages to the vessel↔island unions and their type guards in `island-protocol.ts`; add dedicated readers/factories alongside the camera readers and factories in `lar-camera.ts`. [read: `packages/lararium-mesh/src/island-protocol.ts:750-780,970-1040,1049-1070`; `packages/lararium-mesh/src/lar-camera.ts:301-435`]
+
+- **Live island behavior:** `makeWikiBehavior` already dispatches `wiki:place-verb` to a verb registry and returns `wiki:verb-result`. It supplies a permissive `worker-trust` capability today. D2’s `port:ask` handling and its invoke capability gate belong in the island behavior/dispatch layer, with the gate before `invokeActions`. [read: `packages/lararium-tw5/src/wiki-behavior.ts:103-175`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:94-98`]
+
+- **Record waist:** The outbound path already listens to wiki `change`, handles consumed acts, skips foam, then saves or deletes records through `IslandAdaptor`. The adaptor routes writes through the in-wiki `bag-cascade.routeBag`. D2 can reuse that route and record handling; `port:write` needs its own txId/basis request and `port:written` answer, rather than becoming another camera event. [read: `packages/lararium-tw5/src/outbound-bridge.ts:26-46`; `packages/lararium-tw5/src/island-adaptor.ts:365-390`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:44-46,96`]
+
+- **Camera contract to reuse:** The camera already gives keyed absolute frames, `cameraId`, mount epochs, revision-aware control events, explicit control answers, and readers that reject malformed messages at the island and vessel doors. D2 should reuse those frame/event mechanics for rendering and invocation references, while carrying records and port asks in their own port message kinds. [read: `packages/lararium-mesh/src/lar-camera.ts:301-435`; `packages/lararium-mesh/src/island-protocol.ts:1007-1069`]
+
+- **Width and tier filter:** The roadmap calls for width as an engine-side field filter and `localFilter` for StoryList, HistoryList, `$:/state`, `$:/temp`, `$:/status`, and `$:/info/browser/*`. Existing worker data verbs provide in-worker read patterns, but they do not implement the port’s width filtering or snapshot/change cursor semantics. These belong in the port’s engine-side module and `port:open`/snapshot/changes handlers. [read: `packages/lararium-tw5/src/worker-data-verbs.ts:1-15`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`]
+
+- **Recording document and serialisers:** `mountCamera` already accepts a fake document and renders a root template into it. D2’s recording document, blocks/text/label-html serialisers, and missing-camera degradation can live in a new serialiser module beside the camera/engine code; the `blocks` widget-tree pass waits on D5 Annex B. [read: `packages/lararium-tw5/src/tw5-camera.ts:30-71`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96,178-179`]
+
+- **Presence and close:** The roadmap specifies `port:presence` with a 30-second expiry and no persistence, plus `port:close`; width-none presence remains an open ruling whose interim answer uses a separate droppable message. Put those handlers in the port module and the message in the port protocol union. [read: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96, the-rulings`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom.mem:522-541`]
+
+- **Orphan script:** `meme-worker-script.ts` has no importer in source, tests, scripts, Vite config, or tsconfig; its package export remains. The roadmap calls for retiring it. [read: `bags/lares/ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout.mem:104`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-harness-scout.mem:157-164`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`]
+
+## 2. Collisions with wire-socket
+
+The wire-socket range contains commits **“the gate speaks one handshake”** (`c6f52a293`) and **“the socket stands sealed”** (`f7ea58433`), among others. Its diff against the current span changes the browser vessel composer, island protocol, plugin bundle files, web `main.ts`, and a comment in `projection-sink.ts`. [read: `git log origin/feature/green-jello-dinosaur-5..origin/feature/green-jello-dinosaur-5--wire-socket`; `git diff origin/feature/green-jello-dinosaur-5...origin/feature/green-jello-dinosaur-5--wire-socket -- <paths>`]
+
+| D2-touch file | Wire-socket change and collision read |
+|---|---|
+| `packages/lararium-mesh/src/island-protocol.ts` | Wire-socket removes old auth-verification message types and edits the message unions and guards. **Direct conflict risk:** D2 will add kinds to the same unions/guards. Merge wire-socket first, then add port kinds against its resulting protocol. [read: `git diff … -- packages/lararium-mesh/src/island-protocol.ts`; `git log … -- packages/lararium-mesh/src/island-protocol.ts`] |
+| `packages/lararium-browser/src/open-browser-vessel.ts` | Wire-socket restructures boot and relay composition extensively. **Direct conflict risk** if D2 edits this composer for open/close or port routing. Keep D2’s engine/port work elsewhere until wire-socket lands; then add the composer integration. [read: `git diff … -- packages/lararium-browser/src/open-browser-vessel.ts`] |
+| `packages/lararium-web/src/main.ts` | Wire-socket changes relay URL, floor card, oracle, and vessel option wiring. **Potential collision** if D2 adds browser startup/open behavior here. Keep port construction in a separate module and wire it after the merge. [read: `git diff … -- packages/lararium-web/src/main.ts`] |
+| `packages/lararium-tw5/plugins/*` (four bundle files) | Wire-socket regenerates the bundled memetic-wikitext plugin and attestation. D2 does not need plugin edits for its protocol, serialisers, or engine port. **Avoid this overlap**; if a later D2 change requires plugin content, rebuild after wire-socket lands. [read: `git diff --stat … -- packages/lararium-tw5/plugins`; `git log … -- packages/lararium-tw5/plugins`] |
+| `packages/lararium-web/src/projection-sink.ts` | The branch auto-merges with a comment-only wording change. **No substantive conflict shown**, but D2 need not touch this page sink for its engine-side port. [read: `git diff … -- packages/lararium-web/src/projection-sink.ts`] |
+
+**Order:** Let wire-socket merge before D2 edits the shared protocol or browser/web composers. D2 can start its disjoint engine and serialiser modules now. //(inferred from the listed branch diff and D2’s engine-side requirements)//
+
+## 3. D2 pure steps
+
+These can start beside D1 without touching wire-socket files:
+
+- **Recording document and text/label-html serialisers:** new TW5 serialiser module and focused unit tests. Red test: `recording-document-serialisers-render-text-and-label-html`; control: render the same fixture with the existing TW5 camera into its fake document and compare the expected text/link handles. [read: `packages/lararium-tw5/src/tw5-camera.ts:30-71`; `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`]
+- **Port record/filter core:** new pure engine-side module for width and `localFilter`; no changes to `island-protocol.ts` yet. Red test: `port-skinny-then-load`; control: full width returns the fixture’s complete fields, while skinny omits a named field and an explicit load restores it. [read: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`]
+- **Invoke authorization helper:** new capability-gate helper, isolated from the shared protocol and page composers. Red test: `non-admin-invoke-refused`; control: an admin grant invokes the same action and records its call. [read: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`; `packages/lararium-tw5/src/wiki-behavior.ts:145-164`]
+- **Presence expiry core:** a pure in-memory expiry tracker; defer message wiring until protocol integration. Red test: `port-presence-expires`; control: a refreshed presence remains visible before 30 seconds and expires after the deadline using a controlled clock. [read: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96`]
+
+//(These are proposed test names and controls, not existing tests.)//
+
+I could not write a `-o` file: no output path appeared in the request, and this workspace grants read-only filesystem access.
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;3-SYHFo83AwkBWOemNURflXWm07eMcqG9p03iaWTtEE
+
+<<^ code="&#x0004;" -> to="?">>

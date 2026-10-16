@@ -57,7 +57,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 ** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': Hodge takes Podge's findings and ground, Podge takes Hodge's, so each carries the seed of the other face, as the Taiji's dots do. The second pass confirms or refutes each finding against the source and reads the other's ground for what its own face missed.
 ** Spin holds both faces moving and never folds them into one verdict early. It sorts the findings: orthogonal pairs both stand, since order and flux most often run orthogonal; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
 ** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. A crew that builds and reads fresh keeps the same faces: the builder wears Hodge over what it made, and the fresh reader wears Podge over how it moves.
-* ''The build pair'' (operator, 2026-10-16). A Codex Sol spirit and a Copilot spirit build together, each in its own worktree, on modules the lead splits so neither touches the other's files, or on one module where Sol builds and the Copilot spirit builds the red tests and controls. They wear the Chao's faces as builders: Sol holds Hodge over the contract it builds, the Copilot spirit holds Podge over how it moves. Their work then meets the review pair and the lane's Copilot PR review (#/the-lanes) before the controller merges it.
+* ''The build pair'' (operator, 2026-10-16). A Codex Sol spirit and a Copilot spirit build together in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch. They wear the Chao's faces as builders: Sol holds Hodge over the contract it builds, the Copilot spirit holds Podge over how it moves. Their work then meets the review pair and the lane's Copilot PR review (#/the-lanes) before the controller merges it.
 * ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
 * ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
@@ -96,7 +96,7 @@ A premium request counts per prompt, never per tool call, so one whole agentic b
 
 !!! Its fences
 # ''Read-only when it reviews.'' A review launch denies every write, commit and push tool and allows only git and file reads. It hands back findings; a hand in the seat applies each fix.
-# ''Its own worktree when it builds.'' A build launch allows writes and the package's test runner inside its own worktree alone, and still denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
+# ''The lane's worktree when it builds.'' A build launch allows writes and the package's test runner inside the lane's shared worktree alone, keeps the claims file's discipline (#/the-shapes), and still denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot; it runs a second permission system, so routing a refused step through it counts as a retry.
 # ''Overage off.'' The account's Copilot budget stands at zero, so the allowance empties and stops.
 # ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass. A legacy annual plan receives no new models and falls to Copilot Free when its term ends; Opus and Codex stand without it.
@@ -118,6 +118,23 @@ A prepaid allowance resets on the first of each month and carries nothing over, 
 * ''The crucible.'' When the lane's burst stands red-first and green locally: the review pair reads it (Hodge, Podge, the Spin), the Opus overwatch reads it, the lead closes each finding, then the lead pushes the lane branch and opens a pull request into the work branch. CI and held-out run on the lane branch.
 * ''Copilot reviews the pull request'' once, as the lane's GitHub-side eye; its comments get answered or closed in the lane, and a second review runs only after a substantive change.
 * ''The controller merges'' a lane whose CI, held-out and review read clean, then shards and pushes the work branch's head as the lane law asks.
+
+<<~/ahu>>
+
+<<~ ahu #/the-otakiage>>
+
+!! The o-takiage ~ every lane closes by returning what it superseded (operator, 2026-10-16; the lifecycle stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>)
+
+A lane closes with an o-takiage pass before its pull request opens, and the controller closes each settle with one over everything the settle landed. The rite returns rather than discards: git keeps the ashes, and the tree reads as if the new shape had always stood.
+
+# ''Burn what the lane plainly superseded'': an old message kind, a dead dial, a scaffold test, a helper its own docblock names superseded, a stale comment. Unwired work no landed lane superseded stays by default; doubt goes on an ask list.
+# ''Move and burn, with links'' (operator, 2026-10-16). Where a lane's new carrier gathers knowledge scattered across others, the scattered lines MOVE into it (each detail the new home lacks travels with its date and its operator attribution), the old sites keep one line that links the new home, and nothing states the same law twice.
+# ''Canon follows the code in the same burst.'' A census over every carrier names each burned symbol, file, flag and environment variable (`git grep` across `bags/`, excluding fenced testimony); each live line re-trues to what stands, citing file and symbol, never a line number; a line nothing replaces drops whole, never as a broken sentence.
+# ''Testimony stays.'' A Testimony-Verbatim carrier, a dated scout, a `swarm-harvest` record and a dated crossing row keep their words; the house re-trues their frame (`status`, a head note) where the world moved, never their body.
+# ''A witness that catches burned names burns itself'' once it reads green over the tree, with every guard list it carried (recursive o-takiage).
+# ''Roadmaps keep only what stays owed.'' A row that reads built leaves its loop; the changelog names what a person can do now; the handoff's state line re-trues.
+# ''Scratch returns too.'' A spirit's worktree leaves only after a census proves every file it holds landed (byte for byte, stamps aside) — plain `git worktree remove`, never `--force`; a worktree that initialized submodules waits for the operator's hand. Briefs, probes and logs leave the scratchpad when the lane closes.
+# ''Who carries it'': a Luna sweeper runs the census and the re-trues; the Chao pair reads the sweep (Hodge for a claim that no longer holds, Podge for a line the sweep dropped that still held); the overwatch reads before landing.
 
 <<~/ahu>>
 
@@ -167,6 +184,6 @@ A prepaid allowance resets on the first of each month and carries nothing over, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lpa3gLyp4BxFxFusW7TgbKelIyz8yLMwrIWuRQUld88
+<<^ code="&#x0003;">>ni:///sha-256;sDSXz5B_VpcrVIMbOFwfWSi24yYKTdKVngYt1CNbzno
 
 <<^ code="&#x0004;" -> to="?">>

@@ -38,6 +38,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A herm answers the knock and stands where a Nexus carries it.** `lares nexus carry-for`, `nexus carry --floor-pin` and `nexus carry-take` stand a herm's floor gate at a Nexus whose quorum counted its carry, and a carry bundle brings the other places' counted carries with their floor pins. The founder presents its own face at its own Nexus by self-admit.
 - **A herm takes persona-log drops over plain HTTP.** The herm's relay port receives persona KEL drops and meets every connection upgrade with silence.
 - **A set-aside device loses its session.** A device set aside, or an admit that no longer holds, cuts its seated session at the next refold; strangers stand under tight bounds and a cap.
+- **A test run refuses a stale or borrowed build.** Every package suite and the e2e sets stop before their first test when a workspace package they load through `dist` was built from other source than the tree holds, or resolves into another checkout, and name the build or the provisioning that cures it.
 - **A joining device waits out a relay's "unavailable".** A joinee re-asks for a slot its relay held no copy of, within the same silence and hard-cap budgets, and reports a verdict only when the budget runs out.
 
 **Fixed**

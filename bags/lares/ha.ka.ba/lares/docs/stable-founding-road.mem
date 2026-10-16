@@ -453,18 +453,21 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P20` The carriage gates (`carriage-board.ts`, `vessel-raise.ts`, `nexus-carriage.ts`) count at the head alone, while `lares nexus members` honours anchored ancestry, so the list can show a member a gate does not yet honour. A gate that reads ancestry needs the writer to read it too: a head-epoch admit or carry that cites no carried head reads concurrent with a carried revoke or uncarry, so the contract writer cites the counted anchored heads it supersedes, the presented-admit verifier (`carriage-registry.ts`) resolves a cross-epoch lineage, and the presenter assembles one. P.
 
 !!! THE WIRE
-* `W1` A per-Nexus gate key in two tiers, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): a floor route's keys derive from the floor key and a sovereign route's from the sealed custody root, each per (tier, Nexus, route), resting nowhere. `vesselGate` stands one face gate for a bundle and Nexus (`vessel-gates.ts`), and `face-gate-server.ts` dispatches by the pin's knock. W.
-* `W2` Every vessel socket opens through the sealed face gate: attach, verdict, open. `face-gate.ts` and `face-dial.ts` carry a face's chain, a place's arm and withdrawal memory; `GateSessionChannel` opens after the verdict. The browser's first flight follows the `gate-exchange.ts` envelope (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope">>).
-* `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). The two custody rows stand in node (`face-key-custody.ts`); fleet join calls the certificate and grant path, and `openJoinedFaceSession` stands. Owed: the node's gate session open, the browser holder and the cutover. House. W.
-* `W5` The admit carriage and fleet answer carry the full sovereign sync route pin in signed bytes; `nexus-contract.ts` preserves N's anchor and prior-roll checks (`fleet-join.ts`, `admit-gate-pin.ts`, `device-admit.ts`, `nexus-contract.ts`). W.
-* `W6` Fleet admission runs through `lares fleet join offer|answer --face <i>`; the root-signed answer carries the charter, household admit, floor pins and, with `--doc-url`, the document URL (`fleet-join.ts`, `device-admit.ts`).
-* `W7` One dial per (hearth, Nexus). W.
-* `W8` The floor announcement signs under each Nexus's floor bundle signing key and travels only in an authenticated relation (#/rulings). W.
+* `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). The two custody rows stand in node (`face-key-custody.ts`); fleet join calls the certificate and grant path, and `openJoinedFaceSession` stands. Owed: the browser holder of the face's custody rows. House. W.
 * `W9` The sibling channel at face scope, on per-dial transport keys. W.
 * `W10` The knock tests offline for an observer with candidate keys (`gate-knock.ts`): accepted as a named leak once IK lands. W, canon.
 * `W11` Keyhive keeps the PersonaGroup's private membership and carries no face chain: four probe readings on 0.3.0-alpha.1 stand as alarms (`packages/lararium-keyhive/tests/face-chain-substrate.probe.test.ts`), and a Keyhive bump re-reads them. House. W.
 * `W12` The herm route for cancel and the three receipts, as ruled (#/rulings; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/receipt-ledger#/the-relay-leg">>); no code asks, cancels or answers across a herm. Owed, with `W9`: the ask, the cancel and the vessel's answer as a tagged inner frame under the sealed sibling session's own seal, the vessel reading that session's proof as the asker's; the herm's bare delivery note inside the session, bound to the ask's unique request id and the session's causal position, attesting transit and never execution; and the rule for which verbs a sibling's standing reaches across the session (`sibling-channel.ts`, `uds-channel.ts`). W.
-* `W13` Fleet join names a nonzero face with `--face <index>` and carries that face's certificates, grants and address secret; face zero supplies the default (#/rulings). W.
+* `W14` The floor card a banner carries in its `#floor=` link reads unsigned, on origin trust; a signed card stays owed. W.
+* `W15` A floor pin statement carries no causal position, and `hearthPinIndex` files first-wins, so a rotated floor key re-files only on restart (`admit-gate-pin.ts`, `place-floor-pin.ts`). W.
+* `W16` Two-vault carry: the carry partials land no floor pin, so a cofounded Nexus carries no herm yet (`nexus-contract.ts`). W.
+* `W17` Face switching on one device, and a second joined face on one vessel. House. W.
+* `W18` The founding hearth's own carriage fold reads its carried herms' floor pins as `place-uncarried` (held-out herm-mesh and the nexus cell: A refuses all three pins while relay-2 reads them), so the host reader never files relay-2's pin. A test walking the container's order in one process files all four pins, and the carries share A's head epoch; the leading lead sits across processes, where a CLI `nexus carry` writes the board on disk while A's running daemon reads a live handle it cached. Lane `carriage-fold` (`docs/pono/carriage-fold-lane`). W.
+* `W19` A fleet-join carry walk in the browser weld; the weld's anchored walks await their port. W.
+* `W20` Burned names outside the wire's files still guarded by name: the CLI's unknown-command list, the keyhive cabal names, the browser's boot-invite-burned store (`browser-vessel-identity.ts`). W.
+* `W21` B's oracle mounts A's lararium corpus through the shared oracle id, while `device-admit.ts` states the oracle never crosses to a joinee; under the worn-face bridge it crosses. Whether a joinee keeps its own corpus stays the operator's call. Operator. W.
+* `W22` `composeCasTransits` and `walkInvite` stand with no caller: wire them or burn them. W.
+* `W23` A floor-crossing CI cell (`packages/lararium-web` `vitest.crossing.config.ts`, about seven minutes under chromium) would read the browser floor crossing on every push. Proposed. W.
 
 !!! ONE FACE
 * `F1` The scoped document view stands specified in mesh (`session-document-view.ts` over `gated-sync-leg.ts`); the pool's surface door (`mountSurface`) and the island kernel's half ride it, and no production caller mounts a surface. Owed: every interactive surface mounts under it in place of the broad sync port, which waits on a verified face (train W) and on callers that hold a session (`F4`, `F6`); the share verdict's caller keeps an owner from offering a session island a document beyond its facets; an admitted leaf's relay adapter wears the one-way gate over its hearth's canon documents, and the hearth wears that gate's twin toward its leaves (`hearth-canon.ts`, `open-browser-vessel.ts`, `open-node-vessel.ts`); a wiki island's verbs that read the catalog document move to the view's catalog ask. O1.
@@ -592,16 +595,11 @@ Each step names the commits that hold it, as pointers into git.
 # The cadence offers, which may follow the ceremony.
 ''Riskiest'': the steward signer, proven by the docker `meme` scenario by hand as well as by a shard.
 
-!!! W ~ the wire and the face proof, one socket cutover (waits on K; its pure steps may start early)
-# ''Landed ahead'', each a pure module out of the barrel, specified in code and reached by no production caller: Noise IK (`noise-ik.ts`); the proof subjects (`face-proof-subjects.ts`); private authority with the withdrawal fold and the chain check (`face-authority.ts`); the session signer (`session-signer.ts`); the session face supplier (`session-face.ts`); the gate bundle (`gate-bundle.ts`); the exchange's subjects (`gate-exchange.ts`); the gate behind interfaces, around the chain check and its six verdicts (`face-gate.ts`); the dialer (`face-dial.ts`).
-# ''Landed ahead'': the handshake funnel. Every test that speaks the handshake goes through one helper (`gate-dial-fixture.ts`, in mesh and in node), and `gate-dial-funnel.test.ts` holds the line; the cutover edits that helper and the old wire's own vectors.
-# ''Built'': fleet join carries a device edge, face certificates, grants and a sealed address secret on node and browser; add-a-face and the grant ring stand; the retired join doors leave.
-# ''Live'': the admit and fleet answer sign the full sovereign sync route pin after N's cosign door; W owns the admit-carriage hunk of `nexus-contract.ts`.
-# ''The socket gate'': both dialers, the face gate, the sorter and the ring's lookup by face subject stand in code; every vessel socket follows attach, verdict and open, and the floor announcement signs under its pinned gate bundle.
-# One dial per (hearth, Nexus).
-# The sibling channel at face scope.
-# Canon.
-''Riskiest'': the cutover; an old-wire dialer must draw no byte, and node and browser must both cross after it.
+!!! W ~ the wire and the face proof, one socket cutover
+# ''Built'': the gate's modules stand called on the live path (Noise IK, the proof subjects, private authority, the session signer and face supplier, the gate bundle and exchange, the face gate and the dialer); every handshake test speaks through one helper (`gate-dial-fixture.ts`, held by `gate-dial-funnel.test.ts`).
+# ''Built'': fleet join on every face carries a device edge, face certificates, grants, a sealed address secret, the charter, the household admit and the floor pins; the admit and fleet answer sign the full sovereign sync route pin after N's cosign door.
+# ''Built'': every vessel socket follows attach, verdict and open through the sealed face gate; one dial per (hearth, Nexus) off the admit's pin; the floor announcement signs under its pinned gate bundle; a fresh browser device stands at the floor; a herm answers the knock where a Nexus carries it.
+# ''Owed'': `W4`, `W9` to `W12` and `W14` to `W23` in #/the-loops.
 
 !!! E ~ the ember (waits on W's join door, on `B1` for an ember in a browser leaf, and on H's grant re-cut, `H8`, for the walker arm at SERVING; its three questions stand ruled in #/rulings; lands before the fence)
 # ''Landed ahead'': the law, on paper (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). A serving key the vessel key wraps seals the serving tier alone; the ember's slot wraps that key alone, so an ember-raised vessel opens no seat key, persona root, content key or cold row.
@@ -779,6 +777,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KirRwzsY8mhfSLk00oA5A-_qtF1SKXhfEIs173D0hVc
+<<^ code="&#x0003;">>ni:///sha-256;aBiokevLCX-VUQP6waMih7EAEO5vnWZUhMQ6tjtOWlE
 
 <<^ code="&#x0004;" -> to="?">>

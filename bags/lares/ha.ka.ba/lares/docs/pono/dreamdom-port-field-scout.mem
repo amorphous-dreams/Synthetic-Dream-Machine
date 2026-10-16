@@ -1,0 +1,100 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 14
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-port-field-scout — VERBATIM handoff of a tasked spirit (Codex Luna with web search, woken apart and handed the framing alone): the field read for train D's phase D2, the record port, 2026-10-16. Prior art in CouchDB's changes feed, Replicache pull and push, Firestore listeners and Yjs awareness; the principles and failure stories at the cursor, echo, snapshot, tombstone and presence seams; the choices in D2's framing that look risky; the five findings most likely to change D2."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The field around D2 ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked spirit reported from a web-research pass, each claim marked reached or inferred, kept whole as a ''collision surface''; several named systems stand marked unreached.
+
+''What the house took from it.'' Five findings become D2's contract questions, each a red test where the port's pure core lands: a chunked snapshot carries a stable base cursor and a rule for changes during the transfer; a cursor names its reset when it expires or when `width` or `localFilter` changes; a write's effects, `port:written` and the `causedBy` echo share one atomic boundary with retry and idempotence named; tombstone retention names how a lagging subscriber learns its cursor ran too old; presence names its refresh, its reconnect state and its disconnect cleanup. A skinny record also tells a field left unprojected from a field deleted, and an invoke re-checks authority when it runs.
+
+''Read it against us, not for us.'' Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+<<~ status "D2 field review: useful precedents found; some requested systems and failure histories remain unverified">>
+
+## 1. Prior art
+
+**Cursors, snapshots, tombstones, and subscriptions.** CouchDB’s `_changes` feed supports resuming with `since`/`Last-Event-ID`, continuous feeds, and explicit `deleted: true` changes. Its docs warn that failover can replay changes, so consumers should be idempotent; they also say results can be only partially ordered. [reached: fetched https://docs.couchdb.org/en/stable/api/database/changes.html]
+
+Replicache’s pull uses an opaque cookie plus patches; `clear` followed by puts supports rebuilding when a cursor is invalid. Its mutation acknowledgment is a `lastMutationID`, and the docs require mutation effects and that ID to become visible atomically. They warn that exposing the acknowledgment before the effects can cause undefined behavior. [reached: fetched https://v12.doc.replicache.dev/reference/server-pull] [reached: fetched https://doc.replicache.dev/reference/server-push]
+
+Firestore listeners send an initial snapshot and subsequent updates; local-cache events can be stale or incomplete, and metadata-only changes are opt-in. [reached: fetched https://firebase.google.com/docs/firestore/query-data/listen?authuser=117&hl=en] [reached: fetched https://firebase.google.com/docs/firestore/enterprise/enable-offline]
+
+**Write echoes and optimistic updates.** Replicache’s mutation IDs let clients identify which optimistic mutations have been authoritatively processed; the server must expose the mutation result and acknowledgment consistently. [reached: fetched https://doc.replicache.dev/concepts/how-it-works] [reached: fetched https://doc.replicache.dev/reference/server-push] **Inference:** `causedBy:[txId]` gives DreamDOM a useful local equivalent for tagging and suppressing its own echoed write, but the framing should specify duplicate delivery and acknowledgment ordering as explicitly as Replicache does. //(inferred)//
+
+**Width and projection.** The requested GraphQL field-selection, ElectricSQL Shapes column projection, and TiddlyWiki `skinny` precedents were not verified from fetched pages in this pass. [unreached] The framing’s width filter is therefore a design choice in this evidence set, rather than a proven analogy. //(inferred)//
+
+**Presence.** Yjs Awareness is separate from the durable Yjs document, uses client states and clocks, and marks peers offline after 30 seconds without updates. Its docs advise providers to broadcast regularly, remove state promptly on known disconnect, and send complete awareness state to new peers; repeated updates are safe. [reached: fetched https://docs.yjs.dev/api/about-awareness] The proposed 30-second expiry and “never persisted” rule align with that model. //(inferred)//
+
+**Other named prior art.** ElectricSQL, Zero, Reflect, Automerge-repo sync, LiveStore, Linear’s sync engine, Liveblocks, Phoenix Presence, TiddlyWeb, and TW5’s own syncer were not verified against primary sources in this pass. [unreached]
+
+## 2. Principles and failure stories
+
+- **Make replay safe.** CouchDB explicitly warns that failover can replay previously seen changes; consumers need idempotence. Replicache’s mutation IDs similarly support deduplication and ordered processing. [reached: fetched https://docs.couchdb.org/en/stable/api/database/changes.html] [reached: fetched https://doc.replicache.dev/byob/remote-mutations]
+- **Keep cursor and contents coherent.** Replicache requires the acknowledged mutation’s effects to be present atomically with its mutation ID. DreamDOM should define the same consistency boundary for `port:written`, the advancing cursor, and the subscriber echo. [reached: fetched https://doc.replicache.dev/reference/server-push] //(inferred)//
+- **Treat a cursor as recoverable, not infallible.** Replicache can reset a client view when a cookie is unusable; Firestore distinguishes cache-derived, potentially stale/incomplete snapshots from server snapshots. DreamDOM should specify what happens when `since` is expired, unknown, or belongs to a different width/filter. [reached: fetched https://v12.doc.replicache.dev/reference/server-pull] [reached: fetched https://firebase.google.com/docs/firestore/enterprise/enable-offline] //(inferred)//
+- **Presence needs refresh and disconnect handling.** Yjs uses regular refreshes for liveness and recommends immediate offline updates on known disconnect; duplicate state delivery is acceptable. A single “expires after 30s” rule needs a defined heartbeat/refresh source and cleanup behavior. [reached: fetched https://docs.yjs.dev/api/about-awareness] //(inferred)//
+- **Chunking seam failure stories:** I did not fetch primary documentation establishing specific snapshot-chunking failures or remedies for the named systems. [unreached] DreamDOM’s framing specifies byte limits, but the provided D2 text does not define chunk sequence IDs, snapshot completion/abort, or how changes concurrent with a snapshot are ordered. //(inferred)//
+- **Lazy-load seam failure stories:** I did not verify TW5 `skinny` behavior or a documented lazy-load failure report. [unreached] D2 does include a `port-skinny-then-load` proof, but should also define behavior when a field is absent, stale, or concurrently changed while loading. //(inferred)//
+
+## 3. Choices that look risky
+
+- **Cursor meaning across width/filter changes.** `since` plus a configurable `width` and `localFilter` can skip records if the cursor is reused after a projection changes. Replicache’s reset path is a precedent for explicitly invalidating/rebuilding state when a cursor cannot safely describe the client view. [reached: fetched https://v12.doc.replicache.dev/reference/server-pull] //(inferred)//
+- **Snapshot/change race.** Chunked snapshots need a stable base cursor and a clear rule for changes that occur during transfer; otherwise clients can miss or double-apply updates. The D2 description says “chunked” but does not state those rules. //(inferred)//
+- **Tombstone retention.** Tombstones enable deletion propagation, but the framing does not specify how long they remain or how a long-offline subscriber learns that its cursor is too old. CouchDB’s non-guarantee of intermediate per-document changes and replay warning reinforce the need to define recovery and idempotence. [reached: fetched https://docs.couchdb.org/en/stable/api/database/changes.html] //(inferred)//
+- **`causedBy` semantics.** Mandatory transaction IDs are useful, but the framing should say whether IDs are unique per actor/session, how retries are recognized, whether a write can partially succeed, and whether `port:written` precedes or is equivalent to the echoed change. Replicache’s atomic acknowledgment rule is relevant evidence. [reached: fetched https://doc.replicache.dev/reference/server-push] //(inferred)//
+- **Width as a field filter.** If a skinny subscriber receives a record update without a field, it must distinguish “not projected” from “field absent/deleted.” The `load` answer also needs a version/cursor so older loaded data cannot overwrite newer projected data. //(inferred)//
+- **Presence home remains an open ruling.** The model roadmap explicitly leaves presence’s home at width none unresolved. If presence is outside the record stream, its ordering, reconnect snapshot, actor identity, and access gate still need a contract. Yjs shows that presence can be ephemeral yet still require full state on connect and regular refresh. [reached: fetched https://docs.yjs.dev/api/about-awareness] //(inferred)//
+- **Capability gate must bind to the rendered affordance.** A stale `renderCursor` refusal is valuable, but authorization should also be checked against the current actor and target when execution occurs; a previously rendered affordance alone is not authority. //(inferred)//
+
+## Five findings most likely to change D2
+
+1. Give each snapshot a stable base cursor and define how concurrent changes are buffered or replayed. //(inferred)//
+2. Specify cursor expiry/reset behavior, especially when `width` or `localFilter` changes. [reached: fetched https://v12.doc.replicache.dev/reference/server-pull] //(inferred)//
+3. Make write effects, `port:written`, and the `causedBy` echo share explicit atomicity and retry semantics. [reached: fetched https://doc.replicache.dev/reference/server-push] //(inferred)//
+4. Define tombstone retention and the recovery path for subscribers that fall behind. [reached: fetched https://docs.couchdb.org/en/stable/api/database/changes.html] //(inferred)//
+5. Decide the presence lane and specify refresh, reconnect state, and disconnect cleanup. [reached: fetched https://docs.yjs.dev/api/about-awareness] //(inferred)//
+
+<<~ lares yield -> to="controller">>
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;F4n9KsbkfDrBNq7yNJyl95uH5bdtuuHwa6mcMTKwxuQ
+
+<<^ code="&#x0004;" -> to="?">>
