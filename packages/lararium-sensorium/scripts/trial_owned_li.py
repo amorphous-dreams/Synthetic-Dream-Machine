@@ -119,6 +119,15 @@ def _parse_with_warrant(kind: str, text: str) -> tuple[dict | None, str]:
     return tree, "router-ungraded"
 
 
+def _full_constituency_warrant(tiers: list[str], identity: dict) -> bool:
+    """Require Stanza for every prose graft; a carrier with no prose needs no graft."""
+    stanza = {"stanza-constituency", "carrier+stanza-constituency"}
+    allowed = stanza | {"carrier+no-prose"}
+    return (bool(stanza.intersection(tiers)) and set(tiers) <= allowed
+            and any(name.startswith("en/") for name in
+                    identity["stanza_assets_sha256"]))
+
+
 def project_owned_li(state_root: Path | str, observation_ids: list[int], *,
                      require_constituency: bool = False,
                      cut_hook: Callable[[str], None] | None = None) -> dict:
@@ -166,10 +175,7 @@ def project_owned_li(state_root: Path | str, observation_ids: list[int], *,
         if _runtime_identity() != identity:
             raise ValueError("parser assets changed during Shape projection; restart on the new basis")
         tiers = sorted({tier for _, _, _, tier in shapes})
-        full = all(tier == "stanza-constituency" or
-                   tier == "carrier+stanza-constituency" for tier in tiers)
-        full = full and any(name.startswith("en/") for name in
-                            identity["stanza_assets_sha256"])
+        full = _full_constituency_warrant(tiers, identity)
         if require_constituency and not full:
             raise ValueError(f"constituency model required; parser tiers held {tiers}")
         cut("after_parse")

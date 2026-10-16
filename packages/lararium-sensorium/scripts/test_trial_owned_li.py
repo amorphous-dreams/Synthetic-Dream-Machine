@@ -1,5 +1,6 @@
 """Closed corpus induction keeps occurrence joins and an immutable ordered basis."""
 
+import hashlib
 import json
 import os
 import sqlite3
@@ -12,8 +13,93 @@ import pytest
 from test_trial_intake import HOST, frozen
 from test_trial_owned_content import _duplicate_source
 from trial_intake import DB_NAME, intake_frozen
-from trial_owned_li import project_owned_li
+import structure_router
+import trial_owned_li as owned_li
+from trial_owned_li import _full_constituency_warrant, project_owned_li
 from trial_project import project_observation
+
+
+def test_constituency_warrant_counts_only_prose_that_reached_stanza():
+    assets = {"stanza_assets_sha256": {"en/constituency/model.pt": "digest"}}
+    assert _full_constituency_warrant(
+        ["carrier+no-prose", "carrier+stanza-constituency"], assets)
+    assert not _full_constituency_warrant(["carrier+no-prose"], assets)
+    assert not _full_constituency_warrant(
+        ["carrier+no-prose", "carrier+spacy-dependency",
+         "carrier+stanza-constituency"], assets)
+    assert not _full_constituency_warrant(
+        ["carrier+no-prose", "carrier+stanza-constituency"],
+        {"stanza_assets_sha256": {}})
+
+
+def _typed_memetic_observation(tmp_path, name, texts):
+    receipt, _ = frozen(tmp_path, name, texts[0])
+    freeze = json.loads(receipt.read_text())
+    evidence = Path(freeze["evidence"])
+    first = json.loads(evidence.read_text().strip())
+    rows = [{**first, "uuid": f"turn-{index + 1}", "message": text}
+            for index, text in enumerate(texts)]
+    raw = b"".join((json.dumps(row) + "\n").encode() for row in rows)
+    evidence.write_bytes(raw)
+    freeze.update({"evidence_bytes": len(raw), "evidence_sha256": hashlib.sha256(raw).hexdigest(),
+                   "native_size": len(raw), "rows_by_type": {"user": len(rows)}})
+    receipt.write_text(json.dumps(freeze))
+    state = tmp_path / f"{name}-state"
+    observed = intake_frozen(state, receipt, f"{name}-intent", source_host=HOST)
+    project_observation(state, observed["observation_id"])
+    return state, observed["observation_id"]
+
+
+def test_carrier_only_rows_stay_degraded_even_when_stanza_assets_exist(tmp_path, monkeypatch):
+    text = "<task-notification>\n<task-id>abc</task-id>\n</task-notification>"
+    tree, tier = owned_li._parse_with_warrant("memetic-wikitext", text)
+    assert tree is not None and tree["type"] == "document"
+    assert tier == "carrier+no-prose"
+
+    identity = {**owned_li._runtime_identity(),
+                "stanza_assets_sha256": {"en/constituency/model.pt": "present"}}
+    monkeypatch.setattr(owned_li, "_runtime_identity", lambda: identity)
+    state, observation = _typed_memetic_observation(tmp_path, "li-no-prose", [text])
+    receipt = project_owned_li(state, [observation])
+    assert receipt["parser_tiers"] == ["carrier+no-prose"]
+    assert receipt["warrant"] == "degraded-parser"
+    with pytest.raises(ValueError, match="constituency model required"):
+        project_owned_li(state, [observation], require_constituency=True)
+
+
+def test_mixed_carrier_and_stanza_rows_can_hold_full_warrant(tmp_path, monkeypatch):
+    identity = owned_li._runtime_identity()
+    if not any(name.startswith("en/") for name in identity["stanza_assets_sha256"]):
+        pytest.skip("the English Stanza constituency asset is not provisioned")
+    monkeypatch.setattr(owned_li, "_runtime_identity", lambda: identity)
+    carrier = "<task-notification>\n<task-id>abc</task-id>\n</task-notification>"
+    prose = "The whale crossed the sea under a quiet moon."
+    carrier_tree, carrier_tier = owned_li._parse_with_warrant("memetic-wikitext", carrier)
+    prose_tree, prose_tier = owned_li._parse_with_warrant("memetic-wikitext", prose)
+    assert carrier_tree is not None and carrier_tier == "carrier+no-prose"
+    assert prose_tree is not None and prose_tier == "carrier+stanza-constituency"
+
+    state, observation = _typed_memetic_observation(tmp_path, "li-mixed", [carrier, prose])
+    receipt = project_owned_li(state, [observation], require_constituency=True)
+    assert receipt["parser_tiers"] == sorted({carrier_tier, prose_tier})
+    assert receipt["warrant"] == "full-constituency"
+
+
+def test_degraded_prose_route_cannot_satisfy_constituency_gate(tmp_path, monkeypatch):
+    identity = owned_li._runtime_identity()
+    monkeypatch.setattr(owned_li, "_runtime_identity", lambda: identity)
+    monkeypatch.setattr(structure_router, "_prose_stanza", lambda _text: None)
+    monkeypatch.setattr(structure_router, "_prose_spacy", lambda _text: None)
+    prose = "The whale crossed the sea under a quiet moon."
+    tree, tier = owned_li._parse_with_warrant("memetic-wikitext", prose)
+    assert tree is not None and tier == "carrier+segmented-prose"
+
+    state, observation = _typed_memetic_observation(tmp_path, "li-degraded", [prose])
+    with pytest.raises(ValueError, match="constituency model required"):
+        project_owned_li(state, [observation], require_constituency=True)
+    receipt = project_owned_li(state, [observation])
+    assert receipt["parser_tiers"] == [tier]
+    assert receipt["warrant"] == "degraded-parser"
 
 
 def test_li_basis_replay_and_drift(tmp_path):
