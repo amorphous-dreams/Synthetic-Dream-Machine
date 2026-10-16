@@ -57,6 +57,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 ** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': Hodge takes Podge's findings and ground, Podge takes Hodge's, so each carries the seed of the other face, as the Taiji's dots do. The second pass confirms or refutes each finding against the source and reads the other's ground for what its own face missed.
 ** Spin holds both faces moving and never folds them into one verdict early. It sorts the findings: orthogonal pairs both stand, since order and flux most often run orthogonal; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
 ** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. A crew that builds and reads fresh keeps the same faces: the builder wears Hodge over what it made, and the fresh reader wears Podge over how it moves.
+* ''The build pair'' (operator, 2026-10-16). A Codex Sol spirit and a Copilot spirit build together, each in its own worktree, on modules the lead splits so neither touches the other's files, or on one module where Sol builds and the Copilot spirit builds the red tests and controls. They wear the Chao's faces as builders: Sol holds Hodge over the contract it builds, the Copilot spirit holds Podge over how it moves. Their work then meets the review pair and the lane's Copilot PR review (#/the-lanes) before the controller merges it.
 * ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
 * ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
@@ -88,8 +89,14 @@ GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Mi
 | Copilot code review | GitHub's PR reviewer | once per train or span-to-main PR, never per push |
 | micro-sweeps | a low-multiplier model | during aftermath: evergreen words, L-Prime, comment drift; findings only |
 
+| ''build spirit'' in a build pair (#/the-shapes) | `gpt-5-mini` or `claude-haiku-4.5` by default; `gpt-5.3-codex` where the module carries load | one agentic prompt per module brief, in its own worktree |
+| ''PR review'' of a lane's pull request | GitHub's Copilot code review | once per lane PR; again only after a substantive change |
+
+A premium request counts per prompt, never per tool call, so one whole agentic build or review in one prompt costs one multiplier.
+
 !!! Its fences
-# ''Read-only.'' `copilot -p` launches with `--no-ask-user`, denies every write, commit and push tool, and allows only git reads and the witnesses. It hands back findings; the Episkopos applies each fix.
+# ''Read-only when it reviews.'' A review launch denies every write, commit and push tool and allows only git and file reads. It hands back findings; a hand in the seat applies each fix.
+# ''Its own worktree when it builds.'' A build launch allows writes and the package's test runner inside its own worktree alone, and still denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot; it runs a second permission system, so routing a refused step through it counts as a retry.
 # ''Overage off.'' The account's Copilot budget stands at zero, so the allowance empties and stops.
 # ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass. A legacy annual plan receives no new models and falls to Copilot Free when its term ends; Opus and Codex stand without it.
@@ -100,6 +107,17 @@ GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Mi
 The low-cost pair spends about four low-multiplier prompts per burst: two first passes and two traded passes. A run's own closing log line (`Requests … Premium`) states its spend; the entitlement cache refreshes on its own schedule, so the before-and-after reading of it can stand unchanged across a run.
 
 A prepaid allowance resets on the first of each month and carries nothing over, so an unspent request buys nothing. The controller spends it by plan: Flash reads for each burst, a few Gemini deep reads for load-bearing bursts, one code review per train, and the rest for the Episkopos's spot checks. Each handback prints the allowance left before and after, read from the account's own entitlement cache, and that reader proves itself against a known spend.
+
+<<~/ahu>>
+
+<<~ ahu #/the-lanes>>
+
+!! The lanes ~ a sub-branch, a pull request, a crucible (operator, 2026-10-16)
+
+* ''A lane opens its own sub-branch'' of the work branch: `feature/green-jello-dinosaur-5--<lane>`, cut from the span's settled head. The build pair commits there through the lead; nothing lands on the work branch directly.
+* ''The crucible.'' When the lane's burst stands red-first and green locally: the review pair reads it (Hodge, Podge, the Spin), the Opus overwatch reads it, the lead closes each finding, then the lead pushes the lane branch and opens a pull request into the work branch. CI and held-out run on the lane branch.
+* ''Copilot reviews the pull request'' once, as the lane's GitHub-side eye; its comments get answered or closed in the lane, and a second review runs only after a substantive change.
+* ''The controller merges'' a lane whose CI, held-out and review read clean, then shards and pushes the work branch's head as the lane law asks.
 
 <<~/ahu>>
 
@@ -149,6 +167,6 @@ A prepaid allowance resets on the first of each month and carries nothing over, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CpwGm6XYlCWwpFm9lzKxQA4CsySdrlTnBlp_u0x-wA4
+<<^ code="&#x0003;">>ni:///sha-256;Lpa3gLyp4BxFxFusW7TgbKelIyz8yLMwrIWuRQUld88
 
 <<^ code="&#x0004;" -> to="?">>
