@@ -73,6 +73,8 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 | `admin:resolve-binding-request` | Ask the admin island to mint/resolve keyhive-bound @personal/@draft docs. |
 | `admin:evict-result` / `admin:residency-op-result` | Outcomes for admin-commanded eviction / residency ops. |
 | `wiki:place-verb` | Place a wiki-scope job in a wiki island's TW5 wiki. |
+| `lar:control-event` | One act, sense, write or service answer from a surface, addressed to one control of one camera under one mount epoch; read whole at the door through the camera contract's reader. |
+| `lar:resend` | Ask the named camera for a whole repaint under a new mount epoch. |
 
 !!! Message types — Island → vessel
 
@@ -90,6 +92,11 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 | `admin:evict-request` / `admin:residency-op` | Admin island commands eviction / residency action. |
 | `admin:wiki-alert` | Admin computes "affected by content"; main delivers a `system-alert` verb to the affected LIVE island (fire-and-forget; unmounted wikis skipped). |
 | `wiki:verb-result` | Wiki island result for a job the vessel awaits. |
+| `lar:frame` | The keyed absolute frame of one camera on one surface, each key whole under its own revision; never an `event` envelope. |
+| `lar:control-result` | The answer to one control event: `applied`, `stale-target` or `refused` with a named reason. |
+| `lar:service` | A host door the engine asks the surface to open, under a person's activation, answered by a `lar:service-result` control event. |
+
+''The camera's kinds ride the island wire under their own names'' (`lar:///ha.ka.ba/lararium/mesh/lar-camera`). Each reads whole at its door through the contract's own reader, and a malformed one vanishes there as any malformed message does. No `wiki:dom-event` or `wiki:dom-input` kind passes a door.
 
 ''The teardown handshake runs once per island.'' A composition reaches its daemon island's shutdown by more than one road (its own dispose, then the list of what it stood). The first call sends `teardown`, hears `teardown:ack` and terminates the worker; every later call reads that first answer and sends nothing, since a terminated worker can answer no second `teardown`. A hard dispose runs no handshake: it settles the answer as unacked, and it ends a handshake that stands waiting at once. The handshake's bound stays a bound for an island that never answers (`packages/lararium-tw5/src/daemon-vm-core.ts`, `shutdown`; `packages/lararium-node/tests/daemon-vm-shutdown-runs-once.test.ts`; `tools/two-phase-boot.test.mjs`, T5). The wiki islands' pool holds the same law: `unmountWiki` and `disposeAll` that reach one island while its handshake waits read that one handshake (`packages/lararium-mesh/src/vessel-island-pool-core.ts`; `packages/lararium-mesh/tests/pool-teardown-runs-once.test.ts`). ''A mount that arrives while its island tears down waits for that handshake's answer.'' The island's slot reads live until the handshake ends, so the pool's two mount doors read the handshake in flight first: the mount waits for its answer, by the answer and no clock, and then enters afresh, where it mounts a new island, folds into a mount that waited beside it, or refuses by name (`pool-closing`, `session-ended`, `generation-fenced`) (`packages/lararium-mesh/src/vessel-island-pool-core.ts`, `mountWiki`, `mountSurface`; `packages/lararium-mesh/tests/pool-mount-during-teardown.test.ts`).
 
@@ -115,6 +122,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rIxh2uFuk_lxJ59oG2ydPLEoYI_dQng0JaFV5qlhD9w
+<<^ code="&#x0003;">>ni:///sha-256;OxAQhZt5ps-6p_RhrcT9L7ewTJgW1NmvEp2LpTR7d84
 
 <<^ code="&#x0004;" -> to="?">>

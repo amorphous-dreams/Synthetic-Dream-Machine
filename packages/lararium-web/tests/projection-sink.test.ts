@@ -2,26 +2,38 @@
  * projection-sink.test — THE PAGE'S REPLICA KEEPS EACH SURFACE'S FRAMES, EVENTS AND VALUES APART.
  *
  * Every island counts its own revisions and its own render-ids. One pane shows whichever surface holds the
- * vessel's projection gate, so the sink orders frames within a surface, stamps every returned event with the
- * surface that painted its target, and carries nothing across a switch. Real Chromium, the shipped idiomorph.
+ * vessel's projection gate, so the sink orders a frame's keys within a surface and its mount epoch, stamps every
+ * returned event with the surface that painted its target, and carries nothing across a switch. Real Chromium,
+ * the shipped idiomorph, the keyed `lar:frame` of the camera contract.
  */
 import { describe, expect, test } from "vitest";
-import { createProjectionSink, type ProjectionFrame } from "../src/projection-sink.js";
+import { LAR_CAMERA_STORY, LAR_FRAME, LAR_KEY_STYLE, LAR_KEY_SURFACE, type LarMsg_ControlEvent } from "../../lararium-mesh/src/lar-camera.js";
+import { createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
 
 function mount() {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const sink = createProjectionSink(host, { inputMaxChars: 16 });
   const events: string[] = [];
-  const domEvents: Array<{ surface: string; rid: string; type: string; fields: Record<string, number | boolean> }> = [];
+  const sent: LarMsg_ControlEvent[] = [];
   sink.arm({
-    sendDomEvent: (surface, rid, type, fields) => { events.push(`${surface}:${type}:${rid}`); domEvents.push({ surface, rid, type, fields }); },
-    sendDomInput: (surface, rid, type, value) => { events.push(`${surface}:${type}:${rid}=${value}`); },
+    sendControlEvent: (surface, ev) => {
+      sent.push(ev);
+      const target = ev.controlId ?? ev.renderId;
+      events.push(typeof ev.wholeValue === "string" ? `${surface}:${ev.action}:${target}=${ev.wholeValue}` : `${surface}:${ev.action}:${target}`);
+    },
   });
   const pane = (): HTMLElement => host.shadowRoot!.querySelector<HTMLElement>(".lar-projection")!;
-  return { host, sink, events, domEvents, pane, done: () => host.remove() };
+  return { host, sink, events, sent, pane, done: () => host.remove() };
 }
-const frame = (surface: string, rev: number, html: string): ProjectionFrame => ({ surface, rev, html, css: "" });
+const frame = (surface: string, rev: number, html: string, sensed: Record<string, number> = {}): LarSurfaceFrame => ({
+  type: LAR_FRAME, wikiUri: `lar:///wiki/${surface}`, cameraId: LAR_CAMERA_STORY, mountEpoch: 1, surface,
+  keys: [{ key: LAR_KEY_SURFACE, rev, html }, { key: LAR_KEY_STYLE, rev, css: "" }], sensedRevision: sensed,
+});
+const typeInto = (field: HTMLInputElement, value: string): void => {
+  field.value = value;
+  field.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+};
 
 describe("★ revisions belong to a surface ★", () => {
   test("a switch paints the new surface's first frame though its revision runs lower", () => {
@@ -49,10 +61,10 @@ describe("★ an event names the surface that painted its target ★", () => {
     const button = m.pane().querySelector("button")!;
     button.focus();
     button.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", keyCode: 27, bubbles: true, composed: true }));
-    expect(m.domEvents.map(({ type, rid, fields }) => [type, rid, fields.keyCode])).toEqual([["keydown", "7", 27]]);
+    expect(m.sent.map((ev) => [ev.action, ev.renderId, ev.key?.keyCode])).toEqual([["lar:key", "7", 27]]);
     // CONTROL: ordinary typing is not relayed.
     button.dispatchEvent(new KeyboardEvent("keydown", { key: "a", keyCode: 65, bubbles: true, composed: true }));
-    expect(m.domEvents).toHaveLength(1);
+    expect(m.sent).toHaveLength(1);
     m.done();
   });
 
@@ -61,10 +73,10 @@ describe("★ an event names the surface that painted its target ★", () => {
     m.sink.apply(frame("lares", 1, `<div data-lar-rid="8"><textarea></textarea></div>`));
     const area = m.pane().querySelector("textarea")!;
     area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, ctrlKey: true, bubbles: true, composed: true }));
-    expect(m.domEvents.map(({ type, rid, fields }) => [type, rid, fields.keyCode, fields.ctrlKey])).toEqual([["keydown", "8", 13, true]]);
+    expect(m.sent.map((ev) => [ev.action, ev.renderId, ev.key?.keyCode, ev.modifiers?.ctrl])).toEqual([["lar:key", "8", 13, true]]);
     area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true, composed: true }));
     area.dispatchEvent(new KeyboardEvent("keydown", { key: "Control", keyCode: 17, ctrlKey: true, bubbles: true, composed: true }));
-    expect(m.domEvents).toHaveLength(1);
+    expect(m.sent).toHaveLength(1);
     m.done();
   });
 
@@ -122,14 +134,13 @@ describe("★ an event names the surface that painted its target ★", () => {
     m.sink.apply(frame("lares", 1, `<button data-lar-rid="7">open</button><input data-lar-rid="9" value="a">`));
     m.pane().querySelector<HTMLButtonElement>("button")!.click();
     const field = m.pane().querySelector<HTMLInputElement>("input")!;
-    field.value = "typed";
-    field.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-    expect(m.events).toEqual(["lares:click:7", "lares:input:9=typed"]);
+    typeInto(field, "typed");
+    expect(m.events).toEqual(["lares:lar:click:7", "lares:lar:sense:9=typed"]);
 
     // The daemon's frame reuses render-id 7 for a different node; its click names the daemon.
     m.sink.apply(frame("daemon", 1, `<button data-lar-rid="7">summoned</button>`));
     m.pane().querySelector<HTMLButtonElement>("button")!.click();
-    expect(m.events.at(-1)).toBe("daemon:click:7");
+    expect(m.events.at(-1)).toBe("daemon:lar:click:7");
     m.done();
   });
 
@@ -142,7 +153,7 @@ describe("★ an event names the surface that painted its target ★", () => {
     expect(m.events).toEqual([]);
     field.value = "x".repeat(16);
     field.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-    expect(m.events).toEqual([`lares:change:9=${"x".repeat(16)}`]);
+    expect(m.events).toEqual([`lares:lar:commit:9=${"x".repeat(16)}`]);
     m.done();
   });
 });
@@ -153,8 +164,8 @@ describe("★ nothing leaks across a switch ★", () => {
     m.sink.apply(frame("lares", 1, `<input data-lar-rid="5" value="a">`));
     const typing = m.pane().querySelector<HTMLInputElement>("input")!;
     typing.focus();
-    typing.value = "typed by hand";
-    // CONTROL: the same surface re-projects — the focused field keeps what the person typed.
+    typeInto(typing, "typed by hand");
+    // CONTROL: the same surface re-projects before it sensed the edit — the field keeps what the person typed.
     m.sink.apply(frame("lares", 2, `<input data-lar-rid="5" value="b">`));
     expect(m.pane().querySelector<HTMLInputElement>("input")!.value).toBe("typed by hand");
     // The daemon's frame carries its own field under the same render-id: it shows the daemon's value.
@@ -166,15 +177,15 @@ describe("★ nothing leaks across a switch ★", () => {
   });
 });
 
-describe("★ a refused input says so beside the pane ★", () => {
-  const notice = (m: ReturnType<typeof mount>): HTMLElement | null => m.host.shadowRoot!.querySelector<HTMLElement>('[role="alert"]');
+describe("★ a refused input says so beside its field ★", () => {
+  const notice = (m: ReturnType<typeof mount>): HTMLElement | null => m.host.shadowRoot!.querySelector<HTMLElement>('output[role="status"]');
   const shown = (m: ReturnType<typeof mount>): boolean => { const n = notice(m); return n !== null && !n.hidden && (n.textContent ?? "") !== ""; };
   const type = (field: HTMLInputElement, value: string): void => {
     field.value = value;
     field.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
   };
 
-  test("an input past the bound raises a visible word naming both counts; CONTROL: one within the bound raises none", () => {
+  test("an input past the bound raises a visible word naming the bound; CONTROL: one within the bound raises none", () => {
     const m = mount();
     m.sink.apply(frame("lares", 1, `<input data-lar-rid="9" value="">`));
     const field = m.pane().querySelector<HTMLInputElement>("input")!;
@@ -182,10 +193,10 @@ describe("★ a refused input says so beside the pane ★", () => {
     type(field, "x".repeat(16));
     expect(shown(m)).toBe(false);
     type(field, "x".repeat(17));
-    expect(m.events).toEqual([`lares:input:9=${"x".repeat(16)}`]);     // the overlong value never crossed
+    expect(m.events).toEqual([`lares:lar:sense:9=${"x".repeat(16)}`]);     // the overlong value never crossed
     expect(shown(m)).toBe(true);
-    expect(notice(m)!.textContent).toContain("17");
-    expect(notice(m)!.textContent).toContain("16");
+    expect(notice(m)!.textContent).toBe("This field exceeds 16 characters. Shorten it before saving.");
+    expect(notice(m)!.dataset["larFor"]).toBe("9");
     // The word stands outside the painted pane, so no frame's morph removes it.
     expect(m.pane().contains(notice(m))).toBe(false);
     m.done();

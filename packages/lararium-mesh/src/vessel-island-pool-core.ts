@@ -1,7 +1,7 @@
 /**
  * VesselIslandPoolCore — the one platform-blind island pool.
  *
- * Holds all island residency ONCE — wela/anu + pin, LRU, sweeper, placeWikiVerb,
+ * Holds all island residency ONCE — wela/anu + pin, LRU, sweeper, placeWikiVerb, placeControlEvent,
  * diskMirror. Node and browser each supply only a VesselIslandHost (worker spawn,
  * sync channel, per-wiki storage, the ready handshake flag) and pool config
  * (mainRepo, diskMirrorGrant, hotCap); the browser runs the same residency on a
@@ -33,10 +33,10 @@ import {
   mkManifest,
   mkTeardown,
   mkWikiPlaceVerb,
-  mkWikiDomEvent, mkWikiDomInput,
   mkSensoriumSignal,
 } from "./island-protocol.js";
-import type { SensoriumSignalType } from "./island-protocol.js";
+import type { LarIslandToVesselMsg, SensoriumSignalType } from "./island-protocol.js";
+import { LAR_CONTROL_RESULT, LAR_FRAME, LAR_SERVICE, mkLarResend, type LarMsg_ControlEvent } from "./lar-camera.js";
 import type {
   AutomergeUrl,
   DocHandle,
@@ -237,15 +237,16 @@ export interface VesselIslandPoolCoreOptions {
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
-  /** Called when an island OUTSIDE any session emits a verse-event reaction. */
-  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event) => void;
+  /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
+   *  result or a host-door ask. */
+  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /**
-   * Called when a SESSION's island emits a verse-event reaction, with the key parts that island stands
-   * under. A session island's event never reaches `onWorkerEvent`: that door's callers place vessel verbs
+   * Called when a SESSION's island emits a verse-event reaction, a camera frame, a control result or a
+   * host-door ask, with the key parts that island stands under. A session island's event never reaches `onWorkerEvent`: that door's callers place vessel verbs
    * from an event's payload, and a session acts through a gate bound to its own facets. Absent, a surface
    * island's events drop.
    */
-  onSurfaceEvent?: (surface: IslandKeyParts, msg: IslandMsg_Event) => void;
+  onSurfaceEvent?: (surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /**
    * R3/R4 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
    * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). REQUIRED:
@@ -315,8 +316,8 @@ export class VesselIslandPoolCore {
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
-  private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event) => void) | null;
-  private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event) => void) | null;
+  private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
+  private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
@@ -851,30 +852,23 @@ export class VesselIslandPoolCore {
     });
   }
 
-  /** Relay a main-thread DOM event to the wiki island — the interactivity RETURN leg. Accumulate-
-   *  family but fire-and-forget: postMessage IS the ordered queue, the sink (TW5's own handler) is
-   *  synchronous, so no requestId/timeout/reserve. A cooled slot drops it (Hiatus drop-honesty). */
-  placeWikiEvent(
-    wikiId: string,
-    ev: { renderId: string; eventType: string; fields: Record<string, number | boolean> },
-    session?: PlacingSession,
-  ): void {
+  /** Place one control event (an act, a sense, a write or a service answer) into the island that renders its
+   *  camera: the up leg of the camera (lar:///ha.ka.ba/lararium/mesh/lar-camera). Fire-and-forget: postMessage
+   *  carries the order a person acted in, and the island answers on `lar:control-result`, which reaches the
+   *  vessel's handler. The event travels whole; the island door reads it through the contract's own reader. A
+   *  cooled slot drops it (Hiatus drop-honesty). */
+  placeControlEvent(wikiId: string, event: LarMsg_ControlEvent, session?: PlacingSession): void {
     const slot = this._placeable(wikiId, session);
     if (typeof slot === "string") return;
-    slot.worker.post(mkWikiDomEvent(ev));
+    slot.worker.post(event);
   }
 
-  /** Relay a main-thread TEXT event to the wiki island — the input leg of the RETURN. Same drop-honest
-   *  fire-and-forget as placeWikiEvent; `mkWikiDomInput` refuses a value past the bound at this shore,
-   *  and the island door refuses it again on arrival. */
-  placeWikiInput(
-    wikiId: string,
-    ev: { renderId: string; eventType: string; value: string },
-    session?: PlacingSession,
-  ): void {
+  /** Ask the island to paint one camera whole: it mints a fresh mount epoch and emits every key on `lar:frame`.
+   *  A surface switch and a late attach ask this. The same drop-honest fire-and-forget as placeControlEvent. */
+  resendProjection(wikiId: string, cameraId: string, session?: PlacingSession): void {
     const slot = this._placeable(wikiId, session);
     if (typeof slot === "string") return;
-    slot.worker.post(mkWikiDomInput(ev));
+    slot.worker.post(mkLarResend(cameraId));
   }
 
   /** Post one sensorium read-signal INTO a live island — the daemon's supervision read ridden
@@ -1067,11 +1061,13 @@ export class VesselIslandPoolCore {
         });
         return;
       }
-      if (raw.type === "event") {
+      if (raw.type === "event" || raw.type === LAR_FRAME || raw.type === LAR_CONTROL_RESULT || raw.type === LAR_SERVICE) {
         // A SESSION ISLAND'S EVENT TAKES ITS OWN DOOR. The wiki door's consumers place vessel verbs from an
-        // event's payload; a session's island reaches no such consumer.
-        if (surface) this._onSurfaceEvent?.(surface, raw as IslandMsg_Event);
-        else if (this._onWorkerEvent) this._onWorkerEvent(wikiId, raw as IslandMsg_Event);
+        // event's payload; a session's island reaches no such consumer. The camera's frames, answers and
+        // host-door asks take the same two doors.
+        const msg = raw as IslandMsg_Event | LarIslandToVesselMsg;
+        if (surface) this._onSurfaceEvent?.(surface, msg);
+        else if (this._onWorkerEvent) this._onWorkerEvent(wikiId, msg);
         return;
       }
       if (raw.type === "wiki:verb-result") {

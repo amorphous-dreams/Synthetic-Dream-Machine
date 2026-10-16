@@ -124,17 +124,17 @@ The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboar
 
 !! The wire ~ a keyed frame down, one answered event up
 
-''The frame.'' `projection:frame` carries one validated envelope:
+''The frame.'' `lar:frame` carries one validated envelope (`lar:///ha.ka.ba/lararium/mesh/lar-camera`):
 
 ```json
 {
-  "cameraId": "story",
-  "mountEpoch": "opaque-mount-id",
+  "cameraId": "lar:story",
+  "mountEpoch": 7,
   "grain": "surface",
   "keys": [
-    {"key": "surface", "rev": 41, "html": "<...whole surface...>"},
-    {"key": "style", "rev": 6, "css": "...whole stylesheet..."},
-    {"key": "membership", "rev": 3, "members": ["surface", "style"]}
+    {"key": "lar:surface", "rev": 41, "html": "<...whole surface...>"},
+    {"key": "lar:style", "rev": 6, "css": "...whole stylesheet..."},
+    {"key": "lar:membership", "rev": 3, "members": ["lar:surface", "lar:style"]}
   ],
   "sensedRevision": {"character.level": 8}
 }
@@ -145,9 +145,9 @@ The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboar
 * ''`sensedRevision` names, per control, the page revision the island had taken in when it rendered.''
 * ''The page compares revisions within one key and one mount epoch'', never by arrival and never across keys (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>, conditions 1 to 4).
 
-''The event.'' One message kind, `wiki:control-event`, carries `eventId`, `cameraId`, `mountEpoch`, `controlId`, `controlType`, `action`, `seenFrameRev`, an optional `localRev`, and `wholeValue`. Its schema bounds strings, id arrays and file bytes each on their own, and the island checks the rendered binding against its capability before any write.
+''The event.'' One message kind, `lar:control-event`, carries `eventId`, `cameraId`, `mountEpoch`, `controlId`, `controlType`, `action`, `seenFrameRev`, an optional `localRev`, and `wholeValue`. Its schema bounds strings, id arrays and file bytes each on their own, and the island checks the rendered binding against its capability before any write.
 
-''The answer.'' `projection:control-result` carries `eventId`, `controlId`, a `status`, and a reason where one applies. The status reads ''`applied`'', ''`stale-target`'', or a ''named refusal''. `applied` means the island accepted and applied the act; a later durable or cross-household confirmation takes its own measured state.
+''The answer.'' `lar:control-result` carries `eventId`, `controlId`, a `status`, and a reason where one applies. The status reads ''`applied`'', ''`stale-target`'', or a ''named refusal''. `applied` means the island accepted and applied the act; a later durable or cross-household confirmation takes its own measured state.
 
 ''A text operation rides the same event.'' A toolbar act carries the whole value and the selection as of the act; the island applies the operation to that pair and returns the whole value and the selection it wants. The page applies the answer only while its own revision still matches. No coordinate, focus, node value or geometry returns as an island's observation.
 
@@ -247,6 +247,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N9p1oe_IZFC3soX-mho7cqLVWqAWgSnrUnnAC2hNmYs
+<<^ code="&#x0003;">>ni:///sha-256;UamJmectDCk2pC29AZJV3DHfzvyRtGswQLSzSpgNt38
 
 <<^ code="&#x0004;" -> to="?">>

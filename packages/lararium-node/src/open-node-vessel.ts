@@ -2817,6 +2817,7 @@ async function prepareNodeBootOn(
       }),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {
+        if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
       },
       onEa: (wikiId) => { void mailbox.drain(wikiId); },   // breath → parked verbs deliver

@@ -24,7 +24,7 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
 import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
@@ -114,7 +114,7 @@ async function readOracle(read: OracleReader): Promise<void> {
 // The projection-nalu sink: one pane, painted by whichever surface holds the vessel's projection gate. The
 // sink scopes revisions to a surface and stamps each returned event with the surface that painted its target
 // (`projection-sink`); boot arms its return leg once the vessel stands.
-const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
+const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LAR_WHOLE_VALUE_MAX_CHARS });
 
 /**
  * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.
