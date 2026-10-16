@@ -89,7 +89,7 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 
 /**
  * Collect every ahu slot name a carrier declares — top-level and nested, across the whole text —
- * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: the exempt-slot class retired,
+ * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: no slot class is exempt,
  * so a slot the disk declares is a slot the render must address. The gate reads
  * this to guard its canonical-equivalence NOOP: a slot the disk declares that
  * the round-trip render drops names a LOSSY shore, never a cosmetic edit —
@@ -184,7 +184,7 @@ export function findAhuBalanceFaults(text: string): AhuBalanceFault[] {
 
 /**
  * Append a SINGLE leaf segment (or leaf path) under a prefix — the MINT relation, one of two that
- * used to share one function (`composeSlotPath`'s overcollapse): the other, READING an authored
+ * never share one function: the other, READING an authored
  * open, takes the open's own path AS its full address, verbatim, and never calls this. This one
  * mints a FRESH child address from a parent + a leaf (`placeMeme`/`childUri`/island-adaptor
  * minting) — it always appends, unconditionally; it never inspects the leaf for whether it already
