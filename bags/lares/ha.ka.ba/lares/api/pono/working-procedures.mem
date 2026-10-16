@@ -147,6 +147,9 @@ Collide each before trusting it.
 * ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
 * ''Mechanism at choke-points, policy in cascades.'' A capability stands as a manifest grant, never as a flag a cascade can set.
 * ''Prove by witness, never by assertion.'' A change that crosses a vessel proves itself against a staged vessel; a failing vector NAMES a hole.
+* ''Early alpha, until a third human'' (operator ruling, 2026-10-16). Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) ends the alpha line at the second operator's seat; this ruling places the sticky line at the third human, and the road's fence wording stays owed to that reading.
+* ''Evergreen, with no old shapes'' (operator ruling, 2026-10-16). No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
+* ''Recursive o-takiage'' (operator ruling, 2026-10-16). A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
 * ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
 
 <<~/ahu>>
@@ -162,6 +165,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ltKGmwuvFZkvQ7FKg2BKgKRKaKpIVsIV7If0sdggkuc
+<<^ code="&#x0003;">>ni:///sha-256;Lk_Fx0SKmaiz1VnNDK8jlsEFE4_bGLXtTBDftFSCNo0
 
 <<^ code="&#x0004;" -> to="?">>

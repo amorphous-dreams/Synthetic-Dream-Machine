@@ -1,0 +1,498 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/host-attractors-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/host-attractors-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 13
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "host-attractors-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): the forward attractors where a lararium runs inside or tightly coupled to a host, read as a capability added to any setup. Carries the browser and any HTML5 device, Node, the QuickJS and Hermes shells and their limits, the Unreal Engine 6 sidecar, Mudlet, MCP, Discord and chat surfaces, the projection-port sketch at two grains, coupling tiers and ranked attractors. Held as a collision surface; dreamdom#/the-superset carries the house's reading of it."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/host-attractors-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/host-attractors-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! host-attractors-scout ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on the hosts a lararium joins as a capability, from browsers to Unreal Engine 6, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
+
+''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+
+''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+# Host attractors: where a lararium can live, and what each host gets to be
+
+Fable web researcher, tasked spirit, 2026-10-16. Inputs read in full: the boot seed (`noosphere-boot.mem`), `portable-engine-plan-v2.md`, `model-and-gaps.md`. `third-ways.md` was left alone (still in progress). No repository code was read or run; the "what the branch gives" column rests on the survey's citations. Nothing in the tree was touched.
+
+**Reach in this pass.** `WebSearch` worked in both modes. `WebFetch` resolved only `github.com`; `developers.cloudflare.com` failed DNS (`getaddrinfo ENOTFOUND`), and I did not retry other non-GitHub hosts given the sibling's identical finding. `gh search code` and `gh api repos/Mudlet/Mudlet` were refused: "sessions are bound to their configured repositories" / "GitHub access to this repository is not enabled for this session". Marks: **[reached: fetched]** page read (GitHub only) · **[reached: search]** confirmed through search-returned passages · **[unreached]** memory only, flagged where used. Inferences read *(inferred)*.
+
+**Vocabulary used throughout.** *Store* = the CRDT (conflict-free replicated data type: a data structure that merges concurrent edits without a coordinator), one Automerge document per bag, the virtual backend. *Engine* = the headless TW5 VM: parser, filters, widgets and actions, wiki state, no DOM. *Projection* = any render or interaction surface: a DOM, a 3D scene, a Lua text pane, a terminal, a chat message, an MCP tool result. *Port* = the narrow protocol between engine and projection (the Tiddler Port of v2). *Host* = the thing that executes JavaScript (or WASM) and offers storage, networking and threads. *Lararium* = one operator's node: store + engine + at least one projection.
+
+---
+
+## 1. Summary
+
+1. **The frame holds against the field.** Every host surveyed falls cleanly into one of four coupling tiers once STORE, ENGINE and PROJECTION are separated: **(a)** full lararium inside; **(b)** engine inside, store synced elsewhere; **(c)** projection only, coupled to a nearby lararium over a port; **(d)** not viable. No host needed a fifth category. The one axis the field adds is *whether the host can run WebAssembly*, because Automerge is Rust compiled to WASM with no pure-JS build [reached: search; automerge-anywhere blog], while Hermes has no `WebAssembly` global (issue open since 2020, maintainer recommends transpiling to asm.js instead) [reached: fetched] and QuickJS has none either [reached: search]. So a JS engine without WASM can carry the ENGINE but not the STORE unless the host supplies Automerge natively.
+
+2. **The minimal engine-host contract is small**: an ES2020 engine, `new Function` (the kernel evaluates the core blob that way), a microtask queue, a timer or a host-driven pump, a message channel, a monotonic clock, 64-bit-ish memory budget in the tens of MB, no DOM, no Node, no threads assumed. Extism's JS PDK (QuickJS-ng in WASM, ES2020, no `setTimeout`, no event loop) [reached: fetched] marks the floor below which TW5's own refresh throttles stop working; mikrojs on ESP32 (80–250 KB heap) [reached: search] marks the floor below which the engine does not fit at all.
+
+3. **The STORE already has the right abstraction**: automerge-repo takes exactly one storage adapter (any key/value store with range queries) and many network adapters (WebSocket client/server, MessageChannel, BroadcastChannel, IndexedDB, NodeFS shipped) [reached: fetched; reached: search]. Portability of the store across hosts is a matter of writing adapters over whatever durable thing the host offers, and of refusing by name where the host offers nothing durable (Tauri's WebView storage does not survive app updates per PowerSync; iOS can evict WebView IndexedDB per Capacitor's own guide) [reached: search].
+
+4. **The PROJECTION port must carry one more thing than v2's ten kinds**: a *render ask* that returns a neutral intermediate (plain text, HTML string, or a small block tree), because a Lua pane, a Verse scene, a Discord message and an MCP resource cannot run wikitext themselves. With that, one engine serves a DOM (stock TW5 as replica camera), a 3D world, a Lua pane and an MCP tool. Prior art for one runtime behind many surfaces is abundant and consistent: ink's C# core with ports to JS, C++, Dart and plugins for Unity, Unreal 5.3+, Godot, where "the same story and seed produce the same output and saves" [reached: search]; Yarn Spinner's "generic dialogue virtual machine… with nothing Unity-specific in it" now ported to GDScript and being built natively for Unreal [reached: search]; MCP resources with URIs, `subscribe` and `notifications/resources/updated` [reached: fetched].
+
+4b. **The house's two-grain hypothesis holds with one correction** (§2.4): TW5's widget tree already carries affordances declaratively (`$link to`, `$button actions/message`, `$checkbox`, `$select`, `$edit-text`), so one parse yields both an HTML render for a rich glass and a blocks-plus-affordances stream for lean hosts, invoked by handle under a render cursor. But there are two *read* grains and only one *write* grain: records with `txId` stay the sole state carrier; edits on lean hosts go through `port:write`, never through repeated invokes.
+
+5. **Unreal Engine 6** (announced at State of Unreal / Unreal Fest, June 2026; early access "late 2027-ish", full release 12–18 months later) standardizes gameplay on Verse with a Scene Graph replacing Actors; Verse runs single-threaded with transactional semantics that extend to C++ it calls; Verse today exists only inside UEFN; nothing public says the compiler will be open-sourced or that UE6 embeds a JS engine [reached: search, several]. Verdict: **tier (c) sidecar now and for UE6**, with UE5.x able to reach **(b)** through PuerTS (V8 / QuickJS / Node backends, "4.22 ~ latest") [reached: fetched]. **Mudlet** embeds Lua 5.1, speaks GMCP and friends over telnet, has HTTP but no native WebSocket, and offers Geyser panes plus a new embeddable `Geyser.TextEdit` [reached: search]; verdict: **tier (c)**, with the lararium posing as the "game server" on localhost and GMCP as the port.
+
+6. **Ranked forward attractors**: make first-class next (1) browsers and WebView shells, (2) Node/Deno/Bun including Pi and Termux, (3) VS Code and Obsidian (their extension-host + webview split *is* the port), (4) an MCP projection, (5) a Foundry VTT module; projection-only (6) Mudlet over GMCP, (7) Owlbear Rodeo, (8) UE6 sidecar, (9) Neovim/Emacs; engine-inside-when-asked (10) Godot/Unity/UE5 via GodotJS/PuerTS; relay-only behind the island boundary (11) Cloudflare Durable Objects; drop as engine hosts: Roll20 (sandbox forbids HTTP and external code), e-readers (basic JS only; static camera at most), ESP32-class (heap), Bevy (no JS scripting at all).
+
+7. **What the branch already gives**: the third-runtime forge that nulls both platform flags, the `require` allowlist and `fs`-denying proxy, the CID integrity gate, Automerge-per-bag with Repo sync over MessageChannel and a WebSocket relay adapter, a Node `worker_thread` path with a disk projector, the fakedom static camera, and the island envelope family. Missing for the wider field: a generic `filter`/`render` ask on the live island (the one such surface, `meme-worker-script.ts`, is orphaned per the survey), and the Node path's asymmetries (survey gap #10).
+
+---
+
+## 2. The three-layer contract
+
+### 2.1 What the ENGINE may assume of a host (minimum)
+
+Drawn from the floor and ceiling hosts found in the field; each line names the evidence.
+
+| Assumption | Why this and not more | Evidence |
+|---|---|---|
+| **ES2020 language level**, no reliance on later syntax in the core blob | QuickJS targets ES2020 (Extism/Javy builds) and "almost complete ES2023" upstream; GodotJS claims "near-complete ES2020"; Hermes lags on some features *(inferred: Hermes historically omitted `with`, some RegExp features, and local `eval`; unverified here)* | [reached: fetched] Extism PDK; [reached: search] QuickJS, GodotJS |
+| **`new Function` / indirect eval available** | The kernel evaluates the core with `new Function("exports","module","require","window","process", src)` (survey §3.1). Hermes supports eval without JIT *(inferred)*; Extism's PDK runs Wizer snapshots, where runtime eval is possible but un-idiomatic | survey; [reached: fetched] Extism |
+| **A microtask queue (Promises)** | Universal across hosts surveyed, including Extism (Promise present) | [reached: fetched] |
+| **A timer, or a host pump** | TW5's draft throttle (`setTimeout`, 400 ms), the HandGate (400 ms trailing / 2 s cap) and the CoalesceGate all rest on timers. Extism's PDK has **no `setTimeout`, no event loop**, `queueMicrotask` runs immediately. So the contract names a `host.schedule(ms, fn)` capability; where absent, the engine runs in **pump mode**: the host calls `engine.tick(nowMs)` and the engine drains its own timer wheel *(inferred design)* | [reached: fetched] Extism; survey |
+| **A message channel** | postMessage-shaped (browser Worker, Node `worker_threads`, VS Code webview JSON messages, Owlbear iframe), or host-function-shaped (Extism `Host.inputString/outputString`, PuerTS/GodotJS bindings). Payloads must be **JSON-serializable** at minimum (VS Code refuses Blob/File/ImageData; older versions dropped ArrayBuffers) | [reached: search] VS Code; [reached: fetched] Extism |
+| **A monotonic clock** | `performance.now` exists even in Extism | [reached: fetched] |
+| **No DOM, no Node globals, no `window`** | The third runtime already nulls `$tw.browser` and `$tw.node` (survey §3.1); Roll20 and Extism prove "JS without a browser or Node" is a real class of host | survey; [reached: search] Roll20 |
+| **No threads assumed; threads used when offered** | Godot's workers are "limited support (experimental)"; Cloudflare Workers have no worker threads; Extism has none; browsers/Node/Deno/Bun have them | [reached: fetched] GodotJS; [reached: search] Deno |
+| **Memory in the tens of MB** | Node TW ≈ 33–70 MB resident (v2 §0.10); mikrojs on ESP32 offers 80–250 KB; Espruino ≈ 33 KB of JS space. Below ~16 MB the engine is a projection leaf, not an engine | v2; [reached: search] |
+| **No WASM assumed by the engine itself** | The engine is plain JS; only the STORE wants WASM. This keeps the engine runnable on Hermes and QuickJS | [reached: fetched] Hermes #429 |
+
+Everything else (filesystem, network, IndexedDB, WebSocket) is a **capability the host injects** (v2 principle P7), never assumed. The conformance suite of v2 Phase 3 proves the contract per host; host detection never does.
+
+### 2.2 How the STORE abstracts storage and sync
+
+- **Shape already in hand.** automerge-repo: "A repo accepts only one storage adapter, and it must be set when the repo is created. It can have several network adapters, which can be added after creation"; custom storage is "any key/value store that supports range queries"; shipped: `storage-indexeddb`, `storage-nodefs`, `network-websocket` (client and server), `network-messagechannel`, `network-broadcastchannel` [reached: fetched; reached: search]. Tabs sharing IndexedDB "don't see live updates on their own" and need a channel adapter beside the storage adapter [reached: search], which is v2's P15 topology.
+- **The WASM line.** Automerge ships WASM with a base64-embedded fallback "as the ultimate fallback", still WASM [reached: search]. Hermes: no `WebAssembly` global; maintainer (Sept 2024): "the recommended approach is transpiling Wasm to Asm.js" [reached: fetched]. QuickJS/quickjs-ng: no built-in WASM; it can itself be *compiled to* WASM, which is the opposite direction [reached: search]. React Native 0.84 (Feb 2026) made Hermes V1 default; the official post says nothing about WASM, though one secondary summary claimed it [reached: search, conflicting]. Consequence: **on Hermes and QuickJS the store cannot be Automerge-in-JS.** Two honest options: (i) the host runs Automerge natively and exposes it through host functions (Automerge has Rust at its core; Swift and Kotlin bindings exist [unreached, memory]); (ii) the host is tier (b): engine inside, store on a neighbor reached over a network adapter. Yjs runs as pure JavaScript (~18 kB) [reached: search], but the house chose Automerge and the operator's own TW5-Yjs showed its grain; switching stores for one host class would split the Nexus, so option (i)/(ii) stands.
+- **Durability is a per-host claim, refused by name when false.** Tauri WebView: IndexedDB and OPFS "don't persist across app updates" (PowerSync, vendor claim) [reached: search]. Capacitor on iOS: the OS can reclaim WebView storage "and the same can be said for IndexedDB" [reached: search]. SQLite-WASM over OPFS needs a Worker and COOP/COEP headers [reached: search]. Cloudflare Durable Objects: SQLite backend ~10 GB per object (GA April 2025), hibernation drops memory but keeps WebSockets [reached: search; official limits page unreached]. Roll20: no storage beyond its `state` object and no HTTP [reached: search]. Owlbear: room metadata "must be under 16kB", broadcast payload ≤ 16 KB [reached: search]. So the store adapter table carries a `durable: boolean` and a `budget` per host; a non-durable host must sync to a durable neighbor before it may call itself a lararium. This is the seed's causal-island law in storage terms: a node knows only *as of my last sync*.
+- **Network adapters per port kind.** WebSocket (browser, Node, UE's `IWebSocket`, Godot/Unity sockets, Foundry's socket.io `module.<id>` channel), MessageChannel (worker, VS Code webview, Owlbear iframe via postMessage), stdio/JSON-RPC (MCP, Neovim msgpack-RPC, Emacs `jsonrpc.el`), telnet+GMCP (Mudlet, Evennia). Only the first three carry CRDT sync; GMCP carries projection traffic, never the store *(inferred: GMCP payloads are JSON over telnet subnegotiation and could carry Automerge sync bytes base64'd, but no host wants that)*.
+
+### 2.3 What a PROJECTION port must carry
+
+v2's ten kinds stand (`open`, `write`, `ask`, `presence`, `close` up; `snapshot`, `changes`, `written`, `answer`, `presence`, `fault` down). The multi-host field asks for three refinements, none of which reintroduces the rejected syncer or a DOM-delta stream:
+
+1. **A render ask with a declared target.** `port:ask{kind:"render", title, target:"text"|"html"|"blocks"}`. A DOM projection never needs it (the glass TW5 renders itself). A Lua pane needs `text` (or Mudlet's own tiny HTML subset for labels), a Discord bot needs `text`/markdown, an MCP resource needs `text/markdown` or `text/html`, a 3D world needs `blocks` (a small tree: heading, paragraph, list, link, field) to map onto meshes or widgets. The branch's fakedom camera already renders RootTemplate to HTML in the worker (survey §3.4); `text` and `blocks` are serializers over the same fake tree *(inferred)*. Yarn Spinner and ink both hand the host *lines and options*, not a UI, and let each engine draw them [reached: search]; this ask is the same move.
+2. **Acts arrive as writes or verbs, never as events.** A Geyser label click, a Verse interaction, an MCP tool call, a Discord slash command each become `port:write{records}` or `port:ask{kind:"verb"}` with an actor. This honours the operator's rejection of "the mutators": the projection owns its own input semantics and the engine never sees a DOM event.
+3. **A capability manifest at `port:open`.** The projection declares what it can show and do: `renders: ["html"]`, `edits: true|false`, `presence: true|false`, `maxRecordBytes`, `maxBatchBytes` (Owlbear's 16 KB, Discord's 2 000-character message, Mudlet's ~10k HTTP body cap [reached: search] all matter). The engine then chunks and skinnies to fit, and refuses by name what it cannot fit (v2 P8).
+
+A projection, by this contract, is *a replica that may be lossy in rendering but never in state*: it may show a paragraph as plain text, but what it writes back is a whole tiddler with a `txId` and a `basis`.
+
+### 2.4 The two-grain hypothesis (from the house's coffee talk), weighed
+
+**The hypothesis.** The engine↔projection waist may need two grains: *rich* projections (a DOM glass) host a TW5 replica and render from records; *lean* projections (Mudlet, chat, MCP, a UE dialogue panel) receive an **affordance stream**: content, plus the actions offered on it, plus an invoke, in the shape of ink's lines-plus-choices runtime. Open question: does TW5's own parse/widget tree already carry the affordances, so one source feeds both grains?
+
+**Where it holds.**
+
+1. *The widget tree does carry affordances, declaratively.* TW5's core widgets name their acts as attributes, not as event handlers: `$link to=…`, `$button` with `actions`, `message`/`param`, `set`/`setTo`, `popup`; `$checkbox` with `tiddler`/`field`/`checked`/`unchecked`; `$select` with its options; `$edit-text` with `tiddler`/`field`; `$droppable`/`$draggable` with `actions`. The branch's own probes confirm the tree is walkable headless: the fakedom camera renders the full widget tree in the worker and the `addEventListener` patch already stamps a per-node handle (`data-lar-rid`) wherever a widget bound a listener (survey §3.4). So an *affordance serializer* over the same fake tree, emitting `{id, kind: link|button|toggle|select|edit|drop, label, target|message|field}` per node, needs no second source. One parse, two serializations: HTML for the glass, blocks-plus-affordances for the lean host. The hypothesis refines my `blocks` render target from passive to invokable, and I adopt that refinement: **`blocks` carries `affordances[]`.**
+2. *Invoke maps onto `port:ask{kind:"invoke"}`, not onto an event.* A lean host sends `{renderCursor, affordanceId, arg?}`; the engine finds the live widget and calls its own `invokeActions`/`dispatchEvent(tm-*)` with the widget's variable context. This stays on the right side of the operator's ruling: no DOM event crosses, no mutation log; a named act on a named affordance, answered by name. The branch's `ridMap → TW5's stored handler` path (survey §3.3) is already this call, minus the cursor.
+3. *Ink's grain is the right precedent for the lifetime rule.* In ink a choice list is valid until the next `Continue`; in TW5 an affordance list is valid until the next refresh that touched that subtree. So an invoke carries the `renderCursor` it was offered under, and a stale invoke answers `stale-target` (the branch already has this answer for rids, survey §3.3). This turns the branch's unbounded rid growth (survey gap #6) into a bounded, cursored lease: affordance ids live one render, and the engine prunes at flush.
+4. *Host evidence fits lean hosts exactly.* Discord message components carry a `custom_id` round-tripped on click [unreached, memory]; MCP tools can be listed dynamically with `tools/list_changed`, so the current view's affordances can become the current tool list *(inferred from the spec's capability flags)* [reached: fetched, resources page only]; Mudlet labels take `echoLink`/right-click menus that call a Lua function with an id; a UE dialogue panel is literally a lines-plus-choices widget. None of these wants HTML; all of them want content + choices + an id to send back.
+5. *Rich projections stay record-driven.* The glass TW5 never needs the affordance stream because it runs the widgets itself; grain 1 (records with cursors) is sufficient, and v2's whole argument for it stands untouched.
+
+**Where it breaks, or bends.**
+
+1. *Edit is not a choice.* `$edit-text`, drag-reorder, keyboard shortcuts and multi-step dialogs are continuous, not one-shot. The affordance stream can *announce* them (`kind: "edit", tiddler, field`), but their fulfilment has to go through grain 1 (`port:write` of a whole record with `txId`) or a dedicated verb, never through repeated invokes. Mudlet's new `Geyser.TextEdit` and MCP's `write`-style tools fit that split; a UE dialogue panel does not edit at all. So the two grains are not alternatives: **a lean projection reads grain 2 and writes grain 1.**
+2. *Action semantics live in the widget's context.* A `$button actions=…` string is wikitext evaluated against the widget's variables (`currentTiddler`, list items, transclusion params). Only the live engine widget can evaluate it; a lean host must never be handed the action string to run itself. Hence invoke-by-handle, and hence the engine must keep the rendered widget tree resident per open lean port, which costs memory per projection (survey gap #6 priced one tree at 11.7 KB HTML per frame plus rids; a per-port tree multiplies that). Skinny snapshots do not help here; render-on-demand per visible tiddler does.
+3. *Affordances are state-dependent and so is their legality.* Popups, `$reveal` and `$list` make the affordance set a function of `$:/state/*`, which the tier filter keeps *on the glass* (v2 P10). For a lean port the engine must hold that session state itself, per port. That is fine (the engine already holds `$:/state` for the fakedom camera), but it means a lean port is a session, not a stateless reader, and `port:close` must clear it.
+4. *Authority does not come from the tree.* An affordance being offered says the widget would fire it; it does not say the actor may. Invoke still passes the capability gate (`requestedBy`, keyhive) before `invokeActions`, else the lean path becomes a bypass of the kind survey gap #16 names.
+5. *Not every TW5 act is a widget.* Root `tm-*` services (copy, download, print, open-window) are not affordances of a tiddler; they are host services, and on a lean host most are refused by name (survey §5.3). The affordance stream should not pretend to carry them.
+6. *Mixed-grain hosts exist.* Obsidian, VS Code and Foundry can host a full replica *and* want a lean summary (a sidebar, a tree view, a tooltip). Two grains from one engine serve this well; two grains from two engines (a glass TW5 plus a worker) would double the affordance state. Prefer the lean stream to be served by whichever engine holds the port, and never by the glass replica.
+
+**Verdict.** The hypothesis holds, with one correction: it names *two read grains*, but there is only *one write grain*. Records with cursors (grain 1) remain the sole state carrier both ways; the affordance stream (grain 2) is a second *read* serialization of the engine's live widget tree, cursored per render, invoked by handle through the capability gate, and never a path for state to change except by calling back into the engine. TW5's widget tree already carries what grain 2 needs; the serializer, the per-port session, and the cursored invoke are the work. This folds into §2.3's render ask as `target: "blocks"` with `affordances[]` and a new `port:ask{kind:"invoke"}`, and into §9.2's sketch.
+
+---
+
+## 3. Host families
+
+Columns: JS/WASM execution today · storage and network for the store · threads · natural projection · tier. "WASM" marks whether Automerge-in-JS can load.
+
+### 3.1 Browsers and WebView shells
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Desktop and mobile browsers | V8/JSC/SpiderMonkey, full ES, WASM | IndexedDB, OPFS (in a Worker), WebSocket, WebRTC | Workers, SharedWorker (Safari 16+), Web Locks (v2 P15) | DOM (stock TW5 as replica camera) | **(a)** |
+| Capacitor / Tauri / Electron WebView | Same engines; Electron adds Node | **Caveat:** Tauri WebView IndexedDB/OPFS wiped on app update (vendor claim); iOS may evict WebView storage; Electron has Node FS | Workers; Electron adds `worker_threads` and `utilityProcess` | DOM | **(a)** with the storage adapter moved to a native FS/SQLite plugin (Capacitor Filesystem routes to Swift/Kotlin natively) [reached: search] |
+| Smart TV (Tizen 8–10 on Chromium M108–M130; webOS TV 22 on Chromium 87, older on 68–79) | Chromium of its year; IndexedDB listed on Tizen (table garbled); Service Workers unsupported on Tizen | IndexedDB (Tizen); WebSocket | Workers | DOM, remote-driven | Tizen 8+ **(a)** feasible; webOS ≤ 22 **(c)** or lean (a) *(inferred from Chromium age)* [reached: search] |
+| E-readers (Kindle/Kobo experimental browsers) | "basic JavaScript and CSS but little else"; Kindle build lacked Promises/fetch (2019 report); Kobo on WebKit 533 (2012) | none dependable | none | Static HTML from the fakedom camera | **(d)** as engine; **(c-static)** as a read-only camera [reached: search] |
+| WebXR headsets (Meta Quest Browser, Chromium ~130–136) | Chromium, WASM, WebXR | IndexedDB, WebSocket | Workers | DOM + WebXR scene (three.js/A-Frame as a `blocks` projection) | **(a)** [reached: search] |
+
+### 3.2 JS runtimes
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Node.js (incl. Raspberry Pi arm64, Termux aarch64 where Node 24 is reported running) | V8, WASM | FS (`storage-nodefs`, multi-process safe), WebSocket server/client, UDS | `worker_threads` (the branch's node island) | none native; disk projector, TUI, HTTP | **(a)** [reached: fetched; reached: search for Termux single report] |
+| Deno | V8, WASM; module-type Workers only; per-worker `deno.permissions` | FS with permission flags; WebSocket | Workers | same as Node | **(a)** [reached: search] |
+| Bun | JSC, WASM; `bun:sqlite` | FS, SQLite, WebSocket | Workers *(inferred: Bun docs unreached)* | same as Node | **(a)** |
+| Cloudflare Workers / Durable Objects | V8 isolates, WASM | DO SQLite (~10 GB/object), no FS; WebSockets with hibernation (memory dropped, sockets kept) | none | HTTP/WS relay only | **(a)** technically (engine reboots on each wake), but better **relay-only** for the store behind the island boundary; a web2 cloud sits outside the stack proper [reached: search] |
+
+### 3.3 Embedded JS engines
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| QuickJS / quickjs-ng (C embed) | ES2020–ES2023, **no WASM**, boots in <300 µs | whatever the C host lends | none built in | host-defined | **(b)**, or **(a)** only if the host lends native Automerge through host functions [reached: search] |
+| Hermes (React Native) | ES subset, bytecode AOT, no JIT, **no WASM** (issue #429 open) | RN modules: SQLite, FS; WebSocket | JSI threads via native modules | React Native views (a `blocks` projection) | **(b)**; **(a)** only with a native Automerge module [reached: fetched] |
+| JavaScriptCore (Apple, Bun, GodotJS backend) | full ES, WASM on Apple platforms *(inferred)* | host-lent | host-lent | host-defined | **(a)** possible |
+| Javy / Extism JS PDK (QuickJS-ng in WASM under wasmtime/WASI) | ES2020, synchronous, **no timers, no event loop, no Worker, no WebSocket, no dynamic import**; `Var` key/value persists only for the plugin's lifetime; host functions take ≤5 i64 args | none durable inside; host HTTP via `fetch` | none | pure function: render/filter answers | **(b-pure)**: engine as a stateless function over a snapshot the host passes in; never a live wiki *(inferred)* [reached: fetched] |
+| ESP32 (Espruino ≈ 33 KB JS space; mikrojs/QuickJS-ng 80–250 KB heap) | tiny JS | flash, Wi-Fi/MQTT | none | a lamp, a gauge, a sensor | **(d)** as engine; **(c-leaf)**: reads one record over WS/MQTT, writes one back [reached: search] |
+
+### 3.4 Game engines
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Unreal Engine 5.x via PuerTS | V8 (ECMAScript only), QuickJS (smallest, no debugger), or Node backend (full Node APIs, OpenSSL caveat on mobile); "4.22 ~ latest" | V8/QuickJS: only what C++ lends; Node backend: FS + WASM → store can live inside | engine threads via C++ | UMG widgets, 3D scene (a `blocks` projection), CEF Web Browser widget as a DOM glass (community wiki says CEF 59; third-party CEF plugins exist) | **(b)** default; **(a)** on desktop with the Node backend *(inferred)* [reached: fetched; reached: search] |
+| Unreal.js (ncsoft) | V8; Marketplace lists 4.11–4.27, 5.0–5.1; last push July 2023 | — | — | — | stale; prefer PuerTS [reached: search] |
+| Unreal Engine 6 / Verse | Verse, single-threaded, transactional, calls C++ through a custom LLVM path; no JS engine announced; early access late 2027 | UE `IWebSocket` client; experimental WebSocketNetworking (server) | Verse: one thread | Scene Graph entities, UMG, CEF | **(c)** sidecar; see §4 |
+| Unity via PuerTS | V8/QuickJS/Node, WebGL backend uses the browser's own VM; experimental xIl2cpp bridge | host-lent | C# threads | UI Toolkit/uGUI, 3D | **(b)**; **(a)** with Node backend on desktop |
+| Unity via Jint / ClearScript | Jint: pure C# interpreter, no WASM; ClearScript: V8 on desktop *(both inferred; search returned nothing)* | host-lent | — | same | **(b)** |
+| Godot via GodotJS | V8, QuickJS, quickjs-ng, JavaScriptCore, or the browser's engine; "core functionality implemented… still under testing"; workers "limited (experimental)"; engine-module build (GDExtension planned, unconfirmed) | host-lent (Godot FileAccess) | limited | Control nodes, 3D | **(b)**; **(a)** with V8 + a FileAccess storage adapter *(inferred)* [reached: fetched] |
+| Bevy | bevy_mod_scripting: Lua/Rhai only, no JS, no WASM target | — | — | ECS scene | **(c)** over WebSocket or **(d)** [reached: search] |
+
+### 3.5 TTRPG tables
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Foundry VTT (v13: Node server, browser clients, Electron optional; ESM shared "common" document model) | full browser per client; Node on the server | client: IndexedDB; module sockets `game.socket.emit/on` on `module.<id>` over socket.io; socketlib for GM-proxying | Workers in the client | Foundry ApplicationV2 windows, canvas tokens, journal entries | **(a)** both ends: a Node lararium beside the server, a browser lararium in each client, sync over an Automerge WebSocket adapter *or* a socket.io network adapter *(inferred)* [reached: search] |
+| Owlbear Rodeo 2.0 | extensions are iframes; the page inside is a full browser; `@owlbear-rodeo/sdk` over postMessage | room metadata < 16 kB total, broadcast ≤ 16 KB, scene items via API; the iframe's own IndexedDB *(inferred)* | Workers inside the iframe | tokens, context menus, modals, action panels | **(b)** engine in the iframe with store synced out over WebSocket; projection into OBR items; **(c)** if the iframe stays thin [reached: search] |
+| Tabletop Simulator | MoonSharp Lua; `WebRequest.get/post/custom` **from the host's machine only**; XML UI | none; HTTP polling | none | 3D table, XML UI panels | **(c)** weak (polling HTTP) [reached: search] |
+| Roll20 Mod/API | server-side sandbox, old Node (v12), **no HTTP, no external scripts, no DOM**, Pro only | `state` object only | none | chat and handouts | **(d)** (a chat-paste bridge at most) [reached: search] |
+
+### 3.6 Text worlds
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Mudlet | Lua 5.1 (no JS) | telnet client (`connectToServer(host, port)`), GMCP/MSDP/MSSP/MXP/MNES/NAWS/TLS, `getHTTP/postHTTP…` (4.10+), LuaSQL/SQLite, LuaFileSystem; **no native WebSocket** | none (Qt event loop) | Geyser containers, labels (rawEcho, right-click menus, tooltips), miniconsoles, userwindows, `Geyser.TextEdit` (4.20.1 PTB), the mapper | **(c)**; see §5 |
+| Evennia (Python MUD server) | Python; webclient over WebSockets (autobahn), JSON `["inputfunc", [args], {kwargs}]`; GMCP/MSDP OOB over telnet | Django DB | Twisted | web client and telnet clients | **(c)** peer: a lararium as an out-of-band neighbor Evennia talks GMCP to *(inferred)* [reached: search] |
+| Terminal TUI (Node + a TUI lib) | Node | FS | `worker_threads` | text panes | **(a)** with a `text`/`blocks` projection |
+
+### 3.7 Tools and editors
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Obsidian | Electron on desktop; **Capacitor on mobile** (community-confirmed); Node/Electron APIs crash on mobile; `isDesktopOnly` flag; Vault API for files | desktop: Node FS; mobile: Vault API + IndexedDB *(eviction caveat)* | Workers | Obsidian views and leaves, Markdown panes | **(a)** on desktop; **(a)** on mobile only with a Vault-backed storage adapter *(inferred)* [reached: search] |
+| VS Code | extension host: Node (desktop) or a web worker (vscode.dev); webview: sandboxed browser, no Node, JSON-serializable postMessage, delivered only while the webview is live or `retainContextWhenHidden` | extension host: FS; webview: none to rely on | extension host may spawn workers | webview DOM, tree views, decorations, status bar | **(a)**: engine in the extension host, store on FS, webview as the glass over postMessage, which is exactly the Tiddler Port's shape [reached: search] |
+| Neovim | external Node process over msgpack-RPC (`neovim` npm, `attach()`, remote plugins under `rplugin/node/`; stdout reserved for RPC) | Node FS | Node | buffers, floating windows, virtual text | **(a)** for the Node process; Neovim itself is **(c)** |
+| Emacs | `jsonrpc.el` (extracted from eglot) to a subprocess; xwidget-webkit for an embedded browser (old, build-dependent) | subprocess FS | subprocess | buffers; optional webkit glass | **(c)** with the lararium in the subprocess [reached: search] |
+
+### 3.8 Chat and agents
+
+| Host | Execution | Storage / network | Threads | Projection | Tier |
+|---|---|---|---|---|---|
+| Discord / Matrix bot | Node process; Discord Gateway is a bidirectional WebSocket with intents | Node FS | Node | messages, threads, embeds, slash commands (a `text` projection, 2 000-char limit) | **(a)** for the process; the chat is **(c)** |
+| MCP server | Node/any; resources with URIs, `resources/list`, `read`, `templates/list`, `subscribe`, `notifications/resources/updated`, `list_changed`, text or base64 blob; tools for acts | FS | — | tool results and resources read by an LLM harness | **(a)** for the process; the harness sits at the hearth as **(c)**; MCP maps onto the port almost one to one (see §7) [reached: fetched] |
+
+---
+
+## 4. Deep dive: Unreal Engine 6 and Verse
+
+**What is public as of October 2026** (all [reached: search] unless marked):
+
+- Epic unveiled UE6 at State of Unreal / Unreal Fest 2026 (Inven Global dates the keynote to "the 17th" in Chicago; 4Gamer's keynote report is dated 2026-06-19). Early access is targeted for "late 2027-ish", full release 12–18 months after; the next Rocket League is named as a launch title. Epic's own "The Road to UE 6" post is the primary source (unrealengine.com unreached; quoted through forums and GamesBeat).
+- Sweeney's first of three shifts: "standardizing gameplay logic on Verse and building a unified engine API set", so gameplay objects and subsystems move between projects. UE6 merges the UE5 track and the UEFN track.
+- Verse underpins a **Scene Graph** that replaces the Actor system; Blueprints and Actors remain "in early versions of UE6" and are deprecated "when the new framework is sufficiently mature". GamesBeat frames Verse as the gameplay layer "alongside the low level C engine"; the Ludus vendor blog and Inven say "replace C++". The careful reading: C++ stays underneath and callable.
+- Runtime shape quoted from Epic's text via the forum: "Verse runs on a single thread and calls C++ code built via a custom LLVM compiler that automatically transactionalizes the C++ code"; "transactional semantics also extend to any C++ code that is called from Verse".
+- Verse is "currently tied to Fortnite" (UEFN) and "not intended for general adoption at this point". No result mentions open-sourcing the Verse compiler, embedding a JavaScript engine, or WebAssembly in UE6. Epic's older statements about publishing the Verse language spec remain [unreached, memory].
+
+**Embedding JS in Unreal today.** PuerTS supports "unreal engine 4.22 ~ latest" with three backends: V8 (recommended; "ECMAScript only, with no Node.js or browser APIs"), QuickJS (smallest, "no debugging support"), Node.js (full Node APIs, largest, OpenSSL disabled on mobile) [reached: fetched]. Unreal.js is effectively frozen at UE 5.0–5.1 (last push July 2023) [reached: search]. Unreal's built-in networking offers `IWebSocket` (client, via `IWebSocketsManager::CreateWebSocket`), an experimental `WebSocketNetworking` plugin (client and server), and an experimental `WebSocketMessaging` transport [reached: search]. The built-in Web Browser widget rests on an old CEF (a community wiki says CEF 59); several Fab plugins ship newer CEF with a JS↔UE bridge [reached: search].
+
+**Reading for the lararium.**
+
+1. **UE5.x, tier (b) today.** A PuerTS V8 or QuickJS backend can run the ENGINE inside the game process (ES2020 satisfied; the kernel's `new Function` path works on V8; QuickJS needs the pump mode for timers if PuerTS's timer shim proves thin *(inferred)*). The STORE needs WASM (V8 has it, but PuerTS exposes "ECMAScript only", so Automerge's WASM must load through a C++ host function that returns bytes *(inferred)*) or a native Automerge in C++ lent through the binding. The pragmatic shape: engine inside, store on a sidecar or on the desktop Node backend, UMG/3D as a `blocks` projection. Unreal.js is not a path forward.
+2. **UE6, tier (c) sidecar, by design not by lack.** Verse's single thread with transactional semantics is the wrong place for a long-running wiki VM: a transaction that rolls back would need the engine's state to roll back with it *(inferred from the quoted semantics)*. The lararium therefore runs beside the game (a Node or QuickJS process, or the house's node island) and the game holds a **port** over `IWebSocket` or a C++ pipe. Scene Graph entities become projections: a `blocks` render of a tiddler becomes a sign, a book, a shrine panel; interactions become `port:write`s with the player as actor. This is also what the operator's "tightly coupled" allows: coupling at the port, never at the thread.
+3. **What to watch.** (i) Whether UE6 ships a scripting bridge from Verse to anything other than C++; (ii) whether the Web Browser widget moves to a current CEF (a current CEF would make the stock glass TW5 a first-class projection inside UE); (iii) whether PuerTS tracks UE6's C++ surface. None of these is blocked by Epic's statements; none is promised.
+
+A deliberately flagged uncertainty: the whole UE6 picture rests on keynote coverage, forum quotations of Epic's post, and one vendor blog with a commercial interest. The operator can take it to contact by reading "The Road to UE 6" directly.
+
+---
+
+## 5. Deep dive: Mudlet
+
+**Facts** (all [reached: search]; the GitHub README added only that Lua, Qt, GMCP, Discord integration, LuaSQL, LuaFileSystem, lua-yajl and SQLite are in the credits [reached: fetched]):
+
+- Scripting: **Lua 5.1**, per the manual's introduction. No JavaScript engine of any kind.
+- Connection: `connectToServer(host, port, [save])`, `getConnectionInfo()` (4.2+; reports connected state from 4.12), `disconnect()`. Protocols negotiated: GMCP, MSDP, MSSP, MXP, MNES, CHARSET, MSP, MTTS, NAWS, NEW-ENVIRON, TLS, OSC 8 hyperlinks; ATCP as a legacy backup per the forum.
+- GMCP: inbound packages land in the global `gmcp` table (`gmcp.Char.Vitals`); scripts bind event handlers to package names; outbound via `sendGMCP("Package.Name <json>")`, asynchronous.
+- HTTP: `getHTTP(url, headers)` (4.10+), with `postHTTP`, `putHTTP`, `deleteHTTP`, `customHTTP` in the same family; results arrive as `sysGetHttpDone`/`sysGetHttpError` events; the event carries the body "if the body is under 10k characters".
+- WebSocket: **no native function found**. The 2022 forum "Howto: Websockets in Mudlet" launches `websocat` through `spawn()` and reports trouble getting `send()` to work; the author fell back to HTTP.
+- UI: **Geyser** layout manager: `Geyser.Container` (invisible layout; percent and negative offsets relative to the parent), `Geyser.Label` (rich-text subset, `rawEcho`, `createRightClickMenu`, tooltips), `Geyser.MiniConsole` (`display`), userwindows that may hold labels, miniconsoles and the mapper; the 4.20.1 public test builds (May 2026) add an **embeddable `Geyser.TextEdit`**, `selectAll` with window support, `getKeyCode`, an lpeg library and memory introspection. Releases 4.21.0/4.21.1 are listed; their notes were not reached.
+- Local libraries: LuaSQL with SQLite, LuaFileSystem, lua-yajl (JSON), lua-zip, Luarocks, Discord integration.
+
+**Reading for the lararium.**
+
+1. **Tier (c), firmly.** Nothing in Mudlet can execute the ENGINE (Lua 5.1, no JS). Fengari runs Lua inside JS, not JS inside Lua [reached: search], so it does not help here. Mudlet is a projection, and a rich one.
+2. **The port is GMCP, and the lararium poses as the game.** The lararium's node island opens a telnet listener on localhost (or the LAN Pi) and negotiates GMCP; Mudlet dials it with `connectToServer`. Package design, mirroring the Tiddler Port one to one *(inferred design)*:
+   - `Lar.Open {tier:"glass", since, actor, renders:["text","label-html"], maxBytes}` ← Mudlet, at `sysConnectionEvent`.
+   - `Lar.Snapshot {cursor, records[], membership[]}` and `Lar.Changes {cursor, prevCursor, records[], causedBy[]}` → Mudlet; records carry whole tiddlers, skinny by default (titles and fields; bodies on `Lar.Load`).
+   - `Lar.Write {txId, basis, records[]}` ← Mudlet from a Geyser.TextEdit save or a label click; `Lar.Written {txId, status}` → Mudlet.
+   - `Lar.Render {askId, title, target:"text"|"label-html"}` ← and `Lar.Answer` →, because Lua cannot run wikitext; the engine's fakedom camera renders to Mudlet's label-HTML subset *(inferred: the subset needs measuring)*.
+   - `Lar.Presence` as an uncursored lane.
+   GMCP payloads ride telnet subnegotiation as JSON (lua-yajl decodes); GMCP size limits are per-server, so chunk at a few KB *(inferred)*.
+3. **Projection surfaces.** A `Geyser.Container` per open tiddler; a `Geyser.Label` for the rendered body (links via `createRightClickMenu` or `echoLink`); a `Geyser.MiniConsole` as the river log; `Geyser.TextEdit` as the editor (new in 4.20.1 test builds; on older Mudlet, fall back to an `echoLink` that opens the body in the command line or a userwindow); the mapper can project a `$:/tags/Map`-like structure if one exists *(inferred)*. Mudlet's own triggers and aliases let the player script against the wiki: `#tag foo` as an alias that sends `Lar.Write`.
+4. **Running beside it.** Mudlet has no process host for Node, but a lararium beside it can be anything from §3.2: a Node island on the same machine, or the house's node vessel on a Pi. Mudlet's HTTP functions give a one-shot fallback for `Lar.Load` of a large body (under the ~10k event cap, else `downloadFile`).
+5. **Law check.** Telnet and GMCP predate web2; they are a wire, not an ontology. The bridge sits in the node island behind a causal-island boundary; no Mudlet model enters the store. The Web3-only law is kept because the store never learns Mudlet exists.
+6. **Charm.** This is the cheapest "tightly coupled" host in the whole list: one Lua package (a `.mpackage`), one GMCP listener in the island, and the operator's own MUD client becomes a wiki glass with triggers.
+
+---
+
+## 6. Prior art for one engine, many projections
+
+- **ink (inkle).** C# runtime with an official Unity plugin; ports: inkjs (JS, "usually one major version behind"), inkcpp (C++ with a JSON-to-binary compiler, "optional Unreal and STL extensions"), Inkpot (The Chinese Room's UE 5.3+ plugin with InkPlusPlus kept close to the C# original "to ease updates"), godot-ink (C#), inkgd (GDScript, slower), ink_dart ("checked against the C# reference so that the same story and seed produce the same output and saves"), plus Java, Rust, Kotlin, Haxe, Lua (Defold, Love2d, Playdate) [reached: search]. Lesson: a reference runtime, a conformance oracle (same story + seed → same output), and ports that promise the oracle rather than the API. The engine-host conformance suite of v2 Phase 3 is this oracle for TW5.
+- **Yarn Spinner.** "A generic dialogue virtual machine and script compiler written in C#, with nothing Unity-specific in it"; 2026: every Unity sample ported to a GDScript-only Godot version, a native Unreal integration being built "rather than a straight Unity port" [reached: search]. Lesson: the port hands the host *lines, options, commands*; the host draws. That is the `blocks` render target.
+- **Twine story formats.** A format "supplies a visual layout, a set of macros, and internal JavaScript functionality"; the compiler combines passages with a format to produce a playable file; Snowman bundles Underscore, Marked and jQuery [reached: search]. Lesson, by contrast: the format fuses engine and projection, which is why Twine stories do not port off the browser. The three-layer frame avoids that fusion.
+- **Fengari.** Lua 5.3 re-implemented in JS, DOM interop through the JS GC, `js.global` [reached: search]. Lesson: language VMs port *into* JS easily; the reverse (JS into Lua hosts) does not exist, so Lua hosts are projections.
+- **Colyseus 0.18.** Server runs the authoritative simulation at a fixed tick; the client runs *the same step function* for prediction; "both need to be deterministic"; Babylon's Null Engine as a headless server, with code-duplication complaints [reached: search]. Lesson: the house's leader-and-replica topology (v2 P15) already matches; the engine is the shared step function, the store is the authoritative state, and projections predict.
+- **Headless CMS.** Content and presentation decoupled; JSON over REST/GraphQL; "a channel-neutral model, organized around types of content and how they relate", versus page-oriented models that bind to one channel [reached: search]. Lesson: the tiddler is already channel-neutral; `$:/state/*` and story lists are the page-oriented residue the tier filter keeps on the glass (v2 P10).
+- **MCP servers over notes.** Community Obsidian MCP servers expose notes as URI-addressed resources (`vault://note/…`, `obsidian://…`, `text/markdown`) with size and mtime metadata "so clients can validate caches", plus tools for search, links and writes; typical architecture is a stdio server bridging to an in-app HTTP server or the Vault API [reached: search]. The MCP spec: `resources/list`, `read`, `templates/list` (RFC 6570), `subscribe`, `notifications/resources/updated`, `list_changed`, text or base64 blob, annotations with `lastModified` [reached: fetched]. Lesson: MCP already is a Tiddler Port with worse cursors; see §9.
+- **Foundry's common document model.** One ESM "common" module shared by Node server and browser client, "without a build or transpile step" [reached: search]. Lesson: the same code on both shores of a socket is normal in this ecosystem.
+
+---
+
+## 7. Mu
+
+Tools per the seed: Wand `*` (visible feed, ignition), Cup `?` (macro, relation), Sword `!` (micro, discernment), Pentacle `_` (hidden feed, ground), Arcana `0` (unask).
+
+**Wand `*` — what ignites.** Two fires in the visible feed. First: every non-JS host in the list (Mudlet, Verse, Discord, MCP, Bevy) can be a projection *tomorrow* with one addition to the port, a render ask with a declared target; without it they can only show titles. Second: the WASM line cuts straight through the embedded-engine family: Hermes and QuickJS carry the engine and drop the store. The fire reads: **the engine ports further than the store, and the store ports further than the DOM; design the port so each layer can stop where it must.**
+
+**Cup `?` — the macro relation.** The field relates to a wiki the way it relates to a dialogue runtime: a reference VM in one language, conformance by oracle, hosts that draw lines and options. Browsers, Node, VS Code, Obsidian and Foundry all hold the same picture: a trusted process with the truth, a sandboxed surface over a JSON channel, the surface allowed to lag. Seen from the Cup, the house's node island is already the sidecar every game engine and text client wants; the work is adapters, not architecture.
+
+**Sword `!` — the seams to cut.**
+1. *JS-capable vs not* → engine inside vs projection over a port. (Mudlet, Verse, TTS, Roll20, Bevy fall right; everything else left.)
+2. *WASM-capable vs not* → store inside vs store on a neighbor or lent natively. (Hermes, QuickJS, Extism fall right.)
+3. *Durable vs evictable storage* → lararium vs replica that must sync before it may claim the name. (Tauri/Capacitor WebViews, Cloudflare DO after hibernation, Owlbear's 16 kB fall right until an adapter proves otherwise.)
+4. *Timer-bearing vs pumped* → live wiki vs pure function. (Extism falls right.)
+What must not be cut: one port for all projections. Ten adapters over one port stay cheap; ten ports become ten syncers.
+
+**Pentacle `_` — the hidden ground.**
+- Timers. TW5's refresh, the HandGate and the CoalesceGate all assume `setTimeout`; a pumped engine has never been run. Presence acknowledged, cost unclaimed.
+- Memory on the small hosts: TidGi-Mobile's 4–10 s boots (v2 §0.10) say phones strain; QuickJS-in-UE and GodotJS have no published TW5 numbers at all.
+- Verse. Everything known is keynote-grade; the transactional claim came through a forum quotation of Epic's post.
+- CEF 59 in Unreal's stock browser widget: a DOM glass inside UE may be too old for the stock TW5 core *(inferred)*.
+- Mudlet's label-HTML subset and GMCP size tolerance: unmeasured.
+- Whether `new Function` over a 2.2 MB core is acceptable on Hermes (bytecode-first) or merely slow.
+
+**Arcana `0` — unask the question.** "Which hosts can run TiddlyWiki?" Unasked: **which hosts can hold a port, and which can hold a store.** A host that holds only a port is a glass; a host that holds a port and a store but no engine is a cache; a host that holds all three is a lararium. The seed's shrine tiers already name this: a Household figure, a Crossroads node, a Temple. Hosts do not need to be lararia to be at the hearth.
+
+**Carries.** *Overview `_?`*: the island doctrine ("as of my last sync") and the field's "replica may lag" are one drawing, and the durability column is where that drawing meets the ground. *Precision `_!`*: the first green for any new host is one test: open a port, receive a skinny snapshot, render one title to the host's native text, write one field back with a `txId`, see its echo named. Mudlet can pass that in a weekend.
+
+---
+
+## 8. Tier stories
+
+**Gaia 2026 — Household: a phone and a Pi.** The Pi runs the node island (tier **a**: Node `worker_thread` engine, `storage-nodefs`, WebSocket server adapter); it holds the Web Lock of the household. The phone opens the hearth as a PWA in the mobile browser (tier **a**: engine in a Worker, Automerge over IndexedDB, stock TW5 on the glass over a loopback port). On the walk home the phone writes offline; on Wi-Fi the WebSocket adapter reconnects with `since: cursor` and the Pi merges. The phone's IndexedDB may be evicted by iOS one day; the Pi's disk is the durable island, so the phone's loss is a cache loss, named as such. If the household later wraps the hearth in Capacitor, the storage adapter moves to the native Filesystem plugin and nothing above it changes.
+
+**Gaia 2026 — Crossroads: a Foundry VTT table.** The game's Node server (v13 "dedicated Node.js build") hosts a node island beside Foundry (tier **a**). A Foundry module, plain ESM shipped per the manifest, boots an engine replica in each player's browser (tier **a** per client) and syncs the store over an Automerge WebSocket adapter to the island; the GM's journal entries project from tiddlers through `port:ask{render:"html"}` into ApplicationV2 windows, and a token's context menu writes `port:write` with the player as actor. Foundry's own LevelDB documents are never the store; the module's socket channel carries presence only. Players on phones run the same module skinny.
+
+**Gaia 2026 — Temple: a city-scale server.** A Node cluster behind a load balancer holds many islands, one per bag family, `storage-nodefs` on replicated disks, WebSocket server adapters per island (tier **a**). A Cloudflare Durable Object per public bag acts as a relay-only sync point for households that cannot reach the Temple directly; it holds Automerge bytes in its SQLite and forwards sync messages over hibernating WebSockets, but runs no engine and asserts no truth; it sits behind a causal-island boundary, as the Web3-only law asks of any web2 cloud. An MCP server at the Temple exposes public bags as resources so civic LLM harnesses can read and propose writes (tier **a** process, harness at **c**).
+
+**Elyncia 5492 — single orichalcum figure.** A household Lar bound in one figure: a QuickJS-class core in the orichalcum (tier **b**), the engine inside, the store lent natively by the figure's own memory-lattice through host functions, no WASM anywhere in it. Its projection is the figure's face and voice (a `text` render) and the family's slate when one is brought near (a DOM glass over a short-range port). Fed daily, it hums; neglected, its cursor falls behind the district's and it says so by name.
+
+**Elyncia 5492 — district node.** A Crossroads shrine runs a civic simulation in a UE6-like world: Verse logic on its single transactional thread, the lararium as a sidecar process on the same node (tier **c** for the world, **a** for the sidecar). Shrine panels, notice boards and the keeper's book are Scene Graph entities fed by `blocks` renders over the port; a citizen's offering at the board becomes a `port:write` with their persona key. The district's Mudlet-like terminal clients (the old text consoles of the Second Breaking) dial the same sidecar over GMCP and see the same records in Geyser panes.
+
+**Elyncia 5492 — civic ley-line node.** The Temple tier: many engines on many threads, store on durable ley-line storage, relays at the ring road that hold bytes and no truth, an oracle-port where visiting spirits (LLM harnesses) read resources and propose writes through tools, each answered by name and ranked by the CRDT, never by the relay.
+
+---
+
+## 9. Ranked forward attractors, contract sketch, risks, what the branch gives
+
+### 9.1 Ranked
+
+| Rank | Host | Make it | Why now |
+|---|---|---|---|
+| 1 | Browsers, PWAs, WebView shells (Capacitor/Tauri/Electron), WebXR | **first-class (a)** | already the plan of record; add the native-FS storage adapter for shells because WebView storage is evictable |
+| 2 | Node / Deno / Bun, Pi, Termux | **first-class (a)** | the node island exists; fix survey gap #10; add Deno's module-worker and permission shape to the conformance suite |
+| 3 | VS Code extension, Obsidian plugin | **first-class (a)** | their extension-host/webview split is the port drawn by someone else; one adapter each |
+| 4 | MCP server | **first-class projection** | resources ↔ membership+records, `subscribe`/`updated` ↔ `port:changes` without payload, tools ↔ `port:write`/`port:ask`; the only new work is a cursor in resource annotations |
+| 5 | Foundry VTT module | **(a) both ends** | Crossroads tier in one package; browser plus Node, both already supported |
+| 6 | Mudlet over GMCP | **projection-only (c)** | cheapest tightly-coupled non-JS host; a weekend package; proves the render ask |
+| 7 | Owlbear Rodeo | **(b)/(c)** | an iframe is a browser; 16 kB limits keep OBR as projection |
+| 8 | UE6 sidecar (and UE5 via PuerTS) | **(c), watch for (b)** | nothing to build until Verse or CEF moves; UE5 PuerTS is a bounded experiment |
+| 9 | Neovim, Emacs, terminal TUI, Discord/Matrix bots | **projection-only, community** | all four are a Node process plus a text projection |
+| 10 | Godot (GodotJS), Unity (PuerTS/Jint) | **(b) when asked** | engine-inside works; store needs host-lent Automerge or a neighbor |
+| 11 | Cloudflare Durable Objects, smart TVs (Tizen 8+) | **relay-only / lean (a)** | DO holds bytes, never truth; TVs are browsers of their year |
+| drop | Roll20, e-readers, ESP32-class, Bevy | **(d)** (static camera or leaf at most) | sandbox without HTTP; basic JS only; heap; no JS |
+
+### 9.2 The minimal engine-host contract (interface sketch)
+
+```ts
+// What a host lends. Everything optional is a capability; the engine refuses by name without it.
+interface HostCapabilities {
+  language: "es2020" | "es2023";          // proven by the conformance suite, never detected
+  evaluate(src: string, params: string[]): Function;   // new Function or an equivalent
+  schedule?: (ms: number, fn: () => void) => () => void; // absent => engine runs in pump mode
+  now(): number;                           // monotonic ms
+  channel: MessageChannelLike;             // postMessage(json) / onmessage; JSON-serializable only
+  wasm?: boolean;                          // true => Automerge-in-JS may load
+  storage?: StorageAdapterLike & { durable: boolean; budgetBytes?: number };
+  network?: NetworkAdapterLike[];          // websocket | messagechannel | stdio | none
+  threads?: { spawn(src: string): WorkerLike };
+  memoryBudgetBytes?: number;              // below ~16 MB the host is a leaf, not an engine host
+}
+
+// Pump mode for hosts without timers (Extism-class, some game-engine ticks).
+interface PumpedEngine { tick(nowMs: number): void; }
+
+// The port, as v2 §5 plus the three refinements of §2.3 above.
+type ProjectionOpen = {
+  portId: string; wikiUri: string; tier: "glass" | "headless";
+  since?: Cursor; actor: { personaUri?: string; deviceKey: string };
+  localFilter: string; skinny?: boolean;
+  renders: Array<"html" | "text" | "blocks" | "label-html">;   // what this projection can show
+  edits: boolean; presence: boolean;
+  maxRecordBytes?: number; maxBatchBytes?: number;             // Owlbear 16 KB, Discord 2 000 chars, GMCP chunks
+};
+type Ask =
+  | { kind: "filter"; filter: string }
+  | { kind: "render"; title: string; target: "html" | "text" | "blocks" | "label-html" }
+  | { kind: "verb"; verb: string; args: unknown }
+  | { kind: "load"; title: string }
+  | { kind: "cas"; cid: string }
+  | { kind: "invoke"; renderCursor: Cursor; affordanceId: string; arg?: unknown }; // grain 2, §2.4
+// A "blocks" render answers { renderCursor, blocks[], affordances: Array<{ id, kind: "link"|"button"|"toggle"|"select"|"edit"|"drop", label, target?, field? }> }.
+// Acts from any projection arrive only as port:write{txId, basis, records}, port:ask{kind:"verb"}, or port:ask{kind:"invoke"} (capability-gated, stale by cursor).
+```
+
+Three rules ride with it: (1) a projection declares its renders and limits at open; (2) the engine never emits an event, only records, answers and faults; (3) a host that lends no durable storage is a replica and the UI says so.
+
+### 9.3 Risks
+
+- **The WASM split.** Automerge-in-JS does not run on Hermes or QuickJS; native Automerge through host functions is unbuilt in this house. Until it exists, phones in React Native shells and QuickJS game embeds are tier (b) only. Mitigation: keep the store behind the storage/network adapter seam so a native adapter can slot in; measure a Node-backend PuerTS first because it sidesteps the split.
+- **Timers.** Pump mode is a design, not a run. Risk: TW5's own throttles misbehave under a host tick. Mitigation: make `schedule` the first conformance case.
+- **Storage eviction in shells.** Tauri (per PowerSync) and iOS WebViews can lose IndexedDB/OPFS. Mitigation: shells ship the native-FS adapter from day one; the UI names non-durable hosts.
+- **Verse unknowns.** Everything is keynote-grade until "The Road to UE 6" and later docs are read directly. Mitigation: no UE6 work before early access; UE5 PuerTS as the bounded probe.
+- **Port proliferation.** Each host tempts a bespoke protocol (GMCP packages, MCP resources, OBR broadcasts). Mitigation: one port, adapters only; any adapter that needs a new kind proposes it to the port, not to its host.
+- **Web2 leakage.** Cloudflare, Discord and Foundry's socket.io are web2 systems. Mitigation: they carry bytes or projections only, behind a causal-island boundary; the store never models them (seed, Config Defaults).
+- **Old browsers inside engines.** UE's CEF 59 and webOS's Chromium 68–87 may not run the stock 5.4.0 core. Mitigation: those hosts take `text`/`blocks` projections, not a glass.
+
+### 9.4 What the current branch already gives (per the survey, not re-read)
+
+| Toward | Branch piece | Survey ref |
+|---|---|---|
+| Engine without DOM or Node | third-runtime forge: `$tw.browser = $tw.node = null`, `configureIslandRuntime`, non-exiting `utils.error` (browser path) | §3.1 |
+| Host capability injection | `tw5-host-bridge.ts`: `require` allowlist, `fs` denying Proxy, `window` Proxy admitting only `sjcl` and `$tw` | §3.1 |
+| Integrity across hosts | kernel pulls core and plugins by CID and re-hashes them | §3.1 |
+| Store abstraction | Automerge doc per bag; island Repo ⇄ vessel Repo over MessageChannel; `LarWSClientAdapter` over WebSocket; IndexedDB Repo in the browser vessel | §2, §3.2 |
+| Node host | `worker_thread` path, disk projector, WS relay (CRDT sync only, never DOM) | §2, §3.1 |
+| Neutral render for non-DOM projections | fakedom camera renders RootTemplate and PageStylesheet to HTML in the worker (`tw5-projection.ts`, `tw5-camera.ts`) | §3.4 |
+| Port envelopes | `island-protocol.ts` envelope family, door guard, verb table, `wiki:place-verb`/`verb-result` | §3.3 |
+| Echo and pacing discipline | LandedLedger foam guard, HandGate 400 ms / 2 s | §3.2 |
+| Multi-tab leadership | origin Web Lock (`vessel-lock.ts`) | §3.6 |
+| **Missing** | a generic `filter`/`render` ask on the live island (only orphaned `meme-worker-script.ts`); Node path asymmetries (#10); `$tw.version` undefined on node; trusted-module gate mis-wired (#11) | §3.3, §4 |
+
+The single most leveraged next step for the whole host field is the one v2 already scheduled for Phase 1: **`port:ask` with `filter`, `render` and `load`**, because every tier-(c) host in this report needs exactly that and nothing else from the engine.
+
+---
+
+## 10. Sources
+
+Marks as in the header. Only `github.com` URLs were fetched; all others were confirmed through search passages.
+
+**Unreal Engine 6 / Verse / UE embedding**
+- Inven Global, "Unreal Engine 6 to Feature Fundamental Overhaul, Targeting Early Access Release by Late 2027"; "CEO Tim Sweeney: Unreal Engine 6 Will Fundamentally Change the Development Paradigm" [reached: search]
+- GamesBeat, "Unreal Engine 6 will combine UE5 and UEFN into a unified engine | State of Unreal" [reached: search]
+- 4Gamer, Unreal Fest 2026 keynote report (2026-06-19) [reached: search]
+- Epic Developer Community forums: "Will Unreal Engine 6 still support C++…", "They want to remove Blueprint in UE6", "Questions about Verse roadmap" (quoting Epic's "The Road to UE 6") [reached: search]; unrealengine.com/news/the-road-to-ue-6 [unreached]
+- Wikipedia, "Unreal Engine" (early access "Late 2027-ish") [reached: search]
+- Ludus AI blog on Verse (vendor) [reached: search]
+- Tencent/puerts README [reached: fetched]; PuerTS docs on backends [reached: search]
+- ncsoft/Unreal.js, Marketplace version list, getnamo fork [reached: search]
+- Unreal `IWebSocket`, `IWebSocketsManager::CreateWebSocket`, WebSocketNetworking and WebSocketMessaging plugin API pages [reached: search]
+- Unreal Web Browser widget community wiki (CEF 59); UCefView, WebView for UE, WebNativeBrowser, DBBrowser listings [reached: search]
+
+**Mudlet**
+- Mudlet/Mudlet README [reached: fetched]
+- Mudlet wiki: Manual:Introduction (Lua 5.1), Manual:Networking Functions (`connectToServer`, `getConnectionInfo`), Manual:Supported Protocols, Manual:Lua Functions (`getHTTP`), Manual:Geyser, Mudlet:Geyser [reached: search]
+- Mudlet forums: "Howto: Websockets in Mudlet" (2022, websocat via spawn); GMCP threads; Geyser containers thread [reached: search]
+- Mudlet GMCP tutorial PDF (`sendGMCP`) [reached: search]
+- Mudlet 4.19 release posts; 4.20.1 PTB changelogs (May 2026: `Geyser.TextEdit`, `selectAll`, `getKeyCode`, lpeg) [reached: search]
+
+**Store: Automerge, WASM, engines**
+- automerge/automerge-repo README [reached: fetched]; automerge.org storage and network docs; "Automerge Repo" blog [reached: search]
+- automerge.org "Automerge Anywhere" (base64 WASM fallback) [reached: search]; automerge discussion #893 (React Native) [reached: search]
+- facebook/hermes issue #429 "WASM support within Hermes?" [reached: fetched]
+- reactnative.dev "React Native 0.84 - Hermes V1 by Default" (2026-02-11) [reached: search]; Software Mansion on Hermes V1 [reached: search]; Callstack summary claiming WASM [reached: search, unconfirmed]
+- Yjs docs and Loro/Yjs comparison threads (pure-JS vs WASM) [reached: search]
+- QuickJS / quickjs-ng pages (ES2023, embeddability, no WASM feature) [reached: search]
+- extism/js-pdk README [reached: fetched]; Javy docs [reached: search]
+- react-native-quickjs [reached: search]
+
+**Game engines and tables**
+- godotjs/GodotJS README [reached: fetched]; older godotjs/javascript (QuickJS, ES2020) [reached: search]
+- Unity scripting backends docs; PuerTS xIl2cpp doc [reached: search]
+- bevy_mod_scripting README/docs.rs [reached: search]
+- Foundry VTT release notes 13.338 and 8.88; socketlib; community socket/migration guides [reached: search]
+- Owlbear Rodeo blog "Building an extension for Owlbear Rodeo 2.0"; docs for room (16 kB) and broadcast (16 KB); owlbear-rodeo/sdk README [reached: fetched, thin]
+- Tabletop Simulator API: WebRequest Manager; lua-in-tabletop-simulator [reached: search]
+- Roll20 Help Center "API: Sandbox Model"; wiki "Mod:Sandbox Model", "JS" [reached: search]
+
+**Runtimes, shells, devices**
+- Deno workers docs (module workers, `deno.permissions`) [reached: search]
+- Cloudflare Durable Objects pricing page and third-party limit summaries [reached: search]; developers.cloudflare.com limits page [unreached: DNS]
+- Capacitor storage guide; PowerSync Tauri SDK announcement; WebKit bug 144875; Cordova CB-9008 [reached: search]
+- Samsung Tizen "Web Engine Specifications" (Chromium M108/M120/M130); OneTrust CTV SDK table for webOS [reached: search]
+- Meta Quest Browser specs page; Wikipedia "Meta Quest Browser"; Meta community forums (Chromium 130/134) [reached: search]
+- MobileRead threads and goodereader on Kindle/Kobo browsers; broken-links.com Kobo Touch review (2012) [reached: search]
+- Espruino forum memory threads; mikrojs (QuickJS-ng on ESP32) [reached: search]
+- Termux/Node 24 single-user report [reached: search]; Node on Raspberry Pi [unreached, common knowledge]
+
+**Tools, editors, chat, agents**
+- Obsidian docs "Mobile development"; Obsidian forum threads on Capacitor; remotely-save browser_env doc [reached: search]
+- VS Code Webview API docs and mirrors; Trail of Bits webview escape post; Matt Bierner on webviews on the web [reached: search]
+- neovim/node-client docs (neovim.io, Tessl mirrors) [reached: search]
+- jsonrpc.el package pages; Emacs xwidget slides (2011) [reached: search]
+- Discord Gateway docs [reached: search]
+- modelcontextprotocol spec 2025-06-18 server/resources.mdx [reached: fetched]; Obsidian MCP server listings (Glama, EnterpriseDNA) [reached: search]
+
+**Prior art**
+- inkle/ink-library; Inkpot; inkgd; ink_dart; inkcpp [reached: search]
+- yarnspinner.dev 2026 posts and docs [reached: search]
+- Twine Cookbook story-format pages [reached: search]
+- fengari-interop; wasmoon comparison [reached: search]
+- Colyseus 0.18 netcode docs; Babylon forum threads on Null Engine [reached: search]
+- Contentful, TechTarget, Adobe, Hygraph on headless CMS [reached: search]
+
+**House inputs**
+- `noosphere-boot.mem` (Personas, Mu, causal islands, Config Defaults with the Web3-only law, Elyncia shrine tiers)
+- `portable-engine-plan-v2.md` (the Tiddler Port, P13–P16, the operator's rulings)
+- `model-and-gaps.md` (branch survey at `b4f61e6`)
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;R0eyTBEU2eeRUC-2O3l_3a4QmyJ61inwZdKzMEnqei4
+
+<<^ code="&#x0004;" -> to="?">>
