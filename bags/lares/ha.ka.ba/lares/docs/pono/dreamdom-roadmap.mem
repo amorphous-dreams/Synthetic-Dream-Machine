@@ -90,7 +90,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Measures'': serialised bytes per key and long animation frames across 100 edits beside the 11.7 KB plus 7.5 KB whole-frame number; a key splits (river frames plus order plus membership) only where that number asks (`dreamdom#/the-ruling`, measure first).
 * ''Waits on'': D0's harness; `session-contract#/the-holder-protocol` for the envelope fields (builds against it; refuses `binding-unavailable` where a field has no holder yet).
 * ''Spikes'': the declared-cancellation afternoon (#/the-spikes 1), serializer promotion (2), sensed revision end to end (3), the seam engine's toolbar (4), declared keys and the document leg (5), `import-offer` and `drop` (6), surface switch with epochs (7).
-* ''Rulings'': the edit template of the browser DOM sink (`dreamdom#/open-rulings` 8); the root `tm-*` split and the `tm-http-request` gate (9); `$eventcatcher` and `$keyboard` (10). Each blocks only its rows; the rest of the phase lands around them.
+* ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): the stock edit template through the seam engine; the root `tm-*` split with `tm-http-request` refused; `$eventcatcher` refused and `$keyboard` with declared keys.
 
 !!! D2 · THE RECORD PORT ~ inside the engine (lane `dreamdom-port`; its pure steps start beside D1)
 * ''Builds'': the port's kinds on the live island: `port:open{wikiUri, width, since, actor, localFilter, renders[], edits, presence, maxRecordBytes, maxBatchBytes}`, `port:snapshot` (chunked), `port:changes` with cursors and tombstones, `port:write{txId, basis, records}` answered by `port:written` and echoed under `causedBy:[txId]`, `port:ask{kind: filter · render · load · verb · cas · invoke}` where `render` answers `html` · `text` · `blocks` (with `affordances[]`) · `label-html` and `invoke` carries a `renderCursor`, `port:presence` (30 s expiry, never persisted), `port:close`; the width field as a filter over fields on the engine side (cheap now, expensive to retrofit); the tier `localFilter` naming StoryList, HistoryList, `$:/state`, `$:/temp`, `$:/status` and `$:/info/browser/*`; a recording fakedom-style document and the blocks, text and label-html serialisers over it; the capability gate on every invoke before `invokeActions`; the orphaned `meme-worker-script.ts` retired.
@@ -99,7 +99,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Contract questions the field raised'', each a red test where the port's pure core lands: a chunked snapshot's stable base cursor and its rule for changes during transfer; a cursor's reset when it expires or when `width` or `localFilter` changes; one atomic boundary for a write's effects, `port:written` and its `causedBy` echo, with retry and idempotence named; tombstone retention and how a lagging subscriber learns its cursor ran too old; presence's refresh, reconnect state and disconnect cleanup. A skinny record tells a field left unprojected from a field deleted, and an invoke re-checks authority when it runs.
 * ''Waits on'': D0. The serialisers wait on nothing; `blocks` for memetic-wikitext specifically waits on the Annex B widget-tree pass (D5).
 * ''Spikes'': the blocks sink over a recording document (#/the-spikes 8); the synchronous ask on Node (`Atomics.wait` plus `receiveMessageOnPort`, bounded waits only).
-* ''Rulings'': the presence lane's home at width none (`dreamdom#/open-rulings` 12). The port ships with `causedBy` mandatory and skinny behind a flag, as the v2 plan proposed; the operator may still rule either way without re-cutting.
+* ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): presence at width none travels as a separate droppable message. The port ships with `causedBy` mandatory and skinny behind a flag.
 
 !!! D3 · THE GLASS ENGINE AND THE WIDTH SPIKE ~ full, skinny and story behind a flag (lane `dreamdom-glass`; waits on D1 and D2)
 * ''Builds'': a port adaptor as a startup module on the glass that binds `$tw.wiki`'s `change` event, lands `port:changes` under an origin tag its own listener skips, posts `port:write` with `txId` and keeps the write optimistic until `port:written` echoes; no `$tw.syncer` constructed and no `syncadaptor` module shipped; the glass boot from the same CAS core blob by hash; the page template over `window.document` mounted in-process as the browser's first camera; skinny and story as settings of the same adaptor; `lar:service` doors reached from the glass engine's root handlers; the multi-tab topology (a Web Lock elects the leader, the leader's worker holds the engine, a SharedWorker or a BroadcastChannel handshake routes other tabs, a late tab gets a snapshot and never a missed `ready`); peer write into an open draft shown with the newer-base prompt; `§9` of `packages/AGENTS.md` reworded on the operator's ruling.
@@ -107,28 +107,28 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Measures'' (the separating experiment): one 2,000-tiddler corpus, one loopback port, the same glass booted at full, skinny and none (story only if skinny and full split), on the reference phone and on Node: heap after first paint; warm first paint; p95 keystroke-to-paint; the cold filter over tiddlers the glass never held; the peer write into the open editor; echo (exactly one write, zero re-landings); hot-swap to a second wiki and back; the synchronous ask on Node; the verb census (every worker-side verb that invoked a filter or a render); bytes per key at none. Thresholds: skinny loses if the cold filter exceeds 100 ms p95 on the phone or a `lazy-all` hole reproduces without a closable fix; full loses only on the marginal-memory gate (+25 % over a stock tab; a 150 MB tripwire); none loses if bytes per key exceed the 50 ms input budget on the phone after the key split, or if any ruled control fails its browser and accessibility probes.
 * ''Waits on'': D1 (so none stands as the honest fallback) and D2 (so the glass has a port).
 * ''Spikes'': the three-boot width spike (#/the-spikes 9); the full-width walk (10).
-* ''Rulings'': the default width of the first surface (`dreamdom#/open-rulings` 1); the `§9` wording (2); the confirm road's home per width (6). The flag ships before the rulings; the default flips after.
+* ''Rulings'' (`dreamdom#/open-rulings`): the `§9` wording and the confirm road's home per width stand ruled (2026-10-16); the default width of the first surface stays open until the three-boot spike reads. The flag ships first; the default flips after.
 
 !!! D4 · THE WIKI ACTOR ~ the lifecycle layer (lane `dreamdom-actor`; waits on D2; its manifest and gate may start beside D3)
 * ''Builds'': one actor per wiki with an id, one writer and a manifest `{renders[], edits, presence, sensoria[], width[], maxRecordBytes, maxBatchBytes}`; the capability gate on the actor replacing `worker-trust` (admin-auth plus the keyhive check over `requestedBy`), so a lean invoke never bypasses authority; the states daemon · pinned · sleeping · recipe · spawned with their transitions; per-port attachments `{cursor, subscriptions, width, actorKey, localFilter, cameraMount}` serialised at hibernation and restored at wake; wake-on-act with one parked act per surface and a `waking` state beside the control, `superseded` for a second act, `actor-not-spawned` with a `spawn` affordance for a recipe; the holder's refusal to hibernate an actor holding an unanswered reliable act; the first surface's list of wikis by state; `tm-open-window` as `open-surface` (a second camera on the same actor); `$:/state` per surface or shared, by ruling; a warm start measured against `v8.startupSnapshot` in a `worker_thread`.
 * ''Proves'': `actor-hibernates-with-two-ports-and-both-resume`, `third-port-during-hibernation-wakes`, `percept-without-sensoria-cap-refused-by-name`, `wake-on-act-answers-parked-act`, `recipe-link-refuses-with-spawn`, `hibernate-refused-while-reliable-act-pending`, `sense-never-blocks-hibernation`; interaction golden 14; the blur test as a witness: a glass that cannot hand back its attachment and resume reads red.
 * ''Waits on'': D2 (attachments name port state); the session contract's surface-open for the manifest handshake.
 * ''Spikes'': hibernate and wake (#/the-spikes 11); hibernate mid-edit (12).
-* ''Rulings'': the actor manifest shape (`dreamdom#/open-rulings` 5); wake on act (7); `$:/state` per surface (11).
+* ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): `sensoria[]` names planes; wake on act parks, wakes bounded and answers `superseded`; `$:/state` stays shared across an actor's surfaces.
 
 !!! D5 · CONFORMANCE ~ three families, every host a row (lane `dreamdom-suite`; rides beside D1 onward on disjoint files)
 * ''Builds'': `filter-cts.json` for the house filter dialect, generated from the pinned JS engine over a frozen world (`worlds/pono-small`), reviewed once, tagged (`core`, `host-bound`, `set`, `fault`, `since`, `strange`), near 250 tests; the camera goldens at `html` and `text` keyed by (root template, serialiser); the Annex B widget-tree pass (`resolveWidgetTree(ast, registry)`) and then the `blocks` golden, with `label-html` derived from `blocks` through a declared projection; the interaction goldens' `interaction/` section with its fourteen scripts and a script runner that speaks the contract's vocabulary for Playwright, vitest and (later) a Lua and an MCP harness; the suite run on three hosts from day one (Node, a browser, quickjs-ng) with a skip list by name per host; the `since` pin to the TW5 fork commit and the parity discipline (a drifting hash names a disagreement, never a content edit).
 * ''Proves'': the suite itself green on the reference engine on each host; host drift shows as a named skip (`Intl` on quickjs-ng first); a port that lags the pinned commit fails by lag, not by wrong code; a specimen's `html` golden stays byte-stable across two hosts.
 * ''Waits on'': nothing for `filter-cts` and the `html`/`text` goldens; D1 for the interaction goldens to run at none; D3 for them to run at full; D2 for the blocks run.
 * ''Spikes'': `filter-cts.json` (#/the-spikes 13); the Annex B pass (14).
-* ''Rulings'': interaction goldens blessed as a family (`dreamdom#/open-rulings` 13); the `core` charter and oracle ownership (14).
+* ''Rulings'' (`dreamdom#/open-rulings`, open): the interaction goldens blessed as a family; the `core` charter and oracle ownership.
 
 !!! D6 · THE LEAN SINKS ~ the surfaces without an engine in the app (lane `dreamdom-lean`; waits on D2 and D5's `blocks` golden)
 * ''Builds'': the ''Node CLI'' text camera over the port (`lares act … --yes` as acts, writes from files, asks for filters and renders); the ''SSR face'' (RootTemplate or a static template through the fakedom camera, links as real `href` routes, forms as writes or acts over the holder, a surface attaching for live mode); the ''MCP projection'' (resources ↔ keys with a cursor in the annotations, `subscribe` and `updated` ↔ `port:changes` without payload, `tools/call` per affordance kind, elicitation for the confirm road and `lar-field` schemas, `tools/list_changed` when the affordance set changes, the suite's `fault` names as the tool's error vocabulary); the ''Mudlet weekend'' (a loopback telnet listener in the node island with GMCP, NAWS and CHARSET negotiation and MCCP refused, the `Lar.*` package family mirroring the port kinds, chunking at ~2 KB with a `part/of` envelope, then the `lar.mpackage` with Geyser panes painted from `label-html` keys, a `Geyser.TextEdit` save round-tripping a `txId`, an affordance click invoking by id, a refusal painting an alert); later the proxy mode with GMCP tee (`Room.Info` and `Char.Items` to records, vitals to presence, the river to a log beside the island and never the CRDT); squads only after a wizard grant exists (a keyhive grant, per-character sockets, a reflex table, an intent verb, `squad/*` tiddlers, a game-visible tag, an audit log).
 * ''Proves'': `gmcp-handshake-will-do`, `gmcp-snapshot-chunks-reassemble`, `gmcp-write-txid-echo-named`, `gmcp-presence-expires-30s`, `gmcp-oversize-record-refused-by-name`, `pkg-renders-title-on-open`, `pkg-textedit-save-roundtrips-txid`, `pkg-affordance-click-invokes`, `pkg-refusal-paints-alert`, `proxy-passthrough-bytes-identical`, `proxy-river-not-in-crdt`, `proxy-mccp-refused-by-name`; the MCP projection's rows for interaction goldens 1, 2, 11 and 14 with elicitation as the confirm road; each lean surface's published row with its refusals by name.
 * ''Waits on'': D2 (the port and the serialisers); D5's `blocks` golden for parity; the operator's Mudlet rulings.
 * ''Spikes'': the Mudlet weekend (#/the-spikes 15).
-* ''Rulings'': Mudlet's first carrier and its MCP `lua` tool (`dreamdom#/open-rulings` 15); the river's home, vitals as presence, squad consent artefacts, the package namespace and the minimum Mudlet version (`mudlet-scout`).
+* ''Rulings'': Mudlet's first carrier stands ruled as the virtual-MUD listener, with its MCP `lua` tool off (`dreamdom#/open-rulings`, 2026-10-16); open: the river's home, vitals as presence, squad consent artefacts, the package namespace and the minimum Mudlet version (`mudlet-scout`).
 
 !!! D7 · THE WIDER SURFACES ~ held by name until their gates open
 * ''QuickJS, quickjs-ng and Hermes shells'': the engine runs here (ES2020 core, pump-mode timers where no `setTimeout`), the host supplies the sink (a React Native view tree as a blocks projection with the platform's own event-count handshake on `TextInput`); the store needs Automerge lent natively through host functions or a neighbour that holds it. Gate: a native Automerge adapter, unbuilt in this house; the Node-backend PuerTS probe first because it sidesteps the split. Rides the suite's host rows (D5).
@@ -170,21 +170,21 @@ Every spike runs under a scratch `LAR_ROOT` with `LAR_BAGS` unset, boots nothing
 
 The full list with its options stands at `dreamdom#/open-rulings`; this table names only what each blocks, so the controller brings the operator the right question at the right moment and builds around the rest.
 
-|! Ruling |! Blocks |! Until then |
-| the edit template of the browser DOM sink | D1's editor rows | the seam engine renders the stock template; `lar-field` under `$edit-text` |
-| the root `tm-*` split and the `tm-http-request` gate | D1's services rows | the proposed split; `tm-http-request` refused |
-| `$eventcatcher` and `$keyboard` at width none | D1's keyboard rows | `$eventcatcher` REFUSED; `$keyboard` with declared keys |
-| the presence lane's home at width none | D2 | a separate droppable message |
-| the default width of the first surface | D3's default flip | the flag; none as fallback |
-| `§9` of `packages/AGENTS.md`, re-read as no //truth// on the main thread | D3's glass engine | the glass lands behind the flag and the wording lands with the ruling |
-| the confirm road's home per width | D3 | per actor in the worker at none; per tab on the glass engine |
-| the actor manifest shape | D4 | the proposed shape with `sensoria[]` as planes |
-| wake on act | D4 | wake, bounded, with `superseded` |
-| `$:/state` per surface at width none | D4's multi-tab rows | shared, as the confirm road rules for one question |
-| the interaction goldens as a family | D5 | the fourteen scripts stand as proposed |
-| the `core` charter and oracle ownership | D5's host rows | `core` as the hybrid charter names it; the lane re-pours |
-| Mudlet's first carrier and its MCP `lua` tool | D6's Mudlet rows | the virtual-MUD listener; the `lua` tool off |
-| the moʻolelo | nothing | the draft stands marked |
+|! Ruling |! Blocks |! Stands |
+| the edit template of the browser DOM sink | D1's editor rows | ruled 2026-10-16: the stock template through the seam engine, `lar-field` under `$edit-text` |
+| the root `tm-*` split and the `tm-http-request` gate | D1's services rows | ruled 2026-10-16: the split as proposed; `tm-http-request` refused |
+| `$eventcatcher` and `$keyboard` at width none | D1's keyboard rows | ruled 2026-10-16: `$eventcatcher` refused; `$keyboard` with declared keys |
+| the presence lane's home at width none | D2 | ruled 2026-10-16: a separate droppable message |
+| the default width of the first surface | D3's default flip | open, after the three-boot spike; the flag, with none as fallback, meanwhile |
+| `§9` of `packages/AGENTS.md`, re-read as no //truth// on the main thread | D3's glass engine | ruled 2026-10-16; the wording stands in `packages/AGENTS.md` |
+| the confirm road's home per width | D3 | ruled 2026-10-16: per actor in the worker at none; per tab on the glass engine |
+| the actor manifest shape | D4 | ruled 2026-10-16: `sensoria[]` names planes |
+| wake on act | D4 | ruled 2026-10-16: wake, bounded, with `superseded` |
+| `$:/state` per surface at width none | D4's multi-tab rows | ruled 2026-10-16: shared |
+| the interaction goldens as a family | D5 | open; the fourteen scripts stand as proposed |
+| the `core` charter and oracle ownership | D5's host rows | open; `core` as the hybrid charter names it |
+| Mudlet's first carrier and its MCP `lua` tool | D6's Mudlet rows | ruled 2026-10-16: the virtual-MUD listener; the `lua` tool off |
+| the moʻolelo | nothing | open; the draft stands marked |
 
 A ruling reaches the operator only where its answer changes who holds authority, custody at rest or identity bytes and no ruling settles it; otherwise the controller takes the house reading named in the third column, marks it, and builds (`controller-handoff#/the-seat`).
 
@@ -197,17 +197,17 @@ A ruling reaches the operator only where its answer changes who holds authority,
 * `D1` The second-boot-writes-nothing pin over a staged vessel, the vessel page's long-animation-frames observer and the heap-after-first-paint reading for both instruments. D0. Nobody owes a ruling.
 * `D2` Per-key revisions, membership, mount epoch and sensed revision in `lar:frame`; the three laws of `page-controls#/the-sinks-three-laws` kept. D1.
 * `D3` `lar:control-event` with an id and `lar:control-result` with a status; the answer ring; the reliable and droppable classes. D1.
-* `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion (`checked`, `selected`, `indeterminate`) with the toggle family green on both halves of golden 06; the textarea revert and the blanket cancel green. D1. Rulings 8 and 10 for their rows.
-* `D5` The island root-services module and `lar:service` with named refusals, golden 12 green on both runners; `lar:resend` and epochs on switch, golden 13 green on both. D1. Ruling 9.
+* `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion (`checked`, `selected`, `indeterminate`) with the toggle family green on both halves of golden 06; the textarea revert and the blanket cancel green. D1. Their rulings stand (2026-10-16).
+* `D5` The island root-services module and `lar:service` with named refusals, golden 12 green on both runners; `lar:resend` and epochs on switch, golden 13 green on both. D1. Its ruling stands (2026-10-16).
 * `D6` The three ruled page controls and the IME rules, proven by goldens 04, 05 and 08 on both harnesses in Chromium; `lar-file-picker`, `lar-order-list`, the shortcut and story-order keys and the navigate road, proven by goldens 07, 09, 10 and 11 on both harnesses; the Gecko and WebKit probes 1 and 5 owed. D1.
-* `D7` The port's kinds on the live island with `causedBy`, width, the tier filter and the capability gate on invoke; the recording document and its three serialisers. D2. Ruling 12.
-* `D8` The glass port adaptor behind a flag, the multi-tab leader, the full-width walk of the five sites. D3. Rulings 2 and 6.
-* `D9` The three-boot spike's numbers and the default width. D3. Ruling 1 (operator).
-* `D10` The actor's manifest, gate, states, attachments, wake-on-act and recipe refusal; `worker-trust` retired. D4. Rulings 5, 7 and 11.
-* `D11` `filter-cts.json` reviewed and pinned; the `html` and `text` goldens on three hosts. D5. Ruling 14.
+* `D7` The port's kinds on the live island with `causedBy`, width, the tier filter and the capability gate on invoke; the recording document and its three serialisers. D2. Its ruling stands (2026-10-16).
+* `D8` The glass port adaptor behind a flag, the multi-tab leader, the full-width walk of the five sites. D3. Their rulings stand (2026-10-16).
+* `D9` The three-boot spike's numbers and the default width. D3. The default width stays the operator's, after the spike.
+* `D10` The actor's manifest, gate, states, attachments, wake-on-act and recipe refusal; `worker-trust` retired. D4. Their rulings stand (2026-10-16).
+* `D11` `filter-cts.json` reviewed and pinned; the `html` and `text` goldens on three hosts. D5. The `core` charter stays open.
 * `D12` The Annex B pass and the `blocks` golden; `label-html` derived. D5.
-* `D13` The interaction goldens' runner and section, green at none, full and blocks. D5. Ruling 13.
-* `D14` The CLI text camera, the SSR face, the MCP projection and the Mudlet weekend, each with a published row. D6. Ruling 15 (operator).
+* `D13` The interaction goldens' runner and section, green at none, full and blocks. D5. The goldens family stays open.
+* `D14` The CLI text camera, the SSR face, the MCP projection and the Mudlet weekend, each with a published row. D6. Mudlet's carrier stands ruled (2026-10-16).
 
 <<~/ahu>>
 
@@ -242,6 +242,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_7uzjb7ib-zZfQLjdeZoeq__0g5lj9gzCJAGKFw1eas
+<<^ code="&#x0003;">>ni:///sha-256;fRtahEY5YZtXONZ1enxycrvnWN4KPauQbO_u6WV461w
 
 <<^ code="&#x0004;" -> to="?">>
