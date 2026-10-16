@@ -19,6 +19,8 @@
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
+ *   nexus-carry-take                             a carried carry bundle onto this place's own board replica
+ *                                                (`carry-bundle`: a herm's explicit join)
  *   edge-kapae                                   the edge shadow board (`commands/edge-kapae-cmd`)
  *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
@@ -80,6 +82,8 @@ import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
 import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
+import { takeCarryBundle, CarryBundleError } from "./carry-bundle.js";
+import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 
 /** What the rows read off their holder. */
 export interface StoreDoorDeps {
@@ -134,7 +138,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing",
-  "nexus-posture", "nexus-admit-take", "seal-home-refold",
+  "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
@@ -148,6 +152,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
+  CarryBundleError,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -215,7 +220,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await runNexusContract({
         action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
         ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
-        ...opt("syncUrl", str(args["syncUrl"])),
+        ...opt("syncUrl", str(args["syncUrl"])), ...opt("floorPin", str(args["floorPin"])),
       });
       await awaitOnRolled(deps.onRolled?.());
       return { ...r };
@@ -309,6 +314,15 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
       const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
+    }),
+
+    // A HERM'S EXPLICIT JOIN (house reading "Only there"): the quorum's counted carry over this vessel's own key, taken by
+    // hand onto its own replica of that Nexus's carriage board, so its floor gate stands there at the next refold.
+    "nexus-carry-take": (args) => answer("nexus-carry-take", async () => {
+      const raw = need("nexus-carry-take", args, "raw");
+      const r = await takeCarryBundle({ sealHome, repo, raw, ownVesselKey: await loadVesselVerifyingKey() });
+      const refolded = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
+      return { ...r, refolded };
     }),
 
     // A WRITE LANDED BESIDE THE SEAL HOME, NOT ON THE REPO. `accept-carriage`, `carry-for` and a carried

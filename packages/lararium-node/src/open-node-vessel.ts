@@ -118,8 +118,10 @@ import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
-import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins } from "./hearth-gate-pins.js";
+import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
+import { ed25519SignerFromSeed as carriageSignerFromSeed, hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
+import { gateReadingsFor, hermGatePosture, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
@@ -552,6 +554,9 @@ interface NodeBootPrep {
   vesselGateKey:    string;
   /** The oracle's floor gates, one per Nexus this vessel stands in. */
   floorGates:       OracleGateArgs["gates"];
+  /** THE GATE-NATIVE CARRIAGE PULL (house ruling "Routes at the cutover": carriage peering flips on a proven gate-native
+   *  caller): one floor dial per (peer, Nexus) at the pin this vessel's boards carried, presenting what it stands as there. */
+  carriagePull:     (peer: string, publisherKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
   residency:        BagStowage;
   /** The carriage serve-loop (Socket B) — present ONLY when a carriage-relay URL was configured; else null (inert).
    *  The two vessel entry-points fold its `stop()` into their teardown so no timer / socket leaks past close. */
@@ -1008,12 +1013,15 @@ async function prepareNodeBootOn(
   /** This vessel's own Nexus: the AID of the charter it keeps at its seal home, or null. */
   const ownNexusAid = (): string | null => nexusAidOf(readNexusDoc(sealHome)) ?? null;
   /**
-   * The posture of ONE Nexus a gate stands in. A herm answers the knock at every gate it stands; this vessel's own
+   * The posture of ONE Nexus a gate stands in. A herm reads the charter of the Nexus that carries it; this vessel's own
    * Nexus reads its charter; a carried one reads the charter this vessel holds for it; any other reads PRIVATE.
    */
   const postureOf = (nexus: string): FederationPosture => {
-    if (placeClass === "herm") return "open";
     const aid = nexus.trim().toLowerCase();
+    // A HERM'S GATE READS THE NEXUS THAT CARRIES IT (house reading "The herm's gate posture"): a herm stands a gate only
+    // where a quorum counted its carry, and answers there exactly as that Nexus's charter says: PRIVATE unless it reads
+    // OPEN, so a stranger who learned a pin still meets silence.
+    if (placeClass === "herm") return hermGatePosture(aid, gateReadings);
     if (ownNexusAid()?.toLowerCase() === aid) return ownPlacePosture(placeClass, readNexusDoc(sealHome));
     return gateReadings.find((r) => r.aid.toLowerCase() === aid)?.posture ?? "private";
   };
@@ -1234,10 +1242,15 @@ async function prepareNodeBootOn(
     onRefuse:  (at, reason, detail) => console.warn(`[lar-gate] ${at.tier} ${at.route} at ${at.nexus.slice(0, 18)}… fell silent: ${reason}${detail ? ` (${detail})` : ""}`),
     onShut:    (arm, at) => console.warn(`[lar-gate] a walker's ${arm} arm at ${at.route} reads SHUT at the cutover`),
   };
-  /** Every Nexus a gate stands in: this vessel's own, and each it carries. */
+  /**
+   * Every Nexus a gate stands in: this vessel's own, and each it carries. A HERM stands at the explicit Nexus it was
+   * joined to and only there (house ruling "Routes at the cutover": "an explicit Nexus opens the herm relay"): a Nexus
+   * whose carriage board counts a `carry` for this place's own key. A charter it merely holds stands no gate.
+   */
   const gateNexuses = async (): Promise<string[]> => {
-    gateReadings = await readEveryCarried();
-    const own = ownNexusAid();
+    const read = await readEveryCarried();
+    gateReadings = gateReadingsFor(placeClass, read);
+    const own = placeClass === "herm" ? null : ownNexusAid();
     return [...new Set([...(own ? [own] : []), ...gateReadings.map((r) => r.aid)])];
   };
   /** The oracle's floor gates, one per Nexus, each seating through the face's own table (`oracle-read-face`). */
@@ -1416,6 +1429,37 @@ async function prepareNodeBootOn(
   // `LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer ride the env: the dial reads the pin from the pair index (`gatePins`),
   // and a hearth is named by an option, its admit's pin or a walk record.
   const gatePins       = hearthGatePins();
+  // ── THE GATE-NATIVE CARRIAGE PULL ──────────────────────────────────────────────────────────────
+  // Carriage peering flips on this caller (house ruling "Routes at the cutover"). Each pull dials a peer's floor gate once per
+  // Nexus this vessel stands in, at the pin the pair index holds for that peer there, and nowhere else:
+  //   · THE PINS a place signed for its floor gate ride each Nexus's carriage board; this vessel files one only where its own
+  //     replica of that board counts the place as a carrier (`place-floor-pin`: the quorum's act authenticates the key, the
+  //     key authenticates the pin). A herm signs and lays its own statement on its own replica of every board that carries it.
+  //   · WHAT IT PRESENTS: a place's counted `carry` at that Nexus where its own key stands carried (a herm, house reading "The
+  //     faceless reader"); otherwise the worn face with the admit it took for that Nexus. Nothing composed, nothing dialed.
+  const carriageSessions = opts.dialSessions ?? { table: new SessionTable(`carriage-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" as const };
+  const carriageSign = carriageSignerFromSeed(vesselSeed);
+  const carriagePull = vesselCarriagePull<MeshPalaceDoc>({
+    placeClass,
+    ownPlaceKey: vesselIdentity.verifyingKey,
+    sign:        async (image) => carriageHexToBytes(await carriageSign(image)),
+    readings:    readEveryCarried,
+    ownNexus:    ownNexusAid,
+    openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),
+    ...(placeClass === "herm" ? {
+      ownFloorPin: async (nexus: string) => oracleFloorPinAt(nexus, await vesselFloorKeyDoor()),
+      layStatement: async (url, statement) => { layStatementOn(await materializeSharedLarDoc(repo, url, "board:carriage-contracts"), statement); },
+    } : {
+      facePresentation: async (pin) => {
+        const composed = await composeDialPresentation({ sealHome, pin, personaGroup: wornGateFace()?.personaGroup ?? null, ...carriageSessions });
+        return "presentation" in composed && composed.presentation ? composed.presentation : null;
+      },
+    }),
+    pins:      gatePins,
+    audience:  DAEMON_BAG_ID,
+    deadlines: dialDeadlines(),
+    onLog:     (line) => console.log(`[carriage] ${line}`),
+  });
   // THE DIAL'S URL AND PIN ARE ONE CHOICE (`chooseHearthDial`): an explicit option, the bootstrap's url, the one url the kept
   // admit bundles agree on (`AdmitBundle.syncUrl`), then a walk record's relay; the pin is the one held for THAT hearth. Each
   // pin files under the hearth that issued it, and a kept bundle is re-read at seeding (its opening answers its admit's
@@ -1932,7 +1976,9 @@ async function prepareNodeBootOn(
     // RE-PRESENTATION follows what this vessel holds, never a timer: a change on the dialed island's board, a
     // the after-roll hook, or an `admit-take` (which fires it) re-derives the presentation, and a moved
     // one re-dials through the adapter's own close-and-reconnect path.
-    if (joinSyncUrl) {
+    // THE DIAL STANDS FROM A CHOICE of url and pin (`chooseHearthDial`): at composition from what the bootstrap and the kept
+    // bundles name, and LATER, when a bundle is taken into a RUNNING vessel (`afterRoll`, below), from what it names then.
+    const standFaceDial = async (hd: HearthDialChoice): Promise<void> => {
       try {
         // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
         // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
@@ -1943,10 +1989,10 @@ async function prepareNodeBootOn(
         // bundle opens the pin its quorum signed. Each is filed in the ONE pair index under the name of the hearth that issued
         // it (the origin of ITS sync url: the admit carries no other true name for it), and the dial reads the index alone.
         // The dial's pin is the one `chooseHearthDial` chose with the url.
-        const filed = fileHearthPins(gatePins, hearthDial.filings);
-        const dialPin = hearthDial.pin;
+        const filed = fileHearthPins(gatePins, hd.filings);
+        const dialPin = hd.pin;
         const dialNexus = dialPin?.nexus ?? null;
-        if (filed > 0) console.log(`[nexus-join] ${filed} gate pin(s) filed (${[...new Set(hearthDial.filings.map((f) => f.hearth))].join(", ")})`);
+        if (filed > 0) console.log(`[nexus-join] ${filed} gate pin(s) filed (${[...new Set(hd.filings.map((f) => f.hearth))].join(", ")})`);
         // THE PRESENTATION. The face's chain and session, composed from the joined-face proof (or the founder's lazy
         // self-certificate) and the admit this vessel took for the pinned Nexus. Absent a session table, a pin or any piece
         // of the proof, the dial stands idle and the log names the piece.
@@ -1960,7 +2006,7 @@ async function prepareNodeBootOn(
         if (composed !== null && !("presentation" in composed)) console.log(`[nexus-join] no presentation: ${composed.refusal}${composed.detail ? ` (${composed.detail})` : ""}`);
         const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
         nexusDial = maybeStartNexusClientDial({
-          repo, syncUrl: joinSyncUrl, pins: gatePins, hearth: hearthNameOf(joinSyncUrl), nexus: dialNexus,
+          repo, syncUrl: hd.syncUrl, pins: gatePins, hearth: hearthNameOf(hd.syncUrl!), nexus: dialNexus,
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
@@ -1978,6 +2024,9 @@ async function prepareNodeBootOn(
       } catch (e) {
         console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }
+    };
+    if (joinSyncUrl) {
+      await standFaceDial(hearthDial);
     }
     else if (placeClass === "herm") {
       // THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME (house ruling "Routes at the cutover", stable-founding-road: "Walker arms, the
@@ -1987,6 +2036,26 @@ async function prepareNodeBootOn(
       console.log("[herm-relay] herm-relay-shut — the herm membership relay ships shut by name (house ruling \"Routes at the cutover\"); this herm dials nothing");
     } else if (readKeptAdmitBundles(sealHome).length > 0) {
       console.log("[nexus-join] dial-idle: sync-url-absent — a kept admit bundle names no address the hearth listens at (re-take a bundle issued with --sync-url)");
+    }
+    // THE LATE DIAL. `admit-take` on a RUNNING vessel keeps a bundle that names a hearth, its sync url and the sovereign pin to dial,
+    // and fires `afterRoll`. The retired `LAR_JOIN_*` env was the only thing that stood such a dial before the take, so the take stands
+    // it now: the choice is made again over the bundles kept at that moment, and a dial that already stands keeps what it presents
+    // (a moved board re-dials through the adapter). A herm dials nothing (its relay ships shut by name), and a floor composition holds
+    // no key to present with, so its attempt names `CustodyLocked` and stands nothing.
+    if (placeClass !== "herm") {
+      representIfMoved = async () => {
+        if (nexusDial !== null) return;
+        const late = chooseHearthDial({
+          explicitUrl: opts.joinSyncUrl ?? null,
+          hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
+          kept:        readKeptAdmitBundles(sealHome),
+          walkRelay:   walkingAt?.record.relay ?? null,
+          keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
+        });
+        if (late.syncUrl === null) return;
+        for (const note of late.notes) console.log(`[nexus-join] ${note}`);
+        await standFaceDial(late);
+      };
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
@@ -2117,6 +2186,9 @@ async function prepareNodeBootOn(
       // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
       ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
       ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
+      // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
+      // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
+      ...(sovereign === null && joinSyncUrl ? { personaLate: true } : {}),
       coreHash: assembly.coreHash,
       ...(pluginCids.length ? { pluginCids } : {}),
       grants: {
@@ -2942,7 +3014,7 @@ async function prepareNodeBootOn(
   };
 
   return {
-    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates,
+    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates, carriagePull,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3069,6 +3141,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     nodeSeedHex: Buffer.from(p.vesselSeed).toString("hex"),
     ...(identity ? { identity } : {}),
+    pullOracle:  p.carriagePull,
     ...(p.residency ? { residency: p.residency } : {}),
     onLog: (l) => console.log(`[lararium] ${l}`),
   }) : [];
@@ -3181,6 +3254,7 @@ async function composeNodeHermOn(
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
     oracleGates: p.floorGates,
+    pullOracle:  p.carriagePull,
     ...(opts.meshSelf ? { meshSelf: { ...opts.meshSelf, gatePubKey: p.vesselGateKey } } : {}),
     ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),

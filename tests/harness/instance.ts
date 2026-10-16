@@ -374,6 +374,9 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
       const why = err instanceof Error ? err.message : String(err);
       throw new Error(`${why}\n  the daemon ${stands}; its log ends:\n${log.slice(-6000)}`);
     }
+    // The door's looks held this process's event loop, so the recomposed daemon's log still waits unread in its pipe: give
+    // the loop a turn, so a suite that reads `bootLog()` at once meets the unlocked composition's lines and not the floor's.
+    await new Promise((r) => setTimeout(r, 300));
     recordTimeline({ vessel: name, event: "unlocked", unlockMs: since() });
   }
 
@@ -758,9 +761,11 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
       } catch (err) {
         const text = err instanceof Error ? err.message : String(err);
         // A stand that never unlocked carries the daemon's log tail: keep it whole, since one matched line would hide the fault.
-        joinGate = text.includes("never unlocked")
+        // The first line matching `nexus-join` can be the harmless "gate pin(s) filed" banner that hides the daemon's
+        // real refusal: a fatal/ANERGIZED line wins, and an exit keeps its log tail whole.
+        joinGate = /never unlocked|exited \d+ before live/.test(text)
           ? text.slice(-6500).trim()
-          : (text.split("\n").find((l) => /nexus-join|fatal|ANERGIZED/.test(l)) ?? text.slice(-300)).trim();
+          : (text.split("\n").find((l) => /fatal|ANERGIZED/.test(l)) ?? text.split("\n").find((l) => /nexus-join/.test(l)) ?? text.slice(-300)).trim();
         if (B) { await B.stop(); stood.pop(); }
         B = null;
       }

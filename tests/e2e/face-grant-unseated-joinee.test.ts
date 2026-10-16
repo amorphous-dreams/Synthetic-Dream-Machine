@@ -66,7 +66,8 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     expect(B, `B never stood: ${bootFailure}`).not.toBeNull();
     const log = B!.bootLog();
     expect(log).toContain("[nexus-join] nexus dial-out up → ws://127.0.0.1:");
-    expect(log).toContain("[nexus-join] presenting the device-delegation edge (fleet)");
+    // The sealed face gate speaks one verdict line; the retired "presenting the device-delegation edge (fleet)" line went with the old wire.
+    expect(log).toContain("[lar-leaf] verdict OK — crossing open");
     expect(log).not.toContain("[lar-leaf] ANERGIZED");
     expect(log).toContain("phase → live");
   });

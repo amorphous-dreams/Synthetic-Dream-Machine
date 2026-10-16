@@ -7,7 +7,7 @@
  * the PIN its landing wrote, with no `LAR_JOIN_*` set.
  *
  *   V1 — B stands, bound, dialing A by the pin the signed answer carried
- *   V2 — an answer whose pin a carrier moved refuses `answer-unsigned`, and the landing writes nothing
+ *   V2 — an answer whose pin a carrier moved refuses `answer-admit-other-commit` (the admit commits to the pin), and the landing writes nothing
  *   V3 — the offer names the root's key and the scope the face stands at, and the answer carries one certificate
  *        and one grant there
  *   V4 — a second landing of the same answer refuses: the first landing cleared the pending join
@@ -36,9 +36,9 @@ beforeAll(async () => {
     riteA: async (_cli, rootA) => { stoodAt = await mintStagedNexusKey(rootA); },
     beforeLand: async (cliB, files) => {
       const answer = readJson(files.answer);
-      const carriage = answer["carriage"] as { gatePin: string; canon: unknown };
+      const carriage = answer["carriage"] as { gatePin: Record<string, unknown>; canon: unknown };
       const moved = join(files.answer + ".moved.json");
-      writeFileSync(moved, JSON.stringify({ ...answer, carriage: { ...carriage, gatePin: "ee".repeat(32) } }), "utf8");
+      writeFileSync(moved, JSON.stringify({ ...answer, carriage: { ...carriage, gatePin: { ...carriage.gatePin, transportKey: "ee".repeat(32) } } }), "utf8");
       bootstrapBefore = bootstrapOf(join(files.answer, ".."));
       tampered = await cliB(["fleet", "join", "land", moved]);
       bootstrapAfterTamper = bootstrapOf(join(files.answer, ".."));
@@ -49,9 +49,11 @@ beforeAll(async () => {
 afterAll(async () => { await pair?.stop(); });
 
 describe("the fleet-join door, end to end", () => {
-  test("V2 — a moved pin refuses `answer-unsigned`, and the landing writes nothing", () => {
+  test("V2 — a moved pin refuses `answer-admit-other-commit`, and the landing writes nothing", () => {
     expect(tampered?.code, tampered?.stderr).toBe(1);
-    expect(tampered?.stderr).toMatch(/answer-unsigned/);
+    // The admit the answer carries is signed over a commitment to its opening (the full pin), so a moved pin no longer matches the
+    // admit and refuses by name at that earlier layer, ahead of the root signature; the landing writes nothing either way.
+    expect(tampered?.stderr).toMatch(/answer-admit-other-commit/);
     expect(bootstrapAfterTamper).toBe(bootstrapBefore);
   });
 
@@ -74,7 +76,11 @@ describe("the fleet-join door, end to end", () => {
     expect(asked[0]).not.toBe(stoodAt?.faceKey);
     expect((answer["certificates"] as unknown[]).length).toBe(scopes.length);
     expect((answer["grants"] as unknown[]).length).toBe(scopes.length);
-    expect((answer["carriage"] as { gatePin: string }).gatePin).toMatch(/^[0-9a-f]{64}$/);
+    // The answer carries the FULL sovereign pin (house ruling "The admit's gate pin"), not a bare digest.
+    const pin = (answer["carriage"] as { gatePin: Record<string, string> }).gatePin;
+    expect(pin["signingKey"]).toMatch(/^[0-9a-f]{64}$/);
+    expect(pin["transportKey"]).toMatch(/^[0-9a-f]{64}$/);
+    expect(pin["tier"]).toBe("sovereign");
     expect(answer["personaGroup"]).toBe(offer["personaGroup"]);
   });
 

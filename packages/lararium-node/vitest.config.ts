@@ -28,6 +28,8 @@ export const THRASHERS = [
 export const heavy = [
   // real WebSocketServer + Repo + sealed-gate crossings
   "tests/browser-crossing.test.ts",
+  // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
+  "tests/herm-carriage-relay.test.ts",
   "tests/carriage-relay-serve-loop.test.ts",
   "tests/nexus-client-dial.test.ts",
   "tests/live-wire-node-crossing.test.ts",

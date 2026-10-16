@@ -224,7 +224,7 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
   // the bytes usually stand in B's cid/ before any CLI read — that IS fetch-on-read through the worker's own
   // resolver, not a prefetch (the prefetch cap stays off). The explicit `bag cas --fetch` then reads
   // `held:true`; whichever door fired first is reported, never assumed.
-  test("★ the BYTES follow the pointer: a READ on B pulls the blob through the fetch door into its cid/ ★", async () => {
+  test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false and names membership-relay-shut (Routes at the cutover) ★", async () => {
     const beforeRead = existsSync(join(casDirOf(B!), cid));
     console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
     const r = await B!.cli(["bag", "cas", "--fetch", cid, "--json"]);
@@ -232,9 +232,15 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
     expect(r.json?.["ok"], said(r)).toBe(true);
-    expect(r.json?.["data"] && (r.json["data"] as Record<string, unknown>)["held"]).toBe(true);
-    expect(existsSync(join(casDirOf(B!), cid))).toBe(true);
-    expect(createHash("sha256").update(readFileSync(join(casDirOf(B!), cid))).digest("hex")).toBe(cid);
+    // THE CARRIAGE SHIPS SHUT BY NAME (house ruling "Routes at the cutover": carriage peering and the herm membership relay ship
+    // SHUT; "a closed route grants no silent legacy authority"). The pointer crossed on the sealed gate (step 7); the bytes ride the
+    // carriage's fetch door, which has no gate-native caller yet, so the read honestly answers "not held" and writes nothing. The
+    // witness is the refusal by name, not a deleted step. FLIPS BACK to `held:true` + sha256 whole when the carriage reopens.
+    const data = r.json?.["data"] as Record<string, unknown> | undefined;
+    expect(data?.["held"]).toBe(false);
+    expect(data?.["fetched"]).toBe(false);
+    expect(existsSync(join(casDirOf(B!), cid))).toBe(false);
+    expect(B!.bootLog()).toMatch(/carriage serve-loop membership-relay-shut|carriage-peering-shut/);
   }, 60_000);
 
   test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {

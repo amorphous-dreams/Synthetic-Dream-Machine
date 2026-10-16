@@ -17,7 +17,7 @@
  * path, and when it fails it fails with the next site's name in its message.
  *
  *   R1 — a herm reaches `live`                         · the base case of the stack
- *   R2 — a herm serves its map to a proven peer alone  · carrying is what the floor is FOR; peers prove first
+ *   R2 — a herm joined to no Nexus answers no knock    · closed by default: an explicit Nexus opens the herm relay
  *   R3 — a herm carries a crossing                     · admit-by-lease, the relay role that is load-bearing
  *   R4 — a herm refuses hearth-scoped acts LEGIBLY     · refusal is a feature of the floor
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
@@ -104,8 +104,10 @@ function standHermRoot(): string {
 /** The pid holding PORT, or "" — the one reliable way to name this vessel's process. `pkill -f` matches
  *  its own shell and would kill the harness. */
 function portPid(): string {
+  // `ss` where the box has it, else `lsof`: a box with neither tool read every vessel as already gone, so a stop
+  // returned at once and the lift's founding met the standing vessel's store claim (`StoreHeld`).
   return execFileSync("bash", ["-lc",
-    `ss -ltnp 2>/dev/null | grep ':${PORT} ' | grep -oP 'pid=\\K[0-9]+' | head -1`], { encoding: "utf8" }).trim();
+    `{ ss -ltnp 2>/dev/null | grep ':${PORT} ' | grep -oP 'pid=\\K[0-9]+'; lsof -t -iTCP:${PORT} -sTCP:LISTEN 2>/dev/null; } | grep -m1 . || true`], { encoding: "utf8" }).trim();
 }
 
 /**
@@ -182,12 +184,17 @@ async function operatorDid(r: string): Promise<string> {
 }
 
 /**
- * The herm's FLOOR gate, as a reader dials it: the pin its floor key derives for the Nexus it stands at on the oracle route,
- * filed in a reader's own pair index, and a throwaway face (a chain no admit backs) to present. A floor gate answers the
- * classes a floor sorts and no admit rides this dial (`arm: null`). The publisher's key (`verifyingKey`) is the herm's vessel
- * key, never the gate's. UNWITNESSED HERE: it needs the oracle server's floor gates standing on the herm, at the Nexuses its gates sweep reads (`ownNexusAid()` plus the carried ones).
+ * A reader at the herm's FLOOR gate for `nexusAid`, as a reader dials it: the pin the herm's floor key derives for that Nexus
+ * on the oracle route, filed in a reader's own pair index, and a throwaway face (a chain no admit backs, `arm: null`) to
+ * present. The publisher's key (`verifyingKey`) is the herm's vessel key, never the gate's.
+ *
+ * WHERE A HERM'S GATE STANDS (house reading "Only there"): at a Nexus whose quorum counted its `carry`, on the herm's own
+ * replica of that Nexus's carriage board, and nowhere else. A herm founded with no join stands none, so this reader holds a
+ * pin the herm COULD derive and meets no gate at it. The positive read (a carried place presenting its arm at a carried
+ * herm's private gate, over real sockets) stands in-process: packages/lararium-node/tests/herm-carriage-relay.test.ts and
+ * herm-answers-the-knock.test.ts; the join through the commands: herm-explicit-join.test.ts.
  */
-async function hermFloorReader(r: string) {
+async function hermFloorReader(r: string, nexusAid: string) {
   const mesh = await import("../../packages/lararium-mesh/src/index.js");
   const node = await import("../../packages/lararium-node/src/index.js");
   const { ORACLE_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
@@ -196,15 +203,12 @@ async function hermFloorReader(r: string) {
   process.env["LAR_ROOT"] = r;
   try {
     const vesselKey = (await node.loadVesselVerifyingKey()).toLowerCase();
-    // THE NEXUS THE FLOOR GATE STANDS AT is the one the vessel's gates sweep reads: its OWN Nexus (the identifier its seed charter
-    // names) plus each it carries, never a Nexus derived from the vessel key. A herm that holds no charter stands no gate here.
-    const nexusAid = mesh.nexusAidOf(node.readNexusDoc(node.larSealHome()));
-    if (!nexusAid) throw new Error("the herm's seal home names no Nexus of its own: its floor stands no gate to dial");
-    const bundle = mesh.deriveGateBundle(mesh.floorGateRoot(await node.vesselFloorKeyDoor()), new TextEncoder().encode(nexusAid), mesh.floorRoute(ORACLE_SOCKET_ROUTE));
+    // The pin derives where the floor key door lives (the node package's own module graph): a door from one module instance
+    // reads as foreign to a gate root from another (`door-other-tier`), so the derivation never mixes the two.
+    const { oracleFloorPinAt } = await import("../../packages/lararium-node/src/herm-carriage.js");
     const pins = mesh.hearthPinIndex();
     const hearth = "hearth-herm-floor";
-    if (!pins.put(hearth, bundle.pin)) throw new Error("the herm's floor pin did not file in the reader's index");
-    bundle.drop();
+    if (!pins.put(hearth, oracleFloorPinAt(nexusAid, await node.vesselFloorKeyDoor()))) throw new Error("the herm's floor pin did not file in the reader's index");
     const w = await fx.world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: nexusAid });
     const p = await fx.presenter(w, "herm-floor reader");
     return {
@@ -212,7 +216,8 @@ async function hermFloorReader(r: string) {
       pins, hearth, nexus: mesh.hex(new TextEncoder().encode(nexusAid)),
       presentation: { certificate: p.certificate, signer: p.signer, arm: null, history: p.history },
       audience: fx.AUDIENCE,
-      deadlines: { draw(lapse: () => void) { const t = setTimeout(lapse, 15_000); return { cancel: () => clearTimeout(t) }; } },
+      deadlines: { draw(lapse: () => void) { const t = setTimeout(lapse, 5_000); return { cancel: () => clearTimeout(t) }; } },
+      nexusHeld: mesh.nexusAidOf(node.readNexusDoc(node.larSealHome())) ?? null,
     };
   } finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
@@ -261,7 +266,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(`${asked.stdout}\n${asked.stderr}`).toMatch(/lares vault unlock/);
   }, 200_000);
 
-  test("R2 — a herm serves its map to a proven peer, and a stranger meets the closed door", async () => {
+  test("R2 — a herm joined to no Nexus answers no knock: the stranger meets the closed door, and its floor pin opens nothing", async () => {
     const { pullAndVerifyOracle } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
     const { CLOSED_DOOR } = await import("../../packages/lararium-node/src/bulb-routes.js");
     const origin = `http://127.0.0.1:${PORT}`;
@@ -271,19 +276,15 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(stranger, `nothing answered on :${PORT} — no vessel stands there for R5 to lift`).not.toBeNull();
     expect(stranger!.status).toBe(CLOSED_DOOR.status);
     expect(await stranger!.text()).toBe(CLOSED_DOOR.body);
-    // A PROVEN PEER — this vessel's own key — reads the map through the gated oracle socket. LIVENESS ⊥
-    // READINESS: the vessel listens before its daemon's keyholder can verify a proof, and a gate asked in that
-    // window refuses ("keyhive not booted") exactly as it refuses a stranger. So the vector asks until the
-    // keyholder answers, inside its own budget, and reports the last refusal if it never does.
-    // The reader dials the herm's FLOOR gate on the oracle route under the pin the herm's floor key derives, and reads the pointer
-    // and the snapshot as sealed messages; the pointer verifies under the herm's vessel key (the publisher's, apart from the gate's).
-    const reader = await hermFloorReader(root);
-    let read = await pullAndVerifyOracle(origin, reader);
-    for (const until = Date.now() + 45_000; !read.ok && Date.now() < until; ) {
-      await new Promise((r) => setTimeout(r, 1_000));
-      read = await pullAndVerifyOracle(origin, await hermFloorReader(root));
-    }
-    expect(read.ok, `a proven peer read no map on :${PORT} — the floor serves no shelf: ${read.reason}`).toBe(true);
+    // CLOSED BY DEFAULT (house rulings "Routes at the cutover" and "Only there"). This herm was founded and stood, and joined
+    // no Nexus: it holds no charter, and no quorum counted its carry. A reader holding the very floor pin the herm's own floor
+    // key derives — here at a Nexus named for the test — and presenting a proven face meets no gate and learns no pointer.
+    // The vector this replaces read the map off a herm joined to nothing, the bearer-pin reading the ruling closed.
+    const reader = await hermFloorReader(root, `nexus-${"e".repeat(64)}`);
+    expect(reader.nexusHeld, "the floor rig holds a charter: this vector would measure a joined herm").toBeNull();
+    const read = await pullAndVerifyOracle(origin, reader);
+    expect(read.ok, "a herm joined to no Nexus served its map at a floor gate it never stood").toBe(false);
+    expect(read.pointer).toBeUndefined();
   }, 60_000);
 
   test("R3 — a herm carries: its verb channel answers a caller", async () => {
@@ -311,7 +312,11 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
     const run = (args: readonly string[]): { code: number; said: string } => {
       const r = spawnSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8" });
-      return { code: r.status ?? -1, said: `${r.stdout}\n${r.stderr}`.trim().split("\n").slice(-3).join("\n") };
+      // The runtime's own warnings (node:sqlite's ExperimentalWarning and its `--trace-warnings` hint) print on stderr AFTER
+      // a command's last word when the module loads late; they are the platform's lines, never this house's answer.
+      const said = `${r.stdout}\n${r.stderr}`.split("\n")
+        .filter((l) => !/ExperimentalWarning|--trace-warnings/.test(l)).join("\n").trim().split("\n").slice(-3).join("\n");
+      return { code: r.status ?? -1, said };
     };
     // CONTROL — THE FLOOR HOLDS NO VESSEL KEY, SO NO FACE LIGHTS ON IT. A face founding seals its anchors and its
     // veil archive under the vessel key; the standing vessel rests locked, and the founding refuses by naming the

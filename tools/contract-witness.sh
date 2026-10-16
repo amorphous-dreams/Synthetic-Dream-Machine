@@ -31,9 +31,9 @@
 # lineage, derived off A's board by `presentationFromBoardDoc` — the same derivation a dial presents after
 # sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
-# after a descending revoke. It checks that only B's leaf proves the
-# admit to a socket, and that the wire guard refuses the admit beside a root edge. The raise door then
-# walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# after a descending revoke. It checks that B's own leaf opens a socket through the sealed face gate, that a stranger
+# carrying the same admit draws `arm-other-key`, and that the admit beside a root edge draws the gate's silence.
+# The raise door then walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
 #
 # ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
@@ -306,7 +306,7 @@ fi
 ln -s "$REPO_ROOT/packages/lararium-node/node_modules" "$XFER/node_modules"
 S6="$XFER/s6.mjs"
 cat > "$S6" <<'JSEOF'
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import * as M from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
@@ -399,24 +399,86 @@ switch (mode) {
     console.log(`minted anchors=${anchors.length}`);
     break;
   }
-  case "leafproof": {          // only the admit's own leaf proves it to a socket
-    const p = json(a1);
-    // The Nexus the admit names: the one passed (a charter this vessel carries), else the primary charter's.
-    const aid = a2 || M.nexusAidOf(readNexusDoc(larSealHome()));
-    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
-    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
-    const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
-    const arm = { kind: "admit", ...p };
-    const proof = async (seed) => M.signLeafProof({ presented: arm, ...bind, sign: M.ed25519SignerFromSeed(seed) });
-    const honest = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(leaf.seed) }, ...bind });
-    const forged = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(randomBytes(32)) }, ...bind });
-    console.log(`honest=${honest} forged=${forged}`);
+  case "snapshot": {          // A's held root as the gate rig reads it: public bytes only (charter, deny board, antigen)
+    const r = await reading();
+    writeFileSync(a1, JSON.stringify({ aid: r.aid, doc: r.doc, denyBoard: r.denyBoard, antigen: r.antigen }));
+    console.log("snapshot");
     break;
   }
-  case "wire": {               // one socket, one face: the admit never rides beside a root edge
-    const p = json(a1);
-    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presented: { kind: "admit", ...p, leafProof: "ab".repeat(64) } };
-    console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
+  case "gate": {              // one socket opens through the SEALED FACE GATE; the presentation is the admit riding inside it
+    // Run in the vessel that holds the leaf. A gate stands over A's held root (the snapshot), B's leaf seeds the face,
+    // and `dialFaceGate` speaks the real exchange over an in-process wire. Variants: honest | stranger | stranger-honest | edge.
+    const [presentedFile, snapFile, variant] = [a1, a2, process.argv[5]];
+    const ed = await import("@noble/ed25519");
+    const p = json(presentedFile), snap = json(snapFile);
+    const aid = snap.aid, AUD = "lar:///ha.ka.ba/bags/daemon";
+    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
+    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
+    const root = M.heldNexusRoot({ nexus: aid, charter: snap.doc, denyBoard: snap.denyBoard, antigen: snap.antigen,
+      antigenVerifier: M.makeMultiSigQuorumVerifier() });
+    if ("absent" in root) { console.log(`no-held-root ${root.absent}`); process.exit(1); }
+    const reader = M.presentedAdmitReader(() => root);
+    // The gate's root door is the vessel's OWN custody seat (only a seat mints a gate root door; gate-root-door-minters).
+    const { custodyGateDoor, openedCustody } = await import(`${D}/index.js`);
+    await openedCustody();
+    const bundle = M.deriveGateBundle(
+      M.sovereignGateRoot(custodyGateDoor()),
+      new TextEncoder().encode(aid), M.sovereignRoute("/ws"));
+    // THE FACE: B's own leaf for the honest and edge runs, a key nobody admitted for the stranger runs.
+    const faceSeed = variant === "honest" || variant === "edge" ? leaf.seed : randomBytes(32);
+    const faceKey = M.hex(await ed.getPublicKeyAsync(faceSeed));
+    const scope = { faceKey, nexus: aid };
+    const fold = M.foldWithdrawals(scope);
+    if (!("memory" in fold)) { console.log(`history ${fold.refusal}`); process.exit(1); }
+    const vessel = await M.mintVesselFaceKey();
+    const req = await M.requestCertificate({ scope, vesselFaceKey: vessel.publicKey, apart: [],
+      custody: { signAsVesselFace: (_s, _k, image) => ed.signAsync(image, vessel.secret) } });
+    const cert = "request" in req ? await M.issueCertificate({ request: req.request, history: fold.memory, apart: [],
+      custody: { signAsFace: (_s, image) => ed.signAsync(image, faceSeed) } }) : req;
+    if (!("certificate" in cert)) { console.log(`certificate ${cert.refusal}`); process.exit(1); }
+    // The admit as the held-root reader reads it. A stranger that wants its own session open must SPELL the reading
+    // with its own key at the head; `stranger-honest` leaves the reading as the reader gave it.
+    const honestReading = await reader.read({ admit: p.admit, lineage: p.lineage });
+    const reading = variant === "stranger" ? { ...honestReading, head: faceKey } : honestReading;
+    const opened = await M.openJoinedFaceSession({
+      table: new M.SessionTable("contract-witness-owner-epoch"), binding: M.sessionBinding("socket"), profile: "face",
+      admitted: scope, certificate: cert.certificate, memory: fold.memory, vesselFaceKey: vessel.publicKey, admit: reading,
+      grant: { personaGroup: "0xb7f1c2a9d4e60381", faceKey, nexus: aid, revision: "contract-witness-1" },
+      apart: [], custody: { signAsVesselFace: (_s, _k, image) => ed.signAsync(image, vessel.secret) } });
+    if (!("signer" in opened)) { console.log(`refused=${opened.refusal}`); break; }
+
+    // The wire: both ends in this process. A queue per direction; the gate's end is a GateSocket.
+    const queue = () => { const held = [], waiting = []; let ended = false;
+      return { push(f) { if (ended) return; if (f === null) ended = true; const w = waiting.shift(); if (w) w(f); else held.push(f);
+                 if (f === null) for (const r of waiting.splice(0)) r(null); },
+               take() { if (held.length) return Promise.resolve(held.shift()); if (ended) return Promise.resolve(null); return new Promise((r) => waiting.push(r)); } }; };
+    const toGate = queue(), toDialer = queue();
+    let accept; const accepted = new Promise((r) => { accept = r; });
+    const dialSocket = {
+      open(flight) { accept({ flight: { knock: flight.knock, message1: Uint8Array.from(flight.message1) },
+        send: (f) => toDialer.push(Uint8Array.from(f)), recv: () => toGate.take(),
+        cut() { toDialer.push(null); toGate.push(null); } }); },
+      send: (f) => toGate.push(Uint8Array.from(f)), recv: () => toDialer.take(),
+      close() { toGate.push(null); toDialer.push(null); } };
+    const hand = () => { const lapses = new Set(); return { draw(l) { lapses.add(l); return { cancel() { lapses.delete(l); } }; },
+      fire() { for (const l of [...lapses]) { lapses.delete(l); l(); } } }; };
+    const gateHand = hand(), dialHand = hand();
+    const gate = M.makeFaceGate({
+      bundle, nexus: aid, audience: AUD, deadlines: gateHand, withdrawals: M.memoryBackedWithdrawals(), admits: reader,
+      shadows: { consult: () => ({ aside: false, fleetAside: true }), consultPlace: () => ({ aside: false }) },
+      grants: { grantFor: () => null },
+      sorter: { sort: async (i) => (i.admit ? { class: "contracted", standing: { nym: i.scope.faceKey, aid } } : null) },
+      sessions: { attach: () => ({ open() {}, abandon() {} }) } });
+    // ONE ARM per presentation: the admit alone, or (the edge run) the admit with a root edge written beside it.
+    const arm = { kind: "admit", admit: p.admit, lineage: p.lineage };
+    const dialing = M.dialFaceGate({ pin: bundle.pin, tier: "sovereign", socket: dialSocket, audience: AUD,
+      certificate: cert.certificate, signer: opened.signer,
+      arm: variant === "edge" ? { ...arm, edge: { deviceVerifyingKey: hex32() } } : arm,
+      history: fold.memory, deadlines: dialHand });
+    const outcome = await (await accepted.then((sock) => gate.accept(sock)).then(async (g) => { gateHand.fire(); dialHand.fire(); await dialing; return g; }));
+    console.log(outcome.outcome === "attached" ? `attached=${outcome.class}`
+      : outcome.outcome === "silence" ? `silence=${outcome.reason}` : `answered=${outcome.state}`);
+    leaf.seed.fill(0);
     break;
   }
   case "challenge": {          // what a herm carrying this Nexus would emit
@@ -466,15 +528,34 @@ step "★ (1) B's presented admit reads HELD at A ★"
 if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
 else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
 
-step "★ (2) a leaf proof by ANOTHER key refuses — B's own leaf proves ★"
-# CONTROL inside the check: the honest proof by B's own leaf (derived in B's environment) must verify,
-# or a refusing forged proof would measure a verifier that refuses everything.
-LP=$(s6_b leafproof "$PRESENTED" "$A_AID" 2>&1)
-if [ "$LP" = "honest=true forged=false" ]; then ok; else bad "$LP"; fi
+# THE SOCKET IS THE SEALED FACE GATE. The old leaf proof over a socket's nonce and the old auth frame's guard are gone;
+# the presentation a gate reads is the admit riding INSIDE the sealed exchange (`dialFaceGate` -> `makeFaceGate`), read
+# against the root the gate's vessel holds. The rig runs in B's environment (B's own leaf is the face key) over A's
+# held root, which A copies out as public bytes.
+SNAP="$XFER/held-root.json"
+step "A's held root (charter, deny board, antigen) copies out to the gate rig"
+SN=$(s6_a snapshot "$SNAP" 2>&1)
+if [ "$SN" = "snapshot" ]; then ok; else bad "$(printf '%s' "$SN" | tail -1)"; fi
 
-step "★ (5) the admit beside a root edge fails the wire guard ★"
-WG=$(s6_a wire "$PRESENTED" 2>&1)
-if [ "$WG" = "alone=true beside-edge=false" ]; then ok; else bad "$WG"; fi
+step "★ (2) a presentation by ANOTHER key refuses — B's own leaf is held ★"
+# CONTROL inside the check: B's own leaf, presenting its admit through the gate, must attach as a contracted peer, or a
+# refusing stranger would measure a gate that refuses everything. The stranger carries the SAME admit under a key the Nexus
+# never admitted; the gate names the refusal `arm-other-key`. Its own dial side refuses `admit-other-face` before a byte
+# leaves, when the stranger leaves the held-root reading as the reader gave it.
+GATE_HONEST=$(s6_b gate "$PRESENTED" "$SNAP" honest 2>&1 | tail -1)
+GATE_STRANGER=$(s6_b gate "$PRESENTED" "$SNAP" stranger 2>&1 | tail -1)
+GATE_STRANGER_HONEST=$(s6_b gate "$PRESENTED" "$SNAP" stranger-honest 2>&1 | tail -1)
+if [ "$GATE_HONEST" = "attached=contracted" ] && [ "$GATE_STRANGER" = "silence=arm-other-key" ] \
+   && [ "$GATE_STRANGER_HONEST" = "refused=admit-other-face" ]; then ok
+else bad "honest=$GATE_HONEST stranger=$GATE_STRANGER stranger-honest=$GATE_STRANGER_HONEST"; fi
+
+step "★ (5) the admit beside a root edge draws the gate's silence ★"
+# One socket, one face, ONE ARM: a presentation reads under exact keys, so an admit arm with a root edge written beside it
+# reads as no presentation (`presentation-none`), and the presentation has no slot for an edge at all. CONTROL: the same
+# admit arm alone (above) attaches.
+GATE_EDGE=$(s6_b gate "$PRESENTED" "$SNAP" edge 2>&1 | tail -1)
+if [ "$GATE_HONEST" = "attached=contracted" ] && [ "$GATE_EDGE" = "silence=presentation-none" ]; then ok
+else bad "alone=$GATE_HONEST beside-edge=$GATE_EDGE"; fi
 
 # ── ⑥ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
 say "⑥ the refusals — a gate only shown saying yes is no gate"
@@ -505,10 +586,11 @@ step "a challenge names A's Nexus by its AID"
 if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
 
 step "lares raise sign signs as the LEAF, carrying its admit"
-if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2>&1 \
+# stdout alone is the JSON: a runtime warning on stderr (node:sqlite's experimental notice) must not corrupt it.
+if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
    && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
    && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
-else bad "$(tail -c 300 "$XFER/raise-sign.out")"; fi
+else bad "$(tail -c 300 "$XFER/raise-sign.out") $(tail -c 300 "$XFER/raise-sign.err")"; fi
 
 step "★ the door RAISES the leaf's grant ★"
 RAISE=$(s6_a raise "$CHALLENGE" "$GRANT" 2>&1)

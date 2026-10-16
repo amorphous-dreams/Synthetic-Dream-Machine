@@ -40,7 +40,7 @@
 import { readFileSync } from "node:fs";
 import {
   runNexusCarryFor, NexusContractError, SealedActRefused,
-  AdmitBundleError, type NexusContractResult, type NexusContractPartialResult, type NexusMembersListResult,
+  AdmitBundleError, CarryBundleError, type NexusContractResult, type NexusContractPartialResult, type NexusMembersListResult,
 } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
 import { larSealHome, vesselDid } from "../env.js";
@@ -74,6 +74,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "accept-carriage": return await cmdAcceptCarriage(args);
     case "admit-take":      return await cmdAdmitTake(args);
     case "carry-for":       return await cmdCarryFor(args);
+    case "carry-take":      return await cmdCarryTake(args);
     case "posture":         return await cmdPosture(args);
     case "rite":            return await runNexusRite(args);
     case "kahuli":          return await cmdKahuli(args);
@@ -253,8 +254,12 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
     const carrierSig  = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
     const aid = args.options["nexus"];
     const syncUrl = action === "admit" ? args.options["sync-url"] : undefined;
+    // THE PLACE'S FLOOR PIN (house reading "The herm's floor pin"): the statement `carry-for` printed, inline or as a file.
+    const floorPinArg = action === "carry" ? args.options["floor-pin"] : undefined;
+    const floorPin = floorPinArg === undefined ? undefined : readFloorPinArg(floorPinArg);
     const { output } = await storeVerb("nexus-contract", {
       action, nym,
+      ...(floorPin ? { floorPin } : {}),
       ...(syncUrl ? { syncUrl } : {}),
       ...(contractSig ? { contractSig } : {}),
       ...(carrierSig ? { carrierSig } : {}),
@@ -267,7 +272,7 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         action: r.action, nym: r.nym, parents: r.parents, evidenceCid: r.evidenceCid,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
         contractIn: r.contractIn, boardUrl: r.boardUrl, memberHeld: r.memberHeld, carrierHeld: r.carrierHeld,
-        bundle: r.bundle, findings: r.findings,
+        bundle: r.bundle, findings: r.findings, carryBundle: r.carryBundle ?? null,
       },
       human: () => {
         // What the presenter noticed reaches the kahu who signed, and never stops the act.
@@ -289,6 +294,10 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         if (r.bundle) {
           console.log(`  bundle:      the admit, its lineage (${r.bundle.lineage.length}), the Nexus and this hearth's gate key —`);
           console.log(`               \`--json\` emits it as \`data.bundle\`; the joinee runs \`lares nexus admit-take <file>\``);
+        }
+        if (r.carryBundle) {
+          console.log(`  carry bundle: the carry, its lineage (${r.carryBundle.lineage.length}) and ${r.carryBundle.floorPins.length} place floor pin(s) —`);
+          console.log(`               \`--json\` emits it as \`data.carryBundle\`; the place runs \`lares nexus carry-take <file>\``);
         }
       },
     });
@@ -533,6 +542,67 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
   }
 }
 
+/** A `--floor-pin` value: the statement inline (`{…}`), or a file holding it or `carry-for --json`'s whole envelope. */
+function readFloorPinArg(value: string): string {
+  let raw = value.trim();
+  if (!raw.startsWith("{")) {
+    try { raw = readFileSync(value, "utf8"); } catch (err) {
+      throw new NexusContractError(`cannot read --floor-pin ${value}: ${(err as NodeJS.ErrnoException).code ?? String(err)}`);
+    }
+  }
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const inner = ((parsed["data"] as Record<string, unknown> | undefined)?.["floorPin"]) ?? parsed["floorPin"];
+    if (inner !== undefined) return JSON.stringify(inner);
+  } catch { /* the row names the parse failure */ }
+  return raw;
+}
+
+/**
+ * `lares nexus carry-take <bundle-file>` — run by the carried PLACE on its OWN vessel (a herm's explicit join): take the
+ * carry bundle a founding kahu handed over (`nexus carry --json` → `data.carryBundle`, or the bundle alone). It verifies
+ * every act against the charter held for its Nexus, refuses a carry naming another key, and writes the acts and the floor
+ * pins that read onto this vessel's own replica of that Nexus's carriage board (row `nexus-carry-take`). The herm's floor
+ * gate stands there, and only there, at the next refold.
+ */
+async function cmdCarryTake(args: ParsedArgs): Promise<number> {
+  const file = args.positional[1];
+  if (!file) { console.error("usage: lares nexus carry-take <bundle-file>"); return 2; }
+  try {
+    let raw: string;
+    try { raw = readFileSync(file, "utf8"); } catch (err) {
+      throw new CarryBundleError(`cannot read ${file}: ${(err as NodeJS.ErrnoException).code ?? String(err)}`);
+    }
+    let text = raw;
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      const inner = ((parsed["data"] as Record<string, unknown> | undefined)?.["carryBundle"]) ?? parsed["carryBundle"];
+      if (inner !== undefined) text = JSON.stringify(inner);
+    } catch { /* the take names the parse failure */ }
+    const { output: r } = await storeVerb("nexus-carry-take", { raw: text }, CarryBundleError);
+    emit(args, {
+      ok: true,
+      data: { aid: r["aid"], nym: r["nym"], carryCid: r["carryCid"], lineage: r["lineage"], floorPins: r["floorPins"], boardUrl: r["boardUrl"], refolded: r["refolded"] === true },
+      human: () => {
+        console.log("nexus carry-take — the carry verified against the charter held for its Nexus, and written onto this place's own board:");
+        console.log(`  nexus:      ${String(r["aid"])}`);
+        console.log(`  place:      ${String(r["nym"])}`);
+        console.log(`  carry:      ${String(r["carryCid"])} (lineage ${String(r["lineage"])})`);
+        console.log(`  floor pins: ${Array.isArray(r["floorPins"]) ? r["floorPins"].length : 0} landed`);
+        console.log(r["refolded"] === true
+          ? "  the running vessel re-folded: its floor gate stands at this Nexus"
+          : "  no running vessel answered — the next boot stands its floor gate at this Nexus");
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg  = err instanceof Error ? err.message : String(err);
+    const failure = storeFailure(err, err instanceof CarryBundleError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus carry-take: ${msg}`) });
+    return exitFor(failure.code);
+  }
+}
+
 /**
  * `lares nexus carry-for` — run by the joining PLACE on its OWN vessel: mint the carrier seal the founding
  * kahu supply to `nexus carry <key> --carrier <hex>`. It reads the VESSEL key and nothing else, which is the
@@ -545,13 +615,14 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
     const r = await runNexusCarryFor({ sealHome: larSealHome() });
     emit(args, {
       ok: true,
-      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, carrierSig: r.carrierSig },
+      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, carrierSig: r.carrierSig, floorPin: r.floorPin },
       human: () => {
         console.log("nexus carry-for — signed 'I carry for this Nexus' with this vessel's OWN key (no persona read):");
         console.log(`  this place:   ${r.nym}`);
         console.log(`  epoch:        ${r.sealEpochCid}`);
         console.log(`  carrier-sig:  ${r.carrierSig}`);
-        console.log(`  hand this to a founding kahu:  lares nexus carry ${r.nym} --carrier ${r.carrierSig}`);
+        console.log(`  hand this to a founding kahu:  lares nexus carry ${r.nym} --carrier ${r.carrierSig}${r.floorPin ? " --floor-pin <file>" : ""}`);
+        if (r.floorPin) console.log("  floor pin:    signed for this Nexus's floor gate — `--json` emits it as `data.floorPin`; it rides as --floor-pin");
       },
     });
     return 0;

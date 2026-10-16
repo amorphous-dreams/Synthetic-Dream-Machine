@@ -13,9 +13,9 @@ import {
   pullAndVerifyOracle, ed25519VerifyingKeyFromSeed, ORACLE_SOCKET_ROUTE, type FederationPosture, type GateSessionTable,
 } from "@lararium/mesh";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
-import { world, presenter, AUDIENCE, type World, type Presenter } from "../../lararium-mesh/tests/face-gate-fixture.js";
+import { world, presenter, place, AUDIENCE, type World, type Presenter, type Place } from "../../lararium-mesh/tests/face-gate-fixture.js";
 
-export { presenter, AUDIENCE, type World, type Presenter };
+export { presenter, place, AUDIENCE, type World, type Presenter, type Place };
 
 /** The `gates` argument a face is mounted with: one floor gate per Nexus, each seating through the face's table. */
 export function floorGates(nexuses: readonly string[], opts: { posture?: FederationPosture } = {}): {
@@ -65,5 +65,19 @@ export function oraclePuller<T = unknown>(w: World, p: Presenter, over: { arm?: 
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { certificate: p.certificate, signer: p.signer, arm: over.arm === undefined ? p.arm : over.arm, history: p.history },
     audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: publisherKey, dialSocket: dialer,
+  });
+}
+
+/** Pull the oracle from `base` as a faceless PLACE `pl` at world `w`: its own key and, unless `arm: null`, the quorum's
+ *  `carry` act over it (house reading "The faceless reader"). */
+export async function pullFloorAsPlace<T = unknown>(
+  base: string, w: World, pl: Place,
+  over: { arm?: Place["arm"] | null; publisherSeed: Uint8Array; deadlineMs?: number },
+) {
+  return pullAndVerifyOracle<T>(base, {
+    pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
+    hearth: "hearth-one", nexus: w.pin.nexus,
+    presentation: { kind: "place", placeKey: pl.key, sign: pl.sign, arm: over.arm === undefined ? pl.arm : over.arm },
+    audience: AUDIENCE, deadlines: realDeadlines(over.deadlineMs), verifyingKey: await ed25519VerifyingKeyFromSeed(over.publisherSeed), dialSocket: dialer,
   });
 }

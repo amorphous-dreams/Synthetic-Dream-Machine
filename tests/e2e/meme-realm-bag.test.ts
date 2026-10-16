@@ -53,8 +53,8 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:
 import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID, type GateBundlePin } from "../../packages/lararium-mesh/src/index.js";
-import { strangerFace } from "../../packages/lararium-node/probes/crossing-synthetic-world.js";
+import type { GateBundlePin } from "../../packages/lararium-mesh/src/index.js";
+import { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID, strangerFace } from "../../packages/lararium-node/probes/crossing-synthetic-world.js";
 import {
   openStaged, freePort, stageDir, awaitRendezvous, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
   type LarInstance,
@@ -368,7 +368,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // B dials nobody until she holds an admit: the dial reads its pin and address off the bundle she TOOK, so the pins are
     // filed first, then the dial stands, then A's gate opens the crossing. No root edge rides any socket.
     expect(b).not.toContain("contract edge");
-    const filedAt = lines.findIndex((l) => /\[nexus-join\] \d+ gate pin\(s\) filed for/.test(l));
+    const filedAt = lines.findIndex((l) => /\[nexus-join\] \d+ gate pin\(s\) filed \(/.test(l));
     const upAt = lines.findIndex((l) => l.includes("[nexus-join] nexus dial-out up →"));
     const okAt = lines.findIndex((l) => l.includes("[lar-leaf] verdict OK — crossing open, syncing"));
     console.error(`meme-realm-bag MEASURE B dial order: pins filed @${filedAt} · dial up @${upAt} · crossing open @${okAt}`);
@@ -406,7 +406,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       ]);
       expect(gotDoc, "C's dial reached a doc of A's").not.toBe("found");
       for (const until = Date.now() + 30_000; silencesIn(A!.bootLog()) <= silentBefore && Date.now() < until; ) await new Promise((r) => setTimeout(r, 1_000));
-      expect(silencesIn(A!.bootLog()), "A's gate never fell silent on C's dial: C never reached it").toBeGreaterThan(silentBefore);
+      expect(silencesIn(A!.bootLog()), `A's gate never fell silent on C's dial: C never reached it. A's gate lines:\n${A!.bootLog().split("\n").filter((l) => l.includes("[lar-gate]")).join("\n")}`).toBeGreaterThan(silentBefore);
     } finally {
       dial.disconnect();
       await cRepo.shutdown();

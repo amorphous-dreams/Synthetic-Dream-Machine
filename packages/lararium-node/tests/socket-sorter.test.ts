@@ -89,8 +89,8 @@ describe("the gate sorter — four classes, and silence", () => {
     expect(await live.sort(face({ scope: null, placeKey: PLACE }))).toEqual({ class: "stranger" });
   });
 
-  test("a herm answers any knock; a lararium reads its charter, and an absent one fails closed", () => {
-    expect(ownPlacePosture("herm", null)).toBe("open");
+  test("a herm reads the charter of the Nexus that carries it exactly as a lararium does, and an absent one fails closed", () => {
+    expect(ownPlacePosture("herm", null)).toBe("private");
     expect(ownPlacePosture("lararium", null)).toBe("private");
   });
 });

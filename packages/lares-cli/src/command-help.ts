@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
@@ -61,6 +61,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
       "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
       "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
+      "        [--floor-pin <file>]                the place's signed floor pin (`carry-for --json`); it lands beside the",
+      "                                            act, and the carry emits the CARRY BUNDLE the place takes",
       "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
       "  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never",
       "                                            authority (default: the primary charter's Nexus)",
@@ -70,7 +72,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            against the charter held for its Nexus, keep it, and re-present a",
       "                                            running vessel's dial to the hearth that wrote it",
       "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
-      "                                            key — reads no persona, because a crossroads holds none",
+      "                                            key — reads no persona, because a crossroads holds none — and sign",
+      "                                            its floor pin at this Nexus with the same key",
+      "  carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto",
+      "                                            its own board replica: its floor gate stands at that Nexus, only there",
       "  posture [private | open]                  read / flip the cross-Nexus federation posture",
       "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
       "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",

@@ -199,7 +199,7 @@ export {
   type HeldNexusRoot, type HeldRootAbsence, type HeldAdmitReading, type SignedAdmitBundleRefusal,
 } from "./held-nexus-root.js";
 export {
-  carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,
+  carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX, coerceCarriageEntry,
   rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
 } from "./carriage-board.js";
 export {
@@ -329,6 +329,12 @@ export type { ChannelSocket, ChannelCloseReason, GateSessionChannel, SeatedChann
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "Floor pins").
 export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
+export {
+  PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,
+  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor,
+  type PlaceFloorPinStatement, type PlaceFloorPinRefusal,
+} from "./place-floor-pin.js";
+export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePullDeps } from "./carriage-pull.js";
 export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
 // The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
 export { SessionTable, sessionBinding } from "./session-contract.js";

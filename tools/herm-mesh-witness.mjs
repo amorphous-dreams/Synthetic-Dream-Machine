@@ -1,5 +1,6 @@
 // herm-mesh-witness — the decoding witness for docker-compose.mesh.yml. It pulls each hop's FLOW-map
-// through the SAME client a peer uses (pullAndVerifyOracle: proves the reader's key at the hop's gate,
+// through the SAME gate-native pull a herm's carriage holds (vesselCarriagePull → pullAndVerifyOracle: presents
+// the reader's place arm at the hop's floor gate, at the pin the reader's own board replica filed,
 // verifies the pointer signature, matches the content hash, then Automerge.loads the snapshot), enumerates
 // the dials the decoded map carries, and proves the source's announced dial crossed the relay chain to the
 // last hop.
@@ -9,7 +10,8 @@
 // and reported a false failure while federation ran green underneath it. This witness decodes, so it reads
 // what the map actually carries AND exercises the full pointer-signature/hash/freshness verify path.
 //
-// Run:  node tools/mesh-pins.mjs --up
+// Run:  node tools/mesh-pins.mjs --up   (then ./tools/herm-mesh-witness.sh walks each herm and this reader through
+//       A's explicit join before the read: a reader carried nowhere holds no floor pin and knocks nowhere)
 //        export LAR_ROOT=$(mktemp -d) && node tools/test-scratch-marker.mjs "$LAR_ROOT" && node tools/seed-test-custody.mjs "$LAR_ROOT" \
 //          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \\
 //          && node packages/lares-cli/bin/lares.mjs vessel found --skip-build

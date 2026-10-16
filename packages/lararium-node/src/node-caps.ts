@@ -45,7 +45,7 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type LeafIdentity,
+  type LeafIdentity, type MeshPalaceDoc, type OraclePullResult,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
@@ -156,6 +156,9 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly oracleGates:    OracleGateArgs["gates"];
   /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
   readonly identity?:      LeafIdentity;
+  /** The gate-native pull of a peer's public FLOW-map (`gateNativeCarriagePull`): one floor dial per (peer, Nexus) at the pin
+   *  this Herm's boards carried, presenting its own carriage contract. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
+  readonly pullOracle?:    (peer: string, publisherKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
   readonly pullIntervalMs?: number;
   /** The HELD bulb this Herm serves by cid over the public floor. Absent → no `/bulb/*` face (a Herm with no
    *  genesis to hand). Present → a stranger pulls it + kindles their OWN sovereign hearth (serve fire, never key). */
@@ -200,6 +203,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),
       ...(d.identity ? { identity: d.identity } : {}),
+      ...(d.pullOracle ? { pullOracle: d.pullOracle } : {}),
       ...(d.pullIntervalMs !== undefined ? { pullIntervalMs: d.pullIntervalMs } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),

@@ -28,8 +28,9 @@ import { load as automergeLoad, getHeads, type Doc } from "@automerge/automerge"
 import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
 import type { DialPinKey } from "./admit-gate-pin.js";
 import type { DialSocket } from "./face-dial.js";
-import { dialFaceGate } from "./face-dial.js";
+import { dialFaceGate, dialPlaceGate } from "./face-dial.js";
 import type { GateBundlePin } from "./gate-bundle.js";
+import type { PlaceArm } from "./gate-exchange.js";
 import { dialedChannel, type GateSessionChannel } from "./gate-session-channel.js";
 import type { FacePresentation } from "./lar-ws-client-adapter.js";
 import { wsDialSocket } from "./ws-dial-socket.js";
@@ -62,14 +63,27 @@ export interface OraclePullResult<T = unknown> {
   readonly cid?:     string;
 }
 
+/**
+ * What a FACELESS reader presents at a floor gate: a place's own key, its signing door, and the Nexus quorum's counted
+ * `carry` act over that key (house reading "The faceless reader", place-floor-pin.ts). A place with no contract at the
+ * pinned Nexus presents none and sorts as any stranger does: silence where the Nexus reads private.
+ */
+export interface PlaceOraclePresentation {
+  readonly kind:     "place";
+  readonly placeKey: string;
+  readonly sign:     (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
+  readonly arm:      PlaceArm | null;
+}
+
 export interface OraclePullOpts {
   /** The pair index the floor pin is read from, injected: the reader keeps no global. */
   readonly pins:              { get(key: DialPinKey): GateBundlePin | null };
   /** The hearth the reader reaches, by its true name, and the Nexus it stands at (hex of the AID's bytes). */
   readonly hearth:            string;
   readonly nexus:             string;
-  /** What the reader presents at the floor gate: its certificate, the session's signer, at most one arm and its history. */
-  readonly presentation:      FacePresentation;
+  /** What the reader presents at the floor gate: a face (its certificate, the session's signer, at most one arm and its
+   *  history), or a faceless place (its key and its carriage contract at this Nexus). */
+  readonly presentation:      FacePresentation | PlaceOraclePresentation;
   /** The audience the dial names. */
   readonly audience:          string;
   /** The reader's deadline source (the caller owns the clock): one for the dial, one for each wait on a message. */
@@ -131,14 +145,17 @@ export async function pullAndVerifyOracle<T = unknown>(
   let url: string;
   try { url = oracleSocketUrl(baseUrl); } catch { return { ok: false, reason: "the base url does not parse" }; }
   let socket: DialSocket;
-  let outcome: Awaited<ReturnType<typeof dialFaceGate>>;
+  let outcome: Awaited<ReturnType<typeof dialFaceGate>> | Awaited<ReturnType<typeof dialPlaceGate>>;
   try {
     socket = (opts.dialSocket ?? wsDialSocket)(url);
-    outcome = await dialFaceGate({
-      pin, tier, socket, audience: opts.audience, certificate: opts.presentation.certificate, signer: opts.presentation.signer,
-      arm: opts.presentation.arm, history: opts.presentation.history, deadlines: opts.deadlines,
-      ...(opts.presentation.carry ? { carry: opts.presentation.carry } : {}),
-    });
+    const shown = opts.presentation;
+    outcome = "kind" in shown && shown.kind === "place"
+      ? await dialPlaceGate({ pin, tier, socket, audience: opts.audience, placeKey: shown.placeKey, sign: shown.sign, arm: shown.arm, deadlines: opts.deadlines })
+      : await dialFaceGate({
+        pin, tier, socket, audience: opts.audience, certificate: (shown as FacePresentation).certificate, signer: (shown as FacePresentation).signer,
+        arm: (shown as FacePresentation).arm, history: (shown as FacePresentation).history, deadlines: opts.deadlines,
+        ...((shown as FacePresentation).carry ? { carry: (shown as FacePresentation).carry! } : {}),
+      });
   } catch { return { ok: false, reason: "dial failed: the dial threw" }; }
   if (outcome.state === "silence") return { ok: false, reason: "dial failed: the gate said nothing" };
   if (outcome.state === "refused") return { ok: false, reason: `dial refused here: ${outcome.refusal}` };

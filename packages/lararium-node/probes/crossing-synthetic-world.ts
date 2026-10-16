@@ -38,6 +38,11 @@ const rootOf = (label: string): GateRootDoor => {
 const kahuSeedsOf = (nexus: string): Uint8Array[] => ["kahu one", "kahu two", "kahu three"].map((l) => sha256Of(new Uint8Array([...seedOf(l), ...utf8Bytes(nexus)])));
 const epochOf = (nexus: string): string => `epoch-${nexus}`;
 
+// THE ONE MODULE INSTANCE. A withdrawal memory is branded by a module-private WeakSet, so a dialer built from another copy of the mesh
+// package (a suite importing its TypeScript source beside this probe's built package) refuses every face this world wears as
+// `history-foreign`. A suite that dials with a face from this world takes the dialer from here.
+export { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID } from "@lararium/mesh";
+
 /** The clock deadlines the gate draws on the process clock. */
 export function clockDeadlines(ms: number): GateDeadlines {
   return { draw(lapse) { const t = setTimeout(lapse, ms); return { cancel: () => clearTimeout(t) }; } };

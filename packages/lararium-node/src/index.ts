@@ -262,6 +262,7 @@ export {
   takeAdmitBundle, readKeptAdmitBundle, readKeptAdmitBundles, admitBundlePathFor, admitBundleHolds, dialedNexusAid,
   isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
 } from "./admit-bundle.js";
+export { takeCarryBundle, carryBundleFrom, CarryBundleError, CARRY_BUNDLE_KIND, type CarryBundle, type CarryTakeResult } from "./carry-bundle.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
