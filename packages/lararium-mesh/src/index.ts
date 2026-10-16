@@ -320,6 +320,24 @@ export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.
 // door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
 export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.js";
+// THE CUTOVER'S THREE FROZEN SEAMS AND THE FLOOR'S ANNOUNCEMENT (train-w-launch#/slices, row A), named here for the
+// slices that consume them: the sealed carriage frames every message after a verdict (B, C, F); the session channel
+// holds the attach → verdict → open interval shut on both halves (C, D); the admit's gate pin and its pair index
+// (D, F, G); the floor's signed announcement, read only against a pin its reader already holds (D, E).
+export {
+  SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
+  SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
+} from "./sealed-carriage.js";
+export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
+export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel, channelSessionTable } from "./gate-session-channel.js";
+export type { ChannelSocket, ChannelCloseReason, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
+export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
+export type { AdmitGatePinRefusal, DialPinKey, HearthPinIndex } from "./admit-gate-pin.js";
+export {
+  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+} from "./floor-announcement.js";
+export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
 // THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
 export { GATE_MEMORY_ROW_MAX_BYTES } from "./gate-withdrawal-store.js";
 export type { GateMemoryRows } from "./gate-withdrawal-store.js";

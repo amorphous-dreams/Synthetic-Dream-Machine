@@ -472,8 +472,8 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test.skip("EVERY PRODUCTION DIAL REJECTS THE RETIRED HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts. The built-image negative probe remains owed after the source inventory greens.", () => {
     expect(Object.keys(mesh)).toContain("retiredHandshakeRejected");
   });
-  test.skip("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts. A verdict-only signing bundle cannot sign the announcement today.", () => {
-    expect(Object.keys(mesh)).toContain("gateAnnouncementImage");
+  test("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts and floor-announcement.test.ts. The floor bundle signs `waking-floor-announce`, and the reader refuses any pin but the one it already holds; the socket and relay carriers stay owed to the cutover.", () => {
+    for (const name of ["gateAnnouncementImage", "signFloorAnnouncement", "readFloorAnnouncement"]) expect(Object.keys(mesh)).toContain(name);
   });
   test.skip("THE BROWSER'S IK FIRST FLIGHT SURVIVES THE TERMINATOR — BROWSER_IK_FIRST_FLIGHT_SURVIVES_TERMINATOR. Design only until the browser/proxy witness exists: fixed selected subprotocol, bounded header, no pre-finish application effect, no retained token in proxy logs.", () => {
     expect(Object.keys(mesh)).toContain("browserIkUpgradeWitness");

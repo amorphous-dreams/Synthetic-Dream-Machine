@@ -445,6 +445,11 @@ export const GATE_PLACE_FINISH_DOMAIN = mint("gate-place-finish");
 /** The gate's VERDICT: its signing key signs the handshake's hash, the bundle's digest and a digest of its
  *  answer under this name, so a dialer reads an answer only from the gate it pinned, for the dial it made. */
 export const GATE_VERDICT_DOMAIN = mint("gate-verdict");
+/** The FLOOR's ANNOUNCEMENT to its peers: a floor bundle's signing key signs one canonical body per carried
+ *  Nexus (version, Nexus, floor pin digest, standing, causal position) under this name. Apart from the verdict:
+ *  an announcement never reads as an answer to a dial, nor an answer as an announcement
+ *  (lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement). */
+export const WAKING_FLOOR_ANNOUNCE_DOMAIN = mint("waking-floor-announce");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

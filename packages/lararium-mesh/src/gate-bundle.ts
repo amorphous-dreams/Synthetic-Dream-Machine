@@ -49,7 +49,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import {
   GATE_BUNDLE_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_FLOOR_BUNDLE_INFO, GATE_HANDSHAKE_DOMAIN, GATE_SIGNING_KEY_INFO,
-  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN,
+  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN,
 } from "./domains.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 import { knockSegment } from "./gate-knock.js";
@@ -195,8 +195,12 @@ export function gatePrologue(pin: GateBundlePin): Uint8Array {
 
 // ── What the signing key signs ──────────────────────────────────────────────────────────────────
 
-/** The names a gate's signing key signs under. An image leads with one of them, or draws no signature. */
-export const GATE_SIGNING_PURPOSES: readonly string[] = Object.freeze([GATE_VERDICT_DOMAIN]);
+/**
+ * The names a gate's signing key signs under. An image leads with one of them, or draws no signature: the
+ * verdict a gate answers a dial with, and the floor's announcement to its peers (`floor-announcement.ts`, which
+ * holds the announcement to a floor bundle and to the pin its reader already holds).
+ */
+export const GATE_SIGNING_PURPOSES: readonly string[] = Object.freeze([GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN]);
 
 function gateSigns(image: unknown): image is Uint8Array {
   if (!(image instanceof Uint8Array)) return false;

@@ -16,7 +16,7 @@
  *     index is dropped. There is no `replace`, by design.
  *
  * Pure: no I/O, no clock, no timer, no randomness. Stands specified in code until the cutover swaps it into
- * `AdmitCarriage` (today one HEX64 string); out of the package barrel till then.
+ * `AdmitCarriage` (today one HEX64 string); the package barrel names it for the slices that consume it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */

@@ -28,7 +28,7 @@
  * Pure of clocks and timers: ids come from one sealedWriter, order from the socket's own, and a race pins on a
  * promise the caller holds. Frames after open ride the sealed application header of sealed-carriage.
  *
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Stands specified in code until the socket cutover wires it; the package barrel names it for the slices that consume it.
  *
  * Canon: operator house ruling "Frames after open"; kit train-w-launch #/cutover and #/briefs.
  */

@@ -19,7 +19,7 @@ import { describe, expect, test } from "vitest";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import {
   ALL_DOMAINS, GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_HANDSHAKE_DOMAIN, GATE_SIGNING_KEY_INFO,
-  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, SESSION_FINISH_DOMAIN,
+  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, SESSION_FINISH_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN,
 } from "../src/domains.js";
 import {
   GATE_BUNDLE_REFUSALS, GATE_SIGNING_PURPOSES, GateBundleRefused, deriveGateBundle, gateBundleDigest, gateFields,
@@ -303,7 +303,7 @@ describe("what the bundle's keys do", () => {
   test("the signing key signs a gate's own purposes and nothing else", async () => {
     const bundle = deriveGateBundle(rootOf(7), AID_A, sovereignRoute("/ws"));
     const other = deriveGateBundle(rootOf(7), AID_B, sovereignRoute("/ws"));
-    expect(GATE_SIGNING_PURPOSES).toEqual([GATE_VERDICT_DOMAIN]);
+    expect(GATE_SIGNING_PURPOSES).toEqual([GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN]);
     const image = gateFields(GATE_VERDICT_DOMAIN, new Uint8Array(32).fill(1), hexToBytes(bundle.digest));
     const signature = await bundle.sign(image);
     expect(readGateSignature(bundle.pin, image, signature)).toBe(true);                    // CONTROL
