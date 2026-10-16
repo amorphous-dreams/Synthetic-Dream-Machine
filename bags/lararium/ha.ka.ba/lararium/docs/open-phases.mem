@@ -10,9 +10,9 @@ l-space       = "stable"
 mana          = 17
 manao         = 17
 manaoio       = 16
-role          = "lararium boot open-phase sequence, authority envelope modes, keyhive promotion shore"
-source-symbol = "LarariumOpenPhase LarariumAuthorityEnvelope"
-status-date   = "2026-04-30"
+role          = "LarOpenPhase vocabulary and vessel composer emissions"
+source-symbol = "LarOpenPhase"
+status-date   = "2026-10-16"
 title         = "lar:///ha.ka.ba/lararium/docs/open-phases"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/open-phases"
@@ -22,85 +22,26 @@ uri-path      = "ha.ka.ba/lararium/docs/open-phases"
 
 ! Open Phases
 
-The open-phase sequence tracks boot progress from host open through TW5 hydration
-to live delta stream. An authority envelope wraps every live session — currently
-`local-dev` only; `keyhive` remains a type socket pending encrypted group sync.
+`LarOpenPhase` names ten vessel boot phases in declaration order, from `boot` to `live` (`packages/lararium-mesh/src/lararium-vessel.ts`). Both node and browser composers pass phase callbacks through the shared keel (`packages/lararium-node/src/open-node-vessel.ts`; `packages/lararium-browser/src/open-browser-vessel.ts`).
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu #/sequence>>
 
-!! Schema (machine-readable)
+!! Phase Sequence
 
-```toml
-# LarariumOpenPhase — discriminated union, ordered boot sequence
-# Each phase carries a kind tag plus phase-specific fields
-[[open-phases]]
-kind   = "host-opening"
-fields = ["hostId: string"]
+The type declares this order (`packages/lararium-mesh/src/lararium-vessel.ts`):
 
-[[open-phases]]
-kind   = "authority-opening"
-fields = ["hostId: string"]
-
-[[open-phases]]
-kind   = "authority-ready"
-fields = ["receipt: string"]
-
-[[open-phases]]
-kind   = "store-opening"
-# recipeUri carries the roomId as a human-readable scope label during this phase.
-# The actual doc URL resolves from the catalog island, not from this field.
-fields = ["recipeUri: string"]
-
-[[open-phases]]
-kind   = "store-ready"
-fields = ["titleCount: number"]
-
-# Boot sequence — authority-first-sync-order:
-#   host-opening
-#   → authority-opening → authority-ready   (auth.ready lights)
-#   → store-opening                         (Repo + catalog open; catalog.ready lights)
-#   → store-ready                           (room content doc open; room-content.ready lights)
-#   → tw5-opening → tw5-hydrating → tw5-ready  (tw-vm.ready lights)
-#   → live
-
-[[open-phases]]
-kind   = "tw5-opening"
-fields = ["hostId: string"]
-
-[[open-phases]]
-kind   = "tw5-hydrating"
-fields = ["loaded: number", "total: number"]
-
-[[open-phases]]
-kind   = "tw5-ready"
-fields = ["hostId: string"]
-
-[[open-phases]]
-kind   = "live"
-fields = ["offset: number"]
-
-[[open-phases]]
-kind   = "error"
-fields = ["message: string"]
-
-# LarariumAuthorityEnvelope — session envelope for live protocol shores
-# Only local-dev executes today; keyhive is a type-only socket
-[[authority-modes]]
-mode   = "local-dev"
-fields = ["roomId: string", "receiptHash: string", "issuedAt: string"]
-status-why = "a live ledger of open phases rather than a design"
-
-[[authority-modes]]
-mode   = "keyhive"
-fields = ["graph: unknown", "peer?: string", "group?: string", "document?: string"]
-
-# Keyhive promotion shore law:
-# Canon crossing must NOT mutate lares/ directly from a live edit path.
-# Submit proposal → Keyhive membership/capability check → review/signature receipt
-# → projection/write-back worker materializes canon.
+```text
+boot → repo-open → catalog-ready → island-ready → wiki-ready → draft-ready
+→ vessel-ready → tw5-booted → corpus-ready → live
 ```
+
+Node emits `boot`, `repo-open`, and `catalog-ready` while opening its repository and catalog (`packages/lararium-node/src/open-node-vessel.ts`); browser emits the same three (`packages/lararium-browser/src/open-browser-vessel.ts`). Shared `assembleVessel` emits `island-ready` after the island handle and composite layers stand, then `corpus-ready` after `loadCorpora` completes (`packages/lararium-mesh/src/open-vessel-core.ts`).
+
+The shared wiki cap emits `wiki-ready` and `vessel-ready` after `mountWikiSlot`; the shared mount cap emits `tw5-booted` and `live` after `mountPrimaryWiki` (`packages/lararium-tw5/src/core-caps.ts`). `mountWikiSlot` resolves the draft handle, but these caps emit no `draft-ready` (`core-caps.ts`). The resulting full-vessel callback order places `corpus-ready` before `wiki-ready`, despite its later place in the type declaration (`open-vessel-core.ts`; `core-caps.ts`).
+
+A canon crossing into `@crossroads` passes `lares meme promote --approval <file>`; the charter's seats approve the exact carrier bytes before the move (`packages/lares-cli/src/commands/meme-promote.ts`; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/chartered-classes).
 
 <<~/ahu>>
 
@@ -110,9 +51,10 @@ fields = ["graph: unknown", "peer?: string", "group?: string", "document?: strin
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/node-host">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/catalog-doc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/readiness-keys">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Vicw9CQrIgGbYIN9Zi_GLkTF87mZDITFOcWmNKOP7qQ
+<<^ code="&#x0003;">>ni:///sha-256;PhERSesMN2RW6Y5YeqRP2fez-wi6ZgLuqKwWbogb5d0
 
 <<^ code="&#x0004;" -> to="?">>
