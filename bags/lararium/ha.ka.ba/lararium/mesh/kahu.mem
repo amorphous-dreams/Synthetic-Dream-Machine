@@ -494,7 +494,10 @@ hyphen), so `Charter` and `TRUST_ROOT` never fall to the ordinary class.
 it claims and the charter epoch it roots on. A bare CID is no approval; other bytes under the same name read
 `bytes-differ`; a class below its surface's class, another epoch, or a count short of the class threshold each
 refuse. ''No promotion rides the emergency power''. A seat signs only a statement a person confirms by its digest (the bytes hash, purpose, surface, class and epoch together), and the
-seats on two vessels each sign a carried partial (`lares nexus promote open|sign|check`).
+seats on two vessels each sign a carried partial (`lares nexus promote open|sign|check`). The approval governs a
+crossing into `@crossroads`: `lares meme promote --dest-bag lar:///ha.ka.ba/bags/crossroads --approval <file>`
+refuses before anything moves unless the current charter's seats approved those exact bytes, and the receipt names
+the approval's statement digest. A crossing into a vessel's own canon asks no charter.
 
 <<~/ahu>>
 
@@ -635,6 +638,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fXYXAY7CwGiWtDHRcB1ffKX38VKfLkxcdhIRnrZP4pY
+<<^ code="&#x0003;">>ni:///sha-256;2hZdlJQtPtjL7RdWoYwrk4c6rGyA1HCRt41ahr1wXfY
 
 <<^ code="&#x0004;" -> to="?">>
