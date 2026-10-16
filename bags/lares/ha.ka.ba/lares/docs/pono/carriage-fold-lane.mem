@@ -87,6 +87,19 @@ The Copilot allowance read 299.2 of 300 premium requests at handoff, resetting 2
 
 <<~/ahu>>
 
+<<~ ahu #/advice>>
+
+!! Advice ~ for the lane's first hour
+
+# ''Fetch first.'' Cut the lane branch from the work branch as origin holds it after the controller's settle push; confirm the settle's commits (the dist guard, `mixed-model-swarm`, this kit) stand in it.
+# ''Provision, never link.'' The dist guard refuses a worktree whose `node_modules` link into another checkout; `node tools/provision-worktree.mjs <empty-dir>` gives the build pair one worktree with its own links and builds. A provisioned worktree initializes submodules, so its removal at the lane's close waits on the operator's `--force`.
+# ''Write the probe before any cure.'' Four diagnostic rounds produced two plausible cures that measurement refuted; the cross-process lead stands inferred until a red test reproduces A refusing pins it holds carries for.
+# ''The witness is the held-out cell.'' The node suites read green on the base code; the held-out herm-mesh and mesh-scenarios nexus cells read red. A lane push runs them on the lane branch; download each cell's artifact (`gh run download <run> -n <cell>`) and tally the containers' own `[carriage]` lines, as the evidence table did.
+# ''Spend Copilot on purpose.'' The Chao pair on cheap models reads each burst; one Copilot PR review reads the lane's pull request; a deeper eye runs only on a KAIROS pull the operator hears first.
+# ''Close with the o-takiage'': `W18` leaves the loops, the handoff's state line and the changelog re-true, and the lane's worktrees, briefs and probes return after a landed census.
+
+<<~/ahu>>
+
 <<~ ahu #/questions>>
 
 !! Questions ~ while the controller's session stays open
@@ -105,6 +118,6 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fUdSZai8P9HsT6jJPO5KcbgxeUm424_uFWIYVuEP92U
+<<^ code="&#x0003;">>ni:///sha-256;fI6DVkoiB2Fe8wRGiZmFHEsFk-qB2rv359OzMYGjR-o
 
 <<^ code="&#x0004;" -> to="?">>

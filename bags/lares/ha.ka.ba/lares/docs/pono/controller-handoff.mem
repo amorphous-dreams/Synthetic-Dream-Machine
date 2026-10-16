@@ -47,7 +47,17 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 * ''The plugin bundle and genesis move only by the controller's word.'' A lane that changes `packages/lararium-tw5/` source or tiddlers rebuilds the bundle in the same commit and declares the gap in `genesis/unbaked.json`; one labelled `GENESIS RE-BAKE` folds every declared row.
 * ''Scratch roots alone'' for founding, standing or unlocking (`tools/test-scratch-marker.mjs`, then `tools/seed-test-custody.mjs`); never the operator's homes; never a real passphrase, domain or credential.
 * ''After a machine restart'' the session scratchpad empties and every worktree under it vanishes. Durable state lives in git and in the session folder; a resumed lane re-reads its resume sheet, provisions a fresh worktree at HEAD, and rebuilds.
-* ''O-takiage burns only what a later carrier or module plainly superseded'', or what states a retired shape as live. Unwired, uncalled or unlinked work stays by default in early alpha; doubt goes on an ask list.
+* ''O-takiage'' closes every lane and every settle as `mixed-model-swarm#/the-otakiage` names it.
+* ''Fetch before you act, and again before you push.'' Another lane can merge into the work branch between two turns; a lane that pushes past it, or reasons from a stale origin, cures the wrong tree.
+* ''A local green proves the tree it read.'' A worktree whose `node_modules` link into another checkout tests that checkout's build; every vitest config now refuses a stale or foreign `dist` (`tools/vitest-dist-guard.mjs`). Provision lane worktrees with `tools/provision-worktree.mjs <empty-dir>`.
+* ''One red in CI masks every package after it.'' `pnpm test` runs the packages in order and stops at the first red, so a cured red can reveal the next. Before pushing a cure, run the packages that come after it, or read the next CI run whole.
+* ''Read the containers' own logs before naming a cause.'' A held-out cell uploads each container's log as an artifact (`gh run download <run> -n <cell>`); tallying each container's own lines split the carriage red where the witness's verdict could not. An in-process reproduction holds one Repo, so it cannot show a defect that lives between a CLI process and a running daemon.
+* ''Give a sandboxed spirit the logs it cannot fetch.'' A read-only Codex spirit reaches no GitHub API; fetch the failing job logs and hand it the excerpt.
+* ''A review lands nothing until a second face reads it'' (`mixed-model-swarm#/the-lens-law`): a cheap eye's clean read clears nothing, and a tensioned finding gets measured by running it.
+* ''Launch background spirits through the harness's background mode'', never a plain `&`: a plain `&` brings no completion notice, and `pgrep -f <pattern>` matches its own shell's command line.
+* ''Shell traps in zsh'': `$R:t` reads as a path modifier, so write `${R}:path`; an unquoted variable holding several paths does not split (use `${(f)VAR}`); a `grep` pattern starting with `<<^` treats the caret as an anchor (use `grep -F`); `rm` on a path built from variables trips the safety check, so remove by literal path.
+* ''A corrupt object heals by the operator's hand.'' `git fsck --full` names it; rebuild that pack in a scratch repo from an intact working copy and verify it there (run inside the damaged repo, `verify-pack`'s collision check reads the corrupt copy); the swap into `.git/objects` stays the operator's act.
+* ''A worktree that initialized submodules'' refuses a plain `git worktree remove`; prove its files landed, then ask the operator for the `--force`.
 
 <<~/ahu>>
 
@@ -122,6 +132,14 @@ The merged road carries the fleet-join door on every face, the sealed face gate 
 * ''Browser custody'': the slot tree seals the device seed and the Archives, refusal and reopen witnessed; the boot unlock and the passkey slot stay owed, and the persona roots' seal waits on the boot unlock (`B1`).
 * ''Instruments'': every vitest config refuses a stale or foreign `dist` before its suites run (`tools/vitest-dist-guard.mjs`). Owed: the per-package digest hashes test files too, so a dependency's test edit makes its dependents refuse at the desk until a rebuild; narrowing it to built inputs moves `stamp-build.mjs` and `build-freshness.ts` together. The source-pointer witness refuses an empty census. Two branches wait. `feature/green-jello-dinosaur-5--instruments` holds four gates that stop passing on prose. Its rite-commands cure reads red on `sensorium-runbook.mem`'s `EmbedderIdentityUnknownWarning`, a name the repo's mempalace copy imports in tests and defines nowhere, so it lands after the sensorium hand re-aims that line. Its mesh-coverage, typecheck and shared code scan owe four cures first: single-quoted union values, a nested template that injects a fake union, a regex literal that masks a real file, and a multi-line TS6059 that reads as a crash. A scanner built on the TypeScript compiler closes the last three as one class. `feature/green-jello-dinosaur-5--symbol-anchor-truth` counts a name as defined only by a declaration in code, reading the shared code scan, so it rides on `--instruments` and lands with it; its stricter count reads 34 on the span, and it sets its own ceiling when it lands.
 * ''DreamDOM (train D)'': the model stands in `docs/pono/dreamdom` and its phases in `docs/pono/dreamdom-roadmap`. D0 (the harness, the engine mends, the worker-side and stock-tab baselines) and D1 (the camera contract: `lar:` kinds on the island wire, keyed frames under a mount epoch, answered acts, declared cancellation, the toggle family, root services, the three page controls with the IME rules, files, drops, order, keys and routes) stand, with the thirteen interaction goldens green on the engine and page harnesses and the daemon surface's talk-story in `docs/pono/daemon-surface`; each phase's row names what stays owed. Genesis carries the house plugin whole. D2 (the record port) comes next; `dreamdom-seed#/head` names where the train stands for the session that takes it.
+* ''The road ahead'' (each row in the roadmaps names its owner; one lane per row, opened under `mixed-model-swarm#/the-lanes`):
+** Wave one, on disjoint ground: `carriage-fold` (`W18`, kit `docs/pono/carriage-fold-lane`), whose red test also cures the held-out herm-mesh and nexus cells; D2's pure slices (the recording document with its serialisers, the width and local-filter core), each red test drawn from the field's five contract questions; `instruments`, a scanner built on the TypeScript compiler that lands `--instruments` and `--symbol-anchor-truth` together.
+** Wave two: the rest of D2 on the island protocol (the port kinds, the invoke gate, presence); `B1`'s boot unlock and passkey, which unparks `--persona-root-seal`; the wire's owed rows `W14`, `W15`, `W16`, `W22`.
+** Wave three: `P18` to `P20` on `--gate-ancestry`; D3's glass engine and three-boot spike; E, H and the sealed store's later steps.
+** Then the operator founds the persistent node vessel by hand.
+* ''Rulings the crew needs from the operator'': `W21` (does a joined device keep its own oracle corpus); the DreamDOM rulings in `dreamdom-roadmap#/the-rulings`, each blocking only its own rows while the house reading builds; the two D&D IaM findings awaiting a word on `#/open`.
+* ''Shared ground'': lanes meet on the two vessel composers; one lane at a time holds a composer hunk, and the others hand theirs to the controller as a patch.
+* ''The Copilot allowance'': 300 premium requests a month on a legacy annual plan, a PR review costing 13, so about fifteen lane reviews fit before a reset; the Chao pair costs about one request per burst.
 * ''Ground'': each remaining loop names its owner in the roadmap.
 * ''The operator's own founding'': the persistent node vessel founds after the roadmap's work and its aftermath land, by hand, on a TTY; no spirit founds it. The two-hearth ceremony, HARBOR's live steps and the hardware choice for unattended ember raises stay the operator's hands.
 
@@ -142,6 +160,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BYtOm4wHzBARg8T4CoGXoX5-jVmiIl2yGaO4USKMucE
+<<^ code="&#x0003;">>ni:///sha-256;uxVqVHYzB8ZZGyFidXSnbMz4yuQE4YOvn7C9kXgsuyw
 
 <<^ code="&#x0004;" -> to="?">>
