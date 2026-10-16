@@ -2,7 +2,7 @@
  * realm-steward-map — a realm's co-signed STEWARD map: each worn face or Handle a standing registration's
  * co-signed `keptBy` names, with the bags it keeps. Filled from those registrations and from nothing else.
  *
- * A LEAF MAP, NEVER THE ROOT MAP (membership-doctrine#/two-maps). A `keptBy` name is a steward's worn per-Nexus
+ * The steward map holds leaves (membership-doctrine#/two-maps). A `keptBy` name is a steward's worn per-Nexus
  * face or a Handle, so this map answers "which bags does this steward keep in this realm", and never a root
  * question. The realm consult's ROOT map (`peerContractNymMap`, filled only by a root edge proven at the wire)
  * stands apart; this module imports no carriage module, and no reader joins the two.

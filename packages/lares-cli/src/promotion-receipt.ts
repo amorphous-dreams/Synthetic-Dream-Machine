@@ -2,13 +2,12 @@
  * promotion-receipt — THE AUDIT HALF OF THE PRIESTHOOD ACT.
  *
  * `lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary` names the declared blocker
- * plainly: a promotion into a canon bag is PERMITTED by capability and RECORDED by nothing. Every
- * residency verb demands `cap("admin", destBag)`, so the line holds — but //a cap gate is a decision at a
- * moment; a receipt is a record you can walk backwards//, and without one a promotion leaves no artifact
- * to audit or revoke against.
+ * plainly: a promotion needs destination admin capability and a durable receipt. A crossing into
+ * `lar:///ha.ka.ba/bags/crossroads` also needs the seats' approval; other canon bags ask no charter.
+ * A cap gate decides at a moment; a receipt records the crossing for audit or revocation.
  *
  * THIS IS CONTENT-LEVEL PROVENANCE, NOT AN AUTHORITY RECORD. A capability delegation already answers //who
- * may write canon//. What was missing is //what was promoted, by whom, from where// — proposer, approver,
+ * may write canon//. The receipt records //what crossed, by whom, from where// — proposer, approver,
  * source, destination, content hash — signed, with the approver's hold on the destination checked AT THE
  * MOMENT OF SIGNING.
  *
