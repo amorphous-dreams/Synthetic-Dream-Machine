@@ -109,7 +109,8 @@ describe.skipIf(wikiSkip)(`the control-event dispatcher${skipNote}`, () => {
     expect(s.wiki.getTiddler(T("key"))?.fields).toMatchObject({ text: "Enter", code: "Enter" });
     s.wiki.addTiddler({ title: T("key"), text: "untouched" });
     await s.flush();
-    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: { key: "a", code: "KeyA", keyCode: 65, repeat: false }, modifiers: NO_MODS }))).toMatchObject({ status: "applied" });
+    // A chord the wrapper's crossing set never names crosses to no binding: the island answers it unclaimed (S6).
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: { key: "a", code: "KeyA", keyCode: 65, repeat: false }, modifiers: NO_MODS }))).toMatchObject({ status: "refused", reason: "unclaimed" });
     await s.flush();
     expect(text(s, T("key"))).toBe("untouched");
     expect(dispatchLarControlEvent(s.event("count", { kind: "lar:act", action: "lar:key", key: enter, modifiers: NO_MODS }))).toMatchObject({ status: "refused", reason: "unclaimed" });
@@ -169,7 +170,7 @@ describe.skipIf(wikiSkip)(`the control-event dispatcher${skipNote}`, () => {
   test("RED: a write or an act this camera holds no road for refuses by name — CONTROL: both answers cross ctx.post", async () => {
     s = await mountSurface(counter, [{ title: T("count"), text: "0" }]);
     expect(dispatchLarControlEvent(s.event("count", { kind: "lar:write", action: "lar:write", records: [{ title: T("count"), fields: { text: "9" } }], txId: "tx-1" }))).toMatchObject({ status: "refused", reason: "binding-unavailable" });
-    expect(dispatchLarControlEvent(s.event("count", { kind: "lar:act", action: "lar:drop" }))).toMatchObject({ status: "refused", reason: "unsupported-control" });
+    expect(dispatchLarControlEvent(s.event("count", { kind: "lar:act", action: "lar:layout-select" }))).toMatchObject({ status: "refused", reason: "unsupported-control" });
     await s.flush();
     expect(text(s, T("count"))).toBe("0");
     expect(s.results.map((r) => r.reason)).toEqual(["binding-unavailable", "unsupported-control"]);

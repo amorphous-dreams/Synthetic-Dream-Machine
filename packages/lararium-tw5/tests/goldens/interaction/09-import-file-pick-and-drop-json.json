@@ -4,17 +4,17 @@
   "world": {
     "tiddlers": [],
     "story": [],
-    "root": "<$browse class=\"pick\"/><$dropzone class=\"zone\">drop here</$dropzone>"
+    "root": "<$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\"><span class=\"pick\"><$browse/></span><$dropzone class=\"zone\">drop here</$dropzone>{{$:/Import||$:/core/ui/ViewTemplate/body/import}}<lar-action data-control-id=\"$:/Import\" data-action=\"lar:perform-import\"><button type=\"button\">import</button></lar-action></$navigator>"
   },
   "steps": [
     { "frame": "first" },
-    { "expect": { "frame": { "stamps": { "input.pick": { "data-lar-on": "change", "data-lar-cancel": "" }, ".zone": { "data-lar-on": "drop", "data-lar-cancel": "dragenter dragover drop" } } } } },
+    { "expect": { "frame": { "stamps": { "input.pick": { "data-lar-on": "change", "data-lar-cancel": null }, ".zone": { "data-lar-on": "drop", "data-lar-cancel": "dragenter dragover drop" } } } } },
     { "act": { "control": "input.pick", "action": "lar:import-offer", "wholeValue": "[{\"title\":\"lar:///t/import/one\",\"text\":\"one\"}]", "controlType": "lar-file-picker" } },
     { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/Import", "plugin-type": "import", "status": "pending" }] } },
     { "frame": "next" },
     { "expect": { "frame": { "contains": "lar:///t/import/one" } } },
     { "act": { "control": "$:/Import", "action": "lar:perform-import" } },
-    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/import/one", "text": "one" }] } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/import/one", "text": "one" }, { "title": "$:/Import", "status": "complete" }] } },
     { "act": { "control": ".zone", "action": "lar:drop", "wholeValue": "[{\"title\":\"lar:///t/import/two\",\"text\":\"two\"}]" } },
     { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/Import", "plugin-type": "import", "status": "pending" }] } },
     { "act": { "control": ".zone", "action": "lar:drop", "wholeValue": "<oversize: 9000000 bytes>" } },

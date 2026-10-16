@@ -22,7 +22,7 @@ Steps, each one object with one verb:
 | `frame` | `"first"` or `"next"` | the harness delivers the mount's first frame, or the next frame the island emits |
 | `deliver` | `"older"` | the harness delivers a frame the island rendered BEFORE the last sense (its `sensedRevision` for that control reads lower) |
 | `sense` | `control`, `wholeValue`, `localRev`, `kind?` | a `lar:control-event` of kind `lar:sense` (droppable: newest wins, no answer) |
-| `act` | `control`, `action`, `wholeValue?`, `selection?`, `localRev?`, `modifiers?`, `key?`, `geometry?`, `epoch?` | a `lar:control-event` of kind `lar:act` (reliable: answered); `epoch: "stale"` carries the previous mount epoch; a toolbar act (`lar:edit-operation`) carries the field's whole value and `selection` as of the act |
+| `act` | `control`, `action`, `wholeValue?`, `controlType?`, `selection?`, `localRev?`, `modifiers?`, `key?`, `geometry?`, `epoch?` | a `lar:control-event` of kind `lar:act` (reliable: answered); `epoch: "stale"` carries the previous mount epoch; a toolbar act (`lar:edit-operation`) carries the field's whole value and `selection` as of the act; a `wholeValue` reading `<oversize: N bytes>` stands for N bytes |
 | `write` | `records`, `txId` | a whole-record write landing in the store from a peer (the harness lands it through the island's own landing door) |
 | `service-result` | `requestId`, `status` | the page's answer to a `lar:service` ask |
 | `switch` | `surface` | the vessel moves its gate to another surface; the island receives `lar:resend` |

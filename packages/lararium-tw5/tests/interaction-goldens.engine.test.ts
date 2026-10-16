@@ -4,7 +4,8 @@
  *
  * The scripts this half carries (01, the blanket preventDefault; 02, a button's modifier and popup; 03, the textarea
  * revert; 04, a peer write into an open editor; 05, a toolbar operation over the carried pair; 06, the toggle family;
- * 08, the committing Enter after a composition; 12, the host doors; 13, the surface switch) read green only when the engine
+ * 07, the keys; 08, the committing Enter after a composition; 09, the import; 10, the drop and the order; 11, the
+ * confirm road; 12, the host doors; 13, the surface switch) read green only when the engine
  * answers every step the engine half reads; the page half's expectations stand SKIPPED by
  * name, and a frame line another slice's road paints stands OWED by its own words (and must still read red). Every other
  * script walks too and must still read red: its road has not landed, and a green there names one that did. A
@@ -31,7 +32,7 @@ const hooks = (): EngineRunHooks => {
 
 const scripts = goldenScripts();
 /** The scripts whose every engine-half step this island answers today. */
-const CARRIED = ["01", "02", "03", "04", "05", "06", "08", "12", "13"];
+const CARRIED = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13"];
 /**
  * The frame lines a carried script reads that another slice's road paints, by script number. Each one stays red by
  * its own words until that road lands, and nothing else may read red beside it; a line that reads green leaves.
@@ -92,6 +93,37 @@ describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
     const text = run.failures.join("\n");
     expect(text).toMatch(/answers \["stale-target"\], the script expects \["applied"\]/);
     expect(text).toMatch(/lar:\/\/\/t\/switch\/beta holds text="0", the script expects "beta-pressed"/);
+  }, 120_000);
+
+  test("CONTROL 07: a script claiming the shortcuts key names a chord no shortcut declares reads red", async () => {
+    const script = byNumber("07");
+    const at = script.steps.findIndex((s) => JSON.stringify(s["expect"] ?? {}).includes("lar:shortcuts"));
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { frame: { keys: { "lar:shortcuts": { contains: "ctrl-alt-Z" } } } }), hooks());
+    expect(run.failures.join("\n")).toMatch(/the lar:shortcuts key reads .*, the script expects it to contain "ctrl-alt-Z"/);
+  }, 120_000);
+
+  test("CONTROL 09: a script naming another reason for the oversize drop reads red; the bytes never crossed", async () => {
+    const script = byNumber("09");
+    const at = script.steps.findIndex((s) => (s["expect"] as { refused?: string } | undefined)?.refused === "input-too-long");
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { refused: "stale-target" }), hooks());
+    expect(run.failures.join("\n")).toMatch(/the refusals read \["input-too-long"\], the script expects stale-target/);
+  }, 120_000);
+
+  test("CONTROL 10: a script claiming the short order deleted a member reads red", async () => {
+    const script = byNumber("10");
+    const at = script.steps.findIndex((s, i) => i > 5 && JSON.stringify(s["expect"] ?? {}).includes("lar:///t/drop/order"));
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { writes: [{ title: "lar:///t/drop/order", list: ["c", "a"] }] }), hooks());
+    expect(run.failures.join("\n")).toMatch(/lar:\/\/\/t\/drop\/order holds list=\["c","a","b"\], the script expects \["c","a"\]/);
+  }, 120_000);
+
+  test("CONTROL 11: a script claiming the changed subject's yes deleted it reads red", async () => {
+    const script = byNumber("11");
+    const at = script.steps.length - 1;
+    const run = await runEngineGolden(mutate(script, at, { writes: [{ title: "lar:///t/confirm/x", tombstone: true }] }), hooks());
+    expect(run.failures.join("\n")).toMatch(/lar:\/\/\/t\/confirm\/x still stands, the script expects it deleted/);
   }, 120_000);
 
   test("CONTROL 04: a script claiming the frame repainted the page's text as the store's value reads red", async () => {
@@ -165,7 +197,7 @@ describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
   }, 120_000);
 
   test("CONTROL: a verb the engine half never learned fails closed", async () => {
-    const run = await runEngineGolden({ ...byNumber("03"), steps: [{ frame: "first" }, { expect: { messages: ["tm-save-tiddler"] } }, { wake: { surface: "lar:single" } }] }, hooks());
-    expect(run.failures).toEqual(["step 2: the engine half reads no expect.messages", "step 3: the engine half knows no verb wake"]);
+    const run = await runEngineGolden({ ...byNumber("03"), steps: [{ frame: "first" }, { expect: { presence: ["alpha"] } }, { wake: { surface: "lar:single" } }] }, hooks());
+    expect(run.failures).toEqual(["step 2: the engine half reads no expect.presence", "step 3: the engine half knows no verb wake"]);
   }, 120_000);
 });

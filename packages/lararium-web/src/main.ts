@@ -114,7 +114,7 @@ async function readOracle(read: OracleReader): Promise<void> {
 // The projection-nalu sink: one pane, painted by whichever surface holds the vessel's projection gate. The
 // sink scopes revisions to a surface and stamps each returned event with the surface that painted its target
 // (`projection-sink`); boot arms its return leg once the vessel stands.
-const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LAR_WHOLE_VALUE_MAX_CHARS });
+const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LAR_WHOLE_VALUE_MAX_CHARS, addressBar: true });
 
 /**
  * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.

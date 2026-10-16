@@ -34,6 +34,13 @@ export const LAR_SERVICE        = "lar:service";
 export const LAR_KEY_SURFACE    = "lar:surface";
 export const LAR_KEY_STYLE      = "lar:style";
 export const LAR_KEY_MEMBERSHIP = "lar:membership";
+/** The global shortcut chords the engine declares from `$:/tags/KeyboardShortcut`: the set the page's document leg listens for. */
+export const LAR_KEY_SHORTCUTS  = "lar:shortcuts";
+/** The story's order and the history's tail: the page composes `#` from it and scrolls to the navigated tiddler. */
+export const LAR_KEY_STORY_ORDER = "lar:story-order";
+
+/** The page's document leg, named as a control: a global shortcut or a route act carries it as its `controlId`. */
+export const LAR_CONTROL_DOCUMENT = "lar:document";
 
 /** The story camera every wiki island mounts over its root template. */
 export const LAR_CAMERA_STORY   = "lar:story";
@@ -57,6 +64,24 @@ export interface LarFrameKey {
   readonly members?: readonly string[];
   /** A deleted key, named: the only way a key leaves. */
   readonly tombstone?: true;
+  /** The shortcut chords of `lar:shortcuts`, each parsed by the engine's own keyboard manager. */
+  readonly chords?: readonly LarShortcutChord[];
+  /** The story order and history tail of `lar:story-order`. */
+  readonly story?: LarStoryOrder;
+}
+
+/** One declared chord: the descriptor as the wiki wrote it, and the key code and modifiers it parses to. */
+export interface LarShortcutChord {
+  readonly descriptor: string;
+  readonly keyCode: number;
+  readonly ctrl: boolean; readonly shift: boolean; readonly alt: boolean; readonly meta: boolean;
+}
+
+/** The story list in order, the title the history list ends on, and how deep that list runs (a navigation raises it). */
+export interface LarStoryOrder {
+  readonly order: readonly string[];
+  readonly tail: string | null;
+  readonly depth: number;
 }
 
 /** Engine → surface: the keyed absolute frame of one camera on one surface, under one mount epoch. */
@@ -146,6 +171,8 @@ export interface LarMsg_ControlEvent {
   /** The `lar:service` request a `lar:service-result` answers, with its status. */
   readonly requestId?: string;
   readonly status?: "ok" | LarRefusal;
+  /** The file an import offer's bytes came from: its name and media type, as the page read them. */
+  readonly file?: { readonly name: string; readonly type: string };
 }
 
 // ── The answer ──────────────────────────────────────────────────────────────────────────────────
@@ -297,6 +324,7 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
   if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
   if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;
+  if (v["file"] !== undefined && !(isRecord(v["file"]) && isName(v["file"]["name"]) && typeof v["file"]["type"] === "string" && v["file"]["type"].length <= 1024)) return null;
   // A service answer names the request it closes and its status, or it answers nothing.
   if (v["kind"] === "lar:service-result" && (!isName(v["requestId"]) || !isName(v["status"]))) return null;
   return v as unknown as LarMsg_ControlEvent;
@@ -309,11 +337,21 @@ const isWriteRecord = (r: unknown): r is LarWriteRecord =>
   isRecord(r) && isName(r["title"]) && isRecord(r["fields"]) && (r["tombstone"] === undefined || r["tombstone"] === true);
 
 
-/** Each payload reads by its own type: a string for html and css, a list of names for members, the literal true for a tombstone. */
+const isChord = (c: unknown): boolean =>
+  isRecord(c) && isName(c["descriptor"]) && typeof c["keyCode"] === "number" && Number.isSafeInteger(c["keyCode"]) && c["keyCode"] > 0
+  && ["ctrl", "shift", "alt", "meta"].every((m) => typeof c[m] === "boolean");
+const isStoryOrder = (o: unknown): boolean =>
+  isRecord(o) && Array.isArray(o["order"]) && o["order"].every((t) => typeof t === "string")
+  && (o["tail"] === null || typeof o["tail"] === "string") && isRev(o["depth"]);
+
+/** Each payload reads by its own type: a string for html and css, a list of names for members, chords and a story
+ *  order by their shapes, the literal true for a tombstone. */
 const readsAsPayload = (k: Record<string, unknown>, p: string): boolean => {
   const v = k[p];
   if (p === "html" || p === "css") return typeof v === "string";
   if (p === "members") return Array.isArray(v) && v.every((m) => typeof m === "string");
+  if (p === "chords") return Array.isArray(v) && v.every(isChord);
+  if (p === "story") return isStoryOrder(v);
   return v === true;
 };
 
@@ -326,7 +364,7 @@ export function readLarFrame(v: unknown): LarMsg_Frame | null {
     if (!isRecord(k) || !isName(k["key"]) || !isRev(k["rev"])) return null;
     if (seen.has(k["key"])) return null;   // one key, one payload, one revision per frame
     seen.add(k["key"]);
-    const payloads = ["html", "css", "members", "tombstone"].filter((p) => k[p] !== undefined);
+    const payloads = ["html", "css", "members", "chords", "story", "tombstone"].filter((p) => k[p] !== undefined);
     if (payloads.length !== 1 || !readsAsPayload(k, payloads[0]!)) return null;
   }
   for (const rev of Object.values(v["sensedRevision"] as Record<string, unknown>)) if (!isRev(rev)) return null;

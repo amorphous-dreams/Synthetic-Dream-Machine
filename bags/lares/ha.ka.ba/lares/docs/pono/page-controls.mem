@@ -66,7 +66,7 @@ written           = "2026-10-11"
 | `lar-action` | `data-control-id`, an allowlisted `data-action`; `<button type="button">` | `lar:action` carries an event id and a named action. Its default and cancellation policy bind before activation. |
 | `lar-link` | `data-control-id`, `data-route-key`; a real `<a href>` | `lar:navigate` carries an event id and a route. Ordinary, modified and external activation follow the browser; no blanket click cancellation. |
 | `lar-layout-switcher` | `data-control-id`; `data-layout-key` buttons inside a labelled `<nav>` | `lar:layout-select` carries an event id and the chosen root key. A pending choice shows as pending until a sensed frame paints that root. |
-| `lar-order-list` | `data-control-id`; an `<ol>` with stable `data-item-id` and named move buttons | `lar:order-write` carries an event id and the WHOLE ordered id list. Membership travels under another complete key; an id absent from the order never deletes a member. |
+| `lar-order-list` | `data-control-id`; an `<ol>` with stable `data-item-id` and named move buttons | `lar:order` carries an event id and the WHOLE ordered id list. Membership travels under another complete key; an id absent from the order never deletes a member. |
 | `lar-file-picker` | `data-control-id`, `data-accept`, `data-max-bytes`; a labelled `<input type="file">` | `lar:import-offer` carries an event id and bounded whole bytes after the page validates them. The page keeps the chosen file and its status until the answer. |
 | `lar-dialog` · `lar-refusal` | a labelled `<dialog>`; adjacent status text | The page handles focus, close and top-layer state. `lar:control-refused` carries the event id, the control id and the reason; the visible refusal stands even where no component upgraded. |
 
@@ -167,7 +167,7 @@ The session, surface and generation fields that wrap these messages stand at <<~
 
 |! Reason |! Words |
 | `invalid-integer` | "Enter a whole level from 1 to 20. Your text remains here." |
-| `input-too-long` | "This field exceeds 65,536 characters. Shorten it before saving." |
+| `input-too-long` | "This field exceeds 65,536 characters. Shorten it before saving." For a file: "This file exceeds N bytes. Choose a smaller file; nothing has been imported." |
 | `stale-target` | "This control changed before your action arrived. Review it and try again." |
 | `selection-unavailable` | "This formatting command needs the current selection and cannot run here." |
 | `geometry-unavailable` | "This placement needs a live page measurement; the menu opens in the page instead." |
@@ -197,8 +197,9 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 | `$reveal` · `$range` · an ordinary `$list` | a wikitext override for markup, with a page binding for the input and the write |
 | popups · `$button` actions · `$link` · `$scrollable` · `$browse` · storyviews · modals · notifications | page-only controls |
 | `$edit-shortcut` · `$edit` · `$password` · `$edit-bitmap` | a page-only native control for a supported schema, else a refusal |
-| `$droppable` · `$draggable` · `$dropzone` | a page-only bounded file offer; generic drag refuses |
-| `$keyboard` · `$eventcatcher` · `$linkcatcher` | REFUSE: broad capture, containment checks and late cancellation exceed a named binding |
+| `$droppable` · `$draggable` · `$dropzone` | a bounded file or title offer crossing as `lar:drop` where the stamp names `drop`; generic drag refuses |
+| `$keyboard` | declared keys only: the chords its `data-lar-keys` stamp names cross, every other key stays with the page |
+| `$eventcatcher` · `$linkcatcher` | REFUSE: broad capture, containment checks and late cancellation exceed a named binding |
 
 ''Where each piece lives.'' Camera and template intent, and the narrow override grammar, stay in the house plugin as content. The projected editor engine stays in the engine fold. Listener binding and native behaviour stay in the vessel's own bundle.
 
@@ -250,6 +251,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HzanL7ZvvwAAWz-E_1yUXoZLhdjApK5RhUlbFd7XCH4
+<<^ code="&#x0003;">>ni:///sha-256;IKDdxH6j-MOyuLHBzhl6-1JTM5EYPHquJirTno4f8Cg
 
 <<^ code="&#x0004;" -> to="?">>

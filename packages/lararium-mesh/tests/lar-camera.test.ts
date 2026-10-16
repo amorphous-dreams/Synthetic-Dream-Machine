@@ -3,6 +3,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
+  LAR_CONTROL_DOCUMENT, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_WHOLE_BYTES_MAX,
   LAR_WHOLE_VALUE_MAX_CHARS, boundedWholeValue, isReliableKind, mkLarControlEvent, mkLarFrame,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService, mkLarResend, mkLarService,
   larKeyChordName, readLarCancel, readLarStampTokens,
@@ -148,5 +149,38 @@ describe("the binding stamps", () => {
     expect(larKeyChordName({ keyCode: 83, meta: true, ctrl: true })).toBe("ctrl-meta-S");
     // CONTROL: a code outside the named set names its number, never a guess.
     expect(larKeyChordName({ keyCode: 186 })).toBe("186");
+  });
+});
+
+describe("files, drops, order, keys and navigate (S6)", () => {
+  const frame = (keys: unknown[]) => ({ type: "lar:frame", wikiUri: "lar:///w", cameraId: "lar:story", mountEpoch: 2, sensedRevision: {}, keys });
+  test("a shortcuts key carries parsed chords; CONTROL: a chord missing its keyCode, a string modifier, or an empty descriptor reads null", () => {
+    const chord = { descriptor: "alt-shift-G", keyCode: 71, ctrl: false, shift: true, alt: true, meta: false };
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [chord] }]))).not.toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [] }]))).not.toBeNull();
+    const { keyCode: _k, ...noCode } = chord;
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [noCode] }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [{ ...chord, alt: "yes" }] }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [{ ...chord, descriptor: "" }] }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_SHORTCUTS, rev: 1, chords: [chord], members: [] }])), "one payload per key").toBeNull();
+  });
+  test("a story-order key carries the order and the history tail; CONTROL: a number in the order or a negative depth reads null", () => {
+    expect(readLarFrame(frame([{ key: LAR_KEY_STORY_ORDER, rev: 1, story: { order: ["A", "B"], tail: "B", depth: 2 } }]))).not.toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_STORY_ORDER, rev: 1, story: { order: [], tail: null, depth: 0 } }]))).not.toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_STORY_ORDER, rev: 1, story: { order: [1], tail: null, depth: 0 } }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_STORY_ORDER, rev: 1, story: { order: [], tail: null, depth: -1 } }]))).toBeNull();
+    expect(readLarFrame(frame([{ key: LAR_KEY_STORY_ORDER, rev: 1, story: { order: [], tail: 3, depth: 0 } }]))).toBeNull();
+  });
+  test("an offer's bytes cross within LAR_WHOLE_BYTES_MAX with the file's name and type; CONTROL: one byte past the bound, or a nameless file, reads null", () => {
+    const offer = { ...act(), action: "lar:import-offer", controlType: "lar-file-picker" };
+    expect(readLarControlEvent({ ...offer, wholeValue: new Uint8Array(LAR_WHOLE_BYTES_MAX), file: { name: "a.tid", type: "application/x-tiddler" } })).not.toBeNull();
+    expect(readLarControlEvent({ ...offer, wholeValue: new Uint8Array(LAR_WHOLE_BYTES_MAX + 1), file: { name: "a.tid", type: "" } })).toBeNull();
+    expect(() => mkLarControlEvent({ ...offer, wholeValue: new Uint8Array(LAR_WHOLE_BYTES_MAX + 1) })).toThrow(/exceeds its bound/);
+    expect(readLarControlEvent({ ...offer, wholeValue: new Uint8Array(4), file: { type: "text/plain" } })).toBeNull();
+    expect(readLarControlEvent({ ...offer, wholeValue: new Uint8Array(4), file: { name: "a", type: 7 } })).toBeNull();
+  });
+  test("the document leg names itself as a control", () => {
+    const key = mkLarControlEvent({ eventId: "k1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", controlId: LAR_CONTROL_DOCUMENT, action: "lar:key", seenFrameRev: 1, key: { key: "G", code: "KeyG", keyCode: 71, repeat: false } });
+    expect(readLarControlEvent(key)).toMatchObject({ controlId: "lar:document" });
   });
 });

@@ -11,7 +11,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_FRAME, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_RESEND,
+  LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_FRAME, LAR_KEY_MEMBERSHIP, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_RESEND,
   mkLarResend, readLarFrame,
 } from "@lararium/mesh";
 import { hasProjection } from "../src/has-island-watches.js";
@@ -39,10 +39,10 @@ describe.skipIf(wikiSkip)(`the keyed lar:frame${skipNote}`, () => {
     expect(f.type).toBe(LAR_FRAME);
     expect(f.cameraId).toBe(LAR_CAMERA_STORY);
     expect(f.wikiUri).toBe("lar:///test/projection-surface");
-    expect(f.keys.map((k) => k.key)).toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_MEMBERSHIP]);
+    expect(f.keys.map((k) => k.key)).toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_KEY_MEMBERSHIP]);
     expect(htmlOf(f)).toContain("bump 0");
     expect(keyOf(f, LAR_KEY_STYLE)?.css?.length, "the first frame carries the whole stylesheet").toBeGreaterThan(1000);
-    expect(keyOf(f, LAR_KEY_MEMBERSHIP)?.members).toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE]);
+    expect(keyOf(f, LAR_KEY_MEMBERSHIP)?.members).toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER]);
     expect(f.sensedRevision).toEqual({});
     // CONTROL: the envelope the island used to post reads as no frame at all.
     expect(readLarFrame({ type: "event", wikiUri: "lar:///x", listenable: "projection:frame", payload: { html: "", css: "", rev: 1 } })).toBeNull();
@@ -58,7 +58,7 @@ describe.skipIf(wikiSkip)(`the keyed lar:frame${skipNote}`, () => {
     expect(htmlOf(plain)).toContain("bump 1");
     expect(keyOf(plain, LAR_KEY_STYLE), "an edit that leaves the CSS standing carries no style key").toBeUndefined();
     expect(keyOf(plain, LAR_KEY_SURFACE)!.rev).toBeGreaterThan(keyOf(first, LAR_KEY_SURFACE)!.rev);
-    expect(keyOf(plain, LAR_KEY_MEMBERSHIP)?.members, "membership still names the style key it omitted").toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE]);
+    expect(keyOf(plain, LAR_KEY_MEMBERSHIP)?.members, "membership still names the style key it omitted").toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER]);
 
     s.wiki.addTiddler({ title: SHEET, tags: "$:/tags/Stylesheet", text: ".lar-frame-probe { color: rebeccapurple; }" });
     await s.flush();
@@ -81,7 +81,7 @@ describe.skipIf(wikiSkip)(`the keyed lar:frame${skipNote}`, () => {
     await s.flush();
     const resent = s.last();
     expect(resent.mountEpoch).toBeGreaterThan(first.mountEpoch);
-    expect(resent.keys.map((k) => k.key), "every key whole, the unchanged stylesheet among them").toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_MEMBERSHIP]);
+    expect(resent.keys.map((k) => k.key), "every key whole, the unchanged stylesheet among them").toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_KEY_MEMBERSHIP]);
     expect(keyOf(resent, LAR_KEY_STYLE)!.css).toBe(keyOf(first, LAR_KEY_STYLE)!.css);
     expect(htmlOf(resent)).toContain("bump 1");
     // A resend for another camera asks nothing of this one.

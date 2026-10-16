@@ -33,15 +33,28 @@
  *               control event of kind `lar:service-result` on the document leg (`controlId: "lar:document"`).
  *   - A world's `manifest` opens the surface with it: the mount sends `lar:resend{manifest}` before its first
  *               frame flushes, the way a page that opens names the doors it carries.
+ *   - `write`   lands a peer's whole records in the wiki, the way the island's landing door does; the world moved,
+ *               so the titles it wrote never count as an act's writes.
  *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
- *               stands with those fields, and no title outside the named set took a write since the last expect),
+ *               stands with those fields, `tombstone: true` reading absent, and no title outside the named set took a
+ *               write since the last expect; a title that never persists, and the story and history lists the
+ *               `lar:story-order` key carries, stand outside that count), `messages` (the `tm-*` messages dispatched
+ *               into the widget tree since the last expect, each once, in order), `refused` (the act before never
+ *               crossed, since the wire's own bound refused it at the sending shore, or crossed and answered no
+ *               `applied`; a refusal word names the reason; nothing wrote),
  *               `want` (the `want` the last answer since the last expect carried), `services` (the `lar:service` asks posted since the last expect, in order, each matching the script's
  *               `kind` and every `args` field the script names), and `frame` (`sensedRevision` keyed back to the
- *               script's control names, `surface`, `epoch: "fresh"`, `contains`, `attributes`: per selector, the
+ *               script's control names, `surface`, `epoch: "fresh"`, `contains`, `keys` (per key, the newest payload the
+ *               surface delivered `contains` the text), `questions` (the modal dialogs painted, one per question the
+ *               wiki stands), `questionSubject`, `alert` (the alert the wiki raised), `attributes`: per selector, the
  *               attribute the first named node paints, `null` for absent, and `stamps`: per selector, each named stamp
  *               carries every token the script names, `null` none).
  *               `page` belongs to the page half: the run records it as SKIPPED by name. Any other key fails closed,
  *               so a script that grows a verb this half never learned reads red, never green.
+ *
+ * A control whose node binds no listener (a declared `lar-order-list`), or that the frame paints by no node (the
+ * page's document leg `lar:document`, a parked import's title), crosses by its own name as the event's `controlId`.
+ * A `wholeValue` reading `<oversize: N bytes>` stands for N bytes.
  *
  * Time rests on the caller's hand: the caller fakes `setTimeout`, and `advance` moves the coalesce window, so a
  * frame flushes when the script says and never at the machine's speed.
@@ -57,6 +70,7 @@ import {
   type LarServiceKind, type LarWholeValue,
 } from "@lararium/mesh";
 import { mountProjection } from "../../../src/tw5-projection.js";
+import { neverPersists } from "../../../src/island-adaptor.js";
 import { hasProjection } from "../../../src/has-island-watches.js";
 import type { IslandContext } from "../../../src/island-context.js";
 import type { TW5Engine } from "../../../src/tw5-vm.js";
@@ -109,6 +123,8 @@ interface Surface {
   readonly frames: LarMsg_Frame[];
   /** Titles written since the last expect. */
   written: Set<string>;
+  /** The `tm-*` messages dispatched into the widget tree since the last expect. */
+  messages: string[];
   delivered?: LarMsg_Frame;
   stop?: () => void;
 }
@@ -187,11 +203,18 @@ function ridOf(html: string, control: string): string | null {
     : nodes.filter((n) => n.attrs["data-control-id"] === control);
   // The act names the first named node's own render id, or the nearest painted ancestor's: the node the act climbs
   // from (the camera's top element carries one, so every painted node has a climb).
+  // A declared control (`data-control-id`) stands for its own bindings, as the page reads it: its own render id, or
+  // none, and then the act crosses by the control's name.
+  if (!isSelector(control)) return named.find((n) => n.attrs["data-lar-rid"] !== undefined)?.attrs["data-lar-rid"] ?? null;
   for (const node of named) {
     for (let n: PaintedNode | null = node; n; n = n.parent) if (n.attrs["data-lar-rid"] !== undefined) return n.attrs["data-lar-rid"]!;
   }
   return null;
 }
+
+/** Navigation and volatile state: the camera's own keys carry it, so a script's record writes never count it. */
+const outsideWrites = (title: string): boolean => neverPersists(title) || title === "$:/StoryList" || title === "$:/HistoryList";
+const OVERSIZE = /^<oversize: (\d+) bytes>$/;
 
 const surfaceRev = (f: LarMsg_Frame): number => f.keys.find((k) => k.key === LAR_KEY_SURFACE)?.rev ?? 0;
 const deepEqual = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -224,7 +247,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
     engine.setTiddler({ title: "$:/StoryList", list: [...world.story] });
     const frames: LarMsg_Frame[] = [];
     const surface: Surface = {
-      id, world, engine, frames, written: new Set(),
+      id, world, engine, frames, written: new Set(), messages: [],
       ctx: {
         wikiUri: `lar:///golden/${id}`,
         tw5: engine,
@@ -239,16 +262,27 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
       } as unknown as IslandContext,
     };
     (engine.$tw as unknown as { wiki: { addEventListener(t: string, h: (c: Record<string, unknown>) => void): void } })
-      .wiki.addEventListener("change", (changes) => { for (const t of Object.keys(changes)) surface.written.add(t); });
+      .wiki.addEventListener("change", (changes) => { for (const t of Object.keys(changes)) if (!outsideWrites(t)) surface.written.add(t); });
+    // Each message once, as it enters the tree: a re-dispatch of a stored message (the confirm road's yes) counts again.
+    const proto = Object.getPrototypeOf((engine.$tw as unknown as { rootWidget: object }).rootWidget) as { dispatchEvent(e: { type?: unknown }): unknown };
+    const dispatch = proto.dispatchEvent;
+    const inFlight = new Set<object>();
+    proto.dispatchEvent = function (this: unknown, e: { type?: unknown }): unknown {
+      const entering = !inFlight.has(e);
+      if (entering) { inFlight.add(e); if (typeof e.type === "string" && e.type.startsWith("tm-")) surface.messages.push(e.type); }
+      try { return dispatch.call(this, e); } finally { if (entering) inFlight.delete(e); }
+    };
     surfaces.set(id, surface);
   }
   // The boot's own writes (the root, the story) belong to the world, never to a step.
   await hooks.settle();
-  for (const s of surfaces.values()) s.written.clear();
+  for (const s of surfaces.values()) { s.written.clear(); s.messages = []; }
 
   let current: Surface = surfaces.values().next().value!;
   const lastSense: { rid?: string; name?: string; localRev?: number; framesBefore?: number; surface?: Surface } = {};
   let eventSeq = 0;
+  /** The reason the wire's own bound refused the last act at the sending shore, if it did. */
+  let refusedAtShore: string | undefined;
   /** The revision the page would carry per control for the senses a `page` gesture relays. */
   const pageRevs = new Map<string, number>();
 
@@ -279,25 +313,35 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
     const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
     const control = String(body["control"]);
     const rid = ridOf(html, control);
-    if (!rid) { failures.push(`${at}: control ${control} paints no render id on ${s.id}`); return null; }
-    nameOfRid.set(rid, control);
+    if (!rid && isSelector(control)) { failures.push(`${at}: control ${control} paints no render id on ${s.id}`); return null; }
+    if (rid) nameOfRid.set(rid, control);
     const epoch = body["epoch"] === "stale" ? staleEpoch(s) : frame.mountEpoch;
     if (epoch === undefined) { failures.push(`${at}: ${s.id} emitted no earlier epoch to carry as stale`); return null; }
-    const ev = mkLarControlEvent({
+    const oversize = typeof body["wholeValue"] === "string" ? OVERSIZE.exec(body["wholeValue"]) : null;
+    const wholeValue = oversize ? new Uint8Array(Number(oversize[1])) : body["wholeValue"] as LarWholeValue | undefined;
+    let ev: ReturnType<typeof mkLarControlEvent>;
+    try { ev = mkLarControlEvent({
       eventId: `golden-${++eventSeq}`, cameraId: frame.cameraId, mountEpoch: epoch, kind,
-      renderId: rid,
+      ...(rid ? { renderId: rid } : { controlId: control }),
       action: kind === "lar:sense" ? "lar:sense" : String(body["action"]),
       seenFrameRev: surfaceRev(frame),
+      ...(body["controlType"] !== undefined ? { controlType: String(body["controlType"]) } : {}),
       ...(body["localRev"] !== undefined ? { localRev: Number(body["localRev"]) } : {}),
-      ...(body["wholeValue"] !== undefined ? { wholeValue: body["wholeValue"] as LarWholeValue } : {}),
+      ...(wholeValue !== undefined ? { wholeValue } : {}),
       ...(body["checked"] !== undefined ? { checked: Boolean(body["checked"]) } : {}),
       ...(body["selection"] !== undefined ? { selection: body["selection"] as { start: number; end: number } } : {}),
       ...(body["modifiers"] !== undefined ? { modifiers: body["modifiers"] as LarModifiers } : {}),
       ...(body["key"] !== undefined ? { key: body["key"] as LarKeyChord } : {}),
       ...(body["geometry"] !== undefined ? { geometry: body["geometry"] as LarGeometry } : {}),
-    });
+    }); } catch (error) {
+      // The sending shore's own bound: a value past it never crosses.
+      if (!/exceeds its bound/.test(String(error))) throw error;
+      refusedAtShore = "input-too-long";
+      trace.push(`${at}: ${kind} ${String(body["action"])} ${control} refused at the sending shore (input-too-long)`);
+      return null;
+    }
     if (!cap.onSignal!(LAR_CONTROL_EVENT, ev, s.ctx)) failures.push(`${at}: the projection cap left ${LAR_CONTROL_EVENT} unclaimed`);
-    trace.push(`${at}: ${kind} ${ev.action} ${control}→${rid} epoch=${epoch}${body["epoch"] === "stale" ? " (stale)" : ""}`);
+    trace.push(`${at}: ${kind} ${ev.action} ${control}→${rid ?? `controlId ${control}`} epoch=${epoch}${body["epoch"] === "stale" ? " (stale)" : ""}`);
     return rid;
   };
 
@@ -339,6 +383,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
         if (rid) Object.assign(lastSense, { rid, name: String(body["control"]), localRev: Number(body["localRev"]), framesBefore, surface: s });
       } else if ("act" in step) {
         const body = step["act"] as Record<string, unknown>;
+        refusedAtShore = undefined;
         send(surfaceOf(step, body), "lar:act", body, at);
         await hooks.settle();
       } else if ("write" in step) {
@@ -350,6 +395,8 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
           else s.engine.setTiddler({ ...(r.fields ?? {}), title: r.title });
         }
         await hooks.settle();
+        // The world moved under the island: a peer's records never count as an act's writes.
+        s.written.clear();
         trace.push(`${at}: peer write ${body.records.map((r) => r.title).join(",")}`);
       } else if ("page" in step) {
         const body = step["page"] as { control: string; composition?: string; value?: string; input?: string; composing?: boolean; keydown?: { key: string; code: string; keyCode: number; isComposing?: boolean; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean; shiftKey?: boolean } };
@@ -432,11 +479,33 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
               const holder = [...surfaces.values()].find((s) => s.world.tiddlers.some((t) => t["title"] === record.title)) ?? current;
               const fields = (holder.engine.$tw as unknown as { wiki: { getTiddler(t: string): { fields: Record<string, unknown> } | undefined } })
                 .wiki.getTiddler(record.title)?.fields;
+              if ((record as Record<string, unknown>)["tombstone"] === true) {
+                if (fields !== undefined) failures.push(`${at}: ${record.title} still stands, the script expects it deleted`);
+                if (!written.includes(record.title)) failures.push(`${at}: ${record.title} took no write, the script expects its deletion`);
+                continue;
+              }
               for (const [field, value] of Object.entries(record)) {
                 if (field === "title") continue;
                 if (!deepEqual(fields?.[field], value)) failures.push(`${at}: ${record.title} holds ${field}=${JSON.stringify(fields?.[field])}, the script expects ${JSON.stringify(value)}`);
               }
             }
+            continue;
+          }
+          if (key === "messages") {
+            const got = [...surfaces.values()].flatMap((s) => s.messages);
+            if (!deepEqual(got, want)) failures.push(`${at}: messages ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "refused") {
+            const since = results.slice(resultsSeen);
+            const applied = since.filter((r) => r.status === "applied");
+            if (applied.length) failures.push(`${at}: the act before crossed and answered applied; the script expects a refusal (${String(want)})`);
+            if (/^[a-z]+(?:-[a-z]+)*$/.test(String(want))) {
+              const reasons = [...(refusedAtShore ? [refusedAtShore] : []), ...since.map((r) => r.reason ?? r.status)];
+              if (!reasons.includes(String(want))) failures.push(`${at}: the refusals read ${JSON.stringify(reasons)}, the script expects ${String(want)}`);
+            }
+            const written = [...surfaces.values()].flatMap((s) => [...s.written]);
+            if (!("writes" in expect) && written.length) failures.push(`${at}: a refused act wrote ${JSON.stringify(written)}`);
             continue;
           }
           if (key === "frame") {
@@ -470,6 +539,28 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
               } else if (fk === "contains") {
                 const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
                 if (!html.includes(String(fv))) failures.push(`${at}: the frame paints no ${JSON.stringify(fv)}`);
+              } else if (fk === "keys") {
+                const upTo = s.frames.slice(0, s.frames.indexOf(frame) + 1);
+                for (const [name, spec] of Object.entries(fv as Record<string, { contains?: string }>)) {
+                  const held = upTo.map((f) => f.keys.find((k) => k.key === name)).filter((k) => k !== undefined).at(-1);
+                  if (!held) { failures.push(`${at}: ${s.id} delivered no ${name} key`); continue; }
+                  if (spec.contains !== undefined && !JSON.stringify(held).includes(spec.contains)) failures.push(`${at}: the ${name} key reads ${JSON.stringify(held)}, the script expects it to contain ${JSON.stringify(spec.contains)}`);
+                }
+              } else if (fk === "questions" || fk === "questionSubject" || fk === "alert") {
+                const wiki = (s.engine.$tw as unknown as { wiki: { getTiddlersWithTag(t: string): string[]; getTiddler(t: string): { fields: Record<string, unknown> } | undefined } }).wiki;
+                const standing = wiki.getTiddlersWithTag("$:/tags/Confirmation");
+                const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
+                if (fk === "questions") {
+                  const dialogs = paintedNodes(html).filter((n) => n.attrs["aria-modal"] === "true").length;
+                  if (dialogs !== fv) failures.push(`${at}: the frame paints ${dialogs} modal question(s), the script expects ${String(fv)}`);
+                  if (standing.length !== fv) failures.push(`${at}: the wiki stands ${standing.length} question(s), the script expects ${String(fv)}`);
+                } else if (fk === "questionSubject") {
+                  const subjects = standing.map((t) => wiki.getTiddler(t)?.fields["confirm-title"]);
+                  if (!deepEqual(subjects, [fv])) failures.push(`${at}: the standing question asks of ${JSON.stringify(subjects)}, the script expects ${JSON.stringify(fv)}`);
+                  if (!decode(html).includes(String(fv))) failures.push(`${at}: the frame's question names no ${String(fv)}`);
+                } else if (!wiki.getTiddler(String(fv))) {
+                  failures.push(`${at}: the wiki raised no alert ${String(fv)}`);
+                }
               } else if (fk === "attributes") {
                 const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
                 for (const [selector, named] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
@@ -490,7 +581,8 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
         }
         resultsSeen = results.length;
         servicesSeen = services.length;
-        for (const s of surfaces.values()) s.written.clear();
+        refusedAtShore = undefined;
+        for (const s of surfaces.values()) { s.written.clear(); s.messages = []; }
       } else {
         failures.push(`${at}: the engine half knows no verb ${Object.keys(step).join(",")}`);
       }

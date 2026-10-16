@@ -41,6 +41,7 @@ import { installLarFieldEngine, larFieldEngineOf } from "./lar-field-engine.js";
 import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
   LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
+  LAR_CONTROL_DOCUMENT, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, type LarShortcutChord, type LarStoryOrder,
   type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
   type LarMsg_Resend, type LarMsg_Service, type LarRefusal, type LarResultStatus, type LarServiceKind, type LarSurfaceManifest,
   LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_LIVE, LAR_STAMP_ON, larKeyChordName,
@@ -59,7 +60,7 @@ import type { LaresServiceArgs, LaresServiceDoor } from "./types/lares-globals.j
 const COALESCE_MS = 24;
 
 /** The keys the story camera declares at mount, membership aside. */
-const STORY_MEMBERS: readonly string[] = [LAR_KEY_SURFACE, LAR_KEY_STYLE];
+const STORY_MEMBERS: readonly string[] = [LAR_KEY_SURFACE, LAR_KEY_STYLE, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER];
 
 /** How many answers a camera keeps for re-answering a repeated `eventId` within one epoch. */
 const ANSWER_RING = 256;
@@ -490,6 +491,8 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   }
 
   if (ev.kind === "lar:write") return answer("refused", "binding-unavailable");
+  const offered = dispatchOffer(ev, scope, answer);   // S6: files, drops, order, keys and navigate
+  if (offered !== undefined) return offered;
   const el = resolveTarget(ev, scope);
   if (!el) return stale();
   activeEventScope = scope;
@@ -787,6 +790,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   };
   activeEventScope = scope;
   cameras.add(scope);
+  mountOffers(scope, tw);
   // The camera's top element (TW5's transclusion wrapper) carries a render id of its own, so every painted node
   // names a node of the fake tree an act can climb from: an act on a node no binding reaches climbs to the top and
   // answers `unclaimed`. A re-render that replaces the top element gets the stamp again before the next frame.
@@ -871,6 +875,7 @@ export function mountProjection(ctx: IslandContext): () => void {
       const css = styleContainer.textContent ?? "";
       const keys: LarFrameKey[] = [{ key: LAR_KEY_SURFACE, rev: ++surfaceRev, html }];
       if (whole || css !== lastCss) keys.push({ key: LAR_KEY_STYLE, rev: ++styleRev, css });
+      keys.push(...offerKeys(scope, html, whole));
       keys.push({ key: LAR_KEY_MEMBERSHIP, rev: membershipRev, members: STORY_MEMBERS });
       lastCss = css;
       whole = false;
@@ -909,4 +914,323 @@ export function mountProjection(ctx: IslandContext): () => void {
     if (tw.popup === popupManager) tw.popup = undefined;
     if (activeEventScope === scope) activeEventScope = undefined;
   };
+}
+
+// ── S6 · files, drops, order, keys and navigate ─────────────────────────────────────────────────────
+//
+// The island's half of the import, drop, order, keyboard and navigation classes (dreamdom#/what-a-sink-keeps):
+//
+//   - `lar:import-offer` lands a picked file on the `$browse` input that bound `change` (or on a drop handler)
+//     through TW5's own road: the bytes the page read cross as a projected `File`, the `th-importing-file` hook
+//     TW5 offers every reader answers it with `deserializeTiddlers` (or with the tiddlers the page parsed from
+//     `text/vnd.tiddler` JSON), and the widget dispatches `tm-import-tiddlers` itself, so `$:/Import` parks.
+//   - `lar:drop` hands the dropped payload (bytes, `text/vnd.tiddler` JSON, plain text, or a whole title list
+//     resolved to the JSON a drag source carries) to the node's own `drop` listeners as a `dataTransfer`.
+//   - `lar:perform-import` names a parked import by its title and dispatches `tm-perform-import` from the widget
+//     that parked it, so the same navigator lands it.
+//   - `lar:order` writes a `lar-order-list`'s WHOLE ordered id list onto the field it binds; an id the list lacks
+//     never deletes a member, and an id outside the members never adds one.
+//   - `lar:key` on `lar:document` runs TW5's own keyboard manager; the frame's `lar:shortcuts` key carries the
+//     chords that manager parses from `$:/tags/KeyboardShortcut`, the set the page's document leg listens for.
+//     A key act on a node under a declared crossing set (`data-lar-keys`) that names no chord of it refuses
+//     `unclaimed` and runs nothing.
+//   - `lar:route` on `lar:document` navigates the story the way TW5's own `Story` does; the frame's
+//     `lar:story-order` key carries the story order and the history tail the page composes `#` from.
+//   - an act that reaches a `$eventcatcher` refuses `unsupported-control` by name and runs nothing.
+
+const IMPORT_TITLE = "$:/Import";
+const STORY_LIST = "$:/StoryList";
+const HISTORY_LIST = "$:/HistoryList";
+/** The mark a projected `File` carries: what the page already read, so the reader hook answers it. */
+const PROJECTED_FILE = Symbol("lararium.projected-file");
+const OFFER_HOOK = Symbol("lararium.offer-hook");
+
+interface ProjectedFile {
+  readonly name: string; readonly type: string; readonly size: number;
+  readonly [PROJECTED_FILE]: { readonly bytes?: Uint8Array; readonly tiddlers?: readonly Record<string, unknown>[] };
+}
+interface WidgetLike { dispatchEvent(event: Record<string, unknown>): unknown }
+
+/** Per camera: the engine it speaks for, the imports offers parked, the declared controls the last frame painted, and the
+ *  last payload and revision of each key this section emits. */
+interface OfferState {
+  readonly tw: Record<string, any>;
+  readonly parked: Map<string, WidgetLike>;
+  declared: Map<string, Record<string, string>>;
+  chords?: string; chordsRev: number;
+  story?: string; storyRev: number;
+}
+const offerStates = new WeakMap<CameraScope, OfferState>();
+
+/** The DOM event type an act reaches a listener under. */
+const DOM_TYPE: Readonly<Record<string, string>> = {
+  "lar:click": "click", "lar:key": "keydown", "lar:drop": "drop", "lar:import-offer": "change",
+  "lar:commit": "change", "lar:toggle": "change", "lar:choice": "change",
+};
+
+/** Install, once per engine, the reader hook that answers a projected file with what the page read. */
+function installOfferHook(tw: Record<string, any>): void {
+  if (tw[OFFER_HOOK as unknown as string]) return;
+  tw[OFFER_HOOK as unknown as string] = true;
+  tw.hooks.addHook("th-importing-file", (info: { file?: ProjectedFile; type: string; isBinary: boolean; callback(fields: unknown[]): void } | true) => {
+    const read = info !== true ? info?.file?.[PROJECTED_FILE] : undefined;
+    if (info === true || !read) return info;
+    if (read.tiddlers) { info.callback([...read.tiddlers]); return true; }
+    const bytes = read.bytes ?? new Uint8Array();
+    let text: string;
+    if (info.isBinary) {
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      text = btoa(binary);
+    } else {
+      text = new TextDecoder().decode(bytes);
+    }
+    info.callback(tw.wiki.deserializeTiddlers(info.type, text, { title: info.file!.name || "Untitled" }));
+    return true;
+  });
+}
+
+/** Arm this section for one camera. */
+function mountOffers(scope: CameraScope, tw: Record<string, any>): void {
+  installOfferHook(tw);
+  offerStates.set(scope, { tw, parked: new Map(), declared: new Map(), chordsRev: 0, storyRev: 0 });
+}
+
+/** The tiddlers a `text/vnd.tiddler` JSON string names, or null when it names none. */
+function tiddlersOfJson(tw: Record<string, any>, json: string): Record<string, unknown>[] | null {
+  const data = tw.utils.parseJSONSafe(json, null) as unknown;
+  const list = Array.isArray(data) ? data : data && typeof data === "object" ? [data] : null;
+  if (!list || list.length === 0) return null;
+  return list.every((t) => t && typeof t === "object" && typeof (t as Record<string, unknown>)["title"] === "string")
+    ? list as Record<string, unknown>[] : null;
+}
+
+/** A projected file over what the page read: bytes with their name and type, or tiddlers the page parsed. */
+function projectedFile(ev: LarMsg_ControlEvent, tiddlers?: readonly Record<string, unknown>[]): ProjectedFile {
+  const bytes = ev.wholeValue instanceof Uint8Array ? ev.wholeValue : undefined;
+  return {
+    name: ev.file?.name ?? (tiddlers ? "import.json" : "Untitled"),
+    type: ev.file?.type ?? (tiddlers ? "application/json" : ""),
+    size: bytes?.byteLength ?? 0,
+    [PROJECTED_FILE]: { ...(bytes ? { bytes } : {}), ...(tiddlers ? { tiddlers } : {}) },
+  };
+}
+
+/** The `dataTransfer` a drop hands its listeners, carrying the payload the page read. */
+function dataTransferOf(state: OfferState, ev: LarMsg_ControlEvent): Record<string, unknown> | null {
+  const { tw } = state;
+  const data = new Map<string, string>();
+  let files: ProjectedFile[] = [];
+  const v = ev.wholeValue;
+  if (v instanceof Uint8Array) {
+    files = [projectedFile(ev)];
+    data.set("Files", "");
+  } else if (typeof v === "string") {
+    if (tiddlersOfJson(tw, v)) data.set("text/vnd.tiddler", v);
+    data.set("text/plain", v);
+  } else if (Array.isArray(v) && v.length > 0) {
+    const titles = v as readonly string[];
+    const json = titles.map((t) => tw.wiki.getTiddlerAsJson(t) as string);
+    data.set("text/vnd.tiddler", json.length === 1 ? json[0]! : `[${json.join(",")}]`);
+    data.set("text/plain", tw.utils.stringifyList(titles));
+  } else {
+    return null;
+  }
+  return {
+    files, types: [...data.keys()], items: [], dropEffect: "none", effectAllowed: "all",
+    getData: (type: string) => data.get(type) ?? "",
+  };
+}
+
+/** Run one projected event's listeners on `el`, noting the import a listener's widget parks along the way. */
+function runOffer(state: OfferState, scope: CameraScope, el: RidNode, type: string, event: Record<string, unknown>): void {
+  const proto = Object.getPrototypeOf(state.tw.rootWidget) as { dispatchEvent(this: WidgetLike, e: Record<string, unknown>): unknown };
+  const dispatch = proto.dispatchEvent;
+  proto.dispatchEvent = function (this: WidgetLike, e: Record<string, unknown>): unknown {
+    if (e["type"] === "tm-import-tiddlers") {
+      const title = String(e["importTitle"] || (e["paramObject"] as Record<string, unknown> | undefined)?.["importTitle"] || IMPORT_TITLE);
+      if (!state.parked.has(title) || e["widget"] === undefined) state.parked.set(title, (e["widget"] as WidgetLike | undefined) ?? this);
+    }
+    return dispatch.call(this, e);
+  };
+  const doc = state.tw.fakeDocument as Record<string, unknown>;
+  const lentBody = doc["body"] === undefined;
+  // A dropzone clears its drag state on the document's body; the fake document holds none, so one stands for the drop.
+  if (lentBody) doc["body"] = (doc["createElement"] as (t: string) => unknown)("body");
+  // TW5's `importDataTransfer` asks the browser whether it runs as IE; a worker holds no `$tw.browser`, so the two
+  // facts that reader asks stand for the drop and leave with it.
+  const browser = state.tw.browser as unknown;
+  const lentBrowser = !browser;
+  if (lentBrowser) state.tw.browser = { isIE: false, isMobileChrome: false };
+  try {
+    runListeners(scope, el, type, event);
+  } finally {
+    proto.dispatchEvent = dispatch;
+    if (lentBody) delete doc["body"];
+    if (lentBrowser) state.tw.browser = browser;
+  }
+}
+
+/** Whether the projected key event matches a chord of a declared crossing set, by the engine's own parse. */
+function chordDeclared(tw: Record<string, any>, stamp: string, event: Record<string, unknown>): boolean {
+  const km = tw.keyboardManager;
+  if (!km) return false;
+  const infos = (km.parseKeyDescriptors(stamp) as unknown[]).filter(Boolean);
+  return km.getMatchingKeyDescriptor(event, infos) !== null;
+}
+
+/**
+ * The S6 crossings, ahead of the target resolution `dispatchLarControlEvent` makes: an answer for an act this
+ * section owns, or undefined to let the event take its ordinary road.
+ */
+function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult): LarMsg_ControlResult | undefined {
+  const state = offerStates.get(scope);
+  if (!state || ev.kind !== "lar:act") return undefined;
+  const { tw } = state;
+  activeEventScope = scope;
+
+  if (ev.controlId === LAR_CONTROL_DOCUMENT) {
+    if (ev.action === "lar:key") {
+      const km = tw.keyboardManager;
+      if (!km || !ev.key) return answer("refused", "unclaimed");
+      const event = projectedEvent("keydown", scope.popupRoot, scope, ev);
+      let handled = false;
+      try { handled = km.handleKeydownEvent(event) === true; } catch (error) {
+        const refusal = error instanceof Error ? error : new Error(String(error));
+        scope.alert("$:/temp/lares/alert/handler-refused", `An action stopped: ${refusal.name || "Error"}: ${refusal.message}`);
+        handled = true;
+      }
+      scope.mark();
+      return handled ? answer("applied") : answer("refused", "unclaimed");
+    }
+    if (ev.action === "lar:route") {
+      const title = typeof ev.wholeValue === "string" ? ev.wholeValue : "";
+      if (title === "" || !(tw.wiki.tiddlerExists(title) || tw.wiki.isShadowTiddler(title))) return answer("refused", "route-unresolved");
+      new tw.Story({ wiki: tw.wiki, storyTitle: STORY_LIST, historyTitle: HISTORY_LIST }).navigateTiddler(title);
+      scope.mark();
+      return answer("applied");
+    }
+    return answer("refused", "unsupported-control");
+  }
+
+  if (ev.action === "lar:perform-import") {
+    const title = ev.controlId ?? "";
+    const widget = state.parked.get(title);
+    if (!widget || tw.wiki.getTiddler(title)?.fields["plugin-type"] !== "import") return answer("refused", "binding-unavailable");
+    widget.dispatchEvent({ type: "tm-perform-import", param: title });
+    state.parked.delete(title);
+    scope.mark();
+    return answer("applied");
+  }
+
+  if (ev.action === "lar:order") {
+    const attrs = ev.controlId !== undefined ? state.declared.get(ev.controlId) : undefined;
+    if (!attrs) return answer("stale-target");
+    if (!isKeySet(ev.wholeValue) || (ev.controlType !== undefined && ev.controlType !== "lar-order-list")) return answer("refused", "unsupported-control");
+    const tiddler = attrs["data-tiddler"] ?? "", field = attrs["data-field"] ?? "list";
+    if (tiddler === "" || field === "title" || !/^[a-z0-9\-._]+$/.test(field)) return answer("refused", "binding-unavailable");
+    const members = (tw.utils.parseStringArray(tw.wiki.getTiddler(tiddler)?.getFieldString(field) ?? "") ?? []) as string[];
+    const asked = [...new Set(ev.wholeValue)].filter((id) => members.includes(id));
+    const next = [...asked, ...members.filter((id) => !asked.includes(id))];
+    if (next.join("\n") !== members.join("\n")) tw.wiki.setText(tiddler, field, undefined, tw.utils.stringifyList(next));
+    scope.mark();
+    return answer("applied");
+  }
+
+  const el = resolveTarget(ev, scope);
+  if (!el) return undefined;
+  const type = DOM_TYPE[ev.action];
+  for (let node: RidNode | null | undefined = el; node && type; node = node.parentNode) {
+    if ((node.attributes["class"] ?? "").split(/\s+/).includes("tc-eventcatcher") && binds(node, type)) return answer("refused", "unsupported-control");
+  }
+
+  if (ev.action === "lar:key") {
+    const event = projectedEvent("keydown", el, scope, ev);
+    const stamps: string[] = [];
+    for (let node: RidNode | null | undefined = el; node; node = node.parentNode) {
+      const stamp = node.attributes["data-lar-keys"];
+      if (stamp !== undefined) stamps.push(stamp);
+    }
+    if (stamps.length > 0 && !chordDeclared(tw, stamps.join(" "), event)) return answer("refused", "unclaimed");
+    return undefined;
+  }
+
+  if (ev.action === "lar:import-offer" || ev.action === "lar:drop") {
+    const fileInput = el.tag === "input" && el.attributes["type"] === "file";
+    if (ev.action === "lar:import-offer" && fileInput && binds(el, "change")) {
+      const tiddlers = typeof ev.wholeValue === "string" ? tiddlersOfJson(tw, ev.wholeValue) : undefined;
+      if (tiddlers === null || (tiddlers === undefined && !(ev.wholeValue instanceof Uint8Array))) return answer("refused", "unsupported-control");
+      const holder = el as RidNode & { files?: unknown };
+      holder.files = [projectedFile(ev, tiddlers)];
+      try { runOffer(state, scope, el, "change", projectedEvent("change", el, scope, ev)); } finally { delete holder.files; }
+      scope.mark();
+      return answer("applied");
+    }
+    if (!binds(el, "drop")) return answer("refused", ev.action === "lar:drop" ? "unclaimed" : "unsupported-control");
+    const dataTransfer = dataTransferOf(state, ev);
+    if (!dataTransfer) return answer("refused", "unsupported-control");
+    runOffer(state, scope, el, "drop", { ...projectedEvent("drop", el, scope, ev), dataTransfer, isTrusted: false });
+    scope.mark();
+    return answer("applied");
+  }
+  return undefined;
+}
+
+/**
+ * The keys this section adds to a frame: `lar:shortcuts` and `lar:story-order`, each only when its payload moved
+ * since the mount's last frame or the frame runs whole, each under its own rising revision. Also reads the declared
+ * controls (`lar-order-list`) the frame paints, the only ones an order act may name.
+ */
+function offerKeys(scope: CameraScope, html: string, whole: boolean): LarFrameKey[] {
+  const state = offerStates.get(scope);
+  if (!state) return [];
+  const { tw } = state;
+  state.declared = new Map();
+  for (const [tag] of html.matchAll(/<lar-order-list\b[^>]*>/g)) {
+    const attrs = Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, tw.utils.htmlDecode(m[2]!) as string]));
+    if (attrs["data-control-id"]) state.declared.set(attrs["data-control-id"], attrs);
+  }
+  const keys: LarFrameKey[] = [];
+  const chords = shortcutChords(tw);
+  const chordsJson = JSON.stringify(chords);
+  if (whole || chordsJson !== state.chords) keys.push({ key: LAR_KEY_SHORTCUTS, rev: ++state.chordsRev, chords });
+  state.chords = chordsJson;
+  const history = tw.wiki.getTiddlerData(HISTORY_LIST, []) as unknown;
+  const entries = Array.isArray(history) ? history as { title?: unknown }[] : [];
+  const tailTitle = entries.at(-1)?.title;
+  const story: LarStoryOrder = {
+    order: (tw.wiki.getTiddlerList(STORY_LIST) ?? []) as string[],
+    tail: typeof tailTitle === "string" && tailTitle !== "" ? tailTitle : null,
+    depth: entries.length,
+  };
+  const storyJson = JSON.stringify(story);
+  if (whole || storyJson !== state.story) keys.push({ key: LAR_KEY_STORY_ORDER, rev: ++state.storyRev, story });
+  state.story = storyJson;
+  return keys;
+}
+
+/** The chords `$:/tags/KeyboardShortcut` declares, each descriptor parsed by TW5's own keyboard manager. */
+function shortcutChords(tw: Record<string, any>): LarShortcutChord[] {
+  const km = tw.keyboardManager;
+  if (!km) return [];
+  const expand = (descriptors: string, stack: Set<string>): string[] => descriptors.split(" ").filter(Boolean).flatMap((d) => {
+    const named = /^\(\((.+)\)\)$/.exec(d);
+    if (!named) return [d];
+    if (stack.has(d)) return [];
+    const inner = new Set(stack).add(d);
+    return (km.lookupNames as string[]).flatMap((platform) => expand(tw.wiki.getTiddlerText(`$:/config/${platform}/${named[1]}`) ?? "", inner));
+  });
+  const chords: LarShortcutChord[] = [];
+  const seen = new Set<string>();
+  for (const title of km.getShortcutTiddlerList() as string[]) {
+    const key = tw.wiki.getTiddler(title)?.fields["key"];
+    if (typeof key !== "string") continue;
+    for (const descriptor of expand(key, new Set())) {
+      const info = km.parseKeyDescriptor(descriptor, {}) as { keyCode: number; ctrlKey: boolean; shiftKey: boolean; altKey: boolean; metaKey: boolean } | null;
+      if (!info || seen.has(descriptor)) continue;
+      seen.add(descriptor);
+      chords.push({ descriptor, keyCode: info.keyCode, ctrl: info.ctrlKey, shift: info.shiftKey, alt: info.altKey, meta: info.metaKey });
+    }
+  }
+  return chords;
 }

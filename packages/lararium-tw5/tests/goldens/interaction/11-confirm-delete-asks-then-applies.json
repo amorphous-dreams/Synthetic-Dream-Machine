@@ -18,15 +18,16 @@
     { "act": { "control": "button.del-y", "action": "lar:click" } },
     { "frame": "next" },
     { "expect": { "answers": ["applied"], "frame": { "questions": 1, "questionSubject": "lar:///t/confirm/y" } } },
-    { "act": { "control": "button.tc-confirm-yes", "action": "lar:click" } },
-    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/confirm/y", "tombstone": true }], "messages": ["tm-confirm", "tm-delete-tiddler"] } },
+    { "act": { "control": "button.tc-confirm-accept", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/confirm/y", "tombstone": true }], "messages": ["tm-confirm", "tm-delete-tiddler", "tm-auto-save-wiki"] } },
     { "frame": "next" },
     { "expect": { "frame": { "questions": 0 } } },
     { "act": { "control": "button.del-x", "action": "lar:click" } },
     { "frame": "next" },
     { "write": { "txId": "peer-1", "records": [{ "title": "lar:///t/confirm/x", "fields": { "text": "changed by a peer" } }] } },
     { "frame": "next" },
-    { "act": { "control": "button.tc-confirm-yes", "action": "lar:click" } },
-    { "expect": { "answers": ["applied"], "writes": [], "frame": { "questions": 0, "alert": "$:/temp/alerts/confirm" } } }
+    { "act": { "control": "button.tc-confirm-accept", "action": "lar:click" } },
+    { "frame": "next" },
+    { "expect": { "answers": ["applied", "applied"], "writes": [], "frame": { "questions": 0, "alert": "$:/temp/alerts/confirm" } } }
   ]
 }

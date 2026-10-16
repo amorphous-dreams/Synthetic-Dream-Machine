@@ -46,6 +46,8 @@ import {
   larKeyChordName, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarService, readLarStampTokens,
   type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service, type LarRefusal,
   type LarServiceKind, type LarSurfaceManifest,
+  LAR_CONTROL_DOCUMENT, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_WHOLE_BYTES_MAX,
+  type LarFrameKey, type LarShortcutChord, type LarStoryOrder,
 } from "@lararium/mesh/lar-camera";
 import {
   LAR_FIELD_TAKE_THEIRS, applyWholeValue, defineLarField, isApplyingField, isLarFieldNode, markFieldEdited,
@@ -53,6 +55,9 @@ import {
 } from "./controls/lar-field.js";
 import { defineLarPopover, dismissPopover, paintPopovers } from "./controls/lar-popover.js";
 import { defineLarDisclosure, holdsDisclosure, notePaintedDisclosures, takeDisclosureToggle } from "./controls/lar-disclosure.js";
+import { matchChord } from "./controls/lar-chords.js";
+import { LarFilePicker, bytesRefusalWords, defineLarFilePicker, maxBytesOf, readFileOffer, readsAsTiddlers, type FileOffer } from "./controls/lar-file-picker.js";
+import { defineLarOrderList, type LarOrderDetail } from "./controls/lar-order-list.js";
 
 /** A frame as the page receives it: the contract's keyed frame, plus the surface whose island emitted it. */
 export type LarSurfaceFrame = LarMsg_Frame & { readonly surface: string };
@@ -70,6 +75,8 @@ export interface ProjectionSinkOptions {
   /** The doors at hand by kind, over the page's own (clipboard, download, print, fullscreen, open-external); the
    *  vessel hands `route` and `open-surface`, which only it can move. */
   readonly doors?: Partial<Record<LarServiceKind, LarHostDoor>>;
+  /** Push the address the story order composes and route Back as `lar:route` (S6); off where the host owns the address. */
+  readonly addressBar?: boolean;
 }
 
 /** The vessel's return leg, as the sink speaks it. */
@@ -99,6 +106,8 @@ export interface ProjectionSink {
   surface(): string | null;
   /** The visible set the shown surface's membership key last named, or null before one arrived. */
   members(): readonly string[] | null;
+  /** The address the shown surface's story order composes (`#<navigated>:<story>`), or null before one arrived. */
+  route(): string | null;
   /** Take an island's host-door ask: open it under a fresh act and the manifest, or refuse it by name; either
    *  way answer `lar:service-result` on the return leg. */
   applyService(ask: LarSurfaceService): Promise<ServiceVerdict>;
@@ -334,6 +343,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (style) st.sheet = style.tombstone ? "" : style.css ?? "";
     const membership = fresh.find((k) => k.key === LAR_KEY_MEMBERSHIP);
     if (membership) st.members = membership.tombstone ? null : membership.members ?? null;
+    takeOfferKeys(st, fresh, newEpoch);         // S6: shortcuts and story order
     const surfaceKey = fresh.find((k) => k.key === LAR_KEY_SURFACE);
     if (switching && !surfaceKey) {
       // The arriving surface's mount has not painted: the shown frame stays, under the plate, until it does.
@@ -375,6 +385,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     renderPlate();                             // the plate drops in the paint that lands the mount's first key
     settleRefusals();
     paintControls(frame.sensedRevision);
+    afterOfferPaint(st);                       // S6: scroll to the navigated tiddler
     if (pendingPopupPlacement) {
       const visiblePopup = [...paneEl.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]
         .find((popup) => !popup.hidden && getComputedStyle(popup).display !== "none");
@@ -639,6 +650,217 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     }
   };
 
+
+  // ── S6 · files, drops, order, keys and navigate ─────────────────────────────────────────────────
+  //
+  // The page's half of the import, drop, order, keyboard and navigation classes (dreamdom#/what-a-sink-keeps):
+  //
+  //   - FILES. A file input in the pane (a `$browse`, alone or inside a `lar-file-picker`) offers each picked file
+  //     as one `lar:act` / `lar:import-offer`: tiddler JSON as its text, any other file as bounded bytes beside its
+  //     name and type. A file past the bound never crosses and raises `input-too-long` beside the control.
+  //   - DROPS. A node that declares `drop` (`data-lar-on` or `data-lar-cancel`, the island's stamps) takes the drop:
+  //     the page cancels `dragenter`, `dragover` and `drop` there and relays one `lar:drop` with the whole payload
+  //     (a title list, tiddler JSON, plain text, or a dropped file's bounded bytes) and the modifiers.
+  //   - ORDER. A `lar-order-list` relays its whole ordered id list as `lar:order`.
+  //   - KEYS. A chord a crossing set on its path declares crosses on the declared key leg; otherwise a chord the
+  //     `lar:shortcuts` key names crosses on the document leg (`lar:document`), from the pane or from anywhere on
+  //     the page, and the page cancels it. A composing key never crosses.
+  //   - NAVIGATE. The `lar:story-order` key composes the address (`#<navigated>:<story>`); a navigation within the
+  //     mount scrolls the navigated tiddler into view after the paint lands, and, with `addressBar`, pushes the
+  //     address, so Back posts a `lar:route` act naming the tiddler it returns to.
+  //   - A named page action (`lar-action[data-action]`, allowlisted) relays as that action on its control id.
+
+  defineLarFilePicker();
+  defineLarOrderList();
+  const NAMED_ACTIONS: ReadonlySet<string> = new Set(["lar:perform-import"]);
+  interface OfferPage { chords: readonly LarShortcutChord[]; story: LarStoryOrder | null; scrollTo: string | null; routed: string | null }
+  const offerPages = new WeakMap<SurfaceState, OfferPage>();
+  const offerPageOf = (st: SurfaceState): OfferPage => {
+    let o = offerPages.get(st);
+    if (!o) { o = { chords: [], story: null, scrollTo: null, routed: null }; offerPages.set(st, o); }
+    return o;
+  };
+  const documentTarget: Target = { id: LAR_CONTROL_DOCUMENT, field: "controlId", node: paneEl };
+  const modifiersOf = (e: KeyboardEvent | MouseEvent) => ({ ctrl: e.ctrlKey, meta: e.metaKey, alt: e.altKey, shift: e.shiftKey });
+  /** The event id the last relay minted, so an answer finds the picker that asked. */
+  const lastRelayed = (): string | undefined => [...pending.keys()].at(-1);
+  const pickers = new Map<string, LarFilePicker>();
+  const refuseBytes = (target: Target, maxBytes: number): void => {
+    paintRefusal(target.id, "input-too-long");
+    const out = refusals.get(target.id);
+    if (out) out.textContent = bytesRefusalWords(maxBytes);
+  };
+  const relayOffer = (target: Target, action: "lar:import-offer" | "lar:drop", offer: FileOffer, extra: Partial<EventBody> = {}): boolean => {
+    if ("refused" in offer) { refuseBytes(target, offer.maxBytes); return false; }
+    if (refusals.get(target.id)?.dataset["larReason"] === "input-too-long") dropRefusal(target.id);
+    relay(target, "lar:act", { action, wholeValue: offer.wholeValue, ...(offer.file ? { file: offer.file } : {}), ...extra });
+    return true;
+  };
+
+  // FILES: the capture leg takes a file input's change before the text leg reads its value.
+  paneEl.addEventListener("change", (event) => {
+    const src = origin(event);
+    if (!(src instanceof HTMLInputElement) || src.type !== "file") return;
+    event.stopPropagation();
+    const target = targetOf(src);
+    if (!target || !doors || shownSurface === null) return;
+    const picker = src.closest("lar-file-picker");
+    const maxBytes = maxBytesOf(picker);
+    const files = [...(src.files ?? [])];
+    if (picker instanceof LarFilePicker) picker.setStatus("reading");
+    void (async () => {
+      for (const file of files) {
+        const sent = relayOffer(target, "lar:import-offer", await readFileOffer(file, maxBytes), { controlType: "lar-file-picker" });
+        if (picker instanceof LarFilePicker) {
+          picker.setStatus(sent ? "offered" : "refused");
+          const id = sent ? lastRelayed() : undefined;
+          if (id) pickers.set(id, picker);
+        }
+      }
+    })();
+  }, { capture: true });
+
+  // DROPS: a node takes a drop only where the island declared it.
+  const declaresDrop = (node: Element): boolean =>
+    ["data-lar-on", "data-lar-cancel"].some((a) => (node.getAttribute(a) ?? "").split(/\s+/).includes("drop"));
+  const dropZoneOf = (from: Element | null): Element | null => {
+    for (let node = from; node && node !== paneEl; node = node.parentElement) if (declaresDrop(node)) return node;
+    return null;
+  };
+  for (const type of ["dragenter", "dragover"]) {
+    paneEl.addEventListener(type, (event) => { if (dropZoneOf(origin(event))) event.preventDefault(); }, { capture: true });
+  }
+  paneEl.addEventListener("drop", (event) => {
+    const zone = dropZoneOf(origin(event));
+    if (!zone) return;
+    event.preventDefault();
+    const target = targetOf(zone);
+    const dt = (event as DragEvent).dataTransfer;
+    if (!target || !dt || !doors || shownSurface === null) return;
+    const modifiers = modifiersOf(event as DragEvent);
+    // A drop's data reads only while its event runs: every string now, a file's bytes after.
+    const titles = dt.getData("text/x-lar-titles");
+    const tiddlerJson = dt.getData("text/vnd.tiddler");
+    const plain = dt.getData("text/plain");
+    const file = dt.files[0];
+    let list: string[] | null = null;
+    try { const parsed = titles ? JSON.parse(titles) as unknown : null; list = Array.isArray(parsed) && parsed.every((t) => typeof t === "string") ? parsed : null; } catch { list = null; }
+    if (list) { relay(target, "lar:act", { action: "lar:drop", wholeValue: list, modifiers }); return; }
+    if (file) { void readFileOffer(file, LAR_WHOLE_BYTES_MAX).then((offer) => relayOffer(target, "lar:drop", offer, { modifiers })); return; }
+    const text = tiddlerJson && readsAsTiddlers(tiddlerJson) ? tiddlerJson : plain || tiddlerJson;
+    if (!text) return;
+    const offer: FileOffer = text.length <= LAR_WHOLE_VALUE_MAX_CHARS ? { wholeValue: text }
+      : new TextEncoder().encode(text).byteLength <= LAR_WHOLE_BYTES_MAX ? { wholeValue: new TextEncoder().encode(text), file: { name: "drop.txt", type: tiddlerJson ? "text/vnd.tiddler" : "text/plain" } }
+        : { refused: "input-too-long", maxBytes: LAR_WHOLE_BYTES_MAX };
+    relayOffer(target, "lar:drop", offer, { modifiers });
+  }, { capture: true });
+
+  // ORDER: the list's own event carries the whole ordered list.
+  paneEl.addEventListener("lar-order", (event) => {
+    const list = (event.target as Element | null)?.closest?.("lar-order-list");
+    const id = list?.getAttribute("data-control-id");
+    const ids = (event as CustomEvent<LarOrderDetail>).detail?.ids;
+    if (!list || !id || !Array.isArray(ids)) return;
+    relay({ id, field: "controlId", node: list }, "lar:act", { action: "lar:order", controlType: "lar-order-list", wholeValue: [...ids] });
+  });
+
+  // A named page action: an allowlisted `data-action` on its control id; any other name relays nothing here.
+  paneEl.addEventListener("click", (event) => {
+    const control = (event.target as Element | null)?.closest?.("lar-action[data-action][data-control-id]");
+    if (!control || !paneEl.contains(control)) return;
+    const action = control.getAttribute("data-action") ?? "";
+    if (!NAMED_ACTIONS.has(action)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    relay({ id: control.getAttribute("data-control-id")!, field: "controlId", node: control }, "lar:act", { action });
+  }, { capture: true });
+
+  // KEYS: a declared chord crosses to its target; a shortcut chord crosses on the document leg.
+  const chordBody = (key: KeyboardEvent): EventBody => ({
+    action: "lar:key", key: { key: key.key, code: key.code, keyCode: key.keyCode, repeat: key.repeat }, modifiers: modifiersOf(key),
+  });
+  const keyHeld = (key: KeyboardEvent): boolean =>
+    key.isComposing || key.keyCode === 229 || holdKeysAfterComposition || ["Control", "Meta", "Alt", "Shift"].includes(key.key);
+  const crossedKeys = new WeakSet<Event>();
+  const relayDocumentChord = (key: KeyboardEvent): boolean => {
+    if (shownSurface === null || !matchChord(key, offerPageOf(stateOf(shownSurface)).chords)) return false;
+    key.preventDefault();
+    crossedKeys.add(key);
+    relay(documentTarget, "lar:act", chordBody(key));
+    return true;
+  };
+  // A chord a crossing set on the key's path declares (`data-lar-keys`, chords named by `larKeyChordName`) belongs to
+  // the declared key leg above; only a chord no binding on the path declares reaches the document leg.
+  paneEl.addEventListener("keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (keyHeld(key) || crossedKeys.has(key)) return;
+    const chord = larKeyChordName({ keyCode: key.keyCode, ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
+    for (let node: Element | null = origin(key); node && node !== paneEl; node = node.parentElement) {
+      if (readLarStampTokens(node.getAttribute(LAR_STAMP_KEYS)).has(chord)) return;
+    }
+    if (relayDocumentChord(key)) key.stopPropagation();
+  }, { capture: true });
+  // The document leg: a shortcut pressed anywhere on the page, outside the pane too.
+  document.addEventListener("keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (keyHeld(key) || crossedKeys.has(key) || !plateEl.hidden) return;
+    relayDocumentChord(key);
+  });
+
+  // NAVIGATE: the story order composes the address; a navigation scrolls after the paint.
+  const stringifyList = (titles: readonly string[]): string =>
+    titles.map((t) => (/[\s\]]/.test(t) || t === "" ? `[[${t}]]` : t)).join(" ");
+  const routeOf = (st: SurfaceState): string | null => {
+    const story = offerPageOf(st).story;
+    if (!story) return null;
+    return `#${encodeURIComponent(story.tail ?? story.order[0] ?? "")}:${encodeURIComponent(stringifyList(story.order))}`;
+  };
+  const takeOfferKeys = (st: SurfaceState, fresh: readonly LarFrameKey[], newEpoch: boolean): void => {
+    const o = offerPageOf(st);
+    const shortcuts = fresh.find((k) => k.key === LAR_KEY_SHORTCUTS);
+    if (shortcuts) o.chords = shortcuts.chords ?? [];
+    const key = fresh.find((k) => k.key === LAR_KEY_STORY_ORDER);
+    if (!key?.story) return;
+    const before = o.story;
+    o.story = key.story;
+    const navigated = !newEpoch && before !== null && key.story.tail !== null && (key.story.depth > before.depth || key.story.tail !== before.tail);
+    if (navigated) o.scrollTo = key.story.tail;
+    if (opts.addressBar) {
+      const address = routeOf(st)!;
+      const returning = o.routed !== null && o.routed === key.story.tail;
+      if (location.hash !== address) {
+        if (navigated && !returning) history.pushState({ lar: true }, "", address);
+        else history.replaceState({ lar: true }, "", address);
+      }
+      if (returning) o.routed = null;
+    }
+  };
+  const afterOfferPaint = (st: SurfaceState): void => {
+    const o = offerPageOf(st);
+    const title = o.scrollTo;
+    o.scrollTo = null;
+    if (title === null) return;
+    const frame = paneEl.querySelector<HTMLElement>(`[data-tiddler-title="${CSS.escape(title)}"]`);
+    if (!frame) return;
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    frame.scrollIntoView({ block: "start", behavior: still ? "auto" : "smooth" });
+  };
+  if (opts.addressBar) {
+    window.addEventListener("popstate", () => {
+      if (shownSurface === null) return;
+      const tail = decodeURIComponent(location.hash.slice(1).split(":")[0] ?? "");
+      if (!tail) return;
+      offerPageOf(stateOf(shownSurface)).routed = tail;
+      relay(documentTarget, "lar:act", { action: "lar:route", wholeValue: tail });
+    });
+  }
+  /** An answer to a file offer settles its picker's status. */
+  const settleOffer = (result: LarMsg_ControlResult): void => {
+    const picker = pickers.get(result.eventId);
+    if (!picker) return;
+    pickers.delete(result.eventId);
+    picker.setStatus(result.status === "applied" ? "applied" : "refused");
+  };
   // ── The page controls: lar-field, lar-popover, lar-disclosure ─────────────────────────────────
   //
   // page-controls#/the-control-set, the three ruled first. Each binds where the frame names it:
@@ -750,6 +972,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
 
   const applyResult = (result: LarMsg_ControlResult): ResultVerdict => {
     if (readLarControlResult(result) === null) return "ignored";
+    settleOffer(result);                                           // S6: a file picker's status
     const asked = pending.get(result.eventId);
     if (!asked) return "ignored";                                  // an answer to nothing this page relayed
     if (asked.surface !== shownSurface) { pending.delete(result.eventId); return "ignored"; }
@@ -842,5 +1065,6 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     arm: (d) => { doors = d; },
     surface: () => shownSurface,
     members: () => (shownSurface === null ? null : stateOf(shownSurface).members),
+    route: () => (shownSurface === null ? null : routeOf(stateOf(shownSurface))),
   };
 }
