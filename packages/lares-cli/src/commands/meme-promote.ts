@@ -2,9 +2,9 @@
  * meme-promote — THE PRIESTHOOD ACT, PERFORMED AS A RESIDENCY MOVE AND RECORDED.
  *
  * `lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary` names the blocker plainly: a
- * promotion into a canon bag is PERMITTED by capability and RECORDED by nothing. `mintPromotionReceipt`
- * (`@lararium/mesh`) built the record. This module performs the crossing the record describes, and refuses
- * to perform one it could not record.
+ * promotion into a canon bag needs destination admin capability and a durable receipt. A crossing into
+ * `lar:///ha.ka.ba/bags/crossroads` also needs the seats' approval; other canon bags ask no charter.
+ * This module performs the crossing the record describes and refuses one it cannot record.
  *
  * ── A PROMOTION MOVES RESIDENCY, AND THAT IS THE WHOLE ACT ──────────────────────────────────────
  * A residency move changes the envelope's bag and NOTHING ELSE — no path rename, no host assignment, no
@@ -33,17 +33,14 @@
  *   · REFUSE an ungoverned carrier, and one standing off `lifecycle/standing`. The boundary crosses a thing
  *     with a LIFECYCLE, and only from the state that has settled: a lean, a fold, a draft names a state the
  *     crossing has no meaning from.
- *   · MINT THE RECEIPT FIRST, cap reading and all. The refusals run BEFORE anything moves, so a refused
- *     promotion leaves a tree byte-identical to the one it found — including the cap refusal, which is the
- *     one a hand is most likely to meet.
+ *   · MINT THE RECEIPT FIRST, cap reading and all. The boundary refusals run BEFORE any receipt write.
+ *   · LAND the receipt beside the carrier before asking for the move. A receipt that cannot land stops
+ *     the crossing; a refused or thrown move removes the receipt.
  *   · ASK FOR THE RESIDENCY MOVE. `executeMove` already performs exactly this act: whole-carrier-group
  *     transfer, land-then-retract ordering, `change-id` preserved, a hard RETRACT at the source, and the
  *     title unchanged throughout. Its own comment names this use case — //promotion working → canon reveals
  *     the canon copy//. This door builds no second mover.
- *   · WRITE the receipt BESIDE the carrier (`promotionReceiptPath` — the mesh module already rules where it
- *     rests: sharing the carrier's name, so a reader holding the carrier holds the record of how it arrived,
- *     with no index to consult and none to fall out of step). The carrier's path never moved, so neither did
- *     the place the receipt rests.
+ *     The receipt rests at `promotionReceiptPath`, sharing the carrier's name; the carrier path never moves.
  *
  * ── THE SEAT ARRIVES INJECTED ───────────────────────────────────────────────────────────────────
  * The receipt module "holds no key and reads no cap"; this door keeps the same discipline one layer out. The
@@ -59,8 +56,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
+import { closeSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { dirname, isAbsolute, join } from "node:path";
 import { CROSSROADS_BAG, mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
 import { bccOf } from "@lararium/memetic-frame";
 import { exactBytesHash, promotionApprovalBytes, readPromotionApproval, type PromotionApprovalVerdict } from "@lararium/mesh";
@@ -133,10 +131,41 @@ function declaredTags(src: string): string[] {
   return [...raw.matchAll(/"([^"]*)"/g)].map((m) => m[1]!);
 }
 
-/**
- * Perform one crossing. Every refusal happens BEFORE a record moves, so a refused promotion leaves the tree
- * and the residency it found exactly as they stood — the cap refusal included.
- */
+/** Persist a directory entry as part of landing or removing a receipt. */
+function syncParent(path: string): void {
+  const fd = openSync(dirname(path), "r");
+  try { fsyncSync(fd); } finally { closeSync(fd); }
+}
+
+/** Land complete receipt bytes beside the carrier before the residency move can begin. */
+function landReceipt(path: string, bytes: string): void {
+  const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  let fd: number | undefined;
+  let landed = false;
+  try {
+    fd = openSync(temp, "wx");
+    writeFileSync(fd, bytes);
+    fsyncSync(fd);
+    closeSync(fd);
+    fd = undefined;
+    renameSync(temp, path);
+    landed = true;
+    syncParent(path);
+  } catch (error) {
+    if (fd !== undefined) closeSync(fd);
+    if (landed) unlinkSync(path);
+    else { try { unlinkSync(temp); } catch { /* A failed open leaves no temporary file. */ } }
+    throw error;
+  }
+}
+
+/** Remove a receipt for a move that did not complete, including its directory entry. */
+function removeReceipt(path: string): void {
+  unlinkSync(path);
+  syncParent(path);
+}
+
+/** Boundary refusals precede the receipt write and move; a refused move removes its staged receipt. */
 export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): Promise<PromotionOutcome> {
   const abs = isAbsolute(plan.file) ? plan.file : join(plan.root, plan.file);
   let src: string;
@@ -204,13 +233,26 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
   });
   if (!minted.ok) return { ok: false, reason: minted.reason };
 
-  // THE MOVE. One primitive performs it: the carrier group entire, landed then retracted, the title
-  // preserved throughout. The bytes on disk stay where they are — a residency move re-stamps nothing.
-  const moved = await seat.move({ title, fromBag, toBag: destBag });
-  if (!moved.ok) return { ok: false, reason: moved.reason };
-
   const receiptPath = promotionReceiptPath(abs);
-  writeFileSync(receiptPath, `${JSON.stringify(minted.receipt, null, 2)}\n`);
+  try {
+    landReceipt(receiptPath, `${JSON.stringify(minted.receipt, null, 2)}\n`);
+  } catch (error) {
+    return { ok: false, reason: `cannot write receipt ${receiptPath}: ${error instanceof Error ? error.message : String(error)}` };
+  }
+
+  // THE MOVE sees a durable receipt. A move that refuses or throws leaves no receipt for a crossing
+  // that did not occur. The carrier bytes stay where they are — a residency move re-stamps nothing.
+  let moved: Awaited<ReturnType<PromotionSeat["move"]>>;
+  try {
+    moved = await seat.move({ title, fromBag, toBag: destBag });
+  } catch (error) {
+    removeReceipt(receiptPath);
+    throw error;
+  }
+  if (!moved.ok) {
+    removeReceipt(receiptPath);
+    return { ok: false, reason: moved.reason };
+  }
 
   return {
     ok: true,
