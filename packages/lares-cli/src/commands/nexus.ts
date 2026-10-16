@@ -53,6 +53,8 @@ import { sealedAct } from "../sealed-act-door.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
+import { cmdPromote } from "./nexus-promote.js";
+import { cmdNexusCabal } from "./nexus-cabal.js";
 import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 import { cmdSeal, runQuorumRite } from "./nexus-seal.js";
@@ -77,6 +79,8 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "kahuli":          return await cmdKahuli(args);
     case "publish":         return await cmdPublish(args);
     case "offering":        return await cmdOffering(args);
+    case "promote":         return await cmdPromote(args);
+    case "cabal":           return await cmdNexusCabal(args);
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
     default:
@@ -185,6 +189,7 @@ async function cmdRealmBags(args: ParsedArgs): Promise<number> {
     }
     const out = summaryOutput(r) ?? {};
     const bags = Array.isArray(out["bags"]) ? (out["bags"] as Array<Record<string, unknown>>) : [];
+    const roots = Array.isArray(out["roots"]) ? (out["roots"] as Array<Record<string, unknown>>) : [];
     emit(args, {
       ok: true, data: out,
       human: () => {
@@ -193,6 +198,9 @@ async function cmdRealmBags(args: ParsedArgs): Promise<number> {
         for (const b of bags) {
           const kept = Array.isArray(b["keptBy"]) ? (b["keptBy"] as string[]).map((n) => `${n.slice(0, 16)}…`).join(", ") : "?";
           console.log(`  ${String(b["bag"])}  kept by ${kept}  (${String(b["readTier"])})`);
+        }
+        for (const root of roots) {
+          console.log(`  roots ${String(root["name"]).slice(0, 16)}…  ${Array.isArray(root["bags"]) ? (root["bags"] as string[]).join(", ") : "?"}`);
         }
       },
     });

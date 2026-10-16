@@ -91,7 +91,7 @@ export interface VerbSpec {
    *
    * An agent surface may COMPOSE such an act into a presentable artifact and MUST NEVER execute it: the
    * signing hand stays the human's. The pattern already runs twice in this house — `nexus accept-carriage`
-   * mints a token a human carries to a kahu, and a persona grant stays inert until a live human opens it.
+   * mints a token a human carries to a kahu, and a seal roll opens only on a card a live human reads in.
    * Marking it here turns that convention into something a projection can enforce.
    */
   readonly signs?: boolean;

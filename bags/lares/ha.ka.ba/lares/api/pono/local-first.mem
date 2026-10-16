@@ -152,9 +152,10 @@ cleartext, and the sealed store's later steps seal it
   primitives stand (`sealed-box.ts` · `ciphertext-cas.ts`).
 * ''Rests in cleartext:'' Automerge document content in the node store
   (`DurableNodeFSStorageAdapter`); the vessel key file (a 0o600 JSON file,
-  `packages/lararium-node/src/node-vessel-identity.ts`); the browser's device key and persona
-  roots in IndexedDB (`packages/lararium-browser/src/browser-vessel-identity.ts`); and
-  vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
+  `packages/lararium-node/src/node-vessel-identity.ts`); the browser's persona
+  roots in IndexedDB outside the custody tree, and its device seed and Keyhive Archives
+  while no custody slot binds them (`packages/lararium-browser/src/browser-custody.ts`);
+  and vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
   binds no TLS).
 * ''OWED:'' the operator's ruling that every surface encrypts from the first write
   (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) stays unbuilt
@@ -312,6 +313,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9DYk5MK0NL2CsTo7xVfjFvS0B2l0ieGgDEAltPze9l8
+<<^ code="&#x0003;">>ni:///sha-256;3HXIw8pvT1JhUMLhm7QcCYNdDyviOqP1IKbTA-RiNbs
 
 <<^ code="&#x0004;" -> to="?">>

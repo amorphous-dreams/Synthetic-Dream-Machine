@@ -41,6 +41,15 @@ export {
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
+// BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
+// clear-password act asks through the confirm door.
+export {
+  sealBrowserKeystore, unlockBrowserCustody, lockBrowserCustody, readBrowserCustody, bindBrowserCustodySlot,
+  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION,
+} from "./browser-custody.js";
+export type {
+  BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
+} from "./browser-custody.js";
 // The opt-in PRF wrap of a persona-root seed at rest — beside the cleartext finding, never the mint.
 export { detectPrf, ambientPrfHost, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO } from "./seed-wrap-prf.js";
 export type { PrfHost, PrfDetection, SeedWrapRecord, SeedWrapKeyClass } from "./seed-wrap-prf.js";

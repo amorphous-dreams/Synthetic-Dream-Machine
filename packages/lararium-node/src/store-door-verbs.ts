@@ -13,6 +13,9 @@
  *   nexus-contract · nexus-roll-anchor · nexus-members-list
  *                                                the carriage board's writer, its roll anchor and its reader
  *                                                (`commands/nexus-contract`)
+ *   nexus-cabal-act · nexus-cabal-cosign · nexus-cabal-standing
+ *                                                the seat quorum's admission into the Kahu cabal, on the
+ *                                                carriage board under its own prefix (`commands/nexus-cabal`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -56,6 +59,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
+import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
@@ -129,6 +133,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
@@ -142,7 +147,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
-  NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused,
+  NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -259,6 +264,22 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     "nexus-members-list": (args) => answer("nexus-members-list", async () => ({
       ...(await runNexusMembersList({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
+    })),
+    // THE KAHU CABAL (kahu#/seed-and-nexus, ADMISSION TAKES THE SEAT QUORUM). An act signs with the seats held here
+    // and lands once it counts; short of the threshold it answers a partial a person carries to the next vault.
+    "nexus-cabal-act": (args) => answer("nexus-cabal-act", async () => ({
+      ...(await runCabalAct({
+        repo, sealHome, group: need("nexus-cabal-act", args, "group"),
+        action: args["action"] === "remove" ? "remove" : "admit", ...opt("aid", str(args["aid"])),
+      })),
+    })),
+    "nexus-cabal-cosign": (args) => answer("nexus-cabal-cosign", async () => ({
+      ...(await runCabalCosign({
+        repo, sealHome, partial: args["partial"], confirmActCid: need("nexus-cabal-cosign", args, "act"), ...opt("aid", str(args["aid"])),
+      })),
+    })),
+    "nexus-cabal-standing": (args) => answer("nexus-cabal-standing", async () => ({
+      ...(await runCabalStanding({ repo, sealHome, group: need("nexus-cabal-standing", args, "group"), ...opt("aid", str(args["aid"])) })),
     })),
 
     "nexus-posture": (args) => answer("nexus-posture", async () => {

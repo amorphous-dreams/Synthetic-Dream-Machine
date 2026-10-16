@@ -111,7 +111,7 @@ Applied here: ''as the attestor count rises, the intersection of realms whose dw
 
 The record folds two ways — an EVENT on write, accrued DEPTH on read (#/head) — and the write half stands built. Reaching for the read half turns up ''a fold no hand should write''.
 
-`dwellingHistory` already hands back the verified, attested, chain-ordered acts: which epochs this dwelling stood re-anchored at, and who marked each. ''The obvious next move reduces that to a scalar'' — a depth, a standing, a number. ''Three standing rulings each forbid it independently'':
+`dwellingHistory` already hands back the verified, attested acts, the anchored ones in the held seal lineage's order with their position and the unanchored ones apart: which epochs this dwelling stood re-anchored at, and who marked each. ''The obvious next move reduces that to a scalar'' — a depth, a standing, a number. ''Three standing rulings each forbid it independently'':
 
 # ''No FROZEN rank.'' A scalar depth across dwellers IS a total order, and a total order needs a global now. A partial order — which the history already carries — needs none.
 # ''Standing computed from standing drifts from merit and then locks'' (three literatures, no cure found). A depth that later gates anything becomes an input to itself.
@@ -135,6 +135,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E3xwhYlwm_4-VB5xqL7TXDGk4KCzEPyFh_EWrSNI9yA
+<<^ code="&#x0003;">>ni:///sha-256;GC_n8UCVQNJe6cRnGdYOfkx4swbFwy31vSw_Sq6mxxk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -502,6 +502,13 @@ export const RAISE_CHALLENGE_DOMAIN = frozen("raise-challenge");
  *  name because it asserts CONTENT PROVENANCE and never authority: a cap delegation says who may write
  *  canon, and this says what was written (`docs/pono/canon-boundary#/the-promotion-boundary`). */
 export const PROMOTION_RECEIPT_DOMAIN = frozen("promotion-receipt");
+/** The seats' approval of one promotion: the EXACT bytes (hash), the purpose and the surface, under the
+ *  chartered class the act takes. Its own name, apart from the receipt: the receipt records what crossed, and
+ *  this carries the collective's authority for it (`lararium/mesh/kahu#/chartered-classes`). */
+export const PROMOTION_APPROVAL_DOMAIN = mint("promotion-approval");
+/** The seat quorum's admission of a PersonaGroup into a Nexus's Kahu cabal: its own authority act, never a
+ *  vouch (`lararium/mesh/kahu#/cabal-admission`). */
+export const KAHU_CABAL_ADMIT_DOMAIN = mint("kahu-cabal-admit");
 
 /**
  * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands

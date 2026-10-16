@@ -34,7 +34,7 @@
 
 import {
   ed25519SignerFromSeed, signerClass, stewardClassOf, tiddlerText,
-  CABAL_REALM_RE,
+  CABAL_REALM_RE, realmStewardMap,
   type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { heldNexusLeaves, mintWornNexusLeaf } from "./nexus-leaf.js";
@@ -220,18 +220,23 @@ export async function runRealmBag(opts: {
     readTier: rec.readTier, signedBy: sealedBy, counts, awaiting: rec.keptBy.filter((name) => !sealedBy.includes(name)) };
 }
 
-/** THE VERB `realm-bags`: the standing registrations this vessel's realm carries, counted and folded. */
+/** THE VERB `realm-bags`: the standing registrations this vessel's realm carries, counted and folded, and the
+ *  steward map those registrations fill (`realmStewardMap`: co-signed `keptBy` names only, each with its bags). */
 export async function runRealmBags(opts: { readonly plane: RealmDoorPlanes | null; readonly args?: Record<string, unknown> }): Promise<{
   readonly verb: "realm-bags"; readonly realm: string | null; readonly realmDoc: string | null;
   readonly realms: readonly string[];
   readonly bags: ReadonlyArray<{ readonly bag: string; readonly doc: string; readonly keptBy: readonly string[]; readonly readTier: CapTier }>;
+  readonly stewards: ReadonlyArray<{ readonly name: string; readonly bags: readonly string[] }>;
 }> {
   const { plane } = opts;
   const requested = typeof opts.args?.["realm"] === "string" ? (opts.args["realm"] as string).trim().toLowerCase() : "";
   // A READ NEVER ENTERS A REALM: a realm this vessel stands no plane for lists nothing.
   const selected = !requested || requested === plane?.realmId() ? plane : plane?.plane?.(requested) ?? null;
   const standing = selected ? await selected.standing() : new Map<string, RealmBagRegistration>();
-  return { verb: "realm-bags", realm: (requested || selected?.realmId()) ?? null, realmDoc: selected?.realmUrl() ?? null,
+  const realmId = (requested || selected?.realmId()) ?? null;
+  const stewards = realmId === null ? [] : [...realmStewardMap(realmId, standing).stewards]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([name, bags]) => ({ name, bags }));
+  return { verb: "realm-bags", realm: realmId, realmDoc: selected?.realmUrl() ?? null,
     realms: plane?.realms?.() ?? (plane?.realmId() ? [plane.realmId()!] : []),
-    bags: [...standing.values()].map((rec) => ({ bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier })) };
+    bags: [...standing.values()].map((rec) => ({ bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier })), stewards };
 }

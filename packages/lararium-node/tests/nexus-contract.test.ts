@@ -635,6 +635,36 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     } finally { holder.dispose(); await repo.flush(); }
   });
 
+  it("★ members --list reads an admit the anchor carries as MEMBER after the roll; one minted after the anchor stays off ★", async () => {
+    const { opened, roll } = await foundAndArm();
+    const joinerNym = await leafOf(3);
+    const aid = nexusAidOf(readNexusDoc(sealHome()))!;
+    await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
+    roll();
+
+    // AFTER the anchor, the CLOSED keys mint an admit at the closed epoch: it counts there, in no anchor's past.
+    const lateNym = await leafOf(0);
+    const lateQuorum = await Promise.all([0, 1].map(async (i) => ({
+      signer: (await generateOrLoadPersonaGroupRoot(i)).verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) })));
+    const late = await signCarriageQuorum(
+      { nym: lateNym, action: "admit", parents: [], sealEpochCid: closing.sealEpochCid }, lateQuorum,
+      await signCarriageContract(lateNym, closing.sealEpochCid, ed25519SignerFromSeed((await mintNexusLeaf(0, aid)).seed)));
+    {
+      const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
+      const repo = restingRepo(larDataDir());
+      const handle = await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts");
+      handle.change((d) => writeCarriageEntry(d, late));
+      await repo.flush();
+    }
+
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
+    expect(list.sealEpochCid).toBe(opened.sealEpochCid);   // the setup took: the list reads the rolled head
+    expect(list.members).toContain(joinerNym.toLowerCase());
+    expect(list.members).not.toContain(lateNym.toLowerCase());
+  });
+
   it("★ a recogniser whose admit was minted BEFORE a roll still raises — raise-sign presents the anchor ★", async () => {
     const { opened, roll } = await foundAndArm();
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;

@@ -1030,7 +1030,8 @@ export async function runNexusMembersList(opts: {
   try {
     const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(boardIsland), "board:carriage-contracts");
     const entries = carriageEntriesFromBoard(handle.doc());
-    const folded  = await foldCarriageSet(entries, roster);
+    // An admit minted at a closed epoch reads as a member where a counted roll anchor carries it to the head.
+    const folded  = await foldCarriageSet(entries, roster, { sealLineage: doc?.sealLineage ?? [], anchors: rollAnchorsFromBoard(handle.doc()) });
     return {
       aid:             nexusAidOf(doc),
       island:          boardIsland,

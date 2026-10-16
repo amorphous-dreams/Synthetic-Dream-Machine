@@ -60,6 +60,9 @@ export interface PromotionAssertion {
   /** The subject's canonical hash AT CROSSING (`ni:///sha-256;…`). An address is stable and its bytes are
    *  versioned; this pins WHICH bytes crossed, which is the claim git alone cannot make. */
   readonly carrierHash:  string;
+  /** The digest of the seated statement that approved these exact bytes; a crossing into `@crossroads`
+   *  carries one, and a crossing into a vessel's own canon bag carries none. */
+  readonly approvalStatementDigest?: string;
   /** The bag the record left. */
   readonly fromBag:      string;
   /** The canon bag crossed into. */
@@ -92,12 +95,17 @@ export function declaresLifecycle(subject: PromotionSubject): boolean {
   return (subject.tags ?? []).some((t) => t.startsWith("lifecycle/"));
 }
 
+/** The Nexus's published bag. A crossing into it is the Kahu cabal's promotion, which approves the exact
+ *  bytes under the charter's threshold; a crossing into a vessel's own canon bag asks no charter. */
+export const CROSSROADS_BAG = "lar:///ha.ka.ba/bags/crossroads";
+
 /** The canonical bytes the approver signs. The assertion WHOLE — no field of it rides outside. */
 export function promotionAssertionBytes(assertion: PromotionAssertion): Uint8Array {
   return canonicalJsonBytes({
     domain:         assertion.domain,
     subjectUri:     assertion.subjectUri,
     carrierHash:    assertion.carrierHash,
+    approvalStatementDigest: assertion.approvalStatementDigest,
     fromBag:        assertion.fromBag,
     toBag:          assertion.toBag,
     proposerNym:    assertion.proposerNym,
@@ -115,6 +123,7 @@ export function promotionAssertionBytes(assertion: PromotionAssertion): Uint8Arr
 export async function mintPromotionReceipt(input: {
   readonly subjectUri:     string;
   readonly carrierHash:    string;
+  readonly approvalStatementDigest?: string;
   readonly fromBag:        string;
   readonly toBag:          string;
   readonly proposerNym:    string;
@@ -129,6 +138,11 @@ export async function mintPromotionReceipt(input: {
 }): Promise<{ ok: true; receipt: PromotionReceipt } | { ok: false; reason: string }> {
   if (!input.carrierHash) {
     return { ok: false, reason: "a promotion carries the subject's content hash at crossing — an unrecorded gesture has none, and SESSION never crosses to CANON in one step" };
+  }
+  if (input.approvalStatementDigest === undefined
+      ? input.toBag === CROSSROADS_BAG
+      : !/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/.test(input.approvalStatementDigest)) {
+    return { ok: false, reason: "malformed-approval" };
   }
   if (!input.subjectUri) {
     return { ok: false, reason: "a promotion records WHAT crossed — a subject declaring no address names nothing to record a crossing of" };
@@ -146,6 +160,7 @@ export async function mintPromotionReceipt(input: {
     domain:         PROMOTION_RECEIPT_DOMAIN,
     subjectUri:     input.subjectUri,
     carrierHash:    input.carrierHash,
+    ...(input.approvalStatementDigest === undefined ? {} : { approvalStatementDigest: input.approvalStatementDigest }),
     fromBag:        input.fromBag,
     toBag:          input.toBag,
     proposerNym:    input.proposerNym,

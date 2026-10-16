@@ -16,7 +16,7 @@ usage: lares nexus kahuli <engine | grammar>
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
 "lares nexus: unknown verb "definitely-not-a-verb"
-usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering>
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
@@ -64,6 +64,14 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
                                             held apart from \`kahuli\`, which overturns what the MESH shares
   offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install
   realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm
+  promote open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>
+                                            sign the exact bytes of a promotion with the seats held here
+  promote sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it
+  promote check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)
+  cabal <admit | remove> <group> [--nexus <aid>] [--out <partial>]
+                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it
+  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts
+  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync
 
 Examples:
   lares nexus rite quorum
