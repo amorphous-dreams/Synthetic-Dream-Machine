@@ -425,6 +425,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   isReady(): boolean { return this.#ready; }
+  isStopped(): boolean { return this.#stopped; }
 
   whenReady(): Promise<void> {
     return this.#ready ? Promise.resolve() : new Promise((r) => this.#readyResolvers.push(r));
