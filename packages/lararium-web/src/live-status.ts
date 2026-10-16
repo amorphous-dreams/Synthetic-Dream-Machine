@@ -27,6 +27,20 @@ export function resolveRelayUrl(
   return sameOriginRelayUrl(location);
 }
 
+/**
+ * The line the web status owes when `?oracle=` names a hearth other than the relay's: a read at another hearth
+ * dials under no Nexus the page holds, so the browser reads only its own hearth's oracle until a carried pin set
+ * reaches browsers. Null when `?oracle=` is absent or names the relay's own host.
+ */
+export function oracleElsewhereNote(oracleParam: string | null, relayUrl: string | undefined): string | null {
+  if (oracleParam === null || oracleParam === "") return null;
+  const hostOf = (url: string): string | null => { try { return new URL(url).host; } catch { return null; } };
+  const here = hostOf(oracleParam);
+  const relayHost = relayUrl === undefined ? null : hostOf(relayUrl);
+  if (here !== null && here === relayHost) return null;
+  return "the browser reads only its own hearth's oracle until a carried pin set reaches browsers; an ?oracle= naming another host is not read";
+}
+
 export interface ConnectionPresentation {
   readonly connection: string;
   readonly mode: string;

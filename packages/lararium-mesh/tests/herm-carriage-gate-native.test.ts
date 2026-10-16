@@ -2,9 +2,9 @@
  * herm-carriage-gate-native — carriage peering and the herm-to-herm relay of the public map, reopened gate-native.
  *
  * A real floor-tier gate on "/oracle" (a private Nexus: no stranger is answered) plays a herm's oracle face. The reader
- * is a faceless PLACE: its own key and the Nexus quorum's counted `carry` act over it (house reading "The faceless
- * reader"). The pin comes from a statement the herm signed with the key the quorum's act names, read against the
- * reader's own carrier fold (house reading "The herm's floor pin"). Each vector stands red first against its control.
+ * is a faceless PLACE: its own key and the Nexus quorum's counted `carry` act over it (the place arm). The pin comes from a
+ * statement the herm signed with the key the quorum's act names, read against the reader's own carrier fold
+ * (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). Each vector stands red first against its control.
  */
 import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";

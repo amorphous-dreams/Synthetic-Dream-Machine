@@ -27,7 +27,7 @@ export function hearthNameOf(url: string): string {
 
 /**
  * File the page's OWN hearth's pins, as the root-signed fleet-join answer carried them, under the relay's name: the
- * sovereign pin the relay dial knocks with, and the floor pins at that pin's Nexus (house ruling "Floor pins", carrier
+ * sovereign pin the relay dial knocks with, and the floor pins at that pin's Nexus (house ruling "The admit's gate pin", carrier
  * (b)), so the oracle read at this hearth holds its pin before any crossing. A floor set that fails its read (another
  * Nexus, a non-floor tier, a route twice) files none of it; without a relay or a sovereign pin nothing files. Returns
  * how many the index took.

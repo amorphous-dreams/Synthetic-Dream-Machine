@@ -500,7 +500,8 @@ export function finalizeWalkerBatch(act: HostingAct, pending: PendingMint, answe
 
 /**
  * The hearth's opaque key for one guest's carried record in N: HMAC under the hearth's own leaf seed over the
- * guest's PROVEN per-Nexus leaf `G` — the leaf every grant names and every socket's leaf proof proves. The record
+ * guest's PROVEN per-Nexus leaf `G` — the leaf every grant names and a walker socket's leaf proof proves (the walker route
+ * ships SHUT by name, house ruling "Routes at the cutover"). The record
  * is reached only by a socket that proves `G`, whichever lineage its grant rides, so a guest walking back in on a
  * fresh invite under the same leaf reaches its carriage by proof, and a fresh leaf is a fresh carriage. The key
  * names no leaf to anyone who holds no hearth seed; a holder of the hearth seed can test a KNOWN leaf against the

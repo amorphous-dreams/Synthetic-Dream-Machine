@@ -35,7 +35,7 @@ describe("the admit a fleet-join answer carries", () => {
     // The reach the root signed answers the dial, over whatever the edge itself named.
     expect(admit.syncUrl).toBe("ws://hearth.synthetic:7777/ws");
     expect([admit.hearthIslandKind, admit.hearthIslandScope]).toEqual(["charter", "epoch-0"]);
-    // House ruling "Floor pins", carrier (b): the floor pins the root signed ride beside the sovereign pin.
+    // House ruling "The admit's gate pin", carrier (b): the floor pins the root signed ride beside the sovereign pin.
     expect(admit.hearthFloorPins).toEqual([FLOOR]);
   });
 

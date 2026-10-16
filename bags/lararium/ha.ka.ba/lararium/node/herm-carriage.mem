@@ -1,0 +1,108 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/node/herm-carriage.mem"
+l-space     = "lararium"
+mana        = 14
+role        = "invariant law: WHERE a herm stands its floor gates, HOW they answer, and the GATE-NATIVE carriage pull a vessel hands its carriage. A herm stands a floor gate at the explicit Nexus it was joined to and only there — a Nexus whose carriage board, on its own replica, counts a `carry` for its own vessel key (house ruling \"Routes at the cutover\": an explicit Nexus opens the herm relay). There it answers any proven peer that knocked (operator ruling \"A herm answers the knock\"). It signs its floor pin with the carried key and lays the statement on its own replica of the board. A reader presents its counted carry or its worn face with its admit; nothing composed, nothing dialed."
+source-file = "packages/lararium-node/src/herm-carriage.ts"
+status      = "draft"
+status-why  = "lane reading, unruled 2026-10-16: where a herm stands its floor gate, the pin statement it lays, and what a reader presents at a gate; the operator ruling on the knock is ruled, the rest reads the house rulings"
+title       = "lar:///ha.ka.ba/lararium/node/herm-carriage"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/node/herm-carriage"
+written     = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! Herm carriage ~ where a crossroads stands its gate, and how a vessel pulls through one
+
+A public map crosses a wire only through a gate: the bare hop-by-hop route stands SHUT by name, and the
+house named what opens it: an explicit Nexus, and a proven gate-native caller (house ruling "Routes at the
+cutover").
+This module is both halves for a crossroads: where its floor gate stands, and the pull a vessel's carriage
+dials through such gates.
+
+<<~/ahu>>
+
+<<~ ahu #/where>>
+
+!! Where ~ at the explicit Nexus, and only there
+
+A herm stands a floor gate at a Nexus whose carriage board, ON ITS OWN REPLICA, counts a `carry` for its own
+vessel key (`placeCarriedNexuses`, `via: "carrier-seal"`; `gateReadingsFor`). A charter it merely holds
+stands no gate: holding A's charter is how a herm reads A's board, never a standing at A. A lararium stands
+one at its own Nexus and at each it carries.
+
+The explicit act that opens the herm relay (house ruling "Routes at the cutover") is the quorum's counted
+carry over the herm's key. It travels to the herm by hand, because the membership relay ships SHUT by name
+(`carry-bundle`).
+
+<<~/ahu>>
+
+<<~ ahu #/how-it-answers>>
+
+!! How it answers ~ a herm answers the knock
+
+A stood gate answers any PROVEN peer that knocked (operator ruling "A herm answers the knock"), read by the
+vessel's one posture reader (`ownPlacePosture`, OPEN by class). The knock is the silence: only a peer handed
+the gate key computes the path, and a bare route draws no upgrade. The carrying Nexus's charter posture
+governs that Nexus's own hearths and never the waystone; `nexus posture` refuses on a herm by name.
+
+<<~/ahu>>
+
+<<~ ahu #/the-pin-a-reader-dials>>
+
+!! The pin a reader dials
+
+A herm's floor pin derives from its floor key, which no seat holds, and an announcement never
+authenticates its own first pin (house ruling "The admit's gate pin"). So the herm signs ONE statement per
+carrying Nexus with the key the quorum's act names, and lays it on its own replica of that Nexus's
+carriage board (`layStatementOn`: once, and again only when moved). A reader files that pin only where its
+own replica counts the herm as a carrier (`place-floor-pin`): the quorum's act authenticates the key, the
+key authenticates the pin.
+
+<<~/ahu>>
+
+<<~ ahu #/what-a-reader-presents>>
+
+!! What a reader presents
+
+`vesselCarriagePull` stands the pull the carriage cap is handed (`carriage-pull`). At each Nexus the vessel
+stands in it presents, in this order, and composes nothing it does not hold:
+
+# a PLACE carried there presents the quorum's counted `carry` over its own key, with its counted causal past
+(the place arm, class `contracted`);
+# a LARARIUM otherwise presents its worn face with the admit it took for that Nexus (`dial-presentation`).
+
+A Nexus at which the vessel can present nothing is skipped by name (`presentation-absent`), never dialed
+bare. A founder hearth presents its face at its own Nexus with the admit its own quorum lands for it
+(`stable-founding-road`, the two-root witness: a founder self-admits), or its counted carry where it is
+carried there as a place; a hearth that holds neither presents nothing there, and no bare face is composed.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="has">>
+<<~ pranala #pull from="?" -> to="packages/lararium-mesh/src/carriage-pull.ts" family="code" role="stands-on">>
+<<~ pranala #pin from="?" -> to="packages/lararium-mesh/src/place-floor-pin.ts" family="code" role="signs-with">>
+<<~ pranala #join from="?" -> to="packages/lararium-node/src/carry-bundle.ts" family="code" role="joined-by">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
+
+<<^ code="&#x0003;">>ni:///sha-256;lK3Jvq6EuQb_bCSbfElfRUrUzTCPLuzbglKwqaVKO_o
+
+<<^ code="&#x0004;" -> to="?">>

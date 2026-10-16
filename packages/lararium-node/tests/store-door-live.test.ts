@@ -275,6 +275,22 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("private");
   });
 
+  it("RED nexus-posture on a HERM: a place that lit no face refuses the flip by name and writes nothing; its read says OPEN by class", async () => {
+    // A herm: a vessel key and a charter it imported, no persona root and no face anchors (operator ruling "A herm answers
+    // the knock": OPEN by class, so the charter's posture joint governs nothing here).
+    const root = join(base, "herm-root");
+    at(root);
+    await generateOrLoadVesselIdentity();
+    const { keys } = await seatChairs([0, 1, 2]);
+    writeNexusDoc(sealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
+    await expect(storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() })).rejects.toThrow(/answers the knock/);
+    expect(readNexusDoc(sealHome())?.federationPosture).toBeUndefined();
+    const read = await storeDoorDirect("nexus-posture", {}, { sealHome: sealHome() });
+    expect(read["herm"]).toBe(true);
+    expect(read["posture"]).toBe("open");
+    expect(read["wrote"]).toBe(false);
+  });
+
   it("RED nexus-admit-take: a taken bundle over a live Repo fires the after-roll hook and re-presents; CONTROL: direct keeps it with no hook", async () => {
     const root = join(base, "admit-take-root");
     await seatVessel(root);

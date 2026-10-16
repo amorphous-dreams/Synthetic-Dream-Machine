@@ -1,6 +1,6 @@
 /**
  * nexus-client-dial — the vessel's CLIENT dial-out leg (Socket A, cleartext CRDT). Today a node stands
- * only a SERVER adapter (`ListeningWSServerAdapter` behind the `DaemonAuthGate`); NONE dials out. When a
+ * only a SERVER adapter (`ListeningWSServerAdapter` behind the face gate); NONE dials out. When a
  * peer sync URL rides the config, the live vessel mounts a `LarWSClientAdapter` — carrying the OPERATOR's
  * OWN Ed25519 identity + the peer's gate verifying-key — onto its running Automerge `Repo`, so it DIALS a
  * peer node's `/ws` and syncs. This is the SAME-OPERATOR device path: a second device whose key sits in

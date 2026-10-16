@@ -557,7 +557,7 @@ export function makeRealmCharterConsult(opts: {
   readonly peerContractNymMap:  ReadonlyMap<string, string>;
   /** Peers on a socket this vessel dialed to the charter's hearth (filled by the dial; empty until it stands). */
   readonly charterHearthPeers?: ReadonlySet<string>;
-  /** peerId → the Identifier hex the DaemonAuthGate proved at the wire. A faceless PLACE holds no persona root,
+  /** peerId → the key the face gate seated the socket under (the session's FACE key, or a faceless place's own key). A faceless PLACE holds no persona root,
    *  so its WIRE KEY is the only nym it ever has — and that key IS the nym its carrier contract names. Read
    *  here, and nowhere else, for exactly that reason. */
   readonly peerIdentifierMap?:  ReadonlyMap<string, string>;

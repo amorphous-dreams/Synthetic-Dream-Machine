@@ -121,7 +121,7 @@ import { loadLeafIdentity } from "./leaf-identity.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { ed25519SignerFromSeed as carriageSignerFromSeed, hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
-import { gateReadingsFor, hermGatePosture, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
+import { gateReadingsFor, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
@@ -1067,15 +1067,13 @@ async function prepareNodeBootOn(
   /** This vessel's own Nexus: the AID of the charter it keeps at its seal home, or null. */
   const ownNexusAid = (): string | null => nexusAidOf(readNexusDoc(sealHome)) ?? null;
   /**
-   * The posture of ONE Nexus a gate stands in. A herm reads the charter of the Nexus that carries it; this vessel's own
-   * Nexus reads its charter; a carried one reads the charter this vessel holds for it; any other reads PRIVATE.
+   * The posture of ONE Nexus a gate stands in. A herm answers the knock (operator ruling): OPEN by class at every gate it
+   * stands, and it stands one only where a quorum counted its carry (`gateNexuses`); this vessel's own Nexus reads its
+   * charter; a carried one reads the charter this vessel holds for it; any other reads PRIVATE.
    */
   const postureOf = (nexus: string): FederationPosture => {
     const aid = nexus.trim().toLowerCase();
-    // A HERM'S GATE READS THE NEXUS THAT CARRIES IT (house reading "The herm's gate posture"): a herm stands a gate only
-    // where a quorum counted its carry, and answers there exactly as that Nexus's charter says: PRIVATE unless it reads
-    // OPEN, so a stranger who learned a pin still meets silence.
-    if (placeClass === "herm") return hermGatePosture(aid, gateReadings);
+    if (placeClass === "herm") return ownPlacePosture(placeClass, null);
     if (ownNexusAid()?.toLowerCase() === aid) return ownPlacePosture(placeClass, readNexusDoc(sealHome));
     return gateReadings.find((r) => r.aid.toLowerCase() === aid)?.posture ?? "private";
   };
@@ -1517,8 +1515,8 @@ async function prepareNodeBootOn(
   //   · THE PINS a place signed for its floor gate ride each Nexus's carriage board; this vessel files one only where its own
   //     replica of that board counts the place as a carrier (`place-floor-pin`: the quorum's act authenticates the key, the
   //     key authenticates the pin). A herm signs and lays its own statement on its own replica of every board that carries it.
-  //   · WHAT IT PRESENTS: a place's counted `carry` at that Nexus where its own key stands carried (a herm, house reading "The
-  //     faceless reader"); otherwise the worn face with the admit it took for that Nexus. Nothing composed, nothing dialed.
+  //   · WHAT IT PRESENTS: a place's counted `carry` at that Nexus where its own key stands carried (a herm: the place arm,
+  //     `place-floor-pin`); otherwise the worn face with the admit it took for that Nexus. Nothing composed, nothing dialed.
   const carriageSessions = opts.dialSessions ?? { table: new SessionTable(`carriage-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" as const };
   const carriageSign = carriageSignerFromSeed(vesselSeed);
   const carriagePull = vesselCarriagePull<MeshPalaceDoc>({

@@ -2,7 +2,7 @@
  * carry-bundle — a herm's EXPLICIT JOIN, carried by hand: the quorum's counted `carry` over the herm's own vessel key, its
  * counted causal past, and the place floor-pin statements the issuing hearth's board carries. The herm's take writes them
  * onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there (`placeCarriedNexuses`,
- * `via: "carrier-seal"`) and its floor gate stands at that Nexus and only there (house reading "Only there").
+ * `via: "carrier-seal"`) and its floor gate stands at that Nexus and only there (lar:///ha.ka.ba/lararium/node/herm-carriage#/where).
  *
  * WHY BY HAND. The herm membership relay (herm → hearth board sync) stays shut, so the carry act never crosses a wire to
  * the herm it names. The admit bundle travels the same way for an operator (`admit-bundle`); this is its twin for a place.
@@ -15,7 +15,7 @@
  * THE TAKE refuses, writing nothing, unless the herm holds a charter for the AID, every act COUNTS under that charter's
  * seated roster, the contract names THIS vessel's own key, and the union of its own board and the bundle reads a place arm
  * for its key. A floor-pin statement lands only where it reads under the carrier set that union folds (a stranger's pin,
- * a forged one, or one for another Nexus lands nowhere: house reading "The herm's floor pin").
+ * a forged one, or one for another Nexus lands nowhere: lar:///ha.ka.ba/lararium/mesh/place-floor-pin#/the-reader).
  *
  * Meme: lar:///ha.ka.ba/lararium/node/carry-bundle
  */
@@ -23,14 +23,14 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   carriageDocUrl, carriageEntriesFromBoard, carriageEntryActCid, carriageEntryCounts, coerceCarriageEntry, foldCarrierSet,
   foundingRoster, materializeSharedLarDoc, placeArmFor, placeFloorPinsFromBoard, readPlaceFloorPin, writeCarriageEntry,
-  writePlaceFloorPin, NEXUS_AID_PATTERN, ORACLE_SOCKET_ROUTE,
+  writePlaceFloorPin, CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, ORACLE_SOCKET_ROUTE,
   type CarriageEntry, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import { charterHomeFor } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 
-export const CARRY_BUNDLE_KIND = "lar/carry-bundle/v1" as const;
+export const CARRY_BUNDLE_KIND = CARRY_BUNDLE_DOMAIN;
 
 /** A refusal the CLI renders as a clean message. Nothing was written when one is thrown. */
 export class CarryBundleError extends Error {}

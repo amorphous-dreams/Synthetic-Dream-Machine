@@ -193,7 +193,7 @@ export type CarriedAdmitPayload = DeviceAdmitPayload & {
   readonly hearthGatePubKey?: string;
   /** The hearth's FULL sovereign sync pin the root-signed answer carried (tier, Nexus, route, transport and signing keys): what a dial files and knocks with. */
   readonly hearthGatePin?: GateBundlePin;
-  /** The hearth's FLOOR pins at that Nexus, which the root-signed answer carried (house ruling "Floor pins", carrier (b)):
+  /** The hearth's FLOOR pins at that Nexus, which the root-signed answer carried (house ruling "The admit's gate pin", carrier (b)):
    *  what the oracle read files under the same hearth, before any crossing. */
   readonly hearthFloorPins?: readonly GateBundlePin[];
   /** The hearth's base-canon documents the joinee mounts, keyed by canon bag URI (`bags/lares`,

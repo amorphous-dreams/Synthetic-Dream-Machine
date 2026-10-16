@@ -1,5 +1,5 @@
 /**
- * The browser files its OWN hearth's pins off what the root-signed fleet-join answer carried (house ruling "Floor pins",
+ * The browser files its OWN hearth's pins off what the root-signed fleet-join answer carried (house ruling "The admit's gate pin",
  * carrier (b)), so the oracle read at its own hearth finds the floor pin before any crossing.
  *
  *   O1  CONTROL: the sovereign pin and the oracle's floor pin file under the relay's hearth; the read's key (the relay's

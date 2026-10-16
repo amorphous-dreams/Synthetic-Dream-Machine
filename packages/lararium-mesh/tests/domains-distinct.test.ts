@@ -15,8 +15,8 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 36;
-const FROZEN_WELD = "3a0f0efd300f283efbd1a4dedc5e0fdf38dcc75c9cac50cc240178cde28f1c8c";
+const FROZEN_COUNT = 35;
+const FROZEN_WELD = "80ac920618e2805b7c9d2e0a69cc08cf69a83352b172614f8608454122fbcfc1";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
@@ -56,7 +56,7 @@ describe("the domain registry", () => {
 
   test("RETIRED at the cutover and never reused: the old handshake's names sign nothing", () => {
     const names = domains.ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
-    for (const gone of ["auth-proof", "auth-ok", "presented-leaf-proof"]) expect(names, gone).not.toContain(gone);
+    for (const gone of ["auth-proof", "auth-ok", "presented-leaf-proof", "membership-relay"]) expect(names, gone).not.toContain(gone);
   });
 
   test("WELD: the frozen strings hold byte-identical through the helper split", async () => {

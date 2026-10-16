@@ -18,7 +18,9 @@
 #                     set 0.0.0.0 or a LAN address to serve the house)
 #   LARES_IMAGE       image reference (default lares-surface:local)  LAR_PUBLIC_URL  the REACHABLE face of this
 #                     vessel (the name a browser or peer dials; HTTPS needs a WSS-capable name)
-#   LAR_PEERS         pinned peers, `<url>#<gate key>` comma-separated (empty: a sovereign hearth alone)
+#   LAR_PEERS         pinned peers, `<url>#<publisher key>` comma-separated (the peer's vessel verifying key, which its
+#                     FLOW-map pointer verifies under; the knock rides a held floor pin, never this key; empty: a
+#                     sovereign hearth alone)
 #   LAR_LAN_DISCOVERY `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port (empty: off).
 #                     A candidate grants nothing; the gate key reaches a device by a carried admission. THE NETWORK
 #                     DECIDES ITS REACH: on this file's bridge network an announcement reaches the containers of this

@@ -1,7 +1,7 @@
 /**
- * herm-explicit-join.test.ts — a herm's EXPLICIT JOIN, end to end through the commands a person runs (house readings
- * "Only there" and "The herm's floor pin", 2026-10-16), across two vessel roots: a hearth that holds the seats, and a herm
- * that holds only its vessel key and the imported charter.
+ * herm-explicit-join.test.ts — a herm's EXPLICIT JOIN, end to end through the commands a person runs
+ * (lar:///ha.ka.ba/lararium/node/carry-bundle; lar:///ha.ka.ba/lararium/mesh/place-floor-pin), across two vessel roots: a
+ * hearth that holds the seats, and a herm that holds only its vessel key and the imported charter.
  *
  *   herm   `nexus carry-for`            → carrier seal + its floor pin at this Nexus, signed by its vessel key
  *   hearth `nexus carry --floor-pin`    → the counted carry and the statement land on the carriage board; a CARRY BUNDLE

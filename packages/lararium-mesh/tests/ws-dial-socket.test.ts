@@ -41,6 +41,23 @@ describe("wsDialSocket", () => {
     expect(await socket.recv()).toBeNull();
   });
 
+  it("RED: a send after the socket ended drops and never throws, as a ws send to a closed peer does; CONTROL: an open socket sends", async () => {
+    const { ws } = double();
+    // A client that throws on a send past its close (node's `ws` does): the dial's socket owns that edge, not its caller.
+    const strict = ws as typeof ws & { send: (d: unknown) => void };
+    const sent: unknown[] = [];
+    strict.send = (d: unknown) => { if (ws.closed > 0) throw new Error("WebSocket is not open"); sent.push(d); };
+    const socket = wsDialSocket("wss://hearth.example:8443/ws", () => ws);
+    const opening = socket.open({ knock: "k".repeat(32), message1: FLIGHT });
+    ws.fire("open");
+    await opening;
+    socket.send(Uint8Array.of(1));
+    expect(sent).toEqual([Uint8Array.of(1)]);          // CONTROL: open, it sends
+    socket.close();
+    expect(() => socket.send(Uint8Array.of(2))).not.toThrow();
+    expect(sent).toEqual([Uint8Array.of(1)]);          // and nothing left after the end
+  });
+
   it("a 101 that selected no lar-gate is cut and the open rejects", async () => {
     const { ws } = double("");
     const socket = wsDialSocket("ws://h/ws", () => ws);

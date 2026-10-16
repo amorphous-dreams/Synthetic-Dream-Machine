@@ -1,5 +1,5 @@
 /**
- * lar-ws-client-adapter, THE FLOOR PIN SET over the sovereign session (house ruling "Floor pins", carrier (a)).
+ * lar-ws-client-adapter, THE FLOOR PIN SET over the sovereign session (house ruling "The admit's gate pin", carrier (a)).
  *
  * Once the sovereign crossing verified, the hearth sends one sealed "session" message of kind `hearth/floor-pins`. The
  * crossing is the authenticated relation, so the leaf files the set in its pair index under the hearth it dialed, at

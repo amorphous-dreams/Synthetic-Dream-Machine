@@ -352,8 +352,8 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   // The take reads its admit against the charter it holds, so the charter lands before it; a take that refuses then
   // takes back a charter this landing put down where none stood (`landed`), since a carried charter alone stands a
   // realm plane for a Nexus this vessel never joined. A charter that extended or matched a held one stands: it moved a
-  // lineage this vessel already held forward (lane reading, unruled; it flips if a refused landing must leave a held
-  // charter byte for byte as it stood).
+  // lineage this vessel already held forward (`fleet-join-land-undo.test.ts` witnesses it; the rule flips if a refused
+  // landing must leave a held charter byte for byte as it stood).
   const sealHome = larSealHome();
   let imported: { readonly outcome?: string; readonly path?: string } | void = undefined;
   try {

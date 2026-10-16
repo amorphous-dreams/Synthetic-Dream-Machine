@@ -1,7 +1,7 @@
 /**
  * hearth-floor-pin-store — the floor pins a joinee keeps from its hearth's SIGNED fleet-join answer, one file per Nexus.
  *
- * House ruling "Floor pins", carrier (b): the answer carries the hearth's floor pin set under the PersonaGroup root's
+ * House ruling "The admit's gate pin", carrier (b): the answer carries the hearth's floor pin set under the PersonaGroup root's
  * signature; the land keeps it here, and the boot files it in the pair index under the hearth it dials
  * (`chooseHearthDial`'s `keptFloor`), so the joinee holds the oracle's pin before its first crossing.
  *

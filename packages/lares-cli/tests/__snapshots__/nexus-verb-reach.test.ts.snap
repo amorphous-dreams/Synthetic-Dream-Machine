@@ -26,7 +26,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts
   kapae --list [--nexus <aid>]              read the currently-Kapae'd set (the fold)
   un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)
-  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
+  contract <operator-pubkey> [--sig <hex>] [--sync-url <url>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
                                             --json emits the admit BUNDLE the joinee takes by hand
   contract <operator-pubkey> --sync-url <url>   name the url the joinee dials this hearth at; the bundle carries it (admit only)
   revoke <operator-pubkey>                  revoke a member (quorum-only)
@@ -47,12 +47,15 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over
                                             against the charter held for its Nexus, keep it, and re-present a
                                             running vessel's dial to the hearth that wrote it
-  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel
+  carry-for [--nexus <aid>] [--out <file>]  (joining PLACE, on itself) mint the carrier seal with its OWN vessel
                                             key — reads no persona, because a crossroads holds none — and sign
-                                            its floor pin at this Nexus with the same key
+                                            its floor pin at this Nexus (default the primary charter's; --nexus
+                                            names a carried one) with the same key. --out writes the floor pin
+                                            statement: the file the kahu's \`carry --floor-pin\` reads
   carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto
                                             its own board replica: its floor gate stands at that Nexus, only there
-  posture [private | open]                  read / flip the cross-Nexus federation posture
+  posture [private | open]                  read / flip the cross-Nexus federation posture of this hearth's charter (a herm
+                                            answers the knock by class, operator ruling: it reads OPEN and refuses the flip)
   rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
   realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);

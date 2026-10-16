@@ -15,7 +15,7 @@
  *   F4  the joinee keeps A's floor pins at A's Nexus, at floor tier on the oracle route, as the answer carried them
  *   F5  RED: the sovereign pin ROTATES (another gate door): the face's household admit is minted again, committed to the
  *       new pin, and the kept file replaced; never the old one reused. CONTROL: the same door again reuses the new one.
- *   F1 also witnesses house ruling "Floor pins": (b) B's boot files the kept floor pins under the hearth it dials, before
+ *   F1 also witnesses house ruling "The admit's gate pin": (b) B's boot files the kept floor pins under the hearth it dials, before
  *       any crossing; (a) a dial index holding the sovereign pin alone learns A's oracle pin over the verified sovereign
  *       session, and both carriers name the same pin
  */

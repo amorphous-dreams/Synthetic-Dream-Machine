@@ -69,7 +69,7 @@ export function oraclePuller<T = unknown>(w: World, p: Presenter, over: { arm?: 
 }
 
 /** Pull the oracle from `base` as a faceless PLACE `pl` at world `w`: its own key and, unless `arm: null`, the quorum's
- *  `carry` act over it (house reading "The faceless reader"). */
+ *  `carry` act over it (the place arm, lar:///ha.ka.ba/lararium/mesh/place-floor-pin#/the-place-arm). */
 export async function pullFloorAsPlace<T = unknown>(
   base: string, w: World, pl: Place,
   over: { arm?: Place["arm"] | null; publisherSeed: Uint8Array; deadlineMs?: number },

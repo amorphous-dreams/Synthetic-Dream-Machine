@@ -12,8 +12,9 @@
  *   hearth → walker  `hosting/notice {pending: true}`  on a contact while the walker's carriage stands marked
  *
  * ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF. The hearth keys each guest's carriage under
- * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and its leaf proof
- * proves — so a record is reached by proof alone, whichever lineage the grant rides, and nothing the hearth hands
+ * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and a walker socket's leaf proof
+ * proves (the walker route ships SHUT by name, house ruling "Routes at the cutover") — so a record is reached by proof alone,
+ * whichever lineage the grant rides, and nothing the hearth hands
  * out names it. A guest that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage
  * again; a fresh leaf is a fresh carriage, and a kapae'd leaf reaches nothing through a new one. Every dial on G
  * is a CONTACT — the grant arm and the token arm alike (`socket-sorter`) — so the notice reaches a guest by a

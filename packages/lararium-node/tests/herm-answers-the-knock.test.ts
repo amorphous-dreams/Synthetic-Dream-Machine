@@ -1,20 +1,18 @@
 /**
- * herm-answers-the-knock.test.ts — a herm's floor gate answers as the Nexus that carries it, and the next hop reads its map
- * by presenting its own carriage contract (house readings "The herm's gate posture" and "The faceless reader", 2026-10-16).
- *
- * THE READING THIS REPLACES. A herm once read OPEN by class: "it answers any proven peer that knocked, and only a peer
- * handed the key can knock". That made the pin a bearer secret: a scraper the pin leaked to, presenting a self-made face no
- * Nexus admits, read the crossroads' map. A herm now stands a gate only where a quorum counted its `carry`
- * (`gateNexuses`), and there it reads that Nexus's own charter: PRIVATE unless the charter says OPEN.
+ * herm-answers-the-knock.test.ts — A HERM ANSWERS THE KNOCK (operator ruling: siege-resilience "A HERM ANSWERS THE KNOCK";
+ * stable-founding-road "A herm answers the knock"). A charterless herm answers ANY proven peer that knocked (`ownPlacePosture`):
+ * a waystone by class, never a broken lararium. Only a peer handed the gate key can compute the knock path, and a bare
+ * route draws no upgrade; that silence is the knock. WHERE a herm stands a gate stays the other half of the lane ("an
+ * explicit Nexus opens the herm relay"): only at a Nexus whose quorum counted its `carry`.
  *
  * Proven over a real oracle face on its floor gate, sorting with the vessel's real sorter at the posture a herm reads:
- *   · the herm→herm FLOW-map pull answers at a PRIVATE Nexus: the next hop presents its own key and the quorum's counted
- *     carry act over it (the place arm), and reads the map, verified;
- *   · RED: a stranger who holds the pin and presents a proven face with no arm meets silence and learns no pointer;
- *   · RED: a place the Nexus never carried (no contract) meets silence;
- *   · a stranger without the knock path reaches no socket at all: the bare route draws no upgrade, so no frame;
- *   · CONTROL: where the carrying Nexus's charter reads OPEN, the same arm-less stranger reads the map — the Nexus's choice;
- *   · the reader itself: a herm and a lararium both read the charter, fail-closed.
+ *   · THE RULING: a proven NON-MEMBER stranger who knocked (a face no Nexus admits, no arm) reads the map, verified;
+ *   · a carried next hop presenting its own carriage contract (the place arm) reads the map too;
+ *   · a proven PLACE with no arm (a crossroads no quorum carried) reads it: proven is the whole test;
+ *   · RED: a stranger without the knock path reaches no socket at all: the bare route draws no upgrade, so no frame;
+ *   · RED: a stranger holding the pin of a gate at ANOTHER Nexus knocks on a path this gate never derived: no upgrade, no frame;
+ *   · CONTROL: a LARARIUM's gate at a PRIVATE charter meets the same arm-less stranger with silence (the charter decides);
+ *   · the one reader: a herm reads OPEN with or without a charter; a lararium reads its charter and fails closed.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { createServer, type Server } from "node:http";
@@ -22,14 +20,14 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { ORACLE_SOCKET_ROUTE, emptyFoundingCharterDoc, exportOracleSnapshot, type FederationPosture, type NexusDoc } from "@lararium/mesh";
+import { ORACLE_SOCKET_ROUTE, emptyFoundingCharterDoc, exportOracleSnapshot, type NexusDoc } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountOracleReadFace, type OracleFloorFace } from "../src/oracle-read-face.js";
-import { makeGateSorter, ownPlacePosture } from "../src/socket-sorter.js";
+import { makeGateSorter, ownPlacePosture, type PlaceClass } from "../src/socket-sorter.js";
 import { floorGates, place, presenter, pullFloor, pullFloorAsPlace, type World } from "./oracle-floor-rig.js";
 
 const SEED = new Uint8Array(32).fill(17);
-const CHARTER: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `nexus-${"a".repeat(64)}`, federationPosture: "private" };
+const PRIVATE_CHARTER: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `nexus-${"a".repeat(64)}`, federationPosture: "private" };
 
 const servers: Server[] = [];
 const dirs: string[] = [];
@@ -42,48 +40,47 @@ afterEach(async () => {
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 
-/** Stand a herm's oracle face whose floor gate sorts with the vessel's real sorter, at the posture the carrying charter gives. */
-async function stand(posture: FederationPosture): Promise<{ origin: string; world: World }> {
+/** Stand an oracle face whose floor gate sorts with the vessel's real sorter, at the posture `placeClass` reads over `charter`. */
+async function stand(placeClass: PlaceClass, charter: NexusDoc | null, nexus = "nexus-a.synthetic"): Promise<{ origin: string; world: World }> {
   const server = createServer();
   servers.push(server);
   const dispatcher = mountHttpFaceDispatcher(server);
   const storageDir = mkdtempSync(join(tmpdir(), "herm-knock-")); dirs.push(storageDir);
   const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
   const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { dial: { text: "node/alpha" } } });
-  const rig = floorGates(["nexus-a.synthetic"]);
+  const rig = floorGates([nexus]);
   const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
   faces.push(face);
-  // The vessel's real sorter, reading the posture the herm reads at a carried Nexus: that Nexus's own charter.
-  const sorter = makeGateSorter({ posture: () => ownPlacePosture("herm", { ...CHARTER, federationPosture: posture }) });
+  // The vessel's real sorter over the vessel's one posture reader.
+  const sorter = makeGateSorter({ posture: () => ownPlacePosture(placeClass, charter) });
   const world = rig.worlds[0]!;
   world.sorterAnswer = (input) => sorter.sort(input);
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   return { origin: `http://127.0.0.1:${(server.address() as { port: number }).port}`, world };
 }
 
-describe("a herm's floor gate answers as the Nexus that carries it", () => {
-  test("the herm→herm FLOW-map pull answers at a PRIVATE Nexus: the next hop presents its carriage contract and reads the map", async () => {
-    const herm = await stand("private");
+describe("a herm answers the knock", () => {
+  test("THE RULING: a proven non-member stranger who knocked reads the map, verified", async () => {
+    const herm = await stand("herm", null);
+    const pulled = await pullFloor(herm.origin, herm.world, await presenter(herm.world, "stranger"), { arm: null, publisherSeed: SEED });
+    expect(pulled.ok, pulled.reason).toBe(true);
+    expect(pulled.pointer?.pub).toBeDefined();
+  }, 30_000);
+
+  test("a carried next hop presenting its carriage contract reads the map", async () => {
+    const herm = await stand("herm", null);
     const pulled = await pullFloorAsPlace(herm.origin, herm.world, await place(herm.world, "next hop"), { publisherSeed: SEED });
     expect(pulled.ok, pulled.reason).toBe(true);
   }, 30_000);
 
-  test("RED: a stranger who holds the pin and presents an arm-less face meets silence and learns no pointer", async () => {
-    const herm = await stand("private");
-    const pulled = await pullFloor(herm.origin, herm.world, await presenter(herm.world, "scraper"), { arm: null, publisherSeed: SEED, deadlineMs: 1_500 });
-    expect(pulled.ok).toBe(false);
-    expect(pulled.pointer).toBeUndefined();
+  test("a proven place with no arm (a crossroads no quorum carried) reads it: proven is the whole test", async () => {
+    const herm = await stand("herm", null);
+    const pulled = await pullFloorAsPlace(herm.origin, herm.world, await place(herm.world, "uncarried"), { arm: null, publisherSeed: SEED });
+    expect(pulled.ok, pulled.reason).toBe(true);
   }, 30_000);
 
-  test("RED: a place the Nexus never carried, presenting no contract, meets silence", async () => {
-    const herm = await stand("private");
-    const pulled = await pullFloorAsPlace(herm.origin, herm.world, await place(herm.world, "uncarried"), { arm: null, publisherSeed: SEED, deadlineMs: 1_500 });
-    expect(pulled.ok).toBe(false);
-    expect(pulled.pointer).toBeUndefined();
-  }, 30_000);
-
-  test("a stranger without the knock path reaches no socket: the bare route draws no upgrade", async () => {
-    const herm = await stand("private");
+  test("RED: a stranger without the knock path reaches no socket: the bare route draws no upgrade", async () => {
+    const herm = await stand("herm", null);
     const bare = new WebSocket(`${herm.origin.replace("http", "ws")}${ORACLE_SOCKET_ROUTE}`);
     const frames: string[] = [];
     bare.onmessage = (e) => frames.push(String(e.data));
@@ -96,18 +93,26 @@ describe("a herm's floor gate answers as the Nexus that carries it", () => {
     expect(frames).toEqual([]);
   }, 30_000);
 
-  test("CONTROL: where the carrying Nexus's charter reads OPEN, the same arm-less stranger reads the map", async () => {
-    const herm = await stand("open");
-    const pulled = await pullFloor(herm.origin, herm.world, await presenter(herm.world, "scraper"), { arm: null, publisherSeed: SEED });
-    expect(pulled.ok, pulled.reason).toBe(true);
+  test("RED: a stranger holding the pin of a gate at ANOTHER Nexus knocks on a path this gate never derived: no upgrade, no frame", async () => {
+    const herm = await stand("herm", null);
+    const other = await stand("herm", null, "nexus-b.synthetic");     // a gate at another Nexus: its pin's knock names no path here
+    const pulled = await pullFloor(herm.origin, other.world, await presenter(other.world, "stranger"), { arm: null, publisherSeed: SEED, deadlineMs: 1_500 });
+    expect(pulled.ok).toBe(false);
+    expect(pulled.pointer).toBeUndefined();
   }, 30_000);
 
-  test("the one reader: a herm and a lararium both read the charter, and an absent one fails closed", () => {
-    expect(ownPlacePosture("herm", null)).toBe("private");
-    expect(ownPlacePosture("herm", CHARTER)).toBe("private");
-    expect(ownPlacePosture("herm", { ...CHARTER, federationPosture: "open" })).toBe("open");
+  test("CONTROL: a lararium's gate at a PRIVATE charter meets the same arm-less stranger with silence", async () => {
+    const hearth = await stand("lararium", PRIVATE_CHARTER);
+    const pulled = await pullFloor(hearth.origin, hearth.world, await presenter(hearth.world, "stranger"), { arm: null, publisherSeed: SEED, deadlineMs: 1_500 });
+    expect(pulled.ok).toBe(false);
+    expect(pulled.pointer).toBeUndefined();
+  }, 30_000);
+
+  test("the one reader: a herm reads OPEN by class; a lararium reads its charter and an absent one fails closed", () => {
+    expect(ownPlacePosture("herm", null)).toBe("open");
+    expect(ownPlacePosture("herm", PRIVATE_CHARTER)).toBe("open");
     expect(ownPlacePosture("lararium", null)).toBe("private");
-    expect(ownPlacePosture("lararium", CHARTER)).toBe("private");
-    expect(ownPlacePosture("lararium", { ...CHARTER, federationPosture: "open" })).toBe("open");
+    expect(ownPlacePosture("lararium", PRIVATE_CHARTER)).toBe("private");
+    expect(ownPlacePosture("lararium", { ...PRIVATE_CHARTER, federationPosture: "open" })).toBe("open");
   });
 });

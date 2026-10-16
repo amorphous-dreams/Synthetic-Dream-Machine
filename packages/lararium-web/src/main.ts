@@ -26,7 +26,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -90,24 +90,27 @@ async function readOracle(read: OracleReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("oracle") ?? defaultReadFace(location);
   const pin = params.get("oracle-gate") ?? params.get("gate");
-  if (!pin) { set("oracle-status", "no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
-  set("oracle-status", `proving at ${readFace} …`);
+  const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(location, params));
+  const say = (text: string, cls = ""): void => set("oracle-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
+  if (!pin) { say("no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
+  say(`proving at ${readFace} …`);
   try {
     const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
     if (r.ok && r.pointer) {
       const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
       const oracleEl = $("oracle"); oracleEl.replaceChildren();
       row(oracleEl, "status", "✓ verified + loaded", "ok");
+      if (elsewhere) row(oracleEl, "note", elsewhere, "warn");
       row(oracleEl, "act", r.pointer.actCid.slice(0, 16) + "…");
       row(oracleEl, "parents", String(r.pointer.parents.length));
       row(oracleEl, "tiddlers", String(n));
       row(oracleEl, "cid", r.cid ?? "—");
       row(oracleEl, "publisher", r.pointer.pub.slice(0, 16) + "…");
     } else {
-      set("oracle-status", `✗ ${r.reason ?? "unavailable"}`, "warn");
+      say(`✗ ${r.reason ?? "unavailable"}`, "warn");
     }
   } catch (e) {
-    set("oracle-status", `✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
+    say(`✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
   }
 }
 
@@ -240,10 +243,9 @@ async function bootVessel(): Promise<void> {
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
   const relayUrl = resolveRelayUrl(location, relayParams);
-  // ?gate=<hex> → the RELAY GATE's verifying key. The V3 proof commits to it, and a leaf must hold it
-  // out-of-band: the challenge carries it on the wire, but trusting the wire copy would let any relay
-  // impersonate the gate. Absent, the leaf binds its proof to its OWN did, the gate recomputes against
-  // its own, and the proof fails closed — a correct refusal that looks exactly like a broken socket.
+  // ?gate=<hex> → the RELAY GATE's key. The dial's sealed first flight is addressed to it, and a leaf must hold it
+  // out-of-band: a key read off the wire would let any relay stand as the gate. Absent, the vessel does not cross
+  // (`relayPinFor`) — a correct refusal that looks exactly like a broken socket.
   // The node vessel prints this key in its boot banner.
   const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.

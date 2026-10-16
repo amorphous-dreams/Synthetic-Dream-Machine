@@ -211,7 +211,16 @@ export const CARRIAGE_ROLL_ANCHOR_DOMAIN = mint("carriage-roll-anchor");
 /** The hiding commitment an ADMIT's quorum signs over the hearth's gate pin and canon list. The members board
  *  carries the commitment alone, so the floor travels unwidened; the opening rides only to the subject's hands. */
 export const CARRIAGE_ADMIT_OPENING_DOMAIN = mint("carriage-admit-opening");
-export const MEMBERSHIP_RELAY_DOMAIN = frozen("membership-relay");
+/** A PLACE's signed floor pin at one Nexus (`place-floor-pin`): the place's vessel key signs the pin its floor gate stands
+ *  there, laid on the carriage board as a sidecar; a reader files it only where its own replica counts the place carried.
+ *  Its own name: a floor-pin statement must never verify as a carrier seal, nor a seal as a pin. */
+export const PLACE_FLOOR_PIN_DOMAIN = mint("place-floor-pin");
+/** A herm's EXPLICIT JOIN carried by hand (`carry-bundle`): the kind the bundle's public bytes carry, so a reader never
+ *  takes an admit bundle, or any other file, as a carry. */
+export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
+// `membership-relay` names no domain, and is never reused: the herm membership relay ships SHUT by name (house ruling
+// "Routes at the cutover") and signs nothing; a relay that opens inside a sealed gate session signs under that session's
+// own seal. No new domain may take this name, so a byte string once bound under it never verifies as another protocol's.
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's

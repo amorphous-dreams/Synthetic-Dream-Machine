@@ -1,7 +1,7 @@
 /**
  * hearth-floor-pins — a hearth's FLOOR pin set, carried only where a signature or an authenticated relation carries it.
  *
- * House ruling "Floor pins": a floor route takes its pin only through an authenticated relation or a carried signed pin
+ * House ruling "The admit's gate pin": a floor route takes its pin only through an authenticated relation or a carried signed pin
  * set. Two carriers stand:
  *
  *   · THE SOVEREIGN SESSION. Once a dial's sovereign crossing verified, the hearth sends one sealed "session" message of

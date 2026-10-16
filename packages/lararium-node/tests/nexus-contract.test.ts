@@ -55,7 +55,7 @@ import { writeNexusDoc, readNexusDoc, nexusCharterDocPath } from "../src/nexus-d
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   hasContractedInto, runNexusRollAnchor } from "../src/commands/nexus-contract.js";
 import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor, signRollAnchor, writeRollAnchor } from "@lararium/mesh";
-import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carried-set.js";
+import { readConsent, writeConsent, carriageConsentPathFor, carriedCharterHome } from "../src/carried-set.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
 import { existsSync } from "node:fs";
 import { larSealHome } from "../src/vessel-paths.js";
@@ -165,6 +165,33 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     expect(admit.memberHeld).toBe(true);
     expect(admit.carrierHeld).toBe(false);
     expect((await direct(runNexusMembersList)({ sealHome: sealHome() })).members).not.toContain(seal.nym);
+  });
+
+  it("★ CARRY-FOR --nexus signs the seal and the floor pin at the NAMED Nexus, not the primary; an AID never carried refuses ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const primaryEpoch = await seatCharter(roots.map((r) => r.verifyingKey));
+    // A second charter this vessel holds as a carried partner: other chairs, so another epoch and another AID.
+    const other = heldCharter({ keys: (await seatChairs([4, 5, 6])).keys, threshold: 2 });
+    const otherDoc = other.doc({ labels: ["Kahu Delta", "Kahu Epsilon", "Kahu Zeta"] });
+    const otherAid = nexusAidOf(otherDoc)!;
+    const primaryAid = nexusAidOf(readNexusDoc(sealHome()))!;
+    expect(otherAid).not.toBe(primaryAid);
+    writeNexusDoc(carriedCharterHome(sealHome(), otherAid), otherDoc);
+
+    const primary = await runNexusCarryFor({ sealHome: sealHome() });
+    expect(primary.sealEpochCid).toBe(primaryEpoch);
+    const nexusHex = (aid: string): string => Buffer.from(aid, "utf8").toString("hex");
+    expect(primary.floorPin!.pin.nexus).toBe(nexusHex(primaryAid));
+
+    const named = await runNexusCarryFor({ sealHome: sealHome(), aid: otherAid });
+    expect(named.sealEpochCid).toBe(other.head.epochCid);
+    expect(named.sealEpochCid).not.toBe(primary.sealEpochCid);
+    expect(named.floorPin!.pin.nexus).toBe(nexusHex(otherAid));
+    // The primary named by its AID reads as the default does.
+    expect((await runNexusCarryFor({ sealHome: sealHome(), aid: primaryAid })).sealEpochCid).toBe(primaryEpoch);
+    // An AID this vessel holds no charter for refuses by name.
+    await expect(runNexusCarryFor({ sealHome: sealHome(), aid: `nexus-${"ab".repeat(32)}` })).rejects.toThrow(NexusContractError);
   });
 
   it("REVOKE as a causal descendant drops membership", async () => {

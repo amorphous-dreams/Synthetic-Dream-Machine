@@ -225,8 +225,9 @@ async function main(): Promise<void> {
   // read-face (the self-peering key, advertised in its dial), LAR_PEERS = bootstrap peers (`<url>#<gate key>`),
   // LAR_SEED = its dial label (else hash-derived); LAR_RADIUS = its carriage standing r.
   const publicUrl = process.env["LAR_PUBLIC_URL"] ?? `http://localhost:${port}`;
-  // Each bootstrap peer names its gate key — `<http read-face>#<gate key hex>` — the pin a pull knocks with and
-  // proves to. An entry with no key names no gate: refused here, said aloud, and never dialed.
+  // Each bootstrap peer names its PUBLISHER key — `<http read-face>#<vessel verifying key hex>` — the key a pulled
+  // FLOW-map pointer verifies under (`carriage-caps`); the knock rides a held floor pin, never this key. An entry with
+  // no key names no publisher: refused here, said aloud, and never dialed.
   const peerEntries = (process.env["LAR_PEERS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const peers = peerEntries.flatMap((entry) => {
     const peer = parseMeshPeer(entry);

@@ -17,17 +17,17 @@
  * path, and when it fails it fails with the next site's name in its message.
  *
  *   R1 — a herm reaches `live`                         · the base case of the stack
- *   R2 — a herm joined to no Nexus answers no knock    · closed by default: an explicit Nexus opens the herm relay
+ *   R2 — a herm's floor gate stands at its explicit Nexus · joined by hand, it answers the knock: a proven stranger reads the map
  *   R3 — a herm carries a crossing                     · admit-by-lease, the relay role that is load-bearing
  *   R4 — a herm refuses hearth-scoped acts LEGIBLY     · refusal is a feature of the floor
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
-import { freePort, stageDir, unlockStaged } from "../harness/instance.js";
+import { freePort, openStaged, stageDir, unlockStaged, type LarInstance } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
 
 /**
@@ -52,6 +52,22 @@ const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
 let PORT = 0;
 
 let root = "";
+/** The hearth whose quorum carries the herm in R2: a staged hearth on its own root, port and custody. */
+let hearth: LarInstance | null = null;
+
+/** Run one `lares` command against the herm's root and read its last JSON line; the platform's own warnings never count. */
+function run(args: readonly string[]): { code: number; said: string; json: Record<string, unknown> | null } {
+  const r = spawnSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8" });
+  // The runtime's own warnings (node:sqlite's ExperimentalWarning and its `--trace-warnings` hint) print on stderr AFTER
+  // a command's last word when the module loads late; they are the platform's lines, never this house's answer.
+  const said = `${r.stdout}\n${r.stderr}`.split("\n")
+    .filter((l) => !/ExperimentalWarning|--trace-warnings/.test(l)).join("\n").trim().split("\n").slice(-3).join("\n");
+  let json: Record<string, unknown> | null = null;
+  for (const line of (r.stdout ?? "").trim().split("\n").reverse()) {
+    try { json = JSON.parse(line) as Record<string, unknown>; break; } catch { /* not json */ }
+  }
+  return { code: r.status ?? -1, said, json };
+}
 
 /** How long a stop may hold the port, and a stand may take to reach live with its verb door bound. */
 const STOP_DEADLINE_MS  = 30_000;
@@ -188,12 +204,24 @@ async function operatorDid(r: string): Promise<string> {
  * on the oracle route, filed in a reader's own pair index, and a throwaway face (a chain no admit backs, `arm: null`) to
  * present. The publisher's key (`verifyingKey`) is the herm's vessel key, never the gate's.
  *
- * WHERE A HERM'S GATE STANDS (house reading "Only there"): at a Nexus whose quorum counted its `carry`, on the herm's own
- * replica of that Nexus's carriage board, and nowhere else. A herm founded with no join stands none, so this reader holds a
- * pin the herm COULD derive and meets no gate at it. The positive read (a carried place presenting its arm at a carried
- * herm's private gate, over real sockets) stands in-process: packages/lararium-node/tests/herm-carriage-relay.test.ts and
- * herm-answers-the-knock.test.ts; the join through the commands: herm-explicit-join.test.ts.
+ * WHERE A HERM'S GATE STANDS: at a Nexus whose quorum counted its `carry`, on the herm's own replica of that Nexus's
+ * carriage board, and nowhere else (house ruling "Routes at the cutover": an explicit Nexus opens the herm relay;
+ * lar:///ha.ka.ba/lararium/node/herm-carriage). A herm founded with no join stands none, so this reader holds a pin the
+ * herm COULD derive and meets no gate at it. HOW A STOOD GATE ANSWERS is the operator ruling "A herm answers the knock":
+ * any proven peer, member or stranger. R2 stands both halves over real sockets: the same reader meets no gate before the
+ * join and reads the map after it. In-process twins: packages/lararium-node/tests/herm-answers-the-knock.test.ts and
+ * herm-carriage-relay.test.ts; the join through the commands: herm-explicit-join.test.ts.
  */
+/** The AID of the charter the herm holds at its seal home, or null: what `nexus seal import` landed there. */
+async function hermCharterAid(r: string): Promise<string | null> {
+  const mesh = await import("../../packages/lararium-mesh/src/index.js");
+  const node = await import("../../packages/lararium-node/src/index.js");
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = r;
+  try { return mesh.nexusAidOf(node.readNexusDoc(node.larSealHome())) ?? null; }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+}
+
 async function hermFloorReader(r: string, nexusAid: string) {
   const mesh = await import("../../packages/lararium-mesh/src/index.js");
   const node = await import("../../packages/lararium-node/src/index.js");
@@ -225,6 +253,7 @@ async function hermFloorReader(r: string, nexusAid: string) {
 beforeAll(async () => { PORT = await freePort(); });
 
 afterAll(async () => {
+  try { await hearth?.stop(); } catch { /* the hearth's own root; nothing held */ }
   try {
     // LET THE VESSEL FINISH DYING. It flushes its stores on the way down, so tearing the tree out from
     // under it races its own writes and ENOTEMPTYs — a teardown fault that reads as a suite failure with
@@ -266,7 +295,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(`${asked.stdout}\n${asked.stderr}`).toMatch(/lares vault unlock/);
   }, 200_000);
 
-  test("R2 — a herm joined to no Nexus answers no knock: the stranger meets the closed door, and its floor pin opens nothing", async () => {
+  test("R2 — a herm's floor gate stands at its explicit Nexus and only there, and there it answers the knock", async () => {
     const { pullAndVerifyOracle } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
     const { CLOSED_DOOR } = await import("../../packages/lararium-node/src/bulb-routes.js");
     const origin = `http://127.0.0.1:${PORT}`;
@@ -276,16 +305,52 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(stranger, `nothing answered on :${PORT} — no vessel stands there for R5 to lift`).not.toBeNull();
     expect(stranger!.status).toBe(CLOSED_DOOR.status);
     expect(await stranger!.text()).toBe(CLOSED_DOOR.body);
-    // CLOSED BY DEFAULT (house rulings "Routes at the cutover" and "Only there"). This herm was founded and stood, and joined
-    // no Nexus: it holds no charter, and no quorum counted its carry. A reader holding the very floor pin the herm's own floor
-    // key derives — here at a Nexus named for the test — and presenting a proven face meets no gate and learns no pointer.
-    // The vector this replaces read the map off a herm joined to nothing, the bearer-pin reading the ruling closed.
-    const reader = await hermFloorReader(root, `nexus-${"e".repeat(64)}`);
-    expect(reader.nexusHeld, "the floor rig holds a charter: this vector would measure a joined herm").toBeNull();
-    const read = await pullAndVerifyOracle(origin, reader);
-    expect(read.ok, "a herm joined to no Nexus served its map at a floor gate it never stood").toBe(false);
-    expect(read.pointer).toBeUndefined();
-  }, 60_000);
+
+    // THE HEARTH whose quorum will carry this herm: the Stable founding act seats its one-seat seed charter, so its one
+    // chair counts a carry alone. The charter travels to the herm by its own doors (`seal export` → `seal import`).
+    hearth = await openStaged({ tag: "herm-floor-hearth" });
+    const exported = await hearth.cli(["nexus", "seal", "export", "--no-json"]);
+    expect(exported.code, `the hearth exported no charter:\n${exported.stderr.slice(-400)}`).toBe(0);
+    const courier = mkdtempSync(join(stageDir(), "herm-floor-courier-"));
+    writeFileSync(join(courier, "hearth-charter.mem"), exported.stdout);
+    const imported = run(["nexus", "seal", "import", join(courier, "hearth-charter.mem"), "--json"]);
+    expect(imported.code, `the herm refused the hearth's charter:\n${imported.said}`).toBe(0);
+
+    // RED — NO GATE BEFORE THE JOIN (house ruling "Routes at the cutover": an explicit Nexus opens the herm relay). The herm
+    // holds the charter and nothing more: no quorum counted its carry, so it stands no floor gate at that Nexus. A reader
+    // holding the very floor pin the herm's floor key derives there, presenting a proven face, meets no gate.
+    const aid = await hermCharterAid(root);
+    expect(aid, "the herm holds no charter: the import landed nothing").toMatch(/^nexus-[0-9a-f]{64}$/);
+    const before = await hermFloorReader(root, aid!);
+    expect(before.nexusHeld).toBe(aid);
+    const unjoined = await pullAndVerifyOracle(origin, before);
+    expect(unjoined.ok, "a herm that only holds a charter served its map at a floor gate it never stood").toBe(false);
+    expect(unjoined.pointer).toBeUndefined();
+
+    // THE JOIN, BY HAND, through the three doors a person runs (lar:///ha.ka.ba/lararium/node/carry-bundle): the herm signs
+    // its carrier seal and its floor pin with its own vessel key, the hearth's quorum counts the carry with the pin beside
+    // it, and the herm takes the bundle onto its own replica. The running herm refolds, and its floor gate stands there.
+    const signed = run(["nexus", "carry-for", "--json"]);
+    expect(signed.code, `the herm signed no carrier seal:\n${signed.said}`).toBe(0);
+    const seal = (signed.json?.["data"] ?? {}) as { nym?: string; carrierSig?: string; floorPin?: unknown };
+    expect(seal.floorPin, "carry-for signed no floor pin at the hearth's Nexus").toBeTruthy();
+    writeFileSync(join(courier, "floor-pin.json"), JSON.stringify(seal.floorPin));
+    const carried = await hearth.cli(["nexus", "carry", seal.nym!, "--carrier", seal.carrierSig!, "--floor-pin", join(courier, "floor-pin.json"), "--json"]);
+    expect(carried.code, `the hearth's quorum refused the carry:\n${carried.stdout.slice(-400)}\n${carried.stderr.slice(-400)}`).toBe(0);
+    const bundle = (carried.json?.["data"] as { carryBundle?: unknown } | undefined)?.carryBundle;
+    expect(bundle, "the carry emitted no carry bundle").toBeTruthy();
+    writeFileSync(join(courier, "carry-bundle.json"), JSON.stringify(bundle));
+    const taken = run(["nexus", "carry-take", join(courier, "carry-bundle.json"), "--json"]);
+    expect(taken.code, `the herm refused its carry bundle:\n${taken.said}`).toBe(0);
+    expect((taken.json?.["data"] as { refolded?: boolean } | undefined)?.refolded, "the standing herm did not refold on the take").toBe(true);
+
+    // A HERM ANSWERS THE KNOCK (operator ruling, stable-founding-road#/rulings; siege-resilience). The same proven stranger,
+    // no member of any Nexus, no arm, knocks at the gate the join stood and reads the map, verified under the herm's key.
+    const joined = await pullAndVerifyOracle(origin, before);
+    expect(joined.ok, `the carried herm answered no knock: ${joined.reason ?? "(no reason)"}\n${standLogTail(root)}`).toBe(true);
+    expect(joined.pointer?.pub).toBe(before.verifyingKey);
+    rmSync(courier, { recursive: true, force: true });
+  }, 300_000);
 
   test("R3 — a herm carries: its verb channel answers a caller", async () => {
     const dir = sockStands(root) ? substrateDir(root) : null;
@@ -310,14 +375,9 @@ describe("the herm — the floor of the lararium cap stack", () => {
   }, R4_BUDGET_MS);
 
   test("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
-    const run = (args: readonly string[]): { code: number; said: string } => {
-      const r = spawnSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8" });
-      // The runtime's own warnings (node:sqlite's ExperimentalWarning and its `--trace-warnings` hint) print on stderr AFTER
-      // a command's last word when the module loads late; they are the platform's lines, never this house's answer.
-      const said = `${r.stdout}\n${r.stderr}`.split("\n")
-        .filter((l) => !/ExperimentalWarning|--trace-warnings/.test(l)).join("\n").trim().split("\n").slice(-3).join("\n");
-      return { code: r.status ?? -1, said };
-    };
+    // THE CHARTER R2 CARRIED IN BELONGS TO THE HEARTH THAT FOUNDED IT, never to this place: a face binds its own hearth's seed
+    // charter, and a hearth founds its own seed. The herm's copy leaves before the lift measures a charterless place.
+    rmSync(join(root, "data", "lares", "nexus"), { recursive: true, force: true });
     // CONTROL — THE FLOOR HOLDS NO VESSEL KEY, SO NO FACE LIGHTS ON IT. A face founding seals its anchors and its
     // veil archive under the vessel key; the standing vessel rests locked, and the founding refuses by naming the
     // unlock, with nothing landed. A lift that passed here would have lit a face under no key.

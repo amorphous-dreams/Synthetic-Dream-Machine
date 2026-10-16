@@ -9,7 +9,10 @@
  * `WebSocket`, so one door serves both.
  *
  * Pure of clocks: a socket that never opens leaves `open` pending, and the dial's own deadline cuts it by `close()`.
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * A send after the end (the gate cut the socket, or `close()` ran) drops and never throws, as a ws send to a closed
+ * peer does: the dial reads the end off `recv()`'s null, never off a send. Wired by the cutover: `oracle-read-client`
+ * and `lar-ws-client-adapter` dial through it by default; it stays out of the package barrel by choice (a caller
+ * hands a double through `dialSocket`).
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope
  */
@@ -94,7 +97,7 @@ export function wsDialSocket(url: string, factory: WsFactory = defaultFactory, b
         socket.addEventListener("close", () => reject(new Error("ws-dial-socket: closed before open")));
       });
     },
-    send(frame) { ws?.send(frame); },
+    send(frame) { if (ended) return; try { ws?.send(frame); } catch { /* the peer is gone; recv() reports the end */ } },
     recv() {
       if (held.length > 0) { const next = held.shift()!; heldBytes -= next?.length ?? 0; return Promise.resolve(next); }
       if (ended) return Promise.resolve(null);

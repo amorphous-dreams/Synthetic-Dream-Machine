@@ -15,7 +15,10 @@
  * The quorum's act authenticates the key; the key authenticates the pin. A statement for an uncarried key, a pin of
  * another Nexus or route, or a torn signature files nothing. The statement rides the Nexus's carriage board beside the acts
  * (a sidecar keyed by the place key, which the act extractor skips), so any replica writer may carry it and none can forge
- * it (house reading "The herm's floor pin", stable-founding-road #/rulings).
+ * it (lar:///ha.ka.ba/lararium/mesh/place-floor-pin, whose status line names its standing).
+ *
+ * OWED (the carrier's #/owed): the statement carries no causal position, and the pair index holds no replace, so an older
+ * valid statement can stand in for a newer one after a floor-key rotation until the index drops it.
  *
  * THE PLACE ARM. A place presents the quorum's counted `carry` act over its own key at the gate's Nexus, with every
  * counted act of that relation in its causal past as the lineage the gate's reader walks (`verifyPresentedCarry`). The
@@ -29,14 +32,15 @@ import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 import { carriageEntryActCid, carriageEntryCounts, isCarriageDescendant, type CarriageEntry } from "./carriage-registry.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
+import { PLACE_FLOOR_PIN_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { gateBundleDigest, readGateBundlePin, type GateBundlePin } from "./gate-bundle.js";
 import { PLACE_LINEAGE_BOUND, type PlaceArm } from "./gate-exchange.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { storedLarRecord } from "./stored-record.js";
 
-/** The statement's domain: a place's floor pin, and nothing any other seal signs. */
-export const PLACE_FLOOR_PIN_KIND = "lar/place-floor-pin/v1" as const;
+/** The statement's domain: a place's floor pin, and nothing any other seal signs (`domains`). */
+export const PLACE_FLOOR_PIN_KIND = PLACE_FLOOR_PIN_DOMAIN;
 /** The board sidecar's prefix: one tiddler per place key, apart from the acts. */
 export const PLACE_FLOOR_PIN_PREFIX = `${CARRIAGE_ENTRY_PREFIX}place-floor-pin/` as const;
 

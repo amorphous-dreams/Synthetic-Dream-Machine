@@ -11,7 +11,7 @@
  *   K7  a kept bundle naming no sync url files nowhere, and says so
  *   K8  RED: the bootstrap's pin and a kept pin share the dialed hearth and differ: the bootstrap's pin is the dial, and a
  *       WARNING names the disagreement (never silent) / CONTROL: the same pin twice warns nothing
- *   K9  RED (house ruling "Floor pins", carrier (b)): the floor pins a signed fleet-join answer carried, kept for the dialed
+ *   K9  RED (house ruling "The admit's gate pin", carrier (b)): the floor pins a signed fleet-join answer carried, kept for the dialed
  *       pin's Nexus, file under the dialed hearth; a kept pin at another Nexus or at sovereign tier files nothing, and with
  *       no dial pin none file
  */

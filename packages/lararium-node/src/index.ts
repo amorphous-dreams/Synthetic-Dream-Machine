@@ -266,10 +266,10 @@ export { takeCarryBundle, carryBundleFrom, CarryBundleError, CARRY_BUNDLE_KIND, 
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
-  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener,
 } from "./nexus-carriage.js";
 export type {
-  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
+  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener,
 } from "./nexus-carriage.js";
 // The cad seal's first live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "./seal-carrier-federation.js";
@@ -395,7 +395,8 @@ export { makeSourceCapture } from "./capture/capture-source.js";
 export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture/capture-source.js";
 export { startMembershipRelay, WSMembershipChannel } from "./ws-membership-channel.js";
 // The AUTHENTICATED live-WS membership transport — Ed25519 proof-of-possession binds each envelope's `from` to a
-// proven key (no impersonation of the cas-wire member gate), reusing the DaemonAuthGate's own challenge/verify.
+// proven key (no impersonation of the cas-wire member gate); the relay ships SHUT by name (house ruling "Routes at the cutover";
+// `authenticated-membership-relay`).
 export { startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel } from "./authenticated-membership-relay.js";
 export type { AuthenticatedMembershipRelay } from "./authenticated-membership-relay.js";
 // The CARRIAGE relay capability (Socket B) — the authenticated transport + the DHT-free bag-tracker, one service;

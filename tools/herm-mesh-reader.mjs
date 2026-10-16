@@ -10,8 +10,8 @@
 import { plainField } from "../packages/lararium-mesh/dist/stored-value.js";
 
 /**
- * The reader's gate-native pull, stood once from its founded root (house rulings "Routes at the cutover" and "The
- * faceless reader"): the same `vesselCarriagePull` a herm's carriage holds, over the reader's own store. It files the
+ * The reader's gate-native pull, stood once from its founded root (house ruling "Routes at the cutover";
+ * lar:///ha.ka.ba/lararium/node/herm-carriage): the same `vesselCarriagePull` a herm's carriage holds, over the reader's own store. It files the
  * place floor-pin statements its replica of each carrying Nexus's board counts, and presents its place arm there. It
  * lays no statement of its own: the reader stands no gate. Throws when `LAR_ROOT` holds no founded vessel.
  */

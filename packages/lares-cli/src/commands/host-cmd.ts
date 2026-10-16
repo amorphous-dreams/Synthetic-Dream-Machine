@@ -105,6 +105,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
         console.log(`  cap:       ${String(r["cap"])}`);
         console.log(`  act on:    ${String(r["docUrl"])}  (${via === "daemon" ? "the standing vessel's replica" : "this vessel's store"})`);
         console.log("  every grant and token two epochs back is now dead; roll again to end the previous epoch too.");
+        console.log("  note: the walker route ships SHUT by name (house ruling \"Routes at the cutover\"): the epoch is written, but no gate seats a walker on it until a live grant reader opens the route.");
         if (Number(r["unswept"]) > 0) console.log(`  ${String(r["unswept"])} spend row(s) of dead epochs refused removal (bytes this vessel's key does not open); they stay on disk.`);
       },
     });
@@ -125,6 +126,7 @@ async function hostInvite(args: ParsedArgs): Promise<number> {
       human: () => {
         console.log(String(r["invite"]));
         console.error("  carry this to one newcomer; it redeems once, at this hearth's own gate. Nothing about it is kept here.");
+        console.error("  note: the walker route ships SHUT by name (house ruling \"Routes at the cutover\"): no gate seats a walker on this invite until a live grant reader opens the route.");
       },
     });
     return 0;

@@ -10,7 +10,7 @@
  *   · RED: a channel that ends closes the socket once, and the socket leaves the server's clients / CONTROL: a live
  *     one stays; the adapter's keepalive ping hears its pong;
  *   · closing the socket closes the channel; a send after it is dropped, never thrown;
- *   · THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): a SOVEREIGN session hears, once at open, one
+ *   · THE FLOOR PIN SET (house ruling "The admit's gate pin", carrier (a)): a SOVEREIGN session hears, once at open, one
  *     "session" message of kind hearth/floor-pins carrying the floor pins at the Nexus its gate seated it under / RED: a
  *     floor-tier session hears none; a session with no Nexus hears none; a provider that throws or yields nothing sends
  *     nothing and the session stands.

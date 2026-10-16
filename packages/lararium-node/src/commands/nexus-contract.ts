@@ -95,7 +95,7 @@ export interface NexusContractOptions {
   readonly carrierSig?:  string;
   /** The joining PLACE's signed floor-pin statement (`nexus carry-for` prints it; JSON). `carry` only, optional: where it
    *  reads as the named place's own pin at this Nexus, it lands beside the act on the carriage board, so every replica that
-   *  counts the carry files the pin (house reading "The herm's floor pin"). A statement that does not read refuses the act. */
+   *  counts the carry files the pin (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). A statement that does not read refuses the act. */
   readonly floorPin?:    string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
@@ -243,17 +243,20 @@ export async function runNexusCarryFor(opts: {
   sealHome: string;
   /** The floor key door the place's floor pin derives from; absent → this vessel's own (`vesselFloorKeyDoor`). */
   floorDoor?: FloorKeyDoor;
+  /** The Nexus to sign at: the carried charter this AID names (`charterHomeFor`, as `carry` reads it). Absent → the primary charter's. */
+  aid?: string;
 }): Promise<{ nym: string; sealEpochCid: string; carrierSig: string; floorPin: PlaceFloorPinStatement | null }> {
-  const roster = foundingRoster(readNexusDoc(opts.sealHome));
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
   }
   const nym  = (await loadVesselVerifyingKey()).toLowerCase();
   const seed = await loadVesselSigningSeed();
   const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
-  // THE PLACE'S FLOOR PIN AT THIS NEXUS, signed with the same vessel key the carry will name (house reading "The herm's floor
-  // pin"). It authenticates nothing on its own: a reader files it only once its own replica counts the carry.
-  const aid = primaryNexusAid(opts.sealHome);
+  // THE PLACE'S FLOOR PIN AT THIS NEXUS, signed with the same vessel key the carry will name (`place-floor-pin`). It
+  // authenticates nothing on its own: a reader files it only once its own replica counts the carry.
+  const aid = primaryNexusAid(home);
   let floorPin: PlaceFloorPinStatement | null = null;
   if (aid) {
     const pin = oracleFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());

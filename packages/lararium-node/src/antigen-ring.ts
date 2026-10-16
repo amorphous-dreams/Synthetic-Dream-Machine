@@ -2,11 +2,11 @@
  * antigen-ring — the node holder that makes the Kapae-antigen BREATHE on the live sharePolicy path.
  *
  * It stands the `AntigenRing` (mesh federation-gate) the node's `carryContractShareDecision` consults:
- *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The sealed gate already proved a
- *     peerId↔verifying-key binding (its in-worker keyhive returned the peer's Identifier hex into
- *     `peerIdentifierMap`); this resolver SURFACES that proven nym — it never re-authenticates. The
- *     Identifier hex's last 64 hex chars ARE the raw ed25519 verifying key (operator-daemon-behavior
- *     `id.slice(-64)`), the exact `nym` the charter roster + antigen entries key on. An unresolved /
+ *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The face gate already proved a
+ *     peerId↔key binding at the seat (the vessel fills `peerIdentifierMap` from the session's FACE key, or a
+ *     faceless place's own key); this resolver SURFACES that proven nym — it never re-authenticates. The
+ *     Identifier hex's last 64 hex chars ARE the FACE key (the per-Nexus key the face presented at the seat; no
+ *     vessel key rides), the nym the antigen entries key on. An unresolved /
  *     unauthenticated peer → null (fail-closed: a denylist that cannot name a peer never falsely denies it).
  *   · kapaed — the currently-Kapae'd nym set, FOLDED (kapae-antigen `foldAntigenSet` + the multi-sig quorum
  *     verifier) from the always-carried antigen BOARD entries AND the kahu quorum's seats read off disk

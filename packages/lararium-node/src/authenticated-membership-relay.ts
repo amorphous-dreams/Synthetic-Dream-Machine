@@ -31,9 +31,6 @@ import {
   type MembershipChannel, type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
 } from "@lararium/mesh";
 
-/** The session kind an envelope rode under on an admitted socket. The relay is shut; the name stays for the readers of old envelopes. */
-export const MEMBERSHIP_ENVELOPE_KIND = "membership/env";
-
 /** The name every refusal of the shut relay carries. */
 export const MEMBERSHIP_RELAY_SHUT = "membership-relay-shut";
 const SHUT_WHY = `${MEMBERSHIP_RELAY_SHUT}: the herm membership relay ships shut by name (house ruling "Routes at the cutover"); no socket is proven, stamped or routed until a gate-native caller flips it`;

@@ -62,7 +62,7 @@ export interface HearthDialChoice {
  * for another hearth is never dialed at this url, and the note says so. A kept pin at the dialed hearth that differs
  * from the bootstrap's pin leaves the bootstrap's pin the dial, and a WARNING names it (the index files the first).
  *
- * THE FLOOR PINS (house ruling "Floor pins", carrier (b)): `keptFloor` reads the floor pins a signed fleet-join answer
+ * THE FLOOR PINS (house ruling "The admit's gate pin", carrier (b)): `keptFloor` reads the floor pins a signed fleet-join answer
  * carried for a Nexus (by its hex). Once a dial pin stands, the floor pins kept at ITS Nexus file under the dialed
  * hearth, each re-read at floor tier and that Nexus; none file without a dial pin.
  */

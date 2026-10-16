@@ -9,7 +9,7 @@
  * 32-byte gate seed + a bound port and nothing else, so a bare hearth stands one with a single call.
  *
  * TWO SOCKETS STAY TWO. This carriage (Socket B) SEPARATES from the Automerge `/ws` doc relay (Socket A, cleartext
- * CRDT behind the DaemonAuthGate) — cleartext CRDT never routes through here, so carry ⊥ read holds at the transport.
+ * CRDT behind the face gate) — cleartext CRDT never routes through here, so carry ⊥ read holds at the transport.
  *
  * ISOMORPHISM BY COMPOSITION. It re-uses `startAuthenticatedMembershipRelay` (the proven Ed25519 proof-of-possession
  * transport) and `makeBagTracker` (the discovery index) VERBATIM — it re-derives no gate, no crypto, no index.

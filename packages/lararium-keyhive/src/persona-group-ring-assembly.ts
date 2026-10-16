@@ -13,8 +13,9 @@
  *                         `verifyFaceGrantRecord` the joinee's own kit runs (the ring re-cuts no seal).
  *
  * ONE FUNCTION, TWO SHORES. Node and browser both call this; only the PROOF SOURCE differs. A node vessel
- * reads the identifier its inbound `DaemonAuthGate` proved; a browser leaf reads the gate key its outbound
- * transport proved when that gate SIGNED its verdict (`LarWSClientAdapter.provenKeyOf`). Neither source is
+ * reads the key its inbound FACE GATE proved at the seat (the session's proven face key, `gate-sync-server`); a
+ * browser leaf reads the gate key its outbound dial proved when that gate SIGNED its verdict
+ * (`LarWSClientAdapter.provenKeyOf`). Neither source is
  * a claim the peer made about itself. Both read the device key a SIBLING proved over the face's sibling
  * session (`siblingKeyOf`), a separate path: a sibling holds standing, so `composeSiblings` admits it to the
  * face's own planes and never through a grant.

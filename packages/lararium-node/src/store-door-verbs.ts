@@ -83,7 +83,13 @@ import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
 import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
 import { takeCarryBundle, CarryBundleError } from "./carry-bundle.js";
-import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { listPersonaRoots, loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { listAnchoredPersonas } from "./identity-anchors.js";
+
+/** A place that lit no face stands as a herm: it holds no persona root and anchors no face (a joinee anchors one). */
+async function standsAsHerm(): Promise<boolean> {
+  return (await listPersonaRoots()).length === 0 && (await listAnchoredPersonas()).length === 0;
+}
 
 /** What the rows read off their holder. */
 export interface StoreDoorDeps {
@@ -290,8 +296,14 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-posture": (args) => answer("nexus-posture", async () => {
       const doc = readNexusDoc(sealHome);
       const want = args["want"];
+      // A HERM ANSWERS THE KNOCK (operator ruling): OPEN by class at every gate it stands, so the charter's posture joint
+      // governs nothing on a place that lit no face. A read says so; a flip refuses by name and writes nothing.
+      if (await standsAsHerm()) {
+        if (want !== "private" && want !== "open") return { posture: "open", present: doc !== null, wrote: false, herm: true };
+        throw new Error("nexus-posture REFUSED: this place lit no face, so it stands as a herm, and a herm answers the knock by class (operator ruling) — a posture is a hearth's charter joint. Nothing was written.");
+      }
       if (want !== "private" && want !== "open") {
-        return { posture: federationPostureFromDoc(doc), present: doc !== null, wrote: false };
+        return { posture: federationPostureFromDoc(doc), present: doc !== null, wrote: false, herm: false };
       }
       if (!doc) {
         throw new Error("nexus-posture REFUSED: no charter doc — run `lares nexus seal seat` before setting a posture.");
@@ -316,8 +328,8 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
     }),
 
-    // A HERM'S EXPLICIT JOIN (house reading "Only there"): the quorum's counted carry over this vessel's own key, taken by
-    // hand onto its own replica of that Nexus's carriage board, so its floor gate stands there at the next refold.
+    // A HERM'S EXPLICIT JOIN (lar:///ha.ka.ba/lararium/node/carry-bundle): the quorum's counted carry over this vessel's own key, taken by
+    // hand onto its own replica of that Nexus's carriage board; the refold the take fires stands its floor gate there at once.
     "nexus-carry-take": (args) => answer("nexus-carry-take", async () => {
       const raw = need("nexus-carry-take", args, "raw");
       const r = await takeCarryBundle({ sealHome, repo, raw, ownVesselKey: await loadVesselVerifyingKey() });

@@ -26,7 +26,8 @@
  * idle or anergized leaf never holds a find open. A pin index that THROWS anergizes `pin-unreadable`: no crossing ever
  * stands in CONNECTING with no dial behind it.
  *
- * Stands specified in code until the socket cutover wires its callers (slices D and F); out of the package barrel till then.
+ * Wired by the cutover: a node's hearth dial (`nexus-client-dial`) and a browser leaf's gate dial stand on it, and the
+ * package barrel exports it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-ws-client-adapter
  */
@@ -304,7 +305,8 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   }
 
   /**
-   * THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): the verified sovereign crossing is the authenticated
+   * THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route takes its pin through an authenticated relation
+   * or a carried signed pin set): the verified sovereign crossing is the authenticated
    * relation, so a set at the dialed Nexus files under the dialed hearth, at floor tier, one per route. A set that reads
    * as none files nothing; an index that takes no `put` files nothing.
    */

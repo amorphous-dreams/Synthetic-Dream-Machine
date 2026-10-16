@@ -4,16 +4,18 @@
  *
  * Three herms stand at ONE Nexus whose quorum counted a `carry` over each: an ORIGIN (a crossroads node/alpha announced at),
  * and two relays. Each serves its FLOW map through its own floor gate, assembled the way a vessel assembles every gate
- * (`vesselGate`: the held-root admit reader, the vessel's real sorter, the herm's gate posture), and each carries through
+ * (`vesselGate`: the held-root admit reader, the vessel's real sorter, the vessel's one posture reader), and each carries through
  * the pull the vessel hands its carriage (`vesselCarriagePull`): pins off the Nexus's carriage board, filed only where the
  * reader's own replica counts the signer as a carrier; the place arm presented; the pointer verified under the peer's key.
  *
  *   · the hearths carry from the herm: relay one merges the origin's map;
  *   · RED: the origin goes DARK, and relay two still catches up from relay one, never touching the origin;
  *   · multi-hop: a reader at the last hop reads relay two's map, VERIFIED under relay two's key, carrying node/alpha;
- *   · RED: a stranger (a place no quorum carried) presents nothing and dials nothing; at the gate, arm-less, it meets silence;
- *   · RED: a reader that stands in ANOTHER Nexus holds no pin here and knocks nowhere; its foreign contract meets silence;
- *   · RED: a herm stands no gate at a Nexus that does not carry it, and a gate it stands reads PRIVATE by default.
+ *   · RED: a stranger (a place no quorum carried) holds no pin, presents nothing and dials nothing; handed the pin, it knocks,
+ *     proves its key and is ANSWERED: a herm answers the knock (operator ruling), the pin being the knock itself;
+ *   · RED: a reader that stands in ANOTHER Nexus holds no pin here and knocks nowhere; its foreign contract fails the proof
+ *     and meets silence, posture or no posture;
+ *   · RED: a herm stands no gate at a Nexus that does not carry it; the gate it stands answers the knock (OPEN by class).
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { createServer, type Server } from "node:http";
@@ -30,7 +32,8 @@ import {
 import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
 import { carriageCap, CAP, type MeshPalaceComponent } from "../src/node-caps.js";
 import { vesselGate } from "../src/vessel-gates.js";
-import { gateReadingsFor, hermGatePosture, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
+import { gateReadingsFor, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
+import { ownPlacePosture } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { dialer, realDeadlines, AUDIENCE } from "./oracle-floor-rig.js";
 import { rootOf, world, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
@@ -89,7 +92,7 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
       return {
         pin: bundle.pin,
         gate: vesselGate({
-          readings, posture: (nexus) => hermGatePosture(nexus, gateReadingsFor("herm", [r])),
+          readings, posture: () => ownPlacePosture("herm", null),
           shadows: { consult: () => ({ aside: false, fleetAside: true }), consultPlace: () => ({ aside: false }) },
           grants: { grantFor: () => null }, withdrawals: memoryBackedWithdrawals(), deadlines: realDeadlines(1_500), audience: AUDIENCE,
           onRefuse: (_at, reason) => refusals.push(reason),
@@ -187,21 +190,22 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(misnamed.reason).toMatch(/pointer rejected/);
   }, 30_000);
 
-  test("RED: a stranger — a place no quorum carried — presents nothing and dials nothing; arm-less at the gate, it meets silence", async () => {
+  test("RED: a stranger — a place no quorum carried — presents nothing and dials nothing; handed the pin, it knocks, proves and is answered", async () => {
     const stranger = await hermOf(w, "scraper", false);
     const reader = readerPull(stranger, readings, board);
     const read = await reader.pull(H2.origin, relayTwo.key);
     expect(read.ok).toBe(false);
     expect(read.reason).toMatch(/presentation-absent/);
     expect(reader.urls).toEqual([]);
-    // Holding the pin anyway (it leaked), the stranger at the gate learns nothing: no pointer, no refusal detail.
-    const leaked = await pullAndVerifyOracle(H2.origin, {
-      pins: reader.pins, hearth: relayTwo.key, nexus: w.pin.nexus, presentation: { kind: "place", placeKey: stranger.key, sign: stranger.sign, arm: null },
+    // Handed the pin, the stranger KNOCKS: the path derives from the gate key it now holds, its own key proves, and a herm
+    // answers any proven peer that knocked (operator ruling "A herm answers the knock"). The map it reads is the public one.
+    const handed = await pullAndVerifyOracle(H2.origin, {
+      pins: { get: (k) => reader.pins.get(k) ?? lastHopPin() }, hearth: relayTwo.key, nexus: w.pin.nexus,
+      presentation: { kind: "place", placeKey: stranger.key, sign: stranger.sign, arm: null },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: relayTwo.key, dialSocket: dialer,
     });
-    expect(leaked.ok).toBe(false);
-    expect(leaked.pointer).toBeUndefined();
-    expect(leaked.reason).toBe("dial failed: the gate said nothing");
+    expect(handed.ok, handed.reason).toBe(true);
+    expect(handed.pointer?.pub).toBe(relayTwo.key);
   }, 30_000);
 
   test("RED: a reader standing in ANOTHER Nexus holds no pin here and knocks nowhere; its foreign contract meets silence", async () => {
@@ -233,13 +237,13 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" });
   }
 
-  test("RED: a herm stands no gate at a Nexus that does not carry it, and a gate it stands reads PRIVATE by default", () => {
+  test("RED: a herm stands no gate at a Nexus that does not carry it; the gate it stands answers the knock, OPEN by class", () => {
     const held = readingOf(w, acts);
     expect(gateReadingsFor("herm", [{ ...held, via: "seat" }])).toEqual([]);
     expect(gateReadingsFor("herm", [held]).map((r) => r.aid)).toEqual([w.nexus]);
     expect(gateReadingsFor("lararium", [{ ...held, via: "seat" }]).length).toBe(1);   // CONTROL: a hearth's carried Nexus stands
-    expect(hermGatePosture(w.nexus, [held])).toBe("private");
-    expect(hermGatePosture("nexus-unheld.synthetic", [held])).toBe("private");
-    expect(hermGatePosture(w.nexus, [{ ...held, posture: "open" }])).toBe("open");
+    // The carrying charter's own posture never narrows a herm: a waystone by class.
+    expect(ownPlacePosture("herm", null)).toBe("open");
+    expect(ownPlacePosture("herm", { federationPosture: "private" } as never)).toBe("open");
   });
 });

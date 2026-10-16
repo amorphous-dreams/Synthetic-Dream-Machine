@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, mountLiveStatus, resolveRelayUrl } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
@@ -93,5 +93,16 @@ describe("the connection row publishes its mount as data", () => {
     expect(row.getAttribute("data-wiki-doc-url")).toBe("automerge:doc");
     expect(row.textContent).toBe("disconnected from gate-1");
     stop();
+  });
+});
+
+describe("an ?oracle= naming another hearth says what the browser reads", () => {
+  test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?oracle=, draws none", () => {
+    const relay = "ws://node:5440/ws";
+    expect(oracleElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's oracle");
+    expect(oracleElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's oracle");
+    expect(oracleElsewhereNote("http://node:5440", relay)).toBeNull();
+    expect(oracleElsewhereNote(null, relay)).toBeNull();
+    expect(oracleElsewhereNote("not a url", relay)).toContain("only its own hearth's oracle");
   });
 });

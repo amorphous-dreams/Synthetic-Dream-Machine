@@ -6,12 +6,13 @@
  *   · WHERE. A herm stands a floor gate at the explicit Nexus it was joined to and only there: a Nexus whose carriage board,
  *     on its own replica, counts a `carry` for its own vessel key (`placeCarriedNexuses`, `via: "carrier-seal"`). A charter
  *     it merely holds stands no gate. A lararium stands one at its own Nexus and at each it carries.
- *   · HOW IT ANSWERS (house reading "The herm's gate posture"). As that Nexus's own charter says: PRIVATE unless it reads
- *     OPEN. A stranger who learned the pin, presenting a face no Nexus admits, meets silence.
- *   · THE PIN A READER DIALS (house reading "The herm's floor pin"). The herm signs its floor pin at each carrying Nexus with
+ *   · HOW IT ANSWERS (operator ruling "A herm answers the knock"): any PROVEN peer that knocked, read by the vessel's one
+ *     posture reader (`ownPlacePosture`, OPEN by class). The knock is the silence: only a peer handed the gate key computes
+ *     the path. The carrying Nexus's charter posture governs that Nexus's own hearths, never the waystone.
+ *   · THE PIN A READER DIALS (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). The herm signs its floor pin at each carrying Nexus with
  *     the key the quorum's act names, and lays the statement on its own replica of that Nexus's carriage board; a reader
  *     files it only where its own replica counts the herm as a carrier (`place-floor-pin`).
- *   · WHAT A READER PRESENTS (house reading "The faceless reader"). A place carried at that Nexus presents the quorum's
+ *   · WHAT A READER PRESENTS (lar:///ha.ka.ba/lararium/mesh/carriage-pull#/what-it-presents). A place carried at that Nexus presents the quorum's
  *     counted `carry` over its own key (the place arm, class `contracted`); a lararium otherwise presents its worn face with
  *     the admit it took for that Nexus. Nothing composed, nothing dialed.
  *
@@ -21,7 +22,7 @@ import {
   foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
   signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, ORACLE_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
-  type DialSocket, type FloorKeyDoor, type FacePresentation, type FederationPosture, type GateBundlePin, type HearthPinIndex, type LarDoc,
+  type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
   type OraclePullResult, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
@@ -31,12 +32,6 @@ import type { PlaceClass } from "./socket-sorter.js";
 /** The carried Nexuses a vessel's gates stand in: every one for a lararium; for a herm, those that carry its own key. */
 export function gateReadingsFor(placeClass: PlaceClass, readings: readonly CarriedNexusReading[]): readonly CarriedNexusReading[] {
   return placeClass === "herm" ? readings.filter((r) => r.via === "carrier-seal") : readings;
-}
-
-/** The posture a herm's gate reads at `nexus`: the carrying Nexus's own charter posture, PRIVATE where it reads none. */
-export function hermGatePosture(nexus: string, readings: readonly CarriedNexusReading[]): FederationPosture {
-  const aid = nexus.trim().toLowerCase();
-  return readings.find((r) => r.via === "carrier-seal" && r.aid.toLowerCase() === aid)?.posture ?? "private";
 }
 
 export interface VesselCarriagePullDeps {
@@ -104,7 +99,8 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
     },
     refresh,
     presentationFor: async (nexus, pin) => {
-      const reading = (await standing()).find((r) => r.aid === nexus);
+      const aid = nexus.trim().toLowerCase();
+      const reading = (await standing()).find((r) => r.aid.toLowerCase() === aid);
       const arm = reading ? await placeArmFor(reading.denyBoard, reading.roster, placeKey) : null;
       if (arm !== null) return { kind: "place", placeKey, sign: deps.sign, arm };
       // A place presents its contract or nothing: it wears no face.

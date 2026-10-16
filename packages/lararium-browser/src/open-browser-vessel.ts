@@ -203,14 +203,13 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   /** Base URL the genesis static host serves (seed + cas/ live under it). */
   genesisCasBaseUrl?:   string;
   /** Relay gate URL (ws://host:port/ws) to dial for the node↔browser spore crossing. When set (and
-   *  a founding card is cached), the vessel composes the V3 leaf transport (LarWSClientAdapter) and
+   *  a founding card is cached), the vessel composes the gate-dial transport (LarWSClientAdapter) and
    *  adds it to the Repo — the browser's outbound crossing. */
   relayUrl?:       string;
   /**
-   * The relay gate's verifying-key hex — the gate-binding the V3 proof commits to (anti-relay;
+   * The relay gate's key hex — the key the dial's sealed first flight is addressed to (anti-relay;
    * known OUT-OF-BAND, NEVER trusted from the wire). For a cross-operator crossing this is the
-   * NODE daemon's gate key (so the proof clears against the node's own key). Absent → defaults to
-   * this vessel's own verifying key (the same-operator leaf, the prior behavior — back-compat).
+   * NODE daemon's gate key. Absent → the vessel does not cross (`relayPinFor`).
    */
   relayGatePubKey?: string;
   /**
@@ -752,7 +751,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
   // admit carries no other true name for it): the sovereign pin, and the floor pins at its Nexus the signed answer carried
-  // (house ruling "Floor pins", carrier (b)), so the oracle read at this hearth holds its pin before any crossing. The
+  // (house ruling "The admit's gate pin", carrier (b)), so the oracle read at this hearth holds its pin before any crossing. The
   // verified sovereign crossing files the same set again (carrier (a)). A pin the index refuses files nothing.
   fileOwnHearthPins(gatePins, relayUrl, social);
   const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));

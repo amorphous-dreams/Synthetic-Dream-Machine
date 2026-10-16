@@ -8,8 +8,8 @@
  * Proven, each with its control:
  *   · RED: a charter the landing put down where none stood is gone after the take refuses, and the refusal names
  *     `admit-refused` / CONTROL: a take that holds keeps it;
- *   · lane reading (unruled): a charter that extended (or matched) one already held stands, since it moves its own
- *     lineage forward and the vessel held that Nexus before.
+ *   · a charter that extended (or matched) one already held stands, since it moves its own lineage forward and the
+ *     vessel held that Nexus before.
  */
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { rmSync, writeFileSync } from "node:fs";
@@ -95,7 +95,7 @@ describe("a refused take keeps no charter its landing imported", () => {
     expect(existsSync(seam.charterPath)).toBe(true);                                     // CONTROL
   });
 
-  test("lane reading: a charter that extended one already held stands through a refused take", async () => {
+  test("a charter that extended one already held stands through a refused take", async () => {
     bootstrapNaming(null);
     seam.takeFails = true;
     seam.outcome = "extended";

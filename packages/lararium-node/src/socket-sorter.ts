@@ -40,17 +40,19 @@ export interface GateSorterDeps {
 export type PlaceClass = "lararium" | "herm";
 
 /**
- * ONE READER for the posture of a Nexus a vessel's gate stands in, off the charter it holds for that Nexus. OPEN only where
- * the charter says so; an absent or torn charter reads PRIVATE, because a fault fails closed.
+ * ONE READER for a vessel's OWN place posture: what the gate it stands at a Nexus answers a proven peer with no arm.
  *
- * A HERM READS THE SAME WAY (house reading "The herm's gate posture", 2026-10-16). A herm stands a gate only at a Nexus whose
- * quorum counted its `carry` (`gateNexuses`), and there it answers as that Nexus's own charter says. The reading it replaces
- * ("a crossroads answers any proven peer that KNOCKED") made the knock a bearer secret: anyone a pin leaked to, presenting a
- * face no Nexus admits, read the map. Closed by default, a stranger learns nothing; a relay herm reads the next hop by
- * presenting its own carriage contract (the place arm), and a member's browser by its admit.
+ *   · A LARARIUM reads its charter: OPEN only where the charter says so; an absent or torn charter reads PRIVATE,
+ *     because for a hearth an absent charter is a fault and a fault fails closed.
+ *   · A HERM ANSWERS THE KNOCK (operator ruling, siege-resilience "A HERM ANSWERS THE KNOCK"; stable-founding-road "A herm
+ *     answers the knock"). A herm holds no charter by CLASS, a waystone and never a broken lararium, so its absent charter is no
+ *     fault to fail closed on: it answers any PROVEN peer that knocked. The knock is its silence: the path derives from the
+ *     gate key, and only a peer handed that key can knock at all (a bare route draws no upgrade). WHERE it stands a gate is
+ *     the other half of the ruling, read elsewhere (`herm-carriage`): only at a Nexus whose quorum counted its `carry`. Its
+ *     SILENT/WAYMARK rung governs the HTTP descriptor alone, never this.
  */
-export function ownPlacePosture(_placeClass: PlaceClass, charter: NexusDoc | null): FederationPosture {
-  return federationPostureFromDoc(charter);
+export function ownPlacePosture(placeClass: PlaceClass, charter: NexusDoc | null): FederationPosture {
+  return placeClass === "herm" ? "open" : federationPostureFromDoc(charter);
 }
 
 const isShut = (kind: string): kind is ShutArm => (SHUT_ARMS as readonly string[]).includes(kind);

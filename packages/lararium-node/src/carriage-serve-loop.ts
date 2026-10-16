@@ -15,7 +15,7 @@
  * The read-cap NEVER rides this shore: a bag's content key reaches its readers through the sealed store's lockboxes.
  *
  * CLEAN LIFECYCLE. The connect runs fire-and-forget with a caught rejection (a down relay never blocks or crashes
- * the boot); once `auth-ok` lands, an interval polls. `stop()` latches the loop shut, clears the timer, and closes
+ * the boot); once the channel stands, an interval polls. `stop()` latches the loop shut, clears the timer, and closes
  * the live channel — NON-BLOCKING, so a stop mid-handshake never hangs on a slow / half-open relay. A connect that
  * lands AFTER stop reads the latched flag and closes its own fresh channel (the stopped-guard below), so no timer /
  * socket survives teardown either way. A poll never overlaps itself (a slow serve turn holds the next tick off).
@@ -28,7 +28,7 @@
  * outlives teardown. A relay down at boot retries on the backoff, unblocked, off-thread (boot never waits on it).
  *
  * TWO SOCKETS STAY TWO. This channel (Socket B, ciphertext) SEPARATES from the vessel's Automerge `/ws` relay
- * (Socket A, cleartext CRDT behind the DaemonAuthGate) — the two never cross.
+ * (Socket A, cleartext CRDT behind the face gate) — the two never cross.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/carriage-serve-loop
  */
@@ -161,7 +161,7 @@ export function startCarriageServeLoop(cfg: CarriageServeLoopConfig): CarriageSe
     if (!stopped) { log(`carriage channel dropped over ${cfg.relayUrl} — re-dialing`); scheduleRedial(); }
   };
 
-  // Dial + latch the channel once auth-ok lands. A down relay / a pre-auth close REJECTS → caught, logged, and
+  // Dial + latch the channel once it stands. A down relay / a pre-auth close REJECTS → caught, logged, and
   // RE-DIALED on a backoff (boot never blocks — the retry runs off-thread). A connect that lands after stop()
   // reads `stopped` and closes its own channel — no leak, no matter the order. A RE-connect fires onReconnect.
   const dial = async (): Promise<void> => {

@@ -120,7 +120,7 @@ capture_mesh_state() {
 clear_all() {
   capture_mesh_state
   $COMPOSE down -v >/dev/null 2>&1 || true
-  unset HERM_SOURCE_GATE HERM_RELAY_GATE HERM_RELAY_2_GATE LARARIUM_A_GATE LARARIUM_B_GATE
+  unset HERM_SOURCE_PUBLISHER HERM_RELAY_PUBLISHER HERM_RELAY_2_PUBLISHER LARARIUM_A_PUBLISHER LARARIUM_B_PUBLISHER
   rm -f .mesh-pins.env
   local deadline=$((SECONDS + 60))
   while docker network ls --format '{{.Name}}' | grep -q "^${MESH_PROJECT}_mesh\$" && [ "$SECONDS" -lt "$deadline" ]; do
@@ -208,7 +208,7 @@ dump_boot_failure() {
 # EVERY PEER IS PINNED. A compose peer names the gate key it knocks with, read off the herm's own founded store
 # (`tools/mesh-pins.mjs`), so a herm that stands exports its pin for every service that boots after it. A
 # scenario that founds afresh reads afresh: `clear_all` drops the pins with the volumes.
-pin_herms() { eval "$(node tools/mesh-pins.mjs --print 2>/dev/null | sed -n 's/^\([A-Z0-9_]*_GATE=[0-9a-f]\{64\}\)$/export \1/p')"; }
+pin_herms() { eval "$(node tools/mesh-pins.mjs --print 2>/dev/null | sed -n 's/^\([A-Z0-9_]*_PUBLISHER=[0-9a-f]\{64\}\)$/export \1/p')"; }
 
 # Wait until a hearth both STANDS and ANSWERS. Either alone is a half-truth. A herm that answers exports its pin.
 up_and_answering() {
@@ -324,25 +324,22 @@ contract_ab() {
   fi
 }
 
-# ── A PLACE JOINS A'S NEXUS BY HAND (house reading "Only there") ──────────────────────────────────
+# ── A PLACE JOINS A'S NEXUS BY HAND (lar:///ha.ka.ba/lararium/node/carry-bundle) ─────────────────────────────────
 # A herm stands a floor gate only at a Nexus whose quorum counted its `carry`, and a reader files its floor pin only
-# off a board that counts it. The relay that would carry the act to the herm stays shut, so the join walks three doors
-# by file: the place signs its carrier seal and its floor pin (`nexus carry-for`), A's quorum carries it with the pin
-# beside the act (`nexus carry --floor-pin`), and the place takes the carry bundle onto its own replica
-# (`nexus carry-take`). A, which founds the Nexus, carries ITSELF the same way (house reading "The founder hearth reads
-# as a carried place"): its founder face holds no admit at its own Nexus, so at a PRIVATE herm gate it presents the
-# place arm. $1 = the service joining; A's charter travels to it first unless it is A.
+# off a board that counts it. The relay that would carry the act to the herm ships shut by name (house ruling "Routes at
+# the cutover"), so the join walks three doors by file: the place signs its carrier seal and its floor pin (`nexus
+# carry-for`), A's quorum carries it with the pin beside the act (`nexus carry --floor-pin`), and the place takes the
+# carry bundle onto its own replica (`nexus carry-take`). A running place refolds on the take and its floor gate stands
+# at once (`oracle-read-face` follows the gate set at every refold). $1 = the herm joining; A's charter travels to it first.
 carry_place() {
   local svc="$1"
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   local CHARTER IMP CF PNYM PSIG CARRY TAKE
   step "$svc joins A's Nexus by hand: carry-for → carry --floor-pin → carry-take"
-  if [ "$svc" != "lararium-a" ]; then
-    CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
-    if [ -z "$CHARTER" ] || ! printf '%s' "$CHARTER" | $COMPOSE exec -T "$svc" sh -c 'cat > /tmp/a-charter.mem' \
-       || ! IMP=$($COMPOSE exec -T "$svc" $LARES nexus seal import /tmp/a-charter.mem --json 2>/dev/null); then
-      bad "$svc could not import A's charter"; printf '%s\n' "$IMP" | tail -2 | sed 's/^/      /'; return 1
-    fi
+  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
+  if [ -z "$CHARTER" ] || ! printf '%s' "$CHARTER" | $COMPOSE exec -T "$svc" sh -c 'cat > /tmp/a-charter.mem' \
+     || ! IMP=$($COMPOSE exec -T "$svc" $LARES nexus seal import /tmp/a-charter.mem --json 2>/dev/null); then
+    bad "$svc could not import A's charter"; printf '%s\n' "$IMP" | tail -2 | sed 's/^/      /'; return 1
   fi
   CF=$($COMPOSE exec -T "$svc" $LARES nexus carry-for --json 2>/dev/null)
   PNYM=$(printf '%s' "$CF" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
@@ -355,14 +352,41 @@ carry_place() {
   if ! printf '%s' "$CARRY" | grep -q '"ok":true' || ! printf '%s' "$CARRY" | grep -q '"carryBundle":{'; then
     bad "A's quorum refused the carry"; printf '%s\n' "$CARRY" | tail -2 | sed 's/^/      /'; return 1
   fi
-  if [ "$svc" != "lararium-a" ]; then
-    printf '%s' "$CARRY" | $COMPOSE exec -T "$svc" sh -c 'cat > /tmp/carry-bundle.json'
-    TAKE=$($COMPOSE exec -T "$svc" $LARES nexus carry-take /tmp/carry-bundle.json --json 2>/dev/null)
-    if ! printf '%s' "$TAKE" | grep -q '"ok":true'; then
-      bad "$svc refused its carry bundle"; printf '%s\n' "$TAKE" | tail -2 | sed 's/^/      /'; return 1
-    fi
+  printf '%s' "$CARRY" | $COMPOSE exec -T "$svc" sh -c 'cat > /tmp/carry-bundle.json'
+  TAKE=$($COMPOSE exec -T "$svc" $LARES nexus carry-take /tmp/carry-bundle.json --json 2>/dev/null)
+  if ! printf '%s' "$TAKE" | grep -q '"ok":true'; then
+    bad "$svc refused its carry bundle"; printf '%s\n' "$TAKE" | tail -2 | sed 's/^/      /'; return 1
   fi
   ok
+}
+
+# ── THE FOUNDER ADMITS ITS OWN FACE (stable-founding-road, the two-root witness T3: "each founder consents with its own
+# per-Nexus leaf and opens its own admit") ────────────────────────────────────────────────────────────────────────
+# A hearth reads a herm by presenting its worn face with the admit it took for that Nexus (`herm-carriage`, "what a reader
+# presents"); a herm answers any proven peer that knocked (operator ruling "A herm answers the knock"). A's founder face
+# holds no admit at A's own Nexus until A's quorum admits it, so A consents with its own leaf, admits it, and takes the
+# bundle, the same three doors B walks in `contract_ab`.
+admit_self_a() {
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local ACC NYM SIG CONTRACT TAKE
+  step "A admits its own face at its own Nexus: accept-carriage → contract → admit-take"
+  ACC=$($COMPOSE exec -T lararium-a $LARES nexus accept-carriage --json 2>/dev/null)
+  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
+  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
+  if [ -z "$NYM" ] || [ -z "$SIG" ]; then
+    bad "A minted no contract-in for its own face"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; return 1
+  fi
+  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" --json 2>/dev/null)
+  if [ -z "$CONTRACT" ] || ! printf '%s' "$CONTRACT" | grep -q '"ok":true'; then
+    bad "A's quorum refused its own founder's admit"; printf '%s\n' "$CONTRACT" | tail -2 | sed 's/^/      /'; return 1
+  fi
+  if ! printf '%s' "$CONTRACT" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/a-self-admit-bundle.json'; then
+    bad "the admit bundle never landed on A"; return 1
+  fi
+  TAKE=$($COMPOSE exec -T lararium-a $LARES nexus admit-take /tmp/a-self-admit-bundle.json --json 2>/dev/null)
+  if printf '%s' "$TAKE" | grep -q '"ok":true'; then ok
+  else bad "A refused its own admit bundle"; printf '%s\n' "$TAKE" | tail -2 | sed 's/^/      /'; return 1
+  fi
 }
 
 # COVERS: private/seed/unfed
@@ -845,9 +869,11 @@ run_nexus() {
   # POLL. Carriage runs on its own cadence, well after the browsers have exited — a single read here
   # times the harness rather than the federation.
   # GATE-NATIVE CARRIAGE (house ruling "Routes at the cutover"): a hearth reads a herm only at a floor pin its own board
-  # files, presenting what it stands as at that Nexus. Every place that reads or is read joins A's Nexus first.
+  # files, presenting what it stands as at that Nexus. Each herm joins A's Nexus by carry; A presents its founder face
+  # with the admit it takes at its own Nexus.
   local joined=1 svc
-  for svc in herm-source herm-relay lararium-a; do carry_place "$svc" || joined=0; done
+  for svc in herm-source herm-relay; do carry_place "$svc" || joined=0; done
+  admit_self_a || joined=0
   if [ "$joined" != 1 ]; then clear_all; return; fi
 
   step "the hearths carry from the herm"

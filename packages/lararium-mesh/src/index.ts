@@ -330,7 +330,7 @@ export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./s
 export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel, channelSessionTable } from "./gate-session-channel.js";
 export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
-// client adapter files it, and the fleet-join answer carries it signed (house ruling "Floor pins").
+// client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
 export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
 export {
   PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,

@@ -229,8 +229,8 @@ export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOrigin
 }
 
 /**
- * Build the crossing URL a leaf opens: the web origin, the relay it dials, and the GATE key its V3 proof
- * commits to. The relay rides the SAME name the web surface came from — a phone that loaded the web surface over a LAN
+ * Build the crossing URL a leaf opens: the web origin, the relay it dials, and the GATE key the dial's sealed first
+ * flight is addressed to. The relay rides the SAME name the web surface came from — a phone that loaded the web surface over a LAN
  * address cannot dial `localhost` (which on that phone names the phone), and a browser on a TLS name cannot
  * dial a `ws://` relay from an `https://` page (mixed content), so a declared face carries `wss` throughout.
  */

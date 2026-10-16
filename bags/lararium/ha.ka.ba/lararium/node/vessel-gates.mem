@@ -1,0 +1,69 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/vessel-gates">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/node/vessel-gates.mem"
+l-space     = "lararium"
+mana        = 14
+role        = "invariant law: ONE face gate per (Nexus, route), every one a node vessel stands assembled from the same readers — the held root of the gate's own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the withdrawal memory a sovereign gate keeps across a restart. The bundle comes from the composer under the tier's own root door; the session table from the route's own consumer."
+source-file = "packages/lararium-node/src/vessel-gates.ts"
+title       = "lar:///ha.ka.ba/lararium/node/vessel-gates"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/node/vessel-gates"
+written     = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The vessel's gates ~ one assembly for every gate a node stands
+
+The sovereign sync route and the floor's oracle route stand on the same gate (`@lararium/mesh`
+`face-gate`). What differs between them is the ROOT their bundle derives under and the CONSUMER that seats
+their sessions, never the readers. `vesselGate` is the one place those readers meet the gate.
+
+<<~/ahu>>
+
+<<~ ahu #/the-readers>>
+
+!! What every gate of one vessel reads
+
+* ''The admit reader'' holds the root of the gate's own Nexus alone (`gateHeldRoot`), read fresh at every
+admit. A gate at Nexus A never judges an admit by Nexus B's board.
+* ''The shadow ring'' is the vessel's one D4 reading (`gate-shadow-ring`): a device the fleet root set
+aside holds no same-operator seat, whatever it proves (house ruling "A device set aside").
+* ''The grant ring'' answers the PersonaGroup grant this vessel holds for a face (`gate-rings`).
+* ''The sorter'' reads this Nexus's posture alone (`socket-sorter`), and the walker's arms ship SHUT.
+* ''The withdrawal memory'' outlives a restart where the composer hands the sealed store
+(`gate-memory-rows`); a floor gate keeps it in memory.
+
+<<~/ahu>>
+
+<<~ ahu #/the-bundle-and-the-table>>
+
+!! The bundle and the table come from outside
+
+The gate's bundle comes from the composer, derived under the tier's own root door: a sovereign route's from
+the custody root, a floor route's from the floor key. The session table comes from the route's own
+consumer, so no frame reaches a consumer before the gate's verdict left. A refusal's cause goes to this
+vessel's own log through `onRefuse`; the wire never carries it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/vessel-gates.ts" family="code" role="has">>
+<<~ pranala #gate from="?" -> to="packages/lararium-mesh/src/face-gate.ts" family="code" role="stands">>
+<<~ pranala #sorter from="?" -> to="packages/lararium-node/src/socket-sorter.ts" family="code" role="arms-with">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/open-node-vessel">>
+
+<<^ code="&#x0003;">>ni:///sha-256;PzqVDJqsQEyCX_6vEMuTLjDmGdXpoB1uu2icnVmeFGU
+
+<<^ code="&#x0004;" -> to="?">>

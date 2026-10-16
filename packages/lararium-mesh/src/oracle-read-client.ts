@@ -19,7 +19,8 @@
  * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The challenge
  * and auth frames the old wire carried are gone: the gate does that work.
  *
- * Stands specified in code until the oracle face's server half is wired (cutover slice C/D).
+ * Callers: the browser vessel's oracle read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
+ * the node's server half is `oracle-read-face`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  */
@@ -65,7 +66,7 @@ export interface OraclePullResult<T = unknown> {
 
 /**
  * What a FACELESS reader presents at a floor gate: a place's own key, its signing door, and the Nexus quorum's counted
- * `carry` act over that key (house reading "The faceless reader", place-floor-pin.ts). A place with no contract at the
+ * `carry` act over that key (the place arm, `place-floor-pin`). A place with no contract at the
  * pinned Nexus presents none and sorts as any stranger does: silence where the Nexus reads private.
  */
 export interface PlaceOraclePresentation {

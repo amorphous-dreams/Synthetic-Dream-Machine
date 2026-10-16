@@ -18,7 +18,7 @@
  * THE FLOOR PINS. The vessel stands its oracle's floor gate at the same Nexus on the oracle route, under its floor key
  * (`floorGateRoot(vesselFloorKeyDoor())`). `stoodFloorPins` reads that pin set, so a fleet-join answer and the sovereign
  * session can carry it under a signature: a floor route takes its pin only through an authenticated relation or a
- * carried signed pin set (house ruling "Floor pins").
+ * carried signed pin set (house ruling "The admit's gate pin").
  *
  * Meme: lar:///ha.ka.ba/lararium/node/hearth-sovereign-pin
  */
