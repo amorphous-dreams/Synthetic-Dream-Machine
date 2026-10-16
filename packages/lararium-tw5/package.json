@@ -36,10 +36,6 @@
       "import": "./dist/memetic-wikitext-sensorium.js",
       "types": "./dist/memetic-wikitext-sensorium.d.ts"
     },
-    "./meme-worker-script.js": {
-      "import": "./dist/meme-worker-script.js",
-      "types": "./dist/meme-worker-script.d.ts"
-    },
     "./tw5-memes-root": {
       "import": "./tw5-memes-root.js",
       "types": "./tw5-memes-root.d.ts"
@@ -66,7 +62,8 @@
     "test": "vitest run",
     "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
     "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
-    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
+    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts",
+    "measure:frames": "tsx scripts/frame-baseline.ts"
   },
   "dependencies": {
     "@lararium/memetic-frame": "workspace:*",

@@ -20,6 +20,9 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A realm lists its stewards.** `lares nexus realm bags` prints each co-signed steward beside the bags it keeps.
 - **A member list reads through a roll.** `lares nexus members` counts an admit from a closed epoch when a counted roll anchor carries it to the head.
 - **DreamDOM names the superset of cameras.** `docs/pono/dreamdom` carries the whole model: four layers, two waists, every root template over every document sink, the width dial, the Wiki Actor and the two-way contract per surface. `docs/pono/dreamdom-roadmap` orders train D, and `docs/pono/evaluators-one-or-many` and `docs/pono/mudlet-scout` stand beside it.
+- **A wiki island boots its boot shadows.** The gruvbox palette, the Kumu tag and the `.mem` file-type mapping stand in every island the moment it boots, on the Node vessel and in the browser alike.
+- **A bag's startup actions run.** A tiddler tagged `$:/tags/StartupAction` that arrives with the wiki's own records runs once the seed lands, not only when it rode a plugin.
+- **The engine's suites run on a fresh clone.** `packages/lararium-tw5/tests/genesis-boot.harness.ts` boots the engine from the tracked genesis CAS on either host path, so CI's test job proves the island without a build; `pnpm --filter @lararium/tw5 measure:frames` prints the frame-byte and camera-timing baseline over the house's own carriers.
 
 **Fixed**
 - **Retired join doors leave the CLI and browser.** `lares persona admit`, `lares device-admit`, `vessel found|stand --admit`, the browser's bare `#admit=` reader and browser-ci `qa-admit` give way to fleet join and `qa-join`. `device-admit/v1` stays as the internal edge format; `cabal-join` keeps people and realm admission.
@@ -28,7 +31,11 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A retired bag takes nothing.** A wiki save, a delete or `lares shore remove` into a bag that DROP retired refuses `bag-retired` at the write door and lands nothing; the hand stays owed on the alert rail.
 - **`vault status` names a cut seal.** A floor carrier cut inside the vessel key's magic reads `torn` and a fault, and a short frame of another house seal reads `unopenable`, never bare.
 - **The custody wait refuses only for a holder that answers.** A holder that leaves mid-wait lets the contender in.
-- **A detached wiki control does nothing.** A click or keystroke on a node a re-render detached answers `stale-target` and runs no handler.
+- **A detached wiki control does nothing.** A click or keystroke on a node a re-render detached answers `stale-target` and runs no handler, and the island forgets the node with the frame that dropped it, so a long session's render-id maps hold one frame's worth.
+- **A boot warning never ends a wiki island.** On the Node vessel a TiddlyWiki `utils.error` call surfaces on the console and the island carries on, and the engine names itself by its own bytes (`$tw.version`) with the CSS escape at hand, as it already did in the browser.
+- **A syntax error in a browser island reads as one.** The browser worker's module evaluator throws the `SyntaxError` instead of an undefined module, and the island's own lends never show in TiddlyWiki's global-assignment warnings.
+- **The daemon's panel switch persists nothing.** Choosing a daemon surface, or projecting a carrier from the Working Surface, writes temp state alone: no record reaches the working layer or `wikis/daemon/` on disk.
+- **A trusted module defines by its own name.** The kernel's module gate defines each admitted carrier under its title and module type, so another module's `require` of it resolves.
 - **No face log incepts unarmed.** The persona log's mint and every reader refuse an empty recovery commitment, so no face stands where guardians could never arrive; an event with no kind keeps its earlier bytes.
 - **A re-lit face's name stays sealed.** `lares persona new <N> --name <label>` over a face that stands lit writes the label and Handle onto their sealed rows alone, never onto the face's persona plane, whose document rests in the clear on disk; `persona new` reports `fleet: false` and says so, `lares persona sync` refuses by name until the plane's rest seals, and `persona list` reads the sealed row first.
 - **The two-vessel mesh e2e loads again.** It imported one pin twice in a line, so the whole file failed to load and its tests never ran.
