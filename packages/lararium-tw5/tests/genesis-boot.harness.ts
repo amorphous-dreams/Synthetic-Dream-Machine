@@ -18,7 +18,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { pluginCidsFromIslandBlobs } from "@lararium/mesh";
+import { bootSetPluginCids } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { preloadsFromCasBlob } from "../src/cas-preloads.js";
 
@@ -66,7 +66,7 @@ export function genesisCoreBlob(): { bytes: Uint8Array; sha256: string } {
 /** Every preload the kernel would hand the engine: the seed's json blobs, in the kernel's own selection and shape. */
 export function genesisPreloads(): Record<string, unknown>[] {
   const seed = readSeed()!;
-  return pluginCidsFromIslandBlobs(seed.blobs).flatMap((cid) => preloadsFromCasBlob(new Uint8Array(readFileSync(casPath(cid)))));
+  return bootSetPluginCids(seed.blobs).flatMap((cid) => preloadsFromCasBlob(new Uint8Array(readFileSync(casPath(cid)))));
 }
 
 /**
