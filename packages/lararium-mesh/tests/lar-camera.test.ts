@@ -90,6 +90,21 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarControlEvent({ ...write, records: "x" })).toBeNull();
     expect(readLarControlEvent({ ...write, records: [{ fields: {} }] })).toBeNull();
   });
+  test("a text operation carries its selection and the field it edits; CONTROL: a selection running backwards, a negative offset or a nameless field reads null", () => {
+    const op = mkLarControlEvent({ ...act(), action: "lar:edit-operation", controlType: "lar-field-operation", wholeValue: "wrap me", selection: { start: 5, end: 7 }, fieldId: "12", localRev: 0 });
+    expect(readLarControlEvent(op)).toMatchObject({ selection: { start: 5, end: 7 }, fieldId: "12" });
+    expect(readLarControlEvent({ ...op, selection: { start: 7, end: 5 } })).toBeNull();
+    expect(readLarControlEvent({ ...op, selection: { start: -1, end: 5 } })).toBeNull();
+    expect(readLarControlEvent({ ...op, selection: "5..7" })).toBeNull();
+    expect(readLarControlEvent({ ...op, fieldId: "" })).toBeNull();
+    expect(readLarControlEvent({ ...op, controlType: 7 })).toBeNull();
+  });
+  test("a result's want names a whole value and a forward selection; CONTROL: a want without its value or running backwards reads null", () => {
+    const applied = { type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "applied" };
+    expect(readLarControlResult({ ...applied, want: { value: "wrap ''me''", selStart: 5, selEnd: 11 } })).toMatchObject({ want: { selEnd: 11 } });
+    expect(readLarControlResult({ ...applied, want: { selStart: 5, selEnd: 11 } })).toBeNull();
+    expect(readLarControlResult({ ...applied, want: { value: "x", selStart: 9, selEnd: 1 } })).toBeNull();
+  });
   test("a result names its status, and a refusal names its reason", () => {
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "applied" })).not.toBeNull();
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "refused" })).toBeNull();

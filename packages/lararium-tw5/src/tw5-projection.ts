@@ -37,6 +37,7 @@ import type { IslandContext } from "./island-context.js";
 import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camera.js";
 import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
+import { installLarFieldEngine, larFieldEngineOf } from "./lar-field-engine.js";
 import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
   LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
@@ -116,6 +117,8 @@ interface CameraScope {
   mark(): void;
   resend(manifest?: LarSurfaceManifest): void;
   alert(title: string, text: string): void;
+  /** The doors the page controls reach: the root widget a text operation's message reaches, and the popup closer. */
+  controls?: { readonly rootWidget: Record<string, any>; dismiss(): void };
 }
 const eventScopes = new Map<string, CameraScope>();
 const cameras = new Set<CameraScope>();
@@ -456,13 +459,13 @@ function writeChoice(el: RidNode, keys: readonly string[]): void {
 export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
   const scope = scopeFor(ev);
   const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
-  const answer = (status: LarResultStatus, reason?: LarRefusal): LarMsg_ControlResult => {
+  const answer: Answer = (status, reason, want) => {
     dispatching = undefined;
     const result = mkLarControlResult({
       eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
       ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}),
       ...(ev.renderId !== undefined ? { renderId: ev.renderId } : {}),
-      status, ...(reason !== undefined ? { reason } : {}),
+      status, ...(reason !== undefined ? { reason } : {}), ...(want !== undefined ? { want } : {}),
     });
     if (scope && ev.mountEpoch === scope.mountEpoch) remember(scope, result);
     if (scope) scope.post(result);
@@ -506,7 +509,7 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   // An act that raised a host door the manifest lacks answers with that door's refusal, never `applied`; the
   // answer ends the dispatch's hold on the door.
   const acting = { scope, refusal: undefined as LarRefusal | undefined };
-  const applied = (): LarMsg_ControlResult => acting.refusal ? answer("refused", acting.refusal) : answer("applied");
+  const applied = (want?: LarMsg_ControlResult["want"]): LarMsg_ControlResult => acting.refusal ? answer("refused", acting.refusal) : answer("applied", undefined, want);
   dispatching = acting;
   switch (ev.action) {
     case "lar:click": {
@@ -560,7 +563,88 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       return applied();
     }
     default:
-      return answer("refused", "unsupported-control");
+      return dispatchPageControl(ev, el, key, scope, (status, reason, want) => status === "applied" ? applied(want) : answer(status, reason, want))
+        ?? answer("refused", "unsupported-control");
+  }
+}
+
+// ── The page controls: lar-field's text operation and take-theirs, lar-popover's dismissal ──────────
+//
+//   - `lar:edit-operation` on a node that sends `tm-edit-text-operation` carries the field's whole value and its
+//     selection as of the act (and the field, where the page names it; else the one field the frame painted). An
+//     act whose `localRev` falls below the field's sensed revision answers `stale-target`. The pair lands on the
+//     field's seam engine, the node's own click listeners run, and the message reaches the field's editor
+//     natively (a toolbar inside it) or through the root (a sibling button); TW5's own operation module and
+//     `executeTextOperation` run over the pair, and the answer's `want` carries the whole value and selection the
+//     engine wants. The page reserves the act's `localRev` + 1 for that answer, so the island takes it in.
+//   - `lar:take-theirs` on a seam field: the page took the descriptor whole as one undoable edit; the node reads it.
+//   - `lar:dismiss` closes the popups the camera's manager holds (the page closed its popover on Escape).
+
+type Answer = (status: LarResultStatus, reason?: LarRefusal, want?: LarMsg_ControlResult["want"]) => LarMsg_ControlResult;
+
+/** The seam field a text operation edits: the one the act names, else the one field the last frame painted. */
+function fieldFor(ev: LarMsg_ControlEvent, scope: CameraScope): RidNode | undefined {
+  const live = (rid: string): RidNode | undefined => {
+    const el = ridMap.get(rid);
+    return el && eventScopes.get(rid) === scope && scope.liveIds.has(rid) && standsAttached(el, scope.roots) && larFieldEngineOf(el) ? el : undefined;
+  };
+  if (ev.fieldId !== undefined) return live(scope.controlIds.get(ev.fieldId) ?? ev.fieldId);
+  const fields = [...scope.liveIds].map(live).filter((n): n is RidNode => n !== undefined);
+  return fields.length === 1 ? fields[0] : undefined;
+}
+
+/** Whether `widget` stands at or under `ancestor` in the widget tree. */
+function widgetUnder(widget: Record<string, any> | undefined, ancestor: unknown): boolean {
+  for (let w = widget; w; w = w["parentWidget"]) if (w === ancestor) return true;
+  return false;
+}
+
+function dispatchPageControl(ev: LarMsg_ControlEvent, el: RidNode, key: string, scope: CameraScope, answer: Answer): LarMsg_ControlResult | undefined {
+  switch (ev.action) {
+    case "lar:edit-operation": {
+      if (!claims(el, "click")) return answer("refused", "unclaimed");
+      const field = fieldFor(ev, scope);
+      const sel = ev.selection;
+      if (!field || !scope.controls || typeof ev.wholeValue !== "string" || !sel || sel.end > ev.wholeValue.length) return answer("refused", "selection-unavailable");
+      const fieldKey = field.attributes["data-lar-rid"]!;
+      if (ev.localRev !== undefined && ev.localRev < (scope.sensed.get(fieldKey) ?? -1)) return answer("stale-target");
+      const engine = larFieldEngineOf(field)!;
+      engine.carry({ text: ev.wholeValue, selStart: sel.start, selEnd: sel.end });
+      // A sibling toolbar's message bubbles past the field to the root; the root hands it to the field's editor.
+      const forward = (message: Record<string, any>): boolean => {
+        if (!widgetUnder(message["widget"], engine.widget)) engine.widget["handleEditTextOperationMessage"](message);
+        return false;
+      };
+      const root = scope.controls.rootWidget;
+      root["addEventListener"]("tm-edit-text-operation", forward);
+      try {
+        bubble(scope, el, "click", projectedEvent("click", el, scope, ev));
+      } finally {
+        root["removeEventListener"]("tm-edit-text-operation", forward);
+      }
+      const outcome = engine.takeOutcome();
+      if (!outcome) return answer("refused", "unclaimed");
+      if ("refused" in outcome) return answer("refused", outcome.refused);
+      if (ev.localRev !== undefined) takeIn(scope, fieldKey, ev.localRev + 1);
+      scope.mark();
+      return answer("applied", undefined, outcome.want);
+    }
+    case "lar:take-theirs": {
+      const engine = larFieldEngineOf(el);
+      if (!engine) return answer("refused", "unsupported-control");
+      engine.takeDescribed();
+      if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
+      scope.mark();
+      return answer("applied");
+    }
+    case "lar:dismiss": {
+      if (!scope.controls) return answer("refused", "binding-unavailable");
+      scope.controls.dismiss();
+      scope.mark();
+      return answer("applied");
+    }
+    default:
+      return undefined;
   }
 }
 
@@ -669,6 +753,9 @@ export function mountProjection(ctx: IslandContext): () => void {
   // Arm the interactivity RETURN leg before the camera renders (so every widget that binds a
   // listener gets its render-id stamped + handler stored).
   patchFakeElementForEvents(fakeDoc);
+  // The editor's engine seam and the control table stand before the camera renders its first field, and before
+  // the declarations wrap the widget classes, so the seam's `edit-text` declares its live value too.
+  installLarFieldEngine(tw);
   // Declare every binding at the moment TW5 makes it: the per-widget table stamps what the page cancels.
   patchWidgetDeclarations(tw);
   // The worker's fake document has no browser startup, which normally stands TW5's Popup. Reuse
@@ -717,6 +804,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   }
   const popupManager = new tw.utils.Popup({ rootElement: scope.popupRoot });
   tw.popup = popupManager;
+  scope.controls = { rootWidget: tw.rootWidget, dismiss: () => popupManager.cancel(0) };
   // ($:/SiteTitle "Lararium" + $:/SiteSubtitle "Welcome to the DreamNet" ride the lares plugin
   //  blob as source tiddlers — tiddlers/site-{title,subtitle}.tid — CID-carried, ratchet via
   //  re-genesis, user-overridable (a plugin shadow loaded after $:/core, overridden by ordinary).)

@@ -133,6 +133,8 @@ export interface LarMsg_ControlEvent {
   readonly checked?: boolean;
   /** The selection a toolbar act carries beside its whole value. */
   readonly selection?: { readonly start: number; readonly end: number };
+  /** The field a text operation edits, by its control id or render id, where the page knows it (page-controls#/the-wire). */
+  readonly fieldId?: string;
   readonly modifiers?: LarModifiers;
   readonly key?: LarKeyChord;
   readonly geometry?: LarGeometry;
@@ -289,6 +291,9 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (v["localRev"] !== undefined && !isRev(v["localRev"])) return null;
   if (v["kind"] === "lar:sense" && v["localRev"] === undefined) return null;   // a sense without its revision cannot be ordered
   if (v["checked"] !== undefined && typeof v["checked"] !== "boolean") return null;
+  if (v["controlType"] !== undefined && !isName(v["controlType"])) return null;
+  if (v["fieldId"] !== undefined && !isName(v["fieldId"])) return null;
+  if (v["selection"] !== undefined && !isSelection(v["selection"])) return null;
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;
   if (v["basis"] !== undefined && !(Array.isArray(v["basis"]) && v["basis"].every(isName))) return null;
   if (v["records"] !== undefined && !(Array.isArray(v["records"]) && v["records"].every(isWriteRecord))) return null;
@@ -296,6 +301,9 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (v["kind"] === "lar:service-result" && (!isName(v["requestId"]) || !isName(v["status"]))) return null;
   return v as unknown as LarMsg_ControlEvent;
 }
+
+/** A selection reads as two revisions-shaped offsets, start never past end. */
+const isSelection = (s: unknown): boolean => isRecord(s) && isRev(s["start"]) && isRev(s["end"]) && (s["start"] as number) <= (s["end"] as number);
 
 const isWriteRecord = (r: unknown): r is LarWriteRecord =>
   isRecord(r) && isName(r["title"]) && isRecord(r["fields"]) && (r["tombstone"] === undefined || r["tombstone"] === true);
@@ -331,6 +339,8 @@ export function readLarControlResult(v: unknown): LarMsg_ControlResult | null {
   if (!isName(v["eventId"]) || !isName(v["cameraId"]) || !isRev(v["mountEpoch"])) return null;
   if (v["status"] !== "applied" && v["status"] !== "stale-target" && v["status"] !== "refused") return null;
   if (v["status"] === "refused" && !isName(v["reason"])) return null;
+  const want = v["want"];
+  if (want !== undefined && !(isRecord(want) && typeof want["value"] === "string" && isSelection({ start: want["selStart"], end: want["selEnd"] }))) return null;
   return v as unknown as LarMsg_ControlResult;
 }
 

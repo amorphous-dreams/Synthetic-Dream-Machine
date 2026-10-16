@@ -19,7 +19,14 @@
  *               checkbox and radio class the label around their input), and the event names the first named node's
  *               render id or its nearest painted ancestor's (the node the act climbs from: the camera's top element
  *               carries one); `checked` rides a toggle; `epoch: "stale"` carries the epoch that surface emitted
- *               before the delivered one.
+ *               before the delivered one; a toolbar act carries its `selection`.
+ *   - `write`   lands a peer's whole records in the store through the island's own door (`TW5Engine.setTiddler`;
+ *               a tombstone deletes), the way a landed change reaches a wiki with no person's act behind it.
+ *   - `page`    a raw page gesture. The engine half relays what the page contract says the page relays for it,
+ *               and nothing else: a composition's end crosses once as a `lar:sense` with the composed value under
+ *               the control's next revision; an input while composing, a composition's start, and a keydown the
+ *               IME holds (`keyCode 229` or `isComposing`) cross nothing; any other keydown crosses as one
+ *               `lar:act` / `lar:key`. The one-task hold after `compositionend` rides the page half's real clock.
  *   - `switch`  mounts the arriving surface's engine (first time) and sends it `lar:resend`; the frame the resend
  *               answers becomes the delivered frame.
  *   - `service-result` answers a `lar:service` ask (`requestId: "last"` names the latest) as the page would: a
@@ -28,7 +35,7 @@
  *               frame flushes, the way a page that opens names the doors it carries.
  *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
  *               stands with those fields, and no title outside the named set took a write since the last expect),
- *               `services` (the `lar:service` asks posted since the last expect, in order, each matching the script's
+ *               `want` (the `want` the last answer since the last expect carried), `services` (the `lar:service` asks posted since the last expect, in order, each matching the script's
  *               `kind` and every `args` field the script names), and `frame` (`sensedRevision` keyed back to the
  *               script's control names, `surface`, `epoch: "fresh"`, `contains`, `attributes`: per selector, the
  *               attribute the first named node paints, `null` for absent, and `stamps`: per selector, each named stamp
@@ -242,6 +249,8 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
   let current: Surface = surfaces.values().next().value!;
   const lastSense: { rid?: string; name?: string; localRev?: number; framesBefore?: number; surface?: Surface } = {};
   let eventSeq = 0;
+  /** The revision the page would carry per control for the senses a `page` gesture relays. */
+  const pageRevs = new Map<string, number>();
 
   const surfaceOf = (step: Record<string, unknown>, body?: Record<string, unknown>): Surface => {
     const named = (body?.["surface"] ?? step["surface"]) as string | undefined;
@@ -282,6 +291,7 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
       ...(body["localRev"] !== undefined ? { localRev: Number(body["localRev"]) } : {}),
       ...(body["wholeValue"] !== undefined ? { wholeValue: body["wholeValue"] as LarWholeValue } : {}),
       ...(body["checked"] !== undefined ? { checked: Boolean(body["checked"]) } : {}),
+      ...(body["selection"] !== undefined ? { selection: body["selection"] as { start: number; end: number } } : {}),
       ...(body["modifiers"] !== undefined ? { modifiers: body["modifiers"] as LarModifiers } : {}),
       ...(body["key"] !== undefined ? { key: body["key"] as LarKeyChord } : {}),
       ...(body["geometry"] !== undefined ? { geometry: body["geometry"] as LarGeometry } : {}),
@@ -331,6 +341,37 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
         const body = step["act"] as Record<string, unknown>;
         send(surfaceOf(step, body), "lar:act", body, at);
         await hooks.settle();
+      } else if ("write" in step) {
+        const body = step["write"] as { records?: { title: string; fields?: Record<string, string | string[]>; tombstone?: boolean }[] };
+        if (!Array.isArray(body.records)) { failures.push(`${at}: a write names no records`); continue; }
+        const s = surfaceOf(step, body as Record<string, unknown>);
+        for (const r of body.records) {
+          if (r.tombstone) (s.engine.$tw as unknown as { wiki: { deleteTiddler(t: string): void } }).wiki.deleteTiddler(r.title);
+          else s.engine.setTiddler({ ...(r.fields ?? {}), title: r.title });
+        }
+        await hooks.settle();
+        trace.push(`${at}: peer write ${body.records.map((r) => r.title).join(",")}`);
+      } else if ("page" in step) {
+        const body = step["page"] as { control: string; composition?: string; value?: string; input?: string; composing?: boolean; keydown?: { key: string; code: string; keyCode: number; isComposing?: boolean; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean; shiftKey?: boolean } };
+        const s = surfaceOf(step, body as Record<string, unknown>);
+        if (body.composition === "end") {
+          if (typeof body.value !== "string") { failures.push(`${at}: a composition's end names no value`); continue; }
+          const localRev = (pageRevs.get(body.control) ?? 0) + 1;
+          pageRevs.set(body.control, localRev);
+          send(s, "lar:sense", { control: body.control, wholeValue: body.value, localRev }, at);
+        } else if (body.keydown) {
+          const k = body.keydown;
+          if (k.keyCode === 229 || k.isComposing) { trace.push(`${at}: the IME holds ${k.key} (keyCode ${k.keyCode}); nothing crosses`); continue; }
+          send(s, "lar:act", {
+            control: body.control, action: "lar:key",
+            key: { key: k.key, code: k.code, keyCode: k.keyCode, repeat: false },
+            modifiers: { ctrl: !!k.ctrlKey, meta: !!k.metaKey, alt: !!k.altKey, shift: !!k.shiftKey },
+          }, at);
+        } else {
+          trace.push(`${at}: a page gesture that crosses nothing (${body.composition ? `composition ${body.composition}` : "input while composing"})`);
+          continue;
+        }
+        await hooks.settle();
       } else if ("service-result" in step) {
         const body = step["service-result"] as Record<string, unknown>;
         const s = surfaceOf(step, body);
@@ -364,6 +405,11 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
           if (key === "answers") {
             const got = results.slice(resultsSeen).map((r) => r.status === "refused" ? `refused:${r.reason}` : r.status);
             if (!deepEqual(got, want)) failures.push(`${at}: answers ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "want") {
+            const got = results.slice(resultsSeen).map((r) => r.want).filter((w) => w !== undefined).at(-1);
+            if (!deepEqual(got, want)) failures.push(`${at}: the answer wants ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
             continue;
           }
           if (key === "services") {

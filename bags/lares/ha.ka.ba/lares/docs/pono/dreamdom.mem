@@ -355,7 +355,7 @@ Evidence: `docs/pono/two-way-interaction-scout` §2, §3 and §6; `docs/pono/tw5
 Measured against TiddlyWiki's widget roster at width none today, ''roughly a third of the stock interactions work, a third paint but act wrongly, and a third have no road''. Six places lose a person's work silently in the as-built sink, and each has a named cure. The cure reads as one contract (#/the-crossings), never many patches.
 
 |! Loss |! Mechanism, as built |! Cure |
-| ''The textarea revert'' (data loss) | the worker sets `el.value`, which fakedom keeps as an attribute; the textarea's child text paints; `SimpleEngine.setText` returns early on a fake document; once the body editor blurs, the next frame repaints the old text, and typing again relays the reverted whole value over the earlier edits | the frame carries a value descriptor and the page reconciles only while `localRev ≤ sensedRevision`; the seam engine's `setText` writes the descriptor, never the node |
+| ''The textarea revert'' (data loss) | the worker sets `el.value`, which fakedom keeps as an attribute; the textarea's child text paints; `SimpleEngine.setText` returns early on a fake document; once the body editor blurs, the next frame repaints the old text, and typing again relays the reverted whole value over the earlier edits | the frame carries a value descriptor and the page reconciles only while `localRev ≤ sensedRevision`; the seam engine's `setText` writes the descriptor, never the node; a field the person edited keeps its value against a disagreeing descriptor and offers it (//take theirs//) |
 | ''The blanket `preventDefault`'' | the sink cancels every click that resolves to a render-id-bearing ancestor (the page template's `$dropzone` wrapper carries one), and the worker fires a click on its own node only | `data-lar-cancel` per binding; the worker bubbles every type to the first listener and answers `unclaimed` |
 | ''Checkbox, radio, select'' | the handler reads `.checked` the fake node never holds; TW5 sets a //property// and fakedom serialises //attributes// only; the morph re-syncs `option.selected` from the parsed HTML and the focus guard covers only `input` and `textarea` | the serialiser promotes `checked`, `selected` (a single select's value onto its option) and `indeterminate` (as `data-lar-indeterminate`) to attributes at flush; the act carries `checked` (`lar:toggle`) or the whole key set in document order (`lar:choice`; `lar:sense` on input) and lands on the node before TW5's own listener runs; a click on a toggle keeps its browser default; the veto holds a live control while `localRev` exceeds the sensed revision |
 | ''The frame that repaints over an edit'' | without `sensedRevision` a frame rendered before a keystroke lands after it; focus alone protects a field | condition 4 of #/the-ruling per control: `sensedRevision[controlId]` in the frame, `localRev` on the sense, the page's veto while `localRev > sensed` |
@@ -364,7 +364,7 @@ Measured against TiddlyWiki's widget roster at width none today, ''roughly a thi
 
 Three further classes degrade rather than lose: ''keyboard'' (search Enter, tag-picker Enter, global shortcuts never cross), ''navigation'' (no scroll to the navigated tiddler, no permalink, no Back; the page composes `#` from the order key, Back posts a `route` act, scroll-to-navigated reads as a page transition keyed on `$:/HistoryList`'s tail), and the ''editor toolbar'' (ten text operations over a carried pair; an operation that reaches past the snapshot refuses `selection-unavailable`).
 
-''Undo'' lives in the browser's edit history for the node. A morph that keeps the node by id preserves it; a frame that replaces the textarea destroys it. The page never writes a field's value from a frame while the field holds a local revision; a //take theirs// act replaces the value as one undoable edit.
+''Undo'' lives in the browser's edit history for the node. A morph that keeps the node by id preserves it; a frame that replaces the textarea destroys it. The page never writes a field's value from a frame while the field holds a local revision; every value the page writes for the person (//take theirs//, a toolbar `want`) lands as one undoable edit on the node it keeps. On the fake document the stock toolbar does not render; a sibling toolbar reaches the field through the root.
 
 ''The focused control belongs to the human.'' LiveView keeps the client as the source of truth for a focused input; Turbo needs `data-turbo-permanent`; Idiomorph offers `ignoreActiveValue`, `restoreFocus` and the `beforeNodeMorphed` veto. The house generalises the rule to `localRev > sensedRevision`, so a field that lost focus a moment ago, a select, a `<details>` open state and a scroll offset each keep their own.
 
@@ -598,6 +598,6 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iDhmbXy0Z7jx4DvKLX8xopSHYvwok22JUMSGeTOv8OA
+<<^ code="&#x0003;">>ni:///sha-256;sy3K5Q601m1PaSqtvlVUGI4wNV0iVWse9AgORpYW7tY
 
 <<^ code="&#x0004;" -> to="?">>

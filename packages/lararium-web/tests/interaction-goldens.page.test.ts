@@ -14,8 +14,13 @@
  * as transparent), each painted in TW5's own shape (a checkbox and a radio class the label around their input)
  * with its state as attributes, every bound node stamped the way the island's per-widget table declares it
  * (`data-lar-on`, `data-lar-cancel`, `data-lar-bubble`, `data-lar-live`), and the camera's top element carrying a
- * render id of its own. What this file proves belongs to the PAGE: what the sink paints, keeps, relays and
- * cancels. The island's own claims ride the engine harness.
+ * render id of its own. A field paints in the seam engine's shape: inside `<lar-field>`, its first value in the
+ * native carrier and the store's value in its descriptor (`data-lar-value`, `data-lar-value-rev`); a sense on it
+ * writes the store, as TW5's edit widget saves on every input. A toolbar `$button` (its actions, through a
+ * `\procedure`, send `tm-edit-text-operation`) paints `data-lar-control="lar-field-operation"` and runs
+ * `wrap-selection` the way TW5's own module does; a `$keyboard` paints its wrapper with the chords it declares.
+ * What this file proves belongs to the PAGE: what the sink paints, keeps, relays and cancels. The island's own
+ * claims ride the engine harness.
  *
  * THE HOST DOORS (12). A `$button message=` the stand-in answers asks `lar:service` and leaves the GATE to the
  * page: the sink checks the activation and the manifest the script's world names, runs the door, and answers
@@ -35,8 +40,17 @@
  * fresh epoch; `expect` reads the page (`value`, `text`, `undoDepth`, `focus`, `relays`, `defaultPrevented`,
  * `visible`, `placedFrom`; any other key fails closed), the last frame (`contains`, `stamps` by token, its
  * `attributes` read off the PAINTED node: `checked` and `selected` by the live state the page shows, any other
- * attribute by its value), the answers and the stand-in's writes since the previous `expect`. A control or a
- * selector names its node the way the engine half reads it: a class names its node and the nodes it wraps.
+ * attribute by its value), the answers, the `want` and the stand-in's writes since the previous `expect`. A control
+ * or a selector names its node the way the engine half reads it: a class names its node and the nodes it wraps.
+ *
+ * The page controls (04, 05, 08): `write` lands a peer's records in the stand-in's store; `page` performs a raw
+ * gesture on the real control (a composition's start and end, an input while composing, a keydown) and feeds
+ * whatever the sink relays to the stand-in; `act` makes a real take-theirs on the field's own button, or a real
+ * toolbar click with the act's selection standing in the field; `expect.page` reads `newerVersion`,
+ * `relayedSenses` and `relayedActs` beside the rest. A toolbar act carrying an older pair than the field now holds
+ * re-enacts its race: the act left the page before the person's later typing, so the runner makes the real click
+ * and carries the script's pair on the relayed event, after checking the page's own revision ran past it. The undo
+ * probe relays nothing and moves no revision.
  *
  * `act` with `epoch: "stale"` re-enacts the race the script names: the person acted while the page still showed
  * the arriving surface's PREVIOUS mount (for a surface never shown before, its mount-time frame stands in), and
@@ -50,10 +64,14 @@ import {
   type LarServiceKind,
 } from "../../lararium-mesh/src/lar-camera.js";
 import { LAR_REFUSAL_WORDS, createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
+import type { LarFieldElement } from "../src/controls/lar-field.js";
 import script01 from "./goldens/interaction/01-link-ordinary-modified-middle-external.json";
 import script02 from "./goldens/interaction/02-button-actions-with-modifier-and-popup.json";
 import script03 from "./goldens/interaction/03-edit-body-survives-blur.json";
+import script04 from "./goldens/interaction/04-edit-peer-write-into-open-editor.json";
+import script05 from "./goldens/interaction/05-edit-toolbar-wrap-selection-carried-pair.json";
 import script06 from "./goldens/interaction/06-toggle-checkbox-radio-select-multiselect.json";
+import script08 from "./goldens/interaction/08-ime-safari-enter-after-compositionend.json";
 import script12 from "./goldens/interaction/12-services-copy-download-print-refuse-by-name.json";
 import script13 from "./goldens/interaction/13-switch-resend-and-epoch.json";
 
@@ -67,19 +85,27 @@ interface Script { readonly golden: string; readonly pins: string; readonly worl
 
 /** A widget the stand-in renders: its class names the control in the script, its render id names it on the wire. */
 interface Widget {
-  readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button" | "checkbox" | "radio" | "select" | "link";
+  readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button" | "checkbox" | "radio" | "select" | "link" | "keyboard";
   readonly attrs: Record<string, string>; readonly label: string;
   /** A select's options, by value and label. */
   readonly options: ReadonlyArray<{ value: string; label: string }>;
+  /** The `$keyboard` a widget renders inside, where one wraps it. */
+  readonly parent: Widget | null;
+  /** A field's first value, painted once in its native carrier; and its descriptor, with the revision it took. */
+  readonly initial: string;
+  described?: { value: string; rev: number };
 }
 /** One piece of the root template, in paint order. */
-type Piece = { readonly widget: Widget } | { readonly reveal: Record<string, string>; readonly body: string } | { readonly html: string };
+type Piece = { readonly widget: Widget } | { readonly reveal: Record<string, string>; readonly body: string } | { readonly html: string } | { readonly close: true };
 
 let epochCounter = 0;
 const mintEpoch = (): number => ++epochCounter;
+let descriptorCounter = 0;
 const escapeHtml = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const attrsOf = (src: string): Record<string, string> => Object.fromEntries([...src.matchAll(/([\w$-]+)="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]));
-const ATTRS = `((?:\\s+[\\w$-]+="[^"]*")*)\\s*`;
+/** A widget's attributes: quoted, or a `<<procedure>>` the root template defines. */
+const attrsOf = (src: string, procedures: Readonly<Record<string, string>> = {}): Record<string, string> =>
+  Object.fromEntries([...src.matchAll(/([\w$-]+)=(?:"([^"]*)"|<<([\w-]+)>>)/g)].map((m) => [m[1]!, m[2] ?? procedures[m[3]!] ?? ""]));
+const ATTRS = `((?:\\s+[\\w$-]+=(?:"[^"]*"|<<[\\w-]+>>))*)\\s*`;
 
 /** TW5's modifier descriptor (`$tw.keyboardManager.getEventModifierKeyDescriptor`), for the actions a button runs. */
 const modifierOf = (m: LarMsg_ControlEvent["modifiers"]): string => {
@@ -93,7 +119,7 @@ class StandInIsland {
   readonly widgets: Widget[] = [];
   readonly pieces: Piece[] = [];
   readonly writes: Array<Fields> = [];
-  readonly sensed = new Map<string, { value?: string; localRev: number }>();
+  readonly sensed = new Map<string, { localRev: number }>();
   /** The `lar:service` asks this stand-in made, and the page's answer to each by request id. */
   readonly asks: LarMsg_Service[] = [];
   readonly serviceAnswers = new Map<string, string>();
@@ -109,24 +135,35 @@ class StandInIsland {
   constructor(readonly surface: string, world: World) {
     for (const t of world.tiddlers) this.store.set(String(t["title"]), { ...t });
     this.story = [...world.story];
-    const root = world.root.replace(/<\$navigator\b[^>]*>|<\/\$navigator>/g, "");
+    const procedures = Object.fromEntries([...world.root.matchAll(/^\\procedure ([\w-]+)\(\)\s*(.*)$/gm)].map((m) => [m[1]!, m[2]!]));
+    const root = world.root.split("\n").filter((line) => !line.startsWith("\\")).join("\n")
+      .replace(/<\$navigator\b[^>]*>|<\/\$navigator>/g, "");
+    const open: Widget[] = [];
     const parts = new RegExp([
       `<\\$(edit-text|checkbox|radio)${ATTRS}\\/>`,
       `<\\$(button|select)${ATTRS}>([\\s\\S]*?)<\\/\\$\\3>`,
       `<\\$reveal${ATTRS}>([^<]*)<\\/\\$reveal>`,
       `\\{\\{([^}]+)\\}\\}`,
+      `<\\$keyboard${ATTRS}>`,
+      `<\\/\\$keyboard>`,
     ].join("|"), "g");
     let at = 0;
     for (const m of root.matchAll(parts)) {
       if (m.index! > at) this.pieces.push({ html: root.slice(at, m.index) });
       at = m.index! + m[0].length;
-      if (m[1] !== undefined) this.pieces.push({ widget: this.widget(m[1] as Widget["kind"], attrsOf(m[2] ?? ""), "") });
+      const parent = open.at(-1) ?? null;
+      if (m[1] !== undefined) this.pieces.push({ widget: this.widget(m[1] as Widget["kind"], attrsOf(m[2] ?? "", procedures), "", [], parent) });
       else if (m[3] !== undefined) {
         const kind = m[3] as Widget["kind"];
         const options = kind === "select" ? [...(m[5] ?? "").matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map((o) => ({ value: o[1]!, label: o[2]! })) : [];
-        this.pieces.push({ widget: this.widget(kind, attrsOf(m[4] ?? ""), kind === "button" ? m[5] ?? "" : "", options) });
+        this.pieces.push({ widget: this.widget(kind, attrsOf(m[4] ?? "", procedures), kind === "button" ? m[5] ?? "" : "", options, parent) });
       } else if (m[6] !== undefined) this.pieces.push({ reveal: attrsOf(m[6]), body: m[7] ?? "" });
-      else this.transclude(String(this.store.get(m[8]!)?.["text"] ?? ""));
+      else if (m[8] !== undefined) this.transclude(String(this.store.get(m[8])?.["text"] ?? ""));
+      else if (m[9] !== undefined) {
+        const kb = this.widget("keyboard", attrsOf(m[9], procedures), "", [], parent);
+        open.push(kb);
+        this.pieces.push({ widget: kb });
+      } else { open.pop(); this.pieces.push({ close: true }); }
     }
     if (at < root.length) this.pieces.push({ html: root.slice(at) });
     // The pool mounts every surface at boot; the gate drops its frames until the vessel shows it.
@@ -134,8 +171,9 @@ class StandInIsland {
     this.previousEpochFrame = this.current;
   }
 
-  private widget(kind: Widget["kind"], attrs: Record<string, string>, label: string, options: Widget["options"] = []): Widget {
-    const w: Widget = { rid: `${this.surface}-r${++this.n}`, cls: attrs["class"] ?? "", kind, attrs, label, options };
+  private widget(kind: Widget["kind"], attrs: Record<string, string>, label: string, options: Widget["options"] = [], parent: Widget | null = null): Widget {
+    const initial = kind === "edit-text" ? String(this.store.get(attrs["tiddler"] ?? "")?.["text"] ?? "") : "";
+    const w: Widget = { rid: `${this.surface}-r${++this.n}`, cls: attrs["class"] ?? "", kind, attrs, label, options, parent, initial };
     this.widgets.push(w);
     return w;
   }
@@ -153,7 +191,7 @@ class StandInIsland {
   }
 
   ridOf(cls: string): string {
-    const w = this.widgets.find((x) => `.${x.cls}` === cls || `${x.kind === "link" ? "a" : x.kind}.${x.cls}` === cls);
+    const w = this.widgets.find((x) => `.${x.cls}` === cls || `${x.kind === "link" ? "a" : x.kind}.${x.cls}` === cls || (x.kind === "edit-text" && `${x.attrs["tag"] ?? "input"}.${x.cls}` === cls));
     if (!w) throw new Error(`stand-in: no widget carries ${cls}`);
     return w.rid;
   }
@@ -166,17 +204,20 @@ class StandInIsland {
   /** The stamps the island's per-widget table declares for a widget's node. */
   private stamps(w: Widget): string {
     if (w.kind === "link") return ` data-lar-on="click dragstart dragend" data-lar-cancel="click:ordinary" data-lar-bubble="no"`;
+    if (w.kind === "keyboard") return ` data-lar-on="keydown" data-lar-cancel="keydown:declared" data-lar-keys="${escapeHtml(w.attrs["key"] ?? "")}" data-lar-bubble="yes"`;
     if (w.kind === "edit-text") return ` data-lar-on="focus input" data-lar-live="value"`;
     if (w.kind === "checkbox" || w.kind === "radio") return ` data-lar-on="change" data-lar-live="checked"`;
     if (w.kind === "select") return ` data-lar-on="change" data-lar-live="selected"`;
     const handles = ["set", "popup", "to", "message"].some((a) => w.attrs[a] !== undefined);
     const cancels = handles || w.attrs["actions"] !== undefined;
-    return ` data-lar-on="click"${cancels ? ` data-lar-cancel="click"` : ""} data-lar-bubble="${handles ? "no" : "yes"}"`;
+    const operation = [w.attrs["message"], w.attrs["actions"]].some((a) => a?.includes("tm-edit-text-operation"));
+    return ` data-lar-on="click"${cancels ? ` data-lar-cancel="click"` : ""} data-lar-bubble="${handles ? "no" : "yes"}"${operation ? ' data-lar-control="lar-field-operation"' : ""}`;
   }
 
   render(): LarSurfaceFrame {
     const body = this.pieces.map((piece) => {
       if ("html" in piece) return piece.html;
+      if ("close" in piece) return "</div>";
       if ("reveal" in piece) {
         const cls = escapeHtml(`${piece.reveal["class"] ?? ""} tc-reveal`.trim());
         const at = /^\((-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)\)$/.exec(String(this.store.get(piece.reveal["state"] ?? "")?.["text"] ?? ""));
@@ -188,6 +229,7 @@ class StandInIsland {
       if (w.kind === "link") {
         return `<a class="tc-tiddlylink tc-tiddlylink-resolves" data-lar-rid="${w.rid}"${this.stamps(w)} href="#${encodeURIComponent(w.attrs["to"]!)}">${escapeHtml(w.label)}</a>`;
       }
+      if (w.kind === "keyboard") return `<div class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>`;
       if (w.kind === "button") return `<button class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>${escapeHtml(w.label)}</button>`;
       if (w.kind === "checkbox" || w.kind === "radio") {
         const on = this.read(w) === (w.kind === "checkbox" ? w.attrs["checked"] : w.attrs["value"]);
@@ -200,12 +242,17 @@ class StandInIsland {
         const opts = w.options.map((o) => `<option value="${escapeHtml(o.value)}"${keys.includes(o.value) ? ' selected="selected"' : ""}>${escapeHtml(o.label)}</option>`).join("");
         return `<select class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}${multiple ? ' multiple="multiple"' : ""}>${opts}</select>`;
       }
-      const sensed = this.sensed.get(w.rid);
-      const value = sensed?.value ?? this.store.get(w.attrs["tiddler"] ?? "")?.["text"] ?? "";
-      return `<${w.attrs["tag"] ?? "input"} class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>${escapeHtml(String(value))}</${w.attrs["tag"] ?? "input"}>`;
+      // The seam engine's shape: the first value in the native carrier, the store's value in the descriptor.
+      const value = String(this.store.get(w.attrs["tiddler"] ?? "")?.["text"] ?? "");
+      if (w.described?.value !== value) w.described = { value, rev: ++descriptorCounter };
+      const descriptor = ` data-lar-value="${escapeHtml(value)}" data-lar-value-rev="${w.described.rev}"`;
+      const field = (w.attrs["tag"] ?? "input") === "textarea"
+        ? `<textarea class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}${descriptor}>${escapeHtml(w.initial)}</textarea>`
+        : `<input class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)} value="${escapeHtml(w.initial)}"${descriptor}>`;
+      return `<lar-field data-lar-control="lar-field">${field}</lar-field>`;
     }).join("");
     const layer = this.notice === null ? "" : `<div class="lar-root-layer"><div class="tc-notification" role="status">${escapeHtml(this.notice)}</div></div>`;
-    const html = `<div data-lar-rid="${this.surface}-top"><p>${body}</p>${layer}</div>`;
+    const html = `<div data-lar-rid="${this.surface}-top"><div>${body}</div>${layer}</div>`;
     this.rev += 1;
     const frame: LarSurfaceFrame = {
       type: LAR_FRAME, wikiUri: `lar:///golden/${this.surface}`, cameraId: LAR_CAMERA_STORY, mountEpoch: this.epoch, surface: this.surface,
@@ -235,12 +282,22 @@ class StandInIsland {
       // Before taking the sense in, the island had rendered a frame that is still in flight: the older one.
       this.older = this.render();
       const held = this.sensed.get(cid);
-      const textual = typeof ev.wholeValue === "string";
-      if (!held || (ev.localRev ?? 0) > held.localRev) this.sensed.set(cid, { ...(textual ? { value: ev.wholeValue as string } : {}), localRev: ev.localRev ?? 0 });
+      const sensedWidget = this.widgets.find((x) => x.rid === cid);
+      if (ev.mountEpoch !== this.epoch || !sensedWidget || (held && (ev.localRev ?? 0) <= held.localRev)) return null;
+      this.sensed.set(cid, { localRev: ev.localRev ?? 0 });
+      // TW5's edit widget saves on every input; a select binds no input leg.
+      if (sensedWidget.kind === "edit-text" && typeof ev.wholeValue === "string" && this.read(sensedWidget) !== ev.wholeValue) {
+        const title = sensedWidget.attrs["tiddler"] ?? "";
+        this.store.set(title, { ...this.store.get(title), title, text: ev.wholeValue });
+        this.writes.push({ title, text: ev.wholeValue });
+      }
       return null;
     }
-    const answer = (status: LarMsg_ControlResult["status"]): LarMsg_ControlResult =>
-      mkLarControlResult({ eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: this.epoch, ...(ev.renderId ? { renderId: ev.renderId } : {}), ...(ev.controlId ? { controlId: ev.controlId } : {}), status });
+    const answer = (status: LarMsg_ControlResult["status"], reason?: LarRefusal, want?: LarMsg_ControlResult["want"]): LarMsg_ControlResult =>
+      mkLarControlResult({
+        eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: this.epoch, ...(ev.renderId ? { renderId: ev.renderId } : {}), ...(ev.controlId ? { controlId: ev.controlId } : {}),
+        status, ...(reason ? { reason } : {}), ...(want ? { want } : {}),
+      });
     if (ev.mountEpoch !== this.epoch) return answer("stale-target");
     if (ev.kind === "lar:service-result") {
       const ask = this.asks.find((a) => a.requestId === ev.requestId);
@@ -257,7 +314,16 @@ class StandInIsland {
       this.store.set(title, { ...this.store.get(title), title, [field]: value });
       this.writes.push({ title, [field]: value });
     };
-    if (w.kind === "button" && ev.action === "lar:click") {
+    if (w.kind === "button" && ev.action === "lar:edit-operation") {
+      return this.operate(ev, w, answer);
+    } else if (w.kind === "edit-text" && ev.action === "lar:take-theirs") {
+      // The page took the descriptor whole; the node reads it.
+    } else if (ev.action === "lar:key") {
+      let kb: Widget | null = w;
+      while (kb && !(kb.kind === "keyboard" && kb.attrs["key"]?.toLowerCase() === ev.key?.key.toLowerCase())) kb = kb.parent;
+      if (!kb) return answer("refused", "unclaimed");
+      for (const m of (kb.attrs["actions"] ?? "").matchAll(/<\$action-setfield \$tiddler='([^']*)' text='([^']*)'\/>/g)) write(m[1]!, "text", m[2]!);
+    } else if (w.kind === "button" && ev.action === "lar:click") {
       const action = /<\$action-setfield \$tiddler='([^']+)' text=<<modifier>>\/>/.exec(w.attrs["actions"] ?? "");
       if (action) write(action[1]!, "text", modifierOf(ev.modifiers));
       const g = ev.geometry;
@@ -270,8 +336,9 @@ class StandInIsland {
       const m = ev.modifiers;
       if (!m?.ctrl && !m?.meta && (m?.button ?? 0) !== 1) this.writes.push({ title: "$:/HistoryList", "current-tiddler": to });
     } else if (w.kind === "edit-text" && ev.action === "lar:commit" && typeof ev.wholeValue === "string") {
-      write(w.attrs["tiddler"] ?? "", "text", ev.wholeValue);
-      if (ev.localRev !== undefined) this.sensed.set(cid, { value: ev.wholeValue, localRev: ev.localRev });
+      // TW5's edit widget saves only a value that moved.
+      if (this.read(w) !== ev.wholeValue) write(w.attrs["tiddler"] ?? "", "text", ev.wholeValue);
+      if (ev.localRev !== undefined && ev.localRev > (this.sensed.get(cid)?.localRev ?? -1)) this.sensed.set(cid, { localRev: ev.localRev });
     } else if ((w.kind === "checkbox" || w.kind === "radio") && ev.action === "lar:toggle" && typeof ev.checked === "boolean") {
       const value = w.kind === "checkbox" ? w.attrs[ev.checked ? "checked" : "unchecked"] : ev.checked ? w.attrs["value"] : undefined;
       if (value !== undefined && this.read(w) !== value) write(w.attrs["tiddler"] ?? "", w.attrs["field"] ?? "text", value);
@@ -282,6 +349,34 @@ class StandInIsland {
       if (ev.localRev !== undefined) this.sensed.set(cid, { localRev: ev.localRev });
     }
     return answer("applied");
+  }
+
+  /** A peer's whole record lands in the store, with no person's act behind it. */
+  land(title: string, fields: Fields): void {
+    this.store.set(title, { ...this.store.get(title), ...fields, title });
+  }
+
+  /** A toolbar act: TW5's `wrap-selection` over the carried pair, answered with the value and selection it wants. */
+  private operate(ev: LarMsg_ControlEvent, button: Widget, answer: (s: LarMsg_ControlResult["status"], r?: LarRefusal, w?: LarMsg_ControlResult["want"]) => LarMsg_ControlResult): LarMsg_ControlResult {
+    const fields = this.widgets.filter((x) => x.kind === "edit-text");
+    const field = ev.fieldId !== undefined ? fields.find((x) => x.rid === ev.fieldId) : fields.length === 1 ? fields[0] : undefined;
+    const sel = ev.selection;
+    if (!field || typeof ev.wholeValue !== "string" || !sel || sel.end > ev.wholeValue.length) return answer("refused", "selection-unavailable");
+    if (ev.localRev !== undefined && ev.localRev < (this.sensed.get(field.rid)?.localRev ?? -1)) return answer("stale-target");
+    const op = button.attrs["actions"] ?? "";
+    const param = /\$param="([^"]*)"/.exec(op)?.[1];
+    const prefix = /\bprefix="([^"]*)"/.exec(op)?.[1] ?? "";
+    const suffix = /\bsuffix="([^"]*)"/.exec(op)?.[1] ?? "";
+    if (param !== "wrap-selection") return answer("refused", "unsupported-control");
+    if (sel.start === sel.end) return answer("refused", "selection-unavailable");
+    const text = ev.wholeValue;
+    const replacement = prefix + text.slice(sel.start, sel.end) + suffix;
+    const value = text.slice(0, sel.start) + replacement + text.slice(sel.end);
+    const title = field.attrs["tiddler"] ?? "";
+    this.store.set(title, { ...this.store.get(title), title, text: value });
+    this.writes.push({ title, text: value });
+    if (ev.localRev !== undefined) this.sensed.set(field.rid, { localRev: ev.localRev + 1 });
+    return answer("applied", undefined, { value, selStart: sel.start, selEnd: sel.start + replacement.length });
   }
 
   /** A `$button message=` the stand-in knows as a host door: the ask it makes, or null for any other act. */
@@ -315,17 +410,26 @@ const DOORS: Record<string, { kind: LarServiceKind; args: (param: string) => Rec
 const wrapped = (selector: string): string =>
   selector.split(/\s+/).map((c) => /^([a-zA-Z][\w-]*)((?:\.[\w-]+)+)(.*)$/.exec(c)).map((m, i) => m ? `${m[2]} ${m[1]}${m[3]}` : selector.split(/\s+/)[i]!).join(" ");
 
-/** Count the undo steps the field holds, then put every one back: undo until the value stops moving, redo as many. */
+/**
+ * Count the undo steps the field holds, then put every one back: undo until the value stops moving, redo as many.
+ * The probe's own edits never reach the sink: a measurement relays nothing and moves no revision.
+ */
 function undoDepth(field: HTMLTextAreaElement | HTMLInputElement): number {
-  field.focus();
-  let depth = 0;
-  for (let last = field.value; depth < 64; depth += 1) {
-    document.execCommand("undo");
-    if (field.value === last) break;
-    last = field.value;
+  const quiet = (event: Event): void => { event.stopPropagation(); };
+  field.addEventListener("input", quiet, true);
+  try {
+    field.focus();
+    let depth = 0;
+    for (let last = field.value; depth < 64; depth += 1) {
+      document.execCommand("undo");
+      if (field.value === last) break;
+      last = field.value;
+    }
+    for (let i = 0; i < depth; i += 1) document.execCommand("redo");
+    return depth;
+  } finally {
+    field.removeEventListener("input", quiet, true);
   }
-  for (let i = 0; i < depth; i += 1) document.execCommand("redo");
-  return depth;
 }
 
 async function run(script: Script): Promise<void> {
@@ -369,6 +473,9 @@ async function run(script: Script): Promise<void> {
   let freshAtLast = false;
   let answers: string[] = [];
   let writesSeen = 0;
+  let writesSinceExpect = 0;
+  let lastWant: LarMsg_ControlResult["want"] | undefined;
+  let sentAtExpect = 0;
 
   const deliver = (frame: LarSurfaceFrame): void => {
     const seen = epochsDelivered.get(frame.surface) ?? [];
@@ -404,21 +511,32 @@ async function run(script: Script): Promise<void> {
   const answer = (ev: LarMsg_ControlEvent, surface: string): void => {
     const result = island(surface).receive(ev);
     if (!result) return;
-    answers.push(result.status);
+    answers.push(result.status === "refused" ? `refused:${result.reason}` : result.status);
+    if (result.want) lastWant = result.want;
     sink.applyResult(result);
-    const words = [...root.querySelectorAll<HTMLOutputElement>('output[role="status"]')].filter((o) => o.dataset["larFor"] === (ev.controlId ?? ev.renderId));
+    // A toolbar act's words stand beside its field.
+    const words = [...root.querySelectorAll<HTMLOutputElement>('output[role="status"]')].filter((o) => o.dataset["larFor"] === (ev.fieldId ?? ev.controlId ?? ev.renderId));
     if (result.status === "stale-target") {
       // The page half of a stale answer: the canon's words stand beside the control the person acted on.
       expect(words.map((o) => o.textContent)).toEqual(["This control changed before your action arrived. Review it and try again."]);
+    } else if (result.status === "refused" && result.reason === "unclaimed") {
+      expect(words, "an unclaimed act owes no words").toEqual([]);
     } else if (result.status === "refused") {
       expect(words.map((o) => o.textContent), "a refusal reads beside its control in the canon's words").toEqual([LAR_REFUSAL_WORDS[result.reason!]]);
     } else {
       expect(words, "an applied answer leaves no refusal standing beside its control").toEqual([]);
     }
   };
+  /** Feed every event the page relayed since `mark` to the stand-in, the way the vessel's leg would. */
+  const pump = (mark: number): void => { for (const { surface, ev } of sent.slice(mark)) answer(ev, surface); };
+  const idOf = (node: Element): string =>
+    node.closest("[data-control-id]")?.getAttribute("data-control-id") ?? node.closest("[data-lar-rid]")?.getAttribute("data-lar-rid") ?? "";
 
   try {
+    let previous: Step | undefined;
     for (const step of script.steps) {
+      const prior = previous;
+      previous = step;
       if ("frame" in step) {
         const surface = (step["surface"] as string | undefined) ?? shown;
         shown = surface;
@@ -427,6 +545,30 @@ async function run(script: Script): Promise<void> {
         const older = island(shown).older;
         expect(older, "the stand-in holds a frame rendered before the last sense").not.toBeNull();
         deliver(older!);
+      } else if ("write" in step) {
+        const w = step["write"] as { records: Array<{ title: string; fields: Fields }> };
+        for (const r of w.records) island(shown).land(r.title, r.fields);
+      } else if ("page" in step) {
+        const p = step["page"] as { control: string; composition?: string; value?: string; input?: string; composing?: boolean; keydown?: KeyboardEventInit & { keyCode: number } };
+        const field = el(p.control) as HTMLInputElement;
+        const mark = sent.length;
+        if (p.composition === "start") {
+          field.focus();
+          field.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, composed: true }));
+        } else if (p.composition === "end") {
+          if (p.value !== undefined) field.value = p.value;
+          field.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, composed: true, data: p.value ?? "" }));
+        } else if (p.input !== undefined) {
+          field.value = p.input;
+          field.dispatchEvent(new InputEvent("input", { bubbles: true, composed: true, isComposing: p.composing ?? false, data: p.input }));
+        } else if (p.keydown) {
+          // A keystroke after anything but another gesture of the same burst lands in a later task, as a person's does.
+          if (!(prior && "page" in prior)) await new Promise((resolve) => setTimeout(resolve, 0));
+          field.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, composed: true, cancelable: true, ...p.keydown }));
+        } else {
+          throw new Error(`the page harness reads no gesture in ${JSON.stringify(p)}`);
+        }
+        pump(mark);
       } else if ("sense" in step && el((step["sense"] as { control: string }).control) instanceof HTMLSelectElement) {
         const s = step["sense"] as { control: string; wholeValue: string[]; localRev: number };
         const select = el(s.control) as HTMLSelectElement;
@@ -454,6 +596,7 @@ async function run(script: Script): Promise<void> {
       } else if ("act" in step) {
         const a = step["act"] as {
           control: string; action: string; wholeValue?: string | string[]; checked?: boolean; localRev?: number; epoch?: string; surface?: string;
+          selection?: { start: number; end: number };
           modifiers?: { ctrl: boolean; meta: boolean; alt: boolean; shift: boolean; button?: number };
           geometry?: { top: number; left: number; width: number; height: number };
         };
@@ -463,6 +606,7 @@ async function run(script: Script): Promise<void> {
         if (a.epoch === "stale") sink.apply(isl.previousEpochFrame);    // the page as it stood when the person acted
         const mark = sent.length;
         const target = el(a.control);
+        let carriedOlder = false;
         if (a.geometry) {
           // The control stands where the script measured it, so the page's own measurement reads the script's rect.
           const g = a.geometry;
@@ -480,6 +624,16 @@ async function run(script: Script): Promise<void> {
           expect(toggle.checked, `${a.control} stands opposite the state the person makes`).toBe(!a.checked);
           toggle.click();
           expect(toggle.checked, `${a.control} holds the state the person made: the browser's default stood`).toBe(a.checked);
+        } else if (a.action === "lar:take-theirs") {
+          const lf = target.closest<LarFieldElement>("lar-field");
+          expect(lf?.newerVersion, `${a.control} offers a newer version to take`).not.toBeNull();
+          lf!.shadowRoot!.querySelector<HTMLButtonElement>('button[part="take-theirs"]')!.click();
+        } else if (a.action === "lar:edit-operation") {
+          const field = pane().querySelector<HTMLTextAreaElement>(`[data-lar-rid="${isl.widgets.find((w) => w.kind === "edit-text")!.rid}"]`)!;
+          field.focus();
+          carriedOlder = field.value !== a.wholeValue;
+          if (!carriedOlder) field.setSelectionRange(a.selection!.start, a.selection!.end);
+          target.click();
         } else {
           prevented.set(a.control, clickOn(target, a.modifiers));
         }
@@ -489,8 +643,15 @@ async function run(script: Script): Promise<void> {
           answers.push("refused:unclaimed");
           continue;
         }
-        const ev = relayedSince(mark);
+        let ev = relayedSince(mark);
         expect([ev.kind, ev.action]).toEqual(["lar:act", a.action]);
+        if (carriedOlder) {
+          // The race the script names: this act left the page before the person's later typing.
+          expect(ev.localRev, "the page's own revision already ran past the pair the act carried").toBeGreaterThan(a.localRev!);
+          ev = { ...ev, wholeValue: a.wholeValue!, localRev: a.localRev!, selection: a.selection! };
+        } else if (a.action === "lar:edit-operation") {
+          expect(ev.selection, `${a.control} carries the field's selection`).toEqual(a.selection);
+        }
         if (a.modifiers) expect(ev.modifiers, "the act carries the modifiers held").toEqual(a.modifiers.button === undefined ? { ...a.modifiers, button: 0 } : a.modifiers);
         if (a.geometry) expect(ev.geometry, "the act carries the rect the page measured").toEqual({ ...a.geometry, right: a.geometry.left + a.geometry.width, bottom: a.geometry.top + a.geometry.height });
         if (a.wholeValue !== undefined) expect(ev.wholeValue).toEqual(a.wholeValue);
@@ -532,7 +693,7 @@ async function run(script: Script): Promise<void> {
       } else if ("expect" in step) {
         const want = step["expect"] as {
           page?: Record<string, unknown>; frame?: Record<string, unknown>; answers?: string[]; writes?: unknown[];
-          services?: Array<{ kind: string; args?: Record<string, unknown> }>;
+          services?: Array<{ kind: string; args?: Record<string, unknown> }>; want?: unknown;
         };
         if (want.page) {
           for (const [key, spec] of Object.entries(want.page)) {
@@ -545,8 +706,9 @@ async function run(script: Script): Promise<void> {
             const s = spec as {
               value?: string; text?: string; undoDepth?: number; focus?: boolean; relays?: boolean; defaultPrevented?: boolean;
               visible?: boolean; placedFrom?: { top: number; left: number }; refusal?: LarRefusal;
+              newerVersion?: string | null; relayedSenses?: number; relayedActs?: number;
             };
-            const known = ["value", "text", "undoDepth", "focus", "relays", "defaultPrevented", "visible", "placedFrom", "refusal"];
+            const known = ["value", "text", "undoDepth", "focus", "relays", "defaultPrevented", "visible", "placedFrom", "refusal", "newerVersion", "relayedSenses", "relayedActs"];
             for (const k of Object.keys(s)) if (!known.includes(k)) throw new Error(`the page harness reads no page.${k}`);
             if (s.value !== undefined) expect(node.value, `${key} value`).toBe(s.value);
             if (s.text !== undefined) expect(node.textContent, `${key} text`).toBe(s.text);
@@ -566,6 +728,10 @@ async function run(script: Script): Promise<void> {
               expect(out?.dataset["larReason"], `${key} refusal`).toBe(s.refusal);
               expect(out?.textContent).toBe(LAR_REFUSAL_WORDS[s.refusal]);
             }
+            if (s.newerVersion !== undefined) expect(node.closest<LarFieldElement>("lar-field")?.newerVersion ?? null, `${key} newer version`).toBe(s.newerVersion);
+            const mine = sent.slice(sentAtExpect).filter(({ ev }) => (ev.controlId ?? ev.renderId) === idOf(node) || ev.fieldId === idOf(node));
+            if (s.relayedSenses !== undefined) expect(mine.filter(({ ev }) => ev.kind === "lar:sense").length, `${key} senses relayed`).toBe(s.relayedSenses);
+            if (s.relayedActs !== undefined) expect(mine.filter(({ ev }) => ev.kind === "lar:act").length, `${key} acts relayed`).toBe(s.relayedActs);
             if (s.placedFrom !== undefined) expect({ top: parseFloat(node.style.top), left: parseFloat(node.style.left) }, `${key} placed`).toEqual(s.placedFrom);
           }
         }
@@ -603,6 +769,7 @@ async function run(script: Script): Promise<void> {
           }
         }
         if (want.answers) { expect(answers).toEqual(want.answers); }
+        if (want.want !== undefined) expect(lastWant, "the want the answer carried").toEqual(want.want);
         if (want.services) {
           const got = opened.slice(openedSeen);
           expect(got.map((o) => o.kind), "the doors the page opened").toEqual(want.services.map((w) => w.kind));
@@ -610,11 +777,24 @@ async function run(script: Script): Promise<void> {
         }
         openedSeen = opened.length;
         answers = [];
+        lastWant = undefined;
+        sentAtExpect = sent.length;
+        // The writes, as the engine half reads them: each named record stands (in the store, or as a write since the
+        // previous `writes` expect), and no title outside the named set took a write since the previous expect.
+        const writes = [...islands.values()].flatMap((i) => i.writes);
         if (want.writes) {
-          const writes = [...islands.values()].flatMap((i) => i.writes);
-          expect(writes.slice(writesSeen)).toEqual(want.writes);
+          const named = want.writes as Array<Record<string, unknown>>;
+          const titles = new Set(named.map((r) => String(r["title"])));
+          expect(writes.slice(writesSinceExpect).map((w) => String(w["title"])).filter((t) => !titles.has(t)), "no title outside the script's took a write").toEqual([]);
+          for (const record of named) {
+            const stored = [...islands.values()].map((i) => i.store.get(String(record["title"]))).find((f) => f !== undefined);
+            const stands = stored !== undefined && Object.entries(record).every(([k, v]) => JSON.stringify(stored[k]) === JSON.stringify(v));
+            const written = writes.slice(writesSeen).some((w) => JSON.stringify(w) === JSON.stringify(record));
+            expect(stands || written, `${String(record["title"])} stands as ${JSON.stringify(record)}; writes ${JSON.stringify(writes.slice(writesSeen))}`).toBe(true);
+          }
           writesSeen = writes.length;
         }
+        writesSinceExpect = writes.length;
       } else {
         throw new Error(`the page harness reads no verb in ${JSON.stringify(step)}`);
       }
@@ -630,7 +810,10 @@ describe("★ interaction goldens, the page half ★", () => {
   test(`01 · ${script01.pins}`, async () => { await run(script01 as unknown as Script); });
   test(`02 · ${script02.pins}`, async () => { await run(script02 as unknown as Script); });
   test(`03 · ${script03.pins}`, async () => { await run(script03 as unknown as Script); });
+  test(`04 · ${script04.pins}`, async () => { await run(script04 as unknown as Script); });
+  test(`05 · ${script05.pins}`, async () => { await run(script05 as unknown as Script); });
   test(`06 · ${script06.pins}`, async () => { await run(script06 as unknown as Script); });
+  test(`08 · ${script08.pins}`, async () => { await run(script08 as unknown as Script); });
   test(`12 · ${script12.pins}`, async () => { await run(script12 as unknown as Script); });
   test(`13 · ${script13.pins}`, async () => { await run(script13 as unknown as Script); });
 
@@ -638,6 +821,30 @@ describe("★ interaction goldens, the page half ★", () => {
     const broken = structuredClone(script03) as unknown as { steps: Step[] };
     broken.steps[4] = { expect: { page: { ".body": { value: "first" } } } };     // claims the older frame repainted the edit
     await expect(run(broken as unknown as Script)).rejects.toThrow(/\.body value/);
+  });
+
+  test("CONTROL 04: a script claiming the peer's value repainted the person's text, or that take-theirs cost the earlier undo step, reds", async () => {
+    const repainted = structuredClone(script04) as unknown as { steps: Step[] };
+    repainted.steps[4] = { expect: { page: { ".body": { value: "theirs" } } } };
+    await expect(run(repainted as unknown as Script)).rejects.toThrow(/\.body value/);
+    const flattened = structuredClone(script04) as unknown as { steps: Step[] };
+    flattened.steps[6] = { expect: { answers: ["applied"], page: { ".body": { value: "theirs", undoDepth: 1 } } } };
+    await expect(run(flattened as unknown as Script)).rejects.toThrow(/\.body undo depth/);
+  });
+
+  test("CONTROL 05: a script claiming the stale toolbar act moved the field reds", async () => {
+    const moved = structuredClone(script05) as unknown as { steps: Step[] };
+    moved.steps[5] = { expect: { answers: ["stale-target"], page: { ".body": { value: "wrap ''me'' please" } } } };
+    await expect(run(moved as unknown as Script)).rejects.toThrow(/\.body value/);
+  });
+
+  test("CONTROL 08: a script claiming the committing Enter crossed as an act, or the declared Enter never submitted, reds", async () => {
+    const crossed = structuredClone(script08) as unknown as { steps: Step[] };
+    crossed.steps[6] = { expect: { page: { "input.field": { relayedSenses: 1, relayedActs: 1 } } } };
+    await expect(run(crossed as unknown as Script)).rejects.toThrow(/input\.field acts relayed/);
+    const silent = structuredClone(script08) as unknown as { steps: Step[] };
+    silent.steps[10] = { expect: { answers: [], writes: [] } };
+    await expect(run(silent as unknown as Script)).rejects.toThrow();
   });
 
   test("CONTROL 12: a script claiming the page opened print, or opened no clipboard, reds", async () => {

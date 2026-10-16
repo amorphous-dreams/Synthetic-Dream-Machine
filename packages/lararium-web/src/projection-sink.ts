@@ -47,6 +47,12 @@ import {
   type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service, type LarRefusal,
   type LarServiceKind, type LarSurfaceManifest,
 } from "@lararium/mesh/lar-camera";
+import {
+  LAR_FIELD_TAKE_THEIRS, applyWholeValue, defineLarField, isApplyingField, isLarFieldNode, markFieldEdited,
+  reconcileFieldDescriptor, type LarFieldNode,
+} from "./controls/lar-field.js";
+import { defineLarPopover, dismissPopover, paintPopovers } from "./controls/lar-popover.js";
+import { defineLarDisclosure, holdsDisclosure, notePaintedDisclosures, takeDisclosureToggle } from "./controls/lar-disclosure.js";
 
 /** A frame as the page receives it: the contract's keyed frame, plus the surface whose island emitted it. */
 export type LarSurfaceFrame = LarMsg_Frame & { readonly surface: string };
@@ -270,9 +276,14 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     return (painting.st.localRev.get(target.id) ?? 0) > (painting.sensed[target.id] ?? 0);
   };
   const morphCallbacks = {
-    beforeNodeMorphed: (oldNode: Node): boolean => !(oldNode instanceof Element && holdsLive(oldNode)),
+    beforeNodeMorphed: (oldNode: Node, newNode: Node): boolean => {
+      if (oldNode instanceof Element && holdsLive(oldNode)) return false;
+      reconcileDescriptor(oldNode, newNode);
+      return true;
+    },
     beforeAttributeUpdated: (name: string, element: Element): boolean => {
       if (name === "aria-describedby" && describedBy.has(element)) return false;
+      if (name === "open" && painting && holdsDisclosure(element, painting.sensed[ownId(element) ?? ""])) return false;
       if (name === "value" || name === "checked" || name === "selected") {
         const owner = element instanceof HTMLOptionElement ? element.closest("select") : element;
         if (owner && holdsLive(owner)) return false;
@@ -363,6 +374,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (awaited === frame.surface) awaited = null;
     renderPlate();                             // the plate drops in the paint that lands the mount's first key
     settleRefusals();
+    paintControls(frame.sensedRevision);
     if (pendingPopupPlacement) {
       const visiblePopup = [...paneEl.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]
         .find((popup) => !popup.hidden && getComputedStyle(popup).display !== "none");
@@ -416,7 +428,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   const pending = new Map<string, { readonly surface: string; readonly target: string }>();
   const PENDING_MAX = 1024;
   type EventBody = Omit<LarMsg_ControlEvent, "type" | "eventId" | "cameraId" | "mountEpoch" | "seenFrameRev" | "seenMembershipRev" | "controlId" | "renderId" | "kind">;
-  const relay = (target: Target, kind: LarControlKind, body: EventBody): void => {
+  const relay = (target: Target, kind: LarControlKind, body: EventBody): LarMsg_ControlEvent | undefined => {
     if (!doors || shownSurface === null || !plateEl.hidden) return;    // under the plate the shown frame names no live mount
     const st = stateOf(shownSurface);
     if (st.epoch === null) return;
@@ -434,6 +446,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     }
     doors.sendControlEvent(shownSurface, ev);
     if (kind === "lar:act") activation = { at: performance.now(), surface: shownSurface, target: target.id };
+    return ev;
   };
   const origin = (event: Event): Element | null => (event.composedPath?.()[0] ?? event.target) as Element | null;
 
@@ -626,6 +639,113 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     }
   };
 
+  // ── The page controls: lar-field, lar-popover, lar-disclosure ─────────────────────────────────
+  //
+  // page-controls#/the-control-set, the three ruled first. Each binds where the frame names it:
+  //   - `lar-field`: a field carrying a value descriptor (`data-lar-value`, `data-lar-value-rev`) keeps the
+  //     person's text against a disagreeing descriptor and offers it beside the field (take theirs, one undoable
+  //     edit, relayed `lar:take-theirs`); a clean or agreeing field takes the descriptor. A click on a node stamped
+  //     `lar-field-operation` crosses as ONE `lar:act` / `lar:edit-operation` carrying the last field's whole value,
+  //     its selection and its revision as of the act, and reserves that revision + 1 for the answer: the `want` lands
+  //     as one undoable edit only while the field's revision still reads the reserved one, and an answer that brings
+  //     no want hands the reservation back. Its words stand beside the field.
+  //   - `lar-popover`: an open first-level popover anchors from the control the person activated; Escape closes it
+  //     at once, returns focus there and relays `lar:dismiss`.
+  //   - `lar-disclosure`: a details the person toggled keeps its open state while its revision runs ahead.
+
+  defineLarField();
+  defineLarPopover();
+  defineLarDisclosure();
+  /** The text field the person last stood in, and the control they last activated. */
+  let lastField: LarFieldNode | null = null;
+  let lastActivated: HTMLElement | null = null;
+  /** Each toolbar act in flight, by event id: its field, the revision it carried and the one it reserved. */
+  const fieldActs = new Map<string, { readonly id: string; readonly node: LarFieldNode; readonly carried: number; readonly reserved: number }>();
+  /** A node's own control id or render id, never an ancestor's. */
+  const ownId = (el: Element): string | null => el.getAttribute("data-control-id") ?? el.getAttribute("data-lar-rid");
+
+  const reconcileDescriptor = (oldNode: Node, newNode: Node): void => {
+    if (!isLarFieldNode(oldNode) || !isLarFieldNode(newNode)) return;
+    const value = newNode.getAttribute("data-lar-value");
+    if (value === null) return;
+    const keep = reconcileFieldDescriptor(oldNode, value, Number(newNode.getAttribute("data-lar-value-rev") ?? 0));
+    // The arriving node carries the value the field keeps, so the morph writes nothing the person typed away.
+    if (newNode instanceof HTMLTextAreaElement) newNode.textContent = keep;
+    else newNode.setAttribute("value", keep);
+    newNode.value = keep;
+  };
+  const paintControls = (sensed: Readonly<Record<string, number>>): void => {
+    paintPopovers(paneEl, lastActivated);
+    notePaintedDisclosures(paneEl, (d) => holdsDisclosure(d, sensed[ownId(d) ?? ""]));
+  };
+  const settleFieldAct = (result: LarMsg_ControlResult): { readonly id: string } | undefined => {
+    const act = fieldActs.get(result.eventId);
+    if (!act || shownSurface === null) return undefined;
+    fieldActs.delete(result.eventId);
+    const st = stateOf(shownSurface);
+    const rev = st.localRev.get(act.id);
+    if (result.status === "applied" && result.want && rev === act.reserved && paneEl.contains(act.node)) {
+      applyWholeValue(act.node, result.want.value, result.want.selStart, result.want.selEnd);
+    } else if (rev === act.reserved && !(result.status === "applied" && result.want)) {
+      st.localRev.set(act.id, act.carried);
+    }
+    return act;
+  };
+
+  paneEl.addEventListener("focusin", (event) => { const src = origin(event); if (isLarFieldNode(src)) lastField = src; });
+  paneEl.addEventListener("input", (event) => {
+    const src = origin(event);
+    if (src && isApplyingField(src)) { event.stopPropagation(); return; }    // the page's own write, never the person's
+    if (src) markFieldEdited(src);
+  }, true);
+  paneEl.addEventListener("click", (event) => {
+    const src = origin(event);
+    const op = src?.closest?.<HTMLElement>('[data-lar-control="lar-field-operation"]') ?? null;
+    if (!op) {
+      const activated = src?.closest?.<HTMLElement>("[data-lar-rid], [data-control-id], button, a") ?? null;
+      if (activated && paneEl.contains(activated)) lastActivated = activated;
+      return;
+    }
+    // The toolbar act carries the field's pair; the click leg relays nothing beside it.
+    event.stopPropagation();
+    const target = targetOf(op);
+    if (!target || shownSurface === null) return;
+    const field = lastField && paneEl.contains(lastField) ? lastField : null;
+    const fieldTarget = field ? targetOf(field) : null;
+    if (!field || !fieldTarget) { paintRefusal(target.id, "selection-unavailable"); return; }
+    if (field.value.length > bound) { paintRefusal(fieldTarget.id, "input-too-long"); return; }
+    const st = stateOf(shownSurface);
+    const carried = st.localRev.get(fieldTarget.id) ?? 0;
+    st.localRev.set(fieldTarget.id, carried + 1);
+    const ev = relay(target, "lar:act", {
+      action: "lar:edit-operation", controlType: "lar-field-operation", fieldId: fieldTarget.id, wholeValue: field.value,
+      selection: { start: field.selectionStart ?? 0, end: field.selectionEnd ?? 0 }, localRev: carried,
+    });
+    if (!ev) { st.localRev.set(fieldTarget.id, carried); return; }
+    fieldActs.set(ev.eventId, { id: fieldTarget.id, node: field, carried, reserved: carried + 1 });
+    if (fieldActs.size > PENDING_MAX) fieldActs.delete(fieldActs.keys().next().value!);
+  }, true);
+  paneEl.addEventListener(LAR_FIELD_TAKE_THEIRS, (event) => {
+    const host = origin(event);
+    const field = host ? [...host.children].find(isLarFieldNode) : undefined;
+    const target = field ? targetOf(field) : null;
+    if (target) relay(target, "lar:act", { action: "lar:take-theirs", controlType: "lar-field" });
+  });
+  paneEl.addEventListener("keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (key.isComposing || key.keyCode === 229 || (key.key !== "Escape" && key.keyCode !== 27)) return;
+    const closed = dismissPopover(paneEl);
+    if (!closed) return;
+    // The page closed the popover; the island hears one dismissal, never an Escape key beside it.
+    event.stopPropagation();
+    const target = closed.anchor ? targetOf(closed.anchor) : null;
+    if (target) relay(target, "lar:act", { action: "lar:dismiss", controlType: "lar-popover" });
+  }, true);
+  paneEl.addEventListener("toggle", (event) => {
+    const src = origin(event);
+    if (src instanceof HTMLDetailsElement) takeDisclosureToggle(src);
+  }, true);
+
   // ── The answer rail ───────────────────────────────────────────────────────────────────────────
 
   const applyResult = (result: LarMsg_ControlResult): ResultVerdict => {
@@ -635,10 +755,11 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (asked.surface !== shownSurface) { pending.delete(result.eventId); return "ignored"; }
     if (result.mountEpoch !== stateOf(asked.surface).epoch) return "ignored";
     pending.delete(result.eventId);
-    if (result.status === "applied") { dropRefusal(asked.target); return "cleared"; }
+    const refusalBeside = settleFieldAct(result)?.id ?? asked.target;  // a toolbar act's words stand beside its field
+    if (result.status === "applied") { dropRefusal(refusalBeside); return "cleared"; }
     const reason: LarRefusal = result.status === "stale-target" ? "stale-target" : result.reason ?? "binding-unavailable";
     if (reason === "unclaimed") return "ignored";                  // the browser's default stood; no words owed
-    paintRefusal(asked.target, reason);
+    paintRefusal(refusalBeside, reason);
     return "painted";
   };
 

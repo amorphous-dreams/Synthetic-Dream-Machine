@@ -51,9 +51,11 @@ written           = "2026-10-11"
 
 ''Ruled first'':
 
-# ''A field editor, emitting `lar-field`.'' It runs through the editor's engine seam (#/shadow-widgets), so the stock edit template renders through it.
-# ''A popover'' (`lar-popover`).
-# ''A disclosure'' (`lar-disclosure`).
+# ''A field editor, emitting `lar-field`.'' It runs through the editor's engine seam (#/shadow-widgets), so the stock edit template renders through it. The seam engine (`packages/lararium-tw5/src/lar-field-engine.ts`) paints `<lar-field data-lar-control="lar-field">` around the native child, which carries `data-lar-value` and `data-lar-value-rev`; `setText` writes the descriptor, never the child text; `getText` reads the page's last sense or commit; `getSelectionRange` reads the carried pair. A field the person edited keeps its text against a disagreeing descriptor and shows the newer version beside it; //take theirs// replaces it as one undoable edit (`lar:take-theirs`). A toolbar act (`lar:edit-operation`) carries `wholeValue`, `selection`, `localRev` r and `fieldId`; the page reserves r+1 and the island's `want` lands only while the field still reads r+1; a collapsed pair under `wrap-selection` or `excise` refuses `selection-unavailable`.
+# ''A popover'' (`lar-popover`). `$reveal type="popup"` paints `data-lar-control="lar-popover"`; a first-level popover anchors from the control the person activated; Escape closes it at once, focus returns, and one `lar:dismiss` closes the wiki's popup state, never a `lar:key` beside it.
+# ''A disclosure'' (`lar-disclosure`). `$reveal` keyed to a state paints `data-lar-control="lar-disclosure"`; a `<details>` the person toggled keeps `open` while its revision runs ahead of the sensed one, and a paint's own toggle never reads as the person's.
+
+''The IME rule.'' `keyCode 229` reads as composing on every platform; a declared-key act waits one task after `compositionend`; a composing node never morphs, whatever its revision.
 
 ''The designed set, unbuilt.'' Every tag names vessel-shipped, allowlisted code, and its native children stay in the element's light DOM.
 
@@ -248,6 +250,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EOS0vSA0Lfgx-sB5Yv24usmeZKw1enKAm6UtCCW8DvA
+<<^ code="&#x0003;">>ni:///sha-256;HzanL7ZvvwAAWz-E_1yUXoZLhdjApK5RhUlbFd7XCH4
 
 <<^ code="&#x0004;" -> to="?">>
