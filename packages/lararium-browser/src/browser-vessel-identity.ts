@@ -6,8 +6,9 @@
  *   - IndexedDB for persistence instead of NodeFS (mode 0o600)
  *   - No git-config lookup; displayName passed by caller
  *
- * Key material lives only in the origin's IndexedDB under `<idbName>` / "keystore".
- * Never transferred to island Workers.
+ * Key material rests only in the origin's IndexedDB under `<idbName>` / "keystore": in the clear until a slot
+ * binds, sealed under the vessel key once one does (`browser-custody.ts`). The page that opens the vessel hands
+ * the opened seed and Archive to its daemon island's manifest, so a lock drops this page's unlock alone.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-identity
  */
@@ -39,6 +40,7 @@ import { mintDeviceMintedKey, type DeviceMintedKey } from "@lararium/keyhive";
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
+import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 const KEY_RECORD = "vessel-key";
 const IDENTITY_CONTINUITY_PREFIX = "lares:vessel:continuity:";
 
@@ -220,12 +222,10 @@ const browserKeypairCrypto: KeypairCrypto = {
 };
 
 /**
- * An IndexedDB keypair slot at (store, key) — the ONE keypair-persistence primitive both the device key
- * and each persona-root reuse (custody-by-type: the browser at-rest guard, such as it is, lives HERE in
- * the adapter; the mesh core never sees the bytes). Today the browser holds NO seal for self-sovereign
- * secrets — a persona-root persists CLEARTEXT hex exactly as the device key beside it does (IDB, origin-
- * scoped). SURFACED: a WebCrypto at-rest seal (the browser twin of node's scrypt/AES-GCM archive-seal)
- * is a follow-on; until it lands, the persona-root shares the device key's cleartext-at-rest posture.
+ * An IndexedDB keypair slot at (store, key) — the keypair-persistence primitive each persona-root rides
+ * (custody-by-type: the browser at-rest guard lives HERE in the adapter; the mesh core never sees the bytes).
+ * A persona-root still persists CLEARTEXT hex (IDB, origin-scoped): the keystore's slot tree
+ * (`browser-custody.ts`) wraps the device seed and the Archives, and the persona-root stores stand outside it.
  */
 function idbKeypairSlot(idbName: string, storeName: string, key: string): KeypairStore {
   return {
@@ -245,9 +245,20 @@ function idbKeypairSlot(idbName: string, storeName: string, key: string): Keypai
 }
 
 /** The device keypair slot — the vessel's OWN signing capability (the Individual), distinct from every
- *  persona-root (the two-key atom: device-key ⊥ persona-root). */
+ *  persona-root (the two-key atom: device-key ⊥ persona-root). It rides the keystore's custody row door
+ *  (`browser-custody.ts`): in the clear until a slot binds, sealed under the vessel key once one does, and a
+ *  sealed keystore this page holds no unlock for refuses `sealed-locked`, so nothing mints over a sealed seed. */
 function idbKeypairStore(idbName: string): KeypairStore {
-  return idbKeypairSlot(idbName, "keystore", KEY_RECORD);
+  return {
+    async load() {
+      const existing = await readKeystoreRow(idbName, KEY_RECORD) as PersistedBrowserKey | undefined;
+      return existing ? { verifyingKey: existing.verifyingKey, signingKey: existing.signingKey } : undefined;
+    },
+    async save(kp) {
+      const record: PersistedBrowserKey = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
+      await writeKeystoreRow(idbName, KEY_RECORD, record);
+    },
+  };
 }
 
 // ── Keypair lifecycle ─────────────────────────────────────────────────────────
@@ -334,8 +345,8 @@ export async function loadBrowserDeviceKey(idbName = "lares:vessel"): Promise<De
 // The isomorphic control flow (generate/load/wear/custody-refuse/roster) lives platform-blind in mesh's
 // persona-vault; THIS adapter supplies the browser shores: per-index IDB keypair slots, a JSON active-
 // persona selector, the anchor store, and (SURFACED) a NULL recovery store. The at-rest guard stays HERE
-// (custody-by-type) — but the browser holds no seal for self-sovereign secrets yet, so each root persists
-// cleartext exactly as the device key does (see idbKeypairSlot).
+// (custody-by-type) — and each root still persists cleartext (see idbKeypairSlot): the keystore's slot tree
+// wraps the device seed and the Archives, and the persona-root stores stand outside it.
 //
 // ROOT-ON-FOUNDER: the founding ceremony mints founder-side only; a joinee's vault holds anchors at its
 // admitted index with NO matching root (listRoots()=[]). UNIFORM KEYING — every root spells `h${N}`; the
