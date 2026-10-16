@@ -19,12 +19,9 @@
 // constants, and pono-layer types. `ABILITY_LADDER` sits here too, and its sibling appearance in
 // `mesh/causal-island.mem` promises a four-level gate that never existed.
 //
-// THE MATCH IS DELIBERATELY LOOSE — a word-boundary search across every tracked source file, not a parse.
-// It answers "does this name appear anywhere the code lives", so a symbol it flags is genuinely absent
-// rather than merely moved. False GREEN is the tolerable direction here; a false red would spend an
-// operator's attention on a name that simply lives somewhere the parser did not look.
+// A name counts when source declares it in code. Comments, literals, tests' quoted examples, and
+// `.tid` prose cannot keep a retired definition alive.
 import { execFileSync } from "child_process";
-import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { readCarrier } from "./corpus-read.mjs";
@@ -50,18 +47,17 @@ const IS_PLACEHOLDER = (decl) => decl.includes("<") || decl.includes(">");
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);
 
-// The haystack: every tracked source carrier, read once.
-// PYTHON COUNTS AS SOURCE. `lararium-sensorium` runs python holders under TypeScript callers, so a carrier
-// may legitimately name a python export — and a corpus that never reads `.py` would report such a name
-// absent forever, a red no code change could clear.
-const SOURCE = /\.(ts|mts|cts|js|mjs|cjs|tid|py)$/;
+// PYTHON COUNTS AS SOURCE. `lararium-sensorium` runs python holders under TypeScript callers.
+const SOURCE = /\.(ts|mts|cts|js|mjs|cjs|py)$/;
 const IN_SOURCE_TREE = /^(packages|tools|scripts|TiddlyWiki5)\//;
-let haystack = "";
+const sourcePaths = [];
 for (const rel of tracked) {
   if (!IN_SOURCE_TREE.test(rel) || !SOURCE.test(rel)) continue;
   if (rel.includes("/dist/") || rel.includes("/node_modules/")) continue;
-  try { haystack += readFileSync(join(REPO, rel), "utf8") + "\n"; } catch { /* unreadable — skip */ }
+  sourcePaths.push(join(REPO, rel));
 }
+const definitions = new Set(JSON.parse(execFileSync("python3", [join(REPO, "tools/code_scan.py")],
+  { cwd: REPO, input: JSON.stringify(sourcePaths), encoding: "utf8", maxBuffer: 1 << 28 })));
 
 const absent = [];
 let checked = 0;
@@ -76,12 +72,16 @@ for (const rel of tracked) {
   for (const sym of decl[1].split(/\s+/)) {
     if (!sym || NOT_A_SYMBOL.test(sym)) continue;
     checked++;
-    const found = new RegExp(`\\b${sym.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(haystack);
-    if (!found) absent.push([rel, sym]);
+    if (!definitions.has(sym)) absent.push([rel, sym]);
   }
 }
 
 console.log(`[symbol-anchor] ${checked} named symbol(s) · ${absent.length} absent from every source file (ceiling ${CEILING})`);
+
+if (checked === 0) {
+  console.log("  NO SOURCE SYMBOLS CHECKED — the carrier symbol census is empty");
+  process.exit(1);
+}
 
 if (absent.length > CEILING) {
   console.log("\n  THE DEBT GREW — a carrier names a symbol the source does not define:");
