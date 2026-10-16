@@ -5,7 +5,16 @@
  */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const seam = vi.hoisted(() => ({ asked: [] as Array<[string, Record<string, unknown>]> }));
+const seam = vi.hoisted(() => ({ asked: [] as Array<[string, Record<string, unknown>]>, ran: [] as string[] }));
+
+// The joinee's runners stand in: a refused act must reach none of them, and a control must reach its own.
+vi.mock("@lararium/node", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@lararium/node")>()),
+  runFleetJoinRequest: async () => { seam.ran.push("request"); return { kind: "request" }; },
+  runFleetJoinLand: async () => { seam.ran.push("land"); },
+  runFleetJoinAbandon: async () => { seam.ran.push("abandon"); return true; },
+  ownedStore: async (_dir: string, use: (repo: unknown) => unknown) => use({}),
+}));
 
 vi.mock("../src/store-door.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/store-door.js")>()),
@@ -27,6 +36,7 @@ const run = (...argv: string[]) => cmdFleet(parseArgs(["fleet", "join", ...argv]
 describe("fleet join --face", () => {
   beforeEach(() => {
     seam.asked = [];
+    seam.ran = [];
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
@@ -47,6 +57,30 @@ describe("fleet join --face", () => {
     for (const argv of [["offer", "--face"], ["offer", "--no-face"], ["answer", "request.json", "--face"], ["offer", "--face", "one"], ["offer", "--face", "-1"], ["offer", "--face", "1.5"], ["offer", "--face", "01"]]) {
       expect(await run(...argv), argv.join(" ")).toBe(1);
     }
+    expect(seam.asked).toEqual([]);
+  });
+
+  test("CONTROL: request, land and abandon without --face reach their runners", async () => {
+    expect(await run("request", "offer.json")).toBe(0);
+    expect(await run("land", "answer.json")).toBe(0);
+    expect(await run("abandon")).toBe(0);
+    expect(seam.ran).toEqual(["request", "land", "abandon"]);
+  });
+
+  test("the joinee names no face: --face on request, land and abandon refuses by name and runs nothing", async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, "error").mockImplementation((line: unknown) => { errors.push(String(line)); });
+    for (const argv of [
+      ["request", "offer.json", "--face", "1"], ["request", "offer.json", "--face=1"], ["request", "offer.json", "--face"], ["request", "offer.json", "--no-face"],
+      ["land", "answer.json", "--face", "1"], ["land", "answer.json", "--face=0"],
+      ["abandon", "--face", "1"], ["abandon", "--face=1"],
+    ]) {
+      errors.length = 0;
+      expect(await run(...argv), argv.join(" ")).toBe(1);
+      expect(errors.join("\n"), argv.join(" ")).toMatch(/face-joinee|joinee/);
+      expect(errors.join("\n"), argv.join(" ")).toMatch(/rides the offer/);
+    }
+    expect(seam.ran).toEqual([]);
     expect(seam.asked).toEqual([]);
   });
 });

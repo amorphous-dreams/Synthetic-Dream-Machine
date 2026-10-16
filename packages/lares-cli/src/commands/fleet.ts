@@ -65,6 +65,12 @@ function faceOf(args: ParsedArgs): { face?: number } {
   return { face };
 }
 
+/** The joinee's acts (request, land, abandon) name no face: the face rides the offer, so a `--face` here would pass silently and mean nothing. */
+function refuseFaceOnJoinee(args: ParsedArgs, act: string): void {
+  if (args.options["face"] === undefined && args.flags["face"] === undefined) return;
+  throw new FleetJoinRefused("face-joinee", `\`lares fleet join ${act}\` takes no --face: the joinee never names a face — the face rides the offer, and \`--face N\` belongs to \`offer\` and \`answer\` on the root holder.`);
+}
+
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
   const [group, act, file] = args.positional;
   if (group !== "join" || act === undefined) return usage(args);
@@ -77,6 +83,7 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "request": {
+        refuseFaceOnJoinee(args, act);
         const request = await runFleetJoinRequest({ offer: readJson(file, "offer") });
         emitFile(args, request, "request");
         console.log("[lares fleet join] carry the request back to the root holder: `lares fleet join answer <request-file>`.");
@@ -90,12 +97,14 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "land": {
+        refuseFaceOnJoinee(args, act);
         const answer = readJson(file, "answer");
         await ownedStore(larDataDir(), (repo) => runFleetJoinLand({ repo, answer }));
         console.log("[lares fleet join] landed — the face stands on this vessel. Start with: lares vessel stand --with-web");
         return 0;
       }
       case "abandon": {
+        refuseFaceOnJoinee(args, act);
         const stood = await runFleetJoinAbandon();
         console.log(stood ? "[lares fleet join] the pending join left this vessel." : "[lares fleet join] no join stood pending here.");
         return 0;

@@ -476,4 +476,27 @@ describe("GateSessionChannel", () => {
     expect(calls).toBe(callsAtClose);
     expect(ended).toBe(true);
   });
+
+  it("a seat whose session closed while pending opens nothing: onOpen never runs, the gate reads silence session-unopened and cuts", async () => {
+    const w = await world();
+    const p = await presenter(w, "dead seat face");
+    let handed = 0;
+    const inner = channelSessionTable(() => { handed++; });
+    // The socket ends during the attach-to-open interval: the pump reads null at once and the channel closes "peer-gone".
+    // The channel's own cut is swallowed, so the verdict still leaves; any cut the wire logs is then the gate's.
+    let channelCuts = 0;
+    const sessions: GateSessionTable = {
+      async attach(socket, session) {
+        const seat = await inner.attach({ flight: socket.flight, send: (f) => socket.send(f), cut: () => { channelCuts++; }, recv: () => Promise.resolve(null) }, session);
+        await turn();
+        return seat;
+      },
+    };
+    const d = await dialInto(w, gateOver(w, sessions), p);
+    expect(await d.accepting).toEqual({ outcome: "silence", reason: "session-unopened" });
+    expect(handed).toBe(0);
+    expect(channelCuts).toBe(1);
+    expect(d.log.cuts).toBe(1);
+    expect(await d.channel.recv()).toBeNull();
+  });
 });

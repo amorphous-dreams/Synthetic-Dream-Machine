@@ -65,7 +65,9 @@ export interface GateSessionChannel {
   /**
    * The next whole message in arrival order. It waits while pending: frames buffer and never deliver before open.
    * Messages already whole before a PEER close (or the socket's end) deliver in order, then null; a local close
-   * or any fault drops them.
+   * or any fault drops them. A SEATED channel whose peer closed (or whose socket ended) while still pending, and
+   * which holds undelivered messages, keeps a recv() waiting until open() or abandon() runs: a direct caller of
+   * seatedChannel must do one of the two. channelSessionTable does: it abandons such a channel at open().
    */
   recv(): Promise<SealedMessage | null>;
   /** Close locally: send one sealed "control/close" (empty body) if open, then cut the socket. Idempotent. */
@@ -214,7 +216,10 @@ export function dialedChannel(args: ChannelArgs): GateSessionChannel {
 /**
  * A GateSessionTable for makeFaceGate: attach seats a pending channel over the attached socket and the session's
  * transport; open() opens it and hands it, with the frozen session, to onOpen exactly once; abandon() abandons
- * it. A throw from onOpen closes the channel "local" and rethrows (the gate then cuts).
+ * it. A throw from onOpen closes the channel "local" and rethrows (the gate then cuts). A channel already closed
+ * when open() runs (the peer closed or the socket ended while the seat stood pending) goes to onOpen never: open()
+ * abandons it and throws GateChannelClosed(reason), and the gate reads silence "session-unopened" and cuts. Whatever
+ * the peer had sent before it left is dropped with it.
  */
 export function channelSessionTable(
   onOpen: (channel: GateSessionChannel, session: GateSession) => void,
@@ -228,6 +233,9 @@ export function channelSessionTable(
         open() {
           if (handed) return;
           handed = true;
+          // A session that closed while its seat stood pending is dead: hand nothing to onOpen. The throw makes the gate
+          // abandon the seat, cut the socket and read silence "session-unopened" (face-gate step 9), never "attached".
+          if (channel.state === "closed") { const reason = channel.closedBy!; channel.abandon(); throw new GateChannelClosed(reason); }
           channel.open();
           try { onOpen(channel, session); } catch (error) { channel.close(); throw error; }
         },

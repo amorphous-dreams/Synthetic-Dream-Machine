@@ -11,7 +11,7 @@
 import { describe, expect, test } from "vitest";
 import { hex, utf8Bytes } from "../src/crypto.js";
 import {
-  ADMIT_GATE_PIN_REFUSALS, SOVEREIGN_SYNC_ROUTE, admitGatePinDigest, dialPinKeyOf, hearthPinIndex, readAdmitGatePin,
+  ADMIT_GATE_PIN_REFUSALS, SOVEREIGN_SYNC_ROUTE, admitGatePinDigest, dialPinKeyOf, hearthPinIndex, readAdmitGatePin, readAdmitGatePinAt,
 } from "../src/admit-gate-pin.js";
 import {
   GATE_BUNDLE_REFUSALS, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, gateBundleDigest,
@@ -142,5 +142,41 @@ describe("the pair index", () => {
     expect(ix.put("h", sovPin(A, "/x"))).toBe(true);
     expect(ix.put("h", floPin(A, "/x"))).toBe(true);
     expect(ix.size).toBe(2);
+  });
+});
+
+describe("the Nexus is required where an admit is read", () => {
+  test("CONTROL: readAdmitGatePinAt reads the pin of the Nexus it names", () => {
+    const r = readAdmitGatePinAt({ ...PIN_A }, "nexus-a.synthetic");
+    expect("pin" in r && r.pin).toEqual(PIN_A);
+  });
+  test("RED: another Nexus refuses pin-other-nexus, and so does a missing or empty one (the optional reader would read any)", () => {
+    const refusal = (nexus: unknown) => { const r = readAdmitGatePinAt({ ...PIN_A }, nexus as string); return "refusal" in r ? r.refusal : null; };
+    expect(refusal("nexus-b.synthetic")).toBe("pin-other-nexus");
+    for (const missing of [undefined, null, "", 7]) expect(refusal(missing), String(missing)).toBe("pin-other-nexus");
+    expect(refusalOf({ ...PIN_A }, { nexus: undefined })).toBeNull();
+  });
+  test("the other refusals still stand, in the same order", () => {
+    const r = readAdmitGatePinAt({ ...floPin("nexus-a.synthetic", "/ws") }, "nexus-a.synthetic");
+    expect("refusal" in r && r.refusal).toBe("pin-other-tier");
+  });
+});
+
+describe("one spelling of the Nexus per door", () => {
+  test("CONTROL: get takes the pin's hex; forHearth takes the AID text", () => {
+    const ix = hearthPinIndex();
+    ix.put("h", PIN_A);
+    expect(ix.get(dialPinKeyOf("h", PIN_A))).toEqual(PIN_A);
+    expect(ix.forHearth("h", "nexus-a.synthetic")).toEqual([PIN_A]);
+  });
+  test("RED: get with the AID text refuses loudly instead of missing", () => {
+    const ix = hearthPinIndex();
+    ix.put("h", PIN_A);
+    expect(() => ix.get({ hearth: "h", nexus: "nexus-a.synthetic", route: PIN_A.route, tier: PIN_A.tier })).toThrow(TypeError);
+  });
+  test("RED: forHearth with the hex form refuses loudly instead of answering nothing", () => {
+    const ix = hearthPinIndex();
+    ix.put("h", PIN_A);
+    expect(() => ix.forHearth("h", PIN_A.nexus)).toThrow(TypeError);
   });
 });

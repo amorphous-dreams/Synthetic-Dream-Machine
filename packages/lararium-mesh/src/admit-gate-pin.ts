@@ -9,6 +9,7 @@
  *
  *   · READ. `readAdmitGatePin` reads the gate-bundle pin, then holds it to the sovereign tier, the sovereign
  *     sync route and, where asked, the Nexus the admit names. Each miss refuses by name.
+ *     `readAdmitGatePinAt(value, nexus)` is the admit path's door: the Nexus is required there.
  *   · DIGEST. `admitGatePinDigest` is the gate-bundle digest of the validated pin, nothing beside it.
  *   · FILE. `hearthPinIndex` files pins by (hearth, Nexus, route, tier) in memory. A pin moves only by a
  *     signed causal event; the index holds no such door, so a held key answers its first pin until the
@@ -19,7 +20,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
-import { hex, utf8Bytes } from "./crypto.js";
+import { hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import { GATE_BUNDLE_REFUSALS, gateBundleDigest, readGateBundlePin, type GateBundlePin, type GateTier } from "./gate-bundle.js";
 
 /** The route a hearth's sovereign sync gate answers on. */
@@ -50,6 +51,18 @@ export function readAdmitGatePin(
   return { pin };
 }
 
+/**
+ * `readAdmitGatePin` with the Nexus REQUIRED: the admit path names the Nexus it stands at, and a missing, empty or
+ * non-text one refuses "pin-other-nexus" rather than reading the pin of any Nexus.
+ */
+export function readAdmitGatePinAt(
+  value: unknown,
+  nexus: string,
+): { readonly pin: GateBundlePin } | { readonly refusal: AdmitGatePinRefusal } {
+  if (typeof nexus !== "string" || nexus.length === 0) return { refusal: "pin-other-nexus" };
+  return readAdmitGatePin(value, { nexus });
+}
+
 /** The digest an admit names for its pin: `gateBundleDigest` of the validated pin. */
 export function admitGatePinDigest(pin: GateBundlePin): string {
   return gateBundleDigest(pin);
@@ -71,7 +84,8 @@ export function dialPinKeyOf(hearth: string, pin: GateBundlePin): DialPinKey {
  * The pair index: pins filed by (hearth, Nexus, route, tier). Pure, in memory. `put` refuses (returns false,
  * stores nothing) a pin whose read fails, a different pin under a key already held (a pin moves only by a
  * signed causal event; the index holds no such door), or an empty or newline-bearing hearth. `get` answers
- * the pin or null. `forHearth(hearth, nexus)` answers that pair's pins, never another pair's.
+ * the pin or null. `forHearth(hearth, nexus)` answers that pair's pins, never another pair's. The Nexus has one
+ * spelling per door: `get` the pin's hex, `forHearth` the AID text; the wrong one throws TypeError.
  */
 export interface HearthPinIndex {
   put(hearth: string, pin: unknown): boolean;
@@ -79,6 +93,11 @@ export interface HearthPinIndex {
   forHearth(hearth: string, nexus: string): readonly GateBundlePin[];
   readonly size: number;
 }
+
+// ONE SPELLING PER DOOR. `get` takes the key's Nexus as the pin carries it (hex of the AID text); `forHearth` takes
+// the AID text. Each refuses the other's spelling with a TypeError, since both are strings and a miss would be silent.
+const isHexText = (value: string): boolean => /^(?:[0-9a-f]{2})+$/.test(value);
+const isHexOfAid = (value: string): boolean => isHexText(value) && hexToBytes(value).every((byte) => byte > 0x20 && byte < 0x7f);
 
 const hearthReads = (hearth: unknown): hearth is string => typeof hearth === "string" && hearth.length > 0 && !/[\r\n]/.test(hearth);
 // The hearth leads and holds no newline; the rest holds none either (hex, a route, a tier), so the join is one reading.
@@ -100,10 +119,12 @@ export function hearthPinIndex(): HearthPinIndex {
     },
     get(key: DialPinKey): GateBundlePin | null {
       if (!hearthReads(key?.hearth)) return null;
+      if (typeof key.nexus !== "string" || !isHexText(key.nexus)) throw new TypeError("hearthPinIndex.get: key.nexus is the pin's hex, as dialPinKeyOf spells it; the AID text goes to forHearth");
       return held.get(keyText(key.hearth, key.nexus, key.route, key.tier)) ?? null;
     },
     forHearth(hearth: string, nexus: string): readonly GateBundlePin[] {
       if (!hearthReads(hearth) || typeof nexus !== "string") return [];
+      if (isHexOfAid(nexus)) throw new TypeError("hearthPinIndex.forHearth: nexus is the AID text, never the pin's hex; a hex key goes to get");
       const nexusHex = hex(utf8Bytes(nexus));
       const prefix = `${hearth}\n${nexusHex}\n`;
       return [...held].filter(([key]) => key.startsWith(prefix)).map(([, pin]) => pin);
