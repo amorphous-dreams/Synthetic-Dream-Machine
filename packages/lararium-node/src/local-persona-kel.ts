@@ -2,8 +2,7 @@
  * local-persona-kel — THIS vessel's local persona-KEL board replica, read and seated: one face's chain, every event
  * under a prefix, a carried chain seated on a restore, and a KEL's head with its sequence off one read.
  *
- * The persona admission's airgapped hops once lived beside these readers; `lares fleet join` took that door, and
- * the readers stayed for the restore, the guardian enrolment, the boot's bundle cut and the KEL-head door.
+ * These readers serve restore, guardian enrolment, boot bundle cuts and the KEL-head door.
  */
 
 import type { Repo } from "@automerge/automerge-repo";

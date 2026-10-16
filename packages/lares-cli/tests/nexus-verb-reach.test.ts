@@ -5,8 +5,8 @@
  * `nexus.ts` is five doors in one file — roster/contract, kāhuli, the charter seal and its epoch
  * chain, the kāpae antigen, and the realm/bag pair. Splitting it moves code without changing what any
  * of it does, so there is no OUTCOME to assert that would have read differently before the move. What
- * a split CAN silently break is REACH: a verb that stops being routed, a rite whose handler no longer
- * resolves across a module boundary, a usage array that moves away from the `default:` naming it.
+ * a split CAN silently break is REACH: a verb that stops being routed, a rite whose handler cannot resolve
+ * across a module boundary, or a usage array that moves away from the `default:` naming it.
  *
  * So this asks the only question the move can answer wrongly — does every verb still get somewhere —
  * and asks it of the DISPATCHER, `cmdNexus`, the single symbol every importer takes and the one the
@@ -90,8 +90,8 @@ describe("lares nexus — every verb reaches its door", () => {
   });
 
   /**
-   * CONTROL (K22) — `refresh` retired as a standalone door: its whole body now rides the after-roll hook every
-   * store-door write fires, so a dedicated poke no longer exists to reach. Proves the retirement by the same
+   * CONTROL — `refresh` runs through the after-roll hook on every store-door write; the command table has no
+   * standalone route for it. Proves the boundary by the same
    * `unknown verb` refusal a never-built word gets, rather than by its absence from `VERBS` alone.
    */
   test("`nexus refresh` is retired — it reads as an unknown verb, not a door", async () => {

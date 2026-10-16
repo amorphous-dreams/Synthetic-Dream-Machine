@@ -13,7 +13,7 @@ import { DOMAIN_ROOT } from "../src/domains.js";
 
 const ROOT = `${DOMAIN_ROOT}/`;
 
-/** The frozen set, sha256 over its sorted `EXPORT=string` rows (the per-Nexus scope leaf and the four persona-admission domains retired). A move here re-keys live
+/** The frozen set, sha256 over its sorted `EXPORT=string` rows, including reserved domain strings. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
 const FROZEN_COUNT = 37;
 const FROZEN_WELD = "49f904b786002253980508fea2a866232983e6143959f7862d9083b37b9a1a17";
