@@ -46,11 +46,15 @@
  *   BC17 THE DOOR'S LITERAL TRUE: a door answering a truthy non-boolean parks, writing nothing. Control: literal
  *        true clears.
  *   BC18 A NEWER SEAL BETWEEN PARK AND CONFIRM: the confirmed clear re-opens and carries the newer Archive into the
- *        clear. (Staged between the two passes; a race inside one pass needs a hook this surface does not offer.)
+ *        clear. The newer value lands between passes through the confirm door.
+ *   BC19 THE ACT LOCK: a confirmed clear holds row doors through each clear/sealed handoff; a burst of readers
+ *        answers the device seed and Archive while the writer pauses before removing the first sealed carrier.
+ *   BC20 THE STANDING CARRIER: a torn replacement sidecar leaves the sealed bytes intact and the old value opens.
+ *   BC21 THE FREE QUESTION: the clear asks its confirm door with the act lock free, so a waiting person holds no row door.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import {
   bindSlot, commitSlotTree, confirmPaperPin, decodeSlotTree, draftPaperPin, mintVk, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX,
   type CustodyIo,
@@ -68,7 +72,7 @@ import { vesselLockName } from "../src/vessel-lock.js";
 import {
   BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, SEALED_ROW_PREFIX,
   bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRow, lockBrowserCustody,
-  readBrowserCustody, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
+  readBrowserCustody, readKeystoreRow, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
   type BrowserCustodyRefusalReading, type ConfirmDoor,
 } from "../src/browser-custody.js";
 
@@ -651,8 +655,108 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     const cleared = await clearBrowserCustody(v.idbName, [PASS], door.door);
     expect(cleared.reading).toBe("cleared");
     expect(hex((await rowOf(v.idbName, "keyhive-archive")) as Uint8Array), "the newer bytes rest in the clear").toBe(hex(newer));
-    expect(hex((await rowOf(v.idbName, "keyhive-archive")) as Uint8Array)).not.toBe(hex(v.archive));   // CONTROL: not the older
     expect(hex((await rowOf(v.idbName, "veil-archive-h0")) as Uint8Array)).toBe(hex(v.veil));
     expect(await readBrowserCustody(v.idbName)).toEqual({ reading: "clear" });
+  }, SLOW);
+
+  test("BC19 a clear holds the row doors until each value rests in the clear", async () => {
+    const v = await plantedVessel("clear-race");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await unlockBrowserCustody(v.idbName, [PASS]);
+
+    // Hold the mesh writer at the first removal after the clear row lands. Readers meet the handoff while it stands.
+    const request = navigator.locks.request.bind(navigator.locks);
+    let release!: () => void;
+    let reached!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const parked = new Promise<void>((resolve) => { reached = resolve; });
+    let held = false;
+    const spy = vi.spyOn(navigator.locks, "request").mockImplementation((async (
+      name: string, options: LockOptions, callback: (lock: Lock | null) => unknown,
+    ) => {
+      if (!held && name === `lares:custody:${v.idbName}` && await rowOf(v.idbName, "keyhive-archive") !== undefined) {
+        held = true;
+        reached();
+        await gate;
+      }
+      return request(name, options, callback);
+    }) as LockManager["request"]);
+
+    let clearing: Promise<unknown> | undefined;
+    try {
+      clearing = clearBrowserCustody(v.idbName, [PASS], () => true);
+      await parked;
+      const reads: Promise<unknown>[] = [];
+      let settledEarly = 0;
+      const track = (read: Promise<unknown>) => { read.then(() => { settledEarly++; }, () => { settledEarly++; }); return read; };
+      for (let i = 0; i < 25; i++) {
+        reads.push(track(readKeystoreRow(v.idbName, "vessel-key")));
+        reads.push(track(readKeystoreRow(v.idbName, "keyhive-archive")));
+        if (i % 5 === 4) await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 50));
+      // The readers WAIT: none settles while the clear stands midway.
+      expect(settledEarly, "a read settled while the clear stood midway").toBe(0);
+      release();
+      expect(await clearing).toMatchObject({ reading: "cleared" });
+      const answers = await Promise.allSettled(reads);
+      for (let i = 0; i < answers.length; i++) {
+        const answer = answers[i]!;
+        expect(answer.status, `read ${i} refused during the clear`).toBe("fulfilled");
+        if (answer.status === "fulfilled") expect(answer.value).toEqual(i % 2 === 0 ? v.key : v.archive);
+      }
+    } finally {
+      release();
+      spy.mockRestore();
+      await clearing?.catch(() => undefined);
+    }
+  }, SLOW);
+
+  test("BC20 a torn replacement sidecar leaves the standing sealed value byte-identical", async () => {
+    const idbName = `custody-replace-${crypto.randomUUID()}`;
+    const io = browserKeystoreCustodyIo(idbName);
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] });
+    const carrier = sealedCarrierOf("keyhive-archive");
+    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: [carrier] });
+    const a = randomBytes(64);
+    await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: a });
+    const before = (await io.read(carrier.path))!;
+
+    const flipping: CustodyIo = {
+      read: (p) => io.read(p), rename: (a, b) => io.rename(a, b), remove: (p) => io.remove(p),
+      list: () => io.list(), exclusive: (fn) => io.exclusive(fn),
+      write: (p, bytes) => {
+        if (!p.endsWith(SEALING_SUFFIX)) return io.write(p, bytes);
+        const torn = new Uint8Array(bytes);
+        torn[torn.length - 1] = torn[torn.length - 1]! ^ 0xff;
+        return io.write(p, torn);
+      },
+    };
+    const b = randomBytes(72);
+    await expect(writeSealedCarrier({ io: flipping, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext: b }))
+      .rejects.toThrow(/did not read back/);
+    expect(hex((await io.read(carrier.path))!), "the standing seal keeps its exact bytes").toBe(hex(before));
+    expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
+    expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "replace" }])).toMatchObject({ reading: "opens" });
+    expect(await readKeystoreRow(idbName, "keyhive-archive")).toEqual(a);
+  }, SLOW);
+
+  test("BC21 the clear asks its question with the act lock free", async () => {
+    const v = await plantedVessel("clear-question");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await unlockBrowserCustody(v.idbName, [PASS]);
+    let free: Promise<boolean> | undefined;
+    const door: ConfirmDoor = () => {
+      // A door that waits on a person must hold no other tab's row doors: the act lock stands free while it asks.
+      free = navigator.locks.request(`lares:custody-act:${v.idbName}`, { mode: "exclusive", ifAvailable: true }, (lock) => lock !== null) as Promise<boolean>;
+      return true;
+    };
+    expect(await clearBrowserCustody(v.idbName, [PASS], door)).toMatchObject({ reading: "cleared" });
+    expect(await free, "the act lock stood free while the door asked").toBe(true);
+    // CONTROL: the same probe from inside a held act lock reads it taken.
+    const taken = await navigator.locks.request(`lares:custody-act:${v.idbName}`, { mode: "exclusive" }, () =>
+      navigator.locks.request(`lares:custody-act:${v.idbName}`, { mode: "exclusive", ifAvailable: true }, (lock) => lock !== null));
+    expect(taken).toBe(false);
   }, SLOW);
 });
