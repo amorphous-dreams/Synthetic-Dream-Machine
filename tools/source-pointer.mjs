@@ -55,6 +55,10 @@ for (const rel of mems) {
 }
 
 console.log(`[source-pointer] ${pointers} carrier→code pointer(s) across ${mems.length} carriers · ${dangling.length} dangling`);
+if (mems.length === 0 || pointers === 0) {
+  console.log("  NO CARRIER CODE POINTERS FOUND — the pointer census checked nothing");
+  process.exit(1);
+}
 if (dangling.length > 0) {
   console.log("\n  A CARRIER POINTS AT CODE THAT IS GONE — re-aim it, or retire the carrier:");
   for (const [mem, target] of dangling) console.log(`    ${mem}\n      -> ${target}`);

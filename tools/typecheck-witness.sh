@@ -28,10 +28,21 @@ for dir in packages/*/ tests/; do
   cfg="tsconfig.json"
   [ -f "$dir/tsconfig.typecheck.json" ] && cfg="tsconfig.typecheck.json"
 
-  errs=$( (cd "$dir" && npx tsc --noEmit --pretty false -p "$cfg" 2>&1) | grep "error TS" | grep -v "TS6059" )
+  output=$(cd "$dir" && npx tsc --noEmit --pretty false -p "$cfg" 2>&1)
+  compiler_status=$?
+  rootdir_line='^([^[:cntrl:]]+\([0-9]+,[0-9]+\): )?error TS6059:'
+  errs=$(printf '%s\n' "$output" | grep "error TS" | grep -Ev "$rootdir_line")
   count=$(printf '%s' "$errs" | grep -c . )
+  rootdir_diagnostics=$(printf '%s\n' "$output" | grep -E "$rootdir_line")
+  unexpected=$(printf '%s\n' "$output" | grep -Ev "$rootdir_line" | grep '[^[:space:]]')
+  other_diagnostics=$(printf '%s\n' "$output" | grep -o 'error TS[0-9]\+' | grep -v '^error TS6059$')
 
-  if [ "$count" -eq 0 ]; then
+  # A nonzero compiler exit is clean only when every nonblank output line is a TS6059 diagnostic.
+  if [ "$compiler_status" -ne 0 ] && { [ -z "$rootdir_diagnostics" ] || [ -n "$unexpected" ] || [ -n "$other_diagnostics" ]; }; then
+    printf '  %-22s compiler failed (exit %s) outside TS6059\n' "$pkg" "$compiler_status"
+    printf '%s\n' "$output" | sed 's/^/      /'
+    status=1
+  elif [ "$count" -eq 0 ]; then
     printf '  %-22s ok\n' "$pkg"
   else
     printf '  %-22s %s error(s)\n' "$pkg" "$count"

@@ -48,6 +48,8 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
 import pathlib, re, sys, itertools
+sys.path.insert(0, str(pathlib.Path("tools").resolve()))
+from code_scan import mask_non_code
 
 MESH = pathlib.Path("packages/lararium-mesh/src")
 CLI  = pathlib.Path("packages/lares-cli/src")
@@ -55,18 +57,23 @@ SCEN = pathlib.Path("tools/mesh-scenarios.sh")
 
 def union(path: str, pattern: str, root: pathlib.Path = MESH) -> list[str]:
     """Read a closed string union from the module that declares it — never transcribed here."""
-    src = (root / path).read_text()
-    m = re.search(pattern, src)
+    try:
+        src = (root / path).read_text()
+    except FileNotFoundError:
+        print(f"[mesh-coverage] no state union source at {root / path} — the matrix is underivable")
+        sys.exit(1)
+    m = re.search(pattern, mask_non_code(src), re.M)
     if not m:
         print(f"[mesh-coverage] cannot read the state union from {path} — the matrix is underivable")
         sys.exit(1)
-    return re.findall(r'"([a-z-]+)"', m.group(1))
+    return re.findall(r'"([a-z-]+)"', src[m.start(1):m.end(1)])
 
-phases  = union("nexus-phase.ts",    r'export type NexusPhaseName\s*=\s*([^;]+);', root=CLI)
-realms  = union("realm-standing.ts", r'export type RealmStandingName\s*=\s*([^;]+);')
-posture = union("federation-gate.ts", r'FederationPosture\s*=\s*([^;]+);') if (MESH / "federation-gate.ts").exists() else []
-if not posture:
-    posture = union("cap-tier.ts", r'FederationPosture\s*=\s*([^;]+);') if "FederationPosture" in (MESH / "cap-tier.ts").read_text() else ["private", "open"]
+phases  = union("nexus-phase.ts",    r'^[ \t]*export[ \t]+type[ \t]+NexusPhaseName\s*=([^;]+);', root=CLI)
+realms  = union("realm-standing.ts", r'^[ \t]*export[ \t]+type[ \t]+RealmStandingName\s*=([^;]+);')
+posture = union("federation-gate.ts", r'^[ \t]*export[ \t]+type[ \t]+FederationPosture\s*=([^;]+);')
+if not posture or not phases or not realms:
+    print("[mesh-coverage] a state axis declares no values — the matrix is underivable")
+    sys.exit(1)
 
 cells = [f"{p}/{ph}/{r}" for p, ph, r in itertools.product(posture, phases, realms)]
 

@@ -25,6 +25,8 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
 import os, re, json, pathlib, subprocess, sys
+sys.path.insert(0, str(pathlib.Path("tools").resolve()))
+from code_scan import mask_non_code, declared_names
 
 # EVERY RITE, not only the founding one. A rite states commands as CLAIMS a reader resolves the next
 # move from, and that property belongs to the tending rite too — it asks to be walked end to end, each
@@ -87,16 +89,22 @@ _HANDLER = r'(?:cmd[A-Za-z]|run[A-Z]|\{\s*(?:summary|composes|run|handler)\b)'
 _SUBVAR  = r'(?:sub|subverb|subcmd|verb|op)'
 
 def dispatches(body: str, sub: str) -> bool:
-    s = re.escape(sub)
-    return bool(re.search(rf'case\s+["\'`]{s}["\'`]\s*:', body)
-                or re.search(rf'(?m)^\s*["\'`]?{s}["\'`]?\s*:\s*{_HANDLER}', body)
-                or re.search(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]{s}["\'`]', body))
+    return sub in dispatch_keys(body)
 
 def dispatch_keys(body: str) -> set:
     """Every sub-door a module answers — the same derivation the check above runs, read forward."""
-    return ({m for m in re.findall(r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', body)}
-            | {m for m in re.findall(rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', body)}
-            | {m for m in re.findall(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', body)})
+    code = mask_non_code(body)
+    found = set()
+    shapes = (
+        (r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', r'\bcase\s+:'),
+        (rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', rf':\s*{_HANDLER}'),
+        (rf'{_SUBVAR}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', rf'{_SUBVAR}\s*[=!]==?'),
+    )
+    for pattern, code_pattern in shapes:
+        for match in re.finditer(pattern, body):
+            if re.search(code_pattern, code[match.start():match.end()]):
+                found.add(match.group(1))
+    return found
 
 for c in cmds:
     parts = c.split()
@@ -108,7 +116,8 @@ for c in cmds:
     sub = parts[1]
     module = CMDS_DIR / f"{verb}.ts"
     if not module.exists():
-        continue                      # the door dispatches elsewhere; the top verb already answered
+        fail.append(f"{c!r} — commands/{verb}.ts is absent; `{sub}` has no mapped module")
+        continue
     subs_checked += 1
     if not dispatches(module.read_text(), sub):
         fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{verb}.ts")
@@ -123,10 +132,13 @@ for c in cmds:
 # at the python that holds the palaces — `EmbedderIdentityUnknownWarning` lives in the mempalace
 # backend — so a scan of `packages/**/src/*.ts` alone reports a standing symbol as a ghost and sends
 # a reader chasing a citation that was true all along.
-blob = "".join(q.read_text(errors="replace") for q in pathlib.Path("packages").rglob("*.ts")
-               if "/dist/" not in str(q) and "/src/" in str(q))
-blob += "".join(q.read_text(errors="replace") for q in pathlib.Path("packages").rglob("*.py")
-                if "/node_modules/" not in str(q))
+definitions = set()
+for q in pathlib.Path("packages").rglob("*"):
+    if q.suffix not in (".ts", ".py") or "/node_modules/" in str(q) or "/dist/" in str(q):
+        continue
+    if q.suffix == ".ts" and "/src/" not in str(q):
+        continue
+    definitions.update(declared_names(q.read_text(errors="replace"), 'py' if q.suffix == '.py' else 'ts'))
 # A GONE SUBMODULE READS AS UNREAD, NEVER AS A GHOST. `mempalace/` stands as a submodule; a checkout without
 # it (a fresh worktree) holds none of the python half, and a symbol that lives there would read "defined
 # nowhere" — a true citation named as a stale one. Such a checkout names the absent root and calls no symbol
@@ -136,14 +148,15 @@ unscanned = []
 for _root in ("mempalace/mempalace", "mempalace/tests"):
     _p = pathlib.Path(_root)
     if _p.exists():
-        blob += "".join(q.read_text(errors="replace") for q in _p.rglob("*.py"))
+        for q in _p.rglob("*.py"):
+            definitions.update(declared_names(q.read_text(errors="replace"), 'py'))
     else:
         unscanned.append(_root)
 if unscanned and os.environ.get("GITHUB_ACTIONS") == "true":
     fail.append(f"{', '.join(unscanned)} — absent on a runner that checks submodules out; the python half went unscanned")
 cited = sorted({m for m in re.findall(r'`([a-zA-Z_][a-zA-Z0-9_]*(?:#[a-zA-Z][a-zA-Z0-9_]*)?)`', rite)
                 if re.search(r'[a-z][A-Z]|#', m)})
-ghosts = [c for c in cited if c.split("#")[-1] not in blob]
+ghosts = [c for c in cited if c.split("#")[-1] not in definitions]
 for g in ghosts:
     if unscanned:
         print(f"[rite-commands] UNREAD `{g}` — found in no scanned source, and {', '.join(unscanned)} "
