@@ -32,7 +32,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
 import {
@@ -349,9 +349,15 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
     if (!same) { addressSecret.fill(0); throw new FleetJoinRefused("secret-other", "this vessel holds another address secret for that face."); }
   }
   // THE CHARTER FIRST: its import refuses a lineage that does not extend a held one, and that refusal writes nothing.
+  // The take reads its admit against the charter it holds, so the charter lands before it; a take that refuses then
+  // takes back a charter this landing put down where none stood (`landed`), since a carried charter alone stands a
+  // realm plane for a Nexus this vessel never joined. A charter that extended or matched a held one stands: it moved a
+  // lineage this vessel already held forward (lane reading, unruled; it flips if a refused landing must leave a held
+  // charter byte for byte as it stood).
   const sealHome = larSealHome();
+  let imported: { readonly outcome?: string; readonly path?: string } | void = undefined;
   try {
-    if (primaryNexusAid(sealHome) !== dial.aid) importCarriedCharter(sealHome, answer.charter);
+    if (primaryNexusAid(sealHome) !== dial.aid) imported = importCarriedCharter(sealHome, answer.charter);
   } catch (error) {
     addressSecret.fill(0);
     throw new FleetJoinRefused("charter-refused", error instanceof Error ? error.message : String(error));
@@ -362,7 +368,13 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
     .filter((c) => c.scope.nexus === aid)
     .map((c) => ({ handleIndex: 0, verifyingKey: c.scope.faceKey, seed: new Uint8Array(0) }));
   try { await takeAdmitBundle({ sealHome, raw: JSON.stringify(dial.bundle), leaves: certifiedAt }); }
-  catch (error) { addressSecret.fill(0); throw new FleetJoinRefused("admit-refused", error instanceof Error ? error.message : String(error)); }
+  catch (error) {
+    addressSecret.fill(0);
+    if (imported && imported.outcome === "landed" && typeof imported.path === "string") {
+      try { unlinkSync(imported.path); } catch { /* already gone */ }
+    }
+    throw new FleetJoinRefused("admit-refused", error instanceof Error ? error.message : String(error));
+  }
   keepHearthFloorPins(sealHome, dial.aid, answer.floorPins);
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });

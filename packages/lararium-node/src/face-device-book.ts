@@ -20,7 +20,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("A device set aside")
  */
-import type { FaceScope, VesselFaceKey } from "@lararium/mesh";
+import { withdrawnKeyDigest, type FaceScope, type VesselFaceKey } from "@lararium/mesh";
 import type { FaceJoinRecord } from "./fleet-join-custody.js";
 import type { FaceDeviceReading } from "./gate-shadow-ring.js";
 
@@ -35,6 +35,9 @@ export interface FaceDeviceSources {
 export interface FaceDeviceBook {
   /** The device a presenter's face-scoped key was certified to, as of the last refresh. */
   deviceOf(presenter: { readonly scope: FaceScope; readonly vesselFaceKey: VesselFaceKey }): FaceDeviceReading;
+  /** The same binding, for a SEATED session: its scope and the presenter's digest its gate kept (`GateSession`
+   *  `vesselFaceDigest`, the `withdrawnKeyDigest` of its face-scoped key), as of the last refresh. */
+  deviceOfSeat(seat: { readonly scope: FaceScope; readonly vesselFaceDigest: string }): FaceDeviceReading;
   /** Read the carriers again. A refresh that fails leaves the book unbound and throws. */
   refresh(): Promise<void>;
 }
@@ -73,24 +76,42 @@ export function faceDeviceBindings(records: readonly FaceJoinRecord[], ownVessel
   return out;
 }
 
+/** The digest key a seated session resolves through: its scope's Nexus and face key, then the presenter's digest. */
+const seatKey = (nexus: string, faceKey: string, digest: string): string => `${nexus}\n${faceKey.toLowerCase()}\n${digest.toLowerCase()}`;
+
+/** The same bindings, keyed by the presenter's digest a gate keeps on a seated session. A binding that reads no digest drops. */
+function bySeat(bindings: ReadonlyMap<string, string | null>): ReadonlyMap<string, string | null> {
+  const out = new Map<string, string | null>();
+  for (const [key, device] of bindings) {
+    const [nexus, faceKey, vesselFaceKey] = key.split("\n") as [string, string, string];
+    try { out.set(seatKey(nexus, faceKey, withdrawnKeyDigest({ nexus, faceKey } as FaceScope, vesselFaceKey as VesselFaceKey)), device); }
+    catch { /* a binding whose key reads no digest binds no seat */ }
+  }
+  return out;
+}
+
+const reading = (device: string | null | undefined): FaceDeviceReading =>
+  device === undefined ? { unreadable: "face-device-unbound" } : device === null ? { unreadable: "face-device-ambiguous" } : { device };
+
 export function faceDeviceBook(sources: FaceDeviceSources): FaceDeviceBook {
   let bindings: ReadonlyMap<string, string | null> = new Map();
+  let seats: ReadonlyMap<string, string | null> = new Map();
   let asked = 0;
   return Object.freeze({
     deviceOf(presenter: { readonly scope: FaceScope; readonly vesselFaceKey: VesselFaceKey }): FaceDeviceReading {
-      const device = bindings.get(bindingKey(presenter.scope.nexus, presenter.scope.faceKey, presenter.vesselFaceKey));
-      if (device === undefined) return { unreadable: "face-device-unbound" };
-      if (device === null) return { unreadable: "face-device-ambiguous" };
-      return { device };
+      return reading(bindings.get(bindingKey(presenter.scope.nexus, presenter.scope.faceKey, presenter.vesselFaceKey)));
+    },
+    deviceOfSeat(seat: { readonly scope: FaceScope; readonly vesselFaceDigest: string }): FaceDeviceReading {
+      return reading(seats.get(seatKey(seat.scope.nexus, seat.scope.faceKey, seat.vesselFaceDigest)));
     },
     async refresh(): Promise<void> {
       // Two refreshes in flight: the one asked last decides, so an older read never lands over a newer one.
       const mine = ++asked;
       try {
         const [records, own] = await Promise.all([sources.records(), sources.ownVesselKey()]);
-        if (mine === asked) bindings = faceDeviceBindings(records, own);
+        if (mine === asked) { bindings = faceDeviceBindings(records, own); seats = bySeat(bindings); }
       } catch (error) {
-        if (mine === asked) bindings = new Map();
+        if (mine === asked) { bindings = new Map(); seats = new Map(); }
         throw error;
       }
     },

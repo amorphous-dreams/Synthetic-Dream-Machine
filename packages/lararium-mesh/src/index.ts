@@ -301,6 +301,9 @@ export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
 // THE SCOPE READER, named here by its first caller: the node's dial (`dial-presentation`), which reads a joined face's
 // scope off the certificate its join record keeps, never by a cast.
 export { readFaceScope } from "./face-proof-subjects.js";
+// THE PRESENTER'S DIGEST, named here by its first caller: the node's D4 device book (`face-device-book`), which resolves
+// a seated session's `vesselFaceDigest` to the device edge its face-scoped key was certified to.
+export { withdrawnKeyDigest, type Digest } from "./face-proof-subjects.js";
 // THE FLEET-JOIN DOOR, named here by its first caller: the node's `fleet join` (`commands/fleet-join`). A joining
 // vessel mints and requests its own face-scoped keys, and the root holder certifies them in its answer.
 export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselChain } from "./face-authority.js";
@@ -325,7 +328,7 @@ export {
 } from "./sealed-carriage.js";
 export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
 export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel, channelSessionTable } from "./gate-session-channel.js";
-export type { ChannelSocket, ChannelCloseReason, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
+export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "Floor pins").
 export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody } from "./hearth-floor-pins.js";

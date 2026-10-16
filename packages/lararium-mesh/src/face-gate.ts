@@ -54,8 +54,8 @@ import {
   FACE_CHAIN_REFUSALS, FACE_CHAIN_VERDICTS, checkFaceChain, foldWithdrawals, heldWithdrawals, isWithdrawalMemory, learnWithdrawals, type FaceChainRefusal, type FaceChainVerdictName, type WithdrawalMemory,
 } from "./face-authority.js";
 import {
-  FACE_PROOF_REFUSALS, own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope,
-  type FaceProofRefusalName, type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
+  FACE_PROOF_REFUSALS, own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope, withdrawnKeyDigest,
+  type Digest, type FaceProofRefusalName, type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
 } from "./face-proof-subjects.js";
 import type { GateBundle, GateTier } from "./gate-bundle.js";
 import {
@@ -274,6 +274,11 @@ export interface GateSession {
   readonly tier:          GateTier;
   /** The face the session wears, or null for a place's seat. */
   readonly scope:         FaceScope | null;
+  /** THE PRESENTER'S DIGEST: `withdrawnKeyDigest(scope, vesselFaceKey)` of the face-scoped key the session's certificate
+   *  certified, the very digest a withdrawal of that key names; null for a place's seat. It names the key without
+   *  holding it: a reader that holds the key's own binding (the D4 device book) resolves the device edge a refold
+   *  reads again (house ruling "A device set aside"), and nobody else learns the key. */
+  readonly vesselFaceDigest: Digest | null;
   /** The session's key, or null for a place's seat: a place holds no session. */
   readonly sessionKey:    SessionKey | null;
   /** The place key a place's seat stands under; null for a face's. */
@@ -530,7 +535,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       if (!ARM_CLASSES[shown.arm?.kind ?? "none"].includes(sorted.class)) return silence("sorter-class-unearned", sorted.class);
       if (!standsAs(sorted.standing, shown.placeKey)) return silence("sorter-standing-foreign");
       return seat({
-        tier: bundle.pin.tier, scope: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
+        tier: bundle.pin.tier, scope: null, vesselFaceDigest: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
         ...(sorted.standing ? { standing: sorted.standing } : {}),
         push: Object.freeze([...(sorted.push ?? [])]), arm: shown.arm, face: null, transport,
       });
@@ -612,7 +617,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
 
     const chain = verdict.chain;
     return seat({
-      tier: bundle.pin.tier, scope, sessionKey: chain.sessionKey, placeKey: null, profile: chain.profile, class: sorted.class,
+      tier: bundle.pin.tier, scope, vesselFaceDigest: withdrawnKeyDigest(scope, certificate.read.vesselFaceKey), sessionKey: chain.sessionKey, placeKey: null, profile: chain.profile, class: sorted.class,
       ...(sorted.standing ? { standing: sorted.standing } : {}),
       push: Object.freeze([...(sorted.push ?? [])]), arm: read.arm,
       face: sorted.class === "same-operator" ? sameGroup : null, transport,

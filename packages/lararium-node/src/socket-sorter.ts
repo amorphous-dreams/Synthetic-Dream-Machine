@@ -21,7 +21,9 @@
 import {
   federationPostureFromDoc,
   type FederationPosture, type GateSorter, type GateSortInput, type GateSortVerdict, type NexusDoc, type PeerClass,
+  type FaceScope, type GateAdmitReader, type GateSession,
 } from "@lararium/mesh";
+import type { FaceDeviceReading } from "./gate-shadow-ring.js";
 
 /** The arms that ship SHUT at the cutover: a walker's hosting grant and its invite claim. */
 export const SHUT_ARMS = Object.freeze(["grant", "claim"] as const);
@@ -95,4 +97,55 @@ export function socketsNoLongerHeld<S>(
     out.push(socket);
   }
   return out;
+}
+
+
+/** A seated presenter as the D4 device book reads it: the face it wears and the digest of its face-scoped key. */
+export type SeatedPresenter = { readonly scope: FaceScope; readonly vesselFaceDigest: string };
+
+/**
+ * THE DEVICE BEHIND A SEATED SESSION — what the vessel's own consults read as the peer's vessel key (the edge ring's
+ * `aside`, the fetch door's fleet class, the PersonaGroup ring's proven key). A face's seat reads the device edge its
+ * face-scoped key was certified to (`face-device-book`), and null where the book binds none: the face key is never a
+ * device, so it never stands in for one. A place's seat reads its place key, the key its carriage names. No session
+ * reads null.
+ */
+export function seatedDeviceKey(session: GateSession | null | undefined, deviceOf: (seat: SeatedPresenter) => FaceDeviceReading): string | null {
+  if (!session) return null;
+  if (session.scope === null) return session.placeKey ?? null;
+  if (typeof session.vesselFaceDigest !== "string") return null;
+  let reading: FaceDeviceReading;
+  try { reading = deviceOf({ scope: session.scope, vesselFaceDigest: session.vesselFaceDigest }); } catch { return null; }
+  return "device" in reading && typeof reading.device === "string" && reading.device.length > 0 ? reading.device.toLowerCase() : null;
+}
+
+/** What a refold reads to keep a same-operator seat: the facts its gate read, read again. */
+export interface SameOperatorReading {
+  /** The D4 binding: the device a face-scoped key was certified to. */
+  readonly deviceOf:    (seat: SeatedPresenter) => FaceDeviceReading;
+  /** The fleet shadow over that device (the edge ring's `deviceAside`). */
+  readonly deviceAside: (device: string) => boolean;
+  /** The admit reader of the gate that seated the session, for its Nexus (`vesselAdmitReader`). */
+  readonly admits:      (nexus: string) => Pick<GateAdmitReader, "read">;
+}
+
+/**
+ * Does a same-operator session still stand where its gate would seat it same-operator today? Its device still binds
+ * and no standing shadow sets it aside, and the admit it rode still reads HELD at its own Nexus, heading at its face
+ * key. A reading that throws or cannot read answers false: the session closes, as the gate would answer silence. A
+ * session of any other class answers true here; its own reading keeps it (`socketsNoLongerHeld`).
+ *
+ * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("A device set aside"); kapae#/reach.
+ */
+export async function sameOperatorStands(session: GateSession, now: SameOperatorReading): Promise<boolean> {
+  if (session.class !== "same-operator") return true;
+  try {
+    const scope = session.scope;
+    if (scope === null || session.arm?.kind !== "admit") return false;
+    const device = seatedDeviceKey(session, now.deviceOf);
+    if (device === null || now.deviceAside(device)) return false;
+    const reading = await now.admits(scope.nexus).read({ admit: session.arm.admit, lineage: session.arm.lineage });
+    if ("refusal" in reading) return false;
+    return reading.verdict.state === "held" && reading.head === scope.faceKey && reading.nexus === scope.nexus;
+  } catch { return false; }
 }

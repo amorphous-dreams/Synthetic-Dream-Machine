@@ -15,7 +15,7 @@
  */
 import {
   makeFaceGate, presentedAdmitReader,
-  type FaceGate, type FederationPosture, type GateBundle, type GateDeadlines, type GateFaceGrantRing, type GateShadowRing,
+  type FaceGate, type FederationPosture, type GateAdmitReader, type GateBundle, type GateDeadlines, type GateFaceGrantRing, type GateShadowRing,
   type FaceGateDeps, type GateSilenceDetail, type GateSilenceReason, type GateSessionTable, type GateWithdrawalMemory,
 } from "@lararium/mesh";
 import { gateHeldRoot, type CarriedNexusReading } from "./nexus-carriage.js";
@@ -39,12 +39,20 @@ export interface VesselGateDeps {
   readonly onShut?:     (arm: ShutArm, at: { readonly nexus: string; readonly route: string }) => void;
 }
 
+/**
+ * THE ADMIT READER of the gate for `nexus`: the held root of that Nexus alone, read fresh at every read. A refold reads a
+ * seated session's admit again through the very reader its gate read it with.
+ */
+export function vesselAdmitReader(deps: Pick<VesselGateDeps, "readings">, nexus: string): GateAdmitReader {
+  return presentedAdmitReader(gateHeldRoot(deps.readings, nexus));
+}
+
 /** Stand one gate for `nexus` under `bundle`, seating through `sessions`. */
 export function vesselGate(deps: VesselGateDeps, at: { readonly bundle: GateBundle; readonly nexus: string; readonly sessions: GateSessionTable }): FaceGate {
   const where = { nexus: at.nexus, route: at.bundle.pin.route, tier: at.bundle.pin.tier };
   return makeFaceGate({
     bundle: at.bundle, nexus: at.nexus as FaceGateDeps["nexus"], audience: deps.audience, deadlines: deps.deadlines,
-    admits: presentedAdmitReader(gateHeldRoot(deps.readings, at.nexus)),
+    admits: vesselAdmitReader(deps, at.nexus),
     shadows: deps.shadows, grants: deps.grants, withdrawals: deps.withdrawals, sessions: at.sessions,
     sorter: makeGateSorter({
       posture: () => deps.posture(at.nexus),

@@ -25,6 +25,12 @@
  * cost: while the queue stands full the pump reads nothing, so a peer's control/close, or the socket's end, is read
  * only once the queue drains below the bound. Until then the channel reads open.
  *
+ * THE BYTE BOUND. Beside the count, whole messages held undelivered weigh at most `queueBytes` (32 MiB where none is
+ * named): while pending, a message that lifts the buffered bytes past it closes "pending-overflow"; once open, the pump
+ * pulls nothing while the queue holds that many bytes, and one message heavier than the bound still delivers alone. A
+ * gate names each session's bounds through `channelSessionTable`'s `bounds`, so a stranger's seat holds far less than a
+ * member's.
+ *
  * Pure of clocks and timers: ids come from one sealedWriter, order from the socket's own, and a race pins on a
  * promise the caller holds. Frames after open ride the sealed application header of sealed-carriage.
  *
@@ -85,20 +91,44 @@ interface ChannelArgs {
   readonly firstId?: number;
   /** BACK-PRESSURE. Once open, the pump stops pulling the socket while this many whole messages stand undelivered, and resumes as recv() drains below it. At least 1; 16 where none is named. */
   readonly queueBound?: number;
+  /** THE BYTE BOUND on whole messages held undelivered: past it while pending closes "pending-overflow"; once open the pump waits at it. At least 1; 32 MiB where none is named. */
+  readonly queueBytes?: number;
   /** Called once when the pump ends, whatever ended it. A vector's handshake; no caller needs it. */
   readonly settled?: () => void;
 }
 
 const PENDING_BOUND = 16;
 const QUEUE_BOUND = 16;
+const QUEUE_BYTES = 32 * 1024 * 1024;
+
+/** What one seated session may hold: the reader's reassembly bounds, and the channel's own message queue. */
+export interface GateChannelBounds {
+  /** Messages begun and unfinished at once (`sealedReader`). */
+  readonly concurrent?:   number;
+  /** Declared bytes summed over messages in flight (`sealedReader`). */
+  readonly bufferBytes?:  number;
+  /** The most bytes one message holds (`sealedReader`). */
+  readonly messageBytes?: number;
+  /** Whole messages buffered before open; one more closes "pending-overflow". */
+  readonly pendingBound?: number;
+  /** Whole messages queued after open before the pump waits. */
+  readonly queueBound?:   number;
+  /** Bytes of whole messages held undelivered (see the byte bound above). */
+  readonly queueBytes?:   number;
+}
 
 function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: number): SeatedChannel {
   const { transport, socket } = args;
   const queueBound = args.queueBound ?? QUEUE_BOUND;
   if (!Number.isInteger(queueBound) || queueBound < 1) throw new RangeError("gate-session-channel: queueBound names a count of at least one");
+  const queueBytes = args.queueBytes ?? QUEUE_BYTES;
+  if (!Number.isInteger(queueBytes) || queueBytes < 1) throw new RangeError("gate-session-channel: queueBytes names a count of at least one");
   const reader = sealedReader(args.bounds);
   const writer = sealedWriter(args.firstId ?? 0);
   const queue: SealedMessage[] = [];
+  let queued = 0;                                        // bytes of the whole messages `queue` holds
+  const take = (): SealedMessage | undefined => { const next = queue.shift(); if (next !== undefined) queued -= next.bytes.length; return next; };
+  const full = (): boolean => queue.length >= queueBound || (queue.length > 0 && queued >= queueBytes);
   const waiters: Array<(message: SealedMessage | null) => void> = [];
   let state: "pending" | "open" | "closed" = born;
   let closedBy: ChannelCloseReason | null = null;
@@ -108,8 +138,8 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
 
   const flush = (): void => {
     while (waiters.length > 0) {
-      const next = opened ? queue.shift() : undefined;
-      if (next !== undefined) { waiters.shift()!(next); if (queue.length < queueBound) wake(); continue; }
+      const next = opened ? take() : undefined;
+      if (next !== undefined) { waiters.shift()!(next); if (!full()) wake(); continue; }
       // Nothing to hand over: a closed channel with nothing deliverable reads null; otherwise the waiter stands.
       if (state === "closed" && (queue.length === 0)) { waiters.shift()!(null); continue; }
       break;
@@ -121,7 +151,7 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
     const wasOpen = state === "open";
     state = "closed";
     closedBy = reason;
-    if (opts.drop) queue.length = 0;
+    if (opts.drop) { queue.length = 0; queued = 0; }
     if (opts.notify && wasOpen) {
       try { for (const part of writer.parts("control/close", new Uint8Array(0))) socket.send(transport.send.seal(part)); } catch { /* the socket is gone */ }
     }
@@ -135,7 +165,7 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
     try {
     for (;;) {
       // Back-pressure: an open channel whose queue stands full pulls nothing until recv() drains it (or a close ends the pump).
-      while (opened && (state as string) !== "closed" && queue.length >= queueBound) await new Promise<void>((resolve) => { resume = resolve; });
+      while (opened && (state as string) !== "closed" && full()) await new Promise<void>((resolve) => { resume = resolve; });
       // A pump woken by close() ends here: it never awaits recv() on a socket the close has cut.
       if ((state as string) === "closed") return;
       let frame: Uint8Array | null;
@@ -148,8 +178,9 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
       if (read === null) continue;
       if ("refusal" in read) return close("carriage-refused", { drop: true });
       if (read.kind === "control/close") return close("peer-close", { drop: false });
-      if (!opened && queue.length >= pendingBound) return close("pending-overflow", { drop: true });
+      if (!opened && (queue.length >= pendingBound || queued + read.bytes.length > queueBytes)) return close("pending-overflow", { drop: true });
       queue.push(read);
+      queued += read.bytes.length;
       flush();
     }
     } finally { args.settled?.(); }
@@ -181,8 +212,8 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
     },
     recv() {
       if (opened) {
-        const next = queue.shift();
-        if (next !== undefined) { if (queue.length < queueBound) wake(); return Promise.resolve(next); }
+        const next = take();
+        if (next !== undefined) { if (!full()) wake(); return Promise.resolve(next); }
       }
       if (state === "closed" && queue.length === 0) return Promise.resolve(null);
       return new Promise((resolve) => { waiters.push(resolve); });
@@ -197,6 +228,7 @@ function channelOver(args: ChannelArgs, born: "pending" | "open", pendingBound: 
     abandon() {
       close("abandoned", { drop: true });
       queue.length = 0;
+      queued = 0;
       flush();
     },
   };
@@ -223,11 +255,27 @@ export function dialedChannel(args: ChannelArgs): GateSessionChannel {
  */
 export function channelSessionTable(
   onOpen: (channel: GateSessionChannel, session: GateSession) => void,
-  opts?: { readonly pendingBound?: number },
+  opts?: {
+    readonly pendingBound?: number;
+    /** The bounds one session's channel holds to, named off the session the gate seats (its class, its tier). */
+    readonly bounds?: (session: GateSession) => GateChannelBounds;
+  },
 ): GateSessionTable {
   return {
     attach(socket: GateSocket, session: GateSession) {
-      const channel = seatedChannel({ transport: session.transport, socket, ...(opts?.pendingBound !== undefined ? { pendingBound: opts.pendingBound } : {}) });
+      const named = opts?.bounds?.(session) ?? {};
+      const reader = {
+        ...(named.concurrent !== undefined ? { concurrent: named.concurrent } : {}),
+        ...(named.bufferBytes !== undefined ? { bufferBytes: named.bufferBytes } : {}),
+        ...(named.messageBytes !== undefined ? { messageBytes: named.messageBytes } : {}),
+      };
+      const pendingBound = named.pendingBound ?? opts?.pendingBound;
+      const channel = seatedChannel({
+        transport: session.transport, socket, bounds: reader,
+        ...(pendingBound !== undefined ? { pendingBound } : {}),
+        ...(named.queueBound !== undefined ? { queueBound: named.queueBound } : {}),
+        ...(named.queueBytes !== undefined ? { queueBytes: named.queueBytes } : {}),
+      });
       let handed = false;
       return {
         open() {

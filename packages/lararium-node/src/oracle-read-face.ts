@@ -31,7 +31,7 @@
 import type { Server, IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
-import { faceGateServer, gateSessionRegistry } from "./face-gate-server.js";
+import { GATE_STRANGER_CHANNEL_BOUNDS, faceGateServer, gatePath, gateSessionRegistry } from "./face-gate-server.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
@@ -73,10 +73,22 @@ export interface OracleFloorGate {
   readonly pin:  GateBundlePin;
 }
 
+/**
+ * The floor gate source: one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`.
+ * A source whose Nexus set moves (a carry taken or dropped on a running vessel) names it on `onMoved`: the face then
+ * asks it again, stands each gate on a path it did not stand, and stands down each path the source no longer names.
+ */
+export interface OracleGateSource {
+  (sessions: GateSessionTable): Promise<readonly OracleFloorGate[]> | readonly OracleFloorGate[];
+  /** Follow the source's moves; answers the unfollow. */
+  readonly onMoved?: (listener: () => void) => () => void;
+}
+
 /** The face's serving shape: its gates, built over the session table the face hands, and where they answer. */
 export interface OracleGateArgs {
-  /** Build one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`. */
-  readonly gates:       (sessions: GateSessionTable) => Promise<readonly OracleFloorGate[]> | readonly OracleFloorGate[];
+  /** Build one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`; a source
+   *  that moves names it on its `onMoved`, and the face re-sweeps. */
+  readonly gates:       OracleGateSource;
   readonly httpServer:  Server;
   /** The vessel's dispatcher: each gate's path registers on it. Absent, one upgrade listener on `httpServer`. */
   readonly dispatcher?: HttpFaceDispatcher;
@@ -170,24 +182,45 @@ export async function mountOracleReadFace(args: OracleGateArgs & {
     linger.unref?.();
     void channel.recv().catch(() => null).then(() => { clearTimeout(linger); channel.close(); });
   };
-  const registry = gateSessionRegistry((channel) => serve(channel));
+  // A reader of the floor sends nothing but its close, so every seat here holds to a stranger's bounds.
+  const registry = gateSessionRegistry((channel) => serve(channel), { bounds: () => GATE_STRANGER_CHANNEL_BOUNDS });
   const server = faceGateServer();
-  const unregisters: Array<() => void> = [];
-  try {
-    for (const entry of await args.gates(registry.table)) {
-      const stood = server.stand(entry);
+  // Each path stood: its gate's stand-down and its upgrade's unregister.
+  const stood = new Map<string, { readonly down: () => void }>();
+  const standDownAll = (): void => { for (const held of stood.values()) held.down(); stood.clear(); };
+  let disposed = false;
+  /** Stand each gate on a path not yet stood; with `prune`, stand down each path the source no longer names. */
+  const sweep = async (prune: boolean): Promise<void> => {
+    const entries = await args.gates(registry.table);
+    if (disposed) return;
+    const named = new Set<string>();
+    for (const entry of entries) {
+      const path = gatePath(entry.pin);
+      named.add(path);
+      if (stood.has(path)) continue;                    // the gate already standing stays the same gate
+      const at = server.stand(entry);
       const unregister = args.dispatcher?.registerUpgrade({
-        name: `oracle:${stood.path}`, path: stood.path,
+        name: `oracle:${at.path}`, path: at.path,
         handle: (req, socket, head) => { if (!server.handleUpgrade(req, socket, head)) socket.destroy(); },
       });
-      if (unregister) unregisters.push(unregister);
+      stood.set(at.path, { down: () => { unregister?.(); at.unstand(); } });
     }
+    if (prune) for (const [path, held] of stood) if (!named.has(path)) { held.down(); stood.delete(path); }
+  };
+  try {
+    await sweep(false);
   } catch (error) {
-    for (const unregister of unregisters) unregister();
+    standDownAll();
     server.close();
     oracleHandle.off("change", onChange);
     throw error;
   }
+  // THE RE-SWEEP. A source that moves (a carry taken or dropped on a running vessel) asks the face again; sweeps run one
+  // at a time, and one that fails leaves the gates as they stood and says so.
+  let sweeping: Promise<void> = Promise.resolve();
+  const unfollow = args.gates.onMoved?.(() => {
+    sweeping = sweeping.then(() => sweep(true)).catch((err: unknown) => onLog?.(`oracle read-face: the floor gates did not sweep: ${err instanceof Error ? err.message : String(err)}`));
+  });
   // A bare server (no dispatcher) carries one listener that answers the stood knocks alone and leaves every other.
   const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => { server.handleUpgrade(req, socket, head); };
   if (!args.dispatcher) httpServer.on("upgrade", onUpgrade);
@@ -195,8 +228,10 @@ export async function mountOracleReadFace(args: OracleGateArgs & {
   return {
     paths: () => server.paths(),
     dispose: () => {
+      disposed = true;
+      unfollow?.();
       oracleHandle.off("change", onChange);
-      for (const unregister of unregisters.splice(0)) unregister();
+      standDownAll();
       if (!args.dispatcher) httpServer.off("upgrade", onUpgrade);
       registry.close();
       server.close();

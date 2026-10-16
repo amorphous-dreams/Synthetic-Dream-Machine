@@ -720,14 +720,11 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
-  // THE CROSSING, spoken aloud. A leaf's V3 proof commits to the GATE'S key, and the leaf must hold that
-  // key OUT-OF-BAND — the challenge names no key, and the relay answers only on the knock that key derives, so
-  // a leaf that never received the key reaches no gate at all. That reads correct, and it looks exactly like
-  // a dead socket.
-  //
-  // The gate arms with this vessel's operator verifying key, so this vessel already HOLDS the one thing a
-  // crossing leaf cannot obtain for itself. Printing it turns an unperformable ritual into an instruction.
-  // The load runs idempotent — the same identity the gate armed with, read back, never a second one.
+  // THE CROSSING, spoken aloud. A sealed gate answers only on the knock its full pin derives (`face-gate-server`), and
+  // a leaf reads that pin from the fleet-join answer it lands (house ruling "The admit's gate pin"), never from this
+  // banner: a leaf that holds no pin reaches no gate, which looks exactly like a dead socket. The banner names this
+  // vessel's verifying key beside each crossing page, so a person sees which hearth the page names; the key opens no
+  // gate by itself. The load runs idempotent — the vessel's one identity, read back, never a second one.
   const gateIdentity = await loadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");

@@ -7,8 +7,9 @@
  *   · a sealed "sync" message reads as one Automerge frame, and the adapter's every send leaves as one "sync"
  *     message on the same channel;
  *   · a sealed "session" message (lar:session JSON, UTF-8) never reaches the adapter: it goes to `onSession`;
- *   · the channel's liveness is the gate socket's own: a keepalive ping answers its pong while the channel stands,
- *     and the socket closes, once, when the channel ends;
+ *   · the channel's liveness is the gate socket's own: the gate's server pings the real WebSocket beneath it and cuts
+ *     one that answers no ping (`face-gate-server`'s heartbeat), and a cut ends the channel; so the adapter's keepalive
+ *     ping answers its pong while the channel stands, and the socket closes, once, when the channel ends;
  *   · closing the socket closes the channel; a send to a closed socket drops, as a ws send to a closed peer does;
  *   · THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): a SOVEREIGN session hears, once at open, one sealed
  *     "session" message of kind `hearth/floor-pins` whose body is the floor pins this hearth stands at the Nexus that

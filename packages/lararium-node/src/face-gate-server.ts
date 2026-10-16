@@ -23,10 +23,16 @@
  *   · THE SERVER'S OWN BOUNDS. At most `maxSockets` sockets stand upgraded at once; a knock past it is destroyed
  *     before any 101. A socket the gate turns away as `pending-full` is cut at once rather than at its lapse, and a
  *     gate whose accept throws has its socket cut.
+ *   · THE HEARTBEAT. Every `heartbeatMs` the server pings each socket it upgraded on the real WebSocket, and cuts one
+ *     that answered no ping since the last: a half-open peer holds no place past two beats. Every `ws` client and
+ *     every browser answers a ping by itself.
  *   · THE SESSION TABLE (`gateSessionRegistry`). Every verified dial seats a sealed channel
  *     (`channelSessionTable`), pending until its verdict left; the registry hands each opened channel with its frozen
  *     session to the composer, and keeps the channels it opened so a refold can close the ones whose standing no
- *     longer holds (`drop`), and a stand-down can close them all.
+ *     longer holds (`drop`), and a stand-down can close them all. Each seat holds to its class's bounds
+ *     (`gateChannelBoundsFor`): a stranger's far tighter than a member's. Strangers hold at most `maxStrangers` seats
+ *     at once (`GATE_SERVER_MAX_STRANGERS`); one past it draws the silence a refused table draws, and a member still
+ *     seats.
  *   · THE DEADLINE (`timerGateDeadlines`). One lapse per accept, drawn uniform in [base, 2·base), so how long a gate
  *     stays quiet says nothing of which check failed. The gate reads no clock; this source does.
  *
@@ -44,7 +50,7 @@ import { randomInt } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
 import {
   GATE_PROTOCOL, NOISE_MAX_MESSAGE_BYTES, channelSessionTable, gateKnock, readGateBundlePin, readGateFlightHeader,
-  type FaceGate, type GateBundlePin, type GateDeadlines, type GateFlightRefusal, type GateOutcome, type GateSession,
+  type FaceGate, type GateBundlePin, type GateChannelBounds, type GateDeadlines, type GateFlightRefusal, type GateOutcome, type GateSeat, type GateSession,
   type GateSessionChannel, type GateSessionTable, type GateSocket,
 } from "@lararium/mesh";
 
@@ -56,6 +62,28 @@ export const GATE_SOCKET_QUEUE_BOUND = 32;
 export const GATE_SOCKET_BYTE_BOUND = 1 << 20;
 /** How many sockets one server holds upgraded at once. */
 export const GATE_SERVER_MAX_SOCKETS = 1024;
+/** How many STRANGER sessions one registry holds seated at once; members seat past it. */
+export const GATE_SERVER_MAX_STRANGERS = 256;
+/** How often the server pings each socket it upgraded; a socket that answered no ping since the last beat is cut. */
+export const GATE_SERVER_HEARTBEAT_MS = 30_000;
+
+/**
+ * THE BOUNDS ONE SEAT HOLDS TO, by the class its gate sorted. A STRANGER reaches the public shelf alone, so its channel
+ * holds a message of at most 4 MiB, two in reassembly, and 4 MiB queued. A seat that stands on an admit, a contract or a
+ * grant keeps room for a large Automerge sync message (house ruling "Frames after open"), with its queue held to 16 MiB
+ * where the module ceiling would let sixteen whole messages wait.
+ */
+export const GATE_STRANGER_CHANNEL_BOUNDS: GateChannelBounds = Object.freeze({
+  concurrent: 2, bufferBytes: 4 << 20, messageBytes: 4 << 20, pendingBound: 4, queueBound: 8, queueBytes: 4 << 20,
+});
+export const GATE_MEMBER_CHANNEL_BOUNDS: GateChannelBounds = Object.freeze({
+  concurrent: 4, bufferBytes: 16 << 20, messageBytes: 16 << 20, queueBytes: 16 << 20,
+});
+/** The bounds a session's channel holds to: a stranger's, or a member's for every other class. */
+export function gateChannelBoundsFor(session: Pick<GateSession, "class">): GateChannelBounds {
+  return session.class === "stranger" ? GATE_STRANGER_CHANNEL_BOUNDS : GATE_MEMBER_CHANNEL_BOUNDS;
+}
+
 /** The largest deadline base: twice it stays a timer Node keeps (`2^31 - 1` ms), and its draw a range `randomInt` takes. */
 export const GATE_DEADLINE_MAX_BASE_MS = 2 ** 30 - 1;
 
@@ -186,13 +214,26 @@ export interface GateSessionRegistry {
  * verdict left and the seat opens, `onOpen` takes the channel and the frozen session exactly once. A throw from
  * `onOpen` closes the channel and the gate cuts the socket.
  */
-export function gateSessionRegistry(onOpen: (channel: GateSessionChannel, session: GateSession) => void): GateSessionRegistry {
+export function gateSessionRegistry(
+  onOpen: (channel: GateSessionChannel, session: GateSession) => void,
+  opts: {
+    /** How many stranger sessions stand seated at once (`GATE_SERVER_MAX_STRANGERS`). */
+    readonly maxStrangers?: number;
+    /** The bounds each seat holds to (`gateChannelBoundsFor`). */
+    readonly bounds?: (session: GateSession) => GateChannelBounds;
+  } = {},
+): GateSessionRegistry {
+  const maxStrangers = opts.maxStrangers ?? GATE_SERVER_MAX_STRANGERS;
+  if (!Number.isInteger(maxStrangers) || maxStrangers < 0) throw new RangeError("face-gate-server: the stranger bound names a count");
   const opened: SeatedGateSession[] = [];
   let closed = false;
+  // Stranger seats taken and not yet opened or abandoned: the cap reads them beside the open ones.
+  let pendingStrangers = 0;
   const prune = (): void => {
     for (let at = opened.length - 1; at >= 0; at--) if (opened[at]!.channel.state === "closed") opened.splice(at, 1);
   };
-  const table = channelSessionTable((channel, session) => {
+  const strangersSeated = (): number => { prune(); return pendingStrangers + opened.filter((o) => o.session.class === "stranger").length; };
+  const channels = channelSessionTable((channel, session) => {
     // A seat that opens after the registry closed reaches nobody: its channel closes and the gate cuts the socket.
     if (closed) { channel.close(); throw new Error("face-gate-server: the session registry stands closed"); }
     const seated = Object.freeze({ channel, session });
@@ -202,7 +243,24 @@ export function gateSessionRegistry(onOpen: (channel: GateSessionChannel, sessio
       if (at >= 0) opened.splice(at, 1);
       throw error;
     }
-  });
+  }, { bounds: opts.bounds ?? gateChannelBoundsFor });
+  // THE STRANGER CAP, read at attach, before any verdict leaves: a table that throws draws the dialer silence.
+  const table: GateSessionTable = {
+    attach(socket, session) {
+      if (session.class !== "stranger") return channels.attach(socket, session);
+      if (strangersSeated() >= maxStrangers) throw new Error("face-gate-server: the stranger seats stand full");
+      pendingStrangers++;
+      let pending = true;
+      const settle = (): void => { if (pending) { pending = false; pendingStrangers--; } };
+      const held = (seat: GateSeat): GateSeat => ({
+        open() { settle(); seat.open(); },
+        abandon() { settle(); seat.abandon(); },
+      });
+      let seat: ReturnType<GateSessionTable["attach"]>;
+      try { seat = channels.attach(socket, session); } catch (error) { settle(); throw error; }
+      return seat instanceof Promise ? seat.then(held, (error: unknown) => { settle(); throw error; }) : held(seat);
+    },
+  };
   return {
     table,
     live() { prune(); return Object.freeze([...opened]); },
@@ -247,6 +305,8 @@ export interface FaceGateServerOptions {
   readonly byteBound?: number;
   /** How many sockets stand upgraded at once. */
   readonly maxSockets?: number;
+  /** How often the server pings each socket (`GATE_SERVER_HEARTBEAT_MS`); one that answered no ping since is cut. */
+  readonly heartbeatMs?: number;
   /** What each accepted socket came to, by the path it knocked on. */
   readonly onOutcome?: (path: string, outcome: GateOutcome) => void;
   /** A claimed upgrade destroyed before any 101, and why. */
@@ -278,10 +338,29 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
   if (!Number.isInteger(byteBound) || byteBound < 1) throw new RangeError("face-gate-server: the byte bound names a count of at least one");
   const maxSockets = opts.maxSockets ?? GATE_SERVER_MAX_SOCKETS;
   if (!Number.isInteger(maxSockets) || maxSockets < 1) throw new RangeError("face-gate-server: the socket bound names a count of at least one");
+  const heartbeatMs = opts.heartbeatMs ?? GATE_SERVER_HEARTBEAT_MS;
+  if (!Number.isSafeInteger(heartbeatMs) || heartbeatMs < 1 || heartbeatMs > GATE_DEADLINE_MAX_BASE_MS) throw new RangeError("face-gate-server: the heartbeat names a whole number of milliseconds");
   const gates = new Map<string, { readonly gate: FaceGate; readonly knock: string }>();
   // Paths this server once stood: a knock on one after the close is claimed and destroyed by name.
   const once = new Set<string>();
   const sockets = new Set<WebSocket>();
+  // THE HEARTBEAT: each socket answered a ping since the last beat, or the beat cuts it. The timer stands while a
+  // socket does, and never holds the process open.
+  const answered = new WeakMap<WebSocket, boolean>();
+  let beat: ReturnType<typeof setInterval> | null = null;
+  const beatOnce = (): void => {
+    for (const ws of sockets) {
+      if (answered.get(ws) !== true) { try { ws.terminate(); } catch { /* already gone */ } sockets.delete(ws); continue; }
+      answered.set(ws, false);
+      try { ws.ping(); } catch { /* the close event takes it */ }
+    }
+    if (sockets.size === 0 && beat !== null) { clearInterval(beat); beat = null; }
+  };
+  const follow = (ws: WebSocket): void => {
+    answered.set(ws, true);
+    ws.on("pong", () => { answered.set(ws, true); });
+    if (beat === null) { beat = setInterval(beatOnce, heartbeatMs); beat.unref?.(); }
+  };
   // Upgrades claimed and not yet handed a socket: they count against the bound too.
   let upgrading = 0;
   let closed = false;
@@ -326,6 +405,7 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
         settle();
         if (closed) { ws.terminate(); return; }
         sockets.add(ws);
+        follow(ws);
         ws.once("close", () => sockets.delete(ws));
         const gateSocket = wsGateSocket(ws as unknown as GateWire, { knock: stood.knock, message1: flight.message1 }, bound, byteBound);
         let accepting: Promise<GateOutcome>;
@@ -348,6 +428,7 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
       gates.clear();
       for (const ws of sockets) { try { ws.terminate(); } catch { /* already gone */ } }
       sockets.clear();
+      if (beat !== null) { clearInterval(beat); beat = null; }
       wss.close();
     },
   };

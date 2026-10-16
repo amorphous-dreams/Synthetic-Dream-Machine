@@ -27,6 +27,7 @@
  *
  * Node-main only. Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("The founder's certificate")
  */
+import { mkdirSync } from "node:fs";
 import * as ed25519 from "@noble/ed25519";
 import {
   faceKeyGrantImage, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFaceKeyGrant, requestCertificate,
@@ -35,7 +36,9 @@ import {
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "./face-key-custody.js";
 import { FaceProvisional, refuseWhileProvisional } from "./face-provisional.js";
-import { keepFaceJoinRecord, readFaceJoinRecord } from "./fleet-join-custody.js";
+import { updateCustodyRow } from "./custody-seat.js";
+import { faceJoinRecordFile, readFaceJoinRecord } from "./fleet-join-custody.js";
+import { larIdentityDir } from "./vessel-paths.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { readJoinedFaceProof, type JoinedFaceAbsence, type JoinedFaceProof } from "./joined-face-proof.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "./node-vessel-identity.js";
@@ -149,11 +152,7 @@ export async function ensureFounderCertificate(
       if (readFaceKeyGrant(grant, root.verifyingKey) === null) throw new FounderCertificateRefused("grant-unread", "the root's grant over the face key does not read under the root key.");
     }
 
-    await keepFaceJoinRecord({
-      personaGroup, rootKey: root.verifyingKey,
-      certificates: [...(record?.certificates ?? []).filter((c) => !atScope(c, scope)), certificate],
-      grants: [...(record?.grants ?? []).filter((g) => !atScope(g, scope)), grant],
-    });
+    await mergeAtScope({ personaGroup, rootKey: root.verifyingKey, scope, certificate, grant });
     return { state: "issued" };
   } catch (error) {
     if (error instanceof CustodyRowUnavailable && (error.reading === "absent" || error.reading === "names-another-key")) {
@@ -161,6 +160,41 @@ export async function ensureFounderCertificate(
     }
     throw error;
   } finally { root.seed.fill(0); }
+}
+
+/**
+ * THE MERGE UNDER THE HOLD. Two certifications of one face at two scopes read the record apart and write it back; a write
+ * from what it read once dropped the other's certificate. This merge reads the record AS IT STANDS under the custody
+ * hold and replaces only the entries at its own scope: every other scope's certificate and grant, and the issued book,
+ * stand. A record under another root refuses, and so does a certificate at this scope over another face-scoped key.
+ */
+async function mergeAtScope(args: { readonly personaGroup: string; readonly rootKey: string; readonly scope: FaceScope; readonly certificate: unknown; readonly grant: unknown }): Promise<void> {
+  const file = faceJoinRecordFile(args.personaGroup);
+  const ours = String((args.certificate as { vesselFaceKey?: unknown }).vesselFaceKey ?? "").toLowerCase();
+  mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
+  await updateCustodyRow("identity", file, (standing) => {
+    let held: Record<string, unknown> = { certificates: [], grants: [] };
+    if (standing !== null) {
+      try { held = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; }
+      catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      if (held["rootKey"] !== args.rootKey) throw new FounderCertificateRefused("record-other", "this face's record stands under another root key.");
+      if (!Array.isArray(held["certificates"]) || !Array.isArray(held["grants"])) throw new CustodyRowUnavailable("identity", file, "malformed");
+    }
+    const certificates = held["certificates"] as unknown[], grants = held["grants"] as unknown[];
+    const standingHere = certificates.find((c) => atScope(c, args.scope)) as { vesselFaceKey?: unknown } | undefined;
+    if (standingHere !== undefined && String(standingHere.vesselFaceKey ?? "").toLowerCase() !== ours) {
+      throw new FounderCertificateRefused("certificate-other-vessel", "a certificate stands at this scope over a key this vessel's custody does not hold.");
+    }
+    const issued = held["issued"];
+    const bytes = new TextEncoder().encode(JSON.stringify({
+      personaGroup: args.personaGroup, rootKey: args.rootKey,
+      certificates: [...certificates.filter((c) => !atScope(c, args.scope)), args.certificate],
+      grants: [...grants.filter((g) => !atScope(g, args.scope)), args.grant],
+      ...(Array.isArray(issued) && issued.length > 0 ? { issued } : {}),
+    }));
+    if (standing !== null && standing.length === bytes.length && standing.every((v, i) => v === bytes[i])) return { plaintext: null, value: undefined };
+    return { plaintext: bytes, value: undefined };
+  });
 }
 
 /**

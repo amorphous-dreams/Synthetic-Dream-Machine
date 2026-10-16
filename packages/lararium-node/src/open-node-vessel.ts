@@ -48,7 +48,7 @@ import {
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
-  genesisCasCidsFromOracle,
+  genesisCasCidsFromOracle, provenVesselKeyOf,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -169,11 +169,11 @@ import {
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
-import { socketsNoLongerHeld, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
+import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
-import { vesselGate, type VesselGateDeps }       from "./vessel-gates.js";
-import { gateShadowRing }                        from "./gate-shadow-ring.js";
+import { vesselAdmitReader, vesselGate, type VesselGateDeps } from "./vessel-gates.js";
+import { gateShadowRing, type FaceDeviceReading } from "./gate-shadow-ring.js";
 import { faceDeviceBook }                        from "./face-device-book.js";
 import { faceFleetViews }                        from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
@@ -188,7 +188,7 @@ import type { OracleGateArgs, OracleFloorGate }  from "./oracle-read-face.js";
 import {
   deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
   SOVEREIGN_SYNC_ROUTE, ORACLE_SOCKET_ROUTE,
-  type GateBundle, type GateSessionTable,
+  type GateBundle, type GateSession, type GateSessionTable,
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
@@ -339,8 +339,9 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   /** The peer node's `/ws` URL (Socket A, cleartext CRDT) this vessel DIALS to sync — the same-operator device
    *  breath. ABSENT → NO client adapter mounts, NO dial, zero change (provably inert). */
   joinSyncUrl?: string;
-  /** The DIALED peer's gate verifying-key hex — the gate-binding the outbound V3 proof commits to (out-of-band,
-   *  NEVER trusted from the wire). REQUIRED alongside `joinSyncUrl`; absent → fail-closed to inert (no dial). */
+  /** The DIALED hearth's verifying-key hex, pinned out of band and NEVER trusted from the wire: the island anchor a
+   *  joinee resolves its Nexus under, and the founder Socket B reads as fleet. The dial itself reads its full gate pin
+   *  from the pair index (house ruling "The admit's gate pin"), never from this key. */
   joinGatePubKey?: string;
   /** The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
    *  (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — a device of a fleet
@@ -415,6 +416,31 @@ export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
     archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
+}
+
+/**
+ * THE LATE DIAL'S ONE FLIGHT. A board change and the after-roll hook both ask for the late dial, unserialized, and the
+ * dial's choice awaits before it stands: each ask that read "no dial" would stand its own client adapter, and only the
+ * last one the vessel keeps is ever stopped. One flight answers every ask while it runs; an ask once the dial stands,
+ * or once the vessel stands down, stands nothing; `stand` reads `live` again after each of its awaits.
+ */
+export function lateDialOnce(deps: {
+  /** A dial already stands. */
+  readonly standing: () => boolean;
+  /** The vessel stood its dial down: nothing stands after it. */
+  readonly tornDown: () => boolean;
+  /** Stand the dial; `live` answers false once a dial stood or the vessel stood down, and the stand then stands nothing. */
+  readonly stand:    (live: () => boolean) => Promise<void>;
+}): () => Promise<void> {
+  let flight: Promise<void> | null = null;
+  const live = (): boolean => !deps.standing() && !deps.tornDown();
+  return () => {
+    if (!live()) return Promise.resolve();
+    if (flight !== null) return flight;
+    const mine: Promise<void> = Promise.resolve().then(() => deps.stand(live)).finally(() => { if (flight === mine) flight = null; });
+    flight = mine;
+    return mine;
+  };
 }
 
 /**
@@ -664,7 +690,8 @@ async function prepareNodeBootOn(
   // session to the Repo's adapter as one socket (`gate-sync-server`), so no frame reaches the Repo before the
   // gate's verdict left.
   const storage = new DurableNodeFSStorageAdapter(storageDir);
-  // THE FLOOR PIN SET (house ruling "Floor pins", carrier (a)): each sovereign session hears, at open, the floor pins this
+  // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
+  // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
   const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()) });
   const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
@@ -682,6 +709,28 @@ async function prepareNodeBootOn(
   const peerClassMap = new Map<string, PeerClass>();
   // peerId → the Nexus whose gate seated the peer's session: a refold reads that Nexus's posture for it.
   const peerNexus = new Map<string, string | null>();
+  // peerId → the session its gate seated, while its socket stands. `peerIdentifierMap` keys the FACE key a gate proved,
+  // never a device: every consult that reads a peer's DEVICE (the edge ring's shadow, the fetch door's fleet class, the
+  // PersonaGroup ring) reads it here, through the D4 device book (`seatedDeviceKey`), and an unbound face reads none.
+  const peerSessions = new Map<string, GateSession>();
+  // The D4 binding, set once the device book stands (below); until then every face reads unbound.
+  let deviceOfPresenter: ((seat: SeatedPresenter) => FaceDeviceReading) | null = null;
+  const deviceOfPeer = (peerId: string): string | null =>
+    seatedDeviceKey(peerSessions.get(peerId), (x) => (deviceOfPresenter ? deviceOfPresenter(x) : { unreadable: "face-device-unbound" }));
+  // Every device a gate-seated session under this proven face key was certified to (D4); an unbound face reads none.
+  const seatedDevicesOfFace = (key: string): string[] => {
+    const face = provenVesselKeyOf(key);
+    if (face === null) return [];
+    const out: string[] = [];
+    for (const [pid, ident] of peerIdentifierMap) {
+      if (provenVesselKeyOf(ident) !== face) continue;
+      const device = deviceOfPeer(pid);
+      if (device !== null) out.push(device);
+    }
+    return out;
+  };
+  // The refold's same-operator sweep, set once the gates' readers stand (below).
+  let sweepSameOperator: (() => void) | null = null;
   // D3: the bootstrap's tiddlers once the boot reads them, and one scoped view per same-operator session over the
   // planes of the face its gate proved (`face-fleet-view`). The share verdict reads a same-operator peer through it.
   let faceBootTiddlers: Record<string, { text?: string }> | null = null;
@@ -698,8 +747,8 @@ async function prepareNodeBootOn(
   // fills it: no root-signed edge travels on any socket, and no proof binding a leaf to a root travels on the
   // wire. The seat stands for the realm doc's write side. The membership consult never reads it.
   const peerContractNymMap = new Map<string, string>();
-  // THE LEAF MAP's input — what each admitted socket PRESENTED, bound to the nonce and gate key THIS gate issued
-  // on it and the vessel key its V3 proof proved. Keyed at the seat below and handed to the membership holder,
+  // THE LEAF MAP's input — the admit each admitted socket PRESENTED at THIS gate, as it rode, under the face key the
+  // gate's chain proved (no vessel key rides the gate). Keyed at the seat below and handed to the membership holder,
   // which verifies it (leaf proof · held against the carried Nexus's deny board and antigen · carried set) and
   // alone decides whether the peer stands in the leaf map. A peer that presented no admit keys `null`.
   const peerBindings = new Map<string, SocketBinding | null>();
@@ -722,6 +771,7 @@ async function prepareNodeBootOn(
         // The key the gate proved: the session's face key, or a faceless place's own key. No vessel key rides.
         const identHex = session.scope?.faceKey ?? session.placeKey;
         if (identHex) peerIdentifierMap.set(peerId, identHex);
+        peerSessions.set(peerId, session);
         peerClassMap.set(peerId, session.class);
         peerNexus.set(peerId, session.scope?.nexus ?? session.standing?.aid ?? null);
         // D3: the view of the face this session proved, for a same-operator seat alone.
@@ -741,6 +791,7 @@ async function prepareNodeBootOn(
   network.on("peer-disconnected", ({ peerId }: { peerId: string }) => {
     peerBindings.delete(peerId);
     peerNexus.delete(peerId);
+    peerSessions.delete(peerId);
     faceViews.drop(peerId);
     void nexusMembershipHolder?.present(peerId, null);
   });
@@ -1010,6 +1061,9 @@ async function prepareNodeBootOn(
   let gateReadings: readonly CarriedNexusReading[] = [];
   // The sync gates' sweep, set once they first stand (at the arm, below): every refold sweeps again.
   let resweepGates: (() => Promise<void>) | null = null;
+  // The oracle faces that follow the floor gates' set (`floorGates`, below): every refold tells them, and each sweeps again.
+  const floorFollowers = new Set<() => void>();
+  const floorGatesMoved = (): void => { for (const follower of [...floorFollowers]) { try { follower(); } catch { /* a face's own fault */ } } };
   /** This vessel's own Nexus: the AID of the charter it keeps at its seal home, or null. */
   const ownNexusAid = (): string | null => nexusAidOf(readNexusDoc(sealHome)) ?? null;
   /**
@@ -1054,8 +1108,9 @@ async function prepareNodeBootOn(
     nexusPubkey,
     readCarried,
     onRefold:    () => {
-      reverdict(); dropNoLongerHeld();
+      reverdict(); dropNoLongerHeld(); sweepSameOperator?.();
       void resweepGates?.().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not sweep: ${err instanceof Error ? err.message : String(err)}`));
+      floorGatesMoved();
     },
   });
   nexusMembershipHolder = membershipHolder;
@@ -1153,9 +1208,10 @@ async function prepareNodeBootOn(
       return [...roots];
     },
     charterRealm:    () => nexusAidOf(readNexusDoc(sealHome)),
-    vesselKeyOfPeer: (peerId) => peerIdentifierMap.get(peerId)?.slice(-64).toLowerCase() ?? null,
+    // The DEVICE behind the peer (D4), never the face key its gate proved: a device set aside draws Mu on every lane.
+    vesselKeyOfPeer: deviceOfPeer,
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
-    onRefold:        () => { reverdict(); dropNoLongerHeld(); seatSettler?.onFold(); },
+    onRefold:        () => { reverdict(); dropNoLongerHeld(); sweepSameOperator?.(); seatSettler?.onFold(); },
   });
   // THE SETTLE ON EVERY FOLD (kapae#/keys). A counted raise owes one key roll, and the fold itself sets the answer
   // off: no person types a verb and no timer runs. The settler reads the fold, hands the facts to the daemon
@@ -1222,6 +1278,7 @@ async function prepareNodeBootOn(
   // certificates, and on the root holder the issued book each fleet-join answer noted (`face-device-book`). A gate
   // sweep and every refold read it again; a presenter it does not bind reads fleet-aside.
   const deviceBook = faceDeviceBook({ records: wornFaceRecords, ownVesselKey: async () => vesselIdentity.verifyingKey });
+  deviceOfPresenter = (seat) => deviceBook.deviceOfSeat(seat);
   const gateDeps: VesselGateDeps = {
     readings: readEveryCarried,
     posture:  postureOf,
@@ -1242,6 +1299,21 @@ async function prepareNodeBootOn(
     onRefuse:  (at, reason, detail) => console.warn(`[lar-gate] ${at.tier} ${at.route} at ${at.nexus.slice(0, 18)}… fell silent: ${reason}${detail ? ` (${detail})` : ""}`),
     onShut:    (arm, at) => console.warn(`[lar-gate] a walker's ${arm} arm at ${at.route} reads SHUT at the cutover`),
   };
+  // A REFOLD THAT SETS A DEVICE ASIDE, OR REVOKES AN ADMIT, CLOSES. A same-operator session stands only while its gate
+  // would seat it same-operator today: its device still binds and stands, and its admit still reads held at its Nexus
+  // (`sameOperatorStands`). One that no longer does is dropped silently, as the gate drops a refused socket. Sweeps run
+  // one at a time; a sweep asked while one runs runs once more after it.
+  let sameOperatorSweep: Promise<void> = Promise.resolve();
+  sweepSameOperator = (): void => {
+    sameOperatorSweep = sameOperatorSweep.then(async () => {
+      const now = { deviceOf: (seat: SeatedPresenter) => deviceBook.deviceOfSeat(seat), deviceAside: (d: string) => (edgeShadows ? edgeShadows.deviceAside(d) : true), admits: (nexus: string) => vesselAdmitReader(gateDeps, nexus) };
+      const gone = new Set<GateSession>();
+      for (const { session } of syncSessions.live()) {
+        if (session.class === "same-operator" && !(await sameOperatorStands(session, now))) gone.add(session);
+      }
+      if (gone.size > 0) console.log(`[lar-gate] ${syncSessions.drop((s) => gone.has(s))} same-operator session(s) closed: the device stands aside, binds no more, or the admit no longer holds`);
+    }).catch((err: unknown) => console.warn(`[lar-gate] the same-operator sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
+  };
   /**
    * Every Nexus a gate stands in: this vessel's own, and each it carries. A HERM stands at the explicit Nexus it was
    * joined to and only there (house ruling "Routes at the cutover": "an explicit Nexus opens the herm relay"): a Nexus
@@ -1253,14 +1325,20 @@ async function prepareNodeBootOn(
     const own = placeClass === "herm" ? null : ownNexusAid();
     return [...new Set([...(own ? [own] : []), ...gateReadings.map((r) => r.aid)])];
   };
-  /** The oracle's floor gates, one per Nexus, each seating through the face's own table (`oracle-read-face`). */
-  const floorGates: OracleGateArgs["gates"] = async (sessions: GateSessionTable) => {
+  /**
+   * The oracle's floor gates, one per Nexus, each seating through the face's own table (`oracle-read-face`). The set
+   * moves as the sync gates' does: every membership refold tells each face that follows it (`floorGatesMoved`), and the
+   * face asks again, so a carry taken on a running herm stands its floor gate and an uncarry stands it down.
+   */
+  const floorGates: OracleGateArgs["gates"] = Object.assign(async (sessions: GateSessionTable) => {
     const door = await vesselFloorKeyDoor();
     return (await gateNexuses()).map((nexus): OracleFloorGate => {
       const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(ORACLE_SOCKET_ROUTE));
       return { gate: vesselGate(gateDeps, { bundle, nexus, sessions }), pin: bundle.pin };
     });
-  };
+  }, {
+    onMoved: (follower: () => void) => { floorFollowers.add(follower); return () => { floorFollowers.delete(follower); }; },
+  });
   // THE SYNC GATES: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock.
   // A sweep stands the gate of every Nexus newly read and stands down the gate of one no longer read.
   const syncStood = new Map<string, { readonly unstand: () => void }>();
@@ -1282,6 +1360,8 @@ async function prepareNodeBootOn(
       });
       syncStood.set(nexus, { unstand: () => { unregister?.(); at.unstand(); bundle.drop(); } });
     }
+    // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
+    sweepSameOperator?.();
   };
   stood.push({ what: "the sync gates' knocks", down: () => { for (const held of syncStood.values()) held.unstand(); syncStood.clear(); } });
 
@@ -1321,12 +1401,13 @@ async function prepareNodeBootOn(
   const isFleetPeer = (peerKey: string): boolean => {
     const nym = peerKey.slice(-64).toLowerCase();
     if (fleetJoinGate && nym === fleetJoinGate) return true;
-    for (const [peerId, identHex] of peerIdentifierMap) {
-      if (identHex.slice(-64).toLowerCase() === nym && peerClassMap.get(peerId) === "same-operator") return true;
+    // The DEVICE a same-operator session's face-scoped key was certified to (D4), never the face key its gate proved.
+    for (const [peerId, session] of peerSessions) {
+      if (session.class === "same-operator" && deviceOfPeer(peerId) === nym) return true;
     }
     // Refused, said aloud: a cleartext ask from a peer the gate cannot read as fleet. The peers as this vessel
     // holds them (nym tail · class) so an operator can see WHY the door stayed shut.
-    const seen = [...peerIdentifierMap].map(([pid, ih]) => `${ih.slice(-64).slice(0, 8)}…/${peerClassMap.get(pid) ?? "unvouched"}`).join(" ");
+    const seen = [...peerSessions].map(([pid, session]) => `${(deviceOfPeer(pid) ?? "unbound").slice(0, 8)}…/${session.class}`).join(" ");
     console.log(`[carriage] fetch door: ${nym.slice(0, 8)}… reads NOT fleet (socket-A peers: ${seen || "none"}; join-gate: ${fleetJoinGate.slice(0, 8) || "none"})`);
     return false;
   };
@@ -1334,8 +1415,9 @@ async function prepareNodeBootOn(
   const fleetHolders = (): readonly string[] => {
     const out = new Set<string>();
     if (fleetJoinGate) out.add(fleetJoinGate);
-    for (const [peerId, identHex] of peerIdentifierMap) {
-      if (peerClassMap.get(peerId) === "same-operator") out.add(identHex.slice(-64).toLowerCase());
+    for (const [peerId, session] of peerSessions) {
+      const device = session.class === "same-operator" ? deviceOfPeer(peerId) : null;
+      if (device !== null) out.add(device);
     }
     return [...out];
   };
@@ -1469,7 +1551,7 @@ async function prepareNodeBootOn(
     hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
     kept:        readKeptAdmitBundles(sealHome),
     walkRelay:   walkingAt?.record.relay ?? null,
-    // THE FLOOR PINS a signed fleet-join answer carried, kept per Nexus: they file under the dialed hearth (ruling "Floor pins").
+    // THE FLOOR PINS a signed fleet-join answer carried, kept per Nexus: they file under the dialed hearth (house ruling "The admit's gate pin": a carried signed pin set).
     keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
   });
   for (const note of hearthDial.notes) console.log(`[nexus-join] ${note}`);
@@ -1480,6 +1562,8 @@ async function prepareNodeBootOn(
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
+  // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
+  let dialStoodDown = false;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
   // device-delegation edge (the one a fleet-join landing seated), so the peer's keyholder vouches it
   // `same-operator` (the FLEET class every same-operator door reads) rather than the cross-operator floor.
@@ -1602,7 +1686,7 @@ async function prepareNodeBootOn(
   stood.push({ what: "the realm plane",       down: () => { realmPlane?.dispose(); } });
   stood.push({ what: "the persona-KEL ring",  down: () => { for (const k of kelHolders.splice(0)) k.dispose(); } });
   stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
-  stood.push({ what: "the client dial",       down: () => { nexusDial?.stop(); } });
+  stood.push({ what: "the client dial",       down: () => { dialStoodDown = true; nexusDial?.stop(); } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
   stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
@@ -1978,7 +2062,7 @@ async function prepareNodeBootOn(
     // one re-dials through the adapter's own close-and-reconnect path.
     // THE DIAL STANDS FROM A CHOICE of url and pin (`chooseHearthDial`): at composition from what the bootstrap and the kept
     // bundles name, and LATER, when a bundle is taken into a RUNNING vessel (`afterRoll`, below), from what it names then.
-    const standFaceDial = async (hd: HearthDialChoice): Promise<void> => {
+    const standFaceDial = async (hd: HearthDialChoice, live: () => boolean = () => !dialStoodDown): Promise<void> => {
       try {
         // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
         // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
@@ -2005,6 +2089,8 @@ async function prepareNodeBootOn(
         if (walkingAt && dialPin === null) console.log("[walk] walker-route-shut — the walker route ships shut by name (house ruling \"Routes at the cutover\"); this walk presents nothing at the hearth's gate");
         if (composed !== null && !("presentation" in composed)) console.log(`[nexus-join] no presentation: ${composed.refusal}${composed.detail ? ` (${composed.detail})` : ""}`);
         const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
+        // The composition awaited: a dial that stood meanwhile, or a vessel that stood down, takes no second adapter.
+        if (!live()) return;
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: hd.syncUrl, pins: gatePins, hearth: hearthNameOf(hd.syncUrl!), nexus: dialNexus,
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
@@ -2043,8 +2129,7 @@ async function prepareNodeBootOn(
     // (a moved board re-dials through the adapter). A herm dials nothing (its relay ships shut by name), and a floor composition holds
     // no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
-      representIfMoved = async () => {
-        if (nexusDial !== null) return;
+      representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live) => {
         const late = chooseHearthDial({
           explicitUrl: opts.joinSyncUrl ?? null,
           hearthPin:   hearthPin ? { syncUrl: hearthPin.syncUrl, ...(hearthPin.gatePin ? { gatePin: hearthPin.gatePin } : {}) } : null,
@@ -2052,10 +2137,10 @@ async function prepareNodeBootOn(
           walkRelay:   walkingAt?.record.relay ?? null,
           keptFloor:   (nexusHex) => readKeptHearthFloorPins(sealHome, Buffer.from(nexusHex, "hex").toString("utf8")),
         });
-        if (late.syncUrl === null) return;
+        if (late.syncUrl === null || !live()) return;
         for (const note of late.notes) console.log(`[nexus-join] ${note}`);
-        await standFaceDial(late);
-      };
+        await standFaceDial(late, live);
+      } });
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
@@ -2230,8 +2315,10 @@ async function prepareNodeBootOn(
         provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? null,
         siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
         // THE DYAD'S SHADOW at the face-grant seat and the sibling lane (kapae#/reach): a device the fleet root
-        // set aside holds no seat here, whatever record or session it proves. No ring yet reads as aside.
-        deviceAside: (vesselKey) => edgeShadows ? edgeShadows.deviceAside(vesselKey) : true,
+        // set aside holds no seat here, whatever record or session it proves. No ring yet reads as aside. The
+        // grant path proves a FACE key (a face-join grant names it), so the shadow also reads the DEVICE each
+        // gate-seated session under that face key was certified to (D4): an aside device's face holds no seat.
+        deviceAside: (key) => edgeShadows ? edgeShadows.deviceAside(key) || seatedDevicesOfFace(key).some((d) => edgeShadows!.deviceAside(d)) : true,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
       // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.
