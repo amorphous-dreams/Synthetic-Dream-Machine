@@ -113,15 +113,18 @@ test("a stale render target answers on its originating projected surface", async
   await page.goto(baseUrl);
   await waitForLivePage();
   const wiki = page.locator("#projection");
-  const link = wiki.locator("[data-lar-rid]").first();
+  // The page relays a click only to a node whose `data-lar-on` stamp binds it, and names a node by its render id
+  // where no template control id stands on it, so the probe takes such a node.
+  const link = wiki.locator('[data-lar-rid][data-lar-on~="click"]:not([data-control-id])').first();
   const staleRid = `stale-${crypto.randomUUID()}`;
   await link.evaluate((element, rid) => element.setAttribute("data-lar-rid", rid), staleRid);
   await link.click();
-  const result = wiki.locator('[data-lar-interaction-result="stale-target"]');
+  // The worker answers stale-target and runs nothing; the page paints the words beside the control it named.
+  const result = wiki.locator(`.lar-refusals > output[data-lar-for="${staleRid}"]`);
   await result.waitFor({ state: "visible", timeout: 20_000 });
-  assert.equal(await result.getAttribute("data-lar-source-rid"), staleRid);
-  assert.equal(await result.getAttribute("data-lar-source-event"), "click");
-  assert.ok(await result.getAttribute("data-lar-source-wiki"), "the refusal remains bound to its source wiki surface");
+  assert.equal(await result.getAttribute("data-lar-reason"), "stale-target");
+  assert.equal(await result.getAttribute("role"), "status");
+  assert.match((await result.textContent()) ?? "", /changed before your action arrived/);
   assert.deepEqual(wikiWorkerErrors, [], "stale target is an answer, not a worker error");
 });
 
