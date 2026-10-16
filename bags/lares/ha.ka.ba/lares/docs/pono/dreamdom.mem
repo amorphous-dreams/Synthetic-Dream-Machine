@@ -59,7 +59,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom"
 
 ''Co-location against blur.'' One thread may host more than one layer. The test: does the co-located copy own anything its layer should not? A glass engine that renders from a record-grain replica owns no truth, no sensoria and no authority: co-location. A glass engine that holds `$:/state` the worker needs, evaluates verbs the worker cannot, or ingests a river: blur. The actor manifest (#/the-actor) makes the test mechanical.
 
-Evidence and field reading: `reports/tw5-worker-vm/third-ways.md` §2.
+Evidence and field reading: `docs/pono/third-ways-scout` §2.
 
 <<~/ahu>>
 
@@ -82,7 +82,7 @@ What TiddlyWiki's own code says in support:
 # ''A sink names a document implementation plus a serialiser.'' A ''blocks sink'' records element, attribute, text and bound-listener nodes as a small tree and serialises affordances from the listeners the widgets bind. A ''text sink'' and a ''label-html sink'' (Mudlet's Qt subset) read as serialisers over the same tree. A ''canvas sink'' reads as the DOM-hosting document `wikispace-canvasspace-ontology#/the-surface-law` demands, never a rasterising one.
 # ''The engine need not sit in the app for a camera to exist there.'' A camera mounted beside the headless engine ships keyed frames across a wire to a sink that cannot run the engine (Mudlet, chat, a UE panel).
 # ''Layer 3 belongs to the page wherever a page exists'' (#/the-layers): editors, popups, scrolling, drag and drop, file browsing stay out of the island's camera and get supplied by page-native controls named in the template (`page-controls`), or refuse by name.
-# ''The widget tree already carries the affordances declaratively.'' `$link to`, `$button actions|message|popup`, `$checkbox tiddler|field`, `$select`, `$edit-text tiddler|field`, `$droppable actions`: one parse yields both an HTML render for a rich glass and a blocks-plus-affordances stream for a lean host. An affordance id lives one render under a `renderCursor`; a stale invoke answers `stale-target`; every invoke passes the capability gate before `invokeActions`. ''A lean projection reads keys and writes records'': two read grains, one write grain (`reports/tw5-worker-vm/host-attractors.md` §2.4).
+# ''The widget tree already carries the affordances declaratively.'' `$link to`, `$button actions|message|popup`, `$checkbox tiddler|field`, `$select`, `$edit-text tiddler|field`, `$droppable actions`: one parse yields both an HTML render for a rich glass and a blocks-plus-affordances stream for a lean host. An affordance id lives one render under a `renderCursor`; a stale invoke answers `stale-target`; every invoke passes the capability gate before `invokeActions`. ''A lean projection reads keys and writes records'': two read grains, one write grain (`docs/pono/host-attractors-scout` §2.4).
 
 !!! Three sinks earn names now
 
@@ -93,7 +93,7 @@ What TiddlyWiki's own code says in support:
 
 ''The camera clause of the spec binds here.'' A conforming renderer MUST target exactly one camera per pass, MAY support a subset of cameras, and MUST degrade a missing camera visibly (`memetic-wikitext#/conformance`). Annex B's pending `resolveWidgetTree(ast, registry)` names the middle layer the blocks sink needs for memetic-wikitext specifically.
 
-Evidence: `reports/tw5-worker-vm/third-ways.md` §2.3 and §4.2.
+Evidence: `docs/pono/third-ways-scout` §2.3 and §4.2.
 
 <<~/ahu>>
 
@@ -121,7 +121,7 @@ Each row names a (root template, document sink) over the one engine. ''Capabilit
 
 ''Where a lararium can live.'' Hosts sort into four coupling tiers once the layers stand apart: (a) a full lararium inside; (b) the engine inside with the store synced elsewhere; (c) a projection alone, coupled over a port; (d) not viable. The one axis the field adds: whether the host runs WebAssembly, since Automerge compiles from Rust to WASM and neither Hermes nor QuickJS carries a `WebAssembly` global. A JS engine without WASM carries the ENGINE and not the STORE unless the host lends Automerge natively. Ranked forward attractors: browsers and WebView shells; Node, Deno, Bun, a Pi, Termux; VS Code and Obsidian (their extension-host and webview split reads as the port drawn by someone else); an MCP projection; a Foundry VTT module; then projection-only Mudlet, Owlbear Rodeo, the UE6 sidecar, editors and bots; engine-inside-when-asked for Godot and Unity; relay-only for Durable Objects; dropped as engine hosts: Roll20, e-readers, ESP32-class, Bevy. ''A Lararium ships as a capability added to any setup'' (operator, 2026-10-16; the Islands of Myth MUD with AI co-player squads under wizard approval as the worked example, `mudlet-scout`).
 
-Evidence: `reports/tw5-worker-vm/two-way-interaction.md` §7; `reports/tw5-worker-vm/host-attractors.md` §1, §3 and §9.1.
+Evidence: `docs/pono/two-way-interaction-scout` §7; `docs/pono/host-attractors-scout` §1, §3 and §9.1.
 
 <<~/ahu>>
 
@@ -147,7 +147,7 @@ Evidence: `reports/tw5-worker-vm/two-way-interaction.md` §7; `reports/tw5-worke
 
 ''Pattern integrity'': a standing filter reads as a subscription; the engine owns the index, the projection owns the view; the replica's width reads as a setting, never an architecture.
 
-Evidence: `reports/tw5-worker-vm/third-ways.md` §4.1, §4.4 and §10; `reports/tw5-worker-vm/portable-engine-plan-v2.md` §5.
+Evidence: `docs/pono/third-ways-scout` §4.1, §4.4 and §10; the portable-engine plan v2 §5 (project reports).
 
 <<~/ahu>>
 
@@ -184,7 +184,7 @@ The browser opens against the Node vessel on the same machine. It shows the daem
 
 ''Presence'' rides an ephemeral lane, never a tiddler: `{surfaceId, actor, editing: [titles], focused: controlId}` with a 30 s expiry.
 
-Evidence: `reports/tw5-worker-vm/third-ways.md` §3 and §4.3; `reports/tw5-worker-vm/two-way-interaction.md` §3.4 and §3.5.
+Evidence: `docs/pono/third-ways-scout` §3 and §4.3; `docs/pono/two-way-interaction-scout` §3.4 and §3.5.
 
 <<~/ahu>>
 
@@ -204,7 +204,7 @@ Evidence: `reports/tw5-worker-vm/third-ways.md` §3 and §4.3; `reports/tw5-work
 | the image (Smalltalk, the single-file TW5) | folded | the sleeping actor's warm start |
 | a second full evaluator of TW5 wikitext or filters in any language | ''refused'' (`evaluators-one-or-many`) | every record says that road ends in a subset with a divergence list |
 
-Evidence: `reports/tw5-worker-vm/third-ways.md` §4.0.
+Evidence: `docs/pono/third-ways-scout` §4.0.
 
 <<~/ahu>>
 
@@ -297,7 +297,7 @@ Two absolute streams and one event leg. Neither side outranks the other (#/the-v
 
 A fourth kind, `service-result`, closes a `glass:service` request the engine made (clipboard, download, route, open-surface) with `ok` or a named refusal, so `tm-copy-to-clipboard` can fire its own success notification through the engine.
 
-Every TW5 widget sorts into one of these, and the sort decides which layer owns it: ''E'' the engine (the handler runs in the wiki VM wherever it sits), ''P'' the page or host, ''E+P'' a split where the page holds the live state and the engine applies the act. The full roster, widget by widget and message by message, rests in `reports/tw5-worker-vm/two-way-interaction.md` §2; the rows that matter most read:
+Every TW5 widget sorts into one of these, and the sort decides which layer owns it: ''E'' the engine (the handler runs in the wiki VM wherever it sits), ''P'' the page or host, ''E+P'' a split where the page holds the live state and the engine applies the act. The full roster, widget by widget and message by message, rests in `docs/pono/two-way-interaction-scout` §2; the rows that matter most read:
 
 |! Interaction |! Owner |! Up, at width none |! Down |
 | `$link` click | E, cancellation P | `act` with modifiers and the as-of-act rect; the binding declares `cancel: ordinary-only`, so modified and middle clicks and external `href` follow the browser | frame plus `applied` |
@@ -342,7 +342,7 @@ A node whose `data-lar-on` lacks the event type never relays, and the browser de
 
 `glass:service{requestId, kind: clipboard · download · route · open-surface · print · fullscreen · open-external, args, userActivation: true}` travels engine → surface; the surface answers `service-result`. A surface's manifest at `session:surface-open` lists the kinds it carries; a kind outside the list answers `page-action-unavailable` at once and the engine raises `$:/temp/lares/alert/refused/<kind>`. Of the fifty-odd `tm-*` kinds the core dispatches, the navigator's, the fieldmangler's, `tm-confirm`, `tm-edit-text-operation` and `tm-verse-event` run in the engine wherever it sits; the twenty that bind only under `platforms: ["browser"]` split in half: pure wiki logic the island registers itself in a startup module (`tm-rename-tiddler`, `tm-relink-tiddler`, `tm-home`, `tm-modal`, `tm-show-switcher`, `tm-notify`, `tm-scroll` and `tm-focus-selector` as hints) and host services each surface names or refuses. `tm-http-request` refuses by default as an authority question under the Web3-only law.
 
-Evidence: `reports/tw5-worker-vm/two-way-interaction.md` §2, §3 and §6; `reports/tw5-worker-vm/model-and-gaps.md` §5.3.
+Evidence: `docs/pono/two-way-interaction-scout` §2, §3 and §6; `docs/pono/tw5-vm-gaps-scout` §5.3.
 
 <<~/ahu>>
 
@@ -368,7 +368,7 @@ Three further classes degrade rather than lose: ''keyboard'' (search Enter, tag-
 
 ''At full, skinny and story these losses dissolve'', because the handler runs beside a real control. At width none they do not dissolve; the camera contract answers them.
 
-Evidence: `reports/tw5-worker-vm/two-way-interaction.md` §4; `reports/tw5-worker-vm/model-and-gaps.md` §4 and §5.1.
+Evidence: `docs/pono/two-way-interaction-scout` §4; `docs/pono/tw5-vm-gaps-scout` §4 and §5.1.
 
 <<~/ahu>>
 
@@ -463,7 +463,7 @@ Each script runs at width full (stock TW5 as the oracle, in Playwright), at widt
 
 ''Every suite run pins a TW5 commit'' (today `ea94ca8`, a 5.5.0-prerelease fork); lag fails a port, not wrong code. Who re-pours the goldens when the commit moves stands as an open ruling.
 
-Evidence: `reports/tw5-worker-vm/evaluators-one-or-many.md` §5; `reports/tw5-worker-vm/two-way-interaction.md` §5.
+Evidence: `docs/pono/evaluators-one-or-many` §5; `docs/pono/two-way-interaction-scout` §5.
 
 <<~/ahu>>
 
@@ -552,15 +552,15 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 * ''crdt-ecosystem-scout'' (Wayfarer): the ecosystem, and keyhive #216 merged-but-unreleased.
 * ''testing-architecture-scout'' (Mason) · ''e2e-harness-scout'' (Wright): this house's own instruments, read the same way.
 
-''The second wave'' (2026-10-16), held as reports in the project's shared folder `reports/tw5-worker-vm/`, each carrying its reach marks (//reached: code//, //reached: fetched//, //reached: search//, //unreached//, //inferred//); this carrier adapts their substance into house prose and cites them per section:
+''The second wave'' (2026-10-16), four of it held VERBATIM under `docs/pono/` at register ''Testimony-Verbatim'' and the rest in the project's shared reports, each carrying its reach marks (//reached: code//, //reached: fetched//, //reached: search//, //unreached//, //inferred//); this carrier adapts their substance into house prose and cites them per section:
 
-* `model-and-gaps.md`: the as-built survey of the worker-thread VM (two spirits, TIDDLY and WIKI), gaps #1 to #25 ranked, and the Wave 2 probes that executed the real genesis core in scratch harnesses (the textarea revert, the select snap-back, the boot-shadows fix proven green).
-* `portable-engine-plan.md` and `portable-engine-plan-v2.md`: the candidate architectures A to D, the ten port kinds, the thresholds T1 to T7, the phased plan, and the syncer ruling.
-* `host-attractors.md`: the four coupling tiers, the minimal engine-host contract, the two-grain hypothesis weighed (two read grains, one write grain), and the UE6 and Mudlet dives.
-* `mudlet-capabilities.md`: Mudlet 5.0's surface, four integration patterns, GMCP-to-record mapping, AI co-player squads under wizard approval, and the sensorium deferral; the house's collision copy stands at `mudlet-scout`.
-* `evaluators-one-or-many.md`: the prior-art survey of twenty-odd languages behind the closed Q1; the house's ruling stands at `evaluators-one-or-many`.
-* `third-ways.md`: the map after the rulings (four layers, two waists, the camera reading, the width dial, the actor states, the per-host landing, the separating experiment, the moʻolelo draft).
-* `two-way-interaction.md`: the interaction inventory by widget and message, the UP-leg contract, the adversarial walk, the fourteen interaction goldens, the per-surface superset table, and the open rulings this carrier folds.
+* `tw5-vm-gaps-scout`: the as-built survey of the worker-thread VM (two spirits, TIDDLY and WIKI), gaps #1 to #25 ranked, and the Wave 2 probes that executed the real genesis core in scratch harnesses (the textarea revert, the select snap-back, the boot-shadows fix proven green).
+* the portable-engine plans (project reports, v1 and v2): the candidate architectures A to D, the ten port kinds, the thresholds T1 to T7, the phased plan, and the syncer ruling.
+* `host-attractors-scout`: the four coupling tiers, the minimal engine-host contract, the two-grain hypothesis weighed (two read grains, one write grain), and the UE6 and Mudlet dives.
+* `mudlet-scout` (verbatim): Mudlet 5.0's surface, four integration patterns, GMCP-to-record mapping, AI co-player squads under wizard approval, and the sensorium deferral.
+* `evaluators-one-or-many`: the house's rewrite of the prior-art survey of twenty-odd languages behind the closed Q1.
+* `third-ways-scout`: the map after the rulings (four layers, two waists, the camera reading, the width dial, the actor states, the per-host landing, the separating experiment, the moʻolelo draft).
+* `two-way-interaction-scout`: the interaction inventory by widget and message, the UP-leg contract, the adversarial walk, the fourteen interaction goldens, the per-surface superset table, and the open rulings this carrier folds.
 
 !!! ⚠ Where folkjs's CRDT binding actually lives
 
@@ -573,6 +573,10 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/third-ways-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/host-attractors-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/evaluators-one-or-many">>
@@ -590,6 +594,6 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i7bk9Vze-xQD2Xf2k_sfWlc3w4swJVrSqGGAxrD0eEM
+<<^ code="&#x0003;">>ni:///sha-256;fXncbQlRAOLBQr4KBQREsvr_gbWZobS2koZu0CleC7U
 
 <<^ code="&#x0004;" -> to="?">>

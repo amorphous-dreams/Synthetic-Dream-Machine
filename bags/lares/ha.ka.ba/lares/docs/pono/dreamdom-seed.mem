@@ -47,7 +47,7 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 # ''Read the road's shared law'': `stable-founding-road` #/the-attractor, #/cold-start and #/rulings; `controller-handoff` whole (#/the-lane-law binds every lane); `working-procedures` whole (#/red-first and #/instruments-that-lie above all).
 # ''Read the model and its road whole'': <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> (the model) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> (the phases, spikes, rulings and rows). Beside them: `page-controls`, `evaluators-one-or-many`, `mudlet-scout`, `wikispace-canvasspace-ontology`, `api/pono/render-pipeline`, `api/pono/memetic-wikitext` (the camera clause and Annex B).
 # ''Read CLAUDE.md's adapter note and obey it'': never boot in the tracked tree bare; a scratch `LAR_ROOT=/tmp/<scratch>` per boot moves the store, the bags root and every mirror root; `tools/tree-clean-witness.sh` reads any write into the tracked tree as red.
-# ''Read the research testimony when a phase needs its evidence''. The model cites it by report and section; where the reports stand absent from the container, the carriers above carry what the build needs.
+# ''Read the research testimony when a phase needs its evidence''. The model cites it by carrier and section, each held verbatim beside it: `tw5-vm-gaps-scout` (the as-built and its probed gaps, where D0's and D1's red tests begin), `third-ways-scout`, `host-attractors-scout`, `two-way-interaction-scout` and `mudlet-scout`.
 
 <<~/ahu>>
 
@@ -212,6 +212,6 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EbqFLtJVmy-nyj7JsGq2ucoN49EB0P0XoTe9ymzOob0
+<<^ code="&#x0003;">>ni:///sha-256;ZD9HIBFwB7pmU63thJHuoDE86Qx0s_RsPNR_GQoczGU
 
 <<^ code="&#x0004;" -> to="?">>
