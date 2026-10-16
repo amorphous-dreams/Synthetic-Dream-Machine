@@ -143,8 +143,9 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
     const seal = await runNexusCarryFor({ sealHome: larSealHome() });
     at(hearthRoot);
     const other = await runNexusCarryFor({ sealHome: larSealHome() });
-    const carryOther = await direct(runNexusContract)({ action: "carry", nym: other.nym, carrierSig: other.carrierSig, floorPin: JSON.stringify(other.floorPin) });
+    // The herm's own carry first: its bundle then names no other place, so what lands of `other` lands off the refused take alone.
     const carryOwn = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify(seal.floorPin) });
+    const carryOther = await direct(runNexusContract)({ action: "carry", nym: other.nym, carrierSig: other.carrierSig, floorPin: JSON.stringify(other.floorPin) });
     at(hermRoot);
     await expect(direct(takeCarryBundle)({ raw: JSON.stringify(carryOther.carryBundle), ownVesselKey: seal.nym })).rejects.toBeInstanceOf(CarryBundleError);
     const own = carryOwn.carryBundle as CarryBundle;

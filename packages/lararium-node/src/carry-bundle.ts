@@ -10,7 +10,9 @@
  * WHAT IT HOLDS — public bytes only:
  *   · `contract`  — the quorum-signed `carry` naming the herm's vessel key (the board's carry head for it);
  *   · `lineage`   — that act's counted causal past (`placeArmFor`);
- *   · `floorPins` — every place floor-pin statement the hearth's board carried at the write, the herm's own among them.
+ *   · `floorPins` — every place floor-pin statement the hearth's board carried at the write, the herm's own among them;
+ *   · `peers`     — the counted `carry`/`uncarry` acts of every OTHER place on that board, so the taker's own replica counts
+ *                   the places whose statements ride beside them (a reader that syncs no board files their pins off these).
  *
  * THE TAKE refuses, writing nothing, unless the herm holds a charter for the AID, every act COUNTS under that charter's
  * seated roster, the contract names THIS vessel's own key, and the union of its own board and the bundle reads a place arm
@@ -41,6 +43,8 @@ export interface CarryBundle {
   readonly contract:  CarriageEntry;
   readonly lineage:   readonly CarriageEntry[];
   readonly floorPins: readonly unknown[];
+  /** The carry/uncarry acts of every other place the board holds; absent on a bundle minted before they rode. */
+  readonly peers?:    readonly CarriageEntry[];
 }
 
 /** The bundle a hearth hands a herm it just carried: the arm off its own board, and the board's statements. */
@@ -50,7 +54,10 @@ export async function carryBundleFrom(opts: {
 }): Promise<CarryBundle | null> {
   const arm = await placeArmFor(carriageEntriesFromBoard(opts.board), opts.roster, opts.nym);
   if (arm === null) return null;
-  return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: arm.lineage, floorPins: placeFloorPinsFromBoard(opts.board) };
+  const own = opts.nym.toLowerCase();
+  const peers = carriageEntriesFromBoard(opts.board)
+    .filter((e) => (e.action === "carry" || e.action === "uncarry") && e.nym.toLowerCase() !== own);
+  return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: arm.lineage, floorPins: placeFloorPinsFromBoard(opts.board), peers };
 }
 
 export interface CarryTakeResult {
@@ -79,8 +86,9 @@ export async function takeCarryBundle(opts: {
   const contract = coerceCarriageEntry(b["contract"]);
   const lineage = Array.isArray(b["lineage"]) ? b["lineage"].map(coerceCarriageEntry) : null;
   const floorPins = Array.isArray(b["floorPins"]) ? b["floorPins"] : null;
+  const peerRaw = b["peers"] === undefined ? [] : Array.isArray(b["peers"]) ? b["peers"].map(coerceCarriageEntry) : null;
   if (b["kind"] !== CARRY_BUNDLE_KIND || !NEXUS_AID_PATTERN.test(aid) || aid.includes("..") || contract === null
-    || lineage === null || lineage.some((e) => e === null) || floorPins === null) {
+    || lineage === null || lineage.some((e) => e === null) || floorPins === null || peerRaw === null || peerRaw.some((e) => e === null)) {
     throw new CarryBundleError("the carry bundle is malformed — it needs its kind, an `aid`, the quorum's `carry` contract, its lineage and the floor pins.");
   }
   const own = opts.ownVesselKey.toLowerCase();
@@ -100,7 +108,13 @@ export async function takeCarryBundle(opts: {
   const island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
   const boardUrl = carriageDocUrl(island);
   const handle = await materializeSharedLarDoc(opts.repo, boardUrl, "board:carriage-contracts");
-  const union = [...carriageEntriesFromBoard(handle.doc()), ...acts];
+  // Another place's act lands only where it COUNTS under the held roster: a carrier this replica folds is a carrier the
+  // quorum counted, never one the bundle merely names.
+  const peers: CarriageEntry[] = [];
+  for (const e of peerRaw as CarriageEntry[]) {
+    if ((e.action === "carry" || e.action === "uncarry") && e.nym.toLowerCase() !== own && await carriageEntryCounts(e, roster)) peers.push(e);
+  }
+  const union = [...carriageEntriesFromBoard(handle.doc()), ...acts, ...peers];
   if ((await placeArmFor(union, roster, own)) === null) {
     throw new CarryBundleError("the bundle's carry does not head this vessel's relation on its own replica (an uncarry descends from it, or its past does not chain). Nothing was written.");
   }
@@ -112,7 +126,7 @@ export async function takeCarryBundle(opts: {
     if (!("refusal" in read)) landing.push(raw as PlaceFloorPinStatement);
   }
   handle.change((d) => {
-    for (const act of acts) writeCarriageEntry(d, act);
+    for (const act of [...acts, ...peers]) writeCarriageEntry(d, act);
     for (const s of landing) writePlaceFloorPin(d, s);
   });
   await opts.repo.flush().catch(() => { /* best effort */ });
