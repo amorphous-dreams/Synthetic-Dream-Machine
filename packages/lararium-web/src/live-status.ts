@@ -7,7 +7,7 @@ export interface ServedLocation {
   readonly host: string;
 }
 
-/** The served page and its node share an origin when a gate pin carries no separate route. */
+/** The read face a served page reads by default: the origin that served it. */
 export function defaultReadFace(location: Pick<ServedLocation, "origin">): string {
   return location.origin;
 }
@@ -30,15 +30,9 @@ export function floorCardOf(
   return text ? { text, card: read(text) } : null;
 }
 
-/** A supplied relay remains explicit; a gate-pinned same-origin node derives its own WS route. */
-export function resolveRelayUrl(
-  location: Pick<ServedLocation, "protocol" | "host">,
-  params: URLSearchParams,
-): string | undefined {
-  const explicit = params.get("relay");
-  if (explicit) return explicit;
-  if (!params.get("gate")) return undefined;
-  return sameOriginRelayUrl(location);
+/** The relay a page dials: the `?relay=` its URL names (the hearth's banner prints it), or none for a pure local boot. */
+export function resolveRelayUrl(params: URLSearchParams): string | undefined {
+  return params.get("relay") || undefined;
 }
 
 /**

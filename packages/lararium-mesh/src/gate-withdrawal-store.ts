@@ -34,7 +34,7 @@
  * It compiles no registry (lar:///ha.ka.ba/lares/api/pono/registry-filter#/the-test): every event stands
  * authored by its subject's own hand, the gate reads it as of its own last learning, and nothing enumerates.
  *
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Called by the node vessel's sovereign gate (`open-node-vessel`, over `gate-memory-rows`); the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */

@@ -4,7 +4,7 @@
  * suspect.
  *
  * The relay here stands in memory, so a test can make it hostile; the live herm's relay (node, real sockets)
- * carries the same frames in `authenticated-membership-relay` and the e2e `leaf-sibling-sync`.
+ * stands in `herm-relay-port` and the e2e `leaf-sibling-sync`.
  *
  * Proven, each red beside its control:
  *   · CONTROL: two enrolled sibling leaves, no listening vessel, sync a doc; each names the other's device key;

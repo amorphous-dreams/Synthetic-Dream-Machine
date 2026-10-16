@@ -105,12 +105,11 @@ export function hearthCrossingOf(at: {
   readonly hearthGatePubKey: string | null | undefined;
   readonly holdsDeviceEdge:  boolean;
   readonly hearthCanonDocs:  unknown;
-  readonly relayGatePubKey:  string | null | undefined;
   readonly nexusPubkey:      string;
 }): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.relayGatePubKey) return { ownHearth, hearthCanon, gate: null };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
   return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
 }

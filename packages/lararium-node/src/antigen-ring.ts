@@ -62,7 +62,7 @@ export interface AntigenRingHolder {
  * Stand the antigen ring holder. Constructs the ring SYNCHRONOUSLY (empty Kapae'd set, live presenterNym)
  * so the sharePolicy has a valid ring at once; then resolves the antigen board doc + does the first fold
  * asynchronously (a cold board denies nobody, correctly). `nexusPubkey` is the node's own gate key (its
- * Nexus key — the same key browsers pass as relayGatePubKey). `sealHome` sites the charter doc authority home.
+ * Nexus key — the island its admitted browser leaves resolve). `sealHome` sites the charter doc authority home.
  */
 export function makeAntigenRingHolder(opts: {
   repo:              Repo;

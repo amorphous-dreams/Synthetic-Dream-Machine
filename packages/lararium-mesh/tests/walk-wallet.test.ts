@@ -15,7 +15,7 @@ import {
   type HostingEpoch, type HostingAct,
 } from "../src/hosting.js";
 import { walkOver, popInvite, HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND, type WalkRecord, type WalkStore } from "../src/walk-client.js";
-import type { LarSessionMsg, LeafIdentity } from "../src/auth-wire.js";
+import type { LarSessionMsg, LeafIdentity } from "../src/leaf-presentation.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32);

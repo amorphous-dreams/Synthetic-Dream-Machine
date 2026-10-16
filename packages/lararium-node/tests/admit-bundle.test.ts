@@ -82,15 +82,13 @@ const bundleText = (b: AdmitBundle, pin?: GateBundlePin): string => JSON.stringi
 describe("the carried admit — take, keep, and present at the issuing hearth alone", () => {
   let root: string;
   let prior: string | undefined;
-  let priorGate: string | undefined;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-bundle-"));
-    prior = process.env["LAR_ROOT"]; priorGate = process.env["LAR_JOIN_GATE"];
-    process.env["LAR_ROOT"] = root; delete process.env["LAR_JOIN_GATE"];
+    prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
   });
   afterEach(() => {
     if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    if (priorGate !== undefined) process.env["LAR_JOIN_GATE"] = priorGate;
     rmSync(root, { recursive: true, force: true });
   });
 

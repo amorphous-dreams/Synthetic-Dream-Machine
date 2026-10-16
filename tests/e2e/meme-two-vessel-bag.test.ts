@@ -12,7 +12,7 @@
  *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
  *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
- *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
+ *   ⑥ B stands dialing A                                  the pin `fleet join land` wrote (sync url · gate pin)
  *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get --bag lares`
  *   ⑧ B edits, promotes; A reads the edit back            `meme put --recipe lares --base` · `act MOVE` · `meme get --bag lares`
  *   ⑨ the later grant lands as a RECORD on the PersonaGroup plane; B's kit takes the seat by its own act
@@ -90,7 +90,7 @@ let draftA = "";
 describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★", () => {
   beforeAll(async () => {
     // The joinee rite — one door in the harness (A founds · B mints under its own root · A signs · B founds
-    // by the payload · B dials A by env). ⑤ lands the meme on A before B stands.
+    // by the payload · B dials A by its pin). ⑤ lands the meme on A before B stands.
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));

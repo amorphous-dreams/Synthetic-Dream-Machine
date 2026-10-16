@@ -1,22 +1,18 @@
 /**
- * auth-wire — what survives of the retired pre-sync handshake: the shapes a presentation is read in, the session
- * message a sealed channel carries, the bare Ed25519 helpers and the light leaf identity.
+ * leaf-presentation — the shapes a dial presents and carries: the presentation slot a sealed first flight holds
+ * (an admit with its lineage, a hosting grant, or an invite token being redeemed), the session message a sealed
+ * channel's `session` frame carries, and the light leaf identity a leaf dials with.
  *
- * THE HANDSHAKE IS GONE. The challenge, the auth and auth-ok frames, the V3 proof, the leaf proof over a socket's
- * nonce and the gate that spoke them retired at the socket cutover (`face-dial`, `face-gate`: a Noise IK first
- * flight, a signed finish and a signed verdict). Nothing here proves a socket; possession is the gate's, and
- * `tests/gate-cutover-reach.test.ts` (NO_OLD_WIRE_PRODUCTION_CALLER) reads red if a source speaks one frame of it again.
+ * Nothing here proves a socket. Possession is the gate's (`face-dial`, `face-gate`: a Noise IK first flight, a signed
+ * finish and a signed verdict); these are shapes, read structurally, and every arm grants nothing on arrival.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/auth-wire
+ * Meme: lar:///ha.ka.ba/lares/api/pono/face-proof
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { hex } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import { isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
 import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
 import { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
-import { verifyEd25519 } from "./ed25519-door.js";
 
 /**
  * PresentedAdmit — the subject's own quorum-signed carriage ADMIT with the admit's causal LINEAGE: the counted
@@ -135,21 +131,6 @@ export function isLarSessionMsg(v: unknown): v is LarSessionMsg {
 
 export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
   return { type: "lar:session", kind, body };
-}
-
-/** A bare-Ed25519 signer (32-byte seed → `sign(bytes)=>hex`) for the light leaf-identity path: no keyhive. */
-export function ed25519SignerFromSeed(seed: Uint8Array): (bytes: Uint8Array) => Promise<string> {
-  return async (bytes) => hex(await ed25519.signAsync(bytes, seed));
-}
-
-/** The verifying-key hex a 32-byte seed derives — the pair of `ed25519SignerFromSeed`. */
-export async function ed25519VerifyingKeyFromSeed(seed: Uint8Array): Promise<string> {
-  return hex(await ed25519.getPublicKeyAsync(seed));
-}
-
-/** Verify a hex Ed25519 signature over `bytes` under a hex verifying key. Malformed input reads false, never throws. */
-export async function ed25519VerifyHex(sigHex: string, bytes: Uint8Array, verifyingKeyHex: string): Promise<boolean> {
-  try { return verifyEd25519(sigHex, bytes, verifyingKeyHex); } catch { return false; }
 }
 
 /**

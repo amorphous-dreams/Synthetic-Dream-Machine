@@ -57,7 +57,7 @@ describe("realm-bag — the realm's name", () => {
     expect(nexusAidOf(null)).toBeNull();
     expect(nexusAidOf({ ...emptyFoundingCharterDoc(), threshold: 2 })).toBeNull();
   });
-  test("a NON-NULL bare sealEpochCid with NO sealLineage never roots a realm (the retired legacy inception path)", () => {
+  test("a NON-NULL bare sealEpochCid with NO sealLineage never roots a realm (no bare inception path roots)", () => {
     const legacy: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 2, sealEpochCid: "legacy-bare-epoch" };
     expect(nexusAidOf(legacy)).toBeNull();
   });

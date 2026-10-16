@@ -4,13 +4,11 @@
  * `verifyEdgeAgainstPersonaKel` is the continuity anchor: it walks a persona-KEL to its CURRENT
  * authoritative op-key and verifies a device-delegation edge against THAT head, so an edge signed by a
  * superseded key rejects. Three doors run it — the boot Binding Gate, the face-grant record's verifier,
- * and the sibling channel's edge door (`leaf-peer-proof`, in mesh). The daemon's old live admission path
- * (`verifyPeer` off a relayed V3 proof) is retired with the old wire: an edge is no longer admitted there, so
- * it is no longer a door. THE LAW STANDS: every door that admits on an edge walks the KEL to its head.
+ * and the sibling channel's edge door (`leaf-peer-proof`, in mesh). The daemon admits no edge of its own; the
+ * sealed gate admits a face. THE LAW STANDS: every door that admits on an edge walks the KEL to its head.
  *
- * It shipped as a pure core BEFORE those doors called it, and its own doc-comment said so ("NOT yet wired
- * into the live gate"). The wiring landed; the sentence did not move. A reader — human or agent — auditing
- * the admission path would have read that comment and concluded a security check was an unreached stub.
+ * A doc-comment that calls the walk "not yet wired into the live gate" while its doors call it sends a reader —
+ * human or agent — auditing the admission path to conclude a security check is an unreached stub.
  *
  * A comment cannot be typechecked, so this weld is what keeps it true: the doors must keep calling the
  * walk, and the walk's own documentation must not call itself unwired. The two halves fail together.
@@ -28,7 +26,7 @@ const DOORS = [
   "boot-daemon-keyhive.ts",      // the Binding Gate a vessel passes at boot
   "face-grant-record.ts",        // the grant record's own verifier
 ] as const;
-/** The mesh door that admits on an edge now: two siblings prove their device keys (it replaces `verifyPeer`). */
+/** The mesh door that admits on an edge: two siblings prove their device keys. */
 const MESH_DOORS = ["leaf-peer-proof.ts"] as const;
 
 describe("the continuity anchor's wiring", () => {
@@ -54,7 +52,7 @@ describe("the continuity anchor's wiring", () => {
   test("CONTROL — the assertions are not vacuous: the symbol and the doors are real", () => {
     expect(MESH_SRC("persona-kel.ts")).toContain("export async function verifyEdgeAgainstPersonaKel");
     expect(DOORS.length + MESH_DOORS.length).toBe(3);
-    // The retired door stays retired: no edge is admitted in the daemon behavior, so nothing there may name the walk.
+    // The daemon behavior admits no edge, so nothing there names the walk.
     expect(KEYHIVE_SRC("operator-daemon-behavior.ts")).not.toContain("verifyAuthProof");
     // A door that stopped importing it would still "contain" the call in a comment; require the import.
     for (const door of DOORS) {

@@ -12,7 +12,7 @@
  *       digest as a successor, reads `invalid` whatever signs it; another Nexus reads `invalid`.
  */
 import { describe, expect, test } from "vitest";
-import { ed25519SignerFromSeed } from "../src/auth-wire.js";
+import { ed25519SignerFromSeed } from "../src/ed25519-door.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { sha256BytesSync, utf8Bytes } from "../src/crypto.js";
 import {

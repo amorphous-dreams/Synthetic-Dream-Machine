@@ -46,7 +46,7 @@ import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, webGetRandomValues } from "./crypto.js";
 import { LEAF_PEER_HINT_INFO, LEAF_PEER_PROOF_DOMAIN, LEAF_PEER_SEAL_INFO, LEAF_SESSION_INFO } from "./domains.js";
-import { ed25519VerifyHex } from "./auth-wire.js";
+import { ed25519VerifyHex } from "./ed25519-door.js";
 import { sealToRecipient, openFromSender, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "./persona-kel.js";
 import type { GroupSecret } from "./persona-group-secret.js";

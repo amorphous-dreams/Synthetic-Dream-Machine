@@ -6,7 +6,6 @@
  *   · the Binding Gate at boot — on the log and in its result (`boot-daemon-keyhive`, pinned in the node suite);
  *   · the face-grant verifier — in its verdict (`face-grant-record.test`);
  *   · `kelWalkNote` (`operator-daemon-behavior`) — the note any admission verdict carries, pinned here by behaviour.
- *     (The in-worker `verifyPeer` door retired with the old wire.)
  */
 import { describe, test, expect } from "vitest";
 import {

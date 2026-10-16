@@ -15,8 +15,9 @@
  *     signed causal event; the index holds no such door, so a held key answers its first pin until the
  *     index is dropped. There is no `replace`, by design.
  *
- * Pure: no I/O, no clock, no timer, no randomness. Stands specified in code until the cutover swaps it into
- * `AdmitCarriage` (today one HEX64 string); the package barrel names it for the slices that consume it.
+ * Pure: no I/O, no clock, no timer, no randomness. Called by the admit carriage (`carriage-registry`, whose
+ * `AdmitCarriage` carries the whole pin), `fleet-join`, `held-nexus-root`, the carriage pull, the oracle reader and
+ * the browser adapter; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */

@@ -416,7 +416,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // The answer notes the certificates it issued beside the joining device; the refold it sets off resweeps a standing
     // vessel's gates, and each sweep reads that issued book again, so the gate binds the device's face-scoped key.
     "fleet-join-answer": (args) => answer("fleet-join-answer", async () => {
-      const issued = await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...joinFace(args) });
+      const issued = await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args) });
       await awaitOnRolled(deps.onRolled?.());
       return { answer: issued };
     }),

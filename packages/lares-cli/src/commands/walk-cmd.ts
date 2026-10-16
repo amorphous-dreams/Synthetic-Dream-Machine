@@ -93,7 +93,7 @@ async function walkTake(args: ParsedArgs): Promise<number> {
         console.log(r["dialing"] === "now"
           ? "  the standing dial re-presents on it now"
           : "  this vessel's hearth dial walks in on it when the vessel next stands (`lares vessel stand`)");
-        console.log("  note: the walker route ships SHUT by name (house ruling \"Routes at the cutover\"): the invite is kept, but no hearth gate seats this walk until a live grant reader opens the route.");
+        console.log("  note: the walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats this walk until a live grant reader opens the route.");
       },
     });
     return 0;

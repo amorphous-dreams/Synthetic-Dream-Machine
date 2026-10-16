@@ -2,7 +2,7 @@
  * sibling-channel-stand.test — `standSiblingChannel`, the ONE composition both vessel shores call: THE SIBLING DIAL SHIPS
  * SHUT BY NAME.
  *
- * House ruling "Routes at the cutover": "Walker arms, the sibling dial and the herm membership relay ship SHUT by name ...
+ * The shut-routes house ruling (stable-founding-road #/rulings): "Walker arms, the sibling dial and the herm membership relay ship SHUT by name ...
  * a closed route grants no silent legacy authority." Never skipped to get green: a shut route's test asserts the shut.
  * The adapter's own laws (proof, sessions, rotation, degraded, tolerance) stand in mesh `sibling-channel.test.ts` over a
  * transport double; here the dial is asserted shut.
@@ -20,7 +20,7 @@ import {
   hex, ed25519SignerFromSeed, standSiblingChannel, enrolDevice, groupSecretOpenerFromSeed, dialSiblingHerm, SIBLING_ROUTE_SHUT,
   provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, type PersonaKelEvent, type SiblingRefusal,
 } from "@lararium/mesh";
-import { startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
+import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const seed = (b: number) => new Uint8Array(32).fill(b);
@@ -37,7 +37,7 @@ async function inceptionOf(): Promise<PersonaKelEvent> {
 }
 
 describe("standSiblingChannel — the sibling dial ships SHUT by name", () => {
-  const relays: AuthenticatedMembershipRelay[] = [];
+  const relays: HermRelayPort[] = [];
   const repos: Repo[] = [];
   afterEach(async () => {
     for (const r of repos.splice(0)) await r.shutdown();
@@ -59,7 +59,7 @@ describe("standSiblingChannel — the sibling dial ships SHUT by name", () => {
   }
 
   test("RED: two live herms pinned under their own gate keys see no socket; the channel says the shut as `pins` on every dial and in status", async () => {
-    const live = [await startAuthenticatedMembershipRelay(seed(1)), await startAuthenticatedMembershipRelay(seed(2))];
+    const live = [await startHermRelayPort(seed(1)), await startHermRelayPort(seed(2))];
     relays.push(...live);
     const refusals: SiblingRefusal[] = [];
     const adapter = await stand(live.map((r) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`), refusals);

@@ -40,7 +40,7 @@
  * rings, sorter and `registry.table`, and calls `server.stand({ gate, pin })`; it registers each answered path on the
  * vessel's dispatcher with `server.handleUpgrade` as the handler, or hands the server the raw `upgrade` event. What
  * reaches it afterwards is `onOpen(channel, session)`: a sealed channel and the class, face, profile and standing the
- * gate proved. No vessel key, no card and no old-wire frame crosses here.
+ * gate proved. No vessel key, no card and no proof frame crosses here.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange; train-w-launch#/slices (row C).
  */

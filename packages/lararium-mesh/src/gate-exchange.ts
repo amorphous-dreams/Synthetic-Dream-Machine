@@ -36,10 +36,11 @@
  * frame leads with one tag byte, and a presentation or an answer that outgrows one frame rides in parts.
  *
  * Pure: no key, no I/O, no clock, no timer, no randomness.
- * Stands specified in code until the socket cutover consumes it; the package barrel names it for the cutover's slices.
+ * Called by the gate (`face-gate`), the dial (`face-dial`), `place-floor-pin`, the oracle reader and both socket
+ * adapters; the package barrel names it.
  */
 import { sha256 } from "@noble/hashes/sha2.js";
-import { isPresentedAdmit } from "./auth-wire.js";
+import { isPresentedAdmit } from "./leaf-presentation.js";
 import type { CarriageEntry, PresentedLineageAct } from "./carriage-registry.js";
 import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import { CARRIAGE_ENTRY_DOMAIN, GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN, GATE_PRESENTATION_DOMAIN, GATE_VERDICT_DOMAIN } from "./domains.js";

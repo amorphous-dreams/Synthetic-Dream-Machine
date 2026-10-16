@@ -1,18 +1,18 @@
 /**
- * carriage-relay — the CARRIAGE capability as a live, registrable service: the authenticated membership relay
- * (Socket B, ciphertext envelopes) PLUS the DHT-free `cid → holders` bag-tracker, composed into one startable unit.
+ * carriage-relay — the CARRIAGE capability as a live, registrable service: the herm's relay port (persona-KEL
+ * drops over plain HTTP; every WebSocket upgrade meets silence) PLUS the DHT-free `cid → holders` bag-tracker,
+ * composed into one startable unit.
  *
- * WHAT IT CARRIES, WHAT IT NEVER HOLDS. The carriage relay moves opaque ciphertext envelopes (want-block / cas-block
- * / cas-mu) that ride verify-cap only, stamps each envelope's `from` with the sender's PROVEN Ed25519 key, and holds
- * the bag-tracker HINT index (cids + holder handles, secret-free). It carries NO read-cap, reads NO plaintext, keeps
+ * WHAT IT HOLDS, WHAT IT NEVER HOLDS. The port carries no envelope, so the tracker's announce sniff hears nothing and
+ * the HINT index (cids + holder handles, secret-free) stands empty. It carries NO read-cap, reads NO plaintext, keeps
  * NO charter / content key / roster — a compromised carriage leaks nothing (carry ⊥ read ⊥ contract). It stands from a
  * 32-byte gate seed + a bound port and nothing else, so a bare hearth stands one with a single call.
  *
- * TWO SOCKETS STAY TWO. This carriage (Socket B) SEPARATES from the Automerge `/ws` doc relay (Socket A, cleartext
+ * TWO PORTS STAY TWO. This relay port SEPARATES from the Automerge `/ws` doc relay (Socket A, cleartext
  * CRDT behind the face gate) — cleartext CRDT never routes through here, so carry ⊥ read holds at the transport.
  *
- * ISOMORPHISM BY COMPOSITION. It re-uses `startAuthenticatedMembershipRelay` (the proven Ed25519 proof-of-possession
- * transport) and `makeBagTracker` (the discovery index) VERBATIM — it re-derives no gate, no crypto, no index.
+ * ISOMORPHISM BY COMPOSITION. It re-uses `startHermRelayPort` (the herm's drop port) and `makeBagTracker` (the
+ * discovery index) VERBATIM — it re-derives no gate, no crypto, no index.
  *
  * NO-GLOBAL-NOW: the bag-tracker reads "holders as the relay last heard", never a global truth; a member re-verifies
  * every fetched byte itself (`verifyCiphertextCid`), so the tracker stays a hint, never an authority on the bytes.
@@ -25,9 +25,9 @@ import { createHmac } from "node:crypto";
 import * as ed from "@noble/ed25519";
 import { hex, type MembershipEnvelope } from "@lararium/mesh";
 import {
-  startAuthenticatedMembershipRelay,
-  type AuthenticatedMembershipRelay, type RelayAnnounceObserver,
-} from "./authenticated-membership-relay.js";
+  startHermRelayPort,
+  type HermRelayPort, type RelayAnnounceObserver,
+} from "./herm-relay-port.js";
 import { CAS_HAVE } from "./cas-wire.js";
 import { makeBagTracker, type BagTracker } from "./bag-tracker.js";
 
@@ -58,16 +58,15 @@ const RELAY_GATE_DOMAIN = RELAY_GATE_INFO;
  * fresh random per boot). The one shore the boot's relay-standing gate reads for its seed.
  *
  * ── WHY A DERIVATION AND NOT THE SEED ITSELF ────────────────────────────────────────────────────
- * This once returned `vesselSeed` unchanged, so a Herm's relay gate key WAS its vessel identity key — the same
- * Ed25519 pair signing device delegations and board writes, published to every hearth that dials the crossroads.
- * Nothing leaked (Ed25519 over domain-separated messages is safe under key reuse), and two costs still landed:
+ * Returning `vesselSeed` unchanged would make a Herm's relay gate key its vessel identity key — the same Ed25519
+ * pair signing device delegations and board writes, published to every hearth that dials the crossroads. Nothing
+ * would leak (Ed25519 over domain-separated messages is safe under key reuse), and two costs would still land:
  *
- *   · IT LINKED TWO TRUST DOMAINS PERMANENTLY. The transport identity and the vessel identity became one
+ *   · IT WOULD LINK TWO TRUST DOMAINS PERMANENTLY. The transport identity and the vessel identity would be one
  *     correlatable key, which is exactly the join the veil model spends its whole design preventing.
- *   · IT BROKE THE HOUSE'S OWN CRYPTO RULE. One key, two purposes, no `info` between them.
+ *   · IT WOULD BREAK THE HOUSE'S OWN CRYPTO RULE. One key, two purposes, no `info` between them.
  *
- * The prose already claimed the cure — the runbook says the gate key "derives from this Herm's OWN identity" —
- * so the document described a derivation the code never performed. The derivation now matches the words.
+ * The runbook says the gate key "derives from this Herm's OWN identity", and the derivation matches the words.
  *
  * HMAC-SHA256 yields exactly the 32 bytes an Ed25519 seed takes, and the same domain-tagged-MAC shape
  * `persona-scope` uses one level down, so the house carries ONE separation idiom rather than a second one.
@@ -100,7 +99,7 @@ export function startCarriageRelay(cfg: {
     // The RE-SHARE sniff: a PROVEN peer's `cas-have(cid)` announce lands `cid → holder` in the bag-tracker FROM
     // THE WIRE (the leg that stood empty). A departure prunes every cid that holder announced. The tracker stays
     // a HINT — a member re-verifies `verifyCiphertextCid` on the fetched bytes, so a stale/hostile hint is caught.
-    const relay: AuthenticatedMembershipRelay = await startAuthenticatedMembershipRelay(cfg.gateSeed, cfg.port ?? 0, {
+    const relay: HermRelayPort = await startHermRelayPort(cfg.gateSeed, cfg.port ?? 0, {
       onEnvelope: (env: MembershipEnvelope) => {
         if (env.kind !== CAS_HAVE) return;                                  // only the announce leg feeds discovery
         const cid = typeof (env.payload as { cid?: unknown })?.cid === "string" ? (env.payload as { cid: string }).cid : "";

@@ -101,7 +101,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(parsed).toEqual(fact);
   });
 
-  test("EVERGREEN: a fact that claims content with no digest refuses by name — parseReceiptFact returns null, never a legacy-shaped optional absence", () => {
+  test("EVERGREEN: a fact that claims content with no digest refuses by name — parseReceiptFact returns null, never an optional absence", () => {
     // CONTROL: the identical field bag with `state: "abandoned"` instead parses fine (proven above),
     // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general. `evicted`
     // carries a cancelled id's absence onward (its own block below).

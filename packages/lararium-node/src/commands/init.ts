@@ -273,8 +273,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
     // the edge, so nothing waits on a later ceremony here.
-    // THE PIN NAMES THE DIAL: the hearth's sync url + gate key land beside the sentinel ids, so the boot dials
-    // the hearth with no `LAR_JOIN_*` set by hand (hearth-dial-pin.ts). A payload naming no dial pins none.
+    // THE PIN NAMES THE DIAL: the hearth's sync url + gate key, and the document the admit named, land beside the
+    // sentinel ids, so the boot dials the hearth by that pin (hearth-dial-pin.ts). A payload naming no dial pins none.
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
@@ -282,7 +282,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
         kind:  payload.hearthIslandKind,
         scope: payload.hearthIslandScope,
-      }, payload.hearthGatePin),
+      }, payload.hearthGatePin, payload.islandDocUrl),
     }), null, 2), "utf8");
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.

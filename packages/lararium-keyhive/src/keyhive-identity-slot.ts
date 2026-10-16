@@ -39,14 +39,13 @@
  *     does not cryptographically bind the *presenter* to the token. Presenter↔
  *     token binding is the WASM sync-time membership proof, not this shore.
  *
- * H6 (gp25 iteration 4) — the §2c epoch fence rode a BARE JSON field. `KeyhiveTokenPayload` carried no
- * signature over `boundEpoch` (or anything), so a presenter could edit its own `boundEpoch` upward after
- * the lease rolled and `verifyDelegation` would clear it — proven live over a real WASM provider under real,
- * set-forward and set-back clocks (every causal refusal held; the forged-epoch row alone passed). The fence
- * is now SIGNED: `tokenSeal` (the vessel device key) signs the canonical fenced fields at mint time, and
- * verify checks that signature BEFORE trusting `boundEpoch` at all. A slot with no `tokenSeal` mints
- * `boundEpoch: null` — fail-closed, the same shape as today's no-`leaseEpochOf` path — because an unsealed
- * epoch is exactly as forgeable as no epoch at all; `leaseEpochOf` alone (no seal) no longer fences anything.
+ * H6 (gp25 iteration 4) — the §2c epoch fence is SIGNED. A fence on a BARE JSON field lets a presenter
+ * edit its own `boundEpoch` upward after the lease rolls, and `verifyDelegation` would clear it — measured
+ * live over a real WASM provider under real, set-forward and set-back clocks. So `tokenSeal` (the vessel
+ * device key) signs the canonical fenced fields at mint time, and verify checks that signature BEFORE
+ * trusting `boundEpoch` at all. A slot with no `tokenSeal` mints `boundEpoch: null` — fail-closed, the
+ * same shape as the no-`leaseEpochOf` path — because an unsealed
+ * epoch is exactly as forgeable as no epoch at all; `leaseEpochOf` alone (no seal) fences nothing.
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/identity-slot
  */
@@ -243,8 +242,7 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
    * ORDER (§2c/H6, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the
    * real revocation-aware barrier), (4) the SEAL GATE (H6) — a non-null `boundEpoch` must carry a signature
    * THIS slot can check, over the exact canonical fields a forger could otherwise edit freely, (5) the
-   * clockless EPOCH FENCE. The wall-clock expiry guard (`gate-retire-keyhive-expiry` patch) is GONE, and the
-   * field it read (`expiresAtMs`) with it (evergreen sweep, 2026-10-11): the seal gate + fence alone decide.
+   * clockless EPOCH FENCE. No wall-clock guard and no expiry field stand: the seal gate + fence alone decide.
    * Both sit AFTER revocation so a presenter already denied by
    * `provider.verify` reads that refusal, never a seal/fence refusal that would read as "forged" or "the
    * lease rolled" when the real cause is "never had the cap" / "since revoked".

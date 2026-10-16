@@ -26,8 +26,8 @@ const admitLine = async (page) => ((await page.locator("#admit-status").textCont
 /** Join the node's face through the page's paste door, and report what the page did with the answer. */
 async function join(page) {
   const params = new URL(URL_).searchParams;
-  if (!params.has("relay") || !params.get("gate")) {
-    console.error(`JoinNeedsCrossing: LARES_URL must pin ?relay=<ws url>&gate=<gate key> (browser-ci.sh info names both); got ${URL_}`);
+  if (!params.get("relay")) {
+    console.error(`JoinNeedsCrossing: LARES_URL must name ?relay=<ws url> (the hearth's banner prints it); got ${URL_}`);
     return 1;
   }
   const key = (await page.locator("#vessel-key").innerText()).trim();

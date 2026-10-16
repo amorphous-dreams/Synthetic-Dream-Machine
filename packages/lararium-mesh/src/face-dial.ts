@@ -28,7 +28,8 @@
  * `incomplete` from a gate behind it, and presents again with the whole line.
  *
  * Platform-blind: a node and a browser both dial through it, each over its own socket.
- * Stands specified in code until the socket cutover wires it; the package barrel names it for the cutover's slices.
+ * Called by the node's sovereign dial (`open-node-vessel`, `nexus-client-dial`), the browser adapter
+ * (`lar-ws-client-adapter`), the oracle reader and the carriage pull; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */

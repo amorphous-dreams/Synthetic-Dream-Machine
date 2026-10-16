@@ -8,11 +8,10 @@
  * breathes both ways (`self-slot-share.ts`, `selfSlotShareDecision`).
  *
  * INERT UNTIL CONFIGURED. `maybeStartNexusClientDial` returns null when no sync URL / gate key rides the
- * config — NO adapter mounts and NO socket opens (off by default). The caller gates the whole thing, the same discipline the carriage serve-loop follows.
+ * config — NO adapter mounts and NO socket opens (off by default). The caller gates the whole thing.
  *
  * ONE SOCKET, ITS OWN. This client dial rides the Automerge `/ws` relay (Socket A) — the SAME transport the
- * server adapter answers on, cleartext CRDT behind the gate. It NEVER touches the carriage relay (Socket B,
- * ciphertext cad bodies); the two stay two.
+ * server adapter answers on, cleartext CRDT behind the gate. It NEVER touches the herm relay port; the two stay two.
  *
  * REAL CRYPTO, NEVER FORGED. The dial presents the face's own chain through `dialFaceGate`: a Noise IK flight to the
  * gate's PINNED transport key, the face's certificates, the session's signed finish, and the gate's signed verdict
@@ -24,12 +23,10 @@
  * only the docs a live query already registered — so a `find` that settled `unavailable` during a partition
  * leaves nothing to re-offer and that document never crosses again. `armDialReconnect` counts the adapter's
  * `peer-candidate` crossings: the first is the connect, every one after it is a RETURN, and a return re-folds
- * through `onReconnect` and re-asks `docUrl`. Socket B has carried this since `carriage-serve-loop.ts`'s
- * `attempt > 1`; Socket A carries it here.
+ * through `onReconnect` and re-asks `docUrl`.
  *
  * CLEAN LIFECYCLE. `stop()` stands the re-arm down and disconnects the client adapter (standing down its
- * reconnect loop), so no socket leaks past the vessel's close — folded into the vessel teardown beside the
- * carriage loop's `stop()`.
+ * reconnect loop), so no socket leaks past the vessel's close — folded into the vessel teardown.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/nexus-client-dial
  */
@@ -73,8 +70,7 @@ export interface NexusClientDialConfig {
   readonly docUrl?:    string | null;
   /** A log sink for the dial (defaults to a no-op). */
   readonly onLog?:     (line: string) => void;
-  /** THE RETURN. Fires on every re-connect PAST THE FIRST — the counterpart Socket B already stands
-   *  (`carriage-serve-loop.ts` `attempt > 1`). A caller re-folds the boards a partition staled and
+  /** THE RETURN. Fires on every re-connect PAST THE FIRST. A caller re-folds the boards a partition staled and
    *  re-reads the Repo's cached share verdicts here; a re-ask of `docUrl` follows it regardless. */
   readonly onReconnect?: () => Promise<void> | void;
 }
@@ -160,6 +156,7 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
   // anergizes at the gate), so the find just never settles — never a crash. Fire-and-forget with a caught
   // rejection so a down peer / an un-admitted key never blocks or crashes the boot.
   if (cfg.docUrl) {
+    log(`nexus dial-out asks peer doc ${cfg.docUrl}`);
     void cfg.repo.find(cfg.docUrl as AutomergeUrl).then(
       () => log(`nexus dial-out synced peer doc ${cfg.docUrl}`),
       (err: unknown) => log(`nexus dial-out could not resolve peer doc ${cfg.docUrl}: ${String(err)}`),

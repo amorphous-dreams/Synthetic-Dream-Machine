@@ -249,8 +249,7 @@ export interface VesselIslandPoolCoreOptions {
   /**
    * R3/R4 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
    * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). REQUIRED:
-   * the pre-R3 flat `pluginCids` floor (every island getting the SAME vessel-wide list) has
-   * retired on BOTH platforms — node supplies `resolveNodeIslandPluginCids`, the browser supplies
+   * no flat vessel-wide `pluginCids` floor stands on either platform — node supplies `resolveNodeIslandPluginCids`, the browser supplies
    * `resolveBrowserIslandPluginCids`, and the constructor refuses to build a pool with neither, so
    * no blanket-list path can survive by omission. Called once per activation, BEFORE the worker
    * spawns; a refusal here throws, so a wiki whose recipe names an unresolvable, colliding, or
@@ -348,7 +347,7 @@ export class VesselIslandPoolCore {
     if (!opts.resolvePluginCids) {
       throw new Error(
         "[vessel-pool] resolvePluginCids is required — every mount resolves its OWN recipe's " +
-        "plugin selection; the flat vessel-wide pluginCids floor has retired on every platform",
+        "plugin selection; no flat vessel-wide pluginCids floor stands on any platform",
       );
     }
     this._host            = opts.host;

@@ -121,7 +121,7 @@ describe("Pronaos adapter — prepared Herm/Lararium projection", () => {
   test("serves the page for a crossing link whose query carries a percent-encoded URL", async () => {
     const origin = await start();
     const relay = encodeURIComponent("ws://hearth.example:4321/ws?x=1%2e");
-    const crossing = await fetch(`${origin}/?relay=${relay}&gate=${"a".repeat(64)}`);
+    const crossing = await fetch(`${origin}/?relay=${relay}&mesh=${"a".repeat(64)}`);
     expect(crossing.status, "an encoded URL in the query drew the traversal refusal").toBe(200);
     expect(await crossing.text()).toBe("<!doctype html><title>web</title>");
     // CONTROL — the same spellings in the PATH stay refused, with or without a query behind them.

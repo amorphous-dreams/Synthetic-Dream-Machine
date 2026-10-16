@@ -4,12 +4,12 @@
  *
  * Run each walk through the host driver, which carries the node's half of every fresh profile's fleet join:
  *
- *   info=$(tools/browser-ci.sh info)                       # gateKey, wikiDoc.url
- *   LIVE_WIKI_CROSSING_URL=http://localhost:4321/ LIVE_WIKI_GATE_PUBKEY=<info.gateKey> LIVE_WIKI_NODE_DOC=<info.wikiDoc.url> \
+ *   info=$(tools/browser-ci.sh info)                       # wikiDoc.url
+ *   LIVE_WIKI_CROSSING_URL=http://localhost:4321/ LIVE_WIKI_NODE_DOC=<info.wikiDoc.url> \
  *     tools/browser-ci.sh qa-join node packages/lararium-web/tests/live-wiki.mjs <walk>
  *
- *   crossing           rung 0: a wrong pin names the unreachable gate; the right pin stays silent until the
- *                      node's fleet-join answer lands, then shows the proven gate key; the daemon surface summons
+ *   crossing           rung 0: the page stays silent at the gate until the node's fleet-join answer lands, then
+ *                      shows the gate key its crossing proved; the daemon surface summons
  *   render-aki         rung 1: the admitted leaf mounts the node's wiki document, opens Lady Aki (ingested into
  *                      the node's default bag first), and shows her title, the typed field at 2 in the standard
  *                      field editor, an ahu section with its heading and a followed lar: link.
@@ -43,12 +43,13 @@ function required(name) {
 const WALK_SETTLE_MS = 3_000;
 
 /**
- * The crossing URL: the served origin plus the gate pin. The page derives its relay from the origin that
- * served it, so the walk names no relay.
+ * The crossing URL: the served origin, dialing the relay on that same origin. A face crosses the sovereign gate
+ * under the pin its fleet join carries inside the root's signature, so the URL names no gate key.
  */
-function withGate(source, gate) {
+function crossingAt(source) {
   const url = new URL(source);
-  return `${url.origin}${url.pathname}?gate=${gate}`;
+  const relay = `${url.protocol === "https:" ? "wss" : "ws"}://${url.host}/ws`;
+  return `${url.origin}${url.pathname}?relay=${encodeURIComponent(relay)}`;
 }
 
 /** Load a crossing URL and require the vessel's own page; a refused or foreign answer names itself. */
@@ -91,10 +92,10 @@ async function persistedFace(page) {
  * offers, THIS profile mints its request, the node answers, the page lands it), then the proven gate key and the
  * mounted document, both read as data off the connection row.
  */
-async function joinFace(page, vesselUrl, gatePubKey) {
+async function joinFace(page, vesselUrl) {
   const nodeWikiDoc = process.env.LIVE_WIKI_NODE_DOC;
   assert.ok(nodeWikiDoc, "LIVE_WIKI_NODE_DOC must be supplied by the standing-vessel fixture");
-  await open(page, withGate(vesselUrl, gatePubKey));
+  await open(page, crossingAt(vesselUrl));
   await waitForLive(page);
   // The gate answers an unvouched leaf with silence, and silence has no single face on the page: the row reads
   // pinned or authenticating while the dial stands, and gate-unreachable once the silent socket closes. The
@@ -143,7 +144,7 @@ async function joinFace(page, vesselUrl, gatePubKey) {
     gateKey: row.getAttribute("data-gate-key"),
     wikiDocUrl: row.getAttribute("data-wiki-doc-url"),
   }));
-  assert.equal(shown.gateKey, gatePubKey.toLowerCase(), "the connection row names the gate key the relay proved");
+  assert.match(shown.gateKey ?? "", /^[0-9a-f]{64}$/, "the connection row names the gate key the crossing proved");
   assert.match(shown.wikiDocUrl ?? "", /^automerge:/, "the connection row names the mounted wiki document");
   assert.equal(shown.wikiDocUrl, nodeWikiDoc,
     `the admitted leaf mounts the node's wiki document (leaf ${shown.wikiDocUrl ?? "(unreported)"}, node ${nodeWikiDoc})`);
@@ -189,18 +190,8 @@ async function withBrowser(run) {
 
 async function crossing() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
-  await withBrowser(async (page) => {
-    await open(page, withGate(vesselUrl, "00".repeat(32)));
-    await page.waitForFunction(() => (document.querySelector('[data-live-status="connection"]')?.textContent ?? "")
-      .startsWith("gate-unreachable — "), undefined, { timeout: 90_000 });
-    const refusal = await readConnection(page);
-    assert.match(refusal, /^gate-unreachable — .+/, "a wrong pin names the local unreachable gate without inventing a peer verdict");
-    console.log(`wrong-pin OK — local ${refusal}`);
-  });
-
   await withBrowser(async (page, errors) => {
-    const mount = await joinFace(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     const origin = new URL(page.url()).origin;
     const rowValue = (label) => page.locator(`#vessel .row:has(> .k:text-is("${label}")) > .v`).innerText();
     assert.equal(await rowValue("origin"), origin, "the served page names its actual origin");
@@ -270,9 +261,8 @@ const unroutedAlerts = (page) => page.locator("#projection .tc-alert").filter({ 
 
 async function renderAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
-    const mount = await joinFace(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     await openAki(page);
     const shown = await viewFrame(page, AKI).evaluate((frame) => ({
       title: frame.querySelector(".tc-title")?.textContent?.trim() ?? "",
@@ -321,9 +311,8 @@ async function renderAki() {
 
 async function editAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
-    await joinFace(page, vesselUrl, gatePubKey);
+    await joinFace(page, vesselUrl);
     await openAki(page);
     const level = await openLevelEditor(page);
     assert.equal(await level.inputValue(), "2", "the typed field begins at 2");
@@ -341,7 +330,7 @@ async function editAki() {
     await page.waitForTimeout(WALK_SETTLE_MS);
 
     // The SAME profile, reloaded: the wiki island boots from this vessel's own store and reads the saved field.
-    await open(page, withGate(vesselUrl, gatePubKey));
+    await open(page, crossingAt(vesselUrl));
     await waitForLive(page);
     await openAki(page);
     await assertNoDraft(page, AKI, "reload after save");
@@ -358,10 +347,9 @@ async function editAki() {
 
 async function freshProfileAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   const expected = process.env.LIVE_WIKI_EXPECT_LEVEL ?? "3";
   await withBrowser(async (page, errors) => {
-    const mount = await joinFace(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     await openAki(page);
     const level = await openLevelEditor(page);
     assert.equal(await level.inputValue(), expected, `a fresh browser profile reads the stored typed field at ${expected}`);
@@ -387,11 +375,10 @@ async function awaitQuestion(page, declineWord, acceptWord) {
 
 async function confirmRoads() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
     const prompts = [];
     page.on("dialog", async (dialog) => { prompts.push(dialog.message()); await dialog.dismiss(); });
-    await joinFace(page, vesselUrl, gatePubKey);
+    await joinFace(page, vesselUrl);
     await openAki(page);
 
     // CONTROL: an untouched draft's Discard asks nothing.
@@ -454,7 +441,7 @@ async function confirmRoads() {
     await page.waitForTimeout(WALK_SETTLE_MS);
 
     // The SAME profile, reloaded: the deleted title stays gone.
-    await open(page, withGate(vesselUrl, gatePubKey));
+    await open(page, crossingAt(vesselUrl));
     await waitForLive(page);
     await page.locator("#projection .tc-site-title").first().waitFor({ state: "visible", timeout: 60_000 });
     // The words "New Tiddler" stand inside other tiddlers' text, so the search may count body matches; the

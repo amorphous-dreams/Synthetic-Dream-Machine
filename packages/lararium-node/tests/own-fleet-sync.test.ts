@@ -1,5 +1,5 @@
 /**
- * own-fleet-sync — the no-break-own-sync witness at the cutover: one face's two devices sync the face's document
+ * own-fleet-sync — the no-break-own-sync witness: one face's two devices sync the face's document
  * through the real gate, and nobody else's device reads it.
  *
  * The hearth stands as a vessel composes it: one gate from `vesselGate` (the held-root admit reader, the real

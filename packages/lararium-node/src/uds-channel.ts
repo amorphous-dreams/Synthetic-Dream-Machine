@@ -31,7 +31,7 @@
  * Auth (v1): socket perms 0600 (owner-only) gate PRESENCE — only the operator's own
  * uid opens it; the requestedBy did rides the summons for cap-derivation. A signed
  * Ed25519 proof over the socket is the federation/attenuation hardening (follow-on);
- * the WS path keeps the full V3 gate for genuine remote peers.
+ * a remote peer meets the sealed face gate on the WS path.
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
@@ -369,8 +369,7 @@ export class FactLedger {
    * (`request-id-reused-with-changed-input`), never silently re-runs under borrowed trust in the id
    * alone. `abandoned` refuses on STATE ALONE, whatever the digest says — {@link cancel} is the ONE
    * writer that records no digest (an explicit withdrawal carries no content claim to compare);
-   * every other fact this ledger ever writes carries one (early alpha, no legacy data, no shim —
-   * absence never reads as "unverifiable", only as "cancelled"). A TORN fact (a receipt record
+   * every other fact this ledger ever writes carries one (absence never reads as "unverifiable", only as "cancelled"). A TORN fact (a receipt record
    * under this id that {@link parseReceiptFact} rejects) refuses `receipt-fact-torn` by name,
    * ahead of every other check, and is never written over — this ledger does not guess what a
    * prior process meant to record.
@@ -425,7 +424,7 @@ export class FactLedger {
    * fact already on record is promoted to its terminal state (seq unchanged — observation never
    * mints a new attempt); an outcome with no prior fact at all (the non-UDS path) mints one fresh,
    * seeded with the digest the outcome itself stamped (digest-on-outcome, D1 commit 2 — every
-   * outcome this early-alpha vessel ever writes carries one; no legacy data, no shim). A prior fact
+   * outcome this vessel ever writes carries one). A prior fact
    * that reached here with NO digest (the one `cancel`-abandoned shape) borrows the outcome's own
    * digest to promote, if the outcome carries one — a worker that still ran despite the withdrawal
    * is a real content claim, never fabricated. With neither side holding one, this observation is

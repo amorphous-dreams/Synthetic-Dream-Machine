@@ -10,22 +10,21 @@
  *   ④ the POINTER crosses to C (`wiki which`)
  *   ⑤ MEASURE: what the Herm's `/cas/<cid>` answers while A still stands
  *   ⑥ A goes DARK (`stopDaemonOnly` — A's staged root only; the home vessel is never touched)
- *   ★ ⑦ THE SHUT: with A dark and the Herm's dial SHUT by name (`herm-relay-shut`), the Herm holds neither pointer nor
+ *   ★ ⑦ THE SHUT: with A dark and a Herm that dials no hearth (`a herm dials no hearth`), the Herm holds neither pointer nor
  *       bytes, so its `/cas/<cid>` stays closed and C's fetch reads `held:false`. (The re-share itself — the fleet leg
  *       misses, the Herm leg `hermCasTransit` answers, the sha256 verifies, the bytes land in C's `cid/` — waits on a
  *       gate-native herm route; the vector it owes is quoted at ⑦.)
  *
- * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED again with the fleet standing
- * in ONE REALM. At the sealed-gate cutover the first seam moved: the Herm's dial to A is SHUT by name, so ⑦ no longer
- * stands as `test.fails` for the product-law seam quoted below. It asserts the shut (the Herm never joins A's board, so it
- * holds no pointer and no bytes), and the re-share law below is the vector a gate-native herm route owes. The seam quoted
- * below is HISTORY of the measurement, kept for the route that reopens.
+ * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED with the fleet standing in ONE REALM.
+ * The Herm's dial to A ships SHUT by name, so ⑦ asserts the shut (the Herm never joins A's board, so it holds no
+ * pointer and no bytes), and the re-share law below is the vector a gate-native herm route owes. The seam quoted
+ * below is the measurement's record, kept for the route that opens.
  *
- * The fleet now performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
+ * The fleet performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
  * `nexus rite quorum`; A exports the charter and the Herm imports it; the Herm signs `nexus carry-for` with
  * its OWN vessel key (a place holds no face — `personaSlotCeiling("herm") === 0`); A seats that seal with
- * `nexus carry <key> --carrier <hex>`; the Herm's dial to A is SHUT by name ("Routes at the cutover": the
- * herm membership relay ships shut; `LAR_JOIN_*` no longer read), so it stands once and says `herm-relay-shut`; A registers the book with
+ * `nexus carry <key> --carrier <hex>`; the Herm's dial to A is SHUT by name (the shut-routes house ruling,
+ * stable-founding-road #/rulings: the herm dials no hearth), so it stands once and says `a herm dials no hearth`; A registers the book with
  * `nexus realm-bag lares --tier public`. Every door answers 0, and the Herm's own log reads
  * `[lar-leaf] verdict OK — crossing open, syncing`.
  *
@@ -165,9 +164,9 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(fleet!.admitted.code, said(fleet!.admitted)).toBe(0);
     console.error(`herm-reshares MEASURE the carriage crossing:\n  ${fleet!.crossing}`);
     expect(fleet!.herm.bootLog()).toContain("crossroads relay standing");
-    // THE SHUT, ASSERTED: the herm membership relay ships shut by name (house ruling "Routes at the cutover"), so the herm says so
-    // and never dials A; nothing here may read a herm crossing as open.
-    expect(fleet!.herm.bootLog()).toContain("herm-relay-shut");
+    // A herm dials no hearth, and says so (the shut-routes house ruling, stable-founding-road #/rulings); nothing here may
+    // read a herm crossing as open.
+    expect(fleet!.herm.bootLog()).toContain("a herm dials no hearth");
     expect(fleet!.herm.bootLog()).not.toContain("[lar-leaf] verdict OK");
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
@@ -243,13 +242,13 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(alive, "A still answers on its port — A never went dark").toBe(false);
   }, 30_000);
 
-  // THE SHUT. The Herm's dial to A ships shut by name ("Routes at the cutover"), so the Herm never joins A's board: it holds
+  // THE SHUT. The Herm's dial to A ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings), so the Herm never joins A's board: it holds
   // no pointer and no bytes while A is dark. The re-share this file measures (the Herm answers `/cas/<cid>`, C verifies the
   // sha256 and keeps the bytes) is the vector a gate-native herm route owes, and it is not asserted green by any weaker road:
   // a Herm that serves a cid it was never handed is a leak this test must catch, not a gap it may tolerate.
   test("★ ⑦ THE SHUT: with A dark and the Herm's dial shut by name, the Herm serves no cid it was never handed and C's fetch reads held:false ★", async () => {
     const { C, hermShore, herm } = fleet!;
-    expect(herm.bootLog(), "the Herm never named its shut route").toMatch(/herm-relay-shut/);
+    expect(herm.bootLog(), "the Herm dials no hearth").toMatch(/a herm dials no hearth/);
     // The staged copy leaves C so the read is a MISS: A is dark, so the Herm is the only road left.
     const held = join(casDirOf(C), cid);
     if (existsSync(held)) rmSync(held, { force: true });

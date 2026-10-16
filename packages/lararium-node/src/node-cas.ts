@@ -191,8 +191,8 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 // records out of the derived count — the sweep reads the count, it never reads the verb.
 //
 // A PIN CARRIES NO CLOCK — EVER. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
-// it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO `expiry` field at all (M7 — the field
-// left the record entirely, never merely unread). Its OPTIONAL `fence` names a holder's OWN boot epoch
+// it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO clock field at all (M7: the record has
+// no place for one, so none is ever read). Its OPTIONAL `fence` names a holder's OWN boot epoch
 // at pin time (M7′): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `fence` —
 // the operator's own explicit, standing-forever pin), but a pin that DOES carry a `fence` (a `--held`
 // pin) is a CAUSAL supersession, never a span — `casSweep`'s REQUIRED `currentFence` option, this vessel's
@@ -242,13 +242,13 @@ export interface CasSweepOptions {
    * This vessel's CURRENT boot epoch (M7′/M7″, `owned-store.ts`'s `StoreClaim.bootEpoch`) — the fence a
    * `--held` pin's own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states:
    * absent `fence` on a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while
-   * `currentFence` has not yet moved past it). REQUIRED (alpha line, no back-compat — M7″ G3): every caller,
+   * `currentFence` has not yet moved past it). REQUIRED (M7″ G3): every caller,
    * production or test, threads its own epoch through — never guessed. `0` is the fence law's OWN floor
    * ("no boot has happened yet"): every `--held` pin reads as still standing against it (`0 <= fence` for
    * any non-negative fence), so a caller with no real epoch to give is never safe passing `0` AS IF it were
    * a genuine epoch — it must withhold the sweep instead (`open-node-vessel.ts`'s shape beside
    * `genesisProtect === "unreadable"`). Only the ABSENCE of a pin's own `fence` field reads as a
-   * standing-forever pin; the absence of THIS option is no longer representable at all.
+   * standing-forever pin; the absence of THIS option is not representable at all.
    */
   readonly currentFence: number;
   /** Name what would sweep; delete nothing. */
@@ -294,10 +294,9 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
 
 const PINS_FILE = ".pins.json";
 
-/** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key (the retired
- *  `expiry` chief among them) reads the WHOLE sidecar as malformed (evergreen sweep, gp25): a record shape
- *  this reader does not recognize might carry a clock-driven verdict this house no longer honors, so it
- *  refuses rather than silently accepting an old shape back in. */
+/** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key reads the
+ *  WHOLE sidecar as malformed (gp25): a record shape this reader does not recognize might carry a
+ *  clock-driven verdict, and a pin carries no clock, so it refuses rather than read a shape it never named. */
 const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
 
 /** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
@@ -306,9 +305,9 @@ const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
  *  everything). A per-record `cid` string is the only load-bearing field: a record missing/mistyping its
  *  `holder`/`tier`/`fence` still holds that cid (presence-only, if its `fence` reads as absent) rather than
  *  being dropped whole — dropping a torn record is exactly the "fails open toward deletion" fault M7′
- *  closes. A record carrying the retired `expiry` field, or ANY field outside `PIN_RECORD_FIELDS`, is NOT
- *  silently ignored (the old shape): it REFUSES the whole read (evergreen sweep, gp25-SW2) — fail toward
- *  KEEPING every blob, never toward deleting over a shape this reader no longer recognizes. */
+ *  closes. A record carrying ANY field outside `PIN_RECORD_FIELDS` is NOT silently ignored: it REFUSES the
+ *  whole read by the field's name (gp25-SW2) — fail toward KEEPING every blob, never toward deleting over a
+ *  shape this reader does not recognize. */
 export function readCasPins(casDir: string): PinCap[] {
   const path = join(casDir, PINS_FILE);
   let raw: string;
@@ -326,15 +325,14 @@ export function readCasPins(casDir: string): PinCap[] {
   if (!Array.isArray(parsed)) {
     throw new Error(`[node-cas] pin sidecar ${path} is not a JSON array — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
   }
-  // ANY record carrying a field outside PIN_RECORD_FIELDS (the retired `expiry` chief among them) REFUSES
-  // the WHOLE read — an old or unknown shape might carry a clock-driven verdict this house no longer
-  // honors; the run stops here, logged by name, rather than silently accepting it back in (evergreen
-  // sweep, gp25-SW2).
+  // ANY record carrying a field outside PIN_RECORD_FIELDS REFUSES the WHOLE read — an unknown shape might
+  // carry a clock-driven verdict, and a pin carries no clock; the run stops here, logged by name, rather
+  // than read the record (gp25-SW2).
   for (const p of parsed) {
     if (!p || typeof p !== "object") continue;
     for (const key of Object.keys(p as Record<string, unknown>)) {
       if (!PIN_RECORD_FIELDS.has(key)) {
-        throw new Error(`[node-cas] pin sidecar ${path} carries a record with unknown field "${key}" (e.g. the retired \`expiry\`) — refusing to read it as "no pins" (evergreen sweep: fail toward KEEPING, never toward deleting)`);
+        throw new Error(`[node-cas] pin sidecar ${path} carries a record with unknown field "${key}" — refusing to read it as "no pins" (a pin record holds PinCap's own fields alone: fail toward KEEPING, never toward deleting)`);
       }
     }
   }

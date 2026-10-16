@@ -787,7 +787,7 @@ export interface ApplyAdmitInput {
 }
 
 export interface ApplyAdmitResult {
-  /** The joinee's own self-certifying ContactCard JSON — the leaf identity it presents at the V3 gate. */
+  /** The joinee's own self-certifying ContactCard JSON — the leaf identity it presents at a peer's gate. */
   contactCardJson: string;
   /** The joinee's own keyhive Archive: the prekey secrets behind that card and the membership it absorbed. RAW
    *  SECRET material; the shore seals it at rest. */
@@ -946,9 +946,9 @@ export async function runApplyAdmitPayload(
   // supplies the SELF (who it is). A self-certifying ContactCard is the latter, and it is minted from the
   // vessel's OWN seed — never the founder's, who is not present and whose seed never crossed.
   //
-  // Without it, an admitted vessel comes up bound and MUTE: the V3 handshake presents card + proof, so a
-  // cardless vessel cannot speak at a gate at all. The founding path minted one and this path did not,
-  // which is why an admitted vessel could be perfectly bound and still never dial.
+  // Without it, an admitted vessel comes up bound and MUTE: its leaf identity (`leaf-identity`) presents this
+  // card at a peer's gate, so a cardless vessel cannot speak at a gate at all. The founding path and this
+  // path both mint one.
   const keyhive = new KeyhiveProvider();
   const capStore = new InMemoryEventStore();
   await keyhive.init({ seed: vesselSeed, eventStore: capStore, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });

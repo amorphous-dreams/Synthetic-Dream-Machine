@@ -142,10 +142,6 @@ export const SK_VK_WRAP_INFO = mint("sk-vk-wrap");
 export const SK_CHECK_INFO = mint("sk-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
-// RETIRED with the persona admission, and never reused: `persona-enroll`, `persona-grant`, `persona-sealed-grant`,
-// `persona-join`, and the grant seal's HKDF info `persona-admit-grant-seal`. No protocol signs or derives under them,
-// and no new domain may take one of those names, so a byte string once bound under one never verifies as another
-// protocol's. Fleet join carries the admission they served.
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
  *  and the act it rolls from. The act's CID names the hosting epoch; the act grants nothing and names no one but
  *  the hearth. Its own name: an act must never verify as a carriage act or any other signed thing. */
@@ -218,9 +214,6 @@ export const PLACE_FLOOR_PIN_DOMAIN = mint("place-floor-pin");
 /** A herm's EXPLICIT JOIN carried by hand (`carry-bundle`): the kind the bundle's public bytes carry, so a reader never
  *  takes an admit bundle, or any other file, as a carry. */
 export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
-// `membership-relay` names no domain, and is never reused: the herm membership relay ships SHUT by name (house ruling
-// "Routes at the cutover") and signs nothing; a relay that opens inside a sealed gate session signs under that session's
-// own seal. No new domain may take this name, so a byte string once bound under it never verifies as another protocol's.
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
@@ -327,10 +320,6 @@ export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
 export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
-// RETIRED with the old socket handshake at the sealed-gate cutover, and never reused: `auth-proof` (the V3 proof of
-// possession), `presented-leaf-proof` (the leaf's proof over a socket's presentation) and `auth-ok` (the gate's signed
-// verdict). No protocol signs under them, and no new domain may take one of those names, so a byte string once signed
-// under one never verifies as another protocol's. The gate exchange carries what they served (`gate-verdict` and its kin).
 /** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its
  *  gate key) derives (`gate-knock`), so a dialer that pinned no gate key reaches no gate. A derivation, never a
  *  signature: its own name keeps the knock apart from every proof made with the same key. */

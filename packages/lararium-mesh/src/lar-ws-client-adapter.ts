@@ -1,8 +1,8 @@
 /**
  * LarWSClientAdapter — the sealed-gate peer transport for a sovereign LEAF actor (platform-blind).
  *
- * The stock `WebSocketClientAdapter` opens its socket and immediately speaks Automerge — no shore for a pre-sync
- * exchange. This subclass dials the pinned gate through `dialFaceGate` (a Noise IK flight, a sealed presentation of the
+ * The stock `WebSocketClientAdapter` opens its socket and immediately speaks Automerge — no shore for a gate
+ * exchange before sync. This subclass dials the pinned gate through `dialFaceGate` (a Noise IK flight, a sealed presentation of the
  * face's chain, a signed finish and the gate's signed verdict), and on `verified` holds the dial's sealed transport as a
  * `dialedChannel`. Automerge's own frames then ride that channel as "sync" messages of the sealed carriage, and a
  * hearth's session messages (a hosting grant push, say) ride it as "session" messages; neither reaches the other's reader.
@@ -40,7 +40,7 @@
 import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import type { PeerId, PeerMetadata } from "@automerge/automerge-repo";
 import { SOVEREIGN_SYNC_ROUTE, type DialPinKey } from "./admit-gate-pin.js";
-import { isLarSessionMsg, mkLarSessionMsg, type LarSessionMsg } from "./auth-wire.js";
+import { isLarSessionMsg, mkLarSessionMsg, type LarSessionMsg } from "./leaf-presentation.js";
 import { HEARTH_FLOOR_PINS_SESSION_KIND, readHearthFloorPinsBody } from "./hearth-floor-pins.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { WithdrawalMemory } from "./face-authority.js";

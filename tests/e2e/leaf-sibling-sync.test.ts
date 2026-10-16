@@ -2,15 +2,15 @@
  * e2e/leaf-sibling-sync — leaf kind 3: devices of ONE PersonaGroup, with NO listening vessel among them, and a live
  * HERM (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`).
  *
- * THE SIBLING WS ROUTE SHIPS SHUT (house ruling "Routes at the cutover"): the herm's membership relay refuses every
- * upgrade before any 101, and the sibling dial refuses by name until a gate-native caller flips it. What remains
- * lawful, and is proven here on real sockets, is the HTTP drop floor and the refusal itself:
+ * THE SIBLING WS ROUTE SHIPS SHUT (the shut-routes house ruling, stable-founding-road #/rulings): the herm's relay
+ * port destroys every upgrade before any 101, and the sibling dial refuses by name. What stands, proven here on real
+ * sockets, is the HTTP drop floor and the refusal itself:
  *
  *   L1 — two enrolled siblings beside a live herm never pair: the sibling dial rejects by name, no peer stands, no
  *        doc crosses, and the herm's sight holds not one frame. A route that reopened silently would pair them and
  *        fail this.
  *   L2 — an impostor, a non-member and a member all meet the same shut: no peer, no refusal of a sibling, nothing
- *        carried. The shut grants no silent legacy authority to any of them.
+ *        carried. The shut grants no silent authority to any of them.
  *   L3 — a stranger without the knock path meets silence on the herm's relay port, and the pinned knock draws NO
  *        upgrade either: the relay's WS route is destroyed before the 101.
  *   L4 — a sibling a rotation left stale catches up off the herms' successor drops — a plain request on each herm's
@@ -24,11 +24,12 @@ import * as net from "node:net";
 import { Repo, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { freePort, pinnedCarriageRelay } from "../harness/instance.js";
 import { startCarriageRelay, type CarriageRelay } from "../../packages/lararium-node/src/carriage-relay.js";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import type { PersonaKelEvent } from "../../packages/lararium-mesh/src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../packages/lararium-mesh/src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../../packages/lararium-mesh/src/recovery-registration.js";
-import { knockedUrl, pinnedRelayAddress } from "../../packages/lararium-mesh/src/gate-knock.js";
+import { knockSegment } from "../../packages/lararium-mesh/src/gate-bundle.js";
+import { pinnedRelayAddress } from "../../packages/lararium-mesh/src/persona-kel-drop.js";
 import { DeterministicFederationGate, federationShareDecision, shareConfigOf } from "../../packages/lararium-mesh/src/federation-gate.js";
 import { makePersonaGroupIdentityRing } from "../../packages/lararium-mesh/src/persona-group-ring.js";
 import {
@@ -198,7 +199,9 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
     expect(await upgrades(`ws://127.0.0.1:${relayPort}/`)).toBe(false);
     // The shut is total: the knock the pinned gate key derives draws NO upgrade either.
     const pin = pinnedRelayAddress(relayUrl);
-    expect(await upgrades(knockedUrl(pin.url, pin.gatePubKey))).toBe(false);
+    const knocked = new URL(pin.url);
+    knocked.pathname = `${knocked.pathname.replace(/\/+$/, "")}/${knockSegment(pin.gatePubKey, knocked.pathname)}`;
+    expect(await upgrades(knocked.href)).toBe(false);
   });
 
   /** The ONE rotation this suite's KEL makes, re-enrolling both leaves: a second rotation at the same seat would

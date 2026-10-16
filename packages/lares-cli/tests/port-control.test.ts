@@ -153,9 +153,9 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
   });
 
-  it("H5′ MUTATION PROOF: re-reading the port at past-grace (the retired shape) would have reached nobody", async () => {
-    // Re-enact the retired shape by hand: naming the held pids off a past-grace `holderPids(port)` call,
-    // exactly as the code once did, against the SAME port-frees-before-holder-exits timeline above.
+  it("H5′ MUTATION PROOF: re-reading the port at past-grace reaches nobody", async () => {
+    // Enact the mutant by hand: naming the held pids off a past-grace `holderPids(port)` call, against the
+    // SAME port-frees-before-holder-exits timeline above.
     let portFreed = true;   // by the time grace would fire, main.ts's own ordering already froze the port
     const holderPids = () => (portFreed ? [] : [4242]);
     const heldAtPastGrace = holderPids();

@@ -1,24 +1,21 @@
 /**
- * authenticated-membership-relay — THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME.
+ * herm-relay-port — the herm's relay port: the persona-KEL DROPS over plain HTTP, and silence for everything else.
  *
- * House ruling "Routes at the cutover" (stable-founding-road): "Walker arms, the sibling dial and the herm membership
- * relay ship SHUT by name ... a closed route grants no silent legacy authority." The relay's live-WS transport spoke
- * the retired pre-sync handshake (a challenge, a V3 proof, a signed auth-ok) and stamped each envelope's `from` with
- * the key that handshake proved. That wire is gone, and no gate-native caller has flipped this route: until one does,
- * the relay accepts no WebSocket upgrade (it destroys every one before any 101 and says `membership-relay-shut`), and
- * a channel dial rejects with the same name. Nothing is proven, stamped or routed.
+ * The drops are a floor voice on a plain HTTP request apart from any proven socket: `GET /drop/<name>` answers the
+ * persona-KEL events a drop holds, `POST /drop/<name>` keeps one (`@lararium/mesh` persona-kel-drop). Availability by
+ * content address, never a vouch: a deposit carries its successor and that successor's predecessor, and the herm
+ * keeps it only when the name derives from the predecessor and the successor verifies against it. A deposit past
+ * `PERSONA_KEL_DROP_BODY_CAP` bytes, or past one connection's budget, meets silence before it is read; the store's
+ * byte budget lets go of the drops it heard from least lately. With a journal path the herm keeps what it verified
+ * across a restart, re-verified when it reads the journal back. A name it holds nothing under, a refused deposit and
+ * every other path meet the same silence as a closed door.
  *
- * WHAT STANDS. The successor DROPS are a floor voice on a plain HTTP request apart from any proven socket, and they
- * ride the same port: `GET /drop/<name>` answers the persona-KEL events a drop holds, `POST /drop/<name>` keeps one
- * (`@lararium/mesh` persona-kel-drop). Availability by content address, never a vouch: a deposit carries its successor
- * and that successor's predecessor, and the herm keeps it only when the name derives from the predecessor and the
- * successor verifies against it. A deposit past `PERSONA_KEL_DROP_BODY_CAP` bytes, or past one connection's budget,
- * meets silence before it is read; the store's byte budget lets go of the drops it heard from least lately. With a
- * journal path the herm keeps what it verified across a restart, re-verified when it reads the journal back. A name
- * it holds nothing under, a refused deposit and every other path meet the same silence as a closed door.
+ * The port carries no envelope and stands no socket: a WebSocket upgrade is destroyed before any 101. A herm's
+ * standing at a Nexus is the counted `carry` that travels by hand (lar:///ha.ka.ba/lararium/node/carry-bundle), and
+ * its floor gate answers on the vessel's own gate server (lar:///ha.ka.ba/lararium/node/herm-carriage).
  *
- * Node-side (the transport branch); the `MembershipChannel` shore + the file impl stay platform-blind.
- * Meme: lar:///ha.ka.ba/lararium/node/authenticated-membership-relay
+ * Node-side (the transport branch); the `MembershipChannel` shore and the file impl stay platform-blind.
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-persona-group-secret
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -28,23 +25,20 @@ import type { Duplex } from "node:stream";
 import * as ed from "@noble/ed25519";
 import {
   PERSONA_KEL_DROP_ROUTE, makePersonaKelDropStore, PERSONA_KEL_DROP_BODY_CAP, hex,
-  type MembershipChannel, type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
+  type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
 } from "@lararium/mesh";
 
-/** The name every refusal of the shut relay carries. */
-export const MEMBERSHIP_RELAY_SHUT = "membership-relay-shut";
-const SHUT_WHY = `${MEMBERSHIP_RELAY_SHUT}: the herm membership relay ships shut by name (house ruling "Routes at the cutover"); no socket is proven, stamped or routed until a gate-native caller flips it`;
-
-/** A running authenticated membership relay — the HTTP server (successor drops alone) + its bound port + the gate key a dialer once pinned. */
-export interface AuthenticatedMembershipRelay {
+/** A running herm relay port: the HTTP server, its bound port and the gate key a dialer pins for it. */
+export interface HermRelayPort {
   readonly port:       number;
   readonly gatePubKey: string;
   close(): Promise<void>;
 }
 
 /**
- * The relay's SNIFF observer — the RE-SHARE leg. The shut relay carries no envelope, so none of these fires; the type
- * stays for the carriage relay that composes it.
+ * The relay's SNIFF observer, the parameter the carriage relay hands on. The port carries no envelope and no sibling
+ * frame, so none of these fires; the parameter keeps the herm's sight a witness's own choice, never a boot read
+ * (`herm-sight-seam`).
  */
 export interface RelayAnnounceObserver {
   readonly onEnvelope?: (env: MembershipEnvelope) => void;
@@ -54,12 +48,12 @@ export interface RelayAnnounceObserver {
 }
 
 /**
- * Start the shut relay on `port` (0 → any free port), keyed by `gateSeed`. It serves the successor drops over plain HTTP and
- * destroys every WebSocket upgrade before any 101, naming `membership-relay-shut` to `opts.onShut`.
+ * Stand the relay port on `port` (0 → any free port), keyed by `gateSeed`. It serves the drops over plain HTTP and
+ * destroys every WebSocket upgrade before any 101.
  *
  * @param gateSeed the relay's 32-byte Ed25519 seed — its verifying key is the identity a hearth was handed for it.
  */
-export async function startAuthenticatedMembershipRelay(
+export async function startHermRelayPort(
   gateSeed: Uint8Array,
   port = 0,
   _observer?: RelayAnnounceObserver,
@@ -68,10 +62,8 @@ export async function startAuthenticatedMembershipRelay(
     readonly dropJournalPath?: string;
     /** The drops' byte budget in all. */
     readonly dropBytes?: number;
-    /** Hears each upgrade the shut relay destroyed. */
-    readonly onShut?: (why: string) => void;
   } = {},
-): Promise<AuthenticatedMembershipRelay> {
+): Promise<HermRelayPort> {
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
   const drops = makePersonaKelDropStore({
     gatePubKey,
@@ -80,11 +72,7 @@ export async function startAuthenticatedMembershipRelay(
   });
   const spent = new WeakMap<object, { deposits: number; bytes: number }>();
   const httpServer = createServer((req, res) => { serveDrop(drops, spent, req, res); });
-  httpServer.on("upgrade", (_req: IncomingMessage, socket: Duplex) => {
-    console.log(`[herm-relay] ${SHUT_WHY}`);
-    try { opts.onShut?.(MEMBERSHIP_RELAY_SHUT); } catch { /* a log never decides */ }
-    socket.destroy();
-  });
+  httpServer.on("upgrade", (_req: IncomingMessage, socket: Duplex) => { socket.destroy(); });
   await new Promise<void>((resolve) => httpServer.listen(port, resolve));
   const addr = httpServer.address();
   const boundPort = typeof addr === "object" && addr ? addr.port : port;
@@ -177,24 +165,4 @@ function serveDrop(drops: PersonaKelDropStore, spent: WeakMap<object, { deposits
     res.end();
   });
   req.on("error", silence);
-}
-
-/**
- * The membership channel of the shut relay: `connect` rejects with `membership-relay-shut` and opens no socket. The class
- * stays so a composer that names it (the carriage serve-loop) reads the refusal by name and does not retry.
- */
-export class AuthenticatedWSMembershipChannel implements MembershipChannel {
-  private constructor() {}
-
-  static connect(
-    _address: string,
-    _peerSeed: Uint8Array,
-    _opts?: { readonly onClose?: () => void; readonly onEnvelope?: (env: MembershipEnvelope) => void },
-  ): Promise<AuthenticatedWSMembershipChannel> {
-    return Promise.reject(new Error(SHUT_WHY));
-  }
-
-  async offer(_env: MembershipEnvelope): Promise<void> { throw new Error(SHUT_WHY); }
-  async poll(_recipient: string): Promise<readonly MembershipEnvelope[]> { return []; }
-  close(): void { /* nothing opened */ }
 }

@@ -5,7 +5,7 @@
  *                                                            and the scopes the face stands at
  *   lares fleet join request <offer-file> [--out FILE]       on the joining PLACE: its face-scoped keys mint here,
  *                                                            and the join stays pending until its answer lands
- *   lares fleet join answer  <request-file> [--face N] [--out FILE] [--sync-url URL]
+ *   lares fleet join answer  <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]
  *                                                            on the root holder: the signed answer, with the gate
  *                                                            pin, the canon list and the face's sealed address secret
  *   lares fleet join land    <answer-file>                   on the joining place: the face lands
@@ -91,7 +91,8 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
       }
       case "answer": {
         const syncUrl = args.options["sync-url"];
-        const { answer } = (await storeVerb("fleet-join-answer", { request: readJson(file, "request"), ...faceOf(args), ...(syncUrl ? { syncUrl } : {}) })).output as { answer: unknown };
+        const docUrl = args.options["doc-url"];
+        const { answer } = (await storeVerb("fleet-join-answer", { request: readJson(file, "request"), ...faceOf(args), ...(syncUrl ? { syncUrl } : {}), ...(docUrl ? { docUrl } : {}) })).output as { answer: unknown };
         emitFile(args, answer, "answer");
         console.log("[lares fleet join] carry the answer to the joining vessel: `lares fleet join land <answer-file>`.");
         return 0;

@@ -1,6 +1,5 @@
 /**
- * herm-carriage-relay.test.ts — CARRIAGE PEERING AND THE HERM RELAY OF THE PUBLIC MAP, gate-native (house ruling "Routes at
- * the cutover": "an explicit Nexus opens the herm relay"; each shut route "flips on a proven gate-native caller").
+ * herm-carriage-relay.test.ts — CARRIAGE PEERING AND THE HERM RELAY OF THE PUBLIC MAP, gate-native (the shut-routes house ruling, stable-founding-road #/rulings: "an explicit Nexus opens the herm relay"; each shut route "flips on a proven gate-native caller").
  *
  * Three herms stand at ONE Nexus whose quorum counted a `carry` over each: an ORIGIN (a crossroads node/alpha announced at),
  * and two relays. Each serves its FLOW map through its own floor gate, assembled the way a vessel assembles every gate

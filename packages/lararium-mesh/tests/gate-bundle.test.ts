@@ -23,10 +23,9 @@ import {
 } from "../src/domains.js";
 import {
   GATE_BUNDLE_REFUSALS, GATE_SIGNING_PURPOSES, GateBundleRefused, deriveGateBundle, gateBundleDigest, gateFields,
-  custodyRootDoor, floorGateRoot, floorKeyDoor, floorRoute, gateKnock, gatePrologue, readGateBundlePin, readGateSignature, sovereignGateRoot, sovereignRoute,
+  custodyRootDoor, floorGateRoot, floorKeyDoor, floorRoute, gateKnock, gatePrologue, knockSegment, readGateBundlePin, readGateSignature, sovereignGateRoot, sovereignRoute,
   type GateBundlePin, type GateBundleRoot, type GateRootDoor,
 } from "../src/gate-bundle.js";
-import { knockSegment } from "../src/gate-knock.js";
 import { NoiseHandshakeError, noiseInitiate, noiseKeyPair } from "../src/noise-ik.js";
 import { IDENTITY_KEY } from "./ed25519-torsion.js";
 

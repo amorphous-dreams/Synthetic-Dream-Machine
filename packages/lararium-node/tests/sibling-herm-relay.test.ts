@@ -1,10 +1,8 @@
 /**
- * sibling-herm-relay.test — the herm's drop floor stays lawful while the sibling WS route ships SHUT.
+ * sibling-herm-relay.test — the herm's drop floor stands beside the sibling route, which stands shut by name.
  *
- * The channel-carrying relay (join, route by channel tag, stamp with the proven key) rode the retired
- * challenge/auth wire; house ruling "Routes at the cutover" ships it shut by name, so its carry tests are
- * retired with it (the shut itself is asserted in authenticated-membership-relay.test and
- * sibling-channel-stand.test). What remains lawful, and is proven here over a real socket:
+ * The herm's relay port carries no channel: an upgrade meets silence (herm-relay-port.test), and the sibling
+ * dial refuses by name (sibling-channel-stand.test). Proven here over a real socket:
  *   · the drop floor: a plain request apart from any proven socket reads and keeps a KEL successor that
  *     verifies against the predecessor its deposit carries; an unknown name, a refused deposit and any other
  *     path meet one silence — a cut socket.
@@ -15,16 +13,16 @@ import {
   hex, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate,
   personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors,
 } from "@lararium/mesh";
-import { startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
+import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
-describe("the herm's drop floor stays lawful beside the shut sibling route", () => {
-  let relay: AuthenticatedMembershipRelay | undefined;
+describe("the herm's drop floor stands beside the shut sibling route", () => {
+  let relay: HermRelayPort | undefined;
   afterEach(async () => { await relay?.close(); relay = undefined; });
 
   test("the drop floor: a plain request reads and keeps a KEL successor; every other ask meets one silence", async () => {
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(88), 0);
+    relay = await startHermRelayPort(new Uint8Array(32).fill(88), 0);
     const base = `http://127.0.0.1:${relay.port}`;
     const guardianSeeds = [61, 62, 63].map((b) => new Uint8Array(32).fill(b));
     const guardianRecoveryKeys = await Promise.all(guardianSeeds.map(pubOf));

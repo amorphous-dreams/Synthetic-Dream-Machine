@@ -133,7 +133,7 @@ export function witness(t: Testimony, edge: Witness): Testimony {
  * cryptographic string: the signer draws an Ed25519 signature over canonical bytes binding the TESTIMONY it
  * attests (by content-address) to its own vouch/defeat, and a verifier re-derives those bytes and checks the
  * signature. It mirrors the wax-stamp floor exactly (proofBytes · mint · verifySig) and rides the SAME
- * @noble/ed25519 the auth-wire and wax-stamp keels already ride — no new crypto enters the stack.
+ * @noble/ed25519 the ed25519-door and wax-stamp keels already ride — no new crypto enters the stack.
  *
  * WHAT IT ATTESTS — a PAST, never a global now (preserves no-global-now / causal-islands): "signer S,
  * standing at causal frontier F, corroborated (+1) / defeated (−1) the testimony content-addressed by
@@ -166,7 +166,7 @@ export function witnessProofBytes(
 /**
  * Mint a SIGNED witness edge: sign the proof bytes (`claimCid` ← the testimony being attested) with the
  * signer's key. `sign` yields a hex Ed25519 signature; the caller injects the key material (the same
- * injected-`sign` shape as `mintWaxStamp` / `buildAuthResponse` — no keyhive dep enters the keel).
+ * injected-`sign` shape as `mintWaxStamp` — no keyhive dep enters the keel).
  */
 export async function signWitness(input: {
   readonly claimCid: string;
@@ -188,7 +188,7 @@ export async function signWitness(input: {
  * Verify a witness edge's Ed25519 signature against the testimony it attests (`claimCid`). FAIL-CLOSED: an
  * absent signature, a malformed key/sig, or ANY verify error all read `false` — an unsigned or tampered edge
  * NEVER passes. `signerKeyHex` defaults to the edge's own `signer` (the raw verifying-key hex the mesh uses
- * for identity); a conservative caller MAY pass a trusted key explicitly (the wax-stamp / verifyAuthProof
+ * for identity); a conservative caller MAY pass a trusted key explicitly (the wax-stamp
  * conservative-caller law — never trust a wire-claimed key where a trusted one is held). A `signer` that is
  * not raw verifying-key hex fails the shape guard and forces the caller to supply the trusted key.
  */

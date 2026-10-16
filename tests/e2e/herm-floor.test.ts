@@ -205,7 +205,7 @@ async function operatorDid(r: string): Promise<string> {
  * present. The publisher's key (`verifyingKey`) is the herm's vessel key, never the gate's.
  *
  * WHERE A HERM'S GATE STANDS: at a Nexus whose quorum counted its `carry`, on the herm's own replica of that Nexus's
- * carriage board, and nowhere else (house ruling "Routes at the cutover": an explicit Nexus opens the herm relay;
+ * carriage board, and nowhere else (the shut-routes house ruling, stable-founding-road #/rulings: an explicit Nexus opens the herm relay;
  * lar:///ha.ka.ba/lararium/node/herm-carriage). A herm founded with no join stands none, so this reader holds a pin the
  * herm COULD derive and meets no gate at it. HOW A STOOD GATE ANSWERS is the operator ruling "A herm answers the knock":
  * any proven peer, member or stranger. R2 stands both halves over real sockets: the same reader meets no gate before the
@@ -316,7 +316,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     const imported = run(["nexus", "seal", "import", join(courier, "hearth-charter.mem"), "--json"]);
     expect(imported.code, `the herm refused the hearth's charter:\n${imported.said}`).toBe(0);
 
-    // RED — NO GATE BEFORE THE JOIN (house ruling "Routes at the cutover": an explicit Nexus opens the herm relay). The herm
+    // RED — NO GATE BEFORE THE JOIN (the shut-routes house ruling, stable-founding-road #/rulings: an explicit Nexus opens the herm relay). The herm
     // holds the charter and nothing more: no quorum counted its carry, so it stands no floor gate at that Nexus. A reader
     // holding the very floor pin the herm's floor key derives there, presenting a proven face, meets no gate.
     const aid = await hermCharterAid(root);

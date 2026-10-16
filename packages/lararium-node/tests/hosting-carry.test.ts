@@ -19,7 +19,7 @@
  *   · NO GUEST NAMED: the store holds no lineage, leaf or grant tag; a record key needs the hearth's seed;
  *     CONTROL: the proven leaf's key reaches its record;
  *
- * THE WALKER ROUTE SHIPS SHUT ("Routes at the cutover"). The vectors that rode the hearth's sorter — a renewed walker's
+ * THE WALKER ROUTE SHIPS SHUT (the shut-routes house ruling, stable-founding-road #/rulings). The vectors that rode the hearth's sorter — a renewed walker's
  * carriage surviving a roll, a marked carriage's contact pushing the notice on either arm, another leaf's dial touching
  * no carriage — retire with the walker arms they pinned (the gate sorts a grant or a claim as no walker; see
  * socket-sorter.test). The carry store's own laws above stand without a socket.

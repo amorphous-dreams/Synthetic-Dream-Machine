@@ -393,18 +393,12 @@ export { makeEmbedCap } from "./embed-cap.js";
 export type { EmbedCap, EmbedResult, EmbedCapOptions } from "./embed-cap.js";
 export { makeSourceCapture } from "./capture/capture-source.js";
 export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture/capture-source.js";
-export { startMembershipRelay, WSMembershipChannel } from "./ws-membership-channel.js";
-// The AUTHENTICATED live-WS membership transport — Ed25519 proof-of-possession binds each envelope's `from` to a
-// proven key (no impersonation of the cas-wire member gate); the relay ships SHUT by name (house ruling "Routes at the cutover";
-// `authenticated-membership-relay`).
-export { startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel } from "./authenticated-membership-relay.js";
-export type { AuthenticatedMembershipRelay } from "./authenticated-membership-relay.js";
-// The CARRIAGE relay capability (Socket B) — the authenticated transport + the DHT-free bag-tracker, one service;
-// and the vessel-side serve-loop that carries a sealed cad body to members (inert until a relay URL is configured).
+// The herm's relay port: the persona-KEL drops over plain HTTP; every upgrade meets silence.
+export { startHermRelayPort } from "./herm-relay-port.js";
+export type { HermRelayPort } from "./herm-relay-port.js";
+// The CARRIAGE relay capability: the herm's relay port and the DHT-free bag-tracker, one service.
 export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
-export { startCarriageServeLoop } from "./carriage-serve-loop.js";
-export type { CarriageServeLoop, CarriageServeLoopConfig } from "./carriage-serve-loop.js";
 // The immune keel's RE-KEY (roll a lease epoch, per-writer-slot max-register) + RE-SHARE (list held sealed bodies
 // to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
 export { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -434,7 +428,6 @@ export { pullBulb, pullArrival, kindleFromBulb, httpBulbTransport } from "./kind
 export type { BulbPullTransport, KindleResult } from "./kindle.js";
 export { startNexusClientDial, maybeStartNexusClientDial } from "./nexus-client-dial.js";
 export type { NexusClientDial, NexusClientDialConfig, NexusClientDialInput } from "./nexus-client-dial.js";
-export type { MembershipRelay } from "./ws-membership-channel.js";
 export { FileMembershipChannel } from "./file-membership-channel.js";
 export { makeFormPalace } from "./sensorium.js";
 export type {

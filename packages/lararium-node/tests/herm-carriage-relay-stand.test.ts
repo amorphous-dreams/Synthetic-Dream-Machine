@@ -1,14 +1,13 @@
 /**
- * herm-carriage-relay-stand.test.ts — a Herm still STANDS the carriage crossroads, with its WS route SHUT by name.
+ * herm-carriage-relay-stand.test.ts — a Herm STANDS its relay port, and the port opens no WebSocket.
  *
- * The crossroads carried sealed cad bodies between hearths over the challenge/auth handshake. That handshake is
- * retired, and house ruling "Routes at the cutover" ships the membership relay SHUT: an upgrade is destroyed
- * before any 101, and the refusal is named. So a member's carry and a stranger's Mu have no socket to ride (their
- * ring laws live in the cas-wire suites), and what this suite proves is the standing shore that remains:
+ * The herm's relay port serves persona-KEL drops over plain HTTP and destroys every WebSocket upgrade before any
+ * 101. So a member's carry and a stranger's Mu have no socket to ride (their ring laws live in the cas-wire suites),
+ * and what this suite proves is the port's standing shore:
  *   · INERT — the EXACT boot gate (`relayPort !== null ? startCarriageRelay : null`) stands nothing when no relay
  *     port rides the config, and a listener when it does;
- *   · SHUT — a hearth dialing the stood crossroads on its pinned knock never reaches an open socket (the by-name
- *     refusal is asserted at the relay itself, in authenticated-membership-relay.test);
+ *   · SHUT — a dialer at the stood port on its pinned knock never reaches an open socket (the upgrade's silence
+ *     is asserted at the relay itself, in herm-relay-port.test);
  *   · STABLE IDENTITY — `resolveRelayGateSeed` yields the SAME gate key across restarts from the Herm's own
  *     identity seed, a DIFFERENT one from a pinned seed hex, and NEVER a fresh random;
  *   · CLEAN TEARDOWN — `close()` stops the crossroads: its port answers nothing afterwards.
@@ -18,7 +17,7 @@
 import { afterEach, describe, test, expect } from "vitest";
 import { connect } from "node:net";
 import { WebSocket } from "ws";
-import { knockedUrl, hex } from "@lararium/mesh";
+import { knockSegment, hex } from "@lararium/mesh";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
 
 /** The EXACT boot gate: a relay stands ONLY when a port rides the config, on the resolved (stable) gate seed. */
@@ -43,17 +42,17 @@ function opens(url: string): Promise<boolean> {
   });
 }
 
-describe("herm-carriage-relay-stand — a Herm stands the crossroads SHUT by name; off = inert", () => {
+describe("herm-carriage-relay-stand — a Herm stands its relay port and the port opens no socket; off = inert", () => {
   let relay: CarriageRelay | null = null;
   afterEach(async () => { if (relay) { try { await relay.close(); } catch { /* down */ } relay = null; } });
 
-  test("INERT + SHUT: no port stands nothing; with a port the crossroads stands and its WS route opens no socket", async () => {
+  test("INERT + SHUT: no port stands nothing; with a port the relay port stands and opens no socket", async () => {
     const hermSeed = new Uint8Array(32).fill(21);
     expect(await bootRelayGate({ vesselSeed: hermSeed, relayPort: null })).toBeNull();
 
     relay = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
     expect(relay).not.toBeNull();
-    const url = knockedUrl(`ws://127.0.0.1:${relay!.port}`, relay!.gatePubKey);
+    const url = `ws://127.0.0.1:${relay!.port}/ws/${knockSegment(relay!.gatePubKey, "/ws")}`;
     expect(await opens(url)).toBe(false);
   }, 20_000);
 

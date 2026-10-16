@@ -139,7 +139,7 @@ export async function runAliasedDoor() {
   });
 });
 
-await test("RED (L3): a `new Repo(` planted in packages/lares-cli/src is no longer a blind spot", async () => {
+await test("RED (L3): a `new Repo(` planted in packages/lares-cli/src is seen", async () => {
   const dir = await mkdtemp(join(tmpdir(), "direct-repo-witness-"));
   const nodeSrc = join(dir, "packages", "lararium-node", "src");
   const cliSrc = join(dir, "packages", "lares-cli", "src");

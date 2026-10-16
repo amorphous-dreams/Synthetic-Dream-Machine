@@ -127,7 +127,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
         field.setSelectionRange(saved.selectionStart, saved.selectionEnd);
       }
     }
-    // A refusal word names one field: a frame that no longer carries the field ends the word.
+    // A refusal word names one field: a frame that does not carry the field ends the word.
     if (refusedField && !paneEl.querySelector(`[data-lar-rid="${CSS.escape(refusedField.renderId)}"]`)) endRefusal();
     if (pendingPopupPlacement) {
       const visiblePopup = [...paneEl.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]

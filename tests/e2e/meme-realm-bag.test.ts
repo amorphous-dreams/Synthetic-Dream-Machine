@@ -166,7 +166,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
     };
-    // B and C dial A by the pin and address the admit bundle carries (`nexus contract --sync-url`): no `LAR_JOIN_*` rides the env.
+    // B and C dial A by the pin and address the admit bundle carries (`nexus contract --sync-url`).
     const dialA = { ...wireLog };
     // Each root is marked and founded independently before its daemon stands.
     B = await openStaged({ tag: "B", root: rootB, port: portB, found: foundOperator("B", "highland-steward"), daemonEnv: dialA });

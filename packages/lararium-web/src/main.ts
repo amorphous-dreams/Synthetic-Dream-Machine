@@ -83,14 +83,14 @@ function set(id: string, text: string, cls = ""): void {
 // The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
 // dials the peer's floor gate under the pin it holds and proves there before any map crosses: a joined face as itself,
 // a device at the floor faceless. The read waits on the vessel standing. The read face is the node that served this page
-// (?oracle=… names another), and the snapshot verifies under the publisher key the URL's floor card carries
-// (?oracle-gate=… names one by hand). With no publisher key the page reads nothing: nothing would verify the snapshot.
+// (?oracle=… names another), and the snapshot verifies under the publisher key the URL's floor card carries. With no
+// publisher key the page reads nothing: nothing would verify the snapshot.
 type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
 async function readOracle(read: OracleReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const pin = floorCardOf(location.hash, readHearthFloorCard)?.card?.publisher ?? params.get("oracle-gate") ?? params.get("gate");
-  const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(location, params));
+  const pin = floorCardOf(location.hash, readHearthFloorCard)?.card?.publisher ?? null;
+  const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(params));
   const say = (text: string, cls = ""): void => set("oracle-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
   if (!pin) { say("no floor card names this hearth's oracle publisher (#floor=… from the hearth's banner) — nothing to read", "warn"); return; }
   say(`proving at ${readFace} …`);
@@ -242,9 +242,7 @@ async function bootVessel(): Promise<void> {
   set("status", "booting…");
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
-  const relayUrl = resolveRelayUrl(location, relayParams);
-  // ?gate=<hex> → a relay gate key named by hand; the sealed crossing reads the full pin a joined face's fleet join carries.
-  const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
+  const relayUrl = resolveRelayUrl(relayParams);
   // #floor=<card> → the hearth's oracle floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
@@ -264,17 +262,13 @@ async function bootVessel(): Promise<void> {
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
   const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
   // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
-  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). Empty value
-  //   defaults to the ?oracle= read-face under its pin. An entry with no key is dropped: nothing to knock on.
-  //   The browser is a LEAF (no endpoint — carries-in, not dial-able).
+  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). An entry with no
+  //   key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
-  const defaultPin = new URLSearchParams(location.search).get("oracle-gate") ?? new URLSearchParams(location.search).get("gate");
   const meshLeaf = meshParam !== null
     ? {
         coordSeed: location.origin,
-        peers: meshParam
-          ? meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null)
-          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(location), gatePubKey: defaultPin.toLowerCase() }] : [],
+        peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
       }
     : undefined;
   try {
@@ -289,7 +283,6 @@ async function bootVessel(): Promise<void> {
       onPhase: paint,
       onProjection: (frame) => { projectionSink.apply(frame); },
       ...(relayUrl ? { relayUrl } : {}),
-      ...(relayGatePubKey ? { relayGatePubKey } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),

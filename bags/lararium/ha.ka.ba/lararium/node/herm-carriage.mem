@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/herm-carriage.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: WHERE a herm stands its floor gates, HOW they answer, and the GATE-NATIVE carriage pull a vessel hands its carriage. A herm stands a floor gate at the explicit Nexus it was joined to and only there — a Nexus whose carriage board, on its own replica, counts a `carry` for its own vessel key (house ruling \"Routes at the cutover\": an explicit Nexus opens the herm relay). There it answers any proven peer that knocked (operator ruling \"A herm answers the knock\"). It signs its floor pin with the carried key and lays the statement on its own replica of the board. A reader presents its counted carry or its worn face with its admit; nothing composed, nothing dialed."
+role        = "invariant law: WHERE a herm stands its floor gates, HOW they answer, and the GATE-NATIVE carriage pull a vessel hands its carriage. A herm stands a floor gate at the explicit Nexus it was joined to and only there — a Nexus whose carriage board, on its own replica, counts a `carry` for its own vessel key (the shut-routes house ruling, stable-founding-road #/rulings: an explicit Nexus opens the herm relay). There it answers any proven peer that knocked (operator ruling \"A herm answers the knock\"). It signs its floor pin with the carried key and lays the statement on its own replica of the board. A reader presents its counted carry or its worn face with its admit; nothing composed, nothing dialed."
 source-file = "packages/lararium-node/src/herm-carriage.ts"
 status      = "draft"
 status-why  = "lane reading, unruled 2026-10-16: where a herm stands its floor gate, the pin statement it lays, and what a reader presents at a gate; the operator ruling on the knock is ruled, the rest reads the house rulings"
@@ -23,8 +23,7 @@ written     = "2026-10-16"
 ! Herm carriage ~ where a crossroads stands its gate, and how a vessel pulls through one
 
 A public map crosses a wire only through a gate: the bare hop-by-hop route stands SHUT by name, and the
-house named what opens it: an explicit Nexus, and a proven gate-native caller (house ruling "Routes at the
-cutover").
+house named what opens it: an explicit Nexus, and a proven gate-native caller (the shut-routes house ruling, stable-founding-road #/rulings).
 This module is both halves for a crossroads: where its floor gate stands, and the pull a vessel's carriage
 dials through such gates.
 
@@ -39,7 +38,7 @@ vessel key (`placeCarriedNexuses`, `via: "carrier-seal"`; `gateReadingsFor`). A 
 stands no gate: holding A's charter is how a herm reads A's board, never a standing at A. A lararium stands
 one at its own Nexus and at each it carries.
 
-The explicit act that opens the herm relay (house ruling "Routes at the cutover") is the quorum's counted
+The explicit act that opens the herm relay (the shut-routes house ruling, stable-founding-road #/rulings) is the quorum's counted
 carry over the herm's key. It travels to the herm by hand, because the membership relay ships SHUT by name
 (`carry-bundle`).
 
@@ -103,6 +102,6 @@ carried there as a place; a hearth that holds neither presents nothing there, an
 <<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/socket-sorter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;lK3Jvq6EuQb_bCSbfElfRUrUzTCPLuzbglKwqaVKO_o
+<<^ code="&#x0003;">>ni:///sha-256;C-RuyN2yWe1KOnSuc5-5z96GR075-szLnHfyGdBxLrE
 
 <<^ code="&#x0004;" -> to="?">>

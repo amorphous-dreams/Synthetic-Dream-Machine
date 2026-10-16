@@ -8,10 +8,6 @@
 #   crossing   (X1-X5 + anon floor)  the auth gate: admitted crosses + syncs both ways · anon denied →
 #                                     founds own island · impostor forged-sig denied · wrong-audience denied.
 #   burn       (X6)                   burning a Handle cuts NEW shared content forward-only; the floor persists.
-#   membership (MA1)                  the admit swarm forms across containers: each joiner presents its admit,
-#                                     signing the founder's challenge with the key the admit names, and the
-#                                     founder verifies that possession and the member on ask (held 2/2); a
-#                                     party presenting another's admit holds nothing; no roster stands.
 #   kahu       (S1 civic-custody)     a public-infra kahu HOLDS a citizen's ciphertext yet CANNOT read it —
 #                                     custody ⊥ materialization; Delivery-Service, never Auth-Root.
 #   kahu-recov (S3 civic-custody)     a kahu HOLDS a citizen's recovery escrow share yet CANNOT recover
@@ -85,7 +81,6 @@ echo "════════════════════════�
 # The crossing matrix is itself a 4-scenario witness; run it whole.
 family "crossing matrix (X1-X5+anon)" crossing bash tools/crossing-witness.sh
 family "burn forward-cut (X6)"        burn     compose_scenario docker-compose.burn.yml     burn-device
-family "membership swarm (MA1)"       swarm    compose_scenario docker-compose.swarm-ws.yml founder
 family "kahu civic-custody (S1)"      kahu     compose_scenario docker-compose.kahu.yml          kahu-node
 family "kahu recovery-custody (S3)"   kaharec  compose_scenario docker-compose.kahu-recovery.yml kahu-rec-node
 

@@ -92,11 +92,10 @@ import {
  * data home beside the `<lares>/vessel` store; the key + card + anchors are separate from vessel
  * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
  *
- * TAKES NO `dataDir` — it never did, in effect: this resolver has always answered off
- * `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never off a caller-supplied path. A `dataDir`
- * parameter here USED to exist and be silently ignored, which is the exact footgun a prior spirit
- * measured live (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per
- * simulated vessel, in-process, with no matching `LAR_ROOT` mutation, silently read/wrote the REAL
+ * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never
+ * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live
+ * (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per simulated vessel,
+ * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the REAL
  * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
  * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to

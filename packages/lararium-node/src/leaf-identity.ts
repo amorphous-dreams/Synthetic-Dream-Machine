@@ -6,12 +6,12 @@
  * lar:///ha.ka.ba/lararium/mesh/operator-peer). It holds only:
  *   - the operator Ed25519 seed → a bare signer (no keyhive), and
  *   - the cached ContactCard JSON minted once at `lares vessel found`.
- * With these it presents a self-certifying identity and signs the V3
- * proof-of-possession at the peer-boundary gate. The full keyhive engine boots
- * once on the always-on RELAY, which verifies leaf proofs in its keyholder worker.
+ * With these it presents a self-certifying identity at a peer's gate (the
+ * carriage's gate-native pull reads it through `open-node-vessel`), and never
+ * boots the keyhive engine.
  *
  * The ContactCard carries no expiry/nonce — re-presented forever; proof freshness
- * rides the per-challenge nonce + timestamp, never the cached card.
+ * rides the gate's own handshake, never the cached card.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/leaf-identity
  */

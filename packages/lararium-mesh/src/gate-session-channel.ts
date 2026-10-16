@@ -34,9 +34,9 @@
  * Pure of clocks and timers: ids come from one sealedWriter, order from the socket's own, and a race pins on a
  * promise the caller holds. Frames after open ride the sealed application header of sealed-carriage.
  *
- * Stands specified in code until the socket cutover wires it; the package barrel names it for the slices that consume it.
+ * Called by the oracle reader and the browser adapter (`lar-ws-client-adapter`); the package barrel names it.
  *
- * Canon: operator house ruling "Frames after open"; kit train-w-launch #/cutover and #/briefs.
+ * Canon: operator house ruling "Frames after open" (stable-founding-road #/rulings).
  */
 import type { GateSession, GateSessionTable, GateSocket } from "./face-gate.js";
 import type { NoiseTransport } from "./noise-ik.js";

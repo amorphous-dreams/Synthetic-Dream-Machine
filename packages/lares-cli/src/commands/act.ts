@@ -470,10 +470,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // itself succeeds.
   const timeoutMs = Math.max(10_000, 10_000 + carrierCount * 400);
   // ONE SHORT READ-BACK, BY THE SAME REQUEST ID, THROUGH `queryReceipt` — A READ, NEVER A SECOND
-  // DISPATCH (H1). This used to re-submit through `runVerb` a second time, trusting the dispatcher's
-  // outcome dedup to make that safe — but an id this vessel had already dropped as ABANDONED (the
-  // caller gave up before the vessel ever committed) carried no outcome to dedup against, so the
-  // "read-back" ran the act a second time under the SAME id. `queryReceipt` rides a dedicated
+  // DISPATCH (H1). A re-submit through `runVerb` cannot stand in for it: the dispatcher's outcome dedup
+  // holds nothing for an id this vessel dropped as ABANDONED (the caller gave up before the vessel ever
+  // committed), so a re-submitting "read-back" runs the act a second time under the SAME id. `queryReceipt` rides a dedicated
   // `{op:"receipt"}` line the vessel answers from its own ledger + durable outcome doc alone — it
   // cannot dispatch anything, by construction.
   const READBACK_MS = 2_000;

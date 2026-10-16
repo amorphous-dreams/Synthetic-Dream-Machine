@@ -55,8 +55,8 @@ export interface VesselIslandPoolOptions {
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
   /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
-   *  verified offering selection). REQUIRED — the pre-R3 flat `pluginCids` floor (every island
-   *  getting the SAME vessel-wide list) has retired; `open-node-vessel.ts` always supplies
+   *  verified offering selection). REQUIRED — no flat vessel-wide `pluginCids` floor stands (every island
+   *  getting the SAME list); `open-node-vessel.ts` always supplies
    *  `resolveNodeIslandPluginCids` (`node-plugin-resolution.ts`) at both its call sites, and
    *  `VesselIslandPoolCore`'s own constructor refuses to build a pool with no resolver at all
    *  (`VesselIslandPoolCoreOptions.resolvePluginCids`, M6). See that module's docblock. */

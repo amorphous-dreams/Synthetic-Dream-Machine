@@ -55,10 +55,10 @@ import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
-import { floorShadowRing, noFleetAtTheFloor } from "./floor-fleet-lanes.js";
+import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import type { MountManifest } from "@lararium/mesh";
-import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
+import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, type LeafIdentity } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
@@ -114,7 +114,6 @@ import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
-import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve-loop.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
@@ -321,27 +320,19 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   meshSelf?: MeshSelf;
   /** Carriage pull cadence (ms) — tuning, kept separate from membership. */
   pullIntervalMs?: number;
-  /** The PINNED carriage-relay address (Socket B, ciphertext; `ws://<host>:<port>#<relay gate key hex>`) the
-   *  vessel dials to serve sealed cad bodies to members.
-   *  ABSENT (and `LAR_CARRIAGE_RELAY` unset) → NO carriage socket opens, NO serve-loop stands (provably inert). */
-  carriageRelayUrl?: string;
-  /** The carriage serve-loop poll cadence (ms) — how promptly a member's want-block draws a serve turn. */
-  carriagePollIntervalMs?: number;
-  /** STAND a carriage relay (Socket B, ciphertext CROSSROADS) so a family's hearths dial THIS vessel to carry sealed
-   *  cad bodies between each other — the Herm's Lares-Viales role (a running Herm IS a crossroads). The port the
-   *  relay BINDS (0 → an OS-assigned free port; a Pi deployment pins a stable one). ABSENT (and `LAR_HERM_RELAY_PORT`
-   *  unset) → NO relay socket stands, boot behaves exactly as today (provably inert). SEPARATE from `carriageRelayUrl`
-   *  (that DIALS a relay as a client; this STANDS one as the crossroads). */
+  /** STAND the herm's relay port: siblings of a PersonaGroup leave persona-KEL drops on it over plain HTTP, and every
+   *  WebSocket upgrade meets silence. The port the relay BINDS (0 → an OS-assigned free port; a Pi deployment pins a
+   *  stable one). ABSENT (and `LAR_HERM_RELAY_PORT` unset) → NO relay port stands (provably inert). */
   standCarriageRelayPort?: number;
-  /** The relay's gate seed hex (32 bytes) — a dialing hearth binds its proof-of-possession to this key's PUBLIC half.
-   *  ABSENT → derived from the vessel's OWN identity seed (stable across restarts, so hearths keep dialing the same
+  /** The relay's gate seed hex (32 bytes) — its PUBLIC half is the key a sibling's pinned relay address names.
+   *  ABSENT → derived from the vessel's OWN identity seed (stable across restarts, so a pinned address keeps its
    *  key). NEVER a fresh random per boot. Only read when `standCarriageRelayPort` (or its env) is set. */
   standCarriageRelayGateSeedHex?: string;
   /** The peer node's `/ws` URL (Socket A, cleartext CRDT) this vessel DIALS to sync — the same-operator device
    *  breath. ABSENT → NO client adapter mounts, NO dial, zero change (provably inert). */
   joinSyncUrl?: string;
   /** The DIALED hearth's verifying-key hex, pinned out of band and NEVER trusted from the wire: the island anchor a
-   *  joinee resolves its Nexus under, and the founder Socket B reads as fleet. The dial itself reads its full gate pin
+   *  joinee resolves its Nexus under. The dial itself reads its full gate pin
    *  from the pair index (house ruling "The admit's gate pin"), never from this key. */
   joinGatePubKey?: string;
   /** The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
@@ -353,8 +344,9 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  address that pins no gate key refuses the channel, said alike. Either way the rest of the vessel boots.
    *  ABSENT (and `LAR_SIBLING_HERMS`, a comma-separated list, unset) → no sibling channel stands. */
   siblingHerms?: readonly string[];
-  /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
-   *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
+  /** OPTIONAL doc URL the dial-out `repo.find()`s once mounted. Absent → the document the admit named beside its pin
+   *  (`fleet join answer --doc-url`, kept by the landing: hearth-dial-pin.ts); neither → the vessel syncs only docs it
+   *  already knows. */
   joinDocUrl?: string;
   /**
    * The session table and binding the dial's face session opens on (`composeDialPresentation`). Absent → the vessel
@@ -517,11 +509,11 @@ export interface NodeHermResult {
   catalogHandleUrl: string;
   larariumDocUrl:   string | null;
   phase:            "live";
-  /** The bound port the STOOD carriage relay (Socket B crossroads) listens on — `null` when no relay was configured
-   *  (inert). The operator hands a hearth `ws://<host>:<port>` from this. */
+  /** The bound port the STOOD herm relay port listens on — `null` when no relay was configured (inert). A sibling
+   *  pins `ws://<host>:<port>#<gate key>` from this. */
   carriageRelayPort:       number | null;
-  /** The stood carriage relay's gate verifying-key hex — the key a dialing hearth binds its proof to (out-of-band).
-   *  `null` when no relay was configured. The operator hands a hearth this alongside the URL. */
+  /** The stood relay port's gate verifying-key hex — the fragment of a sibling's pinned relay address.
+   *  `null` when no relay was configured. */
   carriageRelayGatePubKey: string | null;
   /** The oracle's floor gates, one per Nexus this vessel stands in. */
   floorGates:       OracleGateArgs["gates"];
@@ -575,22 +567,19 @@ interface NodeBootPrep {
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
   vesselSeed:     Uint8Array;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
-   *  key its browser leaves pass as relayGatePubKey. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
+   *  key its admitted browser leaves resolve. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
   nexusPubkey:      string;
   /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
   vesselGateKey:    string;
   /** The oracle's floor gates, one per Nexus this vessel stands in. */
   floorGates:       OracleGateArgs["gates"];
-  /** THE GATE-NATIVE CARRIAGE PULL (house ruling "Routes at the cutover": carriage peering flips on a proven gate-native
+  /** THE GATE-NATIVE CARRIAGE PULL (the routes ruling, stable-founding-road: carriage peering flips on a proven gate-native
    *  caller): one floor dial per (peer, Nexus) at the pin this vessel's boards carried, presenting what it stands as there. */
   carriagePull:     (peer: string, publisherKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
   residency:        BagStowage;
-  /** The carriage serve-loop (Socket B) — present ONLY when a carriage-relay URL was configured; else null (inert).
-   *  The two vessel entry-points fold its `stop()` into their teardown so no timer / socket leaks past close. */
-  carriageLoop:     CarriageServeLoop | null;
-  /** The STOOD carriage relay (Socket B CROSSROADS) — present ONLY when a relay port was configured; else null
-   *  (inert). A running crossroads a family's hearths dial to carry sealed cad bodies between each other. The two
-   *  vessel entry-points fold its `close()` into their teardown so no WS server / peer socket leaks past close. */
+  /** The STOOD herm relay port — present ONLY when a relay port was configured; else null (inert). It keeps the
+   *  persona-KEL drops siblings leave over plain HTTP. The two vessel entry-points fold its `close()` into their
+   *  teardown so no server leaks past close. */
   carriageRelay:    CarriageRelay | null;
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel:   () => SiblingChannelStatus | null;
@@ -757,9 +746,6 @@ async function prepareNodeBootOn(
   let nexusMembershipHolder: NexusMembershipHolder | null = null;
   // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
   let representIfMoved: (() => Promise<void>) | null = null;
-  // The walk's re-presentation — set once a walk dial stands (below); the custody door's `walk.take` act calls it
-  // for the dialed hearth.
-  let representWalk: (() => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
@@ -852,7 +838,7 @@ async function prepareNodeBootOn(
     // composes verifyCapability(docUrl, ability) as the INNER ring here (per-doc caps
     // behind the per-peer admission), matching the browser's FederationGate call site.
     //
-    // ONE VERDICT, BOTH HOOKS. A legacy `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
+    // ONE VERDICT, BOTH HOOKS. A bare `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
     // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
     // `bags/*` id derives from the shared genesis (mesh `shareConfigOf`, measured in
     // share-policy-is-access.test.ts). The verdict below is an ACCESS verdict; mesh's `shareConfigOf` seats it on both.
@@ -1296,7 +1282,7 @@ async function prepareNodeBootOn(
     deadlines: timerGateDeadlines(),
     audience:  DAEMON_BAG_ID,
     onRefuse:  (at, reason, detail) => console.warn(`[lar-gate] ${at.tier} ${at.route} at ${at.nexus.slice(0, 18)}… fell silent: ${reason}${detail ? ` (${detail})` : ""}`),
-    onShut:    (arm, at) => console.warn(`[lar-gate] a walker's ${arm} arm at ${at.route} reads SHUT at the cutover`),
+    onShut:    (arm, at) => console.warn(`[lar-gate] a walker's ${arm} arm at ${at.route} reads SHUT by name`),
   };
   // A REFOLD THAT SETS A DEVICE ASIDE, OR REVOKES AN ADMIT, CLOSES. A same-operator session stands only while its gate
   // would seat it same-operator today: its device still binds and stands, and its admit still reads held at its Nexus
@@ -1315,7 +1301,7 @@ async function prepareNodeBootOn(
   };
   /**
    * Every Nexus a gate stands in: this vessel's own, and each it carries. A HERM stands at the explicit Nexus it was
-   * joined to and only there (house ruling "Routes at the cutover": "an explicit Nexus opens the herm relay"): a Nexus
+   * joined to and only there (the routes ruling, stable-founding-road: "an explicit Nexus opens the herm relay"): a Nexus
    * whose carriage board counts a `carry` for this place's own key. A charter it merely holds stands no gate.
    */
   const gateNexuses = async (): Promise<string[]> => {
@@ -1396,83 +1382,12 @@ async function prepareNodeBootOn(
     ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(aid, vesselIdentity.verifyingKey)) as DocumentId);
   }
 
-  // ── The CARRIAGE serve-loop (Socket B, ciphertext) — INERT until a carriage-relay URL rides the config ──────
-  // When configured, the vessel dials the carriage relay over an authenticated WS channel (proving `vesselSeed`)
-  // and serves members' want-blocks for sealed cad bodies on a poll interval. The gate stays `serveCasWire`'s own
-  // `carrierShareDecision` VERBATIM: a proven MEMBER over a provably-sealed plane carries the ciphertext; a
-  // STRANGER / non-member / Kapae'd draws byte-identical Mu. Carry ⊥ read — the read-cap never rides this shore.
-  // Socket B stays SEPARATE from the Automerge `/ws` relay (Socket A): cleartext CRDT never routes through here.
-  // ABSENT the URL → this branch never runs, so no socket opens and boot behaves exactly as it did before.
-  const carriageRelayUrl = opts.carriageRelayUrl ?? process.env["LAR_CARRIAGE_RELAY"] ?? null;
-  // THE FLEET CLASS on Socket B (basket-one #/the-fetch-door). A peer proves its vessel key on the carriage
-  // channel; it reads FLEET when the SAME key stands on Socket A as a `same-operator` peer (the keyholder vouched
-  // its signed device edge at admission — `peerClassMap`), or when it names the vessel THIS one dialed under
-  // its own admit (`joinGatePubKey` — the founder a joinee stood by). A CONTRACT member never reads fleet.
-  const fleetJoinGate = (opts.joinGatePubKey ?? hearthPin?.gatePubKey ?? "").toLowerCase();
-  const isFleetPeer = (peerKey: string): boolean => {
-    const nym = peerKey.slice(-64).toLowerCase();
-    if (fleetJoinGate && nym === fleetJoinGate) return true;
-    // The DEVICE a same-operator session's face-scoped key was certified to (D4), never the face key its gate proved.
-    for (const [peerId, session] of peerSessions) {
-      if (session.class === "same-operator" && deviceOfPeer(peerId) === nym) return true;
-    }
-    // Refused, said aloud: a cleartext ask from a peer the gate cannot read as fleet. The peers as this vessel
-    // holds them (nym tail · class) so an operator can see WHY the door stayed shut.
-    const seen = [...peerSessions].map(([pid, session]) => `${(deviceOfPeer(pid) ?? "unbound").slice(0, 8)}…/${session.class}`).join(" ");
-    console.log(`[carriage] fetch door: ${nym.slice(0, 8)}… reads NOT fleet (socket-A peers: ${seen || "none"}; join-gate: ${fleetJoinGate.slice(0, 8) || "none"})`);
-    return false;
-  };
-  /** The holders a fetch asks, DHT-free: the fleet peers this vessel stands with right now. */
-  const fleetHolders = (): readonly string[] => {
-    const out = new Set<string>();
-    if (fleetJoinGate) out.add(fleetJoinGate);
-    for (const [peerId, session] of peerSessions) {
-      const device = session.class === "same-operator" ? deviceOfPeer(peerId) : null;
-      if (device !== null) out.add(device);
-    }
-    return [...out];
-  };
-  const carriageLoop: CarriageServeLoop | null = carriageRelayUrl
-    ? startCarriageServeLoop({
-        relayUrl:     carriageRelayUrl,
-        vesselSeed: vesselSeed,
-        serverAddr:   vesselIdentity.verifyingKey,
-        deps: {
-          cadDir:     cadSealDir(storageDir),
-          cidDir:     casDirForStorage(storageDir),
-          // A floor composition reads no peer as fleet (`floor-fleet-lanes`): the cleartext tier serves nobody
-          // until a person unlocks, the pinned join gate's key included.
-          fleet:      sovereign ? isFleetPeer : noFleetAtTheFloor,
-          seal:       sealRegistry.seal,
-          membership: nexusMembership,
-          antigen:    antigenRing,
-          fedGate:    selfSlotFedGate,
-          shadow:     shadowRing,
-          // A member set aside from the realm a sealed block belongs to draws Mu ahead of the carry lane. The
-          // sealed set's own sidecar names the Nexus the block belongs to.
-          realmAside: (peerId, documentId) => {
-            const sealedUnder = sealRegistry.epochFor(documentId);
-            return sealedUnder ? shadowRing.memberAside(sealedUnder.nexusAid)(peerId) : false;
-          },
-        },
-        ...(opts.carriagePollIntervalMs !== undefined ? { pollIntervalMs: opts.carriagePollIntervalMs } : {}),
-        // HEAL — on a RE-connect after a drop, re-fold the antigen + carried deny boards + posture the vessel read
-        // as-of-its-last-sync (a peer's bans/revokes that landed during the partition). The SAME after-roll hook
-        // every store-door write fires; here it fires automatically when the carriage transport re-dials.
-        onReconnect:  async () => { await afterRoll(); },
-        onLog:        (line) => console.log(`[carriage] ${line}`),
-      })
-    : null;
-
-  // ── The CARRIAGE relay (Socket B, ciphertext CROSSROADS) — INERT until a relay port rides the config ─────────
-  // A running crossroads a family's HEARTHS dial (`ws://<host>:<port>`) to carry sealed cad bodies between each
-  // other — the Herm's Lares-Viales role. The relay CARRIES opaque ciphertext envelopes, stamps each `from` with the
-  // sender's PROVEN Ed25519 key, and holds the DHT-free bag-tracker HINT index — it reads NO plaintext, holds NO
-  // read-cap / content key / roster (carry ⊥ read ⊥ contract), so a compromised crossroads leaks nothing. Its gate seed
-  // derives from the vessel's OWN identity seed (or a configured seed) — STABLE across restarts, NEVER fresh-random,
-  // so hearths keep dialing the same key. This CROSSROADS (a stood WS server) SEPARATES from both the Automerge `/ws`
-  // relay (Socket A, cleartext CRDT) and the client-side carriage serve-loop dial above. ABSENT the port → this
-  // branch never runs, so no socket opens and boot behaves exactly as it did before (provably inert).
+  // ── THE HERM RELAY PORT — INERT until a relay port rides the config ─────────────────────────────────────────
+  // Siblings of a PersonaGroup pin it (`ws://<host>:<port>#<gate key>`) and leave persona-KEL drops there over plain
+  // HTTP; every WebSocket upgrade meets silence, so no envelope crosses it. It reads NO plaintext and holds NO read-cap /
+  // content key / roster (carry ⊥ read ⊥ contract). Its gate seed derives from the vessel's OWN identity seed (or a
+  // configured seed) — STABLE across restarts, NEVER fresh-random, so a pinned address keeps its key. It stands apart
+  // from the Automerge `/ws` relay (Socket A, cleartext CRDT). ABSENT the port → this branch never runs and no port opens.
   const relayPortRaw = opts.standCarriageRelayPort ?? process.env["LAR_HERM_RELAY_PORT"];
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
   const relayGateSeed = resolveRelayGateSeed(vesselSeed, opts.standCarriageRelayGateSeedHex ?? process.env["LAR_HERM_RELAY_SEED"]);
@@ -1484,46 +1399,46 @@ async function prepareNodeBootOn(
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
   }
-  stood.push({ what: "the carriage serve-loop", down: async () => { await carriageLoop?.stop(); } });
   stood.push({ what: "the carriage crossroads", down: async () => { await carriageRelay?.close(); } });
 
   // ── THE FETCH DOOR, vessel side — `makeCidResolver(localRead, casTransit, cacheWriteThrough)` ──────────────
-  // Fetch-on-read is the default: a read that misses the local `cid/` asks the fleet holders over Socket B, the
-  // bytes verify against the cid's own class, and the verified body lands write-through in `cid/`. Every worker
-  // (the daemon island, each wiki island) reaches this ONE door through `cas:want`. No carriage channel → the
-  // door answers every ask with a miss (PENDING stays PENDING; a dead upstream faults nothing).
+  // Fetch-on-read: a read that misses the local `cid/` asks the Herm's public shore (`LAR_HERM_SHORE`), the bytes
+  // verify against the cid's own class, and the verified body lands write-through in `cid/`. Every worker (the
+  // daemon island, each wiki island) reaches this ONE door through `cas:want`. No shore → the door answers every
+  // ask from `cid/` alone (PENDING stays PENDING; a dead upstream faults nothing).
   const cidDir = casDirForStorage(storageDir);
-  const resolveCidThroughDoor = carriageLoop
+  const hermShore = hermCasTransitFromEnv();
+  const resolveCidThroughDoor = hermShore
     ? makeCidResolver(
         (cid) => readCasBlobFromFs(cid, cidDir),
-        composeCasTransits(carriageLoop.transit(fleetHolders), hermCasTransitFromEnv()),   // the fleet first; the Herm's public shore (`LAR_HERM_SHORE`) after — a dark peer's public bytes still arrive by the crossroads
+        hermShore,
         (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); },
       )
     : async (cid: string) => readVerifiedCasBlobFromFs(cid, cidDir);
   setCasDoor(resolveCidThroughDoor);
-  if (carriageLoop) console.log(`[carriage] fetch door open — fleet holders ${fleetHolders().length} · cid/ ${cidDir}`);
+  if (hermShore) console.log(`[carriage] fetch door open — the herm shore · cid/ ${cidDir}`);
 
   // ── The CLIENT dial-out (Socket A, cleartext CRDT) — INERT until a peer sync URL + gate key ride the config ──
   // When configured, the vessel mounts a `LarWSClientAdapter` carrying the operator's OWN leaf identity onto the
   // running Repo and DIALS the peer node's `/ws`, so a same-operator second device syncs the private planes both
   // ways (the peer's gate vouches it `same-operator`; `selfSlotShareDecision` opens full sync). The dial rides the
-  // Automerge `/ws` relay (Socket A) — the SAME transport the server adapter answers on, SEPARATE from the carriage
-  // relay (Socket B). REAL crypto: the outbound proof binds to the peer's gate key (out-of-band, never the wire) and
+  // Automerge `/ws` relay (Socket A) — the SAME transport the server adapter answers on, SEPARATE from the herm
+  // relay port. REAL crypto: the outbound proof binds to the peer's gate key (out-of-band, never the wire) and
   // carries the operator's own identity, never a forged one. ABSENT the config → no adapter, no dial, no change.
   // THE PINNED EDGE'S HEARTH IS THE DIAL'S DEFAULT. A joinee founded by an admit edge carries the hearth's sync
-  // url + gate key in its bootstrap (hearth-dial-pin.ts); an explicit option / `LAR_JOIN_*` still wins, and a
-  // vessel holding no pin and no env dials nobody — byte-identical to before.
+  // url + gate key in its bootstrap (hearth-dial-pin.ts); an explicit option outranks it, and a vessel holding no
+  // pin dials nobody.
   // THE HEARTH THIS VESSEL WALKS AT names its own dial: where its relay answers, and the gate key to pin there —
-  // kept on the walk record `lares walk take` wrote. It is the dial's last default — an explicit option,
-  // `LAR_JOIN_*`, or a hearth pin each outranks it. A vessel walks at one hearth (the take refuses a second).
+  // kept on the walk record `lares walk take` wrote. It is the dial's last default — an explicit option or a
+  // hearth pin each outranks it. A vessel walks at one hearth (the take refuses a second).
   // THE WALK RECORDS REST SEALED, so this read belongs to a sovereign composition alone: a floor reads no walk
   // record and so dials no walked hearth, and the first unlock stands a composition that reads them.
   const walkingAt      = (sovereign ? await sovereign.walkRecords() : []).find((w) => w.record.relay) ?? null;
-  // `LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer ride the env: the dial reads the pin from the pair index (`gatePins`),
-  // and a hearth is named by an option, its admit's pin or a walk record.
+  // The dial reads the pin from the pair index (`gatePins`), and a hearth is named by an option, its admit's pin or a
+  // walk record. No environment names a hearth, its gate or its document.
   const gatePins       = hearthGatePins();
   // ── THE GATE-NATIVE CARRIAGE PULL ──────────────────────────────────────────────────────────────
-  // Carriage peering flips on this caller (house ruling "Routes at the cutover"). Each pull dials a peer's floor gate once per
+  // Carriage peering flips on this caller (the routes ruling, stable-founding-road). Each pull dials a peer's floor gate once per
   // Nexus this vessel stands in, at the pin the pair index holds for that peer there, and nowhere else:
   //   · THE PINS a place signed for its floor gate ride each Nexus's carriage board; this vessel files one only where its own
   //     replica of that board counts the place as a carrier (`place-floor-pin`: the quorum's act authenticates the key, the
@@ -1570,7 +1485,8 @@ async function prepareNodeBootOn(
   for (const warning of hearthDial.warnings) console.warn(`[nexus-join] ${warning}`);
   const joinSyncUrl    = hearthDial.syncUrl;
   const joinGatePubKey = opts.joinGatePubKey ?? hearthPin?.gatePubKey ?? walkingAt?.gatePubKey   ?? null;
-  const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
+  // The document the dial asks for: an explicit option, else the one the admit named beside its pin (`--doc-url`).
+  const joinDocUrl     = opts.joinDocUrl     ?? hearthPin?.docUrl ?? null;
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
@@ -2079,8 +1995,7 @@ async function prepareNodeBootOn(
         // THE FACE DIAL. The dial presents the face's chain through `dialFaceGate` at the pin the pair index holds for the
         // hearth and Nexus it stands at; the pins and the presentation are composed just below, and the dial stands idle,
         // naming the missing piece, when either is absent.
-        // The walker route is SHUT by name: the old walk arm rode the retired challenge, and H opens walkers with its live
-        // grant reader.
+        // The walker route is SHUT by name until a live grant reader opens it.
         // THE PINS. The full sovereign sync pin the admit carried rides the bootstrap beside the sync url, and each kept admit
         // bundle opens the pin its quorum signed. Each is filed in the ONE pair index under the name of the hearth that issued
         // it (the origin of ITS sync url: the admit carries no other true name for it), and the dial reads the index alone.
@@ -2096,9 +2011,9 @@ async function prepareNodeBootOn(
         const composed = dialPin !== null
           ? await composeDialPresentation({ sealHome, pin: dialPin, personaGroup: personaGroupId, ...dialSessions })
           : null;
-        // THE WALKER ROUTE SHIPS SHUT BY NAME (house ruling "Routes at the cutover": "Walker arms ... ship SHUT by name ... a closed route
-        // grants no silent legacy authority"): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
-        if (walkingAt && dialPin === null) console.log("[walk] walker-route-shut — the walker route ships shut by name (house ruling \"Routes at the cutover\"); this walk presents nothing at the hearth's gate");
+        // THE WALKER ROUTE SHIPS SHUT BY NAME (the routes ruling, stable-founding-road: "Walker arms ... ship SHUT by name"; a closed
+        // route grants no silent authority): a vessel that walks at a hearth with no admit-carried pin presents no walk at the sealed gate.
+        if (walkingAt && dialPin === null) console.log("[walk] walker-route-shut — the walker route ships shut by name; this walk presents nothing at the hearth's gate");
         if (composed !== null && !("presentation" in composed)) console.log(`[nexus-join] no presentation: ${composed.refusal}${composed.detail ? ` (${composed.detail})` : ""}`);
         const dialPresentationNow = composed !== null && "presentation" in composed ? composed.presentation : null;
         // The composition awaited: a dial that stood meanwhile, or a vessel that stood down, takes no second adapter.
@@ -2108,7 +2023,7 @@ async function prepareNodeBootOn(
           presentation: dialPresentationNow, deadlines: dialDeadlines(),
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
-          // THE RETURN ON SOCKET A — the same re-fold the carriage's own `onReconnect` runs on Socket B.
+          // THE RETURN ON SOCKET A — a return re-folds the boards a partition staled.
           onReconnect: async () => { await afterRoll(); },
         });
         // A re-presentation has nothing to move while no presentation stands; the hook stays so the boards' callers keep it.
@@ -2127,19 +2042,17 @@ async function prepareNodeBootOn(
       await standFaceDial(hearthDial);
     }
     else if (placeClass === "herm") {
-      // THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME (house ruling "Routes at the cutover", stable-founding-road: "Walker arms, the
-      // sibling dial and the herm membership relay ship SHUT by name ... a closed route grants no silent legacy authority."). A
-      // carried place dials with its carrier seal (`dialPlaceGate`) and no place presentation is composed; until a proven gate-native
-      // caller opens it, the herm says so on every boot and dials nothing.
-      console.log("[herm-relay] herm-relay-shut — the herm membership relay ships shut by name (house ruling \"Routes at the cutover\"); this herm dials nothing");
+      // A herm dials no hearth. Its standing at a Nexus is the counted `carry` that travels by hand
+      // (lar:///ha.ka.ba/lararium/node/carry-bundle), and its floor gate answers at that Nexus alone
+      // (lar:///ha.ka.ba/lararium/node/herm-carriage).
+      console.log("[herm] a herm dials no hearth — its standing travels by hand (carry-bundle)");
     } else if (readKeptAdmitBundles(sealHome).length > 0) {
       console.log("[nexus-join] dial-idle: sync-url-absent — a kept admit bundle names no address the hearth listens at (re-take a bundle issued with --sync-url)");
     }
     // THE LATE DIAL. `admit-take` on a RUNNING vessel keeps a bundle that names a hearth, its sync url and the sovereign pin to dial,
-    // and fires `afterRoll`. The retired `LAR_JOIN_*` env was the only thing that stood such a dial before the take, so the take stands
-    // it now: the choice is made again over the bundles kept at that moment, and a dial that already stands keeps what it presents
-    // (a moved board re-dials through the adapter). A herm dials nothing (its relay ships shut by name), and a floor composition holds
-    // no key to present with, so its attempt names `CustodyLocked` and stands nothing.
+    // and fires `afterRoll`, and the take stands that dial: the choice is made again over the bundles kept at that moment, and a dial
+    // that already stands keeps what it presents (a moved board re-dials through the adapter). A herm dials no hearth, and a floor
+    // composition holds no key to present with, so its attempt names `CustodyLocked` and stands nothing.
     if (placeClass !== "herm") {
       representIfMoved = lateDialOnce({ standing: () => nexusDial !== null, tornDown: () => dialStoodDown, stand: async (live) => {
         const late = chooseHearthDial({
@@ -2263,7 +2176,7 @@ async function prepareNodeBootOn(
       ...(outboxKey ? { outboxKey } : {}),
     };
     // R3 — the daemon VM resolves its plugins through the SAME selector + CAS path every wiki
-    // island does (`resolveNodeIslandPluginCids`), never the retired vessel-wide hand-off. The
+    // island does (`resolveNodeIslandPluginCids`), never a vessel-wide hand-off. The
     // daemon's own one-recipe-model record names no offerings today, so this call is the floor
     // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
     crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
@@ -2796,15 +2709,14 @@ async function prepareNodeBootOn(
       return { verb: "nexus-rekey", ...r };
     });
 
-    // nexus-reshare — the immune keel's RE-SHARE tooth: re-announce every sealed body this hearth HOLDS over the
-    // carriage, so a relay that PRUNED this holder on a drop re-learns `cid → holder` FROM THE WIRE. The held set =
-    // the cad ciphertext tier on disk (cid-named files); the announce carries a HINT (where to ask), never the
-    // bytes (a member re-verifies `verifyCiphertextCid`). The PUBLIC FLOOR re-announce rides the read-face's own Ea
-    // breath (the signed monotone pointer re-issues each TTL/2), so a static floor never reads stale — no extra verb.
+    // nexus-reshare — the immune keel's RE-SHARE tooth: the sealed bodies this hearth HOLDS (the cad ciphertext tier
+    // on disk, cid-named files). The vessel holds no carriage channel to announce `cas-have` over: the herm relay
+    // carries drops alone (lar:///ha.ka.ba/lararium/node/carry-bundle), so the tooth names the held set and
+    // announces nothing. The PUBLIC FLOOR re-announce rides the read-face's own Ea breath (the signed monotone
+    // pointer re-issues each TTL/2), so a static floor never reads stale.
     registry.register("nexus-reshare", async () => {
       const cids = listSealedCids(cadSealDir(storageDir));
-      const announced = carriageLoop ? await carriageLoop.announce(cids) : 0;
-      return { verb: "nexus-reshare", held: cids.length, announced, carriage: carriageLoop !== null };
+      return { verb: "nexus-reshare", held: cids.length, announced: 0 };
     });
 
     // cas-sweep + the sweep TICK — the ONE production caller of `casSweep` (node-cas): the reference count derives
@@ -2829,7 +2741,7 @@ async function prepareNodeBootOn(
     }
 
     // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,
-    // then the fleet holders over Socket B, verified, write-through). The verb IS a read, so fetch-on-read holds
+    // then the Herm's public shore, verified, write-through). The verb IS a read, so fetch-on-read holds
     // it; it fabricates nothing — a miss everywhere answers `held:false` and the pointer stays PENDING.
     registry.register("cas-fetch", async (args) => {
       const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
@@ -2837,7 +2749,7 @@ async function prepareNodeBootOn(
       const before = readCasBlobFromFs(cid, cidDir) !== null;
       const bytes = await resolveCidThroughDoor(cid);
       return { verb: "cas-fetch", cid, held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0,
-               door: carriageLoop ? "socket-b" : "local-only", holders: fleetHolders() };
+               door: hermShore ? "herm-shore" : "local-only" };
     });
 
     // cad-seal — REGISTER a carrier body the content-key holder sealed. The holder lives in the daemon island,
@@ -2941,7 +2853,7 @@ async function prepareNodeBootOn(
 
     // THE SYNC GATES stand once the island answers: one sovereign gate per Nexus, under the custody root, each
     // signing its own verdict. The walkers' session verbs (the blind mint, the sealed carriage) stand nowhere: the
-    // walker arms ship SHUT at the cutover, so no session ever sorts as a walker.
+    // walker arms ship SHUT by name, so no session ever sorts as a walker.
     if (resweepGates === null) {
       resweepGates = standSyncGates;
       void standSyncGates().catch((err: unknown) => console.warn(`[lar-gate] the sync gates did not stand: ${err instanceof Error ? err.message : String(err)}`));
@@ -3129,8 +3041,9 @@ async function prepareNodeBootOn(
           return faces;
         })
       : null),
-    // Thunks: the dial's gate key settles before any act runs, and the walk dial stands only once the daemon reads its doc.
-    walkDial: { dialGate: () => joinGatePubKey?.toLowerCase() ?? null, get represent() { return representWalk; } },
+    // A thunk: the dial's gate key settles before any act runs. No walk dial re-presents in the daemon, so a taken
+    // walk dials at the next stand.
+    walkDial: { dialGate: () => joinGatePubKey?.toLowerCase() ?? null, represent: null },
     // A roll lands on THIS Repo, the replica this hearth's walkers sync, and the refold serves the hosting doc it opened.
     hostingDoor: { withRepo: (act) => act(repo), rolled: async (nexusAid) => { await awaitOnRolled(afterRoll(nexusAid)); } },
     // THE CUT'S FOUR READS (custody#/the-cut). Each reads live when a cut asks: the face this composition mounts
@@ -3188,7 +3101,7 @@ async function prepareNodeBootOn(
         };
       },
     },
-    residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
+    residency, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
@@ -3293,9 +3206,9 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase: "live",
     eventBus: p.eventBus(),
-    // Graceful shutdown tears the pool down AND stops the carriage serve-loop (Socket B) + the client dial-out
-    // (Socket A) — each a no-op when none stood — so no timer / client socket leaks past close.
-    stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); void p.carriageLoop?.stop(); p.nexusDial?.stop(); },
+    // Graceful shutdown tears the pool down AND closes the crossroads + stops the client dial-out (Socket A), each a
+    // no-op when none stood, so no timer / client socket leaks past close.
+    stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); p.nexusDial?.stop(); },
     teardown: async () => {
       for (const down of roleCaps.splice(0).reverse()) {
         try { await down(); } catch (e) { console.log(`[lararium] teardown: a role cap — ${e instanceof Error ? e.message : String(e)}`); }
@@ -3359,7 +3272,7 @@ async function composeNodeHermOn(
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
     ...(p.bulb ? { bulb: p.bulb } : {}),
-    // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through over Socket B) IFF the crossroads board — the public plane by construction — names the cid.
+    // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through in its `cid/`) IFF the crossroads board — the public plane by construction — names the cid.
     publicCas: publicCasShore({
       casDir: casDirForStorage(opts.storageDir),
       references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
@@ -3393,7 +3306,6 @@ async function composeNodeHermOn(
   const dispose = async (): Promise<void> => {
     setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
     await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
-    await p.carriageLoop?.stop();   // stop Socket B serve-loop (a no-op when none stood) — no timer / socket leaks
     p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood
     await p.daemonVm().shutdown();
     await herm.vessel.dispose();   // reverse build order → read-face disposes (clears the HTTP handler)

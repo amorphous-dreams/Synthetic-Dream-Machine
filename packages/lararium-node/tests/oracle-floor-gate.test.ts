@@ -1,6 +1,6 @@
 /**
  * oracle-floor-gate — the oracle read face's server half on the floor gate (the oracle converts where browser boot
- * reads it: "Routes at the cutover"). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/oracle",
+ * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/oracle",
  * "floor") through the house's one dialer (`pullAndVerifyOracle`), and the face answers over the sealed channel:
  * one "session" message carrying the signed pointer frame, then the snapshot bytes, and no auth verb of its own.
  *

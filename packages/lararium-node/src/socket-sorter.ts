@@ -8,8 +8,8 @@
  *                     face and its scoped document view decide each document (D3);
  *   · contracted    — the gate read the admit HELD, standing as the proven face key at the admit's Nexus; or a
  *                     faceless PLACE presented a carriage contract the gate read HELD, standing as the place key;
- *   · walker        — SHUT by name at the cutover: a grant or claim arm draws nothing until a live grant reader
- *                     opens it (`SHUT_ARMS`);
+ *   · walker        — SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): a grant or claim
+ *                     arm draws nothing until a live grant reader opens it (`SHUT_ARMS`);
  *   · stranger      — a presenter with no arm, answered only where THIS gate's Nexus reads OPEN. Otherwise it is
  *                     SILENCE, exactly like a failed proof.
  *
@@ -25,7 +25,7 @@ import {
 } from "@lararium/mesh";
 import type { FaceDeviceReading } from "./gate-shadow-ring.js";
 
-/** The arms that ship SHUT at the cutover: a walker's hosting grant and its invite claim. */
+/** The arms that ship SHUT by name: a walker's hosting grant and its invite claim. */
 export const SHUT_ARMS = Object.freeze(["grant", "claim"] as const);
 export type ShutArm = (typeof SHUT_ARMS)[number];
 

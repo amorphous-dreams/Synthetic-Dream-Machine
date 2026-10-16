@@ -5,7 +5,7 @@
  * key) and carries a fresh challenge the founder issued for that one admit. To present, the joiner signs the
  * challenge with the key the admit names. The founder holds a presented admit only when:
  *   - the signature verifies under the member id the admit names, so a party presenting another party's admit
- *     (read off the open relay, which carries every admit in the clear) holds nothing;
+ *     (read off the shared channel, which carries every admit in the clear) holds nothing;
  *   - the challenge is the one the founder issued for that member and has not yet been spent, so a replay of an
  *     earlier verified present holds nothing;
  *   - Keyhive answers, on ask, that this one member holds (`dwellersHolding`).
@@ -15,7 +15,7 @@
  * nonce, the founder's key as the verifier's key, the member id as the presenting key, and the digest of the
  * kind-tagged admit as the presentation's CID. A presenter proves possession of what it presents, bound to one
  * verifier's challenge. No clock rides it: the single-use challenge is the freshness. It rides the swarm's own
- * relay, never a gate, and it is not the retired socket proof.
+ * membership channel, never a gate.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */

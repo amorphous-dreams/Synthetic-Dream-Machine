@@ -168,7 +168,7 @@ describe("fold details — evidence for a future receiver-local relation verifie
     expect(revoked.entries).toContainEqual(expect.objectContaining({ state: "revoked", reason: "causal-head-revoked" }));
   });
 
-  test("mixed member and place actions preserve legacy membership parity, including carry ties", async () => {
+  test("mixed member and place actions keep membership parity, including carry ties", async () => {
     const r = await roster();
     const memberAdmit = await admitEntry();
     const memberRevoke = await admitEntry({ action: "revoke" });

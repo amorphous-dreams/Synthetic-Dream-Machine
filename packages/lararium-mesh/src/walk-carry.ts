@@ -35,7 +35,7 @@ import { authorizeAddress, readContentKey, sealedImage } from "./sealed-chunk.js
 import { base64UrlEncode, base64UrlDecode, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { WALK_CARRY_DOCUMENT_INFO } from "./domains.js";
 import { walkCarrySecret } from "./hosting.js";
-import type { LarSessionMsg } from "./auth-wire.js";
+import type { LarSessionMsg } from "./leaf-presentation.js";
 import { tellWalkFault, type WalkStore, type WalkLeaf, type WalkTransport, type CarryReceipt, type WalkFault } from "./walk-client.js";
 
 const REF = /^[0-9a-f]{64}$/;

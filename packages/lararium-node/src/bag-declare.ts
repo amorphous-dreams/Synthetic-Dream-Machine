@@ -86,7 +86,7 @@ export function bagHomeRoots(): BagHomeRoots {
  * Pull the `toml meta` table out of a `.mem` body — through tw5's OWN TOML field reader
  * (`carrier-render.ts`'s `metaFieldsFromBody`), never a second hand-rolled grammar.
  *
- * NOT SHALLOW ANYMORE. The retired hand-rolled regex admitted only quoted strings; this reads the
+ * NOT SHALLOW. No hand-rolled regex reads the meta (one admits only quoted strings); this reads the
  * full TOML surface the real deserializer's meta-fence pass reads (numbers, arrays, booleans all
  * flatten to the TW5 tiddler-field convention — `toml-ast.ts`'s `flattenTomlValue`: scalars stringify,
  * arrays stay `string[]`). A key the fence does not carry simply does not appear, and every field a

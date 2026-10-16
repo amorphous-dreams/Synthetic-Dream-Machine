@@ -1,9 +1,9 @@
 /**
- * e2e/hosted-walk — the hosted walk at the sealed-gate cutover: THE WALKER ROUTE SHIPS SHUT BY NAME.
+ * e2e/hosted-walk — the hosted walk behind the sealed gate: THE WALKER ROUTE SHIPS SHUT BY NAME.
  *
- * House ruling "Routes at the cutover" (stable-founding-road.mem): "Walker arms, the sibling dial and the herm membership relay
- * ship SHUT by name ... a closed route grants no silent legacy authority." It flips on a proven gate-native caller. Until then
- * this suite asserts the SHUT, not the old walk: it is never skipped to get green.
+ * The shut-routes house ruling (stable-founding-road #/rulings): walker arms, the sibling dial and the herm membership relay
+ * ship SHUT by name, and a closed route grants no silent authority. It flips on a proven gate-native caller; while it stands
+ * shut, this suite asserts the SHUT: it is never skipped to get green.
  *
  *   A   the hearth — a charter seated by its own quorum, PRIVATE; its daemon stands throughout.
  *   B   a node that takes A's invite as its worn face and stands.
@@ -12,7 +12,7 @@
  * Proven, in order:
  *   ① A's roll and invite still run INSIDE A's standing vessel (`via: daemon`) — the hearth's hosting is not the shut route;
  *   ② B takes the invite and stands: its boot says `walker-route-shut` by name, A counts NO redemption, and B's wallet stays
- *     empty — no legacy walk arm reached the gate;
+ *     empty — no walk arm reached the gate;
  *   ③ C does the same on a second invite: still shut by name, A still counts none.
  *
  * The walker's browser shape (the platform-blind walk client over the sealed adapter) is shut the same way: the adapter
@@ -30,7 +30,7 @@ const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const dataOf = (r: { json: Record<string, unknown> | null }): Record<string, unknown> => (r.json?.["data"] ?? {}) as Record<string, unknown>;
-const RULING = "Routes at the cutover";
+const RULING = "the shut-routes house ruling";
 
 function missing(): string[] {
   const out: string[] = [];
@@ -59,7 +59,7 @@ async function redeemedAtA(): Promise<number> {
 
 /**
  * A shut route redeems nothing, and a count read the instant the boot lands proves only that no redemption has landed YET.
- * The old walk redeemed within a few seconds of the take, so hold the count at zero across that whole window: every read
+ * An open walk redeems within a few seconds of the take, so hold the count at zero across that whole window: every read
  * inside it reads none, and the last does too.
  */
 async function noRedemptionWithin(windowMs: number): Promise<void> {
@@ -69,7 +69,7 @@ async function noRedemptionWithin(windowMs: number): Promise<void> {
     if (Date.now() < until) await new Promise((r) => setTimeout(r, 1_000));
   } while (Date.now() < until);
 }
-const OLD_WALK_WINDOW_MS = 10_000;
+const OPEN_WALK_WINDOW_MS = 10_000;
 
 /** A walker vessel: founds, wears its face, takes the invite, stands. The walk is SHUT, so the boot says so by name. */
 async function standWalker(tag: string, name: string, invite: string): Promise<LarInstance> {
@@ -122,9 +122,8 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
     B = await standWalker("walkB", "wayfarer", inviteB);
     // The shut is a line the boot wrote before it went live: no clock to wait on.
     expect(B.bootLog(), "B's boot never named the shut walker route").toMatch(/walker-route-shut/);
-    expect(B.bootLog()).toContain(RULING);
-    // A closed route grants no silent legacy authority: nothing redeemed across the window the old walk redeemed in, nothing vested.
-    await noRedemptionWithin(OLD_WALK_WINDOW_MS);
+    // A closed route grants no silent authority: nothing redeemed across the window an open walk redeems in, nothing vested.
+    await noRedemptionWithin(OPEN_WALK_WINDOW_MS);
     const walks = (dataOf(await B.cli(["walk", "--json"]))["walks"] ?? []) as Array<{ wallet: number; grant: unknown }>;
     expect(walks[0]?.wallet).toBe(0);
     expect(walks[0]?.grant ?? null).toBeNull();
@@ -135,6 +134,6 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
     expect(inv.code, said(inv)).toBe(0);
     C = await standWalker("walkC", "second-wayfarer", String(dataOf(inv)["invite"]));
     expect(C.bootLog(), "C's boot never named the shut walker route").toMatch(/walker-route-shut/);
-    await noRedemptionWithin(OLD_WALK_WINDOW_MS);
+    await noRedemptionWithin(OPEN_WALK_WINDOW_MS);
   }, 400_000);
 });

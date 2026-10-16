@@ -42,7 +42,7 @@ describe("the carried admission", () => {
 
   test("no carriage → null: the vessel founds its own group and stands at the floor", () => {
     expect(parseAdmitCarriage("")).toBeNull();
-    expect(parseAdmitCarriage("#relay=ws://localhost:8080/ws&gate=0xabc")).toBeNull();
+    expect(parseAdmitCarriage("#relay=ws://localhost:8080/ws&floor=0xabc")).toBeNull();
   });
 
   test("a garbled paste REFUSES, never throws — a human's typo is not an attack", () => {

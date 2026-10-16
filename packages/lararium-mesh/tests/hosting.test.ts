@@ -179,8 +179,8 @@ describe("the carried invite — one string, naming no inviter", () => {
   });
 });
 
-describe("the domain registry names the hosting relations and none of the retired ones", () => {
-  test("RED: the hosting and knock names stand; the invite, countersign, session-proof and leaf-proof names are gone", () => {
+describe("the domain registry names the hosting relations and nothing beside them", () => {
+  test("RED: the hosting and knock names stand; no invite, countersign, session-proof or leaf-proof name stands", () => {
     const names = ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
     for (const live of ["hosting-act", "hosting-key", "hosting-token", "hosting-grant", "gate-knock"]) {
       expect(names, live).toContain(live);

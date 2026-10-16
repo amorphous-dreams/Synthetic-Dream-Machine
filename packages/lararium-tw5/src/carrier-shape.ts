@@ -147,7 +147,7 @@ export function readCarrierShape(text: string): CarrierShape {
   // word so no carrier goes invisible over whitespace, and the canon is one space — how every emitter
   // writes it and how 733 of 733 openers in the corpus stand. Without this fault the tolerance would
   // BE the canon: a deviant spelling parses, so nothing would ever say otherwise, and the corpus would
-  // drift one file at a time until the strict readers this collapse retired were needed again.
+  // drift one file at a time until strict readers were needed again.
   const openLine = metaOpenLine(text, spans, bodyFrom);
   if (openLine !== null && !isCanonicalMetaOpen(openLine)) {
     faults.push(`meta fence opens \`${openLine}\` — canon is \`${META_OPEN_CANON}\`, one space and nothing after`);

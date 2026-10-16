@@ -32,8 +32,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./auth-wire.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./leaf-presentation.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import {
   decodeInvite, encodeInvite, redeemClaim, isHostingGrant, isInviteToken, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
   hostingActsFromBoard, verifyHostingAct,
@@ -208,9 +208,9 @@ export interface WalkTransport {
   represent(identity: LeafIdentity): void;
   on(event: "peer-candidate", listener: (e: { peerId: unknown }) => void): unknown;
   /**
-   * What the transport presents now. The sealed gate adapter presents a face, not a walk, so it carries none:
-   * the WALKER ROUTE IS SHUT BY NAME at the cutover (`walker-route-shut`) and a transport without an identity
-   * settles no invite. A walker transport that does carry one rides as before until the route is rebuilt.
+   * What the transport presents. The sealed gate adapter presents a face, not a walk, so it carries none: the
+   * WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`) and a transport without an identity settles no invite. A
+   * walker transport that carries one presents it.
    */
   readonly identity?: LeafIdentity;
 }

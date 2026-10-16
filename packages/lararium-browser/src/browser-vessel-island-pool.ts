@@ -9,7 +9,7 @@
  * moment a finite hotCap creates eviction pressure.
  *
  * The pool supplies no explicit storage config: ordinary browser islands retain
- * their legacy IndexedDB partition keyed by wiki URI inside the worker. D-VR
+ * their own IndexedDB partition keyed by wiki URI inside the worker. D-VR
  * daemon ownership is a separate explicit manifest capability.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool
@@ -37,8 +37,8 @@ export interface BrowserVesselIslandPoolOptions {
   /** Called when an island emits a verse-event reaction. */
   onWorkerEvent?: (id: string, msg: IslandMsg_Event) => void;
   /** R4 — resolve ONE mount's own `recipe` into the CIDs its manifest should carry (the fixed
-   *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: the flat
-   *  vessel-wide `pluginCids` floor has retired — `VesselIslandPoolCore` itself refuses to
+   *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: no flat
+   *  vessel-wide `pluginCids` floor stands — `VesselIslandPoolCore` itself refuses to
    *  construct without this, so the browser can supply no blanket list even by omission. See
    *  `resolveBrowserIslandPluginCids` in `open-browser-vessel.ts`. */
   resolvePluginCids: (recipe: WikiRecipe) => Promise<

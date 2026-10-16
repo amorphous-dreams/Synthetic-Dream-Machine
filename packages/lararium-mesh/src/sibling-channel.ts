@@ -192,12 +192,12 @@ export function siblingPeerIdOf(deviceKey: string): PeerId {
 }
 
 /**
- * THE SIBLING DIAL SHIPS SHUT BY NAME. House ruling "Routes at the cutover" (stable-founding-road): "Walker arms, the
- * sibling dial and the herm membership relay ship SHUT by name ... a closed route grants no silent legacy authority."
- * The herm's relay spoke the retired pre-sync handshake, and a sibling frame rides nothing else, so no sibling
- * transport opens until a proven gate-native caller flips the route. The channel says so as `pins` on every dial.
+ * THE SIBLING DIAL SHIPS SHUT BY NAME (the shut-routes house ruling, stable-founding-road #/rulings): walker arms, the
+ * sibling dial and the herm membership relay ship SHUT by name, and a closed route grants no silent authority. A
+ * sibling frame rides the herm's membership relay alone, so no sibling transport opens until a proven gate-native
+ * caller flips the route. The channel says so as `pins` on every dial.
  */
-export const SIBLING_ROUTE_SHUT = "sibling-route-shut: the sibling dial ships shut by name (house ruling \"Routes at the cutover\"); no sibling channel opens until a gate-native caller flips it";
+export const SIBLING_ROUTE_SHUT = "sibling-route-shut: the sibling dial ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings); no sibling channel opens until a gate-native caller flips it";
 
 /** Dial a herm's relay as a leaf: SHUT. It opens no socket and rejects with `SIBLING_ROUTE_SHUT`. */
 export function dialSiblingHerm(_opts: {

@@ -19,7 +19,7 @@ import { raiseStands, standingClass } from "../src/vessel-standing.js";
 import { carriageEntryActCid, type CarriageEntry } from "../src/carriage-registry.js";
 import { heldRootRevision } from "../src/held-nexus-root.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
-import { ed25519VerifyHex } from "../src/auth-wire.js";
+import { ed25519VerifyHex } from "../src/ed25519-door.js";
 import { pubOf, signerOf, kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
 const VESSEL = "vessel-key-hex";

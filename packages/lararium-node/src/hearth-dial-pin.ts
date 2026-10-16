@@ -9,7 +9,8 @@
  * url (an `automerge:` address) and dials nothing.
  *
  * So the two ride the bootstrap beside the sentinel ids, packed at admission (`hearthDialTiddlers`) and read
- * at boot (`readHearthDialPin`): the hearth the dial names (an explicit option outranks it; the environment no longer does).
+ * at boot (`readHearthDialPin`): the hearth the dial names (an explicit option outranks it). Beside them rides the
+ * document the admit named for the dial to ask for (`fleet join answer --doc-url`), at open and on each return.
  * Absent on a vessel that founded its own face — such a vessel IS the hearth. FAIL CLOSED: a torn pin (one
  * half), a malformed key, an unreadable bootstrap → no pin → no dial (byte-identical to a vessel never admitted).
  *
@@ -25,6 +26,8 @@ export const HEARTH_SYNC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/sync-url`;
 export const HEARTH_GATE_KEY_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-key`;
 /** The hearth's FULL sovereign sync pin (JSON): what the joinee files in its pair index and knocks with. Its signing key IS the gate key above. */
 export const HEARTH_GATE_PIN_TIDDLER = `${DAEMON_BAG_ID}/hearth/gate-pin`;
+/** The document the dial asks the hearth for (an `automerge:` url), as the admit named it. */
+export const HEARTH_DOC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/doc-url`;
 /** The founder's RESOLVED NexusIdentity kind at admit time — a SNAPSHOT, never re-resolved live. */
 export const HEARTH_ISLAND_KIND_TIDDLER  = `${DAEMON_BAG_ID}/hearth/island-kind`;
 /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
@@ -43,6 +46,8 @@ export interface HearthDialPin {
    *  pin existed. */
   readonly islandKind?:  "own" | "anchor" | "charter" | "explicit";
   readonly islandScope?: string;
+  /** The document the admit named for the dial to ask for, when it named one. */
+  readonly docUrl?: string;
 }
 
 /** The bootstrap tiddlers an admission packs — empty when the payload named no dial. The island half is
@@ -53,10 +58,12 @@ export function hearthDialTiddlers(
   gatePubKey: string | null | undefined,
   island?: { readonly kind?: string | null | undefined; readonly scope?: string | null | undefined } | null,
   gatePin?: GateBundlePin | null,
+  docUrl?: string | null,
 ): Record<string, { title: string; text: string; kind: string }> {
   if (!syncUrl || !gatePubKey) return {};
   const base = {
     ...(gatePin ? { [HEARTH_GATE_PIN_TIDDLER]: { title: HEARTH_GATE_PIN_TIDDLER, text: JSON.stringify(gatePin), kind: "hearth-door" } } : {}),
+    ...(docUrl ? { [HEARTH_DOC_URL_TIDDLER]: { title: HEARTH_DOC_URL_TIDDLER, text: docUrl, kind: "hearth-door" } } : {}),
     [HEARTH_SYNC_URL_TIDDLER]: { title: HEARTH_SYNC_URL_TIDDLER, text: syncUrl, kind: "hearth-door" },
     [HEARTH_GATE_KEY_TIDDLER]: { title: HEARTH_GATE_KEY_TIDDLER, text: gatePubKey.toLowerCase(), kind: "hearth-door" },
   };
@@ -107,6 +114,10 @@ export function readHearthDialPin(bootstrapPath: string): HearthDialPin | null {
       if (!("pin" in reading) || reading.pin.signingKey !== gatePubKey) return null;
       gatePin = reading.pin;
     }
-    return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}) };
+    // The doc url, when the bootstrap holds one, is an `automerge:` url; a torn one refuses the whole dial.
+    const docRaw = packed.tiddlers?.[HEARTH_DOC_URL_TIDDLER]?.text;
+    if (docRaw !== undefined && (typeof docRaw !== "string" || !/^automerge:[1-9A-HJ-NP-Za-km-z]+$/.test(docRaw.trim()))) return null;
+    const docUrl = typeof docRaw === "string" ? docRaw.trim() : undefined;
+    return { syncUrl: syncUrl.trim(), gatePubKey, ...(gatePin ? { gatePin } : {}), ...(island ?? {}), ...(docUrl ? { docUrl } : {}) };
   } catch { return null; }
 }

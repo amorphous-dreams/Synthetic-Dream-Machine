@@ -19,7 +19,7 @@
  *     `unsettled`, `wrong-epoch`, `denied` and `rejected` all leave the peer a STRANGER. The nym written is the
  *     verdict's own — the admit's leaf — and nothing from any root.
  *   · the ROOT MAP (`peerContractNymMap`) — what the REALM consult reads (`contractNymOfPeer`). Nothing fills
- *     it: no root-signed edge travels on any socket (the lar:auth contract slot is retired), and linking a leaf
+ *     it: no root-signed edge travels on any socket (no socket carries a contract slot), and linking a leaf
  *     to a root would carry the forbidden binding. The seat stays for the realm doc's write side to fill. The
  *     membership consult never reads it.
  *
@@ -360,12 +360,6 @@ async function ownPresentationFor(opts: {
     }
     return null;
   } catch { return null; }
-}
-
-/** The identity of a presentation: its admit's act CID and its lineage's, so a re-dial fires only on a move. */
-export function presentationKey(p: AdmitPresentation | null | undefined): string {
-  if (!p) return "";
-  return [carriageEntryActCid(p.admit), ...p.lineage.map((e) => presentedActCid(e)).sort()].join(",");
 }
 
 export interface NexusMembershipHolder {

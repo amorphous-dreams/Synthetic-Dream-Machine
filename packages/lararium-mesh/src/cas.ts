@@ -59,29 +59,6 @@ export interface GenesisCasManifest {
 }
 
 /**
- * The engine's plugin-tiddler CIDs from an island doc's blobs — every non-engine
- * JSON blob, by sha256. The daemon AND every wiki island resolve these by CID from
- * the local CAS (the breath path), never CRDT-syncing the bytes. One derivation,
- * fed to every island of the runtime.
- *
- * PRE-R3 SHAPE, NO LONGER CALLED BY ANY VESSEL BUILDER (R4 retires the browser's reading of it
- * too, both the daemon VM and the pool now resolving each recipe's own selection through
- * `bootSetPluginCids`/`selectPluginBlobs`/`verifyCasBytes(Async)` — see
- * `resolveNodeIslandPluginCids` (node) and `resolveBrowserIslandPluginCids` (browser)). The
- * export stays only because a node test fixture still names it; it is identical to, and
- * superseded by, `bootSetPluginCids` below, which names the SAME floor computation under its
- * right, narrower scope (one fixed ingredient of a per-island resolution, never the whole answer
- * by itself).
- */
-export function pluginCidsFromIslandBlobs(
-  blobs: Record<string, CasBlobLike> | undefined,
-): readonly string[] {
-  return Object.values(blobs ?? {})
-    .filter((b) => b.id !== ENGINE_CORE_ID && b.mimeType === "application/json" && typeof b.sha256 === "string")
-    .map((b) => b.sha256 as string);
-}
-
-/**
  * bootSetPluginCids — the FIXED floor's plugin-tiddler CIDs (grammar + boot shadows), read
  * straight off an island doc's blobs. Every island gets this ingredient regardless of its own
  * recipe; it never moves per-wiki, only per-genesis-bake. See `resolveIslandPluginCids`.

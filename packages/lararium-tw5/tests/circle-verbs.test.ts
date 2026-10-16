@@ -2,16 +2,12 @@
  * circle-verbs — the FOLLOW-GRAPH lands in the circles doc as a PER-NYM OBSERVED-REMOVE CRDT-set, reads back,
  * and NEVER touches a board.
  *
- * M5 (gp25 iteration 4, D2): the prior Lamport-counter fold compared ADD/REMOVE stamp VALUES as plain strings.
- * A single shared counter cannot tell concurrent from later (a remove at height 1 on one replica, a re-follow
- * at height 3 on an unrelated replica, compared as strings, and the higher height "won" regardless of causal
- * relation) — and `cold-boot-ceremony`'s own genesis follow stamped an ISO wall-clock string, which lexically
- * outranks every zero-padded decimal counter forever, so the operator's own follow could never be unfollowed.
- * Membership now rides DOTTED fields (`mbr+:<nym>#<replica>.<n>` / `mbr-:<nym>#<replica>.<n>`) whose VALUE is
- * the comma-joined set of opposite-kind dots that write OBSERVED — never a clock, never compared by magnitude.
- * A legacy, undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) no longer parses as a
- * dot at all — `parseDotKey` refuses it by name and logs it once per process (a module-level `Set`), never
- * repeating the log on a later fold over the same stale key.
+ * M5 (gp25 iteration 4, D2): a single shared counter cannot tell concurrent from later, and a stamp VALUE
+ * compared as a string lets an ISO wall-clock follow outrank every zero-padded counter forever. So membership
+ * rides DOTTED fields (`mbr+:<nym>#<replica>.<n>` / `mbr-:<nym>#<replica>.<n>`) whose VALUE is the comma-joined
+ * set of opposite-kind dots that write OBSERVED — never a clock, never compared by magnitude. A field with no
+ * dot (`mbr+:<nym>` / `mbr-:<nym>`, any value) is no membership key: `parseDotKey` reads it as nothing, so it
+ * neither grants nor blocks membership, and the fold says nothing about it.
  */
 
 import { describe, expect, test, vi } from "vitest";
@@ -119,10 +115,8 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
   });
 
   test("M5 PROOF 1 — the LIVE cold-boot genesis follow (dotted form) DOES unfollow", async () => {
-    // Before M5: cold-boot-ceremony stamped `mbr+:<did>` = an ISO string. `circle-remove` minted a
-    // zero-padded decimal counter, and the string compare `'0' < '2'` meant the remove NEVER outranked the
-    // ISO stamp — the operator's own follow was permanently un-unfollowable. buildCeremonyTiddlers now
-    // mints the DOTTED form; prove the live reactor can remove it.
+    // buildCeremonyTiddlers mints the operator's own genesis follow in the DOTTED form; the live reactor
+    // removes it like any other follow.
     const [, circle] = buildCeremonyTiddlers("ab".repeat(32), "Operator One");
     const did = Object.keys(circle!.fields).find((k) => k.startsWith(MEMBER_ADD_PREFIX))!
       .slice(MEMBER_ADD_PREFIX.length).split("#")[0]!;
@@ -136,55 +130,39 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     expect(membersOf(store, "operators")).toEqual([]);
   });
 
-  test("a LEGACY undotted mbr+ (any value, ISO included) REFUSES by name: ignored, "
+  test("an undotted mbr+ (any value, ISO included) is no membership key: "
     + "never counted present, never removable", async () => {
-    // Before this sweep: an undotted mbr+ parsed as a dot (reserved id "~") that a remove could dominate.
-    // After: `parseDotKey` does not recognize the undotted shape AT ALL — it is not a dot, so `foldMembers`
-    // never sees an add for this nym, and the nym never becomes present off a legacy stamp alone.
+    // `parseDotKey` reads only the dotted shape, so `foldMembers` never sees an add for this nym, and the nym
+    // never becomes present off an undotted field alone.
     const store = seededCircles();
     const fields = stampFieldsOf(store, "following");
     const seeded = { ...fields, [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
-    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
-    expect(membersOf(store, "following")).toEqual([]);   // INVERTED: no longer present off the legacy stamp
+    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "foreign-writer"));
+    expect(membersOf(store, "following")).toEqual([]);   // an undotted field grants nothing
 
     // A `circle-remove` against it is therefore a no-op by the reactor's own count (the nym already reads
-    // absent) — it refuses to treat the stale key as anything to unfollow FROM.
+    // absent) — the undotted field is nothing to unfollow FROM.
     const { remove } = reactorsOver(store);
     const out = await remove({ circle: "following", nym: NYM_A }, CTX);
     expect(out["removed"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([]);
   });
 
-  test("parseDotKey logs a retired, undotted key ONCE PER PROCESS, not once per fold "
-    + "(a module-level Set, never a per-call guard)", () => {
-    // PROOF: two separate folds over the SAME undotted key yield exactly ONE log line — the second fold's
-    // parseDotKey call recognizes the key as already-logged (the module-level Set persists across calls)
-    // and stays silent.
+  test("RED — an undotted field folds silently: the fold writes no log line about it", () => {
     const key = `${MEMBER_ADD_PREFIX}${NYM_B}`;
     const fields = { [key]: new Date().toISOString() };
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    foldMembers(fields);
-    foldMembers(fields);
-    const hits = logSpy.mock.calls.filter((call) => String(call[0]).includes(key));
-    logSpy.mockRestore();
-    expect(hits.length).toBe(1);
-
-    // MUTATION (inline, never touching the real module): a guard with no module-level memory — a FRESH
-    // `Set` re-created on every call — would log on EVERY fold instead of just the first. This reproduces
-    // that retired shape to show what it would have done: two folds, two log lines.
-    let mutatedLogCount = 0;
-    for (let i = 0; i < 2; i++) {
-      const freshSeen = new Set<string>(); // re-created each iteration: no cross-call memory at all
-      if (!freshSeen.has(key)) { freshSeen.add(key); mutatedLogCount++; }
-    }
-    expect(mutatedLogCount).toBe(2); // the retired, memory-less guard WOULD have logged twice
+    try {
+      expect(foldMembers(fields)).toEqual([]);
+      const hits = logSpy.mock.calls.filter((call) => String(call[0]).includes(key));
+      expect(hits).toEqual([]);
+    } finally { logSpy.mockRestore(); }
   });
 
-  test("a pre-M5 undotted add+remove pair is IGNORED wholesale; a fresh dotted "
-    + "follow lands clean (observing nothing stale, not even its own legacy history)", async () => {
-    // L1 shape (probe-m5-legacy.mjs), inverted: before, the legacy remove dominated the legacy add. Now
-    // NEITHER legacy key parses as a dot at all, so there is no add and no remove to fold — a fresh,
-    // dotted follow does not need to "observe" anything stale; it simply lands as the nym's first dot.
+  test("an undotted add+remove pair folds as nothing; a dotted "
+    + "follow lands clean (observing nothing, since neither field is a dot)", async () => {
+    // L1 shape: NEITHER undotted key parses as a dot, so there is no add and no remove to fold — a dotted
+    // follow has nothing to "observe"; it simply lands as the nym's first dot.
     const store = seededCircles();
     const fields = stampFieldsOf(store, "following");
     const seeded = {
@@ -192,23 +170,22 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
       [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "00000000000000000001",
       [`mbr-:${NYM_A}`]:                "00000000000000000002",
     };
-    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
+    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "foreign-writer"));
     expect(membersOf(store, "following")).toEqual([]);   // no dotted add exists — absent either way
 
     const { add } = reactorsOver(store, { replica: "dev-fresh" });
     await add({ circle: "following", nym: NYM_A }, CTX);
     expect(membersOf(store, "following")).toEqual([NYM_A]);
-    // The fresh add's own observed-set is EMPTY — it never had a legacy dot to observe, because the legacy
-    // keys were never dots in the first place.
+    // The add's own observed-set is EMPTY — the undotted fields are not dots, so there is nothing to observe.
     const key = Object.keys(stampFieldsOf(store, "following")).find((k) => k.startsWith(`${MEMBER_ADD_PREFIX}${NYM_A}#dev-fresh.`))!;
     expect(stampFieldsOf(store, "following")[key]).toBe("");
   });
 
-  test("MUTATION PROOF — the RETIRED reserved-dot-id reader (treating undotted as dot \"~\") would have "
-    + "resurrected/removed off a stale legacy stamp; the real fold refuses to see it at all", () => {
-    // Reproduces the retired behavior inline (never touching the real module) to show what it would have
-    // done, then proves the real `foldMembers` does NOT: a bare undotted `mbr+:<nym>` is not present.
-    function legacyFoldPresent(fields: Record<string, unknown>): string[] {
+  test("MUTATION PROOF — a reader that treats an undotted key as a reserved dot (\"~\") counts it present; "
+    + "the real fold does not see it at all", () => {
+    // The mutant stands inline (never touching the real module); the real `foldMembers` does NOT do this:
+    // a bare undotted `mbr+:<nym>` is not present.
+    function reservedDotFoldPresent(fields: Record<string, unknown>): string[] {
       const present: string[] = [];
       for (const key of Object.keys(fields)) {
         if (!key.startsWith(MEMBER_ADD_PREFIX)) continue;
@@ -218,12 +195,12 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
       return present.sort();
     }
     const fields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
-    expect(legacyFoldPresent(fields)).toEqual([NYM_A]);   // the retired reader WOULD have counted it present
-    expect(foldMembers(fields)).toEqual([]);              // the real, evergreen fold refuses to — it is GONE
+    expect(reservedDotFoldPresent(fields)).toEqual([NYM_A]);   // the mutant counts it present
+    expect(foldMembers(fields)).toEqual([]);                   // the real fold reads no member there
   });
 
   test("M5 PROOF 5 — two devices with DISTINCT replica ids keep a concurrent unfollow visible across the merge (A∥B)", async () => {
-    // F1-CONTROL shape (probe-m5-legacy.mjs): replica devA and replica devB each independently unfollow X from
+    // F1-CONTROL shape: replica devA and replica devB each independently unfollow X from
     // the SAME base state (disjoint dots — different replicas never collide); devA then re-follows, observing
     // only its OWN remove (not devB's, which it has not merged yet). The key-wise merge of both forks must
     // still name X concurrent — devB's unobserved remove is never silently dropped.
@@ -294,9 +271,9 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     }
   });
 
-  test("MUTATION PROOF — comparing stamp VALUES (the old Lamport-counter bug) reads the legacy ISO follow as present forever", () => {
-    // Reproduces the EXACT bug M5 fixes, as a self-contained inline fold (never touching the real module) to
-    // prove the real fold does NOT do this. The old reader compared `addedAt > removedAt` as plain strings.
+  test("MUTATION PROOF — comparing stamp VALUES (a Lamport-counter fold) reads an ISO follow as present forever", () => {
+    // The mutant stands as a self-contained inline fold (never touching the real module): it compares
+    // `addedAt > removedAt` as plain strings. The real fold does NOT do this.
     function buggyFoldPresent(fields: Record<string, unknown>): string[] {
       const added = new Map<string, string>(), removed = new Map<string, string>();
       for (const [key, value] of Object.entries(fields)) {
@@ -314,10 +291,10 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     const isoFollow = new Date().toISOString();                                  // e.g. "2026-10-11T..."
     const decimalRemove = "00000000000000000001";                                // any zero-padded counter
     const fields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: isoFollow, [`mbr-:${NYM_A}`]: decimalRemove };
-    // The bug: '0' < '2' lexically, so the buggy fold NEVER reads the ISO follow as removed.
+    // The mutant: '0' < '2' lexically, so it NEVER reads the ISO follow as removed.
     expect(buggyFoldPresent(fields)).toEqual([NYM_A]);
-    // The real fold is immune — it never compares values, only dot-id SET MEMBERSHIP, and a legacy add
-    // (dot "", observed nothing) never dominates any remove-dot that exists.
+    // The real fold is immune — it never compares values, only dot-id SET MEMBERSHIP, and an undotted field
+    // is no dot at all.
     expect(foldMembers(fields)).toEqual([]);
   });
 

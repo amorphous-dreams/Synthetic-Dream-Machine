@@ -5,7 +5,7 @@
  *   · with TWO carried Nexuses whose boards both hold an admit for this vessel's leaves, the dial presents the
  *     DIALED Nexus's admit — the one the kept bundle ties to the dialed gate key — and never reads the other board;
  *   · CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing;
- *   · `presentationKey` moves when the admit moves, so re-presentation fires on a board change and only then.
+ *   · an unmoved board presents the same admit and the same lineage on every dial.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -18,7 +18,7 @@ import {
   custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
-import { dialPresentation, presentationKey } from "../src/nexus-carriage.js";
+import { dialPresentation } from "../src/nexus-carriage.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
@@ -58,15 +58,13 @@ function boardOf(entries: CarriageEntry[]): LarDoc {
 describe("the dial presents the DIALED island's admit only", () => {
   let root: string;
   let prior: string | undefined;
-  let priorGate: string | undefined;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-dial-presentation-"));
-    prior = process.env["LAR_ROOT"]; priorGate = process.env["LAR_JOIN_GATE"];
-    process.env["LAR_ROOT"] = root; delete process.env["LAR_JOIN_GATE"];
+    prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
   });
   afterEach(() => {
     if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    if (priorGate !== undefined) process.env["LAR_JOIN_GATE"] = priorGate;
     rmSync(root, { recursive: true, force: true });
   });
 
@@ -124,14 +122,14 @@ describe("the dial presents the DIALED island's admit only", () => {
     expect(w.asked).toEqual([]);
   });
 
-  test("presentationKey moves when the admit moves, and only then", async () => {
+  test("an unmoved board presents the same admit and the same lineage on every dial", async () => {
     const w = await stand({ primaryAdmit: true });
     await w.take(w.aidP, w.pinP, w.admitP);
     const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves });
     const again = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: w.gateP, open: w.open, leaves: w.leaves });
-    expect(presentationKey(p)).toBe(presentationKey(again));
-    expect(presentationKey(null)).toBe("");
-    expect(presentationKey(p)).not.toBe("");
+    expect(p).not.toBeNull();
+    expect(carriageEntryActCid(again!.admit)).toBe(carriageEntryActCid(p!.admit));
+    expect(again!.lineage).toEqual(p!.lineage);
   });
 });
 

@@ -1,21 +1,20 @@
 /**
  * e2e/face-grant-unseated-joinee — MEASURE: does the founder's face-grant record reach a joinee that boots
- * WITHOUT `LAR_JOIN_*` set?
+ * by its PIN alone?
  *
  * `meme-two-vessel-bag` ⑨ proves the later grant (basket-one #/the-later-grant, `c3bcab741`): the founder's
  * `face-join` writes `$:/lares/face-grant/<group>/<joinee>` on the PersonaGroup plane, and the joinee's kit
- * takes the seat by its own act. THAT joinee dials the founder by hand (`LAR_JOIN_SYNC` · `LAR_JOIN_GATE` ·
- * `LAR_JOIN_DOC`), so the plane it reads crosses a socket the operator opened at boot.
+ * takes the seat by its own act. THAT joinee also asks the hearth for the founder's lares doc, so the plane it
+ * reads crosses a socket its boot opened.
  *
  * THIS joinee holds the same admit edge — the PIN names the hearth's dial (the fleet-join answer signs it, and
- * the landing pins it in the bootstrap) — and boots with NO `LAR_JOIN_*`. The question the drift-ward asks: does the
+ * the landing pins it in the bootstrap) — and boots asking for no document. The question the drift-ward asks: does the
  * record reach it at all? The CONTROL is the founder's side — the record lands on A's plane regardless
  * (`recordTitle`).
  *
  * THE PIN NAMES THE DIAL. The root's fleet-join answer carries the hearth's `ws://` relay AND the hearth's gate
  * key inside its signature; `fleet join land` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
- * boot dials them where no `LAR_JOIN_*` rides the env (an explicit env still wins; no pin and no env dials
- * nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
+ * boot dials them (an explicit option outranks the pin; no pin dials nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
  * nothing — so the dial needed a pin of its own.
  */
 
@@ -49,7 +48,7 @@ let bootFailure = "";
 
 describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed by its pin ★", () => {
   beforeAll(async () => {
-    // The joinee rite — one door in the harness; B boots by its PIN alone (no LAR_JOIN_*).
+    // The joinee rite — one door in the harness; B boots by its PIN alone.
     pair = await openStagedJoinee({ tag: "pin", dial: "pin" });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitCode = pair.admitted.code; bootFailure = pair.joinGate ?? "";
     if (!B) console.error(`face-grant-unseated-joinee MEASURE B: never stood — ${bootFailure.slice(0, 240)}`);
@@ -62,11 +61,11 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
   });
 
-  test("MEASURE: a joinee with no LAR_JOIN_* stands by its PIN alone — the boot dials the hearth the edge names", () => {
+  test("MEASURE: a joinee stands by its PIN alone — the boot dials the hearth the edge names", () => {
     expect(B, `B never stood: ${bootFailure}`).not.toBeNull();
     const log = B!.bootLog();
     expect(log).toContain("[nexus-join] nexus dial-out up → ws://127.0.0.1:");
-    // The sealed face gate speaks one verdict line; the retired "presenting the device-delegation edge (fleet)" line went with the old wire.
+    // The sealed face gate speaks one verdict line.
     expect(log).toContain("[lar-leaf] verdict OK — crossing open");
     expect(log).not.toContain("[lar-leaf] ANERGIZED");
     expect(log).toContain("phase → live");

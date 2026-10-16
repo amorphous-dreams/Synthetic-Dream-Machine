@@ -2,8 +2,8 @@
  * guarded-boot — the browser boot's lock keeps pace with what the boot stood.
  *
  * A boot takes the store lock first and stands a Repo, a relay adapter, a shared-holder port and a daemon worker over the
- * one IndexedDB store after it. A throw later in the boot used to give the lock back with all of that still up, so a retry
- * in the same page opened a second Repo and a second adapter on the same store. Now the boot REGISTERS each thing it stands,
+ * one IndexedDB store after it. A lock given back with all of that still up would let a retry in the same page open a second Repo and a
+ * second adapter on the same store, so the boot REGISTERS each thing it stands,
  * and a throw tears them down, newest first, BEFORE the lock goes back. A thing that will not come down keeps the lock and
  * the boot refuses by name (`BootTeardownRefusal`): the store stays held by the half-stood boot rather than opened twice.
  */

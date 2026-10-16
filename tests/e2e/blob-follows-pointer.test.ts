@@ -13,11 +13,11 @@
  *
  * The rite (①–⑥) copies `meme-two-vessel-bag` step for step; that file stays untouched.
  *
- * THE FETCH DOOR (basket-one #/the-fetch-door, ruled 2026-09-11): A stands a carriage crossroads
- * (Socket B, `LAR_HERM_RELAY_PORT`) and both vessels dial it (`LAR_CARRIAGE_RELAY`). B's resolver composes
- * `makeCidResolver(localRead, casTransit, cacheWriteThrough)`; a READ on B that misses `cid/` want-blocks
- * A over Socket B, A's gate reads B as FLEET (same operator — the signed device edge) and serves the
- * cleartext blob, B verifies sha256 and writes through. Fetch-on-read: the bytes cross when B reads
+ * THE FETCH DOOR (basket-one #/the-fetch-door): B's resolver composes
+ * `makeCidResolver(localRead, casTransit, cacheWriteThrough)`, and its transit is the Herm's public shore alone
+ * (`LAR_HERM_SHORE`). This pair names no shore, and carriage peering ships SHUT by name, so the bytes stay on A: a
+ * READ on B that misses `cid/` answers "not held" at the `local-only` door and writes nothing.
+ * Fetch-on-read: a byte crosses only when B reads
  * (`lares bag cas --fetch <cid>`), never before — ★ measures the absence FIRST, as the control.
  */
 
@@ -25,7 +25,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { openStagedJoinee, freePort, pinnedCarriageRelay, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -114,14 +114,9 @@ let cid = "";
 
 describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYTES follow? ★", () => {
   beforeAll(async () => {
-    // The joinee rite — one door in the harness. The carriage crossroads (Socket B) A stands and both dial —
-    // the fetch door's transport; the early LOAD lands on A before B stands.
-    const portRelay = await freePort();
-    const relay = await pinnedCarriageRelay(portRelay);
+    // The joinee rite — one door in the harness; the early LOAD lands on A before B stands.
     pair = await openStagedJoinee({
       tag: "blob",
-      daemonEnv:  { LAR_CARRIAGE_RELAY: relay.url },
-      daemonEnvA: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex },
       beforeB: async (a) => {
         const earlyDir = join(a.root, "blob-stage/bags/lares", LOCI_EARLY);
         mkdirSync(earlyDir, { recursive: true });
@@ -224,7 +219,7 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
   // the bytes usually stand in B's cid/ before any CLI read — that IS fetch-on-read through the worker's own
   // resolver, not a prefetch (the prefetch cap stays off). The explicit `bag cas --fetch` then reads
   // `held:true`; whichever door fired first is reported, never assumed.
-  test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false and names membership-relay-shut (Routes at the cutover) ★", async () => {
+  test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false at the local-only door ★", async () => {
     const beforeRead = existsSync(join(casDirOf(B!), cid));
     console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
     const r = await B!.cli(["bag", "cas", "--fetch", cid, "--json"]);
@@ -232,15 +227,15 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
     expect(r.json?.["ok"], said(r)).toBe(true);
-    // THE CARRIAGE SHIPS SHUT BY NAME (house ruling "Routes at the cutover": carriage peering and the herm membership relay ship
-    // SHUT; "a closed route grants no silent legacy authority"). The pointer crossed on the sealed gate (step 7); the bytes ride the
-    // carriage's fetch door, which has no gate-native caller yet, so the read honestly answers "not held" and writes nothing. The
-    // witness is the refusal by name, not a deleted step. FLIPS BACK to `held:true` + sha256 whole when the carriage reopens.
+    // THE CARRIAGE SHIPS SHUT BY NAME (the shut-routes house ruling, stable-founding-road #/rulings: carriage peering ships
+    // SHUT; a closed route grants no silent authority). The pointer crossed on the sealed gate (step 7); the bytes ride the
+    // carriage's fetch door, which has no gate-native caller, so the read answers "not held" and writes nothing. The witness
+    // is the door the read names.
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     expect(data?.["held"]).toBe(false);
     expect(data?.["fetched"]).toBe(false);
     expect(existsSync(join(casDirOf(B!), cid))).toBe(false);
-    expect(B!.bootLog()).toMatch(/carriage serve-loop membership-relay-shut|carriage-peering-shut/);
+    expect(data?.["door"], "the read names the door it read through").toBe("local-only");
   }, 60_000);
 
   test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {

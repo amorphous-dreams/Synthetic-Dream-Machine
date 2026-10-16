@@ -254,9 +254,8 @@ export const SERVO_DEFAULTS: ServoBaseConfig = {
 };
 
 /**
- * Tunables for the one-plane (N=1) quorum-servo call — the {@link ServoBaseConfig} base. The
- * retired one-plane FAST loop (zThreshold/zFloor) gives way to the quorum `gate` + age-relaxed
- * MDL; the name stays exported since `ffz-orchestrator.ts` spreads it alongside
+ * Tunables for the one-plane (N=1) quorum-servo call — the {@link ServoBaseConfig} base: the
+ * quorum `gate` + age-relaxed MDL, with no FAST loop; the name stays exported since `ffz-orchestrator.ts` spreads it alongside
  * {@link QuorumServoConfig}.
  */
 export type MeasureServoConfig = ServoBaseConfig;

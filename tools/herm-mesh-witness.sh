@@ -10,7 +10,7 @@
 # through the same client a peer uses (verifies the pointer signature, matches the hash, Automerge.loads the
 # snapshot, reads the dials). The product image is selected once by digest for the mesh.
 #
-# AN EXPLICIT NEXUS OPENS THE HERM RELAY (house ruling "Routes at the cutover"). A herm stands a floor gate only
+# AN EXPLICIT NEXUS OPENS THE HERM RELAY (the shut-routes house ruling, stable-founding-road #/rulings). A herm stands a floor gate only
 # at a Nexus whose quorum counted its `carry`, and a reader files a herm's floor pin only off a board that counts it.
 # So lararium-a (which seats the founding kahu) stands too, and before the read every herm AND the host reader join
 # A's Nexus by hand: `nexus carry-for` on the place, `nexus carry --floor-pin` on A, `nexus carry-take` on the place.

@@ -16,8 +16,8 @@
  *
  * THE VERBS. After the verdict the face sends ONE "session" message whose body is the signed pointer frame
  * (`ORACLE_POINTER_FRAME`, JSON as it always spoke), then ONE message carrying the snapshot bytes that pointer names
- * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The challenge
- * and auth frames the old wire carried are gone: the gate does that work.
+ * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The face sends no
+ * challenge and reads no proof frame: the gate proves the peer before any message.
  *
  * Callers: the browser vessel's oracle read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
  * the node's server half is `oracle-read-face`.

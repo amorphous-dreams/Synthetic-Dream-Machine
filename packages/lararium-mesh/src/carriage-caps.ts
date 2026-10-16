@@ -23,7 +23,7 @@ import {
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
 import type { OraclePullResult } from "./oracle-read-client.js";
-import type { LeafIdentity } from "./auth-wire.js";
+import type { LeafIdentity } from "./leaf-presentation.js";
 import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
@@ -267,12 +267,11 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
  *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
  *
- *  PEERS PROVE FIRST, AND THE PULL IS INJECTED. The old pull (`pullAndVerifyOracle`, a challenge-and-proof on a
- *  peer's oracle socket) is gone from this cap: a carried dial names a peer's endpoint and gate KEY, never the full
- *  gate pin a sealed dial needs, so no gate-native caller exists here yet and the route ships SHUT by name
- *  ("carriage-peering-shut", house ruling "Routes at the cutover"). A caller that holds a gate-native pull hands it as
- *  `pullOracle`; a carriage handed none pulls nothing — it still stands its own map. `identity` is read no more and
- *  stays in the type only so existing call sites compile until the composer drops it. */
+ *  PEERS PROVE FIRST, AND THE PULL IS INJECTED. A carried dial names a peer's endpoint and gate KEY, never the full
+ *  gate pin a sealed dial needs, so this cap dials nothing of its own: the bare route ships SHUT by name
+ *  ("carriage-peering-shut", the shut-routes house ruling, stable-founding-road #/rulings). A caller that holds a
+ *  gate-native pull (`carriage-pull`) hands it as `pullOracle`; a carriage handed none pulls nothing — it still stands
+ *  its own map. Nothing here reads `identity`; the type keeps it for the composer that passes it. */
 export function carriageCap(deps: {
   peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
   pullOracle?: (peer: string, gatePubKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;

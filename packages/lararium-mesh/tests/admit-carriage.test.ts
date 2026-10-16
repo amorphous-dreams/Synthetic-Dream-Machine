@@ -13,7 +13,7 @@ import {
 } from "../src/carriage-registry.js";
 import { carriageEntriesFromBoard, writeCarriageEntry } from "../src/carriage-board.js";
 import { nexusActPartial, readNexusActPartial } from "../src/nexus-partial.js";
-import { isPresentedAdmit } from "../src/auth-wire.js";
+import { isPresentedAdmit } from "../src/leaf-presentation.js";
 import { heldNexusRoot, readAdmitAtHeldRoot, verifySignedAdmitBundle, type HeldNexusRoot } from "../src/held-nexus-root.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";

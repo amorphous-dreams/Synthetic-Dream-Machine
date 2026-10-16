@@ -62,9 +62,8 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // NEITHER "nothing answered" (3) NOR "the work faulted" (4) — the socket connected, the daemon took
   // the verb, and THIS process merely stopped waiting to hear back; the act may have committed. Its own
   // rank keeps a caller from retrying a gesture that simply needs longer (3's implication) or from
-  // reading a committed act as a failure (4's). `verb-timeout` (the retired predecessor, M3) is GONE —
-  // nothing produces it any longer; `outcome-unknown` is its one successor, raised from
-  // `local-connector.ts`'s `LocalWaitExpired`.
+  // reading a committed act as a failure (4's). `outcome-unknown` is raised from `local-connector.ts`'s
+  // `LocalWaitExpired` alone (M3).
   "outcome-unknown":   6,
   // THE SAME EXIT FAMILY AS outcome-unknown (6), BUT A DISTINCT CODE. An `abandoned` receipt names a
   // request THIS vessel arbitrated and refused BEFORE commit — never ran, never will under this id.
@@ -118,7 +117,7 @@ export function exitFor(code: string): number {
 }
 
 /**
- * REFUSE with a usage reading — the one refusal that used to skip the choke point.
+ * REFUSE with a usage reading — through the choke point, like every other refusal.
  *
  * Every hand-rolled `usage()` printed prose to stderr and returned a bare code, so under `--json` — the
  * mode that exists for agents and pipes — the caller received ZERO parseable bytes and an exit status.

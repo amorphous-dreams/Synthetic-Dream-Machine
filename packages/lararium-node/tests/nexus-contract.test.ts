@@ -12,7 +12,7 @@
  *   · an admit for a nym the vessel does NOT hold, with NO --contract token, REFUSES (no conscription),
  *   · the PRESENTED-ADMIT gate: an admitted leaf that presents its admit (derived off the SAME board the admit
  *     wrote) with a leaf proof reads MEMBER; a seated kahu and the admitted nym's raw wire key, presenting
- *     nothing, read STRANGER — the kahu floor and the board fold are retired from the consult,
+ *     nothing, read STRANGER — the consult reads no kahu floor and no board fold,
  *   · USER-NEVER-WRITTEN: the board carries operator-pubkey nyms only,
  *   · ONE ADDRESS: with a seal home passed, the admit write and the members-list read key on the SAME island,
  *   · THE CARRIED ADMIT: an admit emits a bundle (entry · lineage · AID · this vessel's gate key) the joinee's
@@ -440,7 +440,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
 
       expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);   // presented, proven, held, carried
       expect(holder.leafNymOf("peer-joiner")).toBe(joinerNym);
-      expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(false);    // the kahu floor is RETIRED
+      expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(false);    // no kahu floor reads as member
       expect(holder.membership.holdsCarriagePeer("peer-wire-nym")).toBe(false); // no raw wire key reads as a nym
       void kahuNym;
     } finally { holder.dispose(); }

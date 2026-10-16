@@ -6,8 +6,7 @@
  * already implemented the fence (`opts.expectedEpoch`); `verifyEdgeAgainstPersonaKel`'s opts type carried
  * only `{now, driftMs}`, so the fence was UNREACHABLE from the KEL-wrapped callers this house's
  * admission doors run: the boot Binding Gate (`boot-daemon-keyhive.ts`) and the face-grant record's own verifier
- * (`face-grant-record.ts`). (The daemon's in-worker `verifyPeer` door retired with the old wire; the sealed gate
- * now admits.)
+ * (`face-grant-record.ts`). (No in-worker door admits a peer; the sealed gate admits.)
  *
  * `gate-walk-wired.test.ts` proves the KEL-head walk itself is wired into these same three doors. This
  * weld proves the SECOND fence — the epoch — rides alongside it: a door that stops threading

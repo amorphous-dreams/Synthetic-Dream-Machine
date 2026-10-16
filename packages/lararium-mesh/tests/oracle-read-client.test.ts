@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import { channelSessionTable, type GateSessionChannel } from "../src/gate-session-channel.js";
-import { ed25519VerifyingKeyFromSeed } from "../src/auth-wire.js";
+import { ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { buildOraclePointer, exportOracleSnapshot, type OraclePointer, type OracleSnapshot } from "../src/oracle-substrate.js";
 import { ORACLE_POINTER_FRAME, ORACLE_SOCKET_ROUTE, oracleSocketUrl, pullAndVerifyOracle } from "../src/oracle-read-client.js";
 import { dialSocketTo, gateOver } from "./gate-dial-fixture.js";

@@ -15,8 +15,8 @@
  *      across all bags, in slices paced by host tasks (`host-task.ts`); the in-wiki nalu engine
  *      applies each change synchronously. No frame, no timer and no raw-message-receipt drain
  *      decides when a change lands.
- *   4. (retired) Frame-completion ACK signal — drain timing stays island-internal.
- *   5. Vessel oracle delta delivery is removed. CRDT sync via `syncPort` is the sole
+ *   4. No frame-completion ACK signal — drain timing stays island-internal.
+ *   5. No vessel oracle delta delivery: CRDT sync via `syncPort` is the sole
  *      source of tiddler truth for causal islands.
  *   6. `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe
  *      slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash`
@@ -167,7 +167,7 @@ export interface IslandMsg_Manifest {
    * CIDs (sha256) of the engine's plugin-tiddler blobs (application/json). The worker
    * resolves these — and the core (coreHash) — via the host's content-addressed
    * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. NO FALLBACK STANDS
-   * on either platform (M6/R4 retired it): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
+   * on either platform (M6/R4): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
    * and resolves exactly that list by CID — nothing else — so an absent or empty list boots the
    * engine with no plugin tiddlers at all, never a silent "read every blob off the oracle doc"
    * scan. `resolvePluginCids` is REQUIRED on both `VesselIslandPoolCore` (node and browser alike,
@@ -259,7 +259,7 @@ export interface IslandMsg_Manifest {
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
     registerBags:          readonly string[];
     /** The PINNED signer DID — provenance only (the founding op-key = the KEL inception op-key). The Binding
-     *  Gate no longer PINS this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
+     *  Gate does not PIN this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
     signerDid?:            string;
     /** The persona-KEL PIN + the LOCAL-replica chain the worker walks. `prefix` is the stable identifier (AID)
      *  read from the daemon bag (the pin's root of trust); `chain` is the seq-sorted key-event-log the MAIN thread read
@@ -283,9 +283,8 @@ export interface IslandMsg_Manifest {
      * key (it was handed the sovereign rows), carried
      * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
      *
-     * REQUIRED, and that is the point. The M3 re-seal used to export the sovereign archive on EVERY
-     * boot, which landed a fresh faceless export over a sealed identity whenever the archive held
-     * shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
+     * REQUIRED, and that is the point. A re-seal that exports the sovereign archive on EVERY boot
+     * lands a fresh faceless export over a sealed identity whenever the archive holds shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
      * worker gates on this and reads it `=== true`, so a drifted value fails CLOSED; making the field
      * REQUIRED makes the compiler, rather than a reviewer, the thing that notices a populator which
      * answers nothing.

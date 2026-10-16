@@ -95,7 +95,6 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
     setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);
   });
 
   afterEach(() => {

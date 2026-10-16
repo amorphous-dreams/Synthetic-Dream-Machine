@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/carry-bundle.mem"
 l-space     = "lararium"
 mana        = 13
-role        = "invariant law: a herm's EXPLICIT JOIN, carried by hand — the quorum's counted `carry` over the herm's own vessel key, its counted causal past, and the place floor-pin statements the issuing hearth's board carries. The herm's take writes them onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there and its floor gate stands at that Nexus and only there. The admit bundle's twin for a place: the herm membership relay ships SHUT by name (house ruling \"Routes at the cutover\"), so the quorum's act travels by hand."
+role        = "invariant law: a herm's EXPLICIT JOIN, carried by hand — the quorum's counted `carry` over the herm's own vessel key, its counted causal past, and the place floor-pin statements the issuing hearth's board carries. The herm's take writes them onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there and its floor gate stands at that Nexus and only there. The admit bundle's twin for a place: the herm membership relay ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings), so the quorum's act travels by hand."
 source-file = "packages/lararium-node/src/carry-bundle.ts"
 status      = "draft"
 status-why  = "lane reading, unruled 2026-10-16: the explicit join a herm takes by hand as the act that opens the herm relay; the two-vault carry is owed"
@@ -25,8 +25,7 @@ written     = "2026-10-16"
 The herm membership relay (herm to hearth board sync) ships SHUT by name, so the quorum's `carry` act never
 crosses a wire to the herm it names. An operator carries it instead, the way an admit bundle travels for a
 person (`admit-bundle`): `nexus carry-for` on the herm, `nexus carry --floor-pin` at a seat, `nexus
-carry-take` on the herm. This is the explicit act that opens the herm relay (house ruling "Routes at the
-cutover"): the quorum's counted carry over the herm's key, carried to the herm by hand.
+carry-take` on the herm. This is the explicit act that opens the herm relay (the shut-routes house ruling, stable-founding-road #/rulings): the quorum's counted carry over the herm's key, carried to the herm by hand.
 
 <<~/ahu>>
 
@@ -84,6 +83,6 @@ vault's board and emits this bundle from there.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 
-<<^ code="&#x0003;">>ni:///sha-256;2wOeAP29XR6KNQOZu9U2tlleefNvgVTUaLHVrnIng7Q
+<<^ code="&#x0003;">>ni:///sha-256;Qg_-DYrpaQnEr5RNSUnlhDQHUmmwGCU_OhoqmUBU2us
 
 <<^ code="&#x0004;" -> to="?">>

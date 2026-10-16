@@ -47,7 +47,7 @@ test("dialsOf reads the bearings a decoded FLOW-map carries", () => {
   assert.deepEqual(dialsOf(doc), ["lar:///ha.ka.ba/@oracle/node/alpha"]);
 });
 
-test("RED: a reader carried nowhere holds no floor pin for the hop, so it knocks nowhere (never the retired shut name)", async () => {
+test("RED: a reader carried nowhere holds no floor pin for the hop, so it knocks nowhere", async () => {
   // The reader is a founded place in a scratch root that took no carry: it stands carried at no Nexus, so its pair index
   // holds no floor pin for the hop and the pull dials nothing. Port 9 answers nothing: a dial would read as a dial failure.
   const root = mkdtempSync(join(tmpdir(), "herm-reader-"));

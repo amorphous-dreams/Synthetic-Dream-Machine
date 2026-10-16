@@ -38,11 +38,12 @@
  * Group System line). Renewal is deterministic: a grant at the previous epoch renews to `{L, e_cur, s+1}`, the
  * same grant in yielding the same grant out, so renewal burns nothing.
  *
- * ── WHAT RETIRES THIS SHAPE ────────────────────────────────────────────────────────────────────────
+ * ── THE SIGNED-BYTE SEAM ───────────────────────────────────────────────────────────────────────────
  * A serving checker that runs `grantVerifiesAt` holds `k_e`, a minting secret. H8's signed grant
  * (`walker-grant`) and the seat-delegated act with its three dials (`hosting-delegation`) stand pure beside this
- * file; the one signed-byte cut moves the issuer, the reader, `hosting-store` and the socket sorter onto them
- * together and retires the leaf-signed act and the keyed tag here.
+ * file, with no live caller yet; they stand for the walker route's one signed-byte act, which moves the issuer,
+ * the reader, `hosting-store` and the socket sorter onto them together in place of the leaf-signed act and the
+ * keyed tag here.
  *
  * ── THE CLAIM AND THE LINEAGE ──────────────────────────────────────────────────────────────────────
  * A newcomer redeems with a CLAIM `r = H(claim-tag, its leaf seed, n)`, derived and never stored: a retry
@@ -501,7 +502,7 @@ export function finalizeWalkerBatch(act: HostingAct, pending: PendingMint, answe
 /**
  * The hearth's opaque key for one guest's carried record in N: HMAC under the hearth's own leaf seed over the
  * guest's PROVEN per-Nexus leaf `G` — the leaf every grant names and a walker socket's leaf proof proves (the walker route
- * ships SHUT by name, house ruling "Routes at the cutover"). The record
+ * ships SHUT by name, the shut-routes house ruling (stable-founding-road #/rulings)). The record
  * is reached only by a socket that proves `G`, whichever lineage its grant rides, so a guest walking back in on a
  * fresh invite under the same leaf reaches its carriage by proof, and a fresh leaf is a fresh carriage. The key
  * names no leaf to anyone who holds no hearth seed; a holder of the hearth seed can test a KNOWN leaf against the

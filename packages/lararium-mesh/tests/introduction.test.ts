@@ -376,7 +376,7 @@ describe("an introduction verifies as nothing else", () => {
   });
 });
 
-describe("the module stays out of the barrel and reads no clock", () => {
+describe("the barrel does not name the module, and it reads no clock", () => {
   test("the barrel names it nowhere; its source names no clock and no timer", () => {
     const barrel = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
     expect(barrel).not.toContain("./introduction.js");

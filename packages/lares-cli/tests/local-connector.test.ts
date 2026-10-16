@@ -59,7 +59,7 @@ const haveTool = (bin: string): boolean => {
 };
 
 describe("socketHolderPids — names a listener the rendezvous hard link only POINTS AT (M-a)", () => {
-  it("MUTATION PROOF of the retired bug: `lsof -t <rendezvous path>` names nothing for a real bind-then-link listener", async () => {
+  it("MUTATION PROOF: `lsof -t <rendezvous path>` names nothing for a real bind-then-link listener", async () => {
     if (!haveTool("lsof")) return; // environment carries no lsof — the live probe already confirmed this once
     const dir = mkdtempSync(join(tmpdir(), "socket-holder-pids-"));
     const rendezvousPath = join(dir, "rendezvous.sock");

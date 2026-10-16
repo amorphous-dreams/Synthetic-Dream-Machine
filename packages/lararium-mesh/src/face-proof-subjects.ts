@@ -23,7 +23,7 @@
  *     subject holds a secret.
  *
  * Pure: no key custody, no I/O, no timer, no clock, no randomness.
- * Stands specified in code until the gate and the join door consume it; out of the package barrel till then.
+ * Called by the gate, the dial, the join door, the removal door and the sealed store's records; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof
  */

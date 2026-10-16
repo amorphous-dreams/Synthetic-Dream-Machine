@@ -2,9 +2,8 @@
  * gate-dial-fixture — THE ONE HELPER a test dials a sealed gate through.
  *
  * A suite that needs a socket admitted, a gate stood or a dialer driven asks for it here and names no frame of the
- * handshake itself. The socket's handshake changed ONCE, in one cutover (the Noise IK flight, a sealed presentation, a
- * signed verdict); the old challenge/auth wire it replaced is retired, and so are the dialer and gate doubles that spoke
- * it. This file holds what remains: the real dialer (`dialGate`), a real gate over a world in this process
+ * handshake itself. The socket speaks one handshake (the Noise IK flight, a sealed presentation, a signed verdict), and
+ * no double of a dialer or a gate stands beside it. This file holds the real dialer (`dialGate`), a real gate over a world in this process
  * (`gateOver`, `dialSocketTo`) and the rig that seats channels for the adapter (`faceGateRig`).
  *
  * What a suite holds after it comes through here: a verdict, a channel, a peer. What it never holds: a frame's `type`,

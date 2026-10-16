@@ -91,8 +91,8 @@ export async function importGenesisIsland(
 /**
  * materializeGenesisIsland — the slice-2 boot intake: RELOAD-OR-MATERIALIZE the oracle doc.
  *
- * The oracle island is a LIVE CRDT, not a shipped binary. This is the boot path that retires
- * both the Automerge-binary boot seed AND the merge-into-stale:
+ * The oracle island is a LIVE CRDT, not a shipped binary. This boot path reads no Automerge-binary
+ * boot seed and never merges into a stale doc:
  *
  *   1. find-FIRST under the DETERMINISTIC doc id (oracleGenesisDocUrl). A prior boot
  *      persisted the oracle doc there → reload it with the operator's writes intact

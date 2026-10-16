@@ -13,9 +13,7 @@
  *               zero-config feel. A fresh clone carries neither, and sites no default: every unit
  *               that reaches `larRoot()` sites its own scratch `LAR_ROOT` rather than leaning on it.
  *   LAR_PORT  — daemon WS port. Default 8080.
- *   LAR_JOIN_DOC — the one document url a joinee asks the hearth it dials for, at open and on each return of the dial
- *               (`nexus-client-dial` re-asks it). The dial itself rides the taken admit's pin (`nexus admit-take`): no
- *               env names a hearth's url or gate key.
+ *               No env names a hearth's url, gate key or document: the dial rides the landed or taken admit's pin.
  *   LAR_TARGET — harness mode selector ("staged" | "live"); the CLI ignores it, the harness reads it.
  *
  * The vessel-path resolvers live ONCE in @lararium/node (so the CLI and the daemon agree on the

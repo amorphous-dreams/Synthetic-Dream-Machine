@@ -1,19 +1,14 @@
 /**
- * authenticated-membership-relay.test.ts — THE HERM MEMBERSHIP RELAY SHIPS SHUT BY NAME, and its drop door stands.
- *
- * House ruling "Routes at the cutover": "Walker arms, the sibling dial and the herm membership relay ship SHUT by name ...
- * a closed route grants no silent legacy authority." Never skipped to get green: a shut route's test asserts the shut.
+ * herm-relay-port.test.ts — the herm's relay port: its drop door stands, and every upgrade meets silence.
  *
  * Proven over a real socket:
- *   · a WebSocket upgrade at the relay's port — on any path, the old knock included — is destroyed before any 101, and the
- *     relay names `membership-relay-shut` to its log and to `onShut`;
- *   · `AuthenticatedWSMembershipChannel.connect` opens no socket and rejects, naming the shut;
+ *   · a WebSocket upgrade at the port, on any path, the stood knock's shape included, is destroyed before any 101;
  *   · THE DROP DOOR, live (the floor voice on a plain HTTP request, apart from every proven socket): junk under a real
  *     name or an invented one files nothing (F1, F2), a quarter-megabyte deposit meets silence (F3), one connection
  *     spends a bounded budget, a journal hands a restarted herm back what it verified, and a herm that never answers
  *     costs a pull or a deposit its deadline and no more (H).
  */
-import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
+import { afterEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,25 +19,20 @@ import { request as httpRequest, Agent } from "node:http";
 import {
   provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, enrolmentDigestOf,
   personaEventCidOf, personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors, depositPersonaKelChain,
-  sha256HexSync, hex, knockedUrl, type PersonaKelEvent,
+  sha256HexSync, hex, knockSegment, type PersonaKelEvent,
 } from "@lararium/mesh";
-import {
-  startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel, MEMBERSHIP_RELAY_SHUT, DROP_CONNECTION_BUDGET,
-  type AuthenticatedMembershipRelay,
-} from "../src/authenticated-membership-relay.js";
+import { startHermRelayPort, DROP_CONNECTION_BUDGET, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
-describe("authenticated-membership-relay — the route ships SHUT by name", () => {
-  let relay: AuthenticatedMembershipRelay | undefined;
-  afterEach(async () => { await relay?.close(); relay = undefined; vi.restoreAllMocks(); });
+describe("herm-relay-port — every upgrade meets silence", () => {
+  let relay: HermRelayPort | undefined;
+  afterEach(async () => { await relay?.close(); relay = undefined; });
 
-  test("an upgrade on the old knock and on a bare path is destroyed before any 101, and the relay says `membership-relay-shut` each time", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    const heard: string[] = [];
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(9), 0, undefined, { onShut: (why) => heard.push(why) });
+  test("an upgrade on a key-derived knock and on a bare path is destroyed before any 101", async () => {
+    relay = await startHermRelayPort(new Uint8Array(32).fill(9), 0);
     const url = `ws://127.0.0.1:${relay.port}`;
-    for (const target of [knockedUrl(url, relay.gatePubKey), `${url}/`, `${url}/ws`]) {
+    for (const target of [`${url}/ws/${knockSegment(relay.gatePubKey, "/ws")}`, `${url}/`, `${url}/ws`]) {
       const outcome = await new Promise<string>((resolve) => {
         const ws = new WS(target);
         ws.on("open", () => { ws.terminate(); resolve("opened"); });
@@ -51,40 +41,25 @@ describe("authenticated-membership-relay — the route ships SHUT by name", () =
       });
       expect(outcome, target).toBe("refused");
     }
-    expect(heard).toEqual([MEMBERSHIP_RELAY_SHUT, MEMBERSHIP_RELAY_SHUT, MEMBERSHIP_RELAY_SHUT]);
-    expect(log.mock.calls.filter(([line]) => String(line).includes(MEMBERSHIP_RELAY_SHUT))).toHaveLength(3);
-  });
-
-  test("a channel dial opens no socket and rejects with the shut named, whatever the pin", async () => {
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(9));
-    const dials: unknown[] = [];
-    const server = net.createServer((c) => { dials.push(c); c.destroy(); });
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", () => resolve()));
-    const port = (server.address() as net.AddressInfo).port;
-    try {
-      await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${port}#${relay.gatePubKey}`, new Uint8Array(32).fill(3))).rejects.toThrow(MEMBERSHIP_RELAY_SHUT);
-      await expect(AuthenticatedWSMembershipChannel.connect("not an address", new Uint8Array(32).fill(3))).rejects.toThrow(MEMBERSHIP_RELAY_SHUT);
-      expect(dials).toEqual([]);
-    } finally { await new Promise<void>((resolve) => server.close(() => resolve())); }
   });
 });
 
 // ── THE DROP DOOR, LIVE: a herm keeps only what verifies, spends its budget on nothing else, and never hangs a leaf ──
 
 describe("the drop door over a live herm", () => {
-  const relays: AuthenticatedMembershipRelay[] = [];
+  const relays: HermRelayPort[] = [];
   const dirs: string[] = [];
   afterEach(async () => {
     for (const r of relays.splice(0)) await r.close();
     for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
   });
   const seed = (b: number) => new Uint8Array(32).fill(b);
-  const stand = async (b: number, opts: Parameters<typeof startAuthenticatedMembershipRelay>[3] = {}) => {
-    const r = await startAuthenticatedMembershipRelay(seed(b), 0, undefined, opts);
+  const stand = async (b: number, opts: Parameters<typeof startHermRelayPort>[3] = {}) => {
+    const r = await startHermRelayPort(seed(b), 0, undefined, opts);
     relays.push(r);
     return r;
   };
-  const addressOf = (r: AuthenticatedMembershipRelay) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`;
+  const addressOf = (r: HermRelayPort) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`;
 
   /** A founded KEL rotated once by its guardian quorum. */
   async function rotated(): Promise<[PersonaKelEvent, PersonaKelEvent]> {
@@ -112,7 +87,7 @@ describe("the drop door over a live herm", () => {
     return { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
   };
   /** POST one body and read its status, or "silence" when the herm cut the socket. */
-  const post = (r: AuthenticatedMembershipRelay, name: string, body: string) =>
+  const post = (r: HermRelayPort, name: string, body: string) =>
     fetch(`http://127.0.0.1:${r.port}/drop/${name}`, { method: "POST", headers: { "content-type": "text/plain" }, body })
       .then((res) => res.status, () => "silence" as const);
 

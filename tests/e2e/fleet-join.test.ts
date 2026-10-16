@@ -4,13 +4,15 @@
  * A founds its hearth. B founds a PLACE. Three files cross by hand: A's offer, B's request (B's face-scoped keys mint
  * on B), A's answer (the device edge, a certificate and a grant per scope, the gate pin and canon list INSIDE the
  * root's signature, the face's address secret sealed to B's request). B lands the answer, then boots dialing A by
- * the PIN its landing wrote, with no `LAR_JOIN_*` set.
+ * the PIN its landing wrote; no environment names A's address, gate or document.
  *
  *   V1 — B stands, bound, and its dial crosses A's gate by the pin the signed answer carried: B's own log reads the
  *        gate's verdict, `crossing open`, and no anergy
  *   V2 — an answer whose pin a carrier moved refuses `answer-admit-other-commit` (the admit commits to the pin), and the landing writes nothing
  *   V3 — the offer names the root's key and the scope the face stands at, and the answer carries one certificate
  *        and one grant there
+ *   V5 — the answer names A's lares document beside the gate pin, B's landing keeps it with the pin, and B's dial
+ *        asks for it
  *   V4 — a second landing of the same answer refuses: the first landing cleared the pending join
  */
 import { readFileSync, writeFileSync } from "node:fs";
@@ -32,7 +34,7 @@ const bootstrapOf = (root: string): string => {
 
 beforeAll(async () => {
   pair = await openStagedJoinee({
-    tag: "fleet-join", dial: "pin",
+    tag: "fleet-join",
     // The face stands at its own hearth's Nexus, so the offer names one scope and the answer certifies B's key there.
     riteA: async (_cli, rootA) => { stoodAt = await mintStagedNexusKey(rootA); },
     beforeLand: async (cliB, files) => {
@@ -52,7 +54,7 @@ afterAll(async () => { await pair?.stop(); });
 describe("the fleet-join door, end to end", () => {
   test("V2 — a moved pin refuses `answer-admit-other-commit`, and the landing writes nothing", () => {
     expect(tampered?.code, tampered?.stderr).toBe(1);
-    // The admit the answer carries is signed over a commitment to its opening (the full pin), so a moved pin no longer matches the
+    // The admit the answer carries is signed over a commitment to its opening (the full pin), so a moved pin matches no
     // admit and refuses by name at that earlier layer, ahead of the root signature; the landing writes nothing either way.
     expect(tampered?.stderr).toMatch(/answer-admit-other-commit/);
     expect(bootstrapAfterTamper).toBe(bootstrapBefore);
@@ -93,6 +95,18 @@ describe("the fleet-join door, end to end", () => {
     expect(pin["tier"]).toBe("sovereign");
     expect(answer["personaGroup"]).toBe(offer["personaGroup"]);
   });
+
+  test("V5 — the answer names A's lares document beside the gate pin, B keeps it, and B's dial asks for it", async () => {
+    const answer = readJson(pair!.fleet!.answer);
+    const doc = (answer["edge"] as { islandDocUrl?: unknown }).islandDocUrl;
+    expect(doc, "the signed answer names the document").toBe(pair!.laresA);
+    expect(String(doc)).toMatch(/^automerge:/);
+    expect(bootstrapOf(pair!.rootB), "B's landing keeps the document beside the pin").toContain(String(doc));
+    const asked = `nexus dial-out asks peer doc ${String(doc)}`;
+    const deadline = performance.now() + 60_000;
+    while (!pair!.B!.bootLog().includes(asked) && performance.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(pair!.B!.bootLog(), pair!.B!.bootLog().slice(-2000)).toContain(asked);
+  }, 90_000);
 
   test("V4 — the same answer lands once: a second landing finds no join pending", async () => {
     const { cliFor } = await import("../harness/instance.js");

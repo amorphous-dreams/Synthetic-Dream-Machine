@@ -7,7 +7,7 @@
 import { describe, expect, test } from "vitest";
 import * as mesh from "../src/index.js";
 import { classifySocket, answersStrangers } from "../src/federation-gate.js";
-import { knockPath, knockedUrl, knockSegment } from "../src/gate-knock.js";
+import { knockSegment } from "../src/gate-bundle.js";
 import { carriageAct } from "./fixtures/carriage.js";
 
 const proven = (over: Partial<Parameters<typeof classifySocket>[0]> = {}) => ({
@@ -47,21 +47,16 @@ describe("classifySocket — four classes, and silence", () => {
   });
 });
 
-describe("the knock — the upgrade path derives from the pinned gate key", () => {
+describe("the knock — the upgrade segment derives from the pinned key", () => {
   const K1 = "11".repeat(32);
   const K2 = "22".repeat(32);
 
-  test("RED: the path is the route plus a key-derived segment, and differs per key and per route", () => {
-    expect(knockPath(K1, "/ws")).toMatch(/^\/ws\/[0-9a-f]{32}$/);
-    expect(knockPath(K1, "/ws")).not.toBe(knockPath(K2, "/ws"));
+  test("RED: the segment is 32 hex characters, and differs per key and per route", () => {
+    expect(knockSegment(K1, "/ws")).toMatch(/^[0-9a-f]{32}$/);
+    expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K2, "/ws"));
     expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K1, "/oracle"));
-    expect(knockPath(K1, "/ws/")).toBe(knockPath(K1, "/ws"));
-  });
-
-  test("RED: a dialer's URL carries the knock its own pin derives", () => {
-    expect(knockedUrl("ws://h:1/ws", K1)).toBe(`ws://h:1${knockPath(K1, "/ws")}`);
-    expect(knockedUrl("wss://h/oracle", K2)).toBe(`wss://h${knockPath(K2, "/oracle")}`);
-    expect(() => knockedUrl("ws://h:1/ws", "not-a-key")).toThrow();
+    expect(knockSegment(K1, "/ws/")).toBe(knockSegment(K1, "/ws"));
+    expect(() => knockSegment("not-a-key", "/ws")).toThrow();
   });
 });
 

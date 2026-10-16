@@ -22,7 +22,7 @@
  * This file carries the persona TREE: the path convention, the veiled-user-key
  * derivation, and the per-circle scope-pseudonym that extends it one level.
  *
- * RETIRED FROM HERE, and where each went:
+ * WHAT LIVES ELSEWHERE:
  *   · the seed LIFECYCLE  → `persona-vault` holds the live root machinery.
  *   · the two-key ATOM    → `dyad` holds it, and holds it as a RELATION rather than
  *     as a struct of two public keys. That difference carries the ruling: identity

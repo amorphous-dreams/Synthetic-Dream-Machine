@@ -169,7 +169,7 @@ describe("lares host — roll, invite, state", () => {
     expect(tokenVerifiesAt(live.current, carried.token)).toBe(true);
 
     // A newcomer's redemption burns the token's nonce at the store. The walker ROUTE that carried it to the store ships
-    // SHUT ("Routes at the cutover": the gate sorts a claim as no walker); the store's own count is what stays true.
+    // SHUT (the shut-routes house ruling, stable-founding-road #/rulings: the gate sorts a claim as no walker); the store's own count is what stays true.
     const guestSeed = new Uint8Array(32).fill(7);
     const guestLeaf = hex(await ed.getPublicKeyAsync(guestSeed));
     const claim = redeemClaim(guestSeed, carried.token.n);

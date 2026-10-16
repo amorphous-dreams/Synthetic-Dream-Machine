@@ -155,8 +155,8 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
 export async function cmdRead(args: ParsedArgs): Promise<number> {
   // An explicit --root moves the whole reading, as it does for `vessel found` (never a default).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
-  // The one named lens is `vessel`; any other positional names a door that does not exist (`sensorium`
-  // retired with no alias), so it refuses by name rather than answering as the bare node read.
+  // The one named lens is `vessel`; any other positional names a door that does not exist (no alias stands),
+  // so it refuses by name rather than answering as the bare node read.
   const lens = args.positional[0];
   if (lens !== undefined && lens !== "vessel") {
     console.error(`lares vessel read: unknown lens "${lens}" (the one lens is \`vessel\`; bare \`read\` is the node health reading)`);
@@ -164,8 +164,8 @@ export async function cmdRead(args: ParsedArgs): Promise<number> {
   }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
   if (args.flags["palaces"] === true) return cmdReadPalaces(args);
-  // The named lens: the deep vessel probe. `sensorium` retired (THE VESSEL DOOR: no aliases) — the
-  // sensorium taxonomy has exactly one door, `lares sense status`.
+  // The named lens: the deep vessel probe (THE VESSEL DOOR: no aliases) — the sensorium taxonomy has exactly
+  // one door, `lares sense status`.
   if (args.positional[0] === "vessel") return cmdReadVessel(args);
   // Bare `lares vessel read` — node health, the reading an operator wants most often.
   return cmdReadNode(args);

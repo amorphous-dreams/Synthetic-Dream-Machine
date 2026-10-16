@@ -31,8 +31,7 @@ runSovereignWorker((manifest) => {
   const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
-  // plus the Ui/Persona/Circle seeds, from the single site. This entry no longer re-seeds (the two-site
-  // wart is gone). The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
+  // plus the Ui/Persona/Circle seeds, from the single site. This entry seeds nothing of its own. The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
   const base = makeOperatorDaemonBehavior(manifest, {
     // The daemon wiki projects to `<root>/wikis/daemon/` through the same projector a wiki island mounts
     // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the

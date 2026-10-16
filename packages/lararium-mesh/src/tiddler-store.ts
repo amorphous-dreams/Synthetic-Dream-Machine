@@ -91,8 +91,7 @@ export interface LarTiddlerMeta {
    * across multi-bag residency). Records carry their schema-version so a
    * consumer can tell which shape generation it is reading. Absent = no
    * migration needed. Convention: short stable string (e.g. "v1", "lore-2",
-   * "2026-05"). The version-keyed read-time lens registry that once projected
-   * these (`lensFor`/`identityLens`) was unused residue and is retired.
+   * "2026-05"). No read-time lens projects these.
    */
   readonly schemaVersion?: string;
   /**

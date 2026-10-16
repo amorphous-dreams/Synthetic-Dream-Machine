@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/socket-sorter.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: THE ONE SORTER a vessel's face gates arm with. Every presenter the gate PROVED is classed once, before any verdict, over the facts the gate itself read: same-operator · contracted · walker (SHUT by name; house ruling \"Routes at the cutover\") · stranger. A stranger is answered only where the gate's posture reads OPEN; otherwise SILENCE, exactly like a failed proof. The one posture reader: a lararium reads its charter and fails closed; a herm answers the knock, OPEN by class (operator ruling)."
+role        = "invariant law: THE ONE SORTER a vessel's face gates arm with. Every presenter the gate PROVED is classed once, before any verdict, over the facts the gate itself read: same-operator · contracted · walker (SHUT by name; the shut-routes house ruling, stable-founding-road #/rulings) · stranger. A stranger is answered only where the gate's posture reads OPEN; otherwise SILENCE, exactly like a failed proof. The one posture reader: a lararium reads its charter and fails closed; a herm answers the knock, OPEN by class (operator ruling)."
 source-file = "packages/lararium-node/src/socket-sorter.ts"
 title       = "lar:///ha.ka.ba/lararium/node/socket-sorter"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -36,7 +36,7 @@ Same-operator establishes TRANSPORT alone: the session's proven face and its sco
 each document (house ruling "Sharing after the gate"; "A device set aside").
 # ''contracted'' — the admit read HELD, standing as the proven face key at the admit's Nexus; or a faceless
 PLACE presented a carriage contract the gate read HELD, standing as the place key.
-# ''walker'' — SHUT by name (house ruling "Routes at the cutover"): a grant or claim arm draws nothing until a
+# ''walker'' — SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): a grant or claim arm draws nothing until a
 live grant reader opens the route (`SHUT_ARMS`). The shut arm's name goes to the
 vessel's own log and never to the presenter.
 # ''stranger'' — a proven presenter with no arm, answered only where THIS gate's Nexus reads OPEN.
@@ -89,6 +89,6 @@ drops each one the way the gate drops a refused one: no frame, no reason.
 <<~ loulou "lar:///ha.ka.ba/lararium/node/vessel-gates">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lh49_cUGshIGgV_Uj4jrMRoOdSm_RKrcjv0h8VIqGnw
+<<^ code="&#x0003;">>ni:///sha-256;-ha25RDH1aRoJpqulzRLz6gwraN1D1NF7tD4tj1_nLo
 
 <<^ code="&#x0004;" -> to="?">>

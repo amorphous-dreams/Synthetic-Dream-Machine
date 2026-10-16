@@ -1,7 +1,7 @@
 /**
- * carriage peering is SHUT by name unless a gate-native pull is handed in ("Routes at the cutover"): the old pull
- * (`pullAndVerifyOracle`) is gone from the cap, a dial entry carries a gate key and never a full pin, and an untested
- * old-wire fallback counts as open. A carriage handed a `pullOracle` merges what it returns, as before.
+ * carriage peering is SHUT by name unless a gate-native pull is handed in (the shut-routes house ruling, stable-founding-road #/rulings): the cap dials
+ * nothing of its own, a dial entry carries a gate key and never a full pin, and an untested fallback counts as open.
+ * A carriage handed a `pullOracle` merges what it returns.
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
@@ -23,7 +23,7 @@ async function stand(deps: Partial<Parameters<typeof carriageCap>[0]>): Promise<
 }
 
 describe("carriage peering", () => {
-  test("SHUT: with no pullOracle (even with a legacy identity) nothing is pulled, and the shut is named", async () => {
+  test("SHUT: with no pullOracle (even with an identity handed in) nothing is pulled, and the shut is named", async () => {
     const s = await stand({ identity: { contactCard: "c", peerPubKey: "p", sign: () => "s" } as never });
     expect(await s.pullOnce()).toBe(0);
     expect(s.logs.some((l) => l.includes("carriage-peering-shut"))).toBe(true);

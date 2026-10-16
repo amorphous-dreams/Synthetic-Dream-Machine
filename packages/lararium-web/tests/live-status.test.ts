@@ -7,20 +7,10 @@ describe("served-origin crossing", () => {
     expect(defaultReadFace({ origin: "http://localhost:5417" })).toBe("http://localhost:5417");
   });
 
-  test("a pinned same-origin node derives the matching websocket URL", () => {
-    expect(resolveRelayUrl(
-      { protocol: "https:", host: "lararium.example:5441" },
-      new URLSearchParams("gate=abc"),
-    )).toBe("wss://lararium.example:5441/ws");
-  });
-
-  test("explicit crossing routes stay explicit and no gate means no dial", () => {
-    const location = { protocol: "http:", host: "localhost:5417" };
-    expect(resolveRelayUrl(location, new URLSearchParams("relay=ws%3A%2F%2Fnode%3A5440%2Fws&gate=abc")))
-      .toBe("ws://node:5440/ws");
-    expect(resolveRelayUrl(location, new URLSearchParams("relay=ws%3A%2F%2Fnode%3A5440%2Fws")))
-      .toBe("ws://node:5440/ws");
-    expect(resolveRelayUrl(location, new URLSearchParams())).toBeUndefined();
+  test("the page dials the relay its URL names, and a URL that names none is a pure local boot", () => {
+    expect(resolveRelayUrl(new URLSearchParams("relay=ws%3A%2F%2Fnode%3A5440%2Fws"))).toBe("ws://node:5440/ws");
+    expect(resolveRelayUrl(new URLSearchParams("relay="))).toBeUndefined();
+    expect(resolveRelayUrl(new URLSearchParams())).toBeUndefined();
   });
 
   test("connection state names local, refusal and the authenticated peer", () => {

@@ -20,7 +20,8 @@
  * What the body says stays a HINT: the standing a floor names grants nothing, and a reader decides nothing on it
  * beyond whom to try first.
  *
- * Pure: no I/O, no clock, no randomness. The socket and relay carriers land with the cutover.
+ * Pure: no I/O, no clock, no randomness. No caller yet; it stands for the floor's announcement route
+ * (`FLOOR_ANNOUNCE_ROUTE`), and the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement
  */

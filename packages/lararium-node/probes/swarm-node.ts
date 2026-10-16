@@ -1,13 +1,11 @@
 /**
  * swarm-node — a container (or local) entrypoint that joins a mesh swarm: found a shared
- * cabal-realm (founder) or dwell in it (joiner), the membership ceremony crossing the shore.
- * CHANNEL-AGNOSTIC (the shore's payoff): file/POST over a shared dir, OR live-WS to a relay
- * — chosen by env, the ceremony identical above the shore. REAL Keyhive.
+ * cabal-realm (founder) or dwell in it (joiner), the membership ceremony crossing the file/POST channel over a
+ * shared dir or volume. The ceremony reads only the `MembershipChannel` shore. REAL Keyhive.
  *
  * Env:
  *   LAR_SWARM_ROLE   founder | joiner          (default joiner)
- *   LAR_SWARM_RELAY  ws://host:port            (set → live-WS channel)
- *   LAR_SWARM_DIR    shared dir/volume         (used when RELAY unset → file channel)
+ *   LAR_SWARM_DIR    shared dir/volume         (required; the file channel lives at <dir>/channel)
  *   LAR_SWARM_ID     this vessel's label       (default = role; e.g. vessel-B)
  *   LAR_SWARM_SEED   hex byte for the seed     (default 01; each vessel distinct)
  *   LAR_SWARM_EXPECT founder: joiners to await (default 2)
@@ -18,10 +16,8 @@
  * presenting another party's admit holds nothing. The founder stands green once EXPECT distinct members have
  * presented an admit that verifies, and it writes no membership list anywhere.
  *
- * Discovery rides the channel (a re-broadcast INVITE) — no shared realm file — so it works
- * for the persistent file channel AND the ephemeral WS channel (a late/reconnecting joiner
- * catches a later invite). file/POST serves a shared-dir swarm, the WS relay-service serves live sockets —
- * two live forms of the Herm's OPEN ceremony carriage behind one shore, chosen by env.
+ * Discovery rides the channel (a re-broadcast INVITE), with no shared realm file, so a late or restarting joiner
+ * catches a later invite.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
@@ -30,20 +26,18 @@ import { join } from "node:path";
 import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, openDwelling, dwellersHolding } from "@lararium/keyhive";
 import { MEMBERSHIP_BROADCAST, type MembershipChannel } from "@lararium/mesh";
 import { FileMembershipChannel } from "../src/file-membership-channel.js";
-import { WSMembershipChannel } from "../src/ws-membership-channel.js";
 import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { PresentVerifier, memberKey, signPresent, type SwarmAdmit } from "./swarm-present.js";
 
 const envOf = (k: string, d = ""): string => process.env[k] ?? d;
 const ROLE = envOf("LAR_SWARM_ROLE", "joiner");
-const RELAY = envOf("LAR_SWARM_RELAY");
 const DIR = envOf("LAR_SWARM_DIR");
 const ID = envOf("LAR_SWARM_ID", ROLE);
 const SEED = Number.parseInt(envOf("LAR_SWARM_SEED", "01"), 16) & 0xff;
 const EXPECT = Number.parseInt(envOf("LAR_SWARM_EXPECT", "2"), 10);
 const REALM_URI = envOf("LAR_SWARM_REALM", "lar:///crossroads.cabal.gathers/docker-swarm");
 const ROOT = envOf("LAR_SWARM_ROOT");   // a founded .lararium dataDir → use its REAL identity (else a test key)
-const TRANSPORT = RELAY ? `ws ${RELAY}` : `file ${DIR}`;
+const TRANSPORT = `file ${DIR}`;
 
 /** This vessel's seed: its REAL founded identity (loadVesselSigningSeed) when LAR_SWARM_ROOT
  *  points at a `lares vessel found`-founded dataDir; a deterministic test byte otherwise. */
@@ -60,15 +54,8 @@ async function loadSeed(): Promise<Uint8Array> {
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 const b64 = (u: Uint8Array): string => Buffer.from(u).toString("base64");
 
-async function openChannel(): Promise<MembershipChannel> {
-  if (RELAY) {
-    // Retry the dial — the relay container may not be listening yet at startup.
-    for (let attempt = 0; ; attempt++) {
-      try { const ws = new WSMembershipChannel(RELAY); await ws.opened(); return ws; }
-      catch (e) { if (attempt >= 30) throw e; await sleep(1000); }
-    }
-  }
-  if (!DIR) throw new Error("LAR_SWARM_DIR or LAR_SWARM_RELAY required");
+function openChannel(): MembershipChannel {
+  if (!DIR) throw new Error("LAR_SWARM_DIR required");
   return new FileMembershipChannel(join(DIR, "channel"));
 }
 
@@ -82,7 +69,7 @@ async function runFounder(channel: MembershipChannel, provider: KeyhiveProvider)
   const admitted = new Set<string>();   // the parties this founder answered, so a re-sent card opens nothing twice
   const held = new Set<string>();       // the MEMBERS whose presented admit verified on ask, keyed by the proven key
   for (let i = 0; i < 240 && held.size < EXPECT; i++) {
-    await channel.offer(invite);                            // re-broadcast (persists on file; catches late joiners on WS)
+    await channel.offer(invite);                            // re-broadcast (catches late joiners)
     for (const c of await channel.poll("founder")) {
       if (c.kind === "contact-card" && !admitted.has(c.from)) {
         const { id } = await provider.receiveContactCard(new Uint8Array(Buffer.from(c.payload as string, "base64")));
@@ -150,13 +137,12 @@ async function runJoiner(channel: MembershipChannel, provider: KeyhiveProvider, 
 }
 
 async function main(): Promise<void> {
-  const channel = await openChannel();
+  const channel = openChannel();
   const provider = new KeyhiveProvider();
   const seed = await loadSeed();
   await provider.init({ seed, eventStore: new InMemoryEventStore() });
   if (ROLE === "founder") await runFounder(channel, provider);
   else await runJoiner(channel, provider, seed);
-  if (channel instanceof WSMembershipChannel) channel.close();
   await provider.dispose();
 }
 

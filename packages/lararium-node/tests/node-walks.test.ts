@@ -1,7 +1,7 @@
 /**
  * node-walks.test.ts — N: a node vessel MAY walk, and walking grants it no carry duty.
  *
- * THE WALKER ARMS SHIP SHUT ("Routes at the cutover"): the hearth's gate sorts a hosting grant or an invite claim
+ * THE WALKER ARMS SHIP SHUT (the shut-routes house ruling, stable-founding-road #/rulings): the hearth's gate sorts a hosting grant or an invite claim
  * as no walker at all, and names the shut route locally (asserted in socket-sorter.test). So the old vectors that
  * sorted a node's walk exactly as a browser-shaped leaf's, and followed its key along a hand-over line at the
  * sorter, retire with the walker class they pinned. What stays true is the node's side of a walk, proven here on a

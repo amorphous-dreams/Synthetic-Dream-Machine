@@ -614,12 +614,12 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   }
   for (const f of reachFaces) console.log(`[herm] ws:        ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
 
-  // The CARRIAGE CROSSROADS (Socket B) — announced when a relay port rode the config (LAR_HERM_RELAY_PORT).
-  // The operator hands a family hearth the `ws://` URL + the gate key to dial this crossroads. Absent → no line.
-  // The relay binds its OWN port (SEPARATE from the /ws read-face port) on the same host every face names.
+  // THE HERM RELAY PORT — announced when a relay port rode the config (LAR_HERM_RELAY_PORT). Siblings of a PersonaGroup
+  // pin it as `ws://<host>:<port>#<gate key>` and leave persona-KEL drops there over plain HTTP; every WebSocket upgrade
+  // meets silence. Absent → no line. The port is its OWN (SEPARATE from the /ws read-face port) on the same host every face names.
   if (herm.carriageRelayPort !== null) {
     const relayPort = herm.carriageRelayPort;
-    console.log(`[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:`);
+    console.log(`[herm] relay port — siblings leave persona-KEL drops here:`);
     console.log(`[herm]   gate key: ${herm.carriageRelayGatePubKey}`);
     for (const f of reachFaces) {
       const scheme = f.origin.startsWith("https") ? "wss" : "ws";

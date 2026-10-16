@@ -87,8 +87,7 @@ export const PHASE_COUNT = PHASE_BANDS.length;
 /**
  * The phase a mid-turn marker names, or null for anything else.
  *
- * THE LOOP REPLACES THE LADDER. This channel needs a five-valued signal per Voice span, and the
- * register ladder that supplied one retired with its instrument. The OODA-HA phase markers carry the
+ * THE LOOP IS THE SIGNAL. This channel needs a five-valued signal per Voice span. The OODA-HA phase markers carry the
  * same cardinality, ride the same spans, and the turn actually writes them — so the amplitude vector
  * reads a live signal rather than a remembered one. Nothing here is fabricated: a Voice that marks no
  * phase contributes no mass, exactly as a Voice that vowed no register contributed none.

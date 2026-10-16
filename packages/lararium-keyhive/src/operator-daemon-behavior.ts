@@ -3,9 +3,9 @@
  *
  * The node and browser daemon entry points were byte-identical except for which
  * platform run-function they called. The keyhive wiring — boot keyhive in-worker
- * from `manifest.daemonAuth`, then supply makeDaemonBehavior's three callbacks
- * (verifierFactory, verifyPeer, resolveBinding) — lives here ONCE. Each entry
- * now only picks its platform kernel and passes this factory.
+ * from `manifest.daemonAuth`, then supply makeDaemonBehavior's callbacks
+ * (verifierFactory, resolveBinding) — lives here ONCE. Each entry
+ * picks its platform kernel and passes this factory.
  *
  * Home: keyhive (it owns the keyhive wiring) composes tw5's keyhive-free
  * makeDaemonBehavior. tw5 stays keyhive-free; keyhive → tw5 is acyclic.
@@ -145,9 +145,9 @@ export class WorkingLayerAttachRefusal extends Error {
 }
 
 /**
- * Build the operator's daemon-island behavior from a manifest. Peer V3 admits
- * verify against persisted cap-events, and daemon boot requires Keyhive material
- * for its working-layer binding. Product manifests carry daemonAuth.
+ * Build the operator's daemon-island behavior from a manifest. Daemon boot
+ * requires Keyhive material for its working-layer binding; a peer's admission is
+ * the sealed gate's (`face-gate`), never this behavior's. Product manifests carry daemonAuth.
  */
 /**
  * The note a live admission verdict carries when the persona-KEL walk set events aside or met a fork: events that
@@ -1084,9 +1084,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return keyhive;
     },
 
-    // NO verifyPeer. A peer's admission to the daemon bag was once decided here, off a V3 proof the pre-sync gate relayed.
-    // That gate is retired: a sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket itself
-    // (`socket-sorter`), so the worker no longer vouches a card, a device edge or a class for a socket.
+    // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket
+    // itself (`socket-sorter`); the worker vouches no card, device edge or class for a socket.
 
     // A VESSEL BINDS ON ITS OWN KEY, AND A FACE COMPOSES ONTO THAT.
     //

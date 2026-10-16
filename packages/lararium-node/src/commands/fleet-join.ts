@@ -187,6 +187,9 @@ export interface FleetJoinAnswerOptions {
   readonly request:  unknown;
   /** The url the joinee dials this hearth at (`--sync-url`). */
   readonly syncUrl?: string;
+  /** The document the joinee's dial asks this hearth for, at open and on each return (`--doc-url`). It rides the signed
+   *  answer's device edge beside the gate pin, and the joinee's landing keeps it with the pin. */
+  readonly docUrl?: string;
   /** The persona index the join serves (`--face`); the founding face where absent. It must name the face its offer named. */
   readonly face?:    number;
 }
@@ -208,7 +211,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   await refuseProvisional(face, "fleet join answer");
 
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });
+  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
 
   // THE DIAL THE JOINEE NEEDS: the face's admit at this hearth's Nexus (minted once, through the contract door), the
   // charter that seats its quorum, and this hearth's floor pins. The admit commits to the pin the edge's hearth stands

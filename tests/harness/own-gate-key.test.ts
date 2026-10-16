@@ -1,7 +1,7 @@
 /**
  * harness/own-gate-key — a joiner dials the HEARTH's gate key, never the first key a boot log names.
  *
- * A vessel that stands a carriage crossroads prints two keys: the relay's under `[herm]   gate key:` while it rests
+ * A vessel that stands a herm relay port prints two keys: the relay's under `[herm]   gate key:` while it rests
  * at the floor, and its own under `[lararium] gate key:` once the unlock composes the hearth. The log lines below
  * keep the order and the spelling a staged founder's log carries.
  */
@@ -17,12 +17,12 @@ const ADDR = `localhost:${process.pid}`;
 
 const FLOOR_THEN_HEARTH = [
   "[herm] phase → live",
-  "[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:",
+  "[herm] relay port — siblings leave persona-KEL drops here:",
   `[herm]   gate key: ${RELAY_KEY}`,
   "[custody] unlocked: slot 03e2d54c919ae4f2ecbfadb17fcbd8dd opened the vessel key",
   "[lararium] phase → live",
   `[lararium] gate key: ${HEARTH_KEY}`,
-  `[lararium]   http://${ADDR}/?relay=ws://${ADDR}/ws&gate=${HEARTH_KEY}   (loopback)`,
+  `[lararium]   http://${ADDR}/?relay=ws://${ADDR}/ws   (loopback)`,
 ].join("\n");
 
 describe("ownGateKey — the hearth's own line", () => {

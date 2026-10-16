@@ -326,8 +326,7 @@ contract_ab() {
 
 # ── A PLACE JOINS A'S NEXUS BY HAND (lar:///ha.ka.ba/lararium/node/carry-bundle) ─────────────────────────────────
 # A herm stands a floor gate only at a Nexus whose quorum counted its `carry`, and a reader files its floor pin only
-# off a board that counts it. The relay that would carry the act to the herm ships shut by name (house ruling "Routes at
-# the cutover"), so the join walks three doors by file: the place signs its carrier seal and its floor pin (`nexus
+# off a board that counts it. The relay that would carry the act to the herm ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings), so the join walks three doors by file: the place signs its carrier seal and its floor pin (`nexus
 # carry-for`), A's quorum carries it with the pin beside the act (`nexus carry --floor-pin`), and the place takes the
 # carry bundle onto its own replica (`nexus carry-take`). A running place refolds on the take and its floor gate stands
 # at once (`oracle-read-face` follows the gate set at every refold). $1 = the herm joining; A's charter travels to it first.
@@ -868,7 +867,7 @@ run_nexus() {
   #
   # POLL. Carriage runs on its own cadence, well after the browsers have exited — a single read here
   # times the harness rather than the federation.
-  # GATE-NATIVE CARRIAGE (house ruling "Routes at the cutover"): a hearth reads a herm only at a floor pin its own board
+  # GATE-NATIVE CARRIAGE (the shut-routes house ruling, stable-founding-road #/rulings): a hearth reads a herm only at a floor pin its own board
   # files, presenting what it stands as at that Nexus. Each herm joins A's Nexus by carry; A presents its founder face
   # with the admit it takes at its own Nexus.
   local joined=1 svc

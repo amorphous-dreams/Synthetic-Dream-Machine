@@ -62,28 +62,25 @@ test("the live matrix reads the scenario script's own list, and that door starts
   for (const c of live) assert.ok(c.timeout_minutes <= 60, `${c.cell} asks ${c.timeout_minutes} minutes`);
 });
 
-/** The walks a scenario script defines more than once (bash runs the LAST definition), and the retired dial variables it still sets. */
+/** The walks a scenario script defines more than once (bash runs the LAST definition), and each join variable it sets: no vessel reads one, so a walk that sets one dials nothing. */
 function scenarioScriptFaults(text) {
   const defs = [...text.matchAll(/^(run_[a-z_]+)\(\) \{/gm)].map((m) => m[1]);
   const twice = [...new Set(defs.filter((d, i) => defs.indexOf(d) !== i))];
-  const retired = [...new Set([...text.matchAll(/\bLAR_[A-Z0-9_]*JOIN_(?:SYNC|GATE)=/g)].map((m) => m[0]))];
-  return { twice, retired };
+  const unread = [...new Set([...text.matchAll(/\bLAR_[A-Z0-9_]*JOIN_(?:SYNC|GATE|DOC)=/g)].map((m) => m[0]))];
+  return { twice, unread };
 }
 
-test("RED: a walk defined twice or a retired dial variable reads as a fault, and the control reads clean", () => {
-  assert.deepEqual(scenarioScriptFaults("run_a() {\n}\nrun_b() {\n}\n"), { twice: [], retired: [] });
+test("RED: a walk defined twice or a join variable set reads as a fault, and the control reads clean", () => {
+  assert.deepEqual(scenarioScriptFaults("run_a() {\n}\nrun_b() {\n}\n"), { twice: [], unread: [] });
   assert.deepEqual(scenarioScriptFaults("run_a() {\n}\nrun_a() {\n}\n").twice, ["run_a"]);
-  assert.deepEqual(scenarioScriptFaults('  if LAR_B_JOIN_SYNC="ws://x" LAR_B_JOIN_GATE="$G" up\n').retired, ["LAR_B_JOIN_SYNC=", "LAR_B_JOIN_GATE="]);
-  // A comment that NAMES a retired variable sets nothing.
-  assert.deepEqual(scenarioScriptFaults("# `LAR_JOIN_SYNC` and `LAR_JOIN_GATE` no longer read\n").retired, []);
+  assert.deepEqual(scenarioScriptFaults('  if LAR_B_JOIN_SYNC="ws://x" LAR_B_JOIN_GATE="$G" up\n').unread, ["LAR_B_JOIN_SYNC=", "LAR_B_JOIN_GATE="]);
 });
 
-test("every walk in the scenario script stands ONCE, and none dials by a retired variable", () => {
-  // Bash keeps the last definition of a name, so a second copy silently replaces the walk a hand just changed: the meme
-  // cell once ran a stale copy that still dialed through LAR_B_JOIN_*, which no vessel reads since the sealed-gate cutover.
-  const { twice, retired } = scenarioScriptFaults(readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8"));
+test("every walk in the scenario script stands ONCE, and none sets a join variable", () => {
+  // Bash keeps the last definition of a name, so a second copy silently replaces the walk a hand just changed.
+  const { twice, unread } = scenarioScriptFaults(readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8"));
   assert.deepEqual(twice, [], `walks defined more than once: ${twice.join(", ")}`);
-  assert.deepEqual(retired, [], `a walk still sets a retired dial variable: ${retired.join(", ")}`);
+  assert.deepEqual(unread, [], `a walk sets a join variable no vessel reads: ${unread.join(", ")}`);
 });
 
 test("every cell green for this head merges green, one line per driver", () => {

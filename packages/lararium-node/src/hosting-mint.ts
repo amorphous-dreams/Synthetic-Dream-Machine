@@ -17,6 +17,8 @@
  * carries no Nexus (the socket's grant names it), no nonce and no key; the blinded elements are unlinkable to the
  * tokens they become, which is why no who-invited-whom is computable at redemption.
  *
+ * No caller yet; it stands for the walker route, which ships shut by name until a live grant reader opens it.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 

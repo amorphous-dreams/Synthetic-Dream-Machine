@@ -56,7 +56,6 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, canonicalJsonBytes, hex } from "./crypto.js";
 import { PERSONA_KEL_DROP_DOMAIN } from "./domains.js";
-import { pinnedRelayAddress } from "./gate-knock.js";
 import {
   foldPersonaContests, personaEventCidOf, personaSuccessorFault, type PersonaKelEvent, type PersonaKelFork,
 } from "./persona-kel.js";
@@ -258,6 +257,20 @@ async function cappedText(res: Response, cap: number): Promise<string | null> {
   let at = 0;
   for (const c of chunks) { all.set(c, at); at += c.byteLength; }
   return new TextDecoder().decode(all);
+}
+
+const RELAY_KEY_RE = /^[0-9a-fA-F]{64}$/;
+
+/**
+ * A pinned relay address: `ws(s)://host[:port][/path]#<gate key hex>`. The fragment is the dialer's own pin and
+ * never rides a request. Throws on an address with no 32-byte hex key: a dial with no pin has no herm to reach.
+ */
+export function pinnedRelayAddress(url: string): { readonly url: string; readonly gatePubKey: string } {
+  const u = new URL(url);
+  const gatePubKey = u.hash.replace(/^#/, "").toLowerCase();
+  if (!RELAY_KEY_RE.test(gatePubKey)) throw new Error(`a relay address names its gate key in its fragment (#<gate key hex>): ${url}`);
+  u.hash = "";
+  return { url: u.href, gatePubKey };
 }
 
 /** True for the abort a request's deadline raises. */

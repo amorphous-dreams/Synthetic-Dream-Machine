@@ -17,7 +17,7 @@ import type { PeerId } from "@automerge/automerge-repo";
 import { describe, expect, it } from "vitest";
 import { utf8Bytes } from "../src/crypto.js";
 import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, type GateBundlePin } from "../src/gate-bundle.js";
-import { mkLarSessionMsg } from "../src/auth-wire.js";
+import { mkLarSessionMsg } from "../src/leaf-presentation.js";
 import { HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody } from "../src/hearth-floor-pins.js";
 import { dialGate, faceGateRig, type FaceGateRig } from "./gate-dial-fixture.js";
 

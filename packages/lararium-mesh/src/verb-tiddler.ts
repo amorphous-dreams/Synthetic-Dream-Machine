@@ -158,7 +158,7 @@ interface ReceiptFactCommon {
  *  which compares no content claim at all (an EOF-drop still records the invocation's
  *  own digest before refusing by state). The ring carries that absence into `evicted`.
  *  Every other state names a claim this ledger arbitrated or observed, so its digest is
- *  required, never a legacy-shaped optional absence (early alpha, no shim). */
+ *  required, never an optional absence. */
 export interface ReceiptFactAbandoned extends ReceiptFactCommon {
   readonly state:       "abandoned";
   readonly inputDigest?: string;
@@ -270,7 +270,7 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
     return { requestId, state, seq };
   }
   // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
-  // never as a legacy-shaped "unverifiable" absence.
+  // never as an "unverifiable" absence.
   if (inputDigest === undefined) return null;
   const epochRaw = fields["boot-epoch"];
   const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)

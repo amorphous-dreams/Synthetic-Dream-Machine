@@ -107,11 +107,10 @@ export function buildCeremonyTiddlers(
   };
 
   // M5 — the genesis follow mints the DOTTED observed-remove-set form circle-verbs.ts' `foldMembers` reads
-  // (`mbr+:<nym>#<replica>.<n>`, value = comma-joined observed remove-dots), never the old undotted
-  // `mbr+:<nym>` = ISO-timestamp shape. That legacy shape read as an add-dot that OBSERVED NOTHING, and an
-  // ISO wall-clock string lexically outranks every zero-padded decimal counter forever (`'0' < '2'`) under
-  // the Lamport-counter fold this replaced — so the operator's own genesis follow could never be
-  // unfollowed. The replica id is this device's own `did` (dot `<did>.0`, the first dot this device ever
+  // (`mbr+:<nym>#<replica>.<n>`, value = comma-joined observed remove-dots), never an undotted
+  // `mbr+:<nym>` (no membership key at all) and never a clock: an ISO wall-clock string lexically outranks
+  // every zero-padded decimal counter forever (`'0' < '2'`), so a clock stamp could never be unfollowed.
+  // The replica id is this device's own `did` (dot `<did>.0`, the first dot this device ever
   // mints); the observed-set is empty — nothing has been removed yet at genesis. `circle-verbs.ts` and this
   // file are the two writers of this shared field-key format and must stay in step (one builder lane, M5).
   const groupTiddler: CeremonyTiddler = {

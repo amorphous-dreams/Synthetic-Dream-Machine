@@ -1,6 +1,6 @@
 /**
  * herm-carriage — where a herm stands its floor gates, how they answer, and the GATE-NATIVE carriage pull a vessel hands its
- * carriage (house ruling "Routes at the cutover": "an explicit Nexus opens the herm relay", and carriage peering flips "on a
+ * carriage (the shut-routes house ruling, stable-founding-road #/rulings: "an explicit Nexus opens the herm relay", and carriage peering flips "on a
  * proven gate-native caller").
  *
  *   · WHERE. A herm stands a floor gate at the explicit Nexus it was joined to and only there: a Nexus whose carriage board,

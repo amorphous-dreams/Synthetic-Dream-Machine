@@ -235,7 +235,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "the one `lar-invite:` string to carry. Bare `lares host` reads the live epochs, the cap and how many " +
       "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere. While the " +
       "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart. The walker route ships SHUT " +
-      "by name (house ruling \"Routes at the cutover\"): the act is written, but no gate seats a walker until a live grant reader opens the route.",
+      "by name (the shut-routes house ruling, stable-founding-road #/rulings): the act is written, but no gate seats a walker until a live grant reader opens the route.",
     details: [
       "  (none)                                   per Nexus: the current and previous epoch, the cap, the redemption counts",
       "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on this hearth's hosting doc",
@@ -263,7 +263,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`invite` hands the newest invite out of the wallet, as one string to carry. Bare `lares walk` reads " +
       "where this vessel walks — the Nexus, its standing there, and its wallet. A vessel walks at one hearth: " +
       "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it. The walker route " +
-      "ships SHUT by name (house ruling \"Routes at the cutover\"): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.",
+      "ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.",
     details: [
       "  (none)                  per hearth: the Nexus, whether the invite still waits, the grant held, the wallet count",
       "  take <lar-invite:…>     keep a carried invite; the hearth dial walks in on it as the worn face",
@@ -661,7 +661,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     details: [
       "  join offer [--face N] [--out FILE]          on the root holder: the face, its root key, a nonce, the scopes it stands at",
       "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
-      "  join answer <request-file> [--face N] [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
+      "  join answer <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]   on the root holder: the signed answer",
       "  join land <answer-file>                     on the joining place: the face lands",
       "  join abandon                                on the joining place: the pending join leaves",
     ],
@@ -675,6 +675,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--face N          which of the root holder's faces the join serves (default 0, the founding face); offer and answer name the same one",
       "--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at",
+      "--doc-url URL     the document the new vessel's dial asks this hearth for (an automerge: url); the answer carries it beside the gate pin",
     ],
     next: ["lares vessel stand --with-web"],
   },

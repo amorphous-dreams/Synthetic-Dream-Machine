@@ -65,7 +65,6 @@ describe("device-admit resolves the island the boot resolved", () => {
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
     setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);   // no anchor pin — the charter, or `own`, decides
   });
 
   afterEach(() => {
@@ -109,12 +108,8 @@ describe("device-admit resolves the island the boot resolved", () => {
 
   test("RED — an ANCHOR pin moves the admit door's island too, in the boot's own precedence", () => {
     const anchor = "c3".repeat(32);
-    // A joined vessel, no charter of its own: the anchor rides the explicit option (the environment no longer carries it).
+    // A joined vessel, no charter of its own: the anchor rides the explicit option.
     expect(nodeNexusIsland({ ownVesselKey: OWN_KEY, joinGatePubKey: anchor })).toBe(anchor);
-    setEnv("LAR_JOIN_GATE", "d4".repeat(32));
-    // The retired environment reads nothing: neither the boot's resolution nor the door's moves.
-    expect(bootIsland()).toBe(OWN_KEY);
-    expect(admitBoardIsland(OWN_KEY), "the door ignores the retired LAR_JOIN_GATE").toBe(OWN_KEY);
   });
 
   test("RED — a charter that STANDS and reads TORN refuses rather than falling back to the vessel key", () => {
@@ -208,7 +203,6 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
     setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

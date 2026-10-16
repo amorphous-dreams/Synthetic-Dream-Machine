@@ -54,7 +54,7 @@ describe("the domain registry", () => {
     expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);
   });
 
-  test("RETIRED at the cutover and never reused: the old handshake's names sign nothing", () => {
+  test("ONE HANDSHAKE: no domain signs a proof frame, an ok frame, a presented leaf or a membership relay", () => {
     const names = domains.ALL_DOMAINS.map((d) => d.slice(DOMAIN_ROOT.length + 1));
     for (const gone of ["auth-proof", "auth-ok", "presented-leaf-proof", "membership-relay"]) expect(names, gone).not.toContain(gone);
   });
@@ -69,7 +69,7 @@ describe("the domain registry", () => {
   test("CONTROL: the name law refuses a malformed address", () => {
     expect(`${ROOT}Bad_Name`).not.toMatch(NAME);
     expect(`${ROOT}trailing/`).not.toMatch(NAME);
-    expect("lar:///elsewhere/auth-proof").not.toMatch(NAME);
+    expect("lar:///elsewhere/gate-verdict").not.toMatch(NAME);
   });
 
   /** The TABLE derives from the declarations: every `mint`/`frozen` call lands in `ALL_DOMAINS`, in the

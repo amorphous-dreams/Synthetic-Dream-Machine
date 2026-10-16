@@ -2,7 +2,7 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { ed25519SignerFromSeed } from "../src/auth-wire.js";
+import { ed25519SignerFromSeed } from "../src/ed25519-door.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { CHARTER_SEAT_ROLL_DOMAIN } from "../src/domains.js";
 import { charterInceptionImage, genesisCharterEpoch, inceptCharterEpoch, rotateSealEpoch, sealKeySetHash, sealRollBytes, mintCharterEpoch,

@@ -40,7 +40,7 @@
  * the withdrawal memory accretes; the session table attaches. Where a gate's withdrawal memory rests
  * stands owed: `memoryBackedWithdrawals` keeps it in memory and persists nothing.
  *
- * Stands specified in code until the socket cutover wires it; the package barrel names it for the cutover's slices.
+ * Called by the node's `vessel-gates` and `face-gate-server`; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */

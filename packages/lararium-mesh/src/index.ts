@@ -241,9 +241,8 @@ export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
-export { isPresentedAdmit, isPresented, mkLarSessionMsg, isLarSessionMsg, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex } from "./auth-wire.js";
-export type { LarSessionMsg, LeafIdentity, PresentedAdmit, PresentedAdmitArm, PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented } from "./auth-wire.js";
-export { knockSegment, knockPath, knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
+export { isPresentedAdmit, isPresented, mkLarSessionMsg, isLarSessionMsg } from "./leaf-presentation.js";
+export type { LarSessionMsg, LeafIdentity, PresentedAdmit, PresentedAdmitArm, PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented } from "./leaf-presentation.js";
 export {
   hostingActBytes, hostingActCid, isHostingAct, verifyHostingAct, hostingKeyPair, hostingEpochOf, mintHostingAct,
   hostingActKey, writeHostingAct, hostingActsFromBoard, hostingForks,
@@ -318,10 +317,11 @@ export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.
 // door and the custody seat the custody root's. The bundle itself joins the barrel below, with the gate.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
 export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.js";
-// THE CUTOVER'S THREE FROZEN SEAMS AND THE FLOOR'S ANNOUNCEMENT (train-w-launch#/slices, row A), named here for the
-// slices that consume them: the sealed carriage frames every message after a verdict (B, C, F); the session channel
-// holds the attach → verdict → open interval shut on both halves (C, D); the admit's gate pin and its pair index
-// (D, F, G); the floor's signed announcement, read only against a pin its reader already holds (D, E).
+// THE GATE'S THREE FROZEN SEAMS AND THE FLOOR'S ANNOUNCEMENT, named here for their callers: the sealed carriage frames
+// every message after a verdict (the session channel); the session channel holds the attach → verdict → open interval
+// shut on both halves (the client adapter and the oracle read client dial it); the admit's gate pin and its pair index
+// (the carriage registry and the hearth dial pin); the floor's signed announcement, read only against a pin its reader
+// already holds (no caller yet; it stands for the floor's announce route).
 export {
   SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
   SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
@@ -349,11 +349,11 @@ export {
   gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
 } from "./floor-announcement.js";
 export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
-// THE GATE AND ITS DIAL, named here at the socket cutover by their first callers (train-w-launch#/slices): the node's
-// gate server (C) stands `makeFaceGate` per (Nexus, route) behind the upgrade's knock and its first flight, the
-// composer (D) derives each bundle, and the dialers (B) speak `dialFaceGate` over their own sockets.
+// THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)
+// behind the upgrade's knock and its first flight, the composer derives each bundle, and the dialers speak
+// `dialFaceGate` over their own sockets.
 export {
-  deriveGateBundle, floorGateRoot, sovereignGateRoot, floorRoute, sovereignRoute, gateBundleDigest, gateKnock, readGateBundlePin,
+  deriveGateBundle, floorGateRoot, sovereignGateRoot, floorRoute, sovereignRoute, gateBundleDigest, gateKnock, knockSegment, readGateBundlePin,
   readGateSignature, GateBundleRefused, GATE_BUNDLE_REFUSALS, GATE_TIERS,
 } from "./gate-bundle.js";
 export type { GateBundle, GateBundlePin, GateBundleRoot, GateRoute, GateTier, GateBundleRefusalName } from "./gate-bundle.js";

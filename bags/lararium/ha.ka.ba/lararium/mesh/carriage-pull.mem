@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/carriage-pull.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullOracle`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (house ruling \"Routes at the cutover\")."
+role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullOracle`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (the shut-routes house ruling, stable-founding-road #/rulings)."
 source-file = "packages/lararium-mesh/src/carriage-pull.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/carriage-pull"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -21,8 +21,7 @@ written     = "2026-10-16"
 ! The carriage pull ~ one dial per (peer, Nexus), through a gate
 
 A carriage reads a peer's public map through a gate and nowhere else: the bare route stands SHUT by name,
-and what the house named to open carriage peering is a proven gate-native caller (house ruling "Routes at
-the cutover"). This is that caller: the carriage cap pulls through `gateNativeCarriagePull`, and no bare
+and what the house named to open carriage peering is a proven gate-native caller (the shut-routes house ruling, stable-founding-road #/rulings). This is that caller: the carriage cap pulls through `gateNativeCarriagePull`, and no bare
 path stands beside it.
 
 <<~/ahu>>
@@ -70,6 +69,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 
-<<^ code="&#x0003;">>ni:///sha-256;ljluYb_VzfLSxo4-G5Lr_hX2PpI5JLosqmudKdE6CYw
+<<^ code="&#x0003;">>ni:///sha-256;vZIpBkldk4CyZ9l032IKTbvc7-JDEn6lzl6m7qXOvgs
 
 <<^ code="&#x0004;" -> to="?">>

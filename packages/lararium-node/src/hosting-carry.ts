@@ -13,7 +13,7 @@
  *
  * ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF. The hearth keys each guest's carriage under
  * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and a walker socket's leaf proof
- * proves (the walker route ships SHUT by name, house ruling "Routes at the cutover") — so a record is reached by proof alone,
+ * proves (the walker route ships SHUT by name, the shut-routes house ruling (stable-founding-road #/rulings)) — so a record is reached by proof alone,
  * whichever lineage the grant rides, and nothing the hearth hands
  * out names it. A guest that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage
  * again; a fresh leaf is a fresh carriage, and a kapae'd leaf reaches nothing through a new one. Every dial on G
@@ -69,7 +69,7 @@ import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
 
 /**
  * THE WALKER'S SESSION DOOR: a gate's authenticated sessions, each with its class and the hosting grant it stands
- * on. The walker arms ship SHUT at the socket cutover (`socket-sorter` `SHUT_ARMS`), so no gate seats a walker and
+ * on. The walker arms ship SHUT by name (`socket-sorter` `SHUT_ARMS`), so no gate seats a walker and
  * no composer stands this door; the carriage and mint servers keep their shape for the reader that opens them.
  */
 export interface WalkerSessionDoor<S = unknown> {

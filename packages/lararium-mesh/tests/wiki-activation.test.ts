@@ -140,7 +140,7 @@ describe("wiki-activation cap — activation-on-reference over the one collector
     await pool.disposeAll();
   });
 
-  test("the collector drives eviction at the wiki cap, pool no longer self-bounds", async () => {
+  test("the collector drives eviction at the wiki cap; the pool does not self-bound", async () => {
     const { pool, residency, cap } = makeVesselTrio(1);   // wiki cap 1
     await pool.mountWiki(W1, spec());
     await residency.touch(W1, "wiki");                    // collector: W1 wela (1/1)
