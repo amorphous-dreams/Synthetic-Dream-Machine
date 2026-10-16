@@ -109,8 +109,8 @@ No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.
 
 ''Only the PROOF SOURCE differs, and neither source makes a claim.''
 
-* A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
-* A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
+* A NODE listens: its inbound face gate proves the session’s face key at the seat (`packages/lararium-node/src/face-gate-server.ts`, `packages/lararium-node/src/gate-sync-server.ts`), and the ring reads the key that gate proved (`packages/lararium-keyhive/src/persona-group-ring-assembly.ts`).
+* A LEAF dials out: the gate it dials signs its verdict under the pinned gate key; `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields (`packages/lararium-mesh/src/face-dial.ts`, `packages/lararium-mesh/src/lar-ws-client-adapter.ts`). Authentication runs both ways on one socket.
 * Two LEAVES of one PersonaGroup meet through a herm. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head and the lease epoch the verifier holds (an edge a rotated-away op-key signed reads as rolled past; an edge bound below the held epoch reads as lapsed), plus a signature by the device key over the exchange's whole transcript — both nonces, both ephemeral keys, the prover's role. The PersonaGroup secret gates every box (#/the-persona-group-secret): a hello carries a hint only a member computes, and every box mixes the secret into its key, so a herm reads no leaf↔root link even when it acts — a hello it forges draws no box. The proof binds the session it admits (`LeafPeerSession`): both siblings derive per-direction keys from the very ephemerals their device keys signed, every later frame seals under them, and a hash chain orders the frames, so a herm that injects, replays or reorders one meets a refusal that names the relay as its suspect, and both siblings close the session and prove again. `SiblingNetworkAdapter.provenKeyOf` names the device key a sibling proved.
 
 ''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the lease epoch the verifier holds — `standSiblingChannel` hands the proof the vessel's own read of it.
@@ -187,6 +187,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0cPr9mMIn05GpB8g01_R-vYfw_pJApD73TmipGhQ0so
+<<^ code="&#x0003;">>ni:///sha-256;I9UXwNYGzNn68n1zg9P_YTRwI6LiJ5kiLY5Hz38P_Y0
 
 <<^ code="&#x0004;" -> to="?">>

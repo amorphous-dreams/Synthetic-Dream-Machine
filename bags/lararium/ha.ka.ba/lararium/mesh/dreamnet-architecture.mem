@@ -508,12 +508,12 @@ A fresh browser spore dials in along one of ''three distinct crossings'', each c
 Each door of the tiered gate names a built mechanism, so the abstract split runs on real code:
 
 * ''WHO · read-door'' — a bag declares its read-scope as self-describing TIGHTEN-ONLY data (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>: `VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC`), and the gate enforces `declared ∧ structural-floor` — a declaration only ever tightens below what the crypto permits. The four tiers carry the WHO-axis read-scope made into a datum.
-* ''INFRA · relay-forward door'' — an authenticated membership relay carries sealed envelopes carry ⊥ read: it stamps each envelope with the sender's proven key and reads nothing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>). The read-cap NEVER rides this door; in the ruled model it reaches a member on the WHO door as its bag's content key, carried by a lockbox to the bag's key group, and the lockbox store stands owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>). A ''standing relay'' keeps this door open always: a carry-only cap, MANDATORY-infra, never a reader.
+* ''INFRA · relay-forward door'' — in the ruled model a membership relay carries sealed envelopes carry ⊥ read: it stamps each envelope with the sender's proven key and reads nothing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>). The read-cap NEVER rides this door; in the ruled model it reaches a member on the WHO door as its bag's content key, carried by a lockbox to the bag's key group, and the lockbox store stands owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>). A ''standing relay'' keeps this door open always: a carry-only cap, MANDATORY-infra, never a reader. In code the herm membership relay ships SHUT (`sibling-channel.ts`, `carry-bundle.ts`); a herm's standing travels by hand as a counted `carry`.
 * ''SOCIAL admin-sync door'' — same-operator vessels join through the fleet-join PersonaGroup edge (full private sync); a cross-operator hearth joins by a quorum-signed carriage contract, never the admin door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>). Two sovereign hearths on one LAN CONTRACT; they never merge.
 
 ''The browser clears the WHO/INFRA doors only from a secure context'' — `crypto.subtle` + OPFS demand `https`/`localhost`, so a phone reaches the doors through a DNS-01 trusted name on the kahu domain, not a bare LAN IP (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>).
 
-''The relay-forward CARRIAGE loop stands LIVE.'' `carriage-serve-loop.ts` dials a carriage relay over an authenticated WS channel and answers members' `want-block`s on a clean poll interval — //"this closes the LIVE-WIRE: a member over the relay carries a sealed ciphertext; a stranger draws Mu"// (`packages/lararium-node/src/carriage-serve-loop.ts:1-3`, quote license). It is wired into boot at `open-node-vessel.ts:737-739` (`startCarriageServeLoop`, gated INERT-UNTIL-CONFIGURED: no `carriageRelayUrl` ⇒ zero carriage socket, and boot opens no carriage path). The split-gate stands ruled, its doors and its serving loop built. ''What the loop does NOT close'': a Herm holds no carriage CLIENT, so nothing makes a Herm FETCH the bytes it would serve — it serves only what a member asks of it, and e2e ⑦ (`herm-reshares-public-blob`) holds red as `test.fails` on that leg. The serve side stands; the fetch leg rides #/settled-vs-unbuilt.
+''The herm relay port carries persona-KEL drops over HTTP.'' `herm-relay-port.ts` serves verified successor-drop reads and deposits over HTTP and destroys WebSocket upgrades. The herm's floor gate answers the knock on its vessel's own gate server (`herm-carriage.ts`); it stands at a Nexus whose quorum carries its pin through `nexus carry-for`, `nexus carry --floor-pin` and `nexus carry-take` (`herm-carriage.ts`, `herm-explicit-join.test.ts`).
 
 <<~ set hud="aim" drift-ward="? “the relay-forward gate admits by lease + cost” — the crossing-cost calibration (siege-gate, Sybil-filter">>
 
@@ -638,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BzHVWdXtWdJAKaxDR3P30gjXvxIRpPIClUDQ79HpR-Q
+<<^ code="&#x0003;">>ni:///sha-256;9FHC-XRIzWFIsVMASG67IH9p4jE4mm4yn4SQoM9grvU
 
 <<^ code="&#x0004;" -> to="?">>

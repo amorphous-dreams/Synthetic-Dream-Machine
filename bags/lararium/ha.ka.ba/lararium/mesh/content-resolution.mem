@@ -134,7 +134,7 @@ Matrix's leaked-URL sin fused //may-talk//, //may-resolve//, and //may-read// in
 URL. This resolver keeps them ''three orthogonal gates'', none collapsing into another:
 
 * ''Gate 1 — may-this-peer-talk (transport).'' FederationGate allowlist (#/49) +
-  DaemonAuthGate Ed25519 proof-of-possession.
+  the sealed face gate's verdict, with Ed25519 readings from `packages/lararium-mesh/src/ed25519-door.ts`.
 * ''Gate 2 — may-this-identity-resolve-THIS-cid (content-authz).'' A `#has` cap scoped
   `{peer × address}`, validated UCAN-shape (aud==next-iss → sub=holder) against a grow-only
   revocation-CID set (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>).
@@ -307,6 +307,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MpGtHrrV9FRURxemU8N8hEMx6tz6fOhb9EAdlSyvFRY
+<<^ code="&#x0003;">>ni:///sha-256;jY_9Ft3cFBru0PjJIvPkw6knJvyxJWWee51SOd6n6LA
 
 <<^ code="&#x0004;" -> to="?">>

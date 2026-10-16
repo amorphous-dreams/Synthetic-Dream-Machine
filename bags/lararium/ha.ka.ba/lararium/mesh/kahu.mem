@@ -354,8 +354,7 @@ The quorum's admits stay a shared contract RECORD; the gate never folds that rec
 
 ''What the code holds.'' `verifyPresentedAdmit` (`carriage-registry.ts`) reads a presented admit and
 its causal lineage against the deny-only board and the kapae antigen; it folds no allow roster and
-reads no clock. The wire carries the presentation (`auth-wire.ts`, `presentedAdmit`) outside the proof
-signature, and the daemon gate keeps it per socket as untrusted input, deciding nothing. A vessel
+reads no clock. `packages/lararium-mesh/src/leaf-presentation.ts` carries the presentation; the gate keeps it per socket as untrusted input, deciding nothing (`every arm grants nothing on arrival`), and the sealed face gate returns a verdict before `GateSessionChannel` opens. A vessel
 carries a SET of Nexuses (`carried-set.ts`). No relation witness and no signing domain of its own
 stand beside the gate: an admit proves itself by its quorum signatures and its lineage.
 
@@ -638,6 +637,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2hZdlJQtPtjL7RdWoYwrk4c6rGyA1HCRt41ahr1wXfY
+<<^ code="&#x0003;">>ni:///sha-256;yHPYQ27azjQs7yNnwfBYfmPmxkKQ7nykKNNGMzuwNpM
 
 <<^ code="&#x0004;" -> to="?">>
