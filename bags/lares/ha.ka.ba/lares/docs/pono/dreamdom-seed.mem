@@ -59,7 +59,7 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 
 * ''It holds the train, not the code.'' It briefs one lane per phase (`dreamdom-<ground>`, the names `dreamdom-roadmap` gives), routes handbacks, merges green lane branches into its own train branch, and keeps the record. It writes code only where a lane would cost more than the patch.
 * ''Its branches.'' The train branch reads `feature/green-jello-dinosaur-5--dreamdom`, cut from `feature/green-jello-dinosaur-5`; each lane branch reads `feature/green-jello-dinosaur-5--dreamdom-<ground>`, cut from the train branch. It never pushes `feature/green-jello-dinosaur-5` or `main`; the house controller merges the train. Before its final push it merges `feature/green-jello-dinosaur-5` into the train branch.
-* ''Its crew'' (`controller-handoff#/the-lane-law`, the cloud crew): one Opus lead per lane, with an Opus spirit and a Sonnet spirit as its worker pair, trading masks (builder, reviewer, aftermath sweeper). Whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
+* ''Its crew'' stands as `mixed-model-swarm#/the-shapes` names it: the local crew where Codex stands, the cloud crew where it stands absent, and an Opus overwatch where several crews run at once. Whichever spirit did not build a piece reviews it; `controller-handoff#/the-lane-law` binds every one.
 * ''It decides in forge mode.'' A question reaches the operator only where its answer changes who holds authority, custody at rest or identity bytes, or where the stories leave a genuine fork in the operator's goal (#/settle-uncertainty). Every other open ruling takes the house reading `dreamdom-roadmap#/the-rulings` names in its third column, marked as a house reading, and the work builds on.
 * ''A refused command stops that step.'' Never retry it, reshape it, split it, switch tools for it or hand it to another spirit. Save the work as a patch and surface the refusal.
 
@@ -214,6 +214,6 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O-uEAn7PhZ7g2gRCszGrjCoTXDFg5FCQgyMq3O-f_hQ
+<<^ code="&#x0003;">>ni:///sha-256;XC10Lk8AK7XO-HkJCCF24UelBHyklcXBQiJ4vfn6apI
 
 <<^ code="&#x0004;" -> to="?">>

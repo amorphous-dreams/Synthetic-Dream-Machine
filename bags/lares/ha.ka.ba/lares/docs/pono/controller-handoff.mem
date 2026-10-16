@@ -28,7 +28,7 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 
 !! The seat ~ what the controller does
 
-* ''It briefs lanes.'' One lane per piece of road, each led by one Claude Opus spirit (the Episkopos), with one `gpt-6-sol` reviewer and one `gpt-6-luna` builder at medium effort available when the lane needs them (operator, 2026-10-14). A brief stays short and points at the shared law; it names the lane's ground, the ground it leaves alone, its first line of handback, and where it stops.
+* ''It briefs lanes.'' One lane per piece of road, each led by one Claude Opus spirit (the Episkopos), its crew standing as `mixed-model-swarm#/the-shapes` names. A brief stays short and points at the shared law; it names the lane's ground, the ground it leaves alone, its first line of handback, and where it stops.
 * ''It routes handbacks.'' A handback answers with one status line and plain notes. A finding on another lane's ground travels to that lane as a message or a patch; a slot that frees gets filled from the roadmap's order without asking.
 * ''It pushes green heads, and only those.'' A lane pushes a throwaway `ci/<lane>` branch through `node tools/e2e-shards.mjs push <lane>` and reports `MERGE-VERIFY`. The controller pushes a shard-green SHA to the feature branch while no run stands in flight, then reads `node tools/ci-verdict.mjs --head <sha> --branch <branch>`: three readings, the shards, the full CI workflow, and the container drivers that run on every push (`held-out.yml`). A red reading routes to the lane whose ground it touches.
 * ''It keeps the record.'' Changelog bullets for what a person can do, written after reading `git diff HEAD -- CHANGELOG.md` clean (a shared file committed with another hand's lines once claimed work before it landed). Canon true-ups by a read-only collision of the roadmap against the tree, then hand-applied high-confidence lines.
@@ -47,7 +47,6 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 * ''The plugin bundle and genesis move only by the controller's word.'' A lane that changes `packages/lararium-tw5/` source or tiddlers rebuilds the bundle in the same commit and declares the gap in `genesis/unbaked.json`; one labelled `GENESIS RE-BAKE` folds every declared row.
 * ''Scratch roots alone'' for founding, standing or unlocking (`tools/test-scratch-marker.mjs`, then `tools/seed-test-custody.mjs`); never the operator's homes; never a real passphrase, domain or credential.
 * ''After a machine restart'' the session scratchpad empties and every worktree under it vanishes. Durable state lives in git and in the session folder; a resumed lane re-reads its resume sheet, provisions a fresh worktree at HEAD, and rebuilds.
-* ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''O-takiage burns only what a later carrier or module plainly superseded'', or what states a retired shape as live. Unwired, uncalled or unlinked work stays by default in early alpha; doubt goes on an ask list.
 
 <<~/ahu>>
@@ -59,10 +58,8 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 A session reads this carrier and the roadmap alone; no note outside the repository binds a lane. A lead's brief stays short, names its ground, the ground it leaves alone and where it stops, and points here.
 
 !!! The crew
-* ''In a cloud session'' (operator, 2026-10-15), where Codex stands absent: one Claude Opus lead (the Episkopos) per lane, with one Opus spirit and one Sonnet spirit as its worker pair. The two wear and trade worker masks freely (builder, reviewer, aftermath sweeper) on narrow one-module briefs, and the lead applies, tests and lands their work; the review and sweep duties below fall to whichever of the pair did not build the piece.
-* ''Where Codex stands'': one Claude Opus lead (the Episkopos) per lane. A `gpt-6-luna` and a `gpt-6-sol` spirit co-build, each on a narrow one-module brief with a fixed type contract and its vectors; after each flow the lead runs Sol read-only as the aftermath sweep, and closes or answers each finding before the next flow. A lane closes its span with one more sweep over everything it landed.
-* Codex launches from the repository root: a builder with `codex exec -m <model> -c model_reasoning_effort=medium -s workspace-write --worktree -o <out> -` (it stands inside its own worktree already, so its brief forbids `git worktree add` and every git write); a reviewer with `-s read-only --ephemeral`; `--search` before `exec` for web research. A resume names its model again (`-c model=<id>`). Every Codex brief carries the git and refusal lines below.
-* A lane hands back plainly: one `<<~ status "…">>` line, then what a person can do (each act BUILT, SPECIFIED with its named caller, or OWED), commits, shards, Sol's findings and how each closed, suites, house readings, canon still stale, changelog bullets owed, slips and refusals, and its span's start, end, commits, rows closed and shards for the speed ledger.
+* ''The crew's seats, shapes and launches'' stand at `mixed-model-swarm`: which lineage holds which seat (#/the-seats), the local and cloud crews (#/the-shapes), the lens law, the Copilot seat's read-only role and budget, and the Codex and Copilot launch lines (#/the-launch).
+* A lane hands back plainly: one `<<~ status "…">>` line, then what a person can do (each act BUILT, SPECIFIED with its named caller, or OWED), commits, shards, the fresh reader's findings and how each closed, suites, house readings, canon still stale, changelog bullets owed, slips and refusals, and its span's start, end, commits, rows closed and shards for the speed ledger.
 
 !!! Git
 * A git command that writes runs alone on its line. Never `git stash` in any form, `git stash list` included (a PreToolUse hook, `tools/stash-guard.mjs`, refuses any Bash call that reaches it, and `.codex/rules/stash.rules` forbids its prefix to Codex); never `--no-verify`; never touch `.git/config`; never push `feature/*` or `main` (the controller pushes); never `git worktree remove --force`.
@@ -147,6 +144,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sSZXSrTaiKu923ENim69OB-jsNkV7igHq7qiIiW9irw
+<<^ code="&#x0003;">>ni:///sha-256;znnS7r8ag9KaoRaLk93PNTT2kNpswiVHCrNQLo4UIjs
 
 <<^ code="&#x0004;" -> to="?">>

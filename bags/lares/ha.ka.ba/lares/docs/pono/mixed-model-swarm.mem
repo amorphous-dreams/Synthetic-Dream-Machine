@@ -1,0 +1,144 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus Episkopos, Codex Sol and Luna, the cloud Opus and Sonnet pair, research spirits, and GitHub Copilot as a third lineage of read-only eyes), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/mixed-model-swarm"
+written   = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! Mixed-model swarm ~ many lineages, one hand per lane
+
+The house works across several model lineages at once. Each lineage holds a seat it suits, every seat keeps the same lane law, and one hand per lane applies and lands the work. A second lineage earns its place by seeing what the first one misses, never by adding a writer.
+
+This carrier names the seats, the crew shapes, the lens law, the fences, the launch practice and the budget. The crew lines that bind a running lane stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-crew and #/the-lane-law; a spirit's mask, lifecycle and handback form stand at <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> #/worker-swarm.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seats>>
+
+!! The seats ~ which lineage holds what
+
+|! Seat |! Lineage |! Holds |! Never |
+| ''Episkopos'' (lead) | Claude Opus | the lane's brief, its ground, every landing, every review verdict, the canon lines | hands its landing to another spirit |
+| ''Builder'' | Codex `gpt-6-sol` (judgment-heavy modules) or `gpt-6-luna` (mechanical modules), medium effort | one module with a fixed type contract and its vectors, in its own worktree | commits, pushes, or touches git |
+| ''Aftermath sweeper'' | Codex `gpt-6-luna`, or Sol read-only | evergreen, L-Prime and changelog sweeps; reference census; canon re-trues | sets canon |
+| ''Fresh reader'' | whichever lineage built nothing in the piece, read-only and ephemeral | an adversarial read of the landed diff, findings ranked with `file:line` | sees the builder's conclusions first |
+| ''Research pair'' | two spirits woken apart (Codex Luna with web search, or Fable or Opus where Codex stands absent) | the code read and the field read of one question, each claim marked reached or inferred | shares a conclusion with its twin |
+| ''Third-lineage eye'' | GitHub Copilot CLI (#/the-copilot-seat) | a read-only review from a model family the crew does not run | writes, or carries a lane |
+| ''Cloud pair'' | Claude Opus and Claude Sonnet, where Codex stands absent | builder, reviewer and sweeper masks, traded; the one that did not build a piece reviews it | — |
+
+<<~/ahu>>
+
+<<~ ahu #/the-shapes>>
+
+!! The shapes ~ how a crew stands
+
+* ''Local crew'', where Codex stands (operator, 2026-10-14 and 2026-10-16): one Opus Episkopos per lane; a Sol builder and up to two Luna spirits co-build or sweep, each on a narrow one-module brief with a fixed type contract and its vectors. After each flow the lead runs Sol or a fresh Luna read-only as the aftermath sweep and closes or answers each finding before the next flow; a lane closes its span with one more sweep over everything it landed. The third-lineage eye reads a burst before its shard where the burst carries load.
+* ''Cloud crew'', where Codex stands absent (operator, 2026-10-15): one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
+* ''Observe pair.'' Before a phase designs anything: one spirit cold-reads the as-built with `file:line`; a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
+* ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
+* ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
+
+<<~/ahu>>
+
+<<~ ahu #/the-lens-law>>
+
+!! The lens law ~ why several eyes outweigh one
+
+# ''Correlated eyes count once.'' Two spirits of one lineage share their blind spots; a finding both report still reads as one lead. A second lineage reads with a different prior, so its agreement carries weight and its dissent marks where to look.
+# ''A finding one eye alone reports counts as a lead, not ground'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">> #/the-loop). Ground needs a second eye through another lens, or a measurement.
+# ''The reader built nothing.'' A reviewer that built the piece reads its own intent into the diff.
+# ''Framing without conclusion.'' A second researcher gets the question and the framing, never the first researcher's answer.
+# ''Measure over agree.'' Where eyes disagree, a probe, a red test or a repeated run settles it; a vote never does.
+
+<<~/ahu>>
+
+<<~ ahu #/the-copilot-seat>>
+
+!! The Copilot seat ~ a third lineage of read-only eyes (operator, 2026-10-16)
+
+GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Microsoft's MAI-Code. The house uses it for eyes, on a budget it spends on purpose, and never makes it load-bearing.
+
+!!! Its roles
+|! Role |! Model |! When |
+| third-lineage reviewer of a crew's burst | MAI-Code-1.1-Flash by default; Gemini where the burst touches crypto, custody, carriage or the wire | after the burst lands locally, before its shard |
+| Copilot code review | GitHub's PR reviewer | once per train or span-to-main PR, never per push |
+| micro-sweeps | a low-multiplier model | during aftermath: evergreen words, L-Prime, comment drift; findings only |
+
+!!! Its fences
+# ''Read-only.'' `copilot -p` launches with `--no-ask-user`, denies every write, commit and push tool, and allows only git reads and the witnesses. It hands back findings; the Episkopos applies each fix.
+# ''No laundering.'' A step this session's safety check refused never travels to Copilot; it runs a second permission system, so routing a refused step through it counts as a retry.
+# ''Overage off.'' The account's Copilot budget stands at zero, so the allowance empties and stops.
+# ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass. A legacy annual plan receives no new models and falls to Copilot Free when its term ends; Opus and Codex stand without it.
+# ''No cloud agent.'' A cloud agent opens branches and pull requests under its own hand: outward-facing, and a second writer.
+# ''Its config carries the house.'' `~/.copilot/copilot-instructions.md` loads the boot seed, and `~/.copilot/hooks/lares.json` stands.
+
+!!! Its budget
+A prepaid allowance resets on the first of each month and carries nothing over, so an unspent request buys nothing. The controller spends it by plan: Flash reads for each burst, a few Gemini deep reads for load-bearing bursts, one code review per train, and the rest for the Episkopos's spot checks. Each handback prints the allowance left before and after, read from the account's own entitlement cache, and that reader proves itself against a known spend.
+
+<<~/ahu>>
+
+<<~ ahu #/the-fences>>
+
+!! The fences ~ every lineage keeps them
+
+* ''One writer per lane.'' Spirits of any lineage write only inside their own worktree; the Episkopos alone lands, from its own tree, with `git commit -F <msg> --only -- <paths>`.
+* ''A refused command stops that step'' for every lineage alike: never retried, reshaped, split, moved to another tool, or handed to another spirit (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law).
+* ''Every brief carries the git lines'': no `git stash` in any form, no `--no-verify`, no `.git/config`, no git write from a spirit; `git config core.bare` reads `false` before and after.
+* ''A build reads its own tree.'' A spirit or lead that builds a bundle does so in a provisioned checkout whose links resolve inside it, never over links into another hand's tree.
+
+<<~/ahu>>
+
+<<~ ahu #/the-launch>>
+
+!! The launch ~ one brief file, any lineage
+
+* ''A brief stands as a file'' that opens with a Lares invocation sigil, names the mask, the ground, the ruling being enacted, the house style, and the handback shape, and closes with a yield to the controller.
+* ''A launch wrapper takes the brief, the model and the sandbox'' and writes the handback to an out file beside a log. It retries only where the vendor reports capacity and the out file stayed empty, waiting between tries and giving up after a fixed count.
+* ''Codex'': `codex exec -m <model> -c model_reasoning_effort=medium` with `-s workspace-write` for a builder (either `-C <worktree>` into a worktree the lead provisioned, or `--worktree` from the repository root, whose brief then forbids `git worktree add`) or `-s read-only --ephemeral` for a reader; `--search` before `exec`, or web search enabled in config, for a field read. Every Codex brief carries the git and refusal lines of #/the-fences.
+* ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
+* ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
+* ''A spirit that cannot write its out file'' hands back on stdout; the wrapper's log keeps it.
+
+<<~/ahu>>
+
+<<~ ahu #/provenance>>
+
+!! Provenance ~ each landed line names its hands
+
+* A commit carries a `Co-Authored-By` trailer for each lineage whose work it lands: the Episkopos's own, `Codex <model>` for a Codex spirit, `GitHub Copilot (<model>)` for a Copilot finding applied, and the session line.
+* A handback a house keeps lands verbatim as a Testimony carrier, so no relaying hand rewrites it.
+* Each lineage's own transcript rests where its harness keeps it (Claude and Codex JSONL, Copilot's session store); the capture plane reads them read-only across surfaces (<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>, <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;4jNl3ixTdeRDqGaSzzIhEorDvvqNjktzvpJVVS4WozY
+
+<<^ code="&#x0004;" -> to="?">>
