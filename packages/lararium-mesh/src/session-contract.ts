@@ -29,6 +29,9 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract
  */
 import { defaultCryptoProvider } from "./crypto.js";
+import type {
+  LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LarMsg_ControlEvent, LarMsg_ControlResult, LarMsg_Frame,
+} from "./lar-camera.js";
 
 /** The schema every message after the open names. */
 export const SESSION_SCHEMA_VERSION = 1;
@@ -199,18 +202,11 @@ export type SessionMessage =
   | (SessionRequestEnvelope & { readonly kind: "session:surface-open"; readonly surfaceKind: string; readonly ref: string })
   | (SessionRequestEnvelope & SessionSurfaceEnvelope & { readonly kind: "session:surface-ready"; readonly mountEpoch: number })
   | (SessionSurfaceEnvelope & { readonly kind: "session:surface-close" })
-  | (SessionSurfaceEnvelope & {
-      readonly kind: "projection:frame"; readonly cameraId: string; readonly mountEpoch: number;
-      readonly state: unknown; readonly membershipKey: string; readonly sensedRevision: number;
-    })
-  | (SessionSurfaceEnvelope & {
-      readonly kind: "wiki:control-event"; readonly mountEpoch: number; readonly eventId: string; readonly controlId: string;
-      readonly frameRevision: number; readonly localRevision: number; readonly value: unknown; readonly geometry?: unknown;
-    })
-  | (SessionSurfaceEnvelope & {
-      readonly kind: "projection:control-result"; readonly mountEpoch: number; readonly eventId: string;
-      readonly outcome: string;                   // `applied` · `stale-target` · a named refusal
-    })
+  | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_FRAME } & Pick<LarMsg_Frame, "cameraId" | "mountEpoch" | "keys" | "sensedRevision">)
+  // The control event rides WHOLE beside the envelope: its own `kind` names the crossing (act, sense, write,
+  // service answer), and the holder hands `event` to the contract's reader and to the island unchanged.
+  | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_EVENT; readonly event: LarMsg_ControlEvent })
+  | (SessionSurfaceEnvelope & { readonly kind: typeof LAR_CONTROL_RESULT } & Omit<LarMsg_ControlResult, "type">)
   | (SessionRequestEnvelope & { readonly kind: "session:switch"; readonly expectedGeneration: number; readonly faceRef: string })
   | (SessionRequestEnvelope & { readonly kind: "session:switch-result"; readonly outcome: string })
   | (SessionEnvelope & { readonly kind: "session:revoke"; readonly reason: string })

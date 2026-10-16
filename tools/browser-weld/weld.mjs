@@ -65,9 +65,10 @@ async function installWorkerTrace(page) {
       return {
         type: typeof msg.type === "string" ? msg.type : "",
         renderId: typeof msg.renderId === "string" ? msg.renderId : "",
-        eventType: typeof msg.eventType === "string" ? msg.eventType : "",
+        action: typeof msg.action === "string" ? msg.action : "",
         listenable: typeof msg.listenable === "string" ? msg.listenable : "",
         wikiUri: typeof msg.wikiUri === "string" ? msg.wikiUri : "",
+        mountEpoch: typeof msg.mountEpoch === "number" ? msg.mountEpoch : null,
         rev: typeof payload?.rev === "number" ? payload.rev : null,
       };
     };
@@ -94,7 +95,7 @@ async function installWorkerTrace(page) {
         const before = trace.events.length;
         note("to-worker", data);
         const entry = trace.events[before];
-        if (entry.type === "wiki:dom-event" && entry.renderId === trace.dropDomEventRenderId) {
+        if (entry.type === "lar:control-event" && entry.renderId === trace.dropDomEventRenderId) {
           trace.events.push({ ...entry, direction: "dropped-to-worker" });
           return;
         }
@@ -178,7 +179,7 @@ const main = async () => {
   // defect from an empty pane and must not read the same.
   const html = await until(async () => { const h = await paneHtml(page); return h && h.length > 0 ? h : null; });
   if (!html) {
-    bad("W2 projection-renders", "the projection shadow root stayed empty — no `projection:frame` applied");
+    bad("W2 projection-renders", "the projection shadow root stayed empty — no `lar:frame` applied");
   } else if (!html.includes("data-lar-rid")) {
     bad("W2 projection-renders", "a frame rendered but carries NO data-lar-rid — the return leg has nothing to address");
   } else {
@@ -200,8 +201,9 @@ const main = async () => {
     } else if (!initialTabs.open.selected || initialTabs.recent.selected) {
       bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state no longer names the transition");
     } else {
-      // An unknown rendered id is sent through the same real host listener. The worker must safely drop it:
-      // the trace proves transport reached the worker boundary and the state must remain untouched.
+      // An unknown rendered id that declares a click binding is sent through the same real host listener (the page
+      // relays only what a `data-lar-on` stamp binds). The worker answers it stale and runs nothing: the trace
+      // proves transport reached the worker boundary and the state must remain untouched.
       const unknownId = `weld-unknown-rid-${Date.now()}`;
       const unknownMark = await traceMark(page);
       const unknownSent = await page.evaluate((rid) => {
@@ -209,6 +211,7 @@ const main = async () => {
         if (!pane) return false;
         const probe = document.createElement("button");
         probe.setAttribute("data-lar-rid", rid);
+        probe.setAttribute("data-lar-on", "click");
         pane.appendChild(probe);
         probe.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
         probe.remove();
@@ -221,7 +224,7 @@ const main = async () => {
       const unknownTrace = await traceSince(page, unknownMark);
       if (!unknownSent) {
         bad("W3 unknown-rid-drop", "projection disappeared before the unknown render-id control could run");
-      } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "wiki:dom-event", renderId: unknownId })) {
+      } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
       } else if (unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
         bad("W3 unknown-rid-drop", `unknown render id changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
@@ -242,8 +245,8 @@ const main = async () => {
       await page.evaluate(() => { window.__weldWorkerTrace.dropDomEventRenderId = null; });
       if (!droppedClick) {
         bad("W3 return-leg-control", "Recent disappeared before its deliberately dropped click could run");
-      } else if (!traceHas(droppedTrace, { direction: "dropped-to-worker", type: "wiki:dom-event", renderId: recentId })) {
-        bad("W3 return-leg-control", `the fixture failed to drop Recent's outgoing wiki:dom-event — ${traceTail(droppedTrace)}`);
+      } else if (!traceHas(droppedTrace, { direction: "dropped-to-worker", type: "lar:control-event", renderId: recentId })) {
+        bad("W3 return-leg-control", `the fixture failed to drop Recent's outgoing lar:control-event — ${traceTail(droppedTrace)}`);
       } else if (transitionedWhileDropped) {
         bad("W3 return-leg-control", `Recent selected despite its return leg being dropped — ${traceTail(droppedTrace)}`);
       } else {
@@ -258,19 +261,19 @@ const main = async () => {
       }, 8_000);
       const restoredTrace = await traceSince(page, restoredMark);
       const recentDispatch = restoredTrace.find((event) =>
-        event.direction === "to-worker" && event.type === "wiki:dom-event" && event.renderId === recentId);
+        event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
       const sentRecent = !!recentDispatch;
       const projectedRecent = !!recentDispatch && traceHas(restoredTrace, {
         direction: "from-worker", workerId: recentDispatch.workerId, wikiUri: recentDispatch.wikiUri,
-        type: "event", listenable: "projection:frame",
+        type: "lar:frame",
       });
       if (restored && restoredClick && sentRecent && projectedRecent) {
         ok("W3 Recent-tab", `rid ${recentId}: Open selected true→false; Recent false→true; worker re-projected`);
       } else {
         const missing = [
           !restoredClick && "Recent target",
-          !sentRecent && "outgoing wiki:dom-event",
-          !projectedRecent && "worker projection:frame",
+          !sentRecent && "outgoing lar:control-event",
+          !projectedRecent && "worker lar:frame",
           !restored && "Open→Recent state transition",
         ].filter(Boolean).join(", ");
         bad("W3 Recent-tab", `rid ${recentId}: missing ${missing}; ${traceTail(restoredTrace)}`);
@@ -304,11 +307,11 @@ const main = async () => {
     }), 8_000);
     const sidebarTrace = await traceSince(page, sidebarMark);
     const sidebarDispatch = sidebarTrace.find((event) =>
-      event.direction === "to-worker" && event.type === "wiki:dom-event" && event.renderId === sidebarBefore.renderId);
+      event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
     const hideSent = !!sidebarDispatch;
     const sidebarProjection = !!sidebarDispatch && traceHas(sidebarTrace, {
       direction: "from-worker", workerId: sidebarDispatch.workerId, wikiUri: sidebarDispatch.wikiUri,
-      type: "event", listenable: "projection:frame",
+      type: "lar:frame",
     });
     if (hideClicked && hideSent && sidebarProjection && hidden) {
       ok("W3 sidebar-hides", "$:/state/sidebar became no: sidebar reveal hidden=true and Show sidebar replaced Hide sidebar");
@@ -328,7 +331,7 @@ const main = async () => {
       }
     } else {
       const browserError = consoleErrors.slice(errorCount)[0];
-      const missing = [!hideSent && "outgoing wiki:dom-event", !sidebarProjection && "same-worker projection:frame", !hidden && "hidden sidebar reveal plus Show sidebar"]
+      const missing = [!hideSent && "outgoing lar:control-event", !sidebarProjection && "same-worker lar:frame", !hidden && "hidden sidebar reveal plus Show sidebar"]
         .filter(Boolean).join(", ");
       bad("W3 sidebar-hides", `expected sidebar reveal hidden=true and Show sidebar; ${browserError ? `browser error: ${browserError.slice(0, 120)}` : `missing ${missing}`}; ${traceTail(sidebarTrace)}`);
     }
@@ -356,15 +359,15 @@ const main = async () => {
     const seen = await until(async () => (await paneHtml(page)).includes(typed), 8_000);
     const inputTrace = await traceSince(page, inputMark);
     const inputDispatch = inputTrace.find((event) =>
-      event.direction === "to-worker" && event.type === "wiki:dom-input" && event.eventType === "input");
+      event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
     const inputProjection = !!inputDispatch && traceHas(inputTrace, {
       direction: "from-worker", workerId: inputDispatch.workerId, wikiUri: inputDispatch.wikiUri,
-      type: "event", listenable: "projection:frame",
+      type: "lar:frame",
     });
     if (seen && inputDispatch && inputProjection) {
       ok("W4 keystroke-lands", `"${typed}" reached ${inputDispatch.wikiUri} and re-projected from the same worker`);
     } else {
-      const missing = [!seen && "typed value", !inputDispatch && "outgoing wiki:dom-input", !inputProjection && "same-worker projection:frame"]
+      const missing = [!seen && "typed value", !inputDispatch && "outgoing lar:sense", !inputProjection && "same-worker lar:frame"]
         .filter(Boolean).join(", ");
       bad("W4 keystroke-lands", `input leg missing ${missing}; ${traceTail(inputTrace)}`);
     }

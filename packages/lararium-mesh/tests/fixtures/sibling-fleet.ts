@@ -259,11 +259,54 @@ export const shutdown = async (...leaves: Leaf[]): Promise<void> => { for (const
 const B64URL_RE = /^[A-Za-z0-9_-]+$/;
 const HEX_RE = /^(?:[0-9a-fA-F]{2})+$/;
 
+/** Does the run read as one CBOR item whose every declared length fits in the bytes that remain? Reads the heads
+ *  alone and builds nothing, so a random nonce that opens with a head claiming a hundred million elements reads
+ *  `false` at once, where a decoder that believes the head walks the claim for seconds and starves the event loop.
+ *  Past 64 levels the reading stops and hands the run on: depth costs a decoder bytes, never a claim. */
+const CBOR_DEEP = Symbol("cbor-deep");
+function cborFits(bytes: Uint8Array): boolean {
+  let at = 0;
+  const item = (depth: number): boolean => {
+    if (depth > 64) throw CBOR_DEEP;
+    if (at >= bytes.length) return false;
+    const head = bytes[at++]!;
+    const major = head >> 5;
+    const info = head & 31;
+    if (info === 31) {
+      if (major < 2 || major > 5) return false;
+      while (at < bytes.length && bytes[at] !== 0xff) {
+        if (!item(depth + 1)) return false;
+        if (major === 5 && !item(depth + 1)) return false;
+      }
+      if (at >= bytes.length) return false;
+      at++;
+      return true;
+    }
+    let n = info;
+    if (info >= 28) return false;
+    if (info >= 24) {
+      const width = 1 << (info - 24);
+      if (at + width > bytes.length) return false;
+      n = 0;
+      for (let i = 0; i < width; i++) n = n * 256 + bytes[at++]!;
+    }
+    const left = bytes.length - at;
+    switch (major) {
+      case 2: case 3: if (n > left) return false; at += n; return true;
+      case 4: if (n > left) return false; for (let i = 0; i < n; i++) if (!item(depth + 1)) return false; return true;
+      case 5: if (2 * n > left) return false; for (let i = 0; i < 2 * n; i++) if (!item(depth + 1)) return false; return true;
+      case 6: return item(depth + 1);
+      default: return true;
+    }
+  };
+  try { return item(0) && at === bytes.length; } catch (deep) { if (deep === CBOR_DEEP) return true; throw deep; }
+}
+
 /** Every structured reading of a byte run: JSON, CBOR, and the Automerge sync message, change or document it holds. */
 function structuresOf(bytes: Uint8Array): unknown[] {
   const out: unknown[] = [];
   try { out.push(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes))); } catch { /* not JSON */ }
-  try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
+  if (cborFits(bytes)) try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
   try { out.push(A.decodeSyncMessage(bytes).changes); } catch { /* not a sync message — each change it carries reads below */ }
   try { out.push(A.decodeChange(bytes)); } catch { /* not a change */ }
   try { out.push(A.toJS(A.load(bytes))); } catch { /* not a document */ }

@@ -191,6 +191,20 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     } finally { await shutdown(x, y); }
   });
 
+  test("RED: a nonce whose bytes read as a CBOR head claiming a hundred-million-element array costs the instrument nothing; CONTROL: a line leaked as CBOR in hex still reads, however deep it nests", () => {
+    // A real hello nonce from a fresh pair: its first byte opens an indefinite CBOR array whose inner head claims
+    // more elements than the run holds bytes, and a decoder that believes the head walks it for seconds.
+    const hello = JSON.stringify({ t: "proof", p: { step: "hello", nonce: "9fc45656482b5c779dad9497b403b7898973e22323cf9c148458ba62ec5ce33a" } });
+    expect(carriedReads([hello], "sealed sibling channel")).toBe(false);
+    // CONTROL: the line hides as base64url inside a CBOR map inside hex, so only the CBOR reading finds it.
+    const leaked = JSON.stringify({ t: "proof", p: { box: hex(cbor.encode({ s: base64UrlEncode(new TextEncoder().encode(CONTENT)) })) } });
+    expect(carriedReads([leaked], "sealed sibling channel")).toBe(true);
+    // CONTROL: the same line nested seventy arrays deep still reads, so the head reading never caps what it hands on.
+    let deep: unknown = { s: base64UrlEncode(new TextEncoder().encode(CONTENT)) };
+    for (let i = 0; i < 70; i++) deep = [deep];
+    expect(carriedReads([JSON.stringify({ t: "proof", p: { box: hex(cbor.encode(deep)) } })], "sealed sibling channel")).toBe(true);
+  });
+
   test("carry ⊥ read past Automerge's deflate: the instrument finds a long line leaked as a sync message, and the channel carries none", async () => {
     const LONG = `${CONTENT} ${"lorem ipsum dolor sit amet ".repeat(40)}`;
     // POSITIVE CONTROL: a real Automerge sync exchange leaked in the clear beside a seal — short and deflated-long.

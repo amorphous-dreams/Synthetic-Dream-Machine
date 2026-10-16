@@ -1,0 +1,179 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/daemon-surface">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/daemon-surface.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "daemon-surface — a talk-story on the camera that holds the vessel's wikis, told by a tasked spirit for the Episkopos of train D (2026-10-16) and held VERBATIM: six panes a person sees and acts on (catalog, recipe, breath, alerts, custody, residency), the records that back each pane and the crossing each act takes, activation and projection held apart as two acts with two answers, the width dial read for the daemon, two stories (a switch mid-edit; a boot fault read from the plate), ten questions for the operator each with the house reading and what flips it, and the phase that carries each piece. Held as a collision surface; dreamdom carries the house's reading of it."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/daemon-surface"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/daemon-surface"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+!! The daemon surface ~ a talk-story on the camera that holds the vessel's wikis
+<<~ set mode="talk-story" mu="*?" stance="🏛️ 🌊 🎭" aperture="14/arc" note="draft carrier for the Episkopos; lar:///ha.ka.ba/lares/docs/pono/daemon-surface">>
+
+<<~/ahu>>
+
+<<~ ahu #/the-talk-story>>
+
+!! 0 · What the daemon surface holds, and what it never holds
+
+''Lares (Gatekeeper).'' The daemon surface names the place where a person sees every wiki the vessel holds, moves among them, and reads what the vessel itself says: a boot that faulted, a door a surface refused, a mount still breathing, the key's custody, the residency of each wiki, the alerts. It stands as ''one more camera'': a root template over a document sink, mounted on the daemon actor, with the id `lar:daemon` beside `lar:story` (`dreamdom#/the-camera`).
+
+Held rulings (operator brief):
+
+# ''A camera, never a second evaluator, never a syncer, never an authoritative side.'' The daemon engine renders `$:/temp/lares/*` records and the vessel's catalog; the vessel's pool keeps the mechanism, the daemon worker keeps the policy (`daemon:evict-request`, `daemon:residency-op`), and neither outranks a wiki's own surface (`dreamdom#/the-vectors` 4).
+# ''It speaks only the contract's kinds:'' `lar:frame` down, `lar:control-event` up (`lar:act` · `lar:sense` · `lar:write` · `lar:service-result`), `lar:control-result`, `lar:resend`, `lar:service`.
+# ''A switch travels as `lar:service` kind `route` or `open-surface`, under a person's activation'' (`userActivation: true`, checked by the surface). The switched-to surface shows its last frame, or the plate, until the resend's first `lar:surface` key of the fresh `mountEpoch` paints (interaction golden 13, `switch/resend-and-epoch`).
+# ''A boot fault reads from the daemon plate, never from a console.'' A `console.error` line may accompany it; it never substitutes.
+# ''The width dial applies:'' full, skinny, story, none.
+
+What the daemon camera never holds: a wiki's truth, a wiki's `$:/state`, a second copy of another wiki's alert rail, the vessel key, or a verb a wiki's own engine owns.
+
+!! 1 · What a person sees and does
+
+''Lares (Pedagogue).'' Six panes, one surface. The as-built Working Surface (`daemon-ui-tiddlers.ts`: switcher list, pins, recipe editor, the projection form) supplies the first three in rough form.
+
+|! Pane|! A person sees|! A person does|
+| ''Catalog'' | every wiki the vessel knows, each row naming its actor state: //daemon// · //pinned// 📌 · //awake// · //sleeping// · //recipe//; the row the pane shows marked ◀; a small alert count where the vessel mirrored one | opens a wiki in this pane; opens it beside (a second surface); pins and unpins within the pin budget; spawns a recipe |
+| ''Recipe'' | the bag stack of the home wiki, top first; the bags the vessel could add | adds and removes a bag; reads the `reboot-pending` alert the change raises |
+| ''Breath'' | per mounting island, its phase and progress counter; a stall named after the stall budget | reads; a stalled mount offers //retry// and //evict// |
+| ''Alerts'' | the daemon's own rail (`$:/tags/Alert` under `$:/temp/lares/alert/*`): boot faults, refused services, `reboot-pending`, `disk-ward`, `engine-waiting`, `landing-failed`, `unrouted-save` | reads; dismisses one whose condition has cleared; follows an alert to the wiki it names |
+| ''Custody'' | the public receipt: the vessel's `did`, the seed-at-rest class (cleartext or passkey-wrapped), the storage floor (persistent or evictable, with the estimate), the relay crossing | copies the key or the join command; never sees or moves key bytes |
+| ''Residency'' | per bag and wiki: warm (`wela`) or cold, pinned and why (`boot:daemon`, `boot:home-wiki`), the activation cap and pin budget | pins, unpins, evicts, registers cold; a refusal reads beside the button |
+
+''Refused services read beside the act.'' When a wiki's engine asks a door the surface's manifest lacks (print, fullscreen, open-external on a shell that withholds them), the surface answers `page-action-unavailable` at once; the wiki's own pane shows the words of `page-controls#/refusals` beside the control, and the engine raises `$:/temp/lares/alert/refused/<kind>`. The daemon's Alerts pane carries the vessel-wide copy, so a person who missed the word beside the control still finds it.
+
+''The summon stays on host chrome.'' Ctrl+Shift+D and ☰ live on the page, where `window` exists; the daemon worker seeds no `$:/tags/KeyboardShortcut` (its keyboard manager would reach for `window`). Under the contract the summon reads as a page act of its own: the page sends `lar:resend{cameraId: "lar:daemon"}` and flips its pane to the daemon camera, under the plate until the daemon's first `lar:surface` key of the new epoch paints.
+
+!! 2 · Which records back each pane, and which crossing each act takes
+
+''Lares (Map-Wisp).'' Every pane renders from records the daemon engine already holds or receives by a vessel push; no pane reads another island's heap.
+
+|! Pane|! Backing records (daemon wiki, volatile temp slot)|! Fed by|
+| Catalog | `$:/temp/lares/switcher` (`list` active, `held`, `surface`, `recipeSlug`, `recipe`, `availableBags`); //owed:// per-row actor state and mirrored alert counts | `switcher-state` verb, pushed by main on each activation change and on summon (`pushSwitcherState`) |
+| Recipe | `$:/temp/lares/switcher!!recipe`, `!!availableBags`; the recipe record in the catalog plane | the same push, read through `effectiveRecipe` |
+| Breath | //owed:// `$:/temp/lares/breath/<slug>` `{phase, progress, since}`, tombstoned at `ea` or `fault` | main, from each island's `breath` message (`IslandMsg_Breath`) |
+| Alerts | `$:/temp/lares/alert///` tagged `$:/tags/Alert`; boot faults at `$:/temp/lares/alert/boot-fault/<n>` (`tw5-host-bridge.ts`, `utils.error`); *owed:// a mirrored `…/boot-fault/<slug>/<n>` for another island's fault | the daemon's own engine; main mirrors a wiki island's `fault` the way `daemon:wiki-alert` carries the other direction |
+| Custody | //owed:// `$:/temp/lares/custody` `{did, seedRest, storageFloor, relay}`, public receipt only | main, from the opening's receipt (`result.identity`, `readBrowserSeedWrap`, `storageFloorReport`) |
+| Residency | //owed:// `$:/temp/lares/residency`; the `residency` stats verb answers the read | main (`BagStowage` stays main-resident); acts route through `daemon:residency-op` and `daemon:evict-request` |
+| Projection form | `$:/temp/lares/state/meme-project` (`uri`, `markdown`, `meta`) | the daemon VM's own `meme-project` filter; no verb leaves the VM |
+
+Each record lives under `$:/temp/`, so the shore's `neverPersists` and the bag-paths cascade's `$:/temp/` rule keep it off every store, disk and device. A boot rewrites them from source; a peer never sees them.
+
+''The crossings.''
+
+|! Act|! Up|! Engine|! Down|
+| open a wiki in this pane | `lar:act` `lar:click` on the catalog row, `cameraId: "lar:daemon"`, `seenFrameRev` | runs the row's actions: the `wiki-switch` verb summon (activation, single-flight `ensureActive`) and then `lar:service{kind: "route", args: {wikiUri, cameraId: "lar:story"}}` | `lar:control-result applied`; the page answers `lar:service-result ok`, sends `lar:resend` for the target camera, holds the last frame or the plate until the first `lar:surface` key of the new epoch |
+| open a wiki beside | the same act with a modifier or the //beside// button | `lar:service{kind: "open-surface"}` (the `tm-open-window` road, a second camera on that actor) | `ok`, or `page-action-unavailable` where the shell opens no second surface, with `$:/temp/lares/alert/refused/open-surface` |
+| open a sleeping wiki | `lar:act` | the actor wakes; the row shows //waking//; one parked act per surface, a second answers `superseded` | `applied` against the woken frame, or `stale-target` with a fresh one |
+| touch a recipe wiki incidentally (a link) | `lar:act` | refuses `actor-not-spawned` and renders a //spawn// affordance | `refused` with the reason; only the explicit //spawn// births an actor |
+| pin, unpin, evict | `lar:act` | `wiki-hold` · `wiki-release` · `daemon:residency-op` · `daemon:evict-request`, gated on the actor's capability | `applied`, or `cap-refused` beside the button |
+| add or remove a bag | `lar:act` | `add-bag` · `remove-bag`; the change syncs and raises `reboot-pending` on the affected live wiki | `applied`; the alert names //reboot to apply// |
+| type a carrier address | `lar:sense` (whole value, `localRev`) on the `lar-field`; `lar:act` `lar:commit` on blur | sets `$:/temp/lares/state/meme-project!!uri` | `sensedRevision[controlId]` in a later frame |
+| copy the key | page-native; no crossing | — | — |
+| dismiss an alert | `lar:act` | deletes the temp record; a condition still standing raises it again | `applied` |
+
+''Two waists, held apart.'' Activation (`wiki-switch`, the pool) and projection (`route`, the pane) travel as two acts with two answers. A wiki can wake with no surface over it; a surface can re-point to a wiki already awake with no activation at all. Folding them back into the as-built `setActiveSurface`, a gate flip with a verb on the side, reopens the frozen-pane loss (`dreamdom#/what-a-sink-keeps`, //the surface switch//).
+
+''The width dial, read for the daemon.''
+
+|! Width|! The daemon camera|! Cost and catch|
+| none | renders in the daemon worker, ships keyed frames; the page holds the plate, the field values, the summon | the as-built shape; every daemon record already lives where it renders |
+| story · skinny · full | a glass replica of the daemon wiki on the page | the tier `localFilter` keeps `$:/temp`, `$:/state` and `$:/status` on the glass, so the worker's `$:/temp/lares/*` never crosses the record port; the daemon's panes would paint empty unless main pushes into the glass instead |
+
+//House reading:// the daemon camera stays at width none on every host, and the wikis it opens ride the dial. Question 5 below holds what flips it.
+
+!! 3 · Two stories
+
+!!! Gaia ~ Kalani switches wikis mid-edit
+
+''Tide-Caller (Hierophant).'' Evening, a kitchen table, a laptop beside a cold cup. Kalani edits //Seedlings/Tomato// in the //garden// wiki at width none. The body field holds her paragraph; the page's `lar-field` counts `localRev 14`; the last `garden` frame carried `sensedRevision 12`. She remembers the seed order sits in the //ledger// wiki, and presses Ctrl+Shift+D.
+
+The page does three things before it gives way. It sends one reliable `lar:act` `lar:commit` for the dirty field: the whole value, `localRev 14`, `cameraId: lar:story`, the `garden` epoch it painted under. It keeps `garden`'s last frame in its per-surface cache, untouched. Then it sends `lar:resend{cameraId: "lar:daemon"}` and shows the daemon's last frame under the plate. The daemon's first `lar:surface` key of the fresh epoch paints; the plate lifts. The catalog shows //garden// ◀ awake, //ledger// sleeping.
+
+She clicks //ledger//. A `lar:act` crosses to the daemon engine. The engine summons `wiki-switch`, and the //ledger// row reads //waking//; the actor wakes and answers. The engine asks `lar:service{kind: "route"}`; the page checks the activation the click carried, answers `ok`, sends `lar:resend` for //ledger//'s story camera, and shows the plate, since this surface holds no last frame of //ledger// yet. The plate reads `ledger · seed · 3 of 7`. The first `lar:surface` key lands; the plate lifts. She copies the order number.
+
+Ctrl+Shift+D, //garden//. The page shows `garden`'s cached frame at once, the plate over it, and sends `lar:resend`. The new epoch's first key paints her paragraph as the engine rendered it from the commit that answered `applied` before she ever left. A click she might have fired on the cached frame during that half-second carried the old epoch, and answered `stale-target`, touching nothing (golden 13).
+
+''Lares (Advocate).'' The cost lands on the plate, and the plate tells the truth about it. Without the commit before the switch, her two un-sensed revisions die with the pane's `replaceChildren`, the very loss golden 13 guards. Question 7 holds who owns that flush.
+
+!!! Elyncia ~ the shrine at Kaulu Ford reads its own fault
+
+''Tide-Caller (Hierophant).'' At Kaulu Ford, where the ley line crosses the river, the keeper Nohea feeds the household shrine each dawn. This morning the orichalcum figure does not hum. She touches the dish and the shrine's glass wakes, but no hearth-wiki opens; a plate stands in its place.
+
+The plate speaks in the house's words, never in a stack. //The daemon stopped at `slot-sync`, step 4 of 9. Its stored engine bytes rest in a format the present dependencies cannot read. Cure: `lares vessel rite rebuild`, which keeps the key and the card.// Beneath, a disclosure (`lar-disclosure`) holds the first `fatal:` line whole, ready to copy; beneath that, the last breath the island gave and how long it has held silent.
+
+The daemon's own engine never stood, so no daemon camera could render this. The page raised the plate from the island's `breath` (phase, progress) on mount, and when the island sent `fault`, the plate turned from //breathing// to //faulted//, carrying the first line `bootFaultReport` names and, when the fault matches one, its cure. No console opened. Nohea speaks the rite; the shrine re-derives its genesis engine; the plate counts breath again, `seed · 1 of 9`, and lifts on the first `lar:surface` key of the daemon camera.
+
+Later that day the hearth-wiki itself boots with one dead module. The island keeps standing, since the forge's error reporter surfaces and continues, and raises `$:/temp/lares/alert/boot-fault/1` on the wiki's own rail. The vessel mirrors one line of it to the daemon: the Catalog row for //hearth// shows ⚠ 1, and the Alerts pane names the module and links to the wiki, where the whole text waits. A fed node hums; a node that hums with a dead module says so.
+
+''Breach-Watch (Triage).'' Two fault roads, one plate law: a fault that kills the camera reads from the ''page's plate''; a fault the island survives reads from the ''daemon's rail''. Neither reads from a console.
+
+!! 4 · Open questions for the operator
+
+''Lares (Council).'' Each with the house reading and what flips it.
+
+# ''`lar:daemon` as its own camera, or the daemon's `lar:story` with a different root.'' //House:// its own camera on the daemon actor, root `$:/lares/ui/surface-switch`, its own `mountEpoch`; the daemon's story camera stays available for reading the daemon wiki as a wiki. //Flips if// D1's bytes-per-key and first-render numbers show two cameras on one actor double the render cost past the 50 ms phone budget.
+# ''An in-pane switch as `route` or `open-surface`.'' //House:// `route` re-points the one pane to another wiki's camera; `open-surface` opens a second surface (a tab, a window, a split). //Flips if// `session-contract` rules each re-pointed pane a fresh surface under its own `session:surface-open`; then every switch reads as `open-surface` and `route` keeps to in-wiki navigation.
+# ''How a wiki island's boot fault reaches the daemon.'' //House:// main mirrors a keyed `$:/temp/lares/alert/boot-fault/<slug>/<n>` into the daemon's temp (first line only, a link to the wiki), cleared at that island's next `ea`; the reverse road of `daemon:wiki-alert`. //Flips if// D4's actor manifest grants the daemon a read port onto each actor's alert rail; then the daemon reads, and main mirrors nothing.
+# ''Where the daemon's own fault plate lives.'' //House:// page-native (`lar-loading-plate` in its faulted state), fed by `breath`, `fault` and the `fatal:` line, since no engine stands to render it. //Flips if// the shared holder (`?holder`) becomes the default; then a second tab's standing daemon may render the fault of the first, and the plate names which holder speaks.
+# ''The daemon camera's width.'' //House:// none on every host; the wikis ride the dial. //Flips if// D3's spike shows width none for the daemon past the input budget on the reference phone, or the operator rules a `$:/temp/lares/*` tier that crosses the record port.
+# ''Custody in the daemon VM.'' //House:// the public receipt only (`did`, seed-at-rest class, storage floor, relay) enters `$:/temp/lares/custody`; key bytes stay in the vessel's main thread behind `custody:write`. //Flips if// the operator rules that no custody fact enters any wiki VM, temp included; then the Custody pane renders as page chrome beside the camera, outside the frame.
+# ''Who flushes a dirty field before a switch.'' //House:// the page sends one reliable `lar:commit` per field whose `localRev` exceeds its `sensedRevision`, under the old epoch, before it shows the plate; the plate reads //saving// until each answers. //Flips if// D2's port lands every `lar:sense` in the draft slot write-through; then the droppable class suffices and the switch waits on nothing.
+# ''Alert counts per catalog row.'' //House:// the daemon shows its own rail plus mirrored boot faults and refusals; each wiki keeps its whole rail. //Flips if// the operator wants a vessel-wide census of every rail; that asks for a port read, D4 work.
+# ''The daemon camera's key grain.'' //House:// one whole-surface key first, `lar:style` its own key, `lar:membership` naming the panes; split to `lar:daemon/catalog`, `/alerts`, `/breath`, `/residency` only where D1's measure asks (`dreamdom#/the-ruling`, measure first). //Flips if// the breath pane, repainting per breath, drives the whole-surface key past budget; then breath splits first.
+# ''The per-surface last-frame cache.'' //House:// the sink keeps each surface's last frame (HTML and CSS, its epoch) so a switch back shows it under the plate; the cache holds frames only, never field values past their commit. //Flips if// heap after first paint (D0's owed reading) shows the cache too dear on a phone; then the plate alone covers a switch back.
+
+!! 5 · Which phase carries each piece
+
+|! Piece|! Phase|! Waits on|
+| `breath` and `ea` from every island; the stall budget | stands (D0 floor) | — |
+| `lar-loading-plate`, `setBreath(surface, {phase, progress})`, the plate's faulted state with the `fatal:` line and cure | D1 (the sink builder's lane) | the island's `fault` relayed to the page |
+| `lar:daemon` mounted as a camera; whole-surface key, `lar:style`, `lar:membership` | D1 | ruling 1 above |
+| `lar:resend` and epochs on summon and switch; the per-surface last-frame cache; the flush before switch | D1 (row `D5` of the roadmap) | questions 7 and 10 |
+| `lar:service` `route` and `open-surface` from the island root-services module; `page-action-unavailable` and `$:/temp/lares/alert/refused/<kind>` | D1 | `dreamdom#/open-rulings` 9 |
+| the projection form's `lar-field`; alert detail in `lar-disclosure`; the //beside// menu in `lar-popover` | D1 | `page-controls` probes |
+| breath, custody, residency records pushed into the daemon's temp; mirrored boot faults | D1 beside, through a patch to the owning vessel lanes | questions 3 and 6 |
+| the tier `localFilter` and the daemon's width reading | D2 | question 5 |
+| the daemon width against the glass at full and skinny | D3 | the three-boot spike |
+| the Catalog's actor states; //waking//, `superseded`, `actor-not-spawned` with //spawn//; `cap-refused` on residency acts; `open-surface` as a second camera on one actor | D4 | `dreamdom#/open-rulings` 5, 7, 11 |
+| golden 13 for the daemon road; golden 14 for wake and spawn; proposed daemon scripts (`daemon/summon-under-plate`, `daemon/fault-plate-names-cure`, `daemon/refused-service-mirrors`) | D5 | `dreamdom#/open-rulings` 13 |
+| the daemon as a lean surface: `lares daemon` text camera on the CLI, an MCP resource per daemon key, a Mudlet status pane | D6 | D2's `blocks` and `text` serialisers |
+| the daemon over QuickJS, Hermes, UE6 panels | D7 | their gates |
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! 6 · Edges
+
+* `lar:///ha.ka.ba/lares/docs/pono/dreamdom` ~ the camera, the width dial, the actor states, golden 13, the plate law (`#/what-a-sink-keeps`)
+* `lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap` ~ D1 root services, D4 actor, the rows
+* `lar:///ha.ka.ba/lares/docs/pono/page-controls` ~ `lar-field`, `lar-popover`, `lar-disclosure`, the refusal words
+* `lar:///ha.ka.ba/lararium/mesh/lar-camera` ~ the wire kinds and `LarServiceKind`
+* `lar:///ha.ka.ba/lararium/tw5/daemon-ui-tiddlers` ~ the Working Surface, `$:/temp/lares/surface`, `$:/temp/lares/switcher`, `$:/temp/lares/state/meme-project`
+* `packages/lararium-mesh/src/island-protocol.ts` ~ `breath`, `ea`, `fault`, `daemon:wiki-alert`, `daemon:residency-op`, `daemon:evict-request`, `custody:write`
+* `packages/lararium-node/src/boot-fault.ts` ~ the `fatal:` line and the named cure
+
+<<~ set hud="yield" drift-ward="the breath, custody and residency records stand owed, named here from message shapes and never seen rendered; and the flush-before-switch rests on a reading of projection-sink.ts's replaceChildren, unmeasured in a browser · ↻ L-Prime" aperture="14/arc -> 15/arc" ooda-ha="closed 1↺ -> open 1φ @◇:ten-questions.await-the-operator">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;CphGQCHPVPZcRJCVi5Z22s1_P_dimQQj35-R8nuK0mg
+
+<<^ code="&#x0004;" -> to="?">>

@@ -108,6 +108,7 @@ Collide each before trusting it.
 * ''An ordering assertion over an absent call passes vacuously'': `indexOf` answers −1, and −1 sits below everything. An ordering clause wants a presence clause beside it.
 * ''A fixture that DECLARES reads as a carrier.'' The finder reads the DOCTYPE or `type` line, never the path; assemble the declaration at read time, and control that the finder reads false.
 * ''A unit fake without the live shape hides the defect.'' A rebuild from the wrong source kept every unit test green; only a vector over a document a real ceremony wrote caught it.
+* ''A stall watcher reports only while the event loop turns.'' A decoder that believes a random byte run's claimed length blocks the loop, so the watcher's timer never fires and the timeout names no stage. Read a length claim against the bytes that remain before decoding, and find a rare stall by repeating the case a hundred times with each phase timed.
 * ''A case that sleeps against a counted budget measures the machine.'' A wait loop whose look returns early spends its count at the speed of the box, and the case reads red on the FASTER runner. Hold a contention window by a handshake: the holder says it holds, the contender starts, the holder says a contender reached it and leaves on that word. A suite never makes its own load.
 
 !!! Source-reading welds
@@ -165,6 +166,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lk_Fx0SKmaiz1VnNDK8jlsEFE4_bGLXtTBDftFSCNo0
+<<^ code="&#x0003;">>ni:///sha-256;clKsDcTj26rODQjTQvmiXAph2uOTpNaA7QK4diKRCEg
 
 <<^ code="&#x0004;" -> to="?">>

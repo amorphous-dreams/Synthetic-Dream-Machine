@@ -1,0 +1,166 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/infinite-canvas-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/infinite-canvas-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "infinite-canvas-scout — DRAFT for the controller: the canvas camera (dreamdom-roadmap D7) read through the four layers, the keyed contract, the sink's keep, the width dial; the house seed collided, ruled where the doctrine already rules, held open where it does not."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/infinite-canvas-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/infinite-canvas-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+!! The canvas camera ~ a talk-story on placing whole tiles on a plane
+<<~ set mode="talk-story" mu="*!" stance="🏛️ 🗡️ 🌊" aperture="15/arc" note="research spirit, read-only; reach marked per claim">>
+
+''Lares (Gatekeeper).'' The seed holds up in its spine: a second camera beside `lar:story`, one whole key per placed tile, pan and zoom on the page, a move answered like every act. It breaks in three joints, each named below: ''one placement list as one record'' (a merge hazard the StoryList never meets, since StoryList stays on the glass [reached: dreamdom.mem:140]), ''the layout key written by two hands'' (it violates one-writer-per-key [reached: dreamdom.mem:274]), and ''the frustum fed by nothing'' (culling needs a sensed viewport the seed calls droppable and then never feeds back [reached: dreamdom.mem:264-265]).
+
+!! 1 · The model in four layers
+
+|! Concern |! Layer that owns it |! Form |! Reach |
+| what a tile shows | ENGINE renders, STORE holds the tiddler | the tile's tiddler, unchanged; a meme carries no coordinates | [reached: wikispace-canvasspace-ontology.mem:140] |
+| ''placement'' (where, how big, paint order) | STORE, as view-state | one `lar:`-addressed placement record per tile, separate from the meme | [reached: wikispace-canvasspace-ontology.mem:136, :231] |
+| which tiddlers stand as tiles | ENGINE, by filter over placement records | the canvas root template; a place scopes the corpus, never partitions it | [reached: wikispace-canvasspace-ontology.mem:148; camera-mount.mem:81-85] |
+| ''pan and zoom'' (live) | PROJECTION (layer 3, the page) | a CSS transform per layer, the native scroller for one-finger pan | [reached: wikispace-canvasspace-ontology.mem:49; canvas-shell-ux.mem:66] |
+| pan and zoom (remembered) | STORE, personal layer | one write at rest, per person, never shared by default | //(inferred from the composite layers, dreamdom.mem:43)// |
+| ''a link between tiles'' | STORE, as a model entity | a wire entity or a TW5 link in a tiddler's text; never a placement field, never inferred from proximity | [reached: wikispace-canvasspace-ontology.mem:93-95, :105] |
+| a live drag, a live resize | PROJECTION | the page holds the dragged box while its `localRev` runs ahead, exactly as a field holds its text | [reached: dreamdom.mem:275; projection-sink.ts:280-291] |
+
+''Lares (Council).'' The seed's `$:/CanvasList` with positions as fields fails at the record waist. Whole tiddlers travel keyed by title [reached: dreamdom.mem:52]; one record holding every tile's position turns every move into a rewrite of the shared record, and two hearths adding two tiles at once race on one `list` field. StoryList never pays this because the tier filter keeps it on the glass; a shared canvas list syncs. //House reading:// membership derives by filter over one placement record per tile (`[field:canvas[<id>]]`), each record carries ''one whole `placement` field'' (`x y w h`, plane units) so a concurrent move merges as a unit and never as an x from one hand beside a y from the other, and paint order rides a fractional index string per record (the tldraw pattern, studied, never depended on) //(inferred: Automerge field-level resolution unread in `sovereign-kernel.ts`)//. Removing a tile tombstones its placement record; the tiddler stands untouched.
+
+!!! The prior art, by ruling only
+
+|! System |! Page-side |! Document-side |! Cull |! Node address |! A link means |! The house takes |
+| tldraw | camera in session-scoped records | shapes and bindings as records, fractional z-index | mounted shapes hidden past the viewport | `shape:<id>`, apart from content | a binding record between two shapes | records per shape; fractional z; the budget warning [reached: wikispace-canvasspace-ontology.mem:51-55] |
+| Excalidraw | `appState` scroll and zoom | elements with a per-element `version` | draws only viewport elements | element id | `startBinding`/`endBinding` on the arrow | per-element revision mirrors per-key rev; its raster refuses //(inferred)// |
+| JSON Canvas (Obsidian) | nothing standardised | nodes with `x y width height`, edges with `fromNode toNode` | host's choice | node id, apart from the file | an edge in the //view// file | positions apart from notes; ''refuses'' edges as view facts [reached: canvas-field-scout.mem:319-321] |
+| Figma | — | server-authoritative objects | raster tiles | object id | — | nothing; raster and authority both refuse //(inferred)// |
+| TW5 storyviews | animation, scroll | `$:/StoryList` order | — | title | — | order as a whole list, skipped on the fake document [reached: dreamdom.mem:428] |
+| TiddlyMap | vis.js canvas | positions in a view tiddler, edges as tiddler fields | library's | `tmap.id` field | a typed edge on the source tiddler | positions in a view entity; edges in the model //(inferred)// |
+| Muse · Kinopio | native scroll (Kinopio) | cards on boards | — | card id | Kinopio connections as entities | no arbitrary scale-free ink (Muse); native pan (Kinopio) [reached: canvas-field-scout.mem:373; canvas-shell-ux.mem:66] |
+
+!! 2 · The contract additions, in `lar-camera.ts` terms (additive)
+
+# ''Camera id.'' `LAR_CAMERA_CANVAS = "lar:canvas"` as the kind; a mounted canvas names itself `lar:canvas/<canvasId>`, since `resendLarCamera` repaints every camera sharing an id [reached: tw5-projection.ts:706-710] and two open canvases must not repaint each other.
+# ''Grain on the wire.'' `LarMsg_Frame` gains optional `grain: "surface" | "tile"`. The frame example names `grain` [reached: page-controls.mem:135]; the interface lacks it [reached: lar-camera.ts:88-97]. A sink meeting an unknown grain paints nothing and says so.
+# ''Tile keys.'' `lar:tile/<placementId>` with `html` (whole, transclusions resolved), own `rev`. The id names the placement, never the title, so one tiddler may stand twice and a title's slashes never reach a key (`isName` bounds 1024 [reached: lar-camera.ts:298]).
+# ''The layout key.'' `lar:layout` with a new payload `layout: { tiles: [{id, of, label, x, y, w, h, z, band}], extent }`, ''the complete set of placements'', culled or not; omission never deletes; `readsAsPayload` grows one branch [reached: lar-camera.ts:349-356, :367]. ''The engine alone writes it'' (one writer per key); the page's drag lives in its own `localRev`, never in the key.
+# ''Membership reads as the frustum.'' `lar:membership` names the keys the camera emits for this viewport; a tile leaving view leaves membership and keeps its last frame on the page; only a removed placement tombstones its tile key [reached: dreamdom.mem:273].
+# ''The edges key.'' `lar:edges` with `edges: [{id, from, to, kind, label?}]`: the engine's whole derivation of the model links among placed tiles; `id` names the wire entity's address. The page draws paths between boxes it measured.
+# ''The viewport sense.'' `lar:sense` on control `lar:viewport` with a new field `viewport: {x, y, zoom, width, height}` in plane units, `localRev` as every sense [reached: lar-camera.ts:319]. Droppable; it ''feeds'' the frustum and the zoom band and answers nothing synchronously [reached: dreamdom.mem:265].
+# ''The place act.'' `lar:act` `action: "lar:place"`, `controlId: "place:<placementId>"`, new field `placement: {x, y, w, h}` whole, `localRev`. Paint order travels as the existing `lar:order` with the whole id list on control `lar:z` [reached: page-controls.mem:69], which the engine turns into fractional indices. ''Never `{dx, dy}`'': a key or act reading as an operation counts as a delta wearing a key [reached: dreamdom.mem:280].
+# ''The link act.'' `lar:act` `action: "lar:link"` with `wholeValue: [fromId, toId]`: the engine writes one explicit entity, the hand having taken it [reached: wikispace-canvasspace-ontology.mem:113].
+# ''What an act names.'' `seenFrameRev` reads the surface key's revision [reached: lar-camera.ts:149-150; projection-sink.ts:449], which a canvas never carries, so every canvas act reads `0`. Add optional `seenKey`: the key whose html painted the target. The engine reads neither field and judges staleness by render-id liveness [reached: tw5-projection.ts:362-369] //(grep: no `seenFrameRev` read under `packages/lararium-tw5/src`)//.
+# ''Answers.'' No new status. A place on a tombstoned placement answers `stale-target`; a place past `extent` or a link the capability lacks answers `cap-refused` [reached: lar-camera.ts:181-185].
+
+!! 3 · What a sink must keep
+
+* ''A container per key.'' The sink morphs one pane from `lar:surface` alone [reached: projection-sink.ts:367-379]; a canvas needs one positioned box per tile key, each morphed by its own revision under the one veto (`beforeNodeMorphed`, `holdsLive` [reached: projection-sink.ts:280-291]).
+* ''Culling, by rings.'' Inside the viewport: live nodes. A margin ring: live nodes, frames still arriving. Past it: the node detaches and the sink keeps `{html, rev, epoch}` per tile key, the per-key form of the daemon's per-surface cache [reached: daemon-surface.mem:140]. ''A tile holding a live control never culls'': `localRev > sensedRevision`, focus, or composition each hold its node, so undo and caret survive a pan [reached: dreamdom.mem:367-369]. `display:none` drops a node from the accessibility tree and `content-visibility:auto` got backed out by the best shipped implementation; the spike decides [reached: wikispace-canvasspace-ontology.mem:55].
+* ''Focus and keyboard across tiles.'' DOM order follows the layout's reading order, never z; each tile reads as a labelled group; focusing an offscreen tile asks the page's own camera to bring it into view (the `tm-scroll` hint road [reached: dreamdom.mem:345]); declared keys cross per tile as on the story; render ids stay unique island-wide [reached: tw5-projection.ts:97].
+* ''A tile editing in place through `lar-field`.'' The transport prefixes every `data-control-id` with its placement id, since `sensedRevision` and the page's `localRev` key by control id per surface [reached: projection-sink.ts:189] and the same field on two tiles would veto each other blind; the naming rule already gives stamping to the transport [reached: page-controls.mem:89]. Editing below zoom 1 offers //edit at 1:1// as a page camera move; every field keeps 16 px [reached: canvas-shell-ux.mem:58; canvas-field-scout.mem:389].
+* ''The plate, per canvas then per tile.'' The canvas plate stands until the mount's first `lar:layout` paints; then each tile shows its `label` as a placeholder box until its key lands. Never blank, never a spinner over the plane [reached: dreamdom.mem:371].
+* ''Geometry keeps two spaces.'' An act's `geometry` stays host-relative screen pixels as of the act [reached: projection-sink.ts:541-551]; `placement` and `viewport` travel in plane units. The page converts; the engine never reads a transform.
+
+!! 4 · The width dial, read for the canvas
+
+|! Width |! The canvas |! What crosses per act |
+| full | a glass engine renders tiles beside the real document; a page-native plane control holds pan and zoom | nothing; a move ends as a `write{txId}` of one placement record |
+| skinny · story | as full; the frustum ''becomes the subscription'': placement records for the whole canvas, text only for tiles in the ring | subscriptions enter and leave as the viewport moves //(inferred from dreamdom.mem:136)// |
+| none | the camera beside the headless engine ships tile, layout and edges keys | `lar:sense` viewport, `lar:act` place, link, order |
+
+''Lares (Artificer), the cost.'' D0's whole-surface frame carries ~132 KB HTML over a twelve-tiddler story, ~420 ms first render, ~36 ms per refresh [reached: dreamdom.mem:484]. Divided by twelve, a tiddler frame runs at most ~11 KB and ~35 ms first render, chrome included //(inferred, an upper bound)//. Sixty visible tiles then cost up to ~660 KB and ~2 s on first paint, which the per-tile plate covers; an edit to one tile costs ~11 KB against 132 KB, ''the first camera where a finer grain pays by arithmetic''. The current flush serialises the whole container every beat [reached: tw5-projection.ts:854]; a tile camera needs one transclude widget per tile, the pattern the stylesheet and root layer already use [reached: tw5-projection.ts:826, :835], and emits only tiles whose `refresh` reported change //(inferred)//. At the strategic band a tile sends no html at all: the layout's `label` paints it [reached: wikispace-canvasspace-ontology.mem:71-80]. The budget (~500 live, ~4000 ceiling) bounds the ring, never the canvas [reached: wikispace-canvasspace-ontology.mem:55].
+
+!! 5 · Refused families ~ what the canvas must never become
+
+|! Family |! Why |
+| a rasterising plane, any vendor's licence | the surface law [reached: wikispace-canvasspace-ontology.mem:49-51; dreamdom-roadmap.mem:220] |
+| ''page-side truth of placement'' | the page holds a drag only while its revision runs ahead; at rest the store's record speaks; promoting the page buys LiveView's clocks [reached: dreamdom.mem:481] |
+| a second evaluator: the page choosing tiles by filter, or computing links | the engine owns which tiddlers stand and which edges exist [reached: dreamdom.mem:205] |
+| a move as a delta (`dx`, "bring forward") or a drag as a stream of acts | whole placement, one act at commit; a pointer path never crosses [reached: dreamdom.mem:266, :498] |
+| proximity minting an edge; a frame or group minting containment | graph-primacy [reached: wikispace-canvasspace-ontology.mem:105, :220] |
+| coordinates in a meme's `#meta` | the one hard rule [reached: wikispace-canvasspace-ontology.mem:140] |
+| one shared list record holding every placement | the merge hazard of §1 //(inferred)// |
+| a canvas that partitions the corpus | a place scopes [reached: wikispace-canvasspace-ontology.mem:148-152] |
+
+!! 6 · Two stories
+
+!!! Gaia ~ Mele lays out the campaign and draws one line
+
+''Tide-Caller (Hierophant).'' Sunday, the game in four days. Mele opens the //Drowned Coast// canvas at width none on her laptop. The plate holds a breath; the first `lar:layout` paints and forty grey boxes stand labelled where she left them, //Character/Orin// near the top, //The Bell Tower// far right. The ring around her view fills: a dozen tile keys land, each painting over its placeholder.
+
+She drags //Orin// beside //The Bell Tower//. Nothing crosses while she drags; the page holds the box at `localRev 3`. She lets go: one `lar:act` `lar:place`, the whole `{x, y, w, h}`, `seenKey: lar:tile/p-orin`. The engine writes one placement record and answers `applied`; the next `lar:layout` carries the box where her hand put it and `sensedRevision[place:p-orin] 3`, so the page lets go of its hold. No other tile's record moved.
+
+She pulls a thread from //Orin//'s edge to //The Bell Tower//. One `lar:act` `lar:link`; the engine writes a wire entity, `Orin → The Bell Tower`, and the next `lar:edges` key names it by address. She sits //Bram// beside //Orin// as well, close, meaning maybe; no line appears, and none gets written. Zoomed out past 0.35, every tile flips to its tactical template in one frame; the pan itself crossed nothing.
+
+''Lares (Advocate).'' The cost sits with the line: a person who wanted a loose sketch arrow holds a model fact instead. The proposal channel names the cure and stays unbuilt (question 7).
+
+!!! Elyncia ~ the Two Herons hearth moves a tile under Nohea's hand
+
+''Tide-Caller (Hierophant).'' Kaulu Ford and the Two Herons crossroads shrine share one canvas: the river's ferry schedule, laid out as tiles. Nohea at the Ford drags //Low Tide Crossing// downstream; her page holds it at `localRev 7`. Across the ley line Ikaika at Two Herons, seeing an older plane, moves the same tile north. His write reaches her hearth through the CRDT; her engine renders a `lar:layout` with his box and `sensedRevision[place:p-tide] 6`.
+
+Her page keeps her box, since 7 outruns 6, and draws his as a faint outline with //take theirs// beside it. His cursor rides the presence lane, labelled. She lets go; her `lar:place` lands later than his, the one `placement` field merges whole, and both hearths converge on her box. His move stays in the history, attributable. Had Ikaika removed the tile instead, her drop would answer `stale-target`, the words beside the box, with //place again// on offer.
+
+''Breach-Watch (Triage).'' The joint that breaks first: x and y as two fields. One merge, two hands, a box neither placed.
+
+!! 7 · Interaction goldens to add
+
+# `15-canvas-place-whole-and-answered`: a drag commits one `lar:place`; one placement record written whole; `applied`; no other record moves. ''Pins'': a move as a delta, a drag replayed as acts.
+# `16-canvas-peer-move-under-hand`: a peer placement lands while the page holds `localRev`; the page keeps its box, shows the outline; the drop converges. ''Pins'': the frame that repaints over a drag; the split-field merge.
+# `17-canvas-offscreen-keeps-last-frame`: a tile leaves the frustum and membership; its frame stays; re-entry paints the newest revision, never an older one. ''Pins'': omission read as deletion.
+# `18-canvas-edit-in-tile-survives-cull`: a `lar-field` holding `localRev` inside a tile panned past the ring keeps node, value and undo. ''Pins'': the textarea revert by culling.
+# `19-canvas-same-field-two-tiles`: one tiddler on two tiles; editing one never vetoes or repaints the other. ''Pins'': unprefixed control ids.
+# `20-canvas-link-writes-an-entity`: a `lar:link` writes one entity; adjacency writes nothing; `lar:edges` names it. ''Pins'': inferred edges.
+# `21-canvas-remove-tile-keeps-tiddler`: removal tombstones the placement and the tile key, never the tiddler. ''Pins'': canvas as partition.
+# `22-canvas-zoom-band-reselects`: a viewport sense across 0.35 re-renders tiles at the next template; a zoom inside a band crosses nothing. ''Pins'': magnification sold as semantic zoom.
+# `23-canvas-place-on-tombstone-stale`: a drop on a removed tile answers `stale-target` beside the box. ''Pins'': a silent drop.
+# `24-canvas-layout-before-tiles`: the plate yields to placeholders at the first layout; no blank plane. ''Pins'': the frozen or blank mount.
+
+Each needs two README verbs: `pan` (a viewport sense) and `place` (a drag gesture) [reached: tests/goldens/interaction/README.md:20-31].
+
+!! 8 · Spikes before any build (scratch `LAR_ROOT`, nothing in the tree [reached: dreamdom-roadmap.mem:161])
+
+# ''Two cameras, one island.'' Mount story and canvas together. One `tw.popup` per island [reached: tw5-projection.ts:810] and one `activeEventScope` [reached: tw5-projection.ts:791] collide with C-2 [reached: camera-mount.mem:76-79]. ''Threshold'': goldens 01-14 green on the story with a canvas mounted.
+# ''Per-tile render.'' 100 placements, 60 in view, fake document. ''Threshold'': tile refresh p95 ≤ 8 ms; bytes per one-tile edit ≤ 16 KB; first `lar:layout` ≤ 100 ms after mount.
+# ''Paint and pan.'' 500 placed, real Chromium and WebKit. ''Threshold'': zero long animation frames over 50 ms across a 10 s pan; one tile morph ≤ 4 ms; a tile entering view shows cache or placeholder inside one frame, its fresh key ≤ 150 ms on the same box.
+# ''The cull instrument.'' Detach-with-cache against `content-visibility:auto` against all-live at 500, 2000, 4000. ''Threshold'': a screen reader reaches every tile by the layout's reading order; heap ≤ 200 MB at 2000 on the reference phone.
+# ''Concurrent placement.'' Two stores, 10 000 randomised concurrent moves, adds and removes. ''Threshold'': zero split-field boxes, zero lost adds, both converge.
+# ''Edit under zoom.'' Goldens 03 and 04 inside a tile at zoom 0.5, 1 and 2 on iOS Safari and Android Chrome. ''Threshold'': green, no page zoom on focus.
+
+!! 9 · Open questions for the operator
+
+''Lares (Council).'' Each with the house reading and what flips it.
+
+# ''Placement shape.'' //House:// one record per placement, one whole `placement` field. //Flips if// spike 5 shows split fields merge as one.
+# ''Paint order.'' //House:// a fractional index per record, `lar:order` on `lar:z` as the act. //Flips if// spike 5 shows a shared ordered list merges without loss.
+# ''One tiddler, two tiles.'' //House:// allowed; the placement id carries identity. //Flips if// the operator wants one tile per tiddler, the StoryList and TiddlyMap shape.
+# ''The remembered viewport.'' //House:// per person in the personal layer, written at rest. //Flips if// a //follow me// camera gets ruled; the viewport then joins the presence lane (`dreamdom#/open-rulings` 12).
+# ''Camera naming.'' //House:// `lar:canvas/<canvasId>`. //Flips if// `session-contract` lets the surface id carry the canvas.
+# ''Edges as a key.'' //House:// the engine derives `lar:edges`. //Flips if// spike 2 shows the derivation past budget at 500; the edges then ride inside tile html as anchors the page joins.
+# ''The proposal channel.'' //House:// unbuilt in the first canvas; adjacency writes nothing. //Flips if// the operator wants hedged relations from day one.
+# ''Popup and `$:/state` across story and canvas.'' //House:// rides `dreamdom#/open-rulings` 11. //Flips if// spike 1 forces state per camera first.
+
+!! 10 · Phase and gates
+
+''Lares (Map-Wisp).'' D7, held by name [reached: dreamdom-roadmap.mem:80, :134]. It waits on: D1's keyed contract with per-key revisions, membership, epochs and sensed revision (row `D2` [reached: dreamdom-roadmap.mem:196]); D5's `blocks` golden, which the roadmap names as its gate; D2's subscriptions for the skinny reading of §4; spike 1 above, since a second camera on one island stands unproven; and rulings 11 and 12 of `dreamdom#/open-rulings` for shared state and presence. None of it moves before D1 lands its contract whole.
+
+<<~ set hud="yield" drift-ward="the per-tile costs divide one whole-surface number by twelve, an upper bound never measured per tile; and the merge reading rests on Automerge's field resolution, unread in the store's code · ↻ L-Prime" aperture="15/arc -> 16/arc" ooda-ha="closed 1↺ -> open 1φ @◇:eight-questions.await-the-operator">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Gq9xNli-LawwUqIqClB3WgQj0fuObShHbuSiDsVs66Y
+
+<<^ code="&#x0004;" -> to="?">>

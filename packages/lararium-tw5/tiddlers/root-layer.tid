@@ -1,0 +1,41 @@
+title: lar:///ha.ka.ba/lararium/templates/root-layer
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$list filter="[all[tiddlers]prefix[$:/temp/lares/modal/]sort[title]]" variable="lar-modal">
+<div class="tc-modal-wrapper lar-modal">
+<div class="tc-modal-backdrop"/>
+<div class="tc-modal" role="dialog" aria-modal="true">
+<$messagecatcher $tm-close-tiddler="""<$action-deletetiddler $tiddler=<<lar-modal>>/>""">
+<$setmultiplevariables $names="[<lar-modal>get[lar-variables]jsonindexes[]]" $values="[<lar-modal>get[lar-variables]jsonindexes[]] :map[<lar-modal>get[lar-variables]jsonget<currentTiddler>]">
+<$let currentTiddler={{{ [<lar-modal>get[text]] }}}>
+<$list filter="[<currentTiddler>has[subtitle]]" variable="-">
+<div class="tc-modal-header"><h3><$transclude $tiddler=<<currentTiddler>> $field="subtitle" $mode="inline"/></h3></div>
+</$list>
+<div class="tc-modal-body"><$transclude $tiddler=<<currentTiddler>> $mode="block"/></div>
+<div class="tc-modal-footer">
+<$list filter="[<currentTiddler>has[footer]]" variable="-" emptyMessage="""<$button message="tm-close-tiddler" class="tc-btn-big-green lar-modal-close">{{$:/language/Buttons/Close/Caption}}</$button>""">
+<$transclude $tiddler=<<currentTiddler>> $field="footer" $mode="block"/>
+</$list>
+</div>
+</$let>
+</$setmultiplevariables>
+</$messagecatcher>
+</div>
+</div>
+</$list>
+<$list filter="[all[tiddlers]prefix[$:/temp/lares/notify/]sort[title]]" variable="lar-note">
+<div class="tc-notification lar-notify" role="status">
+<$setmultiplevariables $names="[<lar-note>get[lar-variables]jsonindexes[]]" $values="[<lar-note>get[lar-variables]jsonindexes[]] :map[<lar-note>get[lar-variables]jsonget<currentTiddler>]">
+<$let currentTiddler={{{ [<lar-note>get[text]] }}}>
+<$transclude $tiddler=<<currentTiddler>> $mode="block"/>
+</$let>
+</$setmultiplevariables>
+</div>
+</$list>
+<$list filter="[[$:/temp/lares/hint/scroll]is[tiddler]]" variable="lar-hint">
+<span class="lar-hint" hidden data-lar-scroll-to={{{ [<lar-hint>get[selector]] }}} data-lar-hint={{{ [<lar-hint>get[seq]] }}}/>
+</$list>
+<$list filter="[[$:/temp/lares/hint/focus]is[tiddler]]" variable="lar-hint">
+<span class="lar-hint" hidden data-lar-focus={{{ [<lar-hint>get[selector]] }}} data-lar-hint={{{ [<lar-hint>get[seq]] }}}/>
+</$list>

@@ -173,12 +173,12 @@ The resolver keys bindings by `prefix/fingerprint` and stores them through `daem
 | `session:call` → `session:result` | A request id, a bounded verb and its arguments. The worker-held facet decides; the holder unicasts the result. |
 | `session:surface-open` → `session:surface-ready` | A surface kind and a wiki or camera reference. The owner resolves the recipe, opens a scoped view, then leases the island. |
 | `session:surface-close` | Releases that surface's lease, its pending controls and its scoped channel. |
-| `projection:frame` | Session, surface, camera, mount epoch, absolute keyed state with per-key revisions, a membership key and the sensed revision. |
-| `wiki:control-event` → `projection:control-result` | Event and control ids, the frame revision seen, the local revision, the whole current value, and act-time geometry where the act carries it. Every event gets `applied`, `stale-target` or a named refusal. |
+| `lar:frame` | Session, surface, camera, mount epoch, the keys each whole under its own revision, a membership key and the sensed revision. |
+| `lar:control-event` → `lar:control-result` | The control event carried whole beside the envelope: event and control ids, the frame revision seen, the local revision, the whole current value, and act-time geometry where the act carries it. Every event gets `applied`, `stale-target` or `refused` with a named reason. |
 | `session:switch` → `session:switch-result` | The expected generation and the target face reference. It advances this session alone. |
 | `session:revoke` · `session:close` → `session:closed` | An observed causal reason, or a local close cause. Facets, dials, scoped views, routes and leases all drop. |
 
-''The control-event leg carries every act a person makes on a surface'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls#/the-wire">>). The `wiki:dom-event` and `wiki:dom-input` kinds retire into it. A daemon panel, a wiki and any later camera each open a surface under a named session, and none consults a vessel-wide active face or active surface.
+''The control-event leg carries every act a person makes on a surface'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls#/the-wire">>; the kinds stand at `lar:///ha.ka.ba/lararium/mesh/lar-camera`). No `wiki:dom-event` or `wiki:dom-input` kind passes a door. A daemon panel, a wiki and any later camera each open a surface under a named session, and none consults a vessel-wide active face or active surface.
 
 <<~/ahu>>
 
@@ -261,7 +261,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''A broad sync port, on every production mount.'' Every wiki island mounts through the pool's wiki door (`mountWiki`, `packages/lararium-mesh/src/vessel-island-pool-core.ts`) and boots a Repo over a transferred `syncPort`, which carries unrestricted Repo sync.
 * ''A wiki door keyed by wiki alone.'' That door keys its slots by `wikiId`, so two tabs of one wiki fold into one island.
 * ''A holder that broadcasts.'' The shared holder forwards each island message to every attached port (`packages/lararium-browser/src/shared-holder-core.ts`).
-* ''Two DOM return kinds.'' `wiki:dom-event` and `wiki:dom-input` carry acts by render id (`packages/lararium-mesh/src/island-protocol.ts`).
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`); no socket binds a session to a face.
 * ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
@@ -312,6 +311,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mNGtfmWQwPDFVu64u9QHyTnhXzcwfn6PenAMRVaJAUU
+<<^ code="&#x0003;">>ni:///sha-256;qfqIGDXX9_s_P3ip9o_VszWrbY4c06aLlyUdCHPWpLY
 
 <<^ code="&#x0004;" -> to="?">>

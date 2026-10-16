@@ -7,9 +7,9 @@
  * widget tree and crosses the same render-id event return leg as the browser.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { dispatchProjectedEvent, mountProjection, patchFakeDomAnimation } from "../src/tw5-projection.js";
-import type { IslandContext } from "../src/island-context.js";
-import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
+import { dispatchLarControlEvent, patchFakeDomAnimation } from "../src/tw5-projection.js";
+import { htmlOf, mountSurface, type Surface } from "./projection-surface.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
 
 const ROOT = "$:/temp/lararium/projection-reveal-root";
 const OPEN = "$:/state/lararium/projection-reveal";
@@ -22,18 +22,17 @@ function renderIdFor(html: string, label: string): string {
 }
 
 describe.skipIf(wikiSkip)(`retained reveal projection${skipNote}`, () => {
-  let stop: (() => void) | undefined;
-  let dispose: (() => void) | undefined;
+  let s: Surface | undefined;
 
   afterEach(() => {
-    stop?.();
-    dispose?.();
-    stop = undefined;
-    dispose = undefined;
+    s?.stop();
+    s = undefined;
   });
 
   test("open then close changes the real fake-DOM projection, and close runs its callback", async () => {
-    const engine = await bootTestWiki({ tiddlers: [{
+    // The projection owns this root normally; the focused fixture replaces it
+    // before mounting so the test observes exactly one retained reveal.
+    s = await mountSurface(`{{${ROOT}}}`, [{
       title: ROOT,
       type: "text/vnd.tiddlywiki",
       text: [
@@ -41,38 +40,28 @@ describe.skipIf(wikiSkip)(`retained reveal projection${skipNote}`, () => {
         `<$button set="${OPEN}" setTo="closed">close</$button>`,
         `<$reveal state="${OPEN}" type="match" text="open" retain="yes" animate="yes">revealed</$reveal>`,
       ].join("\n"),
-    }] });
-    dispose = () => engine.dispose();
-    // The projection owns this root normally; the focused fixture replaces it
-    // before mounting so the test observes exactly one retained reveal.
-    engine.setTiddler({ title: "$:/core/ui/RootTemplate", type: "text/vnd.tiddlywiki", text: `{{${ROOT}}}` });
+    }]);
+    const click = (renderId: string) => dispatchLarControlEvent(s!.event("", { kind: "lar:act", action: "lar:click", renderId }));
 
-    const frames: string[] = [];
-    stop = mountProjection({
-      wikiUri: "lar:///test/projection-reveal",
-      tw5: engine,
-      post: (msg) => {
-        if (msg.listenable === "projection:frame") frames.push((msg.payload as { html: string }).html);
-      },
-    } as IslandContext);
+    expect(s.frames.length).toBeGreaterThan(0);
+    const open = renderIdFor(htmlOf(s.last()), "open");
+    const initialClose = renderIdFor(htmlOf(s.last()), "close");
 
-    await vi.waitFor(() => expect(frames.length).toBeGreaterThan(0));
-    const open = renderIdFor(frames.at(-1)!, "open");
-    const initialClose = renderIdFor(frames.at(-1)!, "close");
-
-    expect(() => dispatchProjectedEvent(open, "click", { button: 0 })).not.toThrow();
-    await vi.waitFor(() => expect(frames.at(-1)).toContain("revealed"));
-    expect(frames.at(-1)).not.toContain('hidden="true"');
+    expect(click(open)).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(htmlOf(s.last())).toContain("revealed");
+    expect(htmlOf(s.last())).not.toContain('hidden="true"');
 
     // Opening the reveal re-renders TW5's widget tree, so the old close button belongs to a
     // superseded absolute frame. A real page relays the render-id on its currently painted frame.
-    expect(initialClose).not.toBe(renderIdFor(frames.at(-1)!, "close"));
-    const close = renderIdFor(frames.at(-1)!, "close");
-    expect(() => dispatchProjectedEvent(close, "click", { button: 0 })).not.toThrow();
-    await vi.waitFor(() => expect(frames.at(-1)).toContain('hidden="true"'));
+    expect(initialClose).not.toBe(renderIdFor(htmlOf(s.last()), "close"));
+    const close = renderIdFor(htmlOf(s.last()), "close");
+    expect(click(close)).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(htmlOf(s.last())).toContain('hidden="true"');
     // `retain=yes` deliberately keeps its child nodes; the close callback is what applies hidden.
-    expect(frames.at(-1)).toContain("revealed");
-  });
+    expect(htmlOf(s.last())).toContain("revealed");
+  }, 120_000);
 
   test("control: fake nodes complete once while the original animator owns real nodes", () => {
     const receivers: unknown[] = [];

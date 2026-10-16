@@ -19,7 +19,7 @@ import { runBrowserSovereignWorker } from "./browser-sovereign-island-model.js";
 import { makeWikiBehavior, mountProjection, mountCoherenceProjection, hasWikiSensorium } from "@lararium/tw5";
 
 // onBoot = TWO projection-nalus over the one island (both the browser twin of a node projector):
-//   1. mountProjection    — renders the story river into $tw.fakeDocument, emits `projection:frame`.
+//   1. mountProjection    — renders the story river into $tw.fakeDocument, emits keyed `lar:frame`s.
 //   2. mountCoherenceProjection — reads the wiki's OWN consistency radius, emits `coherence:frame`.
 // Both coalesce on the same wikistore change beat; the teardown tears them down LIFO.
 // caps = the wiki-sensorium perceiver cap — the wiki island answers the daemon's supervision reads

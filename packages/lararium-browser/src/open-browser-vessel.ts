@@ -51,6 +51,7 @@ import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloor
 import { composeBrowserFacePresentation, facelessFloorPresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
+import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
@@ -61,7 +62,6 @@ import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
-  PROJECTION_FRAME,
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
   createWikiSenseSupervisor, registerWikiSenseVerbs,
@@ -268,9 +268,10 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   teardownBudgetMs?: number;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
-  /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
-   *  The web surface applies it to a shadow root — the live wiki made visible. */
-  onProjection?:   (frame: ProjectionSurfaceFrame) => void;
+  /** Camera sink: a keyed `lar:frame` from the gated surface, named by its transport id. */
+  onFrame?:         (frame: ProjectionSurfaceFrame) => void;
+  /** Answer rail: a `lar:control-result`; the page correlates it by event id. */
+  onControlResult?: (surface: string, result: LarMsg_ControlResult) => void;
   /** Coherence-nalu sink: a `coherence:frame` (the wiki's own consistency-radius read as an indicator
    *  frame) from the hot wiki island. The web surface applies it to a DOM coherence indicator via
    *  The web surface's DOM sink may render it over the tiddler-view. */
@@ -303,17 +304,8 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
 // wrongly. A sentinel that differs from the slug buys a translation everywhere the two must meet.
 export const DAEMON_SURFACE_ID = "daemon";
 
-/**
- * A rendered frame as the page receives it: whole HTML and CSS, the emitting surface's own revision, and the
- * SURFACE that emitted it. Each surface counts revisions on its own, and every event a person raises on the
- * painted frame returns to that surface (`surface-return-leg`).
- */
-export interface ProjectionSurfaceFrame {
-  readonly html: string;
-  readonly css:  string;
-  readonly rev:  number;
-  readonly surface: string;
-}
+/** A keyed `lar:frame` plus the SURFACE (transport id) whose island emitted it. */
+export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string };
 
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
@@ -347,14 +339,10 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
    *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
   readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
-  /** Relay a main-thread DOM event to the surface that PAINTED its target (interactivity RETURN leg): `surface`
-   *  names the frame's own source, and the event routes to that island whatever surface stands active now.
-   *  A surface this vessel does not hold answers `surface-unknown` and nothing is posted. */
-  sendDomEvent: (surface: string, renderId: string, eventType: string, fields: Record<string, number | boolean>) => ReturnLegVerdict;
-  /** The RETURN leg's TEXT half — a relayed input/change carrying the field's whole bounded value, routed to
-   *  its source surface exactly as the click leg routes. Its own message kind, so the click channel keeps its
-   *  primitives-only allowlist. */
-  sendDomInput: (surface: string, renderId: string, eventType: string, value: string) => ReturnLegVerdict;
+  /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
+  sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
+  /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
+  resend: (surface: string) => ReturnLegVerdict;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
    *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
    *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
@@ -456,7 +444,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
     genesisCasBaseUrl,
-    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayDial, floorCard,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onFrame, onControlResult, onCoherence, relayUrl, relayDial, floorCard,
     meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
@@ -1572,20 +1560,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
         },
         onWorkerEvent: (_id, msg) => {
-          // Projection-nalu frames route to the display, not the verb plane — but ONLY from the ACTIVE surface.
-          // The frame gate keys on the transport id (never a payload claim), so a summon that flips
-          // activeSurfaceId auto-supersedes the previous surface's frames with no explicit teardown (the
-          // wlroots seat / tmux active-pane rhyme: one sink, N emitters, one gate).
-          if (msg.listenable === PROJECTION_FRAME) {
-            if (_id !== activeSurfaceId) return;   // not the active surface → drop
-            onProjection?.({
-              html: String(msg.payload["html"] ?? ""),
-              css:  String(msg.payload["css"]  ?? ""),
-              rev:  Number(msg.payload["rev"]  ?? 0),
-              surface: _id,   // the transport id names the source, never a payload claim
-            });
+          // The camera's traffic reaches here the way an `event` does. A frame paints ONLY from the ACTIVE surface:
+          // the gate keys on the transport id (never a payload claim), so a summon that flips activeSurfaceId
+          // auto-supersedes the previous surface's frames with no explicit teardown (the wlroots seat / tmux
+          // active-pane rhyme: one sink, N emitters, one gate). An answer passes ungated: the page drops one whose
+          // surface or epoch it no longer shows. A host-door ask waits on the root-services slice.
+          if (msg.type === "lar:frame") {
+            if (_id === activeSurfaceId) onFrame?.({ ...msg, surface: _id });
             return;
           }
+          if (msg.type === "lar:control-result") { onControlResult?.(_id, msg); return; }
+          if (msg.type !== "event") return;
           // Coherence-nalu frame → the DOM coherence indicator. `obstructing` rode the wire as JSON
           // (the event payload admits only scalars); parse it back for the sink.
           if (msg.listenable === COHERENCE_FRAME) {
@@ -1639,8 +1624,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The daemon inherits the render cap (dormant-mounted at boot). Forward its frames into the SAME
       // #projection sink the pool wikis use — gated on the active-surface pointer, so a summoned daemon paints
       // and otherwise its frames drop. One sink, the daemon a peer surface among the wikis (KA·BA braid).
-      daemon.onProjection((frame) => {
-        if (activeSurfaceId === DAEMON_SURFACE_ID) onProjection?.({ ...frame, surface: DAEMON_SURFACE_ID });
+      daemon.onFrame((raw) => {
+        if (activeSurfaceId !== DAEMON_SURFACE_ID) return;
+        const frame = readLarFrame(raw);
+        if (frame) onFrame?.({ ...frame, surface: DAEMON_SURFACE_ID });
+      });
+      daemon.onControlResult((raw) => {
+        const result = readLarControlResult(raw);
+        if (result) onControlResult?.(DAEMON_SURFACE_ID, result);
       });
       // The daemon's OWN verb OUT-path (a projected switcher click → wiki-switch /
       // add-bag / remove-bag): re-enter the dispatcher via placeVerb so the verb runs on
@@ -1728,13 +1719,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
-    sendDomEvent: returnLeg.sendDomEvent,
-    sendDomInput: returnLeg.sendDomInput,
+    sendControlEvent: returnLeg.sendControlEvent,
+    resend: (surface: string) => returnLeg.resend(surface),
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
     // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
     setActiveSurface: (surfaceId: string) => {
+      const moved = surfaceId !== activeSurfaceId;
       activeSurfaceId = surfaceId;
+      // Its frames dropped at the gate until now: ask it to paint whole under a fresh epoch.
+      if (moved) returnLeg.resend(surfaceId);
       void daemon.placeVerb({
         verb: "open-wiki",
         args: { slug: surfaceId },

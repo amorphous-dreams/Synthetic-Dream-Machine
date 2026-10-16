@@ -1,0 +1,180 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-field-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-field-scout — VERBATIM handoff of a tasked spirit: the field read for train D's phases D0 and D1, 2026-10-16. TiddlyWiki's performance instrumentation and the draft Performance plugin (PR #9728); how StartupAction tags run and that core never re-runs them; the fakedom's attribute-only serialisation against the checkbox and select widgets' property writes; idiomorph 0.8.0's focus and value guards; the IME rule in MDN, WebKit and ProseMirror; Long Animation Frames support; WorkerDOM's subscription-time preventDefault against remote-dom's response-only events. Every claim marked by reach; eight places where the field disagrees with the house's framing. Held as a collision surface."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-field-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The field around D0 and D1 ~ a spirit's handoff, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked spirit reported from a web-research pass, handed a framing and no conclusion, kept whole, as a ''collision surface''. The spirit read primary sources where the proxy let it (the TW5 core, the Performance plugin branch, idiomorph, worker-dom, remote-dom, ProseMirror, MDN) and marks the rest as search snippets.
+
+''What the house took from it.'' D0 reads `$tw.perf.measures` and wraps its own camera, since `render.js` never runs in the island; D0 re-invokes `$:/tags/StartupAction` itself once the seed drains. D1 collides its serializer promotion with the select widget's `value` write, its sensed-revision veto with idiomorph's focused-element-only guards, and its one-task IME hold with the field's timestamp window (`dreamdom#/open-rulings`).
+
+''Read it against us, not for us.'' Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+<<~ status "seven items reached; TW5 core, PR #9728 branch, idiomorph 0.8.0, worker-dom, remote-dom, ProseMirror and MDN source read from primary files; WebKit bugzilla, tiddlywiki.com, talk.tiddlywiki.org and bugzilla.mozilla.org stayed behind the proxy — those claims ride on search snippets only">>
+
+Map-Wisp (Tasked Spirit) ~ Testimony-Verbatim
+
+!! 1. TW5 performance instrumentation
+
+''Wiring.'' `core/modules/startup/load-modules.js` lines 16–17 and 43–44 construct the framework: `$tw.perf = new $tw.Performance($tw.wiki.getTiddlerText("$:/config/Performance/Instrumentation","no") === "yes")`. The config tiddler reads at load-modules time only; flipping it later changes nothing until reboot. [reached: fetched]
+
+''`core/modules/utils/performance.js`.'' The constructor takes `enabled`, holds `this.measures = {}`, creates a Logger named "performance", and calls `showGreeting()`, which in the browser logs one line pointing at `$tw.perf.log()`. Three methods [reached: fetched]:
+* `measure(name, fn)` — when enabled, returns a wrapper that adds elapsed time into `self.measures[name].time` and bumps `.invocations` (entry created on first call); when disabled, returns `fn` untouched.
+* `report(name, fn)` — when enabled, wraps `fn` and calls `self.logger.log(name + ": " + ms.toFixed(2) + "ms")` on every invocation. It stores nothing.
+* `log()` — sorts `measures` by total time, computes a grand total, and hands rows `{name, invocations, avgTime, totalTime, percentTime}` to `self.logger.table(results)`.
+The file writes no tiddler. [reached: fetched]
+
+''Programmatic read.'' The only machine-readable surface: the plain hashmap `$tw.perf.measures` (`{name: {time, invocations}}`). PR #9728's replay command reads exactly that (`var measures = perf.measures;`, `perf-replay-command.js` ~line 175) and sorts it itself. The `report()` timings (`mainRender`, `styleRefresh`, `mainRefresh`, `throttledRefresh`) exist only as logger lines; capturing them programmatically means intercepting `$tw.utils.Logger` or wrapping the same functions yourself. [reached: fetched] A "performance tiddler" appears nowhere in core; the docs page describes console output and a table with columns name, invocations, totalTime, percentTime. [reached: search — tiddlywiki.com unreachable by fetch]
+
+''Where the measures wrap'' (`core/modules/startup/render.js`, module `render`, `platforms: ["browser"]`, `after: ["story"]`) [reached: fetched]:
+* line 55: `$tw.wiki.addEventListener("change", $tw.perf.report("styleRefresh", …))` — refreshes the stylesheet widget and rewrites `$tw.styleElement.innerHTML`.
+* lines 65–72: `$tw.perf.report("mainRender", function(){ … makeTranscludeWidget(PAGE_TEMPLATE_TITLE, {document, parentWidget: $tw.rootWidget, recursionMarker:"no"}) … pageWidgetNode.render(pageContainer,null); $tw.hooks.invokeHook("th-page-refreshed"); })();`
+* line 90: `throttledRefresh = $tw.perf.report("throttledRefresh", refresh)`.
+* line 93: `addEventListener("change", $tw.perf.report("mainRefresh", …))` — classifies changed titles: throttled when the tiddler carries `draft.of` or `throttle.refresh` (volatile tiddlers skipped); if only throttled titles changed it defers via `setTimeout(throttledRefresh, timeout)` where timeout comes from `$:/config/Drafts/TypingTimeout` else 400 ms; otherwise merges into `deferredChanges` and calls `refresh()` now. `refresh()` fires `th-page-refreshing`, calls `$tw.pageWidgetNode.refresh(deferredChanges)`, clears the queue, fires `th-page-refreshed`.
+
+''PR #9728.'' It exists, under the title ''"Performance plugin"'', not "headless refresh recorder". Author Jermolene (description notes Claude assistance); Draft, open; opened 13 Mar 2026; head branch `performance-plugin`; label "⟲ admin-review"; 17 files; last visible activity pmario, 2 Jun 2026; Leilei332 review comment on `boot/boot.js`; the bot flags a missing change note. [reached: fetched] What it adds, from the branch files [reached: fetched]:
+* `plugins/tiddlywiki/performance/recorder.js` (startup module, browser only, after load-modules) intercepts `wiki.addTiddler()`/`deleteTiddler()` while `$:/state/performance/recording` reads `yes`; records sequence number, high-resolution timestamp, full fields, and a batch id tracking `$tw.utils.nextTick()` batching; writes `$:/temp/performance/timeline` as JSON; optional draft coalescing via `$:/config/performance/coalesce-drafts`.
+* `perf-replay-command.js`: `--perf-replay <timeline.json> [--no-coalesce]` builds the page widget tree on `$tw.fakeDocument` (mirroring render.js), times the initial `render`, then replays batch by batch calling `pageWidgetNode.refresh(changedTiddlers)` and timing each; prints per-batch rows, mean/P50/P95/P99/max, the sorted `perf.measures` filter table; writes `<timeline>-results.json` with `{wiki:{tiddlerCount}, timeline:{operations,batches}, initialRender, summary:{totalRefreshTime, meanRefresh, p50, p95, p99, maxRefresh, totalFilterInvocations}, batches:[…]}`.
+* `boot/boot.js` and `bootprefix.js` gain `performance.mark()` calls (`tw-bootprefix-start/end`, `tw-boot-start`, `tw-boot-store-read-start/end`, `tw-boot-exec-start`, `tw-boot-startup-modules-start`, `tw-boot-complete`), guarded by `typeof performance !== "undefined"`.
+* `core/modules/filters.js` wraps each compiled filter in `$tw.perf.measure("filter: " + filterString, …)`; plus tag-indexer, `is[system]`/`is[shadow]`/`is[tiddler]`/`tags` optimisations and `wiki.allSystemTitles()`/`allNonSystemTitles()`, which the author says will split into separate PRs. Stability `STABILITY_1_EXPERIMENTAL`.
+* The readme argues for store-level recording over DOM-event recording: refreshes respond to store changes; no headless browser needed. Discussion: pmario asked for reproduction steps and reported a tag-indexer bug; linonetwo suggested Chrome DevTools MCP; Jermolene called that orthogonal. [reached: fetched]
+
+!! 2. Startup actions
+
+`core/modules/startup/startup.js` (module `startup`, `after: ["load-modules"]`, synchronous), lines 94–103 [reached: fetched]:
+```
+$tw.rootWidget.invokeActionsByTag("$:/tags/StartupAction");
+if($tw.browser) { …invokeActionsByTag("$:/tags/StartupAction/Browser"); }
+if($tw.node)    { …invokeActionsByTag("$:/tags/StartupAction/Node"); }
+$tw.wiki.clearTiddlerEventQueue();
+// Find a working syncadaptor
+$tw.syncadaptor = undefined; …
+```
+So the three startup tags fire ''before'' TW5 even selects a syncadaptor, and the event queue clears right after them. `$:/tags/StartupAction/PostRender` fires once, at the end of `render.js` (line 123) after `$tw.rootWidget.domNodes = [$tw.pageContainer]` links the root to the page. [reached: fetched]
+
+`Widget.prototype.invokeActionsByTag(tag, event, variables)` (widget.js line 942) runs `filterTiddlers("[all[shadows+tiddlers]tag[" + tag + "]!has[draft.of]]")` and `invokeActionString` on each, with the widget itself as parent. Nothing prevents calling it again at any time. [reached: fetched]
+
+''Re-run after a late load.'' Grep of `core/modules/syncer.js`, `plugins/tiddlywiki/tiddlyweb/tiddlywebadaptor.js` and `boot/boot.js` finds no second `invokeActionsByTag` and no `StartupAction` reference. The syncer listens for the wiki `lazyLoad` event (`handleLazyLoadEvent`, with a `titlesHaveBeenLazyLoaded` guard and `$:/config/SyncDisableLazyLoading`); lazily loaded text lands as an ordinary store change and rides the refresh cycle. `boot.js` line 2551 fires `th-boot-tiddlers-loaded` after the initial store read. [reached: fetched] Community pattern: a talk thread titled "How to build a respawn-function that can execute action-widgets" exists, but its body stayed unreachable. [reached: search] A related failure story: a `<<now "ddd">>` call inside a StartupAction threw because language strings had not loaded; the workaround moved the action to PostRender; a fix landed in 5.3.7. [reached: search] The docs state that global macros do not resolve inside initial startup actions without `\import`. [reached: search] (inferred) A house that wants startup actions after TiddlyWeb's first sync must call `$tw.rootWidget.invokeActionsByTag(...)` itself from a sync hook or a `th-page-refreshed` listener; core offers no such re-run.
+
+!! 3. The fakedom
+
+`core/modules/utils/fakedom.js` [reached: fetched]:
+* `TW_Element(tag, namespace)` holds `isTiddlyWikiFakeDom:true`, `tag`, `attributes:{}`, `isRaw:false`, `children:[]`, `_style:{}`, a `style` proxy over `_style`, `namespaceURI` (XHTML default). A sequence number attaches when tracking runs.
+* `setAttribute(name, value)` stores `value + ""` into `attributes[name]`, except `style`, which parses into `_style`; throws in raw mode. `removeAttribute` deletes the key.
+* Accessors: `className` ↔ `attributes.class`; `value` ↔ `attributes.value` (lines 233–240). ''No accessor for `checked`, `selected`, `indeterminate`, `disabled`.'' Assigning `el.checked = true` creates a plain JS own property that nothing reads.
+* `outerHTML` emits `<tag`, the `attributes` keys in sorted order (HTML-encoded; `undefined` skipped), a `style="…"` built from `_style`, then `innerHTML` and a close tag unless void. `innerHTML` returns `rawHTML` in raw mode, else child `outerHTML`/encoded `textContent`.
+
+How core widgets drive those properties [reached: fetched]:
+* `widgets/checkbox.js`: initial render uses `setAttribute("checked","true")` (line 41) — serialises — but `refresh` (line 325–326) writes `this.inputDomNode.checked = !!isChecked` and `.indeterminate = (isChecked === undefined)` — properties, lost in `outerHTML`.
+* `widgets/select.js`: multiple mode sets `child.selected = …` on each option (lines 130, 133); single mode sets `domNode.value = value` on the `<select>` (line 139). In fakedom the latter becomes a `value="…"` attribute on `<select>` — which a real HTML parser ignores — and no option ever gains `selected`.
+* `editor/engines/simple.js` lines 28–32: a `textarea` receives a text node child (serialises as content); an `input` receives `domNode.value` → `attributes.value` (serialises). `framed.js` follows the same split.
+
+Upstream issue: none found. The TW5 issue search for fakedom/checked/selected/outerHTML surfaces only browser-side regressions — #9839/#9841 (SelectWidget `multiple` highlight after refresh) and #9949–#9951 (ButtonWidget `selectedClass`). [reached: fetched] A talk thread discusses replacing `$tw.fakeDocument` with jsdom/linkedom for static rendering; packing jsdom hit circular-dependency trouble. [reached: search]
+
+!! 4. idiomorph (0.8.0, released 2026-09-05)
+
+From `src/idiomorph.js` and `CHANGELOG.md` [reached: fetched]:
+* `beforeNodeMorphed(oldNode, newContent)` — returning `false` makes `morphNode` return `oldNode` untouched (line 634). `afterNodeMorphed` runs after. `beforeAttributeUpdated(name, element, "update"|"remove")` — `false` blocks that one mutation; it also gates the `value`/`checked`/`selected`/`disabled` syncs because `ignoreAttribute()` routes through it.
+* `ignoreActive` — `morphNode` returns `null` for `doc.activeElement` (line 629): the focused subtree never morphs at all.
+* `ignoreActiveValue` — `ignoreAttribute()` returns true for `attr === "value"` on the active element, and `ignoreValueOfActiveElement()` also skips `syncInputValue` ''and `morphChildren`'' for the active element (line 649). Only the focused element; nothing for a control the user edited and then blurred.
+* `restoreFocus` (default `true`, introduced 0.7.1, 2025-02-13, "for IDed elements, at the cost of firing extra focus and selection events") — `saveAndRestoreFocus` returns early unless `activeElement` reads as `<input>` or `<textarea>`; captures `id`, `selectionStart/End`; after the morph, if the active id changed, `querySelector([id=…])` and `.focus()`; re-applies `setSelectionRange` only when selection got lost, inside try/catch. `<select>`, `contenteditable`, and elements without an id get no restore. 0.8.0 fixes a TypeError on inputs without text selection (#150), focus restoration under `head: {block:true}`, and `ignoreActive`/`ignoreActiveValue` when morphing another document.
+* `syncInputValue`: for `<input>` (non-file) — `syncBooleanAttribute` for `checked` and `disabled`, then `value` attribute + property; for `<option>` — `syncBooleanAttribute(…, "selected")`, which writes the live property ''and'' sets/removes the attribute; for `<textarea>` — assigns `oldElement.value = newValue` when different and patches `firstChild.nodeValue`. No branch for `<select>` itself.
+* ''Select selection:'' survives a morph exactly when the new frame's `<option>` elements carry the intended `selected` state; idiomorph reads `newElement.selected` off the parsed new content and copies it. (inferred) A frame that omits `selected` on the user's choice resets the control; the house's attribute promotion therefore decides this, not idiomorph.
+* ''Textarea undo history:'' idiomorph writes `.value` programmatically. Mozilla bugs and a Perfetto commit report that programmatic `value` assignment (and re-insertion or hiding) clears a textarea's undo stack; Perfetto moved to `document.execCommand` to keep it. [reached: search] idiomorph's README, CHANGELOG and tests say nothing about undo; tests cover focus/selection (`preserve-focus.js`, `restore-focus.js`) and hidden input state (`retain-hidden-state.js`), with no select- or textarea-specific cases beyond "does not sync values onto SVG-namespace input and textarea". [reached: fetched] No idiomorph issue about select/textarea surfaced. [reached: search, negative]
+
+!! 5. The IME rule
+
+* MDN `keydown` (source `mdn/content`): since Firefox 65 keydown/keyup fire during composition; the recommended guard reads `if (event.isComposing || event.keyCode === 229) return;`. The note: `compositionstart` may fire ''after'' keydown for the first character and `compositionend` may fire ''before'' keydown for the last; in those cases `isComposing` reads false "even when the event is part of composition. However, KeyboardEvent.keyCode is still 229". [reached: fetched]
+* WebKit bug 165004: reports that Safari sends the IME-accepting Enter with `isComposing === false` because events arrive out of order, against UI Events. Status and fix version unreached — bugs.webkit.org refused the proxy. [reached: search]
+* Bluesky `social-app` PR #4186: on Safari `compositionend` fires before the Enter keydown, so their `isComposing` flag already reads false; they check `keyCode === 229` on Safari. [reached: fetched]
+* ProseMirror `prosemirror-view/src/input.ts`: `compositionend` records `view.input.compositionEndedAt = event.timeStamp` and schedules `scheduleComposeEnd(view, 20)`; `inOrNearComposition()` ignores a keydown once when `browser.safari && Math.abs(event.timeStamp - compositionEndedAt) < 500`, then resets to `-2e8`. The comment names the stum.de article and explains the single-use and the time bound (mouse-confirmed compositions). It also drops Enter keydowns outright on Chrome Android. [reached: fetched]
+* A Japanese blog claims a WebKit-side fix under bug 311717; a WebKit PR search for `isComposing compositionend keydown` returned zero results. [reached: search / fetched] Unverified.
+
+!! 6. Long Animation Frames
+
+* MDN browser-compat-data `api/PerformanceLongAnimationFrameTiming.json`: Chrome 123, Edge mirror, Firefox `false`, Safari `false`; status `experimental: true, standard_track: true`. `PerformanceScriptTiming` identical. [reached: fetched]
+* Chrome docs: shipped in Chrome 123 after an origin trial 116–122; Firefox/Safari unsupported; observe with `PerformanceObserver` type `long-animation-frame` and `buffered: true`; entries carry `blockingDuration`, `renderStart`, `styleAndLayoutStart`, `firstUIEventTimestamp`, `scripts[]`. [reached: search — developer.chrome.com unreachable by fetch]
+* Mozilla standards-positions #929: label `position: positive` (martinthomson, 17 Jun 2024), closed; implementation tracking bug cited. A Firefox bug for LoAF in workers sits unfixed, tagged 155. [reached: fetched / search] WebKit standards-positions #283: open, no label; smfr (16 Jan 2024) asked that the APIs be framed as Performance Timing entry types. [reached: fetched]
+* Playwright: no official doc reached. [reached: search, negative] (inferred) Register via `page.addInitScript` a `PerformanceObserver` pushing entries (`toJSON()`) into a window array with `{type:"long-animation-frame", buffered:true}`, then `page.evaluate` after the interaction; guard with `PerformanceObserver.supportedEntryTypes.includes("long-animation-frame")`; only the `chromium` project yields entries — `webkit` and `firefox` projects return none.
+
+!! 7. WorkerDOM and remote-dom
+
+''WorkerDOM'' (`ampproject/worker-dom`, main) [reached: fetched]:
+* `src/worker-thread/Event.ts`: `AddEventListenerOptions { capture?, once?, passive?, workerDOMPreventDefault? }`.
+* `src/worker-thread/dom/Node.ts` lines 409–431: `addEventListener` transfers `[TransferrableMutationType.EVENT_SUBSCRIPTION, this[index], 0 /*remove count*/, 1 /*add count*/, storedType, handlerIndex, Number(capture), Number(once), Number(passive), Number(Boolean(options.workerDOMPreventDefault))]`.
+* `src/transfer/TransferrableEvent.ts`: `AddEventRegistrationIndex { Type=0, Index=1, Capture=2, Once=3, Passive=4, WorkerDOMPreventDefault=5 }`, `ADD_EVENT_SUBSCRIPTION_LENGTH = 6`; `EVENT_SUBSCRIPTION = 4` in `TransferrableMutation.ts`.
+* `src/main-thread/commands/event-subscription.ts` lines 108–140: `eventHandler(index, preventDefault)` returns a listener that runs `if (preventDefault) event.preventDefault();` ''synchronously, before'' posting `MessageType.EVENT` with `bubbles, cancelable, cancelBubble, defaultPrevented, eventPhase, isTrusted, returnValue, target, timeStamp, type` to the worker; `fireValueChange` rides the same path for tracked inputs. The README never mentions the flag. The worker-side `dispatchEvent` honours a handler returning `false` only locally.
+''remote-dom'' (`Shopify/remote-dom`, main, `packages/core`) [reached: fetched]:
+* `RemoteElement.remoteEvents` — array of names, or object `{ change: { bubbles?: boolean, dispatchEvent(value) { …; return new ChangeEvent(value) } } }`; `createRemoteElement({events: [...]})`. Adding a listener registers it in the host representation; non-bubbling events reach the host only once a listener exists; `bubbles: true` makes the host listen regardless. `remoteProperties` with `event: true` stays as a deprecated path.
+* `RemoteEvent extends CustomEvent` adds only `response` and `respondWith(response)`.
+* `DOMRemoteReceiver` (`UPDATE_PROPERTY_TYPE_EVENT_LISTENER`): the host handler does `if (event.target !== element) return; const result = value(event.detail); event.resolve?.(result);`.
+* Grep of `RemoteEvent.ts`, `RemoteElement.ts`, `DOMRemoteReceiver.ts`, `internals.ts` and the README for `preventDefault`/`cancelable`: zero hits. remote-dom carries no cancellation across the boundary; it carries an async response. [reached: fetched]
+* Context: a WHATWG thread (Jake Archibald) asks how `preventDefault` could work for worker-created elements; Andrea Giammarchi's `coincident` patches `addEventListener` with an `invoke` list naming `preventDefault`, because a symbol cannot survive structured clone. [reached: search]
+
+!! What I could not reach
+
+* bugs.webkit.org (165004, the claimed fix 311717), bugzilla.mozilla.org, developer.mozilla.org live, developer.chrome.com, tiddlywiki.com, talk.tiddlywiki.org, lists.w3.org, stum.de, dev.to, developer.squareup.com, azukiazusa.dev — DNS or proxy CONNECT 403. Claims from those ride `[reached: search]` snippets.
+* GitHub REST/GraphQL for TiddlyWiki5 (session-bound); the PR came through the github.com HTML page and the `performance-plugin` branch raw files instead. Tarballs via codeload failed; per-file raw fetches replaced them.
+* The body of the TW talk "respawn-function" thread; the TW5 `--render`/fakedom issue tracker beyond one search page.
+* Any Playwright-official LoAF pattern; any idiomorph issue on `<select>`/textarea; Safari's current fix status.
+
+!! Where the field disagrees with the framing
+
+# ''"The `performance` tiddler"'' — none exists. `$tw.perf` writes nothing; `measures` live in memory and `report()` only logs. A headless harness reads `$tw.perf.measures` directly or wraps the render.js functions itself. [reached: fetched]
+# ''PR #9728 as "headless refresh recorder"'' — the PR records ''store mutations'' in the browser and replays them headlessly on `$tw.fakeDocument`, timing `pageWidgetNode.refresh()` per batch; it explicitly rejects DOM-event recording. It stays a Draft, unmerged, experimental, with a reviewer bug report. The house's keyed absolute frames would sit downstream of exactly this refresh measure — the PR offers the harness, not the frame serialiser. [reached: fetched]
+# ''Startup actions after a late load'' — core never re-runs them; `StartupAction*` fire before the syncadaptor even exists, so with TiddlyWeb lazy loading they see metadata only. PostRender fires once. Re-running means the house calling `invokeActionsByTag` itself; the field offers no sanctioned pattern. [reached: fetched] (inferred)
+# ''Promoting `checked` and `selected` to attributes'' — necessary, and insufficient: the checkbox refresh path writes `.checked`/`.indeterminate` properties; the select widget writes `.value` on the `<select>` (which fakedom turns into a parser-ignored `value` attribute) and `.selected` on options. The serialiser must map select-value → option `selected`, and `indeterminate` has no attribute form at all. [reached: fetched] (inferred)
+# ''Per-control sensed revision vs idiomorph'' — idiomorph guards only the ''focused'' element (`ignoreActive`, `ignoreActiveValue`); a control edited then blurred gets repainted. The house's policy must ride `beforeAttributeUpdated`/`beforeNodeMorphed`, not the built-in options. `restoreFocus` covers only IDed `<input>`/`<textarea>`; `<select>` focus and selection, and contenteditable, get nothing. Textarea undo history dies on the `.value` write idiomorph performs — a known DOM behaviour, not an idiomorph bug report. [reached: fetched] [reached: search]
+# ''The "one-task hold"'' — the field's shipped hold (ProseMirror) uses a ''500 ms timestamp window, single-shot, Safari-only'', keyed on `event.timeStamp − compositionEndedAt`, with an explicit mouse-confirmation rationale; MDN's rule says `keyCode` stays 229 on that very keydown, and Bluesky ships the keyCode check alone. No reached source recommends a one-task (`setTimeout 0`) hold; (inferred) the keyCode check plus a short window reads as the field consensus, and a one-task hold may miss a keydown that arrives in a later task.
+# ''LoAF in 2026'' — Chromium-only (123+); Mozilla positive but unshipped; WebKit without a position. Any Playwright read works on the `chromium` project only. [reached: fetched]
+# ''WorkerDOM vs remote-dom'' — WorkerDOM confirms the framing precisely: a `workerDOMPreventDefault` flag at `addEventListener` time, honoured synchronously on the main thread before the worker hears the event. remote-dom declares events (`remoteEvents`) but carries ''no'' cancellation across the boundary — only `respondWith`'s async response. The framing's pairing holds for WorkerDOM and breaks for remote-dom. [reached: fetched]
+
+<<~ oracle "↯15 ✲ ⚃(4) ⁂:⌗🜁⟁🜄">>
+<<~ set hud="yield" drift-ward="Safari's current behaviour rests on a 2016 WebKit bug I never opened and an unverified blog claim of a fix (311717) — test Enter-after-compositionend on a current Safari before the IME rule seals · ⌜3⌝ quoted · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺ -> open 1φ @✶:webkit-bugzilla.unreached.fix-status">>
+<<~ lares yield from="lar://map-wisp:spirit@house/field.read.seven-items/disagreements-named" -> to="?">>
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;3NrVqaNP0hJZSxe2gUh7eHDz5-rCxT0aAKAb36YcvOY
+
+<<^ code="&#x0004;" -> to="?">>

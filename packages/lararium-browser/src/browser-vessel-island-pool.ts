@@ -19,6 +19,7 @@ import {
   VesselIslandPoolCore,
   type Repo,
   type IslandMsg_Event,
+  type LarIslandToVesselMsg,
   type WikiRecipe,
 } from "@lararium/mesh";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
@@ -34,8 +35,9 @@ export interface BrowserVesselIslandPoolOptions {
   workerScriptUrl?: URL;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
-  /** Called when an island emits a verse-event reaction. */
-  onWorkerEvent?: (id: string, msg: IslandMsg_Event) => void;
+  /** Called when an island outside any session emits a verse-event reaction or one of the camera's kinds
+   *  (`lar:frame`, `lar:control-result`, `lar:service`); a session island's traffic reaches its own surface door instead. */
+  onWorkerEvent?: (id: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /** R4 — resolve ONE mount's own `recipe` into the CIDs its manifest should carry (the fixed
    *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: no flat
    *  vessel-wide `pluginCids` floor stands — `VesselIslandPoolCore` itself refuses to

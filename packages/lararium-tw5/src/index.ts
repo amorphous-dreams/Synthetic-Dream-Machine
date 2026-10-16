@@ -39,7 +39,7 @@ export {
 export type { ActiveWikiSelectionSource } from "./active-wiki.js";
 export type { CameraMount } from "./tw5-camera.js";
 export { mountCamera } from "./tw5-camera.js";
-export { mountProjection, PROJECTION_FRAME, dispatchProjectedEvent } from "./tw5-projection.js";
+export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,
   wireCoherenceProjection,

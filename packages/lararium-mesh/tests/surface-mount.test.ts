@@ -29,6 +29,7 @@ import type { CasBlobLike } from "../src/cas.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
 import { makeIslandRepo } from "../src/island-repo.js";
 import { mkEa, mkFault, mkTeardownAck, type IslandMsg_Manifest } from "../src/island-protocol.js";
+import { mkLarControlEvent, mkLarFrame } from "../src/lar-camera.js";
 import { recipeUri, wikiUri } from "../src/lar-uris.js";
 import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering } from "../src/plugin-offering.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -859,8 +860,8 @@ describe("the island pool keys by the whole session key", () => {
     const surfaceDoor: Array<[IslandKeyParts, unknown]> = [];
     const pool = new VesselIslandPoolCore({
       host, mainRepo: v.owner, resolvePluginCids: async () => ({ ok: true as const, pluginCids: [] }),
-      onWorkerEvent: (wikiId, msg) => { vesselDoor.push([wikiId, msg.payload]); },
-      onSurfaceEvent: (surface, msg) => { surfaceDoor.push([surface, msg.payload]); },
+      onWorkerEvent: (wikiId, msg) => { vesselDoor.push([wikiId, "payload" in msg ? msg.payload : msg.type]); },
+      onSurfaceEvent: (surface, msg) => { surfaceDoor.push([surface, "payload" in msg ? msg.payload : msg.type]); },
     });
     pools.push(pool);
     const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
@@ -874,6 +875,12 @@ describe("the island pool keys by the whole session key", () => {
     // CONTROL: the same event from an island outside any session reaches the vessel's door.
     islands[1]!.reply(event("lar:///ha.ka.ba/wikis/outside"));
     expect(vesselDoor).toEqual([["lar:///ha.ka.ba/wikis/outside", { verb: "vault-unlock", uri: "lar:///synthetic" }]]);
+    // A session island's camera frame takes the surface door too, and never the vessel's.
+    const frame = mkLarFrame({ wikiUri: WIKI, cameraId: "lar:story", mountEpoch: 1, keys: [{ key: "lar:surface", rev: 1, html: "<p/>" }], sensedRevision: {} });
+    islands[0]!.reply(frame);
+    expect(surfaceDoor).toHaveLength(3);
+    expect(surfaceDoor[2]).toEqual([pool.surfaceOf(key), "lar:frame"]);
+    expect(vesselDoor).toHaveLength(1);
     // With no surface door supplied, a session island's event drops.
     const bare = poolOver(v);
     await bare.pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
@@ -902,8 +909,8 @@ describe("the island pool keys by the whole session key", () => {
     expect(await place(WIKI, me)).toContain("no session holds this island");
     expect([verbsAt(islands[0]!), verbsAt(islands[1]!), verbsAt(islands[2]!)]).toEqual([1, 0, 0]);
     // Every other placement door reads the same binding.
-    pool.placeWikiEvent(theirs, { renderId: "r", eventType: "click", fields: {} }, me);
-    pool.placeWikiInput(theirs, { renderId: "r", eventType: "input", value: "x" }, me);
+    pool.placeControlEvent(theirs, mkLarControlEvent({ eventId: "e", cameraId: "lar:story", mountEpoch: 0, kind: "lar:act", renderId: "r", action: "lar:click", seenFrameRev: 0 }), me);
+    pool.resendProjection(theirs, "lar:story", me);
     expect(() => pool.placeSensoriumSignal(theirs, { signal: "sensorium:read" as never, requestId: "q" }, me)).toThrow("the placing session holds no such surface");
     expect(islands[1]!.posted.length).toBe(1);                                           // its manifest, and nothing since
     // The listing names no surface: a status read learns no session and no face plane from it.

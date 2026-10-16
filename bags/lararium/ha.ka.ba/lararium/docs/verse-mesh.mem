@@ -138,10 +138,11 @@ Outbound writes — when a user saves a tiddler from any camera — go through
 `IslandAdaptor.saveTiddler → store.writeFamily()`, the same path the Story River uses.
 No new write-back machinery is necessary for additional cameras.
 
-A browser camera's input starts on the painted surface. The main thread relays a DOM event by the
-render-id the island stamped on the node (`wiki:dom-event`), and a text field's whole current value
-on a sibling message (`wiki:dom-input`); the island invokes the handler TW5 itself bound, and from
-there the widget tree runs as if the event had fired locally.
+A browser camera's input starts on the painted surface. The main thread relays one act as a
+`lar:control-event`, addressed by the render-id the island stamped on the node and carrying the frame
+revision it saw and, for a field, the whole current value; the island invokes the handler TW5 itself
+bound, from there the widget tree runs as if the event had fired locally, and the island answers the
+act with a `lar:control-result` (`lar:///ha.ka.ba/lararium/mesh/lar-camera`).
 
 The TW5 Story River is the ''first camera'' — the primary rendered view
 into the Verse graph for browser peers.
@@ -220,8 +221,8 @@ const stop = mountCamera(engine, {
   document:    $tw.fakeDocument,     // VM-side; never window.document
   container:   storyContainer,
 });
-// Each wiki `change` marks a coalesce gate; the gate posts the newest whole-surface
-// snapshot as one `projection:frame` event, carrying html, css and a monotone rev.
+// Each wiki `change` marks a coalesce gate; the gate posts the newest keyed frame as one
+// `lar:frame`, each key whole under its own monotone rev within the mount epoch.
 ```
 
 The browser island mounts one story camera and one stylesheet reader this way, and the main thread
@@ -243,7 +244,7 @@ Every row names a pace ''inside a worker''; no row places an engine on a main th
 
 | Platform | Where the engine runs | Landing pace (wiki shore) | Paint |
 |---|---|---|---|
-| Browser | Web Worker | a host task between slices: `scheduler.yield` where the worker offers one, else a `MessageChannel` message | main thread applies `projection:frame` to a shadow root |
+| Browser | Web Worker | a host task between slices: `scheduler.yield` where the worker offers one, else a `MessageChannel` message | main thread morphs each `lar:frame` key into a shadow root |
 | Node | `worker_threads` Worker | a host task between slices: `setImmediate` | none — disk projection in-island; `$tw.fakeDocument` for a headless render |
 | Mobile, civil, interplanetary | a worker of that runtime (unbuilt) | that runtime's host task | that platform's surface |
 
@@ -262,6 +263,6 @@ The host-task seat changes; the landing contract does not. The nalu engine holds
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5OuBEshOBcpxQ4CzqKQMIQZG4qG2HXgZ9Nbkpur9Qtw
+<<^ code="&#x0003;">>ni:///sha-256;zLnqhQ6Fn56LotMbpHUBc1Tmj644z2QnVZWmLWWZAgM
 
 <<^ code="&#x0004;" -> to="?">>

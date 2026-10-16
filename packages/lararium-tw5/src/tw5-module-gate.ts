@@ -9,12 +9,10 @@ const MODULE_MANAOIO_THRESHOLD = 17;
 // The has-stack model: a kernel-injectable module WEARS the
 // tw5-module component in its stack (tags), never "implements an interface".
 const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
-const MODULE_AGGREGATE_URI = "lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules";
 
 export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
   const wiki = tw.wiki;
 
-  let injected = 0;
   try {
     const titles: string[] = wiki.filterTiddlers(`[all[tiddlers]stack:has[${MODULE_COMPONENT_URI}]]`) ?? [];
     for (const title of titles) {
@@ -40,28 +38,27 @@ export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
       const claimedHash = f["source-sha256"] ?? "";
       if (!claimedHash || !(await verifySha256(body, claimedHash))) continue;
 
+      const moduleType = f["module-type"] ?? "library";
+      // A module defined after boot reaches the engine through `require` alone: TW5 applied the widget,
+      // filter and startup types during boot and never again. The gate admits libraries and refuses the
+      // rest by name.
+      if (moduleType !== "library") {
+        console.warn(`[module-gate] refused ${title}: module-type ${moduleType} applies at boot alone; the gate defines libraries`);
+        continue;
+      }
       wiki.addTiddler(new tw.Tiddler({
         title,
         type:          "application/javascript",
-        "module-type": f["module-type"] ?? "library",
+        "module-type": moduleType,
         text:          body,
         tags:          [],
       }));
-      injected++;
+      // TW5's module table reaches a module by the name another module `require`s: its title. The gate
+      // defines each trusted module under that name, `define(name, moduleType, definition)`.
+      tw.modules.define(title, moduleType, body);
     }
   } catch {
     /* filter unavailable — fall through */
-  }
-
-  if (injected > 0) {
-    try {
-      const moduleText = wiki.getTiddler(MODULE_AGGREGATE_URI)?.fields?.["text"] ?? "";
-      if (typeof moduleText === "string") {
-        tw.modules.define(moduleText, "library", "lararium-tw5-modules");
-      }
-    } catch {
-      /* no-op */
-    }
   }
 }
 

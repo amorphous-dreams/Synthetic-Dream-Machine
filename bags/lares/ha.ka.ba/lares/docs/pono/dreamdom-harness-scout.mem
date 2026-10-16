@@ -1,0 +1,204 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-harness-scout.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 14
+manao             = 15
+manaoio           = 13
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-harness-scout — VERBATIM handoff of a tasked spirit: the cold read of the as-built worker-thread TiddlyWiki engine that train D's phase D0 (measure and mend) collided against, 2026-10-16. Traces the nine named gaps to file and line: the boot-shadows preload, the Node path's forging, the swallowing VM shim, the render-id maps, the module gate, the daemon's surface state, startup actions against the seed, the global-assignment lends, the orphaned worker script. Code read only; nothing booted. Held as a collision surface."
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-harness-scout"
+written           = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The D0 ground ~ a spirit's cold read, held unedited
+
+''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what a tasked spirit reported from a cold read of the tree at the start of train D's phase D0, kept whole, as a ''collision surface''. The spirit read code and the fork's own boot; it ran nothing and booted nothing. The Episkopos's own probes on both host paths agreed with every finding, and the fixes D0 landed read in git and the changelog.
+
+''Read it against us, not for us.'' Every claim names its reach: `[reached: file:line]` or //(inferred)//. Collide it; do not inherit it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handoff>>
+
+!! The handoff, verbatim
+
+````markdown
+<<~ status "cold read done: all nine gaps traced to file:line; code read only, no tests run; three findings contradict the docblocks that describe them (#3, #11, #15)">>
+
+Ink-Clerk (Tasked Spirit). I read the boot seed whole. Below, the code's own behaviour, cited. Paths sit relative to /home/user/Synthetic-Dream-Machine.
+
+## #3 — boot-shadows preload: never flattened, silently dropped
+
+- **Into the plugin list.** `genesis/seed.json` names `lararium-boot-shadows` (sha256 95bde4…, `mimeType: application/json`, `kind: base`). `bootSetPluginCids` keeps every non-core JSON blob [reached: packages/lararium-mesh/src/cas.ts:89-95]. `resolveRecipePluginCids` unions that floor into `pluginCids` [reached: packages/lararium-mesh/src/surface-recipe.ts:137,144]. Both node call sites route through it [reached: packages/lararium-node/src/node-plugin-resolution.ts:51-55].
+- **Through the kernel.** For each CID it pulls the bytes via `resolveByCid`, then `pluginTiddlers.push(JSON.parse(...))`, and a parse failure falls to `catch { /* malformed — skip */ }` [reached: packages/lararium-tw5/src/sovereign-kernel.ts:398-407]. On node, `resolveByCid` reads `<storage>/cas/<cid>`, then the corpus CAS, then asks the vessel over the port [reached: packages/lararium-node/src/sovereign-island-model.ts:225-242; node-cas.ts:116-125].
+- **Into `$tw`, as one element.** The blob holds a JSON array of five records, not a plugin [reached: genesis/cas/95bde4…]. The kernel pushes that whole array as one entry [sovereign-kernel.ts:405], `IslandKernel.bootTw5` passes it on [island-kernel.ts:86-87], and `TW5Engine.boot` copies each entry into `instance.preloadTiddlers` [reached: tw5-vm.ts:54-55]. TW5 then runs `$tw.wiki.addTiddlers($tw.preloadTiddlers)` [reached: TiddlyWiki5/boot/boot.js:2547-2548].
+- **Dropped.** `addTiddlers` calls `addTiddler(entry)` [boot.js:1505-1509]. `new $tw.Tiddler(array)` walks `for(var t in src)`, which yields fields `"0".."4"` and no `title` [boot.js:1020-1046]. `addTiddler` only stores when `if(title)` holds [boot.js:1187-1192], so the array vanishes with no warning.
+- **What ends up visible after boot:**
+  - `$:/palette`, `$:/tags/LarariumKumu` and `$:/config/FileTypeMappings/text/x-memetic-wikitext`: absent (inferred from the drop above; no test asserts any of them).
+  - The blob's two startup modules (`render.js` override, `lararium-bootstrap-sync.js`) drop the same way.
+- **The `.mem` mapping has its own door, and it stays shut.** The grammar plugin's `lararium-carrier-filetype` startup calls `registerFileType(CARRIER_TYPE,"utf8",[".mem"])`, but declares `platforms = ["browser","node"]` [reached: packages/lararium-tw5/src/modules/carrier-filetype.ts:48,58; same in genesis/cas/26d101… per my parse]. `doesTaskMatchPlatform` returns false when `$tw.browser` and `$tw.node` both stand null [reached: boot.js:2658-2680]. Both worker paths null both flags [tw5-host-bridge.ts:347-348, 366-367]. So that module skips. Core registers no `.mem` [boot.js:2465-2503; grep found no `memetic` in boot.js]. Result: `.mem` stays unmapped in island workers (inferred).
+- `packages/lararium-tw5/plugins/lararium-boot-shadows.json` matches the CAS blob byte for byte (`diff` came back empty).
+
+## #10 — Node path vs browser path forging
+
+`configureIslandRuntime` (browser Worker only) [tw5-host-bridge.ts:362-393] sets:
+- `argv=[]`, `node=null`, `browser=null`
+- no-op `loadTiddlersBrowser` / `loadTiddlersNode`
+- `boot.decryptEncryptedTiddlers = cb()`
+- `boot.tasks = {trapErrors:false, readBrowserTiddlers:true}`
+- `packageInfo ??= {version: engineCid}` (384)
+- `utils.escapeCSS ??= escapeCssIdentifier` (387)
+- `utils.error` replaced by a `console.error` that carries on (390-392)
+
+`neutralizeNodeBootAuthority` (Node worker_thread) [342-350] sets only `argv=[]`, `node=null`, `browser=null` and a no-op `loadTiddlersNode`. The Node path called at 450-452 therefore lacks four things:
+
+- **`boot.tasks`:** stays at bootprefix defaults, `readBrowserTiddlers:false` [TiddlyWiki5/boot/bootprefix.js:40-43]. So `initStartup` enters the node block [boot.js:2431-2463]: bootPath comes from the virtual `module.filename` [tw5-host-bridge.ts:289], argv becomes `["--help"]`, and `wikiPath = process.cwd()`.
+- **`packageInfo`:** `require("../package.json")` resolves to `{engines:{node:">=18.0.0"}}` with no `version` [tw5-host-bridge.ts:239; boot.js:2458]. `extractVersionInfo` then returns `packageInfo.version` (undefined) [TiddlyWiki5/core/modules/utils/utils.js:791-793], so `$tw.version` comes out undefined [core/modules/startup/startup.js:51] (inferred, unless the bundled core pre-sets packageInfo).
+- **`escapeCSS`:** core defines it only in `utils-browser` [core/modules/utils/escapecss.js:4,12-14], and load-modules applies that type only `if($tw.browser)` [core/modules/startup/load-modules.js:27-29]. With nothing forged, `$tw.utils.escapeCSS` stays undefined on Node (inferred).
+- **`utils.error`:** the fork's version logs, takes the DOM branch only when `$tw.browser && !$tw.node`, and otherwise runs `else if(!$tw.browser) process.exit(1)` [boot.js:197-246]. The Node path hands TW5 the real `process` [tw5-host-bridge.ts:245], and modules get `process` too [boot.js:876-879]. So any `$tw.utils.error` call on the Node worker path calls the real `process.exit(1)` (inferred: in a worker_thread that ends the thread).
+
+Note: the brief's `TiddlyWiki5/core/modules/startup.js` sits at `core/modules/startup/startup.js`.
+
+## #14 — the swallowing try/catch in the VM shim
+
+- **The swallow.** `makeBrowserVmShim.runInCtx` wraps `new Function(...keys, "return " + code)` in `try { … } catch { return undefined; }` [reached: tw5-host-bridge.ts:95-100]. `runInThisContext` does the same twice [107, 119]. This shim reaches TW5 only on the browser-Worker path [256].
+- **How it hides the error.** TW5's `evalGlobal` uses `vm.runInContext` whenever `!$tw.browser`, then calls `fn.apply(...)` [boot.js:615-629]. A module with a SyntaxError makes `new Function` throw. The shim returns `undefined`, and `undefined.apply` raises a TypeError.
+- **What gets reported.** `modules.execute` catches that as a non-SyntaxError, "Error executing boot module…" [boot.js:922-933]. The browser `utils.error` override logs it and boot carries on [tw5-host-bridge.ts:390-392]. The real SyntaxError never surfaces (inferred from the chain).
+- **Node path.** Real `vm` throws the SyntaxError, and with no line number TW5 rethrows it (`!$tw.browser → throw e`) [boot.js:924-930].
+- **Neighbouring swallows:**
+  - `bootWithHostBridge` resolves even when `onBoot` rejects: `.catch(() => resolve())` [tw5-host-bridge.ts:504].
+  - The module gate has two bare catches [tw5-module-gate.ts:52, 62].
+  - Plugin JSON parse failures skip quietly [sovereign-kernel.ts:406].
+
+## #6 — ridMap / eventScopes / liveIds across frames
+
+- **Module-level maps.** `ridMap` and `eventScopes` live at module scope [tw5-projection.ts:60, 71].
+  - The patched `addEventListener` stamps `data-lar-rid` once per node and adds to `ridMap`, `eventScopes` and `scope.renderIds` [83-95].
+  - No flush deletes from them. Only teardown prunes, for `scope.renderIds` [381-384]. So all three grow across frames for the mount's lifetime.
+  - `removeEventListener` filters `_larListeners` but leaves both maps alone [96-99].
+- **liveIds.** Each flush rebuilds `scope.liveIds` from the `data-lar-rid` attributes in the story HTML only [346]. Popup-root rids never appear there. Dispatch refuses a rid missing from `liveIds`, or one that `standsAttached` fails [180, 206; 125-136].
+- **Frame payload.** Every frame posts `{html, css, rev}` [353-362]:
+  - `css` carries the stylesheet's full `textContent` every frame, changed or not [359]; the stylesheet widget refreshes on every change [369].
+  - `html` holds the story container's HTML, plus a stale-target `<output>` when one waits [347-352].
+- **Main thread.** The sink writes `style.textContent = frame.css` on every applied frame [reached: packages/lararium-web/src/projection-sink.ts:92], drops frames older than the one shown on the same surface [91], and morphs the HTML [121].
+- Frames coalesce on a fixed 24 ms window [39, 342-364].
+
+## #11 — the module gate
+
+- **What it defines.** `bootTrustedModules` filters `[all[tiddlers]stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]` [tw5-module-gate.ts:11, 19]. It admits a tiddler only when all of these hold:
+  - mana ≥ 18, manao ≥ 17, manaoio ≥ 17
+  - the body holds something other than "// Body injected"
+  - `source-sha256` checks out
+
+  Each admitted tiddler gets re-added as `application/javascript` with no tags [25-50]. After at least one injection it calls `tw.modules.define(moduleText, "library", "lararium-tw5-modules")` [60]. TW5's signature runs `define(name, type, definition)` [boot.js:1522], so that call passes the aggregate's text as the module NAME and the string "lararium-tw5-modules" as the definition (arguments swapped).
+- **Who calls it.** Only `TW5Engine.boot`, inside `bootWithHostBridge`'s onBoot [tw5-vm.ts:25, 59]. That fires at boot callback time, before `buildIslandRecipe` and the seed [sovereign-kernel.ts:427 vs 439-450]. Tests call it directly [packages/lararium-tw5/tests/module-gate.test.ts:91, 106].
+- **Who wears the component.**
+  - At boot only plugin shadows exist. `all[tiddlers]` excludes shadows, and no grammar-plugin tiddler names the URI (grep count 0 over genesis/cas/*).
+  - Corpus carriers that name it via `loulou`: `bags/lararium/ha.ka.ba/lararium/tw5/ui/lar-hud.mem:123`, `tiddler-fields.mem:91`, `modules/tw5-modules.mem:41`, `sigil-aka.mem`, and `bags/lares/…/vendor/sq-streams.mem`. These arrive with the seed, after the gate already ran.
+  - `tw5-modules.mem:7` claims `source-sha256` e3b0c4…, the digest of the empty string.
+  - Net: the gate admits nothing in production today (inferred).
+
+## #15 — where `$:/lares/surface` really goes
+
+- **Where it gets written.** `SUMMON_ACTION` sets `$:/lares/surface` with `text` only and no `disk-projection` field [daemon-ui-tiddlers.ts:45, 131, 135].
+- **The docblock's claim.** "matches no bag-paths cascade rule → pure in-memory" [daemon-ui-tiddlers.ts:17-18].
+- **What the cascade does.** `$:/lares/surface` matches no `$:/temp/`, `$:/state/`, `$:/status/` or `$:/boot/` rule. `lar-kind` classes it `system`, not personal (personal covers only `$:/StoryList`, `$:/palette`, `$:/state/folded/`, `$:/state/tab-`) [packages/lararium-tw5/src/filters/lar-kind.ts:42-50]. It therefore hits the catch-all `[regexp[.]then{…current-wiki-bag}]` [packages/lararium-tw5/tiddlers/lar-bag-paths.tid:17].
+- **Into the store.** The outbound bridge sends the change to `saveTiddler` [outbound-bridge.ts:28-42]. `neverPersists` does not cover it [island-adaptor.ts:108-110, 1303]. `_settle` returns the slot [404-433], and the adaptor writes to the daemon's working CRDT [1201-1230]. `current-wiki-bag` points at the working slot when one mounts [island-recipe.ts:104-110].
+- **Toward disk.** The node daemon mirrors `wikis/daemon/working` to `<root>/wikis/daemon/` [packages/lararium-node/src/open-daemon-vm.ts:149-150; bag-paths.ts:137-139]. The projector cuts nothing by title [disk-projector.ts:433-440] and honours only `disk-projection:"no"` [579]. So `$:/lares/surface` likely lands on disk (inferred; I did not trace the file-path siting for `$:/` titles).
+
+## #17 — startup actions vs seed arrival
+
+- **When they run.** `startup.js` runs `invokeActionsByTag("$:/tags/StartupAction")` synchronously during `boot.boot` [core/modules/startup/startup.js:95]. The `/Browser` and `/Node` variants skip because both flags stand null [96-101]. `PostRender` sits in `render.js`, a browser-only module [render.js:123].
+- **Over what.** At that moment the wiki holds only preloads [boot.js:2547], i.e. plugin shadows; the boot-shadows array got dropped (#3).
+- **Order in the kernel:**
+  1. `bootTw5` [sovereign-kernel.ts:427]
+  2. `buildIslandRecipe`: the temp config seed and `emitInitialReplay` per CRDT slot [island-recipe.ts:104-123]
+  3. `await seedDrained` [sovereign-kernel.ts:450]
+  4. `behavior.onEa` [466], where the daemon seeds its protocol tiddlers [daemon-behavior.ts:187; daemon-protocol-seed.ts:31-37]
+- **Re-invocation.** No source under `packages/*/src` names `StartupAction` or `invokeActionsByTag` (grep came back empty). The corpus carrier tagged `$:/tags/StartupAction` [bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-startup-action.mem:14] lands after step 1, so nothing ever runs it (inferred).
+
+## #24 — global assignments and globalCheck
+
+**What globalCheck does.** It defines an `Object.prototype.__temp__` getter returning `this`, then logs "Warning: Global assignment detected" with `Object.keys(__temp__)`, meaning every own enumerable key of the realm's global object [boot.js:583-593]. TW5 adds it only when `!$tw.browser && sandbox && !allowGlobals` [610], which holds on both worker paths.
+
+**Which global it sees.** On the browser path the shim evaluates code with `new Function` in the worker's own realm, so `__temp__` resolves to the worker `globalThis` (inferred). On Node, real `vm` runs each module in `vm.createContext({})`, so the check enumerates that sandbox, not the worker global (inferred).
+
+**Each assignment in the host bridge** (all in tw5-host-bridge.ts):
+
+| Global | Line | How assigned | Enumerable? | Cleaned up? |
+|---|---|---|---|---|
+| `global` | 421 | `??=` | yes | stays |
+| `Buffer` | 428 | `??=` | yes | stays |
+| `process` | 429 | `??=` | yes | stays |
+| `setImmediate` | 437 | `??=` | yes | stays |
+| `clearImmediate` | 438 | `??=` | yes | stays |
+| `window` | 308 | `defineProperty` with only `configurable` + getter | no | removed at 299-300 / 329 |
+| `require` | 309 | plain set | yes | restored or deleted at 330 |
+| `require` (again, during `boot.boot`) | 488 (browser) / 490 (node) | plain set | yes | restored or deleted at 497-498 |
+| `module` (node only) | 491 | plain set | yes | restored or deleted at 501-502 |
+| `$tw` | 310 (pre-seed), then bootprefix writes through the lend's `Reflect.set` [198] | plain set | yes | stays on `globalThis` [324-327] |
+| `sjcl` | via the same lend [178, 198] | plain set | yes | stays |
+
+**The lend done right.** `host-globals-lend.ts:35-38` defines `TextEncoder`, `TextDecoder` and `crypto` with `enumerable:false`. The startup module calls it [packages/lararium-tw5/src/modules/host-globals.ts:27-29]. That covers only those three names.
+
+## #9 — the orphaned meme-worker-script.ts
+
+`git grep` across tracked files (excluding dist) finds:
+- the file itself [packages/lararium-tw5/src/meme-worker-script.ts], which at import time boots a TW5Engine and attaches `self.addEventListener("message")` [77, 132];
+- a package export `"./meme-worker-script.js"` → `./dist/meme-worker-script.js` [packages/lararium-tw5/package.json:39-42];
+- one roadmap line naming it orphaned and due to retire [bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:96].
+
+Nothing in any src, test, script, vite config or tsconfig imports it. Its schema URI `…/schema/meme-worker-script` names no carrier in bags. Built copies sit in the gitignored `packages/lararium-tw5/dist/` [.gitignore:38].
+
+## Test boot paths and genesis tracking
+
+- **`bootTestWiki`** [packages/lararium-tw5/tests/test-wiki.ts:63-74]:
+  - boots `TW5Engine` from the vendored core at `packages/lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js` [generated-tw5-version.ts; gitignored per packages/lararium-tw5/.gitignore:9];
+  - preloads only `plugins/lares-memetic-wikitext.json`, no boot-shadows;
+  - skips by name when the core file stands absent [50-55];
+  - under vitest takes the Node path (`neutralizeNodeBootAuthority`) (inferred: no `WorkerGlobalScope`).
+- **`setupCasFromGenesis`** [packages/lararium-node/tests/cas-test-setup.ts:57-69]:
+  - pins `<repo>/genesis` [41];
+  - mirrors `genesis/cas/*` into a temp `<dir>/cas` via `mirrorGenesisCasFs`;
+  - derives `pluginCids` with the legacy `pluginCidsFromIslandBlobs` [24, 66], which still includes the boot-shadows CID [cas.ts:80].
+- **`genesis-test-source.ts`:** materialises `genesis/seed.json` into a doc [13-16].
+- **`git ls-files genesis`:** tracks 4 files, `seed.json` plus all three CAS blobs (26d101…, 4da77b…, 95bde4…).
+
+## What I could not reach
+
+- I ran no tests and booted nothing; every runtime result above comes from reading code.
+- Whether the bundled core blob (4da77b…) pre-sets `packageInfo` or patches `boot.js` beyond the fork source.
+- The exact set of own enumerable keys on a real browser-Worker global (bundler-injected names), so the precise globalCheck warning list stays inferred.
+- Whether `process.exit(1)` from a Node worker_thread ends only the thread, in this vessel's setup.
+- How the disk projector sites the file for `$:/lares/surface`, and whether that file actually lands.
+- The browser entry `browser-wiki-worker.ts`, the order of daemon cap `onEa` relative to `onBoot`/`mountProjection`, and who calls `escapeCSS` on the Node path.
+````
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;gEYkrSJVimsqeXemoywpSY_iHq8QoWlr89yeZQMDpNM
+
+<<^ code="&#x0004;" -> to="?">>

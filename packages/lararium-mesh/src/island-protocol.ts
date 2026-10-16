@@ -62,6 +62,11 @@ import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
+import {
+  LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LAR_RESEND, LAR_SERVICE,
+  readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService,
+  type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Resend, type LarMsg_Service,
+} from "./lar-camera.js";
 
 
 // ── Island storage configuration ──────────────────────────────────────────
@@ -703,8 +708,8 @@ export type VesselToIslandMsg =
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
   | WikiMsg_PlaceVerb
-  | WikiMsg_DomEvent
-  | WikiMsg_DomInput
+  | LarMsg_ControlEvent
+  | LarMsg_Resend
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
@@ -918,63 +923,6 @@ export interface WikiMsg_PlaceVerb {
 }
 
 /**
- * Vessel → wiki island: a main-thread DOM event relayed back to the projected wiki — the
- * interactivity RETURN leg (the accumulate-family inbound twin of the coalesce projection OUT).
- * The worker resolves `renderId` to the fake DOM node TW5 bound a listener to and invokes TW5's
- * OWN stored handler; from `tm-navigate` onward the widget tree runs as if the event were local.
- * `fields` is an explicit allowlist of primitive event properties (GP-2: primitives only).
- */
-export interface WikiMsg_DomEvent {
-  type:           "wiki:dom-event";
-  renderId:       string;
-  eventType:      string;
-  fields:         Record<string, number | boolean>;
-}
-
-/**
- * The bound a relayed TEXT value carries: characters, counted, refused above the line.
- *
- * A tiddler body runs long, so the bound sits well above a paragraph and well below a payload that
- * could stall the island thread or bloat its CRDT in one keystroke. It reads as a real edit surface's
- * ceiling, not a token limit — a phone typing prose never meets it, and a paste of a novel does.
- */
-export const DOM_INPUT_MAX_CHARS = 65_536;
-
-/**
- * Read a relayed input value, or REFUSE it.
- *
- * Returns the string when it stands within the bound, `null` otherwise — fail-closed, one number, one
- * site. Both the send shore (which throws, because an over-long send names a caller bug) and the island
- * door (which drops, because an over-long arrival names an untrusted sender) read this same function.
- */
-export function boundedDomInputValue(v: unknown): string | null {
-  if (typeof v !== "string") return null;
-  if (v.length > DOM_INPUT_MAX_CHARS) return null;
-  return v;
-}
-
-/**
- * Vessel → wiki island: a TEXT-carrying DOM event — the input leg of the interactivity RETURN.
- *
- * WHY A SIBLING KIND, and never a wider `fields`. `WikiMsg_DomEvent.fields` states an explicit
- * primitives-only allowlist (GP-2). Loosening it to `string` would widen EVERY relayed event at once:
- * a click would silently gain the right to carry arbitrary text under an arbitrary key, and no reader
- * of the click path could tell by looking that it no longer holds. The text instead rides its own kind,
- * with ONE named field, ONE type, and ONE explicit bound — so the click path keeps its primitives-only
- * guarantee legible, and the text path carries a guarantee a reader can check in a single line.
- *
- * The island applies `value` to the resolved node before invoking TW5's own stored handler, so TW5's
- * edit widgets read what a human typed exactly where they read a local keystroke.
- */
-export interface WikiMsg_DomInput {
-  type:           "wiki:dom-input";
-  renderId:       string;
-  eventType:      string;
-  /** The field's whole current value, bounded by DOM_INPUT_MAX_CHARS. Never a diff, never a keycode. */
-  value:          string;
-}
-
-/**
  * Island → vessel: wiki-scope verb result.
  *
  * Sent by a wiki island's dispatch behavior after completing a verb whose result
@@ -1001,6 +949,14 @@ export interface IslandMsg_Ready {
   type: "ready";
 }
 
+/**
+ * Island → vessel: the camera's traffic down (lar:///ha.ka.ba/lararium/mesh/lar-camera). The keyed frame rides
+ * its own kind, never an `event` envelope; the answer to a control event rides `lar:control-result`; a host door
+ * the engine asks the surface to open rides `lar:service`. The pool hands each to the vessel's handler the way it
+ * hands an `event`: an island outside any session reaches `onWorkerEvent`, a session's island its own door.
+ */
+export type LarIslandToVesselMsg = LarMsg_Frame | LarMsg_ControlResult | LarMsg_Service;
+
 /** All messages a causal island may send to the vessel. */
 export type IslandToVesselMsg =
   | IslandMsg_Event
@@ -1024,7 +980,8 @@ export type IslandToVesselMsg =
   | IslandMsg_CustodyWrite
   | IslandMsg_ViewCatalog
   | IslandMsg_ViewContent
-  | IslandMsg_ViewSettle;
+  | IslandMsg_ViewSettle
+  | LarIslandToVesselMsg;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1035,18 +992,25 @@ function _hasType(v: unknown): v is { type: string } {
 
 export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (!_hasType(v)) return false;
-  // The text bound holds AT THE ISLAND DOOR — the one gate every island message passes (the sovereign
-  // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
-  // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
-  if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
+  // THE CAMERA'S KINDS READ WHOLE AT THE ISLAND DOOR, the one gate every island message passes (the sovereign
+  // kernel's listen). A control event reads through the contract's own reader: two targets, an unknown
+  // crossing or a whole value past its bound vanish here exactly as a malformed message does, so no behavior,
+  // no cap and no TW5 handler ever sees one, and the island keeps running.
+  if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
+  if (v.type === LAR_RESEND) return readLarResend(v) !== null;
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
-    v.type as IslandToVesselMsg["type"],
+  // The camera's answers read whole at the vessel's door too: a frame whose key paints from two payloads, a
+  // refusal that names no reason, a host door the house never named, each vanishes before any handler.
+  if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
+  if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
+  if (v.type === LAR_SERVICE) return readLarService(v) !== null;
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+    v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"]>,
   );
 }
 
@@ -1420,45 +1384,6 @@ export function mkWikiPlaceVerb(opts: {
   if (opts.batchMode)        msg.batchMode = opts.batchMode;
   if (opts.requestId)        msg.requestId = opts.requestId;
   return msg;
-}
-
-export function mkWikiDomEvent(opts: {
-  renderId: string;
-  eventType: string;
-  fields: Record<string, number | boolean>;
-}): WikiMsg_DomEvent {
-  return {
-    type: "wiki:dom-event",
-    renderId: opts.renderId,
-    eventType: opts.eventType,
-    fields: opts.fields,
-  };
-}
-
-/**
- * Build the text-carrying relay message, REFUSING an over-long value at the send shore.
- *
- * This throw names a caller bug (a main thread relaying more than an edit surface may hold), and it
- * fires where the stack still points at the offending call. The island door refuses the same value
- * again on arrival — the two checks read one function, so the bound cannot drift between them.
- */
-export function mkWikiDomInput(opts: {
-  renderId: string;
-  eventType: string;
-  value: string;
-}): WikiMsg_DomInput {
-  const value = boundedDomInputValue(opts.value);
-  if (value === null) {
-    throw new Error(
-      `[island-protocol] wiki:dom-input refused — a relayed value carries at most ${DOM_INPUT_MAX_CHARS} characters`,
-    );
-  }
-  return {
-    type: "wiki:dom-input",
-    renderId: opts.renderId,
-    eventType: opts.eventType,
-    value,
-  };
 }
 
 export function mkSensoriumSignal(opts: {
