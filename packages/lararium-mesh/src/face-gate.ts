@@ -636,8 +636,9 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       }
       ACCEPTED.add(socket);
       // 1 · ONE deadline, drawn at accept. Whatever follows, a socket that never attached gets cut when it lapses.
-      // Until it attaches or lapses the socket holds its pending place, whatever its run came to: a refused
-      // socket and a waiting one weigh alike on the bound.
+      // Until it attaches, lapses or closes the socket holds its pending place, whatever its run came to: a refused
+      // socket still open and a waiting one weigh alike on the bound. A refused socket its dialer closed frees its
+      // place at once; the socket itself still meets the one deadline, so the gate's quiet runs the same either way.
       const state: AcceptState = { lapsed: false, attached: false, standDown: () => {}, release: null };
       let placed = false;
       const leave = (): void => { if (placed) { placed = false; pending--; } };
@@ -659,6 +660,12 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
         try { outcome = await run(socket, state); }
         catch { outcome = { outcome: "silence", reason: "fault" }; }
       }
+      // THE REFUSED SOCKET'S PLACE. The gate reads on, unheard, until the socket ends (its dialer left, or the lapse
+      // cut it); the place frees then.
+      if (placed && !state.attached) void (async () => {
+        try { while ((await socket.recv()) !== null) { /* a refused socket's frames go unread */ } } catch { /* the socket ended */ }
+        leave();
+      })();
       // A detail passes as the outcome's OWN property alone: an inherited one names nothing the gate read.
       if (outcome.outcome === "silence") { try { deps.onRefuse?.(outcome.reason, Object.hasOwn(outcome, "detail") ? outcome.detail : undefined); } catch { /* a log never decides */ } }
       return outcome;

@@ -117,6 +117,7 @@ import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve-loop.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
+import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
@@ -1339,9 +1340,20 @@ async function prepareNodeBootOn(
   });
   // THE SYNC GATES: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock.
   // A sweep stands the gate of every Nexus newly read and stands down the gate of one no longer read.
+  // THE STOOD KNOCK, SAID. Each sync gate says the path it stands on, once, as it stands: the knock a device handed
+  // this hearth's pin derives, so an operator (and a witness) reads where the gate answers. At the floor the
+  // composition says once that it stands none (stable-founding-road: a hearth rests at its floor until a person
+  // unlocks it).
   const syncStood = new Map<string, { readonly unstand: () => void }>();
+  let floorRestSaid = false;
   const standSyncGates = async (): Promise<void> => {
-    if (!sovereign) return;                      // the custody root answers a sovereign composition alone
+    if (!sovereign) {                            // the custody root answers a sovereign composition alone
+      if (!floorRestSaid) {
+        floorRestSaid = true;
+        console.log("[lar-gate] this vessel rests at its floor: it stands no sync gate until a person unlocks it (`lares vault unlock`)");
+      }
+      return;
+    }
     // The D4 binding reads again at every sweep: a fleet-join answer's note reaches the gates at the refold its device
     // edge sets off. A read that fails leaves the book unbound, so every presenter reads fleet-aside.
     await deviceBook.refresh().catch((err: unknown) => console.warn(`[lar-gate] the face device book did not read: ${err instanceof Error ? err.message : String(err)}`));
@@ -1356,6 +1368,7 @@ async function prepareNodeBootOn(
         name: `sync:${at.path}`, path: at.path,
         handle: (req, socket, head) => { if (!gateServer.handleUpgrade(req, socket, head)) socket.destroy(); },
       });
+      console.log(`[lar-gate] the sync gate for Nexus ${nexus.slice(0, 18)}… stands on ${at.path}`);
       syncStood.set(nexus, { unstand: () => { unregister?.(); at.unstand(); bundle.drop(); } });
     }
     // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
@@ -1538,6 +1551,7 @@ async function prepareNodeBootOn(
     pins:      gatePins,
     audience:  DAEMON_BAG_ID,
     deadlines: dialDeadlines(),
+    dialSocket: nodeDialSocket,
     onLog:     (line) => console.log(`[carriage] ${line}`),
   });
   // THE DIAL'S URL AND PIN ARE ONE CHOICE (`chooseHearthDial`): an explicit option, the bootstrap's url, the one url the kept

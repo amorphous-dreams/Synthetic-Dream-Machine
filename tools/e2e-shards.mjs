@@ -17,7 +17,7 @@
  * and refuses closed on every one of:
  *   - a missing or unparseable artifact (a shard directory absent, or its JSON corrupt);
  *   - a shard reporting zero tests;
- *   - any failing test, in any shard;
+ *   - any failing test, in any shard, and any file that failed outside a test (a hook that threw), by name;
  *   - a zero total across every shard combined;
  *   - a union of executed files that differs from the tracked set (each set in `E2E_SETS` against its own glob) — a file
  *     no shard ran, or a file more than one shard ran, both read here.
@@ -143,7 +143,13 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
       const named = (r.testResults ?? []).flatMap((tr) => (tr.assertionResults ?? [])
         .filter((t) => t.status === "failed")
         .map((t) => `${typeof tr.name === "string" ? relativeToE2eDir(tr.name) : "?"} :: ${t.fullName ?? t.title ?? "?"}`));
-      problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))${named.length > 0 ? `: ${named.join(" | ")}` : ""}`);
+      // A FILE that failed outside any case (a hook that threw, a load error) skips its cases and counts no failing
+      // test, yet vitest exits 1: the file names itself with the first line of its own message.
+      const hooked = (r.testResults ?? [])
+        .filter((tr) => tr.status === "failed" && !(tr.assertionResults ?? []).some((t) => t.status === "failed"))
+        .map((tr) => `${typeof tr.name === "string" ? relativeToE2eDir(tr.name) : "?"} failed outside any test${typeof tr.message === "string" && tr.message.trim() ? `: ${tr.message.trim().split("\n")[0].slice(0, 300)}` : ""}`);
+      const reds = [...named, ...hooked];
+      problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))${reds.length > 0 ? `: ${reds.join(" | ")}` : ""}`);
     }
     totalTests += nTotal;
     for (const tr of r.testResults ?? []) {

@@ -13,10 +13,16 @@
  * A pin the index does not hold dials nothing: the leaf ANERGIZES as `pin-absent` until it is re-presented.
  *
  * WHAT A DIAL ANSWERS. `verified` opens the crossing. `silence` is a transport fault (a gate that refuses says nothing, so a
- * dial never learns why): the socket closes and the parent's close path re-dials at its own interval. A signed answer the
+ * dial never learns why): the socket closes and the parent's close path re-dials. A signed answer the
  * gate named (`unconfirmed`, `withdrawn`, `incomplete`, `forked`) and a refusal on this side (`refused`) ANERGIZE the leaf with
  * that name, and `answer` holds the gate's unread events for the caller to fold. Anergy is a state, never a longer timer:
  * the leaf stops dialing until `represent` hands it a new presentation.
+ *
+ * THE RE-DIAL. Each silence in a row doubles the wait before the next dial, from the base (`retryInterval`) up to the
+ * ceiling (`retryCapMs`, five minutes where none is named), and the wait draws uniform in the upper half of that span, so
+ * many leaves a gate turned away come back spread out rather than together. A verified crossing sets the wait back to
+ * the base. The leaf says the first silence in a row and every tenth after it, naming the URL and the count: a gate
+ * answers nothing on a knock it does not stand, and a hearth at its floor stands no sync gate until a person unlocks it.
  *
  * THE SESSION. A verified crossing names `handshakeHash` (hex, this exchange's own) and the pinned gate's signing key.
  *
@@ -26,8 +32,7 @@
  * idle or anergized leaf never holds a find open. A pin index that THROWS anergizes `pin-unreadable`: no crossing ever
  * stands in CONNECTING with no dial behind it.
  *
- * Wired by the cutover: a node's hearth dial (`nexus-client-dial`) and a browser leaf's gate dial stand on it, and the
- * package barrel exports it.
+ * Called by the node's Nexus dial (`nexus-client-dial`) and the browser vessel's sync dial, through the package barrel.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-ws-client-adapter
  */
@@ -85,14 +90,27 @@ export interface LarWSClientOptions {
   deadlines:  { draw(lapse: () => void): { cancel(): void } };
   /** A fresh dial socket per connect. A WebSocket to `url` with the knock and flight in its upgrade where none is named. */
   dialSocket?: () => DialSocket;
-  /** The parent's reconnect delay (ms) after a socket closes. Defaults to the parent's own. */
+  /** The base re-dial delay (ms) after a socket closes. Defaults to the parent's own. */
   retryInterval?: number;
+  /** The ceiling (ms) silences in a row back the re-dial off to (`LEAF_RETRY_CAP_MS`). */
+  retryCapMs?: number;
+  /** The jitter's draw in [0, 1); `Math.random` where none is named. */
+  random?: () => number;
+  /** Where the leaf says a silence; `console.warn` where none is named. A hearer that throws changes nothing. */
+  onLog?: (line: string) => void;
   /**
    * Hears the leaf's anergy at the moment it ANERGIZES, after the state stands (`anergized` already reads the same
    * reason). Each anergy says it once. A hearer that throws changes nothing of the leaf.
    */
   onAnergy?: (reason: string) => void;
 }
+
+/** The ceiling of the re-dial's wait: five minutes. */
+export const LEAF_RETRY_CAP_MS = 300_000;
+/** The leaf says the first silence in a row, and every this-many-th after it. */
+export const LEAF_SILENCE_LOG_EVERY = 10;
+/** The floor's word, said beside a silence: why a hearth's gate may stand nowhere. */
+const FLOOR_REST = "a gate answers nothing on a knock it does not stand; a hearth rests at its floor, standing no sync gate, until a person unlocks it (`lares vault unlock`)";
 
 type Listener = (event: { data?: unknown }) => void;
 
@@ -146,11 +164,15 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   #gateKey: string | null = null;
   readonly #sessionListeners = new Set<(msg: LarSessionMsg) => void>();
   #ready = false;
+  /** The re-dial's base wait, and how many dials in a row met silence. */
+  readonly #retryBase: number;
+  #silences = 0;
   #readyResolve: (() => void) | null = null;
   readonly #readyPromise = new Promise<void>((resolve) => { this.#readyResolve = resolve; });
 
   constructor(opts: LarWSClientOptions) {
     super(opts.url, opts.retryInterval);
+    this.#retryBase = this.retryInterval;
     this.#opts = opts;
     this.#presentation = opts.presentation;
     this.#onAnergy = opts.onAnergy;
@@ -239,9 +261,34 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     crossing.addEventListener("error", this.onError);
     void this.#dial(crossing).catch(() => {
       // A dial that threw past its own guards ends as silence: the crossing closes and the parent's close path re-dials.
-      crossing.end();
-      this.#settleReady();
+      this.#silence(crossing);
     });
+  }
+
+  /** The wait the parent's close path reads before its next dial (a plain field it declares read-only). */
+  #waitNext(ms: number): void { (this as unknown as { retryInterval: number }).retryInterval = ms; }
+
+  /**
+   * One dial met silence: the wait before the next one backs off (THE RE-DIAL), the first silence in a row and every
+   * tenth get said, and the crossing ends, so the parent's close path re-dials after that wait.
+   */
+  #silence(crossing: CrossingSocket): void {
+    const silences = ++this.#silences;
+    if (this.#retryBase > 0) {
+      const cap = Math.max(this.#retryBase, this.#opts.retryCapMs ?? LEAF_RETRY_CAP_MS);
+      const ceiling = Math.min(cap, this.#retryBase * 2 ** Math.min(silences - 1, 30));
+      let draw = 0.5;
+      try { draw = (this.#opts.random ?? Math.random)(); } catch { /* the midpoint stands */ }
+      if (!(draw >= 0 && draw < 1)) draw = 0.5;
+      this.#waitNext(Math.max(1, Math.round(ceiling / 2 + (ceiling / 2) * draw)));
+    }
+    if (silences === 1 || silences % LEAF_SILENCE_LOG_EVERY === 0) {
+      const next = this.#retryBase > 0 ? `; the next dial in ${Math.ceil(this.retryInterval / 1000)}s` : "";
+      const line = `[lar-leaf] silence at ${this.#opts.url} (dial ${silences})${next} — ${FLOOR_REST}`;
+      try { (this.#opts.onLog ?? ((l: string) => console.warn(l)))(line); } catch { /* a hearer never moves the leaf */ }
+    }
+    crossing.end();
+    this.#settleReady();
   }
 
   #anergize(crossing: CrossingSocket, reason: string): void {
@@ -273,7 +320,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     if (crossing.readyState === 3) { try { dialSocket.close(); } catch { /* gone */ } return; }
 
     switch (outcome.state) {
-      case "silence": try { dialSocket.close(); } catch { /* gone */ } crossing.end(); return this.#settleReady();
+      case "silence": try { dialSocket.close(); } catch { /* gone */ } return this.#silence(crossing);
       case "refused": return this.#anergize(crossing, `refused:${outcome.refusal}`);
       case "unconfirmed": case "withdrawn": case "incomplete": case "forked":
         this.#answer = outcome;
@@ -292,6 +339,9 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       const gateKey = pin.signingKey.toLowerCase();
       const session = { handshakeHash: hex(outcome.transport.handshakeHash), gatePubKey: gateKey };
       crossing.attach(channel);
+      // A crossing stands: the re-dial waits the base again, and a later silence counts from one.
+      this.#silences = 0;
+      this.#waitNext(this.#retryBase);
       this.#verified = crossing;
       this.#gateKey = gateKey;
       this.#session = session;

@@ -199,6 +199,28 @@ describe("nothing leaves the gate before a valid first message", () => {
     expect(w.gate.pending).toBe(0);
   });
 
+  test("RED: a refused socket its dialer closed frees its pending place at once, and the socket still meets the one deadline", async () => {
+    const w = await world({ maxPending: 1 });
+    const p = await presenter(w, "closed refusal");
+    const refusedSocket = async () => {
+      const { dial: socket, accepted, log } = wire();
+      socket.open({ knock: "a".repeat(w.bundle.knock.length), message1: new Uint8Array(96).fill(5) });
+      return { socket, log, outcome: await w.gate.accept(await accepted) };
+    };
+    const open = await refusedSocket();
+    expect(open.outcome).toEqual({ outcome: "silence", reason: "knock-foreign" });
+    await settle();
+    expect(w.gate.pending).toBe(1);                                    // CONTROL: a refused socket still open holds its place
+    open.socket.close();
+    await settle();
+    expect(w.gate.pending).toBe(0);                                    // RED: its dialer left, so its place frees
+    expect(w.deadlines.standing).toBe(1);                              // the socket's own deadline still stands
+    expect(open.log.toDialer).toEqual([]);
+    // The place it freed seats the next honest dial before any lapse.
+    const next = await dial(w, p);
+    expect(next.gate).toEqual({ outcome: "attached", class: "contracted" });
+  });
+
   test("RED: one socket carries one first flight: a second run on it sends no second message two", async () => {
     const w = await world();
     const p = await presenter(w, "one flight");

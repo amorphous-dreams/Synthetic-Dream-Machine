@@ -10,11 +10,15 @@
  *   R5  RED: messages that arrive after disconnect() are dropped, with no throw (the parent asserts its socket)
  *   R6  RED: a throw AFTER the dial verified (the pin's key reads as no text at the session's seating) closes the dial
  *       socket it drew, leaves no crossing open, and readies; CONTROL: R4's verified crossing keeps its socket
+ *   R7  RED: each silence doubles the re-dial's wait from the base, jittered within its upper half, up to the ceiling; the
+ *       leaf says the first silence and every tenth; CONTROL: a verified crossing sets the wait back to the base and
+ *       the count back to one
  */
 import { cbor } from "@automerge/automerge-repo/slim";
 import type { PeerId } from "@automerge/automerge-repo";
 import { describe, expect, it } from "vitest";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
+import { LEAF_SILENCE_LOG_EVERY } from "../src/lar-ws-client-adapter.js";
 import type { DialSocket } from "../src/face-dial.js";
 import { dialGate, faceGateRig } from "./gate-dial-fixture.js";
 
@@ -140,4 +144,42 @@ describe("LarWSClientAdapter readiness", () => {
     expect(adapter.session).toBeNull();
     adapter.disconnect();
   });
+
+  it("R7 RED: silences back the re-dial off, jittered, to its ceiling, and say so; CONTROL: a crossing resets both", async () => {
+    const rig = await faceGateRig();
+    const waits: number[] = [];
+    const lines: string[] = [];
+    let live = false;
+    let adapter!: ReturnType<typeof dialGate>;
+    const crossed = new Promise<void>((resolve) => {
+      adapter = dialGate(rig.adapterOptions({
+        retryInterval: 8, retryCapMs: 64, random: () => 0.5, onLog: (line) => lines.push(line),
+        dialSocket: () => {
+          waits.push(adapter.retryInterval);
+          if (!live) return deadSocket();
+          resolve();
+          return rig.adapterOptions().dialSocket!();
+        },
+      }));
+    });
+    adapter.connect(PEER);
+    while (waits.length < LEAF_SILENCE_LOG_EVERY + 1) await new Promise((r) => setTimeout(r, 2));
+    // The wait before each dial: the base, then three quarters of each doubled ceiling, held at the ceiling's.
+    expect(waits.slice(0, 7)).toEqual([8, 6, 12, 24, 48, 48, 48]);                   // RED
+    const said = lines.filter((line) => line.includes("silence at ws://gate.test/ws"));
+    expect(said.map((line) => /\(dial (\d+)\)/.exec(line)?.[1])).toEqual(["1", String(LEAF_SILENCE_LOG_EVERY)]);
+    expect(said[0]).toContain("lares vault unlock");
+    // CONTROL: the next dial crosses; the wait returns to the base and a later silence counts from one.
+    live = true;
+    await crossed;
+    const channel = await rig.nextChannel();
+    await channel.recv();
+    expect(adapter.retryInterval).toBe(8);
+    live = false;
+    lines.length = 0;
+    channel.close();
+    while (lines.length === 0) await new Promise((r) => setTimeout(r, 2));
+    expect(lines[0]).toContain("(dial 1)");
+    adapter.disconnect();
+  }, 30_000);
 });

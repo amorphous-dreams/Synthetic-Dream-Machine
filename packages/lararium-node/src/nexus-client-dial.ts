@@ -1,15 +1,14 @@
 /**
- * nexus-client-dial — the vessel's CLIENT dial-out leg (Socket A, cleartext CRDT). Today a node stands
- * only a SERVER adapter (`ListeningWSServerAdapter` behind the face gate); NONE dials out. When a
- * peer sync URL rides the config, the live vessel mounts a `LarWSClientAdapter` — carrying the OPERATOR's
- * OWN Ed25519 identity + the peer's gate verifying-key — onto its running Automerge `Repo`, so it DIALS a
- * peer node's `/ws` and syncs. This is the SAME-OPERATOR device path: a second device whose key sits in
+ * nexus-client-dial — the vessel's CLIENT dial-out leg (Socket A, cleartext CRDT). A node answers sync on its
+ * sovereign face gates (`ListeningWSServerAdapter` over `gate-sync-server`); when a peer sync URL rides the config,
+ * the live vessel mounts a `LarWSClientAdapter` — presenting the worn face at the peer's PINNED gate — onto its
+ * running Automerge `Repo`, so it DIALS a peer node's `/ws` and syncs. The dial socket is the `ws` client
+ * (`nodeDialSocket`), which holds the payload cap on the wire. This is the SAME-OPERATOR device path: a second device whose key sits in
  * the founder's PersonaGroup dials in, the peer's gate vouches it `same-operator`, and full private sync
  * breathes both ways (`self-slot-share.ts`, `selfSlotShareDecision`).
  *
  * INERT UNTIL CONFIGURED. `maybeStartNexusClientDial` returns null when no sync URL / gate key rides the
- * config — NO adapter mounts, NO socket opens, the boot behaves EXACTLY as it did before (additive, off by
- * default). The caller gates the whole thing, the same discipline the carriage serve-loop follows.
+ * config — NO adapter mounts and NO socket opens (off by default). The caller gates the whole thing, the same discipline the carriage serve-loop follows.
  *
  * ONE SOCKET, ITS OWN. This client dial rides the Automerge `/ws` relay (Socket A) — the SAME transport the
  * server adapter answers on, cleartext CRDT behind the gate. It NEVER touches the carriage relay (Socket B,
@@ -38,6 +37,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { LarWSClientAdapter, DAEMON_BAG_ID } from "@lararium/mesh";
+import { nodeDialSocket } from "./node-dial-socket.js";
 import type { LarWSClientOptions } from "@lararium/mesh";
 
 /** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
@@ -142,7 +142,7 @@ export function armDialReconnect(input: {
 
 /**
  * Mount the client dial-out onto the running Repo. Adds a `LarWSClientAdapter` to the repo's network
- * subsystem (the adapter dials + runs the V3 handshake on connect), then — when a `docUrl` rides the
+ * subsystem (the adapter dials the pinned gate on connect), then — when a `docUrl` rides the
  * config — kicks a `repo.find()` to pull the peer's doc across the crossed socket. Returns the mounted
  * dial; `stop()` disconnects it cleanly.
  */
@@ -151,6 +151,7 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
   const adapter = new LarWSClientAdapter({
     url: cfg.syncUrl, pins: cfg.pins, hearth: cfg.hearth, nexus: cfg.nexus,
     presentation: cfg.presentation, audience: cfg.aud ?? DAEMON_BAG_ID, deadlines: cfg.deadlines,
+    dialSocket: () => nodeDialSocket(cfg.syncUrl), onLog: (line) => console.warn(line),
   });
   cfg.repo.networkSubsystem.addNetworkAdapter(adapter);
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);

@@ -1,4 +1,4 @@
-import { createServer, type Server } from "node:http";
+import { createServer, request, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
@@ -67,6 +67,36 @@ describe("production face dispatcher integration", () => {
     oracleUnregister();
     readiness.dispose();
     pronaos.dispose();
+    dispatcher.dispose();
+  });
+
+  test("RED: an upgrade no gate claims is destroyed, then said once per path on the vessel's own console", async () => {
+    const server = createServer(); servers.push(server);
+    const lines: string[] = [];
+    const destroyedFirst: boolean[] = [];
+    let live: import("node:stream").Duplex | null = null;
+    server.prependListener("upgrade", (_req, socket) => { live = socket; });
+    const dispatcher = mountHttpFaceDispatcher(server, { onUnclaimedUpgrade: (line) => { lines.push(line); destroyedFirst.push(live?.destroyed === true); } });
+    const claimed: string[] = [];
+    dispatcher.registerUpgrade({ name: "stood", path: "/ws/stood", handle: (_req, socket) => { claimed.push("stood"); socket.destroy(); } });
+    const base = await origin(server);
+    const knock = (path: string) => new Promise<string>((resolve) => {
+      const req = request(base + path, { headers: { Connection: "Upgrade", Upgrade: "websocket" } });
+      req.on("upgrade", () => resolve("101"));
+      req.on("response", (res) => { res.resume(); resolve(String(res.statusCode)); });
+      req.on("error", () => resolve("destroyed"));
+      req.end();
+    });
+    expect(await knock("/ws/unstood")).toBe("destroyed");
+    expect(await knock("/ws/unstood")).toBe("destroyed");
+    expect(await knock("/ws/another")).toBe("destroyed");
+    expect(await knock("/ws/stood")).toBe("destroyed");                    // CONTROL: a stood path reaches its face
+    expect(claimed).toEqual(["stood"]);
+    expect(lines).toHaveLength(2);                                         // RED: one line per unclaimed path
+    expect(lines[0]).toContain("/ws/unstood");
+    expect(lines[1]).toContain("/ws/another");
+    expect(lines[0]).toContain("lares vault unlock");
+    expect(destroyedFirst).toEqual([true, true]);                          // the socket died before the line
     dispatcher.dispose();
   });
 });

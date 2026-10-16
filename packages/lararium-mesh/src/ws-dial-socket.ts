@@ -8,11 +8,14 @@
  * socket (Firefox and WebKit open a 101 that selected nothing). Node 22+ and every browser carry the same global
  * `WebSocket`, so one door serves both.
  *
+ * THE PAYLOAD CAP. The door cuts a frame past a Noise message (`NOISE_MAX_MESSAGE_BYTES`), and hands the same cap to its
+ * factory as `maxPayload`. A client that holds the cap itself (`ws`, in node: the vessel's `nodeDialSocket`) refuses
+ * such a frame as its header lands, before its body is buffered; a platform WebSocket holds no cap, so there the door
+ * cuts once the whole frame has landed.
+ *
  * Pure of clocks: a socket that never opens leaves `open` pending, and the dial's own deadline cuts it by `close()`.
- * A send after the end (the gate cut the socket, or `close()` ran) drops and never throws, as a ws send to a closed
- * peer does: the dial reads the end off `recv()`'s null, never off a send. Wired by the cutover: `oracle-read-client`
- * and `lar-ws-client-adapter` dial through it by default; it stays out of the package barrel by choice (a caller
- * hands a double through `dialSocket`).
+ * Called by the leaf's sync dial (`LarWSClientAdapter`), the oracle's read client and the carriage pull, and through the
+ * package barrel by the node vessel's own factory.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope
  */
@@ -44,6 +47,7 @@ export function knockedRouteUrl(url: string, knock: string): string {
   return u.href;
 }
 
+/** The platform WebSocket: it takes no payload cap, so the door's own length check holds it (THE PAYLOAD CAP). */
 const defaultFactory: WsFactory = (url, protocols) => new WebSocket(url, protocols) as unknown as WsLike;
 
 /** A fresh DialSocket over one WebSocket to `url`. One socket per dial; a second `open` throws. */
@@ -88,7 +92,8 @@ export function wsDialSocket(url: string, factory: WsFactory = defaultFactory, b
         else cut();
       });
       socket.addEventListener("close", () => push(null));
-      socket.addEventListener("error", () => { /* the close that follows ends the dial */ });
+      // An error ends the reader at once (a client that refused a frame past its cap may wait out its close handshake).
+      socket.addEventListener("error", () => cut());
       return new Promise<void>((resolve, reject) => {
         socket.addEventListener("open", () => {
           if (!gateProtocolSelected(socket.protocol)) { try { socket.close(); } catch { /* already gone */ } reject(new Error("ws-dial-socket: the 101 selected no lar-gate")); return; }

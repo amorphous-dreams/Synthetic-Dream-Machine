@@ -10,6 +10,8 @@
  *     seat carries the same message;
  *   · RED: strangers seat up to their own cap and no further, while a member still seats past it / CONTROL: a stranger
  *     whose seat closed frees its place;
+ *   · with every pending place held, the NEWEST arrival is dropped, the place's holder stands, and a seated member's
+ *     session carries a message (stable-founding-road: the strangers' dial drops the newest arrival);
  *   · RED: a socket that answers no ping is cut at the heartbeat / CONTROL: one that answers stands.
  */
 import { createServer, type Server } from "node:http";
@@ -105,6 +107,38 @@ describe("what one peer may hold at the gate's server", () => {
     opened[0]!.close();
     const third = await dialAs(w, p, s.base("/ws"), null);
     expect(third.state).toBe("verified");                                             // CONTROL
+  }, 60_000);
+
+  test("pending places full: the NEWEST arrival is the one dropped, and a seated member's session stands", async () => {
+    const s = await stand();
+    const opened: GateSessionChannel[] = [];
+    const registry = gateSessionRegistry((channel) => { opened.push(channel); });
+    const w = await world({ posture: "open", sessions: registry.table, maxPending: 1 });
+    const p = await presenter(w, "seated member");
+    const stood = s.server.stand({ gate: w.gate, pin: w.pin });
+    const member = await dialAs(w, p, s.base("/ws"), p.arm);
+    expect(member.state).toBe("verified");
+    await until(() => opened.length === 1);
+    // One socket holds the one pending place: a flight that parses and opens to nothing, its socket left open.
+    const knock = (fill: number) => new Promise<WsSocket>((resolve, reject) => {
+      const ws = new WsSocket(s.base(stood.path), [...gateFlightProtocols(new Uint8Array(96).fill(fill))], { perMessageDeflate: false });
+      ws.on("open", () => resolve(ws));
+      ws.on("error", reject);
+    });
+    const holder = await knock(3);
+    expect(await until(() => w.gate.pending === 1)).toBe(true);
+    let holderClosed = false;
+    holder.on("close", () => { holderClosed = true; });
+    const newest = await knock(4);
+    let newestClosed = false;
+    newest.on("close", () => { newestClosed = true; });
+    expect(await until(() => newestClosed)).toBe(true);                                  // the newest arrival is dropped
+    expect(holderClosed).toBe(false);                                                     // the place's holder stands
+    // The seated member's session stands and carries a message both ways.
+    expect(opened[0]!.state).not.toBe("closed");
+    member.channel!.send("sync", big(1024));
+    expect((await opened[0]!.recv())?.bytes.length).toBe(1024);
+    holder.terminate();
   }, 60_000);
 
   test("RED: a socket that answers no ping is cut at the heartbeat; CONTROL: one that answers stands", async () => {

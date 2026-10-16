@@ -6,7 +6,8 @@
  * root's signature, the face's address secret sealed to B's request). B lands the answer, then boots dialing A by
  * the PIN its landing wrote, with no `LAR_JOIN_*` set.
  *
- *   V1 — B stands, bound, dialing A by the pin the signed answer carried
+ *   V1 — B stands, bound, and its dial crosses A's gate by the pin the signed answer carried: B's own log reads the
+ *        gate's verdict, `crossing open`, and no anergy
  *   V2 — an answer whose pin a carrier moved refuses `answer-admit-other-commit` (the admit commits to the pin), and the landing writes nothing
  *   V3 — the offer names the root's key and the scope the face stands at, and the answer carries one certificate
  *        and one grant there
@@ -57,10 +58,19 @@ describe("the fleet-join door, end to end", () => {
     expect(bootstrapAfterTamper).toBe(bootstrapBefore);
   });
 
-  test("V1 — B lands the answer and stands bound, dialing A by the signed pin", () => {
+  test("V1 — B lands the answer, stands bound, and crosses A's gate by the signed pin", async () => {
     expect(pair?.admitted.code, `${pair?.admitted.stdout}\n${pair?.admitted.stderr}`).toBe(0);
     expect(pair?.B, pair?.joinGate ?? "").not.toBeNull();
-  });
+    // The rendezvous says B stands; the crossing is the dial's own verdict line.
+    const crossed = "[lar-leaf] verdict OK — crossing open";
+    const deadline = performance.now() + 90_000;
+    while (!pair!.B!.bootLog().includes(crossed) && !pair!.B!.bootLog().includes("[lar-leaf] ANERGIZED") && performance.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    const log = pair!.B!.bootLog();
+    expect(log, log.slice(-2000)).toContain(crossed);
+    expect(log).not.toContain("[lar-leaf] ANERGIZED");
+  }, 120_000);
 
   test("V3 — the offer names the root's key and the face's scope, and the answer certifies and grants B's key there", () => {
     const offer = readJson(pair!.fleet!.offer);

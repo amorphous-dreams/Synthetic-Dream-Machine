@@ -266,7 +266,7 @@ export {
   HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
 } from "./walk-carry.js";
 export type { CarryOutcome } from "./walk-carry.js";
-export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
+export { LEAF_RETRY_CAP_MS, LEAF_SILENCE_LOG_EVERY, LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions, LarLeafSession, FacePresentation } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
 export * from "./carriage-caps.js";
@@ -366,6 +366,9 @@ export { GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProto
 export type { GateFlightRefusal, PresentationArm, PlaceArm } from "./gate-exchange.js";
 export { dialFaceGate, dialPlaceGate, FACE_DIAL_REFUSALS } from "./face-dial.js";
 export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceDialArgs, PlaceDialOutcome } from "./face-dial.js";
+// The dial's WebSocket door, named here so a vessel hands it a client that holds the payload cap itself (`nodeDialSocket`).
+export { wsDialSocket } from "./ws-dial-socket.js";
+export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
 // The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
 export { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
 // THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).

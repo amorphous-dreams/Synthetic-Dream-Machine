@@ -12,9 +12,15 @@
 #               challenge test server. The certificate names the wildcard alone and chains to Pebble's root.
 #   PER MACHINE a second run under another certificate name issues a second certificate with its own key.
 #   THE EDGE    the terminator serves the issued certificate for the household name, refuses another name's
-#               handshake, proxies `https` to the vessel, passes a socket upgrade (HTTP 101), and passes a
-#               `Sec-WebSocket-Protocol` header of 8192 bytes (a measured tablet's first gate message). CONTROL: a
-#               header line longer than the terminator's buffer draws nginx's own 400.
+#               handshake, proxies `https` to the vessel, and passes a socket upgrade carrying the sealed gate's
+#               first flight (HTTP 101) on the knock the vessel's sovereign sync gate stands, the path the vessel
+#               itself states (`[lar-gate] the sync gate for Nexus … stands on <path>`). The vessel founds a hearth
+#               and the witness opens its key through the test door: a hearth rests at its floor, standing no sync
+#               gate, until a person unlocks it. A `Sec-WebSocket-Protocol` header of 8192 bytes passes the
+#               terminator and reaches the gate, which refuses it by name on its own console (`flight-overlong`)
+#               and destroys it before any 101 (502), never nginx's 400. CONTROLS: a knock no gate stood (a random
+#               path) and the stood knock with no flight each draw 502; a header line longer than the terminator's
+#               buffer draws nginx's own 400.
 #   THE WALL    the fake credential appears nowhere in the vessel's environment, mounts, `/state` or `/workspace`,
 #               nor in the terminator's. CONTROL: the same search finds it inside the issuer.
 #
@@ -244,7 +250,7 @@ docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
   -v "$LARES_STATE:/state" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
   --entrypoint sh "$IMAGE" -ec \
   'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state' >/dev/null
-compose --profile offline run --rm -T offline vessel found --skip-build --root /state --genesis /app/genesis >/dev/null
+compose --profile offline run --rm -T offline vessel found --hearth --name household-witness --skip-build --root /state --genesis /app/genesis >/dev/null
 export LARES_TLS_CERT="$CERT" LARES_TLS_KEY="$KEY"
 compose --profile https up -d lares terminator >/dev/null 2>&1
 tries=0
@@ -267,21 +273,36 @@ result 'https to the household name verifies and reads ready'     test "$health"
 # curl exits 35 when the TLS handshake itself fails: the terminator rejected the name before any certificate.
 reach "other.$ZONE.invalid" -k -o /dev/null "https://other.$ZONE.invalid:$TLS_PORT/api/health" 2>/dev/null && other=0 || other=$?
 result 'CONTROL: another name meets a refused handshake'          test "$other" -eq 35
-# THE KNOCK. The vessel's gate answers an upgrade only on the path derived from its own gate key; every other
-# upgrade meets a destroyed socket before any HTTP 101. The witness reads the vessel's key off its own founded
-# store and derives the path with the image's own code, as a device holding a carried admission would.
+# THE KNOCK. Every socket opens through the sealed face gate (siege-resilience): a gate answers an upgrade only on
+# the path its own bundle derives, `<route>/<knock>`, and only when `Sec-WebSocket-Protocol` carries its first
+# flight, `lar-gate, <token>`; every other upgrade meets a destroyed socket before any HTTP 101. A hearth rests at its
+# floor, standing no sync gate, until a person unlocks it, so the witness opens the staged hearth's key through the
+# test door; the hearth composes and its sovereign sync gate states the path it stands on. The witness knocks there
+# with a flight that reads (96 bytes, 128 characters of unpadded base64url): the gate answers 101, then falls silent
+# on a flight no dialer sealed to it.
 VESSEL=$(compose ps -q lares)
-wspath=$(docker exec "$VESSEL" node --input-type=module -e \
-  'import { loadVesselVerifyingKey } from "/app/packages/lararium-node/dist/src/node-vessel-identity.js";
-   import { knockPath } from "/app/packages/lararium-mesh/dist/index.js";
-   process.stdout.write(knockPath(await loadVesselVerifyingKey(), "/ws"));' 2>/dev/null || :)
-result 'the vessel names a knocked socket path'                   sh -c "case '$wspath' in /ws/?*) exit 0 ;; *) exit 1 ;; esac"
-head_plain=$(knock "$wspath" lar.witness)
+unlocked=$("$HERE/unlock-staged-container.sh" "$VESSEL" 2>&1 || :)
+result 'the staged hearth opens its key and composes as a hearth' contains "$unlocked" '"standing":"hearth"'
+stood_knock() { docker logs "$VESSEL" 2>&1 | sed -n 's/.*\[lar-gate\] the sync gate for Nexus .* stands on \(\/[^ ]*\).*/\1/p' | tail -n 1; }
+tries=0
+until [ -n "$(stood_knock)" ] || [ "$tries" -ge 60 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait
+wspath=$(stood_knock)
+result 'the vessel states the knock its sync gate stands on'      sh -c "case '$wspath' in /ws/?*) exit 0 ;; *) exit 1 ;; esac"
+flight="lar-gate, $(head -c 96 /dev/urandom | base64 | tr -d '\n=' | tr '+/' '-_')"
+result 'the flight spells the gate header (138 bytes)'            test "${#flight}" -eq 138
+head_plain=$(knock "$wspath" "$flight")
 result 'a wss knock through the terminator draws HTTP 101'        contains "$head_plain" 'HTTP/1.1 101'
-head_bare=$(knock /ws lar.witness)
-result 'CONTROL: an upgrade without the knock draws 502, never 101' contains "$head_bare" 'HTTP/1.1 502'
+unstood="/ws/$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')"
+head_unstood=$(knock "$unstood" "$flight")
+result 'CONTROL: a knock no gate stood draws 502, never 101'      contains "$head_unstood" 'HTTP/1.1 502'
+head_noflight=$(knock "$wspath" lar.witness)
+result 'CONTROL: the stood knock without a flight draws 502'      contains "$head_noflight" 'HTTP/1.1 502'
 head_tablet=$(knock "$wspath" "$(bytes 8192)")
-result 'an 8192-byte Sec-WebSocket-Protocol passes the terminator' contains "$head_tablet" 'HTTP/1.1 101'
+# 502 is the vessel's refusal behind the terminator, and the vessel names it on its own console; 400 would be nginx's.
+vessel_refused() { docker logs "$VESSEL" 2>&1 | grep -q "refused before any 101 ($1)"; }
+result 'an 8192-byte Sec-WebSocket-Protocol passes the terminator (502)' contains "$head_tablet" 'HTTP/1.1 502'
+result 'the 8192-byte header meets the vessel, never nginx (no 400)' not_contains "$head_tablet" 'HTTP/1.1 400'
+result 'the gate refused the 8192-byte header by name'            vessel_refused flight-overlong
 head_over=$(knock "$wspath" "$(bytes 20000)")
 result 'CONTROL: a header line past the buffer draws nginx 400'   contains "$head_over" 'HTTP/1.1 400'
 

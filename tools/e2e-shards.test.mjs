@@ -126,6 +126,27 @@ test("RED — a red shard names each failing test by file and name, and a report
   assert.ok(!verdict.problems.join("; ").includes("the floor stands"), "a passing case got named as a red");
 });
 
+test("RED — a shard red with zero failing tests names the file whose hook failed, and why", () => {
+  // A `beforeAll` that throws fails its FILE: vitest skips every case, reports zero failing tests, and exits 1.
+  const red = {
+    numTotalTests: 2, numPassedTests: 1, numFailedTests: 0, numPendingTests: 1, success: false,
+    testResults: [{
+      name: "/home/runner/work/x/x/tests/e2e/beta.test.ts", status: "failed",
+      message: "Error: receiver never stood: staged vessel never unlocked\n  the daemon still stands; its log ends:",
+      assertionResults: [{ status: "skipped", fullName: "replicates the board" }],
+    }, { name: "/home/runner/work/x/x/tests/e2e/gamma.test.ts", status: "passed", assertionResults: [{ status: "passed", fullName: "g" }] }],
+  };
+  const verdict = evaluateMergeGate({
+    shardCount: 2,
+    shardReports: shardReportsFor({ 1: { report: goodReport(["/runner/a/tests/e2e/alpha.test.ts"]) }, 2: { report: red } }),
+    trackedFiles: [...TRACKED, "tests/e2e/gamma.test.ts"],
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.includes("red shard: shard 2 failed (0 failing test(s)): beta.test.ts failed outside any test: Error: receiver never stood: staged vessel never unlocked"),
+    verdict.problems.join("; "));
+  assert.ok(!verdict.problems.join("; ").includes("gamma.test.ts failed"), "a passing file got named as a red");
+});
+
 // ── RED 5a: zero total across every shard combined ─────────────────────────────────────────────
 test("RED — every shard present but the combined total reads zero", () => {
   const verdict = evaluateMergeGate({
