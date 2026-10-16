@@ -449,10 +449,9 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P14` The Offering: generic adoption stays deferred, and no generic `take` or `stage` evidence gets minted; the grammar-scoped offering relation, and the receiver's Antigen consultation cap behind the scope ruling (#/open); the fold stands with no caller; a multi-vessel docker receipt for partial replication, partition and rejoin. First arrival, carriage, local inspection, adoption, grammar admission and Antigen enforcement each keep their own receipt. May follow.
 * `P15` `nexus kahuli grammar --apply` stands held, its diff-gate unbuilt. Operator (engine cadence, #/open).
 * `P17` The realm feed's writer check: the feed verb runs in the daemon island (`cabal-realm-verbs.ts`), while the worn face's key at a realm's Nexus mints on the vessel's main thread behind the custody door (`cabal-face.ts`), so the verb resolving its own writer needs a door from the island to the vessel, the shape of `dyad:ask`, which moves the capability inventory and the compose files. The one production caller, `lares cabal feed`, names that key through `cabal-face`; the residue: a caller that types any writer. P.
-* `P18` The shared-canon read consults `kahuCabalCanonAccess`, admission AND sentinel membership; until it does, a removed group keeps its Keyhive sentinel capability at every reader but that one (`boot-daemon-keyhive`). P.
-* `P19` Cabal acts across a roll: an act counts only under the epoch it names, so after a seal roll standing reads `absent` until the seats re-admit at the new head; anchored ancestry, which `lares nexus members` reads, carries them, and an `onRolled` refold for the cabal verbs follows once a live reading folds them. P.
-* `P20` The carriage gates (`carriage-board.ts`, `vessel-raise.ts`, `nexus-carriage.ts`) count at the head alone, while `lares nexus members` honours anchored ancestry, so the list can show a member a gate does not yet honour. P.
-* `P21` A promotion approval reaches no publishing act: link it to `promotion-receipt.ts` and the crossroads publication. P.
+* `P18` The shared-canon read consults `kahuCabalCanonAccess`, admission AND sentinel membership; until it does, a removed group keeps its Keyhive sentinel capability at every reader but that one (`boot-daemon-keyhive`). Both vessels' daemon payloads (`open-node-vessel.ts`, `open-browser-vessel.ts`) carry the group and sentinel ids alone, so each composition threads the Nexus AID, the seated roster and the carriage board into the read together; a node-only gate leaves the browser reader open. P.
+* `P19` Cabal acts across a roll: an act counts only under the epoch it names, so after a seal roll standing reads `absent` until the seats re-admit at the new head; anchored ancestry, which `lares nexus members` reads, carries them, and an `onRolled` refold for the cabal verbs follows once a live reading folds them. It lands with `P20`, under the same writer rule. P.
+* `P20` The carriage gates (`carriage-board.ts`, `vessel-raise.ts`, `nexus-carriage.ts`) count at the head alone, while `lares nexus members` honours anchored ancestry, so the list can show a member a gate does not yet honour. A gate that reads ancestry needs the writer to read it too: a head-epoch admit or carry that cites no carried head reads concurrent with a carried revoke or uncarry, so the contract writer cites the counted anchored heads it supersedes, the presented-admit verifier (`carriage-registry.ts`) resolves a cross-epoch lineage, and the presenter assembles one. P.
 
 !!! THE WIRE
 * `W1` A per-Nexus gate key in two tiers, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): a floor route's keys derive from the floor key and a sovereign route's from the sealed custody root, each per (tier, Nexus, route), resting nowhere. Owed: the composer that stands one gate per bundle and hands each tier its own door, and the dispatcher's knock per bundle. W.
@@ -591,7 +590,7 @@ Each step names the commits that hold it, as pointers into git.
 !!! P ~ the Kahu plane around the train (its steps before N take no identity bytes and may run beside S and K)
 # ''Landed ahead'': the steward signer, the carriage verifier's held root, and realms with selected-realm routing.
 # The member consult of a cabal realm, after W.
-# ''Built after N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission; R-KAHU witnessed across two vessels; the re-anchoring fence and the anchored ancestry count. Owed: the shared-canon read, acts across a roll, and the gates' ancestry (`P18` to `P21`).
+# ''Built after N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission; R-KAHU witnessed across two vessels; the re-anchoring fence and the anchored ancestry count; a crossing into `@crossroads` carries the seats' approval over its exact bytes, and its receipt names the approval (`meme-promote.ts`). Owed: the shared-canon read, acts across a roll, and the gates' ancestry (`P18` to `P20`).
 # The cadence offers, which may follow the ceremony.
 ''Riskiest'': the steward signer, proven by the docker `meme` scenario by hand as well as by a shard.
 
@@ -780,6 +779,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tEeZW5c-YICb_m0WmZdWhRmlCHGwcFm4pfWUm41vlZ0
+<<^ code="&#x0003;">>ni:///sha-256;MWVmht_zA73Mw1axJoUHH1spBuz0zrYWfzjOdlhiOUU
 
 <<^ code="&#x0004;" -> to="?">>

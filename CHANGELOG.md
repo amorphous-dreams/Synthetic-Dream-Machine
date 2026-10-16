@@ -15,6 +15,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A bundle founds a fresh hearth.** `lares vessel found --hearth --restore <bundle>` restores its face as persona zero under a fresh seed charter and chair.
 - **A realm carries its own edge roll anchor.** `lares nexus seal anchor --edge --out <partial>` opens one partial per realm for two-vault rolls; `--from` lands each and names `anchored` or `owed` per realm.
 - **The seats approve a promotion's exact bytes.** `lares nexus promote open|sign|check` carries one approval between vaults; it binds the bytes' hash with purpose, surface, class and epoch, and a seat signs only the statement a person confirms by its digest.
+- **A crossing into `@crossroads` asks the seats.** `lares meme promote --dest-bag lar:///ha.ka.ba/bags/crossroads --approval <file>` refuses before anything moves unless the charter's seats approved these exact bytes at the current epoch, and the receipt names the approval. A crossing into your own canon asks no charter.
 - **A Nexus's Kahu cabal admits by its own act.** `lares nexus cabal admit|remove|cosign|standing` admits or removes a PersonaGroup at the charter's high-impact threshold; a vouch admits nobody.
 - **A realm lists its stewards.** `lares nexus realm bags` prints each co-signed steward beside the bags it keeps.
 - **A member list reads through a roll.** `lares nexus members` counts an admit from a closed epoch when a counted roll anchor carries it to the head.
