@@ -34,6 +34,7 @@ import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, mkLarControlResult, mkLarFrame,
   type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
   type LarMsg_Resend, type LarRefusal, type LarResultStatus,
+  LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_LIVE, LAR_STAMP_ON, larKeyChordName,
 } from "@lararium/mesh";
 
 /** Coalesce window (ms): a burst of wiki "change" events collapses to one posted frame. Small
@@ -123,6 +124,13 @@ function postLar(ctx: IslandContext, msg: LarMsg_Frame | LarMsg_ControlResult): 
   ctx.post(msg as unknown as IslandToVesselMsg);
 }
 
+/** `data-lar-on`: the types the node binds, in the order TW5 bound them; the page relays only these. */
+function stampBoundTypes(node: RidNode): void {
+  const types = [...new Set((node._larListeners ?? []).map((l) => l.type))];
+  if (types.length) node.setAttribute(LAR_STAMP_ON, types.join(" "));
+  else delete node.attributes[LAR_STAMP_ON];
+}
+
 const FAKE_DOM_ANIMATION_PATCHED = Symbol("lararium.fake-dom-animation-patched");
 
 /** Patch the fake-element prototype once per worker (the RETURN-leg capability the fakedom platform
@@ -139,6 +147,7 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
       this.setAttribute("data-lar-rid", rid);
     }
     (this._larListeners ??= []).push({ type, handler });
+    stampBoundTypes(this);
     ridMap.set(rid, this);
     if (activeEventScope) {
       eventScopes.set(rid, activeEventScope);
@@ -148,6 +157,7 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
   proto["removeEventListener"] = function (this: RidNode, type: string, handler: unknown): void {
     if (!this._larListeners) return;
     this._larListeners = this._larListeners.filter((listener) => listener.type !== type || listener.handler !== handler);
+    stampBoundTypes(this);
   };
   proto["getBoundingClientRect"] = function (this: RidNode): unknown {
     if (!this._larRect) {
@@ -223,6 +233,98 @@ export function patchFakeDomAnimation(tw: Record<string, any>): void {
   };
 }
 
+// ── Declared at binding: the per-widget stamp table ─────────────────────────────────────────────
+
+/** What one widget declares about the node it bound: the page reads these synchronously, the engine never decides them at handling. */
+interface Declaration {
+  readonly node: RidNode | undefined;
+  readonly cancel?: string;
+  readonly keys?: string;
+  readonly bubble?: "yes" | "no";
+  readonly live?: "value" | "checked" | "selected";
+}
+/** The loose widget surface the table reads: TW5's own fields, never a copy of them. */
+type DeclaringWidget = Record<string, any> & { domNodes: RidNode[]; children: DeclaringWidget[] };
+
+/** Whether a `$button` click invokes child action widgets, the way TW5's `invokeActions` walks them. */
+function invokesChildActions(widget: DeclaringWidget): boolean {
+  return (widget.children ?? []).some((child) =>
+    !!child.invokeAction || (child.allowActionPropagation?.() !== false && invokesChildActions(child)));
+}
+
+const KEY_INFO_CHORD = (info: { keyCode: number; ctrlKey?: boolean; altKey?: boolean; shiftKey?: boolean; metaKey?: boolean }): string =>
+  larKeyChordName({ keyCode: info.keyCode, ctrl: !!info.ctrlKey, alt: !!info.altKey, shift: !!info.shiftKey, meta: !!info.metaKey });
+
+/**
+ * The small table: per widget class, the node it binds and what that node declares.
+ *
+ *   - `$link`: an ordinary click on an `href` cancels; TW5's handler always ends the climb.
+ *   - `$button`: a click that runs actions, navigates, sends, pops up or sets cancels and ends the climb.
+ *   - `$keyboard`: only the declared chords cancel; an undeclared key climbs on.
+ *   - `$dropzone`, `$droppable`: dragenter, dragover and drop cancel, so the browser lets the drop land.
+ *   - `$edit-text`, `$checkbox`, `$radio`, `$select`, `$range`: the page owns the live property.
+ */
+const DECLARATIONS: Readonly<Record<string, (w: DeclaringWidget) => Declaration>> = {
+  link: (w) => {
+    const node = w.domNodes[0];
+    return { node, bubble: "no", ...(node?.attributes["href"] !== undefined ? { cancel: "click:ordinary" } : {}) };
+  },
+  button: (w) => {
+    const handles = !!(w.to || w.message || w.popup || w.popupTitle || w.set || w.setTitle) || invokesChildActions(w);
+    return { node: w.domNodes[0], bubble: handles ? "no" : "yes", ...(handles || w.actions ? { cancel: "click" } : {}) };
+  },
+  keyboard: (w) => ({
+    node: w.domNodes[0], bubble: "yes", cancel: "keydown:declared",
+    keys: [...new Set(((w.keyInfoArray ?? []) as Parameters<typeof KEY_INFO_CHORD>[0][]).map(KEY_INFO_CHORD))].join(" "),
+  }),
+  dropzone: (w) => ({ node: w.domNodes[0], bubble: "no", cancel: "dragenter dragover drop" }),
+  droppable: (w) => ({ node: w.domNodes[0], bubble: "no", cancel: "dragenter dragover drop" }),
+  "edit-text": (w) => ({ node: w.engine?.domNode ?? w.domNodes[0], live: "value" }),
+  checkbox: (w) => ({ node: w.inputDomNode ?? w.domNodes[0], live: "checked" }),
+  radio: (w) => ({ node: w.inputDomNode ?? w.domNodes[0], live: "checked" }),
+  select: (w) => ({ node: w.domNodes[0], live: "selected" }),
+  range: (w) => ({ node: w.inputDomNode ?? w.domNodes[0], live: "value" }),
+};
+
+function stamp(node: RidNode, name: string, value: string | undefined): void {
+  if (value === undefined || value === "") delete node.attributes[name];
+  else node.setAttribute(name, value);
+}
+
+function declare(widget: DeclaringWidget, read: (w: DeclaringWidget) => Declaration): void {
+  const d = read(widget);
+  if (!d.node?.attributes) return;
+  stamp(d.node, LAR_STAMP_CANCEL, d.cancel);
+  stamp(d.node, LAR_STAMP_KEYS, d.keys);
+  stamp(d.node, LAR_STAMP_BUBBLE, d.bubble);
+  stamp(d.node, LAR_STAMP_LIVE, d.live);
+}
+
+const WIDGET_DECLARATIONS_PATCHED = Symbol("lararium.widget-declarations-patched");
+
+/** Wrap each table widget's `render` and `refresh` once per class, so every binding it makes carries its declaration. */
+export function patchWidgetDeclarations(tw: Record<string, any>): void {
+  const classes = tw.rootWidget?.widgetClasses as Record<string, { prototype: Record<string | symbol, any> }> | undefined;
+  if (!classes) throw new Error("TW5 projection cannot declare its bindings: $tw.rootWidget.widgetClasses is unavailable");
+  for (const [name, read] of Object.entries(DECLARATIONS)) {
+    const proto = classes[name]?.prototype;
+    if (!proto || proto[WIDGET_DECLARATIONS_PATCHED]) continue;
+    proto[WIDGET_DECLARATIONS_PATCHED] = true;
+    const render = proto["render"] as (...args: unknown[]) => unknown;
+    const refresh = proto["refresh"] as (...args: unknown[]) => unknown;
+    proto["render"] = function (this: DeclaringWidget, ...args: unknown[]): unknown {
+      const out = render.apply(this, args);
+      declare(this, read);
+      return out;
+    };
+    proto["refresh"] = function (this: DeclaringWidget, ...args: unknown[]): unknown {
+      const out = refresh.apply(this, args);
+      declare(this, read);
+      return out;
+    };
+  }
+}
+
 type Listener = NonNullable<RidNode["_larListeners"]>[number]["handler"];
 
 const binds = (node: RidNode | null | undefined, type: string): boolean =>
@@ -270,6 +372,20 @@ function runListeners(scope: CameraScope, node: RidNode, type: string, event: Re
   for (const l of node._larListeners ?? []) if (l.type === type) invokeProjectedListener(scope, l.handler, event);
 }
 
+/** Whether any node from `el` up the fake tree binds `type`: the first listener up the climb claims the act. */
+function claims(el: RidNode, type: string): boolean {
+  for (let node: RidNode | null | undefined = el; node; node = node.parentNode) if (binds(node, type)) return true;
+  return false;
+}
+
+/** Bubble one event from its target up the fake tree, the way the page's DOM would: each binding node runs its
+ *  listeners, and a `stopPropagation` from TW5's own handler ends the climb. */
+function bubble(scope: CameraScope, el: RidNode, type: string, event: ReturnType<typeof projectedEvent>): void {
+  for (let node: RidNode | null | undefined = el; node && !event.stopped(); node = node.parentNode) {
+    if (binds(node, type)) runListeners(scope, node, type, event);
+  }
+}
+
 /** Land a whole value on the node TW5 reads it from; the caret rides to its end, since the page holds the real one. */
 function writeValue(el: RidNode, value: string): void {
   el.value = value;
@@ -303,18 +419,18 @@ function writeChoice(el: RidNode, keys: readonly string[]): void {
  *
  *   - An act under another `mountEpoch`, on a render id no live frame painted, or on a node a re-render detached
  *     answers `stale-target` and runs nothing (a sense in that place answers nothing and runs nothing).
- *   - A `lar:act` whose node binds no listener of its type answers `refused: unclaimed`, so the page leaves the
- *     browser's default alone.
- *   - `lar:click` runs the popup closer leg, then the node's own listeners (a click stays on its node).
- *   - `lar:key` bubbles up the fake tree until a listener stops it, since TW5's keyboard widget binds on a wrapper.
- *   - `lar:commit` writes the whole value (and `checked`) onto the node and runs its `change` listeners; an edit
- *     engine that saves on `input` alone runs that leg, so a commit always lands the settled value.
+ *   - EVERY TYPE BUBBLES. An act climbs from its node up the fake tree to the first listener of its type, and on
+ *     through each binding ancestor until TW5's own handler calls `stopPropagation`. A `lar:act` that no node up
+ *     the climb claims answers `refused: unclaimed` and runs nothing, so the page leaves the browser's default alone.
+ *   - `lar:click` runs the popup closer leg, then bubbles `click`.
+ *   - `lar:key` bubbles `keydown`, since TW5's keyboard widget binds on a wrapper.
  *   - `lar:toggle` lands `checked` on a checkbox or radio and runs its `change` listeners; `lar:choice` lands the
  *     whole key set on a select and runs its `change` listeners. The state lands BEFORE TW5's own handler runs,
  *     so the handler reads what the person chose, and the act's `localRev` rides into `sensedRevision`.
- *   - `lar:sense` writes the whole value (a string on a field, a key set on a select), records its `localRev`
- *     (newest wins), runs the `input` listeners, and answers null: the droppable class answers only through a
- *     later frame's `sensedRevision`.
+ *   - `lar:commit` writes the whole value (and `checked`) onto the node and bubbles `change`; an edit engine that
+ *     saves on `input` alone bubbles that leg, so a commit always lands the settled value.
+ *   - `lar:sense` writes the whole value (a string on a field, a key set on a select), records its `localRev` (newest wins), bubbles `input`, and answers null:
+ *     the droppable class answers only through a later frame's `sensedRevision`.
  *   - A repeated `eventId` within the epoch re-answers from the ring without re-applying.
  *
  * Every answer crosses the camera's `ctx.post` as `lar:control-result`. A listener that throws (a plugin
@@ -359,14 +475,14 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
     if (!takeIn(scope, key, ev.localRev)) return null;
     if (choice) writeChoice(el, ev.wholeValue as readonly string[]);
     else writeValue(el, ev.wholeValue as string);
-    runListeners(scope, el, "input", projectedEvent("input", el, scope, ev));
+    bubble(scope, el, "input", projectedEvent("input", el, scope, ev));
     scope.mark();
     return null;
   }
 
   switch (ev.action) {
     case "lar:click": {
-      if (!binds(el, "click")) return answer("refused", "unclaimed");
+      if (!claims(el, "click")) return answer("refused", "unclaimed");
       const g = ev.geometry;
       if (g) {
         // TW5 Popup reads the fake node's bounding box and offset dimensions while opening a popup; these whole
@@ -379,30 +495,24 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
         // TW5 binds its popup closer on the document capture leg; run that before the target's widget
         // handler so a click that opens a popup cannot immediately close the popup it just opened.
         runListeners(scope, scope.popupRoot, "click", event);
-        event.currentTarget = el;
-        runListeners(scope, el, "click", event);
+        bubble(scope, el, "click", event);
       } finally {
         if (g) { delete el._larRect; delete el.offsetLeft; delete el.offsetTop; delete el.offsetWidth; delete el.offsetHeight; }
       }
       return answer("applied");
     }
     case "lar:key": {
-      let claimed = false;
-      for (let node: RidNode | null | undefined = el; node && !claimed; node = node.parentNode) claimed = binds(node, "keydown");
-      if (!claimed) return answer("refused", "unclaimed");
-      const event = projectedEvent("keydown", el, scope, ev);
-      for (let node: RidNode | null | undefined = el; node && !event.stopped(); node = node.parentNode) {
-        runListeners(scope, node, "keydown", event);
-      }
+      if (!claims(el, "keydown")) return answer("refused", "unclaimed");
+      bubble(scope, el, "keydown", projectedEvent("keydown", el, scope, ev));
       return answer("applied");
     }
     case "lar:commit": {
-      const leg = binds(el, "change") ? "change" : binds(el, "input") ? "input" : undefined;
+      const leg = claims(el, "change") ? "change" : claims(el, "input") ? "input" : undefined;
       if (!leg) return answer("refused", "unclaimed");
       if (typeof ev.wholeValue === "string") writeValue(el, ev.wholeValue);
       if (ev.checked !== undefined) el.checked = ev.checked;
       if (ev.localRev !== undefined) takeIn(scope, key, ev.localRev);
-      runListeners(scope, el, leg, projectedEvent(leg, el, scope, ev));
+      bubble(scope, el, leg, projectedEvent(leg, el, scope, ev));
       // The commit took the page's value in: the next frame says so, whether or not the store moved.
       scope.mark();
       return answer("applied");
@@ -480,6 +590,8 @@ export function mountProjection(ctx: IslandContext): () => void {
   // Arm the interactivity RETURN leg before the camera renders (so every widget that binds a
   // listener gets its render-id stamped + handler stored).
   patchFakeElementForEvents(fakeDoc);
+  // Declare every binding at the moment TW5 makes it: the per-widget table stamps what the page cancels.
+  patchWidgetDeclarations(tw);
   // The worker's fake document has no browser startup, which normally stands TW5's Popup. Reuse
   // TW5's own manager over a fake root so popup state remains ordinary wiki state and every frame
   // remains a complete snapshot.
@@ -504,6 +616,18 @@ export function mountProjection(ctx: IslandContext): () => void {
   };
   activeEventScope = scope;
   cameras.add(scope);
+  // The camera's top element (TW5's transclusion wrapper) carries a render id of its own, so every painted node
+  // names a node of the fake tree an act can climb from: an act on a node no binding reaches climbs to the top and
+  // answers `unclaimed`. A re-render that replaces the top element gets the stamp again before the next frame.
+  const stampTop = (): void => {
+    const top = storyContainer.children?.[0];
+    if (!top?.attributes || top.attributes["data-lar-rid"] !== undefined) return;
+    const rid = String(++ridSeq);
+    top.setAttribute("data-lar-rid", rid);
+    ridMap.set(rid, top);
+    eventScopes.set(rid, scope);
+    scope.renderIds.add(rid);
+  };
   if (typeof tw.utils?.Popup !== "function") {
     throw new Error("TW5 projection cannot install its own popup manager: $tw.utils.Popup is unavailable");
   }
@@ -536,6 +660,7 @@ export function mountProjection(ctx: IslandContext): () => void {
   const gate = new CoalesceGate({
     windowMs: COALESCE_MS,
     onFlush: () => {
+      stampTop();
       const html = tw5ElementToHtml(storyContainer);
       scope.liveIds = new Set();
       scope.controlIds = new Map();

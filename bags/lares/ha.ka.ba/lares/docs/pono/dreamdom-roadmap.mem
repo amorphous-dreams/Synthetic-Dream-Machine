@@ -85,7 +85,7 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 
 !!! D1 · THE CAMERA CONTRACT ~ the browser DOM sink at width none, hardened (lane `dreamdom-camera`; waits on D0's harness)
 * ''Builds'', whole: keyed frames with a per-key revision, a `membership` key, a `mountEpoch` and `sensedRevision[controlId]`, one whole-surface key first and the CSS as a key of its own (so a sheet crosses only when it changes, and the vessel's frame relay carries an absent key as absent); `lar:control-event` with `eventId`, `kind`, `seenFrameRev`, `localRev`, `wholeValue`, `modifiers`, `key` and as-of-act `geometry`; `lar:control-result` with `applied` · `stale-target` · `refused` and `want`; the answer ring per surface; declared cancellation and crossing (`data-lar-on`, `data-lar-cancel`, `data-lar-keys`, `data-lar-bubble`, `data-lar-live` descriptors) stamped by the patched `addEventListener` and a small per-widget table; the worker bubbling every type to the first listener and answering `unclaimed`; the serialiser promoting `checked` and `selected` to attributes at flush; `lar:resend` on `session:surface-open` and on switch; the island root-services startup module (`tm-rename-tiddler`, `tm-relink-tiddler`, `tm-home`, `tm-modal`, `tm-show-switcher`, `tm-notify`, `tm-scroll` and `tm-focus-selector` as hints) and `lar:service` with `lar:service-result` for clipboard, download, route and open-surface, each other kind refused by name with its alert; the three ruled page controls (`lar-field` through the editor's engine seam, `lar-popover`, `lar-disclosure`) and the page's per-control veto in `beforeNodeMorphed`; the IME rules (`keyCode 229`, one-task hold after `compositionend`, never morph a composing node); `lar-file-picker` and the page-side `import-offer` and `drop` with bounded bytes; `lar-order-list`; the document keyboard leg driven by a `shortcuts` key; the navigate service with the page composing `#` from the order key.
-* ''Proves'': interaction goldens 1 to 13 (`dreamdom#/conformance`) green at width none over the DOM sink in Playwright, each red first; the five probes of `page-controls#/measure-first`; the three faults of `page-controls#/the-sink-today` closed; `glass-switch-back-repaints`; `glass-print-refuses-by-name`; the refusal words of `page-controls#/refusals` read beside the control in each engine.
+* ''Proves'': interaction goldens 1 to 13 (`dreamdom#/conformance`) green at width none over the DOM sink in Playwright, each red first; the five probes of `page-controls#/measure-first`; the three laws of `page-controls#/the-sinks-three-laws` kept; `glass-switch-back-repaints`; `glass-print-refuses-by-name`; the refusal words of `page-controls#/refusals` read beside the control in each engine.
 * ''Measures'': serialised bytes per key and long animation frames across 100 edits beside the 11.7 KB plus 7.5 KB whole-frame number; a key splits (river frames plus order plus membership) only where that number asks (`dreamdom#/the-ruling`, measure first).
 * ''Waits on'': D0's harness; `session-contract#/the-holder-protocol` for the envelope fields (builds against it; refuses `binding-unavailable` where a field has no holder yet).
 * ''Spikes'': the declared-cancellation afternoon (#/the-spikes 1), serializer promotion (2), sensed revision end to end (3), the seam engine's toolbar (4), declared keys and the document leg (5), `import-offer` and `drop` (6), surface switch with epochs (7).
@@ -192,10 +192,10 @@ A ruling reaches the operator only where its answer changes who holds authority,
 !! The rows ~ one line per open loop, beside the phase that closes it
 
 * `D1` The second-boot-writes-nothing pin over a staged vessel, the vessel page's long-animation-frames observer and the heap-after-first-paint reading for both instruments. D0. Nobody owes a ruling.
-* `D2` Per-key revisions, membership, mount epoch and sensed revision in `lar:frame`; the three faults of `page-controls#/the-sink-today` closed. D1.
+* `D2` Per-key revisions, membership, mount epoch and sensed revision in `lar:frame`; the three laws of `page-controls#/the-sinks-three-laws` kept. D1.
 * `D3` `lar:control-event` with an id and `lar:control-result` with a status; the answer ring; the reliable and droppable classes. D1.
 * `D4` Declared cancellation, crossing keys and bubbling stamped at binding; the serializer promotion (`checked`, `selected`, `indeterminate`) with the toggle family green on both halves of golden 06; the textarea revert and the blanket cancel green. D1. Rulings 8 and 10 for their rows.
-* `D5` The island root-services module and `lar:service` with named refusals; `lar:resend` and epochs on switch. D1. Ruling 9.
+* `D5` The island root-services module and `lar:service` with named refusals, golden 12 green on both runners; `lar:resend` and epochs on switch, golden 13 green on both. D1. Ruling 9.
 * `D6` The three ruled page controls built and probed in each engine; `lar-file-picker`, `lar-order-list`, the IME rules, the navigate service. D1.
 * `D7` The port's kinds on the live island with `causedBy`, width, the tier filter and the capability gate on invoke; the recording document and its three serialisers. D2. Ruling 12.
 * `D8` The glass port adaptor behind a flag, the multi-tab leader, the full-width walk of the five sites. D3. Rulings 2 and 6.
@@ -237,6 +237,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aR5aP7W9S_ZMjn23qnQWKYK22d5zVslgSlhlDdevjgw
+<<^ code="&#x0003;">>ni:///sha-256;TVYq0wOAARxJDLU7-0xZG2mL3NyW8IdxFGkcqD6HiGs
 
 <<^ code="&#x0004;" -> to="?">>

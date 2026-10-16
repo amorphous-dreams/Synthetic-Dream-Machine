@@ -2,8 +2,8 @@
  * interaction-goldens.engine — the engine half of every interaction golden beside the runner, walked through the
  * camera contract's doors over a real booted engine.
  *
- * The scripts this half carries (03, the textarea revert; 06, the toggle family; 13, the surface switch) read green
- * only when the engine answers every step the engine half reads; the page half's expectations stand SKIPPED by
+ * The scripts this half carries (01, the blanket preventDefault; 02, a button's modifier and popup; 03, the textarea
+ * revert; 06, the toggle family; 13, the surface switch) read green only when the engine answers every step the engine half reads; the page half's expectations stand SKIPPED by
  * name, and a frame line another slice's road paints stands OWED by its own words (and must still read red). Every other
  * script walks too and must still read red: its road has not landed, and a green there names one that did. A
  * control mutates each carried script into a claim the engine never makes and reads the runner red, so a green
@@ -29,15 +29,12 @@ const hooks = (): EngineRunHooks => {
 
 const scripts = goldenScripts();
 /** The scripts whose every engine-half step this island answers today. */
-const CARRIED = ["03", "06", "13"];
+const CARRIED = ["01", "02", "03", "06", "13"];
 /**
- * The frame lines a carried script reads that another slice's road paints: the declared-cancellation stamps
- * (`data-lar-on`, `data-lar-cancel`) belong to the stamps slice. Each one stays red by its own words until that
- * road lands, and nothing else may read red beside it.
+ * The frame lines a carried script reads that another slice's road paints, by script number. Each one stays red by
+ * its own words until that road lands, and nothing else may read red beside it; a line that reads green leaves.
  */
-const OWED_ELSEWHERE: Readonly<Record<string, readonly RegExp[]>> = {
-  "06": [/^step 2: the frame paints input\.cb data-lar-(on|cancel)=null, the script expects /],
-};
+const OWED_ELSEWHERE: Readonly<Record<string, readonly RegExp[]>> = {};
 const byNumber = (n: string): GoldenScript => scripts.find((s) => s.file.startsWith(`${n}-`))!.script;
 /** A script whose `expect` at `index` takes `patch` in place of what it said. */
 const mutate = (script: GoldenScript, index: number, patch: Record<string, unknown>): GoldenScript => ({
@@ -47,8 +44,8 @@ const mutate = (script: GoldenScript, index: number, patch: Record<string, unkno
 describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
   afterEach(() => { vi.useRealTimers(); });
 
-  test("the runner finds the scripts the README names, 03 and 13 among them", () => {
-    expect(scripts.map((s) => s.file)).toEqual(expect.arrayContaining(["03-edit-body-survives-blur.json", "13-switch-resend-and-epoch.json"]));
+  test("the runner finds the scripts the README names, the carried ones among them", () => {
+    expect(scripts.map((s) => s.file.slice(0, 2))).toEqual(expect.arrayContaining([...CARRIED]));
   });
 
   for (const { file, script } of scripts.filter((s) => CARRIED.includes(s.file.slice(0, 2)))) {
@@ -93,6 +90,27 @@ describe.skipIf(wikiSkip)(`interaction goldens, engine half${skipNote}`, () => {
     const text = run.failures.join("\n");
     expect(text).toMatch(/answers \["stale-target"\], the script expects \["applied"\]/);
     expect(text).toMatch(/lar:\/\/\/t\/switch\/beta holds text="0", the script expects "beta-pressed"/);
+  }, 120_000);
+
+  test("CONTROL 01: a script claiming the link cancels every click, or that the bare span stands bound, reads red", async () => {
+    const script = byNumber("01");
+    const at = script.steps.findIndex((s) => JSON.stringify(s["expect"] ?? {}).includes("data-lar-cancel"));
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { frame: { stamps: {
+      "a.tc-tiddlylink-resolves": { "data-lar-on": "click", "data-lar-cancel": "click" }, "span.plain": { "data-lar-on": "click" },
+    } } }), hooks());
+    expect(run.failures).toEqual([
+      `step ${at + 1}: a.tc-tiddlylink-resolves carries data-lar-cancel="click:ordinary", the script expects "click"`,
+      `step ${at + 1}: span.plain carries data-lar-on=none, the script expects "click"`,
+    ]);
+  }, 120_000);
+
+  test("CONTROL 02: a script claiming the ctrl-click ran its actions unmodified reads red", async () => {
+    const script = byNumber("02");
+    const at = script.steps.findIndex((s) => JSON.stringify(s["expect"] ?? {}).includes('"text":"ctrl"'));
+    expect(at, "the mutation found its step").toBeGreaterThan(0);
+    const run = await runEngineGolden(mutate(script, at, { writes: [{ title: "lar:///t/button/target", text: "normal" }] }), hooks());
+    expect(run.failures).toEqual([`step ${at + 1}: lar:///t/button/target holds text="ctrl", the script expects "normal"`]);
   }, 120_000);
 
   test("CONTROL: a verb the engine half never learned fails closed", async () => {

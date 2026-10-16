@@ -8,7 +8,7 @@
   },
   "steps": [
     { "frame": "first" },
-    { "expect": { "frame": { "stamps": { "input.cb": { "data-lar-on": "change", "data-lar-cancel": "" } }, "attributes": { "input.cb": { "checked": null }, "option[value=m]": { "selected": "selected" } } } } },
+    { "expect": { "frame": { "stamps": { "input.cb": { "data-lar-on": "change", "data-lar-cancel": null } }, "attributes": { "input.cb": { "checked": null }, "option[value=m]": { "selected": "selected" } } } } },
     { "act": { "control": "input.cb", "action": "lar:toggle", "checked": true } },
     { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/toggle/rec", "done": "yes" }] } },
     { "frame": "next" },

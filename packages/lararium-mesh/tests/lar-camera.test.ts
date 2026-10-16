@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import {
   LAR_WHOLE_VALUE_MAX_CHARS, boundedWholeValue, isReliableKind, mkLarControlEvent, mkLarFrame,
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService, mkLarResend, mkLarService,
+  larKeyChordName, readLarCancel, readLarStampTokens,
 } from "../src/lar-camera.js";
 
 const act = () => mkLarControlEvent({ eventId: "e1", cameraId: "lar:story", mountEpoch: 1, kind: "lar:act", renderId: "7", action: "lar:click", seenFrameRev: 3 });
@@ -93,5 +94,25 @@ describe("lar:frame and lar:control-result", () => {
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "refused" })).toBeNull();
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "refused", reason: "unclaimed" })).not.toBeNull();
     expect(readLarControlResult({ type: "lar:control-result", eventId: "e", cameraId: "c", mountEpoch: 1, status: "done" })).toBeNull();
+  });
+});
+
+describe("the binding stamps", () => {
+  test("data-lar-cancel reads each type's rule and fails closed on a qualifier the contract never named", () => {
+    expect([...readLarCancel("click:ordinary keydown:declared dragover drop")]).toEqual([
+      ["click", "ordinary"], ["keydown", "declared"], ["dragover", "always"], ["drop", "always"],
+    ]);
+    // CONTROL: an unknown qualifier, a doubled one and an empty stamp cancel nothing.
+    expect([...readLarCancel("click:sometimes keydown:declared:extra")]).toEqual([]);
+    expect([...readLarCancel(null)]).toEqual([]);
+    expect([...readLarStampTokens("  click   keydown ")]).toEqual(["click", "keydown"]);
+  });
+
+  test("a chord names itself the same way on both shores: modifiers in order, then the key by its code", () => {
+    expect(larKeyChordName({ keyCode: 13 })).toBe("enter");
+    expect(larKeyChordName({ keyCode: 78, alt: true, shift: true })).toBe("alt-shift-N");
+    expect(larKeyChordName({ keyCode: 83, meta: true, ctrl: true })).toBe("ctrl-meta-S");
+    // CONTROL: a code outside the named set names its number, never a guess.
+    expect(larKeyChordName({ keyCode: 186 })).toBe("186");
   });
 });

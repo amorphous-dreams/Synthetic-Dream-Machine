@@ -172,6 +172,8 @@ The session, surface and generation fields that wrap these messages stand at <<~
 | `route-unresolved` | "This destination no longer resolves." |
 | `unsupported-control` · `binding-unavailable` | "This control has no page binding in this vessel. Your change has not saved." |
 | `page-action-unavailable` | "This browser action has no page control here." |
+| `activation-required` | "This browser action needs your own click or key first." |
+| `unknown-request` | "This answer names no request this wiki made." |
 
 ''A stock surface with no control yet refuses by one of these names.'' Its content still paints.
 
@@ -200,19 +202,17 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 
 <<~/ahu>>
 
-<<~ ahu #/the-sink-today>>
+<<~ ahu #/the-sinks-three-laws>>
 
-!! OWED ~ three faults standing in the page sink
+!! The sink's three laws ~ what the page keeps on every act
 
-The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projection (`packages/lararium-tw5/src/tw5-projection.ts`) relay acts by render id. Three faults stand against this contract:
+The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projection (`packages/lararium-tw5/src/tw5-projection.ts`) relay acts by render id under three laws:
 
-# ''The delegated click handler cancels every projected click as it handles it.'' That decides at handling what the binding rule fixes at binding, and it takes modified and middle clicks on a real anchor with it.
-# ''A revision orders a whole surface.'' The sink orders frames within one continuous showing of one surface, so a switch paints the arriving surface's first frame. It carries no per-key revision, no mount epoch and no sensed revision: a focused or composing field keeps its value by focus, never by a revision the frame names.
-# ''A stale render id answers `stale-target` with no event id.'' The answer paints into the next frame of the surface that raised it, so an answer raised on a surface no longer shown reaches no frame, and nothing correlates an answer to the act that drew it.
+# ''Cancellation reads `data-lar-cancel` per binding.'' The page cancels only what the stamp on the claiming node's climb declares, so a modified or middle click on a real anchor, an external link, a native toggle and the file picker keep their browser default (`dreamdom#/declared-at-mount`).
+# ''A revision orders one key within one mount epoch.'' Each key of a frame orders itself; a new epoch or a switch paints whole; a live control keeps its value while its `localRev` runs ahead of `sensedRevision[controlId]` or while it composes, never by focus alone.
+# ''Every answer names its act.'' A `lar:control-result` correlates by `eventId`; its words rest in a sibling `<output role="status">` beside the control, linked by `aria-describedby`; an answer under another epoch is dropped.
 
-''An oversize input says so.'' A value past the input bound never crosses to the island. The page raises one word beside the pane, outside the morphed nodes, naming the field's count and the bound; the word stands until that field relays a value within the bound, its surface gives way, or a frame drops the field (`createProjectionSink`). A status that rests beside the field itself, and an answer correlated to the act, wait on the control-event leg.
-
-''Also standing'': no message carries a control id, an event id or a correlated result; the two return kinds carry a render id and number-or-boolean fields, or a bounded whole string.
+''An oversize input says so.'' A value past the whole-value bound never crosses to the island. The page raises the bound's own words beside the field, naming the count and the bound; the word stands until that field relays a value within the bound, its surface gives way, or a frame drops the field (`createProjectionSink`).
 
 <<~/ahu>>
 
@@ -248,6 +248,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e_af4MgR1HX8JEmyCq5zqlANqOU79gBduHXlJ9nzmWs
+<<^ code="&#x0003;">>ni:///sha-256;EOS0vSA0Lfgx-sB5Yv24usmeZKw1enKAm6UtCCW8DvA
 
 <<^ code="&#x0004;" -> to="?">>

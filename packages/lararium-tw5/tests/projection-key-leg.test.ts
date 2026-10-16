@@ -1,6 +1,6 @@
 /**
  * projection-key-leg — a projected key bubbles up the fake tree to TW5's wrapper-bound keyboard widget, carrying
- * the real key chord; a click stays on its own node.
+ * the real key chord; a click climbs the same tree to the first node that binds it.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { dispatchLarControlEvent } from "../src/tw5-projection.js";
@@ -16,7 +16,7 @@ describe.skipIf(wikiSkip)(`the projected key leg${skipNote}`, () => {
   let s: Surface | undefined;
   afterEach(() => { s?.stop(); s = undefined; });
 
-  test("RED: a key reaches the parent keyboard wrapper with its real key — CONTROL: a click on the same field stays target-only", async () => {
+  test("RED: a key reaches the parent keyboard wrapper with its real key — CONTROL: a click on the same field climbs past the keyboard to the button", async () => {
     s = await mountSurface([
       `<$button class="wrapper" set="${T("clicked")}" setTo="yes">`,
       `<$keyboard key="enter" actions="""${writes("seen")}"""><$edit-text tiddler="${T("field")}" tag="input" class="field"/></$keyboard>`,
@@ -25,9 +25,10 @@ describe.skipIf(wikiSkip)(`the projected key leg${skipNote}`, () => {
     expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:key", key: ENTER, modifiers: NO_MODS }))).toMatchObject({ status: "applied" });
     await s.flush();
     expect(s.wiki.getTiddler(T("seen"))?.fields["text"], "the wrapper read the real key, never a blank").toBe("Enter");
-    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "refused", reason: "unclaimed" });
+    expect(s.wiki.getTiddler(T("clicked")), "the key never fired the wrapping button").toBeUndefined();
+    expect(dispatchLarControlEvent(s.event("field", { kind: "lar:act", action: "lar:click" }))).toMatchObject({ status: "applied" });
     await s.flush();
-    expect(s.wiki.getTiddler(T("clicked")), "the click never climbed to the wrapping button").toBeUndefined();
+    expect(s.wiki.getTiddler(T("clicked"))?.fields["text"], "the click climbed to the wrapping button, as the page's DOM would carry it").toBe("yes");
   }, 120_000);
 
   test("RED: a wrapper that handles the key halts the climb — CONTROL: an inner wrapper that lets it pass, the outer fires", async () => {

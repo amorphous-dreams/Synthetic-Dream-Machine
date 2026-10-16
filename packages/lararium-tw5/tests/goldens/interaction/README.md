@@ -28,13 +28,17 @@ Steps, each one object with one verb:
 | `switch` | `surface` | the vessel moves its gate to another surface; the island receives `lar:resend` |
 | `page` | `control`, then one of `composition: "start"` or `"end"`, `input` (+ `composing`), `keydown` (a raw key chord with `isComposing`) | a raw page gesture the page harness performs on the real control; the engine harness skips it by name |
 | `wake` | `surface` | the harness wakes a sleeping actor (D4) |
-| `expect` | `answers?`, `writes?`, `messages?`, `services?`, `want?`, `frame?`, `page?`, `refused?` | the harness reads: the answers since the last expect (`applied`, `stale-target`, or `refused:<reason>`), the records written (after the echo lands; `tombstone: true` for a deletion), the `tm-*` messages the root widget saw, the `lar:service` asks the engine made, the `want` an answer carried, the next keyed frame (`contains`, `stamps` per selector, `attributes` per selector with `null` for absent, `keys`, `sensedRevision`, `questions`, `questionSubject`, `alert`, `surface`, `epoch: "fresh"`), the page's state per selector (`value`, `undoDepth`, `focus`, `relays`, `relayed`, `relayedSenses`, `relayedActs`, `defaultPrevented`, `refusal`, `visible`, `placedFrom`, `newerVersion`, `state`, `affordances`, and `surface` for the shown surface), or `{"refused": "<reason>"}` where the surface has no road |
+| `expect` | `answers?`, `writes?`, `messages?`, `services?`, `want?`, `frame?`, `page?`, `refused?` | the harness reads: the answers since the last expect (`applied`, `stale-target`, or `refused:<reason>`), the records written (after the echo lands; `tombstone: true` for a deletion), the `tm-*` messages the root widget saw, the `lar:service` asks the engine made, the `want` an answer carried, the next keyed frame (`contains`, `stamps` per selector (each named stamp carries every token the script names; `null` names an absent stamp), `attributes` per selector with `null` for absent, `keys`, `sensedRevision`, `questions`, `questionSubject`, `alert`, `surface`, `epoch: "fresh"`), the page's state per selector (`value`, `undoDepth`, `focus`, `relays`, `relayed`, `relayedSenses`, `relayedActs`, `defaultPrevented`, `refusal`, `visible`, `placedFrom`, `newerVersion`, `state`, `affordances`, and `surface` for the shown surface), or `{"refused": "<reason>"}` where the surface has no road |
 
 A world may carry a `manifest` naming the service kinds the surface carries. `lar:document` names the
 page's document leg as a control; `requestId: "last"` names the latest service ask.
 
-A control names itself by `data-control-id`, or by a CSS class the script's root template sets, read
-off the frame the harness last delivered. A surface with no road for a step records `{"refused": ...}`
+A control names itself by `data-control-id`, by a CSS class the script's root template sets, or by
+`tag.class`, read off the frame the harness last delivered. An act names the control's own render id, or
+its nearest painted ancestor's: the camera's top element carries one, so every act has a node to climb
+from. On the page, a real act that no binding's `data-lar-on` claims relays nothing and leaves the
+browser's default standing; the page half reads that as the answer `refused:unclaimed`, the word the
+engine half hears for the same act. A surface with no road for a step records `{"refused": ...}`
 and the harness checks the refusal reads beside the control in the words of `page-controls#/refusals`.
 
 Every run pins a TW5 commit (`ea94ca8`, the 5.5.0-prerelease fork). A drifting frame hash names a

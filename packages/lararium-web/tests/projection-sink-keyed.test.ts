@@ -97,10 +97,10 @@ describe("★ each key keeps its own revision within one mount epoch ★", () =>
 
   test("the membership key's revision rides every act as seenMembershipRev; CONTROL: an act before any membership key carries none", () => {
     const m = mount();
-    m.sink.apply(frame("lares", { rev: 1, html: `<button data-lar-rid="7">go</button>` }));
+    m.sink.apply(frame("lares", { rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">go</button>` }));
     m.pane().querySelector("button")!.click();
     expect(m.sent[0]!.ev.seenMembershipRev).toBeUndefined();
-    m.sink.apply(frame("lares", { rev: 2, html: `<button data-lar-rid="7">go</button>`, members: { rev: 3, members: [LAR_KEY_SURFACE, LAR_KEY_STYLE] } }));
+    m.sink.apply(frame("lares", { rev: 2, html: `<button data-lar-rid="7" data-lar-on="click">go</button>`, members: { rev: 3, members: [LAR_KEY_SURFACE, LAR_KEY_STYLE] } }));
     m.pane().querySelector("button")!.click();
     expect(m.sent[1]!.ev.seenMembershipRev).toBe(3);
     expect(m.sink.members()).toEqual([LAR_KEY_SURFACE, LAR_KEY_STYLE]);
@@ -199,7 +199,7 @@ describe("★ the sensed-revision veto keeps a live control the person moved ahe
 describe("★ the return leg speaks lar:control-event ★", () => {
   test("a click relays lar:act / lar:click with a minted id, the camera, the shown epoch and key revision, modifiers, button and host-relative geometry", () => {
     const m = mount();
-    m.sink.apply(frame("lares", { epoch: 4, rev: 12, html: `<button data-lar-rid="7" style="display:block;margin:10px 0 0 15px;width:80px;height:20px">go</button>` }));
+    m.sink.apply(frame("lares", { epoch: 4, rev: 12, html: `<button data-lar-rid="7" data-lar-on="click" style="display:block;margin:10px 0 0 15px;width:80px;height:20px">go</button>` }));
     const button = m.pane().querySelector("button")!;
     button.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, cancelable: true, shiftKey: true, button: 0 }));
     button.click();
@@ -220,7 +220,7 @@ describe("★ the return leg speaks lar:control-event ★", () => {
 
   test("Escape and modifier chords relay lar:key with the real chord; CONTROL: a bare letter, a bare modifier and keyCode 229 never cross", () => {
     const m = mount();
-    m.sink.apply(frame("lares", { rev: 2, html: `<div data-lar-rid="8"><textarea></textarea></div>` }));
+    m.sink.apply(frame("lares", { rev: 2, html: `<div data-lar-rid="8" data-lar-on="keydown"><textarea></textarea></div>` }));
     const area = m.pane().querySelector("textarea")!;
     const key = (init: KeyboardEventInit) => area.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, composed: true, ...init }));
     key({ key: "Enter", code: "Enter", keyCode: 13, ctrlKey: true });
@@ -237,7 +237,7 @@ describe("★ the return leg speaks lar:control-event ★", () => {
 
   test("a key chord in the task after compositionend never crosses; CONTROL: the same chord one task later crosses", async () => {
     const m = mount();
-    m.sink.apply(frame("lares", { rev: 2, html: `<div data-lar-rid="8"><input value=""></div>` }));
+    m.sink.apply(frame("lares", { rev: 2, html: `<div data-lar-rid="8" data-lar-on="keydown"><input value=""></div>` }));
     const field = m.pane().querySelector("input")!;
     field.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, composed: true }));
     field.value = "日本";
@@ -311,7 +311,7 @@ describe("★ the answer rail paints a refusal beside its control and clears it 
 
   test("stale-target paints the canon's words beside the control and survives the next frame; a later applied clears it", () => {
     const m = mount();
-    const html = `<button data-lar-rid="7">bump</button><button data-lar-rid="8">other</button>`;
+    const html = `<button data-lar-rid="7" data-lar-on="click">bump</button><button data-lar-rid="8" data-lar-on="click">other</button>`;
     m.sink.apply(frame("lares", { rev: 1, html }));
     const first = click(m, "7");
     expect(m.sink.applyResult(answer(first, { status: "stale-target" }))).toBe("painted");
@@ -328,7 +328,7 @@ describe("★ the answer rail paints a refusal beside its control and clears it 
 
   test("a named refusal paints its words; the word leaves with its control", () => {
     const m = mount();
-    m.sink.apply(frame("lares", { rev: 1, html: `<button data-lar-rid="7">bump</button>` }));
+    m.sink.apply(frame("lares", { rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     m.sink.applyResult(answer(click(m, "7"), { status: "refused", reason: "page-action-unavailable" }));
     expect(m.refusals()[0]?.textContent).toBe("This browser action has no page control here.");
     m.sink.apply(frame("lares", { rev: 2, html: `<p>the control left</p>` }));
@@ -338,9 +338,9 @@ describe("★ the answer rail paints a refusal beside its control and clears it 
 
   test("a result for another epoch is ignored; CONTROL: the same answer under the shown epoch paints", () => {
     const m = mount();
-    m.sink.apply(frame("lares", { epoch: 1, rev: 1, html: `<button data-lar-rid="7">bump</button>` }));
+    m.sink.apply(frame("lares", { epoch: 1, rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     const late = click(m, "7");
-    m.sink.apply(frame("lares", { epoch: 2, rev: 1, html: `<button data-lar-rid="7">bump</button>` }));
+    m.sink.apply(frame("lares", { epoch: 2, rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     expect(m.sink.applyResult(answer(late, { status: "stale-target", mountEpoch: 1 }))).toBe("ignored");
     expect(m.refusals()).toHaveLength(0);
     expect(m.sink.applyResult(answer(late, { status: "stale-target", mountEpoch: 2 }))).toBe("painted");
@@ -352,10 +352,10 @@ describe("★ the answer rail paints a refusal beside its control and clears it 
 
   test("a switch drops every word of the surface that gave way", () => {
     const m = mount();
-    m.sink.apply(frame("alpha", { rev: 1, html: `<button data-lar-rid="7">bump</button>` }));
+    m.sink.apply(frame("alpha", { rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     m.sink.applyResult(answer(click(m, "7"), { status: "stale-target" }));
     expect(m.refusals()).toHaveLength(1);
-    m.sink.apply(frame("beta", { rev: 1, html: `<button data-lar-rid="7">bump</button>` }));
+    m.sink.apply(frame("beta", { rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     expect(m.refusals()).toHaveLength(0);
     m.done();
   });
@@ -381,7 +381,7 @@ describe("★ a loading plate reads the island's breath until a mount's first su
 
   test("a switch keeps the old frame visible under the plate, inert, until the resend's first frame lands", () => {
     const m = mount();
-    m.sink.apply(frame("alpha", { rev: 3, html: `<button data-lar-rid="7">alpha</button>` }));
+    m.sink.apply(frame("alpha", { rev: 3, html: `<button data-lar-rid="7" data-lar-on="click">alpha</button>` }));
     m.sink.awaitSurface("beta");
     m.sink.setBreath("beta", { phase: "mounting" });
     expect(up(m)).toBe(true);
@@ -392,7 +392,7 @@ describe("★ a loading plate reads the island's breath until a mount's first su
     // A frame of the arriving surface that carries no surface key holds: still the old frame, still the plate.
     expect(m.sink.apply(frame("beta", { epoch: 2, css: { rev: 1, css: ".b{}" } }))).toBe("held");
     expect([up(m), m.pane().textContent]).toEqual([true, "alpha"]);
-    expect(m.sink.apply(frame("beta", { epoch: 2, rev: 1, html: `<button data-lar-rid="7">beta</button>` }))).toBe("painted");
+    expect(m.sink.apply(frame("beta", { epoch: 2, rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">beta</button>` }))).toBe("painted");
     expect([up(m), m.pane().textContent, m.sheet()]).toEqual([false, "beta", ".b{}"]);
     m.pane().querySelector("button")!.click();
     expect(m.sent.map(({ surface }) => surface)).toEqual(["beta"]);

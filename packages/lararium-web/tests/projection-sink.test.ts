@@ -57,7 +57,7 @@ describe("★ revisions belong to a surface ★", () => {
 describe("★ an event names the surface that painted its target ★", () => {
   test("Escape relays on a focused button; CONTROL: a bare letter does not", () => {
     const m = mount();
-    m.sink.apply(frame("lares", 1, `<button data-lar-rid="7">open</button>`));
+    m.sink.apply(frame("lares", 1, `<button data-lar-rid="7" data-lar-on="click keydown">open</button>`));
     const button = m.pane().querySelector("button")!;
     button.focus();
     button.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", keyCode: 27, bubbles: true, composed: true }));
@@ -70,7 +70,7 @@ describe("★ an event names the surface that painted its target ★", () => {
 
   test("modified Enter relays from a textarea; CONTROL: plain Enter and bare Control do not", () => {
     const m = mount();
-    m.sink.apply(frame("lares", 1, `<div data-lar-rid="8"><textarea></textarea></div>`));
+    m.sink.apply(frame("lares", 1, `<div data-lar-rid="8" data-lar-on="keydown"><textarea></textarea></div>`));
     const area = m.pane().querySelector("textarea")!;
     area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, ctrlKey: true, bubbles: true, composed: true }));
     expect(m.sent.map((ev) => [ev.action, ev.renderId, ev.key?.keyCode, ev.modifiers?.ctrl])).toEqual([["lar:key", "8", 13, true]]);
@@ -82,7 +82,7 @@ describe("★ an event names the surface that painted its target ★", () => {
 
   test("a new modal focuses its first button and a held modal does not steal focus", () => {
     const m = mount();
-    const html = `<div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9">Keep</button><button data-lar-rid="10">Delete</button></div>`;
+    const html = `<div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9" data-lar-on="click">Keep</button><button data-lar-rid="10" data-lar-on="click">Delete</button></div>`;
     m.sink.apply(frame("lares", 1, html));
     const buttons = m.pane().querySelectorAll("button");
     expect(m.host.shadowRoot!.activeElement).toBe(buttons[0]);
@@ -95,8 +95,8 @@ describe("★ an event names the surface that painted its target ★", () => {
 
   test("a modal turns every painted sibling inert, marked by the frame or not; CONTROL: no modal, nothing inert", () => {
     const m = mount();
-    const aside = `<div class="aside"><button data-lar-rid="3">behind</button></div>`;
-    const modal = `<div class="wrap"><div class="near">near</div><div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9">Keep</button></div></div>`;
+    const aside = `<div class="aside"><button data-lar-rid="3" data-lar-on="click">behind</button></div>`;
+    const modal = `<div class="wrap"><div class="near">near</div><div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9" data-lar-on="click">Keep</button></div></div>`;
     // CONTROL: the same siblings with no modal stay live.
     m.sink.apply(frame("lares", 1, `${aside}<div class="wrap"><div class="near">near</div></div>`));
     expect(m.pane().querySelectorAll("[inert]")).toHaveLength(0);
@@ -112,16 +112,16 @@ describe("★ an event names the surface that painted its target ★", () => {
 
   test("closing a modal restores prior render-id focus; CONTROL: missing target stays unfocused", () => {
     const m = mount();
-    m.sink.apply(frame("lares", 1, `<button data-lar-rid="5">Origin</button>`));
+    m.sink.apply(frame("lares", 1, `<button data-lar-rid="5" data-lar-on="click">Origin</button>`));
     const origin = m.pane().querySelector("button")!;
     origin.focus();
     const modal = `<div aria-modal="true"><button>Continue</button></div>`;
     m.sink.apply(frame("lares", 2, modal));
     expect(m.host.shadowRoot!.activeElement?.textContent).toBe("Continue");
-    m.sink.apply(frame("lares", 3, `<button data-lar-rid="5">Restored</button>`));
+    m.sink.apply(frame("lares", 3, `<button data-lar-rid="5" data-lar-on="click">Restored</button>`));
     expect(m.host.shadowRoot!.activeElement).toBe(m.pane().querySelector("button"));
 
-    m.sink.apply(frame("lares", 4, `<button data-lar-rid="6">Origin</button>`));
+    m.sink.apply(frame("lares", 4, `<button data-lar-rid="6" data-lar-on="click">Origin</button>`));
     m.pane().querySelector("button")!.focus();
     m.sink.apply(frame("lares", 5, modal));
     expect(() => m.sink.apply(frame("lares", 6, `<p>gone</p>`))).not.toThrow();
@@ -131,14 +131,14 @@ describe("★ an event names the surface that painted its target ★", () => {
 
   test("clicks and whole-value input carry the shown surface, and follow a switch", () => {
     const m = mount();
-    m.sink.apply(frame("lares", 1, `<button data-lar-rid="7">open</button><input data-lar-rid="9" value="a">`));
+    m.sink.apply(frame("lares", 1, `<button data-lar-rid="7" data-lar-on="click">open</button><input data-lar-rid="9" value="a">`));
     m.pane().querySelector<HTMLButtonElement>("button")!.click();
     const field = m.pane().querySelector<HTMLInputElement>("input")!;
     typeInto(field, "typed");
     expect(m.events).toEqual(["lares:lar:click:7", "lares:lar:sense:9=typed"]);
 
     // The daemon's frame reuses render-id 7 for a different node; its click names the daemon.
-    m.sink.apply(frame("daemon", 1, `<button data-lar-rid="7">summoned</button>`));
+    m.sink.apply(frame("daemon", 1, `<button data-lar-rid="7" data-lar-on="click">summoned</button>`));
     m.pane().querySelector<HTMLButtonElement>("button")!.click();
     expect(m.events.at(-1)).toBe("daemon:lar:click:7");
     m.done();

@@ -192,6 +192,64 @@ export interface LarMsg_Service {
   readonly userActivation: true;
 }
 
+// ── Declared at mount: the binding stamps ───────────────────────────────────────────────────────
+
+/**
+ * The stamps a node carries beside its render id, declared where the engine made the binding and never decided
+ * at handling (dreamdom#/the-crossings, "Declared at mount, never decided at handling"):
+ *
+ *   - `data-lar-on`      the event types the node binds; the page relays only these.
+ *   - `data-lar-cancel`  what the page cancels synchronously: `type` (always), `type:ordinary` (an unmodified
+ *                        primary-button act on a non-external target), `type:declared` (a key chord the node's
+ *                        `data-lar-keys` names).
+ *   - `data-lar-keys`    the crossing set: the key chords the node declares, each named by `larKeyChordName`.
+ *   - `data-lar-bubble`  `yes` where the node's own handler lets the act climb to an ancestor's binding, `no` where
+ *                        it ends the climb; the page reads an ancestor's cancellation only past a `yes`.
+ *   - `data-lar-live`    the property the page owns on a live control (`value`, `checked`, `selected`).
+ */
+export const LAR_STAMP_ON     = "data-lar-on";
+export const LAR_STAMP_CANCEL = "data-lar-cancel";
+export const LAR_STAMP_KEYS   = "data-lar-keys";
+export const LAR_STAMP_BUBBLE = "data-lar-bubble";
+export const LAR_STAMP_LIVE   = "data-lar-live";
+
+/** How the page cancels one event type a node declares. */
+export type LarCancelRule = "always" | "ordinary" | "declared";
+
+/** The tokens of a space-separated stamp, or the empty set for an absent one. */
+export function readLarStampTokens(stamp: string | null | undefined): ReadonlySet<string> {
+  return new Set((stamp ?? "").split(/\s+/).filter((t) => t.length > 0));
+}
+
+/** Read a `data-lar-cancel` stamp, failing closed: a token with a qualifier the contract never named cancels nothing. */
+export function readLarCancel(stamp: string | null | undefined): ReadonlyMap<string, LarCancelRule> {
+  const rules = new Map<string, LarCancelRule>();
+  for (const token of readLarStampTokens(stamp)) {
+    const [type, qualifier, ...rest] = token.split(":");
+    if (!type || rest.length) continue;
+    const rule: LarCancelRule | undefined = qualifier === undefined ? "always" : qualifier === "ordinary" ? "ordinary" : qualifier === "declared" ? "declared" : undefined;
+    if (rule) rules.set(type, rule);
+  }
+  return rules;
+}
+
+/** Key names for the codes a chord most often carries; a letter or digit names itself, any other code its number. */
+const LAR_KEY_NAMES: Readonly<Record<number, string>> = {
+  8: "backspace", 9: "tab", 13: "enter", 19: "pause", 27: "escape", 32: "space", 33: "page_up", 34: "page_down",
+  35: "end", 36: "home", 37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "delete",
+  112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 120: "f9", 121: "f10", 122: "f11", 123: "f12",
+};
+
+/**
+ * The one name a key chord carries on both shores: modifiers in the order `ctrl alt shift meta`, then the key by its
+ * code, the way TiddlyWiki matches a descriptor (`alt-shift-N`, `ctrl-enter`, `escape`).
+ */
+export function larKeyChordName(chord: { readonly keyCode: number; readonly ctrl?: boolean; readonly alt?: boolean; readonly shift?: boolean; readonly meta?: boolean }): string {
+  const code = chord.keyCode;
+  const name = LAR_KEY_NAMES[code] ?? ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ? String.fromCharCode(code) : String(code));
+  return `${chord.ctrl ? "ctrl-" : ""}${chord.alt ? "alt-" : ""}${chord.shift ? "shift-" : ""}${chord.meta ? "meta-" : ""}${name}`;
+}
+
 // ── Readers (fail closed) ───────────────────────────────────────────────────────────────────────
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);

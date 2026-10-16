@@ -21,6 +21,9 @@
  *   - EVERY ACT CARRIES WHAT THE PAGE SHOWED. A relayed event carries a minted id, the camera, the shown mount
  *     epoch, the shown surface key's revision and the target, read at the moment of the act, and names the
  *     surface whose frame painted its target, so the vessel routes it to that island.
+ *   - THE PAGE CANCELS ONLY WHAT A BINDING DECLARED. A click or a key relays to the first node whose
+ *     `data-lar-on` binds its type and cancels only by that climb's `data-lar-cancel`; an unstamped node relays
+ *     nothing and the browser's default stands.
  *   - A REFUSAL SAYS SO BESIDE ITS CONTROL. The words stand in a sibling layer beside the pane, keyed by control
  *     id, so no frame's morph claims them; they leave when the control leaves, when a later `applied` lands for
  *     it, or when the surface gives way. A value past the bound never crosses and raises `input-too-long` there.
@@ -35,7 +38,8 @@ import { Idiomorph } from "idiomorph";
 // the page sink.
 import {
   LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_WHOLE_VALUE_MAX_CHARS,
-  mkLarControlEvent, readLarControlResult, readLarFrame,
+  LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_ON,
+  larKeyChordName, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarStampTokens,
   type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarRefusal,
 } from "@lararium/mesh/lar-camera";
 
@@ -407,20 +411,64 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
   };
   const origin = (event: Event): Element | null => (event.composedPath?.()[0] ?? event.target) as Element | null;
 
-  // The KEY leg. Typing rides the text leg as a whole value, so only keys that never type cross: Escape, and any
-  // key pressed with ctrl, meta or alt (until the declared-keys slice names each binding's crossing set). A key an
-  // IME holds never crosses: `isComposing`, `keyCode 229` on every platform, and the task after `compositionend`
-  // (Safari sends the committing Enter there with `isComposing` false).
+  // ── Declared cancellation: the act legs read the stamps ───────────────────────────────────────
+  //
+  // The island declares each binding at mount (dreamdom#/the-crossings): `data-lar-on` names the types a node
+  // binds, `data-lar-cancel` what the page cancels, `data-lar-keys` the chords a keyboard binding declares,
+  // `data-lar-bubble` whether the node's own handler lets the act climb on. A click or a key relays only to the
+  // first node up its path whose stamp binds that type (a template's declared control stands for its own
+  // bindings), and the page cancels synchronously only what the stamps on that climb declare. No stamp, no relay:
+  // the browser's default stands, so an external link opens, a native toggle toggles, a file picker opens.
+
+  /** The act target for one event type: the nearest declared control, or the nearest node whose stamp binds the type. */
+  const bindingTargetOf = (from: Element | null, type: string): Target | null => {
+    for (let node = from; node && node !== paneEl; node = node.parentElement) {
+      const controlId = node.getAttribute("data-control-id");
+      if (controlId) return { id: controlId, field: "controlId", node };
+      const renderId = node.getAttribute("data-lar-rid");
+      if (renderId && readLarStampTokens(node.getAttribute(LAR_STAMP_ON)).has(type)) return { id: renderId, field: "renderId", node };
+    }
+    return null;
+  };
+  /** An anchor whose `href` names a scheme, or that reads `rel=external` or TW5's external class: the browser opens it. */
+  const isExternalLink = (from: Element | null): boolean => {
+    const anchor = from?.closest?.("a");
+    if (!anchor) return false;
+    return /^[a-z][a-z0-9+.-]*:/i.test(anchor.getAttribute("href") ?? "")
+      || readLarStampTokens(anchor.getAttribute("rel")).has("external")
+      || anchor.classList.contains("tc-tiddlylink-external");
+  };
+  /** Whether the stamps from the target up its climb declare this act cancelled: each binding node's own rule, until
+   *  one whose handler ends the climb. `ordinary` reads an unmodified primary act on a non-external target. */
+  const declaresCancel = (target: Target, type: string, ordinary: boolean, chord?: string): boolean => {
+    for (let node: Element | null = target.node; node && node !== paneEl; node = node.parentElement) {
+      if (!readLarStampTokens(node.getAttribute(LAR_STAMP_ON)).has(type)) continue;
+      const rule = readLarCancel(node.getAttribute(LAR_STAMP_CANCEL)).get(type);
+      if (rule === "always") return true;
+      if (rule === "ordinary" && ordinary) return true;
+      if (rule === "declared" && chord !== undefined && readLarStampTokens(node.getAttribute(LAR_STAMP_KEYS)).has(chord)) return true;
+      if (node.getAttribute(LAR_STAMP_BUBBLE) !== "yes") return false;
+    }
+    return false;
+  };
+
+  // The KEY leg. Typing rides the text leg as a whole value, so a key crosses only to a node that binds `keydown`,
+  // and only when it never types (Escape, or a chord with ctrl, meta or alt) or a binding on its climb declares
+  // it; the page cancels a declared chord and leaves every other key to the browser. A key an IME holds never
+  // crosses: `isComposing`, `keyCode 229` on every platform, and the task after `compositionend` (Safari sends the
+  // committing Enter there with `isComposing` false).
   paneEl.addEventListener("keydown", (event) => {
     const key = event as KeyboardEvent;
     if (key.isComposing || key.keyCode === 229 || holdKeysAfterComposition) return;
     if (["Control", "Meta", "Alt", "Shift"].includes(key.key)) return;
-    const escape = key.key === "Escape" || key.keyCode === 27;
-    if (!escape && !key.ctrlKey && !key.metaKey && !key.altKey) return;
     const src = origin(key);
-    const target = targetOf(src);
+    const target = bindingTargetOf(src, "keydown");
     if (!target) return;
-    if (escape && src?.closest?.('[aria-modal="true"]')) key.preventDefault();
+    const escape = key.key === "Escape" || key.keyCode === 27;
+    const chord = larKeyChordName({ keyCode: key.keyCode, ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
+    const declared = declaresCancel(target, "keydown", false, chord);
+    if (!declared && !escape && !key.ctrlKey && !key.metaKey && !key.altKey) return;
+    if (declared || (escape && src?.closest?.('[aria-modal="true"]'))) key.preventDefault();
     relay(target, "lar:act", {
       action: "lar:key",
       key: { key: key.key, code: key.code, keyCode: key.keyCode, repeat: key.repeat },
@@ -428,25 +476,35 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     });
   });
 
-  paneEl.addEventListener("click", (e) => {
+  // The CLICK leg. A click relays to the first node that binds `click`; a middle click (`auxclick`, button 1)
+  // relays only to a link's ordinary binding, which reads it as "open without navigating". A modified or middle
+  // click and an external link leave the browser's default standing; every other cancel reads off the stamps.
+  const relayClick = (e: MouseEvent): void => {
     if (leftToToggleLeg(e.target as Element | null)) return;
-    const target = targetOf((e.target as Element | null) ?? null);
+    const src = origin(e);
+    const target = bindingTargetOf(src, "click");
     if (!target || !doors || shownSurface === null) return;
-    e.preventDefault();                        // a projected <a href> must not navigate the host page
-    const me = e as MouseEvent;
+    const middle = e.type === "auxclick";
+    if (middle && (e.button !== 1 || readLarCancel(target.node.getAttribute(LAR_STAMP_CANCEL)).get("click") !== "ordinary")) return;
+    const ordinary = !middle && e.button === 0 && !e.ctrlKey && !e.metaKey && !isExternalLink(src);
+    if (declaresCancel(target, "click", ordinary)) e.preventDefault();
     const rect = target.node.getBoundingClientRect();
     pendingPopupPlacement = { top: rect.bottom, left: rect.left };
     const hostRect = host.getBoundingClientRect();
     relay(target, "lar:act", {
       action: "lar:click",
-      modifiers: { ctrl: me.ctrlKey, meta: me.metaKey, alt: me.altKey, shift: me.shiftKey, button: me.button },
+      modifiers: { ctrl: e.ctrlKey, meta: e.metaKey, alt: e.altKey, shift: e.shiftKey, button: e.button },
       geometry: {
         top: rect.top - hostRect.top, left: rect.left - hostRect.left,
         right: rect.right - hostRect.left, bottom: rect.bottom - hostRect.top,
         width: rect.width, height: rect.height,
       },
     });
-  });
+  };
+  paneEl.addEventListener("click", (e) => relayClick(e as MouseEvent));
+  paneEl.addEventListener("auxclick", (e) => relayClick(e as MouseEvent));
+
+  // ── The text leg ──────────────────────────────────────────────────────────────────────────────
 
   // The TEXT leg. TW5's edit widgets bind `input` (every keystroke) and `change` (commit on blur): `input` crosses
   // as a droppable `lar:sense`, `change` as a reliable `lar:act` / `lar:commit`. The value rides WHOLE, never as a

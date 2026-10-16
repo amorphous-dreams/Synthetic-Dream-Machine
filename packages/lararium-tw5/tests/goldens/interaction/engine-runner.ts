@@ -16,14 +16,17 @@
  *   - `sense` / `act` build a `lar:control-event` against the frame the harness last delivered for that surface:
  *               the control resolves by `data-control-id` or by a selector read off that frame (a tag, classes and
  *               `[attr=value]`, spaces for descendants; a class names its node and the nodes it wraps, since TW5's
- *               checkbox and radio class the label around their input); `checked` rides a toggle; `epoch: "stale"`
- *               carries the epoch that surface emitted before the delivered one.
+ *               checkbox and radio class the label around their input), and the event names the first named node's
+ *               render id or its nearest painted ancestor's (the node the act climbs from: the camera's top element
+ *               carries one); `checked` rides a toggle; `epoch: "stale"` carries the epoch that surface emitted
+ *               before the delivered one.
  *   - `switch`  mounts the arriving surface's engine (first time) and sends it `lar:resend`; the frame the resend
  *               answers becomes the delivered frame.
  *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
  *               stands with those fields, and no title outside the named set took a write since the last expect),
  *               and `frame` (`sensedRevision` keyed back to the script's control names, `surface`, `epoch: "fresh"`,
- *               and `attributes` / `stamps`: per selector, the attribute the first named node paints, `null` for absent).
+ *               `contains`, `attributes`: per selector, the attribute the first named node paints, `null` for absent,
+ *               and `stamps`: per selector, each named stamp carries every token the script names, `null` none).
  *               `page` belongs to the page half: the run records it as SKIPPED by name. Any other key fails closed,
  *               so a script that grows a verb this half never learned reads red, never green.
  *
@@ -166,7 +169,12 @@ function ridOf(html: string, control: string): string | null {
   const named = isSelector(control)
     ? select(nodes, control)
     : nodes.filter((n) => n.attrs["data-control-id"] === control);
-  return named.find((n) => n.attrs["data-lar-rid"] !== undefined)?.attrs["data-lar-rid"] ?? null;
+  // The act names the first named node's own render id, or the nearest painted ancestor's: the node the act climbs
+  // from (the camera's top element carries one, so every painted node has a climb).
+  for (const node of named) {
+    for (let n: PaintedNode | null = node; n; n = n.parent) if (n.attrs["data-lar-rid"] !== undefined) return n.attrs["data-lar-rid"]!;
+  }
+  return null;
 }
 
 const surfaceRev = (f: LarMsg_Frame): number => f.keys.find((k) => k.key === LAR_KEY_SURFACE)?.rev ?? 0;
@@ -359,7 +367,23 @@ export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHook
                 const earlier = s.frames.slice(0, s.frames.indexOf(frame)).map((f) => f.mountEpoch);
                 if (earlier.length === 0) failures.push(`${at}: ${s.id}'s delivered frame stands alone; no earlier epoch to read it fresh against`);
                 else if (!earlier.every((e) => frame.mountEpoch > e)) failures.push(`${at}: ${s.id}'s frame carries epoch ${frame.mountEpoch}, not fresh against ${JSON.stringify([...new Set(earlier)])}`);
-              } else if (fk === "attributes" || fk === "stamps") {
+              } else if (fk === "stamps") {
+                const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
+                for (const [selector, stamps] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
+                  const node = select(painted, selector)[0];
+                  if (!node) { failures.push(`${at}: the frame paints no ${selector}`); continue; }
+                  for (const [name, wantStamp] of Object.entries(stamps)) {
+                    const got = node.attrs[name];
+                    if (wantStamp === null) { if (got !== undefined) failures.push(`${at}: ${selector} carries ${name}="${got}", the script expects none`); continue; }
+                    const tokens = new Set((got ?? "").split(/\s+/).filter(Boolean));
+                    const missing = wantStamp.split(/\s+/).filter((t) => t && !tokens.has(t));
+                    if (got === undefined || missing.length) failures.push(`${at}: ${selector} carries ${name}=${got === undefined ? "none" : `"${got}"`}, the script expects "${wantStamp}"`);
+                  }
+                }
+              } else if (fk === "contains") {
+                const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
+                if (!html.includes(String(fv))) failures.push(`${at}: the frame paints no ${JSON.stringify(fv)}`);
+              } else if (fk === "attributes") {
                 const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
                 for (const [selector, named] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
                   const node = select(painted, selector)[0];

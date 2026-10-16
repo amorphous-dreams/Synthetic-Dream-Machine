@@ -9,18 +9,24 @@
  * empty `lar:style` key, a `lar:membership` key, a mount epoch it mints at mount and on every `lar:resend`, and
  * the `sensedRevision` it took in — and it answers acts the way the contract says an island must (`applied`, or
  * `stale-target` for an act under another epoch, touching nothing). It knows the widgets these scripts name
- * (`$edit-text`, `$button set= setTo=`, `$checkbox`, `$radio`, `$select`), each painted in TW5's own shape (a
- * checkbox and a radio class the label around their input) with its state as attributes. What this file proves
- * belongs to the PAGE: what the sink paints, keeps and relays. The island's own claims ride the engine harness,
- * the declared-cancellation stamps among them (`frame.stamps` reads there; the stand-in paints none).
+ * (`$edit-text`, `$button` with `set=`, `actions=` or `popup=`, `$checkbox`, `$radio`, `$select`, `$reveal
+ * type="popup"`, a transcluded tiddler's `[[link]]`, `[ext[label|href]]` and raw HTML, inside a `$navigator` it reads
+ * as transparent), each painted in TW5's own shape (a checkbox and a radio class the label around their input)
+ * with its state as attributes, every bound node stamped the way the island's per-widget table declares it
+ * (`data-lar-on`, `data-lar-cancel`, `data-lar-bubble`, `data-lar-live`), and the camera's top element carrying a
+ * render id of its own. What this file proves belongs to the PAGE: what the sink paints, keeps, relays and
+ * cancels. The island's own claims ride the engine harness.
  *
  * Steps: `frame` asks the stand-in for its next frame; `deliver: older` applies the frame the stand-in rendered
  * BEFORE taking in the last sense (a newer key revision, a lower sensed revision for that control); `sense` makes
  * a real edit (`execCommand("insertText")`, so a real input event and a real undo step; on a select, the
  * person's options chosen and a real `input`) and reads the relayed event; `act` makes a real click, a real
- * commit, a real click on a toggle (`lar:toggle`) or a real choice and `change` (`lar:choice`), reads the
- * relayed event and feeds the stand-in's answer back through `applyResult`; `switch` sends `lar:resend` to the arriving surface and applies its first frame under a
- * fresh epoch; `expect` reads the page (`value`, `text`, `undoDepth`, `focus`), the last frame (its
+ * commit, a real click on a toggle (`lar:toggle`) or a real choice and `change` (`lar:choice`), or a real click
+ * elsewhere (the modifiers held; the middle button's `auxclick`; the control placed where the script measured it),
+ * reads the relayed event and feeds the stand-in's answer back through `applyResult`; an act the page relays
+ * nothing for reads `refused:unclaimed`, with the default left standing; `switch` sends `lar:resend` to the arriving surface and applies its first frame under a
+ * fresh epoch; `expect` reads the page (`value`, `text`, `undoDepth`, `focus`, `relays`, `defaultPrevented`,
+ * `visible`, `placedFrom`; any other key fails closed), the last frame (`contains`, `stamps` by token, its
  * `attributes` read off the PAINTED node: `checked` and `selected` by the live state the page shows, any other
  * attribute by its value), the answers and the stand-in's writes since the previous `expect`. A control or a
  * selector names its node the way the engine half reads it: a class names its node and the nodes it wraps.
@@ -36,6 +42,8 @@ import {
   mkLarControlResult, type LarMsg_ControlEvent, type LarMsg_ControlResult,
 } from "../../lararium-mesh/src/lar-camera.js";
 import { createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
+import script01 from "./goldens/interaction/01-link-ordinary-modified-middle-external.json";
+import script02 from "./goldens/interaction/02-button-actions-with-modifier-and-popup.json";
 import script03 from "./goldens/interaction/03-edit-body-survives-blur.json";
 import script06 from "./goldens/interaction/06-toggle-checkbox-radio-select-multiselect.json";
 import script13 from "./goldens/interaction/13-switch-resend-and-epoch.json";
@@ -47,46 +55,89 @@ interface Script { readonly golden: string; readonly pins: string; readonly worl
 
 /** A widget the stand-in renders: its class names the control in the script, its render id names it on the wire. */
 interface Widget {
-  readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button" | "checkbox" | "radio" | "select";
+  readonly rid: string; readonly cls: string; readonly kind: "edit-text" | "button" | "checkbox" | "radio" | "select" | "link";
   readonly attrs: Record<string, string>; readonly label: string;
   /** A select's options, by value and label. */
   readonly options: ReadonlyArray<{ value: string; label: string }>;
 }
+/** One piece of the root template, in paint order. */
+type Piece = { readonly widget: Widget } | { readonly reveal: Record<string, string>; readonly body: string } | { readonly html: string };
 
 let epochCounter = 0;
 const mintEpoch = (): number => ++epochCounter;
 const escapeHtml = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const attrsOf = (src: string): Record<string, string> => Object.fromEntries([...src.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]));
+const attrsOf = (src: string): Record<string, string> => Object.fromEntries([...src.matchAll(/([\w$-]+)="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]));
+const ATTRS = `((?:\\s+[\\w$-]+="[^"]*")*)\\s*`;
+
+/** TW5's modifier descriptor (`$tw.keyboardManager.getEventModifierKeyDescriptor`), for the actions a button runs. */
+const modifierOf = (m: LarMsg_ControlEvent["modifiers"]): string => {
+  const on = [m?.meta && "meta", m?.ctrl && "ctrl", m?.alt && "alt", m?.shift && "shift"].filter(Boolean).join("-");
+  return on === "" ? "normal" : on === "alt-ctrl" ? "ctrl-alt" : on === "alt-ctrl-shift" ? "ctrl-alt-shift" : on;
+};
 
 /** The engine half, standing in: a hand renderer of the widgets these scripts name. */
 class StandInIsland {
   readonly store = new Map<string, Fields>();
   readonly widgets: Widget[] = [];
+  readonly pieces: Piece[] = [];
   readonly writes: Array<Fields> = [];
   readonly sensed = new Map<string, { value?: string; localRev: number }>();
+  story: string[];
   epoch = mintEpoch();
   previousEpochFrame: LarSurfaceFrame;
   older: LarSurfaceFrame | null = null;
   current: LarSurfaceFrame;
   private rev = 0;
+  private n = 0;
 
   constructor(readonly surface: string, world: World) {
     for (const t of world.tiddlers) this.store.set(String(t["title"]), { ...t });
-    let n = 0;
-    const tags = /<\$(edit-text|checkbox|radio)([^>]*?)\/>|<\$(button|select)([^>]*)>([\s\S]*?)<\/\$\3>/g;
-    for (const m of world.root.matchAll(tags)) {
-      const kind = (m[1] ?? m[3]) as Widget["kind"];
-      const attrs = attrsOf(m[2] ?? m[4] ?? "");
-      const options = kind === "select" ? [...(m[5] ?? "").matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map((o) => ({ value: o[1]!, label: o[2]! })) : [];
-      this.widgets.push({ rid: `${surface}-r${++n}`, cls: attrs["class"] ?? "", kind, attrs, label: kind === "button" ? m[5] ?? "" : "", options });
+    this.story = [...world.story];
+    const root = world.root.replace(/<\$navigator\b[^>]*>|<\/\$navigator>/g, "");
+    const parts = new RegExp([
+      `<\\$(edit-text|checkbox|radio)${ATTRS}\\/>`,
+      `<\\$(button|select)${ATTRS}>([\\s\\S]*?)<\\/\\$\\3>`,
+      `<\\$reveal${ATTRS}>([^<]*)<\\/\\$reveal>`,
+      `\\{\\{([^}]+)\\}\\}`,
+    ].join("|"), "g");
+    let at = 0;
+    for (const m of root.matchAll(parts)) {
+      if (m.index! > at) this.pieces.push({ html: root.slice(at, m.index) });
+      at = m.index! + m[0].length;
+      if (m[1] !== undefined) this.pieces.push({ widget: this.widget(m[1] as Widget["kind"], attrsOf(m[2] ?? ""), "") });
+      else if (m[3] !== undefined) {
+        const kind = m[3] as Widget["kind"];
+        const options = kind === "select" ? [...(m[5] ?? "").matchAll(/<option value="([^"]*)">([^<]*)<\/option>/g)].map((o) => ({ value: o[1]!, label: o[2]! })) : [];
+        this.pieces.push({ widget: this.widget(kind, attrsOf(m[4] ?? ""), kind === "button" ? m[5] ?? "" : "", options) });
+      } else if (m[6] !== undefined) this.pieces.push({ reveal: attrsOf(m[6]), body: m[7] ?? "" });
+      else this.transclude(String(this.store.get(m[8]!)?.["text"] ?? ""));
     }
+    if (at < root.length) this.pieces.push({ html: root.slice(at) });
     // The pool mounts every surface at boot; the gate drops its frames until the vessel shows it.
     this.current = this.render();
     this.previousEpochFrame = this.current;
   }
 
+  private widget(kind: Widget["kind"], attrs: Record<string, string>, label: string, options: Widget["options"] = []): Widget {
+    const w: Widget = { rid: `${this.surface}-r${++this.n}`, cls: attrs["class"] ?? "", kind, attrs, label, options };
+    this.widgets.push(w);
+    return w;
+  }
+
+  /** A transcluded tiddler's text: `[[link]]` binds a link widget, `[ext[label|href]]` and raw HTML paint unbound. */
+  private transclude(text: string): void {
+    let at = 0;
+    for (const m of text.matchAll(/\[\[([^\]]+)\]\]|\[ext\[([^|\]]+)\|([^\]]+)\]\]/g)) {
+      if (m.index! > at) this.pieces.push({ html: text.slice(at, m.index) });
+      at = m.index! + m[0].length;
+      if (m[1] !== undefined) this.pieces.push({ widget: this.widget("link", { to: m[1] }, m[1]) });
+      else this.pieces.push({ html: `<a class="tc-tiddlylink-external" href="${escapeHtml(m[3]!)}" rel="noopener noreferrer" target="_blank">${escapeHtml(m[2]!)}</a>` });
+    }
+    if (at < text.length) this.pieces.push({ html: text.slice(at) });
+  }
+
   ridOf(cls: string): string {
-    const w = this.widgets.find((x) => `.${x.cls}` === cls);
+    const w = this.widgets.find((x) => `.${x.cls}` === cls || `${x.kind === "link" ? "a" : x.kind}.${x.cls}` === cls);
     if (!w) throw new Error(`stand-in: no widget carries ${cls}`);
     return w.rid;
   }
@@ -96,24 +147,48 @@ class StandInIsland {
     return this.store.get(w.attrs["tiddler"] ?? "")?.[w.attrs["field"] ?? "text"];
   }
 
+  /** The stamps the island's per-widget table declares for a widget's node. */
+  private stamps(w: Widget): string {
+    if (w.kind === "link") return ` data-lar-on="click dragstart dragend" data-lar-cancel="click:ordinary" data-lar-bubble="no"`;
+    if (w.kind === "edit-text") return ` data-lar-on="focus input" data-lar-live="value"`;
+    if (w.kind === "checkbox" || w.kind === "radio") return ` data-lar-on="change" data-lar-live="checked"`;
+    if (w.kind === "select") return ` data-lar-on="change" data-lar-live="selected"`;
+    const handles = ["set", "popup", "to", "message"].some((a) => w.attrs[a] !== undefined);
+    const cancels = handles || w.attrs["actions"] !== undefined;
+    return ` data-lar-on="click"${cancels ? ` data-lar-cancel="click"` : ""} data-lar-bubble="${handles ? "no" : "yes"}"`;
+  }
+
   render(): LarSurfaceFrame {
-    const html = this.widgets.map((w) => {
-      if (w.kind === "button") return `<button class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}">${escapeHtml(w.label)}</button>`;
+    const body = this.pieces.map((piece) => {
+      if ("html" in piece) return piece.html;
+      if ("reveal" in piece) {
+        const cls = escapeHtml(`${piece.reveal["class"] ?? ""} tc-reveal`.trim());
+        const at = /^\((-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)\)$/.exec(String(this.store.get(piece.reveal["state"] ?? "")?.["text"] ?? ""));
+        if (!at) return `<span class="${cls}" hidden="true"></span>`;
+        const [left, top, , height] = at.slice(1).map(Number) as [number, number, number, number];
+        return `<span class="${cls} tc-popup" style="position:absolute;z-index:1000;left:${left}px;top:${top + height}px">${escapeHtml(piece.body)}</span>`;
+      }
+      const w = piece.widget;
+      if (w.kind === "link") {
+        return `<a class="tc-tiddlylink tc-tiddlylink-resolves" data-lar-rid="${w.rid}"${this.stamps(w)} href="#${encodeURIComponent(w.attrs["to"]!)}">${escapeHtml(w.label)}</a>`;
+      }
+      if (w.kind === "button") return `<button class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>${escapeHtml(w.label)}</button>`;
       if (w.kind === "checkbox" || w.kind === "radio") {
         const on = this.read(w) === (w.kind === "checkbox" ? w.attrs["checked"] : w.attrs["value"]);
-        return `<label class="tc-${w.kind} ${escapeHtml(w.cls)}"><input type="${w.kind}" data-lar-rid="${w.rid}"${on ? ' checked="checked"' : ""}><span></span></label>`;
+        return `<label class="tc-${w.kind} ${escapeHtml(w.cls)}"><input type="${w.kind}" data-lar-rid="${w.rid}"${this.stamps(w)}${on ? ' checked="checked"' : ""}><span></span></label>`;
       }
       if (w.kind === "select") {
         const held = this.read(w);
         const keys = Array.isArray(held) ? held : held === undefined ? [] : [held];
         const multiple = w.attrs["multiple"] === "yes";
         const opts = w.options.map((o) => `<option value="${escapeHtml(o.value)}"${keys.includes(o.value) ? ' selected="selected"' : ""}>${escapeHtml(o.label)}</option>`).join("");
-        return `<select class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${multiple ? ' multiple="multiple"' : ""}>${opts}</select>`;
+        return `<select class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}${multiple ? ' multiple="multiple"' : ""}>${opts}</select>`;
       }
       const sensed = this.sensed.get(w.rid);
       const value = sensed?.value ?? this.store.get(w.attrs["tiddler"] ?? "")?.["text"] ?? "";
-      return `<${w.attrs["tag"] ?? "input"} class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}">${escapeHtml(value)}</${w.attrs["tag"] ?? "input"}>`;
+      return `<${w.attrs["tag"] ?? "input"} class="${escapeHtml(w.cls)}" data-lar-rid="${w.rid}"${this.stamps(w)}>${escapeHtml(String(value))}</${w.attrs["tag"] ?? "input"}>`;
     }).join("");
+    const html = `<div data-lar-rid="${this.surface}-top"><p>${body}</p></div>`;
     this.rev += 1;
     const frame: LarSurfaceFrame = {
       type: LAR_FRAME, wikiUri: `lar:///golden/${this.surface}`, cameraId: LAR_CAMERA_STORY, mountEpoch: this.epoch, surface: this.surface,
@@ -150,14 +225,25 @@ class StandInIsland {
     const answer = (status: LarMsg_ControlResult["status"]): LarMsg_ControlResult =>
       mkLarControlResult({ eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: this.epoch, ...(ev.renderId ? { renderId: ev.renderId } : {}), ...(ev.controlId ? { controlId: ev.controlId } : {}), status });
     if (ev.mountEpoch !== this.epoch) return answer("stale-target");
+    if (cid === `${this.surface}-top`) return mkLarControlResult({ ...answer("refused"), reason: "unclaimed" });
     const w = this.widgets.find((x) => x.rid === cid);
     if (!w) return answer("stale-target");
     const write = (title: string, field: string, value: string | string[]): void => {
       this.store.set(title, { ...this.store.get(title), title, [field]: value });
       this.writes.push({ title, [field]: value });
     };
-    if (w.kind === "button" && ev.action === "lar:click" && w.attrs["set"] !== undefined) {
-      write(w.attrs["set"], "text", w.attrs["setTo"] ?? "");
+    if (w.kind === "button" && ev.action === "lar:click") {
+      const action = /<\$action-setfield \$tiddler='([^']+)' text=<<modifier>>\/>/.exec(w.attrs["actions"] ?? "");
+      if (action) write(action[1]!, "text", modifierOf(ev.modifiers));
+      const g = ev.geometry;
+      if (w.attrs["popup"] !== undefined && g) write(w.attrs["popup"], "text", `(${g.left},${g.top},${g.width},${g.height})`);
+      if (w.attrs["set"] !== undefined) write(w.attrs["set"], "text", w.attrs["setTo"] ?? "");
+    } else if (w.kind === "link" && ev.action === "lar:click") {
+      // The navigator's road: the target opens at the top of the story; an ordinary click also enters the history.
+      const to = w.attrs["to"]!;
+      if (!this.story.includes(to)) { this.story = [to, ...this.story]; this.writes.push({ title: "$:/StoryList", list: [...this.story] }); }
+      const m = ev.modifiers;
+      if (!m?.ctrl && !m?.meta && (m?.button ?? 0) !== 1) this.writes.push({ title: "$:/HistoryList", "current-tiddler": to });
     } else if (w.kind === "edit-text" && ev.action === "lar:commit" && typeof ev.wholeValue === "string") {
       write(w.attrs["tiddler"] ?? "", "text", ev.wholeValue);
       if (ev.localRev !== undefined) this.sensed.set(cid, { value: ev.wholeValue, localRev: ev.localRev });
@@ -193,7 +279,20 @@ function undoDepth(field: HTMLTextAreaElement | HTMLInputElement): number {
 
 async function run(script: Script): Promise<void> {
   const host = document.createElement("div");
+  // The host stands at the viewport's origin, so a control placed where the script measured it reads back the
+  // script's own host-relative geometry.
+  host.style.cssText = "position:fixed;top:0;left:0;width:800px;height:600px";
   document.body.appendChild(host);
+  // The page's own default, read after the sink had its turn; an anchor's is then cancelled so the test page never navigates.
+  let lastDefaultPrevented: boolean | null = null;
+  const readDefault = (e: Event): void => {
+    lastDefaultPrevented = e.defaultPrevented;
+    // An anchor would navigate the test page; every other default (a checkbox's toggle) stands as the page left it.
+    if (e.composedPath().some((n) => n instanceof HTMLAnchorElement)) e.preventDefault();
+  };
+  window.addEventListener("click", readDefault);
+  window.addEventListener("auxclick", readDefault);
+  const prevented = new Map<string, boolean>();
   const sink = createProjectionSink(host, { inputMaxChars: 4096 });
   const sent: Array<{ surface: string; ev: LarMsg_ControlEvent }> = [];
   sink.arm({ sendControlEvent: (surface, ev) => { sent.push({ surface, ev }); } });
@@ -229,6 +328,16 @@ async function run(script: Script): Promise<void> {
     select.focus();
     for (const option of select.options) option.selected = keys.includes(option.value);
   };
+  /** A real click as the person makes it: the modifiers held, and the middle button's `auxclick`. */
+  const clickOn = (target: HTMLElement, m?: { ctrl?: boolean; meta?: boolean; alt?: boolean; shift?: boolean; button?: number }): boolean => {
+    lastDefaultPrevented = null;
+    const middle = m?.button === 1;
+    target.dispatchEvent(new MouseEvent(middle ? "auxclick" : "click", {
+      bubbles: true, composed: true, cancelable: true, button: middle ? 1 : 0,
+      ctrlKey: !!m?.ctrl, metaKey: !!m?.meta, altKey: !!m?.alt, shiftKey: !!m?.shift,
+    }));
+    return lastDefaultPrevented ?? false;
+  };
   const relayedSince = (mark: number): LarMsg_ControlEvent => {
     expect(sent.length, "the page relayed one control event").toBe(mark + 1);
     return sent[mark]!.ev;
@@ -247,134 +356,182 @@ async function run(script: Script): Promise<void> {
     }
   };
 
-  for (const step of script.steps) {
-    if ("frame" in step) {
-      const surface = (step["surface"] as string | undefined) ?? shown;
-      shown = surface;
-      deliver(island(surface).render());
-    } else if ("deliver" in step) {
-      const older = island(shown).older;
-      expect(older, "the stand-in holds a frame rendered before the last sense").not.toBeNull();
-      deliver(older!);
-    } else if ("sense" in step && el((step["sense"] as { control: string }).control) instanceof HTMLSelectElement) {
-      const s = step["sense"] as { control: string; wholeValue: string[]; localRev: number };
-      const select = el(s.control) as HTMLSelectElement;
-      const mark = sent.length;
-      choose(select, s.wholeValue);
-      select.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-      const ev = relayedSince(mark);
-      expect([ev.kind, ev.action, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", "lar:sense", s.wholeValue, s.localRev]);
-      answer(ev, shown);
-    } else if ("sense" in step) {
-      const s = step["sense"] as { control: string; wholeValue: string; localRev: number };
-      const field = el(s.control) as HTMLTextAreaElement;
-      field.focus();
-      const mark = sent.length;
-      if (s.wholeValue.startsWith(field.value)) {
-        field.setSelectionRange(field.value.length, field.value.length);
-        document.execCommand("insertText", false, s.wholeValue.slice(field.value.length));
-      } else {
-        field.select();
-        document.execCommand("insertText", false, s.wholeValue);
-      }
-      const ev = relayedSince(mark);
-      expect([ev.kind, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", s.wholeValue, s.localRev]);
-      answer(ev, shown);
-    } else if ("act" in step) {
-      const a = step["act"] as { control: string; action: string; wholeValue?: string | string[]; checked?: boolean; localRev?: number; epoch?: string; surface?: string };
-      const surface = a.surface ?? shown;
-      const isl = island(surface);
-      const current = isl.current;
-      if (a.epoch === "stale") sink.apply(isl.previousEpochFrame);    // the page as it stood when the person acted
-      const mark = sent.length;
-      const target = el(a.control);
-      if (a.action === "lar:commit") {
-        target.blur();
-        if (sent.length === mark) target.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-      } else if (a.action === "lar:choice") {
-        const select = target as HTMLSelectElement;
-        if (JSON.stringify([...select.selectedOptions].map((o) => o.value)) !== JSON.stringify(a.wholeValue)) choose(select, a.wholeValue as string[]);
-        select.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-      } else if (a.action === "lar:toggle") {
-        const toggle = target as HTMLInputElement;
-        expect(toggle.checked, `${a.control} stands opposite the state the person makes`).toBe(!a.checked);
-        toggle.click();
-        expect(toggle.checked, `${a.control} holds the state the person made: the browser's default stood`).toBe(a.checked);
-      } else {
-        target.click();
-      }
-      const ev = relayedSince(mark);
-      expect([ev.kind, ev.action]).toEqual(["lar:act", a.action]);
-      if (a.wholeValue !== undefined) expect(ev.wholeValue).toEqual(a.wholeValue);
-      if (a.checked !== undefined) expect(ev.checked, `${a.control} carries checked`).toBe(a.checked);
-      if (a.localRev !== undefined) expect(ev.localRev, `${a.control} carries its revision`).toBe(a.localRev);
-      if (a.epoch === "stale") {
-        expect(ev.mountEpoch, "the late act carries the epoch the page showed when the person acted").toBe(isl.previousEpochFrame.mountEpoch);
-        expect(ev.mountEpoch).not.toBe(isl.epoch);
-        sink.apply(current);                                            // the resend's frame lands before the answer
-      } else {
-        expect(ev.mountEpoch).toBe(isl.epoch);
-      }
-      answer(ev, surface);
-    } else if ("switch" in step) {
-      const to = (step["switch"] as { surface: string }).surface;
-      shown = to;
-      deliver(island(to).resend());
-    } else if ("expect" in step) {
-      const want = step["expect"] as { page?: Record<string, unknown>; frame?: Record<string, unknown>; answers?: string[]; writes?: unknown[] };
-      if (want.page) {
-        for (const [key, spec] of Object.entries(want.page)) {
-          if (key === "surface") { expect(sink.surface()).toBe(spec); continue; }
-          const node = el(key) as HTMLTextAreaElement;
-          if (node instanceof HTMLSelectElement && (spec as { value?: string }).value !== undefined) {
-            expect(node.value, `${key} value`).toBe((spec as { value: string }).value);
-            continue;
+  try {
+    for (const step of script.steps) {
+      if ("frame" in step) {
+        const surface = (step["surface"] as string | undefined) ?? shown;
+        shown = surface;
+        deliver(island(surface).render());
+      } else if ("deliver" in step) {
+        const older = island(shown).older;
+        expect(older, "the stand-in holds a frame rendered before the last sense").not.toBeNull();
+        deliver(older!);
+      } else if ("sense" in step && el((step["sense"] as { control: string }).control) instanceof HTMLSelectElement) {
+        const s = step["sense"] as { control: string; wholeValue: string[]; localRev: number };
+        const select = el(s.control) as HTMLSelectElement;
+        const mark = sent.length;
+        choose(select, s.wholeValue);
+        select.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+        const ev = relayedSince(mark);
+        expect([ev.kind, ev.action, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", "lar:sense", s.wholeValue, s.localRev]);
+        answer(ev, shown);
+      } else if ("sense" in step) {
+        const s = step["sense"] as { control: string; wholeValue: string; localRev: number };
+        const field = el(s.control) as HTMLTextAreaElement;
+        field.focus();
+        const mark = sent.length;
+        if (s.wholeValue.startsWith(field.value)) {
+          field.setSelectionRange(field.value.length, field.value.length);
+          document.execCommand("insertText", false, s.wholeValue.slice(field.value.length));
+        } else {
+          field.select();
+          document.execCommand("insertText", false, s.wholeValue);
+        }
+        const ev = relayedSince(mark);
+        expect([ev.kind, ev.wholeValue, ev.localRev]).toEqual(["lar:sense", s.wholeValue, s.localRev]);
+        answer(ev, shown);
+      } else if ("act" in step) {
+        const a = step["act"] as {
+          control: string; action: string; wholeValue?: string | string[]; checked?: boolean; localRev?: number; epoch?: string; surface?: string;
+          modifiers?: { ctrl: boolean; meta: boolean; alt: boolean; shift: boolean; button?: number };
+          geometry?: { top: number; left: number; width: number; height: number };
+        };
+        const surface = a.surface ?? shown;
+        const isl = island(surface);
+        const current = isl.current;
+        if (a.epoch === "stale") sink.apply(isl.previousEpochFrame);    // the page as it stood when the person acted
+        const mark = sent.length;
+        const target = el(a.control);
+        if (a.geometry) {
+          // The control stands where the script measured it, so the page's own measurement reads the script's rect.
+          const g = a.geometry;
+          target.style.cssText = `position:fixed;box-sizing:border-box;margin:0;padding:0;border:0;top:${g.top}px;left:${g.left}px;width:${g.width}px;height:${g.height}px`;
+        }
+        if (a.action === "lar:commit") {
+          target.blur();
+          if (sent.length === mark) target.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+        } else if (a.action === "lar:choice") {
+          const select = target as HTMLSelectElement;
+          if (JSON.stringify([...select.selectedOptions].map((o) => o.value)) !== JSON.stringify(a.wholeValue)) choose(select, a.wholeValue as string[]);
+          select.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+        } else if (a.action === "lar:toggle") {
+          const toggle = target as HTMLInputElement;
+          expect(toggle.checked, `${a.control} stands opposite the state the person makes`).toBe(!a.checked);
+          toggle.click();
+          expect(toggle.checked, `${a.control} holds the state the person made: the browser's default stood`).toBe(a.checked);
+        } else {
+          prevented.set(a.control, clickOn(target, a.modifiers));
+        }
+        if (sent.length === mark && a.action === "lar:click") {
+          // No binding claims the click: the page relays nothing and leaves the browser's default standing, which
+          // reads as the island's own word for it.
+          answers.push("refused:unclaimed");
+          continue;
+        }
+        const ev = relayedSince(mark);
+        expect([ev.kind, ev.action]).toEqual(["lar:act", a.action]);
+        if (a.modifiers) expect(ev.modifiers, "the act carries the modifiers held").toEqual(a.modifiers.button === undefined ? { ...a.modifiers, button: 0 } : a.modifiers);
+        if (a.geometry) expect(ev.geometry, "the act carries the rect the page measured").toEqual({ ...a.geometry, right: a.geometry.left + a.geometry.width, bottom: a.geometry.top + a.geometry.height });
+        if (a.wholeValue !== undefined) expect(ev.wholeValue).toEqual(a.wholeValue);
+        if (a.checked !== undefined) expect(ev.checked, `${a.control} carries checked`).toBe(a.checked);
+        if (a.localRev !== undefined) expect(ev.localRev, `${a.control} carries its revision`).toBe(a.localRev);
+        if (a.epoch === "stale") {
+          expect(ev.mountEpoch, "the late act carries the epoch the page showed when the person acted").toBe(isl.previousEpochFrame.mountEpoch);
+          expect(ev.mountEpoch).not.toBe(isl.epoch);
+          sink.apply(current);                                            // the resend's frame lands before the answer
+        } else {
+          expect(ev.mountEpoch).toBe(isl.epoch);
+        }
+        answer(ev, surface);
+      } else if ("switch" in step) {
+        const to = (step["switch"] as { surface: string }).surface;
+        shown = to;
+        deliver(island(to).resend());
+      } else if ("expect" in step) {
+        const want = step["expect"] as { page?: Record<string, unknown>; frame?: Record<string, unknown>; answers?: string[]; writes?: unknown[] };
+        if (want.page) {
+          for (const [key, spec] of Object.entries(want.page)) {
+            if (key === "surface") { expect(sink.surface()).toBe(spec); continue; }
+            const node = el(key) as HTMLTextAreaElement;
+            if (node instanceof HTMLSelectElement && (spec as { value?: string }).value !== undefined) {
+              expect(node.value, `${key} value`).toBe((spec as { value: string }).value);
+              continue;
+            }
+            const s = spec as {
+              value?: string; text?: string; undoDepth?: number; focus?: boolean; relays?: boolean; defaultPrevented?: boolean;
+              visible?: boolean; placedFrom?: { top: number; left: number };
+            };
+            const known = ["value", "text", "undoDepth", "focus", "relays", "defaultPrevented", "visible", "placedFrom"];
+            for (const k of Object.keys(s)) if (!known.includes(k)) throw new Error(`the page harness reads no page.${k}`);
+            if (s.value !== undefined) expect(node.value, `${key} value`).toBe(s.value);
+            if (s.text !== undefined) expect(node.textContent, `${key} text`).toBe(s.text);
+            if (s.undoDepth !== undefined) expect(undoDepth(node), `${key} undo depth`).toBe(s.undoDepth);
+            if (s.focus !== undefined) expect(root.activeElement === node, `${key} focus`).toBe(s.focus);
+            if (s.relays !== undefined) {
+              const mark = sent.length;
+              clickOn(node);
+              expect(sent.length > mark, `${key} relays`).toBe(s.relays);
+              sent.length = mark;                                          // a probe, never an act: nothing reaches the island
+            }
+            if (s.defaultPrevented !== undefined) expect(prevented.get(key), `${key} defaultPrevented`).toBe(s.defaultPrevented);
+            if (s.visible !== undefined) expect(!node.hidden && getComputedStyle(node).display !== "none", `${key} visible`).toBe(s.visible);
+            if (s.placedFrom !== undefined) expect({ top: parseFloat(node.style.top), left: parseFloat(node.style.left) }, `${key} placed`).toEqual(s.placedFrom);
           }
-          const s = spec as { value?: string; text?: string; undoDepth?: number; focus?: boolean };
-          if (s.value !== undefined) expect(node.value, `${key} value`).toBe(s.value);
-          if (s.text !== undefined) expect(node.textContent, `${key} text`).toBe(s.text);
-          if (s.undoDepth !== undefined) expect(undoDepth(node), `${key} undo depth`).toBe(s.undoDepth);
-          if (s.focus !== undefined) expect(root.activeElement === node, `${key} focus`).toBe(s.focus);
         }
-      }
-      if (want.frame) {
-        const f = lastFrame!;
-        if (want.frame["surface"] !== undefined) expect(f.surface).toBe(want.frame["surface"]);
-        if (want.frame["epoch"] === "fresh") expect(freshAtLast, "the frame carries a mount epoch this surface never showed").toBe(true);
-        for (const key of Object.keys(want.frame)) {
-          if (!["surface", "epoch", "sensedRevision", "attributes", "stamps"].includes(key)) throw new Error(`the page harness reads no frame.${key}`);
-        }
-        // The stamps are the island's own claim: the engine half reads them, and the stand-in paints none.
-        for (const [selector, named] of Object.entries((want.frame["attributes"] ?? {}) as Record<string, Record<string, string | null>>)) {
-          const node = el(selector);
-          for (const [attr, value] of Object.entries(named)) {
-            if (attr === "checked" || attr === "selected") {
-              expect((node as HTMLInputElement & HTMLOptionElement)[attr], `${selector} shows ${attr}`).toBe(value !== null);
-            } else {
-              expect(node.getAttribute(attr), `${selector} ${attr}`).toBe(value);
+        if (want.frame) {
+          const f = lastFrame!;
+          if (want.frame["surface"] !== undefined) expect(f.surface).toBe(want.frame["surface"]);
+          if (want.frame["epoch"] === "fresh") expect(freshAtLast, "the frame carries a mount epoch this surface never showed").toBe(true);
+          for (const key of Object.keys(want.frame)) {
+            if (!["surface", "epoch", "sensedRevision", "attributes", "stamps", "contains"].includes(key)) throw new Error(`the page harness reads no frame.${key}`);
+          }
+          if (want.frame["contains"] !== undefined) expect(f.keys[0]!.html, "the frame paints the text").toContain(String(want.frame["contains"]));
+          // The stamps the page reads its cancellation from, as the painted node keeps them: each token the script names.
+          for (const [control, stamps] of Object.entries((want.frame["stamps"] ?? {}) as Record<string, Record<string, string | null>>)) {
+            const node = el(control);
+            for (const [name, wantStamp] of Object.entries(stamps)) {
+              const got = node.getAttribute(name);
+              if (wantStamp === null) { expect(got, `${control} ${name}`).toBeNull(); continue; }
+              const tokens = new Set((got ?? "").split(/\s+/).filter(Boolean));
+              expect(wantStamp.split(/\s+/).filter((t) => !tokens.has(t)), `${control} ${name}="${got}" carries "${wantStamp}"`).toEqual([]);
             }
           }
+          for (const [selector, named] of Object.entries((want.frame["attributes"] ?? {}) as Record<string, Record<string, string | null>>)) {
+            const node = el(selector);
+            for (const [attr, value] of Object.entries(named)) {
+              if (attr === "checked" || attr === "selected") {
+                expect((node as HTMLInputElement & HTMLOptionElement)[attr], `${selector} shows ${attr}`).toBe(value !== null);
+              } else {
+                expect(node.getAttribute(attr), `${selector} ${attr}`).toBe(value);
+              }
+            }
+          }
+          if (want.frame["sensedRevision"] !== undefined) {
+            const named = Object.fromEntries(Object.entries(want.frame["sensedRevision"] as Record<string, number>).map(([cls, rev]) => [island(f.surface).ridOf(cls), rev]));
+            expect(f.sensedRevision).toEqual(named);
+          }
         }
-        if (want.frame["sensedRevision"] !== undefined) {
-          const named = Object.fromEntries(Object.entries(want.frame["sensedRevision"] as Record<string, number>).map(([cls, rev]) => [island(f.surface).ridOf(cls), rev]));
-          expect(f.sensedRevision).toEqual(named);
+        if (want.answers) { expect(answers).toEqual(want.answers); }
+        answers = [];
+        if (want.writes) {
+          const writes = [...islands.values()].flatMap((i) => i.writes);
+          expect(writes.slice(writesSeen)).toEqual(want.writes);
+          writesSeen = writes.length;
         }
+      } else {
+        throw new Error(`the page harness reads no verb in ${JSON.stringify(step)}`);
       }
-      if (want.answers) { expect(answers).toEqual(want.answers); }
-      answers = [];
-      if (want.writes) {
-        const writes = [...islands.values()].flatMap((i) => i.writes);
-        expect(writes.slice(writesSeen)).toEqual(want.writes);
-        writesSeen = writes.length;
-      }
-    } else {
-      throw new Error(`the page harness reads no verb in ${JSON.stringify(step)}`);
     }
+  } finally {
+    window.removeEventListener("click", readDefault);
+    window.removeEventListener("auxclick", readDefault);
+    host.remove();
   }
-  host.remove();
 }
 
 describe("★ interaction goldens, the page half ★", () => {
+  test(`01 · ${script01.pins}`, async () => { await run(script01 as unknown as Script); });
+  test(`02 · ${script02.pins}`, async () => { await run(script02 as unknown as Script); });
   test(`03 · ${script03.pins}`, async () => { await run(script03 as unknown as Script); });
   test(`06 · ${script06.pins}`, async () => { await run(script06 as unknown as Script); });
   test(`13 · ${script13.pins}`, async () => { await run(script13 as unknown as Script); });

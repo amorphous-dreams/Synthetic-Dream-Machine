@@ -36,7 +36,7 @@ const change = (el: Element, type = "change"): void => { el.dispatchEvent(new Ev
 describe("★ a toggle crosses as one act, and the browser's default stands ★", () => {
   test("a checkbox click relays ONE lar:toggle carrying checked and a localRev, and the box stays checked; CONTROL: a button click still relays lar:click", () => {
     const m = mount();
-    m.sink.apply(frame(1, box(false) + `<button data-lar-rid="b">b</button>`));
+    m.sink.apply(frame(1, box(false) + `<button data-lar-rid="b" data-lar-on="click">b</button>`));
     const input = m.q<HTMLInputElement>("input");
     input.click();
     expect(input.checked, "the browser's toggle stood: no blanket preventDefault reached it").toBe(true);
