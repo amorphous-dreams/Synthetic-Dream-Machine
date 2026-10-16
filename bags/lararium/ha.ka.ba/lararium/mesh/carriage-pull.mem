@@ -1,0 +1,74 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/carriage-pull.mem"
+l-space     = "lararium"
+mana        = 14
+role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullOracle`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (the shut-routes house ruling, stable-founding-road #/rulings)."
+source-file = "packages/lararium-mesh/src/carriage-pull.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/carriage-pull"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/carriage-pull"
+written     = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The carriage pull ~ one dial per (peer, Nexus), through a gate
+
+A carriage reads a peer's public map through a gate and nowhere else: the bare route stands SHUT by name,
+and what the house named to open carriage peering is a proven gate-native caller (the shut-routes house ruling, stable-founding-road #/rulings). This is that caller: the carriage cap pulls through `gateNativeCarriagePull`, and no bare
+path stands beside it.
+
+<<~/ahu>>
+
+<<~ ahu #/where-the-pin-comes-from>>
+
+!! Where the pin comes from ~ never the wire, never the dial entry
+
+The pair index (`admit-gate-pin`), keyed (peer's key, Nexus hex, `/oracle`, `floor`), filled only through an
+authenticated relation or a carried signed pin set (house ruling "The admit's gate pin"; `place-floor-pin`).
+A peer this vessel holds no pin for at any Nexus it stands in is not dialed at all (`pin-absent`): a
+stranger's crossroads, and a crossroads of another Nexus, are never knocked on. The `refresh` hook runs once
+before each pull: where the vessel files the pins its boards carried since the last one.
+
+<<~/ahu>>
+
+<<~ ahu #/what-it-presents>>
+
+!! What it presents ~ the caller's own standing
+
+The caller's `presentationFor(nexus, pin)`: a face with its admit at that Nexus, or a place with its
+carriage contract there (`herm-carriage` decides which). A Nexus at which this vessel can present nothing is
+skipped by name (`presentation-absent`), never dialed bare. Nothing is composed on the wire's behalf.
+
+<<~/ahu>>
+
+<<~ ahu #/feed-or-fade>>
+
+!! Feed or fade
+
+The first verified pull wins (`pullAndVerifyOracle`, the pointer bound to the publisher's key); every Nexus
+is tried at most once per pull; nothing throws. The last refusal names itself when none answered.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/carriage-pull.ts" family="code" role="has">>
+<<~ pranala #dial from="?" -> to="packages/lararium-mesh/src/oracle-read-client.ts" family="code" role="dials-through">>
+<<~ pranala #caller from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="stood-by">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+
+<<^ code="&#x0003;">>ni:///sha-256;vZIpBkldk4CyZ9l032IKTbvc7-JDEn6lzl6m7qXOvgs
+
+<<^ code="&#x0004;" -> to="?">>

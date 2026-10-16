@@ -26,8 +26,8 @@
 import { type CapTier, CAP_TIER_ORDER } from "./cap-tier.js";
 
 /** A PIN cap — keep the bytes a cid names, at cid grain, until an explicit release or the holder's own fence
- *  (its boot epoch) supersedes it. NO `expiry` field (M7): a wall clock never decided this house's pin
- *  verdicts even while the field stood, and a retired field left standing invites a reader to think it does. */
+ *  (its boot epoch) supersedes it. NO clock field (M7): a wall clock never decides this house's pin verdicts,
+ *  and a field that decides nothing invites a reader to think it does. */
 export interface PinCap {
   readonly cid:    string;
   readonly tier:   CapTier;

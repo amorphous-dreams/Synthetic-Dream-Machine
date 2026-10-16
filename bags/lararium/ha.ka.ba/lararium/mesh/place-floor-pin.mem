@@ -1,0 +1,97 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/place-floor-pin.mem"
+l-space     = "lararium"
+mana        = 14
+role        = "invariant law: a PLACE's floor pin, carried where a reader already holds the Nexus that carries the place, and the place's own presentation at that Nexus's floor gates. The quorum's act authenticates the key; the key authenticates the pin. A reader files a statement only when it reads whole at floor tier, at the Nexus and route asked, its signature verifies under the place key, and the reader's OWN held root counts a carry for that key. The statement rides the carriage board as a sidecar any replica writer may carry and none can forge. Under the house ruling \"The admit's gate pin\"."
+source-file = "packages/lararium-mesh/src/place-floor-pin.ts"
+status      = "draft"
+status-why  = "lane reading, unruled 2026-10-16: the statement a place signs over its floor pin and the carry relation a reader files it under; the statement's causal position and the index's replace door are owed"
+title       = "lar:///ha.ka.ba/lararium/mesh/place-floor-pin"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/place-floor-pin"
+written     = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The place floor pin ~ a pin the quorum's act vouches for
+
+A floor route takes its pin only through an authenticated relation or a carried signed pin set, and an
+announcement never authenticates its own first pin (house ruling "The admit's gate pin"). A herm's floor pin
+derives from its floor key, which no seat holds, so no seat can mint it. The relation that vouches for it is
+the one the Nexus already published: the quorum's counted `carry` over the herm's vessel key.
+
+<<~/ahu>>
+
+<<~ ahu #/the-statement>>
+
+!! The statement ~ one per place per Nexus
+
+The place signs `{ kind, placeKey, nexus, route, tier, digest }` over the pin it stands at that Nexus, with
+the key the quorum's act names (`PLACE_FLOOR_PIN_DOMAIN`, registered in `domains`, apart from every other seal). It rides
+the Nexus's carriage board under a sidecar key apart from the acts (`PLACE_FLOOR_PIN_PREFIX`), which the act
+extractor skips. Any replica writer may carry it; none can forge it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reader>>
+
+!! The reader files only what it can vouch for
+
+`readPlaceFloorPin` refuses by name, never throws, and files only when all of these hold:
+
+# the statement reads whole and its pin reads whole (`readGateBundlePin`), at FLOOR tier, at the Nexus the
+reader asked, on the route asked;
+# the signature verifies under `placeKey` over this exact image;
+# LAST, the relation: the reader's OWN held root of that Nexus counts a `carry` for `placeKey`.
+
+A key the reader's replica does not count authenticates nothing (`place-uncarried`). The index it files into
+is the pair index (`admit-gate-pin`), keyed (place key, Nexus hex, route, tier).
+
+<<~/ahu>>
+
+<<~ ahu #/the-place-arm>>
+
+!! The place arm
+
+A place presents the quorum's counted `carry` act over its own key at the gate's Nexus, with every counted
+act of that relation in its causal past as the lineage the gate's reader walks (`placeArmFor`,
+`verifyPresentedCarry`). The head is the counted `carry` no other counted act of this place descends from; a
+counted `uncarry` that descends from it leaves the place with no arm to present. A lineage past
+`PLACE_LINEAGE_BOUND` presents nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed
+
+The statement carries no causal position, and the pair index holds no replace by design: an older valid
+statement can stand in for a newer one after a floor-key rotation until the index drops. Owed as one piece:
+a position on the statement (the carrying roster's `sealEpochCid` and the place's own pin generation) and a
+causal replace door on the index that reads it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/place-floor-pin.ts" family="code" role="has">>
+<<~ pranala #index from="?" -> to="packages/lararium-mesh/src/admit-gate-pin.ts" family="code" role="files-into">>
+<<~ pranala #layer from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="signed-by">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carriage-pull">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/carry-bundle">>
+
+<<^ code="&#x0003;">>ni:///sha-256;Agk-y5AZS4M9jWNyqW6abeCu7_u2GBmH1SQx3aHvzO4
+
+<<^ code="&#x0004;" -> to="?">>

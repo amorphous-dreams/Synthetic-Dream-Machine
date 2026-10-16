@@ -10,7 +10,7 @@ import { test } from "node:test";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const FILES = [
   "docker-compose.mesh.yml", "docker-compose.kahu.yml", "docker-compose.kahu-recovery.yml",
-  "docker-compose.crossing.yml", "docker-compose.swarm.yml", "docker-compose.swarm-ws.yml",
+  "docker-compose.crossing.yml", "docker-compose.swarm.yml",
   "docker-compose.burn.yml",
 ];
 const EXCEPTIONS = new Map([

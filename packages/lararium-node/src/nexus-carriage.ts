@@ -10,9 +10,8 @@
  * No proof binding a per-Nexus LEAF to a persona ROOT ever travels on the wire, so this vessel keeps two maps
  * keyed by peer that fill independently:
  *   · the LEAF MAP (`peerId → leaf nym`) — the ONLY thing the membership consult reads. A peer enters it when
- *     the socket it stands on PRESENTED an admit and ALL of these hold, checked here at the seat:
- *       (a) the admit's leaf signed this socket's nonce, this gate's key, the wire vessel key and the admit's
- *           act CID (`verifyLeafProof`);
+ *     the gated session it stands on PRESENTED an admit and ALL of these hold, checked here at every refold:
+ *       (a) the session's proven face key (`face-gate`'s chain) stands at the head of the admitted nym's key line;
  *       (b) `readAdmitAtHeldRoot` reads the admit `held` against its Nexus N — N's held root built from the charter this
  *           vessel holds for N, N's carriage board read as a DENY board (counted revokes only), and N's
  *           antigen through its own roster and verifier;
@@ -20,7 +19,7 @@
  *     `unsettled`, `wrong-epoch`, `denied` and `rejected` all leave the peer a STRANGER. The nym written is the
  *     verdict's own — the admit's leaf — and nothing from any root.
  *   · the ROOT MAP (`peerContractNymMap`) — what the REALM consult reads (`contractNymOfPeer`). Nothing fills
- *     it: no root-signed edge travels on any socket (the lar:auth contract slot is retired), and linking a leaf
+ *     it: no root-signed edge travels on any socket (no socket carries a contract slot), and linking a leaf
  *     to a root would carry the forbidden binding. The seat stays for the realm doc's write side to fill. The
  *     membership consult never reads it.
  *
@@ -41,8 +40,8 @@
  * the leaf map lands from readings older than a write already landed: a presentation judged on the readings
  * before a revoke never re-seats a peer after the refold that read the revoke.
  *
- * NO GLOBAL NOW: every reading is this vessel's own replica as of its last sync, and the gate's single-use
- * nonce is the only freshness the leaf proof carries.
+ * NO GLOBAL NOW: every reading is this vessel's own replica as of its last sync, and the gate's Noise session
+ * is the only freshness the face proof carries.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/nexus-membership
  */
@@ -50,7 +49,7 @@
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type {
   NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit,
-  LeafIdentity, SealEpoch, FederationPosture,
+  SealEpoch, FederationPosture,
 } from "@lararium/mesh";
 import {
   nexusAidOf,
@@ -64,11 +63,9 @@ import {
   kapaeAntigenDocUrl,
   materializeSharedLarDoc,
   makeMultiSigQuorumVerifier,
-  verifyLeafProof,
   heldNexusRoot, heldRootFor, readAdmitAtHeldRoot,
   presentationFromBoardDoc,
   presentationFindingLine,
-  ed25519SignerFromSeed,
   carriageEntryActCid,
   presentedActCid,
   nexusKeyHandOversFromBoard,
@@ -78,7 +75,6 @@ import {
   type PresentationFinding,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import type { DeviceDelegationTiddler } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
 import type { HeldNexusRoot } from "@lararium/mesh";
 import { carriedReadings, charterHomeFor, readKeyLine } from "./carried-set.js";
@@ -90,14 +86,24 @@ import { admitBundleHolds, dialedNexusAid, readKeptAdmitBundle } from "./admit-b
 const NYM_RE = /^[0-9a-f]{64}$/;
 
 /**
- * What a socket presented, bound to the values THIS vessel's gate holds for it: the nonce it issued, its own
- * gate key, and the vessel key the V3 proof proved. The presentation is untrusted until `leafStandingFor` reads it.
+ * What a gated session presented, bound to the face key its gate proved it under (`face-gate`): the admit and its
+ * lineage as they rode the presentation's arm. The gate read them held once; every refold reads them again, and the
+ * face key must still stand at the head of the admitted key's line, so a hand-over the line made since unseats it.
  */
 export interface SocketBinding {
-  readonly presentedAdmit: PresentedAdmit;
-  readonly nonce:          string;
-  readonly gatePubKey:     string;
-  readonly vesselKey:      string;
+  readonly presentedAdmit: Pick<PresentedAdmit, "admit" | "lineage">;
+  /** The session's proven face key: the key the gate's chain verified, never a key the presentation named. */
+  readonly faceKey:        string;
+}
+
+/**
+ * THE GATE'S HELD ROOT (`face-gate` `presentedAdmitReader`): the reading this vessel holds for the ONE Nexus a gate
+ * stands in, or null where it carries no such Nexus. A gate reads its own Nexus's root alone, so an admit for any
+ * other Nexus finds no root of its own epoch there.
+ */
+export function gateHeldRoot(readings: () => Promise<readonly CarriedNexusReading[]>, nexus: string): () => Promise<CarriedNexusReading | null> {
+  const aid = nexus.trim().toLowerCase();
+  return async () => (await readings()).find((r) => r.aid.toLowerCase() === aid) ?? null;
 }
 
 /**
@@ -208,20 +214,19 @@ export interface LeafStanding {
 }
 
 /**
- * The leaf standing a socket's presentation earns, or null (STRANGER). Pure over its inputs; never throws.
+ * The leaf standing a gated session's presentation earns, or null (STRANGER). Pure over its inputs; never throws.
  *
  *   (a) the admit must root on an epoch of a Nexus in `readings` — its head, or an epoch on its charter
  *       lineage the presentation's roll anchors carry to the head — and `readAdmitAtHeldRoot` must read it
  *       `held` against that Nexus's charter lineage, deny board, antigen and key line;
- *   (b) the leaf proof must verify for this socket's nonce, gate key and wire vessel key, under the HEAD of the
- *       admitted nym's key line (the nym itself where no hand-over stands): a key the line handed on proves
- *       nothing;
+ *   (b) the session's proven face key must stand at the HEAD of the admitted nym's key line (the nym itself
+ *       where no hand-over stands): a key the line handed on stands for nothing;
  *   (c) `readings` holds carried Nexuses only, so an admit for any other Nexus finds no reading.
  * The nym returned is the verdict's own.
  */
 export async function leafReadingFor(binding: SocketBinding, readings: readonly CarriedNexusReading[]): Promise<{ readonly standing: LeafStanding } | { readonly refusal: string }> {
   // Each way out wears a name the vessel's own operator may read; the peer draws silence whichever one fires:
-  // `leaf-proof-failed` · `no-held-root` (the admit names no Nexus this vessel holds a root for) ·
+  // `admit-head-other` · `no-held-root` (the admit names no Nexus this vessel holds a root for) ·
   // `admit-<state>:<reason>` (the verifier's own verdict) · `admit-nym-unreadable` · `unreadable` (a throw).
   try {
     const admit = binding.presentedAdmit.admit;
@@ -231,10 +236,7 @@ export async function leafReadingFor(binding: SocketBinding, readings: readonly 
     if ("refusal" in read) return read;
     if (read.verdict.state !== "held") return { refusal: `admit-${read.verdict.state}:${read.verdict.reason}` };
     if (!NYM_RE.test(read.verdict.nym) || !NYM_RE.test(read.head)) return { refusal: "admit-nym-unreadable" };
-    if (!(await verifyLeafProof({
-      presented: { kind: "admit", ...binding.presentedAdmit }, nonce: binding.nonce,
-      gatePubKey: binding.gatePubKey, vesselKey: binding.vesselKey, signer: read.head,
-    }))) return { refusal: "leaf-proof-failed" };
+    if (typeof binding.faceKey !== "string" || binding.faceKey.trim().toLowerCase() !== read.head) return { refusal: "admit-head-other" };
     return { standing: { nym: read.verdict.nym, aid: root.nexus } };
   } catch { return { refusal: "unreadable" }; }
 }
@@ -358,38 +360,6 @@ async function ownPresentationFor(opts: {
     }
     return null;
   } catch { return null; }
-}
-
-/**
- * The identity a dial presents — ONE FACE PER VESSEL PER NEXUS. A leaf admit presents with its leaf signer and
- * no root-signed edge. Without one, the FLEET edge (`fleetEdge`: a self edge a root this vessel does NOT hold
- * signed — a hearth's admit of this device) presents in its slot; with none, the ContactCard alone. A
- * self-founded vessel's own root-signed edge never presents: no slot carries it.
- */
-export function dialIdentityFor(
-  base: LeafIdentity,
-  presented: DialPresentation | null,
-  fleetEdge: DeviceDelegationTiddler | null,
-): LeafIdentity {
-  if (presented) {
-    return {
-      contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign,
-      presented: { kind: "admit", admit: presented.admit, lineage: presented.lineage },
-      leafSign: leafSignerOf(presented),
-    };
-  }
-  return fleetEdge ? { ...base, edge: fleetEdge } : base;
-}
-
-/** The identity of a presentation: its admit's act CID and its lineage's, so a re-dial fires only on a move. */
-export function presentationKey(p: AdmitPresentation | null | undefined): string {
-  if (!p) return "";
-  return [carriageEntryActCid(p.admit), ...p.lineage.map((e) => presentedActCid(e)).sort()].join(",");
-}
-
-/** The leaf signer a dial presentation's proof signs with — the leaf's own seed, and only for that proof. */
-export function leafSignerOf(p: DialPresentation): (bytes: Uint8Array) => Promise<string> {
-  return ed25519SignerFromSeed(p.leaf.seed);
 }
 
 export interface NexusMembershipHolder {
@@ -581,7 +551,7 @@ export function makeRealmCharterConsult(opts: {
   readonly peerContractNymMap:  ReadonlyMap<string, string>;
   /** Peers on a socket this vessel dialed to the charter's hearth (filled by the dial; empty until it stands). */
   readonly charterHearthPeers?: ReadonlySet<string>;
-  /** peerId → the Identifier hex the DaemonAuthGate proved at the wire. A faceless PLACE holds no persona root,
+  /** peerId → the key the face gate seated the socket under (the session's FACE key, or a faceless place's own key). A faceless PLACE holds no persona root,
    *  so its WIRE KEY is the only nym it ever has — and that key IS the nym its carrier contract names. Read
    *  here, and nowhere else, for exactly that reason. */
   readonly peerIdentifierMap?:  ReadonlyMap<string, string>;

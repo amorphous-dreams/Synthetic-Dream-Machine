@@ -67,8 +67,8 @@ export interface PersonaKelRingHolder {
 }
 
 /**
- * Stand the persona-KEL ring holder. `nexusPubkey` is the node's own gate key (its Nexus key — the same key
- * browsers pass as relayGatePubKey), so the board id is a pure function of the Nexus and every island member
+ * Stand the persona-KEL ring holder. `nexusPubkey` is the node's own gate key (its Nexus key — the island its
+ * admitted browser leaves resolve), so the board id is a pure function of the Nexus and every island member
  * resolves the identical board with no mint-race. The board resolves asynchronously; `ready` gates the first
  * read (a cold board folds to an empty map — every prefix denies, correctly).
  */

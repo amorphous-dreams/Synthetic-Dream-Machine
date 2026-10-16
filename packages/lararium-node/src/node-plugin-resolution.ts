@@ -5,10 +5,9 @@
  *
  * `resolveNodeIslandPluginCids` folds the fixed boot-set floor (grammar + boot shadows, read off
  * the island/oracle doc's own blobs) UNION this wiki's own recipe's verified, byte-checked
- * offering selection. It retires the old vessel-WIDE `pluginCidsFromIslandBlobs` hand-off (every
- * island got the exact SAME list, with no per-recipe distinction): `bootSetPluginCids`/`bootSetIds`
- * now name that floor computation under its right, narrower scope — one fixed INGREDIENT of a
- * per-island resolution, never the whole answer by itself.
+ * offering selection. No vessel-WIDE list stands (every island handed the exact SAME list, with no
+ * per-recipe distinction): `bootSetPluginCids`/`bootSetIds` name the floor computation under its
+ * right, narrower scope — one fixed INGREDIENT of a per-island resolution, never the whole answer by itself.
  *
  * Fail-closed throughout, in order: an offering this lookup cannot find, a lying lookup, a
  * boot-set-collision or cross-offering duplicate claim, or any `verifyPluginOffering` code

@@ -191,9 +191,8 @@ function classifyStablePath(
   // it already said which plane this is. Its interior is doc/registry data, never a corpus file, so it
   // resolves virtual — doc identity, not a disk path.
   //
-  // A third arm here matched a bare leading `@`, from when the slug carried the marker instead of the
-  // segment. Routing on it kept a retired address form REACHABLE: anything still minting one would have
-  // resolved correctly and gone unnoticed, which is how a retired form outlives its retirement.
+  // No arm matches a bare leading `@` slug: the SEGMENT carries the marker, never the slug. Routing a
+  // second form would keep it REACHABLE, and anything minting it would resolve and go unnoticed.
   //
   // ha.ka.ba/{rest} — a bare meme namespace with no lares/lararium disk mapping — resolves virtual too
   // (its file lives in its holding bag on disk, resolved elsewhere), so both arms land on VIRTUAL.

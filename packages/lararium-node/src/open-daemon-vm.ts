@@ -32,7 +32,7 @@ import {
   type DaemonVmHost,
   type DaemonVmCore,
 } from "@lararium/tw5";
-import { resolveBootDoc } from "./repo-helpers.js";
+import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
@@ -47,6 +47,14 @@ export interface DaemonVmOptions {
   /** The mounted plane's bag id, resolved once at the boot path — carried, never re-derived here.
    *  Absent with `personaUrl`; the two stand or fall together. */
   personaBagId?:      string;
+  /**
+   * THE PERSONA PLANE ARRIVES LATE: this composition holds no vessel key, so the sealed dial that carries a joinee's
+   * persona plane from its hearth cannot present, and the plane may stand on the hearth alone. The VM then asks for it
+   * on the mesh-shared tideline at the vessel's own patience: a plane the store holds mounts at once, and one it does
+   * not stands StillJoining (the VM stands without it) until the sovereign composition the unlock stands dials and
+   * the plane arrives. Absent (the default), the plane reads hearth-private and its absence is fatal, as for a founder.
+   */
+  personaLate?:       boolean;
   /**
    * SHA-256 hex (the CID) of the TW5 core blob — the daemon island pulls the engine
    * bytes by this CID from the local CAS (the CID plane).
@@ -86,7 +94,7 @@ export interface DaemonVmOptions {
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
+  const { repo, daemonUrl, personaUrl, personaBagId, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -107,10 +115,15 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     { tideline: "hearth-private", label: "@daemon", expectPresent: true },
   );
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
-  const personaHandle = personaUrl ? await resolveBootDoc<LarDoc>(
-    repo, personaUrl as AutomergeUrl,
-    { tideline: "hearth-private", label: "@persona" },
-  ) : undefined;
+  const personaRead = personaUrl
+    ? (personaLate
+        ? await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "mesh-shared", label: "@persona", scale: "vessel" })
+        : await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "hearth-private", label: "@persona" }))
+    : undefined;
+  const personaHandle = personaRead && !isStillJoining(personaRead) ? personaRead : undefined;
+  if (personaRead && isStillJoining(personaRead)) {
+    console.log("[daemon] @persona still joining — this composition holds no vessel key, so the plane stands on the hearth until the unlocked composition dials it");
+  }
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
   // by ACCESS per residency action (ephemeral mount, released after — the

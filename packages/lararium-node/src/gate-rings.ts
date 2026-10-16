@@ -25,7 +25,7 @@
  * The node's disk readers (the records under the identity seat, the root holder's charters and per-Nexus keys)
  * stay the composition's to bind; this module reads no disk.
  *
- * Stands specified until the socket cutover seats a gate over it.
+ * Called by the node vessel's gates (`open-node-vessel`) and `face-root-holdings`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */

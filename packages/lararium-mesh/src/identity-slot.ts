@@ -8,10 +8,10 @@
  *   KeyhiveIdentitySlot    — Keyhive convergent capabilities (Ink & Switch)
  *
  * STATUS NOTE: Keyhive runs
- * LIVE at the OPERATOR level (bootDaemonKeyhive Gates A/B/C, the V3 peer-boundary gate,
+ * LIVE at the OPERATOR level (bootDaemonKeyhive Gates A/B/C, the sealed face gate,
  * resolveOrMintBinding) in @lararium/keyhive. THIS slot governs only USER-level access
  * (Bluesky/GitHub/keyhive-user), which remains the alpha stub. The node sharePolicy
- * already gates inbound network peers via the V3 daemon-auth gate; the browser admits
+ * gates inbound network peers through the sealed face gate (`face-gate`); the browser admits
  * only same-origin/in-process peers (a legitimate asymmetry, not an open hole). See
  * lararium-canonical-model #open-drift (point 4).
  *
@@ -95,15 +95,13 @@ export interface IdentitySlot {
 }
 
 // ---------------------------------------------------------------------------
-// THE DEFAULT SLOT RETIRED — the PersonaGroup ring decides (2026-09-13)
+// NO DEFAULT SLOT — the PersonaGroup ring decides (2026-09-13)
 // ---------------------------------------------------------------------------
 //
-// `OpenIdentitySlot` stood here and answered `return true` to every `verifyCapability`. Measured
-// (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy`), that answer reached NO live path: both vessels
-// passed `identity = null`, so the allow-all sat as dead code behind an unwired socket — and lighting the
-// socket naively would have made it live, because a self-slot asking "may I sync my own doc" with presenter
-// equal to self reads as an allow-all the moment it is consulted.
+// No slot here answers `true` to every `verifyCapability` (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy`):
+// a self-slot asking "may I sync my own doc" with presenter equal to self reads as an allow-all the moment
+// it is consulted.
 //
 // The operator ruled arm (B): a slot doc's verdict = the FACE's grant records, never the realm's `keptBy`,
 // never a roster. `makePersonaGroupIdentityRing` (`persona-group-ring.ts`) answers it, and a vessel that
-// names no slot now carries none — the alpha line takes the retirement whole, with no alias standing in.
+// names no slot carries none, with no alias standing in.

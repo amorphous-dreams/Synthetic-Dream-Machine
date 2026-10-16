@@ -11,7 +11,7 @@
  *   S4  RED: a scope moved after signing breaks the act's identity, and a lineage that fails the roll law folds nothing.
  */
 import { describe, expect, test } from "vitest";
-import { ed25519SignerFromSeed } from "../src/auth-wire.js";
+import { ed25519SignerFromSeed } from "../src/ed25519-door.js";
 import { sha256BytesSync, utf8Bytes } from "../src/crypto.js";
 import {
   auditOfferingAntigen, foldOfferingAntigenVerdicts, offeringReaderOfLineage, signOfferingKapae, type OfferingKapaeEntry,

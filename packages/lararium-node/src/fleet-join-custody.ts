@@ -12,6 +12,12 @@
  *   face-join-record     HOT. What a joined vessel keeps of its answer, one row per face: the PersonaGroup, its
  *                        root key, the certificates over this vessel's face-scoped keys and the root's grants. A
  *                        session's face reads them (`session-face`); the grants form the face's private record.
+ *                        On the ROOT HOLDER the same row also keeps THE ISSUED BOOK (`issued`): for each
+ *                        certificate a fleet-join answer issued, the scope, the certified face-scoped key and the
+ *                        device it was issued to. The device comes off the answer the root signed, never off the
+ *                        certificate (whose fields name no device): the request's `vesselKey`, which the answer
+ *                        binds beside its certificates and which the device edge names as its delegate. A gate
+ *                        maps a presenting face-scoped key to its device through it (D4, `face-device-book`).
  *
  * ── A STORE NEVER LANDS OVER ANOTHER SECRET ─────────────────────────────────────────────────────
  * Each write reads, decides and writes under one custody holder: nothing standing takes the bytes, the same bytes
@@ -132,27 +138,100 @@ export async function clearPendingFleetJoin(nonce: string): Promise<boolean> {
   });
 }
 
+/** One certificate the root holder issued: the scope, the certified face-scoped key, and the device it went to. */
+export interface IssuedFaceKey {
+  readonly nexus:         string;
+  readonly faceKey:       string;
+  readonly vesselFaceKey: string;
+  /** The joined vessel's own verifying key, as the signed answer named it. */
+  readonly device:        string;
+}
+
 /** What a joined vessel keeps of one face's answer. Public keys and signatures alone: no secret rides it. */
 export interface FaceJoinRecord {
   readonly personaGroup: string;
   readonly rootKey:      string;
   readonly certificates: readonly unknown[];
   readonly grants:       readonly unknown[];
+  /** The root holder's issued book; empty on a vessel that issued nothing. A write that omits it keeps it. */
+  readonly issued?:      readonly IssuedFaceKey[];
+}
+
+const HEX64 = /^[0-9a-f]{64}$/;
+function readIssued(v: unknown): IssuedFaceKey[] {
+  if (v === undefined) return [];
+  if (!Array.isArray(v)) throw new Error("malformed");
+  return v.map((e: unknown) => {
+    const r = e as Record<string, unknown> | null;
+    if (r === null || typeof r !== "object") throw new Error("malformed");
+    const { nexus, faceKey, vesselFaceKey, device } = r;
+    if (typeof nexus !== "string" || nexus.length === 0 || typeof faceKey !== "string" || typeof vesselFaceKey !== "string" || typeof device !== "string") throw new Error("malformed");
+    if (!HEX64.test(faceKey) || !HEX64.test(vesselFaceKey) || !HEX64.test(device)) throw new Error("malformed");
+    return { nexus, faceKey, vesselFaceKey, device };
+  });
+}
+
+function recordBytes(record: FaceJoinRecord, issued: readonly IssuedFaceKey[]): Uint8Array {
+  return utf8.encode(JSON.stringify({
+    personaGroup: record.personaGroup, rootKey: record.rootKey, certificates: record.certificates, grants: record.grants,
+    ...(issued.length > 0 ? { issued } : {}),
+  }));
 }
 
 /** Keep a joined face's record. The same record again changes nothing; a later join of the same face replaces it,
- *  since each landing verified its answer whole. */
+ *  since each landing verified its answer whole. The issued book stands unless the write names its own. */
 export async function keepFaceJoinRecord(record: FaceJoinRecord): Promise<void> {
   const file = faceJoinRecordFile(record.personaGroup);
-  const bytes = utf8.encode(JSON.stringify({ personaGroup: record.personaGroup, rootKey: record.rootKey, certificates: record.certificates, grants: record.grants }));
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRow("identity", file, (standing) => {
+    let issued: readonly IssuedFaceKey[] = record.issued ?? [];
     if (standing !== null) {
-      let root: unknown;
-      try { root = (JSON.parse(new TextDecoder().decode(standing)) as { rootKey?: unknown }).rootKey; } catch { root = undefined; }
+      let root: unknown, kept: unknown;
+      try { ({ rootKey: root, issued: kept } = JSON.parse(new TextDecoder().decode(standing)) as { rootKey?: unknown; issued?: unknown }); } catch { root = undefined; }
       if (root !== record.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (record.issued === undefined) {
+        try { issued = readIssued(kept); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      }
+      const bytes = recordBytes(record, issued);
       if (sameBytes(standing, bytes)) return { plaintext: null, value: undefined };
+      return { plaintext: bytes, value: undefined };
     }
+    return { plaintext: recordBytes(record, issued), value: undefined };
+  });
+}
+
+/**
+ * THE ROOT HOLDER notes the certificates one answer issued to `device`, before the answer leaves. A row that stands
+ * keeps its certificates and grants; a face with no row yet stands one with none. An entry for the same scope and
+ * face-scoped key is replaced, so a re-answered request notes once. A row under another root key refuses.
+ */
+export async function noteIssuedFaceKeys(args: {
+  readonly personaGroup: string;
+  readonly rootKey:      string;
+  readonly device:       string;
+  readonly certificates: ReadonlyArray<{ readonly scope: { readonly faceKey: string; readonly nexus: string }; readonly vesselFaceKey: string }>;
+}): Promise<void> {
+  const device = args.device.toLowerCase();
+  const fresh: IssuedFaceKey[] = args.certificates.map((c) => ({
+    nexus: c.scope.nexus, faceKey: c.scope.faceKey.toLowerCase(), vesselFaceKey: c.vesselFaceKey.toLowerCase(), device,
+  }));
+  readIssued(fresh);                                         // a malformed entry never lands
+  const file = faceJoinRecordFile(args.personaGroup);
+  mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
+  await updateCustodyRow("identity", file, (standing) => {
+    let base: FaceJoinRecord = { personaGroup: args.personaGroup, rootKey: args.rootKey, certificates: [], grants: [] };
+    let issued: IssuedFaceKey[] = [];
+    if (standing !== null) {
+      let r: Record<string, unknown>;
+      try { r = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      if (r["rootKey"] !== args.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (!Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new CustodyRowUnavailable("identity", file, "malformed");
+      base = { personaGroup: args.personaGroup, rootKey: args.rootKey, certificates: r["certificates"], grants: r["grants"] };
+      try { issued = readIssued(r["issued"]); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+    }
+    const replaced = (e: IssuedFaceKey): boolean => fresh.some((f) => f.nexus === e.nexus && f.faceKey === e.faceKey && f.vesselFaceKey === e.vesselFaceKey);
+    const bytes = recordBytes(base, [...issued.filter((e) => !replaced(e)), ...fresh]);
+    if (standing !== null && sameBytes(standing, bytes)) return { plaintext: null, value: undefined };
     return { plaintext: bytes, value: undefined };
   });
 }
@@ -165,6 +244,6 @@ export async function readFaceJoinRecord(personaGroup: string): Promise<FaceJoin
   try {
     const r = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
     if (r["personaGroup"] !== personaGroup || typeof r["rootKey"] !== "string" || !Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new Error("malformed");
-    return { personaGroup, rootKey: r["rootKey"], certificates: r["certificates"], grants: r["grants"] };
+    return { personaGroup, rootKey: r["rootKey"], certificates: r["certificates"], grants: r["grants"], issued: readIssued(r["issued"]) };
   } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
 }

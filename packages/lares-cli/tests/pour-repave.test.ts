@@ -104,7 +104,7 @@ describe("pour --all — one door, three legs, in dependency order", () => {
     expect(seen.at(-1)).toBe("resume");
   });
 
-  it("★ carries one wing to every leg — the two legs no longer disagree ★", async () => {
+  it("★ carries one wing to every leg — the two legs agree ★", async () => {
     const wings: string[] = [];
     await runRepave(args({ all: true }, { wing: "wing_named" }), async (_s, a) => {
       wings.push(String(a.options["wing"])); return 0;

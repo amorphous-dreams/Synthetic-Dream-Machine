@@ -24,9 +24,9 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -81,33 +81,36 @@ function set(id: string, text: string, cls = ""): void {
 }
 
 // The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
-// dials the knock the peer's gate key derives and proves its key there before any map crosses; an anon page
-// reads nothing, so the read waits on the vessel standing. Config-supplied via ?oracle=… (default the node that
-// served this page) and pinned by ?oracle-gate=… (default the ?gate= relay key — the same node's vessel key).
-// A face with no pinned key is not dialed: there is no gate to knock on.
+// dials the peer's floor gate under the pin it holds and proves there before any map crosses: a joined face as itself,
+// a device at the floor faceless. The read waits on the vessel standing. The read face is the node that served this page
+// (?oracle=… names another), and the snapshot verifies under the publisher key the URL's floor card carries. With no
+// publisher key the page reads nothing: nothing would verify the snapshot.
 type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
 async function readOracle(read: OracleReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const pin = params.get("oracle-gate") ?? params.get("gate");
-  if (!pin) { set("oracle-status", "no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
-  set("oracle-status", `proving at ${readFace} …`);
+  const pin = floorCardOf(location.hash, readHearthFloorCard)?.card?.publisher ?? null;
+  const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(params));
+  const say = (text: string, cls = ""): void => set("oracle-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
+  if (!pin) { say("no floor card names this hearth's oracle publisher (#floor=… from the hearth's banner) — nothing to read", "warn"); return; }
+  say(`proving at ${readFace} …`);
   try {
     const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
     if (r.ok && r.pointer) {
       const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
       const oracleEl = $("oracle"); oracleEl.replaceChildren();
       row(oracleEl, "status", "✓ verified + loaded", "ok");
+      if (elsewhere) row(oracleEl, "note", elsewhere, "warn");
       row(oracleEl, "act", r.pointer.actCid.slice(0, 16) + "…");
       row(oracleEl, "parents", String(r.pointer.parents.length));
       row(oracleEl, "tiddlers", String(n));
       row(oracleEl, "cid", r.cid ?? "—");
       row(oracleEl, "publisher", r.pointer.pub.slice(0, 16) + "…");
     } else {
-      set("oracle-status", `✗ ${r.reason ?? "unavailable"}`, "warn");
+      say(`✗ ${r.reason ?? "unavailable"}`, "warn");
     }
   } catch (e) {
-    set("oracle-status", `✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
+    say(`✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
   }
 }
 
@@ -239,13 +242,9 @@ async function bootVessel(): Promise<void> {
   set("status", "booting…");
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
-  const relayUrl = resolveRelayUrl(location, relayParams);
-  // ?gate=<hex> → the RELAY GATE's verifying key. The V3 proof commits to it, and a leaf must hold it
-  // out-of-band: the challenge carries it on the wire, but trusting the wire copy would let any relay
-  // impersonate the gate. Absent, the leaf binds its proof to its OWN did, the gate recomputes against
-  // its own, and the proof fails closed — a correct refusal that looks exactly like a broken socket.
-  // The node vessel prints this key in its boot banner.
-  const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
+  const relayUrl = resolveRelayUrl(relayParams);
+  // #floor=<card> → the hearth's oracle floor card, carried by hand off its banner: what a device at the floor reads under.
+  const floor = floorCardOf(location.hash, readHearthFloorCard);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = takeStashedAdmit();
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
@@ -253,32 +252,23 @@ async function bootVessel(): Promise<void> {
   // absent crossing that reports nothing reads exactly like a crossing that worked.
   if (relayUrl) {
     console.log(`[vessel] CROSSING → ${relayUrl}`);
-    if (!relayGatePubKey) {
-      console.warn(
-        "[vessel] NO GATE KEY — the proof will bind to this vessel's OWN did and the gate will DENY it.\n" +
-        "         Add the node vessel's key:  &gate=<hex from the node's boot banner>",
-      );
-    }
+    if (floor && floor.card === null) console.warn("[vessel] the floor card this URL carries does not read: open the URL the hearth's banner prints");
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
-      `         To cross:  ?relay=${sameOriginRelayUrl(location)}&gate=<node's gate key>`,
+      "         To cross: open the URL a hearth's banner prints (`?relay=…#floor=…`); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
   const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
   // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
-  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). Empty value
-  //   defaults to the ?oracle= read-face under its pin. An entry with no key is dropped: nothing to knock on.
-  //   The browser is a LEAF (no endpoint — carries-in, not dial-able).
+  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). An entry with no
+  //   key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
-  const defaultPin = new URLSearchParams(location.search).get("oracle-gate") ?? new URLSearchParams(location.search).get("gate");
   const meshLeaf = meshParam !== null
     ? {
         coordSeed: location.origin,
-        peers: meshParam
-          ? meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null)
-          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(location), gatePubKey: defaultPin.toLowerCase() }] : [],
+        peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
       }
     : undefined;
   try {
@@ -294,7 +284,7 @@ async function bootVessel(): Promise<void> {
       onFrame: (frame) => { projectionSink.apply(frame); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       ...(relayUrl ? { relayUrl } : {}),
-      ...(relayGatePubKey ? { relayGatePubKey } : {}),
+      ...(floor ? { floorCard: floor.text } : {}),
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });

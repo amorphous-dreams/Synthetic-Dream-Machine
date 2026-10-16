@@ -74,6 +74,12 @@ export interface AdmitBundle {
   readonly lineage:    readonly PresentedLineageAct[];
   /** The opening of the admit's carriage commitment; a bundle without one takes nowhere. */
   readonly opening?:   AdmitOpening;
+  /**
+   * Where the issuing hearth LISTENS (`ws://` or `wss://`): the address the taker dials. It rides beside the admit and
+   * is signed by nothing, and it needs no signature: the dial pins the hearth's keys (the pin the opening carries), so a
+   * wrong address reaches a gate that cannot answer, never a gate that passes for the hearth.
+   */
+  readonly syncUrl?:   string;
 }
 
 /** An AID addresses a file, so only a Nexus AID passes (`NEXUS_AID_PATTERN`): no separator, no dot-segment, no other name. */
@@ -87,7 +93,8 @@ export function isAdmitBundle(v: unknown): v is AdmitBundle {
   return typeof x["aid"] === "string" && AID_RE.test(x["aid"]) && !x["aid"].includes("..") &&
     typeof x["gatePubKey"] === "string" && KEY_RE.test(x["gatePubKey"].toLowerCase()) &&
     isPresentedAdmit({ admit: x["admit"], lineage: x["lineage"] }) &&
-    (x["opening"] === undefined || readAdmitOpening(x["opening"]) !== null);
+    (x["opening"] === undefined || readAdmitOpening(x["opening"]) !== null) &&
+    (x["syncUrl"] === undefined || (typeof x["syncUrl"] === "string" && /^wss?:\/\/[^\s]+$/.test(x["syncUrl"])));
 }
 
 /** Where the bundle for one Nexus is kept: `<sealHome>/nexus/carriage-admit/<aid>.json`, beside the consent. */
@@ -120,7 +127,7 @@ export function readKeptAdmitBundles(sealHome: string): readonly AdmitBundle[] {
 }
 
 function normalized(b: AdmitBundle): AdmitBundle {
-  return { aid: b.aid, gatePubKey: b.gatePubKey.toLowerCase(), admit: b.admit, lineage: b.lineage, ...(b.opening ? { opening: b.opening } : {}) };
+  return { aid: b.aid, gatePubKey: b.gatePubKey.toLowerCase(), admit: b.admit, lineage: b.lineage, ...(b.opening ? { opening: b.opening } : {}), ...(b.syncUrl ? { syncUrl: b.syncUrl } : {}) };
 }
 
 /**
@@ -179,6 +186,9 @@ export async function takeAdmitBundle(opts: {
     if (signed.refusal === "admit-carries-no-pin") {
       throw new AdmitBundleError("the admit's quorum signed no gate pin and no canon list, or the bundle opens none — a bundle carries only an admit that names its hearth. This vessel kept nothing.");
     }
+    if (signed.refusal === "pin-other-nexus") {
+      throw new AdmitBundleError("the admit's gate pin stands at another Nexus than the bundle names — a pin is the hearth's key for one Nexus. This vessel kept nothing.");
+    }
     if (signed.refusal === "pin-differs") {
       throw new AdmitBundleError("the bundle's gate key differs from the pin its opening carries — the file names another hearth than its admit. This vessel kept nothing.");
     }
@@ -232,7 +242,7 @@ export function dialedNexusAid(opts: {
   for (const kept of readKeptAdmitBundles(opts.sealHome)) {
     // The tie reads the pin the admit signed; its quorum gets read again where the admit gets presented.
     const opening = kept.opening;
-    if (kept.gatePubKey === gate && opening?.carriage.gatePin === gate && admitCarriageCommit(opening) === kept.admit.carriageCommit) tied.add(kept.aid);
+    if (kept.gatePubKey === gate && opening?.carriage.gatePin.signingKey === gate && admitCarriageCommit(opening) === kept.admit.carriageCommit) tied.add(kept.aid);
   }
   const pin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
   if (pin && pin.gatePubKey === gate && pin.islandKind === "charter" && pin.islandScope) tied.add(pin.islandScope);

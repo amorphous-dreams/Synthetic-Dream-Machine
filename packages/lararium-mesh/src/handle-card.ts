@@ -33,7 +33,7 @@ import {
 import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The stable identifier a card presents — a handle-KEL prefix (`handle-<64hex>`), fixed across every key
- *  rotation and graft. The nym RETIRED off a bare key onto this chain-anchored name (identity-classes#the-handle-chain). */
+ *  rotation and graft. The nym is this chain-anchored name, never a bare key (identity-classes#the-handle-chain). */
 const HANDLE_PREFIX_RE = /^handle-[0-9a-f]{64}$/;
 
 /** The domain a card signs over. A signature is meaningless without the domain it was made in. */

@@ -54,10 +54,13 @@ import {
   realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
   edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
   type CountedEdgeBoard, type EdgeRollAnchor,
-  type AdmitOpening, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
+  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, ORACLE_SOCKET_ROUTE,
+  type FloorKeyDoor, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
+import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
 import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
@@ -70,6 +73,9 @@ import { realmNexusIn } from "../edge-board.js";
 import { edgeRollAnchorRealms } from "./edge-roll-anchor.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 import { admitCanonDocs } from "./device-admit.js";
+import { carryBundleFrom, type CarryBundle } from "../carry-bundle.js";
+import { oracleFloorPinAt } from "../herm-carriage.js";
+import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -87,12 +93,20 @@ export interface NexusContractOptions {
    *  that place). `carry` only, and REQUIRED there: this path reads NO persona seed and mints NO root, so
    *  there is no self-sign arm and a Nexus never conscripts a crossroads either. */
   readonly carrierSig?:  string;
+  /** The joining PLACE's signed floor-pin statement (`nexus carry-for` prints it; JSON). `carry` only, optional: where it
+   *  reads as the named place's own pin at this Nexus, it lands beside the act on the carriage board, so every replica that
+   *  counts the carry files the pin (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). A statement that does not read refuses the act. */
+  readonly floorPin?:    string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:        Repo;
   /** The Nexus the act lands under, where this vessel carries its charter beside the primary; absent names the primary. */
   readonly aid?:        string;
+  /** The custody door the admit's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
+  readonly gateDoor?:   CustodyRootDoor;
+  /** Where this hearth listens (`ws://…/ws`): an admit's bundle carries it beside the admit, for the taker to dial. */
+  readonly syncUrl?:    string;
 }
 
 export interface NexusContractResult {
@@ -125,6 +139,9 @@ export interface NexusContractResult {
   /** What the presenter noticed deriving the bundle's lineage (an `admit` only). Informational: it never
    *  refuses the act and never changes the bundle. */
   readonly findings:        readonly PresentationFinding[];
+  /** The CARRIED carry (a `carry` only; null for every other act): the place arm off the board just written and the board's
+   *  floor-pin statements. The herm takes it by hand (`lares nexus carry-take`), since no board crosses to it. */
+  readonly carryBundle?:    CarryBundle | null;
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
@@ -224,15 +241,40 @@ async function resolveCarrierIn(
  */
 export async function runNexusCarryFor(opts: {
   sealHome: string;
-}): Promise<{ nym: string; sealEpochCid: string; carrierSig: string }> {
-  const roster = foundingRoster(readNexusDoc(opts.sealHome));
+  /** The floor key door the place's floor pin derives from; absent → this vessel's own (`vesselFloorKeyDoor`). */
+  floorDoor?: FloorKeyDoor;
+  /** The Nexus to sign at: the carried charter this AID names (`charterHomeFor`, as `carry` reads it). Absent → the primary charter's. */
+  aid?: string;
+}): Promise<{ nym: string; sealEpochCid: string; carrierSig: string; floorPin: PlaceFloorPinStatement | null }> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
   }
   const nym  = (await loadVesselVerifyingKey()).toLowerCase();
   const seed = await loadVesselSigningSeed();
   const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
-  return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig };
+  // THE PLACE'S FLOOR PIN AT THIS NEXUS, signed with the same vessel key the carry will name (`place-floor-pin`). It
+  // authenticates nothing on its own: a reader files it only once its own replica counts the carry.
+  const aid = primaryNexusAid(home);
+  let floorPin: PlaceFloorPinStatement | null = null;
+  if (aid) {
+    const pin = oracleFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());
+    const signer = ed25519SignerFromSeed(seed);
+    floorPin = await signPlaceFloorPin({ placeKey: nym, pin, sign: async (image) => hexToBytes(await signer(image)) });
+  }
+  return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig, floorPin };
+}
+
+/** Read a supplied floor-pin statement for a `carry` of `nym` at `aid`: its own pin, signed by its own key. Refuses otherwise. */
+function floorPinOrRefuse(raw: string, nym: string, aid: string): PlaceFloorPinStatement {
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the --floor-pin statement does not parse as JSON — pass the `floorPin` `nexus carry-for --json` printed, whole."); }
+  // The carrier set here is the named place alone: this checks the statement's own bytes; the board's readers judge the relation.
+  const read = readPlaceFloorPin(parsed, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, carriers: new Set([nym]) });
+  if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin statement does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
+  if (read.placeKey !== nym) throw new NexusContractError("carry REFUSED: the --floor-pin statement names another place than the carry. Nothing was written.");
+  return parsed as PlaceFloorPinStatement;
 }
 
 /** The charter home an act reads: the carried charter `aid` names, else the primary. Refuses an AID this vessel never carried. */
@@ -254,9 +296,11 @@ interface ContractCore {
   readonly boardUrl: string;
   readonly handle:   Awaited<ReturnType<typeof materializeSharedLarDoc>>;
   readonly parents:  readonly string[];
-  /** An admit's carriage opening: this hearth's gate key as the pin and the canon documents it names, under a fresh
+  /** An admit's carriage opening: this hearth's full sovereign sync pin and the canon documents it names, under a fresh
    *  salt. The quorum signs its commitment; the board never holds the opening. Null for every other act. */
   readonly opening:  AdmitOpening | null;
+  /** A carry's supplied floor-pin statement, read whole for the named place at this Nexus; null otherwise. */
+  readonly floorPin: PlaceFloorPinStatement | null;
 }
 
 /** The carriage board one charter home's island names on this vessel, with the gate key that resolved the island. */
@@ -286,9 +330,10 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
-    ? openAdmitCarriage({ gatePin: gateKey.toLowerCase(), canon: await admitCanonDocs(opts.repo) })
+    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo) })
     : null;
-  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening };
+  const floorPin = opts.action === "carry" && opts.floorPin ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home)) : null;
+  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin };
 }
 
 /**
@@ -297,7 +342,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
  * carried bundle.
  */
 async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction, entry: CarriageEntry, signers: readonly string[],
-  beforeWrite?: () => Promise<void>): Promise<NexusContractResult> {
+  beforeWrite?: () => Promise<void>, syncUrl?: string): Promise<NexusContractResult> {
   if (!(await carriageEntryCounts(entry, core.roster))) {
     throw new NexusContractError(
       action === "admit"
@@ -310,7 +355,10 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
   const { handle, nym, roster } = core;
   // The last check reads the board as it stands at the write; the write follows it with no await between.
   if (beforeWrite) await beforeWrite();
-  handle.change((d) => writeCarriageEntry(d, entry));
+  handle.change((d) => {
+    writeCarriageEntry(d, entry);
+    if (core.floorPin) writePlaceFloorPin(d, core.floorPin);
+  });
   await repo.flush();
 
   // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
@@ -334,14 +382,17 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
     const opening = core.opening;
     if (presented && opening && admitCarriageCommit(opening) === presented.admit.carriageCommit &&
         carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
-      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: opening.carriage.gatePin, admit: presented.admit, lineage: presented.lineage, opening };
+      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: opening.carriage.gatePin.signingKey, admit: presented.admit, lineage: presented.lineage, opening, ...(syncUrl ? { syncUrl } : {}) };
     }
   }
+  const carryBundle = action === "carry"
+    ? await carryBundleFrom({ aid: nexusAidOrRefuse(core.home), nym, board: handle.doc(), roster })
+    : null;
   return {
     action, nym, parents: entry.parents, evidenceCid: carriageEntryActCid(entry),
     sealEpochCid: roster.sealEpochCid, threshold: roster.threshold, signers,
     contractIn: entry.contractSig ? (core.contract?.how ?? "supplied") : "n/a",
-    boardUrl: core.boardUrl, memberHeld, carrierHeld, bundle, findings,
+    boardUrl: core.boardUrl, memberHeld, carrierHeld, bundle, findings, carryBundle,
   };
 }
 
@@ -366,7 +417,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
       selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
       core.contract?.contractSig,
     );
-    return await landEntry(core, repo, opts.action, entry, selected.map((s) => s.verifyingKey));
+    return await landEntry(core, repo, opts.action, entry, selected.map((s) => s.verifyingKey), undefined, opts.syncUrl);
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
@@ -445,7 +496,9 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
   try {
     const { gateKey, boardUrl, handle } = await carriageBoardFor(repo, home);
     const core: ContractCore = { nym: entry0.nym, home, roster, contract: null, gateKey, boardUrl, handle, parents: entry0.parents,
-      opening: read.act.family === "admit" ? read.act.opening ?? null : null };
+      opening: read.act.family === "admit" ? read.act.opening ?? null : null,
+      // A partial carries the act alone: a two-vault carry lands no floor-pin statement (the herm's own replica lays it).
+      floorPin: null };
     const reader = partialReader(read.aid, core);
     let partial: NexusActPartial = read;
     let judged = await judgeNexusActPartial(partial, reader);

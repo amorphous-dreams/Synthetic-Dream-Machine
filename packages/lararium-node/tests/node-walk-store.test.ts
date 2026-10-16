@@ -156,10 +156,10 @@ describe("a walk record at rest", () => {
     expect(readFileSync(rowPath()).equals(standing)).toBe(true);
     // THE COMPOSING VESSEL reads a walk row under a sovereign composition alone: each read site names `sovereign`.
     const compose = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8").split("\n");
-    // Two reads decide whether this composition walks at all: the default relay's, and the dial's own record.
-    // (The walk dial's later reads stand inside the block that second read opens.)
+    // One read decides whether this composition walks at all: the default relay's. The dial reads no record of its own:
+    // the walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings).
     const reads = compose.filter((line) => /\.walkRecords\(|const walkRecord\s*=/.test(line) && !/^\s*(\/\/|\*)/.test(line));
-    expect(reads.length).toBeGreaterThanOrEqual(2);                                // control: the search finds the read sites
+    expect(reads.length).toBeGreaterThanOrEqual(1);                                // control: the search finds the read site
     for (const line of reads) expect(/\bsovereign\b/.test(line), line.trim()).toBe(true);
   });
 

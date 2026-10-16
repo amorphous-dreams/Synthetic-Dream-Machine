@@ -18,21 +18,16 @@
 
 import {
   mkDaemonDelegateVerb,
-  mkDaemonVerifyResult,
   mkDaemonResolveBindingResult,
   mkDaemonDeriveSkeletonResult,
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryResult,
   type DaemonMsg_PlaceVerb,
   type DaemonMsg_VerbResult,
-  type DaemonMsg_VerifyRequest,
   type DaemonMsg_ResolveBindingRequest,
   type DaemonMsg_DeriveSkeletonRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
-  type AuthProofWire,
-  type DeviceDelegationTiddler,
-  type PeerClass,
   type BatchMode,
   type Verb,
   type CapabilityVerifier,
@@ -98,16 +93,6 @@ export interface DaemonBehaviorOptions {
    * never goes live with an unauthorized identity.
    */
   verifierFactory?: (ctx: IslandContext) => Promise<CapabilityVerifier>;
-  /**
-   * Inbound-peer verification for the host's AuthVerifierShore (path b). The host
-   * has no keyhive after Stage 1, so it posts `daemon:verify-request` and the
-   * daemon worker answers here. Opaque by design — peer verification needs
-   * `receiveContactCard` (a @lararium/keyhive method, not in mesh), so the
-   * platform entry supplies this closing over the booted keyhive; tw5 stays
-   * keyhive-free.
-   */
-  verifyPeer?: (cardBytes: Uint8Array, bagUrl: string, access: "read" | "admin", proof?: AuthProofWire, edge?: DeviceDelegationTiddler)
-    => Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean }>;
   /**
    * Resolve (or mint+delegate) the personal/draft binding pair island-side —
    * the mint needs keyhive + the island Repo. The platform entry supplies this
@@ -261,27 +246,6 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
           else           pending.resolve(msg.result ?? {});
         }
         void post;
-        return true;
-      }
-
-      if (type === "daemon:verify-request") {
-        const msg = raw as DaemonMsg_VerifyRequest;
-        const answer: Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean; peerClass?: PeerClass }> = opts.verifyPeer
-          ? opts.verifyPeer(msg.cardBytes, msg.bagUrl, msg.access, msg.proof, msg.edge)
-          : Promise.resolve({ ok: false, reason: "no verifyPeer configured" });
-        answer
-          .then((r) => post(mkDaemonVerifyResult({
-            requestId: msg.requestId, ok: r.ok,
-            ...(r.identifier ? { identifier: r.identifier } : {}),
-            ...(r.reason ? { reason: r.reason } : {}),
-            ...(r.proofVerified !== undefined ? { proofVerified: r.proofVerified } : {}),
-            // Forward the self-slot class VERBATIM — the worker owns the classification (only it holds
-            // the cap-verify + the pinned-root edge check). The host fails closed on an absent class.
-            ...(r.peerClass !== undefined ? { peerClass: r.peerClass } : {}),
-          })))
-          .catch((err: unknown) => post(mkDaemonVerifyResult({
-            requestId: msg.requestId, ok: false, reason: err instanceof Error ? err.message : String(err),
-          })));
         return true;
       }
 

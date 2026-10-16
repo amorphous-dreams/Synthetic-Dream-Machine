@@ -106,9 +106,9 @@ describe("throughStoreDoor — a WEDGED holder spends its own phase budget, neve
     });
   });
 
-  it("MUTATION PROOF of the retired bug: re-enacting the old null-fusing map reads a wedged answer as unbound", () => {
-    // The OLD shape: `met === null ? "unbound" : "parked"` — any non-null answer, wedged included, fell into
-    // "parked". Re-enacting it over a wedged answer proves the fusion this cure retired.
+  it("MUTATION PROOF: a null-fusing map reads a wedged answer as unbound", () => {
+    // The mutant: `met === null ? "unbound" : "parked"` — any non-null answer, wedged included, falls into
+    // "parked". Enacting it over a wedged answer shows the fusion the real map refuses.
     const met: { phase: "wedged"; holder: null; message: string } = { phase: "wedged", holder: null, message: "…" };
     const oldShapePhase = met === null ? "unbound" : "parked";
     expect(oldShapePhase).toBe("parked");                // the bug: a wedged answer read as merely "parked"

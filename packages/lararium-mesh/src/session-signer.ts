@@ -25,8 +25,8 @@
  *     grant names, as any session of that face does.
  *
  * Pure but for the key it mints: no I/O, no timer, no clock, no table of signers.
- * Stands specified in code until the node's session open and the browser holder consume it; out of the
- * package barrel till then.
+ * Called by the dial (`face-dial`), the session face (`session-face`) and the browser adapter; the package barrel
+ * does not name it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */

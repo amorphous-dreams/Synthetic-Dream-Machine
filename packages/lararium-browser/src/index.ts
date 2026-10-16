@@ -31,9 +31,9 @@ export type { HearthCanonDocs } from "./hearth-canon.js";
 
 export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 
-export { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+export { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 export type {
-  BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState, RelayConnectionAdapter,
+  BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState, CrossingInputs, RelayConnectionAdapter,
 } from "./browser-connection-state.js";
 
 export {

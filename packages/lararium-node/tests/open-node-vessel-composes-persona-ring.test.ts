@@ -49,7 +49,8 @@ describe("the boot composes the PersonaGroup identity-slot ring", () => {
   });
 
   test("the ring reads the dyad's shadow off the one live reading, and reads aside while no ring stands", () => {
-    expect(CODE).toMatch(/deviceAside:\s*\(vesselKey\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.deviceAside\(vesselKey\)\s*:\s*true,/);
+    // The face-grant seat proves a FACE key, so the shadow also reads each device a seated session under it was certified to (D4).
+    expect(CODE).toMatch(/deviceAside:\s*\(key\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.deviceAside\(key\)\s*\|\|\s*seatedDevicesOfFace\(key\)\.some\(\(d\)\s*=>\s*edgeShadows!\.deviceAside\(d\)\)\s*:\s*true,/);
   });
 
   test("the ring wires behind an injected witness — the boot names no Date.now", () => {

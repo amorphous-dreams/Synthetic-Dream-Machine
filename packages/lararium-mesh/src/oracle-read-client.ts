@@ -1,29 +1,40 @@
 /**
  * oracle-read-client — the CONSUMER side of the Two-Faced Substrate: pull a peer's oracle read-face over
- * the AUTHENTICATED channel, run the reader rule, and load it as a CRDT.
+ * the SEALED channel, run the reader rule, and load it as a CRDT.
  *
- * PEERS PROVE FIRST. The read-face answers no stranger: the pointer and its snapshot cross only a socket
- * whose dialer passed the vessel gate's own handshake (lar:challenge → lar:auth → lar:auth-ok, the V3
- * proof-of-possession `runPeerHandshake` composes). A dialer that cannot prove a key reads nothing, and an
- * HTTP request for the oracle meets the vessel's closed door.
+ * PEERS PROVE FIRST. The read-face answers no stranger: the pointer and its snapshot cross only a channel whose dialer
+ * passed the floor gate's exchange (`dialFaceGate` at the floor tier: a Noise IK flight to the pinned floor key, the
+ * face's sealed presentation, a signed finish, and the gate's signed verdict). A dialer that cannot present reads
+ * nothing, and an HTTP request for the oracle meets the vessel's closed door.
  *
- * EVERY DIALER PINS. The reader names the publisher's key out of band (`verifyingKey`): the vessel key is both the
- * gate key and the pointer's signer. The socket opens on the knock that key derives (`knockedUrl`), the proof
- * commits to it, the verdict must carry its signature, and the pointer must be signed by it — so a socket that
- * proved to one vessel cannot be fed another's map, and a reader that pinned no key dials nothing.
+ * EVERY DIALER PINS TWICE. The gate's pin comes from the pair index the caller injects (hearth, Nexus, "/oracle",
+ * "floor"), never from the wire; the publisher's key (`verifyingKey`) is named out of band and is NOT the gate's key
+ * (the floor key rests outside the vessel key), so a socket that proved to one gate cannot be fed another vessel's map.
  *
  * The reader then VERIFIES before trusting (signature · causal ancestry · publisher binding · rehash == cid ·
- * heads == signed frontier).
- * Isomorphic: the global `WebSocket` (Node 22+/browser) + `Automerge.load`; a browser vessel reads exactly so.
+ * heads == signed frontier). Isomorphic: the global `WebSocket` + `Automerge.load`; a browser vessel reads exactly so.
+ *
+ * THE VERBS. After the verdict the face sends ONE "session" message whose body is the signed pointer frame
+ * (`ORACLE_POINTER_FRAME`, JSON as it always spoke), then ONE message carrying the snapshot bytes that pointer names
+ * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The face sends no
+ * challenge and reads no proof frame: the gate proves the peer before any message.
+ *
+ * Callers: the browser vessel's oracle read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
+ * the node's server half is `oracle-read-face`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  */
 
 import { load as automergeLoad, getHeads, type Doc } from "@automerge/automerge";
 import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
-import { isLarChallengeMsg, runPeerHandshake, type LeafIdentity } from "./auth-wire.js";
-import { DAEMON_BAG_ID } from "./lar-uris.js";
-import { knockedUrl } from "./gate-knock.js";
+import type { DialPinKey } from "./admit-gate-pin.js";
+import type { DialSocket } from "./face-dial.js";
+import { dialFaceGate, dialPlaceGate } from "./face-dial.js";
+import type { GateBundlePin } from "./gate-bundle.js";
+import type { PlaceArm } from "./gate-exchange.js";
+import { dialedChannel, type GateSessionChannel } from "./gate-session-channel.js";
+import type { FacePresentation } from "./lar-ws-client-adapter.js";
+import { wsDialSocket } from "./ws-dial-socket.js";
 
 /**
  * THE ORACLE SOCKET ROUTE AND FRAME, SPELLED ONCE.
@@ -33,9 +44,9 @@ import { knockedUrl } from "./gate-knock.js";
  * and a Herm built from different commits would simply miss each other, which reads as a peer being down rather
  * than as a rename. Mesh holds them because node imports mesh and never the reverse.
  *
- * After the gate's `lar:auth-ok` the face sends ONE text frame (`ORACLE_POINTER_FRAME`, the signed pointer),
- * then ONE binary frame (the snapshot bytes that pointer names), then closes. A face with no pointer yet closes
- * without a frame.
+ * After the gate's verdict the face sends ONE "session" message (`ORACLE_POINTER_FRAME`, the signed pointer, JSON),
+ * then ONE message (the snapshot bytes that pointer names), then closes. A face with no pointer yet closes
+ * without a message.
  */
 export const ORACLE_SOCKET_ROUTE  = "/oracle";
 export const ORACLE_POINTER_FRAME = "lar:oracle-pointer";
@@ -53,28 +64,38 @@ export interface OraclePullResult<T = unknown> {
   readonly cid?:     string;
 }
 
-/** One dialed socket as the reader drives it: frames in order, text out, a close. */
-export interface OracleChannel {
-  /** The next frame, or null once the socket closed (or the wait ran out). */
-  readonly recv:  () => Promise<string | Uint8Array | null>;
-  readonly send:  (text: string) => void;
-  readonly close: () => void;
+/**
+ * What a FACELESS reader presents at a floor gate: a place's own key, its signing door, and the Nexus quorum's counted
+ * `carry` act over that key (the place arm, `place-floor-pin`). A place with no contract at the
+ * pinned Nexus presents none and sorts as any stranger does: silence where the Nexus reads private.
+ */
+export interface PlaceOraclePresentation {
+  readonly kind:     "place";
+  readonly placeKey: string;
+  readonly sign:     (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
+  readonly arm:      PlaceArm | null;
 }
 
 export interface OraclePullOpts {
-  /** The identity this reader proves at the peer's gate. Without one there is nothing to prove, and nothing reads. */
-  readonly identity:          LeafIdentity;
-  /** The publisher's key — the gate key this reader proves to and the key the pointer must be signed by. */
+  /** The pair index the floor pin is read from, injected: the reader keeps no global. */
+  readonly pins:              { get(key: DialPinKey): GateBundlePin | null };
+  /** The hearth the reader reaches, by its true name, and the Nexus it stands at (hex of the AID's bytes). */
+  readonly hearth:            string;
+  readonly nexus:             string;
+  /** What the reader presents at the floor gate: a face (its certificate, the session's signer, at most one arm and its
+   *  history), or a faceless place (its key and its carriage contract at this Nexus). */
+  readonly presentation:      FacePresentation | PlaceOraclePresentation;
+  /** The audience the dial names. */
+  readonly audience:          string;
+  /** The reader's deadline source (the caller owns the clock): one for the dial, one for each wait on a message. */
+  readonly deadlines:         { draw(lapse: () => void): { cancel(): void } };
+  /** The publisher's key — the key the pointer must be signed by. NOT the gate's key. */
   readonly verifyingKey:      string;
   /** Locally held pointer identities; a missing parent is unavailable. */
   readonly knownPointerIds?: readonly string[];
-  /** Open the socket (tests inject one). Default: the global `WebSocket`. */
-  readonly openChannel?:      (url: string) => Promise<OracleChannel>;
-  /** How long any one frame may take to arrive. */
-  readonly frameTimeoutMs?:   number;
+  /** A fresh dial socket (tests inject one). Default: the global `WebSocket` on the oracle route with the knock and flight in its upgrade. */
+  readonly dialSocket?:       (url: string) => DialSocket;
 }
-
-const DEFAULT_FRAME_TIMEOUT_MS = 10_000;
 
 /** The oracle socket URL for a peer's base URL — http(s) maps to ws(s); a ws(s) base rides as given. */
 export function oracleSocketUrl(baseUrl: string): string {
@@ -84,45 +105,8 @@ export function oracleSocketUrl(baseUrl: string): string {
   return u.href;
 }
 
-/** Open a channel over the platform's global `WebSocket`. Rejects when the socket never opens. */
-export function webSocketChannel(url: string, frameTimeoutMs = DEFAULT_FRAME_TIMEOUT_MS): Promise<OracleChannel> {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocket(url);
-    ws.binaryType = "arraybuffer";
-    const frames: Array<string | Uint8Array> = [];
-    const waiters: Array<(f: string | Uint8Array | null) => void> = [];
-    let closed = false;
-    let opened = false;
-    const drain = (): void => { while (waiters.length) waiters.shift()!(null); };
-    ws.onmessage = (e: MessageEvent) => {
-      const frame = typeof e.data === "string" ? e.data : new Uint8Array(e.data as ArrayBuffer);
-      const w = waiters.shift();
-      if (w) w(frame); else frames.push(frame);
-    };
-    ws.onclose = () => { closed = true; drain(); if (!opened) reject(new Error("socket closed before it opened")); };
-    ws.onerror = () => { if (!opened) { closed = true; reject(new Error("socket failed to open")); } };
-    ws.onopen = () => {
-      opened = true;
-      resolve({
-        recv: () => {
-          if (frames.length) return Promise.resolve(frames.shift()!);
-          if (closed) return Promise.resolve(null);
-          return new Promise((r) => {
-            const timer = setTimeout(() => { const i = waiters.indexOf(done); if (i >= 0) waiters.splice(i, 1); r(null); }, frameTimeoutMs);
-            const done = (f: string | Uint8Array | null): void => { clearTimeout(timer); r(f); };
-            waiters.push(done);
-          });
-        },
-        send:  (text) => { try { ws.send(text); } catch { /* closed */ } },
-        close: () => { try { ws.close(); } catch { /* closed */ } },
-      });
-    };
-  });
-}
-
-function parseText(frame: string | Uint8Array | null): unknown {
-  if (typeof frame !== "string") return undefined;
-  try { return JSON.parse(frame) as unknown; } catch { return undefined; }
+function parseFrame(bytes: Uint8Array): unknown {
+  try { return JSON.parse(new TextDecoder().decode(bytes)) as unknown; } catch { return undefined; }
 }
 
 function isOraclePointerFrame(v: unknown): v is OraclePointerFrame {
@@ -131,70 +115,84 @@ function isOraclePointerFrame(v: unknown): v is OraclePointerFrame {
     && typeof (v as { pointer?: unknown }).pointer === "object";
 }
 
+/** The next message, or null when the channel ends or the deadline lapses first (the channel is then closed). */
+async function nextWithin(channel: GateSessionChannel, deadlines: OraclePullOpts["deadlines"]): Promise<{ kind: string; bytes: Uint8Array } | null> {
+  let draw: { cancel(): void } | undefined;
+  const lapsed = new Promise<null>((resolve) => { draw = deadlines.draw(() => { channel.close(); resolve(null); }); });
+  try { return await Promise.race([channel.recv(), lapsed]); } finally { draw?.cancel(); }
+}
+
 /**
  * Pull + verify + load the oracle doc from a peer at `baseUrl`, proving `opts.identity` at its gate first.
- * Never throws; a failure returns `{ ok: false, reason }` (and the pointer, when it got that far).
+ * Never throws (the pin read, the url, the dial and the pull are each guarded); a failure returns `{ ok: false, reason }`
+ * (and the pointer, when it got that far).
  * Order: dial → prove → pointer frame → verify → snapshot frame → rehash → load → heads.
  */
 export async function pullAndVerifyOracle<T = unknown>(
   baseUrl: string,
   opts: OraclePullOpts,
 ): Promise<OraclePullResult<T>> {
-  const timeoutMs = opts.frameTimeoutMs ?? DEFAULT_FRAME_TIMEOUT_MS;
-  let channel: OracleChannel;
-  try {
-    const url = knockedUrl(oracleSocketUrl(baseUrl), opts.verifyingKey);
-    channel = await (opts.openChannel ?? ((u: string) => webSocketChannel(u, timeoutMs)))(url);
-  } catch (e) {
-    return { ok: false, reason: `dial failed: ${e instanceof Error ? e.message : String(e)}` };
+  const tier = "floor" as const;
+  // NEVER THROWS: an index that cannot read the key, a URL that does not parse and a dial that throws each answer by name.
+  let pin: GateBundlePin | null;
+  try { pin = opts.pins.get({ hearth: opts.hearth, nexus: opts.nexus, route: ORACLE_SOCKET_ROUTE, tier }); }
+  catch { return { ok: false, reason: "the pin index could not read this hearth and Nexus (pin-unreadable)" }; }
+  if (pin === null) return { ok: false, reason: "no floor pin held for this hearth and Nexus (pin-absent)" };
+  // The pin must stand where the read asked: at this Nexus, on the oracle route, at the floor. An index that answers with
+  // a pin standing elsewhere dials nothing.
+  if (pin.nexus !== opts.nexus || pin.route !== ORACLE_SOCKET_ROUTE || pin.tier !== tier) {
+    return { ok: false, reason: "the pin held stands at another Nexus, route or tier than this read asks (pin-other-nexus)" };
   }
+  let url: string;
+  try { url = oracleSocketUrl(baseUrl); } catch { return { ok: false, reason: "the base url does not parse" }; }
+  let socket: DialSocket;
+  let outcome: Awaited<ReturnType<typeof dialFaceGate>> | Awaited<ReturnType<typeof dialPlaceGate>>;
+  try {
+    socket = (opts.dialSocket ?? wsDialSocket)(url);
+    const shown = opts.presentation;
+    outcome = "kind" in shown && shown.kind === "place"
+      ? await dialPlaceGate({ pin, tier, socket, audience: opts.audience, placeKey: shown.placeKey, sign: shown.sign, arm: shown.arm, deadlines: opts.deadlines })
+      : await dialFaceGate({
+        pin, tier, socket, audience: opts.audience, certificate: (shown as FacePresentation).certificate, signer: (shown as FacePresentation).signer,
+        arm: (shown as FacePresentation).arm, history: (shown as FacePresentation).history, deadlines: opts.deadlines,
+        ...((shown as FacePresentation).carry ? { carry: (shown as FacePresentation).carry! } : {}),
+      });
+  } catch { return { ok: false, reason: "dial failed: the dial threw" }; }
+  if (outcome.state === "silence") return { ok: false, reason: "dial failed: the gate said nothing" };
+  if (outcome.state === "refused") return { ok: false, reason: `dial refused here: ${outcome.refusal}` };
+  if (outcome.state !== "verified") return { ok: false, reason: `gate answered ${outcome.state}` };
+
+  const channel = dialedChannel({ transport: outcome.transport, socket: { send: (f) => socket.send(f), recv: () => socket.recv(), cut: () => socket.close() } });
   try {
     return await pullOverChannel<T>(channel, opts);
+  } catch {
+    return { ok: false, reason: "the pull threw" };
   } finally {
     channel.close();
   }
 }
 
-async function pullOverChannel<T>(channel: OracleChannel, opts: OraclePullOpts): Promise<OraclePullResult<T>> {
-  // 1. the gate speaks first: a bare nonce. The key this dialer proves to is its own pin.
-  const challenge = parseText(await channel.recv());
-  if (!isLarChallengeMsg(challenge)) return { ok: false, reason: "no gate challenge" };
-  const gatePubKey = opts.verifyingKey;
-
-  // 2. prove — the gate's own handshake, composed unchanged.
-  let replayed = false;
-  const verdict = await runPeerHandshake({
-    recv: async () => {
-      if (!replayed) { replayed = true; return challenge; }
-      return parseText(await channel.recv());
-    },
-    send:        (msg) => channel.send(JSON.stringify(msg)),
-    contactCard: opts.identity.contactCard,
-    peerPubKey:  opts.identity.peerPubKey,
-    gatePubKey,
-    aud:         DAEMON_BAG_ID,
-    sign:        opts.identity.sign,
-    ...(opts.identity.edge ? { edge: opts.identity.edge } : {}),
-  });
-  if (!verdict.ok) return { ok: false, reason: `gate refused: ${verdict.reason}` };
-
-  // 3. the signed pointer — verify BEFORE trusting, bound to the gate this socket proved to.
-  const frame = parseText(await channel.recv());
+async function pullOverChannel<T>(channel: GateSessionChannel, opts: OraclePullOpts): Promise<OraclePullResult<T>> {
+  // 1. the signed pointer — verify BEFORE trusting, bound to the publisher this reader pinned.
+  const first = await nextWithin(channel, opts.deadlines);
+  if (first === null || first.kind !== "session") return { ok: false, reason: "peer published no pointer" };
+  const frame = parseFrame(first.bytes);
   if (!isOraclePointerFrame(frame)) return { ok: false, reason: "peer published no pointer" };
   const pointer = frame.pointer;
   const pointerVerdict = await verifyOraclePointer(pointer, {
-    verifyingKey: gatePubKey,
+    verifyingKey: opts.verifyingKey,
     ...(opts.knownPointerIds !== undefined ? { knownPointerIds: opts.knownPointerIds } : {}),
   });
   if (!pointerVerdict.ok) return { ok: false, reason: `pointer rejected: ${pointerVerdict.reason}`, pointer };
 
-  // 4. the content-addressed snapshot — rehash == cid (the host cannot lie about the bytes).
-  const bytes = await channel.recv();
-  if (!(bytes instanceof Uint8Array)) return { ok: false, reason: "peer sent no snapshot", pointer };
+  // 2. the content-addressed snapshot — rehash == cid (the host cannot lie about the bytes).
+  const second = await nextWithin(channel, opts.deadlines);
+  if (second === null || (second.kind !== "session" && second.kind !== "sync")) return { ok: false, reason: "peer sent no snapshot", pointer };
+  const bytes = second.bytes;
   if (!(await verifyOracleSnapshotBytes(bytes, pointer.cid)))
     return { ok: false, reason: "snapshot hash mismatch (cid does not match bytes)", pointer };
 
-  // 5. load read-only.
+  // 3. load read-only.
   let doc: Doc<T>;
   try {
     doc = automergeLoad<T>(bytes);

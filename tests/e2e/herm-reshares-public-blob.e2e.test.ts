@@ -10,17 +10,21 @@
  *   ④ the POINTER crosses to C (`wiki which`)
  *   ⑤ MEASURE: what the Herm's `/cas/<cid>` answers while A still stands
  *   ⑥ A goes DARK (`stopDaemonOnly` — A's staged root only; the home vessel is never touched)
- *   ★ ⑦ C reads the cid through its fetch door with A dark: the fleet leg misses, the Herm leg (`hermCasTransit`,
- *       0449d1bab's `GET /cas/<cid>`) answers, the sha256 verifies, the bytes land in C's `cid/`
+ *   ★ ⑦ THE SHUT: with A dark and a Herm that dials no hearth (`a herm dials no hearth`), the Herm holds neither pointer nor
+ *       bytes, so its `/cas/<cid>` stays closed and C's fetch reads `held:false`. (The re-share itself — the fleet leg
+ *       misses, the Herm leg `hermCasTransit` answers, the sha256 verifies, the bytes land in C's `cid/` — waits on a
+ *       gate-native herm route; the vector it owes is quoted at ⑦.)
  *
- * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED again with the fleet standing
- * in ONE REALM. ⑦ still stands as `test.fails`, and its seam has narrowed to a single line of product law.
+ * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED with the fleet standing in ONE REALM.
+ * The Herm's dial to A ships SHUT by name, so ⑦ asserts the shut (the Herm never joins A's board, so it holds no
+ * pointer and no bytes), and the re-share law below is the vector a gate-native herm route owes. The seam quoted
+ * below is the measurement's record, kept for the route that opens.
  *
- * The fleet now performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
+ * The fleet performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
  * `nexus rite quorum`; A exports the charter and the Herm imports it; the Herm signs `nexus carry-for` with
  * its OWN vessel key (a place holds no face — `personaSlotCeiling("herm") === 0`); A seats that seal with
- * `nexus carry <key> --carrier <hex>`; the Herm RE-STANDS carrying `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` for A
- * (the dial is a boot reading, and no running verb seats one); A registers the book with
+ * `nexus carry <key> --carrier <hex>`; the Herm's dial to A is SHUT by name (the shut-routes house ruling,
+ * stable-founding-road #/rulings: the herm dials no hearth), so it stands once and says `a herm dials no hearth`; A registers the book with
  * `nexus realm-bag lares --tier public`. Every door answers 0, and the Herm's own log reads
  * `[lar-leaf] verdict OK — crossing open, syncing`.
  *
@@ -146,8 +150,12 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     try { fleet = await openStagedFleet({ tag: "herm-reshare" }); }
     catch (err) {
       const text = err instanceof Error ? err.message : String(err);
-      standGate = (text.split("\n").find((l) => /nexus-join|fatal|failed/.test(l)) ?? text.slice(-400)).trim();
-      console.error(`herm-reshares-public-blob: the fleet never stood — every vector SKIPS. It said:\n  ${standGate}`);
+      // The refusal's own first line names the stand that broke (a daemon that never unlocked, never reached live, or
+      // exited); a fatal line from the daemon's log rides beside it. A dial's teardown line names no fault.
+      const lines = text.split("\n");
+      const fatal = lines.find((l) => /fatal|ANERGIZED|refused|REFUSED/.test(l));
+      standGate = [lines[0], fatal].filter((l): l is string => !!l).map((l) => l.trim()).join("\n  ") || text.slice(-400).trim();
+      console.error(`herm-reshares-public-blob: the fleet never stood — every vector SKIPS. It said:\n  ${standGate}\n  its tail:\n${text.slice(-3000)}`);
     }
   }, 500_000);
 
@@ -160,6 +168,10 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(fleet!.admitted.code, said(fleet!.admitted)).toBe(0);
     console.error(`herm-reshares MEASURE the carriage crossing:\n  ${fleet!.crossing}`);
     expect(fleet!.herm.bootLog()).toContain("crossroads relay standing");
+    // A herm dials no hearth, and says so (the shut-routes house ruling, stable-founding-road #/rulings); nothing here may
+    // read a herm crossing as open.
+    expect(fleet!.herm.bootLog()).toContain("a herm dials no hearth");
+    expect(fleet!.herm.bootLog()).not.toContain("[lar-leaf] verdict OK");
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
@@ -234,29 +246,29 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(alive, "A still answers on its port — A never went dark").toBe(false);
   }, 30_000);
 
-  // THE VECTOR THE LAW OWES. Red today, for the seam the file header names: the Herm holds no pointer and no bytes.
-  test.fails("★ ⑦ with A dark, C reads the cid through the Herm: `bag cas --fetch` held:true, bytes verify in C's cid/ ★", async () => {
-    const { C, hermShore } = fleet!;
-    // The island's own read may have pulled the bytes while A stood (fetch-on-read, measured in blob-follows-
-    // pointer); the vector wants a MISS on C, so the staged copy leaves before the read — A is dark, the Herm is
-    // the only road left.
+  // THE SHUT. The Herm's dial to A ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings), so the Herm never joins A's board: it holds
+  // no pointer and no bytes while A is dark. The re-share this file measures (the Herm answers `/cas/<cid>`, C verifies the
+  // sha256 and keeps the bytes) is the vector a gate-native herm route owes, and it is not asserted green by any weaker road:
+  // a Herm that serves a cid it was never handed is a leak this test must catch, not a gap it may tolerate.
+  test("★ ⑦ THE SHUT: with A dark and the Herm's dial shut by name, the Herm serves no cid it was never handed and C's fetch reads held:false ★", async () => {
+    const { C, hermShore, herm } = fleet!;
+    expect(herm.bootLog(), "the Herm dials no hearth").toMatch(/a herm dials no hearth/);
+    // The staged copy leaves C so the read is a MISS: A is dark, so the Herm is the only road left.
     const held = join(casDirOf(C), cid);
-    const heldBefore = existsSync(held);
-    if (heldBefore) rmSync(held, { force: true });
+    if (existsSync(held)) rmSync(held, { force: true });
     const direct = await fetch(`${hermShore}/cas/${cid}`);
+    const planted = existsSync(join(casDirOf(herm), cid));
     const r = await C.cli(["bag", "cas", "--fetch", cid, "--json"]);
     console.error([
-      `herm-reshares MEASURE C (A dark): C held the bytes before the read: ${heldBefore} (removed to force the miss)`,
-      `  GET ${hermShore}/cas/${cid.slice(0, 12)}… → ${direct.status} ${direct.status === 404 ? JSON.stringify(await direct.text()) : ""}`,
+      `herm-reshares MEASURE the shut (A dark): GET ${hermShore}/cas/${cid.slice(0, 12)}… → ${direct.status} · Herm cid/ holds it by ⑤b's plant: ${planted}`,
       `  bag cas --fetch → ${said(r).trim().slice(0, 300)}`,
-      `  C carriage (last 6): ${C.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door/.test(l)).slice(-6).join(" | ")}`,
     ].join("\n"));
-    expect(direct.status).toBe(200);
-    expect(sha(new Uint8Array(await direct.arrayBuffer()))).toBe(cid);
+    // ⑤b planted the body by hand in the Herm's cid/ and the index still withholds (the Herm learns no pointer through a shut
+    // dial), so the Herm's door stays closed on the cid it holds bytes for but was never told is public.
+    expect(direct.status).toBe(404);
     expect(r.json?.["ok"], said(r)).toBe(true);
-    expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(true);
-    expect(existsSync(held)).toBe(true);
-    expect(sha(readFileSync(held))).toBe(cid);
+    expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);
+    expect(existsSync(held)).toBe(false);
   }, 90_000);
 
   test("CONTROL: a ghost cid draws the Herm's closed door with A dark", async () => {

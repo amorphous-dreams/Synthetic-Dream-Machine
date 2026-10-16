@@ -88,9 +88,9 @@ describe("Phase 0 · the leans collided", () => {
     expect([...declared("<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
   });
 
-  test("a call standing BEFORE a block no longer eats its pairing — the slot still lands as a child record", () => {
-    // The call used to push onto the pairing stack, so the real block's closer popped at depth 1, the
-    // block never emitted as top-level, and the slot's body landed in NO child at all.
+  test("a call standing BEFORE a block leaves its pairing whole — the slot lands as a child record", () => {
+    // A call that pushes onto the pairing stack makes the real block's closer pop at depth 1: the block never
+    // emits as top-level, and the slot's body lands in NO child at all.
     const text = carrier(URI, []).replace("uri-path = \"t/a\"\n```\n\n",
       "uri-path = \"t/a\"\n```\n\n<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>\n\n");
     const records = recordsOf(URI, text);

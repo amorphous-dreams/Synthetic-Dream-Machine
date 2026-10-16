@@ -4,12 +4,14 @@
  *
  * The whole point (the cross-operator security tension two prior spirits declined to force): a peer that
  * carries a DIFFERENT operator identity must reach ONLY this vessel's deterministically-federatable planes
- * (crossroads / WHO / kapae-antigen), NEVER a private-own plane (catalog / personal / home / wikis) —
- * while the operator's OWN device fleet keeps FULL sync of everything.
+ * (crossroads / WHO / kapae-antigen), NEVER a private-own plane (catalog / personal / home / wikis). The
+ * operator's own fleet holds no blanket either (D3, "Sharing after the gate"): the same-operator class
+ * establishes transport alone, and the session's proven face decides each document.
  *
  * Proven against REAL mesh primitives (DeterministicFederationGate + the real deterministic doc urls +
  * the real carryContractShareDecision the sharePolicy calls) — no stubs in the decision path:
- *   · a SAME-OPERATOR (device-fleet) WS peer gets full sync INCLUDING a private plane (no-break-own-sync),
+ *   · RED (D3): a SAME-OPERATOR WS peer reads a private plane only through its proven face's gate; with none it
+ *     reads the shelf an admitted peer reads / CONTROL: the face's own plane crosses through that gate,
  *   · a CROSS-OPERATOR WS peer gets a federatable plane but is DENIED catalog/personal (the no-leak),
  *   · an UNCLASSIFIED WS peer is treated cross-operator (private DENIED) — fail-closed,
  *   · a Kapae'd cross-operator draws Mu even for a federatable plane (the #59 antigen ahead),
@@ -53,19 +55,28 @@ const antigen: AntigenRing = {
   presenterNym: (peerId) => (peerId === KAPAED_PEER ? "dead".repeat(16) : null),
 };
 
-describe("no-break-own-sync — a SAME-OPERATOR device-fleet peer keeps FULL device sync", () => {
-  const same = (documentId: DocumentId) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null, membership: null, planeSeal: null, peerId: SAME_PEER, documentId,
+describe("D3 — a SAME-OPERATOR session reads through its proven face, never a blanket", () => {
+  /** The gate of the face the session proved: that face's own plane, and nothing else. */
+  const faceGate = { mayFederate: (documentId: DocumentId) => documentId === PERSONAL_LIKE };
+  const same = (documentId: DocumentId, sessionFace: typeof faceGate | null = null, antigenRing: AntigenRing | null = null) => selfSlotShareDecision({
+    hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing, membership: null, planeSeal: null, peerId: SAME_PEER, documentId,
+    sessionFace,
   });
 
-  test("a PRIVATE plane (catalog-like) crosses to my own device", async () => {
-    expect(await same(CATALOG_LIKE)).toBe(true);
-  });
-  test("a PRIVATE plane (personal-like) crosses to my own device", async () => {
-    expect(await same(PERSONAL_LIKE)).toBe(true);
-  });
-  test("a FEDERATABLE plane crosses to my own device too", async () => {
+  test("RED: with no face gate a PRIVATE plane stays home; the shelf still crosses", async () => {
+    expect(await same(CATALOG_LIKE)).toBe(false);
+    expect(await same(PERSONAL_LIKE)).toBe(false);
     expect(await same(CROSSROADS)).toBe(true);
+  });
+  test("CONTROL: the face's own plane crosses through its gate; another face's private plane does not", async () => {
+    expect(await same(PERSONAL_LIKE, faceGate)).toBe(true);
+    expect(await same(CATALOG_LIKE, faceGate)).toBe(false);
+    expect(await same(CROSSROADS, faceGate)).toBe(true);
+  });
+  test("a Kapae'd same-operator presenter draws Mu even through its face gate", async () => {
+    const kapaed: AntigenRing = { kapaed: new Set(["cafe".repeat(16)]), presenterNym: (p) => (p === SAME_PEER ? "cafe".repeat(16) : null) };
+    expect(await same(PERSONAL_LIKE, faceGate, kapaed)).toBe(false);
+    expect(await same(CROSSROADS, faceGate, kapaed)).toBe(false);
   });
 });
 
@@ -277,10 +288,14 @@ describe("a SIBLING holds standing, never the house — the sibling gate alone d
         }), `${String(peerClass)} socket claiming a sibling's id`).toBe(false);
       }
     }
-    // CONTROL: the same-operator socket no sibling claims full-syncs, as before.
+    // CONTROL: the same-operator socket no sibling claims reads through its face gate (D3), and the shelf beside it.
     expect(await selfSlotShareDecision({
       hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null, membership: null,
-      planeSeal: null, peerId: "own-node", documentId: DAEMON_LIKE,
+      planeSeal: null, peerId: "own-node", documentId: FACE_A_PLANE, sessionFace: { mayFederate: (d: DocumentId) => d === FACE_A_PLANE },
+    })).toBe(true);
+    expect(await selfSlotShareDecision({
+      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null, membership: null,
+      planeSeal: null, peerId: "own-node", documentId: CROSSROADS,
     })).toBe(true);
   });
 });

@@ -30,8 +30,8 @@
  * `supplySessionFace` stays pure: no key, no I/O, no timer, no clock. `openJoinedFaceSession` composes it for a
  * vessel the fleet-join door joined: the chain checked over the vessel's own certificate, the face supplied,
  * then the session opened and its signer minted through `openSignedSession`. The node's joined-face proof
- * (`readJoinedFaceProof`) supplies its vessel-side inputs; the dial that holds the table lands at the socket
- * cutover, and the browser holder stays owed.
+ * (`readJoinedFaceProof`) supplies its vessel-side inputs; the node's sovereign dial holds the table, and the
+ * browser holder stays owed.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries
  */

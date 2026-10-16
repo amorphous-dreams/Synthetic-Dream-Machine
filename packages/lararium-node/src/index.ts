@@ -159,9 +159,17 @@ export { composeStreamSensorium, defaultStreamPlaneSink } from "./sense-stream.j
 export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
-export { DaemonAuthGate } from "./daemon-auth-gate.js";
-export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
-export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
+export { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "./socket-sorter.js";
+export type { GateSorterDeps, ShutArm, PlaceClass } from "./socket-sorter.js";
+export { gateShadowRing, faceDevicesUnbound } from "./gate-shadow-ring.js";
+export { faceDeviceBook, faceDeviceBindings, type FaceDeviceBook, type FaceDeviceSources } from "./face-device-book.js";
+export { faceFleetFacets, faceFleetViews, viewFederationGate, type FaceFleetViews } from "./face-fleet-view.js";
+export { heldRootHoldings, standingFaceScopes } from "./face-root-holdings.js";
+export type { FaceDeviceReading, GateShadowRingDeps } from "./gate-shadow-ring.js";
+export { vesselGate } from "./vessel-gates.js";
+export type { VesselGateDeps } from "./vessel-gates.js";
+export { faceGateServer, gateSessionRegistry, gatePath, wsGateSocket, timerGateDeadlines, GATE_SOCKET_QUEUE_BOUND } from "./face-gate-server.js";
+export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate, GateWire } from "./face-gate-server.js";
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
@@ -254,14 +262,14 @@ export {
   takeAdmitBundle, readKeptAdmitBundle, readKeptAdmitBundles, admitBundlePathFor, admitBundleHolds, dialedNexusAid,
   isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
 } from "./admit-bundle.js";
+export { takeCarryBundle, carryBundleFrom, CarryBundleError, CARRY_BUNDLE_KIND, type CarryBundle, type CarryTakeResult } from "./carry-bundle.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
-  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
-  dialIdentityFor,
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener,
 } from "./nexus-carriage.js";
 export type {
-  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
+  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener,
 } from "./nexus-carriage.js";
 // The cad seal's first live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "./seal-carrier-federation.js";
@@ -385,17 +393,12 @@ export { makeEmbedCap } from "./embed-cap.js";
 export type { EmbedCap, EmbedResult, EmbedCapOptions } from "./embed-cap.js";
 export { makeSourceCapture } from "./capture/capture-source.js";
 export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture/capture-source.js";
-export { startMembershipRelay, WSMembershipChannel } from "./ws-membership-channel.js";
-// The AUTHENTICATED live-WS membership transport — Ed25519 proof-of-possession binds each envelope's `from` to a
-// proven key (no impersonation of the cas-wire member gate), reusing the DaemonAuthGate's own challenge/verify.
-export { startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel } from "./authenticated-membership-relay.js";
-export type { AuthenticatedMembershipRelay } from "./authenticated-membership-relay.js";
-// The CARRIAGE relay capability (Socket B) — the authenticated transport + the DHT-free bag-tracker, one service;
-// and the vessel-side serve-loop that carries a sealed cad body to members (inert until a relay URL is configured).
+// The herm's relay port: the persona-KEL drops over plain HTTP; every upgrade meets silence.
+export { startHermRelayPort } from "./herm-relay-port.js";
+export type { HermRelayPort } from "./herm-relay-port.js";
+// The CARRIAGE relay capability: the herm's relay port and the DHT-free bag-tracker, one service.
 export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
-export { startCarriageServeLoop } from "./carriage-serve-loop.js";
-export type { CarriageServeLoop, CarriageServeLoopConfig } from "./carriage-serve-loop.js";
 // The immune keel's RE-KEY (roll a lease epoch, per-writer-slot max-register) + RE-SHARE (list held sealed bodies
 // to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
 export { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -425,7 +428,6 @@ export { pullBulb, pullArrival, kindleFromBulb, httpBulbTransport } from "./kind
 export type { BulbPullTransport, KindleResult } from "./kindle.js";
 export { startNexusClientDial, maybeStartNexusClientDial } from "./nexus-client-dial.js";
 export type { NexusClientDial, NexusClientDialConfig, NexusClientDialInput } from "./nexus-client-dial.js";
-export type { MembershipRelay } from "./ws-membership-channel.js";
 export { FileMembershipChannel } from "./file-membership-channel.js";
 export { makeFormPalace } from "./sensorium.js";
 export type {

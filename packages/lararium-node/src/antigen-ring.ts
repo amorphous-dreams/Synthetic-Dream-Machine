@@ -2,11 +2,11 @@
  * antigen-ring — the node holder that makes the Kapae-antigen BREATHE on the live sharePolicy path.
  *
  * It stands the `AntigenRing` (mesh federation-gate) the node's `carryContractShareDecision` consults:
- *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The DaemonAuthGate already proved a
- *     peerId↔verifying-key binding (its in-worker keyhive returned the peer's Identifier hex into
- *     `peerIdentifierMap`); this resolver SURFACES that proven nym — it never re-authenticates. The
- *     Identifier hex's last 64 hex chars ARE the raw ed25519 verifying key (operator-daemon-behavior
- *     `id.slice(-64)`), the exact `nym` the charter roster + antigen entries key on. An unresolved /
+ *   · presenterNym(peerId) — the main↔worker cap-verify BRIDGE. The face gate already proved a
+ *     peerId↔key binding at the seat (the vessel fills `peerIdentifierMap` from the session's FACE key, or a
+ *     faceless place's own key); this resolver SURFACES that proven nym — it never re-authenticates. The
+ *     Identifier hex's last 64 hex chars ARE the FACE key (the per-Nexus key the face presented at the seat; no
+ *     vessel key rides), the nym the antigen entries key on. An unresolved /
  *     unauthenticated peer → null (fail-closed: a denylist that cannot name a peer never falsely denies it).
  *   · kapaed — the currently-Kapae'd nym set, FOLDED (kapae-antigen `foldAntigenSet` + the multi-sig quorum
  *     verifier) from the always-carried antigen BOARD entries AND the kahu quorum's seats read off disk
@@ -62,7 +62,7 @@ export interface AntigenRingHolder {
  * Stand the antigen ring holder. Constructs the ring SYNCHRONOUSLY (empty Kapae'd set, live presenterNym)
  * so the sharePolicy has a valid ring at once; then resolves the antigen board doc + does the first fold
  * asynchronously (a cold board denies nobody, correctly). `nexusPubkey` is the node's own gate key (its
- * Nexus key — the same key browsers pass as relayGatePubKey). `sealHome` sites the charter doc authority home.
+ * Nexus key — the island its admitted browser leaves resolve). `sealHome` sites the charter doc authority home.
  */
 export function makeAntigenRingHolder(opts: {
   repo:              Repo;

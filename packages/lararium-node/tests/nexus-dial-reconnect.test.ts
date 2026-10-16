@@ -1,11 +1,10 @@
 /**
- * nexus-dial-reconnect — Socket A's RE-ARM, the counterpart Socket B already stands.
+ * nexus-dial-reconnect — Socket A's RE-ARM.
  *
- * The carriage serve-loop (Socket B) counts its dials and fires `onReconnect` on every attempt past the
- * first — re-folding membership, posture and the realm plane, then re-reading the Repo's cached share
- * verdicts (`carriage-serve-loop.ts:170-175` · `open-node-vessel.ts:694-702`). The Automerge `/ws` dial
- * (Socket A) had no counterpart: the inherited `WebSocketClientAdapter` re-dials on its own and NOTHING
- * above it hears, so after a partition heals the peer's doc is never re-asked and no verdict is re-read.
+ * The inherited `WebSocketClientAdapter` re-dials the Automerge `/ws` dial (Socket A) on its own, and nothing above
+ * it hears. The arm counts the dial's candidates and fires `onReconnect` on every one past the first, re-folding
+ * membership, posture and the realm plane and re-reading the Repo's cached share verdicts, so after a partition
+ * heals the peer's doc is re-asked and every verdict is re-read.
  *
  * The docker `meme` scenario measures exactly that as a GAP — "B's offline edit never reached A after the
  * return — the seam is the RECONNECT, not the write".

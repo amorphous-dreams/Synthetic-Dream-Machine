@@ -7,8 +7,7 @@
 import { describe, expect, test } from "vitest";
 import * as mesh from "../src/index.js";
 import { classifySocket, answersStrangers } from "../src/federation-gate.js";
-import { isLarAuthMsg, mkLarChallenge, mkLarAuth, runPeerHandshake } from "../src/auth-wire.js";
-import { knockPath, knockedUrl, knockSegment } from "../src/gate-knock.js";
+import { knockSegment } from "../src/gate-bundle.js";
 import { carriageAct } from "./fixtures/carriage.js";
 
 const proven = (over: Partial<Parameters<typeof classifySocket>[0]> = {}) => ({
@@ -40,56 +39,18 @@ describe("classifySocket — four classes, and silence", () => {
     expect(answersStrangers(["private"])).toBe(false);
     expect(answersStrangers(["private", "open"])).toBe(true);
   });
-
-  test("RED: the classifiers the sort replaced are gone from the mesh surface", () => {
-    for (const gone of ["classifyCrossOperatorAdmission", "postureGatesCrossOperator", "admitCrossOperatorUnderPosture"]) {
-      expect(gone in mesh, gone).toBe(false);
-    }
-  });
 });
 
-describe("the wire confesses nothing", () => {
-  test("RED: the challenge names no gate key, and no refusal message exists", () => {
-    expect(Object.keys(mkLarChallenge("ab".repeat(32))).sort()).toEqual(["nonce", "type"]);
-    for (const gone of ["mkLarAuthDenied", "isLarAuthDeniedMsg"]) expect(gone in mesh, gone).toBe(false);
-  });
-
-  test("RED: one presentation slot — the retired `presentedAdmit` field is refused, `presented` carries the admit", async () => {
-    const admit = await carriageAct(new Uint8Array(32).fill(5), "admit", { kahu: [new Uint8Array(32).fill(3)], epoch: "e".repeat(64), parents: [] });
-    const base = mkLarAuth("card", "ab".repeat(32), "cd".repeat(64), "ef".repeat(32));
-    expect(isLarAuthMsg({ ...base, presented: { kind: "admit", admit, lineage: [] } })).toBe(true);
-    expect(isLarAuthMsg({ ...base, presentedAdmit: { admit, lineage: [] } })).toBe(false);
-    expect(isLarAuthMsg({ ...base, presented: { kind: "admit", admit, lineage: [] }, edge: {} })).toBe(false);
-    expect(isLarAuthMsg({ ...base, presented: { kind: "nothing" } })).toBe(false);
-    expect(isLarAuthMsg(base)).toBe(true);   // CONTROL: a bare proof parses
-  });
-
-  test("RED: a gate that answers nothing ends the handshake as no answer, never a hang", async () => {
-    const frames: unknown[] = [mkLarChallenge("ab".repeat(32))];
-    const verdict = await runPeerHandshake({
-      recv: async () => frames.shift(), send: () => {},
-      contactCard: "{}", peerPubKey: "aa".repeat(32), gatePubKey: "bb".repeat(32), aud: "lar:///x",
-      sign: () => "00".repeat(64),
-    });
-    expect(verdict).toEqual({ ok: false, reason: "no answer" });
-  });
-});
-
-describe("the knock — the upgrade path derives from the pinned gate key", () => {
+describe("the knock — the upgrade segment derives from the pinned key", () => {
   const K1 = "11".repeat(32);
   const K2 = "22".repeat(32);
 
-  test("RED: the path is the route plus a key-derived segment, and differs per key and per route", () => {
-    expect(knockPath(K1, "/ws")).toMatch(/^\/ws\/[0-9a-f]{32}$/);
-    expect(knockPath(K1, "/ws")).not.toBe(knockPath(K2, "/ws"));
+  test("RED: the segment is 32 hex characters, and differs per key and per route", () => {
+    expect(knockSegment(K1, "/ws")).toMatch(/^[0-9a-f]{32}$/);
+    expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K2, "/ws"));
     expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K1, "/oracle"));
-    expect(knockPath(K1, "/ws/")).toBe(knockPath(K1, "/ws"));
-  });
-
-  test("RED: a dialer's URL carries the knock its own pin derives", () => {
-    expect(knockedUrl("ws://h:1/ws", K1)).toBe(`ws://h:1${knockPath(K1, "/ws")}`);
-    expect(knockedUrl("wss://h/oracle", K2)).toBe(`wss://h${knockPath(K2, "/oracle")}`);
-    expect(() => knockedUrl("ws://h:1/ws", "not-a-key")).toThrow();
+    expect(knockSegment(K1, "/ws/")).toBe(knockSegment(K1, "/ws"));
+    expect(() => knockSegment("not-a-key", "/ws")).toThrow();
   });
 });
 

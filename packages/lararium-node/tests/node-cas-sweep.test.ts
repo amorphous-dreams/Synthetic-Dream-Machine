@@ -6,7 +6,7 @@
  * genesis CAS holds (the engine + plugins) NEVER sweeps. NO GLOBAL NOW (P2.5, lean 3): `casSweep` takes
  * its age from an explicit, caller-supplied `ageOf` (a CAUSAL reading — rolls of the realm's own clock
  * in production, `installCasSweep`) — there is no mtime-vs-`Date.now()` fallback to fall into, and a pin
- * stands by PRESENCE in the set passed in, never by comparing `expiry` against now. The proofs, over a
+ * stands by PRESENCE in the set passed in, never by comparing a clock against now. The proofs, over a
  * real temp CAS dir:
  *   · land a pointer → referenced 1 → the sweep keeps the blob,
  *   · DROP the bag → referenced 0 → sweep with grace 0 → the file is gone,
@@ -104,11 +104,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   });
 });
 
-// ── GRACE AND PIN, NO GLOBAL NOW (basket-one #/grace-and-pin, ruled 2026-09-11; retired 2026-10-10) ──────────
+// ── GRACE AND PIN, NO GLOBAL NOW (basket-one #/grace-and-pin, ruled 2026-09-11) ──────────
 // A PIN `{cid, tier, holder, fence?}` beside the bag's caps holds its blob past any grace; the grace itself
 // reads PER TIER off the realm's baseline (`graceForTier`), so two unreferenced blobs of different tiers
 // sweep at different ages. A pin stands by PRESENCE in the array `casSweep` is handed — never by comparing
-// a clock. `PinCap` (mesh) carries NO `expiry` field at all (M7); this suite proves `casSweep` never reads
+// a clock. `PinCap` (mesh) carries NO clock field at all (M7); this suite proves `casSweep` never reads
 // even the OPTIONAL `fence` to decide a sweep, with a pin that carries one a far-forward clock would have
 // no bearing on still holding, and one absent from the array sweeping the instant its sidecar entry is
 // withdrawn.
@@ -230,12 +230,12 @@ describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", ()
     expect(() => readCasPins(casDir)).toThrow(/pin sidecar/);
   });
 
-  test("MUTATION PROOF: the retired shape (`catch { return [] }`) would have read the torn sidecar as \"no pins\"", () => {
+  test("MUTATION PROOF: a reader shaped `catch { return [] }` reads the torn sidecar as \"no pins\"", () => {
     writeFileSync(join(casDir, ".pins.json"), "{ not json at all, torn mid-write");
-    let legacy: unknown[];
-    try { legacy = JSON.parse(readFileSync(join(casDir, ".pins.json"), "utf8")) as unknown[]; }
-    catch { legacy = []; }   // the retired fallback this fix removed
-    expect(legacy).toEqual([]);   // every pinned blob would have read unprotected under the retired shape
+    let swallowed: unknown[];
+    try { swallowed = JSON.parse(readFileSync(join(casDir, ".pins.json"), "utf8")) as unknown[]; }
+    catch { swallowed = []; }   // the fallback `readCasPins` refuses to be
+    expect(swallowed).toEqual([]);   // every pinned blob would read unprotected under that shape
   });
 
   test("CONTROL: an ABSENT sidecar reads as no pins — never a refusal (a vessel that never pinned is not corrupt)", () => {
@@ -249,18 +249,18 @@ describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", ()
   });
 });
 
-// ── evergreen sweep: a retired `expiry` field (or any unknown field) REFUSES the whole sidecar ──
-// Spec: `.pins.json` is not a legacy-acceptance surface. A record carrying the retired `expiry` field, or
+// ── an unknown field REFUSES the whole sidecar ──
+// Spec: `.pins.json` holds `PinCap`'s own fields and nothing else. A record carrying a clock-shaped field, or
 // any field `PinCap` never named, is malformed — the WHOLE read refuses by name (never "ignore the stray
 // field and keep going"), so the sweep that depends on it fails toward KEEPING every blob.
-describe("readCasPins — evergreen sweep retires old-shape acceptance", () => {
-  test("RED: a record carrying the retired `expiry` field REFUSES the whole sidecar", () => {
+describe("readCasPins — a record shape PinCap never named refuses the read", () => {
+  test("RED: a record carrying a clock field (`until`) REFUSES the whole sidecar, and the refusal names that field alone", () => {
     const cid = "d".repeat(64);
-    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", expiry: 123 }]));
-    expect(() => readCasPins(casDir)).toThrow(/unknown field "expiry"/);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", until: 123 }]));
+    expect(() => readCasPins(casDir)).toThrow(/unknown field "until" — refusing to read it as "no pins"/);
   });
 
-  test("RED: a record carrying ANY field `PinCap` never named (not just `expiry`) also refuses", () => {
+  test("RED: a record carrying ANY field `PinCap` never named (not just a clock) also refuses", () => {
     const cid = "e".repeat(64);
     writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", notes: "hi" }]));
     expect(() => readCasPins(casDir)).toThrow(/unknown field "notes"/);
@@ -272,39 +272,38 @@ describe("readCasPins — evergreen sweep retires old-shape acceptance", () => {
     expect(readCasPins(casDir)).toEqual([{ cid, tier: "veil", holder: "x", fence: 2 }]);
   });
 
-  test("MUTATION PROOF: the retired shape (silently drop the stray field, keep the record) would have let `expiry` back in", () => {
-    // Reproduces exactly what the OLD reader did — pick only the known fields off the record, dropping
-    // anything else without complaint. That shape is what this fix removes: it never saw the stray
-    // `expiry`, so it never refused.
+  test("MUTATION PROOF: a reader that silently drops the stray field and keeps the record lets a clock field in", () => {
+    // A picking reader — only the known fields off the record, anything else dropped without complaint —
+    // never sees the stray `until`, so it never refuses. `readCasPins` is not that reader.
     const cid = "a1".repeat(32);
-    const record = { cid, tier: "veil", holder: "x", expiry: 999_999_999_999 } as Record<string, unknown>;
-    const legacyRead = (p: Record<string, unknown>) => ({
+    const record = { cid, tier: "veil", holder: "x", until: 999_999_999_999 } as Record<string, unknown>;
+    const pickingRead = (p: Record<string, unknown>) => ({
       cid: p["cid"] as string,
       holder: typeof p["holder"] === "string" ? p["holder"] : "unknown",
       tier: typeof p["tier"] === "string" ? p["tier"] : "veil",
     });
-    expect(legacyRead(record)).toEqual({ cid, holder: "x", tier: "veil" });   // the old reader never balked
+    expect(pickingRead(record)).toEqual({ cid, holder: "x", tier: "veil" });   // the picking reader never balks
     // The REAL reader, fed the exact same on-disk shape, refuses instead.
     writeFileSync(join(casDir, ".pins.json"), JSON.stringify([record]));
-    expect(() => readCasPins(casDir)).toThrow(/unknown field "expiry"/);
+    expect(() => readCasPins(casDir)).toThrow(/unknown field "until"/);
   });
 
-  test("installCasSweep: an `expiry`-bearing sidecar faults the production tick's own `pins()` reader — the sweep run refuses, nothing deletes", async () => {
-    const orphan = blob("an orphan beside an expiry-bearing pin sidecar (evergreen)");
+  test("installCasSweep: a clock-field sidecar faults the production tick's own `pins()` reader — the sweep run refuses, nothing deletes", async () => {
+    const orphan = blob("an orphan beside a clock-field pin sidecar");
     writeCasEntriesFs([orphan], casDir);
-    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: "b2".repeat(32), tier: "veil", holder: "x", expiry: 1 }]));
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: "b2".repeat(32), tier: "veil", holder: "x", until: 1 }]));
     const logs: string[] = [];
     const installed = installCasSweep({
       registry: { register: () => {} },
       casDir,
       references: () => [],
       protect: new Set(),
-      pins: () => readCasPins(casDir),   // THROWS on the expiry-bearing sidecar — the production wiring shape
+      pins: () => readCasPins(casDir),   // THROWS on the clock-field sidecar — the production wiring shape
       realmClock: () => clockAt(5),
       currentFence: () => 0,
       log: (line) => logs.push(line),
     });
-    await expect(installed.sweep(false)).rejects.toThrow(/unknown field "expiry"/);
+    await expect(installed.sweep(false)).rejects.toThrow(/unknown field "until"/);
     expect(existsSync(join(casDir, orphan.cid))).toBe(true);   // nothing swept — the run never got there
     installed.stop();
   });

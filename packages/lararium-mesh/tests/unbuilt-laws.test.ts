@@ -216,7 +216,7 @@ describe("⑨ the dyad, specified and unwired", () => {
 //
 // THE LEG IS UNWALKED, not undesigned. A node has no path to any key but its own
 // (`nexusPubkey: vesselIdentity.verifyingKey`, seven sites). The BROWSER leaf already walks it:
-// `const nexusPubkey = relayGatePubKey`, gated on `admittedToNexus`. And the key already travels —
+// its admitted island (`admittedJoineeIsland`), gated on its admit. And the key already travels —
 // `lares herm` prints the dial URL(s) AND the gate pubkey "to hand a hearth". Nothing on the
 // receiving side keeps it.
 describe("⑧ a joined vessel reads its Nexus's board", () => {
@@ -307,7 +307,7 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     // names no door — the packer returns `{}` unless it holds both.
     expect(pin).toMatch(/HEARTH_SYNC_URL_TIDDLER/);
     expect(pin).toMatch(/HEARTH_GATE_KEY_TIDDLER/);
-    expect(pin, "the packer no longer refuses a half pin").toMatch(/if \(!syncUrl \|\| !gatePubKey\) return \{\};/);
+    expect(pin, "the packer lets a half pin through").toMatch(/if \(!syncUrl \|\| !gatePubKey\) return \{\};/);
     // And the boot READS it — a pin nothing consults leaves the hearth re-learning by hand, which is the
     // deferral's own words.
     const boot = readFileSync(
@@ -466,14 +466,14 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
     expect(Object.keys(mesh)).toContain("openJoinedFaceSession");
   });
-  test.skip("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts. A real adapter must queue immediate traffic across verdict then open.", () => {
-    expect(Object.keys(mesh)).toContain("queueUntilGateSessionOpen");
+  test("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts drives a real gate and dial with an immediate frame against a held seat, and `@lararium/node` face-gate-server.test.ts drives the same law over a live WebSocket. The seat channel buffers across verdict then open.", () => {
+    for (const name of ["seatedChannel", "dialedChannel", "channelSessionTable"]) expect(Object.keys(mesh)).toContain(name);
   });
-  test.skip("EVERY PRODUCTION DIAL REJECTS THE RETIRED HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts. The built-image negative probe remains owed after the source inventory greens.", () => {
-    expect(Object.keys(mesh)).toContain("retiredHandshakeRejected");
+  test("EVERY PRODUCTION DIAL SPEAKS ONE HANDSHAKE — the Noise IK flight, a sealed presentation and the gate's signed verdict. One client transport dials and one face gate answers, and a sealed gate answers a text frame by cutting the socket (the node gate server's text-frame vector).", () => {
+    for (const name of ["LarWSClientAdapter", "makeFaceGate", "presentedAdmitReader"]) expect(Object.keys(mesh)).toContain(name);
   });
-  test.skip("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts. A verdict-only signing bundle cannot sign the announcement today.", () => {
-    expect(Object.keys(mesh)).toContain("gateAnnouncementImage");
+  test("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts and floor-announcement.test.ts. The floor bundle signs `waking-floor-announce`, and the reader refuses any pin but the one it already holds; the socket and relay carriers have no caller yet.", () => {
+    for (const name of ["gateAnnouncementImage", "signFloorAnnouncement", "readFloorAnnouncement"]) expect(Object.keys(mesh)).toContain(name);
   });
   test.skip("THE BROWSER'S IK FIRST FLIGHT SURVIVES THE TERMINATOR — BROWSER_IK_FIRST_FLIGHT_SURVIVES_TERMINATOR. Design only until the browser/proxy witness exists: fixed selected subprotocol, bounded header, no pre-finish application effect, no retained token in proxy logs.", () => {
     expect(Object.keys(mesh)).toContain("browserIkUpgradeWitness");

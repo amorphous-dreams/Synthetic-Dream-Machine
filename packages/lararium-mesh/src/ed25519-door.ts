@@ -28,7 +28,9 @@
  * any other source file calls a curve library's `verify`.
  */
 import { ed25519 } from "@noble/curves/ed25519.js";
+import * as nobleEd25519 from "@noble/ed25519";
 import { sha512 } from "@noble/hashes/sha2.js";
+import { hex } from "./crypto.js";
 
 /** Why a public key refuses. */
 export type Ed25519KeyRefusal =
@@ -148,4 +150,19 @@ export function readEd25519(signature: unknown, message: unknown, publicKey: unk
 /** The same reading as a boolean. THE verify every verifier in the house calls. */
 export function verifyEd25519(signature: unknown, message: unknown, publicKey: unknown): boolean {
   return readEd25519(signature, message, publicKey).ok;
+}
+
+/** A bare-Ed25519 signer (32-byte seed → `sign(bytes)=>hex`) for the light leaf-identity path: no keyhive. */
+export function ed25519SignerFromSeed(seed: Uint8Array): (bytes: Uint8Array) => Promise<string> {
+  return async (bytes) => hex(await nobleEd25519.signAsync(bytes, seed));
+}
+
+/** The verifying-key hex a 32-byte seed derives — the pair of `ed25519SignerFromSeed`. */
+export async function ed25519VerifyingKeyFromSeed(seed: Uint8Array): Promise<string> {
+  return hex(await nobleEd25519.getPublicKeyAsync(seed));
+}
+
+/** Verify a hex Ed25519 signature over `bytes` under a hex verifying key, through the door. Malformed input reads false, never throws. */
+export async function ed25519VerifyHex(sigHex: string, bytes: Uint8Array, verifyingKeyHex: string): Promise<boolean> {
+  try { return verifyEd25519(sigHex, bytes, verifyingKeyHex); } catch { return false; }
 }

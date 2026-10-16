@@ -276,11 +276,11 @@ export async function fileWardRefusal(
     const bagId  = typeof args["bagId"]  === "string" ? args["bagId"]  : "(unknown bag)";
     const uri    = typeof args["uri"]    === "string" ? args["uri"]    : "(unknown uri)";
     const reason = typeof args["reason"] === "string" ? args["reason"] : "(no reason)";
-    // WHICH WARD REFUSED. The disk projector was the first caller and is no longer the only one: the
+    // WHICH WARD REFUSED. The disk projector is one caller among others: the
     // M3 archive-floor write files its own refusals here rather than minting a fourth rail
     // (`archive-floor-write`, waking-floor). A seal refusal recorded as a disk-ward refusal would
     // send an operator to the wrong mechanism, so the LEDGER record and the operator-facing message
-    // name the ward that actually refused. Absent → "disk-ward", so the original caller is unchanged.
+    // name the ward that actually refused. Absent → "disk-ward", the disk projector's ward.
     //
     // THE WIRE KIND STAYS `disk-ward` DELIBERATELY. `kind`/`cause` are Rail A's TRANSPORT names, and
     // the residency delivery keys off them (`hooks.alertArgs?.(kind)`, the browser drop diagnostics).

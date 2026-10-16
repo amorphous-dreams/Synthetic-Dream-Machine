@@ -1,63 +1,24 @@
 /**
- * herm-carriage-relay-stand.test.ts — WAVE 1 of the full-pono Herm: a Herm STANDS the carriage crossroads
- * (Socket B) so a family's hearths dial IT to carry sealed cad bodies between each other.
+ * herm-carriage-relay-stand.test.ts — a Herm STANDS its relay port, and the port opens no WebSocket.
  *
- * This proves the boot's relay-STANDING shore (the server side), the complement to carriage-relay-serve-loop.test.ts
- * (which proves the vessel's serve-loop client side against a free-standing relay):
- *   · STANDS + CARRIES — the Herm-boot gate stands `startCarriageRelay` on its resolved gate seed; a HOLDER hearth
- *     serves over it and a MEMBER hearth dials the Herm's `ws://` URL, carries the ciphertext, re-verifies
- *     BLAKE3(ciphertext)==cid SECRET-FREE, and reads with the bag content key (carry ⊥ read),
- *   · STRANGER draws Mu — a non-member dialing the SAME crossroads draws byte-identical Mu (denial ≡ satiety),
- *   · INERT — the EXACT boot gate (`relayPort !== null ? startCarriageRelay : null`) stands ZERO sockets when no
- *     relay port rides the config and ONE when it does (an un-configured Herm behaves as today),
- *   · STABLE IDENTITY — `resolveRelayGateSeed` (the shore the boot reads) yields the SAME gate key across restarts
- *     from the Herm's own identity seed, a DIFFERENT one from a pinned seed hex, and NEVER a fresh random,
- *   · CLEAN TEARDOWN — `close()` stops the crossroads: a dial after close cannot connect (no leaked WS server).
- *
- * The full openNodeHerm boot (genesis + identity + read-face) stays outside this headless proof — here the boot's
- * relay-standing gate + seed-resolution run VERBATIM (`resolveRelayGateSeed` + the `startCarriageRelay` ternary),
- * and every crypto piece is REAL (Ed25519 proof-of-possession, the cad seal, secret-free verify). What only a Pi /
- * two-OS-process crossing proves: a stable bound port surviving a real process restart, the LAN secure-context shore.
+ * The herm's relay port serves persona-KEL drops over plain HTTP and destroys every WebSocket upgrade before any
+ * 101. So a member's carry and a stranger's Mu have no socket to ride (their ring laws live in the cas-wire suites),
+ * and what this suite proves is the port's standing shore:
+ *   · INERT — the EXACT boot gate (`relayPort !== null ? startCarriageRelay : null`) stands nothing when no relay
+ *     port rides the config, and a listener when it does;
+ *   · SHUT — a dialer at the stood port on its pinned knock never reaches an open socket (the upgrade's silence
+ *     is asserted at the relay itself, in herm-relay-port.test);
+ *   · STABLE IDENTITY — `resolveRelayGateSeed` yields the SAME gate key across restarts from the Herm's own
+ *     identity seed, a DIFFERENT one from a pinned seed hex, and NEVER a fresh random;
+ *   · CLEAN TEARDOWN — `close()` stops the crossroads: its port answers nothing afterwards.
  *
  * Gate: lar:///ha.ka.ba/lararium/node/herm-carriage-relay-stand
  */
 import { afterEach, describe, test, expect } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import * as ed from "@noble/ed25519";
+import { connect } from "node:net";
 import { WebSocket } from "ws";
-import { knockedUrl,
-  DeterministicFederationGate, verifyCiphertextCid, utf8Bytes, hex,
-  type MembershipChannel, type MembershipEnvelope,
-} from "@lararium/mesh";
-import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
-import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
-import { CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, muWireBytes, type CasWireServerDeps } from "../src/cas-wire.js";
-import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
+import { knockSegment, hex } from "@lararium/mesh";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
-import { type CarriageServeLoop } from "../src/carriage-serve-loop.js";
-import { standServeLoop } from "./carriage-stand.js";
-import { membershipOf, antigenOf, bytesFromPayload, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
-
-const BODY = utf8Bytes("a family body one hearth seals and another carries over the Herm's crossroads");
-const pubOf = (seed: Uint8Array): Promise<string> => ed.getPublicKeyAsync(seed).then(hex);
-const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-
-async function fetchOverCarriage(args: {
-  channel: MembershipChannel; requester: string; holderAddr: string; cid: string;
-}): Promise<MembershipEnvelope | null> {
-  await args.channel.offer({ kind: CAS_WANT_BLOCK, from: args.requester, to: args.holderAddr, payload: { cid: args.cid } });
-  // The channel names no arrival, so the asker reads its inbox until the answer stands. The deadline only FAILS
-  // (it sits inside the vector's own timeout); no outcome depends on its length.
-  const deadline = Date.now() + 15_000;
-  while (Date.now() < deadline) {
-    const responses = await args.channel.poll(args.requester);
-    if (responses.length > 0) return responses[0]!;
-    await sleep(25);
-  }
-  return null;
-}
 
 /** The EXACT boot gate: a relay stands ONLY when a port rides the config, on the resolved (stable) gate seed. */
 function bootRelayGate(cfg: {
@@ -69,102 +30,30 @@ function bootRelayGate(cfg: {
     : Promise.resolve(null);
 }
 
-describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member carries, a stranger draws Mu; off = inert", () => {
-  let relay: CarriageRelay | null = null;
-  const loops: CarriageServeLoop[] = [];
-  const channels: AuthenticatedWSMembershipChannel[] = [];
-  const dirs: string[] = [];
-
-  const mkDir = (tag: string): string => { const d = mkdtempSync(join(tmpdir(), `lares-herm-${tag}-`)); dirs.push(d); return d; };
-
-  afterEach(async () => {
-    for (const l of loops.splice(0)) { try { await l.stop(); } catch { /* down */ } }
-    for (const c of channels.splice(0)) { try { c.close(); } catch { /* down */ } }
-    if (relay) { try { await relay.close(); } catch { /* down */ } relay = null; }
-    for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
+/** Does a WS dial to `url` reach an OPEN socket? A shut route destroys the upgrade, so `error` or `close` answers false. */
+function opens(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const ws = new WebSocket(url);
+    const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
+    ws.on("open", () => done(true));
+    ws.on("error", () => done(false));
+    ws.on("close", () => done(false));
+    setTimeout(() => done(false), 3000);
   });
+}
 
-  function sealBody(): { cadDir: string; installed: ReturnType<typeof sealCarrierForFederation>; registry: ReturnType<typeof makeSealedPlaneRegistry>; under: ReturnType<typeof freshTestBodyKey> } {
-    const storageDir = mkDir("store");
-    const registry = makeSealedPlaneRegistry();
-    const under = freshTestBodyKey();
-    const cadDir = cadSealDir(storageDir);
-    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: TEST_SCOPE });
-    return { cadDir, installed, registry, under };
-  }
+describe("herm-carriage-relay-stand — a Herm stands its relay port and the port opens no socket; off = inert", () => {
+  let relay: CarriageRelay | null = null;
+  afterEach(async () => { if (relay) { try { await relay.close(); } catch { /* down */ } relay = null; } });
 
-  test("STANDS + CARRIES: a member dials the Herm's crossroads + reads a sealed body; a stranger draws byte-identical Mu", async () => {
-    // The Herm's OWN identity seed (in the boot this is `vesselSeed`, loaded from store → stable across restarts).
-    const hermSeed    = new Uint8Array(32).fill(11);
-    const holderSeed  = new Uint8Array(32).fill(12);
-    const memberSeed  = new Uint8Array(32).fill(13);
-    const strangerSeed = new Uint8Array(32).fill(14);
-    const [holderKey, memberKey, strangerKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed), pubOf(strangerSeed)]);
-
-    const { cadDir, installed, registry, under } = sealBody();
-    const deps: CasWireServerDeps = {
-      cadDir, seal: registry.seal,
-      membership: membershipOf([memberKey]),
-      antigen: antigenOf([]),
-      fedGate: new DeterministicFederationGate(holderKey),
-    };
-
-    // ── THE HERM STANDS THE CROSSROADS — the boot gate on the Herm's own identity seed (port 0 → OS-assigned). ──
-    relay = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
-    expect(relay).not.toBeNull();
-    expect(relay!.port).toBeGreaterThan(0);
-    // ★ THE GATE KEY IS DERIVED FROM THE HERM'S IDENTITY, NEVER EQUAL TO IT ★ — this line once asserted
-    // equality, which stated the flaw as an invariant: the published crossroads key WAS the vessel
-    // identity key, joining the transport and identity trust domains in one correlatable pair.
-    expect(relay!.gatePubKey).toBe(await pubOf(resolveRelayGateSeed(hermSeed)));
-    expect(relay!.gatePubKey).not.toBe(await pubOf(hermSeed));
-    expect(relay!.tracker.size).toBe(0);
-    const url = `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`;
-
-    // A holder hearth serves its sealed body over the Herm's crossroads; two requester hearths dial the same URL.
-    // The crossroads keeps no want-block for a holder that has not proven its key yet: the requesters ask
-    // once the holder's loop stands, by its own word.
-    const holder = standServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 });
-    loops.push(holder.loop);
-    await holder.stands;
-    const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
-    const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
-    channels.push(memberCh, strangerCh);
-
-    // MEMBER: carries the ciphertext over the Herm, re-verifies secret-free, reads with the bag content key.
-    const memberResp = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid });
-    expect(memberResp?.kind).toBe(CAS_BLOCK);
-    const ciphertext = bytesFromPayload(memberResp!);
-    expect(verifyCiphertextCid(ciphertext, installed.cid)).toBe(true);
-    expect([...ciphertext]).not.toEqual([...BODY]);
-    expect(openAsMember(ciphertext, installed, under)).toEqual(BODY);
-
-    // STRANGER: dials the SAME crossroads, draws the void — byte-identical to satiety.
-    const strangerResp = await fetchOverCarriage({ channel: strangerCh, requester: strangerKey, holderAddr: holderKey, cid: installed.cid });
-    expect(strangerResp?.kind).toBe(CAS_MU);
-    expect([...bytesFromPayload(strangerResp!)]).toEqual([...muWireBytes()]);
-  }, 20_000);
-
-  test("INERT: the boot gate stands ZERO crossroads sockets when no relay port rides the config, ONE when it does", async () => {
+  test("INERT + SHUT: no port stands nothing; with a port the relay port stands and opens no socket", async () => {
     const hermSeed = new Uint8Array(32).fill(21);
+    expect(await bootRelayGate({ vesselSeed: hermSeed, relayPort: null })).toBeNull();
 
-    // UNCONFIGURED (no port): the EXACT boot ternary stands NO relay — an un-configured Herm behaves as today.
-    const inert = await bootRelayGate({ vesselSeed: hermSeed, relayPort: null });
-    expect(inert).toBeNull();
-
-    // CONFIGURED: the SAME gate with a port stands exactly one crossroads a hearth can dial.
     relay = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
     expect(relay).not.toBeNull();
-    // A hearth dials the knock its pin derives — the only path the crossroads answers an upgrade on.
-    const url = knockedUrl(`ws://127.0.0.1:${relay!.port}`, relay!.gatePubKey);
-    const dialed = await new Promise<boolean>((resolve) => {
-      const ws = new WebSocket(url);
-      const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
-      ws.on("open", () => done(true));
-      ws.on("error", () => done(false));
-      setTimeout(() => done(false), 2000);
-    });
-    expect(dialed).toBe(true);   // a hearth reaches the stood crossroads
+    const url = `ws://127.0.0.1:${relay!.port}/ws/${knockSegment(relay!.gatePubKey, "/ws")}`;
+    expect(await opens(url)).toBe(false);
   }, 20_000);
 
   test("STABLE IDENTITY: the resolved gate seed is deterministic — same across restarts, distinct from a pinned seed", async () => {
@@ -200,31 +89,18 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     finally { await stood1.close(); await stood2.close(); }
   }, 20_000);
 
-  test("CLEAN TEARDOWN: close() stops the crossroads — a dial after close cannot connect (no leaked WS server)", async () => {
+  test("CLEAN TEARDOWN: close() stops the crossroads — its port answers nothing afterwards", async () => {
     const hermSeed = new Uint8Array(32).fill(41);
     const stood = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
     expect(stood).not.toBeNull();
-    const url = knockedUrl(`ws://127.0.0.1:${stood!.port}`, stood!.gatePubKey);
-
-    // UP: a hearth reaches the crossroads.
-    const upDial = await new Promise<boolean>((resolve) => {
-      const ws = new WebSocket(url);
-      const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
-      ws.on("open", () => done(true));
-      ws.on("error", () => done(false));
-      setTimeout(() => done(false), 2000);
+    const port = stood!.port;
+    const listens = (): Promise<boolean> => new Promise((resolve) => {
+      const sock = connect({ host: "127.0.0.1", port });
+      sock.once("connect", () => { sock.destroy(); resolve(true); });
+      sock.once("error", () => resolve(false));
     });
-    expect(upDial).toBe(true);
-
-    // close() tears the WS server down — a fresh dial to the SAME port now fails (no leaked listener).
+    expect(await listens(), "control: the listener stands before close()").toBe(true);
     await stood!.close();
-    const afterDial = await new Promise<boolean>((resolve) => {
-      const ws = new WebSocket(url);
-      const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
-      ws.on("open", () => done(true));
-      ws.on("error", () => done(false));
-      setTimeout(() => done(false), 2000);
-    });
-    expect(afterDial).toBe(false);
+    expect(await listens()).toBe(false);
   }, 20_000);
 });

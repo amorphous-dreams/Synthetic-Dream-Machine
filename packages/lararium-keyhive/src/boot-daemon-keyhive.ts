@@ -6,7 +6,7 @@
  * daemon island. This function is the heart of that move, extracted PURE (no
  * worker, no platform API) so it unit-tests in-process. The daemon island's
  * `onEa` calls it with the seed (delivered via the manifest) and the daemon
- * CompositeStore (the cap-event EventStore backing); the host no longer boots
+ * CompositeStore (the cap-event EventStore backing); the host never boots
  * keyhive at all (keyhive cannot double-boot — `generateDocument` mints a fresh
  * CSPRNG doc-id each call, so two instances diverge).
  *
@@ -37,7 +37,7 @@ export interface BootDaemonKeyhiveInput {
   /** Writable bag URIs to register so `verify`/`delegate` resolve (lar: URIs). */
   readonly registerBags: readonly string[];
   /** The PINNED signer DID — provenance ONLY (the founding op-key = the KEL inception op-key). The Binding
-   *  Gate NO LONGER pins this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid —
+   *  Gate does NOT pin this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid —
    *  accepting both a raw op-key pin AND the prefix would open a downgrade). */
   readonly signerDid?: string;
   /** The persona-KEL PIN + the LOCAL-replica chain the gate walks (identity-classes#the-continuity-anchor).

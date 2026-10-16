@@ -101,8 +101,8 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
     expect(await boardVouches()).toHaveLength(0);   // and nothing landed
   });
 
-  it("CARRIES NO EXPIRY AT ALL — the wall-clock mint gate is RETIRED (operator ruling 2026-10-10) and " +
-     "the field itself is gone, not merely unread: a vouch binds to the realm's lease epoch, never a clock",
+  it("CARRIES NO EXPIRY AT ALL — no wall-clock mint gate stands (operator ruling 2026-10-10) and " +
+     "no such field stands at all: a vouch binds to the realm's lease epoch, never a clock",
   async () => {
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
     expect(r).not.toHaveProperty("expiresAt");

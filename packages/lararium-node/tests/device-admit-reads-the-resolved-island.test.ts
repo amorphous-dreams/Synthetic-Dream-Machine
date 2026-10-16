@@ -65,7 +65,6 @@ describe("device-admit resolves the island the boot resolved", () => {
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
     setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);   // no anchor pin — the charter, or `own`, decides
   });
 
   afterEach(() => {
@@ -83,7 +82,7 @@ describe("device-admit resolves the island the boot resolved", () => {
     return nexusScopeOrThrow(nexusIdentity({
       genesisEpochCid: nexusAidOf(readNexusDoc(larSealHome())),
       charterStands:   nexusCharterStands(larSealHome()),
-      anchorGateKey:   process.env["LAR_JOIN_GATE"] ?? null,
+      anchorGateKey:   null,
       ownVesselKey:    OWN_KEY,
     }));
   }
@@ -109,11 +108,8 @@ describe("device-admit resolves the island the boot resolved", () => {
 
   test("RED — an ANCHOR pin moves the admit door's island too, in the boot's own precedence", () => {
     const anchor = "c3".repeat(32);
-    setEnv("LAR_JOIN_GATE", anchor);     // a joined vessel, no charter of its own
-    expect(bootIsland()).toBe(anchor);
-    expect(admitBoardIsland(OWN_KEY), "the door follows the boot's precedence").toBe(anchor);
-    // And an explicit override still outranks the environment, as it does at the boot.
-    expect(nodeNexusIsland({ ownVesselKey: OWN_KEY, joinGatePubKey: "d4".repeat(32) })).toBe("d4".repeat(32));
+    // A joined vessel, no charter of its own: the anchor rides the explicit option.
+    expect(nodeNexusIsland({ ownVesselKey: OWN_KEY, joinGatePubKey: anchor })).toBe(anchor);
   });
 
   test("RED — a charter that STANDS and reads TORN refuses rather than falling back to the vessel key", () => {
@@ -207,7 +203,6 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
     setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

@@ -43,7 +43,7 @@ import { canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import {
   GROUP_SECRET_ENROLMENT_DOMAIN, GROUP_SECRET_SEAL_INFO, PERSONA_GROUP_SECRET_INFO, SEALED_ENROLMENT_INFO,
 } from "./domains.js";
-import { ed25519VerifyHex } from "./auth-wire.js";
+import { ed25519VerifyHex } from "./ed25519-door.js";
 import { sealToRecipient, openFromSender } from "./sealed-box.js";
 import { didFromVerifyingKey, verifyingKeyFromDid } from "./lar-did.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";

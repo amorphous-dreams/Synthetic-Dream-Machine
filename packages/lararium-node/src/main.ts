@@ -42,7 +42,7 @@ import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositio
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
+import { standAs, ORACLE_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
   standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
@@ -68,7 +68,8 @@ import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
-import { loadVesselSigningSeed, loadVesselIdentity } from "./node-vessel-identity.js";
+import { loadVesselSigningSeed, loadVesselIdentity, vesselFloorKeyDoor } from "./node-vessel-identity.js";
+import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
 import type { AutomergeUrl }            from "@automerge/automerge-repo";
@@ -225,8 +226,9 @@ async function main(): Promise<void> {
   // read-face (the self-peering key, advertised in its dial), LAR_PEERS = bootstrap peers (`<url>#<gate key>`),
   // LAR_SEED = its dial label (else hash-derived); LAR_RADIUS = its carriage standing r.
   const publicUrl = process.env["LAR_PUBLIC_URL"] ?? `http://localhost:${port}`;
-  // Each bootstrap peer names its gate key — `<http read-face>#<gate key hex>` — the pin a pull knocks with and
-  // proves to. An entry with no key names no gate: refused here, said aloud, and never dialed.
+  // Each bootstrap peer names its PUBLISHER key — `<http read-face>#<vessel verifying key hex>` — the key a pulled
+  // FLOW-map pointer verifies under (`carriage-caps`); the knock rides a held floor pin, never this key. An entry with
+  // no key names no publisher: refused here, said aloud, and never dialed.
   const peerEntries = (process.env["LAR_PEERS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const peers = peerEntries.flatMap((entry) => {
     const peer = parseMeshPeer(entry);
@@ -612,12 +614,12 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   }
   for (const f of reachFaces) console.log(`[herm] ws:        ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
 
-  // The CARRIAGE CROSSROADS (Socket B) — announced when a relay port rode the config (LAR_HERM_RELAY_PORT).
-  // The operator hands a family hearth the `ws://` URL + the gate key to dial this crossroads. Absent → no line.
-  // The relay binds its OWN port (SEPARATE from the /ws read-face port) on the same host every face names.
+  // THE HERM RELAY PORT — announced when a relay port rode the config (LAR_HERM_RELAY_PORT). Siblings of a PersonaGroup
+  // pin it as `ws://<host>:<port>#<gate key>` and leave persona-KEL drops there over plain HTTP; every WebSocket upgrade
+  // meets silence. Absent → no line. The port is its OWN (SEPARATE from the /ws read-face port) on the same host every face names.
   if (herm.carriageRelayPort !== null) {
     const relayPort = herm.carriageRelayPort;
-    console.log(`[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:`);
+    console.log(`[herm] relay port — siblings leave persona-KEL drops here:`);
     console.log(`[herm]   gate key: ${herm.carriageRelayGatePubKey}`);
     for (const f of reachFaces) {
       const scheme = f.origin.startsWith("https") ? "wss" : "ws";
@@ -720,29 +722,31 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
-  // THE CROSSING, spoken aloud. A leaf's V3 proof commits to the GATE'S key, and the leaf must hold that
-  // key OUT-OF-BAND — the challenge names no key, and the relay answers only on the knock that key derives, so
-  // a leaf that never received the key reaches no gate at all. That reads correct, and it looks exactly like
-  // a dead socket.
-  //
-  // The gate arms with this vessel's operator verifying key, so this vessel already HOLDS the one thing a
-  // crossing leaf cannot obtain for itself. Printing it turns an unperformable ritual into an instruction.
-  // The load runs idempotent — the same identity the gate armed with, read back, never a second one.
+  // THE CROSSING, spoken aloud. Each line names a URL a fresh device opens and stands at the floor with: the relay, and
+  // the hearth's oracle floor card in the fragment (the oracle's floor pin beside the key its snapshot is signed under,
+  // carried by the person's own hand: `hearthFloorCardText`). No line names a gate key. A face crosses the sovereign gate
+  // only under the full pin its fleet join carries inside the root's signature (house ruling "The admit's gate pin"), so
+  // the banner names the fleet-join door beside the URLs. The `gate key:` line names this vessel's verifying key, so a
+  // person sees which hearth the page names; it opens no gate by itself. A vessel that keeps no charter stands no floor
+  // gate at a Nexus, so its URLs carry no card.
   const gateIdentity = await loadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
-  console.log("[lararium] browser crossing — open one of these on the device that crosses:");
+  const floorCard = await (async (): Promise<string | null> => {
+    try {
+      const pin = stoodFloorPins(larSealHome(), await vesselFloorKeyDoor()).find((p) => p.route === HEARTH_FLOOR_CARD_ROUTE);
+      return pin ? hearthFloorCardText({ pin, publisher: gateIdentity.verifyingKey }) : null;
+    } catch (err) {
+      if (!(err instanceof NoStoodNexus)) console.log(`[lararium] floor card: none (${err instanceof Error ? err.message : String(err)})`);
+      return null;
+    }
+  })();
+  console.log("[lararium] browser crossing — open one of these on the device that crosses; it stands at the floor:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
-  for (const line of crossingBannerLines("lararium", crossings, gateIdentity.verifyingKey)) console.log(`[lararium]   ${line}`);
-  console.log("[lararium]   (a leaf joins by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
+  for (const line of crossingBannerLines("lararium", crossings, floorCard)) console.log(`[lararium]   ${line}`);
+  console.log("[lararium]   (a leaf joins a face by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
 
-  // The CLIENT dial-out (Socket A) — announced when a peer sync URL rides the config (the same-operator device
-  // breath: this vessel DIALS a peer node's /ws carrying the operator's own identity). Read inside the vessel;
-  // announced here so the operator sees it. Absent → no dial, no line.
-  const joinSync = process.env["LAR_JOIN_SYNC"];
-  if (joinSync) {
-    const joinGate = process.env["LAR_JOIN_GATE"];
-    console.log(`[lararium] nexus dial-out → ${joinSync}${joinGate ? "" : "   (no LAR_JOIN_GATE — fail-closed to inert; a gate-less dial cannot bind the anti-relay proof)"}`);
-  }
+  // The CLIENT dial-out (Socket A) is read inside the vessel, from the hearth pin its admit carries and the pair index
+  // of gate pins, never from the env; the vessel logs it as `[nexus-join]`.
 
   // The oracle doc's read-only substrate (the Two-Faced Substrate's content-addressed floor) — served to
   // PROVEN PEERS over THIS http server's gated oracle socket; an HTTP request for it meets the closed door.
@@ -762,8 +766,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       const floorSeedCid = genesisSeedCid(floorSeedBytes);
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
-        authShore: result.daemon.authShore,
-        sort:      result.socketSorter,
+        gates:     result.floorGates,
         dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
         exportSnapshot: (doc) => snapshotPublicOracle(doc as LarDoc, floorSeed, floorSeedCid),

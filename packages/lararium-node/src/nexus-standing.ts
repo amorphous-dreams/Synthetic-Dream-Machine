@@ -78,7 +78,7 @@ export function nodeNexusStandsAt(opts: {
   return {
     genesisEpochCid: ownGenesis ?? pinnedGenesis ?? null,
     charterStands:   ownCharterStands,
-    anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
+    anchorGateKey:   opts.joinGatePubKey ?? hearthPin?.gatePubKey ?? null,
     ownVesselKey:    opts.ownVesselKey,
   };
 }

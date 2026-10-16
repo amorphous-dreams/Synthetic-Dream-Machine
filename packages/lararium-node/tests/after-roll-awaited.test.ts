@@ -10,7 +10,7 @@
  *     `boolean | void | Promise<boolean | void>`) can read a truthful answer;
  *   · the three refold stages must sit in THREE separate `try` blocks (a fault in
  *     `realmPlane.refresh` must not skip `reverdict`/`representIfMoved` — the single-`try` bug);
- *   · every caller (`onRolled`, both `onReconnect` sites) must AWAIT it, not fire it into the void.
+ *   · every caller (`onRolled`, the nexus dial-out's `onReconnect`) must AWAIT it, not fire it into the void.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -66,10 +66,10 @@ describe("★ H2 — afterRoll is Promise<boolean>, serialized, and never fire-a
     expect(tail, "the FINAL catch must return false, never rethrow and never return true").toMatch(/catch[\s\S]{0,220}return false;/);
   });
 
-  test("★ every caller AWAITS afterRoll — onRolled (store-door-verbs) and both onReconnect sites ★", () => {
+  test("★ every caller AWAITS afterRoll — onRolled (store-door-verbs) and the nexus dial-out's onReconnect ★", () => {
     expect(SRC, "the door table must hand afterRoll straight to onRolled, which F2's rows now await").toMatch(/onRolled:\s*afterRoll,/);
     const onReconnectSites = SRC.match(/onReconnect:\s*async \(\) => \{ await afterRoll\(\); \},/g) ?? [];
-    expect(onReconnectSites.length, "both the carriage serve-loop and the nexus dial-out onReconnect must await afterRoll").toBe(2);
+    expect(onReconnectSites.length, "the nexus dial-out's onReconnect, the one onReconnect site, awaits afterRoll").toBe(1);
     // No onReconnect may still fire it unawaited (`async () => afterRoll(),` with no inner await/braces).
     expect(SRC).not.toMatch(/onReconnect:\s*async \(\) => afterRoll\(\),/);
   });

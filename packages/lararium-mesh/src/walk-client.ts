@@ -32,8 +32,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./auth-wire.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./leaf-presentation.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import {
   decodeInvite, encodeInvite, redeemClaim, isHostingGrant, isInviteToken, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
   hostingActsFromBoard, verifyHostingAct,
@@ -207,7 +207,12 @@ export interface WalkTransport {
   sendSession(kind: string, body: unknown): boolean;
   represent(identity: LeafIdentity): void;
   on(event: "peer-candidate", listener: (e: { peerId: unknown }) => void): unknown;
-  readonly identity: LeafIdentity;
+  /**
+   * What the transport presents. The sealed gate adapter presents a face, not a walk, so it carries none: the
+   * WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`) and a transport without an identity settles no invite. A
+   * walker transport that carries one presents it.
+   */
+  readonly identity?: LeafIdentity;
 }
 
 /**
@@ -252,7 +257,7 @@ export function walkOver(opts: {
     });
   });
   opts.transport.on("peer-candidate", () => {
-    const presented = opts.transport.identity.presented;
+    const presented = opts.transport.identity?.presented;
     if (presented?.kind !== "grant") return;
     unawaited("settle", async () => {
       await opts.store.update(gate, (held) => {

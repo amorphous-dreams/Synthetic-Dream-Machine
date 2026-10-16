@@ -41,6 +41,15 @@ const PENDING = "pending";
 const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object" && v !== null && "refusal" in v;
 const faceKeyRow = (scope: FaceScope): string => `${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
+/** The dial a landed answer carried, kept per face (`dial:<group>`): what the face's presentation reads at its hearth. */
+export interface KeptFleetJoinDial {
+  readonly charter:  FleetJoinAnswer["charter"];
+  readonly admit:    FleetJoinAnswer["admit"];
+  readonly carriage: FleetJoinAnswer["carriage"];
+}
+/** The row a face's kept dial rests at in the fleet-join store. */
+export const dialRow = (personaGroup: string): string => `dial:${personaGroup}`;
+
 /** What this browser keeps while its join stands pending; `landed` once its answer landed, awaiting the boot. */
 interface PendingJoin { readonly offer: FleetJoinOffer; readonly request: FleetJoinRequest; readonly sealSecret: string; readonly landed?: true }
 
@@ -210,6 +219,10 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
             }
             os.put(Uint8Array.from(addressSecret), secretRow);
             os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
+            // THE DIAL IT CARRIED, kept beside the record as the root signed it: the hearth's charter and the face's own admit
+            // at the hearth's Nexus. The face's presentation reads them again at each dial (`browser-face-presentation`):
+            // the charter seats the root the admit reads held at, so a torn one presents nothing, by name.
+            os.put({ charter: answer.charter, admit: answer.admit, carriage: answer.carriage } satisfies KeptFleetJoinDial, dialRow(answer.personaGroup));
             os.put({ ...p, landed: true } satisfies PendingJoin, PENDING);
             done(undefined);
           };

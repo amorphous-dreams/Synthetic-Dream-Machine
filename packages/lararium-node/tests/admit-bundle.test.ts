@@ -26,14 +26,14 @@ import {
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
   signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   admitCarriageCommit,
-  type NexusDoc, type CarriageEntry, type LarDoc, type AdmitOpening,
+  custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute,
+  type NexusDoc, type CarriageEntry, type LarDoc, type AdmitOpening, type GateBundlePin,
 } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
 import { dialPresentation, makeNexusMembership, type CarriedNexusReading } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome, carriageConsentPathFor } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
@@ -46,8 +46,11 @@ const LEAF_P = seed(21);
 const LEAF_Q = seed(22);
 const FOREIGN_LEAF = seed(23);
 const VESSEL = seed(30);
-const GATE_P = "a1".repeat(32);
-const GATE_Q = "b2".repeat(32);
+/** The hearth's sovereign sync pin at one Nexus, from a test custody door filled with `tag`. */
+const pinAt = (aid: string, tag: number): GateBundlePin => {
+  const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(aid), sovereignRoute("/ws"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+};
 
 async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahuSeeds.map(pubOf));
@@ -55,12 +58,12 @@ async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
 }
 
 /** An admit signs the pin of the hearth its bundle names (face-proof#/the-gate-exchange, step 5). */
-async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, action: "admit" | "revoke", parents: string[] = [], pin = GATE_P): Promise<CarriageEntry> {
+async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, action: "admit" | "revoke", parents: string[] = [], pin?: GateBundlePin): Promise<CarriageEntry> {
   const nym = await pubOf(leafSeed);
   const epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahuSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const consent = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(leafSeed)) : undefined;
-  const carriage = action === "admit" ? { carriageCommit: admitCarriageCommit(openingFor(pin)) } : {};
+  const carriage = action === "admit" ? { carriageCommit: admitCarriageCommit(openingFor(pin ?? pinAt(nexusAidOf(doc)!, 1))) } : {};
   return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch, ...carriage }, quorum, consent);
 }
 
@@ -72,22 +75,20 @@ function boardOf(entries: CarriageEntry[]): LarDoc {
 
 /** A fixed test salt, so a bundle opens the commitment its pin's admit signed (`openingFor`). */
 const SALT = "5a".repeat(32);
-const openingFor = (gatePin: string): AdmitOpening => ({ carriage: { gatePin, canon: {} }, salt: SALT });
+const openingFor = (gatePin: GateBundlePin): AdmitOpening => ({ carriage: { gatePin, canon: {} }, salt: SALT });
 /** A bundle as the producer writes it: the opening for the pin it names rides beside the admit. */
-const bundleText = (b: AdmitBundle): string => JSON.stringify({ opening: openingFor(b.gatePubKey), ...b });
+const bundleText = (b: AdmitBundle, pin?: GateBundlePin): string => JSON.stringify({ opening: openingFor(pin ?? pinAt(b.aid, 1)), ...b });
 
 describe("the carried admit — take, keep, and present at the issuing hearth alone", () => {
   let root: string;
   let prior: string | undefined;
-  let priorGate: string | undefined;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-bundle-"));
-    prior = process.env["LAR_ROOT"]; priorGate = process.env["LAR_JOIN_GATE"];
-    process.env["LAR_ROOT"] = root; delete process.env["LAR_JOIN_GATE"];
+    prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
   });
   afterEach(() => {
     if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    if (priorGate !== undefined) process.env["LAR_JOIN_GATE"] = priorGate;
     rmSync(root, { recursive: true, force: true });
   });
 
@@ -106,8 +107,9 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
       return s ? [{ handleIndex: 0, verifyingKey: await pubOf(s), seed: s }] : [];
     };
     const admitP = await act(P, P_KAHU, LEAF_P, "admit");
-    const bundleP: AdmitBundle = { aid: aidP, gatePubKey: GATE_P, admit: admitP, lineage: [] };
-    return { sealHome, P, Q, aidP, aidQ, leaves, admitP, bundleP };
+    const gateP = pinAt(aidP, 1).signingKey, gateQ = pinAt(aidQ, 1).signingKey, pinOther = pinAt(aidP, 2);
+    const bundleP: AdmitBundle = { aid: aidP, gatePubKey: gateP, admit: admitP, lineage: [] };
+    return { sealHome, P, Q, aidP, aidQ, leaves, admitP, bundleP, gateP, gateQ, pinOther };
   }
 
   test("TAKE refuses a bundle for a leaf this vessel does not hold — nothing written", async () => {
@@ -123,11 +125,11 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
   test("TAKE hands out only the pin and canon the admit signed — a moved pin or a pinless admit keeps nothing", async () => {
     const w = await stand();
     // A bundle naming another hearth than the admit's signed pin.
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q }), leaves: w.leaves }))
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: w.pinOther.signingKey }, w.pinOther), leaves: w.leaves }))
       .rejects.toThrow(/does not answer the commitment/);
     // The admit's own carriage moved after the quorum signed: the act no longer counts.
-    const moved: CarriageEntry = { ...w.admitP, carriageCommit: admitCarriageCommit(openingFor(GATE_Q)) };
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q, admit: moved }), leaves: w.leaves }))
+    const moved: CarriageEntry = { ...w.admitP, carriageCommit: admitCarriageCommit(openingFor(w.pinOther)) };
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: w.pinOther.signingKey, admit: moved }, w.pinOther), leaves: w.leaves }))
       .rejects.toThrow(/does not hold/);
     // An admit whose quorum signed no carriage at all.
     const nym = await pubOf(LEAF_P), epoch = w.P.sealEpochCid!;
@@ -136,13 +138,31 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, admit: pinless }), leaves: w.leaves }))
       .rejects.toThrow(/signed no gate pin/);
     // A bundle whose opening names another hearth than its own gate key.
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: JSON.stringify({ ...w.bundleP, opening: openingFor(GATE_P), gatePubKey: GATE_Q }), leaves: w.leaves }))
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: JSON.stringify({ ...w.bundleP, opening: openingFor(pinAt(w.aidP, 1)), gatePubKey: w.pinOther.signingKey }), leaves: w.leaves }))
       .rejects.toThrow(/differs from the pin its opening carries/);
+    // A pin the quorum signed that stands at ANOTHER Nexus than the bundle names: the admit names the Nexus it stands at.
+    const stray = pinAt(w.aidQ, 1);
+    const strayAdmit = await act(w.P, P_KAHU, LEAF_P, "admit", [], stray);
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: stray.signingKey, admit: strayAdmit }, stray), leaves: w.leaves }))
+      .rejects.toThrow(/another Nexus/);
     // A bundle that opens nothing.
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: JSON.stringify(w.bundleP), leaves: w.leaves })).rejects.toThrow(/opens none/);
     expect(existsSync(admitBundlePathFor(w.sealHome, w.aidP))).toBe(false);
     // CONTROL: the signed bundle lands and names its signed canon.
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves })).resolves.toMatchObject({ gatePubKey: GATE_P, canon: {} });
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves })).resolves.toMatchObject({ gatePubKey: w.gateP, canon: {} });
+  });
+
+  test("TAKE keeps the address the hearth listens at beside the admit, and a malformed address is no bundle", async () => {
+    const w = await stand();
+    const url = "ws://127.0.0.1:7777/ws";
+    await takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, syncUrl: url }), leaves: w.leaves });
+    expect(readKeptAdmitBundle(w.sealHome, w.aidP)?.syncUrl).toBe(url);
+    // CONTROL: a bundle that names none keeps none.
+    await takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves });
+    expect(readKeptAdmitBundle(w.sealHome, w.aidP)).not.toHaveProperty("syncUrl");
+    for (const bad of ["http://hearth/ws", "ws://a b", "", 7]) {
+      await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, syncUrl: bad as never }), leaves: w.leaves })).rejects.toThrow(AdmitBundleError);
+    }
   });
 
   test("TAKE refuses a tampered or forged admit — nothing written", async () => {
@@ -164,7 +184,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const w = await stand();
     const unheld = await charter([seed(7), seed(8), seed(9)]);
     const admit = await act(unheld, [seed(7), seed(8), seed(9)], LEAF_P, "admit");
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: nexusAidOf(unheld)!, gatePubKey: GATE_P, admit, lineage: [] }), leaves: w.leaves }))
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: nexusAidOf(unheld)!, gatePubKey: pinAt(nexusAidOf(unheld)!, 1).signingKey, admit, lineage: [] }), leaves: w.leaves }))
       .rejects.toThrow(AdmitBundleError);
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: "{not json", leaves: w.leaves })).rejects.toThrow(AdmitBundleError);
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: "zz" }), leaves: w.leaves })).rejects.toThrow(AdmitBundleError);
@@ -178,7 +198,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     expect(r.path).toBe(admitBundlePathFor(w.sealHome, w.aidP));
     expect(join(r.path, "..", "..")).toBe(join(carriageConsentPathFor(w.sealHome, w.aidP), "..", ".."));
     expect(JSON.parse(readFileSync(r.path, "utf8"))).toEqual(JSON.parse(bundleText(w.bundleP)));
-    expect(readKeptAdmitBundle(w.sealHome, w.aidP)?.gatePubKey).toBe(GATE_P);
+    expect(readKeptAdmitBundle(w.sealHome, w.aidP)?.gatePubKey).toBe(w.gateP);
   });
 
   test("★ F2: primary P holds an admit, the dialed hearth is Q's, Q holds none → nothing presents, no board is read ★", async () => {
@@ -187,13 +207,13 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const asked: string[] = [];
     const boards = new Map<string, LarDoc>([[carriageDocUrl(w.aidP), boardOf([w.admitP])], [carriageDocUrl(w.aidQ), boardOf([])]]);
     const open = async (url: string) => { asked.push(url); return boards.get(url); };
-    expect(dialedNexusAid({ sealHome: w.sealHome, gatePubKey: GATE_Q })).toBeNull();
-    const toQ = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE_Q, open, leaves: w.leaves });
+    expect(dialedNexusAid({ sealHome: w.sealHome, gatePubKey: w.gateQ })).toBeNull();
+    const toQ = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: w.gateQ, open, leaves: w.leaves });
     expect(toQ).toBeNull();
     expect(asked).toEqual([]);
     // CONTROL: dialing P's own hearth presents P's admit.
-    expect(dialedNexusAid({ sealHome: w.sealHome, gatePubKey: GATE_P })).toBe(w.aidP);
-    const toP = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE_P, open, leaves: w.leaves });
+    expect(dialedNexusAid({ sealHome: w.sealHome, gatePubKey: w.gateP })).toBe(w.aidP);
+    const toP = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: w.gateP, open, leaves: w.leaves });
     expect(toP?.aid).toBe(w.aidP);
     expect(carriageEntryActCid(toP!.admit)).toBe(carriageEntryActCid(w.admitP));
   });
@@ -202,8 +222,8 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const w = await stand();
     const open = async () => boardOf([w.admitP]);
     expect(dialedNexusAid({ sealHome: w.sealHome, gatePubKey: null })).toBeNull();
-    // The primary's board holds the admit, but no bundle ties GATE_P to P — the primary is never assumed.
-    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE_P, open, leaves: w.leaves })).toBeNull();
+    // The primary's board holds the admit, but no bundle ties w.gateP to P — the primary is never assumed.
+    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: w.gateP, open, leaves: w.leaves })).toBeNull();
   });
 
   test("KEPT vs BOARD — the board head presents only when it descends from the kept admit", async () => {
@@ -213,7 +233,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     // A re-admit descending from the kept admit (through a revoke) — the board's head moved forward: it presents.
     const revoke  = await act(w.P, P_KAHU, LEAF_P, "revoke", [carriageEntryActCid(w.admitP)]);
     const readmit = await act(w.P, P_KAHU, LEAF_P, "admit", [carriageEntryActCid(revoke)]);
-    const forward = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P,
+    const forward = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: w.gateP,
       open: async () => boardOf([w.admitP, revoke, readmit]), leaves: w.leaves });
     expect(carriageEntryActCid(forward!.admit)).toBe(carriageEntryActCid(readmit));
     expect(forward!.lineage.map(carriageEntryActCid).sort()).toEqual([carriageEntryActCid(w.admitP), carriageEntryActCid(revoke)].sort());
@@ -222,11 +242,11 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const sideRevoke = await act(w.P, P_KAHU, LEAF_P, "revoke");
     const sideAdmit  = await act(w.P, P_KAHU, LEAF_P, "admit", [carriageEntryActCid(sideRevoke)]);
     expect(carriageEntryActCid(sideAdmit)).not.toBe(carriageEntryActCid(w.admitP));
-    const kept = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P,
+    const kept = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: w.gateP,
       open: async () => boardOf([sideRevoke, sideAdmit]), leaves: w.leaves });
     expect(carriageEntryActCid(kept!.admit)).toBe(carriageEntryActCid(w.admitP));
     // An empty replica (a PRIVATE hearth crosses no board) presents the kept admit.
-    const bare = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P,
+    const bare = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: w.gateP,
       open: async () => undefined, leaves: w.leaves });
     expect(carriageEntryActCid(bare!.admit)).toBe(carriageEntryActCid(w.admitP));
   });
@@ -234,7 +254,6 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
   test("★ a PRIVATE gate holds the kept bundle; CONTROL: without the take, the joinee stays a STRANGER ★", async () => {
     const w = await stand();
     const vessel = await pubOf(VESSEL);
-    const nonce = "cd".repeat(32);
     // THE HEARTH's side: P carried (its own charter), its deny board empty. No board ever crosses to the joinee.
     const hearthReading: CarriedNexusReading = {
       nexus: w.aidP, aid: w.aidP, revision: "fixture", via: "seat", island: w.aidP, roster: foundingRoster(w.P), sealLineage: [], denyBoard: [], antigen: [],
@@ -243,10 +262,10 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const hearth = makeNexusMembership({ readCarried: async () => [hearthReading] });
     await hearth.refold();
     const bindingOf = async () => {
-      const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P, open: async () => undefined, leaves: w.leaves });
+      const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: w.gateP, open: async () => undefined, leaves: w.leaves });
       if (!p) return null;
-      const leafProof = await socketProof(socketUnderTest(vessel, { nonce, gatePubKey: GATE_P }), { kind: "admit", admit: p.admit, lineage: [] }, signerOf(p.leaf.seed));
-      return { presentedAdmit: { admit: p.admit, lineage: p.lineage, leafProof }, nonce, gatePubKey: GATE_P, vesselKey: vessel };
+      // The face the gate proved is the leaf the admit names: the binding carries it, no socket proof of its own.
+      return { presentedAdmit: { admit: p.admit, lineage: p.lineage }, faceKey: await pubOf(p.leaf.seed) };
     };
     // CONTROL first: no take → no presentation → STRANGER.
     const before = await bindingOf();
@@ -270,7 +289,7 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
   const OLD = [seed(41), seed(42), seed(43)];
   const NEW = [seed(51), seed(52), seed(53)];
   const LEAF = seed(54);
-  const GATE = "c4".repeat(32);
+  const gateOf = (aid: string): GateBundlePin => pinAt(aid, 1);
 
   test("★ an anchored bundle takes and presents at the new head; CONTROL: the same bundle without its anchor refuses ★", async () => {
     const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
@@ -285,24 +304,24 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
 
-    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], GATE);
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], gateOf(aid));
     const anchor = await signRollAnchor(
       { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents: [carriageEntryActCid(admit)] },
       await Promise.all(NEW.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
     );
 
     // CONTROL: the bundle as taken BEFORE the roll — no anchor — does not hold at the new head.
-    await expect(takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: GATE, admit, lineage: [] }), leaves }))
+    await expect(takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: gateOf(aid).signingKey, admit, lineage: [] }), leaves }))
       .rejects.toThrow(AdmitBundleError);
     expect(existsSync(admitBundlePathFor(sealHome, aid))).toBe(false);
-    const taken = await takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: GATE, admit, lineage: [anchor] }), leaves });
+    const taken = await takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: gateOf(aid).signingKey, admit, lineage: [anchor] }), leaves });
     expect(taken.admitCid).toBe(carriageEntryActCid(admit));
 
     // The dial off the board: the anchored admit presents, its anchor riding the lineage.
     const board = emptyLarDoc();
     writeCarriageEntry(board, admit);
     writeRollAnchor(board, anchor);
-    const p = await dialPresentation({ sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE,
+    const p = await dialPresentation({ sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: gateOf(aid).signingKey,
       open: async (url) => (url === carriageDocUrl(aid) ? board : undefined), leaves });
     expect(p).not.toBeNull();
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(admit));
@@ -319,7 +338,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
   const OLD = [seed(61), seed(62), seed(63)];
   const NEW = [seed(71), seed(72), seed(73)];
   const LEAF = seed(74);
-  const GATE = "d5".repeat(32);
+  const gateOf = (aid: string): GateBundlePin => pinAt(aid, 1);
 
   /** A charter rolled once, an admit minted before the roll, the anchor that carries it, and an orphan retry. */
   async function rolledWithFork() {
@@ -334,7 +353,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     const aid = nexusAidOf(rolled)!;
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
-    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], GATE);
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], gateOf(aid));
     const anchorOf = async (parents: string[]) => signRollAnchor(
       { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents },
       newHands.slice(0, 2),
@@ -353,7 +372,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
   const dial = async (w: Awaited<ReturnType<typeof rolledWithFork>>, board: LarDoc) => {
     const heard: unknown[] = [];
     const p = await dialPresentation({
-      sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE, leaves: w.leaves,
+      sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: gateOf(w.aid).signingKey, leaves: w.leaves,
       open: async (url) => (url === carriageDocUrl(w.aid) ? board : undefined),
       onFinding: (f) => heard.push(f),
     });
@@ -362,7 +381,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
 
   test("★ the KEPT path surfaces the fork once, and still presents through the carrying anchor ★", async () => {
     const w = await rolledWithFork();
-    await takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [w.carrying] }), leaves: w.leaves });
+    await takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: w.aid, gatePubKey: gateOf(w.aid).signingKey, admit: w.admit, lineage: [w.carrying] }), leaves: w.leaves });
     const { p, heard } = await dial(w, w.boardWith([w.carrying, w.orphan]));
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admit));
     expect(p!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(w.carrying)]);
@@ -377,7 +396,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     // own, so the dial reads the board's head for each held leaf.
     const path = admitBundlePathFor(w.sealHome, w.aid);
     mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [] }));
+    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: gateOf(w.aid).signingKey, admit: w.admit, lineage: [] }));
     const { p, heard } = await dial(w, w.boardWith([w.orphan, w.carrying]));
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admit));
     expect(heard).toEqual([{ kind: "anchors-open-one-epoch", epochCid: w.epochCid, anchorCids: [rollAnchorCid(w.carrying), rollAnchorCid(w.orphan)].sort() }]);
@@ -391,7 +410,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     const w = await rolledWithFork();
     const path = admitBundlePathFor(w.sealHome, w.aid);
     mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [] }));
+    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: gateOf(w.aid).signingKey, admit: w.admit, lineage: [] }));
     const orphanTwin = await w.anchorOf(["00".repeat(32)]);   // a second attempt that holds the admit no better
     const { p, heard } = await dial(w, w.boardWith([w.orphan, orphanTwin]));
     expect(p).toBeNull();

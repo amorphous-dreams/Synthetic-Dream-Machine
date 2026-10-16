@@ -20,7 +20,7 @@ import { foldHandleCardsDetailed } from "./handle-card.js";
 import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner, type OwnerHeadResolver } from "./handle-kel.js";
 import { deriveVeiledUserKey } from "./persona-identity.js";
 import { didFromVerifyingKey } from "./lar-did.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import { hexToBytes } from "./crypto.js";
 import { PERSONA_GLAMOUR_CONTEXT } from "./persona-glamour.js";
 import type { HandleCard } from "./handle-card.js";

@@ -1,111 +1,127 @@
 /**
- * socket-sorter.test.ts — the vessel's ONE sorter classes every proven socket off its own carried readings.
+ * socket-sorter.test.ts — the ONE sorter every face gate arms with (`face-gate` `GateSorter`), over the facts the
+ * gate proved and this gate's own Nexus posture alone.
  *
  * Proven:
- *   · a same-operator socket stands under both postures;
- *   · RED: under PRIVATE a proven stranger is SILENCE; CONTROL: the vessel's own charter or any carried Nexus
- *     reading OPEN answers it as a stranger;
- *   · a presented admit HELD against a carried Nexus is CONTRACTED, with the verdict's leaf and Nexus as its
- *     standing; the same admit proven under another vessel key is silence under PRIVATE;
- *   · a faceless PLACE whose wire key this board carries is CONTRACTED; a presentation that fails never falls
- *     through to the carrier read;
- *   · a refold drops a stranger once nothing answers strangers, and a contracted socket the membership no
- *     longer holds — never a same-operator or walker socket, and nothing at all under OPEN.
+ *   · an admit the gate read held sorts CONTRACTED, standing as the proven face key at the admit's Nexus;
+ *   · RED: it sorts SAME-OPERATOR only at a sovereign gate, with the PersonaGroup grant and no fleet shadow (D4)
+ *     / CONTROL: each missing fact leaves it contracted;
+ *   · a place's held carriage contract sorts CONTRACTED, standing as the place key;
+ *   · RED: a walker's grant or claim arm draws nothing, whatever the posture: the route ships SHUT by name, and
+ *     the name reaches the vessel's own log alone;
+ *   · RED: a presenter with no arm is silence under PRIVATE / CONTROL: OPEN answers it as a stranger; the
+ *     posture reads fresh at each sort;
+ *   · every verdict passes the gate itself: a real gate over this sorter seats each class the sorter names;
+ *   · a refold drops a stranger once nothing answers strangers, and a contracted session the membership no
+ *     longer holds — never a same-operator one, and nothing at all under OPEN.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
-import {
-  hex, signCarriageQuorum, signCarriageContract,
-  makeMultiSigQuorumVerifier,
-  type CarriageEntry, type KahuQuorumSeats, type FederationPosture, type PeerClass,
-} from "@lararium/mesh";
-import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "../src/socket-sorter.js";
-import type { CarriedNexusReading } from "../src/nexus-carriage.js";
-import type { SortInput } from "../src/daemon-auth-gate.js";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
-import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import type { FederationPosture, GateSortInput, PeerClass, FaceAdmitReading, FaceGrantReading, PlaceContractReading, CarriageEntry } from "@lararium/mesh";
+import { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "../src/socket-sorter.js";
+import { world, presenter, dial, GROUP } from "../../lararium-mesh/tests/face-gate-fixture.js";
 
-const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
-const LEAF_SEED   = new Uint8Array(32).fill(5);
-const VESSEL_SEED = new Uint8Array(32).fill(11);
-const OTHER_SEED  = new Uint8Array(32).fill(12);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const GATE  = "ee".repeat(32);
-const NONCE = "ab".repeat(32);
+const FACE  = "aa".repeat(32);
+const PLACE = "bb".repeat(32);
+const N     = "nexus-n";
+const admit: FaceAdmitReading = { verdict: { state: "held", reason: "held", nym: FACE }, nexus: N, admitRef: "ref", revision: "r1", head: FACE };
+const grant: FaceGrantReading = { personaGroup: "0xgroup", faceKey: FACE, nexus: N, revision: "g1" };
+const place: PlaceContractReading = { verdict: { state: "held", reason: "held", nym: PLACE }, nexus: N, contractRef: "c", revision: "r1" };
+const entry = {} as CarriageEntry;
 
-async function rosterAt(): Promise<KahuQuorumSeats> {
-  const keys = await Promise.all(SEEDS.map(pubOf));
-  return { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
+function face(over: Partial<GateSortInput> = {}): GateSortInput {
+  return {
+    tier: "sovereign", scope: { faceKey: FACE, nexus: N } as GateSortInput["scope"], placeKey: null, place: null,
+    profile: "hand" as GateSortInput["profile"], admit: null, sameGroup: null, fleetAside: false, arm: null, ...over,
+  };
 }
-async function admitAt(epoch: string): Promise<CarriageEntry> {
-  const nym = await pubOf(LEAF_SEED);
-  const kahu = await Promise.all([SEEDS[0]!, SEEDS[1]!].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: epoch }, kahu, await signCarriageContract(nym, epoch, signerOf(LEAF_SEED)));
-}
-function reading(roster: KahuQuorumSeats, posture: FederationPosture = "private"): CarriedNexusReading {
-  return { nexus: "N", aid: "N", revision: "fixture", via: "consent", island: "island-N", roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture };
-}
-/** A sort input for a proven vessel key, optionally presenting `admit` with its leaf's proof over this socket. */
-async function input(opts: { sameOperator?: boolean; admit?: CarriageEntry; vessel?: Uint8Array; proofVessel?: Uint8Array } = {}): Promise<SortInput> {
-  const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);
-  const base = { identifier: `0x${vesselKey}`, vesselKey, sameOperator: opts.sameOperator ?? false, challenge: { nonce: NONCE, gatePubKey: GATE } };
-  if (!opts.admit) return base;
-  const proofVesselKey = await pubOf(opts.proofVessel ?? opts.vessel ?? VESSEL_SEED);
-  const leafProof = await socketProof(socketUnderTest(proofVesselKey, { nonce: NONCE, gatePubKey: GATE }),
-    { kind: "admit", admit: opts.admit, lineage: [] }, signerOf(LEAF_SEED));
-  return { ...base, presented: { kind: "admit", admit: opts.admit, lineage: [], leafProof } };
-}
-const sorter = (readings: CarriedNexusReading[], primary: FederationPosture = "private", carriers: string[] = []) =>
-  makeSocketSorter({ readings: async () => readings, carrier: (k) => carriers.includes(k), primaryPosture: () => primary });
+const admitArm = { kind: "admit" as const, admit: entry, lineage: [] };
+const sorter = (posture: FederationPosture = "private", shut: string[] = []) =>
+  makeGateSorter({ posture: () => posture, onShut: (arm) => { shut.push(arm); } });
 
-describe("the sorter — four classes, and silence", () => {
-  test("CONTROL: a same-operator socket stands under both postures", async () => {
+describe("the gate sorter — four classes, and silence", () => {
+  test("an admit the gate read held sorts contracted, standing as the proven face at the admit's Nexus", async () => {
+    expect(await sorter().sort(face({ arm: admitArm, admit }))).toEqual({ class: "contracted", standing: { nym: FACE, aid: N } });
+  });
+
+  test("RED: same-operator only at a sovereign gate with the grant and no fleet shadow; CONTROL: each lack leaves it contracted", async () => {
+    expect(await sorter().sort(face({ arm: admitArm, admit, sameGroup: grant }))).toEqual({ class: "same-operator" });
+    const contracted = { class: "contracted", standing: { nym: FACE, aid: N } };
+    expect(await sorter().sort(face({ arm: admitArm, admit, sameGroup: grant, fleetAside: true }))).toEqual(contracted);
+    expect(await sorter().sort(face({ arm: admitArm, admit, sameGroup: null }))).toEqual(contracted);
+    expect(await sorter().sort(face({ arm: admitArm, admit, sameGroup: grant, tier: "floor" }))).toEqual(contracted);
+    // A grant that names another face never stands for this one.
+    expect(await sorter().sort(face({ arm: admitArm, admit, sameGroup: { ...grant, faceKey: "cc".repeat(32) } }))).toEqual(contracted);
+  });
+
+  test("an admit arm the gate read no admit for draws nothing", async () => {
+    expect(await sorter("open").sort(face({ arm: admitArm, admit: null }))).toBeNull();
+  });
+
+  test("a place's held carriage contract sorts contracted, standing as the place key; a place arm with no contract draws nothing", async () => {
+    const arm = { kind: "place" as const, contract: entry, lineage: [] };
+    const input = face({ scope: null, placeKey: PLACE, place, arm, fleetAside: true });
+    expect(await sorter().sort(input)).toEqual({ class: "contracted", standing: { nym: PLACE, aid: N } });
+    expect(await sorter("open").sort({ ...input, place: null })).toBeNull();
+  });
+
+  test("RED: a walker's grant or claim draws nothing under either posture, and names its shut route locally", async () => {
+    const shut: string[] = [];
+    const grantArm = { kind: "grant", grant: {} } as unknown as GateSortInput["arm"];
+    const claimArm = { kind: "claim", nexusAid: N, token: {}, claim: "c" } as unknown as GateSortInput["arm"];
     for (const p of ["private", "open"] as const) {
-      expect(await sorter([], p)(await input({ sameOperator: true }))).toEqual({ class: "same-operator" });
+      expect(await sorter(p, shut).sort(face({ arm: grantArm }))).toBeNull();
+      expect(await sorter(p, shut).sort(face({ arm: claimArm }))).toBeNull();
     }
+    expect(shut).toEqual(["grant", "claim", "grant", "claim"]);
+    expect([...SHUT_ARMS]).toEqual(["grant", "claim"]);
+    // A log that throws decides nothing.
+    const loud = makeGateSorter({ posture: () => "open", onShut: () => { throw new Error("a log that fails"); } });
+    expect(await loud.sort(face({ arm: grantArm }))).toBeNull();
   });
 
-  test("RED: under PRIVATE a proven stranger is silence; any OPEN Nexus the gate stands in answers it", async () => {
-    const roster = await rosterAt();
-    expect(await sorter([reading(roster)])(await input())).toBeNull();
-    expect(await sorter([])(await input())).toBeNull();
-    expect(await sorter([reading(roster, "open")])(await input())).toEqual({ class: "stranger" });
-    expect(await sorter([reading(roster)], "open")(await input())).toEqual({ class: "stranger" });
+  test("RED: a presenter with no arm is silence under PRIVATE; CONTROL: OPEN answers it as a stranger, read fresh", async () => {
+    let posture: FederationPosture = "private";
+    const live = makeGateSorter({ posture: () => posture });
+    expect(await live.sort(face())).toBeNull();
+    expect(await live.sort(face({ scope: null, placeKey: PLACE }))).toBeNull();
+    posture = "open";
+    expect(await live.sort(face())).toEqual({ class: "stranger" });
+    expect(await live.sort(face({ scope: null, placeKey: PLACE }))).toEqual({ class: "stranger" });
   });
 
-  test("a presented admit HELD against a carried Nexus is contracted, standing as the verdict's leaf", async () => {
-    const roster = await rosterAt();
-    const verdict = await sorter([reading(roster)])(await input({ admit: await admitAt(roster.sealEpochCid) }));
-    expect(verdict).toEqual({ class: "contracted", standing: { nym: await pubOf(LEAF_SEED), aid: "N" } });
+  test("a herm answers the knock: OPEN by class, charter or none; a lararium reads its charter and an absent one fails closed", () => {
+    expect(ownPlacePosture("herm", null)).toBe("open");
+    expect(ownPlacePosture("herm", { federationPosture: "private" } as never)).toBe("open");
+    expect(ownPlacePosture("lararium", null)).toBe("private");
+    expect(ownPlacePosture("lararium", { federationPosture: "open" } as never)).toBe("open");
   });
+});
 
-  test("CONTROL: the same admit with its proof made for another vessel key is silence under PRIVATE", async () => {
-    const roster = await rosterAt();
-    expect(await sorter([reading(roster)])(await input({ admit: await admitAt(roster.sealEpochCid), proofVessel: OTHER_SEED }))).toBeNull();
-  });
-
-  test("a faceless PLACE whose key this board carries is contracted; a failed presentation never falls through to it", async () => {
-    const roster = await rosterAt();
-    const place = await pubOf(VESSEL_SEED);
-    expect(await sorter([reading(roster)], "private", [place])(await input())).toEqual({ class: "contracted" });
-    expect(await sorter([reading(roster)], "private", [place])(await input({ admit: await admitAt("another-epoch") }))).toBeNull();
-  });
-
-  test("gateAnswersStrangers folds the primary charter with every carried reading", async () => {
-    const roster = await rosterAt();
-    expect(gateAnswersStrangers("private", [])).toBe(false);
-    expect(gateAnswersStrangers("open", [])).toBe(true);
-    expect(gateAnswersStrangers("private", [reading(roster), reading(roster, "open")])).toBe(true);
+describe("every verdict passes a real gate", () => {
+  test("a real gate over this sorter seats contracted, then same-operator with the grant, and contracted again under the fleet shadow", async () => {
+    const w = await world();
+    const gated = makeGateSorter({ posture: () => w.posture });
+    w.sorterAnswer = (input) => gated.sort(input);
+    const p = await presenter(w, "one face");
+    expect((await dial(w, p)).gate).toEqual({ outcome: "attached", class: "contracted" });
+    expect(w.attached.at(-1)!.session.standing).toEqual({ nym: p.scope.faceKey, aid: w.nexus });
+    w.grants.set(p.scope.faceKey, { personaGroup: GROUP, faceKey: p.scope.faceKey, nexus: w.nexus, revision: "g1" });
+    expect((await dial(w, p)).gate).toEqual({ outcome: "attached", class: "same-operator" });
+    w.fleetAside.add(p.certificate.vesselFaceKey);
+    expect((await dial(w, p)).gate).toEqual({ outcome: "attached", class: "contracted" });
+    // No arm at a PRIVATE gate: silence; CONTROL: OPEN seats the stranger.
+    expect((await dial(w, p, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted-silent" });
+    w.posture = "open";
+    expect((await dial(w, p, { arm: null })).gate).toEqual({ outcome: "attached", class: "stranger" });
   });
 });
 
 describe("a refold drops what it no longer holds", () => {
   const admitted = (pairs: Array<[string, PeerClass | undefined]>) => pairs.map(([peerId, cls]) => ({ peerId, socket: peerId, cls }));
 
-  test("RED: under PRIVATE strangers and unheld contracted sockets drop; same-operator, walker and held stay", () => {
+  test("RED: under PRIVATE strangers and unheld contracted sessions drop; same-operator and held stay", () => {
     const drop = socketsNoLongerHeld(admitted([
-      ["self", "same-operator"], ["walk", "walker"], ["held", "contracted"], ["gone", "contracted"], ["str", "stranger"], ["none", undefined],
+      ["self", "same-operator"], ["held", "contracted"], ["gone", "contracted"], ["str", "stranger"], ["none", undefined],
     ]), { holds: (id) => id === "held", answersStrangers: false });
     expect(drop.sort()).toEqual(["gone", "none", "str"]);
   });

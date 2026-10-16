@@ -56,7 +56,7 @@ export async function writeBlobsToCasOpfs(
 /**
  * Fetch each CAS blob named by the seed-derived logical inventory over HTTP (`baseUrl`/cas/<cid>)
  * and write it to the OPFS CAS — the browser face of the byte SOURCE the genesis CRDT
- * no longer carries (mirrors the node `mirrorGenesisCasFs`). The genesis static host
+ * does not carry (mirrors the node `mirrorGenesisCasFs`). The genesis static host
  * serves genesis/seed.json + genesis/cas/<cid>; the worker later resolves each by
  * the SAME cid via readCasBlobFromOpfs. Existing files are re-verified before reuse;
  * fetched bytes are verified before they enter OPFS. A missing, unavailable, or

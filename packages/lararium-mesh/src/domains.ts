@@ -142,10 +142,6 @@ export const SK_VK_WRAP_INFO = mint("sk-vk-wrap");
 export const SK_CHECK_INFO = mint("sk-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
-// RETIRED with the persona admission, and never reused: `persona-enroll`, `persona-grant`, `persona-sealed-grant`,
-// `persona-join`, and the grant seal's HKDF info `persona-admit-grant-seal`. No protocol signs or derives under them,
-// and no new domain may take one of those names, so a byte string once bound under one never verifies as another
-// protocol's. Fleet join carries the admission they served.
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
  *  and the act it rolls from. The act's CID names the hosting epoch; the act grants nothing and names no one but
  *  the hearth. Its own name: an act must never verify as a carriage act or any other signed thing. */
@@ -211,7 +207,13 @@ export const CARRIAGE_ROLL_ANCHOR_DOMAIN = mint("carriage-roll-anchor");
 /** The hiding commitment an ADMIT's quorum signs over the hearth's gate pin and canon list. The members board
  *  carries the commitment alone, so the floor travels unwidened; the opening rides only to the subject's hands. */
 export const CARRIAGE_ADMIT_OPENING_DOMAIN = mint("carriage-admit-opening");
-export const MEMBERSHIP_RELAY_DOMAIN = frozen("membership-relay");
+/** A PLACE's signed floor pin at one Nexus (`place-floor-pin`): the place's vessel key signs the pin its floor gate stands
+ *  there, laid on the carriage board as a sidecar; a reader files it only where its own replica counts the place carried.
+ *  Its own name: a floor-pin statement must never verify as a carrier seal, nor a seal as a pin. */
+export const PLACE_FLOOR_PIN_DOMAIN = mint("place-floor-pin");
+/** A herm's EXPLICIT JOIN carried by hand (`carry-bundle`): the kind the bundle's public bytes carry, so a reader never
+ *  takes an admit bundle, or any other file, as a carry. */
+export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
@@ -318,24 +320,10 @@ export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
 export const FACE_LOG_VIEW_DOMAIN = mint("face-log-view");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
-/** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and
- *  timestamp, committed under this name so a proof can never verify as any other signed thing, nor any
- *  other signature as a proof. Ephemeral — both ends run one build, so nothing persisted rides it. */
-export const AUTH_PROOF_DOMAIN = mint("auth-proof");
-/** The LEAF'S PROOF OF POSSESSION over what a socket PRESENTS — an admit, a hosting grant or a redeemed token:
- *  the presenting leaf signs the gate's nonce, the gate key, the presenting vessel key and the presentation's
- *  CID under this name, binding that presentation to ONE socket. One relation across every arm, so one name.
- *  Apart from `auth-proof`: the vessel key signs that one and the leaf signs this one, and neither signature
- *  may verify as the other. No root signs it and no root is named in it. */
-export const PRESENTED_LEAF_PROOF_DOMAIN = mint("presented-leaf-proof");
 /** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its
  *  gate key) derives (`gate-knock`), so a dialer that pinned no gate key reaches no gate. A derivation, never a
  *  signature: its own name keeps the knock apart from every proof made with the same key. */
 export const GATE_KNOCK_DOMAIN = mint("gate-knock");
-/** The GATE'S VERDICT: a gate signs its `lar:auth-ok` with its own gate key over both nonces, the gate key,
- *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
- *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */
-export const AUTH_OK_DOMAIN = mint("auth-ok");
 /** A LEAF'S PROOF TO A SIBLING LEAF of one PersonaGroup: a device key signs the exchange's whole transcript —
  *  both nonces, both ephemeral keys, its role — under this name, so the proof binds to one exchange and one channel. */
 export const LEAF_PEER_PROOF_DOMAIN = mint("leaf-peer-proof");
@@ -444,6 +432,11 @@ export const GATE_PLACE_FINISH_DOMAIN = mint("gate-place-finish");
 /** The gate's VERDICT: its signing key signs the handshake's hash, the bundle's digest and a digest of its
  *  answer under this name, so a dialer reads an answer only from the gate it pinned, for the dial it made. */
 export const GATE_VERDICT_DOMAIN = mint("gate-verdict");
+/** The FLOOR's ANNOUNCEMENT to its peers: a floor bundle's signing key signs one canonical body per carried
+ *  Nexus (version, Nexus, floor pin digest, standing, causal position) under this name. Apart from the verdict:
+ *  an announcement never reads as an answer to a dial, nor an answer as an announcement
+ *  (lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement). */
+export const WAKING_FLOOR_ANNOUNCE_DOMAIN = mint("waking-floor-announce");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

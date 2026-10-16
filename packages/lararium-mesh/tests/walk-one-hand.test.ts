@@ -36,7 +36,7 @@ import {
   type WalkFault, type WalkRecord, type WalkStore,
 } from "../src/walk-client.js";
 import { carryDocument, fetchDocument, watchCarryNotice, HOSTING_CARRY_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND } from "../src/walk-carry.js";
-import type { LarSessionMsg, LeafIdentity } from "../src/auth-wire.js";
+import type { LarSessionMsg, LeafIdentity } from "../src/leaf-presentation.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32);

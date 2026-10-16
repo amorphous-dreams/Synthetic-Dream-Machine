@@ -389,11 +389,10 @@ describe("★ ADMIT-AWARE ISLAND — an admitted leaf resolves the FOUNDER'S isl
   // now `@lararium/mesh/nexus-identity.ts`): an admit payload carries the founder's RESOLVED
   // `hearthIslandKind`/`hearthIslandScope`, a SNAPSHOT at mint time, so a CLIMBED founder's joinee seats
   // on the board the founder actually stands on rather than always reading `kind: "anchor"` off the raw
-  // `hearthGatePubKey`/`relayGatePubKey`. This leaf inherited the SAME defect (the follow-on `aa15cfb3b`
-  // itself flagged, "not built"). `openBrowserVessel` needs a real IndexedDB + WebCrypto substrate and
+  // `hearthGatePubKey`. `openBrowserVessel` needs a real IndexedDB + WebCrypto substrate and
   // cannot stand in a unit test (same limitation the fault-pin above already works around), so this reads
   // the boot's own source — the ONLY reachable witness, same method as the pin above.
-  test("★ FAULT-PIN — the admit branch composes admittedJoineeIsland over the CARRIED island fields, not relayGatePubKey alone", () => {
+  test("★ FAULT-PIN — the admit branch composes admittedJoineeIsland over the CARRIED island fields, not a raw gate key", () => {
     // RED — the admit-aware resolution must exist and must read the carried island fields, beside the
     // unchanged anti-relay binding (hearthGatePubKey stays byte-identical to before — Option A, node-side).
     expect(bootSrc, "an admit must resolve through admittedJoineeIsland, the SAME ruling the node's init.ts composes")
@@ -413,7 +412,7 @@ describe("★ ADMIT-AWARE ISLAND — an admitted leaf resolves the FOUNDER'S isl
       .toContain("admittedJoineeIsland({");
 
     // CONTROL — the founding (no-admit) branch is UNCHANGED: it still resolves via nexusIdentity over
-    // nexusStandsAt (`relayGatePubKey ?? null`), and never reaches for admittedJoineeIsland.
+    // nexusStandsAt, and never reaches for admittedJoineeIsland.
     const elseBranch = /\} else \{[\s\S]*?\n {2}\}\n/.exec(bootSrc.slice(bootSrc.indexOf("if (admit) {")))?.[0] ?? "";
     expect(elseBranch, "the founding branch must be findable").not.toBe("");
     expect(elseBranch, "the founding branch must still resolve via nexusIdentity(nexusStandsAt)")

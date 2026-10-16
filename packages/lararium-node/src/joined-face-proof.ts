@@ -8,7 +8,7 @@
  * `openJoinedFaceSession` takes beside the session table: that mesh door checks the chain, supplies the face,
  * opens the session and mints its signer, and refuses a certificate over any key but the custody row's.
  *
- * The session table stays private to the mesh; the dial at the socket cutover holds it, and brings what this
+ * The session table stays private to the mesh; the node's sovereign dial holds it, and brings what this
  * vessel learned at the Nexus (the admit as the held-root reader read it, and the face's withdrawal memory).
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy

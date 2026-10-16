@@ -23,7 +23,7 @@ import {
 import {
   rollAnchorsFromBoard, writeRollAnchor, writeCarriageEntry, carriageEntriesFromBoard, presentationFromBoardDoc,
 } from "../src/carriage-board.js";
-import { isPresentedAdmit } from "../src/auth-wire.js";
+import { isPresentedAdmit } from "../src/leaf-presentation.js";
 import { makeMultiSigQuorumVerifier, type KahuQuorumSeats } from "../src/kapae-antigen.js";
 import type { SealEpoch } from "../src/wax-stamp.js";
 import { seatedCharter, charterSeatSeeds } from "./charter-fixture.js";

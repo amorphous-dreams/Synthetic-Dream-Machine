@@ -64,8 +64,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0004;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
-  // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). EOT2 (DC4, 0x14) is
-  // RETIRED: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
+  // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). No second EOT spelling
+  // stands: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
   // to a future transport envelope, not a second at-rest EOT spelling.
   { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   // pranala stays a reasoned SECOND hand-kept exception (RED: pranala-attribute-spellings.test.ts).

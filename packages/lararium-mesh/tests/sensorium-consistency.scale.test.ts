@@ -58,9 +58,9 @@ function timeIt<T>(f: () => T): { ms: number; v: T } {
   return { ms: performance.now() - t0, v };
 }
 
-// ── the scale ceiling is GONE: DECKARD is near-linear ──────────────────────────────────────────────
+// ── no scale ceiling: DECKARD is near-linear ──────────────────────────────────────────────
 
-describe("QA: structure distance is near-linear now (the O(n^3.2) wall is retired)", () => {
+describe("QA: structure distance is near-linear (no O(n^3.2) wall)", () => {
   test("correct on tiny skeletal trees (the design regime — DECKARD default)", () => {
     const a: LabeledTree = { label: "root", children: [leaf("x"), leaf("y")] };
     expect(treeEditDistance(a, a)).toBe(0);

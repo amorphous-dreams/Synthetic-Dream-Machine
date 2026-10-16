@@ -39,20 +39,20 @@
  * for that Nexus, so a gate and its announcement never sign under two keys.
  *
  * Pure but for the keys it derives: no I/O, no clock, no timer, no randomness.
- * Stands specified in code until the socket cutover consumes it; out of the package barrel till then.
+ * The package barrel names it for its callers: the node's gate server, the gate composer and every dialer.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
+import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import {
-  GATE_BUNDLE_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_FLOOR_BUNDLE_INFO, GATE_HANDSHAKE_DOMAIN, GATE_SIGNING_KEY_INFO,
-  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN,
+  GATE_BUNDLE_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_FLOOR_BUNDLE_INFO, GATE_HANDSHAKE_DOMAIN, GATE_KNOCK_DOMAIN, GATE_SIGNING_KEY_INFO,
+  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN,
 } from "./domains.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
-import { knockSegment } from "./gate-knock.js";
 import { noiseRespond, type NoiseResponderPending } from "./noise-ik.js";
 
 // ── Refusals ────────────────────────────────────────────────────────────────────────────────────
@@ -183,6 +183,25 @@ export function gateBundleDigest(pin: GateBundlePin): string {
   return hex(sha256(gateFields(GATE_BUNDLE_PIN_DOMAIN, utf8Bytes(pin.tier), hexToBytes(pin.nexus), utf8Bytes(pin.route), hexToBytes(pin.transportKey), hexToBytes(pin.signingKey))));
 }
 
+/**
+ * The knock segment for a 32-byte key on `route` (`/ws`, `/oracle`, …): 32 hex characters of
+ * HMAC-SHA256(key = SHA-256(GATE_KNOCK_DOMAIN ‖ key), route), the route read without a trailing slash. A gate
+ * answers an upgrade only on `<route>/<knock>`, so a dialer that holds no pin computes no path, and the vessel's
+ * dispatcher destroys an upgrade on a path no face claims before any HTTP 101
+ * (lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober, the WireGuard mac1 shape). The path rides
+ * the upgrade in the clear, so a passive watcher of one lawful dial learns it; the Noise IK first flight is what
+ * proves the client first. Throws on a key that is not 32-byte hex.
+ */
+export function knockSegment(key: string, route: string): string {
+  if (!/^[0-9a-fA-F]{64}$/.test(key)) throw new Error("gate-knock: the key is not 32-byte hex");
+  const domain = utf8Bytes(GATE_KNOCK_DOMAIN);
+  const keyBytes = hexToBytes(key.toLowerCase());
+  const material = new Uint8Array(domain.length + keyBytes.length);
+  material.set(domain, 0);
+  material.set(keyBytes, domain.length);
+  return hex(hmac(sha256, sha256(material), utf8Bytes(route.replace(/\/+$/, "") || "/"))).slice(0, 32);
+}
+
 /** The knock a gate answers on: the house's one knock derivation, over the bundle's digest and its route. */
 export function gateKnock(pin: GateBundlePin): string {
   return knockSegment(gateBundleDigest(pin), pin.route);
@@ -195,8 +214,12 @@ export function gatePrologue(pin: GateBundlePin): Uint8Array {
 
 // ── What the signing key signs ──────────────────────────────────────────────────────────────────
 
-/** The names a gate's signing key signs under. An image leads with one of them, or draws no signature. */
-export const GATE_SIGNING_PURPOSES: readonly string[] = Object.freeze([GATE_VERDICT_DOMAIN]);
+/**
+ * The names a gate's signing key signs under. An image leads with one of them, or draws no signature: the
+ * verdict a gate answers a dial with, and the floor's announcement to its peers (`floor-announcement.ts`, which
+ * holds the announcement to a floor bundle and to the pin its reader already holds).
+ */
+export const GATE_SIGNING_PURPOSES: readonly string[] = Object.freeze([GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN]);
 
 function gateSigns(image: unknown): image is Uint8Array {
   if (!(image instanceof Uint8Array)) return false;

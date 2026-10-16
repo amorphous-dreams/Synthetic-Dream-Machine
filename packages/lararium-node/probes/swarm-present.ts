@@ -5,23 +5,23 @@
  * key) and carries a fresh challenge the founder issued for that one admit. To present, the joiner signs the
  * challenge with the key the admit names. The founder holds a presented admit only when:
  *   - the signature verifies under the member id the admit names, so a party presenting another party's admit
- *     (read off the open relay, which carries every admit in the clear) holds nothing;
+ *     (read off the shared channel, which carries every admit in the clear) holds nothing;
  *   - the challenge is the one the founder issued for that member and has not yet been spent, so a replay of an
  *     earlier verified present holds nothing;
  *   - Keyhive answers, on ask, that this one member holds (`dwellersHolding`).
  * A failed present spends nothing, so a forger racing ahead of the real joiner cannot burn its challenge.
  *
- * The bytes signed are the house's one presentation proof (`leafProofBytes`, under PRESENTED_LEAF_PROOF_DOMAIN):
- * the challenge as its nonce, the founder's key as the verifier's key, the member id as the presenting key, and
- * the digest of the kind-tagged admit as the presentation's CID. One relation (a presenter proves possession of
- * what it presents, bound to one verifier's challenge), so one name. No clock rides it: the single-use challenge
- * is the freshness.
+ * The bytes signed are this probe's own (`proofBytes`, under its own domain, not a gate's): the challenge as its
+ * nonce, the founder's key as the verifier's key, the member id as the presenting key, and the digest of the
+ * kind-tagged admit as the presentation's CID. A presenter proves possession of what it presents, bound to one
+ * verifier's challenge. No clock rides it: the single-use challenge is the freshness. It rides the swarm's own
+ * membership channel, never a gate.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { leafProofBytes, ed25519SignerFromSeed, ed25519VerifyHex } from "@lararium/mesh";
+import { canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyHex } from "@lararium/mesh";
 
 /** What the founder's admit carries to one joiner. */
 export interface SwarmAdmit {
@@ -48,11 +48,12 @@ export function swarmAdmitCid(admit: Pick<SwarmAdmit, "realmDocIdHex" | "memberI
 }
 
 function proofBytes(admit: SwarmAdmit, founderKeyHex: string): Uint8Array {
-  return leafProofBytes({
+  return canonicalJsonBytes({
+    domain:       "swarm-present",
     nonce:        admit.challenge,
-    gatePubKey:   memberKey(founderKeyHex) ?? "",
-    vesselKey:    memberKey(admit.memberIdHex) ?? "",
-    presentedCid: swarmAdmitCid(admit),
+    founderKey:   memberKey(founderKeyHex) ?? "",
+    memberKey:    memberKey(admit.memberIdHex) ?? "",
+    admitCid:     swarmAdmitCid(admit),
   });
 }
 

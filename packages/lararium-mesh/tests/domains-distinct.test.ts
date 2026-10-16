@@ -15,8 +15,8 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 36;
-const FROZEN_WELD = "3a0f0efd300f283efbd1a4dedc5e0fdf38dcc75c9cac50cc240178cde28f1c8c";
+const FROZEN_COUNT = 35;
+const FROZEN_WELD = "80ac920618e2805b7c9d2e0a69cc08cf69a83352b172614f8608454122fbcfc1";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
@@ -49,9 +49,9 @@ describe("the domain registry", () => {
     expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
   });
 
-  test("a NEW domain mints bare — the auth proof carries no version suffix", () => {
-    expect(domains.AUTH_PROOF_DOMAIN).toBe(`${DOMAIN_ROOT}/auth-proof`);
-    expect(domains.AUTH_PROOF_DOMAIN).not.toMatch(/\/v\d+$/);
+  test("a NEW domain mints bare — the gate's verdict carries no version suffix", () => {
+    expect(domains.GATE_VERDICT_DOMAIN).toBe(`${DOMAIN_ROOT}/gate-verdict`);
+    expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);
   });
 
   test("WELD: the frozen strings hold byte-identical through the helper split", async () => {
@@ -64,7 +64,7 @@ describe("the domain registry", () => {
   test("CONTROL: the name law refuses a malformed address", () => {
     expect(`${ROOT}Bad_Name`).not.toMatch(NAME);
     expect(`${ROOT}trailing/`).not.toMatch(NAME);
-    expect("lar:///elsewhere/auth-proof").not.toMatch(NAME);
+    expect("lar:///elsewhere/gate-verdict").not.toMatch(NAME);
   });
 
   /** The TABLE derives from the declarations: every `mint`/`frozen` call lands in `ALL_DOMAINS`, in the

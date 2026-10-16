@@ -1,13 +1,13 @@
 /**
- * custody-shape.test — the old-shape reader reads every home before any write and names one of four
+ * custody-shape.test — the custody shape reader reads every home before any write and names one of four
  * shapes: `fresh` · `floor-only` · `slotted` · `old-shape`.
  *
- * A home holding a secret with no slot tree to guard it, a carrier under the retired `LARK` envelope, or a
- * cleartext secret beside a slot tree reads OLD SHAPE, and the reader names every offender. The reader
- * writes nothing: a recursive hash of every home reads identical before and after.
+ * A home holding a secret with no slot tree to guard it, a carrier under an envelope this build cannot open,
+ * or a cleartext secret beside a slot tree reads as a shape nothing here writes over, and the reader names
+ * every offender. The reader writes nothing: a recursive hash of every home reads identical before and after.
  *
- * The VK envelope's recognizer arrives as an input (`sealed`), so the reader names no envelope of its own;
- * these tests stand a fixture recognizer that answers for a fixture magic.
+ * The VK envelope's recognizer arrives as an input (`sealed`); these tests stand a fixture recognizer that
+ * answers for a fixture magic. The house envelope reader (`readVkCarrier`) names a frame no unlock here opens.
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
@@ -21,8 +21,10 @@ const FIXTURE_MAGIC = Buffer.from("FIXTURE-VK-SEAL:");
 /** The fixture recognizer: bytes that open with the fixture magic read sealed. */
 const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subarray(0, FIXTURE_MAGIC.length).equals(FIXTURE_MAGIC) };
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
-/** A carrier that opens with `LARK`: the magic, a version byte, then a frame. */
-const larkBytes = (version: number): Buffer => Buffer.from([0x4c, 0x41, 0x52, 0x4b, version, 1, 0, 0, 0]);
+/** A seal of the house family under a scheme this build does not frame: the family prefix, a scheme name, a frame. */
+const otherSchemeBytes = (scheme: string): Buffer => Buffer.concat([Buffer.from(`lares-${scheme}-seal`), Buffer.alloc(48, 7)]);
+/** The house VK magic with two bytes damaged, over a frame long enough to hold a nonce and a tag. */
+const damagedMagicBytes = (): Buffer => { const b = Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.alloc(48, 9)]); b[2] = 0x58; b[7] = 0x58; return b; };
 
 function freshHomes(): { homes: CustodyHomes; root: string } {
   const root = mkdtempSync(join(tmpdir(), "lar-shape-"));
@@ -54,7 +56,7 @@ function treeHash(root: string): string {
   return h.digest("hex");
 }
 
-describe("readCustodyShape — the old-shape refusal reads before any write", () => {
+describe("readCustodyShape — the custody shape refusal reads before any write", () => {
   test("RED — a cleartext persona root with no slot tree reads OLD SHAPE, and every home stays byte-identical", () => {
     const { homes, root } = freshHomes();
     try {
@@ -77,30 +79,32 @@ describe("readCustodyShape — the old-shape refusal reads before any write", ()
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("RED — a LARK carrier reads OLD SHAPE even beside a slot tree, and even when a recognizer would call it sealed", () => {
+  test("RED — a seal of another house scheme reads UNKNOWN-ENVELOPE even beside a slot tree, and even when a recognizer would call it sealed", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/vk-slots.bin": "slots",
-        "identity/keyhive-archive.bin": larkBytes(1),
+        "identity/keyhive-archive.bin": otherSchemeBytes("kh"),
       });
       for (const r of [reading, { sealed: () => true }]) {
         const shape = readCustodyShape(homes, r);
         expect(shape.kind).toBe("old-shape");
         if (shape.kind === "old-shape") {
-          expect(shape.offenders).toEqual([{ home: "identity", file: "keyhive-archive.bin", row: "keyhive-archive", reason: "retired-envelope" }]);
+          expect(shape.offenders).toEqual([{ home: "identity", file: "keyhive-archive.bin", row: "keyhive-archive", reason: "unknown-envelope" }]);
         }
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("RED — a LARK carrier under a version byte nothing knows still reads OLD SHAPE (the magic decides, never the version)", () => {
+  test("RED — a damaged house magic reads UNKNOWN-ENVELOPE (the frame decides, never the recognizer)", () => {
     const { homes, root } = freshHomes();
     try {
-      sow(homes, { "identity/vk-slots.bin": "slots", "identity/recovery-device-share-h0.bin": larkBytes(2) });
-      const shape = readCustodyShape(homes, reading);
-      expect(shape.kind === "old-shape" && shape.offenders.map((o) => o.reason)).toEqual(["retired-envelope"]);
+      sow(homes, { "identity/vk-slots.bin": "slots", "identity/recovery-device-share-h0.bin": damagedMagicBytes() });
+      for (const r of [reading, { sealed: () => true }]) {
+        const shape = readCustodyShape(homes, r);
+        expect(shape.kind === "old-shape" && shape.offenders.map((o) => o.reason)).toEqual(["unknown-envelope"]);
+      }
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 

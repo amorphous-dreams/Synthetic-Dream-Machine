@@ -9,6 +9,7 @@
 import { NetworkAdapter, generateAutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import type { PeerMetadata } from "@automerge/automerge-repo";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import type { HearthPinIndex } from "@lararium/mesh";
 import type { BrowserVesselOptions } from "../src/open-browser-vessel.js";
 
 type SharePolicy = (peerId: PeerId, documentId?: DocumentId) => boolean | Promise<boolean>;
@@ -79,12 +80,25 @@ export function fakeAdmitResult(): Record<string, unknown> {
   };
 }
 
-/** Options for a boot that dials `relayGatePubKey` after admission (none: no relay); the store name is unique per boot. */
-export function bootOptions(admit: CarriedAdmitPayload, relayGatePubKey: string | null): BrowserVesselOptions {
+/**
+ * The three inputs the sealed relay dial waits on, as the rig hands them: an index that holds, for any key, a pin whose
+ * signing key is `gateKey` (the gate the crossing pins), a Nexus, and a presentation. The relay transport is a fake
+ * beneath the vessel, so it reads none of the three; they let the vessel stand the dial the policy wire sits behind.
+ */
+function heldRelayDial(gateKey: string): NonNullable<BrowserVesselOptions["relayDial"]> {
+  return {
+    pins: { get: () => ({ tier: "sovereign", signingKey: gateKey }), put: () => false } as unknown as HearthPinIndex,
+    nexus: "ab".repeat(16),
+    presentation: {} as never,
+  };
+}
+
+/** Options for a boot that dials the gate `pinnedGateKey` names after admission (none: no relay); the store name is unique per boot. */
+export function bootOptions(admit: CarriedAdmitPayload, pinnedGateKey: string | null): BrowserVesselOptions {
   return {
     idbName: `wire-rig-${crypto.randomUUID()}`,
     admit,
-    ...(relayGatePubKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayGatePubKey } : {}),
+    ...(pinnedGateKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayDial: heldRelayDial(pinnedGateKey) } : {}),
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
 }

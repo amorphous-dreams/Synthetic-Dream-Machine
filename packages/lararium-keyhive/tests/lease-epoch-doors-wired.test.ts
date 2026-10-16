@@ -1,13 +1,12 @@
 /**
- * THE LEASE-EPOCH FENCE IS WIRED THROUGH ALL THREE DOORS, AND THE SOURCE SAYS SO.
+ * THE LEASE-EPOCH FENCE IS WIRED THROUGH ALL DOORS THAT REMAIN, AND THE SOURCE SAYS SO.
  *
  * Option 1 (operator-approved): device-delegation admission licenses off the PersonaGroup LEASE EPOCH (a
  * clockless monotone counter, `epoch-lease.ts`) instead of the wall-clock alone. `verifyDeviceDelegation`
  * already implemented the fence (`opts.expectedEpoch`); `verifyEdgeAgainstPersonaKel`'s opts type carried
- * only `{now, driftMs}`, so the fence was UNREACHABLE from the three KEL-wrapped callers this house's
- * admission doors actually run: the boot Binding Gate (`boot-daemon-keyhive.ts`), the daemon's live
- * admission path (`operator-daemon-behavior.ts::verifyPeer`), and the face-grant record's own verifier
- * (`face-grant-record.ts`).
+ * only `{now, driftMs}`, so the fence was UNREACHABLE from the KEL-wrapped callers this house's
+ * admission doors run: the boot Binding Gate (`boot-daemon-keyhive.ts`) and the face-grant record's own verifier
+ * (`face-grant-record.ts`). (No in-worker door admits a peer; the sealed gate admits.)
  *
  * `gate-walk-wired.test.ts` proves the KEL-head walk itself is wired into these same three doors. This
  * weld proves the SECOND fence — the epoch — rides alongside it: a door that stops threading
@@ -29,33 +28,6 @@ describe("the lease-epoch fence's wiring", () => {
     // The forwarding call itself — expectedEpoch reaches verifyEdgeAgainstPersonaKel's opts.
     expect(src).toMatch(/if \(input\.expectedEpoch === undefined\)[\s\S]{0,220}current lease frontier unavailable/);
     expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(input\.deviceEdge!,\s*chain,\s*\{\s*expectedEpoch:\s*input\.expectedEpoch\s*\}/);
-  });
-
-  test("★ operator-daemon-behavior.ts threads expectedEpoch into verifyPeer's device-delegation door (:814-ish) ★", () => {
-    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    // The live admission path reads a fresh lease epoch and forwards it into the SAME KEL-walk primitive.
-    expect(src).toMatch(/const lease\s*=\s*await readLeaseEpoch\(epochCtx\.composite\)/);
-    expect(src).toMatch(/const expectedEpoch\s*=\s*lease\.n;/);
-    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(edge,\s*kel\.chain,\s*\{\s*expectedEpoch\s*\}/);
-  });
-
-  test("★ an unavailable lease frontier cannot become a successful device mutation ★", () => {
-    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toContain("device-delegation pending: current lease frontier unavailable");
-    expect(src).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,220}current lease frontier unavailable/);
-  });
-
-  test("★ live daemon proof uses connection-bound nonce evidence, never Date.now ★", () => {
-    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    const start = src.indexOf("verifyPeer: async");
-    const end = src.indexOf("// ADMIN-CAP PATH", start);
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
-    const proofGate = src.slice(start, end);
-    expect(proofGate).toContain("verifyAuthProof({");
-    expect(proofGate).toContain("nonce:      proof.nonce");
-    expect(proofGate).toContain("aud:        bagUrl");
-    expect(proofGate).not.toContain("now:        Date.now()");
   });
 
   test("★ operator-daemon-behavior.ts ALSO threads it into the boot-time bootDaemonKeyhive call (Binding Gate door) ★", () => {
@@ -99,7 +71,6 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("CONTROL — the assertions are not vacuous: every symbol they grep for is real", () => {
     expect(KEYHIVE_SRC("boot-daemon-keyhive.ts")).toContain("export async function bootDaemonKeyhive");
-    expect(KEYHIVE_SRC("operator-daemon-behavior.ts")).toContain("verifyPeer:");
     expect(KEYHIVE_SRC("face-grant-record.ts")).toContain("export async function verifyFaceGrantRecord");
   });
 });

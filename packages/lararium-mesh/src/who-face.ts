@@ -38,7 +38,7 @@ export function announceToWhoFace(whoFaceHandle: DocHandle<LarDoc>, card: Handle
  * alongside the lares/lararium system-bag pointers. ISOMORPHIC: node and browser boots both call this so a
  * vessel's TW5 kernel resolves the crossroads plane the same well-known-tiddler way (sovereign-kernel). A RUNTIME write,
  * not genesis-seeded like the static system bags — the crossroads plane is per-Nexus, so its address is known only once
- * the vessel holds its confederation key (the node's own gate key; the browser's relayGatePubKey). Idempotent:
+ * the vessel holds its confederation key (the node's own gate key; a browser leaf's admitted island). Idempotent:
  * every island member writes the same deterministic url, so re-registration never diverges. Returns the url.
  */
 export async function registerCrossroadsInOracle(

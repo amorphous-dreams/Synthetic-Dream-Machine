@@ -7,7 +7,7 @@
  * DIFFERENT CEREMONY, THRESHOLD, RATE and AUTHORITY. A quorum that rotates keys can silently move the
  * admission price, because four amendment costs sit behind one write authority.
  *
- * THE NAMING RULING LANDED (canon `cabal-realm#six-joints`): the word retires to the FOUNDING ACT, and
+ * THE NAMING RULING (canon `cabal-realm#six-joints`): the word names the FOUNDING ACT alone, and
  * the other joints hold their own names — `SealEpoch`/`verifySealLineage` for the lineage, `RealmGlamour`/
  * `projectRealmGlamour` for the published face, `KahuQuorumSeats` for the seats. Two joints collapsed as a gain:
  * the NAME reads as the content-address of the founding act, and the evidentiary MUNIMENT collapses whole,
@@ -187,7 +187,7 @@ export function foundingRoster(doc: NexusDoc | null): KahuQuorumSeats {
   // The pre-rotation chain is the ONLY path to a live roster: a present chain MUST verify its whole
   // lineage AND its HEAD must bind the seated key-set — either failure folds to the empty (inert)
   // roster. The antigen then roots on the cryptographically-verified chain HEAD, never a bare stored
-  // string. No lineage at all → nothing roots (the legacy genesis-inception fallback is gone).
+  // string. No lineage at all → nothing roots (no genesis-inception fallback stands).
   if (weakSeatOf(keys) !== null) return empty;                                  // a seat the Ed25519 door refuses → the charter roots nothing
   if (!doc?.sealLineage || doc.sealLineage.length === 0) return empty;
   if (!verifySealLineage(doc.sealLineage)) return empty;                        // broken lineage → deny
@@ -242,7 +242,7 @@ export function admissionDialsFromDoc(doc: NexusDoc | null): AdmissionDials | nu
   return { epsilon: d.epsilon, beta: d.beta, rho: d.rho, supply: d.supply, alpha: d.alpha };
 }
 
-/** The pre-rotated chain's head epoch, or null when no chain stands established (legacy / unseated doc). */
+/** The pre-rotated chain's head epoch, or null when no chain stands established (an unseated doc). */
 export function sealLineageHead(doc: NexusDoc | null): SealEpoch | null {
   const chain = doc?.sealLineage;
   return chain && chain.length > 0 ? chain[chain.length - 1]! : null;

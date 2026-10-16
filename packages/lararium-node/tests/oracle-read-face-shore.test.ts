@@ -12,14 +12,13 @@ import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
 import {
-  pullAndVerifyOracle, ed25519VerifyingKeyFromSeed, materializeGenesisDoc, snapshotPublicOracle,
+  materializeGenesisDoc, snapshotPublicOracle,
   type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
 import { mountOracleReadFace } from "../src/oracle-read-face.js";
-import { provingShore, readerIdentity, openSorter } from "./oracle-proof-fixture.js";
+import { floorGates, presenter, pullFloor as pullFromFloor } from "./oracle-floor-rig.js";
 
 const SEED   = new Uint8Array(32).fill(7);
-const READER = new Uint8Array(32).fill(9);
 const SEED_CID = "5".repeat(64);
 
 const GENESIS = {
@@ -63,14 +62,14 @@ async function pullFloor(mount: (args: Parameters<typeof mountOracleReadFace>[0]
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   const storageDir = mkdtempSync(join(tmpdir(), "oracle-shore-")); dirs.push(storageDir);
   const logs: string[] = [];
+  const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
   const face = await mount({
     httpServer: server, oracleHandle: handle as DocHandle<unknown>, signerSeed: SEED, storageDir,
-    authShore: await provingShore(SEED), sort: openSorter, onLog: (l) => logs.push(l),
+    gates: rig.gates, onLog: (l) => logs.push(l),
     exportSnapshot: undefined as never,
   });
-  const pulled = await pullAndVerifyOracle<{ tiddlers: Record<string, unknown> }>(origin, {
-    identity: await readerIdentity(READER), verifyingKey: await ed25519VerifyingKeyFromSeed(SEED),
-  });
+  const w = rig.worlds[0]!;
+  const pulled = await pullFromFloor<{ tiddlers: Record<string, unknown> }>(origin, w, await presenter(w, "reader"), { arm: null, publisherSeed: SEED });
   face.dispose();
   return { pulled, logs };
 }

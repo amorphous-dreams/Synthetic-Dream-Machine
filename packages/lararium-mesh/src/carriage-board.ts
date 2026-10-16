@@ -82,8 +82,9 @@ function coerceSignature(raw: unknown): QuorumSignature | null {
   return { signer: s["signer"], sig: s["sig"] };
 }
 
-/** A parsed board payload reads a carriage entry only at the exact `CarriageEntry` FLOOR shape — else null. */
-function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
+/** A parsed board payload reads a carriage entry only at the exact `CarriageEntry` FLOOR shape — else null. Exported for a
+ *  carried bundle's entries, which cross by hand rather than on a board (`carry-bundle`). */
+export function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (p["kind"] !== CARRIAGE_ENTRY_DOMAIN) return null;                    // not a carriage tiddler → skip

@@ -1,51 +1,36 @@
 /**
- * e2e/hosted-walk — the hosted walk end to end, on real vessels: a hearth hosts while its daemon stands, a node
- * walks in on its invite, the walker's wallet fills and hands an invite on, a third vessel redeems that, a
- * browser-shaped walker carries and fetches its own document, a roll reaches every walker with no restart, and a
- * stranger meets silence.
+ * e2e/hosted-walk — the hosted walk behind the sealed gate: THE WALKER ROUTE SHIPS SHUT BY NAME.
  *
- * THE VECTOR this suite exists for: `lares host roll` beside a STANDING hearth. The hearth's process holds the
- * replica its walkers sync, so a roll lands on that replica or no walker reads it: an act written through a
- * second Repo sits on disk the replica never carries, and a walker's next dial cannot fill its wallet at the new
- * epoch. The roll runs inside the standing vessel (the `host.roll` act on its custody door).
+ * The shut-routes house ruling (stable-founding-road #/rulings): walker arms, the sibling dial and the herm membership relay
+ * ship SHUT by name, and a closed route grants no silent authority. It flips on a proven gate-native caller; while it stands
+ * shut, this suite asserts the SHUT: it is never skipped to get green.
  *
  *   A   the hearth — a charter seated by its own quorum, PRIVATE; its daemon stands throughout.
- *   B   a node that walks in on A's invite (`persona wear 0` · `walk take` · stand).
- *   C   a node that walks in on the invite B hands out of its wallet (`walk invite`).
- *   W   a browser-shaped walker in this process: a real Keyhive identity, the platform-blind walk client over a
- *       real `LarWSClientAdapter`, its own per-Nexus leaf — the shape a browser leaf runs.
+ *   B   a node that takes A's invite as its worn face and stands.
+ *   C   a node that takes an invite as the second walker (B's wallet is empty, so it takes A's second invite).
  *
  * Proven, in order:
- *   ① A's roll and invite run INSIDE A's standing vessel (`via: daemon`);
- *   ② B takes the invite as its worn face and, once it stands, redeems it at A's gate: A counts one redemption,
- *     and B's wallet fills from the act on A's hosting doc;
- *   ③ B hands an invite out of its wallet; C takes it and redeems it: A counts two;
- *   ④ W redeems a host invite, carries a document, and fetches it back opened under its own receipt;
- *   ⑤ RED: A rolls AGAIN while W's hosting doc already sits in A's replica; W re-dials on its previous-epoch
- *     grant, is renewed, and fills its wallet at the NEW epoch — the act reached it with no hearth restart;
- *   ⑥ a stranger (a real key, presenting nothing) meets silence at A's PRIVATE gate.
+ *   ① A's roll and invite still run INSIDE A's standing vessel (`via: daemon`) — the hearth's hosting is not the shut route;
+ *   ② B takes the invite and stands: its boot says `walker-route-shut` by name, A counts NO redemption, and B's wallet stays
+ *     empty — no walk arm reached the gate;
+ *   ③ C does the same on a second invite: still shut by name, A still counts none.
+ *
+ * The walker's browser shape (the platform-blind walk client over the sealed adapter) is shut the same way: the adapter
+ * carries no walk identity, so `walkOver` settles no invite (mesh walk-client, `walker-route-shut`).
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
-import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { openStaged, freePort, stageDir, awaitRendezvous, foundStagedHearth, growStagedQuorum, type LarInstance } from "../harness/instance.js";
-import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
-import { InMemoryEventStore } from "../../packages/lararium-keyhive/src/event-store.js";
-import {
-  LarWSClientAdapter, DAEMON_BAG_ID, ed25519SignerFromSeed, takeInvite, walkIdentity, walkOver, hostingDocUrl,
-  hostingActOn, materializeSharedLarDoc, carryDocument, fetchDocument, ed25519VerifyingKeyFromSeed, utf8Bytes, hex,
-  decodeInvite, isHostingGrant,
-  type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
-} from "../../packages/lararium-mesh/src/index.js";
+import { hostingDocUrl, decodeInvite } from "../../packages/lararium-mesh/src/index.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const dataOf = (r: { json: Record<string, unknown> | null }): Record<string, unknown> => (r.json?.["data"] ?? {}) as Record<string, unknown>;
+const RULING = "the shut-routes house ruling";
 
 function missing(): string[] {
   const out: string[] = [];
@@ -63,67 +48,51 @@ let C: LarInstance | null = null;
 let relayA = "";
 let gateA = "";
 let nexusA = "";
-/** The host invite ① minted, which B walks in on. */
 let inviteB = "";
-const adapters: LarWSClientAdapter[] = [];
-const repos: Repo[] = [];
 
-/** A walker's real Keyhive identity — the card a browser leaf presents at a real gate. */
-async function realIdentity(fill: number): Promise<LeafIdentity> {
-  const seed = new Uint8Array(32).fill(fill);
-  const provider = new KeyhiveProvider();
-  await provider.init({ seed, eventStore: new InMemoryEventStore() });
-  const key = (await provider.whoami()).replace(/^0x/i, "").toLowerCase();
-  return { contactCard: new TextDecoder().decode(await provider.contactCard()), peerPubKey: key, sign: ed25519SignerFromSeed(seed) };
-}
-
-function memoryStore(): WalkStore & { readonly records: Map<string, WalkRecord> } {
-  const records = new Map<string, WalkRecord>();
-  return {
-    records, read: async (g) => records.get(g) ?? null,
-    // Reads, decides and writes with no await between: this store's own lock.
-    update: async (g, decide) => { const next = decide(records.get(g) ?? null); if (next) records.set(g, structuredClone(next)); return next; },
-  };
-}
-
-/** Read a door's answer the way a hand reads it: the count A keeps for its current epoch. */
+/** The count A keeps for its current epoch and the one before it. */
 async function redeemedAtA(): Promise<number> {
   const st = await A!.cli(["host", "--json"]);
   const rows = (dataOf(st)["nexuses"] ?? []) as Array<{ redeemed: number; redeemedPrevious: number }>;
   return rows.reduce((n, r) => n + r.redeemed + r.redeemedPrevious, 0);
 }
-async function until(cond: () => Promise<boolean>, tries: number, everyMs = 500): Promise<boolean> {
-  for (let i = 0; i < tries; i++) { if (await cond()) return true; await sleep(everyMs); }
-  return false;
+
+/**
+ * A shut route redeems nothing, and a count read the instant the boot lands proves only that no redemption has landed YET.
+ * An open walk redeems within a few seconds of the take, so hold the count at zero across that whole window: every read
+ * inside it reads none, and the last does too.
+ */
+async function noRedemptionWithin(windowMs: number): Promise<void> {
+  const until = Date.now() + windowMs;
+  do {
+    expect(await redeemedAtA(), "a walker redeemed an invite at A though the route ships shut").toBe(0);
+    if (Date.now() < until) await new Promise((r) => setTimeout(r, 1_000));
+  } while (Date.now() < until);
+}
+const OPEN_WALK_WINDOW_MS = 10_000;
+
+/** A walker vessel: founds, wears its face, takes the invite, stands. The walk is SHUT, so the boot says so by name. */
+async function standWalker(tag: string, name: string, invite: string): Promise<LarInstance> {
+  const root = mkdtempSync(join(stageDir(), `lares-staged-${tag}-`));
+  return openStaged({ tag, root, found: async (cli, r) => {
+    await foundStagedHearth(cli, r, name);
+    // A walker walks as the face it wears: unworn, the take refuses and writes nothing.
+    const unworn = await cli(["walk", "take", invite, "--json"]);
+    if (unworn.code === 0) throw new Error(`${tag}: a take with no face worn was kept:\n${said(unworn)}`);
+    const wear = await cli(["persona", "wear", "0"]);
+    if (wear.code !== 0) throw new Error(`${tag}: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
+    const take = await cli(["walk", "take", invite, "--json"]);
+    if (take.code !== 0) throw new Error(`${tag}: walk take failed (${take.code})\n${said(take).slice(-800)}`);
+  } });
 }
 
-/** W's one dial: a fresh Repo and adapter, the walk client riding it, the act read off A's hosting doc. */
-function dialW(identity: LeafIdentity, walk: { store: WalkStore; leaf: { verifyingKey: string; seed: Uint8Array }; base: LeafIdentity } | null): { adapter: LarWSClientAdapter; repo: Repo } {
-  const adapter = new LarWSClientAdapter({ url: relayA, identity, aud: DAEMON_BAG_ID, gatePubKey: gateA, retryInterval: 200 });
-  const repo = new Repo({ network: [adapter], peerId: `w-${adapters.length}` as PeerId });
-  adapters.push(adapter); repos.push(repo);
-  if (walk) {
-    const doc = hostingDocUrl(nexusA, gateA);
-    walkOver({
-      transport: adapter, store: walk.store, gatePubKey: gateA, leaf: walk.leaf, base: walk.base,
-      actFor: async (epochCid): Promise<HostingAct | null> => {
-        const handle = await materializeSharedLarDoc(repo, doc, "hosting").catch(() => null);
-        return handle ? hostingActOn(handle, epochCid, 15_000) : null;
-      },
-      onFault: (fault) => { throw fault.error; },
-    });
-  }
-  return { adapter, repo };
-}
-
-describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standing hearth ★", () => {
+describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside a standing hearth ★", () => {
   beforeAll(async () => {
     const portA = await freePort();
     relayA = `ws://127.0.0.1:${portA}/ws`;
     A = await openStaged({ tag: "hostA", port: portA, found: async (cli, root) => {
       await foundStagedHearth(cli, root, "hearth-keeper");
       await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      // The hearth hosts as the face it wears.
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`A: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
     } });
@@ -131,14 +100,12 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
   }, 400_000);
 
   afterAll(async () => {
-    for (const a of adapters.splice(0)) { try { a.disconnect(); } catch { /* down */ } }
-    for (const r of repos.splice(0)) await r.shutdown().catch(() => {});
     if (C) await C.stop();
     if (B) await B.stop();
     if (A) await A.stop();
   });
 
-  test("① A's roll and invite run inside A's standing vessel", async () => {
+  test("① A's roll and invite still run inside A's standing vessel — hosting is not the shut route", async () => {
     const roll = await A!.cli(["host", "roll", "--json"]);
     expect(roll.code, said(roll)).toBe(0);
     expect(dataOf(roll)["via"]).toBe("daemon");
@@ -151,96 +118,22 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     inviteB = String(dataOf(inv)["invite"]);
   }, 60_000);
 
-  test("② B takes the invite as its worn face, stands, redeems at A's gate, and its wallet fills", async () => {
-    const carried = inviteB;
-    const rootB = mkdtempSync(join(stageDir(), "lares-staged-walkB-"));
-    B = await openStaged({ tag: "walkB", root: rootB, found: async (cli, root) => {
-      await foundStagedHearth(cli, root, "wayfarer");
-      // A walker walks as the face it wears: unworn, the take refuses and writes nothing.
-      const unworn = await cli(["walk", "take", carried, "--json"]);
-      if (unworn.code === 0) throw new Error(`B: a take with no face worn was kept:\n${said(unworn)}`);
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`B: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
-      const take = await cli(["walk", "take", carried, "--json"]);
-      if (take.code !== 0) throw new Error(`B: walk take failed (${take.code})\n${said(take).slice(-800)}`);
-    } });
-    expect(await until(async () => (await redeemedAtA()) >= 1, 120), `A counted no redemption:\n${B.bootLog().slice(-1500)}`).toBe(true);
-    let walks: Array<{ grant: unknown; wallet: number; redeeming: boolean }> = [];
-    expect(await until(async () => {
-      walks = (dataOf(await B!.cli(["walk", "--json"]))["walks"] ?? []) as typeof walks;
-      return walks[0]?.wallet === 1 && !walks[0]!.redeeming;
-    }, 120), `B's wallet never filled: ${JSON.stringify(walks)}\n${B.bootLog().slice(-1500)}`).toBe(true);
-    expect(walks[0]!.grant).toMatchObject({ from: "host", survived: 0 });
+  test(`② B takes the invite and stands: the boot names \`walker-route-shut\` (${RULING}), A counts no redemption, B's wallet stays empty`, async () => {
+    B = await standWalker("walkB", "wayfarer", inviteB);
+    // The shut is a line the boot wrote before it went live: no clock to wait on.
+    expect(B.bootLog(), "B's boot never named the shut walker route").toMatch(/walker-route-shut/);
+    // A closed route grants no silent authority: nothing redeemed across the window an open walk redeems in, nothing vested.
+    await noRedemptionWithin(OPEN_WALK_WINDOW_MS);
+    const walks = (dataOf(await B.cli(["walk", "--json"]))["walks"] ?? []) as Array<{ wallet: number; grant: unknown }>;
+    expect(walks[0]?.wallet).toBe(0);
+    expect(walks[0]?.grant ?? null).toBeNull();
   }, 400_000);
 
-  test("③ B hands an invite out of its wallet; C takes it and redeems: A counts two", async () => {
-    const out = await B!.cli(["walk", "invite", "--json"]);
-    expect(out.code, said(out)).toBe(0);
-    expect(dataOf(out)["via"]).toBe("daemon");
-    const handed = String(dataOf(out)["invite"]);
-    expect(decodeInvite(handed)).toMatchObject({ gatePubKey: gateA, relay: relayA, token: { purpose: "walker-invite" } });
-    const rootC = mkdtempSync(join(stageDir(), "lares-staged-walkC-"));
-    C = await openStaged({ tag: "walkC", root: rootC, found: async (cli, root) => {
-      await foundStagedHearth(cli, root, "second-wayfarer");
-      for (const step of [["persona", "wear", "0"], ["walk", "take", handed]]) {
-        const r = await cli(step);
-        if (r.code !== 0) throw new Error(`C: ${step.join(" ")} failed (${r.code})\n${said(r).slice(-800)}`);
-      }
-    } });
-    expect(await until(async () => (await redeemedAtA()) >= 2, 120), `A counted no second redemption:\n${C.bootLog().slice(-1500)}`).toBe(true);
-    // A walker-minted lineage vests only at the hearth's next roll: C's wallet stays empty this epoch.
-    const cWalk = (dataOf(await C.cli(["walk", "--json"]))["walks"] ?? []) as Array<{ grant: { from: string } | null; wallet: number }>;
-    expect(cWalk[0]?.grant?.from).toBe("walker");
-    expect(cWalk[0]?.wallet).toBe(0);
-  }, 400_000);
-
-  let wStore: (WalkStore & { readonly records: Map<string, WalkRecord> }) | null = null;
-  let wLeaf: { verifyingKey: string; seed: Uint8Array } | null = null;
-  let wBase: LeafIdentity | null = null;
-
-  test("④ W, a browser-shaped walker, redeems, carries a document, and fetches it back under its own receipt", async () => {
+  test("③ a second walker meets the same shut: named, and A still counts none", async () => {
     const inv = await A!.cli(["host", "invite", "--relay", relayA, "--json"]);
     expect(inv.code, said(inv)).toBe(0);
-    wBase = await realIdentity(171);
-    // A walker's key at the Nexus mints at random; its 32 bytes ARE the key, and no seed relates them.
-    const walkerKey = new Uint8Array(32).fill(172);
-    wLeaf = { verifyingKey: (await ed25519VerifyingKeyFromSeed(walkerKey)).toLowerCase(), seed: walkerKey };
-    wStore = memoryStore();
-    const taken = await takeInvite(wStore, String(dataOf(inv)["invite"]));
-    const { adapter } = dialW(walkIdentity(wBase, taken!.record, wLeaf)!, { store: wStore, leaf: wLeaf, base: wBase });
-    expect(await until(async () => {
-      const r = wStore!.records.get(gateA);
-      return !r?.invite && (r?.wallet?.length ?? 0) === 1;
-    }, 120, 250), `W never settled and filled: ${JSON.stringify(wStore.records.get(gateA))}`).toBe(true);
-    expect(isHostingGrant(wStore.records.get(gateA)!.grant)).toBe(true);
-    const plaintext = utf8Bytes("the walker's own field notes, carried and never read");
-    const carried = await carryDocument({ transport: adapter, store: wStore, gatePubKey: gateA, leaf: wLeaf, plaintext, withinMs: 10_000 });
-    expect(carried).toMatchObject({ held: true });
-    const back = await fetchDocument({ transport: adapter, store: wStore, gatePubKey: gateA, cid: carried!.cid, withinMs: 10_000 });
-    expect(back && hex(back)).toBe(hex(plaintext));
-  }, 120_000);
-
-  test("⑤ RED: A rolls again while W's hosting doc sits in A's replica; W's next dial fills at the NEW epoch — no hearth restart", async () => {
-    const before = wStore!.records.get(gateA)!;
-    const roll = await A!.cli(["host", "roll", "--json"]);
-    expect(roll.code, said(roll)).toBe(0);
-    expect(dataOf(roll)["via"]).toBe("daemon");
-    const newEpoch = String(dataOf(roll)["epoch"]);
-    expect(newEpoch).not.toBe(before.grant!.epoch);
-    for (const a of adapters.splice(0)) { try { a.disconnect(); } catch { /* down */ } }
-    // W re-dials on its previous-epoch grant: the hearth renews it, and the wallet fills off the act it reads.
-    dialW(walkIdentity(wBase!, before, wLeaf!)!, { store: wStore!, leaf: wLeaf!, base: wBase! });
-    expect(await until(async () => (wStore!.records.get(gateA)?.wallet ?? []).some((w) => w.epoch === newEpoch), 120, 250),
-      `W's wallet never filled at ${newEpoch.slice(0, 16)}…: ${JSON.stringify(wStore!.records.get(gateA)?.wallet?.map((w) => w.epoch.slice(0, 12)))}`).toBe(true);
-    expect(wStore!.records.get(gateA)!.grant).toMatchObject({ epoch: newEpoch, survived: 1 });
-  }, 120_000);
-
-  test("⑥ a stranger — a real key presenting nothing — meets silence at A's PRIVATE gate", async () => {
-    const stranger = await realIdentity(181);
-    const { adapter } = dialW(stranger, null);
-    let reason: string | null = null;
-    for (let i = 0; i < 150 && !reason; i++) { await sleep(100); reason = adapter.anergized; }
-    expect(reason).toBe("no answer");
-    expect(adapter.session).toBeNull();
-  }, 30_000);
+    C = await standWalker("walkC", "second-wayfarer", String(dataOf(inv)["invite"]));
+    expect(C.bootLog(), "C's boot never named the shut walker route").toMatch(/walker-route-shut/);
+    await noRedemptionWithin(OPEN_WALK_WINDOW_MS);
+  }, 400_000);
 });

@@ -28,14 +28,12 @@ import { tendBootPointer, asInclude, BOOT_CARRIER } from "./boot-pointer.js";
  * logged corruption-under-concurrency bug (anthropics/claude-code#28842), and parallel sessions
  * share this tree.
  *
- * OS-NATIVE, NEVER A PID FILE (M6). This used to write its holder's own pid into a lockfile and
- * ask the OS whether that pid still lived (`process.kill(pid, 0)`) — three distinct holes: (a) two
- * contenders racing a dead holder's steal (`rmSync` then `wx`) could BOTH win, each deleting the
- * other's fresh lock; (b) a crash between the file's create and its pid write left an unparseable
- * lock that `lockHolderPid` read as "indeterminate, never steal" FOREVER — a permanent wedge only a
- * hand `rm` cleared; (c) pid reuse made a dead holder read alive; (d) a holder in another pid
- * namespace (a container, the WSL/Windows split sharing `~/.claude`) read dead while alive. The
- * house's own socket-claim primitive (`claimName`, extracted from `owned-store.ts`'s rendezvous
+ * OS-NATIVE, NEVER A PID FILE (M6). A pid lockfile probed with `process.kill(pid, 0)` holds four
+ * holes: (a) two contenders racing a dead holder's steal (`rmSync` then `wx`) can BOTH win, each
+ * deleting the other's fresh lock; (b) a crash between the file's create and its pid write leaves an
+ * unparseable lock that reads "indeterminate, never steal" FOREVER — a permanent wedge only a hand
+ * `rm` clears; (c) pid reuse makes a dead holder read alive; (d) a holder in another pid namespace (a
+ * container, the WSL/Windows split sharing `~/.claude`) reads dead while alive. The house's own socket-claim primitive (`claimName`, extracted from `owned-store.ts`'s rendezvous
  * claim) has none of these: no pid is ever read, so neither reuse nor a namespace split can lie,
  * and the kernel's own listener state — not a file's parseable content — decides dead vs. live.
  */

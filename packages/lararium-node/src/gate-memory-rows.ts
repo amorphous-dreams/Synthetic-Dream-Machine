@@ -42,7 +42,7 @@
  * The row belongs to its vessel (the carrier table reads its face as `vessel`), so no face's backup bundle
  * carries it: a vessel that stands again from a bundle learns each withdrawal from the next honest dial.
  *
- * Stands specified until the socket cutover seats a sovereign gate over it. Node-main only.
+ * Called by the node vessel's sovereign gate (`open-node-vessel`). Node-main only.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */

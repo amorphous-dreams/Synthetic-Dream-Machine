@@ -266,7 +266,7 @@ type ReadOnlyOp = "receipt" | "cancel";
  *
  * `patienceMs` (M13) is THIS caller's own MONOTONIC (`performance.now()`-timed) liveness for the
  * READ — never a verdict on anything. A frozen/wedged vessel that accepted the connection but never
- * answers used to hang this call forever; past `patienceMs` this destroys the socket and resolves
+ * answers would hang this call forever; past `patienceMs` this destroys the socket and resolves
  * `{state:"unanswered"}` instead, exactly as `LocalWaitExpired` ends the dispatch path's OWN wait.
  */
 function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: string | null; patienceMs?: number }): Promise<ReceiptAnswer> {

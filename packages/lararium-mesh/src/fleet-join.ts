@@ -12,8 +12,11 @@
  *   ANSWER   the root holder answers ONE request: the device edge it signed, one certificate per requested
  *            key under each face key, one face-key grant per scope under the PersonaGroup root, the face's
  *            address secret sealed to the request's X25519 key, and the hearth's carriage (gate pin and canon
- *            list) with its reach. The PersonaGroup root signs the answer's image, so the pin and the canon
- *            list ride INSIDE signed bytes and never beside them.
+ *            list) with its reach. It carries everything the joinee needs to DIAL its hearth: the hearth's
+ *            charter, the face's own admit at the hearth's Nexus (the admit, its lineage and the salt that opens
+ *            its carriage commitment over the answer's carriage), and the hearth's floor pin set. The
+ *            PersonaGroup root signs the answer's image, so the pin, the canon list, the charter, the admit and
+ *            the floor pins ride INSIDE signed bytes (by digest) and never beside them.
  *
  * The invariants:
  *   · A JOINED VESSEL RECEIVES NO ROOT BYTES AND NO PRIVATE FACE KEY. It mints its own face-scoped keys; the
@@ -37,8 +40,11 @@
  */
 import { x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { readAdmitCarriage, type AdmitCarriage } from "./carriage-registry.js";
+import { admitCarriageCommit, readAdmitCarriage, type AdmitCarriage, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
+import { admitGatePinDigest, readAdmitGatePinAt } from "./admit-gate-pin.js";
 import { canonicalJson, canonicalJsonBytes, hex, hexToBytes, utf8Bytes, webGetRandomValues } from "./crypto.js";
+import { gateBundleDigest, type GateBundlePin } from "./gate-bundle.js";
+import { HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins } from "./hearth-floor-pins.js";
 import {
   FACE_KEY_GRANT_DOMAIN, FLEET_JOIN_ANSWER_DOMAIN, FLEET_JOIN_EDGE_DOMAIN, FLEET_JOIN_REQUEST_DOMAIN,
   FLEET_JOIN_SECRET_INFO,
@@ -64,6 +70,11 @@ export const FLEET_JOIN_REFUSALS = [
   "request-unsigned",          // the vessel key's signature over the request refuses
   "certificate-request-refused",
   "answer-malformed",
+  "answer-pin-other-nexus",   // the carried pin stands at another Nexus than the island the answer names
+  "answer-nexus-absent",       // the answer names no Nexus: its edge names no true name and its island is no charter
+  "answer-admit-other-commit", // the face's admit does not commit to the answer's carriage under the salt it carries
+  "answer-admit-other-face",   // the face's admit names another key than the face key certified at the hearth's Nexus
+  "answer-floor-pin-refused",  // a floor pin refuses, stands at another tier or Nexus, or repeats a route
   "answer-other-request",      // the answer names another nonce, vessel key or PersonaGroup than the request
   "answer-unsigned",           // the PersonaGroup root's signature over the answer refuses
   "answer-root-reused",        // the root key equals the joinee's vessel key, one of its face-scoped keys, or a face key
@@ -86,6 +97,12 @@ const refuse = (refusal: FleetJoinRefusalName, cause?: FaceProofRefusal): FleetJ
 export const FLEET_JOIN_SCOPE_BOUND = 64;
 /** How many bytes of canonical JSON a carried device edge may hold. */
 export const FLEET_JOIN_EDGE_BOUND = 65536;
+/** How many bytes the carried charter's text may hold. */
+export const FLEET_JOIN_CHARTER_BOUND = 1 << 20;
+/** How many bytes of canonical JSON the carried admit and its lineage may hold. */
+export const FLEET_JOIN_ADMIT_BOUND = 1 << 20;
+/** How many floor pins one answer may carry. */
+export const FLEET_JOIN_FLOOR_PIN_BOUND = HEARTH_FLOOR_PIN_BOUND;
 
 export interface FleetJoinOffer {
   readonly kind:         "fleet-join-offer";
@@ -134,6 +151,14 @@ export interface FleetJoinReach {
   readonly islandScope: string | null;
 }
 
+/** The face's own admit at the hearth's Nexus, as a joinee keeps it: its opening is `{ carriage, salt }`. */
+export interface FleetJoinFaceAdmit {
+  readonly admit:   CarriageEntry;
+  readonly lineage: readonly PresentedLineageAct[];
+  /** The salt that opens the admit's carriage commitment over the answer's own carriage. */
+  readonly salt:    string;
+}
+
 export interface FleetJoinAnswer {
   readonly kind:         "fleet-join-answer";
   readonly nonce:        string;
@@ -144,6 +169,12 @@ export interface FleetJoinAnswer {
   /** The hearth's gate pin and canon list. */
   readonly carriage:     AdmitCarriage;
   readonly reach:        FleetJoinReach;
+  /** The hearth's charter, as its seal file's text: the joinee reads its admit at the root this charter seats. */
+  readonly charter:      string;
+  /** The face's own admit at the hearth's Nexus. */
+  readonly admit:        FleetJoinFaceAdmit;
+  /** The hearth's floor pins at its Nexus, one per floor route: the oracle's pins, held before any crossing. */
+  readonly floorPins:    readonly GateBundlePin[];
   readonly certificates: readonly VesselFaceCertificate[];
   readonly grants:       readonly FaceKeyGrant[];
   readonly secret:       SealedAddressSecret;
@@ -226,9 +257,12 @@ export function faceKeyGrantImage(personaGroup: string, scope: FaceScope): Uint8
 export function fleetJoinAnswerImage(a: Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">): Uint8Array {
   return signed(FLEET_JOIN_ANSWER_DOMAIN, {
     nonce: a.nonce, vesselKey: a.vesselKey, personaGroup: a.personaGroup, edge: fleetJoinEdgeDigest(a.edge),
-    gatePin: a.carriage.gatePin, canon: a.carriage.canon,
+    gatePin: admitGatePinDigest(a.carriage.gatePin), canon: a.carriage.canon,
     syncUrl: a.reach.syncUrl, islandKind: a.reach.islandKind, islandScope: a.reach.islandScope,
     secret: { epk: a.secret.epk, nonce: a.secret.nonce, ciphertext: a.secret.ciphertext },
+    charter: hex(sha256(utf8Bytes(a.charter))),
+    admit: hex(sha256(canonicalJsonBytes({ admit: a.admit.admit, lineage: a.admit.lineage, salt: a.admit.salt }))),
+    floorPins: a.floorPins.map(gateBundleDigest),
   });
 }
 
@@ -358,6 +392,17 @@ function readReach(value: unknown): FleetJoinReach | null {
   return Object.freeze({ syncUrl, islandKind, islandScope });
 }
 
+function readFaceAdmit(value: unknown): FleetJoinFaceAdmit | null {
+  if (!record(value) || !exactly(value, ["admit", "lineage", "salt"])) return null;
+  const { salt } = value;
+  if (typeof salt !== "string" || !HEX64.test(salt)) return null;
+  const copy = snapshot({ admit: value["admit"], lineage: value["lineage"] }, FLEET_JOIN_ADMIT_BOUND) as { admit: unknown; lineage: unknown } | undefined;
+  if (copy === undefined || !record(copy.admit) || !Array.isArray(copy.lineage)) return null;
+  const admit = copy.admit;
+  if (typeof admit["nym"] !== "string" || typeof admit["carriageCommit"] !== "string") return null;
+  return Object.freeze({ admit: admit as unknown as CarriageEntry, lineage: copy.lineage as PresentedLineageAct[], salt });
+}
+
 /**
  * Read an answer against the request this vessel sent, under the PersonaGroup root key, and open its address
  * secret with the request's X25519 secret. Every requested scope must carry exactly one certificate over the key
@@ -372,7 +417,7 @@ export function readFleetJoinAnswer(value: unknown, args: {
   request: FleetJoinRequest; personaGroup: string; rootKey: string; sealSecret: Uint8Array; apart?: KeysHeldApart;
 }): VerifiedFleetJoin | FleetJoinRefusal {
   return guarded("answer-malformed", () => {
-    const keys = ["kind", "nonce", "vesselKey", "personaGroup", "edge", "carriage", "reach", "certificates", "grants", "secret", "signature"];
+    const keys = ["kind", "nonce", "vesselKey", "personaGroup", "edge", "carriage", "reach", "charter", "admit", "floorPins", "certificates", "grants", "secret", "signature"];
     if (!record(value) || !exactly(value, keys) || value["kind"] !== "fleet-join-answer") return refuse("answer-malformed");
     if (!isKey(args.rootKey)) return refuse("answer-unsigned");
     const { nonce, vesselKey, personaGroup, signature } = value;
@@ -380,7 +425,25 @@ export function readFleetJoinAnswer(value: unknown, args: {
     const carriage = readAdmitCarriage(value["carriage"]);
     const reach = readReach(value["reach"]);
     const secret = value["secret"];
+    // THE PIN STANDS AT THE HEARTH'S NEXUS: the true name its device edge names (the Nexus its sync gate stands at), and
+    // a `charter` island's genesis where the edge names none. An anchor's gate key or an explicit scope never decides it.
+    const edgeNexus = record(edge) && typeof edge["hearthTrueName"] === "string" && edge["hearthTrueName"].length > 0 ? edge["hearthTrueName"] : null;
+    const pinNexus = edgeNexus ?? (reach !== null && reach.islandKind === "charter" ? reach.islandScope : null);
+    if (carriage !== null && pinNexus !== null && !("pin" in readAdmitGatePinAt(carriage.gatePin, pinNexus))) {
+      return refuse("answer-pin-other-nexus");
+    }
     if (carriage === null || reach === null || typeof signature !== "string" || !HEX128.test(signature) || edge === undefined) return refuse("answer-malformed");
+    // AN ANSWER NAMES ITS NEXUS: every Nexus-bound check below (the floor pins, the admit's face) reads at it, so an answer
+    // naming none refuses here rather than skip them.
+    if (pinNexus === null) return refuse("answer-nexus-absent");
+    const charter = value["charter"];
+    if (typeof charter !== "string" || charter.length === 0 || utf8Bytes(charter).length > FLEET_JOIN_CHARTER_BOUND) return refuse("answer-malformed");
+    const faceAdmit = readFaceAdmit(value["admit"]);
+    if (faceAdmit === null) return refuse("answer-malformed");
+    // THE ADMIT OPENS OVER THE ANSWER'S OWN CARRIAGE: the pin the joinee dials is the pin the quorum committed to.
+    if (admitCarriageCommit({ carriage, salt: faceAdmit.salt }) !== faceAdmit.admit.carriageCommit) return refuse("answer-admit-other-commit");
+    const floorPins = readHearthFloorPins(value["floorPins"], hex(utf8Bytes(pinNexus)));
+    if (floorPins === null) return refuse("answer-floor-pin-refused");
     if (!record(secret) || !exactly(secret, ["epk", "nonce", "ciphertext"])
       || typeof secret["epk"] !== "string" || !HEX64.test(secret["epk"])
       || typeof secret["nonce"] !== "string" || !/^[0-9a-f]{48}$/.test(secret["nonce"])
@@ -394,7 +457,7 @@ export function readFleetJoinAnswer(value: unknown, args: {
     if (!sealMatches) return refuse("seal-secret-other");
 
     const sealed: SealedAddressSecret = { epk: secret["epk"], nonce: secret["nonce"], ciphertext: secret["ciphertext"] };
-    const body = { nonce, vesselKey, personaGroup, edge, carriage, reach, secret: sealed } as Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">;
+    const body = { nonce, vesselKey, personaGroup, edge, carriage, reach, charter, admit: faceAdmit, floorPins, secret: sealed } as Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">;
     if (!readEd25519(signature, fleetJoinAnswerImage(body), args.rootKey).ok) return refuse("answer-unsigned");
 
     const apart = [...(args.apart ?? []), args.rootKey, args.request.vesselKey];
@@ -422,6 +485,10 @@ export function readFleetJoinAnswer(value: unknown, args: {
     }
     if (granted.size !== certified.size) return refuse("grant-missing");
     for (const c of certificates) if (!grants.some((g) => sameFaceScope(g.scope, c.scope))) return refuse("grant-missing");
+    // THE ADMIT IS THE FACE'S OWN at the hearth's Nexus: its nym is the face key a certificate here certifies there.
+    if (!certificates.some((c) => c.scope.nexus === pinNexus && c.scope.faceKey === faceAdmit.admit.nym.toLowerCase())) {
+      return refuse("answer-admit-other-face");
+    }
 
     const addressSecret = openAddressSecret(sealed, args.sealSecret, nonce, vesselKey);
     if (addressSecret === null) return refuse("secret-unopened");

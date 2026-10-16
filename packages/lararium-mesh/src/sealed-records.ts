@@ -20,8 +20,8 @@
  * version id commits the key, so the payload needs no signature; the wrap to a bag's readers rides Keyhive's
  * own encryption and belongs to the lockbox store.
  *
- * Pure but for the salt a seal draws. Stands specified in code until the sealed store's lockbox store and
- * chunk index consume it; out of the package barrel till then.
+ * Pure but for the salt a seal draws. Called by `content-key-holder`, `sealed-store-rest` and `lockbox-wrap`; the
+ * package barrel names it.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records
  */
 import { hkdf } from "@noble/hashes/hkdf.js";

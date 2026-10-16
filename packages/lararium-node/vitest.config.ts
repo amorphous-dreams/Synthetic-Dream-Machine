@@ -26,17 +26,14 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
-  // real WebSocketServer + Repo + gate crossings
+  // real WebSocketServer + Repo + sealed-gate crossings
   "tests/browser-crossing.test.ts",
-  "tests/carriage-relay-serve-loop.test.ts",
-  "tests/lar-ws-client-adapter.test.ts",
+  // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
+  "tests/herm-carriage-relay.test.ts",
   "tests/nexus-client-dial.test.ts",
   "tests/live-wire-node-crossing.test.ts",
-  "tests/daemon-auth-gate.test.ts",
-  "tests/hosted-walker.test.ts",
-  "tests/authenticated-membership-relay.test.ts",
-  "tests/carriage-heal-reconnect.test.ts",
-  "tests/carriage-reshare-sniff.test.ts",
+  "tests/crossing-matrix.test.ts",
+  "tests/sibling-channel-stand.test.ts",
   "tests/bulb-kindle.test.ts",
   "tests/bulb-serves-boot-cas-alone.test.ts",
   "tests/herm-reshares-public-blob.test.ts",
@@ -80,6 +77,12 @@ export const heavy = [
   "tests/daemon-vm-replica-restart.test.ts",
   "tests/daemon-vm-storage-accounting.test.ts",
   "tests/http-face-dispatcher.test.ts",
+  "tests/face-gate-server.test.ts",
+  "tests/oracle-floor-gate.test.ts",
+  "tests/own-fleet-sync.test.ts",
+  "tests/same-operator-refold.test.ts",
+  "tests/oracle-floor-resweep.test.ts",
+  "tests/face-gate-server-bounds.test.ts",
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",
@@ -91,6 +94,12 @@ export const heavy = [
   "tests/herm-answers-the-knock.test.ts",
   "tests/oracle-read-face-shore.test.ts",
   "tests/wire-daemon-bootstrap.test.ts",
+  // A real HTTP listener and a sealed-gate crossing (the joinee dials its hearth through the production mount).
+  "tests/dial-presentation-joinee.test.ts",
+  // A raw HTTP listener that answers the upgrade as a gate stand-in, so the node dial socket meets real frames.
+  "tests/node-dial-socket.test.ts",
+  // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
+  "tests/herm-relay-port.test.ts",
 ];
 
 /**

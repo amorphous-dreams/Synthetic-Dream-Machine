@@ -62,6 +62,23 @@ test("the live matrix reads the scenario script's own list, and that door starts
   for (const c of live) assert.ok(c.timeout_minutes <= 60, `${c.cell} asks ${c.timeout_minutes} minutes`);
 });
 
+/** The walks a scenario script defines more than once: bash runs the LAST definition. */
+function walksDefinedTwice(text) {
+  const defs = [...text.matchAll(/^(run_[a-z_]+)\(\) \{/gm)].map((m) => m[1]);
+  return [...new Set(defs.filter((d, i) => defs.indexOf(d) !== i))];
+}
+
+test("RED: a walk defined twice reads as a fault, and the control reads clean", () => {
+  assert.deepEqual(walksDefinedTwice("run_a() {\n}\nrun_b() {\n}\n"), []);
+  assert.deepEqual(walksDefinedTwice("run_a() {\n}\nrun_a() {\n}\n"), ["run_a"]);
+});
+
+test("every walk in the scenario script stands ONCE", () => {
+  // Bash keeps the last definition of a name, so a second copy silently replaces the walk a hand just changed.
+  const twice = walksDefinedTwice(readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8"));
+  assert.deepEqual(twice, [], `walks defined more than once: ${twice.join(", ")}`);
+});
+
 test("every cell green for this head merges green, one line per driver", () => {
   const m = evaluateMerge({ cells, verdicts: cells.map((c) => green(c.cell)), head: HEAD });
   assert.equal(m.ok, true);

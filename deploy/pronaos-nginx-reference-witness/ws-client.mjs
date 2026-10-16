@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { connect } from "node:net";
 
 const port = Number(process.argv[2] ?? "18432");
+const path = process.argv[3] ?? "/ws/reference-knock";
 const key = randomBytes(16).toString("base64");
 const expectedAccept = createHash("sha1")
   .update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
@@ -16,14 +17,14 @@ function finish(error) {
   settled = true;
   socket.destroy();
   if (error) { console.error(`[ws-witness] FAIL: ${error.message}`); process.exitCode = 1; }
-  else console.log("[ws-witness] PASS: /ws upgraded and reached the internal peer");
+  else console.log(`[ws-witness] PASS: ${path} upgraded and reached the internal peer`);
 }
 
 socket.setTimeout(5_000, () => finish(new Error("WebSocket forwarding timed out")));
 socket.on("error", finish);
 socket.on("connect", () => {
   socket.write([
-    "GET /ws HTTP/1.1",
+    `GET ${path} HTTP/1.1`,
     "Host: localhost",
     "Upgrade: websocket",
     "Connection: Upgrade",

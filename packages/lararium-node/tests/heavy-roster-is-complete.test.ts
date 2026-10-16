@@ -41,6 +41,9 @@ const ALLOWED_LIGHT: Record<string, string> = {
   "tests/e2e/persona-ring-cross-operator-admit.test.ts":
     "binds a real WS listener + a nested daemon-island worker, but runs ONLY under the separate, " +
     "already-serial-by-being-alone `vitest.e2e.config.ts` — see EXCLUDED_BY_DESIGN below.",
+  "tests/e2e/fleet-join-dial.test.ts":
+    "binds a real HTTP listener for the hearth's sealed sync gate, but runs ONLY under the separate " +
+    "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
 };
 
 /** The roster the config declares — read from the module, so the two cannot disagree. */
@@ -77,9 +80,13 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — the two-vessel founding ceremony. It fails against " +
     "current `runInit` (hearth true-name absent) and awaits an operator ruling: repair and roster, or retire.",
   "tests/e2e/persona-ring-cross-operator-admit.test.ts":
-    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot (real DaemonAuthGate, " +
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot (a real sealed gate, " +
     "nested daemon-island worker, real WS crossing). Runs opt-in via `vitest.e2e.config.ts`, which this " +
     "package's own heavy/main split does not cover; every other suite under `tests/e2e/` reads the same way.",
+  "tests/e2e/fleet-join-dial.test.ts":
+    "excluded from `main`, absent from `heavy` — two vessel roots through offer, request, answer, land and the " +
+    "joinee's boot dial over a live sealed gate. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
+    "`tests/e2e/**/*.test.ts`; tools/e2e-shards.mjs tracks `tests/e2e/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {

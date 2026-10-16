@@ -51,10 +51,12 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { Repo } from "@automerge/automerge-repo";
+import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { GateBundlePin } from "../../packages/lararium-mesh/src/index.js";
+import { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID, strangerFace } from "../../packages/lararium-node/probes/crossing-synthetic-world.js";
 import {
-  openStaged, freePort, stageDir, awaitRendezvous, awaitOwnGateKey, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
+  openStaged, freePort, stageDir, awaitRendezvous, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
   type LarInstance,
 } from "../harness/instance.js";
 
@@ -106,6 +108,19 @@ const bagsOf = (r: { json: Record<string, unknown> | null }): string[] =>
 /** B's answer BEFORE any registration — the byte-identical "today" a non-member keeps drawing. */
 let beforeB = "";
 let contractNym = "";
+/** A's port, and the sovereign gate pin her admit bundle carries: what C (and B) dial A's gate under. */
+let portAOuter = 0;
+let gatePinA: GateBundlePin | null = null;
+/** How many dials A's gate has let fall silent, read off her own log. */
+const silencesIn = (log: string): number => log.split("\n").filter((l) => l.includes("[lar-gate]") && l.includes("fell silent")).length;
+/** Wait, bounded, for a line to land in a vessel's log; resolves whether it did. */
+async function awaitLog(who: LarInstance, re: RegExp, ms: number): Promise<boolean> {
+  for (const until = Date.now() + ms; Date.now() < until; ) {
+    if (re.test(who.bootLog())) return true;
+    await new Promise((r) => setTimeout(r, 1_000));
+  }
+  return re.test(who.bootLog());
+}
 /** B's refusal at the read tier — the bytes ⑩ pins while her naming still waits on her own hand. */
 let refusalB = "";
 let named = false;
@@ -119,6 +134,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bop-"));
     rootC = mkdtempSync(join(stageDir(), "lares-staged-Cop-"));
     const portA = await freePort();
+    portAOuter = portA;
     const portB = await freePort();
     const portC = await freePort();
     // THE WIRE PROBE, armed on every staged vessel: each share verdict either hook answers and each sync
@@ -139,7 +155,6 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
-    const gateA = await awaitOwnGateKey(A);
     // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
     // never contracts.
     const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string; json: Record<string, unknown> | null }>, root: string) => {
@@ -151,7 +166,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
     };
-    const dialA = { ...wireLog, LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
+    // B and C dial A by the pin and address the admit bundle carries (`nexus contract --sync-url`).
+    const dialA = { ...wireLog };
     // Each root is marked and founded independently before its daemon stands.
     B = await openStaged({ tag: "B", root: rootB, port: portB, found: foundOperator("B", "highland-steward"), daemonEnv: dialA });
     C = await openStaged({ tag: "C", root: rootC, port: portC, found: foundOperator("C", "court-spy"), daemonEnv: dialA });
@@ -188,10 +204,12 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
         contractNym = acc.nym;
         // A's Nexus stays PRIVATE: no board of A's crosses to B while she is a stranger. Her admit reaches her
         // as the charter and the token reach her — by FILE: the bundle `nexus contract --json` emits.
-        const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--json"]);
+        const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--json"]);
         lines.push(`A nexus contract → ${contract.code}: ${said(contract).trim().slice(0, 240)}`);
         const bundle = ((contract.json?.["data"] ?? {}) as Record<string, unknown>)["bundle"];
         if (contract.code === 0 && bundle) {
+          const opening = ((bundle as Record<string, unknown>)["opening"] ?? {}) as { carriage?: { gatePin?: GateBundlePin } };
+          gatePinA = opening.carriage?.gatePin ?? null;
           const bundleFile = join(rootB, "a-admit-bundle.json");
           writeFileSync(bundleFile, JSON.stringify(bundle));
           // L1: `nexus refresh` is a RETIRED verb — A's running node already refolded the instant
@@ -248,7 +266,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(refoldLive, doors).toBe(true);
   });
 
-  test("④ CONTROL (before): B holds the relation and not the bag — `not-found`, the measured today", async () => {
+  test("④ CONTROL (before): B holds the relation and not the bag — `not-found`, the measured today, with B's dial STANDING", async () => {
+    // B must have DIALED before the control means anything: a `not-found` from a vessel that never reached A is not a
+    // refusal of the bag, it is a disconnection. So the measure waits for B's own word that A's gate opened a crossing.
+    const dialed = await awaitLog(B!, /\[lar-leaf\] verdict OK — crossing open, syncing/, 90_000);
+    expect(dialed, `B never dialed A's gate:\n${B!.bootLog().split("\n").filter((l) => /nexus-join|lar-leaf|lar-gate/.test(l)).slice(-8).join("\n")}`).toBe(true);
     const r = await B!.cli(["meme", "get", URI, "--bag", "lares", "--realm", realmA, "--json"]);
     beforeB = said(r).trim();
     console.error(`meme-realm-bag MEASURE B before registration: ${beforeB.slice(0, 200)}`);
@@ -343,22 +365,52 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);
     }
-    expect(b).toContain("[nexus-join] presenting the ContactCard alone");      // the boot dial, before any admit
-    expect(b).not.toContain("contract edge");                                    // no root edge rides any socket
-    const leafLine = b.split("\n").find((l) => l.includes("[nexus-join] presenting the leaf admit")) ?? "";
-    console.error(`meme-realm-bag MEASURE B re-presentation: ${leafLine.trim().slice(0, 240)}`);
-    expect(leafLine).toContain("no root edge rides it");
-    // The card-alone dial before the admit: a stranger at a PRIVATE gate is answered with silence.
-    const reDial = lines.findIndex((l) => l.includes("[nexus-join] presenting the leaf admit"));
-    const before = lines.slice(0, reDial).filter((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l));
-    expect(before.join("\n")).toContain("[lar-leaf] ANERGIZED: no answer");
-    expect(before.join("\n")).not.toContain("verdict OK");
-    // The leaf-admit dial after it stands.
-    expect(lines.slice(reDial).some((l) => l.includes("[lar-leaf] verdict OK — crossing open, syncing"))).toBe(true);
+    // B dials nobody until she holds an admit: the dial reads its pin and address off the bundle she TOOK, so the pins are
+    // filed first, then the dial stands, then A's gate opens the crossing. No root edge rides any socket.
+    expect(b).not.toContain("contract edge");
+    const filedAt = lines.findIndex((l) => /\[nexus-join\] \d+ gate pin\(s\) filed \(/.test(l));
+    const upAt = lines.findIndex((l) => l.includes("[nexus-join] nexus dial-out up →"));
+    const okAt = lines.findIndex((l) => l.includes("[lar-leaf] verdict OK — crossing open, syncing"));
+    console.error(`meme-realm-bag MEASURE B dial order: pins filed @${filedAt} · dial up @${upAt} · crossing open @${okAt}`);
+    expect(filedAt, "B never filed A's gate pin from the admit she took").toBeGreaterThanOrEqual(0);
+    expect(upAt, "B's dial never stood").toBeGreaterThan(filedAt);
+    expect(okAt, "A's gate never opened B's crossing").toBeGreaterThan(upAt);
+    // The sealed gate answers a dial it admits with a verdict and a stranger with silence: B's crossing opened, so her log
+    // carries no anergy for A's gate, and no dial of hers drew a refusal.
+    expect(lines.slice(okAt).some((l) => l.includes("[lar-leaf] ANERGIZED"))).toBe(false);
+    // The leaf-admit dial stands.
+    expect(lines.slice(okAt).some((l) => l.includes("[lar-leaf] verdict OK — crossing open, syncing"))).toBe(true);
     expect(verdict).toContain("verdict OK — crossing open, syncing");
   });
 
-  test("⑦ CONTROL: C — a proof-carrying operator with NO contract — draws `not-found`, byte-identical to B's before", async () => {
+  test("⑦ CONTROL: C — a face that DIALS A's gate with NO contract — is met with silence and draws `not-found`, byte-identical to B's before", async () => {
+    // C DIALS. A third operator's vessel holds no admit to take, so it has no pin and no address to dial from; the dial is
+    // therefore stood here, in-process, as C's face would stand it: A's sovereign gate pin (public), a chain no admit backs.
+    // A's gate answers a stranger at her PRIVATE Nexus with nothing, which her own log counts.
+    expect(gatePinA, "A's admit bundle carried no gate pin to dial under").not.toBeNull();
+    const silentBefore = silencesIn(A!.bootLog());
+    const face = await strangerFace(aidA, "court-spy face");
+    const pins = hearthPinIndex();
+    pins.put("hearth-a", gatePinA!);
+    const dial = new LarWSClientAdapter({
+      url: `ws://127.0.0.1:${portAOuter}${gatePinA!.route}`, pins, hearth: "hearth-a", nexus: gatePinA!.nexus, audience: DAEMON_BAG_ID,
+      deadlines: { draw(lapse: () => void) { const t = setTimeout(lapse, 5_000); return { cancel: () => clearTimeout(t) }; } },
+      presentation: { certificate: face.certificate, signer: face.signer, arm: face.arm, history: face.history },
+      retryInterval: 500,
+    });
+    const cRepo = new Repo({ network: [dial] });
+    try {
+      const gotDoc = await Promise.race([
+        cRepo.find(`automerge:${"1".repeat(27)}` as AutomergeUrl).then(() => "found", () => "unavailable"),
+        new Promise<string>((r) => setTimeout(() => r("pending"), 8_000)),
+      ]);
+      expect(gotDoc, "C's dial reached a doc of A's").not.toBe("found");
+      for (const until = Date.now() + 30_000; silencesIn(A!.bootLog()) <= silentBefore && Date.now() < until; ) await new Promise((r) => setTimeout(r, 1_000));
+      expect(silencesIn(A!.bootLog()), `A's gate never fell silent on C's dial: C never reached it. A's gate lines:\n${A!.bootLog().split("\n").filter((l) => l.includes("[lar-gate]")).join("\n")}`).toBeGreaterThan(silentBefore);
+    } finally {
+      dial.disconnect();
+      await cRepo.shutdown();
+    }
     const r = await C!.cli(["meme", "get", URI, "--bag", "lares", "--realm", realmA, "--json"]);
     console.error(`meme-realm-bag MEASURE C: ${said(r).trim().slice(0, 200)}`);
     expect(r.json?.["ok"]).toBe(false);

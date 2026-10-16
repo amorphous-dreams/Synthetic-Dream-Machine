@@ -64,6 +64,18 @@
       "import": "./dist/node.js",
       "types": "./dist/node.d.ts"
     },
+    "./face-proof-subjects": {
+      "import": "./dist/face-proof-subjects.js",
+      "types": "./dist/face-proof-subjects.d.ts"
+    },
+    "./session-face": {
+      "import": "./dist/session-face.js",
+      "types": "./dist/session-face.d.ts"
+    },
+    "./session-signer": {
+      "import": "./dist/session-signer.js",
+      "types": "./dist/session-signer.d.ts"
+    },
     "./rank-te": {
       "import": "./dist/rank-te.js",
       "types": "./dist/rank-te.d.ts"

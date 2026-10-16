@@ -394,8 +394,8 @@ function safeSplitMeme(read: CarrierRead, fields: TiddlerFields): TiddlerFields[
 // ---------------------------------------------------------------------------
 
 // The head line, stripped at ingest. Control sigils live on ONE line by law — the shore's line pattern
-// never crosses one (a greedy multi-line match once swallowed from a quoted `<<~` mention down to the
-// real closer; formerly recorded in the retired address memo).
+// never crosses one (a greedy multi-line match swallows from a quoted `<<~` mention down to the real
+// closer).
 const SOH_LINE_RE = carrierHeadLinePattern();
 
 function stripLeadingNewlines(text: string): string {
@@ -607,7 +607,7 @@ export function findMetaFence(text: string, allowPlain = false): MetaFence | nul
 //     law (memetic-wikitext-framing #authoring: the fence that OPENS a carrier heads it) reaches every slot the same way.
 //
 //     Post-meta content in the head STANDS — that is the bindings zone, authored, and it re-emits
-//     between the meta and the body. Pre-meta content does not, and `preamble` retires with it: a zone
+//     between the meta and the body. Pre-meta content does not, and no `preamble` field stands: a zone
 //     that names a shape the grammar forbids holds bytes nothing should have written.
 //   - fields    = parsed from the meta toml block (operator-authored keys).
 //   - text      = body proper — from the first inner kahea ref to the last

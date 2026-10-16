@@ -19,6 +19,8 @@
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
+ *   nexus-carry-take                             a carried carry bundle onto this place's own board replica
+ *                                                (`carry-bundle`: a herm's explicit join)
  *   edge-kapae                                   the edge shadow board (`commands/edge-kapae-cmd`)
  *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
@@ -80,6 +82,14 @@ import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
 import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
+import { takeCarryBundle, CarryBundleError } from "./carry-bundle.js";
+import { listPersonaRoots, loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { listAnchoredPersonas } from "./identity-anchors.js";
+
+/** A place that lit no face stands as a herm: it holds no persona root and anchors no face (a joinee anchors one). */
+async function standsAsHerm(): Promise<boolean> {
+  return (await listPersonaRoots()).length === 0 && (await listAnchoredPersonas()).length === 0;
+}
 
 /** What the rows read off their holder. */
 export interface StoreDoorDeps {
@@ -134,7 +144,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing",
-  "nexus-posture", "nexus-admit-take", "seal-home-refold",
+  "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
@@ -148,6 +158,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
+  CarryBundleError,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -156,6 +167,14 @@ const strs = (v: unknown): readonly string[] | undefined =>
   (Array.isArray(v) && v.every((x) => typeof x === "string") ? (v as string[]) : undefined);
 const opt = <K extends string, V>(key: K, v: V | undefined): { [P in K]?: V } =>
   (v === undefined ? {} : { [key]: v }) as { [P in K]?: V };
+
+/** The face a fleet-join row names: absent, or a whole number; anything else refuses `face-malformed`. */
+function joinFace(args: Readonly<Record<string, unknown>>): { face?: number } {
+  if (args["face"] === undefined) return {};
+  const face = int(args["face"]);
+  if (face === undefined || face < 0) throw new FleetJoinRefused("face-malformed", `the row's face names no persona index: ${JSON.stringify(args["face"])}.`);
+  return { face };
+}
 
 /** The name a row's refusal answers under: the row's own verb, so no two doors share one word for "refused". */
 export const storeRefusalName = (verb: string): string => `${verb}-refused`;
@@ -207,6 +226,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await runNexusContract({
         action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
         ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
+        ...opt("syncUrl", str(args["syncUrl"])), ...opt("floorPin", str(args["floorPin"])),
       });
       await awaitOnRolled(deps.onRolled?.());
       return { ...r };
@@ -276,8 +296,14 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-posture": (args) => answer("nexus-posture", async () => {
       const doc = readNexusDoc(sealHome);
       const want = args["want"];
+      // A HERM ANSWERS THE KNOCK (operator ruling): OPEN by class at every gate it stands, so the charter's posture joint
+      // governs nothing on a place that lit no face. A read says so; a flip refuses by name and writes nothing.
+      if (await standsAsHerm()) {
+        if (want !== "private" && want !== "open") return { posture: "open", present: doc !== null, wrote: false, herm: true };
+        throw new Error("nexus-posture REFUSED: this place lit no face, so it stands as a herm, and a herm answers the knock by class (operator ruling) — a posture is a hearth's charter joint. Nothing was written.");
+      }
       if (want !== "private" && want !== "open") {
-        return { posture: federationPostureFromDoc(doc), present: doc !== null, wrote: false };
+        return { posture: federationPostureFromDoc(doc), present: doc !== null, wrote: false, herm: false };
       }
       if (!doc) {
         throw new Error("nexus-posture REFUSED: no charter doc — run `lares nexus seal seat` before setting a posture.");
@@ -300,6 +326,15 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
       const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
+    }),
+
+    // A HERM'S EXPLICIT JOIN (lar:///ha.ka.ba/lararium/node/carry-bundle): the quorum's counted carry over this vessel's own key, taken by
+    // hand onto its own replica of that Nexus's carriage board; the refold the take fires stands its floor gate there at once.
+    "nexus-carry-take": (args) => answer("nexus-carry-take", async () => {
+      const raw = need("nexus-carry-take", args, "raw");
+      const r = await takeCarryBundle({ sealHome, repo, raw, ownVesselKey: await loadVesselVerifyingKey() });
+      const refolded = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
+      return { ...r, refolded };
     }),
 
     // A WRITE LANDED BESIDE THE SEAL HOME, NOT ON THE REPO. `accept-carriage`, `carry-for` and a carried
@@ -375,10 +410,16 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     // The fleet-join door's root half: an offer, and the answer to one carried request. The answer carries the face's
     // address secret SEALED to the request's own key; no secret rides it in the clear.
-    "fleet-join-offer": () => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome }) })),
-    "fleet-join-answer": (args) => answer("fleet-join-answer", async () => ({
-      answer: await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])) }),
-    })),
+    // `face` names the persona index the join serves; absent, the founding face. A face that reads as no index
+    // refuses by name: an act that signs authority never falls back to the founding face.
+    "fleet-join-offer": (args) => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome, ...joinFace(args) }) })),
+    // The answer notes the certificates it issued beside the joining device; the refold it sets off resweeps a standing
+    // vessel's gates, and each sweep reads that issued book again, so the gate binds the device's face-scoped key.
+    "fleet-join-answer": (args) => answer("fleet-join-answer", async () => {
+      const issued = await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args) });
+      await awaitOnRolled(deps.onRolled?.());
+      return { answer: issued };
+    }),
     "handle-publish": (args) => answer("handle-publish", async () => ({
       card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])) }),
     })),

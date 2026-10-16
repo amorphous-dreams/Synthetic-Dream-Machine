@@ -114,7 +114,7 @@ describe("the acquired tier", () => {
     expect(meta?.mediaType).toContain("text");
   });
 
-  test("★ NO meta.json ANYWHERE — the sidecar retired, the entry lives in the index ★", () => {
+  test("★ NO meta.json ANYWHERE — no sidecar, the entry lives in the index ★", () => {
     writeFileSync(join(src, "a.txt"), "body a", "utf8");
     writeFileSync(join(src, "b.txt"), "body b", "utf8");
     const a = acquireIntoLibrary(join(src, "a.txt"), { collection: "c" });

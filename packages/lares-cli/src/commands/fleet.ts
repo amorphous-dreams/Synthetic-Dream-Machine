@@ -1,11 +1,11 @@
 /**
  * `lares fleet join` — one face's fleet takes a new vessel of the same human (`@lararium/node` `commands/fleet-join`).
  *
- *   lares fleet join offer   [--out FILE]                    on the root holder: the face, its root key, a nonce,
+ *   lares fleet join offer   [--face N] [--out FILE]         on the root holder: the face, its root key, a nonce,
  *                                                            and the scopes the face stands at
  *   lares fleet join request <offer-file> [--out FILE]       on the joining PLACE: its face-scoped keys mint here,
  *                                                            and the join stays pending until its answer lands
- *   lares fleet join answer  <request-file> [--out FILE] [--sync-url URL]
+ *   lares fleet join answer  <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]
  *                                                            on the root holder: the signed answer, with the gate
  *                                                            pin, the canon list and the face's sealed address secret
  *   lares fleet join land    <answer-file>                   on the joining place: the face lands
@@ -15,6 +15,10 @@
  * mint on it and stay there, and the one secret that crosses (the address secret) crosses sealed to a key its
  * request named. The joinee reads the answer under the root key its kept offer named, so the courier carries that
  * key before the answer exists.
+ *
+ * `--face N` names which of the root holder's faces the join serves (default 0, the founding face); the answer
+ * names the same face its offer named. The index stays local to the root holder: the offer and the answer name the
+ * face by its PersonaGroup and root key, so the joining vessel takes no `--face`.
  *
  * The root holder's two acts ride the store door (inside the standing vessel when one stands); the joining
  * vessel's acts run in this process with no vessel standing, as a founding does.
@@ -50,18 +54,36 @@ function emitFile(args: ParsedArgs, value: unknown, what: string): void {
   console.log(`[lares fleet join] ${what} written to ${at}`);
 }
 
+/** The face a root holder's act names: `--face N`, a whole number from 0, or nothing for the founding face. */
+function faceOf(args: ParsedArgs): { face?: number } {
+  const raw = args.options["face"];
+  // A bare `--face` (or `--no-face`) names no index: it refuses rather than fall back to the founding face.
+  if (args.flags["face"] !== undefined) throw new FleetJoinRefused("face-malformed", "--face names a persona index: give it one, as `--face 1`.");
+  if (raw === undefined) return {};
+  const face = typeof raw === "string" && /^(?:0|[1-9][0-9]{0,5})$/.test(raw) ? Number(raw) : Number.NaN;
+  if (!Number.isSafeInteger(face)) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${JSON.stringify(raw)}.`);
+  return { face };
+}
+
+/** The joinee's acts (request, land, abandon) name no face: the face rides the offer, so a `--face` here would pass silently and mean nothing. */
+function refuseFaceOnJoinee(args: ParsedArgs, act: string): void {
+  if (args.options["face"] === undefined && args.flags["face"] === undefined) return;
+  throw new FleetJoinRefused("face-joinee", `\`lares fleet join ${act}\` takes no --face: the joinee never names a face — the face rides the offer, and \`--face N\` belongs to \`offer\` and \`answer\` on the root holder.`);
+}
+
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
   const [group, act, file] = args.positional;
   if (group !== "join" || act === undefined) return usage(args);
   try {
     switch (act) {
       case "offer": {
-        const { offer } = (await storeVerb("fleet-join-offer", {})).output as { offer: unknown };
+        const { offer } = (await storeVerb("fleet-join-offer", { ...faceOf(args) })).output as { offer: unknown };
         emitFile(args, offer, "offer");
         console.log("[lares fleet join] carry the offer to the joining vessel: `lares fleet join request <offer-file>`.");
         return 0;
       }
       case "request": {
+        refuseFaceOnJoinee(args, act);
         const request = await runFleetJoinRequest({ offer: readJson(file, "offer") });
         emitFile(args, request, "request");
         console.log("[lares fleet join] carry the request back to the root holder: `lares fleet join answer <request-file>`.");
@@ -69,18 +91,21 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
       }
       case "answer": {
         const syncUrl = args.options["sync-url"];
-        const { answer } = (await storeVerb("fleet-join-answer", { request: readJson(file, "request"), ...(syncUrl ? { syncUrl } : {}) })).output as { answer: unknown };
+        const docUrl = args.options["doc-url"];
+        const { answer } = (await storeVerb("fleet-join-answer", { request: readJson(file, "request"), ...faceOf(args), ...(syncUrl ? { syncUrl } : {}), ...(docUrl ? { docUrl } : {}) })).output as { answer: unknown };
         emitFile(args, answer, "answer");
         console.log("[lares fleet join] carry the answer to the joining vessel: `lares fleet join land <answer-file>`.");
         return 0;
       }
       case "land": {
+        refuseFaceOnJoinee(args, act);
         const answer = readJson(file, "answer");
         await ownedStore(larDataDir(), (repo) => runFleetJoinLand({ repo, answer }));
         console.log("[lares fleet join] landed — the face stands on this vessel. Start with: lares vessel stand --with-web");
         return 0;
       }
       case "abandon": {
+        refuseFaceOnJoinee(args, act);
         const stood = await runFleetJoinAbandon();
         console.log(stood ? "[lares fleet join] the pending join left this vessel." : "[lares fleet join] no join stood pending here.");
         return 0;

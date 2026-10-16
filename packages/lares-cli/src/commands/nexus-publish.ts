@@ -102,9 +102,8 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   // fresh — the SAME fold `--apply` would sign, so a read never drifts from what applying would do.
   const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
-  // L-d: this read used to print raw human prose unconditionally — `--json` (or any non-TTY caller)
-  // got the SAME text instead of structured data. It now routes through the ONE choke point every
-  // other door answers through.
+  // L-d: this read routes through the ONE choke point every other door answers through, so `--json`
+  // (or any non-TTY caller) reads structured data, never the human prose.
   emit(args, {
     ok: true,
     data: {

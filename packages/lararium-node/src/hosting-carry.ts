@@ -12,8 +12,9 @@
  *   hearth → walker  `hosting/notice {pending: true}`  on a contact while the walker's carriage stands marked
  *
  * ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF. The hearth keys each guest's carriage under
- * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and its leaf proof
- * proves — so a record is reached by proof alone, whichever lineage the grant rides, and nothing the hearth hands
+ * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and a walker socket's leaf proof
+ * proves (the walker route ships SHUT by name, the shut-routes house ruling (stable-founding-road #/rulings)) — so a record is reached by proof alone,
+ * whichever lineage the grant rides, and nothing the hearth hands
  * out names it. A guest that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage
  * again; a fresh leaf is a fresh carriage, and a kapae'd leaf reaches nothing through a new one. Every dial on G
  * is a CONTACT — the grant arm and the token arm alike (`socket-sorter`) — so the notice reaches a guest by a
@@ -64,7 +65,19 @@ import {
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, writeCustodyRow } from "./custody-seat.js";
 import { hostingDir, hostingRowDir, readHostingState, liveEpochs } from "./hosting-store.js";
-import type { DaemonAuthGate } from "./daemon-auth-gate.js";
+import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
+
+/**
+ * THE WALKER'S SESSION DOOR: a gate's authenticated sessions, each with its class and the hosting grant it stands
+ * on. The walker arms ship SHUT by name (`socket-sorter` `SHUT_ARMS`), so no gate seats a walker and
+ * no composer stands this door; the carriage and mint servers keep their shape for the reader that opens them.
+ */
+export interface WalkerSessionDoor<S = unknown> {
+  onSession(listener: (socket: S, msg: LarSessionMsg) => void): () => void;
+  sendSession(socket: S, kind: string, body: unknown): boolean;
+  getClassForSocket(socket: S): PeerClass | undefined;
+  getGrantForSocket(socket: S): HostingGrant | undefined;
+}
 
 /** How much a hearth carries for walkers: per guest, and in all. */
 export interface CarryLimits {
@@ -296,8 +309,8 @@ export async function fetchCarried(nexusAid: string, key: string, cid: string): 
  * proven leaf keys. Nothing in a request names a record, and nothing in an answer hands one out. A fault (a key
  * that locked, a row that does not open) answers nothing, exactly as a refusal does.
  */
-export function serveHostingCarry(
-  gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
+export function serveHostingCarry<S>(
+  gate: WalkerSessionDoor<S>,
   deps: { readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null>; readonly limits?: CarryLimits },
 ): () => void {
   return gate.onSession((socket, msg) => {

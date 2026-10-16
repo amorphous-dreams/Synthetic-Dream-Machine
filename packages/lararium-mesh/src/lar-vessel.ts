@@ -84,8 +84,8 @@ export class LarVessel<TVm = unknown> {
   /** Full doc stack — CompositeStore(system → corpus:* → wiki → draft). */
   readonly store:        LarTiddlerStore;
   readonly capabilities: LarVesselCapabilities;
-  /** The identity slot a factory supplies, or null. NO DEFAULT: the allow-all stub retired 2026-09-13, and a
-   *  vessel that names no slot now carries none rather than one that grants everything. */
+  /** The identity slot a factory supplies, or null. NO DEFAULT: a vessel that names no slot carries none,
+   *  never one that grants everything. */
   readonly identity:     IdentitySlot | null;
   readonly keyhive:      KeyhiveSlot | undefined;
 

@@ -140,6 +140,9 @@ export type { AntigenRing } from "./federation-gate.js";
 export { presenterIsKapaed, carryContractShareDecision, classifySocket, answersStrangers } from "./federation-gate.js";
 export { carrierShareDecision, capTierShareDecision } from "./federation-gate.js";
 export type { NexusMembership, PlaneSeal } from "./federation-gate.js";
+// THE SCOPED VIEW: a session reads its face's documents through it (the node's D3 share verdict over a same-operator session).
+export { SessionDocumentView, SessionViewError } from "./session-document-view.js";
+export type { SessionDocumentFacets, DocumentFacet, FacetLayer } from "./session-document-view.js";
 // The household's own certificate witness — nothing outside this stack warns before a cert expires.
 export type { CertExpiryBand, CertLifetime, CertExpiryReading } from "./cert-expiry-gauge.js";
 export {
@@ -197,7 +200,7 @@ export {
   type HeldNexusRoot, type HeldRootAbsence, type HeldAdmitReading, type SignedAdmitBundleRefusal,
 } from "./held-nexus-root.js";
 export {
-  carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,
+  carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX, coerceCarriageEntry,
   rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
 } from "./carriage-board.js";
 export {
@@ -239,20 +242,8 @@ export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
-export {
-  mkLarChallenge, mkLarAuth, mkLarAuthOk,
-  isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isPresentedAdmit, isPresented,
-  authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
-  authOkBytes, verifyAuthOk, mintLeafNonce, mkLarSessionMsg, isLarSessionMsg,
-  leafProofBytes, signLeafProof, signPresented, verifyLeafProof, presentedCid, presentedSigner,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
-} from "./auth-wire.js";
-export type {
-  LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarSessionMsg, LarAuthWireMsg,
-  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit, PresentedAdmitArm,
-  PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented,
-} from "./auth-wire.js";
-export { knockSegment, knockPath, knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
+export { isPresentedAdmit, isPresented, mkLarSessionMsg, isLarSessionMsg } from "./leaf-presentation.js";
+export type { LarSessionMsg, LeafIdentity, PresentedAdmit, PresentedAdmitArm, PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented } from "./leaf-presentation.js";
 export {
   hostingActBytes, hostingActCid, isHostingAct, verifyHostingAct, hostingKeyPair, hostingEpochOf, mintHostingAct,
   hostingActKey, writeHostingAct, hostingActsFromBoard, hostingForks,
@@ -275,8 +266,8 @@ export {
   HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
 } from "./walk-carry.js";
 export type { CarryOutcome } from "./walk-carry.js";
-export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
-export type { LarWSClientOptions, LarLeafSession } from "./lar-ws-client-adapter.js";
+export { LEAF_RETRY_CAP_MS, LEAF_SILENCE_LOG_EVERY, LarWSClientAdapter } from "./lar-ws-client-adapter.js";
+export type { LarWSClientOptions, LarLeafSession, FacePresentation } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
 export * from "./carriage-caps.js";
 export * from "./persona-hd.js";
@@ -307,10 +298,16 @@ export {
 } from "./nexus-key-line.js";
 export type { FaceKeyCustody, WithdrawalMemory, FaceAuthorityRefusal } from "./face-authority.js";
 export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
+// THE SCOPE READER, named here by its first caller: the node's dial (`dial-presentation`), which reads a joined face's
+// scope off the certificate its join record keeps, never by a cast.
+export { readFaceScope } from "./face-proof-subjects.js";
+// THE PRESENTER'S DIGEST, named here by its first caller: the node's D4 device book (`face-device-book`), which resolves
+// a seated session's `vesselFaceDigest` to the device edge its face-scoped key was certified to.
+export { withdrawnKeyDigest, type Digest } from "./face-proof-subjects.js";
 // THE FLEET-JOIN DOOR, named here by its first caller: the node's `fleet join` (`commands/fleet-join`). A joining
 // vessel mints and requests its own face-scoped keys, and the root holder certifies them in its answer.
-export { requestCertificate, issueCertificate, mintVesselFaceKey } from "./face-authority.js";
-export type { VesselFaceKeyCustody, MintedKey } from "./face-authority.js";
+export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselChain } from "./face-authority.js";
+export type { VesselFaceKeyCustody, MintedKey, VesselChainVerdict } from "./face-authority.js";
 export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
 export * from "./fleet-join.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
@@ -318,11 +315,66 @@ export * from "./fleet-join.js";
 export { openJoinedFaceSession } from "./session-face.js";
 export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
-// door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
+// door and the custody seat the custody root's. The bundle itself joins the barrel below, with the gate.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
 export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.js";
+// THE GATE'S THREE FROZEN SEAMS AND THE FLOOR'S ANNOUNCEMENT, named here for their callers: the sealed carriage frames
+// every message after a verdict (the session channel); the session channel holds the attach → verdict → open interval
+// shut on both halves (the client adapter and the oracle read client dial it); the admit's gate pin and its pair index
+// (the carriage registry and the hearth dial pin); the floor's signed announcement, read only against a pin its reader
+// already holds (no caller yet; it stands for the floor's announce route).
+export {
+  SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
+  SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
+} from "./sealed-carriage.js";
+export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
+export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel, channelSessionTable } from "./gate-session-channel.js";
+export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
+// THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
+// client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
+export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard } from "./hearth-floor-pins.js";
+export type { HearthFloorCard } from "./hearth-floor-pins.js";
+export {
+  PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,
+  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor,
+  type PlaceFloorPinStatement, type PlaceFloorPinRefusal,
+} from "./place-floor-pin.js";
+export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePullDeps } from "./carriage-pull.js";
+export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
+// The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
+export { SessionTable, sessionBinding } from "./session-contract.js";
+export type { SessionBinding } from "./session-contract.js";
+export type { AdmitGatePinRefusal, DialPinKey, HearthPinIndex } from "./admit-gate-pin.js";
+export {
+  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+} from "./floor-announcement.js";
+export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
+// THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)
+// behind the upgrade's knock and its first flight, the composer derives each bundle, and the dialers speak
+// `dialFaceGate` over their own sockets.
+export {
+  deriveGateBundle, floorGateRoot, sovereignGateRoot, floorRoute, sovereignRoute, gateBundleDigest, gateKnock, knockSegment, readGateBundlePin,
+  readGateSignature, GateBundleRefused, GATE_BUNDLE_REFUSALS, GATE_TIERS,
+} from "./gate-bundle.js";
+export type { GateBundle, GateBundlePin, GateBundleRoot, GateRoute, GateTier, GateBundleRefusalName } from "./gate-bundle.js";
+export { makeFaceGate, presentedAdmitReader, memoryBackedWithdrawals, GATE_SILENCE_REASONS } from "./face-gate.js";
+export type {
+  FaceGate, FaceGateDeps, GateSocket, GateDeadlines, GateAdmitReader, PlaceContractReading, GateShadowReading, GateShadowRing,
+  GateFaceGrantRing, GateSortInput, GateSortVerdict, GateSorter, GateWithdrawalMemory, GateSession, GateSeat, GateSessionTable,
+  GateSilenceReason, GateSilenceDetail, GateOutcome,
+} from "./face-gate.js";
+export { GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProtocols, readGateFlightHeader, gateProtocolSelected } from "./gate-exchange.js";
+export type { GateFlightRefusal, PresentationArm, PlaceArm } from "./gate-exchange.js";
+export { dialFaceGate, dialPlaceGate, FACE_DIAL_REFUSALS } from "./face-dial.js";
+export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceDialArgs, PlaceDialOutcome } from "./face-dial.js";
+// The dial's WebSocket door, named here so a vessel hands it a client that holds the payload cap itself (`nodeDialSocket`).
+export { wsDialSocket } from "./ws-dial-socket.js";
+export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
+// The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
+export { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
 // THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
-export { GATE_MEMORY_ROW_MAX_BYTES } from "./gate-withdrawal-store.js";
+export { GATE_MEMORY_ROW_MAX_BYTES, storedWithdrawals, GateMemoryRowTorn } from "./gate-withdrawal-store.js";
 export type { GateMemoryRows } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
@@ -498,3 +550,6 @@ export * from "./content-key-holder.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";
+// The one parser of a Nexus seal file's text, platform-blind: the node's disk adapter and a browser leaf's landed
+// fleet-join answer read a charter through it — see `nexus-doc-text`.
+export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } from "./nexus-doc-text.js";

@@ -193,14 +193,19 @@ jobs:
         if: matrix.mesh == 'true'
         run: node --test tools/mesh-pins.test.mjs
 
-      # PINS ARE GENERATED, NEVER COPIED. Every bootstrap peer knocks with the gate key its target founded in its
-      # own container, so the herms stand one wave at a time and each wave boots against the keys read off the
-      # wave before it. A bare `compose up` stands relays whose peer entries carry no key, and those refuse aloud.
+      # PINS ARE GENERATED, NEVER COPIED. Every bootstrap peer names the PUBLISHER key its target founded in its own
+      # container (`<url>#<vessel verifying key>`: the key a pulled FLOW-map pointer must verify under, `carriage-caps`;
+      # the knock itself rides the floor pin the carry join files), so the herms stand one wave at a time and each wave
+      # boots against the keys read off the wave before it. A bare `compose up` stands relays whose peer entries carry
+      # no key, and those refuse aloud.
       - name: Stand the Herm mesh in pin order
         if: matrix.driver == 'herm-mesh'
         shell: bash
         run: |
-          timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 2>&1 \
+          # AN EXPLICIT NEXUS OPENS THE HERM RELAY (house ruling "Routes at the cutover"): a herm stands its floor gate only
+          # where a quorum counted its carry, so lararium-a, which seats the founding kahu, stands with the herms and the
+          # witness joins every herm and its reader to A's Nexus by hand (tools/herm-mesh-witness.sh).
+          timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 lararium-a 2>&1 \
             | tee "$ARTIFACT_DIR/mesh-setup.log"
 
       - name: Run ${{ matrix.cell }}
@@ -275,7 +280,7 @@ jobs:
           exit "$status"
 
       # A mesh driver's own trap tears down on a clean exit; a job timeout signals past it, so this step holds
-      # the evidence and the teardown either way. The pins file names public gate keys only.
+      # the evidence and the teardown either way. The pins file names public publisher keys only.
       - name: Capture and tear down the mesh
         if: always() && matrix.mesh == 'true'
         shell: bash

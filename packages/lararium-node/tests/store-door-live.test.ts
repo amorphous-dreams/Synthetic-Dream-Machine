@@ -23,7 +23,7 @@ import {
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
   fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
+  nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
@@ -275,6 +275,22 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("private");
   });
 
+  it("RED nexus-posture on a HERM: a place that lit no face refuses the flip by name and writes nothing; its read says OPEN by class", async () => {
+    // A herm: a vessel key and a charter it imported, no persona root and no face anchors (operator ruling "A herm answers
+    // the knock": OPEN by class, so the charter's posture joint governs nothing here).
+    const root = join(base, "herm-root");
+    at(root);
+    await generateOrLoadVesselIdentity();
+    const { keys } = await seatChairs([0, 1, 2]);
+    writeNexusDoc(sealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
+    await expect(storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() })).rejects.toThrow(/answers the knock/);
+    expect(readNexusDoc(sealHome())?.federationPosture).toBeUndefined();
+    const read = await storeDoorDirect("nexus-posture", {}, { sealHome: sealHome() });
+    expect(read["herm"]).toBe(true);
+    expect(read["posture"]).toBe("open");
+    expect(read["wrote"]).toBe(false);
+  });
+
   it("RED nexus-admit-take: a taken bundle over a live Repo fires the after-roll hook and re-presents; CONTROL: direct keeps it with no hook", async () => {
     const root = join(base, "admit-take-root");
     await seatVessel(root);
@@ -287,10 +303,14 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const chairs = await seatChairs([0, 1, 2]);
     const quorum = chairs.hands.slice(0, 2);
     const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
-    const opening = openAdmitCarriage({ gatePin: "c3".repeat(32), canon: {} });
+    const pin = (() => {
+      const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(3) })), new TextEncoder().encode(aidP), sovereignRoute("/ws"));
+      try { return bundle.pin; } finally { bundle.drop(); }
+    })();
+    const opening = openAdmitCarriage({ gatePin: pin, canon: {} });
     const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid!,
       carriageCommit: admitCarriageCommit(opening) }, quorum, consent);
-    const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [], opening });
+    const raw = JSON.stringify({ aid: aidP, gatePubKey: pin.signingKey, admit, lineage: [], opening });
 
     const live = restingRepo(larDataDir());
     const rolled: Array<string | undefined> = [];

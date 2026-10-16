@@ -207,8 +207,8 @@ export function carrierHash(body: string, meta?: string): string {
  * - Use CIDv1 raw SHA-256 for content identity where a stable address is needed.
  * - Avoid the full multiformats dependency by emitting only the raw SHA-256
  *   multicodec prefix + content digest, encoded as lowercase base32.
- * - Early alpha intent: canonize CIDs now and avoid preserving hex-only SHA-256
- *   as a long-lived legacy surface.
+ * - CIDs are the canonical content address; hex-only SHA-256 stands as no
+ *   second address surface.
  */
 const BASE32_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
 

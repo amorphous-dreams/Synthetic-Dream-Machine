@@ -238,9 +238,8 @@ export async function runCabalJoin(
     // fence read this board, every invite compared against 0, and no vouch could ever lapse — a clock
     // that at least expired, replaced by a fence that never fired.
     // M16 — FAIL CLOSED, mirroring the vouch side (`cabal-vouch.ts`'s `resolveBoundEpoch`). An unreadable
-    // daemon doc used to fall through to `boardEpoch = 0` (genesis) and price the crossing against a fence
-    // the joiner never actually read — a vouch bound at N>0 then stood against a board this vessel could not
-    // see. Council ruling 6: a replica missing the history reports an INCOMPLETE VIEW, never "expired" and
+    // daemon doc never falls through to `boardEpoch = 0` (genesis): that prices the crossing against a fence
+    // the joiner never read, and a vouch bound at N>0 stands against a board this vessel cannot see. Council ruling 6: a replica missing the history reports an INCOMPLETE VIEW, never "expired" and
     // never "standing". An explicit `opts.epoch` still overrides (the caller stated its own fence by hand),
     // so this refusal fires only when NEITHER the board nor the caller supplied one.
     const daemonUrl = daemonDocUrlFromBootstrap();

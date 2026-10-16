@@ -50,8 +50,8 @@ const repoRoot = new URL("../../..", import.meta.url).pathname;
 const BOOTSTRAP_ADDRESS = "automerge:wire-bootstrap-daemon";
 const ORACLE_ADDRESS = "automerge:wire-oracle-daemon";
 
-/** Ambient dial and relay switches that would change what a boot stands; scrubbed for the file's duration. */
-const AMBIENT = ["LAR_JOIN_SYNC", "LAR_JOIN_GATE", "LAR_CARRIAGE_RELAY", "LAR_HERM_RELAY_PORT"] as const;
+/** Ambient relay switches that would change what a boot stands; scrubbed for the file's duration. */
+const AMBIENT = ["LAR_HERM_RELAY_PORT"] as const;
 const TIMEOUT_MS = 180_000;
 
 let root: string;

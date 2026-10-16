@@ -274,7 +274,7 @@ export async function identityShareDecision(
 /**
  * AntigenRing — the #59 identity-ring shore the carry-contract enforces: consult the quorum-signed
  * Kapae-antigen and deny a Kapae'd PRESENTER with Mu. This is NOT a second peer-gate (peer-auth lives,
- * live, at the DaemonAuthGate) and it is NOT the self-slot capability ring (that stays inert — see the
+ * live, at the face gate) and it is NOT the self-slot capability ring (that stays inert — see the
  * surfaced fork below). It is a purely ADDITIVE deny path keyed on the PEER, orthogonal to the per-doc
  * cap barrier.
  *
@@ -383,7 +383,7 @@ export async function carryContractShareDecision(
  * The mesh breathes across a Nexus because a MEMBER relay blind-transits sealed ciphertext (carry, never
  * read); a STRANGER reaches ONLY the public shelf (the federatable set). This consult draws that line — and
  * it reads the node's OWN nexus-doc replica (as of last sync; no global now). It is NOT a peer-auth gate (that
- * lives, live, at the DaemonAuthGate) and NOT a read-cap (the BeeKEM read-floor stays absolute). It answers
+ * lives, live, at the face gate) and NOT a read-cap (the BeeKEM read-floor stays absolute). It answers
  * ONE question: MEMBER or not.
  *
  * FAIL-CLOSED: an unrecognized / unconsultable peer reads `false` (STRANGER) — a node NEVER assumes a peer

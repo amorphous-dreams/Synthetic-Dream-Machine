@@ -1,5 +1,5 @@
 /**
- * self-slot-circles — the circles doc FLEET-syncs same-operator, NEVER federates to a stranger (STRUCTURAL).
+ * self-slot-circles — the circles doc reaches the face that owns it, NEVER federates to a stranger (STRUCTURAL).
  *
  * The operator ruling: the follow-graph rides the sovereign circles Automerge doc, PRIVATE-but-fleet-synced
  * (matching the catalog registry) — a follow shows on ALL the operator's OWN devices, and NEVER on anyone else's. This
@@ -8,8 +8,8 @@
  *   · the circles doc is a PRIVATE bag: its random doc id sits OUTSIDE the DeterministicFederationGate's fixed
  *     federatable set {crossroads · who · kapae-antigen · members · persona-KEL}. A cross-operator peer is
  *     denied it even with the Nexus OPEN — only the public shelf crosses. (never-federates)
- *   · a SAME-OPERATOR WS peer full-syncs the circles doc (the device-fleet lane; empty relay ring → shared freely).
- *     (fleet-sync)
+ *   · a SAME-OPERATOR WS peer reads the circles doc through the gate of the face its session proved, and never by
+ *     its class alone (D3, "Sharing after the gate"). (fleet-sync, face-scoped)
  *
  * A circles doc from ANOTHER key models the circles doc's own random private doc id — NOT in the gate built for
  * THIS Nexus, exactly as a private bag's id is not in the deterministic public set.
@@ -32,13 +32,15 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
     expect(gate.mayFederate(circlesStandIn)).toBe(false); // a private-bag id never does
   });
 
-  test("a SAME-OPERATOR WS peer FLEET-syncs the circles doc (the device fleet)", async () => {
-    const shared = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "same-operator",
+  test("a SAME-OPERATOR WS peer syncs the circles doc through its face's gate, and never by class (D3)", async () => {
+    const base = {
+      hasWsSocket: true, peerClass: "same-operator" as const,
       selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "same-op-device", documentId: circlesStandIn,
-    });
-    expect(shared).toBe(true);   // the operator's own fleet carries every private plane, the circles doc included
+    };
+    expect(await selfSlotShareDecision(base)).toBe(false);   // RED: the class alone opens no private plane
+    // CONTROL: the face that owns the circles doc reads it through its own gate.
+    expect(await selfSlotShareDecision({ ...base, sessionFace: { mayFederate: (d: DocumentId) => d === circlesStandIn } })).toBe(true);
   });
 
   test("a CROSS-OPERATOR peer is DENIED the circles doc even with the Nexus OPEN", async () => {

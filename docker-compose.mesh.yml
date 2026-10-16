@@ -22,10 +22,11 @@
 # Witness: ./tools/herm-mesh-witness.sh        (relay carries the alpha dial; daemon-full, wiki-less)
 # Down:    docker compose -f docker-compose.mesh.yml down -v
 #
-# EVERY PEER IS PINNED. A bootstrap peer names the gate key it knocks with — `<url>#<gate key hex>` — and an
-# entry with no key is refused aloud and never dialed. Each vessel founds its own key in-container, so no key
-# can be written here by hand: `tools/mesh-pins.mjs` stands the herms first, reads each one's gate key off its
-# own founded store, and writes `.mesh-pins.env` (`HERM_SOURCE_GATE`, `HERM_RELAY_GATE`, …), which the pinned
+# EVERY PEER IS PINNED. A bootstrap peer names the PUBLISHER key of the peer it pulls from — `<url>#<vessel verifying
+# key hex>`, the key its FLOW-map pointer verifies under (`carriage-caps`); the knock rides the floor pin the carry join
+# files, never this key — and an entry with no key is refused aloud and never dialed. Each vessel founds its own key
+# in-container, so no key can be written here by hand: `tools/mesh-pins.mjs` stands the herms first, reads each one's key off its
+# own founded store, and writes `.mesh-pins.env` (`HERM_SOURCE_PUBLISHER`, `HERM_RELAY_PUBLISHER`, …), which the pinned
 # entries below read. Before the pins exist an entry reads `<url>#` and is refused, never dialed bare.
 #
 # The product image supplies every node service; the read-only tools mount stages founding markers. The browser
@@ -65,7 +66,7 @@ services:
       LAR_PORT: "8080"
       # A SCENARIO DECIDES WHETHER AN OPERATOR CARRIES. Blank stands a sovereign hearth alone —
       # `peers` filters empty away, so a lone vessel is a supported shape rather than a broken one.
-      LAR_PEERS: "${LAR_A_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
+      LAR_PEERS: "${LAR_A_PEERS-http://herm-source:8080#${HERM_SOURCE_PUBLISHER-}}"
       LAR_PUBLIC_URL: "http://lararium-a:8080"
       # A LARARIUM DECLARES ITS ORIGINS. Its relay, oracle and Web surface share the one HTTP origin it serves;
       # an undeclared Web origin refuses the boot (`origin composition`), as the staged harness declares too.
@@ -103,7 +104,7 @@ services:
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
       LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
-      LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
+      LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080#${HERM_SOURCE_PUBLISHER-}}"
       LAR_PUBLIC_URL: "http://lararium-b:8080"
       # A LARARIUM DECLARES ITS ORIGINS. Its relay, oracle and Web surface share the one HTTP origin it serves;
       # an undeclared Web origin refuses the boot (`origin composition`), as the staged harness declares too.
@@ -112,10 +113,8 @@ services:
       # B SEATS NO CABAL BY DEFAULT: she founds charterless and contracts into A's Nexus. A scenario that needs
       # two independently-founded charters names B's chairs (`LAR_B_KAHU`), and she seats her own at boot.
       LAR_STAND_KAHU: "${LAR_B_KAHU-}"
-      # THE DIRECT DIAL — the member-read wire between two operators' hearths (`meme` sets both once A's
-      # gate key is known; empty = no dial, the peerless shape every other reading keeps).
-      LAR_JOIN_SYNC: "${LAR_B_JOIN_SYNC-}"
-      LAR_JOIN_GATE: "${LAR_B_JOIN_GATE-}"
+      # THE DIRECT DIAL rides no environment: a hearth dials from the admit bundle it takes (`nexus admit-take`), which
+      # carries the dialed gate's pin and sync address. A scenario takes the admit and restarts the hearth.
     entrypoint: ["sh", "tools/lararium-container-boot.sh"]
     networks: [mesh]
     ports:
@@ -220,7 +219,7 @@ services:
       LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
-      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"
+      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_PUBLISHER-}"
       LAR_PUBLIC_URL: "http://herm-relay:8080"
       LAR_PULL_MS: "2000"
     ports:
@@ -242,7 +241,7 @@ services:
       LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
-      LAR_PEERS: "http://herm-relay:8080#${HERM_RELAY_GATE-}"
+      LAR_PEERS: "http://herm-relay:8080#${HERM_RELAY_PUBLISHER-}"
       LAR_PUBLIC_URL: "http://herm-relay-2:8080"
       LAR_PULL_MS: "2000"
     ports:

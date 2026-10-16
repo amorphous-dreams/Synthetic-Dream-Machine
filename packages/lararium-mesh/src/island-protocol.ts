@@ -15,8 +15,8 @@
  *      across all bags, in slices paced by host tasks (`host-task.ts`); the in-wiki nalu engine
  *      applies each change synchronously. No frame, no timer and no raw-message-receipt drain
  *      decides when a change lands.
- *   4. (retired) Frame-completion ACK signal — drain timing stays island-internal.
- *   5. Vessel oracle delta delivery is removed. CRDT sync via `syncPort` is the sole
+ *   4. No frame-completion ACK signal — drain timing stays island-internal.
+ *   5. No vessel oracle delta delivery: CRDT sync via `syncPort` is the sole
  *      source of tiddler truth for causal islands.
  *   6. `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe
  *      slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash`
@@ -58,7 +58,6 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/island-protocol
  */
 
-import type { AuthProofWire } from "./auth-wire.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
@@ -173,7 +172,7 @@ export interface IslandMsg_Manifest {
    * CIDs (sha256) of the engine's plugin-tiddler blobs (application/json). The worker
    * resolves these — and the core (coreHash) — via the host's content-addressed
    * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. NO FALLBACK STANDS
-   * on either platform (M6/R4 retired it): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
+   * on either platform (M6/R4): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
    * and resolves exactly that list by CID — nothing else — so an absent or empty list boots the
    * engine with no plugin tiddlers at all, never a silent "read every blob off the oracle doc"
    * scan. `resolvePluginCids` is REQUIRED on both `VesselIslandPoolCore` (node and browser alike,
@@ -265,7 +264,7 @@ export interface IslandMsg_Manifest {
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
     registerBags:          readonly string[];
     /** The PINNED signer DID — provenance only (the founding op-key = the KEL inception op-key). The Binding
-     *  Gate no longer PINS this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
+     *  Gate does not PIN this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
     signerDid?:            string;
     /** The persona-KEL PIN + the LOCAL-replica chain the worker walks. `prefix` is the stable identifier (AID)
      *  read from the daemon bag (the pin's root of trust); `chain` is the seq-sorted key-event-log the MAIN thread read
@@ -289,9 +288,8 @@ export interface IslandMsg_Manifest {
      * key (it was handed the sovereign rows), carried
      * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
      *
-     * REQUIRED, and that is the point. The M3 re-seal used to export the sovereign archive on EVERY
-     * boot, which landed a fresh faceless export over a sealed identity whenever the archive held
-     * shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
+     * REQUIRED, and that is the point. A re-seal that exports the sovereign archive on EVERY boot
+     * lands a fresh faceless export over a sealed identity whenever the archive holds shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
      * worker gates on this and reads it `=== true`, so a drifted value fails CLOSED; making the field
      * REQUIRED makes the compiler, rather than a reviewer, the thing that notices a populator which
      * answers nothing.
@@ -553,37 +551,6 @@ export interface DaemonMsg_VerbResult {
   error?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Auth verify proxy (isomorphic-vessel epic, Stage 1+2)
-// ---------------------------------------------------------------------------
-// Keyhive lives in the daemon island after Stage 1, but inbound untrusted peers
-// land on the HOST transport (node WS server). The host's AuthVerifierShore asks
-// the island to verify each peer; the island answers via its keyhive. Path (b).
-
-/** Vessel → island: verify an inbound peer's capability. Host has no keyhive. */
-export interface DaemonMsg_VerifyRequest {
-  type: "daemon:verify-request";
-  requestId: string;
-  /** The peer's serialized Keyhive ContactCard bytes. */
-  cardBytes: Uint8Array;
-  /** The bag the peer wants to sync. */
-  bagUrl: string;
-  /** Access level required. */
-  access: "read" | "admin";
-  /**
-   * V3 proof-of-possession material relayed from the peer's lar:auth, for the
-   * in-worker keyholder to verify (project_verification_placement). Optional:
-   * absent until the peer transport (C) sources it; the worker reports
-   * `proofVerified` advisory-only until the enforcement flip (D).
-   */
-  proof?: AuthProofWire;
-  /**
-   * OPTIONAL device-delegation edge relayed from the peer's lar:auth. The in-worker
-   * keyholder verifies it against the PINNED hearth root and admits a device-admitted peer that
-   * holds no cap=admin. Absent → the worker takes the existing admin-cap path unchanged.
-   */
-  edge?: DeviceDelegationTiddler;
-}
 
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
@@ -603,27 +570,6 @@ export interface DaemonMsg_VerifyRequest {
  */
 export type PeerClass = "same-operator" | "contracted" | "walker" | "stranger";
 
-/** Island → vessel: the keyhive verdict for a verify-request. */
-export interface DaemonMsg_VerifyResult {
-  type: "daemon:verify-result";
-  requestId: string;
-  ok: boolean;
-  /** Peer's keyhive Identifier hex (from the island's receiveContactCard), so the
-   *  host can key its sharePolicy/peer map without a local keyhive. */
-  identifier?: string;
-  reason?: string;
-  /**
-   * V3 advisory: whether the relayed proof's Ed25519 signature verified against
-   * the card-derived key + this gate's own key. `undefined` when no proof crossed.
-   * Advisory until the enforcement flip (D) folds it into `ok`.
-   */
-  proofVerified?: boolean;
-  /**
-   * "same-operator" on an `ok` verdict that PROVES it (admin@daemon or a KEL-pinned device edge); absent on
-   * every other proven key, which the gate's sorter then classes (contracted · walker · stranger · silence).
-   */
-  peerClass?: PeerClass;
-}
 
 // ---------------------------------------------------------------------------
 // personal / draft binding resolution (isomorphic-vessel epic, Stage 1)
@@ -758,7 +704,6 @@ export type VesselToIslandMsg =
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
-  | DaemonMsg_VerifyRequest
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
@@ -1025,7 +970,6 @@ export type IslandToVesselMsg =
   | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
   | DaemonMsg_WorldlineTrajectoryResult
-  | DaemonMsg_VerifyResult
   | DaemonMsg_ResolveBindingResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
@@ -1333,45 +1277,6 @@ export function mkDaemonVerbResult(opts: {
   return msg;
 }
 
-export function mkDaemonVerifyRequest(opts: {
-  requestId: string;
-  cardBytes: Uint8Array;
-  bagUrl:    string;
-  access:    "read" | "admin";
-  proof?:    AuthProofWire;
-  edge?:     DeviceDelegationTiddler;
-}): DaemonMsg_VerifyRequest {
-  return {
-    type: "daemon:verify-request",
-    requestId: opts.requestId,
-    cardBytes: opts.cardBytes,
-    bagUrl:    opts.bagUrl,
-    access:    opts.access,
-    ...(opts.proof ? { proof: opts.proof } : {}),
-    ...(opts.edge ? { edge: opts.edge } : {}),
-  };
-}
-
-export function mkDaemonVerifyResult(opts: {
-  requestId:      string;
-  ok:             boolean;
-  identifier?:    string;
-  reason?:        string;
-  proofVerified?: boolean;
-  peerClass?:     PeerClass;
-}): DaemonMsg_VerifyResult {
-  const msg: DaemonMsg_VerifyResult = {
-    type: "daemon:verify-result",
-    requestId: opts.requestId,
-    ok:        opts.ok,
-  };
-  if (opts.identifier    !== undefined) msg.identifier    = opts.identifier;
-  if (opts.reason        !== undefined) msg.reason        = opts.reason;
-  if (opts.proofVerified !== undefined) msg.proofVerified = opts.proofVerified;
-  if (opts.peerClass     !== undefined) msg.peerClass     = opts.peerClass;
-  return msg;
-}
-
 export function mkDaemonResolveBindingRequest(opts: {
   requestId:   string;
   fingerprint: string;
@@ -1509,21 +1414,3 @@ export function mkWikiVerbResult(opts: {
 }
 
 
-// ── AuthVerifierShore — host-side verify proxy (path b) ─────────────────────
-//
-// The host transport (node WS gate) holds no keyhive after Stage 1; it asks the
-// daemon island to verify each inbound peer (the DaemonMsg_VerifyRequest/Result
-// pair above) and keys its sharePolicy map off the returned `identifier`. Node
-// binds this to DaemonAuthGate; the browser leaves it unbound (no inbound peer yet).
-export interface AuthVerifierShore {
-  verify(
-    cardBytes: Uint8Array,
-    bagUrl: string,
-    access: "read" | "admin",
-    /** V3 proof material relayed from the peer's lar:auth; the in-worker
-     *  keyholder verifies it (advisory `proofVerified` until the D flip). */
-    proof?: AuthProofWire,
-    /** OPTIONAL device-delegation edge — admits an operator-device-admitted peer. */
-    edge?: DeviceDelegationTiddler,
-  ): Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean; peerClass?: PeerClass }>;
-}

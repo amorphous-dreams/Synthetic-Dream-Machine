@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
@@ -50,8 +50,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts",
       "  kapae --list [--nexus <aid>]              read the currently-Kapae'd set (the fold)",
       "  un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)",
-      "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
+      "  contract <operator-pubkey> [--sig <hex>] [--sync-url <url>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
       "                                            --json emits the admit BUNDLE the joinee takes by hand",
+      "  contract <operator-pubkey> --sync-url <url>   name the url the joinee dials this hearth at; the bundle carries it (admit only)",
       "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
       "  contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the",
       "                                            seats held here and write the act as a PARTIAL file; nothing lands",
@@ -60,6 +61,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
       "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
       "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
+      "        [--floor-pin <file>]                the place's signed floor pin (`carry-for --json`); it lands beside the",
+      "                                            act, and the carry emits the CARRY BUNDLE the place takes",
       "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
       "  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never",
       "                                            authority (default: the primary charter's Nexus)",
@@ -68,9 +71,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over",
       "                                            against the charter held for its Nexus, keep it, and re-present a",
       "                                            running vessel's dial to the hearth that wrote it",
-      "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
-      "                                            key — reads no persona, because a crossroads holds none",
-      "  posture [private | open]                  read / flip the cross-Nexus federation posture",
+      "  carry-for [--nexus <aid>] [--out <file>]  (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
+      "                                            key — reads no persona, because a crossroads holds none — and sign",
+      "                                            its floor pin at this Nexus (default the primary charter's; --nexus",
+      "                                            names a carried one) with the same key. --out writes the floor pin",
+      "                                            statement: the file the kahu's `carry --floor-pin` reads",
+      "  carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto",
+      "                                            its own board replica: its floor gate stands at that Nexus, only there",
+      "  posture [private | open]                  read / flip the cross-Nexus federation posture of this hearth's charter (a herm",
+      "                                            answers the knock by class, operator ruling: it reads OPEN and refuses the flip)",
       "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
       "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
       "  realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);",
@@ -225,7 +234,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "ends every grant and token before it), and `invite` mints one invite at the current epoch, printed as " +
       "the one `lar-invite:` string to carry. Bare `lares host` reads the live epochs, the cap and how many " +
       "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere. While the " +
-      "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart.",
+      "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart. The walker route ships SHUT " +
+      "by name (the shut-routes house ruling, stable-founding-road #/rulings): the act is written, but no gate seats a walker until a live grant reader opens the route.",
     details: [
       "  (none)                                   per Nexus: the current and previous epoch, the cap, the redemption counts",
       "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on this hearth's hosting doc",
@@ -252,7 +262,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`take` keeps a carried `lar-invite:` string durably, and the vessel's hearth dial walks in on it; " +
       "`invite` hands the newest invite out of the wallet, as one string to carry. Bare `lares walk` reads " +
       "where this vessel walks — the Nexus, its standing there, and its wallet. A vessel walks at one hearth: " +
-      "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it.",
+      "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it. The walker route " +
+      "ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.",
     details: [
       "  (none)                  per hearth: the Nexus, whether the invite still waits, the grant held, the wallet count",
       "  take <lar-invite:…>     keep a carried invite; the hearth dial walks in on it as the worn face",
@@ -641,16 +652,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   fleet: {
-    usage: "usage: lares fleet join <offer | request <offer-file> | answer <request-file> | land <answer-file> | abandon>",
+    usage: "usage: lares fleet join <offer [--face N] | request <offer-file> | answer <request-file> [--face N] | land <answer-file> | abandon>",
     synopsis:
       "THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human, by three files carried by hand. " +
       "The joining vessel founds a PLACE first and mints its own face-scoped keys there; the root holder's answer " +
       "carries the device edge, a certificate and a grant per scope, the gate pin and canon list inside the root's " +
       "signature, and the face's address secret sealed to the request. The joining vessel's acts run with no vessel standing.",
     details: [
-      "  join offer [--out FILE]                     on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  join offer [--face N] [--out FILE]          on the root holder: the face, its root key, a nonce, the scopes it stands at",
       "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
-      "  join answer <request-file> [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
+      "  join answer <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]   on the root holder: the signed answer",
       "  join land <answer-file>                     on the joining place: the face lands",
       "  join abandon                                on the joining place: the pending join leaves",
     ],
@@ -659,8 +670,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares fleet join request offer.json --out request.json       # on the new vessel, a place already founded",
       "lares fleet join answer request.json --sync-url ws://hearth:7777/ws --out answer.json",
       "lares fleet join land answer.json                            # on the new vessel",
+      "lares fleet join offer --face 1 --out offer.json             # the root holder's second face takes the vessel",
     ],
-    flags: ["--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at"],
+    flags: [
+      "--face N          which of the root holder's faces the join serves (default 0, the founding face); offer and answer name the same one",
+      "--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at",
+      "--doc-url URL     the document the new vessel's dial asks this hearth for (an automerge: url); the answer carries it beside the gate pin",
+    ],
     next: ["lares vessel stand --with-web"],
   },
 

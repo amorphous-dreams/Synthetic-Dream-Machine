@@ -62,9 +62,8 @@ export function larariumDataHome(): string {
 /**
  * The GUEST mempalace's PARENT store dir — the upstream-default `~/.mempalace`.
  *
- * The content-cap-home ruling that once made this the memory sensorium's `content` fiber was RETIRED:
- * the lararium OWNS its content plane ({@link memorySensoriumContentDir}), and this store demoted to a
- * GUEST — a comparator to measure against, and the source of a deliberate one-way import Act. Never a
+ * This is no fiber of the memory sensorium: the lararium OWNS its content plane
+ * ({@link memorySensoriumContentDir}), and this store stands as a GUEST — a comparator to measure against, and the source of a deliberate one-way import Act. Never a
  * runtime binding, and never written by the boot (the comparator ruling). The `MEMPALACE_PALACE_PATH`
  * override — upstream's OWN relocation lever — is applied by the CALLERS (it relocates the chroma dir,
  * not this parent), so this stays the pure default both agree on.

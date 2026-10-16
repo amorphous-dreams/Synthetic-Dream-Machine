@@ -10,11 +10,9 @@ import { describe, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
   buildDeviceDelegation,
-  buildAuthResponse,
   DEFAULT_JOIN_POLICY,
   signCabalInvite,
   signHandleCard,
-  verifyAuthProof,
   verifyDeviceDelegation,
   verifyHandleCard,
   mintHandleInception,
@@ -33,7 +31,6 @@ type AuditRow = {
 const auditRows: AuditRow[] = [];
 const opSeed = new Uint8Array(32).fill(31);
 const deviceSeed = new Uint8Array(32).fill(32);
-const peerSeed = new Uint8Array(32).fill(33);
 const realm = "a".repeat(64);
 const joiner = "b".repeat(64);
 const dials: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alpha: 0.5 };
@@ -72,35 +69,6 @@ describe("P1 authority relations — characterization witness", () => {
     expect(withEpoch.ok).toBe(true);
     expect(staleWithEpoch).toMatchObject({ ok: false });
     expect(omittedEpoch).toMatchObject({ ok: true });
-  });
-
-  test("records daemon PoP: the gate's single-use nonce is its only freshness", async () => {
-    const peerPubKey = await pubOf(peerSeed);
-    const challenge = {
-      nonce: "ab12cd",
-      gatePubKey: "00".repeat(32),
-      peerPubKey,
-      aud: "lar:///ha.ka.ba/bags/daemon",
-    };
-    const proof = await buildAuthResponse({
-      ...challenge,
-      contactCard: "audit-card",
-      leafNonce: "ef".repeat(32),
-      sign: signWith(peerSeed),
-    });
-    const fresh  = await verifyAuthProof({ ...challenge, sig: proof.sig });
-    const replay = await verifyAuthProof({ ...challenge, nonce: "cd34ef", sig: proof.sig });
-    auditRows.push({
-      relation: "daemon-proof-of-possession",
-      inputs: { nonce: challenge.nonce, audience: challenge.aud },
-      outcome: {
-        fresh:  fresh.ok,
-        replay: replay.ok,
-        seam: "no clock on the wire; a proof binds the gate's nonce alone",
-      },
-    });
-    expect(fresh).toMatchObject({ ok: true });
-    expect(replay).toMatchObject({ ok: false });
   });
 
   test("records handle recognition from a self-certifying causal act", async () => {
@@ -156,10 +124,9 @@ describe("P1 authority relations — characterization witness", () => {
   });
 
   test("keeps the audit rows machine-readable and relation-scoped", () => {
-    expect(auditRows).toHaveLength(4);
+    expect(auditRows).toHaveLength(3);
     expect(auditRows.map((row) => row.relation)).toEqual([
       "device-face-delegation",
-      "daemon-proof-of-possession",
       "handle-recognition",
       "cabal-vouch-admission",
     ]);

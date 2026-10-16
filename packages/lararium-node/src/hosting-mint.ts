@@ -17,6 +17,8 @@
  * carries no Nexus (the socket's grant names it), no nonce and no key; the blinded elements are unlinkable to the
  * tokens they become, which is why no who-invited-whom is computable at redemption.
  *
+ * No caller yet; it stands for the walker route, which ships shut by name until a live grant reader opens it.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
@@ -24,14 +26,14 @@ import {
   allowance, mintMarker, batchDigest, evaluateWalkerBatch, grantVerifiesAt,
   HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND,
 } from "@lararium/mesh";
-import type { DaemonAuthGate } from "./daemon-auth-gate.js";
+import type { WalkerSessionDoor } from "./hosting-carry.js";
 import { readHostingState, liveEpochs, spendMintMarker } from "./hosting-store.js";
 
 const POINT_RE = /^[0-9a-f]{64}$/;
 
 /** Serve walkers' blind mints on `gate`'s authenticated sessions. Returns the unsubscribe. */
-export function serveHostingMint(
-  gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
+export function serveHostingMint<S>(
+  gate: WalkerSessionDoor<S>,
   deps: { readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null> },
 ): () => void {
   return gate.onSession((socket, msg) => {

@@ -923,8 +923,8 @@ export class KeyhiveProvider implements CapabilityProvider {
    * PACED by the homeostatic depth SERVO (#13 — the boot-CPU spike): the replay ingests in chunks whose
    * depth SERVOS toward a per-chunk latency set-point (gate-tuning `adaptGate`, negative feedback) —
    * smaller batches when a chunk runs slow, larger when there is headroom — with an event-loop yield
-   * between them. A large N=1 keyhive replay no longer pegs the loop synchronously (243% → the
-   * vessel-ready → UDS signal breathes between chunks), and the pace ADAPTS to the load instead of a
+   * between them. A large N=1 keyhive replay never pegs the loop synchronously (the vessel-ready →
+   * UDS signal breathes between chunks), and the pace ADAPTS to the load instead of a
    * fixed guess. Keyhive resolves causality internally — order across ingest calls does not matter —
    * so chunking is byte-equivalent to one batch, only kinder to the loop.
    */

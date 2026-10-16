@@ -21,7 +21,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { randomBytes } from "crypto";
 import {
-  pluginCidsFromIslandBlobs, authorizeAddress, openPrivateBody, readContentKey,
+  bootSetPluginCids, authorizeAddress, openPrivateBody, readContentKey,
   type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey,
 } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
@@ -63,7 +63,7 @@ export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir: string = REP
   mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
   return {
     storageDir,
-    pluginCids: pluginCidsFromIslandBlobs(genesisDoc.blobs),
+    pluginCids: bootSetPluginCids(genesisDoc.blobs),
     cleanup: () => rmSync(storageDir, { recursive: true, force: true }),
   };
 }

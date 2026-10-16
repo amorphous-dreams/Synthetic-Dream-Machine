@@ -13,122 +13,49 @@
  *       adds NO adapter to the repo — the unconfigured boot opens zero client socket, zero behaviour change;
  *   (4) `stop()` disconnects the mounted adapter cleanly (no leaked socket).
  *
- * Every crypto piece stays REAL: real DaemonAuthGate, real V3 Ed25519 proof-of-possession bound to the
- * DIALED gate, real Automerge CRDT sync. Two sockets stay two — this rides the Automerge `/ws` (Socket A).
+ * Every crypto piece stays REAL: a real sovereign gate (`faceGateServer` over a sealed session table), the Noise IK
+ * flight and presented admit bound to the DIALED gate's pin, real Automerge CRDT sync. Two sockets stay two — this
+ * rides the Automerge `/ws` (Socket A).
  *
  * Gate: lar:///ha.ka.ba/lararium/node/nexus-client-dial
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import { createServer, type Server } from "node:http";
-import { generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { WebSocketServer } from "ws";
-import { ed25519SignerFromSeed } from "@lararium/mesh";
-import type { LeafIdentity } from "@lararium/mesh";
-import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
-import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { restEvery, restingRepo } from "./resting-repo.js";
-import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
-import { armGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
-/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
-const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
+import { hearthPinIndex } from "../../lararium-mesh/src/admit-gate-pin.js";
+import { presenter, AUDIENCE } from "../../lararium-mesh/tests/face-gate-fixture.js";
+import { restEvery } from "./resting-repo.js";
+import { realDeadlines } from "./oracle-floor-rig.js";
+import { standGatedNode, type GatedNode } from "./gated-node-rig.js";
 import { startNexusClientDial, maybeStartNexusClientDial } from "../src/nexus-client-dial.js";
 
-const AUD = "lar:///ha.ka.ba/bags/daemon";
 const GREETING_KEY = "lar:///ha.ka.ba/bags/crossroads/greeting";
 const REPLY_KEY    = "lar:///ha.ka.ba/bags/personal/reply";
 type GreetDoc = { tiddlers: Record<string, { text: string }> };
 
-/** An Ed25519 keypair — raw 32-byte seed + verifying-key hex (the node-vessel-identity pattern). */
-const SEED_OF = new Map<string, Uint8Array>();
-function genKey(): { seed: Uint8Array; pub: string } {
-  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-  const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
-  const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
-  SEED_OF.set(pub, seed);
-  return { seed, pub };
-}
-/** A gate's own key — the verifying key it advertises and the signer of its verdicts. */
-const gateKeyOf = (pub: string): GateKey => ({ pubKey: pub, sign: ed25519SignerFromSeed(SEED_OF.get(pub)!) });
-
-/** A node's leaf identity — a real Ed25519 signer + a ContactCard carrying its own verifying key. */
-function makeNodeIdentity(): { identity: LeafIdentity; seed: Uint8Array; pub: string } {
-  const { seed, pub } = genKey();
-  return { seed, pub, identity: { contactCard: JSON.stringify({ peerPubKey: pub }), peerPubKey: pub, sign: ed25519SignerFromSeed(seed) } };
+/** What a production dial is handed to reach `far`: the pair index holding its sovereign pin, and a presenter its gate sorts. */
+async function dialInputs(far: GatedNode, label: string) {
+  const pins = hearthPinIndex();
+  pins.put("hearth-far", far.world.pin);
+  const p = await presenter(far.world, label);
+  return {
+    pins, hearth: "hearth-far", nexus: far.world.pin.nexus, aud: AUDIENCE, deadlines: realDeadlines(),
+    presentation: { certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history },
+  };
 }
 
-/** The real shore a vessel's gate arms with: real V3 proof check, then the admitted-set capability decision. */
-/** Mirrors production's ListeningWSServerAdapter — ready from listen, not from the first client. */
-class ReadyWSServerAdapter extends NodeWSServerAdapter {
-  override isReady(): boolean { return true; }
-  override whenReady(): Promise<void> { return Promise.resolve(); }
-}
-
-interface Vessel {
-  gate: DaemonAuthGate;
-  repo: Repo;
-  port: number;
-  close: () => Promise<void>;
-}
-
-/** Stand a SERVER-ONLY node vessel: its own http+wss behind a real DaemonAuthGate, NodeFS storage, a
- *  gate-ring sharePolicy. NO client — the dial mounts SEPARATELY via the production helper (the vessel flow). */
-function standServerVessel(opts: { storageDir: string; gatePubKey: string; admitted: ReadonlySet<string> }): Promise<Vessel> {
-  return new Promise((resolve, reject) => {
-    const http: Server = createServer();
-    const wss  = new WebSocketServer({ server: http });
-    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
-    const serverNetwork = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
-
-    const peerIdentifierMap = new Map<string, string>();
-    serverNetwork.on("peer-candidate", ({ peerId }: { peerId: string }) => {
-      queueMicrotask(() => {
-        const socket = (serverNetwork.sockets as Record<string, unknown>)[peerId];
-        if (!socket) return;
-        const identHex = gate.getIdentifierForSocket(socket as Parameters<typeof gate.getIdentifierForSocket>[0]);
-        if (identHex) peerIdentifierMap.set(peerId, identHex);
-      });
-    });
-
-    const repo = restingRepo(opts.storageDir, {
-      network: [serverNetwork],
-      // A WS peer (on the server socket) shares only once its socket carries an admitted identifier; a peer
-      // reached over the OUTBOUND client leg is not in the server sockets → shared with freely (production asymmetry).
-      sharePolicy: async (peerId) => {
-        const wsSocket = (serverNetwork.sockets as Record<string, unknown> | undefined)?.[peerId];
-        return wsSocket ? peerIdentifierMap.has(peerId) : true;
-      },
-    });
-
-    armGate(gate, { gate: gateKeyOf(opts.gatePubKey), aud: AUD, sort: admitProven, shore: provingShore(opts.gatePubKey, { admits: (key) => opts.admitted.has(key) }) });
-
-    http.listen(0, "127.0.0.1", () => {
-      const addr = http.address();
-      if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
-      resolve({
-        gate, repo, port: addr.port,
-        close: async () => {
-          await repo.rest();
-          await new Promise<void>((res) => wss.close(() => http.close(() => res())));
-        },
-      });
-    });
-  });
-}
-
-/** Resolve once the gate reports a crossed peer (the dial's socket is up), or reject after `ms`. Mounting
+/** Resolve once the gate seats a crossed peer (the dial's socket is up), or reject after `ms`. Mounting
  *  the dial post-construction means the repo's `whenReady()` has already resolved on the server adapter, so
  *  a `find()` fired before the crossing completes races to "unavailable"; the operator's pull rides AFTER the
  *  socket is up — this waits for that, the faithful order. */
-function awaitPeer(gate: DaemonAuthGate, ms: number): Promise<void> {
+function awaitPeer(node: GatedNode, ms: number): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const started = Date.now();
     const tick = (): void => {
-      if (gate.clients.size >= 1) { resolve(); return; }
+      if (node.seated() >= 1) { resolve(); return; }
       if (Date.now() - started > ms) { reject(new Error("timeout: dial never crossed the gate")); return; }
       setTimeout(tick, 25);
     };
@@ -191,37 +118,30 @@ function awaitKey(handle: { doc: () => GreetDoc | undefined; on: (e: "change", c
 
 describe("B1 — the production client dial-out mounts onto a live Repo and crosses the gate", () => {
   const dirs: string[] = [];
-  let vessels: Vessel[] = [];
+  let nodes: GatedNode[] = [];
   const dials: Array<{ stop: () => void }> = [];
 
   function mkStorageDir(): string { const d = mkdtempSync(join(tmpdir(), "lar-nexusdial-")); dirs.push(d); return d; }
 
   afterEach(async () => {
     for (const d of dials.splice(0)) { try { d.stop(); } catch { /* already down */ } }
-    for (const v of vessels) { try { await v.close(); } catch { /* already down */ } }
-    vessels = [];
+    for (const n of nodes) { try { await n.close(); } catch { /* already down */ } }
+    nodes = [];
     // Every vessel's Repo rests (its adapter closed) before its directory leaves: no save of its can land after.
     await restEvery();
     for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
   });
 
   test("node A mounts the dial onto its LIVE repo, syncs B's doc, and a change flows back (both ways)", async () => {
-    const a = makeNodeIdentity();
-    const bGate = genKey().pub;
-    const aGate = genKey().pub;
-
-    // Vessel B — the DIALED node; its gate admits A's key.
-    const nodeB = await standServerVessel({ storageDir: mkStorageDir(), gatePubKey: bGate, admitted: new Set([a.pub]) });
-    vessels.push(nodeB);
-
+    // Vessel B — the DIALED node; its gate sorts the face A presents.
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });
+    nodes.push(nodeB);
     // Vessel A — a full server vessel, THEN the production dial mounts onto its already-running repo.
-    const nodeA = await standServerVessel({ storageDir: mkStorageDir(), gatePubKey: aGate, admitted: new Set() });
-    vessels.push(nodeA);
+    const nodeA = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic" });
+    nodes.push(nodeA);
 
     const adaptersBefore = nodeA.repo.networkSubsystem.adapters.length;
-    const dial = startNexusClientDial({
-      repo: nodeA.repo, syncUrl: `ws://127.0.0.1:${nodeB.port}`, gatePubKey: bGate, identity: a.identity, aud: AUD,
-    });
+    const dial = startNexusClientDial({ repo: nodeA.repo, syncUrl: nodeB.url, ...(await dialInputs(nodeB, "node a")) });
     dials.push(dial);
     // The mount added exactly one adapter (Socket A) to the live repo.
     expect(nodeA.repo.networkSubsystem.adapters.length).toBe(adaptersBefore + 1);
@@ -231,7 +151,7 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
     docB.change((d) => { d.tiddlers[GREETING_KEY] = { text: "the DreamNet breathes" }; });
 
     // Wait for the dial to CROSS the gate before pulling — the operator's find rides an up socket.
-    await awaitPeer(nodeB.gate, 6_000);
+    await awaitPeer(nodeB, 6_000);
     // ...and the DIALING repo holds B as a peer, by the dial's own event: the near half of the same crossing.
     await awaitRepoPeer(nodeA.repo, nodeB.repo.peerId, 6_000);
 
@@ -244,7 +164,7 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
     // while it is still arriving. `findWhenReady` observes that transient blink and waits out the true
     // `ready` instead (see its doc-comment for the mechanism + the two refuted cures it supersedes).
     const foundOnA = await findWhenReady<GreetDoc>(nodeA.repo, docB.url as AutomergeUrl, 8_000,
-      () => `A's peers ${JSON.stringify(nodeA.repo.peers)}, B's admitted sockets ${nodeB.gate.clients.size}, dial anergized ${String(dial.adapter.anergized)}`);
+      () => `A's peers ${JSON.stringify(nodeA.repo.peers)}, B's seated sessions ${nodeB.seated()}, dial anergized ${String(dial.adapter.anergized)}`);
     await awaitKey(foundOnA, GREETING_KEY, 5_000, "node A never synced node B's doc");
     expect(foundOnA.doc()?.tiddlers?.[GREETING_KEY]?.text).toBe("the DreamNet breathes");
 
@@ -253,7 +173,7 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
     await awaitKey(docB, REPLY_KEY, 5_000, "node B never saw node A's change");
     expect(docB.doc()?.tiddlers?.[REPLY_KEY]?.text).toBe("node A answers");
 
-    expect(nodeB.gate.clients.size).toBe(1);       // the dialing node crossed the gate as a real peer
+    expect(nodeB.seated()).toBe(1);                // the dialing node crossed the gate as a real peer
     expect(dial.adapter.anergized).toBeNull();     // admitted → never anergized
 
     // stop() disconnects cleanly — no leaked socket past teardown.
@@ -261,34 +181,40 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
   }, 12_000);
 
   test("INERT: no sync URL → maybeStart returns null and adds NO adapter (the unconfigured boot is untouched)", async () => {
-    const a = makeNodeIdentity();
-    const node = await standServerVessel({ storageDir: mkStorageDir(), gatePubKey: genKey().pub, admitted: new Set() });
-    vessels.push(node);
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });
+    nodes.push(nodeB);
+    const node = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic" });
+    nodes.push(node);
+    const inputs = await dialInputs(nodeB, "node a");
 
     const before = node.repo.networkSubsystem.adapters.length;
     // The default path: no join config rides the boot.
-    const dial = maybeStartNexusClientDial({ repo: node.repo, identity: a.identity, syncUrl: null, gatePubKey: null });
+    const dial = maybeStartNexusClientDial({ repo: node.repo, ...inputs, syncUrl: null });
     expect(dial).toBeNull();
     expect(node.repo.networkSubsystem.adapters.length).toBe(before);   // zero socket, zero change
 
-    // Fail-closed: a sync URL WITHOUT a gate key cannot bind the anti-relay proof → still inert (no gate-less dial).
-    const dialNoGate = maybeStartNexusClientDial({ repo: node.repo, identity: a.identity, syncUrl: `ws://127.0.0.1:${node.port}`, gatePubKey: null });
-    expect(dialNoGate).toBeNull();
+    // Fail-closed: a sync URL with NO pin held for the hearth and Nexus cannot reach any gate → still inert.
+    const said: string[] = [];
+    const dialNoPin = maybeStartNexusClientDial({ repo: node.repo, ...inputs, pins: hearthPinIndex(), syncUrl: nodeB.url, onLog: (l) => said.push(l) });
+    expect(dialNoPin).toBeNull();
+    expect(said.some((l) => l.includes("pin-absent"))).toBe(true);
+    // ...and a sync URL with nothing to present is inert too, and says so by name.
+    const dialNoFace = maybeStartNexusClientDial({ repo: node.repo, ...inputs, presentation: null, syncUrl: nodeB.url, onLog: (l) => said.push(l) });
+    expect(dialNoFace).toBeNull();
+    expect(said.some((l) => l.includes("presentation-absent"))).toBe(true);
     expect(node.repo.networkSubsystem.adapters.length).toBe(before);   // still no adapter mounted
   });
 
-  test("CONFIGURED: a sync URL + a gate key → maybeStart mounts exactly one adapter (the bite of the inert gate)", async () => {
+  test("CONFIGURED: a sync URL + a held pin + a presentation → maybeStart mounts exactly one adapter (the bite of the inert gate)", async () => {
     // The matched positive control: flip the inputs the INERT test withholds, the outcome flips — proving the
     // null return hangs on the missing config, not on incidental failure. (Points at B's port; stop() before sync.)
-    const a = makeNodeIdentity();
-    const bGate = genKey().pub;
-    const nodeB = await standServerVessel({ storageDir: mkStorageDir(), gatePubKey: bGate, admitted: new Set([a.pub]) });
-    vessels.push(nodeB);
-    const node = await standServerVessel({ storageDir: mkStorageDir(), gatePubKey: genKey().pub, admitted: new Set() });
-    vessels.push(node);
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });
+    nodes.push(nodeB);
+    const node = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic" });
+    nodes.push(node);
 
     const before = node.repo.networkSubsystem.adapters.length;
-    const dial = maybeStartNexusClientDial({ repo: node.repo, identity: a.identity, syncUrl: `ws://127.0.0.1:${nodeB.port}`, gatePubKey: bGate });
+    const dial = maybeStartNexusClientDial({ repo: node.repo, ...(await dialInputs(nodeB, "node a")), syncUrl: nodeB.url });
     expect(dial).not.toBeNull();
     expect(node.repo.networkSubsystem.adapters.length).toBe(before + 1);
     dial!.stop();

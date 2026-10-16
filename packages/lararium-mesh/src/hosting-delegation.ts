@@ -25,10 +25,10 @@
  * public half stays OFF the act: a serving row holds it, and a seized walker's grant proves "this hearth hosts G"
  * to no reader of the hosting doc (`walker-grant`).
  *
- * WHAT WAITS FOR THE LIVE CUT. The leaf-signed act in `hosting.ts` still stands for its live callers (the issuer, the
- * reader, `hosting-store` and the socket sorter); this module names no caller yet and stays out of the barrel until
- * the one signed-byte cut moves them together. Whether a seat sits seated in the Nexus's charter rides the reader's
- * `seatedKeys`, which that cut reads off the charter.
+ * WHO CALLS IT. `walker-grant` alone; no live route calls it yet, and it stands for the walker route's signed-byte
+ * act, out of the package barrel. The leaf-signed act in `hosting.ts` serves the live callers (the issuer, the
+ * reader, `hosting-store` and the socket sorter). Whether a seat sits seated in the Nexus's charter rides the
+ * reader's `seatedKeys`, which its caller reads off the charter.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */

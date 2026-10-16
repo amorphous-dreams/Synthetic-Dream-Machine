@@ -8,9 +8,9 @@
  * memory store the node writes into "from the inside" (an AI's authored memories about that stream,
  * given a structured home).
  *
- * THE IN-TREE MEMPALACE RETIRES THE BINDING, NEVER THE COEXISTENCE (operator ruling, 2026-07-29).
+ * THE IN-TREE MEMPALACE HOLDS THE BINDING, NEVER EXCLUDES THE COEXISTENCE (operator ruling, 2026-07-29).
  * Read the scope exactly, because the two readings differ by a whole capability:
- *   · RETIRED — every DEPENDENCY on an external `~/.mempalace`. The sovereign organs bind only in-tree,
+ *   · NONE — no DEPENDENCY on an external `~/.mempalace`. The sovereign organs bind only in-tree,
  *     so nothing silently falls back onto a guest store and the content-cap-home / never-bound /
  *     confused-deputy hazards dissolve at the root.
  *   · KEPT — the capability to ACCEPT a guest install that already stands. `~/.mempalace` holds its own
@@ -296,8 +296,8 @@ function seedCaptureSensorium(step: string, dir: string, opts: Omit<BuildSensori
  * `<memory>/content` (the RUN reads its OWN content). The `mempalace` cap adds a per-sensorium curated
  * memory store at `<memory>/mempalace` — the structured home for the memories an AI authors about this
  * stream (the "flat-file memories," given entity-graph / hallways structure). Each sensorium composes
- * its own (memory here; a future twain/kumulipo its own), which RETIRES the external guest `~/.mempalace`
- * and supersedes the one-mempalace / never-bound ruling — an in-tree sovereign store binds to nothing
+ * its own (memory here; a future twain/kumulipo its own), so no organ binds the external guest `~/.mempalace`
+ * — an in-tree sovereign store binds to nothing
  * external and can never silently fall back to a guest. bands rides as the base-cap membership-address
  * grain (NO dir); coupling stays empty (memory glues no sub-sensoriums).
  */
@@ -318,8 +318,8 @@ export function materializeMemorySensorium(): PalaceSetupStep {
       // the memories an AI authors about this stream (today scattered as flat files) given a structured
       // home (entity-graph · hallways · KG). IN-TREE at <sensorium>/mempalace, sovereign-owned, one per
       // sensorium — memory keeps its curated chat memories here; a twain/kumulipo sensorium keeps its own.
-      // Adopting this in-tree mempalace RETIRES the external guest ~/.mempalace install entirely (no
-      // external store → the content-cap-home / never-bound / confused-deputy hazards all dissolve).
+      // This in-tree mempalace binds no external guest ~/.mempalace install (no external store → the
+      // content-cap-home / never-bound / confused-deputy hazards all dissolve).
       mempalace:   { absDir: join(memorySensoriumDir(), "mempalace"), engine: "mempalace" },
     },
     // BASE cap — the FFZ membership-address grain (li-side stamp metadata). No bytes stored.

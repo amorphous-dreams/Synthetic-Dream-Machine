@@ -57,7 +57,7 @@ export const COSHEAF_PLANES = ["coupling"] as const;
 // Each li-plane's OWN stalk carries a native pseudometric — the metric by which two assignments of THAT
 // plane compare (and by which a restriction's per-unit salience is derived). content = cosine (embedding
 // direction), structure = a near-linear tree pseudometric (DECKARD characteristic-vector embedding, the
-// AST grain — no longer the cubic tree-edit that timed out past ~200 nodes), form = Jaccard (the mined
+// AST grain — never a cubic tree-edit, which times out past ~200 nodes), form = Jaccard (the mined
 // subpattern SET). All three are DISAGREEMENT SIGNALS (caution b), never distortion bounds — they may obey
 // the triangle inequality (angular cosine / Ruzicka do), yet stay NON-Lipschitz (a one-token edit re-roots
 // a tree), so the sensorium reads the wave, never a Lipschitz promise about the water.

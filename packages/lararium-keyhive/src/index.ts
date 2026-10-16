@@ -1,6 +1,6 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
-import type { DeviceDelegationTiddler, PersonaKelEvent, GroupSecretSeal } from "@lararium/mesh";
+import type { DeviceDelegationTiddler, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
 
 export type {
   CapabilityProvider, CapabilityProviderInitOpts,
@@ -189,7 +189,13 @@ export interface DeviceAdmitPayload {
  * browser's `#admit=` stash carries it across the page's own reload alone.
  */
 export type CarriedAdmitPayload = DeviceAdmitPayload & {
+  /** The key that signs the hearth gate's verdict: the carried pin's `signingKey`, kept as the one key the anchor and the hosting address read. */
   readonly hearthGatePubKey?: string;
+  /** The hearth's FULL sovereign sync pin the root-signed answer carried (tier, Nexus, route, transport and signing keys): what a dial files and knocks with. */
+  readonly hearthGatePin?: GateBundlePin;
+  /** The hearth's FLOOR pins at that Nexus, which the root-signed answer carried (house ruling "The admit's gate pin", carrier (b)):
+   *  what the oracle read files under the same hearth, before any crossing. */
+  readonly hearthFloorPins?: readonly GateBundlePin[];
   /** The hearth's base-canon documents the joinee mounts, keyed by canon bag URI (`bags/lares`,
    *  `bags/lararium`) and valued by document url. The joinee's gate widens by exactly these documents when it
    *  dials this hearth; the hearth's oracle plane never crosses to it. */
