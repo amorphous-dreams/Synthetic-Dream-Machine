@@ -501,7 +501,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `V4` The guardian recovery door, the request check, the veto, succession. Operator (#/open). Off this road unless ruled.
 
 !!! THE BROWSER, THE PHONES, TWO HEARTHS
-* `B1` Browser custody: the device seed and the Keyhive Archives rest in the clear in the keystore (`browser-keyhive-archive.ts`); a passphrase slot wraps both, a passkey slot joins after its derivation gets measured and never alone, and the clear-password act asks through the confirm door. B.
+* `B1` Browser custody. The custody API stands specified in `browser-custody.ts`: a passphrase or paper (2-of-3) slot binds the slot tree, the device seed and every Keyhive Archive move into sealed carriers through the mesh's one sealed writer, a wrong route refuses and changes no byte, a locked keystore refuses `sealed-locked` before any mint, and the clear-password act asks through the confirm door and answers only to a literal yes. Owed: the boot unlock and `tm-clear-password` wired in the web boot and `open-browser-vessel.ts`, which also must release its vessel lock on a throw so a `sealed-locked` boot can retry in the same page; the persona roots, which still rest in the clear outside the tree, sealed under it, with the mint refusing until a slot binds (#/rulings); the browser's vessel-key rotation; and the passkey slot, after its derivation gets measured (`B3`) and never alone. B.
 * `B2` Rung 3: two tabs, two faces, one holder. O1.
 * `B3` Device measures owed on the tablet and both phones: owner-kill, the one-tab lock fallback, long background, the passkey derivation, eviction over days (`tools/capability-probe/`). Operator's hands. B.
 * `B4` QR pairing: the camera road stands unwired, and no decoder dependency or production decode stands. B.
@@ -651,7 +651,7 @@ Each step names the commits that hold it, as pointers into git.
 # ''Owed'': guardian recovery request, veto and succession after the operator rules them; the remaining provisional guards and sibling proof.
 
 !!! B ~ the browser rungs and the leaves
-# Browser custody, after the seal's Keyhive step.
+# ''Built'': the browser custody API, its slot tree, refusal and reopen (`browser-custody.ts`). Its boot caller, the persona roots' seal and the passkey slot stay owed (`B1`).
 # The owed device measures, by hand.
 # The phone's admission walk, after household HTTPS and the join door.
 # Rung 4, after X's witness.
@@ -780,6 +780,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YY8NekfaP9-ssmnJ5bLm_Q1MMbbJTPRoc7sN6mHXFWk
+<<^ code="&#x0003;">>ni:///sha-256;_UfTGa8kG8wDhbDklOA3T3tshc7oVAT6KgyPEwlmf6c
 
 <<^ code="&#x0004;" -> to="?">>
