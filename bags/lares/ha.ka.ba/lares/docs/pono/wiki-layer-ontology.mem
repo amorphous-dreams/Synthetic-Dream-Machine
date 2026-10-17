@@ -120,7 +120,7 @@ The read-face projects only the rows named by the supplied seed, as a history-fr
 | ''WHO board'' | derived from the Nexus key | one board per Nexus | the Nexus relation |
 | ''Public answer'' | porch, carried by a herm | the Nexus charter and floor CID | Kahu steward signs; Kahu Plane / R-WIRE build owed |
 
-`lares` and `lararium` remain system bag names and recipe members. Their per-vessel document pointers still ride `@oracle`; moving them to bootstrap seeds and each vessel's catalog remains owed on Kahu Plane. A leaf learns the admitted canon documents through its admit. A face's planes and the daemon URL resolve from that vessel's bootstrap alone.
+`lares` and `lararium` remain system bag names and recipe members. Only each Nexus's Kahu cabal writes them live. Every other wiki mounts them read-only through `@oracle`, as the floor CID its Nexus last released (operator ruling, 2026-10-16; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, row `W26`). The release rides the crossroads board as the Nexus's public answer. A vessel moves its floor pin only on accepting a newer signed release, face by face. Their per-vessel document pointers still ride `@oracle` until that build lands; moving them to bootstrap seeds and each vessel's catalog remains owed on Kahu Plane. A leaf learns the admitted canon documents through its admit. A face's planes and the daemon URL resolve from that vessel's bootstrap alone.
 
 The WHO board address derives from the Nexus key. LAW THE BUILD OWES: one public answer per Nexus names the floor CID; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape, and R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule, the crossroads address derivation, and retirement of `CREATE --plane oracle`.
 
@@ -343,6 +343,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;28xTq_rCLYyCMgnRJ3BnXnUMWMW80UiEuUIqu1_8YaY
+<<^ code="&#x0003;">>ni:///sha-256;f4GBFPlfrn804-Y3Wa6Ck7J5AMFmZtGnP2Oc-fJ42BM
 
 <<^ code="&#x0004;" -> to="?">>
