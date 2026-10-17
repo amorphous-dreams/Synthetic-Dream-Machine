@@ -1,0 +1,71 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/art-sigils/formal-analysis >> -->
+```toml meta
+uri-path = "ha.ka.ba/art-sigils/formal-analysis"
+file-path = "art-sigils-formal-analysis.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "inscription-first evidence-based reading of existing artworks"
+status = "draft"
+retain = true
+```
+
+<<~ ahu #/orientation>>
+! Art Sigils — Formal Analysis
+
+When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must be one complete standalone Inscription**: native single-line definition plus one invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. Produce a Folio only if the operator requests conversion or a later revision. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
+
+The exact canonical Inscription definition lives in art-sigils-procedures.mem. Include that native definition literally in the first source block (not merely a link or an instruction to import the meme). The source block excludes any critical essay and wrapper metadata from its character budget.
+<<~/ahu>>
+
+<<~ ahu #/discipline>>
+!! First look, then speak
+
+Before composing the first visible Inscription, inspect:
+* **What appears:** subject, visible forms, people, inscriptions, images inside images, crop, spatial levels, graphic apparatus, and likely worktype.
+* **How it reads:** focal hierarchy, first/second/later attention, figure-ground, scale, line, value, chroma, rhythm, edges, negative space and the possibility of purposeful non-hierarchy.
+* **What acts on what:** composition differs from relation; a correction, juxtaposition or contradiction needs observable evidence, not a speculative maker story.
+* **Where depiction begins and ends:** distinguish addressed viewers, studio makers, source photographers, nested pictures, and depicted participants.
+* **How media appear:** report simulated paper, graphite-like lines or apparent gouache as appearances; medium, physical implement, author and process remain unproven without external evidence.
+* **What remains unresolved:** question uncertain identities, incorrect readings, and apparent survey precision. A landscape panorama alone does not authorize a measured route map.
+
+The analyst may leave weakly evidenced dimensions delegated or broad rather than invent them. Favor observable claims within the Inscription; save alternative interpretations and their evidence for prose.
+<<~/ahu>>
+
+<<~ ahu #/response>>
+!! Required turn shape
+
+**First:** a single compact native TW5 inscription in a fenced tiddlywiki block. Supply a descriptive `subject` and defensible `read`, plus explicit values where observations warrant them. The source includes the definition and call in <1,025 characters.
+
+**Then:** natural-language formal analysis at the warranted depth, generally tracing:
+1. Direct observation: what and where, with nested image scopes.
+2. Formal composition: focal priorities, groups, space, value, edges, material behavior.
+3. Pictorial relations: comparison, correction, influence, narrative or deliberate absence.
+4. Plausible meaning and alternate reads: what supports or weakens each reading.
+5. Technique and attribution limits: avoid invented media, makers, intentions or precise maps.
+6. Constructive critique: identified artistic objective, concrete strengths/tensions and revisable alternatives.
+7. Outstanding uncertainties and candidate further questions.
+
+The narrative analysis may revise or challenge its own opening Inscription; if that materially changes the reading, explicitly offer a corrected Inscription rather than defending the first guess reflexively. Observed features, interpretations and production facts require distinct evidence standards.
+
+**Optional later:** translate the prose investigation into a Folio using extended parameter vocabulary plus modular studies, counterpoints and facture when the operator requests it. Preserve dissent and uncertainty; do not automatically turn a critical hypothesis into fictional canon.
+<<~/ahu>>
+
+<<~ ahu #/counter-read>>
+!! Failure modes
+
+* **Prompt archaeology fantasy:** visible effects do not prove the model prompt, particular software or intentional original procedure.
+* **Attribution inflation:** style resemblance does not establish actual artists or sources.
+* **Iconographic overreach:** a bone-like outline does not identify a mythological giant.
+* **False physical evidence:** a rendered scumble may only simulate paint.
+* **Frame imputation:** a person addressed by the work does not automatically appear inside it; a hiker's view does not force a hiker into frame.
+* **Text artifact migration:** source URIs and credits should not become visible map labels unless evidence demands them.
+* **Texture collapse:** uniform speckle on sky, fabric, stone and paper signals a visual issue, not proof of a particular engine.
+* **Single-image overconfidence:** two or three image generations cannot validate universal comparative performance or causal effects of a new sigil.
+* **Output-before-observation confusion:** first *visible* source block follows actual scrutiny; it does not license immediate guessing.
+<<~/ahu>>
+
+<<~ ahu #/sources>>
+!! Methodological anchors
+
+Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
+<<~/ahu>>
