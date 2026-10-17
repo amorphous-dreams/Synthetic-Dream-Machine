@@ -15,10 +15,43 @@ retain = true
 The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1011 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
 
 ```tiddlywiki
-\procedure art-sigil(worktype:artwork subject read imagery:'follow subject and read' treatment:'suit the read' composition:'serve the read' relation:'where meaningful' depiction-scope:'follow worktype and imagery') <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 
 <<art-sigil worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`artists disagree on routes through a damaged yet passable mountain` imagery=`luminous relief panorama; vellum route correction; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers` composition=`dominant panorama above small studies` relation=`redrawn saddle contradicts painted pass; bone or machine?` depiction-scope=`board alone; figures inside studies; no credits or photos`>>
 ```
+<<~/ahu>>
+
+<<~ ahu #/literal-rendering>>
+!! Literal rendering — Inscription null test
+
+This ahu supplies a **hand-derived literal expansion** of the native TW5 single-line procedure. It serves as a test oracle, not a claim that this assistant ran TW5. Paste the procedure declaration and invocation together into a live TiddlyWiki5 v5.4.0+ instance; compare the rendered textual content, allowing for browser whitespace normalization and surrounding tiddler layout. Copy the characters inside the text block, not the enclosing code fences.
+
+!!! A. Explicit Example Zero call — expected output
+
+```text
+concept-art pinboard: shattered Olympos, Rift of Tempes, Phlegra. Read: artists disagree on routes through a damaged yet passable mountain. Imagery: luminous relief panorama; vellum route correction; charcoal relic; green refuge. Treatment: Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers. Composition: dominant panorama above small studies. Relation: redrawn saddle contradicts painted pass; bone or machine?. Depiction scope: board alone; figures inside studies; no credits or photos.
+```
+
+All eight arguments in the Example Zero call carry explicit values. TW5 should therefore never need a default for this case. The `<<...>>` tokens in the definition substitute their matching named call values in textual order; the procedure's period-and-space separators remain literal.
+
+!!! B. Delegated defaults — expected output
+
+```tiddlywiki
+<<art-sigil subject=`a distant coast` read=`the unseen seems near`>>
+```
+
+```text
+artwork: a distant coast. Read: the unseen seems near. Imagery: follow subject and read. Treatment: suit the read. Composition: serve the read. Relation: where meaningful. Depiction scope: follow worktype and imagery.
+```
+
+This second probe omits `worktype`, `imagery`, `treatment`, `composition`, `relation` and `depiction-scope`, making the colon/double-quote **declaration** defaults visible in the rendered result. The `=` plus backtick **invocation** values remain plain text, not required printed inscriptions.
+
+!!! C. Null-test boundaries
+
+* The Inscription budget counts definition, two newline separators and invocation only: **1013 characters**. This ahu lives outside that transmitted source.
+* Rendering checks literal substitution, parameter order, defaults, and punctuation; it does not test whether a text-to-image model follows the compositional direction.
+* Any deliberate backtick payload containing actual double-quote characters should render those characters verbatim. Avoid output-text quotations when testing Midjourney unless visible text belongs to the intended work.
+* A failed comparison could indicate TW5 version, definition scope, code-fence copying, unresolved procedure registration, or different whitespace normalization; do not immediately infer a semantic failure of the Art Sigil language.
 <<~/ahu>>
 
 <<~ ahu #/bounds>>
