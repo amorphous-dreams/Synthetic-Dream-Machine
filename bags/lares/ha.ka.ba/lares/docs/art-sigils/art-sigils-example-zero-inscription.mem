@@ -12,22 +12,23 @@ retain = true
 <<~ ahu #/inscription>>
 ! Art Sigils — Example Zero Inscription
 
-The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **999 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
+The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1011 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
 
 ```tiddlywiki
-\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art-sigil(worktype:artwork subject read imagery:'follow subject and read' treatment:'suit the read' composition:'serve the read' relation:'where meaningful' depiction-scope:'follow worktype and imagery') <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 
-<<art-sigil worktype:"concept-art pinboard" subject:"shattered Olympos, Rift of Tempes, Phlegra" read:"artists dispute a passable mountain route" imagery:"luminous relief panorama; vellum route correction; charcoal relic; green refuge" treatment:"Heinrich Berann panorama; Bernhard Jenny shaded relief; Luka Rejec exploratory mythpunk; Piranesi/Ian Miller only in dark Phlegra; distinct papers" composition:"dominant panorama, smaller pinned studies" relation:"saddle correction refutes painted pass; bone or machine?" depiction-scope:"board only; figures in studies; artist labels/photos unseen">>
+<<art-sigil worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`artists disagree on routes through a damaged yet passable mountain` imagery=`luminous relief panorama; vellum route correction; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers` composition=`dominant panorama above small studies` relation=`redrawn saddle contradicts painted pass; bone or machine?` depiction-scope=`board alone; figures inside studies; no credits or photos`>>
 ```
 <<~/ahu>>
 
 <<~ ahu #/bounds>>
-!! Reading, artist basins and representational boundaries
+!! Reading, paired cartography and representational boundaries
 
-* Supplied `subject` and `read` hold the governing intention. The now-explicit `composition` keeps the large landscape and smaller pinned studies in view; `relation` preserves the route correction and the unresolved relic.
-* Five deliberately scoped *direct named artist references* guide different tasks: **Heinrich Berann** (panoramic landforms), **Bernhard Jenny** (shaded terrain relief), **Luka Rejec** (explorable mythpunk), **Piranesi** and **Ian Miller** (Phlegra's dark, ruinous and organic-mechanical studies only). These names cue overlapping visual traditions, not guaranteed model behavior or authorization to reproduce a particular work.
-* The broader register stays available in the Folio. Tom Patterson, Eduard Imhof and Erwin Raisz remain represented through relief and terrain vocabulary; Moebius through luminous open space; Doré through scale and value; Kilian Eng through localized anomalous color. No additional proper names enter this self-contained Inscription.
-* Explicit depiction-scope keeps the board as the outer image, human figures inside depicted studies, and artist credits and source photographs outside the picture. The individual artwork and style references must not become literal paper labels.
-* The real Olympus relief, aerial and embodied photographs remain external references in the companion Folio; an AI cannot retrieve those URLs without appropriate access or attached imagery.
-* The complete native TW5 procedure is included unchanged from `art-sigils-procedures.mem`. Its defaults remain available for future Inscription forms; the present call states the most consequential composition and relation choices directly.
+* The `subject` and `read` retain the governing question: which routes actually work across a damaged, still traversable mountain? The explicit `composition` preserves the dominant panorama over smaller studies, and `relation` preserves an observable route contradiction.
+* **Tom Patterson and Bernhard Jenny travel as a paired reference**, jointly grounding shaded topographic relief. Their names address the landform study specifically rather than the entire board's mood. **Luka Rejec** influences explorable mythpunk; **Piranesi and Ian Miller** apply only to dark Phlegra charcoal, not the luminous panorama.
+* The Folio retains Heinrich Berann's panorama, Imhof, Raisz, Moebius, Doré, Kilian Eng and the rest of the wider artist register. That expanded ancestry need not accompany a portable image-facing Inscription.
+* `depiction-scope` preserves the board as the outer image, with any small figures only inside embedded studies; source photographs and artist names never become instructions to print labels on the artwork.
+* New-style TW5 named-parameter calls use an equals sign with backtick-delimited values. This v5.4.0+ syntax lets values include apostrophes and double quotes without double-quote *delimiters*. The generic procedure's defaults use ordinary single-quoted strings or an unquoted token; TW5 handles literal substitution, while the receiving AI interprets the art direction.
+* Midjourney can treat double-quoted phrases as requests for visible text. Backticks remove the quoted-string delimiters from this transmitted source, but do not guarantee any model's interpretation or suppress actual quotation marks placed *inside* a value.
+* The real Olympus relief, aerial and embodied photographs remain external references in the companion Folio; supply them as actual images when the receiving model cannot retrieve URLs.
 <<~/ahu>>
