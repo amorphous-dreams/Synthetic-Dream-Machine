@@ -20,13 +20,13 @@ The art-house lexicons live in the semantic specification and **inside values**,
 <<~ ahu #/inscription>>
 !! Canonical Inscription procedure
 
-In portable use copy the next single line, followed by a blank line and one invocation.
+In portable use copy the next single line, followed by a blank line and one invocation. For image-facing calls use the new-style named parameter form (an equals sign followed by a backtick-delimited literal) instead of double-quoted argument values. The procedure declaration's defaults use single quotes or an unquoted token.
 
 ```tiddlywiki
-\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art-sigil(worktype:artwork subject read imagery:'follow subject and read' treatment:'suit the read' composition:'serve the read' relation:'where meaningful' depiction-scope:'follow worktype and imagery') <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 ```
 
-* The eight semantic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope. The named calls use TW5 colon syntax.
+* The eight semantic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope. The named calls use TW5 v5.4.0+ equals-sign named parameters and backtick-delimited values.
 * `subject` and `read` carry no explicit default; the authoring convention strongly prefers both. Other fields offer neutral or delegating defaults. Blank/silent values remain possible but the compact transclusion may then emit an empty label; do not mistake a blank for a creative instruction.
 * A default such as "serve the read" merely supplies words for TW5 to transclude; an AI or human interprets that artistic invitation. No assumption of dynamic evaluation or of guaranteed AI understanding follows.
 * The declared defaults invite artistic freedom: omitted imagery follows subject and read, treatment suits the read, composition serves the read, relation arises only where meaningful, and scope follows worktype and imagery. Explicit values take precedence.
@@ -39,9 +39,9 @@ In portable use copy the next single line, followed by a blank line and one invo
 A Folio may expand a nucleus parameter in ordinary art language without any additional module. Invoke a module only when separately scoped evidence, media or pictorial argument deserves its own repeatable clause. Do not let this first trio foreclose future operators or vocabularies.
 
 ```tiddlywiki
-\procedure art-study(question form proposal status:"unresolved") Study: <<question>>. Work: <<form>>. Proposal: <<proposal>>. Status: <<status>>.
-\procedure art-counterpoint(first second tension evidence:"visible in the images") Counterpoint: <<first>> meets <<second>>; <<tension>>. Evidence: <<evidence>>.
-\procedure art-facture(scope support medium handling:"let the medium's behavior remain visible") Facture in <<scope>>: <<medium>> on <<support>>; <<handling>>.
+\procedure art-study(question form proposal status:unresolved) Study: <<question>>. Work: <<form>>. Proposal: <<proposal>>. Status: <<status>>.
+\procedure art-counterpoint(first second tension evidence:'visible in the images') Counterpoint: <<first>> meets <<second>>; <<tension>>. Evidence: <<evidence>>.
+\procedure art-facture(scope support medium handling:'let the medium remain visible') Facture in <<scope>>: <<medium>> on <<support>>; <<handling>>.
 ```
 
 ''Study'' contributes an independently interpretable attempt at a design question. ''Counterpoint'' lets two works, forms, histories or hypotheses act on each other; a mere overlap does not establish disagreement. ''Facture'' gives one scope its own physical support and medium behavior rather than spreading identical texture across every surface.
@@ -53,10 +53,10 @@ The distinct worktype, subject, read, imagery, treatment, composition, relation 
 !! Generic use outside Example Zero
 
 ```tiddlywiki
-<<art-sigil worktype:"brush-and-ink illustration" subject:"an abandoned tidal station" read:"a quiet place suggesting recent hurried departure" composition:"low horizon, long still reflection" relation:"a single warm window questions the apparent emptiness">>
-<<art-study question:"How high did the water rise?" form:"graphite floodline study" proposal:"two alternate staining heights on the same masonry" status:"provisional">>
-<<art-counterpoint first:"distant calm water" second:"broken floating lanterns" tension:"the stillness carries evidence of recent violence" evidence:"opposed edges and reflections">>
-<<art-facture scope:"foreground study paper" support:"smooth Bristol" medium:"sepia ink with drybrush" handling:"limited feathering, decisive exposed highlights">>
+<<art-sigil worktype=`brush-and-ink illustration` subject=`an abandoned tidal station` read=`a quiet place suggesting recent hurried departure` composition=`low horizon, long still reflection` relation=`a single warm window questions the apparent emptiness`>>
+<<art-study question=`How high did the water rise?` form=`graphite floodline study` proposal=`two alternate staining heights on the same masonry` status=`provisional`>>
+<<art-counterpoint first=`distant calm water` second=`broken floating lanterns` tension=`the stillness carries evidence of recent violence` evidence=`opposed edges and reflections`>>
+<<art-facture scope=`foreground study paper` support=`smooth Bristol` medium=`sepia ink with drybrush` handling=`limited feathering, decisive exposed highlights`>>
 ```
 
 The source uses a changed subject, not one disguised inheritance of Olympos. Copy the generic procedures as native pragmas into a TW5 context with the calls available at transclusion time. `<<~ name ...>>` belongs to Lares house sigils, not a synonym for native `<<name ...>>` calls.
@@ -69,5 +69,5 @@ The source uses a changed subject, not one disguised inheritance of Olympos. Cop
 * https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html
 * https://tiddlywiki.com/static/Procedure%2520Definitions.html
 
-This document supplies documented source vocabulary; it does not claim live TW5 runtime certification. Any renderer-specific text handling, output length or model prompt rewrite policy requires independent validation.
+The source also follows https://tiddlywiki.com/static/Calls.html and https://tiddlywiki.com/static/Substituted%2520Attribute%2520Values.html for v5.4.0+ backtick-delimited named calls. This document supplies documented source vocabulary; it does not claim live TW5 runtime certification. Any renderer-specific text handling, output length or model prompt rewrite policy requires independent validation.
 <<~/ahu>>
