@@ -13,19 +13,31 @@ status = "draft"
 
 A complete art-direction *example* rather than a commissioned render, fixed geographic map, or independent source of Elyncian canon. Its illustrative assignment: an in-house concept-art board depicting exploratory **artworks about Olympos**, not a portrait of the people who make or view the board. The addressed audience may include cartographers and game artists. Artists, directors, critics, photographers, and viewers remain outside the depicted scene unless the specific work explicitly includes them. Tiny travelers can inhabit an **inner** illustration of the Marches.
 
-Outer subject: a physically assembled wall/pinboard of paintings, maps, charcoal drawings, overlays, working alternatives, media tests and revisions. Inner subjects: mountain panoramas, the Rift passage, the Phlegra wounds, artifacts, refuges, hazards, and travel studies. Some inner images challenge others through visible correction rather than decorative overlap.
+Outer subject: a physically assembled wall/pinboard of paintings, maps, charcoal drawings, overlays, working alternatives, media tests and revisions. Inner subjects: mountain panoramas, the Rift passage, the Phlegra wounds, artifacts, refuges, hazards, and travel studies. Some inner images challenge others through visible correction rather than decorative overlap. Real-world terrain and photographic references inform artistic study; they do not automatically supply objects, labels, photographers or visible pictures within the board.
 <<~/ahu>>
 
 <<~ ahu #/settled-world>>
 !! Preserved Elyncian bearings
 
 * Shattered Heights of Olympos, Rift of Tempes and Ash Plains of Phlegra occupy the Olympian Marches.
-* Marches connect Neo-Thracia and Illyria and approach the Aegean Nexus of New Delos.
+* Marches connect Neo-Thracia and Illyria. Wider Aegean-facing relationships remain outside the geographic claims of this particular image.
 * Millennia of Gigantomachy electromagnetic, magitech and sorcerous contamination precede roughly five centuries of maelstrom enclosure.
 * Following the maelstrom enclosure, the reopened corridor admits hazardous passage and pockets of survival.
 * Illyria's Necrospire impact lies in the Accursed Mountains, **not** on Olympos.
 * Exact route geometry, relic identity, settlements, supernatural mechanisms and boundaries remain open. The Gorgonne Diaspora counts among the established named regional powers, but no specific settlement or encounter follows automatically.
 * Olympos serves exploratory visual/terrain inquiry; Neo-Thracia's watershed retains precedence as the first approved game-worthy atlas project.
+<<~/ahu>>
+
+<<~ ahu #/olympus-visual-references>>
+!! Three external visual references — real Mount Olympus
+
+These URIs serve *non-depicted reference metadata*, not subject labels or commands to insert photographic prints into the board. Each resource supplies a different observational standpoint; none establishes the final geography of Elyncia's Olympos. An AI lacking URL retrieval needs the reference supplied as an attached image or a separately described observation. Preserve source credit and original license when reusing photographic material.
+
+* **RELIEF / terrain structure:** https://en-ca.topographic-map.com/map-ll8c18/Mount-Olympus/ — interactive elevation map of the real Greek summit area; inspect connected slopes and high relief. Its displayed elevation range covers a local map area, not a definitive full-massif survey. Role: coherent ridges, saddles and descent, not an imposed Elyncian route.
+* **AERIAL / geographic appearance:** https://commons.wikimedia.org/wiki/File:Greece_Mount-Olympus_Muses-Plateau_Mytikas-2918m_Christos-Kakkalos-Refuge_Aerial-ISymeonidis-3.jpg — aerial photograph of Mytikas and the Muses Plateau by Isymeoni (2020; CC BY-SA 4.0). Role: elevated rock-mass continuity, plateau exposure, aerial scale, not an obligation to paint the photograph itself.
+* **EMBODIED / ground-level appearance:** https://commons.wikimedia.org/wiki/File:Olympus_Mytikas_from_Skala.jpg — view from Skala toward Mytikas (2011; Wikimedia Commons, CC0 derivative). Role: human-accessible ridge perspective, immediate drops, close geological silhouette and the traveler's implied position; the photographer/hiker does not enter the frame automatically.
+
+Keep these three full URIs outside the image-facing sigil unless an explicitly capable host accepts references. The compact profile may name their *visual contributions* without carrying URLs or photographed place names.
 <<~/ahu>>
 
 <<~ ahu #/artist-register>>
@@ -53,7 +65,7 @@ Influences concern craft techniques and viewer effects; do not reproduce specifi
 
 Primary first read: a sweeping high, luminous relief-aware Olympos panorama. Second read: a damaged passage and dark Phlegra/relic studies with substantially heavier line and contrast. Later read: a route overlay visibly disputes the panorama, a charcoal alternative questions a giant-bone interpretation, and a modest refuge challenges the idea of universal uninhabitability.
 
-Difference of opinion need not become explanatory text. Two mismatched drainage traces, an erased crossing, a stained scrap with revised colour, and a partly concealed earlier silhouette can communicate revision through their juxtaposition. Papers overlap because the artists compare something specific.
+Difference of opinion need not become explanatory text. Two mismatched drainage traces, an erased crossing, a stained scrap with revised colour, and a partly concealed earlier silhouette can communicate revision through their juxtaposition. Papers overlap because the artists compare something specific. Ground-level travel studies may inherit the embodied reference's viewpoint without depicting its photographer, while elevated paintings and map overlays draw on the aerial and terrain references for different tasks.
 <<~/ahu>>
 
 <<~ ahu #/source-invocations>>
@@ -75,13 +87,13 @@ The following calls carry the example as modular black ink. A standalone authori
 <<art-reference artist:"Luka Rejec" contribution:"mythpunk exploration and strange archaeology" application:"traversable but hazardous route and unsettling discoveries">>
 <<art-reference artist:"Piranesi, Ian Miller, Kilian Eng, Gustave Doré" contribution:"ruinous immensity, localized corrosive linework, anomalous luminosity, sacred scale" application:"dark lower-right Phlegra and relic studies contrasted with pale high country">>
 
-<<art-view system:"partly plan-oblique painterly panorama" spatial-rule:"physiographically coherent ridges, ravines, passes, basins and drainage descending toward lower country" limits:"not a surveyed georeferenced route map; inset relation maps may use different spatial conventions">>
+<<art-view system:"partly plan-oblique painterly panorama" spatial-rule:"physiographically coherent ridges, ravines, passes, basins and drainage descending toward lower country; optional hiker-level inset shows a path from within" limits:"not a surveyed georeferenced route map; inset relation maps and embodied views may use different spatial conventions">>
 <<art-contrast left:"clear upper mountain painting" right:"dark lower-right war scar studies" relation:"maintain distinct regional style weather within a shared imagined landscape">>
 <<art-place element:"panorama" site:"large, dominant, off-centre sheet" action:"one translucent route overlay intersects a specific disputed valley">>
 <<art-place element:"relic sketch" site:"cropped at lower-right edge" action:"dark charcoal silhouette partly covers a lighter incompatible bone hypothesis">>
 <<art-place element:"small habitat vignette" site:"lower-left warm island" action:"a quiet spring and terraces contest total-wasteland interpretation">>
 
-<<art-study question:"Where does the Rift route actually pass?" form:"graphite over translucent vellum" proposal:"an amended crossing follows a gentler saddle rather than the panoramic artist's impossible escarpment" status:"unresolved; two visible route lines">>
+<<art-study question:"Where does the Rift route actually pass?" form:"graphite over translucent vellum with a tiny embodied ledge-view sketch" proposal:"an amended crossing follows a gentler saddle rather than the panoramic artist's impossible escarpment; ground-level exposure makes the crossing legible" status:"unresolved; two visible route lines; hiker's perspective without a visible hiker">>
 <<art-dispute study-a:"hero panorama" study-b:"transparent route overlay" disagreement:"route and drainage disagree at one saddle" visible-proof:"erased pass mark beneath the translucent corrected line">>
 <<art-study question:"What lies exposed beneath Phlegra's vitrified layers?" form:"cool-grey charcoal and white chalk" proposal:"bone-like form could indicate giant remains or distorted mechanical/rock strata" status:"two adjacent interpretations; identity withheld">>
 <<art-study question:"Which hazards have distinct signatures?" form:"three loose colour experiment scraps" proposal:"cyan static near charged ridges; amber ancient mechanism leakage; violet spatial discontinuities" status:"tentative visual vocabulary">>
@@ -102,16 +114,32 @@ The following calls carry the example as modular black ink. A standalone authori
 <<art-history layer:"roughly five centuries of maelstrom" evidence:"deposited ash, preserved pockets, changed surfaces, covered infrastructure" interpretation:"later action on a far older war-wounded region">>
 <<art-history layer:"reopened present" evidence:"travelers inside a route sketch, maintained crossing, protected refuge" interpretation:"danger remains; human persistence survives">>
 
-<<art-boundary scope:"Elyncian geography" preserve:"Heights of Olympos; Rift of Tempes; Ash Plains of Phlegra; Marches between Neo-Thracia and Illyria and near New Delos Aegean approaches; Necrospire belongs to Illyria's Accursed Mountains" undecided:"exact distances, watershed edits, borders, route geometry, settlement identities">>
+<<art-boundary scope:"Elyncian geography" preserve:"Heights of Olympos; Rift of Tempes; Ash Plains of Phlegra; Marches between Neo-Thracia and Illyria; Necrospire belongs to Illyria's Accursed Mountains" undecided:"exact distances, watershed edits, borders, route geometry, settlement identities; no named distant city to place in this frame">>
 <<art-boundary scope:"representation" preserve:"artist/viewer outside image; any humanoids belong to the embedded fictional depictions" undecided:"identity of divine relics and supernatural processes">>
-<<art-boundary scope:"presentation" preserve:"real working evidence and regional stylistic contrast" undecided:"which studio conjecture will prevail; do not print artist influences, evaluation settings or revision histories on the board">>
+<<art-boundary scope:"presentation" preserve:"real working evidence and regional stylistic contrast; place labels only at unambiguous depicted features" undecided:"which studio conjecture will prevail; do not print artist influences, source URLs, evaluation settings or revision histories on the board">>
 ```
+<<~/ahu>>
+
+<<~ ahu #/portable-art-pocket>>
+!! Portable art-pocket — illustrative self-contained seed
+
+The full semantic-call sequence above supplies depth for contexts that can read many procedures and supporting memes. This optional pocket deliberately compresses *one generic procedure plus one example invocation* into 776 characters, including the newline between them, below a practical 1,024-character authoring target. It proposes a portability pattern without amending the companion procedures meme or reducing the authoritative domain ontology. The text remains TiddlyWiki-style source, **not** a guarantee that another image generator interprets procedures. For a plain-text-only image system, expand or paraphrase the invocation as natural-language art direction; keep source links and extensive evidence external unless the host accepts them.
+
+```tiddlywiki
+\procedure art-pocket(artifact subject address image contrast evidence boundary)
+<<artifact>>: <<subject>>. <<address>>. <<image>>. <<contrast>>. <<evidence>>. <<boundary>>
+\end art-pocket
+
+<<art-pocket artifact:"working board of separate studies" subject:"shattered Olympos, Rift of Tempes, Phlegra scars" address:"invite comparison and revision" image:"one luminous relief panorama beneath a translucent route correction; a charcoal relic mystery; a small spring refuge" contrast:"Patterson/Jenny/Berann cartography against dark Piranesi/Miller/Rejec mythpunk; distinct paper surfaces" evidence:"rejected pass line beneath a safer saddle route; bone or machine unresolved" boundary:"studio viewer absent; tiny figures only inside studies; no misplaced distant city labels">>
+```
+
+Retain the separation between portable artistic intent and optional enrichments: full art specification, procedural library, three visual URIs, attached images, world-canon sources, accumulated critique, and production provenance. No single model needs every enrichment. The minimal seed should still express subject, artifact, audience relationship, visual hierarchy, a specific artistic *relation*, and the boundary separating audience from depicted persons.
 <<~/ahu>>
 
 <<~ ahu #/further-resource-ahu>>
 !! Resource and source ahu
 
-* Canon bearings: Elyncia `nexuses/new-delos/region-worksheet.mem`, `nexuses/illyria/region-worksheet.mem`, Neo-Thracia referee worksheet (restricted register), and region-worksheet template in the Synthetic Dream Machine repository. The source files, not this exploration, govern setting claims.
+* Canon bearings: Elyncia regional and nexus worksheets, the Neo-Thracia referee worksheet (restricted register), and the region-worksheet template in the Synthetic Dream Machine repository. The source files, not this exploration, govern setting claims; do not transmit unrelated regional names into image-facing instructions.
 * Tom Patterson and Bernhard Jenny, *Introducing Plan Oblique Relief*: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
 * Getty Research Institute Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/
 * Getty Categories for the Description of Works of Art: https://www.getty.edu/publications/categories-description-works-art/categories/ ; Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/ ; Subject Matter: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/
