@@ -389,6 +389,24 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lares/api/pono/meme",
   },
 
+  events: {
+    usage: "usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json",
+    synopsis:
+      "Read the vessel journal through the daemon. Without --wait it returns the matching entries already standing. " +
+      "With --wait it answers on the first matching entry after --since (or after now when --since is absent).",
+    examples: [
+      "lares events --json",
+      "lares events --kind bag-projected --wait --json",
+      "lares events --since genesis:node-daemon:12 --json",
+    ],
+    flags: [
+      "--since <epoch:writer:seq>  read entries after this cursor",
+      "--kind <k>                  one kind: bag-projected",
+      "--wait                      hold until the first matching entry lands",
+      "--json                      print the structured payload",
+    ],
+  },
+
   library: {
     usage: "usage: lares library <list | show | acquire | verify | index | path>",
     synopsis:

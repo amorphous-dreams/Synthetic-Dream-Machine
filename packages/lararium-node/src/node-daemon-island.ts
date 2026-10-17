@@ -12,9 +12,14 @@ import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js
 import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
-import { HULLS_FULL } from "@lararium/mesh";
+import { HULLS_FULL, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.js";
+import { fileJournal } from "./vessel-journal-file.js";
+import { admitJournalAppend } from "./journal-append-gate.js";
+import { larDataDir } from "./vessel-paths.js";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
@@ -27,7 +32,33 @@ const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
 // The vessel keeps the live fleet reading on its main thread and answers the daemon through this door.
 const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
 
+const JOURNAL_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected"]);
+
+function asCursor(raw: unknown): JournalCursor | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const row = raw as Record<string, unknown>;
+  const epoch = row["epoch"];
+  const writer = row["writer"];
+  const seq = row["seq"];
+  if (typeof epoch !== "string" || epoch.length === 0) return undefined;
+  if (typeof writer !== "string" || writer.length === 0) return undefined;
+  if (!Number.isInteger(seq) || (seq as number) < 1) return undefined;
+  return { epoch, writer, seq: seq as number };
+}
+
+function byKind(kind: JournalKind | undefined): (entry: JournalEntry) => boolean {
+  if (!kind) return () => true;
+  return (entry) => entry.kind === kind;
+}
+
 runSovereignWorker((manifest) => {
+  const journalEpoch = `boot-${randomUUID()}`;
+  const journal = fileJournal(join(larDataDir(), "journal.jsonl"), journalEpoch, "node-daemon");
+  const projectedBags = new Set<string>();
+  for (const entry of journal.since()) {
+    if (entry.kind !== "bag-projected") continue;
+    projectedBags.add((entry.data as { bagId: string }).bagId);
+  }
   const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
@@ -36,7 +67,7 @@ runSovereignWorker((manifest) => {
     // The daemon wiki projects to `<root>/wikis/daemon/` through the same projector a wiki island mounts
     // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
     // option also lights the daemon's projection cap.
-    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
+    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
     ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
@@ -55,6 +86,32 @@ runSovereignWorker((manifest) => {
       return projector === null
         ? { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" }
         : answerShore(projector, args);
+    },
+    events:         async (args, signal) => {
+      const kindRaw = args["kind"];
+      const wait = args["wait"] === true;
+      const kind = typeof kindRaw === "string" && JOURNAL_KINDS.has(kindRaw as JournalKind)
+        ? kindRaw as JournalKind
+        : undefined;
+      const cursor = asCursor(args["since"]);
+      const match = byKind(kind);
+      if (wait) {
+        const waitOptions = {
+          ...(cursor ? { cursor } : {}),
+          ...(signal ? { signal } : {}),
+        };
+        const entry = await journal.waitFor(match, waitOptions);
+        return { entries: [entry] };
+      }
+      return { entries: journal.since(cursor).filter(match) };
+    },
+    journalAppend:  async (args, invocation) => {
+      const verdict = admitJournalAppend(invocation, args);
+      if (!verdict.ok) return { ok: false, refusal: verdict.refusal, why: verdict.why };
+      if (projectedBags.has(verdict.append.data.bagId)) return { ok: true, deduped: true };
+      const entry = journal.append(verdict.append.kind, verdict.append.data);
+      projectedBags.add(verdict.append.data.bagId);
+      return { ok: true, entry };
     },
     // The crossing gate reads each bag's declared cap-tier off this vessel's hearth manifests,
     // so an outward transfer (veil-ward -> public-ward) refuses without the kahu-cabal.

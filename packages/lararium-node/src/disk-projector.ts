@@ -73,7 +73,7 @@ import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
-import type { ReadinessMap } from "@lararium/mesh";
+import type { ReadinessMap, VesselJournal } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import type { BagMirrorConfig } from "./bag-paths.js";
 
@@ -207,6 +207,16 @@ export interface LarDiskProjectorOptions {
    * and a restart reads every carrier as never agreed.
    */
   readonly syncedTree?: SyncedTree;
+  /**
+   * Vessel journal writer. When present, the projector appends one `bag-projected` entry per bag after
+   * that bag's mirror first gains a carrier file on disk.
+   */
+  readonly journal?: VesselJournal;
+  /**
+   * Optional relay for bag-projected events when the writer sits outside this island.
+   * Fired once per bag after the first carrier file stands on disk.
+   */
+  readonly onBagProjected?: (info: { bagId: string; path: string }) => void;
 }
 
 /** Read a file and compare it byte-for-byte against `body`; a missing or
@@ -371,6 +381,9 @@ export class LarDiskProjector {
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree;
+  private readonly journal: VesselJournal | undefined;
+  private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
+  private readonly projectedBags = new Set<string>();
 
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors;
@@ -389,6 +402,11 @@ export class LarDiskProjector {
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree ?? new SyncedTree(null);
+    this.journal      = opts.journal;
+    this.onBagProjected = opts.onBagProjected;
+    for (const entry of this.journal?.since() ?? []) {
+      if (entry.kind === "bag-projected" && "bagId" in entry.data) this.projectedBags.add(entry.data.bagId);
+    }
   }
 
   /**
@@ -1524,6 +1542,13 @@ export class LarDiskProjector {
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
       this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, gateRecords);
+      // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.
+      if ((!bodyPending || metaPath !== null) && !this.projectedBags.has(bagId)) {
+        this.projectedBags.add(bagId);
+        const projected = { bagId, path: mirror.mirrorRoot };
+        this.journal?.append("bag-projected", projected);
+        this.onBagProjected?.(projected);
+      }
       if (this.debugJson && this._tw5) {
         const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
           .getTiddlerAsJson?.(tiddlerUri);

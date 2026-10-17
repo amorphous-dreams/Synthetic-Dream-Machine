@@ -49,6 +49,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
    *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
   shore?: (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  /** `events` — the vessel journal read door (`lares events`). Absent → no journal verb stands. */
+  events?: (args: Record<string, unknown>, signal?: AbortSignal) => Promise<Record<string, unknown>>;
+  /** `journalAppend` — daemon-owned vessel journal writes from non-daemon islands; the invocation names who placed it. */
+  journalAppend?: (args: Record<string, unknown>, invocation: { readonly requestedBy?: string; readonly listenable?: string }) => Promise<Record<string, unknown>>;
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
@@ -174,7 +178,10 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive rides node-only; keep it OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, persistVeilArchive, shore, bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra } = extra;
+  const {
+    persistArchive, persistVeilArchive, shore, events, journalAppend,
+    bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra
+  } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) {
     return {
@@ -905,6 +912,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
       if (shore) registry.register("shore", async (args) => shore(args as Record<string, unknown>));
+      if (events) registry.register("events", async (args, context) => events(args as Record<string, unknown>, context.signal));
+      if (journalAppend) registry.register("journal-append", async (args, context) => journalAppend(args as Record<string, unknown>, {
+        requestedBy: context.invocation.requestedBy,
+        ...(context.invocation.listenable !== undefined ? { listenable: context.invocation.listenable } : {}),
+      }));
 
       // Every other daemon verb reaches USER registry data in the catalog plane (wiki oracles,
       // recipes) via the accessor over ctx.repo/ctx.catalogUrl — access≠load. The daemon

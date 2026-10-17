@@ -12,6 +12,7 @@
 
 import { mkWikiVerbResult } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
+import type { VesselJournal } from "@lararium/mesh";
 import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
@@ -21,6 +22,7 @@ import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir } from "./synced-tree.js";
 import { larProjectionDir } from "./vessel-paths.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
+import { bagProjectedEvent } from "./journal-append-gate.js";
 
 /** The projector this island mounted, while it stands. One island runs per worker, so one seat suffices. */
 let mountedProjector: LarDiskProjector | null = null;
@@ -65,7 +67,11 @@ export function claimShoreVerb(
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
  * `<root>/wikis/daemon/` exactly as a wiki's working layer projects to `<root>/wikis/<slug>/`.
  */
-export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandContext): (() => Promise<void>) | undefined {
+export function mountDiskProjection(
+  manifest: IslandMsg_Manifest,
+  ctx: IslandContext,
+  opts: { readonly journal?: VesselJournal } = {},
+): (() => Promise<void>) | undefined {
   const mirrorDefs = manifest.diskMirrors;
   if (!mirrorDefs?.length) return undefined;
   const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles }) =>
@@ -158,6 +164,10 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   canonicalizeNativeFn: (uri, ext, diskBody, diskMeta) =>
     canonicalizeNativeCarrierText(makeTw5Deserializer(ctx.tw5), uri, ext, diskBody, diskMeta),
   syncedTree,
+  ...(opts.journal ? { journal: opts.journal } : {}),
+  ...(!opts.journal ? {
+    onBagProjected: (info: { bagId: string; path: string }) => ctx.post(bagProjectedEvent(ctx.wikiUri, info)),
+  } : {}),
   });
   const stop = projector.start(ctx.tw5);
   mountedProjector = projector;
@@ -167,9 +177,9 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   };
 }
 
-export function makeWikiPrimaryBehavior(manifest: IslandMsg_Manifest): IslandBehavior {
+export function makeWikiPrimaryBehavior(manifest: IslandMsg_Manifest, journal?: VesselJournal): IslandBehavior {
   const base = makeWikiBehavior({
-    onBoot: (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
+    onBoot: (ctx: IslandContext) => mountDiskProjection(manifest, ctx, journal ? { journal } : {}),
     // caps = the wiki-sensorium perceiver cap — the wiki island answers the daemon's supervision reads
     // (sensorium:cohere/recall in, SENSORIUM_FRAME back). Platform-blind hull; same cap as browser.
     caps: [hasWikiSensorium()],
