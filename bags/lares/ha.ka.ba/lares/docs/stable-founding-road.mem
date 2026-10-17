@@ -474,7 +474,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `W21` A joinee mounts the hearth's `@lararium` corpus read-only beside its own, while the oracle plane never crosses (#/rulings, 2026-10-16). Today B's oracle mounts A's whole corpus through the shared oracle id and only the lares pointer patches back at reconcile; the build re-cuts that into a read-only corpus mount and states the law in `device-admit.ts`. W.
 * `W22` `composeCasTransits` and `walkInvite` stand with no caller: wire them or burn them. W.
 * `W23` A floor-crossing CI cell (`packages/lararium-web` `vitest.crossing.config.ts`, about seven minutes under chromium) would read the browser floor crossing on every push. Proposed. W.
-* `W24` `herm-reshares-public-blob` step ③ waits on a wall clock (500 ms looks for 30 s) for the projector to lay `bags/lares`, then declares the bag whether or not it stands; under load it reads `no bag "lares" stands`. The projector emits no keyed event naming the bag it laid (`disk-projector.ts`); the cure emits one after the write and the test awaits it. W.
+* `W24` `herm-reshares-public-blob` step ③ waits on a wall clock (500 ms looks for 30 s) for the projector to lay `bags/lares`, then declares the bag whether or not it stands; under load it reads `no bag "lares" stands`. The projector emits no keyed event naming the bag it laid (`disk-projector.ts`); the cure emits one after the write and the test awaits it. The cure lands as the first script of the mesh goldens (`docs/pono/mesh-goldens`), the e2e suite's design written from scratch. W.
 * `W25` The carried bag event names its creator in the clear, where the WHO plane's veil-born group hides it: measure it red-first, then hide it, ranked before wave three (#/rulings, 2026-10-16). W.
 
 !!! ONE FACE
@@ -784,6 +784,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FL_XrV4Vqf6deJNe7DG_x_Xsf_WZRyzZWeOgVJ6OvSw
+<<^ code="&#x0003;">>ni:///sha-256;XI-tdqeYdi93uClZqws17VwwA9k4ALxaRGYc5UopO8w
 
 <<^ code="&#x0004;" -> to="?">>
