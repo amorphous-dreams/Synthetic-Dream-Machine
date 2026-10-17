@@ -14,6 +14,7 @@ import { mkWikiVerbResult } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
 import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
+import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
@@ -58,6 +59,25 @@ export function claimShoreVerb(
 }
 
 /**
+ * The projector's carrier door over the VM's export. An export that throws answers no file and says so by
+ * uri, since nothing retries it; an export that answers `null` (the honest "this uri has no file") stays quiet.
+ */
+export function carrierFileOf(exportFn: (uri: string) => CarrierFile | null): (uri: string) => Promise<CarrierFile | null> {
+  return (uri) => {
+    try { return Promise.resolve(exportFn(uri)); }
+    catch (err) {
+      console.warn(`[disk-projector] carrier for ${uri} not exported: ${err instanceof Error ? err.message : String(err)}`);
+      return Promise.resolve(null);
+    }
+  };
+}
+
+/** The carrier door a projector mounts over an island's own VM. */
+export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (uri: string) => Promise<CarrierFile | null> {
+  return carrierFileOf((uri) => exportCarrierFile(tw5, uri));
+}
+
+/**
  * Primary wiki island behavior for the node vessel: the shared wiki behavior
  * plus disk write-back as the node-held onBoot capability.
  */
@@ -89,7 +109,7 @@ export function mountDiskProjection(
   // (memetic → `.mem`; `.tid`/`.json`/`.md`/content-type → its native file
   // + a `.meta` sidecar). The VM registry decides type + bytes; the
   // projector only sites them.
-  carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(ctx.tw5, uri)); } catch { return Promise.resolve(null); } },
+  carrierFileFn: vmCarrierFile(ctx.tw5),
   // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
   // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
   ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),

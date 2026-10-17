@@ -107,7 +107,10 @@ runSovereignWorker((manifest) => {
     },
     journalAppend:  async (args, invocation) => {
       const verdict = admitJournalAppend(invocation, args);
-      if (!verdict.ok) return { ok: false, refusal: verdict.refusal, why: verdict.why };
+      if (!verdict.ok) {
+        console.warn(`[journal-append] refused ${verdict.refusal}: ${verdict.why}`);
+        return { ok: false, refusal: verdict.refusal, why: verdict.why };
+      }
       if (projectedBags.has(verdict.append.data.bagId)) return { ok: true, deduped: true };
       const entry = journal.append(verdict.append.kind, verdict.append.data);
       projectedBags.add(verdict.append.data.bagId);
