@@ -1,0 +1,180 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/art-sigils/procedures >> -->
+```toml meta
+uri-path = "ha.ka.ba/art-sigils/procedures"
+file-path = "art-sigils-procedures.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "modular native-TiddlyWiki authoring vocabulary for art description and critique"
+status = "draft"
+```
+
+<<~ ahu #/intent>>
+! Art Sigils — Procedure Vocabulary
+
+Define structure once; feed all subjects, artists, histories, styles, materials, narrative relationships and visual hypotheses into calls. No Greek geography, genre, fixed artist, or default aesthetic belongs inside a reusable procedure. Keep all `\procedure` pragmas before ordinary WikiText content and calls. This document presents its procedure declarations together inside a fenced source block so its surrounding meme commentary does not masquerade as a directly importable procedure-definition tiddler. A pure-definition tiddler contains those declarations without surrounding commentary.
+
+`\procedure` and `<<name parameter:"value">>` illustrate native TiddlyWiki5. Lares `<<~ name ...>>` follows a house convention, with no automatic native WikiText equivalence. Parameter calls below use short single-line strings to avoid assuming a parser handles multiline quoted arguments identically in every context.
+<<~/ahu>>
+
+<<~ ahu #/definitions>>
+!! Reusable procedure definitions — source-only
+
+```tiddlywiki
+\procedure art-work(name kind purpose)
+! <<name>>
+Kind: <<kind>>
+Purpose: <<purpose>>
+\end art-work
+
+\procedure art-address(audience relationship invitation)
+Audience: <<audience>>
+Relation: <<relationship>>
+Invitation: <<invitation>>
+\end art-address
+
+\procedure art-depict(subject setting location)
+Subject: <<subject>>
+Setting: <<setting>>
+Depiction-scope: <<location>>
+\end art-depict
+
+\procedure art-reference(artist contribution application)
+Reference: <<artist>>
+Contribution: <<contribution>>
+Application: <<application>>
+\end art-reference
+
+\procedure art-read(first second third)
+First read: <<first>>
+Second read: <<second>>
+Later discovery: <<third>>
+\end art-read
+
+\procedure art-contrast(left right relation)
+Contrast: <<left>> / <<right>>
+Visual effect: <<relation>>
+\end art-contrast
+
+\procedure art-place(element site action)
+Element: <<element>>
+Placement: <<site>>
+Interaction: <<action>>
+\end art-place
+
+\procedure art-view(system spatial-rule limits)
+View convention: <<system>>
+Spatial behavior: <<spatial-rule>>
+Limits: <<limits>>
+\end art-view
+
+\procedure art-study(question form proposal status)
+Question: <<question>>
+Study form: <<form>>
+Proposal: <<proposal>>
+Status: <<status>>
+\end art-study
+
+\procedure art-dispute(study-a study-b disagreement visible-proof)
+Studies: <<study-a>> / <<study-b>>
+Disagreement: <<disagreement>>
+Visible evidence: <<visible-proof>>
+\end art-dispute
+
+\procedure art-media(support medium implement technique handling)
+Support: <<support>>
+Medium: <<medium>>
+Implement: <<implement>>
+Technique: <<technique>>
+Handling: <<handling>>
+\end art-media
+
+\procedure art-edge(region contour contrast detail)
+Region: <<region>>
+Edge: <<contour>>
+Contrast: <<contrast>>
+Detail: <<detail>>
+\end art-edge
+
+\procedure art-light(region source color effect)
+Region: <<region>>
+Light source: <<source>>
+Colour treatment: <<color>>
+Effect: <<effect>>
+\end art-light
+
+\procedure art-withhold(region absence purpose)
+Region: <<region>>
+Withhold: <<absence>>
+Purpose: <<purpose>>
+\end art-withhold
+
+\procedure art-history(layer evidence interpretation)
+Historical layer: <<layer>>
+Visible evidence: <<evidence>>
+Interpretation: <<interpretation>>
+\end art-history
+
+\procedure art-boundary(scope preserve undecided)
+Scope: <<scope>>
+Preserve: <<preserve>>
+Open questions: <<undecided>>
+\end art-boundary
+
+\procedure art-observe(region feature relation)
+Region: <<region>>
+Observed feature: <<feature>>
+Visible relation: <<relation>>
+\end art-observe
+
+\procedure art-infer(interpretation evidence alternative)
+Interpretation: <<interpretation>>
+Evidence: <<evidence>>
+Alternative: <<alternative>>
+\end art-infer
+
+\procedure art-critique(effect problem suggestion)
+Effect: <<effect>>
+Concern: <<problem>>
+Possible adjustment: <<suggestion>>
+\end art-critique
+```
+<<~/ahu>>
+
+<<~ ahu #/sample-calls>>
+!! Generic invocations — examples of replacing *all* black-ink content
+
+```tiddlywiki
+<<art-work name:"Unfinished River Port" kind:"environment exploration drawing" purpose:"Investigate the navigability of a flooded industrial waterfront">>
+<<art-address audience:"level designer" relationship:"review of route alternatives" invitation:"compare uncertain crossings rather than admire a finished promotional scene">>
+<<art-depict subject:"waterfront warehouses and boats" setting:"flooded estuary at dusk" location:"inside the drawn environment; no external reviewer depicted">>
+<<art-reference artist:"an identified cartographer" contribution:"legible river terrace form" application:"separate the navigable channel from submerged streets">>
+<<art-dispute study-a:"ink flood map" study-b:"painterly skyline" disagreement:"a raised causeway blocks the pictured boat route" visible-proof:"erased route and corrected waterline on translucent overlay">>
+<<art-media support:"smooth white Bristol" medium:"brown ink" implement:"dip nib" technique:"sparse hatching" handling:"one erased pencil guide remains under the finished contour">>
+<<art-withhold region:"far bank" absence:"dense architectural detail" purpose:"preserve atmosphere and make the navigation problem readable">>
+```
+
+The sample demonstrates topic substitution without embedding the river-port in the definitions. A new Example Zero retains whichever references the operator explicitly locks; no other thematic defaults travel silently.
+<<~/ahu>>
+
+<<~ ahu #/craft-notes>>
+!! Disciplined use
+
+* Favor art-critical verbs in param names: `contrast`, `withhold`, `observe`, `infer`, `dispute`, `place`, `read`.
+* Keep `audience` and `depiction-scope` distinct. An external critic or director does not become a figure in the scene.
+* Give nested images individual study scopes. Physical paper, applied media, and depicted materials must not share an invented universal tooth.
+* A study exists to answer or contest a question; distinguish deliberate unfinishedness from accidental incompleteness.
+* Avoid an exhaustive ontology of commands. A few meaningful primitives support varied formal and informal language.
+* Retain uncertainty explicitly for unconfirmed source materials, techniques, intentions and mythological identities.
+* In a native procedure-definition tiddler, place pragmas before content and calls; arrange surrounding metadata according to its container. These examples express an authoring vocabulary, not an execution claim.
+<<~/ahu>>
+
+<<~ ahu #/references>>
+!! Resources
+
+* TiddlyWiki5 Procedures and Procedure Pragma: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Pragma%253A%2520%255Cprocedure.html
+* Getty AAT: https://www.getty.edu/research/conducting_research/vocabularies/aat/
+* Getty CDWA Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
+* Getty CDWA Subject Matter: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/
+* Harvard Project Zero: https://pz.harvard.edu/resources/what-makes-you-say
+* Bernhard Jenny and Tom Patterson (2007), Introducing Plan Oblique Relief: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
+<<~/ahu>>

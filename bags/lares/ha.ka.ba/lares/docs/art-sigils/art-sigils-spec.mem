@@ -1,0 +1,90 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/art-sigils/spec >> -->
+```toml meta
+uri-path = "ha.ka.ba/art-sigils/spec"
+file-path = "art-sigils-spec.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "art-sigils domain ontology and visual-direction law"
+status = "draft"
+retain = true
+```
+
+<<~ ahu #/purpose>>
+! Art Sigils — Domain Specification
+
+Art Sigils supply a reusable, human-readable vocabulary for developing, discussing, describing, and criticizing visual works. The specification governs artistic meaning and relations. Rendering, software implementation, and execution remain outside its remit.
+
+The Two Inks: procedure definitions (red/operative) hold reusable form; invocations (black/semantic) carry subject, aesthetic choices, relationships, and creative constraints. Lares invocation and native TiddlyWiki procedures follow distinct conventions: the live noosphere boot uses `<<~ name ...>>` as a house sigil and `<<name ...>>` as a bare procedure call. Native authoring examples use ordinary TiddlyWiki calls; no equivalence with `~` invocation follows.
+<<~/ahu>>
+
+<<~ ahu #/terms>>
+!! Ontological distinctions
+
+* **work / artifact** — the complete object presented to a viewer: painting, book illustration, poster, map, drawing, development board, or image of several images.
+* **subject / ofness** — objects, people, locations, forms and acts visibly represented.
+* **aboutness** — narrative, symbolic, thematic or conceptual interpretation of a work, potentially disputed.
+* **address** — relationship between the work and an implied audience; this does not add that audience to the depicted scene.
+* **reading** — proposed sequence of viewer attention and interpretation, distinct from measured viewer response.
+* **depiction scope** — where subjects may appear: the outer artifact, an inner image depicted inside it, or an explicitly nested representation. Audience and creator occupy separate *relational* scopes and never turn into pictured figures by implication.
+* **narrative** — optional synthesis of subject-event, artifact history, and viewer invitation; must not silently override address, depiction, or scope.
+* **canon / proposal / hypothesis** — established external story facts, provisional design inventions, and in-world or studio interpretations. Treat only canon as fixed, subject to its cited authority and scope.
+* **support** — physical ground such as paper, canvas, board, or vellum; **medium** — material applied, e.g. graphite, ink, charcoal, gouache; **implement** — brush, nib, pen, stump; **technique** — application process, e.g. wash, hatching, rubbing; **facture** — the visible or documented evidence of how a maker worked a surface; **depicted material** — rock, metal, fabric, sky inside a picture. Do not merge these texture layers.
+* **visual treatment** — value, chroma, line, mark, edge, focal hierarchy, spatial system, light, texture and material representation, chosen for a particular expressive purpose.
+* **image relationship** — two visible elements support, conceal, annotate, contradict, compare, correct, or reframe one another; physical overlap alone need not carry significance.
+* **withholding** — intentionally unresolved identity, lost edge, broad quiet wash, blank support, or omitted explanation; absence may support an artistic intention.
+<<~/ahu>>
+
+<<~ ahu #/integrities>>
+!! Pattern integrities
+
+A governing distinction retains force across work types: address concerns the relationship proposed for an audience; depiction concerns visible subjects. Neither implies the other. A reference contribution names an artistic method or effect, not automatic scene content.
+
+# **Depicted ≠ addressed.** A request addressed to an art director does not portray an art director. Figures within an inset fantasy illustration belong to that inner depiction, not to the room holding the pinboard.
+# **Ofness ≠ aboutness.** A skeletal form visibly resembles bone; its identity as a particular giant remains interpretation unless established elsewhere.
+# **Work type changes artistic purpose.** The same mountain requires different composition and viewer relations as a map, studio board, OSR illustration, or movie poster.
+# **Technique answers a problem.** An artist's name supplies a grounded craft contribution, not an indiscriminate style coating.
+# **Composition carries a reading.** Hierarchy, shape, value, scale, rhythm, edge and negative space govern how viewers notice relations.
+# **Different evidence may disagree.** Exploratory work may retain alternative silhouettes, erroneous drainage, erased routes, painted corrections, and incompatible archaeological hypotheses.
+# **Texture has location, material and scale.** Paper tooth applies to a support, charcoal marks to an applied medium, metal patina to depicted metal, atmospheric softness to distant geography. Never impose one universal microtexture.
+# **Physical geography follows a declared spatial convention.** A plan-oblique study, true perspective painting and measurable plan map may differ; maintain shared anchors without pretending equivalent geometry.
+# **History of design need not clutter the image.** Revision history and source citations belong in a record or context ahu; graphic evidence of revision appears in-image only when the artifact narrative requires it.
+# **Formal analysis precedes certainty.** Describe visible evidence before attributing technique, iconography, intentions or production history.
+# **Unknown remains expressible.** A deliberately ambiguous relic should not acquire an invented identity merely to make the scene more explicit.
+# **Artistic discord can remain productive.** A pinboard depicts a process of inquiry through useful tension, not merely through skewed rectangles and masking tape.
+<<~/ahu>>
+
+<<~ ahu #/composition>>
+!! Artistic relationship vocabulary
+
+* **arrange** — place, crop, frame, overlap, distribute, repeat, cluster, isolate, counterbalance.
+* **direct attention** — lead, arrest, subordinate, accent, interrupt, conceal, reveal, quiet, withhold.
+* **shape and space** — silhouette, grouping, figure/ground, perspective, plan oblique, scale, occlusion, horizon, depth, passage, spatial continuity.
+* **light and colour** — key, value mass, hue, chroma, temperature, local colour, contrast, lost edge, atmospheric attenuation, anomalous radiance.
+* **material action** — support, ground, medium, implement, application, layering, abrasion, erasure, masking, transfer, smudge, granulation, facture.
+* **development inquiry** — thumbnail, gesture, study, alternate, rejected proposal, correction, paint-over, callout, comparison, reference, handoff.
+* **critical verbs** — observe, locate, compare, support, infer, challenge, revise, preserve, question, distinguish.
+
+Do not elevate every word into a standalone procedure. Procedures should expose the minimum slots necessary to express meaningful visual relationships; natural language carries the rest.
+<<~/ahu>>
+
+<<~ ahu #/references>>
+!! Research resources and authorities
+
+* **Getty Research Institute, Art & Architecture Thesaurus (AAT)** — controlled generic concepts and multilingual hierarchical/associative relationships for work types, materials, techniques, roles, styles and cultural-historical terms. https://www.getty.edu/research/conducting_research/vocabularies/aat/ ; consult specific term scope notes rather than treating an AAT preferred term as an artistic instruction. Getty materials include an ODC-By notice; examine reuse obligations before redistribution.
+* **Getty, Categories for the Description of Works of Art (CDWA)** — especially Work Type, Materials/Techniques (7), Facture (11), Physical Description (13), Subject Matter (16), Critical Responses (19), Related Works (20). https://www.getty.edu/publications/categories-description-works-art/categories/ ; https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/ ; https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/ . CDWA separates medium, support, technique, and implements; subject analysis distinguishes what a work is **of** from what it is **about**.
+* **Kress & van Leeuwen, Reading Images: The Grammar of Visual Design** — representational, interactive and compositional meaning. The distinction motivates depiction/address/composition; our exact procedure terminology remains an adaptation.
+* **W. J. T. Mitchell, Picture Theory** — metapictures/images containing or commenting upon other pictures; useful for a studio board *of* drawings.
+* **Michael Baxandall, Patterns of Intention** — artistic problems and historically situated inferences; never assert an artist's private intention based only on an image.
+* **Rudolf Arnheim, Art and Visual Perception** — Gestalt organization, balance, tension, grouping and visual forces; use as critical lenses, not infallible perceptual laws.
+* **James Gurney, Color and Light** — observational treatment of illumination, atmospheric phenomena and material response.
+* **Harvard Project Zero, What Makes You Say That?** — evidence-grounded interpretation. https://pz.harvard.edu/resources/what-makes-you-say ; **See, Think, Wonder** https://pz.harvard.edu/resources/see-think-wonder .
+* **Bernhard Jenny and Tom Patterson, Introducing Plan Oblique Relief** (Cartographic Perspectives 57, 2007), DOI 10.14714/CP57.279. https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson . Includes historical precedent from Xaver Imfeld, Erwin Raisz, and Heinrich Berann.
+* **Jenny and Patterson, Aerial Perspective for Shaded Relief** — relief luminance, aerial perspective, visual relief depth; distinguish painting's atmospheric distance from terrain source geometry.
+* **TiddlyWiki5 documentation, Procedures and Procedure Pragma** — native procedure definition/call conventions. https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Pragma%253A%2520%255Cprocedure.html . This corpus supplies written examples, not a runtime certification.
+<<~/ahu>>
+
+<<~ ahu #/boundaries>>
+!! Scope of this research layer
+
+This meme concerns artistic semantics and interpretation, without claims about generators, compilers, validators, or execution. Keep research citations in a source ahu or authority registry. Include printed credits within the depicted artwork only when its communicative purpose calls for them.
+<<~/ahu>>
