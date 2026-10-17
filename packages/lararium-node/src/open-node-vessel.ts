@@ -2885,6 +2885,24 @@ async function prepareNodeBootOn(
     reconcileWellKnownTiddlers(assembly.islandHandle, assembly.laresHandle?.url);
   };
 
+  const subscribeWorkerEventsToDaemon = (): void => {
+    eventBus.subscribe<{ wikiId: string; listenable: string; payload: Record<string, string | number | boolean> }>(
+      "worker.event",
+      ({ listenable, payload }) => {
+        const verb    = typeof payload["verb"]    === "string" ? payload["verb"]    : undefined;
+        const fromUri = typeof payload["fromUri"] === "string" ? payload["fromUri"] : undefined;
+        if (!verb) return;
+        daemonVm.placeVerb({
+          verb,
+          args:        verbArgsFromPayload(payload),   // structured args off the `verb-args` JSON (#48)
+          requestedBy: typeof payload["requestedBy"] === "string" ? payload["requestedBy"] : listenable,
+          listenable,
+          ...(fromUri ? { fromUri } : {}),
+        });
+      },
+    );
+  };
+
   // Island pool (worker_threads) + the event bus + the sovereign-worker command bindings.
   const makePool: VesselOrchestration<VesselIslandPool>["makePool"] = (_daemon, assembly) => {
     // ── Durable mailbox (lane law §7) — keel mechanism (vessel-mailbox.ts,
@@ -2904,6 +2922,7 @@ async function prepareNodeBootOn(
     eventBus = new LarEventBusImpl(20);
     for (const ring of DEFAULT_RINGS) eventBus.registerRing(ring);
     eventBus.start();
+    subscribeWorkerEventsToDaemon();
 
     const workerRootDir = corpusRoot;
     const diskMirrorGrant: DiskMirrorGrant = [
@@ -2989,24 +3008,8 @@ async function prepareNodeBootOn(
     return vmManager;
   };
 
-  // After live: wire the cross-island verb routing (worker.event → daemon placeVerb).
+  // After live: settle boot pinning after every island has reached live.
   const afterLive: VesselOrchestration<VesselIslandPool>["afterLive"] = ({ wikiHandle: _wikiHandle }) => {
-    eventBus.subscribe<{ wikiId: string; listenable: string; payload: Record<string, string | number | boolean> }>(
-      "worker.event",
-      ({ listenable, payload }) => {
-        const verb    = typeof payload["verb"]    === "string" ? payload["verb"]    : undefined;
-        const fromUri = typeof payload["fromUri"] === "string" ? payload["fromUri"] : undefined;
-        if (!verb) return;
-        daemonVm.placeVerb({
-          verb,
-          args:        verbArgsFromPayload(payload),   // structured args off the `verb-args` JSON (#48)
-          requestedBy: typeof payload["requestedBy"] === "string" ? payload["requestedBy"] : listenable,
-          listenable,
-          ...(fromUri ? { fromUri } : {}),
-        });
-      },
-    );
-
     // Boot DEMOTED to a pin. The daemon island stays always-live on its own (never
     // pooled, never collected — the "daemon bag always there"). The home wiki (the ONE
     // rotatable user pin BESIDES the daemon bag; a resource-rich node MAY hold up to

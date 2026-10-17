@@ -264,14 +264,20 @@ export interface ActionHandlerOptions {
 interface BagAccess {
   read(bag: string): Promise<LarTiddlerStore | null>;
   write(bag: string): Promise<LarTiddlerStore | null>;
+  /** Why each registry plane answered no store for `bag`, in plane order; empty when no plane threw. */
+  causesOf(bag: string): readonly string[];
 }
 
 function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
   if (opts.reach) {
     const reach = opts.reach;
-    const planes = [reach.catalogUrl, reach.oracleUrl].filter((u): u is string => !!u)
-      .map((u) => makeCatalogAccessor(reach.repo, u));
+    const planes = ([["catalog", reach.catalogUrl], ["oracle", reach.oracleUrl]] as const)
+      .filter((p): p is readonly ["catalog" | "oracle", string] => !!p[1])
+      .map(([name, u]) => ({ name, accessor: makeCatalogAccessor(reach.repo, u) }));
     const cache = new Map<string, LarTiddlerStore | null>();
+    // A plane that throws (a document that never arrived, or one reported unavailable) keeps its reason
+    // beside the bag, so a refusal names it instead of reading as an unregistered bag.
+    const causes = new Map<string, string[]>();
     // Reach a bag's store: prefer one the daemon already mounts writable (its own
     // daemon bag — no find latency), else resolve the bag's doc by access across
     // the two planes. Cached per action (find() is bounded-async). Read and write
@@ -281,30 +287,41 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
       if (hit !== undefined) return hit;
       let store: LarTiddlerStore | null = opts.composite.writableStoreForBag(bag);
       if (!store) {
-        for (const accessor of planes) {
-          store = await accessor.storeOf(bag).catch(() => null);
-          if (store) break;
+        const held: string[] = [];
+        for (const { name, accessor } of planes) {
+          try {
+            store = await accessor.storeOf(bag);
+            if (store) break;
+          } catch (err) {
+            held.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+          }
         }
+        if (!store && held.length > 0) causes.set(bag, held);
       }
       // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
       // doc its island mounts; reached by access, never mounted here.
       if (!store && reach.slotDocUrl) {
         const m = /^lar:\/\/\/ha\.ka\.ba\/wikis\/([^/]+)\/(draft|working|personal)$/.exec(bag);
         if (m) {
-          const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(() => null);
-          const handle = url ? await findOrThrow(reach.repo, url, bag).catch(() => null) : null;
+          const reason = (err: unknown): null => {
+            causes.set(bag, [...(causes.get(bag) ?? []), `slot: ${err instanceof Error ? err.message : String(err)}`]);
+            return null;
+          };
+          const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(reason);
+          const handle = url ? await findOrThrow(reach.repo, url, bag).catch(reason) : null;
           store = handle ? new AutomergeDocStore(handle, bag) : null;
         }
       }
       cache.set(bag, store);
       return store;
     };
-    return { read: resolve, write: resolve };
+    return { read: resolve, write: resolve, causesOf: (bag) => causes.get(bag) ?? [] };
   }
   // No reach: the wiki island operates on its own mounted layers only.
   return {
     read:  async (bag) => opts.composite.storeForBag(bag),
     write: async (bag) => opts.composite.writableStoreForBag(bag),
+    causesOf: () => [],
   };
 }
 
@@ -343,6 +360,7 @@ function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured:
       };
       return capturing;
     },
+    causesOf: (bag) => real.causesOf(bag),
   };
   return { access, captured: { puts, tombstones, removes } };
 }
@@ -491,9 +509,11 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // access resolved nothing, fail loud — a residency write never falls through
     // to the default writable (wiki-layer-ontology#write-law; the confused-deputy guard).
     if (!(await access.write(destBag))) {
+      const causes = access.causesOf(destBag);
+      const causeLines = causes.length > 0 ? ` The planes answered: ${causes.map((c) => c.replace(/\.+$/, "")).join("; ")}.` : "";
       throw new Error(
         `action-handler/${verb}: destination bag "${destBag}" unreachable — ` +
-        `not registered, or access resolved nothing. No silent fall-through.`,
+        `not registered, or access resolved nothing. No silent fall-through.${causeLines}`,
       );
     }
 

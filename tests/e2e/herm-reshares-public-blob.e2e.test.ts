@@ -115,6 +115,7 @@ const GHOST      = createHash("sha256").update("a likeness nobody ever staged").
 const LOCI  = "t.witness.herm";
 const TITLE = `lar:///${LOCI}/photo`;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
+const LARES_WORKING = "lar:///ha.ka.ba/wikis/lares/working";
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const casDirOf = (v: LarInstance): string => join(vesselStorageDir(v), "cas");
@@ -177,20 +178,23 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
-  test("③ A LOADs the png and declares bags/lares PUBLIC: the bytes rest in A's cid/, the CRDT holds a pointer", async () => {
+  test("③ A LOADs the png into its lares wiki, moves it to bags/lares and declares the bag PUBLIC: the bytes rest in A's cid/, the CRDT holds a pointer", async () => {
     const { A } = fleet!;
     const srcDir = join(A.root, "blob-stage/bags/lares", LOCI);
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", LARES_BAG, "--yes", "--json"]);
+    // The lares wiki takes a direct write into its working layer; a residency MOVE carries the record into
+    // its canon bag. Both act in the wiki island that owns the two layers and mirrors them.
+    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", LARES_WORKING, "--in-wiki", "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    const mv = await A.cli(["act", "MOVE", "--title", TITLE, "--from", LARES_WORKING, "--to", LARES_BAG, "--in-wiki", "--yes", "--json"]);
+    expect(mv.json?.["ok"], said(mv)).toBe(true);
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
     expect(await awaitWhich(A, 30_000)).toContain(`  ${LARES_BAG}`);
-    // The projector lays down the mirror directory as the record lands and appends a bag-projected entry
-    // to the journal. Await that entry instead of polling for the directory.
+    // The wiki's projector lays the canon mirror as the moved record lands and names the bag in the journal.
     await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === LARES_BAG });
     expect(existsSync(join(A.root, "bags/lares"))).toBe(true);
     const decl = await A.cli(["bag", "declare", "lares", "--tier", "public", "--json"]);

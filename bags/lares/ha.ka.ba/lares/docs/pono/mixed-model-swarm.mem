@@ -60,6 +60,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 * ''When a lineage runs short, the seat stays and the lineage changes'' (operator, 2026-10-16: //"I'm short on Codex token, enact all with cost-effective Copilot swarms"//). While Codex runs short, both build seats go to Copilot spirits from two different families (Hodge over the contract on `gpt-5-mini`, or `gpt-5.3-codex` where the module carries load; Podge over motion and the red tests on `claude-haiku-4.5`), the review pair reads from families neither builder uses (`mai-code-1.1-flash`, or the build pair's own faces traded where the diff stays small), and the Opus overwatch keeps the deep read.
 * ''The build pair'' (operator, 2026-10-16). A Codex Sol spirit and a Copilot spirit build together in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch. They wear the Chao's faces as builders: Sol holds Hodge over the contract it builds, the Copilot spirit holds Podge over how it moves. Their work then meets the review pair and the lane's Copilot PR review (#/the-lanes) before the controller merges it.
 * ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
+* ''A cross-process seam always takes the overwatch.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the Opus overwatch's read before it lands, even with a single crew: the build and review pairs read a module's own contract well and its crossings poorly. On the first mesh-goldens slice the pairs read green while the overwatch found four writers sharing one file, waiters that never woke on an island's entries, a fixed epoch and an untrimmed torn tail (2026-10-16).
 * ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
 <<~/ahu>>
@@ -185,6 +186,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gAOPlbOtGSnmGU6r2DLriiJmTTkIO6XdGlmse2498xc
+<<^ code="&#x0003;">>ni:///sha-256;tVQRSHxd85bww0qCBA3kYJbdTmRhNAeyY3WhMFmBp_o
 
 <<^ code="&#x0004;" -> to="?">>

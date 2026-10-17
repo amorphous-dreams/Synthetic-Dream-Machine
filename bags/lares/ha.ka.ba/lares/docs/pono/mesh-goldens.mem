@@ -51,6 +51,7 @@ written   = "2026-10-16"
 * Test names state the law in the present tense; dated measurement narration in test comments leaves for git.
 * A witness refuses `Date.now()` and `setTimeout` deadlines under `tests/e2e/`, runs green over the moved tree, then burns itself with its guard list.
 * The first slice stands: the daemon writes each vessel's journal alone (`journal.jsonl` under the data dir, one epoch per boot), a projecting island hands its `bag-projected` entry in through `journal-append` (admitted only from a projector, over a mirror that stands), and `lares events --wait` answers the moment an entry lands. Owed beside it: a CLI that gives up on its budget cancels its waiter in the daemon, and the daemon's own projector shares the per-bag dedup the door keeps.
+* The second slice stands: herm-reshares acts on the model's write path (a LOAD into the lares wiki's working layer, then a residency MOVE into its canon bag, in the wiki island that owns both), and every silent drop the first script met now speaks: a reach refusal names each plane's cause, a carrier whose export throws warns by uri, a refused journal entry warns by name, and the vessel routes island events from the pool's first mount. Next: readiness entries (a wiki mounted with its layers laid) and a per-carrier entry, then the next family of scripts.
 
 <<~/ahu>>
 
@@ -71,6 +72,6 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h4QIRGzcBPWW-OoTQOI2WDrU37yOAOx85KI1auujHvM
+<<^ code="&#x0003;">>ni:///sha-256;qTBqlhdxRG-HCROwZkSLl8mOCe87lUl-FWpWyHk0AnU
 
 <<^ code="&#x0004;" -> to="?">>
