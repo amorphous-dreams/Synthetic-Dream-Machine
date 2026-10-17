@@ -12,6 +12,8 @@ retain = true
 <<~ ahu #/purpose>>
 ! Art Sigils — Semantic Specification
 
+! Art Sigils — Semantic Specification
+
 Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, development studies and images containing other images. One portable Inscription supplies a complete invitation to artistic interpretation; a Folio can elaborate that same intention through rich disciplinary language, modular procedures, references and documented disagreement.
 
 The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
@@ -19,7 +21,33 @@ The specification governs artistic meaning, not the producer's internal generati
 The Two Inks remain distinct without separation: reusable red procedure definitions shape the reading; subject-specific black invocations make artistic claims. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The native Inscription supplies its own definition and may travel directly to a receptive AI or undergo TW5 transclusion into prose.
 <<~/ahu>>
 
+<<~ ahu #/syntax>>
+!! Native TW5 Grammar — declaration / invocation
+
+Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one universal quotation style:
+
+* **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art-sigil(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
+* **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art-sigil subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
+* The exact core source and image-facing invocation appear in `art-sigils-procedures.mem` and the standalone Example Zero Inscription. The examples under `art-sigils-example-zero.mem` and analysis examples follow the same pattern.
+* **Scope of rule:** all `art-sigil`, `art-study`, `art-counterpoint`, `art-facture`, and future Art Sigil procedure calls use backtick-wrapped `name=` values; all corresponding declared defaults use colon plus double quotes. Lares house sigils follow their separate house syntax.
+* **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
+* **Rendered reading:** the native single-line procedure body concatenates phrases in its declared order. The literal rendering in the Inscription meme supplies expected bytes, punctuation and whitespace as a reproducible null-test oracle, hand-derived rather than asserted live-TW5 certification.
+* **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
+* **Character budgeting:** the 1,024-character portability ceiling covers the complete definition plus invocation, not the expanded prose, meme wrapper, references, or Folio.
+* **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
+
+Native source pattern:
+
+```tiddlywiki
+\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+
+<<art-sigil subject=`a distant coast` read=`the unseen seems near`>>
+```
+<<~/ahu>>
+
 <<~ ahu #/nucleus>>
+!! Eight artistic dimensions
+
 !! The eight artistic dimensions
 
 * ''worktype'' — category and communicative convention of the offered work, e.g. portrait, terrain plate, book illustration, concept board, installation, poster. Neither genre nor image file format alone substitutes for worktype.
@@ -35,6 +63,8 @@ The accepted nucleus reads in this order: worktype / subject / read / imagery / 
 <<~/ahu>>
 
 <<~ ahu #/optional>>
+!! Yin — speech and delegation
+
 !! Yin: speech, delegation, silence, withholding
 
 * ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims should survive interpretation, though a later deliberate revision may amend them.
@@ -48,6 +78,8 @@ Interpretation priority: protect explicit choices; read the full subject and int
 <<~/ahu>>
 
 <<~ ahu #/scopes>>
+!! Depiction and source boundaries
+
 !! Layers, viewers, sources, evidence
 
 * ''Outer artifact'': the complete picture presented to a viewer, whether flat field, photograph, map, physical board or illustrated object.
@@ -61,6 +93,8 @@ Interpretation priority: protect explicit choices; read the full subject and int
 <<~/ahu>>
 
 <<~ ahu #/lexicons>>
+!! Art-house lexicons
+
 !! Art-house lexicons for values rather than compulsory procedures
 
 A term enters a parameter value when it deepens the artistic decision. These registers supply examples, not enumerated allowed values or mandatory production effects. The artist may reject any of them.
@@ -88,6 +122,8 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 <<~/ahu>>
 
 <<~ ahu #/integrities>>
+!! Pattern integrities
+
 !! Pattern integrities across worktypes
 
 # ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
@@ -104,6 +140,8 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 <<~/ahu>>
 
 <<~ ahu #/research-ahu>>
+!! Research authorities
+
 !! Source ahu — disciplinary anchors
 
 * Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — controlled work types, techniques, roles, and materials; consult term scope notes rather than converting a taxonomy into a direct art instruction.
@@ -128,6 +166,8 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 <<~/ahu>>
 
 <<~ ahu #/migration>>
+!! O-takiage
+
 !! O-takiage ledger — what rises from the earlier draft
 
 Keep: work/address/depiction/reading separation, ofness/aboutness, artist references as problem-solving methods, spatial projections, medium versus support versus depicted material, lost edges, deliberate uncertainty, disputed studies, alternative interpretations, canon/proposal/hypothesis, Getty authority and the broader comparative research corpus.
@@ -138,3 +178,4 @@ Release: one macro for every adjective or visual verb; exhaustive instructions i
 
 The first structural procedure set remains provisional. Promote a new procedure only when a scoped, reusable artistic relationship earns independent treatment rather than fitting clearly inside an existing parameter.
 <<~/ahu>>
+
