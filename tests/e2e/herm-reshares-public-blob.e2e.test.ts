@@ -191,7 +191,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(await awaitWhich(A, 30_000)).toContain(`  ${LARES_BAG}`);
     // The projector lays down the mirror directory as the record lands and appends a bag-projected entry
     // to the journal. Await that entry instead of polling for the directory.
-    await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === "lares" });
+    await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === LARES_BAG });
     expect(existsSync(join(A.root, "bags/lares"))).toBe(true);
     const decl = await A.cli(["bag", "declare", "lares", "--tier", "public", "--json"]);
     const show = await A.cli(["bag", "show", "lares", "--json"]);
