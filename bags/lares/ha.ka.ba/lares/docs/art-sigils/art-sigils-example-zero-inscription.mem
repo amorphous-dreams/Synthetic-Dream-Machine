@@ -1,0 +1,32 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/art-sigils/example-zero-inscription >> -->
+```toml meta
+uri-path = "ha.ka.ba/art-sigils/example-zero-inscription"
+file-path = "art-sigils-example-zero-inscription.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "portable, self-contained Example Zero art inscription"
+status = "draft"
+retain = true
+```
+
+<<~ ahu #/inscription>>
+! Art Sigils — Example Zero Inscription
+
+The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **963 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
+
+```tiddlywiki
+\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+
+<<art-sigil worktype:"concept-art pinboard" subject:"shattered Olympos, Rift of Tempes, Phlegra" read:"artists disagree about routes through a damaged yet traversable mountain" imagery:"dominant luminous relief panorama; vellum pass correction; dark charcoal relic; green refuge" treatment:"Patterson/Jenny relief vs localized Piranesi/Miller mythpunk; distinct paper media" relation:"corrected saddle route contradicts painted crossing; bone or machine unresolved" depiction-scope:"the board alone; tiny travelers only within pinned art; source photos unseen">>
+```
+<<~/ahu>>
+
+<<~ ahu #/bounds>>
+!! Reading and delegation
+
+* Supplied `subject` and `read` hold the governing intention; the omitted `composition` delegates organization to that read, not to a preset layout.
+* `relation` explicitly preserves the meaningful route disagreement. `depiction-scope` keeps the outside viewer, maker, and external photographs outside the represented board.
+* Real Olympus relief, aerial and embodied photographs remain references in the companion Folio; an AI cannot follow those URLs without appropriate access or attached imagery.
+* Native TW5 substitutes declared defaults literally. Any artistic interpretation of a delegated phrase belongs to the receiving reader or image-making model. Source form may travel directly; TW5 transclusion offers an alternative prose reading.
+* The inscription's visual subject, genre and artist examples never become defaults of the generic procedure.
+<<~/ahu>>
