@@ -98,6 +98,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { openStagedFleet, vesselStorageDir, type LarInstance, type StagedFleet } from "../harness/instance.js";
+import type { JournalEntry } from "@lararium/mesh";
+import { expectEntry } from "../harness/journal-expect.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -187,10 +189,10 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
     expect(await awaitWhich(A, 30_000)).toContain(`  ${LARES_BAG}`);
-    // The declaration wants the hearth bag dir, which the projector lays down as the record lands — so it
-    // follows the LOAD. A declaration moves no bytes; the tier reader re-reads the manifest within 30s.
-    const deadline = Date.now() + 30_000;
-    while (!existsSync(join(A.root, "bags/lares")) && Date.now() < deadline) await new Promise((r) => setTimeout(r, 500));
+    // The projector lays down the mirror directory as the record lands and appends a bag-projected entry
+    // to the journal. Await that entry instead of polling for the directory.
+    await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === "lares" });
+    expect(existsSync(join(A.root, "bags/lares"))).toBe(true);
     const decl = await A.cli(["bag", "declare", "lares", "--tier", "public", "--json"]);
     const show = await A.cli(["bag", "show", "lares", "--json"]);
     console.error(`herm-reshares MEASURE A: bag declare lares --tier public → ${said(decl).trim().slice(0, 200)}\n  bag show lares → ${said(show).trim().slice(0, 300)}`);
