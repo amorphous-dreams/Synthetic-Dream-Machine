@@ -125,7 +125,7 @@ Collide each before trusting it.
 
 !!! Tree and run
 * ''Most often the operator wrote the other change.'' Parallel sessions share this tree. A dirty file of unknown provenance gets REPORTED and copied aside, never reverted and never committed.
-* ''A suite reads whatever `dist` its imports resolve to.'' A stale build, or a worktree whose `node_modules` link into another checkout, greens a suite about code the tree does not hold. Every vitest config loads `tools/vitest-dist-guard.mjs`, which refuses before any test runs when a workspace package the suite loads through `dist` resolves outside the checkout or reads stale against its stamp; a package checks its own `dist` only where its tests name a built path. Provision a worktree with `tools/provision-worktree.mjs <empty-dir>` rather than linking another checkout's `node_modules`.
+* ''A suite reads whatever `dist` its imports resolve to.'' A stale build, or a worktree whose `node_modules` link into another checkout, greens a suite about code the tree does not hold. Every vitest config loads `tools/vitest-dist-guard.mjs`, which refuses before any test runs when a workspace package the suite loads through `dist` resolves outside the checkout or reads stale against its stamp; a package checks its own `dist` only where its tests name a built path, and a CI run (which builds the tree moments before its suites, while a suite may write into `packages/`) keeps the foreign-checkout refusal and leaves the stale check to the desk. Provision a worktree with `tools/provision-worktree.mjs <empty-dir>` rather than linking another checkout's `node_modules`.
 * ''Know what an import resolves to.'' `@lararium/mesh` resolves to source under the node package's test aliases and to `dist` under the CLI's, so one symbol reading "missing" may name a stale `dist`. A revert-verify that swaps source alone reads vacuous against a run of `dist`.
 * ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
 * ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
@@ -167,6 +167,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uBn-8rrNdfA6Cm-N3RgB0CEUIaB0LYwTcHUBwACBiDA
+<<^ code="&#x0003;">>ni:///sha-256;5uGIxLVf1h5dJBQ3GogZI-ypw_Q-sQUFN0XmCPhUt4I
 
 <<^ code="&#x0004;" -> to="?">>

@@ -145,3 +145,18 @@ test("CONTROL package without dist may run source tests", () => {
     assert.doesNotThrow(() => checkDistDependencies(s.repo, "app"));
   } finally { s.cleanup(); }
 });
+
+test("RED a CI run built this tree moments before its suites, so it skips the stale check", () => {
+  const s = scratch();
+  try {
+    appendFileSync(join(s.repo, "packages", "dep", "src", "index.ts"), "export const changed = 2;\n");
+    assert.doesNotThrow(() => checkDistDependencies(s.repo, "app", [], false, false));
+  } finally { s.cleanup(); }
+});
+
+test("CONTROL a CI run still refuses a foreign dependency", () => {
+  const s = scratch(true);
+  try {
+    assert.throws(() => checkDistDependencies(s.repo, "app", [], false, false), /foreign build/);
+  } finally { s.cleanup(); }
+});

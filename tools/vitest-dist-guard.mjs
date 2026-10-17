@@ -61,7 +61,7 @@ export function ownDistTestLiteral(repo, dir) {
 }
 
 /** Check built output read by the owner, then each workspace dependency reached from it. */
-export function checkDistDependencies(repo, dir, aliases = [], requireOwnerDist = false) {
+export function checkDistDependencies(repo, dir, aliases = [], requireOwnerDist = false, checkStale = true) {
   const root = resolve(repo);
   const names = new Map(workspacePackageDirs(root).map((d) => [packageManifest(root, d).name, d]));
   const seen = new Set();
@@ -78,7 +78,7 @@ export function checkDistDependencies(repo, dir, aliases = [], requireOwnerDist 
     const actual = realpathSync(ownerDist);
     if (!inside(root, actual)) {
       errors.push(`[vitest-dist-guard] foreign build: ${owner.name} dist resolves to ${actual}; this checkout expects ${ownerDist}\n  cure: relink node_modules into ${root} or provision one with node tools/provision-worktree.mjs <empty-dir>`);
-    } else if (!globalFresh && packageFreshness(root, dir).stale) {
+    } else if (checkStale && !globalFresh && packageFreshness(root, dir).stale) {
       errors.push(`[vitest-dist-guard] ${owner.name} stale build: dist was not built from the current source\n  cure: pnpm --filter ${owner.name} build && node tools/stamp-build.mjs . --pkg ${dir}`);
     }
   }
@@ -101,7 +101,7 @@ export function checkDistDependencies(repo, dir, aliases = [], requireOwnerDist 
         const expected = join(root, "packages", dep);
         if (actual && (!inside(root, actual) || actual !== realpathSync(expected))) {
           errors.push(`[vitest-dist-guard] foreign build: ${name} resolves to ${actual}; this checkout expects ${expected}\n  cure: relink node_modules into ${root} or provision one with node tools/provision-worktree.mjs <empty-dir>`);
-        } else if (actual && (!existsSync(join(actual, "dist")) || (!globalFresh && packageFreshness(root, dep).stale))) {
+        } else if (actual && (!existsSync(join(actual, "dist")) || (checkStale && !globalFresh && packageFreshness(root, dep).stale))) {
           errors.push(`[vitest-dist-guard] ${name} stale build: dist was not built from the current source\n  cure: pnpm --filter ${name} build && node tools/stamp-build.mjs . --pkg ${dep}`);
         }
       }
@@ -123,5 +123,7 @@ export function setup(context) {
   }
   const dir = relative(join(repo, "packages"), root);
   const testsRoot = root === join(repo, "tests");
-  checkDistDependencies(repo, testsRoot ? "lares-cli" : dir, context.viteConfig.resolve.alias ?? [], testsRoot);
+  // CI builds this tree moments before its suites run, and a suite that writes into `packages/` moves the digest
+  // under it, so a CI run keeps the foreign-checkout refusal and leaves the stale check to the desk.
+  checkDistDependencies(repo, testsRoot ? "lares-cli" : dir, context.viteConfig.resolve.alias ?? [], testsRoot, process.env["CI"] !== "true");
 }
