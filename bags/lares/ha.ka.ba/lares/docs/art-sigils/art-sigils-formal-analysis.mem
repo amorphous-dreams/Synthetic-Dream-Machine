@@ -34,7 +34,7 @@ The analyst may leave weakly evidenced dimensions delegated or broad rather than
 <<~ ahu #/response>>
 !! Required turn shape
 
-**First:** a single compact native TW5 inscription in a fenced tiddlywiki block, using backtick-delimited named arguments (`param=`value``) in v5.4.0+ TW5 instead of double-quoted prompt values. Supply a descriptive `subject` and defensible `read`, plus explicit values where observations warrant them. The source includes the definition and call in <1,025 characters.
+**First:** a single compact native TW5 inscription in a fenced tiddlywiki block, using TW5 v5.4.0+ backtick-delimited named arguments (for example, `read=` followed by a backtick-wrapped value) instead of double-quoted prompt values. Supply a descriptive `subject` and defensible `read`, plus explicit values where observations warrant them. The source includes the definition and call in <1,025 characters.
 
 **Then:** natural-language formal analysis at the warranted depth, generally tracing:
 1. Direct observation: what and where, with nested image scopes.
