@@ -61,6 +61,13 @@ test("CONTROL source alias exempts stale dist", () => {
   } finally { s.cleanup(); }
 });
 
+function outsideCi(run) {
+  const held = process.env["CI"];
+  delete process.env["CI"];
+  try { run(); }
+  finally { if (held === undefined) delete process.env["CI"]; else process.env["CI"] = held; }
+}
+
 test("RED setup from a package root reads resolved aliases and checks its own dist", () => {
   const s = scratch(true);
   try {
@@ -68,7 +75,8 @@ test("RED setup from a package root reads resolved aliases and checks its own di
     writeFileSync(join(s.repo, "packages", "app", "tests", "built.test.ts"), 'import "../dist/index.js";\n');
     appendFileSync(join(s.repo, "packages", "app", "package.json"), " ");
     const alias = [{ find: "@lararium/dep", replacement: join(s.repo, "packages", "dep", "src", "index.ts") }];
-    assert.throws(() => setup({ config: { root: join(s.repo, "packages", "app") }, viteConfig: { resolve: { alias } } }), /@lararium\/app stale build/);
+    // `setup` reads the runner's own CI flag; the stale refusal belongs to a desk run.
+    outsideCi(() => assert.throws(() => setup({ config: { root: join(s.repo, "packages", "app") }, viteConfig: { resolve: { alias } } }), /@lararium\/app stale build/));
   } finally { s.cleanup(); }
 });
 
