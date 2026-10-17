@@ -9,44 +9,76 @@ status = "draft"
 retain = true
 ```
 
-<<~ ahu #/bearing>>
-! Example Zero — Olympos / Gigantomachy Folio
+<<~ ahu #/invitation>>
+! Example Zero Folio — Olympos, Tempes, Phlegra
 
-This Folio expands the portable `art-sigils-example-zero-inscription.mem` into craft, visual research, independently scoped studies and uncertain geography. The companion Inscription leads and stays standalone. This Folio adds details selectively, without requiring its longer research ahus to accompany a ~1K image prompt.
+The Folio opens from a **problem**, not a checklist: which mountain paths survive, and which drawings should the studio believe? The companion 1,013-character Inscription provides the portable intention and a literal TW5 null test. Here the artist studies, resists, corrects and leaves questions unresolved.
 
-Its outer picture portrays a physical concept-art board. It addresses the collaborating art director but does not portray that person. Within pinned studies, tiny travelers may enter a fictional landscape. Actual photographs, citations and artists' names remain research resources rather than automatic subject matter.
+**Read:** one luminous relief-aware panorama dominates; a vellum revision exposes an impossible painterly crossing; dark archaeological alternatives refuse one identity; a small green refuge challenges blanket desolation.
+
+**Outside the image:** viewers, reviewers, artist biographies, source photos and references. **Inside:** the physical pinboard, its distinct paper media and any tiny figures within the subordinate drawings. No surrounding studio furniture or display apparatus.
+
+**TW5 dialect:** reusable procedure definitions use `name:"default"`; every Folio call uses `name=` with backtick-wrapped values. Art-specific terms live *inside* values. The optional `art-study`, `art-counterpoint`, and `art-facture` modules remain provisional, not a final canon of procedures.
 <<~/ahu>>
 
-<<~ ahu #/intention>>
-!! Governing Inscription and first read
+<<~ ahu #/questions>>
+!! Four propositions in productive tension
 
-The canonical standalone Inscription lives in `art-sigils-example-zero-inscription.mem`. Its read invites artistic disagreement over routes through a damaged but partly traversable sacred mountain.
+**1 — Pass:** the first relief panorama suggests a crossing; a graphite vellum correction argues against it using slope, exposure and drainage. Preserve both marks.
 
-First read: high luminous terrain relief, breathing sky and coherent summits. Second: route correction against an impossible painted pass; dark Phlegra corruption, vitrified remains and uncertain relic structure. Later: a small inhabited water refuge and study-to-study disagreement challenge the assumption of universal uninhabitability.
+**2 — Remains:** the dark Phlegra studies read as giant bone, machine or stone depending on medium, contour and prior expectation. No one identification wins.
 
-The Folio's additional propositions remain proposals, not settled geographic or mythological claims. Important pictorial relationships outrank the number of extra studies. Differences of finish, medium and paper history support inquiry rather than decorative disorder.
+**3 — Refuge:** an inhabited spring study complicates the claim that all Olympos terrain suffers permanent uninhabitability.
+
+**4 — Hazards:** cyan, amber and violet scraps investigate distinct appearances. Their physical mechanisms remain unproven.
+
+The papers communicate revision through actual erasures, changed routes and conflicting construction lines—not merely an inventory of captions saying the artists disagree.
 <<~/ahu>>
 
-<<~ ahu #/folio-calls>>
-!! Expanded art direction — shared grammar, optional modules
+<<~ ahu #/method>>
+!! Support, marks, color and the limits of names
 
-The following call sequence presumes `art-sigils-procedures.mem`'s native procedure definitions in its TW5 context. It supplements rather than substitutes for the portable Inscription. Each additional call earns a distinct study, material investigation or pictorial counterpoint; artists and terrain conventions otherwise belong inside parameter values.
+* **Relief:** Tom Patterson and Bernhard Jenny share the primary cartographic attractor: shaded relief and legible ridges; Heinrich Berann joins only in panoramic orchestration. Use source artists as **method-bearing references**, not literal name labels.
+* **High light:** preserve broad pale upper sky, coherent plan-oblique terrain, relief hierarchy and a believable summit-to-valley descent. Watercolor cold-press behaves differently from depicted stone.
+* **Route overlay:** vellum reads as pale translucent paper with graphite corrections, not another mountain cloud. The amended crossing challenges the painted route at a meaningful location.
+* **Dark matter:** Piranesi informs ruined engineering; Ian Miller informs locally dense, corroded organic-mechanical studies. Keep them in Phlegra rather than turning the entire mountain into an impossible cathedral.
+* **Small life:** quiet green gouache and repairs demonstrate use and inhabitation amid ongoing danger.
+* **Color scraps:** localized cyan, amber and violet test pictorial alternatives. Avoid invented legends masquerading as measured hazards.
+* **Yin reserve:** unpainted sky, uncertain relic identity, aborted lines, partially finished studies and quiet intervals. The richer Folio does not require a busier picture.
+<<~/ahu>>
+
+<<~ ahu #/investigations>>
+!! Three sets of structural investigations — not a decorative sequence
+
+### A. Terrain and route
 
 ```tiddlywiki
-<<art-study question=`Can travelers cross Tempes from the reopened corridor?` form=`thin blue-grey tracing vellum with sparse graphite route correction laid across the large mountain panorama` proposal=`a gentler saddle route challenges the painted escarpment; leave both traces visible` status=`unresolved; no surveyed route precision`>>
-<<art-counterpoint first=`luminous highland panorama with legible relief` second=`translucent graphite route overlay` tension=`the painter's apparent pass fails the cartographer's drainage and slope argument` evidence=`erased original crossing, revised saddle line and two incompatible water traces`>>
-<<art-facture scope=`dominant mountain sheet` support=`warm-white cold-press watercolor paper` medium=`watercolor, thin gouache, selective fine ink` handling=`substantial unworked sky, broad value masses, visible pigment variations, one curling sheet edge`>>
-<<art-study question=`What lies beneath Phlegra's vitrified layers?` form=`rubbed charcoal and chalk on cool charcoal-grey fibrous paper` proposal=`an exposed gigantic shape might be skeletal, mineral or mechanical` status=`at least two interpretations; identity withheld`>>
-<<art-counterpoint first=`broad rock-strata rendering` second=`high-contrast mechanical-bone diagram` tension=`visible form resists a single archaeological explanation` evidence=`incompatible contour traces and partially erased annotations`>>
-<<art-facture scope=`Phlegra relic studies` support=`cool dark charcoal paper and separately mounted smooth white Bristol` medium=`charcoal, chalk, graphite, fine ink` handling=`rubbed charcoal deepens hollows; clean Bristol sections carry precise lines; no identical tooth across media`>>
-<<art-study question=`Do hazards possess different visual signatures?` form=`three small color scraps, varied paper stocks` proposal=`cyan electrical activity at charged ridges; amber ancient magitech leakage; violet spatial discontinuity` status=`tentative; avoid specific unverified mechanisms`>>
-<<art-study question=`What makes a small refuge habitable?` form=`small warm gouache vignette on cream stock` proposal=`protected spring, terraced repair work and quiet vegetation contest a wholly dead landscape` status=`unnamed speculative community`>>
-<<art-counterpoint first=`dark Phlegra devastation` second=`small green spring refuge` tension=`renewed human maintenance contradicts total wasteland without erasing surrounding dangers` evidence=`tiny repaired terraces, retained water and deliberate warm/cool balance`>>
+<<art-facture scope=`dominant highland panorama` support=`warm white cold-press watercolor paper` medium=`watercolor, fine ink, thin gouache` handling=`spacious pale sky and varied pigment granulation; coherent relief`>>
+<<art-study question=`Can the visible Tempes crossing actually work?` form=`graphite over translucent blue-gray vellum` proposal=`a saddle revision challenges the painted escarpment with slope and drainage evidence` status=`two visible crossing traces; uncertain survey`>>
+<<art-counterpoint first=`painter's apparently viable mountain pass` second=`cartographer's corrected saddle route` tension=`visual promise meets terrain constraint` evidence=`misaligned line, erasure, changes to watercourse and exposure`>>
 ```
+
+### B. Phlegra and disputed identification
+
+```tiddlywiki
+<<art-facture scope=`Phlegra relic studies` support=`cool fibrous grey charcoal stock plus smooth white Bristol` medium=`rubbed charcoal and chalk; precise technical ink on separate sheet` handling=`distinct paper teeth, incompatible contours and interrupted lines`>>
+<<art-study question=`Is the colossal relic bone, machine or geology?` form=`dark charcoal mass adjacent to fine ink reconstruction` proposal=`opposed silhouette hypotheses remain visible without final identification` status=`unresolved`>>
+<<art-counterpoint first=`skeletal charcoal impression` second=`mechanical Bristol schematic` tension=`both suggest conflicting interpretations of the same buried form` evidence=`incompatible joints and erased construction`>>
+```
+
+### C. Habitation and colored uncertainty
+
+```tiddlywiki
+<<art-study question=`Where can habitation persist?` form=`small gouache refuge study on separate cream stock` proposal=`spring-fed terraces and repairs survive under local shelter` status=`unnamed settlement; provisional`>>
+<<art-counterpoint first=`Phlegra devastation` second=`a green repaired spring refuge` tension=`inhabitation disproves absolute desolation without dismissing hazards` evidence=`water, terraces, tending and visibly modest scale`>>
+<<art-study question=`What distinguishes nearby visual hazards?` form=`three differently handled small color scraps` proposal=`cyan, amber and violet disturbances, with distinct edge behaviors` status=`mechanisms withheld`>>
+```
+
+The image-facing Folio call values use backticks exclusively; procedure declarations and their quoted defaults live in the procedures meme.
 <<~/ahu>>
 
-<<~ ahu #/other-formal-choices>>
-!! Art-house values and viewpoint distinctions
+<<~ ahu #/assembly>>
+!! Board assembly, pictorial argument, and what remains offstage
 
 * **Composition:** a dominant partly plan-oblique relief panorama across the upper work; supporting lower studies vary in size, orientation and resolution; charcoal relic study darkens one side while the modest refuge occupies a quieter counterweight. Avoid a uniformly polished portfolio grid.
 * **Spatial representation:** shared ridges, passes, ravines, basins and drainage remain physiographically coherent; aerial painting, embedded route map and embodied ledge view can differ in spatial convention. A summit-to-lowland sea sweep suggests Berann and Jenny/Patterson, never a false surveyed metric legend.
@@ -55,37 +87,18 @@ The following call sequence presumes `art-sigils-procedures.mem`'s native proced
 * **Value/light:** pale upper mountain atmosphere and quieter distant recession; locally corrosive black-charcoal and anomalous cyan/amber/violet near the wounds; avoid a global sepia wash or identical micro-grain over the entire board.
 * **Inquiry:** two different route hypotheses, erased pass mark, alternative relic identification, some unfinished areas and unequal finish levels. Labels need not explain disagreement when marks already demonstrate it.
 * **Withholding:** no settled divine identity, exact river survey, fabricated route distance, confirmed supernatural cause, automatic artist credit or floating distant city name. The blank sky performs compositional work.
+
+**Audience/address:** a collaborator reviewing hypotheses about a setting. **Artifactual narrative:** a collection of studies accumulated across differing questions and opinions. **Subject narrative:** a sacred mountain badly wounded by ancient war, later smothered by maelstrom, now difficult but possible to traverse. Audience and hypothetical makers stay *outside* the image.
+
+Primary first read: a sweeping high, luminous relief-aware Olympos panorama. Second read: a damaged passage and dark Phlegra/relic studies with substantially heavier line and contrast. Later read: a route overlay visibly disputes the panorama, a charcoal alternative questions a giant-bone interpretation, and a modest refuge challenges the idea of universal uninhabitability.
+
+Difference of opinion need not become explanatory text. Two mismatched drainage traces, an erased crossing, a stained scrap with revised colour, and a partly concealed earlier silhouette can communicate revision through their juxtaposition. Papers overlap because the artists compare something specific. Ground-level travel studies may inherit the embodied reference's viewpoint without depicting its photographer, while elevated paintings and map overlays draw on the aerial and terrain references for different tasks.
+
+Do not mistake the physical support of the *outer board* for the depicted geological rock of an embedded study. Avoid equal-sized postcard panels, generalized antique parchment, or extravagant technical circles that displace terrain inquiry. The upper panorama can remain bright even when the Phlegra sheets darken.
 <<~/ahu>>
-
-
-<<~ ahu #/settled-world>>
-!! Preserved Elyncian bearings
-
-* Shattered Heights of Olympos, Rift of Tempes and Ash Plains of Phlegra occupy the Olympian Marches.
-* Marches connect Neo-Thracia and Illyria. Wider Aegean-facing relationships remain outside the geographic claims of this particular image.
-* Millennia of Gigantomachy electromagnetic, magitech and sorcerous contamination precede roughly five centuries of maelstrom enclosure.
-* Following the maelstrom enclosure, the reopened corridor admits hazardous passage and pockets of survival.
-* Illyria's Necrospire impact lies in the Accursed Mountains, **not** on Olympos.
-* Exact route geometry, relic identity, settlements, supernatural mechanisms and boundaries remain open. The Gorgonne Diaspora counts among the established named regional powers, but no specific settlement or encounter follows automatically.
-* Olympos serves exploratory visual/terrain inquiry; Neo-Thracia's watershed retains precedence as the first approved game-worthy atlas project.
-<<~/ahu>>
-
-
-<<~ ahu #/olympus-visual-references>>
-!! Three external visual references — real Mount Olympus
-
-These URIs serve *non-depicted reference metadata*, not subject labels or commands to insert photographic prints into the board. Each resource supplies a different observational standpoint; none establishes the final geography of Elyncia's Olympos. An AI lacking URL retrieval needs the reference supplied as an attached image or a separately described observation. Preserve source credit and original license when reusing photographic material.
-
-* **RELIEF / terrain structure:** https://en-ca.topographic-map.com/map-ll8c18/Mount-Olympus/ — interactive elevation map of the real Greek summit area; inspect connected slopes and high relief. Its displayed elevation range covers a local map area, not a definitive full-massif survey. Role: coherent ridges, saddles and descent, not an imposed Elyncian route.
-* **AERIAL / geographic appearance:** https://commons.wikimedia.org/wiki/File:Greece_Mount-Olympus_Muses-Plateau_Mytikas-2918m_Christos-Kakkalos-Refuge_Aerial-ISymeonidis-3.jpg — aerial photograph of Mytikas and the Muses Plateau by Isymeoni (2020; CC BY-SA 4.0). Role: elevated rock-mass continuity, plateau exposure, aerial scale, not an obligation to paint the photograph itself.
-* **EMBODIED / ground-level appearance:** https://commons.wikimedia.org/wiki/File:Olympus_Mytikas_from_Skala.jpg — view from Skala toward Mytikas (2011; Wikimedia Commons, CC0 derivative). Role: human-accessible ridge perspective, immediate drops, close geological silhouette and the traveler's implied position; the photographer/hiker does not enter the frame automatically.
-
-Keep these three full URIs outside the image-facing sigil unless an explicitly capable host accepts references. The compact profile may name their *visual contributions* without carrying URLs or photographed place names.
-<<~/ahu>>
-
 
 <<~ ahu #/artist-register>>
-!! Named artistic ancestors and their contributions
+!! Artist lineage by contribution
 
 * **Tom Patterson** — shaded relief, mountain/seafloor coherence, colour and detail generalization.
 * **Bernhard Jenny** — plan oblique, relief geometry, Swiss colour shading and aerial perspective.
@@ -100,22 +113,36 @@ Keep these three full URIs outside the image-facing sigil unless an explicitly c
 * **Gustave Doré** — sublimity, chiaroscuro and small figures against immense landscapes.
 
 Influences concern craft techniques and viewer effects; do not reproduce specific identifiable artworks or print the artist registry on the board.
+
+The name pairing Patterson/Jenny remains intact in the Inscription; the expanded register may enrich studio decisions without mandating the printing of artist credits.
 <<~/ahu>>
 
+<<~ ahu #/terrain-references>>
+!! Real Olympus sources (research only)
 
-<<~ ahu #/story>>
-!! Narrative relationship, depiction scopes, and visual argument
+These URIs serve *non-depicted reference metadata*, not subject labels or commands to insert photographic prints into the board. Each resource supplies a different observational standpoint; none establishes the final geography of Elyncia's Olympos. An AI lacking URL retrieval needs the reference supplied as an attached image or a separately described observation. Preserve source credit and original license when reusing photographic material.
 
-**Audience/address:** a collaborator reviewing hypotheses about a setting. **Artifactual narrative:** a collection of studies accumulated across differing questions and opinions. **Subject narrative:** a sacred mountain badly wounded by ancient war, later smothered by maelstrom, now difficult but possible to traverse. Audience and hypothetical makers stay *outside* the image.
+* **RELIEF / terrain structure:** https://en-ca.topographic-map.com/map-ll8c18/Mount-Olympus/ — interactive elevation map of the real Greek summit area; inspect connected slopes and high relief. Its displayed elevation range covers a local map area, not a definitive full-massif survey. Role: coherent ridges, saddles and descent, not an imposed Elyncian route.
+* **AERIAL / geographic appearance:** https://commons.wikimedia.org/wiki/File:Greece_Mount-Olympus_Muses-Plateau_Mytikas-2918m_Christos-Kakkalos-Refuge_Aerial-ISymeonidis-3.jpg — aerial photograph of Mytikas and the Muses Plateau by Isymeoni (2020; CC BY-SA 4.0). Role: elevated rock-mass continuity, plateau exposure, aerial scale, not an obligation to paint the photograph itself.
+* **EMBODIED / ground-level appearance:** https://commons.wikimedia.org/wiki/File:Olympus_Mytikas_from_Skala.jpg — view from Skala toward Mytikas (2011; Wikimedia Commons, CC0 derivative). Role: human-accessible ridge perspective, immediate drops, close geological silhouette and the traveler's implied position; the photographer/hiker does not enter the frame automatically.
 
-Primary first read: a sweeping high, luminous relief-aware Olympos panorama. Second read: a damaged passage and dark Phlegra/relic studies with substantially heavier line and contrast. Later read: a route overlay visibly disputes the panorama, a charcoal alternative questions a giant-bone interpretation, and a modest refuge challenges the idea of universal uninhabitability.
-
-Difference of opinion need not become explanatory text. Two mismatched drainage traces, an erased crossing, a stained scrap with revised colour, and a partly concealed earlier silhouette can communicate revision through their juxtaposition. Papers overlap because the artists compare something specific. Ground-level travel studies may inherit the embodied reference's viewpoint without depicting its photographer, while elevated paintings and map overlays draw on the aerial and terrain references for different tasks.
+Keep these three full URIs outside the image-facing sigil unless an explicitly capable host accepts references. The compact profile may name their *visual contributions* without carrying URLs or photographed place names.
 <<~/ahu>>
 
+<<~ ahu #/canon-boundary>>
+!! Elyncia bearings and withheld claims
 
-<<~ ahu #/further-resource-ahu>>
-!! Resource and source ahu
+* Shattered Heights of Olympos, Rift of Tempes and Ash Plains of Phlegra occupy the Olympian Marches.
+* Marches connect Neo-Thracia and Illyria. Wider Aegean-facing relationships remain outside the geographic claims of this particular image.
+* Millennia of Gigantomachy electromagnetic, magitech and sorcerous contamination precede roughly five centuries of maelstrom enclosure.
+* Following the maelstrom enclosure, the reopened corridor admits hazardous passage and pockets of survival.
+* Illyria's Necrospire impact lies in the Accursed Mountains, **not** on Olympos.
+* Exact route geometry, relic identity, settlements, supernatural mechanisms and boundaries remain open. The Gorgonne Diaspora counts among the established named regional powers, but no specific settlement or encounter follows automatically.
+* Olympos serves exploratory visual/terrain inquiry; Neo-Thracia's watershed retains precedence as the first approved game-worthy atlas project.
+<<~/ahu>>
+
+<<~ ahu #/resources>>
+!! Critical and cartographic source register
 
 * Canon bearings: Elyncia regional and nexus worksheets, the Neo-Thracia referee worksheet (restricted register), and the region-worksheet template in the Synthetic Dream Machine repository. The source files, not this exploration, govern setting claims; do not transmit unrelated regional names into image-facing instructions.
 * Tom Patterson and Bernhard Jenny, *Introducing Plan Oblique Relief*: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
@@ -128,11 +155,9 @@ Difference of opinion need not become explanatory text. Two mismatched drainage 
 * Harvard Project Zero: https://pz.harvard.edu/resources/what-makes-you-say
 <<~/ahu>>
 
+<<~ ahu #/transfer>>
+!! O-takiage and null-test handoff
 
-<<~ ahu #/source-history>>
-!! O-takiage and limits
-
-The preceding four-meme draft supplied wider speculative and historical material; this re-cut keeps relevant world bearings, artist contributions and source URIs while giving the portable Inscription a separate file. The three external Olympus URIs inform terrain structure, aerial appearance and embodied ledge experience respectively; do not place their photographs or geographic labels directly into the image absent specific direction.
-
-Additional artists from this example remain illustrative craft ancestors, not a reusable aesthetic default. The three Folio modules demonstrate a possible small structural vocabulary; they do not settle all future procedures. This research/documentation handback does not certify a TW5 runtime execution or establish game-world geography.
+The old Folio supplied the visual questions and sources. This re-cut reorganizes them into terrain → contradiction → unresolved remains → inhabitation → assembly; the artist, route and material registers retain their distinction. A literal rendering of the standalone Inscription lives in its fifth meme. No assumption of live TW5 execution or universal cross-model behavior follows from these authored calls.
 <<~/ahu>>
+
