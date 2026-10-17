@@ -8,6 +8,7 @@ import { defineConfig } from "vitest/config";
  */
 export default defineConfig({
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     name: "floor-crossing-e2e",
     include: ["tests/e2e/floor-crossing.e2e.test.ts"],
     environment: "node",

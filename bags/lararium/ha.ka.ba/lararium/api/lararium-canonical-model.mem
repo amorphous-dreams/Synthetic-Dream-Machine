@@ -118,7 +118,7 @@ sub-memes; this carries the keel + the meme map.
 @lares/core        — voice house · mu · syad · law-of-5s · OODA-HA · l-prime · lar-URI (noosphere-boot)
   └ @lararium/mesh  — SUBSTRATE keel, VM-FREE: CompositeStore · AutomergeDocStore · MemeProvider ·
                       island-protocol · island-repo · BagResidencyManager · CapabilityVerifier ·
-                      AuthVerifierShore · auth-wire (V3) · open-vessel-core (assembleVessel) ·
+                      leaf-presentation · ed25519-door · open-vessel-core (assembleVessel) ·
                       VesselIslandPoolCore · causal-island · crypto · lar-uris · base-doc
      └ @lararium/tw5 — VM-in-Worker: runSovereignKernel+IslandHostShore · openAdminVmCore+AdminVmHost ·
                        IslandAdaptor · tw5-vm · admin-behavior · verb-dispatcher · vessel-steps (mountPrimaryWiki)
@@ -284,6 +284,6 @@ Read order once held: noosphere-boot → THIS → (open-vessel · causal-island 
 seeded by the boot, enacted per turn, corrected by degree, decaying untended; the memory-palace that
 captures its FORM beside the verbatim CONTENT stands at [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]].
 
-<<^ code="&#x0003;">>ni:///sha-256;ZEJhC67FT3mPAwh2PppaXDivWSatdoji-U-QQU6SZmI
+<<^ code="&#x0003;">>ni:///sha-256;gg9_fzoVjOLiruzsK2I31OQpq9itQYbkUfrurmOojXM
 
 <<^ code="&#x0004;" -> to="?">>

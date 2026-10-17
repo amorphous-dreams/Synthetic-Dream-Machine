@@ -62,6 +62,7 @@ import { runLocalVerb, deriveRoutedCap } from "./verb-local-dispatch.js";
 export interface VerbContext {
   readonly daemon: CompositeStore;
   readonly invocation: Verb;
+  readonly signal?: AbortSignal;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -196,6 +197,7 @@ export class VerbDispatcher {
   private unsubWiki:      (() => void) | null = null;
   private unsubAutomerge: (() => void) | null = null;
   private readonly inFlight = new Set<string>();
+  private readonly inFlightAbort = new Map<string, AbortController>();
   private readonly seenSummons = new Set<string>();
   /**
    * Effect dedup (D1, P2.5 iter 4) — one chained promise per effectKey. A second attempt
@@ -237,11 +239,12 @@ export class VerbDispatcher {
   /** Run the invocation's handler — local registry first, else the verify-then-delegate
    *  route to main, else a "no handler" refusal. Shared by the plain-dispatch path and
    *  the effect-dedup "run fresh" path (both end up calling exactly this). */
-  private async runHandler(invocation: Verb): Promise<Record<string, unknown>> {
+  private async runHandler(invocation: Verb, signal?: AbortSignal): Promise<Record<string, unknown>> {
     if (this.opts.registry.has(invocation.action)) {
       return runLocalVerb(invocation, {
         daemon:   this.opts.daemon,
         registry: this.opts.registry,
+        ...(signal ? { signal } : {}),
         ...(this.opts.verifier ? { verifier: this.opts.verifier } : {}),
       });
     }
@@ -277,17 +280,17 @@ export class VerbDispatcher {
    * of it before doing its own read), then replaces the map entry with its own promise before
    * returning — so a third concurrent attempt chains onto THIS one in turn.
    */
-  private dispatchWithEffectDedup(invocation: Verb): Promise<void> {
+  private dispatchWithEffectDedup(invocation: Verb, signal?: AbortSignal): Promise<void> {
     const effectKey = invocation.effectKey as string;
     const ahead = this.inFlightEffect.get(effectKey);
-    const chained = (ahead ?? Promise.resolve()).catch(() => {}).then(() => this.resolveEffect(invocation, effectKey));
+    const chained = (ahead ?? Promise.resolve()).catch(() => {}).then(() => this.resolveEffect(invocation, effectKey, signal));
     this.inFlightEffect.set(effectKey, chained);
     return chained.finally(() => {
       if (this.inFlightEffect.get(effectKey) === chained) this.inFlightEffect.delete(effectKey);
     });
   }
 
-  private async resolveEffect(invocation: Verb, effectKey: string): Promise<void> {
+  private async resolveEffect(invocation: Verb, effectKey: string, signal?: AbortSignal): Promise<void> {
     const inputDigest = await verbInputDigest({
       verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy, effectKey,
     });
@@ -322,7 +325,7 @@ export class VerbDispatcher {
       console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation));
+    await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, signal));
   }
 
   start(): void {
@@ -332,12 +335,18 @@ export class VerbDispatcher {
     const onWikiChange = (changedTiddlers: Record<string, { deleted?: boolean }>) => {
       for (const title of Object.keys(changedTiddlers)) {
         if (!title.startsWith(VERB_URI_PREFIX)) continue;
-        if (changedTiddlers[title]?.deleted) continue;
+        if (changedTiddlers[title]?.deleted) {
+          const requestId = title.slice(VERB_URI_PREFIX.length);
+          this.inFlightAbort.get(requestId)?.abort();
+          continue;
+        }
         const tw5Tiddler = wiki.getTiddler(title) as { fields: Record<string, unknown> } | undefined;
         if (!tw5Tiddler) continue;
         const invocation = parseVerb(tw5Tiddler.fields);
         if (!invocation || invocation.status !== "pending" || this.inFlight.has(invocation.requestId)) continue;
+        const abort = new AbortController();
         this.inFlight.add(invocation.requestId);
+        this.inFlightAbort.set(invocation.requestId, abort);
         void this.opts.daemon.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
           // Durable idempotency — the CRDT is the dedup store: a verb whose
           // outcome already landed has already taken effect, so skip re-execution
@@ -362,11 +371,14 @@ export class VerbDispatcher {
           }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
-          if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation);
-          return dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation));
+          if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
+          return dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, abort.signal));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
-        }).finally(() => this.inFlight.delete(invocation.requestId));
+        }).finally(() => {
+          this.inFlight.delete(invocation.requestId);
+          this.inFlightAbort.delete(invocation.requestId);
+        });
       }
     };
     wiki.addEventListener("change", onWikiChange);
@@ -399,4 +411,3 @@ export class VerbDispatcher {
     return placeVerb(this.opts.daemonVm, opts);
   }
 }
-

@@ -75,7 +75,7 @@ function stageFacts(a: Leaf, b: Leaf): string {
 
 interface StageWatch { readonly stallAfterMs?: number; readonly onStall?: (report: string) => void }
 
-/** A network stage still unsettled at its stall mark reports its label and both leaves' state, then keeps waiting:
+/** A network stage unsettled at its stall mark reports its label and both leaves' state, then keeps waiting:
  *  the report names a stall, and only the test's own deadline decides pass or fail. */
 async function stage<T>(label: string, a: Leaf, b: Leaf, run: () => Promise<T>, watch: StageWatch = {}): Promise<T> {
   const { stallAfterMs = 4000, onStall = (report: string) => console.warn(report) } = watch;
@@ -131,7 +131,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     } finally { await shutdown(x, y); }
   });
 
-  test("RED: a parked sync frame reports the repo.find stage and document, and the find still lands once the frame goes", async () => {
+  test("RED: a parked sync frame reports the repo.find stage and document, and the find lands once the frame goes", async () => {
     let armed = false;
     let parked = false;
     const held: Array<() => void> = [];
@@ -199,7 +199,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     // CONTROL: the line hides as base64url inside a CBOR map inside hex, so only the CBOR reading finds it.
     const leaked = JSON.stringify({ t: "proof", p: { box: hex(cbor.encode({ s: base64UrlEncode(new TextEncoder().encode(CONTENT)) })) } });
     expect(carriedReads([leaked], "sealed sibling channel")).toBe(true);
-    // CONTROL: the same line nested seventy arrays deep still reads, so the head reading never caps what it hands on.
+    // CONTROL: the same line nested seventy arrays deep reads, so the head reading never caps what it hands on.
     let deep: unknown = { s: base64UrlEncode(new TextEncoder().encode(CONTENT)) };
     for (let i = 0; i < 70; i++) deep = [deep];
     expect(carriedReads([JSON.stringify({ t: "proof", p: { box: hex(cbor.encode(deep)) } })], "sealed sibling channel")).toBe(true);

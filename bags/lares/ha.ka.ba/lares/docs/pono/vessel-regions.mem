@@ -49,7 +49,7 @@ Two things the window once held stand in the floor phase: the store claim (`stan
 
 !!! ② Repo + the share verdict + reverdict
 
-`DaemonAuthGate` · `ListeningWSServerAdapter` · the five peer maps (`peerIdentifierMap` · `peerClassMap` · `peerWalkerBoard` · `peerContractNymMap` · `peerBindings`) and the `peer-candidate` microtask that fills four of them · `new Repo({ shareConfig: … })` · the `doc-metrics` wire probe · `reverdict`, which calls `repo.shareConfigChanged()`.
+the sealed face gate · `ListeningWSServerAdapter` · the five peer maps (`peerIdentifierMap` · `peerClassMap` · `peerWalkerBoard` · `peerContractNymMap` · `peerBindings`) and the `peer-candidate` microtask that fills four of them · `new Repo({ shareConfig: … })` · the `doc-metrics` wire probe · `reverdict`, which calls `repo.shareConfigChanged()`.
 
 ''The verdict closure (the `selfSlotShareDecision` call) reads the denial cells, the sibling cells, the peer maps and the vessel's own carriage and hosting boards'', and several regions write them. This region does not split.
 
@@ -108,7 +108,7 @@ Regions ①②③④ co-own the verdict cells: `antigenRing` · `selfSlotFedGate
 Four orderings bear load. The first three stand unpinned as orderings, and the fourth already throws. A region plan that moves a line before the reds stand amounts to a rewrite with no instrument.
 
 # ''THE ADMISSION LANDS FIRST.'' The share verdict awaits a microtask before reading `network.sockets[peerId]`, because the WS adapter emits `peer-candidate` BEFORE it keys the socket, and the Repo resolves the verdict synchronously inside that emit. Without the yield a WS peer reads as an in-process house member and every private plane the vessel holds at that instant syncs. ''RED'' (UNBUILT): a staged WS peer that never passed the gate asks for a private plane on its FIRST verdict and draws `false`; ''CONTROL'': the same peer after `peer-candidate` lands draws the same `false` for a different reason (unadmitted), and an in-process island peer draws `true`. The red must fail once the `queueMicrotask` yield goes — collide it by removing the line and re-running.
-# ''THE DIAL FIRES AFTER THE BOARDS'' (`maybeStartNexusClientDial` after `registerCrossroadsInOracle` and the realm plane). ''RED'' (UNBUILT): a boot with a `LAR_JOIN_SYNC` naming a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
+# ''THE DIAL FIRES AFTER THE BOARDS'' (`maybeStartNexusClientDial` after `registerCrossroadsInOracle` and the realm plane). ''RED'' (UNBUILT): a joinee boot whose hearth dial pin (`readHearthDialPin`, packed from the root-signed answer’s `--sync-url` and gate pin) names a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
 # ''EVERY WRITER REVERDICTS''. ''RED'': for each verdict cell, a write followed by a verdict read answers the NEW value. The three tests named under #/what-becomes-a-module pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape; the per-cell verdict reds stand UNBUILT. The red makes an extraction safe, since a missed `reverdict` in a refactor reads as a peer that syncs what it should not and shows up nowhere else.
 # ''THE PREFAB ORDER.'' `openDaemon` writes `pendingVerbContribution` and `wireVerbs` reads it, throwing when it finds none. This one already throws; the other three want that shape.
 
@@ -144,6 +144,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_3QxEZjYYC7rCY50LzFP4qK3pkTlezWwBAgkuP8YnsA
+<<^ code="&#x0003;">>ni:///sha-256;03mvKV88pBZUHj-JX-2loiWqCrYJ3gYCnS2PJLcTjug
 
 <<^ code="&#x0004;" -> to="?">>

@@ -9,6 +9,7 @@ import { alias } from "./vitest.alias";
 export default defineConfig({
   resolve: { alias },
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     environment: "node",
     include: ["tests/e2e/**/*.test.ts"],
     testTimeout: 60_000,

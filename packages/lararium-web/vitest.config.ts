@@ -5,6 +5,7 @@ import { playwright } from "@vitest/browser-playwright";
 // pure functions inside that browser context; no test boots a vessel here.
 export default defineConfig({
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     projects: [
       {
         test: {

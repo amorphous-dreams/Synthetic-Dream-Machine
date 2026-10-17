@@ -443,4 +443,3 @@ export function larBootstrapPath(): string {
 // bundle (seed.json, cas/), identical for every vessel and safe to copy.
 
 // ── Transient runtime (tmpfs) ────────────────────────────────────────────────────────────────────
-

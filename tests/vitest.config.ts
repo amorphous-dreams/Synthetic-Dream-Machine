@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { configDefaults, defineConfig } from "vitest/config";
 
 /**
@@ -16,7 +17,9 @@ const RUN_DIR = process.env["LAR_E2E_RUN_DIR"]
 mkdirSync(RUN_DIR, { recursive: true });
 
 export default defineConfig({
+  root: fileURLToPath(new URL(".", import.meta.url)),
   test: {
+    globalSetup: ["../tools/vitest-dist-guard.mjs"],
     // STATED, not inherited. `isolate: true` is vitest's default, and suites here depend on it:
     // several modules hold process-global registries (a Map of holders, memo caches) that no reset
     // clears, so a fresh module registry per file is the only thing returning them to zero. Left

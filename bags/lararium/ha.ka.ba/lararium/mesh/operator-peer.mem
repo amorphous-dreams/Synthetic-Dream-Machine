@@ -205,8 +205,7 @@ authority equals the INTERSECTION of the operator's grant and the agent's attenu
 
 The leaf-identity shape (OP-AP5/6) stands
 resolved by twin scouts 2026-06-07 (light cached-card + bare-Ed25519 signer over the
-heavy worker-keyhive path; the tree's `auth-proof` tests already prove bare-Ed25519
-proofs verify). The remaining BUILD: `lares vessel found` mints + persists the operator
+heavy worker-keyhive path; `packages/lararium-mesh/src/ed25519-door.ts` reads bare Ed25519 proofs). The remaining BUILD: `lares vessel found` mints + persists the operator
 ContactCard (`.operator-card.json`, 0o600); a leaf-identity provider loads
 seed+card; then V3 C (peer transport) and the writable MCP surface compose over it.
 
@@ -255,6 +254,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d826cfW2ySd5ZsBEQGvYF0cjhpIjGXkfCG_iI5hrNC8
+<<^ code="&#x0003;">>ni:///sha-256;mFw6gbuzdr8M-3ayN7jGR2xTAXBw8Jy1nEgDAd3Lueo
 
 <<^ code="&#x0004;" -> to="?">>

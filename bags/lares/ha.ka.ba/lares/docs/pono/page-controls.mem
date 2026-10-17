@@ -199,7 +199,8 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 | `$edit-shortcut` · `$edit` · `$password` · `$edit-bitmap` | a page-only native control for a supported schema, else a refusal |
 | `$droppable` · `$draggable` · `$dropzone` | a bounded file or title offer crossing as `lar:drop` where the stamp names `drop`; generic drag refuses |
 | `$keyboard` | declared keys only: the chords its `data-lar-keys` stamp names cross, every other key stays with the page |
-| `$eventcatcher` · `$linkcatcher` | REFUSE: broad capture, containment checks and late cancellation exceed a named binding |
+| `$eventcatcher` | BIND declared discrete events (click, dblclick, contextmenu, focus in and out, drop) through a declared selector; REFUSE continuous streams and pointer capture by name (`dreamdom#/open-rulings`, 2026-10-16) |
+| `$linkcatcher` | REFUSE: broad capture, containment checks and late cancellation exceed a named binding |
 
 ''Where each piece lives.'' Camera and template intent, and the narrow override grammar, stay in the house plugin as content. The projected editor engine stays in the engine fold. Listener binding and native behaviour stay in the vessel's own bundle.
 
@@ -251,6 +252,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IKDdxH6j-MOyuLHBzhl6-1JTM5EYPHquJirTno4f8Cg
+<<^ code="&#x0003;">>ni:///sha-256;ScVxwdv-cG8bKMNZdgOgJo7hMXKbX_r7wKxUhrEN__8
 
 <<^ code="&#x0004;" -> to="?">>

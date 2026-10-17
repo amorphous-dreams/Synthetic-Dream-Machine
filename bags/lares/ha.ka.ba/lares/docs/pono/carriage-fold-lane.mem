@@ -1,0 +1,124 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/carriage-fold-lane.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "carriage-fold-lane — the lane kit a fresh local session takes for roadmap row `W18`: the founding hearth reads its carried herms' floor pins as `place-uncarried` in the held-out herm-mesh and nexus cells, so a host reader never files a herm's pin. It names the evidence measured so far, the causes ruled out with what ruled them out, the leading lead and the probe that settles it, the lane's branch and crucible under `mixed-model-swarm#/the-lanes`, its crew, its fences, where the evidence rests on disk, and who answers questions while the controller's session stays open."
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/carriage-fold-lane"
+written   = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! The carriage-fold lane ~ a kit for the session that takes it
+
+''What this lane closes.'' Roadmap row `W18` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/the-loops): in the held-out herm-mesh cell, all four places join A's Nexus, then the host reader reads relay-2 as `unverified: pin-absent` on every attempt; in the mesh-scenarios nexus cell, `the hearths carry from the herm` fails with `no carriage`. Both cells read red on the work branch since the wire-socket lane merged (PR #44).
+
+''How to start.'' Open a fresh session in the repository and paste:
+
+```
+Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/lares/ha.ka.ba/lares/docs/pono/carriage-fold-lane.mem whole.
+```
+
+''Read before acting'': this carrier whole; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> whole (#/the-lanes binds this lane, #/the-otakiage closes it); <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> #/red-first and #/instruments-that-lie.
+
+<<~/ahu>>
+
+<<~ ahu #/the-evidence>>
+
+!! The evidence ~ measured, with where each reading rests
+
+The held-out run 38975094627 on `1f0759b53` uploaded its cell's container logs. Tallying each container's `[carriage] nexus-…: N place floor pin(s) …` lines:
+
+|! container |! reads |
+| `lararium-a` (A, the Nexus founder; every carry ran there as `lares nexus carry --floor-pin`) | `1 place floor pin(s) read` ×6, `3 place floor pin(s) refused (place-uncarried)` ×7 |
+| `herm-relay-2` (carried last) | `3 place floor pin(s) read` ×129 |
+| `herm-relay` (took its bundle before relay-2's carry) | `2 place floor pin(s) read` ×80 |
+
+So the herms count the carries from their bundles and read every pin, while A's running daemon sees the pin statements and counts none of the carries it wrote. `place-uncarried` names exactly `carriers.has(placeKey)` failing after the statement's signature, Nexus, route and tier passed (`place-floor-pin.ts`).
+
+''Ruled out, and what ruled each out:''
+# ''A held reading staler than the board.'' In production `readings` runs `readEveryCarried` fresh each refresh, and the reading's `denyBoard` and `openBoard(url)` read one cached live handle (`liveBoardOpener`); a cure that reopened the board changed nothing real (Opus overwatch, round 3).
+# ''A head-only fold after a charter roll.'' `foldCarrierSet` runs without ancestry at three sites (the pull in `herm-carriage.ts`, `placeArmFor`, `placeCarriedNexuses`), so a carry at a closed epoch would read uncarried. Measured in a test that walks the container's own order (the boot's charter roll in `tools/lararium-container-boot.sh`, then four `carry-for → carry → carry-take` joins): A's head epoch and all four carries share one epoch, and A files all four pins (Sol, round 4).
+# ''The merge with the DreamDOM base.'' `git diff 02fe2a4cc 1f0759b53` is empty over these paths.
+
+''The leading lead (inferred, unmeasured).'' The in-process reproduction holds one Repo; the container does not. In A's container, `nexus carry` runs as a separate CLI process that writes the carriage board into the store on disk, while A's long-running daemon reads the board through a live handle it materialized once and caches per url. The herms' own pin statements reach the daemon over the network; the CLI's carry acts may never reach the daemon's live document. That fits the split: pins seen, carries not counted.
+
+''The probe that settles it.'' In a two-process test (a running daemon composition and a separate `nexus carry` writing the same store), or in the container itself, read the carriage board through the daemon's live handle after the CLI's carry and compare it with the store on disk. If the daemon's handle lacks the carry acts, the cure belongs where a CLI write reaches a running daemon (the verb seat over the UDS socket, or the daemon reloading a board another process changed); if it holds them, the fold or the reader is the next suspect.
+
+<<~/ahu>>
+
+<<~ ahu #/the-lane>>
+
+!! The lane ~ branch, crew, crucible
+
+* ''Branch'': `feature/green-jello-dinosaur-5--carriage-fold`, cut from the work branch's head after the controller's settle push. Nothing lands on the work branch directly.
+* ''Crew'' (`mixed-model-swarm#/the-shapes`): the session leads as the Opus Episkopos; a build pair builds in ONE provisioned worktree (two Copilot spirits from different families while Codex runs short, `mixed-model-swarm#/the-shapes`) (`node tools/provision-worktree.mjs <empty-dir>`), coordinating through `.lane-claims.md`; the Copilot Chao pair (Hodge, Podge, the Spin) and an Opus overwatch read the burst; the lane closes with an o-takiage pass (`mixed-model-swarm#/the-otakiage`).
+* ''Red first'': the probe above as a red test pinned by the product's own event, never a sleep, a retry or load; a control that bites. Sol's container-order test (below) passes on the base code and stands as a control for the in-process path.
+* ''The crucible'' (`mixed-model-swarm#/the-lanes`): push the lane branch (its CI and held-out run there, and the held-out herm-mesh and nexus cells are this lane's witness), open a pull request into the work branch, one Copilot PR review, answer every comment, then the controller merges.
+* ''Canon in the same burst'': `W18` leaves the loops when it closes; the handoff's state line and the changelog re-true.
+
+<<~/ahu>>
+
+<<~ ahu #/the-kit-on-disk>>
+
+!! The kit on disk ~ outside the tree, for this lane alone
+
+The evidence and tools rest at `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/handoff-2026-10-16-carriage-fold/`:
+
+* `held-out-herm-mesh-artifact/`: the cell's own logs (`mesh-compose.log` holds every container's lines; `driver.log` the witness).
+* `reds-logs.txt`: the failing excerpts of both cells.
+* `sol-reds.out.md`, `sol-floorpin.out.md`, `sol-fold.out.md`, `sol-epoch.out.md`: the four diagnostic rounds, each with its `file:line` reads; `overwatch-3.md`: the Opus overwatch's read of round 3.
+* `sol-container-order-test.patch`: Sol's test that walks the container's order in one process (apply with `git apply` on the lane's worktree).
+* `launch.sh`, `launch-copilot.sh`, `copilot-quota.mjs`: the Codex and Copilot launchers (read-only review and retry-on-capacity) and the premium-allowance reader; their `S=` paths name the controller's scratchpad, so set them to the lane's own.
+
+The Copilot allowance read 299.2 of 300 premium requests at handoff, resetting 2026-11-01; a run's closing `Requests … Premium` line states its spend.
+
+<<~/ahu>>
+
+<<~ ahu #/advice>>
+
+!! Advice ~ for the lane's first hour
+
+# ''Fetch first.'' Cut the lane branch from the work branch as origin holds it after the controller's settle push; confirm the settle's commits (the dist guard, `mixed-model-swarm`, this kit) stand in it.
+# ''Provision, never link.'' The dist guard refuses a worktree whose `node_modules` link into another checkout; `node tools/provision-worktree.mjs <empty-dir>` gives the build pair one worktree with its own links and builds. A provisioned worktree initializes submodules, so its removal at the lane's close waits on the operator's `--force`.
+# ''Write the probe before any cure.'' Four diagnostic rounds produced two plausible cures that measurement refuted; the cross-process lead stands inferred until a red test reproduces A refusing pins it holds carries for.
+# ''The witness is the held-out cell.'' The node suites read green on the base code; the held-out herm-mesh and mesh-scenarios nexus cells read red. A lane push runs them on the lane branch; download each cell's artifact (`gh run download <run> -n <cell>`) and tally the containers' own `[carriage]` lines, as the evidence table did.
+# ''Spend Copilot on purpose.'' The Chao pair on cheap models reads each burst; one Copilot PR review reads the lane's pull request; a deeper eye runs only on a KAIROS pull the operator hears first.
+# ''Close with the o-takiage'': `W18` leaves the loops, the handoff's state line and the changelog re-true, and the lane's worktrees, briefs and probes return after a landed census.
+# ''Hand back in the lane law's shape'' (`controller-handoff#/the-lane-law`, the crew's handback line): one status line, what a person can do, commits, shards and CI, the review pair's and the overwatch's findings and how each closed, suites, house readings, canon still stale, changelog bullets, slips and refusals, and the span's start and end; and re-true `controller-handoff#/state` before the pull request merges.
+
+<<~/ahu>>
+
+<<~ ahu #/questions>>
+
+!! Questions ~ while the controller's session stays open
+
+The controller's session (Lares-Awakens) stays open for a short while after this handoff. A question about the evidence, the rounds, or the reasoning behind a ruled-out cause reaches it by `SendMessage` (list it with `ListAgents`), or through the operator. Once the operator closes that session, the controller seat passes by the operator's word (`controller-handoff#/the-live-handoff`), and this lane's lead merges its own pull request only as the seat's holder.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;EmjWsZMLz5awkqZDT2ZOINct56-0-J9Zw65_ReGk3-Q
+
+<<^ code="&#x0004;" -> to="?">>

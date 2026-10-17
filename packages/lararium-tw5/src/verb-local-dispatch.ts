@@ -24,6 +24,7 @@ export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<Ca
 export interface RunLocalVerbOptions {
   readonly daemon:    CompositeStore;
   readonly registry:  VerbTable;
+  readonly signal?:   AbortSignal;
   readonly verifier?: CapabilityVerifier;
 }
 
@@ -59,5 +60,5 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   }
 
   const cap = makeCapVerify(opts.verifier, invocation.requestedBy);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap });
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, ...(opts.signal ? { signal: opts.signal } : {}) });
 }

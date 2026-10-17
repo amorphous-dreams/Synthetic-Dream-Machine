@@ -142,7 +142,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Eight suites guard on `existsSync` of tw5-core/ and dist/ — both gitignored build output.
-      # Unbuilt, they SKIP and the job still exits 0, so the run reads green while 35 tests never ran.
+      # Unbuilt, they SKIP and the job exits 0, so the run reads green while 35 tests never ran.
       # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored
       # because its sha256 IS the hearth's true name, so `build` refuses to render it and the bake reads
       # the blob that stands. A runner holds none until this step renders it from the submodule.
@@ -190,7 +190,7 @@ jobs:
       - name: Run lararium-sensorium Python suite
         run: ~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q
       # Keep the package verdict visible if the independent Python suite fails.
-      # The holder still gates package tests that exercise its real subprocess.
+      # The holder gates package tests that exercise its real subprocess.
       - name: Install Playwright Chromium (browser-vessel suite)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: browser
@@ -276,7 +276,7 @@ jobs:
           sed -n '/held out of this run/,$p' "$RUNNER_TEMP/witnesses.log"
       # THE INSTRUMENTS' OWN SELF-TESTS. Each `tools/*.test.mjs` plants the reds its tool owes against fakes
       # and scratch trees — no docker, no browser, no standing app — and reads the built tree, so it runs
-      # here beside the fleet it keeps honest. The glob reads the live set; a new self-test joins without a
+      # here beside the fleet it keeps honest. The glob reads the live set; each self-test joins without a
       # hand edit. It runs whatever the fleet answered, so one red cannot hide the other question.
       - name: Run every tool self-test (tools/*.test.mjs)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
@@ -385,6 +385,9 @@ jobs:
       # dist-plugin/ as the tw5 package's own side effect; this job's whole point is to prove
       # what SHIPS, so the pristine engine meets the TRACKED `$:/` distribution — the sibling
       # `build-freshness` job is what already proves a fresh build and the tracked copy agree.
+      # The package suites read dist stamps; this build emits dist without stamping it.
+      - name: Stamp the dependency build for the pristine suites
+        run: node tools/stamp-build.mjs .
       - name: Point dist-plugin at the committed standalone artifact
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
       - name: Install Playwright Chromium (standalone single-file suite)

@@ -17,6 +17,7 @@ export {
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
 } from "./vessel-paths.js";
 export { atomicWriteFileSync } from "./fs-atomic.js";
+export { fileJournal } from "./vessel-journal-file.js";
 
 // The Erisian date: `ddate(1)` where it stands (it carries holydays, exclamations, X-Day and the whole
 // %{…%} shape), the computed calendar where it does not — and the STAMP always computed, because ddate's

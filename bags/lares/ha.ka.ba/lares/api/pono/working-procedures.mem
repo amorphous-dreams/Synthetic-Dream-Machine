@@ -125,6 +125,7 @@ Collide each before trusting it.
 
 !!! Tree and run
 * ''Most often the operator wrote the other change.'' Parallel sessions share this tree. A dirty file of unknown provenance gets REPORTED and copied aside, never reverted and never committed.
+* ''A suite reads whatever `dist` its imports resolve to.'' A stale build, or a worktree whose `node_modules` link into another checkout, greens a suite about code the tree does not hold. Every vitest config loads `tools/vitest-dist-guard.mjs`, which refuses before any test runs when a workspace package the suite loads through `dist` resolves outside the checkout or reads stale against its stamp; a package checks its own `dist` only where its tests name a built path, and a CI run (which builds the tree moments before its suites, while a suite may write into `packages/`) keeps the foreign-checkout refusal and leaves the stale check to the desk. Provision a worktree with `tools/provision-worktree.mjs <empty-dir>` rather than linking another checkout's `node_modules`.
 * ''Know what an import resolves to.'' `@lararium/mesh` resolves to source under the node package's test aliases and to `dist` under the CLI's, so one symbol reading "missing" may name a stale `dist`. A revert-verify that swaps source alone reads vacuous against a run of `dist`.
 * ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
 * ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
@@ -148,7 +149,7 @@ Collide each before trusting it.
 * ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
 * ''Mechanism at choke-points, policy in cascades.'' A capability stands as a manifest grant, never as a flag a cascade can set.
 * ''Prove by witness, never by assertion.'' A change that crosses a vessel proves itself against a staged vessel; a failing vector NAMES a hole.
-* ''Early alpha, until a third human'' (operator ruling, 2026-10-16). Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) ends the alpha line at the second operator's seat; this ruling places the sticky line at the third human, and the road's fence wording stays owed to that reading.
+* ''Early alpha, until a third human'' (operator ruling, 2026-10-16). Shapes get tried and thrown away freely while one or two operators hold the mesh, since that takes only minimal coordination. Once a third human's data and habits enter it, and in any stable federated mesh, human-scale flows and persistence become the primary design attractors. The road's fence (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>) reads the same line.
 * ''Evergreen, with no old shapes'' (operator ruling, 2026-10-16). No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
 * ''Recursive o-takiage'' (operator ruling, 2026-10-16). A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
 * ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
@@ -166,6 +167,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;clKsDcTj26rODQjTQvmiXAph2uOTpNaA7QK4diKRCEg
+<<^ code="&#x0003;">>ni:///sha-256;5uGIxLVf1h5dJBQ3GogZI-ypw_Q-sQUFN0XmCPhUt4I
 
 <<^ code="&#x0004;" -> to="?">>

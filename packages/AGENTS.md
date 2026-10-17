@@ -55,7 +55,7 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/tw5` carries TiddlyWiki runtime integration: the TW5 VM surface, the island layer, the memetic-wikitext machinery, the verb pipeline, TW5-side stores, and the TW5 wikirules/macros/modules/filters. Holds zero `@automerge` dependencies. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No TW5 VM runs on the main thread — every engine lives in a worker.
+`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No truth lives on the main thread: every authoritative engine and store runs in a worker, and a main-thread glass engine (DreamDOM D3, behind a flag) renders as a camera over them, never as truth.
 
 ### Pronaos arrival/bootstrap projection (P0 inventory)
 

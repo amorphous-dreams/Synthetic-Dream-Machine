@@ -1,0 +1,76 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mesh-goldens">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/mesh-goldens.mem"
+l-space   = "stable"
+mana      = 14
+manao     = 14
+manaoio   = 12
+namespace = "&#x2299;"
+role      = "mesh-goldens — a design for the e2e suite written from scratch: every vessel keeps a typed, durable event journal; a test acts on vessels and awaits journal entries, never a clock; scripts run as data on three hosts (memory, process, container); causal tokens the mesh already carries say 'after'; a product event says 'never happened'; a liveness budget only alarms. Drafted by the Muse, refined by a Copilot Chao pair's two passes and their traded Spin, 2026-10-16. Designed, unbuilt."
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/mesh-goldens"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/mesh-goldens"
+written   = "2026-10-16"
+```
+
+<<~ ahu #/head>>
+
+! Mesh goldens ~ the e2e suite as scripts of acts and events
+
+''Why.'' The house's law reads that a wall clock never decides run or drop (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>), and most of `tests/e2e/` decides pass or fail by `Date.now()` deadlines over polls of the disk and of stdout. Those waits fail intermittently under load (row `W24`), and a defect that lives between a CLI process and a running daemon (row `W18`) stays invisible to a test that holds one process. DreamDOM answers the same shape at the page with interaction goldens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> #/conformance): a script of acts over a frozen world, with the expected writes, messages and answers, run on every host as a row. The mesh takes the same form.
+
+''Status.'' Designed, unbuilt. A lane opens it under `mixed-model-swarm#/the-lanes`; `W24`'s cure lands as its first script.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model ~ seven parts
+
+# ''An event journal per vessel.'' Typed, append-only, durable entries: readiness phases, a bag projected, a carriage fold, floor pins filed or refused, a crossing, a refusal, a verb's own receipt. Ids run monotonic within a genesis epoch, so a re-genesis opens a new lineage; a writer prefix keeps two daemons on one store apart; compaction bounds its size. Much of it stands today as log lines (`[carriage] … place floor pin(s) …`, the verb dispatcher's readiness) and as `ReadinessMap` in mesh `readiness.ts`; the journal makes them data. It reads over the verb seat (a `lares events --follow --since <cursor>` verb) and in process as an async iterator.
+# ''An entry names an effect another process can see.'' The journal writes `bag-projected` after the files stand on disk, and a carry entry after the board change another process reads. An entry written before its effect is visible would rebuild the very race it exists to end.
+# ''A test acts and awaits.'' `act(vessel, verb, args)` drives a vessel, and its journal records the verb's receipt; `expect(vessel, pattern)` awaits an entry on that vessel's iterator. No sleep, no poll.
+# ''"After" quotes a causal token the mesh already carries'': a seal epoch (`sealEpochCid` and its `predecessors`), a KEL head, a write's `causedBy` txId. A script awaits A's fold, takes its token, and awaits C's read citing it; no global order is needed.
+# ''"Never happened" is an event the product emits, never a timeout.'' A refusal, a closed epoch, a fold that settles without a place: each lands as an entry, and the script expects that entry. A single liveness budget per script only alarms: on expiry it names the entry that never came and dumps each vessel's journal tail. Safety reads from entries and their order, never from elapsed time.
+# ''One script, three hosts.'' MEMORY runs every vessel in one process with a separate Repo per vessel and per CLI act, so the seam between a CLI write and a daemon's live document stays modelled, with race injection where a script asks for it; PROCESS runs staged scratch roots in the e2e shards; CONTAINER runs the docker mesh in the held-out cells. A host a script cannot serve skips by name; a script that names a cross-process seam runs on PROCESS and CONTAINER at least.
+# ''Artifacts read on failure.'' Each vessel keeps its journal in a ring; a red uploads every vessel's journal and names the first entry that diverged from the script. Determinism: seeded keys, a frozen genesis, recorded fixtures for anything outside the mesh (the `http-request` door among them).
+
+<<~/ahu>>
+
+<<~ ahu #/the-otakiage>>
+
+!! The o-takiage ~ how the suite moves onto it
+
+* No compatibility layer and no shim: early alpha takes the move whole (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, the fence). The suite moves one family of scripts at a time (the fleet joins, the carriage, the crossings, the herm), each family's polling helpers burning as its scripts land, each family green in the shards before the next.
+* Test names state the law in the present tense; dated measurement narration in test comments leaves for git.
+* A witness refuses `Date.now()` and `setTimeout` deadlines under `tests/e2e/`, runs green over the moved tree, then burns itself with its guard list.
+* The first slice stands: the daemon writes each vessel's journal alone (`journal.jsonl` under the data dir, one epoch per boot), a projecting island hands its `bag-projected` entry in through `journal-append` (admitted only from a projector, over a mirror that stands), and `lares events --wait` answers the moment an entry lands. Owed beside it: a CLI that gives up on its budget cancels its waiter in the daemon, and the daemon's own projector shares the per-bag dedup the door keeps.
+
+<<~/ahu>>
+
+<<~ ahu #/the-talk-story>>
+
+!! The talk-story ~ how the model was refined
+
+The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge (`claude-haiku-4.5`) confirmed the readiness map, the carriage log lines, the verb seat a journal verb could ride, and the fit of DreamDOM's golden form, found no durable journal and no `act` or `expect` in the harness, and asked for a persisted journal and an iterator tests await. Podge (`gpt-5-mini`) walked the model under change and asked for an entry written after its effect is visible, causal tokens for "after", declared absence, durable cursors across restarts, the memory host's limits named, and journals uploaded on failure. In the traded Spin, Hodge struck Podge's migration compatibility layer under the alpha law and grounded the causal tokens in the tree; Podge added epoch-scoped ids, writer prefixes and compaction. One tension settled by the house's law: absence stands as an event the product emits, never a timeboxed wait. Two of Hodge's second-pass claims fell to the source (a journal verb it named as present, and a memory-only suite), so they shaped nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;h4QIRGzcBPWW-OoTQOI2WDrU37yOAOx85KI1auujHvM
+
+<<^ code="&#x0004;" -> to="?">>

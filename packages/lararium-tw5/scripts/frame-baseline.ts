@@ -21,7 +21,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
-import { LAR_KEY_STYLE, LAR_KEY_SURFACE, pluginCidsFromIslandBlobs, readLarFrame } from "@lararium/mesh";
+import { LAR_KEY_STYLE, LAR_KEY_SURFACE, bootSetPluginCids, readLarFrame } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { preloadsFromCasBlob } from "../src/cas-preloads.js";
 import { mountProjection, renderIdCensus } from "../src/tw5-projection.js";
@@ -36,7 +36,7 @@ interface Seed { blobs: Record<string, { id: string; sha256: string; mimeType: s
 const seed = JSON.parse(readFileSync(path.join(GENESIS, "seed.json"), "utf8")) as Seed;
 const cas = (sha: string): Uint8Array => new Uint8Array(readFileSync(path.join(GENESIS, "cas", sha)));
 const core = Object.values(seed.blobs).find((b) => b.id === "tiddlywikicore")!;
-const preloads = pluginCidsFromIslandBlobs(seed.blobs).flatMap((cid) => preloadsFromCasBlob(cas(cid)));
+const preloads = bootSetPluginCids(seed.blobs).flatMap((cid) => preloadsFromCasBlob(cas(cid)));
 
 function* carriers(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {

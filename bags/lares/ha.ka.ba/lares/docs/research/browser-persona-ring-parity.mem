@@ -11,7 +11,7 @@ mana      = 17
 manao     = 17
 manaoio   = 16
 role      = "local and external engineering research with a red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
-status    = "second research wave collided with repository evidence — no package, test, generated artifact, or handoff changed"
+status    = "the parity this report sought stands on both shores: the gate signs its verdict, `LarWSClientAdapter.provenKeyOf` names the gate key, and the Browser path composes the PersonaGroup ring through `assemblePersonaGroupRing`"
 tags      = ["research", "vessel-parity", "persona-ring", "identity-as-relation", "causal-island"]
 title     = "lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -35,7 +35,7 @@ The parity target is the **outer PersonaGroup identity ring** that composes onto
 `packages/lararium-node/src/self-slot-persona-ring.ts` assembles the ring from four existing readings:
 
 * the face's PersonaGroup, Circles, Identities, and Sessions document IDs, resolved through the local catalog;
-* the key this Node vessel's `DaemonAuthGate` already verified for that peer;
+* the face key this Node vessel’s inbound face gate proved at the seat (`packages/lararium-node/src/gate-sync-server.ts`);
 * the face's `face-join-grant/v1` records, read from that face's PersonaGroup plane;
 * the face's pinned persona root and locally held persona-KEL chain, supplied to `verifyFaceGrantRecord`.
 
@@ -55,9 +55,9 @@ Those are candidate inputs, not a completed capability ring. The source does not
 
 !! Transport direction is the central unresolved relation
 
-`LarWSClientAdapter` opens a WebSocket to a relay. It sends the Browser's ContactCard, V3 proof, optional device edge, and optional presented admit. The proof binds the Browser key to the expected gate key and the dialed audience. The server sends `lar:auth-ok` or refusal; the inspected client handshake does not receive a server ContactCard or a reciprocal server proof of possession.
+`LarWSClientAdapter` dials the gate. `face-dial.ts` verifies the gate’s signed verdict under the pinned gate key, and `LarWSClientAdapter.provenKeyOf` names that key for the peer yielded by the verified socket.
 
-The Node `DaemonAuthGate` authenticates an incoming socket, retains the proved peer identifier, and lets Node's share policy associate that evidence with the Automerge peer. The Browser path inspected here instead tags the relay peer based on its client adapter and does not expose an equivalent verified remote vessel key. A configured gate key is a pin used by the Browser's proof; by itself it is not a reciprocal proof that the remote holder possesses that key.
+The Node face gate proves the session’s face key at the seat (`face-gate-server.ts`, `gate-sync-server.ts`), and Node’s share policy associates that evidence with the Automerge peer. The Browser adapter exposes the gate key only after the socket verdict verifies.
 
 Therefore, the repository evidence does not yet establish that the Browser currently admits arbitrary inbound peers. It establishes a Browser leaf that dials a Node relay and a Browser share-policy hook that can gate documents for relay peers. Before implementing parity, the crew must name the relation being protected:
 
@@ -85,7 +85,7 @@ The current Browser WebSocket already becomes a full-duplex channel after Node a
 
 The report's earlier mention of a missing main-thread-to-worker bridge describes the separate **inner `IdentityRing`** capability barrier. It is not established as a blocker for the **outer `PersonaGroupIdentityRing`**. The Browser main Repo already holds the catalog handle, can resolve the persona-KEL board, and has `@lararium/tw5`'s `makeCatalogAccessor` available through an existing package dependency. The shared `verifyFaceGrantRecord` is available from Keyhive. Inference: the Browser outer ring can likely read its own local face-plane grants and KEL from the main Repo, matching the Node factory's injected inputs, without a new worker bridge. A focused implementation scout must still prove that the worn face plane is registered and locally readable at the exact share-policy decision point.
 
-The remaining proof gap is narrower: Browser's current V3 handshake proves the Browser to Node. To use a Node key as `provenVesselKey` when Browser's share policy serves a face plane, Node must also prove possession of its expected identity key to Browser, and the proof must bind to the exact Automerge peer candidate on that same socket. Merely echoing the configured `gatePubKey`, accepting a WSS connection, or receiving `lar:auth-ok` does not establish that relation.
+The reciprocal gate proof stands: the dial verifies the gate’s signed verdict under the pinned gate key, and `LarWSClientAdapter.provenKeyOf` associates that key with the peer yielded by the verified socket. The Browser path composes the same ring through `assemblePersonaGroupRing` (`open-browser-vessel.ts`), and its proven key comes from `LarWSClientAdapter.provenKeyOf`.
 
 !! Minimally viable red-first contract — no Browser listener
 
@@ -125,11 +125,11 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 * `packages/lararium-node/src/open-node-vessel.ts` — live Node composition of the outer ring.
 * `packages/lararium-node/src/self-slot-persona-ring.ts` — Node assembly and evidence sources.
-* `packages/lararium-node/src/daemon-auth-gate.ts` — authenticated socket-to-identifier evidence.
+* `packages/lararium-node/src/face-gate-server.ts` and `gate-sync-server.ts` — gated socket-to-face-key evidence.
 * `packages/lararium-mesh/src/persona-group-ring.ts` — platform-blind outer ring contract.
 * `packages/lararium-mesh/src/federation-gate.ts` — distinction between outer PersonaGroup ring and inner `IdentityRing`.
 * `packages/lararium-browser/src/open-browser-vessel.ts` — Browser repo, share gate, KEL reads, and outbound transport.
-* `packages/lararium-mesh/src/lar-ws-client-adapter.ts` and `auth-wire.ts` — Browser-to-gate handshake direction and proof contents.
+* `packages/lararium-mesh/src/lar-ws-client-adapter.ts`, `face-dial.ts`, and `leaf-presentation.ts` — the Browser’s dial direction, signed verdict, and presentation.
 * `packages/lararium-keyhive/src/face-grant-record.ts` — shared grant verification.
 * `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` #/the-loops, the carried lanes — where the open half of this question rests.
 
@@ -144,5 +144,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w9k9PLLCw26J_Od985Dpd-NCG153Ihxan6BNtiVosGw
+<<^ code="&#x0003;">>ni:///sha-256;G71ehAbuySK3P9aDTz6g7saQKWBc_5bwfmmybZ6MLQ0
 <<^ code="&#x0004;" -> to="?">>
