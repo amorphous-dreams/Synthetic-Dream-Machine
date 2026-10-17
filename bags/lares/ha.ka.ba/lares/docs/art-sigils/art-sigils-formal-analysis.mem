@@ -1,0 +1,88 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/art-sigils/formal-analysis >> -->
+```toml meta
+uri-path = "ha.ka.ba/art-sigils/formal-analysis"
+file-path = "art-sigils-formal-analysis.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "evidence-led formal analysis and reverse engineering of art direction"
+status = "draft"
+```
+
+<<~ ahu #/orientation>>
+! Art Sigils — Formal Analysis
+
+Interpret a visible artwork before imagining what instructions might reproduce its properties. The image supplies evidence of appearance, not direct access to the maker's mental state or technical workflow. Reverse engineering yields a plausible specification, not certain knowledge of the original prompt, hidden layers, intention, or medium.
+
+Foundational lines: Erwin Panofsky's pre-iconographical description, iconographical identification, and iconological interpretation; Getty CDWA `ofness` versus `aboutness`; Feldman's description-analysis-interpretation-judgment educational model; Project Zero's observation-to-evidence question; Arnheim's visual organization; Baxandall's historically situated inference; Kress and van Leeuwen's representation/interaction/composition.
+<<~/ahu>>
+
+<<~ ahu #/method>>
+!! Looking protocol
+
+Keep separate columns of thought: direct observation, contextual identification, interpretive hypothesis, and proposed creative reconstruction. Never promote an inference into an observation merely because the reading feels persuasive.
+
+# **Describe:** visible subject, crop, aspect, orientation, regions, literal inscriptions, people, objects, media artifacts and graphic elements; avoid premature story inference.
+# **Organize:** dominant mass, focal point, figure/ground, value keys, hue/chroma, local contrast, silhouette, line, spatial recession, edge hierarchy, scale, rhythm and negative space.
+# **Relate:** which parts overlap, correct, obscure, quote, contradict, or echo others? For an image of images distinguish outer support, inner studies, and fictional scene contents.
+# **Read:** describe plausible first/second/later reads; include an alternative reading, and note how composition warrants each.
+# **Situate:** what work type and viewer relationship appear plausible? Map, poster, editorial plate, book illustration, devotional image, study wall, production sheet? Viewer addressed need not be represented.
+# **Materially inspect:** distinguish depicted paper from depicted landscape, substrate from marks, texture from gloss, atmosphere from universal image noise. Describe *appearances* rather than asserting unobserved tools.
+# **Interpret:** offer symbolic, narrative, stylistic, iconographic and contextual hypotheses, separating evidence from source-dependent lore.
+# **Evaluate:** articulate what succeeds, which feature obstructs purpose, why, and possible revision; do not equate technical neatness with artistic merit.
+# **Reverse-specify:** translate observed relations into modular procedure calls; explicitly label observed, inferred, uncertain, and intentionally unspecified features.
+# **Counter-read:** seek a reasonable alternate identity or purpose; preserve unresolved interpretations rather than manufacturing certainty.
+<<~/ahu>>
+
+<<~ ahu #/vocabulary>>
+!! Formal analytic registers
+
+* **Elements:** line, shape, form, colour, value, texture, space.
+* **Organization:** scale, proportion, emphasis, balance, rhythm, hierarchy, repetition, variation, unity, contrast, movement, adjacency.
+* **Edge:** hard, soft, lost, found; their local distribution changes attention and depth.
+* **Paint/drawing:** gesture, contour, hatching, scumbling, wash, impasto, glazing, granulation, smudge, reserve, correction, overpainting; only assert physical technique when evidence supports it.
+* **Spatial construction:** horizon, vanishing behavior, foreshortening, aerial perspective, plan oblique, planimetric map, panorama, occlusion, generalization.
+* **Visual narrative:** implied before/after, story event, open action, iconographic identification, image quotation, metapicture, implied audience, artifact function.
+* **Production:** thumbnail, colour key, material study, silhouette pass, route sketch, rejected alternative, correction overlay, resolution study, presentation art.
+<<~/ahu>>
+
+<<~ ahu #/reverse-example>>
+!! Compact worked reverse-analysis
+
+Observed: a large pale mountain painting partly covered by a translucent line drawing. The overlay's river bends differently from the underlying painting. A charcoal sketch near the edge shows a dark mineral shape that resembles a bone. No person stands in the depicted studio.
+
+Possible reading: the board communicates unresolved geographical and archaeological questions. The overlay may challenge the painted river; the charcoal study may argue for a skeletal identity. The image cannot establish the maker's original medium or intention from pixels alone.
+
+Candidate invocations (illustrative only):
+
+```tiddlywiki
+<<art-work name:"Mountain Research Board" kind:"image of pinned visual studies" purpose:"present provisional interpretations of one fictional region">>
+<<art-address audience:"art collaborators" relationship:"visual review from outside the picture" invitation:"compare conflicting studies">>
+<<art-depict subject:"two overlapping terrain pictures and one relic sketch" setting:"physical pinboard" location:"artists and audience outside scene; any traveler figures only inside the represented artworks">>
+<<art-dispute study-a:"painted mountain" study-b:"hydrographic overlay" disagreement:"river course" visible-proof:"two clearly different river lines">>
+<<art-infer interpretation:"the dark form may suggest a giant bone" evidence:"curved hollow silhouette in a charcoal sketch" alternative:"mineral deposit or broken mechanism">>
+```
+<<~/ahu>>
+
+<<~ ahu #/pitfalls>>
+!! Common misreadings
+
+* **Intent laundering:** observed beauty does not prove a specific conscious design objective.
+* **Attribution inflation:** resemblance to a named artist does not establish authorship, actual technique, or direct reference use.
+* **Iconographic overreach:** visually bone-like does not mean an identified mythological figure.
+* **Medium overclaim:** pixels resembling gouache need not originate from physical gouache.
+* **Level confusion:** the viewer of a depicted pinboard does not stand physically in the picture; tiny travelers may appear in an inner landscape drawing.
+* **Texture collapse:** identical fine-scale marks on clouds, fabric, stone, paper and metal warrant separate observation, not the unsupported diagnosis of a particular model mechanism.
+* **Decorative critique:** 'more dynamic' lacks an observable change; specify which mass, edge, focal contrast or relation needs alteration.
+* **False map precision:** a cinematic panorama does not automatically provide a metric route or drainage chart.
+<<~/ahu>>
+
+<<~ ahu #/references>>
+!! Authorities and further reading
+
+* Getty CDWA Subject Matter, especially **ofness/aboutness**, evidence and ambiguity: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/
+* Getty AAT and Materials/Techniques: https://www.getty.edu/research/conducting_research/vocabularies/aat/ ; https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
+* Harvard Project Zero, What Makes You Say That?: https://pz.harvard.edu/resources/what-makes-you-say
+* Harvard Project Zero, See, Think, Wonder: https://pz.harvard.edu/resources/see-think-wonder
+* Panofsky, Studies in Iconology and Meaning in the Visual Arts; Rudolf Arnheim, Art and Visual Perception; Michael Baxandall, Patterns of Intention; Kress and van Leeuwen, Reading Images; W. J. T. Mitchell, Picture Theory. These books supply overlapping lenses, not a single infallible method.
+* Jenny and Patterson, Introducing Plan Oblique Relief: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
+<<~/ahu>>
