@@ -1,0 +1,219 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/art-sigils/spec >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/spec"
+file-path = "spec.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/purpose>>
+! Art Sigils — Semantic Specification
+
+Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, preparatory studies and images containing other images. An Inscription carries one compact, invocation-only artistic invitation; a Folio expresses that intention through one contiguous block of richer sigils, specialized material scopes and counterpoints. Reference URIs remain in adjacent research ahus, outside the transmitted Folio. Surrounding ahus preserve the research and interpretation outside the transmitted art.
+
+The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
+
+The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The Inscription carries an invocation without a procedure definition. A receiving AI may interpret its structured language directly; native TW5 transclusion draws its definition from the Procedures meme.
+<<~/ahu>>
+
+<<~ ahu #/syntax>>
+!! Native TW5 Grammar — declaration / invocation
+
+Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one universal quotation style:
+
+* **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
+* **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
+* The canonical `art()` declaration and optional Folio definitions live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]. Inscription and Folio artifacts contain **invocations only**, with an external reference to the Procedures meme. Native TW5 execution requires those definitions in scope; direct model interpretation may work without them.
+* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
+* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
+* **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
+* **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
+* **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
+* **Character budgeting:** the 1,024-character portability target covers the **Inscription invocation only**. The Folio uses a practical **6,000-character ceiling**, counting its entire copyable block including line breaks. Procedure definitions, meme wrappers and external research registers stay outside both forms. These targets express portability conventions, not guaranteed receiver limits.
+* **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
+* **Prompt-bearing vocabulary:** treat every word in an image-facing value as a potential visual cue. Name the intended worktype directly, e.g. `messy concept-art board` when uneven pinned studies matter; keep `Folio` as a documentation form outside the copyable calls. Remove workflow and editorial terms such as `folio`, `source photos`, `artist credits`, `metadata`, `studio` and negative checklists from values unless the picture itself calls for them. Prefer short positive depiction boundaries (`board fills frame; figures inside studies`) over long exclusions. Artist references, media, supporting studies and consequential relations stay when they shape visible art. The grammar itself remains medium-neutral.
+
+Image-facing Inscription pattern (the reusable definition resides in the Procedures meme):
+
+```tiddlywiki
+<<art subject=`a distant coast` read=`the unseen seems near`>>
+```
+
+A Folio presents one contiguous, copyable `tiddlywiki` block of at most **6,000 characters**. Its first `art()` invocation articulates the whole artwork; optional `art-study`, `art-counterpoint` and `art-facture` invocations develop visual studies, materials, uncertainties and pictorial relationships. **No URI, URL, webpage address or procedure declaration enters the block.** Source-aware AIs can read the adjacent research ahus alongside the sigils. Artistic findings from those sources belong in named parameters; raw addresses remain outside. Midjourney may rephrase long prompts; the compact Inscription offers a shorter form.
+<<~/ahu>>
+
+<<~ ahu #/nucleus>>
+!! The eight artistic dimensions
+
+* ''worktype'' — category and communicative convention of the offered work, e.g. portrait, terrain plate, book illustration, concept board, installation, poster. Neither genre nor image file format alone substitutes for worktype.
+* ''subject'' — what the work concerns; distinguish the subject of the entire artwork from specific depicted objects.
+* ''read'' — primary perceptual or interpretive invitation: what a viewer may notice, compare, anticipate, contemplate, doubt, or feel. A desired read never guarantees an audience's response.
+* ''imagery'' — forms, figures, scenes, pictorial motifs, and representational or nonrepresentational content offered to sight; the subject may differ from the list of depicted things.
+* ''treatment'' — artistically chosen realization: style and its purpose, medium, mark, value key, color relationships, edge behavior, spatial treatment and surface response.
+* ''composition'' — placement and hierarchy within the work: grouping, balance, rhythm, focal weights, scale, boundaries, figure-ground, cropping and intervals of quiet.
+* ''relation'' — consequential interactions between visible elements or pictures: correspondence, counterpoint, correction, contradiction, quotation, concealment, juxtaposition, revision and support. Composition places; relation says what that placement makes possible.
+* ''depiction-scope'' — membership in the represented world or nested image: outer picture, embedded picture, depicted subject, viewer, maker and source reference. A viewer's address or a source photograph does not by itself insert a person or photograph into the image.
+
+The nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
+<<~/ahu>>
+
+<<~ ahu #/optional>>
+!! Yin — speech, delegation, silence, withholding
+
+* ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims govern interpretation within their declared boundaries.
+* ''Delegated'': a TW5 default value such as "serve the read" supplies actual words, inviting the receiving model or collaborator to judge in context. TW5 substitutes text; it does not independently calculate the artistic decision.
+* ''Silent'': an omitted dimension with an empty/default-free value makes no positive artistic claim. Do not fill a deliberate silence with a mandatory universal convention.
+* ''Withheld'': an explicit artistic choice reserves ambiguity, open form, empty space, unresolved identity or unseen evidence. Unlike silence, withholding expresses a positive intention.
+
+No intrinsic artistic virtue follows from filling all eight fields. A simple photograph or abstract painting may need few articulated dimensions. A multi-layer metapicture may require a precise depiction-scope. Neutral and delegated defaults must never silently require parchment, cinematic light, posed figures, fantasy, or extra diagrams.
+
+Interpretation priority: protect explicit choices; read the full subject and intended read together; allow delegated decisions within those boundaries; preserve expressly withheld unknowns. An added reference contributes evidence or technique according to its declared role and must not override the work's geographic, narrative or depiction boundary. Context reduction cuts secondary detail before cutting the artwork's defining visual relationship.
+<<~/ahu>>
+
+<<~ ahu #/scopes>>
+!! Representation, address, and artifactual layers
+
+* **Outer artifact:** the complete work encountered by a viewer: a photograph, painted field, printed page, constructed object, installation or digital image.
+* **Depicted content:** the people, objects, spaces, abstractions or actions represented *within* the work, including deliberately empty or concealed portions.
+* **Embedded image:** a represented painting, photograph, chart, drawing, printed fragment or screen *inside* the outer work. Each nested layer carries its own viewpoint and depicted participants; do not insert figures into the outer world merely because an embedded picture contains them.
+* **Aboutness:** what the work concerns may exceed what appears. A portrait can evoke memory without literally depicting remembered people; an abstract image can investigate conflict without illustrating combat.
+* **Address:** to whom and how the work speaks differs from its depicted subject. Artist, intended viewer, source photographer, photographer's standpoint and characters need not share any location inside the frame.
+* **Viewpoint and focalization:** camera position, projection and line of sight determine a view; focalization limits which information the work offers or withholds. One angle may reveal a face while concealing a motive.
+* **Material levels:** support, ground, applied medium, implement, technique and facture belong to the made artifact. An imitation of metal, skin, water or cloth belongs to depicted content; an image can also represent another work's physical support.
+* **Production traces:** erasures, overpainting, repair, seams, registration errors and pentimenti may carry evidence of revision. Their mere appearance does not prove a creator used the simulated technique.
+* **Source boundaries:** reference images, attributed methods, metadata and worldbuilding notes may inform the work without entering it as visible objects, labels or credited names. State a displayed inscription only when its pictorial presence matters.
+<<~/ahu>>
+
+<<~ ahu #/pictorial-evidence>>
+!! Visual propositions, relations and evidence
+
+A picture can make a perceptual or interpretive **proposition** without proving it. An adjacent picture, repeated motif, alteration, blank interval or opposing gesture may answer, question or transform that proposition. This option applies to any worktype with consequential relations; Art Sigils never requires a pinboard, comparative studies or a visible research process.
+
+* **Composition positions; relation makes a claim:** side-by-side portraits might simply form a diptych, or their contrasting gazes might challenge a shared social role. `composition` names position and visual priority; `relation` names the consequential encounter.
+* **Shared anchors strengthen comparisons:** when two images conflict, identify the recurring shape, figure, gesture, inscription, moment or visual feature through which viewers can compare them. Adjacent pictures without a shared question may create rhythm without argumentative contradiction.
+* **Signs do not automatically prove their propositions:** a crossing-out mark suggests rejection; a painted repair suggests intervention; an inconsistent shadow may suggest impossible space. Do not elevate pictorial suggestion into verified fact or maker intention without additional evidence.
+* **Different appearances can bear different claims:** a photograph, charcoal sketch and textile response to the same subject can change how the subject reads. A physical difference of material does not, by itself, establish a difference of meaning.
+* **Unresolved alternatives deserve form:** overlapping silhouettes, partly erased passages, ambiguous edge joins, incomplete gestures and open space can sustain competing interpretations. Avoid resolving deliberate ambiguity merely to achieve visual neatness.
+* **Address and agency remain distinct:** a viewer may participate by noticing, supplying memory, moving around an installation or comparing images without appearing inside the depicted world.
+* **Visible inquiry remains optional:** multiple attempts, unfinished studies and revisions may document an artistic question. A complete singular image may pursue an equally serious question without displaying its preliminary work.
+* **Creative accident remains legible:** a generative receiver may find an unanticipated pictorial interpretation. Preserve the difference between a compelling departure and faithful fulfillment of the authored intention.
+
+The same eight dimensions accommodate both a solitary monochrome photograph and a many-part conceptual installation. Use discipline-specific terms only where the artwork earns them.
+<<~/ahu>>
+
+<<~ ahu #/lexicons>>
+!! Art-house lexicons — optional vocabulary within values
+
+These terms offer handles inside the eight dimensions rather than enumerated allowed values, requirements, or promises of a particular renderer. Some carry different meanings across media; interpret each within its local artistic problem.
+
+!!! Pictorial organization
+Figure-ground, focal hierarchy, scale, rhythm, gestalt grouping, symmetry and asymmetry, visual weight, silhouette, axes, negative space, interval, overlap, serial repetition, counterbalance, hard/soft/lost edges, all-over field, interruption, graphic reserve.
+
+!!! Drawing, printing, and facture
+Contour, gesture, hatching, crosshatching, stippling, wash, scumbling, drybrush, granulation, rubbing, erasure, pentimento, glazing, impasto, etching, lithography, watercolor bloom, graphite sheen, chalk drag, reserved paper, sewn repair, found material. Describe simulated techniques as appearances without proof of historical manufacture.
+
+!!! Color and light
+Value key, chroma, local color, simultaneous contrast, hue interaction, complementary tension, reflected light, temperature, transparency, luminance hierarchy, high-key reserve, anomalous radiance, subdued passages, specular highlight, diffuse shadow, color field, optical mixing.
+
+!!! Space, time, and embodiment
+Linear perspective, foreshortening, orthographic projection, axial organization, framing, crop, implied camera position, occlusion, parallax, room-scale installation, near/far interval, bodily scale, temporal sequence, implied movement, spatial affordance, circulation, spectator position.
+
+!!! Subject, address, and iconography
+Visual focalization, metaphor, symbol, represented participant, spectator address, iconography, cultural convention, memory trace, narrative before-and-after, conceptual opposition, allegory, deliberate ambiguity, portrait gaze, performative gesture, material witness.
+
+!!! Inquiry and inter-image relation
+Thumbnail, color key, alternative, rejected proposal, edit, overlay, juxtaposition, quotation, counterproposal, revision, appropriation, comparison, annotation, provenance, reflective iteration, repaired image, provenance uncertainty, intentional omission.
+
+!!! Writing and image
+Anchorage, relay, pictorial title, caption, handwritten note, printed legend, calligraphy, visual poem, typographic rhythm, diagram key, image-text counterpoint. Distinguish deliberately depicted text from prompt source, attached reference, credits and metadata.
+
+For a specialized spatial, environmental or cartographic work, consult the optional cartography research ahu; the basic grammar neither inherits nor privileges its vocabulary.
+<<~/ahu>>
+
+<<~ ahu #/integrities>>
+!! Pattern integrities across worktypes
+
+# ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
+# ''Inscription carries one art call.'' A single invocation carries the artistic nucleus within a practical 1,024-character target, without importing the procedure declaration into the image-facing prompt. Procedure Grammar retains the formal executable definitions.
+# ''Folio carries the complete expanded work.'' One uninterrupted block of invocations expresses the whole artistic direction, including scoped studies, material behaviors and counterpoints, under a practical 6,000-character ceiling. Source URIs live in accompanying research ahus, never in the copyable block. The adjacent research supplies provenance without replacing the artistic instruction.
+# ''Depicted does not imply addressed.'' Audience, source photographer and studio maker stay outside the represented scene unless the work deliberately depicts them.
+# ''Relation does not collapse into composition.'' Two adjacent objects can have a meaningful action between them, or none.
+# ''No generic style inheritance.'' An example's geography, artists, medium and texture never become defaults of the reusable grammar.
+# ''Differences have purposes.'' Independent studies may disagree on evidence, handling, finish, viewpoint or purpose. Decorative disorder alone provides weak evidence of artistic inquiry. The visible depiction of a correction does not by itself prove its target proposition.
+# ''Support differs from subject.'' Paper texture, pigment behavior and depicted stone or bronze follow distinct physical histories and scales.
+# ''Unknowns remain unknown.'' Neither Art Sigil nor Formal Analysis manufactures provenance, medium certainty, exact geographic routes or mythological identity from attractive ambiguity.
+# ''Creative surprise remains available.'' Specification states vital commitments without exhausting possible solutions. An unexpected visual reading supplies an alternative interpretation, not a silent replacement for the written Inscription.
+# ''Source authorities retain limits.'' Getty concepts inform terms, real geography informs appearance, and fictional canon governs fictional world facts only within its claimed scope.
+<<~/ahu>>
+
+<<~ ahu #/interop>>
+!! Expression, execution, and reception
+
+Art Sigils distinguishes the **author's written intention**, its **literal TW5 rendering**, and any receiving artist or model's **visible interpretation**.
+
+* **Inscription:** one `<<art ...>>` invocation carries a portable minimal invitation. Its 1,024-character target describes the invocation alone, not a receiving engine's documented hard limit. TW5 delegation defaults come from the independently available canonical procedure; a model without that declaration may interpret explicit parameter values directly.
+* **Literal reading:** native TW5 transclusion substitutes declared parameters and defaults into the procedure's prose. It transforms syntax, not artistic judgment. An image-generating model may interpret the transmitted wikitext without executing TW5.
+* **Folio:** one copyable block of extended art sigils unfolds the eight-dimensional nucleus with specialized lexicons, studies, counterpoints and facture. The source-bearing research register sits outside that block: no address strings enter the image-facing sigils. A capable receiver may consume research ahus alongside the copied Folio; its parameter values convey relevant visual findings instead of raw URLs.
+* **Receiver-dependent conditions:** aspect ratio, random seed, model identity, stylistic controls, attached images and other tool settings sit outside the portable semantic fields unless the work explicitly concerns such settings.
+* **Interpretive variance:** different recipients may privilege different associations of the same words or artist reference. Neither exact repetition nor identical reception follows from an apparently equivalent source.
+* **Critical return:** compare a rendered work with its articulated read, composition, relations, material boundaries and scope. Treat visibly attractive divergences as optional discoveries, not automatic upgrades to the source.
+
+Formal Analysis carries the observational and comparative method; the Procedures meme carries executable TW5 declarations. Both operate through the eight-dimensional semantic contract described here.
+<<~/ahu>>
+
+
+<<~ ahu #/cartography-research>>
+!! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
+
+A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
+
+* **Planimetric / orthographic map:** an overhead plan with a chosen projection and scale convention. Such a plan can support route comparison without inheriting a painted panorama's perspective.
+* **Plan-oblique relief:** an elevated view that preserves a recognizable overhead spatial organization while giving terrain vertical relief and expressive volume. Perspective and occlusion may distort local measurements. See Tom Patterson and Bernhard Jenny, `Introducing Plan Oblique Relief`: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
+* **Hypsometric tinting:** color shifts associated with elevation rather than generic scenic color. The artist may organize low/mid/high bands through hues and values suited to the read; green–ochre–snow supplies an example, never a required palette or assertion of measured heights.
+* **Shaded relief:** directional illumination clarifies landform shape. Shadows and hillshading help viewers understand ridges and slopes without directly establishing traversability.
+* **Aerial / atmospheric perspective:** color, contrast and haze can express depth and air; distinguish distance-based recession from altitude-dependent tint or relief shading. Jenny and Patterson's research on aerial perspective for shaded relief offers a specialist bearing.
+* **Panoramic geography:** Heinrich Berann's painted landform panoramas suggest ways to orchestrate a larger region without reducing its ridges and valleys to a single landmark. Eduard Imhof informs illumination and tonal hierarchy; Erwin Raisz informs selective physiographic characterization.
+* **Embodied terrain:** a photograph or painted eye-level study of a ledge, slope, river or inhabited site may challenge a higher-view depiction. Share distinctive landmarks where two pictures claim to depict the same passage, while acknowledging different projections.
+* **Watershed and route evidence:** drainage, valleys, saddles, escarpments and slope exposure offer features a viewer can compare. Colored routes, plotted arrows or crossed-out lines depict spatial claims; they do not guarantee actual access, gradient, distance or geological accuracy.
+* **Source provenance:** digital elevation models, imagery, survey notes, fictional world references and creative departures deserve separate evidentiary labels. Real geographic reference does not automatically establish an imagined world's terrain or authorize fictional canon.
+
+The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
+<<~/ahu>>
+
+<<~ ahu #/art-research>>
+!! Research bearings — general art ontology
+
+Scholarly sources furnish vocabulary and competing interpretive lenses, never one mandatory aesthetic or automatic instruction to imitate their named authors.
+
+* Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — work types, materials, techniques, and roles; consult term scope notes.
+* Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — materials/techniques, facture, physical description, subject matter, critical responses and related works. Subject: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/ ; Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
+* Getty CONA, TGN and Iconography Authority — distinguish catalogued works, geographical place names, and depicted iconography: https://www.getty.edu/research/tools/vocabularies/
+* Kress and van Leeuwen, *Reading Images: The Grammar of Visual Design* — represented participants, interaction, information value and composition.
+* W. J. T. Mitchell, *Picture Theory* — metapictures and pictures about pictures.
+* Aby Warburg, *Mnemosyne Atlas* — thinking through juxtaposition, absence, and changing image arrangements: https://warburg.sas.ac.uk/library-collections/warburg-institute-archive/bilderatlas-mnemosyne
+* Donald Schön, *Designing as Reflective Conversation with the Materials of a Design Situation* — action and reflection in a developing work.
+* Michael Baxandall, *Patterns of Intention* — historically situated inference about artistic problems.
+* Rudolf Arnheim, *Art and Visual Perception* — spatial balance and perception as critical lenses, not universal law.
+* Josef Albers, *Interaction of Color* — relational color and its surrounding field.
+* James Gurney, *Color and Light* — light, optics and material effects.
+* Roland Barthes, *Rhetoric of the Image* — anchorage and relay between text and picture.
+* Gérard Genette, *Narrative Discourse* — focalization and knowledge limits, with care when applying narrative terms to static images.
+* Henry Jenkins, *Game Design as Narrative Architecture* — implied action and environmental narration: https://electronicbookreview.com/publications/game-design-as-narrative-architecture/
+* Kevin Lynch, *The Image of the City*; Tim Ingold, *The Temporality of the Landscape* — orientation, perceptual movement, spatial practice.
+* Panofsky, *Studies in Iconology*; Feldman's methods of criticism; Harvard Project Zero, *What Makes You Say That?*: https://pz.harvard.edu/resources/what-makes-you-say ; *See, Think, Wonder*: https://pz.harvard.edu/resources/see-think-wonder
+* TiddlyWiki native Procedures, Definition Syntax and Calls: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Calls.html
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+!! Aftermath — interpretation and artistic bounds
+
+Artworks, instructions, references and interpretations carry distinct authorities. Formal criticism distinguishes what a work **shows**, what viewers **infer**, what credible sources **support**, and what the authored **read** invites. Neither a suggestive image nor an artist's name alone establishes technique, intention, identity or provenance.
+
+Discipline-specific methods inhabit named research ahus; artwork-specific forms, fictional facts and materials inhabit their Folios; syntax belongs to Procedure Grammar; observation and inference belong to Formal Analysis. These boundaries protect an artwork from inheriting another worktype's conventions.
+
+The grammar accommodates portraits, abstract fields, textiles, photographs, installations and maps without requiring unrelated genres, parchment, monumental scenery, prescribed narratives or compulsory comparison boards.
+<<~/ahu>>
+

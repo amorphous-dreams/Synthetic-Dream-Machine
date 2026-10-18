@@ -1,0 +1,44 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/docs/art-sigils/example-one-inscription >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-one-inscription"
+file-path = "example-one-inscription.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "Example One portable invocation-only art inscription"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/inscription>>
+! Art Sigils — Example One Inscription
+
+Copy only this **913-character** invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the canonical `art()` definition outside the image-facing source; native TW5 transclusion requires that declaration in scope.
+
+```tiddlywiki
+<<art worktype=`messy concept-art board` subject=`Tide-Clock Monastery of the Black Lens, a ring of drowned basalt sea stacks` read=`an astronomical sea sanctuary measures tides while concealing an abyssal watcher` imagery=`oblique storm-coast panorama; flooded observatory, bronze tide clock, beacon mirrors, rope bridges, disappearing stairs, kelp gardens, tiny skiffs, leviathan wake` treatment=`Kay Nielsen mythic ornament; Roger Dean organic spires; Caspar David Friedrich storm-sublime; Hiroshi Yoshida layered sea light; Arthur Rackham wiry silhouettes; Anna Podedworna weathered materials` composition=`vast stormlit panorama above pinned beacon, stair, dock, storm-chart and Black Lens studies on separate stocks` relation=`star charts promise orderly tides, but the rising sea erases the path; an abyss beneath the mirrors watches back` depiction-scope=`board fills frame; tiny figures inside studies`>>
+```
+<<~/ahu>>
+
+<<~ ahu #/literal-rendering>>
+!! Literal rendering
+
+The procedure's named parameters expand to the following expected prose. The reference expresses substitution, not an attestation of live TW5 execution.
+
+```text
+messy concept-art board: Tide-Clock Monastery of the Black Lens, a ring of drowned basalt sea stacks. Read: an astronomical sea sanctuary measures tides while concealing an abyssal watcher. Imagery: oblique storm-coast panorama; flooded observatory, bronze tide clock, beacon mirrors, rope bridges, disappearing stairs, kelp gardens, tiny skiffs, leviathan wake. Treatment: Kay Nielsen mythic ornament; Roger Dean organic spires; Caspar David Friedrich storm-sublime; Hiroshi Yoshida layered sea light; Arthur Rackham wiry silhouettes; Anna Podedworna weathered materials. Composition: vast stormlit panorama above pinned beacon, stair, dock, storm-chart and Black Lens studies on separate stocks. Relation: star charts promise orderly tides, but the rising sea erases the path; an abyss beneath the mirrors watches back. Depiction scope: board fills frame; tiny figures inside studies.
+```
+<<~/ahu>>
+
+<<~ ahu #/bearings>>
+!! Artistic bearings
+
+The dominant sea-stack painting presents a navigable sanctuary whose lower stairs disappear under the tide. Smaller studies investigate its mirrored beacon, working dock, storm chart and dark central aperture. Six artist bearings shape ornament, organic architecture, atmosphere, marine light, line and material credibility without requiring printed credits.
+
+[[Complete Example One Folio|ha.ka.ba/lares/docs/art-sigils/example-one-folio]] carries scoped studies, counterpoints, facture and non-depicted source references.
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+!! Aftermath — partial knowledge
+
+The monastery's astronomers claim predictable cycles; floodwater contradicts dependable access. The Black Lens suggests a watcher without identifying one. These narrative tensions belong to the imagined artwork, not to observed marine archaeology or astronomical evidence.
+<<~/ahu>>
