@@ -12,7 +12,7 @@ retain = true
 <<~ ahu #/invitation>>
 ! Example Zero Folio — Olympos, Tempes, Phlegra
 
-The Folio opens from a **problem**, not a checklist: which mountain paths survive, and which drawings should the studio believe? The companion 1,019-character Inscription provides the portable intention and a literal TW5 null test. Here the artist studies, resists, corrects and leaves questions unresolved.
+This Folio develops one artistic **problem** rather than an exhaustive checklist: which mountain passages survive, and which drawings warrant trust? The companion 1,019-character Inscription carries the portable intention and a hand-derived TW5 literal-rendering oracle. The expanded studies propose, resist, revise and leave questions unresolved.
 
 **Read:** one luminous region-scale plan-oblique panorama with green–ochre–snow hypsometric relief dominates; a vellum revision exposes an impossible painterly crossing; dark archaeological alternatives refuse one identity; a small green refuge challenges blanket desolation.
 
@@ -24,7 +24,7 @@ The Folio opens from a **problem**, not a checklist: which mountain paths surviv
 <<~ ahu #/visual-thesis>>
 !! Dominant picture — regional terrain rather than a mountain portrait
 
-The main painting carries the **cartographic thesis**: a continuous plan-oblique fantasy relief across the shattered heights of Olympos, the Rift of Tempes and the scarred margins of Phlegra. A monumental summit attracts attention without swallowing the surrounding ridges, watersheds, passes, ravines, shelves and inhabited lower valleys. The viewer can mentally follow the region rather than simply admire a peak.
+The main painting offers a **cartographic thesis**: continuous plan-oblique fantasy relief across the shattered heights of Olympos, the Rift of Tempes and the scarred margins of Phlegra. A monumental summit attracts attention without swallowing the surrounding ridges, watersheds, passes, ravines, shelves and inhabited lower valleys. The viewer can mentally follow the region rather than simply admire a peak.
 
 **Hypsometric tints** move from green lower lands through ochre exposed elevations to pale snow and rock. **Shaded relief** gives slopes their form; **atmospheric recession** gives distant terrain air; **plan-oblique composition** joins the terrain into an elevated spatial argument. None supplies surveyed elevations or a canon route. Preserve the broad luminous panorama and enough quiet sky for the landform to read.
 
@@ -48,7 +48,7 @@ These studies perform **distinct inquiries**, not decorative variety. Unequal fi
 
 **1 — Pass:** the relief panorama suggests a high crossing; a graphite vellum correction challenges it using the same cliff, lower saddle and drainage. Preserve both marks, erasures and unresolved survey uncertainty.
 
-**2 — Remains:** the dark Phlegra studies read as giant bone, machine or stone depending on medium, contour and prior expectation. No one identification wins.
+**2 — Remains:** the dark Phlegra studies read as giant bone, machine or stone depending on medium, contour and prior expectation. The competing outlines withhold any final identification.
 
 **3 — Refuge:** an inhabited spring study complicates the claim that all Olympos terrain suffers permanent uninhabitability.
 
@@ -160,7 +160,6 @@ Keep these three full URIs outside the image-facing sigil unless an explicitly c
 * Following the maelstrom enclosure, the reopened corridor admits hazardous passage and pockets of survival.
 * Illyria's Necrospire impact lies in the Accursed Mountains, **not** on Olympos.
 * Exact route geometry, relic identity, settlements, supernatural mechanisms and boundaries remain open. The Gorgonne Diaspora counts among the established named regional powers, but no specific settlement or encounter follows automatically.
-* Olympos serves exploratory visual/terrain inquiry; Neo-Thracia's watershed retains precedence as the first approved game-worthy atlas project.
 <<~/ahu>>
 
 <<~ ahu #/resources>>
@@ -177,9 +176,14 @@ Keep these three full URIs outside the image-facing sigil unless an explicitly c
 * Harvard Project Zero: https://pz.harvard.edu/resources/what-makes-you-say
 <<~/ahu>>
 
-<<~ ahu #/transfer>>
+<<~ ahu #/aftermath>>
 !! O-takiage and null-test handoff
 
-The old Folio supplied the visual questions and sources. This re-cut reorganizes them into terrain → contradiction → unresolved remains → inhabitation → assembly; the artist, route and material registers retain their distinction. A literal rendering of the standalone Inscription lives in its fifth meme. No assumption of live TW5 execution or universal cross-model behavior follows from these authored calls.
+Example Zero organizes its visual questions as terrain → contradiction → unresolved remains → inhabitation → assembly. The distinct artist, route and material registers preserve disagreements rather than forcing one definitive historical reading. The standalone Inscription meme carries a literal-rendering oracle; the source alone offers no proof of live TW5 execution or guaranteed cross-model interpretation.
+
+
+The Folio's next revision should follow **artistic evidence**: note which rendering supports the geographic and material relationships, which departs productively, and which merely imitates the surrounding research apparatus. An interpretation derived from a generated picture may motivate a new proposal; it does not settle a route, a relic identity, or the fictional setting's canon.
+
+Keep this example's geography, artists, material supports and route claims inside its own Folio. None supplies an unstated default for `art()`, `art-study`, `art-counterpoint` or `art-facture`. The generic grammar, Formal Analysis method and the optional cartography research ahu stand independently.
 <<~/ahu>>
 
