@@ -5,14 +5,14 @@ file-path = "art-sigils-formal-analysis.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
 role = "evergreen inscription-first visual analysis and evidence-grounded interpretation"
-status = "draft"
+status = "stable"
 retain = true
 ```
 
 <<~ ahu #/orientation>>
 ! Art Sigils — Formal Analysis
 
-When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete standalone Inscription**: native single-line definition plus one invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. Produce a Folio only if the operator requests conversion or a later revision. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
+When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete standalone Inscription**: native single-line definition plus one invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
 
 The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The exact canonical Inscription definition lives in art-sigils-procedures.mem. Include that native definition literally in the first source block (not merely a link or an instruction to import the meme). The source block excludes any critical essay and wrapper metadata from its character budget.
 <<~/ahu>>
@@ -48,9 +48,9 @@ The opening Inscription may keep weakly evidenced fields delegated or broad. Its
 6. **Constructive critique:** strengths and tensions measured against the work's articulated invitation, not against the analyst's unrelated stylistic preferences.
 7. **Open questions:** evidence or viewing conditions that could support, complicate or change the reading.
 
-The prose may correct the initial Inscription if looking more closely changes the account. Offer a revised Inscription explicitly rather than silently defending a mistaken first one.
+When closer inspection contradicts the opening Inscription, the analysis names the discrepancy rather than rationalizing an unsupported claim.
 
-**Optional after operator request:** translate the natural-language investigation into a richer Folio with independently scoped studies, counterpoints and facture. Treat analysis as an interpretation, not verified reproduction of an originating prompt or authority over the artist's intention.
+**Distinct Folio expression:** a requested Folio may organize the reading through scoped studies, counterpoints and facture. Formal Analysis reports evidence and interpretation, not a recovered original prompt or privileged access to the artist's intentions.
 <<~/ahu>>
 
 <<~ ahu #/comparative-reading>>
@@ -65,9 +65,9 @@ When an operator presents several versions of a work, make comparisons on **visi
 * **Test relation as evidence:** a red mark may symbolize revision; juxtaposed portraits may imply disagreement; an inserted fragment may question authorship. Name the visible feature carrying each inference and distinguish its effectiveness from empirical or historical proof.
 * **Separate attraction from fulfillment:** a persuasive unexpected variant can satisfy aesthetic preference while departing from explicit worktype, relation or depiction scope. Neither verdict cancels the other.
 * **Respect selection:** a favorite chosen from four alternatives documents the operator's preference, not an outcome frequency. A few differently conditioned outputs cannot isolate causes such as word choice, model architecture, style controls or reasoning effort.
-* **Preserve alternatives:** recommend revisions as proposals with stated tradeoffs. Do not silently install a visual accident, interpretation or previously withheld identity into the canonical source.
+* **Preserve alternatives:** articulate competing readings and their tradeoffs without inserting a visual accident, interpretation or withheld identity into the authored source.
 
-Formal Analysis can inform a later new inscription or Folio, but the prior source remains a historical witness to the original artistic intention.
+The authored Inscription, any associated Folio and the rendered work occupy distinct evidentiary positions. A viewer's reading neither recovers an originating prompt nor supersedes the stated artistic intention.
 <<~/ahu>>
 
 <<~ ahu #/counter-read>>
@@ -87,13 +87,12 @@ Formal Analysis can inform a later new inscription or Folio, but the prior sourc
 
 
 <<~ ahu #/aftermath>>
-!! Aftermath — a critique that can revise without erasing
+!! Aftermath — critical limits
 
-After close reading, mark the boundary between observation, interpretation, sourced production information and creative proposal. Carry forward verified distinctions, not unwarranted certainty. A later artistic choice may amend the read or repair a pictorial contradiction, yet the earlier Inscription remains useful evidence of how the work initially communicated.
+Formal reading distinguishes observable form, plausible inference, documented manufacture and interpretive possibility. An Inscription articulates artistic intention, an image communicates visible form and a viewer brings situated knowledge; none automatically authenticates the others.
 
-Repeated analysis across painting, print, photography, installation, abstraction and image-within-image work can refine the general lexicon. Specialist technique and subject-specific lore remain in their own research or example ahus; no one subject becomes a universal diagnostic.
+Across painting, print, photography, installation, abstraction and pictures within pictures, the same method examines what appears, how parts relate and what supports each claim. Specialist subject lore belongs to the artwork and its sources, not to the general analytical method.
 <<~/ahu>>
-
 <<~ ahu #/sources>>
 !! Methodological anchors
 
