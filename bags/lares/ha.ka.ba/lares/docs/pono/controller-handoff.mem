@@ -104,7 +104,7 @@ A cloud lane commits on its OWN branch, `feature/green-jello-dinosaur-5--<lane>`
 Train W's assembled cutover landed as PR #44: every vessel socket opens through the sealed face gate on one handshake, fleet join serves every face, a fresh browser device stands at the floor, and a herm answers the knock where a Nexus carries it. The roadmap's `W` rows name what stays owed.
 
 !!! Lane `carriage-fold` ~ a local session's lane
-Kit: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane">>. Roadmap row `W18`: the founding hearth counts none of the carries its CLI wrote, so a host reader never files a herm's floor pin (held-out herm-mesh and the nexus cell). The first lane under `mixed-model-swarm#/the-lanes`: its own sub-branch, a Sol and Copilot build pair in one worktree, the Chao review pair, the overwatch, a pull request with one Copilot review.
+Kit: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/carriage-fold-lane">>. Roadmap row `W18`: the founding hearth counts none of the carries its CLI wrote, so a host reader never files a herm's floor pin (held-out herm-mesh and the nexus cell). The first lane under `mixed-model-swarm#/the-lanes`: its own sub-branch, the work swarm's Sol and Luna build pair in one worktree, the Chao review pair, the overwatch, a pull request.
 
 !!! Lane `browser-custody` ~ past lane
 Its custody API landed (the roadmap's `B1` row names what it built and what stays owed). Its boot caller rides with whichever lane next holds `open-browser-vessel.ts` and the web boot. The persona roots' seal waits built and red-first on `feature/green-jello-dinosaur-5--persona-root-seal`: the root mint refuses `no-custody-slot`, so it merges only after that boot binds a slot and unlocks before `openBrowserVessel`.
@@ -139,7 +139,11 @@ The merged road carries the fleet-join door on every face, the sealed face gate 
 ** Then the operator founds the persistent node vessel by hand.
 * ''Rulings the crew still needs from the operator'': D3's default width, after the three-boot spike; DreamDOM's key grain, its interaction goldens family and its `core` charter (`dreamdom#/open-rulings`); the moʻolelo's blessing. The rulings of 2026-10-16 stand in `stable-founding-road#/rulings` and `dreamdom#/open-rulings`.
 * ''Shared ground'': lanes meet on the two vessel composers; one lane at a time holds a composer hunk, and the others hand theirs to the controller as a patch.
-* ''The Copilot allowance'': 300 premium requests a month on a legacy annual plan, a PR review costing 13, so about fifteen lane reviews fit before a reset; the Chao pair costs about one request per burst.
+* ''The crew'' (operator, 2026-10-18): the Codex budget refreshed, so each lane runs the work swarm (one Opus Episkopos, one Sol-6, one Luna-6); Copilot stands approved as the third-lineage eyes, and a Copilot PR review runs only when the operator asks for one (`mixed-model-swarm#/the-shapes`).
+* ''The Copilot allowance'': 300 premium requests a month on a legacy annual plan, resetting on the first; the Chao pair costs about one request per burst, and a PR review, about 13, runs only on the operator's ask.
+* ''The operator's focus'' (2026-10-18): the DreamNet and the browser's capabilities. The art-sigil carriers (`docs/art-sigils/`, PR #47) stand set aside, off this road.
+* ''The span head'' (`20728cdd6`): CI reads red on E2E shard 2, `herm-reshares-public-blob` step ③ (`MOVE` into `bags/lares` reads "destination … unreachable — not registered"). The same step went red before slice two, green at `f0a7c183d`, and red again at a head that moved docs alone, so it reads intermittent and stands unmeasured. Held-out reads red on herm-mesh alone (`W18`).
+* ''Lane `w26-floor`'' (`W26`, branch `feature/green-jello-dinosaur-5--w26-floor`, cut at `fb82fbaa3`): its five open joints stand with the operator before slice one builds: the release answer's shape and signing domain, where the cabal's live documents rest, how a vessel names "accepted", genesis as a floor, and how `herm-reshares` and `working-loop` keep their system-bag write on a lone hearth. Its worktree's provisioning refused: the main tree holds no grammar-wasm stamp (`node_modules/.lares-build/wasm/`), and the half-built worktree that initialized submodules waits for the operator's hand.
 * ''Ground'': each remaining loop names its owner in the roadmap.
 * ''The operator's own founding'': the persistent node vessel founds after the roadmap's work and its aftermath land, by hand, on a TTY; no spirit founds it. The two-hearth ceremony, HARBOR's live steps and the hardware choice for unattended ember raises stay the operator's hands.
 
@@ -160,6 +164,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-QJQFcmlMIEsm9emtZr3YGb7PBdlZNwOxoIMkf3-W7Q
+<<^ code="&#x0003;">>ni:///sha-256;G3_vSvRqc4TZjSRVDOYcshKSSrm29uBnhXYHfNsjvA4
 
 <<^ code="&#x0004;" -> to="?">>
