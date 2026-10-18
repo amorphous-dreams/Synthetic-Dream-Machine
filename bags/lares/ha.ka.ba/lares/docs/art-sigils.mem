@@ -1,0 +1,23 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/docs/art-sigils >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils"
+file-path = "art-sigils.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "Art Sigils examples index"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/index>>
+! Art Sigils — Examples
+
+* **Zero · Shattered Olympos:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-zero-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-zero-folio]]
+* **One · Tide-Clock Monastery:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-one-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-one-folio]]
+
+[[Art Sigils API|ha.ka.ba/lares/api/art-sigils]]
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+Examples demonstrate the grammar without defining its defaults.
+<<~/ahu>>
