@@ -5,7 +5,7 @@ file-path = "art-sigils-procedures.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
 role = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
-status = "draft"
+status = "stable"
 retain = true
 ```
 
@@ -20,7 +20,7 @@ The art-house lexicons live in the semantic specification and **inside values**,
 <<~ ahu #/inscription>>
 !! Canonical Inscription procedure
 
-In portable use copy the next single line, followed by a blank line and one invocation. For image-facing calls use the new-style named parameter form (an equals sign followed by a backtick-delimited literal) instead of double-quoted argument values. Procedure declarations use the colon plus double-quoted default convention (`worktype:"artwork"`, `treatment:"suit the read"`); image-facing calls use an equals sign and single-backtick-delimited values (`treatment=` followed by a backtick-wrapped value). Do not transpose these two grammars.
+A portable Inscription contains the following single-line definition, a blank separator and one native invocation. Procedure declarations use colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus backtick-wrapped values (`name=` followed by its tick-delimited contents). The two syntactic roles remain distinct.
 
 ```tiddlywiki
 \procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
@@ -48,7 +48,7 @@ The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak
 * **`art-counterpoint`:** a consequential relation between two images, passages, concepts, gestures, materials or hypotheses. The `evidence` value names visible or experiential features that give a viewer grounds to compare them. Mere adjacency does not establish opposition.
 * **`art-facture`:** medium, support and handling in a specific work or region. Distinguish its physical surface from any object, substance or texture *depicted* within it. No medium or material becomes a default across unrelated parts.
 
-Neither the existence of a Folio nor the desire for richness triggers automatic use of these procedures. An isolated portrait, an all-over painting, a photograph or a temporal installation can invoke only `art()`. Further vocabulary belongs in parameter values until a genuinely reusable scope warrants a new module.
+A Folio invokes these procedures only where an independent artistic question, consequential counterpoint or material condition benefits from its own scope. A portrait, an all-over painting, a photograph or a temporal installation may invoke only `art()`. Other artistic vocabulary belongs within parameter values.
 <<~/ahu>>
 
 <<~ ahu #/compositional-contract>>
@@ -62,7 +62,7 @@ Let the nucleus name **what artwork the maker proposes**. Elaborate only the dim
 * **Facture** names where the outer work's support, ground and marks act, as distinct from represented flesh, metal, fabric, stone or digital surface.
 * **Nested depiction** separates a physical artwork from the pictures and figures portrayed inside it; address and reference do not automatically count as depicted participants.
 * **Silence and openness** can perform the work that an additional procedure would only explain. Delegated parameters permit informed interpretation without filling every slot.
-* **Engine controls** and attached sources remain outside the art grammar unless the artwork itself explicitly concerns them. Keep the native `art()` declaration unchanged when adapting to a different receiver.
+* **Engine controls** and attached sources sit outside the art grammar unless the artwork itself expressly concerns them. The native `art()` declaration expresses consistent dimensions across receivers.
 
 The extended procedures provide modular **ways of telling**, not mandatory steps in production, a universal artwork layout, or proof of the artist's intent.
 <<~/ahu>>
@@ -79,7 +79,7 @@ The following example deliberately leaves maps, genre illustration and studio bo
 <<art-facture scope=`left panel` support=`coarse undyed flax` medium=`waxed cotton thread and chalk` handling=`uneven needle spacing, exposed knots and worn edges`>>
 ```
 
-Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability; it supplies no requirements for the next artwork.
+Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability without imposing requirements on other artworks.
 <<~/ahu>>
 
 <<~ ahu #/notation-contract>>
@@ -90,16 +90,15 @@ Copy the relevant native procedure definitions into a live TW5 context before tr
 * Apostrophes or double quotes *inside* a backtick value remain literal source characters. They can enter the transcluded prose and may also influence an image receiver's text-rendering conventions.
 * Omitted parameters inherit declared defaults verbatim. The receiving artist or model, not TW5, decides how to interpret their artistic delegation.
 * A default-free missing argument can yield empty output rather than an instruction to invent content. Where supported, intentional dynamic substitutions inside backtick payloads should declare their context; the portable Inscription favors literal values.
-* A separate work-specific Inscription can carry an exact literal-rendering null test. This procedure meme supplies the reusable declarations and their behavior, without endorsing any work-specific prompt as a default.
+* An artwork-specific Inscription may include a literal-rendering reference. This grammar supplies reusable declarations and their behavior without endorsing any artwork-specific subject as a default.
 <<~/ahu>>
 <<~ ahu #/aftermath>>
-!! Aftermath — grammar stewardship
+!! Aftermath — meaning across representation
 
-After a work returns, compare its stated **read** and depicted relations with what viewers can actually observe. A useful unplanned material or image relation may inspire a new version, but never rewrites the old call by implication. Preserve stable procedure names, declared defaults, and invocation syntax across revisions unless a tested change warrants versioning.
+The written call, its literal transclusion and the resulting artwork carry related but distinct meanings. A receiving artist's unexpected pictorial choices invite interpretation; they do not silently add parameters to the native procedure.
 
-Let new subjects teach the grammar only when their lessons transfer across worktypes. Specialized geographical, architectural, photographic or textile techniques belong in the specification's research ahu or in a particular Folio; the core procedure must remain innocent of its examples.
+A support, motif, genre, material convention, named artist or depicted subject belongs to the artistic invitation that names it. The eight-dimensional nucleus and three optional Folio procedures impose no house style, narrative format or image layout.
 <<~/ahu>>
-
 <<~ ahu #/tw5-source>>
 !! Native TiddlyWiki documentation and verification boundary
 
@@ -108,5 +107,5 @@ Let new subjects teach the grammar only when their lessons transfer across workt
 * Calls: https://tiddlywiki.com/static/Calls.html
 * Substituted Attribute Values: https://tiddlywiki.com/static/Substituted%2520Attribute%2520Values.html
 
-A syntax claim carries the documented TW5 convention. A literal expansion supplied elsewhere remains a **hand-derived test oracle** until an actual TW5 execution confirms it. An image-producing AI may read wikitext semantically without executing it.
+These references describe native TW5 syntax. Hand-derived literal expansions express lexical expectations without claiming execution in a live runtime. An image-producing AI may read wikitext semantically without executing TW5.
 <<~/ahu>>
