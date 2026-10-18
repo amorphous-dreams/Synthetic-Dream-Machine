@@ -5,18 +5,18 @@ file-path = "art-sigils-spec.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
 role = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
-status = "draft"
+status = "stable"
 retain = true
 ```
 
 <<~ ahu #/purpose>>
 ! Art Sigils — Semantic Specification
 
-Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, development studies and images containing other images. One portable Inscription supplies a complete invitation to artistic interpretation; a Folio can elaborate that same intention through rich disciplinary language, modular procedures, references and documented disagreement.
+Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, preparatory studies and images containing other images. One portable Inscription supplies a complete invitation to artistic interpretation; a Folio can elaborate that same intention through rich disciplinary language, modular procedures, references and documented disagreement.
 
 The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
 
-The Two Inks remain distinct without separation: reusable red procedure definitions shape the reading; subject-specific black invocations make artistic claims. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The native Inscription supplies its own definition and may travel directly to a receptive AI or undergo TW5 transclusion into prose.
+The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The native Inscription supplies its own definition and may travel directly to a receptive AI or undergo TW5 transclusion into prose.
 <<~/ahu>>
 
 <<~ ahu #/syntax>>
@@ -27,10 +27,10 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 * **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
 * **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
 * The canonical `art()` declaration lives in `art-sigils-procedures.mem`; an artwork-specific Inscription carries its own copy of that declaration and one invocation. General-purpose examples below demonstrate invocation syntax without imposing any example's subject on the grammar.
-* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the prompt-facing native procedure uses the deliberately neutral name `art`. Keep this vocabulary outside the transmitted procedure name unless an artwork intentionally calls for those associations.
-* **Scope of rule:** all `art`, `art-study`, `art-counterpoint`, `art-facture`, and future Art Sigil procedure calls use backtick-wrapped `name=` values; all corresponding declared defaults use colon plus double quotes. Lares house sigils follow their separate house syntax.
+* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
+* **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
-* **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-expansion oracle can check parameter substitution, defaults and punctuation; until a live TW5 comparison occurs, a hand-derived oracle remains unverified.
+* **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
 * **Character budgeting:** the 1,024-character portability ceiling covers the complete definition plus invocation, not the expanded prose, meme wrapper, references, or Folio.
 * **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
@@ -56,13 +56,13 @@ Native source pattern:
 * ''relation'' — consequential interactions between visible elements or pictures: correspondence, counterpoint, correction, contradiction, quotation, concealment, juxtaposition, revision and support. Composition places; relation says what that placement makes possible.
 * ''depiction-scope'' — membership in the represented world or nested image: outer picture, embedded picture, depicted subject, viewer, maker and source reference. A viewer's address or a source photograph does not by itself insert a person or photograph into the image.
 
-The accepted nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
+The nucleus reads in this order: worktype / subject / read / imagery / treatment / composition / relation / depiction-scope. This order gives neither an object inventory nor a mandatory checklist: read carries the governing invitation, while other declared choices retain their own authority.
 <<~/ahu>>
 
 <<~ ahu #/optional>>
 !! Yin — speech, delegation, silence, withholding
 
-* ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims should survive interpretation, though a later deliberate revision may amend them.
+* ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims govern interpretation within their declared boundaries.
 * ''Delegated'': a TW5 default value such as "serve the read" supplies actual words, inviting the receiving model or collaborator to judge in context. TW5 substitutes text; it does not independently calculate the artistic decision.
 * ''Silent'': an omitted dimension with an empty/default-free value makes no positive artistic claim. Do not fill a deliberate silence with a mandatory universal convention.
 * ''Withheld'': an explicit artistic choice reserves ambiguity, open form, empty space, unresolved identity or unseen evidence. Unlike silence, withholding expresses a positive intention.
@@ -144,7 +144,7 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 # ''Differences have purposes.'' Independent studies may disagree on evidence, handling, finish, viewpoint or purpose. Decorative disorder alone provides weak evidence of artistic inquiry. The visible depiction of a correction does not by itself prove its target proposition.
 # ''Support differs from subject.'' Paper texture, pigment behavior and depicted stone or bronze follow distinct physical histories and scales.
 # ''Unknowns remain unknown.'' Neither Art Sigil nor Formal Analysis manufactures provenance, medium certainty, exact geographic routes or mythological identity from attractive ambiguity.
-# ''Creative surprise remains available.'' Specification states vital commitments without exhausting possible solutions. A revised Folio may amend the original Inscription through an acknowledged creative decision.
+# ''Creative surprise remains available.'' Specification states vital commitments without exhausting possible solutions. An unexpected visual reading supplies an alternative interpretation, not a silent replacement for the written Inscription.
 # ''Source authorities retain limits.'' Getty concepts inform terms, real geography informs appearance, and fictional canon governs fictional world facts only within its claimed scope.
 <<~/ahu>>
 
@@ -160,7 +160,7 @@ Art Sigils distinguishes the **author's written intention**, its **literal TW5 r
 * **Interpretive variance:** different recipients may privilege different associations of the same words or artist reference. Neither exact repetition nor identical reception follows from an apparently equivalent source.
 * **Critical return:** compare a rendered work with its articulated read, composition, relations, material boundaries and scope. Treat visibly attractive divergences as optional discoveries, not automatic upgrades to the source.
 
-Formal Analysis carries the detailed observational and comparison methodology; the Procedures meme carries the executable TW5 declaration. This specification retains their shared semantic contract without preserving a particular rendering campaign.
+Formal Analysis carries the observational and comparative method; the Procedures meme carries executable TW5 declarations. Both operate through the eight-dimensional semantic contract described here.
 <<~/ahu>>
 
 
@@ -207,14 +207,12 @@ Scholarly sources furnish vocabulary and competing interpretive lenses, never on
 <<~/ahu>>
 
 <<~ ahu #/aftermath>>
-!! Aftermath — guarding the open grammar
+!! Aftermath — interpretation and artistic bounds
 
-After an image or critical reading returns, distinguish what the work **shows**, what a viewer **infers**, what a maker or source **confirms**, and what the operator may **revise**. An unexpected visual invention can enter the next artistic invitation through an explicit choice; it cannot silently rewrite the previous one.
+Artworks, instructions, references and interpretations carry distinct authorities. Formal criticism distinguishes what a work **shows**, what viewers **infer**, what credible sources **support**, and what the authored **read** invites. Neither a suggestive image nor an artist's name alone establishes technique, intention, identity or provenance.
 
-Promote a reusable semantic distinction only when several worktypes benefit from it. Keep discipline-specific terminology in a named research ahu, image-specific facts in a Folio, prompt syntax in the Procedures meme, and evidence assessments in Formal Analysis.
+Discipline-specific methods inhabit named research ahus; artwork-specific forms, fictional facts and materials inhabit their Folios; syntax belongs to Procedure Grammar; observation and inference belong to Formal Analysis. These boundaries protect an artwork from inheriting another worktype's conventions.
 
-Do not treat historical trials, old naming experiments, discarded parameters, artist preference rankings, generated render frequencies or project migration notes as normative artwork instructions. Preserve their provenance in version history or review records rather than the evergreen grammar.
-
-The enduring test: a maker should feel equally free to describe a portrait, minimal abstraction, textile object, photograph, performative installation or illustrated map without pressure to summon an unrelated genre, paper surface, research board or narrative.
+The grammar accommodates portraits, abstract fields, textiles, photographs, installations and maps without requiring unrelated genres, parchment, monumental scenery, prescribed narratives or compulsory comparison boards.
 <<~/ahu>>
 
