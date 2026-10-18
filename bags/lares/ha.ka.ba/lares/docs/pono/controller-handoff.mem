@@ -52,7 +52,7 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 * ''A local green proves the tree it read.'' A worktree whose `node_modules` link into another checkout tests that checkout's build; every vitest config refuses a stale or foreign `dist` (`tools/vitest-dist-guard.mjs`). Provision lane worktrees with `tools/provision-worktree.mjs <empty-dir>`.
 * ''One red in CI masks every package after it.'' `pnpm test` runs the packages in order and stops at the first red, so a cured red can reveal the next. Before pushing a cure, run the packages that come after it, or read the next CI run whole.
 * ''Read the containers' own logs before naming a cause.'' A held-out cell uploads each container's log as an artifact (`gh run download <run> -n <cell>`); tallying each container's own lines split the carriage red where the witness's verdict could not. An in-process reproduction holds one Repo, so it cannot show a defect that lives between a CLI process and a running daemon.
-* ''Give a sandboxed spirit the logs it cannot fetch.'' A read-only Codex spirit reaches no GitHub API; fetch the failing job logs and hand it the excerpt.
+* ''Give a sandboxed spirit the logs it cannot fetch.'' A read-only Codex spirit reaches no GitHub API; fetch the failing job logs and hand it the excerpt, or launch it in the networked scout shape `mixed-model-swarm#/the-launch` names.
 * ''A review lands nothing until a second face reads it'' (`mixed-model-swarm#/the-lens-law`): a cheap eye's clean read clears nothing, and a tensioned finding gets measured by running it.
 * ''Launch background spirits through the harness's background mode'', never a plain `&`: a plain `&` brings no completion notice, and `pgrep -f <pattern>` matches its own shell's command line.
 * ''Shell traps in zsh'': `$R:t` reads as a path modifier, so write `${R}:path`; an unquoted variable holding several paths does not split (use `${(f)VAR}`); a `grep` pattern starting with `<<^` treats the caret as an anchor (use `grep -F`); `rm` on a path built from variables trips the safety check, so remove by literal path.
@@ -164,6 +164,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G3_vSvRqc4TZjSRVDOYcshKSSrm29uBnhXYHfNsjvA4
+<<^ code="&#x0003;">>ni:///sha-256;C0OTLMK-bECQX_KIF_ZpVVB5qKxa7qNT-bh-S6_JWTc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -157,6 +157,8 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A brief stands as a file'' that opens with a Lares invocation sigil, names the mask, the ground, the ruling being enacted, the house style, and the handback shape, and closes with a yield to the controller.
 * ''A launch wrapper takes the brief, the model and the sandbox'' and writes the handback to an out file beside a log. It retries only where the vendor reports capacity and the out file stayed empty, waiting between tries and giving up after a fixed count.
 * ''Codex'': `codex exec -m <model> -c model_reasoning_effort=medium` with `-s workspace-write` for a builder (either `-C <worktree>` into a worktree the lead provisioned, or `--worktree` from the repository root, whose brief then forbids `git worktree add`) or `-s read-only --ephemeral` for a reader; `--search` before `exec`, or web search enabled in config, for a field read. Every Codex brief carries the git and refusal lines of #/the-fences.
+* ''A Codex scout that needs GitHub'' (measured 2026-10-18). `-s read-only` reaches no network, so a read-only spirit reads no pull request; `-s workspace-write` reaches it, since the config sets `[sandbox_workspace_write] network_access = true`. A scout therefore runs `-s workspace-write -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.exclude_tmpdir_env_var=true --skip-git-repo-check -C <an empty scratch directory>`: it reads the repository and calls `gh`, and it writes only inside that directory. The probe that measured it ran `gh pr list` and `git -C <repo> log` green, and its writes into the repository and into a sibling scratch directory refused `Read-only file system`. Without the two excludes, `/tmp` stays writable, and every lane worktree under the session scratchpad with it. The lead hands a scout the slow inventory as a file in its directory: one shell command that outruns Codex's command window leaves the spirit with nothing.
+* ''Every background Codex launch closes its stdin'' (`< /dev/null`): `codex exec` otherwise waits at "Reading additional input from stdin..." and never starts.
 * ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
 * ''A spirit that cannot write its out file'' hands back on stdout; the wrapper's log keeps it.
@@ -185,6 +187,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wvrY1kxftwLP_jyIslxUgXRfC5P0XQUvemuRdxJ29dU
+<<^ code="&#x0003;">>ni:///sha-256;I21wE0GTZPdjcilospbzZENTU_4WxHAZroyoXXaJ5gI
 
 <<^ code="&#x0004;" -> to="?">>
