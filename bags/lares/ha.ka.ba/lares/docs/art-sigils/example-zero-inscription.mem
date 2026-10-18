@@ -1,0 +1,68 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-inscription >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-zero-inscription"
+file-path = "example-zero-inscription.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "portable, invocation-only Example Zero art inscription"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/inscription>>
+! Art Sigils — Example Zero Inscription
+
+The image-facing Inscription occupies **947 characters**. Copy only the invocation below, without this wrapper. Its named parameters and backtick-wrapped values carry the artwork's own semantic directions; the 1,024-character ceiling measures the invocation alone.
+
+**Procedure authority (outside the transmitted artwork):** `lar:///ha.ka.ba/lares/api/art-sigils/procedures` — [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], defining the native `art()` declaration and its defaults. A live TiddlyWiki5 instance must load that definition to transclude the call; an image model may interpret the invocation without executing TW5.
+
+```tiddlywiki
+<<art worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`plan-oblique fantasy terrain promises passage; rival field studies dispute it` imagery=`dominant regional relief: green lowlands, ochre ridges, snow heights; route vellum; dark Phlegra relic; embodied travelers; green refuge; cyan, amber, violet anomalies` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Heinrich Berann panorama; cold-press watercolor and hypsometric tints; Luka Rejec mythpunk; Piranesi/Ian Miller charcoal; graphite, Bristol ink, gouache` composition=`luminous regional panorama above uneven pinned studies on visibly different papers; broad sky, dark counterweight` relation=`painted red high pass ends at cliff; white line corrects by lower saddle; bone or machine?; lived-in refuge disputes desolation` depiction-scope=`flat board fills frame; figures inside studies, no studio, no artist credits or source photos`>>
+```
+<<~/ahu>>
+
+<<~ ahu #/literal-rendering>>
+!! Literal rendering — reference prose
+
+The following reference prose follows the `art()` declaration in the Procedures meme. It records expected substitution, not a claim of live TiddlyWiki execution.
+
+!!! A. Example Zero invocation
+
+```text
+concept-art pinboard: shattered Olympos, Rift of Tempes, Phlegra. Read: plan-oblique fantasy terrain promises passage; rival field studies dispute it. Imagery: dominant regional relief: green lowlands, ochre ridges, snow heights; route vellum; dark Phlegra relic; embodied travelers; green refuge; cyan, amber, violet anomalies. Treatment: Tom Patterson and Bernhard Jenny shaded relief; Heinrich Berann panorama; cold-press watercolor and hypsometric tints; Luka Rejec mythpunk; Piranesi/Ian Miller charcoal; graphite, Bristol ink, gouache. Composition: luminous regional panorama above uneven pinned studies on visibly different papers; broad sky, dark counterweight. Relation: painted red high pass ends at cliff; white line corrects by lower saddle; bone or machine?; lived-in refuge disputes desolation. Depiction scope: flat board fills frame; figures inside studies, no studio, no artist credits or source photos.
+```
+
+All eight values appear explicitly, so the declaration's optional defaults do not enter this expansion.
+
+!!! B. Delegated defaults
+
+```tiddlywiki
+<<art subject=`a distant coast` read=`the unseen seems near`>>
+```
+
+```text
+artwork: a distant coast. Read: the unseen seems near. Imagery: follow subject and read. Treatment: suit the read. Composition: serve the read. Relation: where meaningful. Depiction scope: follow worktype and imagery.
+```
+
+Here the shared Procedures definition supplies omitted `worktype`, `imagery`, `treatment`, `composition`, `relation`, and `depiction-scope` values.
+
+!!! C. Interpretation boundary
+
+The invocation alone can provide meaningful artistic direction to an image model; no universal model behavior follows from wikitext familiarity. Exact TW5 text transclusion requires a declaration in scope. Visual fidelity, correct geographic interpretation and source provenance require separate evidence.
+<<~/ahu>>
+
+<<~ ahu #/bounds>>
+!! Reading and depiction
+
+* **Primary image:** a dominant, luminous plan-oblique relief landscape connects green lowlands, ochre ridges and snowy heights, through Patterson/Jenny shaded-relief influences and Berann panoramic organization.
+* **Competing witnesses:** the high pass painted in red ends against a cliff; a white revised route takes a lower saddle. Phlegra charcoal invites contradictory skeletal and mechanical readings; a modest green refuge resists total desolation. Small color scraps retain unidentified cyan, amber and violet appearances.
+* **Distinct materials:** cold-press watercolor, graphite on translucent vellum, charcoal on cool fibrous paper, ink on smooth Bristol and small gouache studies retain separate surface behaviors.
+* **Depiction boundary:** the flat pinned board fills the frame. Artist, photographer, studio furniture, source photos, names and credits do not become depicted participants by virtue of their references.
+* **Folio companion:** `lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio` — [[Example Zero Folio|ha.ka.ba/lares/docs/art-sigils/example-zero-folio]]. It carries expanded artistic sigils, visual arguments, specialized sources and their three real Olympus URIs.
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+!! Aftermath — two expressions, one artistic invitation
+
+The compact invocation names the primary visual intention; the accompanying Folio expands distinct questions, material behaviors, viewpoints and sources. Source URLs and artist names guide visual interpretation but need not enter the rendered picture as labels. Neither the invocation nor its prose expansion certifies traversability, relic identity or fictional canon.
+<<~/ahu>>
