@@ -14,17 +14,39 @@ retain = true
 
 The Folio opens from a **problem**, not a checklist: which mountain paths survive, and which drawings should the studio believe? The companion 1,019-character Inscription provides the portable intention and a literal TW5 null test. Here the artist studies, resists, corrects and leaves questions unresolved.
 
-**Read:** one luminous relief-aware panorama dominates; a vellum revision exposes an impossible painterly crossing; dark archaeological alternatives refuse one identity; a small green refuge challenges blanket desolation.
+**Read:** one luminous region-scale plan-oblique panorama with green–ochre–snow hypsometric relief dominates; a vellum revision exposes an impossible painterly crossing; dark archaeological alternatives refuse one identity; a small green refuge challenges blanket desolation.
 
 **Outside the image:** viewers, reviewers, artist biographies, source photos and references. **Inside:** the physical pinboard, its distinct paper media and any tiny figures within the subordinate drawings. No surrounding studio furniture or display apparatus.
 
 **TW5 dialect:** reusable procedure definitions use `name:"default"`; every Folio call uses `name=` with backtick-wrapped values. Art-specific terms live *inside* values. The optional `art-study`, `art-counterpoint`, and `art-facture` modules remain provisional, not a final canon of procedures.
 <<~/ahu>>
 
+<<~ ahu #/visual-thesis>>
+!! Dominant picture — regional terrain rather than a mountain portrait
+
+The main painting carries the **cartographic thesis**: a continuous plan-oblique fantasy relief across the shattered heights of Olympos, the Rift of Tempes and the scarred margins of Phlegra. A monumental summit attracts attention without swallowing the surrounding ridges, watersheds, passes, ravines, shelves and inhabited lower valleys. The viewer can mentally follow the region rather than simply admire a peak.
+
+**Hypsometric tints** move from green lower lands through ochre exposed elevations to pale snow and rock. **Shaded relief** gives slopes their form; **atmospheric recession** gives distant terrain air; **plan-oblique composition** joins the terrain into an elevated spatial argument. None supplies surveyed elevations or a canon route. Preserve the broad luminous panorama and enough quiet sky for the landform to read.
+
+The outer image shows the **flat pinned artboard alone**. No surrounding desk, room, wall perspective or physical terrain maquette. Embedded field studies may contain tiny travelers; neither the audience nor the artist enters the depicted studio by default. Supporting images surround and partly overlap the main painting without converting it into a grid of equal postcards.
+<<~/ahu>>
+
+<<~ ahu #/field-witnesses>>
+!! Pinned witnesses — competing styles and narratives
+
+* **Cartographer:** graphite on translucent blue-gray vellum disputes the painter's high crossing. The red route terminates at a recognizable cliff; the white correction follows a lower saddle. Both views share a cliff, drainage or landmark; erasures show revision without pretending to certify the path.
+* **Embodied traveler:** a small eye-level watercolor or drybrush ledge study conveys exposure and passage at human scale without forcing the entire dominant panorama into a hiker's viewpoint.
+* **Archaeologist:** a charcoal Phlegra impression on cool fibrous stock proposes colossal bone; a separate fine-ink Bristol reconstruction suggests machinery or stone. Preserve incompatible but plausible outlines, not one settled identity.
+* **Inhabitant:** a small green gouache refuge with springs, terraces and repair work challenges blanket desolation. It should remain modest rather than a second glorious landscape.
+* **Observer of anomalies:** cyan, amber and violet scraps explore different localized appearances; avoid fabricated mechanisms, measurements or authoritative legends.
+
+These studies perform **distinct inquiries**, not decorative variety. Unequal finish, visible revisions and different material supports matter as much as a visually pleasing arrangement.
+<<~/ahu>>
+
 <<~ ahu #/questions>>
 !! Four propositions in productive tension
 
-**1 — Pass:** the first relief panorama suggests a crossing; a graphite vellum correction argues against it using slope, exposure and drainage. Preserve both marks.
+**1 — Pass:** the relief panorama suggests a high crossing; a graphite vellum correction challenges it using the same cliff, lower saddle and drainage. Preserve both marks, erasures and unresolved survey uncertainty.
 
 **2 — Remains:** the dark Phlegra studies read as giant bone, machine or stone depending on medium, contour and prior expectation. No one identification wins.
 
@@ -80,7 +102,7 @@ The image-facing Folio call values use backticks exclusively; procedure declarat
 <<~ ahu #/assembly>>
 !! Board assembly, pictorial argument, and what remains offstage
 
-* **Composition:** a dominant partly plan-oblique relief panorama across the upper work; supporting lower studies vary in size, orientation and resolution; charcoal relic study darkens one side while the modest refuge occupies a quieter counterweight. Avoid a uniformly polished portfolio grid.
+* **Composition:** a dominant region-scale plan-oblique hypsometric relief panorama across the upper work; supporting lower studies vary in size, orientation and resolution; charcoal relic study darkens one side while the modest refuge occupies a quieter counterweight. Avoid a uniformly polished portfolio grid.
 * **Spatial representation:** shared ridges, passes, ravines, basins and drainage remain physiographically coherent; aerial painting, embedded route map and embodied ledge view can differ in spatial convention. A summit-to-lowland sea sweep suggests Berann and Jenny/Patterson, never a false surveyed metric legend.
 * **Address and nested scope:** the maker, reference photographer and art director remain outside the image; tiny travelers occupy *inner* landscape studies only. Pinned pictures depict different interpretations, not detached fragments of one seamless scene.
 * **Media behavior:** cold-press watercolor wash, translucent route vellum, rubbed charcoal on fibrous grey stock, sharp ink on smooth Bristol, small gouache and color scraps. Paper fiber, applied media, pictured bronze patina, geological strata and cloud recession obey different visual scales.
