@@ -12,15 +12,15 @@ retain = true
 <<~ ahu #/bearing>>
 ! Art Sigils — Procedure Grammar
 
-The smallest portable form carries *its own* native TW5 procedure definition and one named-argument invocation. A native TW5 instance transcludes the call into concise prose; a model familiar with wikitext may also directly interpret its semantic structure. Neither path guarantees the same response across image models.
+The portable Inscription carries **one native named-argument `<<art ...>>` invocation**, without a procedure declaration. This meme holds the canonical definition. TW5 transclusion requires that definition in the receiving wiki's scope; an image model familiar with wikitext may instead interpret the invocation's semantic structure directly. Neither path guarantees identical reception across models.
 
-The art-house lexicons live in the semantic specification and **inside values**, not in one procedure per artistic term. Only independently meaningful structural scopes warrant extended procedures. The 1,024-character envelope applies to the Inscription's transmitted definition and call together, never to the Folio or file metadata.
+The art-house lexicons live in the semantic specification and **inside values**, not in one procedure per artistic term. Only independently meaningful structural scopes warrant extended procedures. The 1,024-character target applies to the complete **invocation alone**, excluding the source code fence, meme wrapper, reference register and Folio.
 <<~/ahu>>
 
 <<~ ahu #/inscription>>
-!! Canonical Inscription procedure
+!! Canonical `art()` procedure
 
-A portable Inscription contains the following single-line definition, a blank separator and one native invocation. Procedure declarations use colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus backtick-wrapped values (`name=` followed by its tick-delimited contents). The two syntactic roles remain distinct.
+The following definition governs Inscription and Folio calls. It stays in this grammar meme rather than in the transmitted artwork. Procedure declarations use colon plus double-quoted defaults (`worktype:"artwork"`); invocations use equals plus backtick-wrapped values (`name=` followed by its tick-delimited contents). The two syntactic roles remain distinct.
 
 ```tiddlywiki
 \procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
@@ -90,7 +90,7 @@ Copy the relevant native procedure definitions into a live TW5 context before tr
 * Apostrophes or double quotes *inside* a backtick value remain literal source characters. They can enter the transcluded prose and may also influence an image receiver's text-rendering conventions.
 * Omitted parameters inherit declared defaults verbatim. The receiving artist or model, not TW5, decides how to interpret their artistic delegation.
 * A default-free missing argument can yield empty output rather than an instruction to invent content. Where supported, intentional dynamic substitutions inside backtick payloads should declare their context; the portable Inscription favors literal values.
-* An artwork-specific Inscription may include a literal-rendering reference. This grammar supplies reusable declarations and their behavior without endorsing any artwork-specific subject as a default.
+* An artwork-specific Inscription carries one invocation; its surrounding meme may include a literal-rendering reference and a link to this grammar. The invocation alone does not register the procedure in a TW5 instance.
 <<~/ahu>>
 <<~ ahu #/aftermath>>
 !! Aftermath — meaning across representation
