@@ -5,7 +5,7 @@ file-path = "art-sigils-example-zero.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
 role = "Example Zero Folio: independent art studies and reference-backed visual direction"
-status = "draft"
+status = "stable"
 retain = true
 ```
 
@@ -18,7 +18,7 @@ This Folio develops one artistic **problem** rather than an exhaustive checklist
 
 **Outside the image:** viewers, reviewers, artist biographies, source photos and references. **Inside:** the physical pinboard, its distinct paper media and any tiny figures within the subordinate drawings. No surrounding studio furniture or display apparatus.
 
-**TW5 dialect:** reusable procedure definitions use `name:"default"`; every Folio call uses `name=` with backtick-wrapped values. Art-specific terms live *inside* values. The optional `art-study`, `art-counterpoint`, and `art-facture` modules remain provisional, not a final canon of procedures.
+**TW5 expression:** procedure declarations use `name:"default"`; Folio invocations use `name=` with backtick-wrapped values. Art-specific terms live *inside* values. The optional `art-study`, `art-counterpoint`, and `art-facture` procedures provide distinct artistic scopes beneath the eight-dimensional `art()` nucleus.
 <<~/ahu>>
 
 <<~ ahu #/visual-thesis>>
@@ -112,7 +112,7 @@ The image-facing Folio call values use backticks exclusively; procedure declarat
 
 **Audience/address:** a collaborator reviewing hypotheses about a setting. **Artifactual narrative:** a collection of studies accumulated across differing questions and opinions. **Subject narrative:** a sacred mountain badly wounded by ancient war, later smothered by maelstrom, now difficult but possible to traverse. Audience and hypothetical makers stay *outside* the image.
 
-Primary first read: a sweeping high, luminous relief-aware Olympos panorama. Second read: a damaged passage and dark Phlegra/relic studies with substantially heavier line and contrast. Later read: a route overlay visibly disputes the panorama, a charcoal alternative questions a giant-bone interpretation, and a modest refuge challenges the idea of universal uninhabitability.
+Primary first read: a sweeping high, luminous relief-aware Olympos panorama. Second read: a damaged passage and dark Phlegra/relic studies with substantially heavier line and contrast. On sustained looking: a route overlay visibly disputes the panorama, a charcoal alternative questions a giant-bone interpretation, and a modest refuge challenges the idea of universal uninhabitability.
 
 Difference of opinion need not become explanatory text. Two mismatched drainage traces, an erased crossing, a stained scrap with revised colour, and a partly concealed earlier silhouette can communicate revision through their juxtaposition. Papers overlap because the artists compare something specific. Ground-level travel studies may inherit the embodied reference's viewpoint without depicting its photographer, while elevated paintings and map overlays draw on the aerial and terrain references for different tasks.
 
@@ -136,7 +136,7 @@ Do not mistake the physical support of the *outer board* for the depicted geolog
 
 Influences concern craft techniques and viewer effects; do not reproduce specific identifiable artworks or print the artist registry on the board.
 
-The name pairing Patterson/Jenny remains intact in the Inscription; the expanded register may enrich studio decisions without mandating the printing of artist credits.
+Tom Patterson and Bernhard Jenny jointly inform the relief portrayal. Other artist references guide particular visual decisions without requiring printed artist credits.
 <<~/ahu>>
 
 <<~ ahu #/terrain-references>>
@@ -177,13 +177,11 @@ Keep these three full URIs outside the image-facing sigil unless an explicitly c
 <<~/ahu>>
 
 <<~ ahu #/aftermath>>
-!! O-takiage and null-test handoff
+!! Aftermath — the artwork's unresolved claims
 
-Example Zero organizes its visual questions as terrain → contradiction → unresolved remains → inhabitation → assembly. The distinct artist, route and material registers preserve disagreements rather than forcing one definitive historical reading. The standalone Inscription meme carries a literal-rendering oracle; the source alone offers no proof of live TW5 execution or guaranteed cross-model interpretation.
+The Folio assembles terrain, contested passage, uncertain remains, habitation and their contrasting visual treatments within one artboard. The primary painted relief proposes a landscape; route studies challenge its crossing; charcoal remnants sustain contrary identifications; a green refuge complicates apparent desolation.
 
+A path painted across a ridge cannot certify traversability. Bone-like and mechanical outlines do not establish archaeological provenance. A refuge study implies inhabitation without establishing a specific settlement. The three Olympus sources offer observational bearings, not surveys of fictional geography.
 
-The Folio's next revision should follow **artistic evidence**: note which rendering supports the geographic and material relationships, which departs productively, and which merely imitates the surrounding research apparatus. An interpretation derived from a generated picture may motivate a new proposal; it does not settle a route, a relic identity, or the fictional setting's canon.
-
-Keep this example's geography, artists, material supports and route claims inside its own Folio. None supplies an unstated default for `art()`, `art-study`, `art-counterpoint` or `art-facture`. The generic grammar, Formal Analysis method and the optional cartography research ahu stand independently.
+Example Zero's geography, artists, supports, colors and narrative tensions belong to this Folio and its companion Inscription, without becoming assumptions of the general grammar.
 <<~/ahu>>
-
