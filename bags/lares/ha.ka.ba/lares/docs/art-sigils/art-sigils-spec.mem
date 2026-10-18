@@ -12,11 +12,11 @@ retain = true
 <<~ ahu #/purpose>>
 ! Art Sigils — Semantic Specification
 
-Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, preparatory studies and images containing other images. One portable Inscription supplies a complete invitation to artistic interpretation; a Folio can elaborate that same intention through rich disciplinary language, modular procedures, references and documented disagreement.
+Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, preparatory studies and images containing other images. An Inscription carries one compact, invocation-only artistic invitation; a Folio expresses that intention through one contiguous block of richer sigils, specialized material scopes, counterpoints and reference-bearing values. Surrounding ahus preserve the research and interpretation outside the transmitted art.
 
 The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
 
-The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The native Inscription supplies its own definition and may travel directly to a receptive AI or undergo TW5 transclusion into prose.
+The Two Inks distinguish reusable red procedure definitions from subject-specific black invocations. Their different offices contribute to one artistic reading. Lares house sigils (<<~ name ...>>) and native TW5 calls (<<name ...>>) follow different conventions. The Inscription carries an invocation without a procedure definition. A receiving AI may interpret its structured language directly; native TW5 transclusion draws its definition from the Procedures meme.
 <<~/ahu>>
 
 <<~ ahu #/syntax>>
@@ -26,22 +26,22 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 
 * **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
 * **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
-* The canonical `art()` declaration lives in `art-sigils-procedures.mem`; an artwork-specific Inscription carries its own copy of that declaration and one invocation. General-purpose examples below demonstrate invocation syntax without imposing any example's subject on the grammar.
+* The canonical `art()` declaration and optional Folio definitions live in `art-sigils-procedures.mem`. Inscription and Folio artifacts contain **invocations only**, with an external reference to the Procedures meme. Native TW5 execution requires those definitions in scope; direct model interpretation may work without them.
 * **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the native procedure bears the name `art`. Neither name requires glyphs, magical symbols or printed labels in the depicted work.
 * **Scope of rule:** `art`, `art-study`, `art-counterpoint` and `art-facture` invocations use backtick-wrapped `name=` values; their declared defaults use colon plus double quotes. Lares house sigils follow separate house syntax.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
 * **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-rendering reference records expected parameter substitution, defaults and punctuation; written reference text alone does not attest live TW5 execution.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
-* **Character budgeting:** the 1,024-character portability ceiling covers the complete definition plus invocation, not the expanded prose, meme wrapper, references, or Folio.
+* **Character budgeting:** the 1,024-character portability target covers the complete **Inscription invocation only**. The procedure declaration, meme wrapper, surrounding research, Folio, and engine settings do not consume this budget. The Folio carries no 1,024-character ceiling.
 * **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
 
-Native source pattern:
+Image-facing Inscription pattern (the reusable definition resides in the Procedures meme):
 
 ```tiddlywiki
-\procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
-
 <<art subject=`a distant coast` read=`the unseen seems near`>>
 ```
+
+A Folio presents one contiguous, copyable `tiddlywiki` block. Its first `art()` invocation articulates the whole artwork; optional `art-study`, `art-counterpoint` and `art-facture` invocations provide distinct artistic scopes. Specialized observations and full source URIs may appear **inside parameter values** as explicitly non-depicted references. No procedure definitions or explanatory prose interrupt the Folio block. The surrounding meme supplies research ahus, citations, source provenance, artistic context and limits of authority.
 <<~/ahu>>
 
 <<~ ahu #/nucleus>>
@@ -136,8 +136,8 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 !! Pattern integrities across worktypes
 
 # ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
-# ''Inscription stands alone.'' One procedure definition plus one invocation carries the essential meaning within a practical 1,024-character target. The file wrapper and external references do not enter that transmitted source.
-# ''Richness stays optional.'' The Folio permits deep, ordinary art vocabulary inside parameter values. Extended procedures appear only when the artwork calls for independently scoped study, material behavior or counterpoint.
+# ''Inscription carries one art call.'' A single invocation carries the artistic nucleus within a practical 1,024-character target, without importing the procedure declaration into the image-facing prompt. Procedure Grammar retains the formal executable definitions.
+# ''Folio carries the complete expanded work.'' One uninterrupted block of invocations expresses the whole artistic direction, including scoped studies, material behaviors, counterpoints and relevant source references. The surrounding ahus preserve research rather than substituting for a copyable art-sigil sequence.
 # ''Depicted does not imply addressed.'' Audience, source photographer and studio maker stay outside the represented scene unless the work deliberately depicts them.
 # ''Relation does not collapse into composition.'' Two adjacent objects can have a meaningful action between them, or none.
 # ''No generic style inheritance.'' An example's geography, artists, medium and texture never become defaults of the reusable grammar.
@@ -153,9 +153,9 @@ For a specialized spatial, environmental or cartographic work, consult the optio
 
 Art Sigils distinguishes the **author's written intention**, its **literal TW5 rendering**, and any receiving artist or model's **visible interpretation**.
 
-* **Inscription:** one complete native `art()` declaration plus a named invocation carries a portable minimal invitation. The 1,024-character target applies to the transmitted source, not to a receiving engine's documented hard limit. Optional defaults let the operator allocate characters to the artistic choices that matter.
+* **Inscription:** one `<<art ...>>` invocation carries a portable minimal invitation. Its 1,024-character target describes the invocation alone, not a receiving engine's documented hard limit. TW5 delegation defaults come from the independently available canonical procedure; a model without that declaration may interpret explicit parameter values directly.
 * **Literal reading:** native TW5 transclusion substitutes declared parameters and defaults into the procedure's prose. It transforms syntax, not artistic judgment. An image-generating model may interpret the transmitted wikitext without executing TW5.
-* **Folio:** extended prose, specialized lexicons, visual references, scoped studies, counterpoints and facture can unfold the same eight-dimensional intention. Folio richness never changes the nucleus's meaning by stealth.
+* **Folio:** one copyable block of extended art sigils unfolds the eight-dimensional nucleus with specialized lexicons, studies, counterpoints, facture and source-bearing parameter values. Full reference URIs enter as non-depicted research bearings when relevant, not as automatic visible image elements. Prose and source registers outside the block belong to the accompanying meme, not the transmitted Folio.
 * **Receiver-dependent conditions:** aspect ratio, random seed, model identity, stylistic controls, attached images and other tool settings sit outside the portable semantic fields unless the work explicitly concerns such settings.
 * **Interpretive variance:** different recipients may privilege different associations of the same words or artist reference. Neither exact repetition nor identical reception follows from an apparently equivalent source.
 * **Critical return:** compare a rendered work with its articulated read, composition, relations, material boundaries and scope. Treat visibly attractive divergences as optional discoveries, not automatic upgrades to the source.
