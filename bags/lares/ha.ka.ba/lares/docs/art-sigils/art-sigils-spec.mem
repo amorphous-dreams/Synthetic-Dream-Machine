@@ -12,8 +12,6 @@ retain = true
 <<~ ahu #/purpose>>
 ! Art Sigils — Semantic Specification
 
-! Art Sigils — Semantic Specification
-
 Art Sigils articulate pictorial intentions across paintings, drawings, abstract works, maps, illustrations, photographs, posters, development studies and images containing other images. One portable Inscription supplies a complete invitation to artistic interpretation; a Folio can elaborate that same intention through rich disciplinary language, modular procedures, references and documented disagreement.
 
 The specification governs artistic meaning, not the producer's internal generation algorithm. It neither promises a particular model's fidelity nor promotes rendered results into source canon. Articulation need not exhaust possibility: the maker may state a choice, delegate it, withhold it, or leave it silent.
@@ -47,8 +45,6 @@ Native source pattern:
 <<~/ahu>>
 
 <<~ ahu #/nucleus>>
-!! Eight artistic dimensions
-
 !! The eight artistic dimensions
 
 * ''worktype'' — category and communicative convention of the offered work, e.g. portrait, terrain plate, book illustration, concept board, installation, poster. Neither genre nor image file format alone substitutes for worktype.
@@ -64,9 +60,7 @@ The accepted nucleus reads in this order: worktype / subject / read / imagery / 
 <<~/ahu>>
 
 <<~ ahu #/optional>>
-!! Yin — speech and delegation
-
-!! Yin: speech, delegation, silence, withholding
+!! Yin — speech, delegation, silence, withholding
 
 * ''Specified'': the operator authors a concrete choice. Explicit subject, read, relation and scope claims should survive interpretation, though a later deliberate revision may amend them.
 * ''Delegated'': a TW5 default value such as "serve the read" supplies actual words, inviting the receiving model or collaborator to judge in context. TW5 substitutes text; it does not independently calculate the artistic decision.
@@ -79,24 +73,37 @@ Interpretation priority: protect explicit choices; read the full subject and int
 <<~/ahu>>
 
 <<~ ahu #/scopes>>
-!! Depiction and source boundaries
-
-!! Layers, viewers, sources, evidence
+!! Depiction, viewpoint and source boundaries
 
 * ''Outer artifact'': the complete picture presented to a viewer, whether flat field, photograph, map, physical board or illustrated object.
 * ''Embedded picture'': a painting, photograph, chart or drawing represented within that outer artifact. A small traveler can appear inside an embedded landscape without occupying the studio.
 * ''Subject-of / aboutness'': distinguish visible identity from possible theme or symbolic meaning. A bone-like relic need not identify a giant, deity or even bone.
 * ''Reference role'': descriptive source, source image, canonical world note, artist method, and generated interpretation carry different evidential authority. Keep source URIs outside depicted content unless the chosen worktype calls for printed citation.
 * ''Focalization versus viewpoint'': where an image looks from differs from which knowledge and uncertainties its composition makes accessible. An embodied landscape view need not portray the photographer.
-* ''Cartographic claim'': a plan-oblique panorama conveys relief and plausible movement without automatically specifying surveyed route geometry. An inset plan map may use a distinct projection.
+* ''Cartographic claim'': plan-oblique terrain, hypsometric tinting, shaded relief, and aerial perspective supply **different** pictorial operations. Plan-oblique offers an elevated terrain arrangement; hypsometric tints distinguish relative elevation bands; shaded relief describes terrain form through illumination; atmospheric recession modulates depth or haze. Their combination may suggest plausible passage without validating a surveyed route. An inset plan map may use another projection; use common landmarks when comparing it to the panorama.
 * ''Material layers'': support, ground, medium, implement, technique and visible facture belong to the image artifact; metal, skin, clouds, rock and fabric represented within a study belong to its depicted subject. Do not smear one scale-invariant texture across these layers.
 * ''Artwork history'': repairs, erasures, alternatives and pentimenti may leave visible evidence of inquiry. They need not appear in every finished work.
 <<~/ahu>>
 
-<<~ ahu #/lexicons>>
-!! Art-house lexicons
+<<~ ahu #/pictorial-evidence>>
+!! Pictorial thesis, evidence, and competing representations
 
-!! Art-house lexicons for values rather than compulsory procedures
+A principal image may act as a **visual thesis** rather than an authoritative survey. Supporting pictures can disagree with that thesis through other projections, scales, media, or claims. This structure offers one *possible* use of the eight dimensions, not a required layout for portraits, abstract art or every concept board.
+
+* **Region versus object:** a plan-oblique landscape can articulate a continuous region through connected summits, ridges, watersheds, saddles, ravines and inhabited lowlands. A single dramatic peak may serve another artistic intention. Name *regional continuity* when the viewer should infer a terrain system rather than merely admire a landmark.
+* **Altitude versus atmosphere:** a green-to-ochre-to-snow hypsometric sequence suggests relative heights, while shaded faces give local form and haze gives distance. Color does not prove measured elevation; spectacular lighting alone does not replace physiographic logic.
+* **Mark versus proof:** red and white lines or crossing-out signs can *symbolize* a route dispute. A pictured correction gains evidential force when two routes refer to a common cliff, slope, drainage or saddle and their differing consequences become visible. If the landscape supplies no such anchor, describe the markings as depicted claims, not an objectively solved path.
+* **Multiple viewpoints:** a high panorama, a plan route chart, and an embodied ledge study can inspect the *same feature* without showing identical geometry. Keep the corresponding features recognizable; do not impose false pixelwise alignment or transfer real-world measurements into fantasy geography.
+* **Unresolved alternatives:** a bone-machine ambiguity demands incompatible but viable visual hypotheses. One obvious skull or a polished caption may collapse the very uncertainty the read seeks to hold.
+* **Work within the frame:** the outer subject might comprise a flat pinned artboard, a physical relief sculpture, a photograph of a studio, or a depicted room. Worktype and depiction-scope decide which layers belong; no universal exclusion of studios follows. A source image, title, named artist or audience does not automatically become depicted content.
+* **Artist names as bounded bearings:** invoke a named artist for a particular pictorial *contribution*, not their entire corpus or every motif attached to that name. Conflicting aesthetic associations merit interpretation; do not infer causal token effects from a few images.
+* **Presentation versus inquiry:** a polished board can satisfy composition while losing the visible exchange among studies. Give each subordinate study an identifiable question or counterclaim where inquiry matters. Pinned clutter, fictitious measurements and pseudo-writing alone do not constitute evidence of reasoning.
+
+The nucleus distributes these responsibilities without requiring additional universal parameters: `imagery` offers the pictures, `treatment` gives each its pictorial method, `composition` governs hierarchy, `relation` carries the counterclaim, `read` invites the viewer's inference, and `depiction-scope` bounds the outer artwork.
+<<~/ahu>>
+
+<<~ ahu #/lexicons>>
+!! Art-house lexicons — vocabulary inside values
 
 A term enters a parameter value when it deepens the artistic decision. These registers supply examples, not enumerated allowed values or mandatory production effects. The artist may reject any of them.
 
@@ -107,10 +114,10 @@ Figure-ground, visual weight, gestalt grouping, focal hierarchy, scale, rhythm, 
 Contour, gesture, hatching, crosshatching, stippling, wash, scumbling, drybrush, granulation, rubbing, erasure, pentimento, glazing, impasto, etching, lithography, watercolor bloom, graphite sheen, chalk drag, reserved paper. Never mistake a visual resemblance for proof of production history.
 
 !!! Color and light
-Value key, chroma, local color, simultaneous contrast, temperature, transparent overlap, reflected light, atmospheric recession, luminance hierarchy, high-key reserve, complementary tension, anomalous radiance, subdued passages. Relational color effects outrank an indiscriminate global palette.
+Value key, chroma, local color, simultaneous contrast, temperature, transparent overlap, reflected light, atmospheric recession, luminance hierarchy, high-key reserve, complementary tension, anomalous radiance, subdued passages. **Hypsometric tints** encode relative height through color bands (e.g. green valleys, ochre slopes, pale summits) rather than only sunset lighting. Relational color effects outrank an indiscriminate global palette.
 
 !!! Space and embodiment
-Linear perspective, foreshortening, orthographic plan, plan-oblique, shaded relief, aerial photograph, painted panorama, horizon, terrain generalization, occlusion, path, node, landmark, watershed, saddle, slope exposure, inhabited taskscape. Different visual conventions can share topological anchors while disagreeing on metric projection.
+Linear perspective, foreshortening, orthographic plan, plan-oblique, shaded relief, hypsometric terrain painting, aerial photograph, painted panorama, horizon, terrain generalization, occlusion, path, node, landmark, watershed, saddle, slope exposure, inhabited taskscape. An elevated region-scale view differs from a summit portrait; related pictures may share a cliff, saddle, river confluence or ruin as a topological anchor while differing in projection and viewpoint.
 
 !!! Narrative and address
 Visual focalization, implied before-and-after, an open action, metaphor, iconography, metapicture, environmental story, spatial affordance, spectator address, anticipation, contemplative presence, playful ambiguity, conceptual opposition. A viewer does not become a depicted character by naming their role.
@@ -123,8 +130,6 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 <<~/ahu>>
 
 <<~ ahu #/integrities>>
-!! Pattern integrities
-
 !! Pattern integrities across worktypes
 
 # ''One art language, multiple expressions.'' Direct native TW5 sigil, its transcluded prose reading, and a richer Folio preserve a recognizable artistic intention; none commands a single AI engine.
@@ -133,17 +138,31 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 # ''Depicted does not imply addressed.'' Audience, source photographer and studio maker stay outside the represented scene unless the work deliberately depicts them.
 # ''Relation does not collapse into composition.'' Two adjacent objects can have a meaningful action between them, or none.
 # ''No generic style inheritance.'' An example's geography, artists, medium and texture never become defaults of the reusable grammar.
-# ''Differences have causes.'' Independent studies may disagree on evidence, handling, finish, viewpoint or purpose. Decorative disorder alone provides weak evidence of artistic inquiry.
+# ''Differences have purposes.'' Independent studies may disagree on evidence, handling, finish, viewpoint or purpose. Decorative disorder alone provides weak evidence of artistic inquiry. The visible depiction of a correction does not by itself prove its target proposition.
 # ''Support differs from subject.'' Paper texture, pigment behavior and depicted stone or bronze follow distinct physical histories and scales.
 # ''Unknowns remain unknown.'' Neither Art Sigil nor Formal Analysis manufactures provenance, medium certainty, exact geographic routes or mythological identity from attractive ambiguity.
 # ''Creative surprise remains available.'' Specification states vital commitments without exhausting possible solutions. A revised Folio may amend the original Inscription through an acknowledged creative decision.
 # ''Source authorities retain limits.'' Getty concepts inform terms, real geography informs appearance, and fictional canon governs fictional world facts only within its claimed scope.
 <<~/ahu>>
 
-<<~ ahu #/research-ahu>>
-!! Research authorities
+<<~ ahu #/receiver-comparisons>>
+!! Portable Inscription, expanded Folio, and receiver comparisons
 
-!! Source ahu — disciplinary anchors
+Art Sigils separates the **source-bearing intention** from any receiving model's **visible interpretation**:
+
+* **Native Inscription:** exact TW5 `art()` declaration plus invocation within a practical 1,024-character *design target*. A text-to-image engine may treat the wikitext as prompt tokens; do not assume that it runs TW5 or that 1,024 marks a documented Midjourney hard limit. A live TW5 instance or explicit substitution can provide a literal prose null test.
+* **Literal rendering:** expansion of named fields into prose. The same values do not guarantee the same images; the procedure's lexical wrapper changes the tokens the receiver sees.
+* **Expanded Folio:** craft vocabulary, material and viewpoint studies, counterpoints, canonical boundaries, and external references can deepen the *same* artistic problem, but need not fit a compact prompt.
+* **Receiver controls:** model and version, aspect ratio, Stylize, Chaos, Raw, personalization, seed and reference images belong to the operator or receiving engine unless an artwork expressly makes them part of its work. Do not burn portable art-language tokens on engine flags by default.
+* **Evidence ledger:** record exact submitted source, literal rendering when applicable, model/version and effort or settings, reference attachments, output aspect ratio, every candidate in a batch, which candidates the operator selected, and any later edits.
+* **Comparison:** evaluate worktype, visual thesis, composition, connected geography where relevant, material distinctions, relations *supported by visible evidence*, and depiction boundaries separately from aesthetic preference. A pleasing departure may offer an artistic discovery while failing an explicit specification.
+* **Uncertainty:** a favorite-of-four sample documents preference, not outcome frequency. A handful of images cannot establish causal effects of wording, reasoning effort, Stylize, or changing aspect ratio. Treat lexical basin theories and trend claims as hypotheses. Where possible, vary one factor and compare full sets.
+
+A repeated layout may reflect an explicit `composition` rather than spontaneous model rigidity. Do not redesign the generic grammar to cure a pattern its example expressly requested.
+<<~/ahu>>
+
+<<~ ahu #/research-ahu>>
+!! Research authorities — disciplinary anchors
 
 * Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — controlled work types, techniques, roles, and materials; consult term scope notes rather than converting a taxonomy into a direct art instruction.
 * Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — especially Materials/Techniques (7), Facture (11), Physical Description (13), Subject Matter (16), Critical Responses (19), Related Works (20). https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/ ; https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/
@@ -167,8 +186,6 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 <<~/ahu>>
 
 <<~ ahu #/migration>>
-!! O-takiage
-
 !! O-takiage ledger — what rises from the earlier draft
 
 Keep: work/address/depiction/reading separation, ofness/aboutness, artist references as problem-solving methods, spatial projections, medium versus support versus depicted material, lost edges, deliberate uncertainty, disputed studies, alternative interpretations, canon/proposal/hypothesis, Getty authority and the broader comparative research corpus.
