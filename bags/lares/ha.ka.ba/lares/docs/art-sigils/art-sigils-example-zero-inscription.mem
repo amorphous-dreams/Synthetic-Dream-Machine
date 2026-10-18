@@ -12,12 +12,12 @@ retain = true
 <<~ ahu #/inscription>>
 ! Art Sigils — Example Zero Inscription
 
-The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1001 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
+The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1019 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
 
 ```tiddlywiki
 \procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 
-<<art worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`artists disagree on routes through a damaged yet passable mountain` imagery=`luminous relief panorama; vellum route correction; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers` composition=`dominant panorama above small studies` relation=`redrawn saddle contradicts painted pass; bone or machine?` depiction-scope=`board alone; figures inside studies; no credits or photos`>>
+<<art worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`painted high pass fails a terrain check` imagery=`plan-oblique fantasy terrain with green-ochre-snow hypsometric tints; vellum route; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Heinrich Berann panorama; Luka Rejec mythpunk; Piranesi/Ian Miller Phlegra charcoal; varied papers` composition=`sunlit watercolor map over uneven pinned studies` relation=`red path ends at cliff; white route takes lower saddle; bone or machine?` depiction-scope=`board fills frame; figures in studies`>>
 ```
 <<~/ahu>>
 
@@ -29,7 +29,7 @@ This ahu supplies a **hand-derived literal expansion** of the native TW5 single-
 !!! A. Explicit Example Zero call — expected output
 
 ```text
-concept-art pinboard: shattered Olympos, Rift of Tempes, Phlegra. Read: artists disagree on routes through a damaged yet passable mountain. Imagery: luminous relief panorama; vellum route correction; charcoal relic; green refuge. Treatment: Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers. Composition: dominant panorama above small studies. Relation: redrawn saddle contradicts painted pass; bone or machine?. Depiction scope: board alone; figures inside studies; no credits or photos.
+concept-art pinboard: shattered Olympos, Rift of Tempes, Phlegra. Read: painted high pass fails a terrain check. Imagery: plan-oblique fantasy terrain with green-ochre-snow hypsometric tints; vellum route; charcoal relic; green refuge. Treatment: Tom Patterson and Bernhard Jenny shaded relief; Heinrich Berann panorama; Luka Rejec mythpunk; Piranesi/Ian Miller Phlegra charcoal; varied papers. Composition: sunlit watercolor map over uneven pinned studies. Relation: red path ends at cliff; white route takes lower saddle; bone or machine?. Depiction scope: board fills frame; figures in studies.
 ```
 
 All eight arguments in the Example Zero call carry explicit values. TW5 should therefore never need a default for this case. The `<<...>>` tokens in the definition substitute their matching named call values in textual order; the procedure's period-and-space separators remain literal.
@@ -48,20 +48,20 @@ This second probe omits `worktype`, `imagery`, `treatment`, `composition`, `rela
 
 !!! C. Null-test boundaries
 
-* The Inscription budget counts definition, two newline separators and invocation only: **1001 characters**. This ahu lives outside that transmitted source.
+* The Inscription budget counts definition, two newline separators and invocation only: **1019 characters**. This ahu lives outside that transmitted source.
 * Rendering checks literal substitution, parameter order, defaults, and punctuation; it does not test whether a text-to-image model follows the compositional direction.
 * Any deliberate backtick payload containing actual double-quote characters should render those characters verbatim. Avoid output-text quotations when testing Midjourney unless visible text belongs to the intended work.
 * A failed comparison could indicate TW5 version, definition scope, code-fence copying, unresolved procedure registration, or different whitespace normalization; do not immediately infer a semantic failure of the Art Sigil language.
 <<~/ahu>>
 
 <<~ ahu #/bounds>>
-!! Reading, paired cartography and representational boundaries
+!! Reading, cartographic illusion, and competing papers
 
-* The `subject` and `read` retain the governing question: which routes actually work across a damaged, still traversable mountain? The explicit `composition` preserves the dominant panorama over smaller studies, and `relation` preserves an observable route contradiction.
-* **Tom Patterson and Bernhard Jenny travel as a paired reference**, jointly grounding shaded topographic relief. Their names address the landform study specifically rather than the entire board's mood. **Luka Rejec** influences explorable mythpunk; **Piranesi and Ian Miller** apply only to dark Phlegra charcoal, not the luminous panorama.
-* The Folio retains Heinrich Berann's panorama, Imhof, Raisz, Moebius, Doré, Kilian Eng and the rest of the wider artist register. That expanded ancestry need not accompany a portable image-facing Inscription.
-* `depiction-scope` preserves the board as the outer image, with any small figures only inside embedded studies; source photographs and artist names never become instructions to print labels on the artwork.
-* New-style TW5 named-parameter calls use an equals sign with backtick-delimited values. This v5.4.0+ syntax lets values include apostrophes and double quotes without double-quote *delimiters*. The generic procedure's defaults use ordinary single-quoted strings or an unquoted token; TW5 handles literal substitution, while the receiving AI interprets the art direction.
-* Midjourney can treat double-quoted phrases as requests for visible text. Backticks remove the quoted-string delimiters from this transmitted source, but do not guarantee any model's interpretation or suppress actual quotation marks placed *inside* a value.
-* The real Olympus relief, aerial and embodied photographs remain external references in the companion Folio; supply them as actual images when the receiving model cannot retrieve URLs.
+* **Upper image.** The main painting now asks for a plan-oblique fantasy terrain view, with green lowlands, ochre middle elevations, pale snowy heights and plausible connected relief. Hypsometric tints describe a representational method, not real surveyed elevation classes or immutable Elyncian geography. A sunlit watercolor map should remain the dominant artwork.
+* **The dispute.** The apparently traversable painted high pass fails a terrain check: a red line stops at a cliff; a revised white route takes a lower saddle. The actual geometry should carry that argument before a caption explains it. The dark relic invites incompatible bone and machine readings; an inhabited green refuge offers a counter-narrative to total desolation.
+* **Artist-bearing roles.** Tom Patterson and Bernhard Jenny remain a paired shaded-relief reference. Heinrich Berann now directly supports the panoramic oblique view. Luka Rejec contributes exploratory mythpunk; Piranesi and Ian Miller stay localized to dark Phlegra charcoal, not the luminous landscape. Distinct papers, vellum and painting supports matter beyond differences of hue.
+* **Outer scope.** Only the pinned artboard occupies the outer frame, not an art studio, diorama or in-world shrine. Figures may appear in subordinate studies. The artist names, real-world Olympus references, title text and source photos guide artistic decisions but do not require printed credits or labels.
+* **Compact selection.** This selected-pass revision prioritizes the central plan-oblique and hypsometric landscape, with route correction, unresolved relic and refuge pinned around it. The expanded Folio retains competing historical hypotheses, hazard-color swatches and additional material investigations for a later round; the Inscription cannot responsibly encode every study within its portability ceiling.
+* **Native TW5 contract.** The generic `art()` declaration remains byte-identical to the procedures meme: colon plus double-quoted defaults in the definition, equals plus backtick-wrapped values in the call. Midjourney can still interpret incidental text-like syntax pictorially. The expected prose under the literal-rendering ahu follows exact substitution, not an assumed execution inside Midjourney.
+* **Research handoff.** The real Olympus relief, aerial and embodied-photo URIs remain external in the Folio. The operator controls aspect ratio and engine settings outside the Inscription; the new source carries no `--ar` or `--stylize` parameters.
 <<~/ahu>>
