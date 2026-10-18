@@ -1,0 +1,25 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/art-sigils >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils"
+file-path = "art-sigils.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "Art Sigils API index"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/index>>
+! Art Sigils — API
+
+Eight artistic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope.
+
+* [[Semantic Specification|ha.ka.ba/lares/api/art-sigils/spec]]
+* [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]
+* [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]]
+* [[Worked Examples|ha.ka.ba/lares/docs/art-sigils]]
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+The grammar governs expression, not an artwork's subject, medium or style.
+<<~/ahu>>
