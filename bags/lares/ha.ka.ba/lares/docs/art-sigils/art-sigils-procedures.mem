@@ -5,7 +5,7 @@ file-path = "art-sigils-procedures.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
 role = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
-status = "evergreen-draft"
+status = "draft"
 retain = true
 ```
 
@@ -49,7 +49,9 @@ The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak
 * **`art-facture`:** medium, support and handling in a specific work or region. Distinguish its physical surface from any object, substance or texture *depicted* within it. No medium or material becomes a default across unrelated parts.
 
 Neither the existence of a Folio nor the desire for richness triggers automatic use of these procedures. An isolated portrait, an all-over painting, a photograph or a temporal installation can invoke only `art()`. Further vocabulary belongs in parameter values until a genuinely reusable scope warrants a new module.
-<<~/ahu>><<~ ahu #/compositional-contract>>
+<<~/ahu>>
+
+<<~ ahu #/compositional-contract>>
 !! Composition, relation, and nested artistic scope
 
 Let the nucleus name **what artwork the maker proposes**. Elaborate only the dimensions whose pictorial or experiential work benefits from more space.
@@ -63,7 +65,9 @@ Let the nucleus name **what artwork the maker proposes**. Elaborate only the dim
 * **Engine controls** and attached sources remain outside the art grammar unless the artwork itself explicitly concerns them. Keep the native `art()` declaration unchanged when adapting to a different receiver.
 
 The extended procedures provide modular **ways of telling**, not mandatory steps in production, a universal artwork layout, or proof of the artist's intent.
-<<~/ahu>><<~ ahu #/sample>>
+<<~/ahu>>
+
+<<~ ahu #/sample>>
 !! Generic use — abstract textile diptych
 
 The following example deliberately leaves maps, genre illustration and studio boards aside. One artistic read unifies a two-panel material work and three optional elaborations.
@@ -76,7 +80,9 @@ The following example deliberately leaves maps, genre illustration and studio bo
 ```
 
 Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability; it supplies no requirements for the next artwork.
-<<~/ahu>><<~ ahu #/notation-contract>>
+<<~/ahu>>
+
+<<~ ahu #/notation-contract>>
 !! Procedure declaration, invocation and delegation
 
 * Canonical declarations use colon plus double-quoted defaults, e.g. `worktype:"artwork"` and `treatment:"suit the read"`.
