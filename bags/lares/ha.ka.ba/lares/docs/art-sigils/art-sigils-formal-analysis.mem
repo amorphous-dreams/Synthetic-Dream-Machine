@@ -12,9 +12,9 @@ retain = true
 <<~ ahu #/orientation>>
 ! Art Sigils — Formal Analysis
 
-When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete standalone Inscription**: native single-line definition plus one invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
+When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete Inscription**: a single `<<art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
 
-The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The exact canonical Inscription definition lives in art-sigils-procedures.mem. Include that native definition literally in the first source block (not merely a link or an instruction to import the meme). The source block excludes any critical essay and wrapper metadata from its character budget.
+The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The canonical declaration and its defaults live in `art-sigils-procedures.mem`, outside the Inscription. A TW5 runtime requires that procedure in scope; a model may read the invocation directly. The source block excludes definitions, critical prose and wrapper metadata from its character budget.
 <<~/ahu>>
 
 <<~ ahu #/discipline>>
@@ -36,7 +36,7 @@ The opening Inscription may keep weakly evidenced fields delegated or broad. Its
 <<~ ahu #/response>>
 !! Required output shape for invoked Formal Analysis
 
-**First visible output:** one complete native TW5 Inscription in a fenced `tiddlywiki` block, with the canonical `art()` definition followed by a blank line and one image-descriptive invocation. The definition plus invocation occupy at most 1,024 characters. Invocation arguments use backtick-wrapped values; the definition preserves colon and double-quoted defaults. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble precedes this initial source block.
+**First visible output:** one native `<<art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters including no procedure definition. Invocation arguments use backtick-wrapped values; the referenced canonical definition lives in the Procedures meme. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble precedes this initial source block.
 
 **Then:** natural-language formal analysis at the depth warranted by the work, normally addressing:
 
