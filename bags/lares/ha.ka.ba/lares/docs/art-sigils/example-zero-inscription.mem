@@ -12,7 +12,7 @@ retain = true
 <<~ ahu #/inscription>>
 ! Art Sigils — Example Zero Inscription
 
-The image-facing Inscription occupies **947 characters**. Copy only the invocation below, without this wrapper. Its named parameters and backtick-wrapped values carry the artwork's own semantic directions; the 1,024-character ceiling measures the invocation alone.
+The image-facing Inscription occupies **898 characters**. Copy only the invocation below, without this wrapper. Its named parameters and backtick-wrapped values carry the artwork's own semantic directions; the 1,024-character ceiling measures the invocation alone.
 
 **Procedure authority (outside the transmitted artwork):** `lar:///ha.ka.ba/lares/api/art-sigils/procedures` — [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], defining the native `art()` declaration and its defaults. A live TiddlyWiki5 instance must load that definition to transclude the call; an image model may interpret the invocation without executing TW5.
 
