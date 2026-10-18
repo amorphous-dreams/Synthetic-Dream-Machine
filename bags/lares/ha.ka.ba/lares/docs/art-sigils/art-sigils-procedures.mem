@@ -49,6 +49,21 @@ A Folio may expand a nucleus parameter in ordinary art language without any addi
 The distinct worktype, subject, read, imagery, treatment, composition, relation and depiction-scope fields already handle most paintings, drawings, maps, portraits and illustrations. No study, counterpoint or facture call follows automatically from the existence of a Folio.
 <<~/ahu>>
 
+<<~ ahu #/compositional-contract>>
+!! Composing a Folio without enlarging the nucleus
+
+The eight-part art call remains the single artistic nucleus. A Folio may elaborate it through (1) the dominant picture and first read, (2) supporting studies with distinct questions, (3) counterpoints linked through shared landmarks or motifs, (4) scoped facture, and (5) depiction and source boundaries. This sequence aids reading rather than mandating a render order.
+
+* **Thesis and witness:** the principal image can propose region-scale terrain; a plan inset or eye-level study can challenge its high crossing. Name common cliffs, saddles or drainage and the visible consequences rather than merely displaying differently colored arrows.
+* **Distinct pictorial operations:** plan-oblique composition, hypsometric tints, shaded relief and atmospheric recession may coexist without collapsing into one generic scenic treatment.
+* **Counterpoint as a depicted claim:** an erased crossing or incompatible construction line offers pictorial evidence of disagreement, not a verified real-world correction. Distinguish a visible hypothesis from proof.
+* **Scoped support:** a vellum route overlay, charcoal stock and watercolor sheet have separate physical behaviors; their depicted rocks, bones and machines do not inherit paper texture.
+* **No new universal defaults:** Folio examples never require every portrait, landscape or abstract work to carry maps, named artists, antique paper, studio furniture or research annotations.
+* **Receiver settings stay outside:** aspect ratio, Stylize, Chaos, model version and image references remain operator controls unless the artwork expressly concerns them.
+
+Use the existing art, art-study, art-counterpoint and art-facture procedures. Keep further art vocabulary inside values until a reusable structural need warrants another module.
+<<~/ahu>>
+
 <<~ ahu #/sample>>
 !! Generic use outside Example Zero
 
