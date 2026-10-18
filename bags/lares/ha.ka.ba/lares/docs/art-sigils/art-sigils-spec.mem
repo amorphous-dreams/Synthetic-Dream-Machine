@@ -4,7 +4,7 @@ uri-path = "ha.ka.ba/art-sigils/spec"
 file-path = "art-sigils-spec.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role = "evergreen art-sigil ontology, interpretive bounds, and art-house lexicons"
+role = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
 status = "draft"
 retain = true
 ```
@@ -26,10 +26,11 @@ The Two Inks remain distinct without separation: reusable red procedure definiti
 
 Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one universal quotation style:
 
-* **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art-sigil(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
-* **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art-sigil subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
+* **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
+* **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
 * The exact core source and image-facing invocation appear in `art-sigils-procedures.mem` and the standalone Example Zero Inscription. The examples under `art-sigils-example-zero.mem` and analysis examples follow the same pattern.
-* **Scope of rule:** all `art-sigil`, `art-study`, `art-counterpoint`, `art-facture`, and future Art Sigil procedure calls use backtick-wrapped `name=` values; all corresponding declared defaults use colon plus double quotes. Lares house sigils follow their separate house syntax.
+* **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the prompt-facing native procedure uses the deliberately neutral name `art`. Keep this vocabulary outside the transmitted procedure name unless an artwork intentionally calls for those associations.
+* **Scope of rule:** all `art`, `art-study`, `art-counterpoint`, `art-facture`, and future Art Sigil procedure calls use backtick-wrapped `name=` values; all corresponding declared defaults use colon plus double quotes. Lares house sigils follow their separate house syntax.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
 * **Rendered reading:** the native single-line procedure body concatenates phrases in its declared order. The literal rendering in the Inscription meme supplies expected bytes, punctuation and whitespace as a reproducible null-test oracle, hand-derived rather than asserted live-TW5 certification.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
@@ -39,9 +40,9 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 Native source pattern:
 
 ```tiddlywiki
-\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 
-<<art-sigil subject=`a distant coast` read=`the unseen seems near`>>
+<<art subject=`a distant coast` read=`the unseen seems near`>>
 ```
 <<~/ahu>>
 
