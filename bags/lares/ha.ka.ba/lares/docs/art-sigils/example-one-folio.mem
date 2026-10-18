@@ -1,0 +1,67 @@
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/docs/art-sigils/example-one-folio >> -->
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-one-folio"
+file-path = "example-one-folio.mem"
+type = "text/x-memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role = "Example One expanded art-sigil folio and maritime research bearings"
+status = "stable"
+retain = true
+```
+
+<<~ ahu #/invitation>>
+! Art Sigils — Example One Folio
+
+The **Tide-Clock Monastery of the Black Lens** occupies a crescent of drowned basalt sea stacks. Its inhabitants read the skies while the sea erases familiar passages and returns an ambiguous reflection.
+
+The Folio develops this single visual inquiry through named studies, counterpoints and material scopes. [[Companion Inscription|ha.ka.ba/lares/docs/art-sigils/example-one-inscription]] presents the compact `art()` invocation. [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]] supplies the declarations outside the artistic source.
+<<~/ahu>>
+
+<<~ ahu #/folio-sigils>>
+!! The complete copyable Folio
+
+Copy the entire **5179-character** block for a receiver that supports extended structured art direction. The opening `art()` sets the whole work; subsequent calls investigate location, tide hazards, instruments, habitation and the abyss. Research URIs inside the final `art-study()` describe **non-depicted** reference sources.
+
+```tiddlywiki
+<<art worktype=`concept-art folio` subject=`Tide-Clock Monastery of the Black Lens, drowned basalt towers encircling a deep sea aperture` read=`astronomers seek order in stars and tides; a presence below appears to answer their observations` imagery=`dominant stormlit oblique coastal panorama; flooded observatory monastery, suspended rope bridges, wave caves, bronze tide-clock, polished beacon mirrors, tide stairs, kelp gardens, signal fires, tiny skiffs, dark abyss and leviathan wake; pinned chart and field studies` treatment=`Kay Nielsen mythic ornament on architectural trim; Roger Dean organic stone bridges; Caspar David Friedrich lonely storm horizon; Hiroshi Yoshida layered sea-print light; Arthur Rackham wiry silhouettes in small drawings; Anna Podedworna weathered bronze, wet basalt and inhabited details` composition=`one large elevated sea-stack panorama above uneven smaller tide-stair, beacon, dock, chart and abyss studies; moonlit silver and muted amber, cold green water, black rock and vermilion ropes on distinct papers` relation=`the clock suggests a predictable lunar cycle yet floodwater erases the landing route; polished mirrors map the stars while the Black Lens returns an unexplained glint; inhabited shelter persists above unseen danger` depiction-scope=`folio alone fills frame; figures inhabit embedded views, not external studio; research links and artist names stay off the pictured sheets`>>
+<<art-study question=`Where does the monastery stand?` form=`high oblique painterly sea-stack panorama` proposal=`a crescent of wave-cut basalt pinnacles encloses one black marine hollow; causeways, ledges and narrow shelves sustain a flooded observatory, beacons and landing slips` status=`fictional geography, not surveyed coastline`>>
+<<art-facture scope=`main panorama` support=`ivory cold-press watercolor sheet` medium=`glazed indigo and green watercolor with pearl gouache` handling=`layered sea haze and distant weather; detailed dry-stone silhouettes balanced by luminous marine air`>>
+<<art-study question=`When can anyone climb the tide stairs?` form=`vellum route elevation and embodied landing sketch` proposal=`stone stairs reach the dock at ebb but lose their lowest flights under a rising surge; skiff mooring drifts beneath the cut rock` status=`hazardous crossing`>>
+<<art-counterpoint first=`tidal clockwork claims regular access` second=`the landing stair disappears beneath surf` tension=`prediction does not confer safety` evidence=`matching step shapes, flood marks and a mooring ring visible in both views`>>
+<<art-facture scope=`landing chart and stair study` support=`translucent vellum over pale blue-gray rag paper` medium=`graphite, wash and muted vermilion chalk` handling=`partly erased waterline and corrected foot-route share identifiable ledges`>>
+<<art-study question=`What does the beacon measure?` form=`tower section and mirrored instrument detail` proposal=`bronze tide clock, ceramic markers and polished reflectors aim toward the horizon and astronomical bearings; bells and mirrors also face the sea hollow` status=`ritual and practical purposes coexist`>>
+<<art-counterpoint first=`beacon mirrors reflect constellations` second=`the Black Lens returns a deep-sea glint` tension=`watcher and watched exchange positions` evidence=`aligned sightlines, contradictory reflections and an unaccounted-for lower gleam`>>
+<<art-study question=`Who keeps the sanctuary alive?` form=`ink-wash dock, kelp garden and workshop vignette` proposal=`bell tenders, monks, fishers and salvagers tend rope bridges, herb terraces, glazed markers and repaired boats` status=`small occupied refuge`>>
+<<art-counterpoint first=`cultivated kelp garden and dry refuges` second=`storm wreckage and a distant leviathan wake` tension=`care and danger inhabit the same coastline` evidence=`repaired lines and lanterns beside gouged planking and disturbed surf`>>
+<<art-facture scope=`beacon and inhabited dock studies` support=`smooth Bristol ink and pale sea-gray paper` medium=`bronze-and-ceramic gouache, fine ink and scratched highlights` handling=`credible wet materials, intricate ornament and needle-fine rigging`>>
+<<art-study question=`What hides beneath the Black Lens?` form=`dark charcoal abyssal bathymetry and reflective water sketch` proposal=`a descending seabed funnel holds a round black absence; readings suggest sinkhole, leviathan eye or ancient instrument` status=`unresolved identity`>>
+<<art-facture scope=`Black Lens underside` support=`cool charcoal stock and translucent blue ink overlay` medium=`compressed graphite, chalk, dark wash and sparse silver ink` handling=`heavy negative space, one uncertain iris-ring, no explanatory label`>>
+<<art-study question=`Which external sources inform the setting?` form=`NON-DEPICTED references: Skellig Michael https://whc.unesco.org/en/list/757 ; NOAA bathymetry https://www.ncei.noaa.gov/maps/bathymetry/ ; Hiroshi Yoshida print https://asia-archive.si.edu/object/S2003.8.3459/` proposal=`borrow exposed monastic access, seafloor visualization and layered marine light without depicting source photographs or names` status=`research bearings, not setting canon`>>
+```
+
+This extended form contains webpage reference URIs rather than direct Midjourney image assets. The compact Inscription offers the preferred Midjourney-first form; the Folio may benefit from receivers with longer context and retrieval.
+<<~/ahu>>
+
+<<~ ahu #/research>>
+!! Maritime and artistic bearings
+
+* [[Skellig Michael World Heritage|https://whc.unesco.org/en/list/757]] — exposed monastic occupation amid steep maritime terrain
+* [[NOAA Bathymetry Viewer|https://www.ncei.noaa.gov/maps/bathymetry/]] — seabed shape and underwater spatial representation
+* [[Hiroshi Yoshida — Sailing Boats: Mist|https://asia-archive.si.edu/object/S2003.8.3459/]] — printmaking approaches to luminous coastal atmosphere
+
+Kay Nielsen guides ornamental rhythm; Roger Dean lends improbable architecture; Caspar David Friedrich supplies solitary weather; Hiroshi Yoshida offers layered marine light; Arthur Rackham shapes wiry line; Anna Podedworna informs believable fantasy materials. Those bounded bearings remain distinct from a wholesale imitation of any one artist.
+<<~/ahu>>
+
+<<~ ahu #/depiction>>
+!! Pictorial and fictional boundaries
+
+The frame contains a single folio with one dominant oblique panorama and supporting studies on unequal paper supports. Monks, fishers and salvagers appear only *inside* depicted studies. Source photographs, printed artist names, studio furniture, navigational measurements and definite explanations of the Black Lens do not enter the painted work.
+
+The clock describes a plausible cycle without guaranteeing safe crossing. Mirrors, tide marks and the dark water invite rival explanations without proving an ancient machine or a living abyss. The monastery and its lore occupy a fictional setting; the terrestrial sources offer artistic bearings rather than canonical geography.
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+!! Aftermath — observed relation and withheld certainty
+
+The tide-clock provides order while its stairs lose access; the beacon studies outward while the central aperture appears to answer; gardens and repairs persist alongside peril. Each contrast draws meaning through visible relationships. An implied leviathan does not require a confirmed leviathan, and a reflected light need not settle the Black Lens's identity.
+<<~/ahu>>
