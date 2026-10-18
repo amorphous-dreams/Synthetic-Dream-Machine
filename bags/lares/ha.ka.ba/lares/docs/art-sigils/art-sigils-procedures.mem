@@ -23,7 +23,7 @@ The art-house lexicons live in the semantic specification and **inside values**,
 In portable use copy the next single line, followed by a blank line and one invocation. For image-facing calls use the new-style named parameter form (an equals sign followed by a backtick-delimited literal) instead of double-quoted argument values. Procedure declarations use the colon plus double-quoted default convention (`worktype:"artwork"`, `treatment:"suit the read"`); image-facing calls use an equals sign and single-backtick-delimited values (`treatment=` followed by a backtick-wrapped value). Do not transpose these two grammars.
 
 ```tiddlywiki
-\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 ```
 
 * The eight semantic dimensions: worktype, subject, read, imagery, treatment, composition, relation, depiction-scope. Procedure definitions use `name:"default"`; invocations use TW5 v5.4.0+ `name=` followed by a backtick-wrapped value. A supplied invocation value overrides its default; an omitted value inherits it. Keep both syntaxes exact.
@@ -53,7 +53,7 @@ The distinct worktype, subject, read, imagery, treatment, composition, relation 
 !! Generic use outside Example Zero
 
 ```tiddlywiki
-<<art-sigil worktype=`brush-and-ink illustration` subject=`an abandoned tidal station` read=`a quiet place suggesting recent hurried departure` composition=`low horizon, long still reflection` relation=`a single warm window questions the apparent emptiness`>>
+<<art worktype=`brush-and-ink illustration` subject=`an abandoned tidal station` read=`a quiet place suggesting recent hurried departure` composition=`low horizon, long still reflection` relation=`a single warm window questions the apparent emptiness`>>
 <<art-study question=`How high did the water rise?` form=`graphite floodline study` proposal=`two alternate staining heights on the same masonry` status=`provisional`>>
 <<art-counterpoint first=`distant calm water` second=`broken floating lanterns` tension=`the stillness carries evidence of recent violence` evidence=`opposed edges and reflections`>>
 <<art-facture scope=`foreground study paper` support=`smooth Bristol` medium=`sepia ink with drybrush` handling=`limited feathering, decisive exposed highlights`>>
