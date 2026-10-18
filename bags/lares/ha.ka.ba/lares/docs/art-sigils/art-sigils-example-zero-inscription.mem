@@ -12,12 +12,12 @@ retain = true
 <<~ ahu #/inscription>>
 ! Art Sigils — Example Zero Inscription
 
-The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1011 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
+The following source alone carries the portable inscription. Copy both the native TW5 definition and its call, with the blank separator; exclude this meme wrapper. The entire transmitted source occupies **1001 characters**, including its line breaks; a 1,024-character ceiling serves as a portability *target*, not an ideal length.
 
 ```tiddlywiki
-\procedure art-sigil(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
+\procedure art(worktype:"artwork" subject read imagery:"follow subject and read" treatment:"suit the read" composition:"serve the read" relation:"where meaningful" depiction-scope:"follow worktype and imagery") <<worktype>>: <<subject>>. Read: <<read>>. Imagery: <<imagery>>. Treatment: <<treatment>>. Composition: <<composition>>. Relation: <<relation>>. Depiction scope: <<depiction-scope>>.
 
-<<art-sigil worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`artists disagree on routes through a damaged yet passable mountain` imagery=`luminous relief panorama; vellum route correction; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers` composition=`dominant panorama above small studies` relation=`redrawn saddle contradicts painted pass; bone or machine?` depiction-scope=`board alone; figures inside studies; no credits or photos`>>
+<<art worktype=`concept-art pinboard` subject=`shattered Olympos, Rift of Tempes, Phlegra` read=`artists disagree on routes through a damaged yet passable mountain` imagery=`luminous relief panorama; vellum route correction; charcoal relic; green refuge` treatment=`Tom Patterson and Bernhard Jenny shaded relief; Luka Rejec mythpunk travel; Piranesi/Ian Miller only in dark Phlegra charcoal; varied papers` composition=`dominant panorama above small studies` relation=`redrawn saddle contradicts painted pass; bone or machine?` depiction-scope=`board alone; figures inside studies; no credits or photos`>>
 ```
 <<~/ahu>>
 
@@ -37,7 +37,7 @@ All eight arguments in the Example Zero call carry explicit values. TW5 should t
 !!! B. Delegated defaults — expected output
 
 ```tiddlywiki
-<<art-sigil subject=`a distant coast` read=`the unseen seems near`>>
+<<art subject=`a distant coast` read=`the unseen seems near`>>
 ```
 
 ```text
@@ -48,7 +48,7 @@ This second probe omits `worktype`, `imagery`, `treatment`, `composition`, `rela
 
 !!! C. Null-test boundaries
 
-* The Inscription budget counts definition, two newline separators and invocation only: **1013 characters**. This ahu lives outside that transmitted source.
+* The Inscription budget counts definition, two newline separators and invocation only: **1001 characters**. This ahu lives outside that transmitted source.
 * Rendering checks literal substitution, parameter order, defaults, and punctuation; it does not test whether a text-to-image model follows the compositional direction.
 * Any deliberate backtick payload containing actual double-quote characters should render those characters verbatim. Avoid output-text quotations when testing Midjourney unless visible text belongs to the intended work.
 * A failed comparison could indicate TW5 version, definition scope, code-fence copying, unresolved procedure registration, or different whitespace normalization; do not immediately infer a semantic failure of the Art Sigil language.
