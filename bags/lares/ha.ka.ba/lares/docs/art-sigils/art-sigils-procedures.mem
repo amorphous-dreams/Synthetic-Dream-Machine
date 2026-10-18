@@ -4,8 +4,8 @@ uri-path = "ha.ka.ba/art-sigils/procedures"
 file-path = "art-sigils-procedures.mem"
 type = "text/x-memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role = "canonical compact TW5 inscription grammar with provisional modular folio procedures"
-status = "draft"
+role = "evergreen TW5 art grammar, canonical inscription procedure, optional scoped extensions"
+status = "evergreen-draft"
 retain = true
 ```
 
@@ -34,9 +34,9 @@ In portable use copy the next single line, followed by a blank line and one invo
 <<~/ahu>>
 
 <<~ ahu #/folio-modules>>
-!! First Folio modules — provisional, not a complete procedure taxonomy
+!! Optional Folio procedures — scoped artistic extensions
 
-A Folio may expand a nucleus parameter in ordinary art language without any additional module. Invoke a module only when separately scoped evidence, media or pictorial argument deserves its own repeatable clause. Do not let this first trio foreclose future operators or vocabularies.
+The eight-dimension `art()` call handles the artistic nucleus. A Folio can speak with ordinary art-house vocabulary in those same parameter values. The following three procedures offer **optional**, named scopes only when a separate investigation, consequential comparison or material condition merits independent expression.
 
 ```tiddlywiki
 \procedure art-study(question form proposal status:"unresolved") Study: <<question>>. Work: <<form>>. Proposal: <<proposal>>. Status: <<status>>.
@@ -44,57 +44,63 @@ A Folio may expand a nucleus parameter in ordinary art language without any addi
 \procedure art-facture(scope support medium handling:"let the medium's behavior remain visible") Facture in <<scope>>: <<medium>> on <<support>>; <<handling>>.
 ```
 
-''Study'' contributes an independently interpretable attempt at a design question. ''Counterpoint'' lets two works, forms, histories or hypotheses act on each other; a mere overlap does not establish disagreement. ''Facture'' gives one scope its own physical support and medium behavior rather than spreading identical texture across every surface.
+* **`art-study`:** one interpretable proposal or question explored through a picture, object, variation or experiment. `status` can hold a provisional, rejected, open or settled artistic position without claiming verified fact.
+* **`art-counterpoint`:** a consequential relation between two images, passages, concepts, gestures, materials or hypotheses. The `evidence` value names visible or experiential features that give a viewer grounds to compare them. Mere adjacency does not establish opposition.
+* **`art-facture`:** medium, support and handling in a specific work or region. Distinguish its physical surface from any object, substance or texture *depicted* within it. No medium or material becomes a default across unrelated parts.
 
-The distinct worktype, subject, read, imagery, treatment, composition, relation and depiction-scope fields already handle most paintings, drawings, maps, portraits and illustrations. No study, counterpoint or facture call follows automatically from the existence of a Folio.
-<<~/ahu>>
+Neither the existence of a Folio nor the desire for richness triggers automatic use of these procedures. An isolated portrait, an all-over painting, a photograph or a temporal installation can invoke only `art()`. Further vocabulary belongs in parameter values until a genuinely reusable scope warrants a new module.
+<<~/ahu>><<~ ahu #/compositional-contract>>
+!! Composition, relation, and nested artistic scope
 
-<<~ ahu #/compositional-contract>>
-!! Composing a Folio without enlarging the nucleus
+Let the nucleus name **what artwork the maker proposes**. Elaborate only the dimensions whose pictorial or experiential work benefits from more space.
 
-The eight-part art call remains the single artistic nucleus. A Folio may elaborate it through (1) the dominant picture and first read, (2) supporting studies with distinct questions, (3) counterpoints linked through shared landmarks or motifs, (4) scoped facture, and (5) depiction and source boundaries. This sequence aids reading rather than mandating a render order.
+* **Composition** establishes position, rhythm, emphasis, cropping, sequence and interval. **Relation** asks what one part does to another, whether through echo, contrast, erasure, repair, quotation, material friction or deliberate noncontact. A pairing alone need not carry conflict.
+* **Shared bearings** can make a counterpoint legible: matching contours in a diptych, one repeated portrait gesture, a motif reprinted at a different scale, a fold continuing across a seam, or a shape transformed in a second material. Choose anchors relevant to the worktype rather than a fixed visual recipe.
+* **Study** may explore options or ask what viewers could infer; no artwork must disclose the maker's preliminary drafts.
+* **Facture** names where the outer work's support, ground and marks act, as distinct from represented flesh, metal, fabric, stone or digital surface.
+* **Nested depiction** separates a physical artwork from the pictures and figures portrayed inside it; address and reference do not automatically count as depicted participants.
+* **Silence and openness** can perform the work that an additional procedure would only explain. Delegated parameters permit informed interpretation without filling every slot.
+* **Engine controls** and attached sources remain outside the art grammar unless the artwork itself explicitly concerns them. Keep the native `art()` declaration unchanged when adapting to a different receiver.
 
-* **Thesis and witness:** the principal image can propose region-scale terrain; a plan inset or eye-level study can challenge its high crossing. Name common cliffs, saddles or drainage and the visible consequences rather than merely displaying differently colored arrows.
-* **Distinct pictorial operations:** plan-oblique composition, hypsometric tints, shaded relief and atmospheric recession may coexist without collapsing into one generic scenic treatment.
-* **Counterpoint as a depicted claim:** an erased crossing or incompatible construction line offers pictorial evidence of disagreement, not a verified real-world correction. Distinguish a visible hypothesis from proof.
-* **Scoped support:** a vellum route overlay, charcoal stock and watercolor sheet have separate physical behaviors; their depicted rocks, bones and machines do not inherit paper texture.
-* **No new universal defaults:** Folio examples never require every portrait, landscape or abstract work to carry maps, named artists, antique paper, studio furniture or research annotations.
-* **Receiver settings stay outside:** aspect ratio, Stylize, Chaos, model version and image references remain operator controls unless the artwork expressly concerns them.
+The extended procedures provide modular **ways of telling**, not mandatory steps in production, a universal artwork layout, or proof of the artist's intent.
+<<~/ahu>><<~ ahu #/sample>>
+!! Generic use — abstract textile diptych
 
-Use the existing art, art-study, art-counterpoint and art-facture procedures. Keep further art vocabulary inside values until a reusable structural need warrants another module.
-<<~/ahu>>
-
-<<~ ahu #/sample>>
-!! Generic use outside Example Zero
+The following example deliberately leaves maps, genre illustration and studio boards aside. One artistic read unifies a two-panel material work and three optional elaborations.
 
 ```tiddlywiki
-<<art worktype=`brush-and-ink illustration` subject=`an abandoned tidal station` read=`a quiet place suggesting recent hurried departure` composition=`low horizon, long still reflection` relation=`a single warm window questions the apparent emptiness`>>
-<<art-study question=`How high did the water rise?` form=`graphite floodline study` proposal=`two alternate staining heights on the same masonry` status=`provisional`>>
-<<art-counterpoint first=`distant calm water` second=`broken floating lanterns` tension=`the stillness carries evidence of recent violence` evidence=`opposed edges and reflections`>>
-<<art-facture scope=`foreground study paper` support=`smooth Bristol` medium=`sepia ink with drybrush` handling=`limited feathering, decisive exposed highlights`>>
+<<art worktype=`abstract textile diptych` subject=`two incompatible rhythms` read=`contact without merger` imagery=`a densely stitched field beside a broad painted wash` treatment=`raw flax, indigo pigment and irregular thread` composition=`unequal panels divided by a quiet interval` relation=`loose threads cross the seam yet never join the fields` depiction-scope=`only the textile work; no maker depicted`>>
+<<art-study question=`Can the gap carry visual tension?` form=`two spare panel-spacing trials` proposal=`the smallest interval retains palpable separation` status=`open`>>
+<<art-counterpoint first=`repeated tightly sewn stitches` second=`one diffuse blue pigment wash` tension=`rhythm meets dispersion` evidence=`thread ends cross toward the adjacent field but stop short`>>
+<<art-facture scope=`left panel` support=`coarse undyed flax` medium=`waxed cotton thread and chalk` handling=`uneven needle spacing, exposed knots and worn edges`>>
 ```
 
-The source uses a changed subject, not one disguised inheritance of Olympos. Copy the generic procedures as native pragmas into a TW5 context with the calls available at transclusion time. `<<~ name ...>>` belongs to Lares house sigils, not a synonym for native `<<name ...>>` calls.
+Copy the relevant native procedure definitions into a live TW5 context before transcluding these calls. `<<~ name ...>>` denotes a Lares house sigil, not a substitute for a native `<<name ...>>` call. This example demonstrates expressive portability; it supplies no requirements for the next artwork.
+<<~/ahu>><<~ ahu #/notation-contract>>
+!! Procedure declaration, invocation and delegation
+
+* Canonical declarations use colon plus double-quoted defaults, e.g. `worktype:"artwork"` and `treatment:"suit the read"`.
+* Native TW5 v5.4.0+ calls use equals plus backtick-wrapped values for the `art()` nucleus and all optional procedures.
+* Apostrophes or double quotes *inside* a backtick value remain literal source characters. They can enter the transcluded prose and may also influence an image receiver's text-rendering conventions.
+* Omitted parameters inherit declared defaults verbatim. The receiving artist or model, not TW5, decides how to interpret their artistic delegation.
+* A default-free missing argument can yield empty output rather than an instruction to invent content. Where supported, intentional dynamic substitutions inside backtick payloads should declare their context; the portable Inscription favors literal values.
+* A separate work-specific Inscription can carry an exact literal-rendering null test. This procedure meme supplies the reusable declarations and their behavior, without endorsing any work-specific prompt as a default.
 <<~/ahu>>
+<<~ ahu #/aftermath>>
+!! Aftermath — grammar stewardship
 
-<<~ ahu #/notation-contract>>
-!! Declaration and invocation — canonical TW5 split
+After a work returns, compare its stated **read** and depicted relations with what viewers can actually observe. A useful unplanned material or image relation may inspire a new version, but never rewrites the old call by implication. Preserve stable procedure names, declared defaults, and invocation syntax across revisions unless a tested change warrants versioning.
 
-* Procedure declarations use colon plus **double-quoted defaults**: `worktype:"artwork"`, `treatment:"suit the read"`.
-* Native calls use equals plus **backtick-wrapped values**. Use this for all four Art Sigil procedures.
-* The call can contain ordinary apostrophes and quotation marks within its backtick delimiters. Actual quote characters inside the value remain output characters; they may still affect image generation.
-* Omitted parameters transclude their declared defaults verbatim. This delegates artistic judgment to the receiving reader or model, not TW5.
-* Backtick payloads can also hold intentional TW5 substitutions. Keep portable Inscription tests literal unless supplying their substitution context.
-* The Example Zero Inscription has a complete expected prose rendering and a default-parameter null test.
+Let new subjects teach the grammar only when their lessons transfer across worktypes. Specialized geographical, architectural, photographic or textile techniques belong in the specification's research ahu or in a particular Folio; the core procedure must remain innocent of its examples.
 <<~/ahu>>
 
 <<~ ahu #/tw5-source>>
-!! Native documentation
+!! Native TiddlyWiki documentation and verification boundary
 
-* https://tiddlywiki.com/static/Procedures.html
-* https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html
-* https://tiddlywiki.com/static/Calls.html
-* https://tiddlywiki.com/static/Substituted%2520Attribute%2520Values.html
+* Procedures: https://tiddlywiki.com/static/Procedures.html
+* Procedure Definition Syntax: https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html
+* Calls: https://tiddlywiki.com/static/Calls.html
+* Substituted Attribute Values: https://tiddlywiki.com/static/Substituted%2520Attribute%2520Values.html
 
-The source contract follows documented TW5 syntax. No live TW5 runtime check completed in this pass.
+A syntax claim carries the documented TW5 convention. A literal expansion supplied elsewhere remains a **hand-derived test oracle** until an actual TW5 execution confirms it. An image-producing AI may read wikitext semantically without executing it.
 <<~/ahu>>
