@@ -26,11 +26,11 @@ Art Sigils use **two distinct, native TiddlyWiki5 5.4.0+ forms**, not one univer
 
 * **Procedure declarations** use `:` followed by **double-quoted default values**, e.g. `\procedure art(worktype:"artwork" treatment:"suit the read" ...)`. Omit defaults for `subject` and `read` unless an artwork's use calls for deliberate silence. The two quotation marks belong to the declaration grammar.
 * **Procedure invocations** use `=` followed by **backtick-wrapped parameter values**, e.g. `<<art subject=` followed by a backtick-wrapped `an artist's "impossible" passage` and the closing `>>`. This supports natural apostrophes or embedded double quotes without quoting the whole value as a directive to print text.
-* The exact core source and image-facing invocation appear in `art-sigils-procedures.mem` and the standalone Example Zero Inscription. The examples under `art-sigils-example-zero.mem` and analysis examples follow the same pattern.
+* The canonical `art()` declaration lives in `art-sigils-procedures.mem`; an artwork-specific Inscription carries its own copy of that declaration and one invocation. General-purpose examples below demonstrate invocation syntax without imposing any example's subject on the grammar.
 * **Terminology boundary:** **Art Sigils** names the art-direction practice, documents and ontology; the prompt-facing native procedure uses the deliberately neutral name `art`. Keep this vocabulary outside the transmitted procedure name unless an artwork intentionally calls for those associations.
 * **Scope of rule:** all `art`, `art-study`, `art-counterpoint`, `art-facture`, and future Art Sigil procedure calls use backtick-wrapped `name=` values; all corresponding declared defaults use colon plus double quotes. Lares house sigils follow their separate house syntax.
 * **Delegation:** TW5 substitutes a declared default literally when the call omits the named value. The receiving artist or AI interprets that phrase in context. Silence, delegation and explicit withholding remain distinct artistic states.
-* **Rendered reading:** the native single-line procedure body concatenates phrases in its declared order. The literal rendering in the Inscription meme supplies expected bytes, punctuation and whitespace as a reproducible null-test oracle, hand-derived rather than asserted live-TW5 certification.
+* **Rendered reading:** the native single-line procedure body concatenates phrases in declared order. A companion literal-expansion oracle can check parameter substitution, defaults and punctuation; until a live TW5 comparison occurs, a hand-derived oracle remains unverified.
 * **Dynamic substitution caveat:** backtick values in TW5 may support internal variable substitution. Portable literal Inscription values should avoid unintentional interpolation markers. Optional dynamic Folios should declare their source context.
 * **Character budgeting:** the 1,024-character portability ceiling covers the complete definition plus invocation, not the expanded prose, meme wrapper, references, or Folio.
 * **Text versus subject:** artist names, reference URIs and source photos can guide pictorial decisions without entering the image. Embedded quote characters may remain in the transcluded text; backtick delimiters alone do not prevent visual models from drawing unwanted captions.
@@ -73,60 +73,63 @@ Interpretation priority: protect explicit choices; read the full subject and int
 <<~/ahu>>
 
 <<~ ahu #/scopes>>
-!! Depiction, viewpoint and source boundaries
+!! Representation, address, and artifactual layers
 
-* ''Outer artifact'': the complete picture presented to a viewer, whether flat field, photograph, map, physical board or illustrated object.
-* ''Embedded picture'': a painting, photograph, chart or drawing represented within that outer artifact. A small traveler can appear inside an embedded landscape without occupying the studio.
-* ''Subject-of / aboutness'': distinguish visible identity from possible theme or symbolic meaning. A bone-like relic need not identify a giant, deity or even bone.
-* ''Reference role'': descriptive source, source image, canonical world note, artist method, and generated interpretation carry different evidential authority. Keep source URIs outside depicted content unless the chosen worktype calls for printed citation.
-* ''Focalization versus viewpoint'': where an image looks from differs from which knowledge and uncertainties its composition makes accessible. An embodied landscape view need not portray the photographer.
-* ''Cartographic claim'': plan-oblique terrain, hypsometric tinting, shaded relief, and aerial perspective supply **different** pictorial operations. Plan-oblique offers an elevated terrain arrangement; hypsometric tints distinguish relative elevation bands; shaded relief describes terrain form through illumination; atmospheric recession modulates depth or haze. Their combination may suggest plausible passage without validating a surveyed route. An inset plan map may use another projection; use common landmarks when comparing it to the panorama.
-* ''Material layers'': support, ground, medium, implement, technique and visible facture belong to the image artifact; metal, skin, clouds, rock and fabric represented within a study belong to its depicted subject. Do not smear one scale-invariant texture across these layers.
-* ''Artwork history'': repairs, erasures, alternatives and pentimenti may leave visible evidence of inquiry. They need not appear in every finished work.
+* **Outer artifact:** the complete work encountered by a viewer: a photograph, painted field, printed page, constructed object, installation or digital image.
+* **Depicted content:** the people, objects, spaces, abstractions or actions represented *within* the work, including deliberately empty or concealed portions.
+* **Embedded image:** a represented painting, photograph, chart, drawing, printed fragment or screen *inside* the outer work. Each nested layer carries its own viewpoint and depicted participants; do not insert figures into the outer world merely because an embedded picture contains them.
+* **Aboutness:** what the work concerns may exceed what appears. A portrait can evoke memory without literally depicting remembered people; an abstract image can investigate conflict without illustrating combat.
+* **Address:** to whom and how the work speaks differs from its depicted subject. Artist, intended viewer, source photographer, photographer's standpoint and characters need not share any location inside the frame.
+* **Viewpoint and focalization:** camera position, projection and line of sight determine a view; focalization limits which information the work offers or withholds. One angle may reveal a face while concealing a motive.
+* **Material levels:** support, ground, applied medium, implement, technique and facture belong to the made artifact. An imitation of metal, skin, water or cloth belongs to depicted content; an image can also represent another work's physical support.
+* **Production traces:** erasures, overpainting, repair, seams, registration errors and pentimenti may carry evidence of revision. Their mere appearance does not prove a creator used the simulated technique.
+* **Source boundaries:** reference images, attributed methods, metadata and worldbuilding notes may inform the work without entering it as visible objects, labels or credited names. State a displayed inscription only when its pictorial presence matters.
 <<~/ahu>>
 
 <<~ ahu #/pictorial-evidence>>
-!! Pictorial thesis, evidence, and competing representations
+!! Visual propositions, relations and evidence
 
-A principal image may act as a **visual thesis** rather than an authoritative survey. Supporting pictures can disagree with that thesis through other projections, scales, media, or claims. This structure offers one *possible* use of the eight dimensions, not a required layout for portraits, abstract art or every concept board.
+A picture can make a perceptual or interpretive **proposition** without proving it. An adjacent picture, repeated motif, alteration, blank interval or opposing gesture may answer, question or transform that proposition. This option applies to any worktype with consequential relations; Art Sigils never requires a pinboard, comparative studies or a visible research process.
 
-* **Region versus object:** a plan-oblique landscape can articulate a continuous region through connected summits, ridges, watersheds, saddles, ravines and inhabited lowlands. A single dramatic peak may serve another artistic intention. Name *regional continuity* when the viewer should infer a terrain system rather than merely admire a landmark.
-* **Altitude versus atmosphere:** a green-to-ochre-to-snow hypsometric sequence suggests relative heights, while shaded faces give local form and haze gives distance. Color does not prove measured elevation; spectacular lighting alone does not replace physiographic logic.
-* **Mark versus proof:** red and white lines or crossing-out signs can *symbolize* a route dispute. A pictured correction gains evidential force when two routes refer to a common cliff, slope, drainage or saddle and their differing consequences become visible. If the landscape supplies no such anchor, describe the markings as depicted claims, not an objectively solved path.
-* **Multiple viewpoints:** a high panorama, a plan route chart, and an embodied ledge study can inspect the *same feature* without showing identical geometry. Keep the corresponding features recognizable; do not impose false pixelwise alignment or transfer real-world measurements into fantasy geography.
-* **Unresolved alternatives:** a bone-machine ambiguity demands incompatible but viable visual hypotheses. One obvious skull or a polished caption may collapse the very uncertainty the read seeks to hold.
-* **Work within the frame:** the outer subject might comprise a flat pinned artboard, a physical relief sculpture, a photograph of a studio, or a depicted room. Worktype and depiction-scope decide which layers belong; no universal exclusion of studios follows. A source image, title, named artist or audience does not automatically become depicted content.
-* **Artist names as bounded bearings:** invoke a named artist for a particular pictorial *contribution*, not their entire corpus or every motif attached to that name. Conflicting aesthetic associations merit interpretation; do not infer causal token effects from a few images.
-* **Presentation versus inquiry:** a polished board can satisfy composition while losing the visible exchange among studies. Give each subordinate study an identifiable question or counterclaim where inquiry matters. Pinned clutter, fictitious measurements and pseudo-writing alone do not constitute evidence of reasoning.
+* **Composition positions; relation makes a claim:** side-by-side portraits might simply form a diptych, or their contrasting gazes might challenge a shared social role. `composition` names position and visual priority; `relation` names the consequential encounter.
+* **Shared anchors strengthen comparisons:** when two images conflict, identify the recurring shape, figure, gesture, inscription, moment or visual feature through which viewers can compare them. Adjacent pictures without a shared question may create rhythm without argumentative contradiction.
+* **Signs do not automatically prove their propositions:** a crossing-out mark suggests rejection; a painted repair suggests intervention; an inconsistent shadow may suggest impossible space. Do not elevate pictorial suggestion into verified fact or maker intention without additional evidence.
+* **Different appearances can bear different claims:** a photograph, charcoal sketch and textile response to the same subject can change how the subject reads. A physical difference of material does not, by itself, establish a difference of meaning.
+* **Unresolved alternatives deserve form:** overlapping silhouettes, partly erased passages, ambiguous edge joins, incomplete gestures and open space can sustain competing interpretations. Avoid resolving deliberate ambiguity merely to achieve visual neatness.
+* **Address and agency remain distinct:** a viewer may participate by noticing, supplying memory, moving around an installation or comparing images without appearing inside the depicted world.
+* **Visible inquiry remains optional:** multiple attempts, unfinished studies and revisions may document an artistic question. A complete singular image may pursue an equally serious question without displaying its preliminary work.
+* **Creative accident remains legible:** a generative receiver may find an unanticipated pictorial interpretation. Preserve the difference between a compelling departure and faithful fulfillment of the authored intention.
 
-The nucleus distributes these responsibilities without requiring additional universal parameters: `imagery` offers the pictures, `treatment` gives each its pictorial method, `composition` governs hierarchy, `relation` carries the counterclaim, `read` invites the viewer's inference, and `depiction-scope` bounds the outer artwork.
+The same eight dimensions accommodate both a solitary monochrome photograph and a many-part conceptual installation. Use discipline-specific terms only where the artwork earns them.
 <<~/ahu>>
 
 <<~ ahu #/lexicons>>
-!! Art-house lexicons — vocabulary inside values
+!! Art-house lexicons — optional vocabulary within values
 
-A term enters a parameter value when it deepens the artistic decision. These registers supply examples, not enumerated allowed values or mandatory production effects. The artist may reject any of them.
+These terms offer handles inside the eight dimensions rather than enumerated allowed values, requirements, or promises of a particular renderer. Some carry different meanings across media; interpret each within its local artistic problem.
 
 !!! Pictorial organization
-Figure-ground, visual weight, gestalt grouping, focal hierarchy, scale, rhythm, silhouette, axes, negative space, all-over field, diagonal movement, asymmetry, overlap, counterbalance, hard/soft/lost edges, visual interruption, serial repetition.
+Figure-ground, focal hierarchy, scale, rhythm, gestalt grouping, symmetry and asymmetry, visual weight, silhouette, axes, negative space, interval, overlap, serial repetition, counterbalance, hard/soft/lost edges, all-over field, interruption, graphic reserve.
 
-!!! Drawing, printing, facture
-Contour, gesture, hatching, crosshatching, stippling, wash, scumbling, drybrush, granulation, rubbing, erasure, pentimento, glazing, impasto, etching, lithography, watercolor bloom, graphite sheen, chalk drag, reserved paper. Never mistake a visual resemblance for proof of production history.
+!!! Drawing, printing, and facture
+Contour, gesture, hatching, crosshatching, stippling, wash, scumbling, drybrush, granulation, rubbing, erasure, pentimento, glazing, impasto, etching, lithography, watercolor bloom, graphite sheen, chalk drag, reserved paper, sewn repair, found material. Describe simulated techniques as appearances without proof of historical manufacture.
 
 !!! Color and light
-Value key, chroma, local color, simultaneous contrast, temperature, transparent overlap, reflected light, atmospheric recession, luminance hierarchy, high-key reserve, complementary tension, anomalous radiance, subdued passages. **Hypsometric tints** encode relative height through color bands (e.g. green valleys, ochre slopes, pale summits) rather than only sunset lighting. Relational color effects outrank an indiscriminate global palette.
+Value key, chroma, local color, simultaneous contrast, hue interaction, complementary tension, reflected light, temperature, transparency, luminance hierarchy, high-key reserve, anomalous radiance, subdued passages, specular highlight, diffuse shadow, color field, optical mixing.
 
-!!! Space and embodiment
-Linear perspective, foreshortening, orthographic plan, plan-oblique, shaded relief, hypsometric terrain painting, aerial photograph, painted panorama, horizon, terrain generalization, occlusion, path, node, landmark, watershed, saddle, slope exposure, inhabited taskscape. An elevated region-scale view differs from a summit portrait; related pictures may share a cliff, saddle, river confluence or ruin as a topological anchor while differing in projection and viewpoint.
+!!! Space, time, and embodiment
+Linear perspective, foreshortening, orthographic projection, axial organization, framing, crop, implied camera position, occlusion, parallax, room-scale installation, near/far interval, bodily scale, temporal sequence, implied movement, spatial affordance, circulation, spectator position.
 
-!!! Narrative and address
-Visual focalization, implied before-and-after, an open action, metaphor, iconography, metapicture, environmental story, spatial affordance, spectator address, anticipation, contemplative presence, playful ambiguity, conceptual opposition. A viewer does not become a depicted character by naming their role.
+!!! Subject, address, and iconography
+Visual focalization, metaphor, symbol, represented participant, spectator address, iconography, cultural convention, memory trace, narrative before-and-after, conceptual opposition, allegory, deliberate ambiguity, portrait gaze, performative gesture, material witness.
 
-!!! Inquiry and visual evidence
-Thumbnail, color key, site study, alternative, rejected proposal, erasure, overlay, edit, counterproposal, juxtaposition, quotation, reflective iteration, painted correction, provenance, empirical reference, disputed identification, planned absence. A studio board may show useful disagreement without labeling every proposition.
+!!! Inquiry and inter-image relation
+Thumbnail, color key, alternative, rejected proposal, edit, overlay, juxtaposition, quotation, counterproposal, revision, appropriation, comparison, annotation, provenance, reflective iteration, repaired image, provenance uncertainty, intentional omission.
 
-!!! Words inside pictures
-Anchorage, relay, legible annotation, image-caption relation, pictorial title, cartographic label, diagrammatic key. Separate displayed inscription from source metadata, technical instructions and artist credits. Unwanted labels can migrate into the image even when the operator meant them only as reference.
+!!! Writing and image
+Anchorage, relay, pictorial title, caption, handwritten note, printed legend, calligraphy, visual poem, typographic rhythm, diagram key, image-text counterpoint. Distinguish deliberately depicted text from prompt source, attached reference, credits and metadata.
+
+For a specialized spatial, environmental or cartographic work, consult the optional cartography research ahu; the basic grammar neither inherits nor privileges its vocabulary.
 <<~/ahu>>
 
 <<~ ahu #/integrities>>
@@ -145,55 +148,73 @@ Anchorage, relay, legible annotation, image-caption relation, pictorial title, c
 # ''Source authorities retain limits.'' Getty concepts inform terms, real geography informs appearance, and fictional canon governs fictional world facts only within its claimed scope.
 <<~/ahu>>
 
-<<~ ahu #/receiver-comparisons>>
-!! Portable Inscription, expanded Folio, and receiver comparisons
+<<~ ahu #/interop>>
+!! Expression, execution, and reception
 
-Art Sigils separates the **source-bearing intention** from any receiving model's **visible interpretation**:
+Art Sigils distinguishes the **author's written intention**, its **literal TW5 rendering**, and any receiving artist or model's **visible interpretation**.
 
-* **Native Inscription:** exact TW5 `art()` declaration plus invocation within a practical 1,024-character *design target*. A text-to-image engine may treat the wikitext as prompt tokens; do not assume that it runs TW5 or that 1,024 marks a documented Midjourney hard limit. A live TW5 instance or explicit substitution can provide a literal prose null test.
-* **Literal rendering:** expansion of named fields into prose. The same values do not guarantee the same images; the procedure's lexical wrapper changes the tokens the receiver sees.
-* **Expanded Folio:** craft vocabulary, material and viewpoint studies, counterpoints, canonical boundaries, and external references can deepen the *same* artistic problem, but need not fit a compact prompt.
-* **Receiver controls:** model and version, aspect ratio, Stylize, Chaos, Raw, personalization, seed and reference images belong to the operator or receiving engine unless an artwork expressly makes them part of its work. Do not burn portable art-language tokens on engine flags by default.
-* **Evidence ledger:** record exact submitted source, literal rendering when applicable, model/version and effort or settings, reference attachments, output aspect ratio, every candidate in a batch, which candidates the operator selected, and any later edits.
-* **Comparison:** evaluate worktype, visual thesis, composition, connected geography where relevant, material distinctions, relations *supported by visible evidence*, and depiction boundaries separately from aesthetic preference. A pleasing departure may offer an artistic discovery while failing an explicit specification.
-* **Uncertainty:** a favorite-of-four sample documents preference, not outcome frequency. A handful of images cannot establish causal effects of wording, reasoning effort, Stylize, or changing aspect ratio. Treat lexical basin theories and trend claims as hypotheses. Where possible, vary one factor and compare full sets.
+* **Inscription:** one complete native `art()` declaration plus a named invocation carries a portable minimal invitation. The 1,024-character target applies to the transmitted source, not to a receiving engine's documented hard limit. Optional defaults let the operator allocate characters to the artistic choices that matter.
+* **Literal reading:** native TW5 transclusion substitutes declared parameters and defaults into the procedure's prose. It transforms syntax, not artistic judgment. An image-generating model may interpret the transmitted wikitext without executing TW5.
+* **Folio:** extended prose, specialized lexicons, visual references, scoped studies, counterpoints and facture can unfold the same eight-dimensional intention. Folio richness never changes the nucleus's meaning by stealth.
+* **Receiver-dependent conditions:** aspect ratio, random seed, model identity, stylistic controls, attached images and other tool settings sit outside the portable semantic fields unless the work explicitly concerns such settings.
+* **Interpretive variance:** different recipients may privilege different associations of the same words or artist reference. Neither exact repetition nor identical reception follows from an apparently equivalent source.
+* **Critical return:** compare a rendered work with its articulated read, composition, relations, material boundaries and scope. Treat visibly attractive divergences as optional discoveries, not automatic upgrades to the source.
 
-A repeated layout may reflect an explicit `composition` rather than spontaneous model rigidity. Do not redesign the generic grammar to cure a pattern its example expressly requested.
+Formal Analysis carries the detailed observational and comparison methodology; the Procedures meme carries the executable TW5 declaration. This specification retains their shared semantic contract without preserving a particular rendering campaign.
 <<~/ahu>>
 
-<<~ ahu #/research-ahu>>
-!! Research authorities — disciplinary anchors
 
-* Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — controlled work types, techniques, roles, and materials; consult term scope notes rather than converting a taxonomy into a direct art instruction.
-* Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — especially Materials/Techniques (7), Facture (11), Physical Description (13), Subject Matter (16), Critical Responses (19), Related Works (20). https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/ ; https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/
-* Getty CONA, TGN and Iconography Authority — distinguish catalogued works, geographical names and depicted subjects: https://www.getty.edu/research/tools/vocabularies/
-* Kress and van Leeuwen, Reading Images: The Grammar of Visual Design — represented participants, interaction and compositional meaning.
-* W. J. T. Mitchell, Picture Theory — metapictures and pictures about pictures.
-* Aby Warburg, Mnemosyne Atlas — inquiry through selection, adjacent images and changing arrangements: https://warburg.sas.ac.uk/library-collections/warburg-institute-archive/bilderatlas-mnemosyne
-* Donald Schön, Designing as Reflective Conversation with the Materials of a Design Situation — observation, intervention and revised judgment.
-* Michael Baxandall, Patterns of Intention — infer artistic problem-solving with historical humility.
-* Rudolf Arnheim, Art and Visual Perception — balance, forces and perceptual organization, treated as lenses rather than perceptual law.
-* Josef Albers, Interaction of Color — color relativity and surrounding context.
-* James Gurney, Color and Light — atmosphere, physical light and material response.
-* Roland Barthes, Rhetoric of the Image — textual anchorage and relay alongside depiction.
-* Gérard Genette, Narrative Discourse — focalization and information limits; adapt cautiously to static visual work.
-* Henry Jenkins, Game Design as Narrative Architecture — spatial narrative, environmental information and implied action: https://electronicbookreview.com/publications/game-design-as-narrative-architecture/
-* Kevin Lynch, The Image of the City; Tim Ingold, The Temporality of the Landscape — paths, landmarks, perception, inhabitation and taskscapes.
-* Tom Patterson and Bernhard Jenny, Introducing Plan Oblique Relief: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
-* Jenny and Patterson, Aerial Perspective for Shaded Relief — altitude-driven relief color/luminance requires distinguishing from distance-driven atmospheric recession.
-* Panofsky, Studies in Iconology; Feldman, methods of art criticism; Harvard Project Zero, What Makes You Say That?: https://pz.harvard.edu/resources/what-makes-you-say ; See, Think, Wonder: https://pz.harvard.edu/resources/see-think-wonder
-* TiddlyWiki native Procedures, Definition Syntax and imports: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Procedure%2520Definitions.html . An art sigil does not require a custom parser.
+<<~ ahu #/cartography-research>>
+!! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
+
+A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
+
+* **Planimetric / orthographic map:** an overhead plan with a chosen projection and scale convention. Such a plan can support route comparison without inheriting a painted panorama's perspective.
+* **Plan-oblique relief:** an elevated view that preserves a recognizable overhead spatial organization while giving terrain vertical relief and expressive volume. Perspective and occlusion may distort local measurements. See Tom Patterson and Bernhard Jenny, `Introducing Plan Oblique Relief`: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
+* **Hypsometric tinting:** color shifts associated with elevation rather than generic scenic color. The artist may organize low/mid/high bands through hues and values suited to the read; green–ochre–snow supplies an example, never a required palette or assertion of measured heights.
+* **Shaded relief:** directional illumination clarifies landform shape. Shadows and hillshading help viewers understand ridges and slopes without directly establishing traversability.
+* **Aerial / atmospheric perspective:** color, contrast and haze can express depth and air; distinguish distance-based recession from altitude-dependent tint or relief shading. Jenny and Patterson's research on aerial perspective for shaded relief offers a specialist bearing.
+* **Panoramic geography:** Heinrich Berann's painted landform panoramas suggest ways to orchestrate a larger region without reducing its ridges and valleys to a single landmark. Eduard Imhof informs illumination and tonal hierarchy; Erwin Raisz informs selective physiographic characterization.
+* **Embodied terrain:** a photograph or painted eye-level study of a ledge, slope, river or inhabited site may challenge a higher-view depiction. Share distinctive landmarks where two pictures claim to depict the same passage, while acknowledging different projections.
+* **Watershed and route evidence:** drainage, valleys, saddles, escarpments and slope exposure offer features a viewer can compare. Colored routes, plotted arrows or crossed-out lines depict spatial claims; they do not guarantee actual access, gradient, distance or geological accuracy.
+* **Source provenance:** digital elevation models, imagery, survey notes, fictional world references and creative departures deserve separate evidentiary labels. Real geographic reference does not automatically establish an imagined world's terrain or authorize fictional canon.
+
+The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
 <<~/ahu>>
 
-<<~ ahu #/migration>>
-!! O-takiage ledger — what rises from the earlier draft
+<<~ ahu #/art-research>>
+!! Research bearings — general art ontology
 
-Keep: work/address/depiction/reading separation, ofness/aboutness, artist references as problem-solving methods, spatial projections, medium versus support versus depicted material, lost edges, deliberate uncertainty, disputed studies, alternative interpretations, canon/proposal/hypothesis, Getty authority and the broader comparative research corpus.
+Scholarly sources furnish vocabulary and competing interpretive lenses, never one mandatory aesthetic or automatic instruction to imitate their named authors.
 
-Rehouse: old work/address/depict/read fields into the eight-part nucleus; contrast/place/dispute into composition and relation values; view/edge/light/withhold/media into art-house lexicons; observation/inference/critique into Formal Analysis; history and geography into example Folio context; particular references into source ahu.
+* Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — work types, materials, techniques, and roles; consult term scope notes.
+* Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — materials/techniques, facture, physical description, subject matter, critical responses and related works. Subject: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/ ; Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
+* Getty CONA, TGN and Iconography Authority — distinguish catalogued works, geographical place names, and depicted iconography: https://www.getty.edu/research/tools/vocabularies/
+* Kress and van Leeuwen, *Reading Images: The Grammar of Visual Design* — represented participants, interaction, information value and composition.
+* W. J. T. Mitchell, *Picture Theory* — metapictures and pictures about pictures.
+* Aby Warburg, *Mnemosyne Atlas* — thinking through juxtaposition, absence, and changing image arrangements: https://warburg.sas.ac.uk/library-collections/warburg-institute-archive/bilderatlas-mnemosyne
+* Donald Schön, *Designing as Reflective Conversation with the Materials of a Design Situation* — action and reflection in a developing work.
+* Michael Baxandall, *Patterns of Intention* — historically situated inference about artistic problems.
+* Rudolf Arnheim, *Art and Visual Perception* — spatial balance and perception as critical lenses, not universal law.
+* Josef Albers, *Interaction of Color* — relational color and its surrounding field.
+* James Gurney, *Color and Light* — light, optics and material effects.
+* Roland Barthes, *Rhetoric of the Image* — anchorage and relay between text and picture.
+* Gérard Genette, *Narrative Discourse* — focalization and knowledge limits, with care when applying narrative terms to static images.
+* Henry Jenkins, *Game Design as Narrative Architecture* — implied action and environmental narration: https://electronicbookreview.com/publications/game-design-as-narrative-architecture/
+* Kevin Lynch, *The Image of the City*; Tim Ingold, *The Temporality of the Landscape* — orientation, perceptual movement, spatial practice.
+* Panofsky, *Studies in Iconology*; Feldman's methods of criticism; Harvard Project Zero, *What Makes You Say That?*: https://pz.harvard.edu/resources/what-makes-you-say ; *See, Think, Wonder*: https://pz.harvard.edu/resources/see-think-wonder
+* TiddlyWiki native Procedures, Definition Syntax and Calls: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Calls.html
+<<~/ahu>>
 
-Release: one macro for every adjective or visual verb; exhaustive instructions in every prompt; aged paper as generic art default; automatic rendering of reference URI or artist register; guaranteed causal claims from a handful of image generations.
+<<~ ahu #/aftermath>>
+!! Aftermath — guarding the open grammar
 
-The first structural procedure set remains provisional. Promote a new procedure only when a scoped, reusable artistic relationship earns independent treatment rather than fitting clearly inside an existing parameter.
+After an image or critical reading returns, distinguish what the work **shows**, what a viewer **infers**, what a maker or source **confirms**, and what the operator may **revise**. An unexpected visual invention can enter the next artistic invitation through an explicit choice; it cannot silently rewrite the previous one.
+
+Promote a reusable semantic distinction only when several worktypes benefit from it. Keep discipline-specific terminology in a named research ahu, image-specific facts in a Folio, prompt syntax in the Procedures meme, and evidence assessments in Formal Analysis.
+
+Do not treat historical trials, old naming experiments, discarded parameters, artist preference rankings, generated render frequencies or project migration notes as normative artwork instructions. Preserve their provenance in version history or review records rather than the evergreen grammar.
+
+The enduring test: a maker should feel equally free to describe a portrait, minimal abstraction, textile object, photograph, performative installation or illustrated map without being forced to summon an unrelated genre, paper surface, research board or narrative.
 <<~/ahu>>
 
