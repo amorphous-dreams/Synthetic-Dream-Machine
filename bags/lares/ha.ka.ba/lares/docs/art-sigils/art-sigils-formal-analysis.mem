@@ -14,7 +14,7 @@ retain = true
 
 When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must be one complete standalone Inscription**: native single-line definition plus one invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. Produce a Folio only if the operator requests conversion or a later revision. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
 
-The exact canonical Inscription definition lives in art-sigils-procedures.mem. Include that native definition literally in the first source block (not merely a link or an instruction to import the meme). The source block excludes any critical essay and wrapper metadata from its character budget.
+The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The exact canonical Inscription definition lives in art-sigils-procedures.mem. Include that native definition literally in the first source block (not merely a link or an instruction to import the meme). The source block excludes any critical essay and wrapper metadata from its character budget.
 <<~/ahu>>
 
 <<~ ahu #/discipline>>
