@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 64, clock: 60, narration: 203 };
+export const CEILINGS = { version: 64, clock: 60, narration: 202 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
