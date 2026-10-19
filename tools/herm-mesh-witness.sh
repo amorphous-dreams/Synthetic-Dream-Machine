@@ -59,11 +59,19 @@ join() {
   if [ "$label" != "host-reader" ]; then
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' || refused "$label" "the charter copy" ""
     out=$("$@" nexus seal import /tmp/a-charter.mem --json 2>&1) || refused "$label" "nexus seal import" "$out"
+  elif [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+    # The reader joins twice across the roll. A's charter is a partner's to it, so it lands beside the
+    # reader's primary, where the second import moves forward along its seal lineage.
+    out=$("$@" nexus seal import --carry "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import --carry" "$out"
+    carried=$(printf '%s' "$out" | grep -oE '"aid":"[^"]+"' | head -1 | cut -d'"' -f4)
+    [ -n "$carried" ] || refused "$label" "nexus seal import --carry (no aid)" "$out"
   else
     out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
   fi
+  local at=()
+  if [ "$label" = "host-reader" ] && [ -n "${carried:-}" ]; then at=(--nexus "$carried"); fi
   # A --json answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
-  cf=$("$@" nexus carry-for --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
+  cf=$("$@" nexus carry-for "${at[@]}" --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
   nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
   sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
   [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
