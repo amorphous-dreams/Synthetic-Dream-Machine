@@ -78,7 +78,51 @@ join() {
   echo "  joined A's Nexus: $label (${nym:0:16}…)"
 }
 await_a_boot
-for herm in herm-source herm-relay herm-relay-2; do join "$herm" $COMPOSE exec -T "$herm" $LARES; done
+join herm-source $COMPOSE exec -T herm-source $LARES
+join herm-relay $COMPOSE exec -T herm-relay $LARES
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  # Keep this reader's opening-epoch arm for the forged control; join it again at the opened head below.
+  join host-reader $LARES
+  cp "$WORK/bundle-host-reader.json" "$WORK/opening-reader-bundle.json"
+  before=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>/dev/null \
+    | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  card=$($COMPOSE logs --no-color lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
+  [ -n "$before" ] && [ -n "$card" ] || refused "lararium-a" "opening head and staged seed card" "$before"
+  # The card enters the staged test root's own rite. Its code never prints in the witness log.
+  out=$($COMPOSE exec -T lararium-a $LARES nexus seal rotate --cold-key "$card" --threshold 1 --json 2>&1) \
+    || refused "lararium-a" "nexus seal rotate" "$out"
+  unset card
+  after=$(printf '%s' "$out" | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  [ -n "$after" ] && [ "$after" != "$before" ] || refused "lararium-a" "head move" "$out"
+  echo "  A's product rite rolled ${before:0:18}… → ${after:0:18}…"
+fi
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then relay2_since=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi
+join herm-relay-2 $COMPOSE exec -T herm-relay-2 $LARES
 join host-reader $LARES
-
-exec node "$(dirname "$0")/herm-mesh-witness.mjs"
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  # The relay's own merge event pins the crossing; the verified reader then takes one reading.
+  if ! (set +o pipefail; timeout 120s $COMPOSE logs --follow --no-color --since "$relay2_since" herm-relay-2 2>&1 \
+    | grep -m 1 -F '[carriage] carriage: merged' >/dev/null); then
+    refused "herm-relay-2" "carriage merge within 120s" "$($COMPOSE logs --tail 20 --no-color herm-relay-2 2>&1)"
+  fi
+  WITNESS_ATTEMPTS=1 node "$(dirname "$0")/herm-mesh-witness.mjs"
+else
+  node "$(dirname "$0")/herm-mesh-witness.mjs"
+fi
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  for herm in herm-source herm-relay herm-relay-2; do
+    logs=$($COMPOSE logs --no-color "$herm" 2>&1)
+    if printf '%s\n' "$logs" | grep -E '\[carriage\].*place-contract-unheld' >/dev/null; then
+      refused "$herm" "carriage gate across the roll" "$(printf '%s\n' "$logs" | grep -E '\[carriage\].*place-contract-unheld')"
+    fi
+  done
+  before_silence=$($COMPOSE logs --no-color herm-relay-2 2>&1 | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
+  node tools/herm-mesh-forged-anchor.mjs "$WORK/opening-reader-bundle.json" "${HERM_RELAY_2_PUBLISHER:-}" \
+    || refused "host-reader" "forged anchor probe" "the probe did not hear silence"
+  # The floor gate logs its own refusal; only a named place-contract silence passes this control.
+  logs=$($COMPOSE logs --no-color herm-relay-2 2>&1)
+  after_silence=$(printf '%s\n' "$logs" | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
+  [ "$after_silence" -gt "$before_silence" ] \
+    || refused "herm-relay-2" "named forged-anchor silence" "$logs"
+  echo "✓ FORGED ANCHOR: relay-2's floor gate fell silent by place-contract name"
+fi
