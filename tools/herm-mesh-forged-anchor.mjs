@@ -1,5 +1,7 @@
-// Present this reader's opening-epoch carry at relay-2's floor gate with an anchor
-// signed by a key this probe mints. The opened quorum never seated that key.
+// Present this reader's opening-epoch carry at relay-2's floor gate twice, through one path:
+// once with A's own roll anchor off the reader's board (it must verify), once with that anchor's
+// parts signed by a key this probe mints, which the opened quorum never seated (the gate must fall
+// silent). The two anchors share one act CID; only the signer differs.
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import * as mesh from "../packages/lararium-mesh/dist/index.js";
@@ -35,28 +37,37 @@ try {
     const opened = reading.sealLineage.at(-1);
     const seats = mesh.epochSeats(old);
     if (!seats || bundle.contract.sealEpochCid !== old.epochCid) throw new Error("the opening carry names no closing epoch");
-    const forged = await mesh.signRollAnchor({
-      prevEpochCid: old.epochCid, sealEpochCid: opened.epochCid,
-      prevKeys: seats.keys, prevThreshold: seats.threshold,
-      parents: [mesh.carriageEntryActCid(bundle.contract)],
-    }, [{ signer: stranger, sign: signStranger }]);
-    const arm = { kind: "place", contract: bundle.contract, lineage: [...bundle.lineage, forged], sealLineage: reading.sealLineage };
     const board = await open(mesh.carriageDocUrl(reading.island), "board:carriage-contracts");
+    const contractCid = mesh.carriageEntryActCid(bundle.contract);
+    const real = mesh.rollAnchorsFromBoard(board).find((a) => a.prevEpochCid === old.epochCid &&
+      a.sealEpochCid === opened.epochCid && a.parents.includes(contractCid));
+    if (!real) throw new Error("the reader's board holds no roll anchor of A's that cites the opening carry");
+    const forged = await mesh.signRollAnchor({
+      prevEpochCid: real.prevEpochCid, sealEpochCid: real.sealEpochCid,
+      prevKeys: real.prevKeys, prevThreshold: real.prevThreshold, parents: real.parents,
+    }, [{ signer: stranger, sign: signStranger }]);
+    if (mesh.rollAnchorCid(forged) !== mesh.rollAnchorCid(real)) throw new Error("the forged anchor differs from A's in more than its signer");
+    if (real.signatures.some((s) => s.signer.toLowerCase() === stranger.toLowerCase())) throw new Error("the probe's key signed A's anchor");
+    const armWith = (anchor) => ({ kind: "place", contract: bundle.contract, lineage: [...bundle.lineage, anchor], sealLineage: reading.sealLineage });
     const ancestry = mesh.carriageAncestryFromBoard(reading.sealLineage, board);
     const carriers = await mesh.foldCarrierSet(reading.denyBoard, reading.roster, ancestry);
     const index = mesh.hearthPinIndex();
     mesh.filePlaceFloorPins(index, mesh.placeFloorPinsFromBoard(board), {
       nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.ORACLE_SOCKET_ROUTE, carriers,
     });
-    const result = await mesh.pullAndVerifyOracle(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
+    const present = (arm) => mesh.pullAndVerifyOracle(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
       pins: index, hearth: publisher, nexus: Buffer.from(bundle.aid, "utf8").toString("hex"),
       presentation: { kind: "place", placeKey: own, sign: async (bytes) => mesh.hexToBytes(await signOwn(bytes)), arm },
       audience: mesh.DAEMON_BAG_ID, deadlines: pins.dialDeadlines(), verifyingKey: publisher,
     });
+    const twin = await present(armWith(real));
+    if (!twin.ok) throw new Error(`the opening carry under A's own roll anchor did not verify at relay-2: ${JSON.stringify(twin)}`);
+    console.log(`✓ TWIN: the opening carry under A's roll anchor ${mesh.rollAnchorCid(real).slice(0, 16)}… verified at relay-2's rolled head`);
+    const result = await present(armWith(forged));
     if (result.ok || result.reason !== "dial failed: the gate said nothing") {
       throw new Error(`the forged anchor did not produce gate silence: ${JSON.stringify(result)}`);
     }
-    console.log("✓ forged roll anchor met gate silence (the signer sits outside the opened seats)");
+    console.log("✓ forged roll anchor met gate silence (the same act, signed outside the opened seats)");
   });
 } finally {
   seed.fill(0);

@@ -135,11 +135,11 @@ if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   done
   before_silence=$($COMPOSE logs --no-color herm-relay-2 2>&1 | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
   node tools/herm-mesh-forged-anchor.mjs "$WORK/opening-reader-bundle.json" "${HERM_RELAY_2_PUBLISHER:-}" \
-    || refused "host-reader" "forged anchor probe" "the probe did not hear silence"
+    || refused "host-reader" "anchor probe" "the twin under A's anchor did not verify, or the forgery did not meet silence"
   # The floor gate logs its own refusal; only a named place-contract silence passes this control.
   logs=$($COMPOSE logs --no-color herm-relay-2 2>&1)
   after_silence=$(printf '%s\n' "$logs" | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
   [ "$after_silence" -gt "$before_silence" ] \
     || refused "herm-relay-2" "named forged-anchor silence" "$logs"
-  echo "✓ FORGED ANCHOR: relay-2's floor gate fell silent by place-contract name"
+  echo "✓ FORGED ANCHOR: relay-2's floor gate verified A's anchor and fell silent by place-contract name at the same act signed outside its seats"
 fi
