@@ -1,12 +1,17 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio >> -->
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio">>
+<<^ code="&#x0002;">>
+
 ```toml meta
-uri-path = "ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
-file-path = "example-zero-folio.mem"
-type = "text/x-memetic-wikitext+tiddlywiki"
-register = "Synthesis-Canon"
-role = "Example Zero Folio: one copyable extended art-sigil sequence with supporting research ahus"
-status = "stable"
-retain = true
+uri-path  = "ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
+title     = "lar:///ha.ka.ba/lares/docs/art-sigils/example-zero-folio"
+file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils/example-zero-folio.mem"
+type      = "text/memetic-wikitext+tiddlywiki"
+register  = "Synthesis-Canon"
+role      = "Example Zero Folio: one copyable extended art-sigil sequence with supporting research ahus"
+status    = "stable"
+retain    = true
 ```
 
 <<~ ahu #/invitation>>
@@ -187,3 +192,7 @@ A path painted across a ridge cannot certify traversability. Bone-like and mecha
 
 Example Zero's geography, artists, supports, colors and narrative tensions belong to this Folio and its companion Inscription, without becoming assumptions of the general grammar.
 <<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RlW7vguHn7c4Haa2rNB2Hwgg5H4bf8ILjt1X3MWXAWk
+
+<<^ code="&#x0004;" -> to="?">>

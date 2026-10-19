@@ -1,12 +1,17 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/art-sigils/spec >> -->
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/spec">>
+<<^ code="&#x0002;">>
+
 ```toml meta
-uri-path = "ha.ka.ba/lares/api/art-sigils/spec"
-file-path = "spec.mem"
-type = "text/x-memetic-wikitext+tiddlywiki"
-register = "Synthesis-Canon"
-role = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
-status = "stable"
-retain = true
+uri-path  = "ha.ka.ba/lares/api/art-sigils/spec"
+title     = "lar:///ha.ka.ba/lares/api/art-sigils/spec"
+file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/spec.mem"
+type      = "text/memetic-wikitext+tiddlywiki"
+register  = "Synthesis-Canon"
+role      = "evergreen Art Sigils ontology, interpretive bounds, and art-house lexicons"
+status    = "stable"
+retain    = true
 ```
 
 <<~ ahu #/purpose>>
@@ -217,3 +222,7 @@ Discipline-specific methods inhabit named research ahus; artwork-specific forms,
 The grammar accommodates portraits, abstract fields, textiles, photographs, installations and maps without requiring unrelated genres, parchment, monumental scenery, prescribed narratives or compulsory comparison boards.
 <<~/ahu>>
 
+
+<<^ code="&#x0003;">>ni:///sha-256;cYNfwvUdP0VwdOyfPHbAW1GoyvVZBHLKz-Dcr8vpkxA
+
+<<^ code="&#x0004;" -> to="?">>
