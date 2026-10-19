@@ -6,19 +6,19 @@
  * dialing it, a same-operator joiner C dialing A's `/ws` for the CRDT and the Herm for bytes, naming the Herm's
  * read-face as its public shore (`LAR_HERM_SHORE`). Then:
  *
- *   ③ A declares a user book PUBLIC and LOADs `photo.png` (+ `.meta`) → A's `cid/` holds the bytes, the CRDT the pointer
- *   ④ the POINTER crosses to C (its realm bag registration names the user's canon document)
+ *   ③ A LOADs `photo.png` (+ `.meta`) into its user canon and declares the book PUBLIC → A's `cid/` holds the bytes, the CRDT the pointer
+ *   ④ MEASURE: C's realm view names no user book or canon pointer
  *   ⑤ MEASURE: what the Herm's `/cas/<cid>` answers while A still stands
  *   ⑥ A goes DARK (`stopDaemonOnly` — A's staged root only; the home vessel is never touched)
- *   ★ ⑦ THE SHUT: with A dark and a Herm that dials no hearth (`a herm dials no hearth`), the Herm holds neither pointer nor
- *       bytes, so its `/cas/<cid>` stays closed and C's fetch reads `held:false`. (The re-share itself — the fleet leg
+ *   ★ ⑦ THE SHUT: with A dark and a Herm that dials no hearth (`a herm dials no hearth`), the Herm holds no public
+ *       pointer even after ⑤b plants bytes, so its `/cas/<cid>` stays closed and C's fetch reads `held:false`. (The re-share itself — the fleet leg
  *       misses, the Herm leg `hermCasTransit` answers, the sha256 verifies, the bytes land in C's `cid/` — waits on a
  *       gate-native herm route; the vector it owes is quoted at ⑦.)
  * The 2026-10-18 ruling seats system canon writes with the Kahu alone; this book therefore lives in a public user bag.
  *
  * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED with the fleet standing in ONE REALM.
  * The Herm's dial to A ships SHUT by name, so ⑦ asserts the shut (the Herm never joins A's board, so it holds no
- * pointer and no bytes), and the re-share law below is the vector a gate-native herm route owes. The seam quoted
+ * pointer), and the re-share law below is the vector a gate-native herm route owes. The seam quoted
  * below is the measurement's record, kept for the route that opens.
  *
  * The fleet performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
@@ -114,10 +114,8 @@ const CID_BASE64 = createHash("sha256").update(Buffer.from(PNG_BYTES.toString("b
 const GHOST      = createHash("sha256").update("a likeness nobody ever staged").digest("hex");
 
 const LOCI  = "t.witness.herm";
-const TITLE = `lar:///${LOCI}/photo`;
 const BOOK_SLUG = "herm-public-photo";
 const BOOK_BAG = `lar:///ha.ka.ba/bags/${BOOK_SLUG}`;
-const BOOK_WORKING = `lar:///ha.ka.ba/wikis/${BOOK_SLUG}/working`;
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const casDirOf = (v: LarInstance): string => join(vesselStorageDir(v), "cas");
@@ -179,18 +177,17 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
-  test("③ A LOADs the png into its user wiki, moves it to its canon bag and declares it PUBLIC: A holds bytes and a CRDT pointer", async () => {
+  test("③ A LOADs the png into its user canon and declares it PUBLIC: A holds bytes and a CRDT pointer", async () => {
     const { A } = fleet!;
     const srcDir = join(A.root, "blob-stage", "bags", BOOK_SLUG, LOCI);
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    // The daemon reaches catalog bags and wiki slot docs by access. wiki-act reaches the active island alone,
-    // and wiki init leaves lares active until wiki open and reboot, so both acts take the daemon route.
-    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", BOOK_WORKING, "--yes", "--json"]);
+    // This witness stages a public blob for a Herm to re-share, not a promotion through a working slot.
+    // The catalog registers the canon at mint; an unmounted wiki has no working slot document, so daemon LOAD
+    // to that slot refuses with `destination bag "lar:///ha.ka.ba/wikis/herm-public-photo/working" unreachable — not registered`.
+    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", BOOK_BAG, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
-    const mv = await A.cli(["act", "MOVE", "--title", TITLE, "--from", BOOK_WORKING, "--to", BOOK_BAG, "--yes", "--json"]);
-    expect(mv.json?.["ok"], said(mv)).toBe(true);
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
@@ -198,32 +195,24 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     const show = await A.cli(["bag", "show", BOOK_SLUG, "--json"]);
     console.error(`herm-reshares MEASURE A: bag declare ${BOOK_SLUG} --tier public → ${said(decl).trim().slice(0, 200)}\n  bag show ${BOOK_SLUG} → ${said(show).trim().slice(0, 300)}`);
     expect(decl.json?.["ok"], said(decl)).toBe(true);
-    // The projector lays the user canon mirror as the moved record lands and names that bag in the journal.
+    // The projector lays the user canon mirror as the loaded record lands and names that bag in the journal.
     await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === BOOK_BAG });
     expect(existsSync(join(A.root, "bags", BOOK_SLUG))).toBe(true);
   }, 90_000);
 
-  test("④ the POINTER crosses to C", async () => {
-    // C's active recipe does not mount A's user wiki. The shared realm doc can carry its PUBLIC registration
-    // and canon doc pointer; nexus realm-bags measures that crossing, not presence of the photo in C's recipe.
+  test("④ MEASURE: C holds no realm or pointer to A's public user book", async () => {
+    // The sharing-after-the-gate ruling grants a sibling vessel transport through PersonaGroup, not blanket
+    // document access. F1's scoped document view and P3's member consult across a cabal realm would change
+    // this row; C's same-operator edge alone leaves it outside A's realm and user book.
     const aBags = await fleet!.A.cli(["nexus", "realm-bags", "--json"]);
     const aRows = (aBags.json?.["data"] as { bags?: Array<Record<string, unknown>> } | undefined)?.bags ?? [];
-    const aDoc = aRows.find((row) => row["bag"] === BOOK_BAG)?.["doc"];
-    expect(typeof aDoc === "string" && aDoc.length > 0, said(aBags)).toBe(true);
-    const deadline = Date.now() + 90_000;
-    let bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
-    let rows: Array<Record<string, unknown>> = [];
-    for (;;) {
-      const data = bags.json?.["data"] as { bags?: Array<Record<string, unknown>> } | undefined;
-      rows = data?.bags ?? [];
-      if (rows.some((row) => row["bag"] === BOOK_BAG && row["readTier"] === "public" && row["doc"] === aDoc)) break;
-      if (Date.now() > deadline) break;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
-    }
+    const aBook = aRows.find((row) => row["bag"] === BOOK_BAG && row["readTier"] === "public");
+    expect(typeof aBook?.["doc"] === "string" && aBook["doc"].length > 0, said(aBags)).toBe(true);
+    const bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
     console.error(`herm-reshares MEASURE C: nexus realm-bags → ${said(bags).trim().slice(0, 600)}`);
-    expect(rows, "C's shared realm doc named no public user book or A's canon pointer").toEqual(expect.arrayContaining([expect.objectContaining({ bag: BOOK_BAG, readTier: "public", doc: aDoc })]));
-  }, 120_000);
+    expect(bags.json?.["ok"], said(bags)).toBe(true);
+    expect(bags.json?.["data"], "C holds no cabal realm or A's public user book").toMatchObject({ realm: null, realmDoc: null, realms: [], bags: [] });
+  }, 30_000);
 
   test("⑤ MEASURE: the Herm's /cas/<cid> while A still stands", async () => {
     await new Promise((r) => setTimeout(r, 3000));
@@ -247,6 +236,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   // Plant the body by hand in the Herm's own `cid/` and the two halves separate: a 200 here says the index
   // stands and the byte lane alone is owed; a 404 says the index still withholds.
   test("⑤b MEASURE: with the body planted in the Herm's cid/, does the index alone open /cas/<cid>?", async () => {
+    expect(cid, "③ never staged the blob").not.toBe("");
     const hermCas = casDirOf(fleet!.herm);
     mkdirSync(hermCas, { recursive: true });
     writeFileSync(join(hermCas, cid), PNG_BYTES);
@@ -269,10 +259,11 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   }, 30_000);
 
   // THE SHUT. The Herm's dial to A ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings), so the Herm never joins A's board: it holds
-  // no pointer and no bytes while A is dark. The re-share this file measures (the Herm answers `/cas/<cid>`, C verifies the
+  // no public pointer while A is dark. The re-share this file measures (the Herm answers `/cas/<cid>`, C verifies the
   // sha256 and keeps the bytes) is the vector a gate-native herm route owes, and it is not asserted green by any weaker road:
   // a Herm that serves a cid it was never handed is a leak this test must catch, not a gap it may tolerate.
   test("★ ⑦ THE SHUT: with A dark and the Herm's dial shut by name, the Herm serves no cid it was never handed and C's fetch reads held:false ★", async () => {
+    expect(cid, "③ never staged the blob").not.toBe("");
     const { C, hermShore, herm } = fleet!;
     expect(herm.bootLog(), "the Herm dials no hearth").toMatch(/a herm dials no hearth/);
     // The staged copy leaves C so the read is a MISS: A is dark, so the Herm is the only road left.
