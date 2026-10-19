@@ -1,6 +1,7 @@
 import type { CapabilityVerifier } from "@lararium/mesh";
 import type { CapabilityProvider, KeyhiveAccess } from "./capability-provider.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
+import type { BagDocLedger } from "./bag-doc-ledger.js";
 
 export interface FaceBagDoor {
   mint(bagUrl: string, access: KeyhiveAccess): Promise<{ docId: string }>;
@@ -8,16 +9,18 @@ export interface FaceBagDoor {
   remint(bagUrl: string): Promise<{ docId: string }>;
 }
 
-export function makeFaceBagDoor({ face, groupId }: { face: CapabilityProvider; groupId: string }): FaceBagDoor {
+export function makeFaceBagDoor({ face, groupId, ledger }: { face: CapabilityProvider; groupId: string; ledger?: BagDocLedger }): FaceBagDoor {
   return {
     async mint(bagUrl, access) {
       const { docId } = await face.registerBag(bagUrl);
+      if (ledger) await ledger.put(bagUrl, docId);
       await face.delegate({ bagUrl, audience: groupId, access });
       return { docId };
     },
     adopt: (bagUrl, docId) => face.adoptBag(bagUrl, docId),
     async remint(bagUrl) {
       const { docId } = await face.remintBag(bagUrl);
+      if (ledger) await ledger.put(bagUrl, docId);
       await face.delegate({ bagUrl, audience: groupId, access: "admin" });
       return { docId };
     },

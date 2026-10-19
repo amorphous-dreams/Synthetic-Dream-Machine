@@ -122,6 +122,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   return reader;
 }
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
@@ -197,11 +198,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // The VEIL identity — the group's creator, re-derived from (vessel seed × persisted tag). Stands
   // beside the vessel identity at boot; sentinel ops and face bag grants run through it.
   let veilKh: KeyhiveProvider | null = null;
+  let faceLedger: BagDocLedger | null = null;
   // THE CONTENT-KEY HOLDER, seated beside the two identities once both stand (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
   let contentKeys: ContentKeySeat | null = null;
   const faceDoor = () => veilKh && daemonAuth.personaGroupId
-    ? makeFaceBagDoor({ face: veilKh, groupId: daemonAuth.personaGroupId }) : null;
+    ? makeFaceBagDoor({ face: veilKh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   let mintedByHex = daemonAuth.vesselVerifyingKey;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
@@ -951,6 +953,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
         ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
         registerBags:          daemonAuth.dyadVeil ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+        ledger:                daemonBagDocLedger(ctx.composite),
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
@@ -975,9 +978,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         await v.hydrateFromEventStore();
         veilKh = v;
-        for (const bag of daemonAuth.registerBags) {
-          if (!isVesselGround(bag)) await v.registerBag(bag);
+        faceLedger = null;
+        if (daemonAuth.personaGroupId) {
+          try {
+            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
+            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            if (!store) throw new Error("face plane absent");
+            await store.listVisible();
+            faceLedger = planeBagDocLedger(store);
+          } catch {
+            console.warn("[daemon] face bag document plane unavailable; registering face bags without durable bindings");
+          }
         }
+        const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
+        if (faceLedger) await registerBagsDurably({ provider: v, bags: faceBags, ledger: faceLedger });
+        else for (const bag of faceBags) await v.registerBag(bag);
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // `exportArchive()` captures the founding + hydrated membership/capability DAG (+ prekey

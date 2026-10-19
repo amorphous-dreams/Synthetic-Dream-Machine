@@ -19,6 +19,7 @@
  */
 
 import { KeyhiveProvider } from "./keyhive-provider.js";
+import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
 import { verifyEdgeAgainstPersonaKel, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
@@ -36,6 +37,7 @@ export interface BootDaemonKeyhiveInput {
   readonly meshCabalDocIdHex?: string;
   /** Writable bag URIs to register so `verify`/`delegate` resolve (lar: URIs). */
   readonly registerBags: readonly string[];
+  readonly ledger?: BagDocLedger;
   /** The PINNED signer DID — provenance ONLY (the founding op-key = the KEL inception op-key). The Binding
    *  Gate does NOT pin this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid —
    *  accepting both a raw op-key pin AND the prefix would open a downgrade). */
@@ -183,9 +185,8 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
-  for (const bagUrl of input.registerBags) {
-    await keyhive.registerBag(bagUrl);
-  }
+  if (input.ledger) await registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
+  else for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
 
   return { keyhive, did, unreadable };
 }
