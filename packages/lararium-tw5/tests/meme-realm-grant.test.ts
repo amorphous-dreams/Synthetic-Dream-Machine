@@ -8,9 +8,16 @@
  * still asks this vessel's own cap.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, type LarTiddlerStore } from "@lararium/mesh";
+import { createRequire } from "node:module";
+import {
+  CompositeStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, deterministicDocUrl, emptyLarDoc, materializeSharedLarDoc,
+  realmDocPointer, realmDocUrl, realmStewardPointer, storedLarRecord, writeRealmStanding,
+  type LarDoc, type LarTiddlerStore, type RealmBagRegistration, type Repo as RepoType,
+} from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeGetReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+
+const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/ford";
@@ -58,5 +65,44 @@ describe("a realm-carried bag answers by the realm's grant", () => {
     expect(said).toContain("cap-denied: read on");
     const put = await makeMemePutReactor(r.opts)({ uri: URI, bag: "ford-book", text: meme("/a") }, unregistered()).then(() => "(landed)", (e: Error) => e.message);
     expect(put).toContain("cap-denied: admin on");
+  });
+});
+
+/** A vessel's own island over the production reach: the realms it pins, the standing each pinned realm carries. */
+async function vessel(pins: ReadonlyArray<{ realm: string; doc: string; book?: string; steward?: string; pinDoc?: boolean }>) {
+  const repo = new Repo({ network: [] });
+  for (const p of pins) await materializeSharedLarDoc(repo, p.doc as never, "book");
+  const catalog = repo.create<LarDoc>(emptyLarDoc());
+  catalog.change((d) => {
+    d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: "charter-own" }, "vessel-boot");
+    for (const p of pins) {
+      if (p.pinDoc !== false) d.tiddlers[realmDocPointer(p.realm)] = storedLarRecord(realmDocPointer(p.realm), { text: realmDocUrl(p.realm) }, "vessel-boot");
+      const reg: RealmBagRegistration = { kind: REALM_BAG_DOMAIN, realmId: p.realm, bagUri: p.book ?? BOOK, docUrl: p.doc, keptBy: [p.steward ?? "nobody"], readTier: "contract", signatures: [] };
+      writeRealmStanding(d, p.realm, new Map([[reg.bagUri, reg]]));
+      if (p.steward) d.tiddlers[realmStewardPointer(p.realm)] = storedLarRecord(realmStewardPointer(p.realm), { text: p.steward }, "realm-bag");
+    }
+  });
+  return memeVerbOptions({ composite: new CompositeStore(), tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, repo, catalogUrl: catalog.url, oracleUrl: null }, async () => null);
+}
+
+describe("the realm's grant reaches only a member of that realm, by the production reach", () => {
+  const DOC = deterministicDocUrl("realm-grant-book");
+  const read = (opts: MemeVerbOptions, realm: string) =>
+    makeMemeGetReactor(opts)({ uri: URI, bag: "ford-book", realm }, unregistered()).then((r) => ({ read: r }), (e: Error) => ({ refused: e.message }));
+
+  test("a member whose realm counts the book reads it; a vessel outside every realm, one naming a realm it never pinned, and one whose realm counts no such book each refuse and read nothing", async () => {
+    const steward = await vessel([{ realm: REALM, doc: DOC, steward: "hand-a" }]);
+    const placed = await makeMemePutReactor(steward)({ uri: URI, bag: "ford-book", realm: REALM, text: meme("/a") }, unregistered());
+    expect(placed["decision"]).toBe("ingest");
+    const member = await read(steward, REALM);
+    expect("read" in member, JSON.stringify(member)).toBe(true);
+
+    const outside = await read(await vessel([]), REALM);
+    const unpinned = await read(await vessel([{ realm: REALM, doc: DOC, pinDoc: false }]), REALM);
+    const otherBook = await read(await vessel([{ realm: REALM, doc: DOC, book: bagUri("another-book") }]), REALM);
+    for (const answer of [outside, unpinned, otherBook]) {
+      expect("refused" in answer, JSON.stringify(answer)).toBe(true);
+      expect((answer as { refused: string }).refused).toContain(`in realm ${REALM}`);
+    }
   });
 });
