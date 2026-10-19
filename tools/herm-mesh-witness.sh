@@ -108,9 +108,18 @@ if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then relay2_since=$(date -u +%Y-%m-%dT%H:%M:%
 join herm-relay-2 $COMPOSE exec -T herm-relay-2 $LARES
 join host-reader $LARES
 if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  # Each herm names the head its own charter took: the relay joined before the roll, relay-2 after it.
+  head_of() {
+    $COMPOSE exec -T "$1" $LARES nexus seal show --json 2>/dev/null \
+      | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4
+  }
+  relay_head=$(head_of herm-relay); relay2_head=$(head_of herm-relay-2)
+  [ "$relay_head" = "$before" ] || refused "herm-relay" "the opening head" "${relay_head:-none} (A opened at ${before})"
+  [ "$relay2_head" = "$after" ] || refused "herm-relay-2" "the rolled head" "${relay2_head:-none} (A rolled to ${after})"
+  echo "  herm-relay holds ${relay_head:0:18}…; herm-relay-2 holds ${relay2_head:0:18}…"
   # The relay's own merge event pins the crossing; the verified reader then takes one reading.
   if ! (set +o pipefail; timeout 120s $COMPOSE logs --follow --no-color --since "$relay2_since" herm-relay-2 2>&1 \
-    | grep -m 1 -F '[carriage] carriage: merged' >/dev/null); then
+    | grep -m 1 -F 'carriage: merged' >/dev/null); then
     refused "herm-relay-2" "carriage merge within 120s" "$($COMPOSE logs --tail 20 --no-color herm-relay-2 2>&1)"
   fi
   WITNESS_ATTEMPTS=1 node "$(dirname "$0")/herm-mesh-witness.mjs"
@@ -120,8 +129,8 @@ fi
 if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   for herm in herm-source herm-relay herm-relay-2; do
     logs=$($COMPOSE logs --no-color "$herm" 2>&1)
-    if printf '%s\n' "$logs" | grep -E '\[carriage\].*place-contract-unheld' >/dev/null; then
-      refused "$herm" "carriage gate across the roll" "$(printf '%s\n' "$logs" | grep -E '\[carriage\].*place-contract-unheld')"
+    if printf '%s\n' "$logs" | grep -E '\[(carriage|herm|lar-gate)\].*place-contract-unheld' >/dev/null; then
+      refused "$herm" "carriage gate across the roll" "$(printf '%s\n' "$logs" | grep -E '\[(carriage|herm|lar-gate)\].*place-contract-unheld')"
     fi
   done
   before_silence=$($COMPOSE logs --no-color herm-relay-2 2>&1 | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
