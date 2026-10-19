@@ -1,0 +1,208 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "kit: K15 step 0, the custody contract before bytes move — the node and browser row census sorted D, F or S, the face custody key, the carrier binding, the overwrite contract, the one-face bundle, the reds per vessel, the build order and the open joints; drafted by a Sol-6 spirit over four research rounds, verified against code"
+status    = "kit; drafted 2026-10-19; K15 step 0 builds against it; the place signer open"
+tags      = ["kit", "k15", "custody", "persona-group", "face-custody-key"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-custody-step-zero.mem"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k15-custody-step-zero"
+```
+
+<<~ ahu #/head>>
+
+!! K15 STEP 0 — custody contract before bytes move
+
+
+''Status:'' build specification, 2026-10-19. ''LEAD'' marks a target disposition or fact whose payload, selector, or implementation has not been proved by the cited code. Source paths below are relative to `/home/joshu/Synthetic-Dream-Machine`; line numbers identify the read-only snapshot. No suite, build, or git write in that repository forms evidence for this specification.
+
+<<~/ahu>>
+
+<<~ ahu #/law-and-acceptance-boundary>>
+
+!!! Law and acceptance boundary
+
+
+Every persisted custody carrier and every act that touches it has exactly one target class. ''D'' dissolves confidential material into rows owned by one PersonaGroup and sealed with that group's face custody key (FCK). ''F'' carries deliberately public material or ciphertext a blind floor may copy; it has no custody decryption key. ''S'' carries a *named* node-only confidential row under a named node principal and opener. A shared verb creates no shared key. A mixed carrier splits before it receives a class. The browser has no vessel custody key (VK). A node has no residual omnibus VK: only an actual S row can justify a node custody door. Current `hot`/`cold` mean VK-sealed, not target ownership (`vault-carriers.ts:5-22,64-68`). These are operator rulings recorded at `stable-founding-road.mem:205-207`.
+
+The face identifier in this document means a stable, canonical PersonaGroup identifier. Current `h<N>` is a local handle index, not sufficient by itself as a cross-vessel cryptographic identity. ''LEAD:'' migrations map each current handle to one authenticated PersonaGroup before assigning an FCK or moving bytes; an ambiguous map refuses the migration. A row with no provable owner refuses rather than falling into F or S.
+
+<<~/ahu>>
+
+<<~ ahu #/row-census-node>>
+
+!!! Row census — node
+
+
+This table covers every `buildTable()` row in `packages/lararium-node/src/vault-carriers.ts:236-398`. “Current” names the code's custody class. “Owner / target” is the K15 contract. Where the source only names a filename, ''LEAD'' requires a payload and caller audit before the classification can be implemented. There is no implicit S catchall.
+
+| Current row and code line | Current | Owner / target and required cut |
+| `vessel-key` `:240-242` | floor | ''S, OPEN JOINT:'' private place signing seed owned by this node. Its public verifying key belongs in F. The signer options appear below; it is never a custody VK or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
+| `vessel-kel` `:243-245` | floor | ''F:'' public inception/signature, node place principal. |
+| `vk-slots` `:246-248` | floor | ''D/S split:'' retire the omnibus VK tree. Each face gets its own FCK tree; a node S tree exists only for named S rows. No face FCK wrapper under a node key. |
+| `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current VK-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
+| `vessel-card` `:254-256` | floor-plain | ''F:'' public node contact card. |
+| `charter` `:257-259` | floor-plain | ''F:'' signed public founding charter. |
+| `carried-charter` `:260-262` | floor-plain | ''F:'' signed public carried charter. |
+| `carriage-consent` `:263-265` | floor-plain | ''F:'' public consent/pin as the row comment defines it. |
+| `nexus-key-line` `:266-268` | floor-plain | ''F:'' public hand-over keys/signatures. |
+| `carriage-admit` `:269-271` | floor-plain | ''F:'' public gate reach/pin. |
+| `sealed-rest` `:275-277` | floor-plain | ''F carriage:'' sealed lockboxes, signed records and indexes remain opaque transport; cryptographic content ownership stays with the relevant face's Keyhive/content-key seat. The row is not an FCK escrow. |
+| `sealed-own` `:279-281` | floor-plain | ''F only for proved opaque pointers/marks. LEAD:'' audit names and values for face-linking metadata; any private index dissolves into D. |
+| `sealed-chunk` `:283-285` | floor-plain | ''F carriage:'' Keyhive ciphertext under opaque addresses; its content key and identity remain D. |
+| `custody-root` `:288-289` | hot | ''D:'' partition any face-bearing derivation/root by PersonaGroup. ''LEAD:'' prove every remaining use; a node-only secret may enter S only as a separately named row, never by retaining this generic root. |
+| `keyhive-archive` `:290-291` | hot | ''D:'' split the vessel archive into one identity/archive per PersonaGroup, with no identity above them (`stable-founding-road.mem:203,459`). Node archive row selection is an OPEN JOINT below. |
+| `veil-archive` `:292-293` | hot | ''D:'' each `h<N>` maps to its own PersonaGroup and FCK. |
+| `enroll-pending` `:295-296` | hot, reserved | ''D, LEAD:'' if materialized, bind each pending enrolment to its target face; reject a row with no target. There is no current writer. |
+| `grant-pending` `:297-298` | hot, reserved | ''D, LEAD:'' split per granting/target face and bind the authority relation; reject an unassigned pending secret. There is no current writer. |
+| `admissions` `:299-300` | hot, reserved | ''D, LEAD:'' confidential admission state partitions by owning face; public signed proof may be F after payload audit. There is no current writer. |
+| `anchors` `:301-302` | hot | ''D:'' face-indexed anchor lines and private identity state under that face. Current `bundle: lines` is an export selector, not key separation. |
+| `anchor-roster` `:303-304` | hot | ''D/F split, LEAD:'' face-specific anchor mapping D; only minimum reviewed public lookup F. |
+| `persona-roster` `:305-306` | hot | ''D/F split:'' each face's root/labels/identity line D; a minimum opaque routing index F only if existence leakage is accepted. Current `bundle: lines` does not isolate at rest. |
+| `active-persona` `:307-308` | hot | ''D/F split, LEAD:'' a session's selected face is session state; any private persisted preference belongs to that face. An explicitly public chooser hint may be F after leakage review. No global active face confers authority. |
+| `persona-petnames` `:309-310` | hot | ''D:'' per-face private names; split current line carrier. |
+| `persona-declarations` `:311-312` | hot | ''D/F split, LEAD:'' private per-face declaration D; signed intentionally public declaration F only after field audit. |
+| `public-handles` `:313-314` | hot | ''D/F split, LEAD:'' public handle bytes may be F; private owner mapping and recognition remain D. Audit before exposing the current whole row. |
+| `vessel-face-key` `:317-318` | hot | ''D:'' private face-scoped vessel key belongs to the PersonaGroup named by its proof relation. Current digest filename has no `face` selector; add an authenticated mapping. It stays local, outside a face bundle. |
+| `face-address-secret` `:322-323` | hot | ''D:'' face's fleet address secret; digest-to-PersonaGroup mapping is required. It stays local unless a defined face recovery route includes it. |
+| `fleet-join-pending` `:326-327` | hot | ''D:'' split the single pending file into target-face rows, including its X25519 secret/request; bind target before writing. Public signed offer/answer transport is F. A pending join with no proven target refuses. |
+| `face-join-record` `:330-331` | hot | ''D:'' joined face's private record/grants; digest-to-face mapping is required. Public certificates may be copied at F only as separately defined fields. |
+| `handle-book` `:332-333` | hot | ''D/F split:'' private per-face recognition graph and petnames D; only minimum opaque public routing F after leakage review. Current `bundle: lines` is not a seal boundary. |
+| `guardian-set` `:337-338` | hot | ''D:'' each face's guardian/recovery commitments under that face; its intended local row rides its one-face bundle. Guardians keep their own secret shares. |
+| `face-provisional` `:341-342` | hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
+| `hosting-state` `:343-344` | hot | ''D/F split, LEAD:'' assign confidential hosting state to the authorizing face; public hosting advertisements may be F. A proven irreducible node service secret needs a new named S row, not this catchall. |
+| `hosting-spent` `:345-346` | hot | ''D/F split, LEAD:'' per-face replay/spend authority D; public nonsecret replay markers F only after payload audit. |
+| `hosting-carry` `:347-348` | hot | ''D/F split, LEAD:'' ciphertext carriage may be F; any private plaintext/key or relation goes to owning face D. Inspect payload before migration. |
+| `walk` `:349-350` | hot | ''D/F split, LEAD:'' private walker receipt/seed/relationship D by owning face; public carriage bytes F. Browser has a corresponding `walk/*` matcher. |
+| `gate-memory` `:353-354` | hot | ''D/F split, LEAD:'' withdrawal memory per proof subject maps to the owning face D; a public revocation statement may be F. Its digest filename alone does not prove ownership. |
+| `transition-pending` `:356-357` | hot | ''D/F split, LEAD:'' confidential ceremony state D by participating face; signed public transition proof F after field audit. No unassigned global pending secret. |
+| `transitions` `:358-359` | hot | ''D/F split, LEAD:'' split private lineage by face; verified public transition records may be F. |
+| `cofound` `:362-363` | hot | ''D/F split, LEAD:'' private offer/authority context D by the acting face; public halves and jointly signed image F where the payload proves public. |
+| `outbox-key` `:367-368` | hot | ''D:'' one outbox key per sending face, opened under that face's FCK, or retire it for a face-scoped equivalent. It cannot remain VK-wrapped. |
+| `sealed-outbox` `:373-374` | outbox | ''D:'' local sealed parcels partition by sending face and its outbox key. Wire ciphertext can be copied as F carriage; the local outbox key and reader relation do not become floor authority. |
+| `persona-root` `:377-378` | cold | ''D:'' face root under that face's FCK; one-face bundle includes it. |
+| `face-proof-key` `:381-382` | cold | ''D:'' per-face Nexus proof key under that FCK; bundle selection remains face-specific. |
+| `seat-key` `:386-387` | cold | ''D:'' face's local seat key; stays on its vessel, not in a face bundle. |
+| `cadence-key` `:390-391` | cold | ''D/F split, LEAD:'' private hearth cadence authority must map to the authorizing face if it is face authority; its public half is F. If genuinely node-only, specify a new named S principal/opener before assigning it. The current digest filename does not settle this. |
+| `restore-pending` `:394-395` | cold | ''D:'' one target-face restore transaction; split the global file, authenticate its target before staging, and never stage sibling material. |
+| `device-share` `:396-397` | cold | ''D:'' face-indexed recovery device share, not a common device share. |
+
+Rows whose class includes ''LEAD'' block byte movement until their payload and owning principal are proved. Current `face` and `bundle` fields describe filename/export selection only (`vault-carriers.ts:119-165`); they never confer cryptographic separation. The existing VK rotation sweeps all hot/cold rows (`:64-68,477-510`), so K15 replaces it with per-face and named-S rotation.
+
+<<~/ahu>>
+
+<<~ ahu #/row-census-browser>>
+
+!!! Row census — browser
+
+
+The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/browser-custody.ts:54-68`. They currently share one `custody-slots` tree and one page-held VK for sealed writes (`:2-12,95,386-402`). `catalog-url` is explicitly outside that matcher and public (`:5-13`). The target has no browser VK and no browser S.
+
+| Current `CUSTODY_ROW` alternative | Target class, principal and split |
+| `vessel-key` | ''F/D split:'' public vessel contact/routing material F; any face identity seed D by its PersonaGroup. Retire the browser common private device seed and VK. ''LEAD:'' audit consumers of current seed before deletion. |
+| `keyhive-archive` | ''D:'' one Keyhive archive per PersonaGroup, with no vessel-level face registry; split current whole archive. |
+| `veil-archive-h<N>` | ''D:'' that handle's authenticated PersonaGroup. |
+| `persona-root-h<N>` | ''D:'' that PersonaGroup root. |
+| `persona-root-roster` | ''D/F split:'' roots, private labels and membership D per face; minimum deliberately public routing F only after leakage review. |
+| `nexus-key/h<N>/*` | ''D:'' that face's private per-Nexus keys; public verification line F if separately represented. |
+| `vessel-face-key/*|*` | ''D:'' the face named by authenticated relation, never inferred from delimiter text alone; add owner lookup/binding. |
+| `fleet-join-secret/*` | ''D:'' target face's address/join secret; add authenticated owner mapping. |
+| `fleet-join-pending` | ''D:'' split into one target-face pending row before its secret lands; public offer/answer envelope F. |
+| `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
+
+The browser's clear-before-slot allowance for `vessel-key`, `keyhive-archive`, and `veil-archive-h<N>` (`browser-custody.ts:390-395`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and rows (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
+
+<<~/ahu>>
+
+<<~ ahu #/key-classes-and-routes>>
+
+!!! Key classes and routes
+
+
+Add this row beside the key table at `bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem#/keys` (`:60-73`):
+
+| Key | Who holds it | What it seals | Where it rests | What unlock needs | Removal and recovery |
+| ''Face custody key (FCK)'' | One PersonaGroup's admitted, unlocked face session; on browser, only the authorized tab's sealer holds bare key material | That face's custody rows: root, Keyhive/Veil archive, face proof/member and recovery material, face-private roster/book/join/outbox partitions. It does not replace per-bag content keys (`sealed-store.mem:65-72`). | Fresh random key, wrapped only in that face's independent slot/recovery tree; bare only during authorized live use. Never wrapped by VK, a node S key, another face, or a common Keyhive archive. | That face's passphrase, paper route, or measured PRF route; each browser tab asks for its own face unlock. A node face act separately proves its face. | Removing a face revokes its slots/admission and retires its local rows without rotating siblings; old offline bundles and already learned plaintext remain readable to their holders. A one-face recovery route restores only that face's FCK and rows. |
+
+The per-face slot tree carries wrapped FCK, slot identifiers and nonsecret KDF parameters; it cannot embed a sibling wrapper. Bind/unbind/rotation prove the standing FCK and affect that tree and that face's rows alone. The bundle contains only intended wrapped recovery routes, not a bare FCK or guardian-held secret shares. A passkey/PRF slot stands only after its derivation is measured on target devices (`browser-custody.ts:41-43`). Last browser tab/session close drops bare face keys and returns to F (`stable-founding-road.mem:199,202`); an installed app or worker does not extend authority.
+
+''Node S register.'' The present private place signing seed is a named candidate S, with the two unresolved treatments below (`vault-carriers.ts:240-242`; `node-vessel-identity.ts:429-442`). The existing SK tree has *zero* serving payload rows (`vault-carriers.ts:12-14,249-251`), so SK is not a justification for a common unlock. Future ember serving rows enter S only with their own row names, principal, opener and restart rule. No browser, phone, installed web app, tablet, CLI, MCP, watcher or probe owns S (`stable-founding-road.mem:207`). A container inherits the node's actual S set and cannot create one by packaging.
+
+<<~/ahu>>
+
+<<~ ahu #/carrier-binding-and-overwrite>>
+
+!!! Carrier binding and overwrite
+
+
+''LEAD target wire format:'' each D seal authenticates one canonical context containing a format/domain name and version, vessel or store namespace, immutable PersonaGroup ID, row name, row kind, and the complete logical row reference. Encode fields unambiguously as length-prefixed bytes, analogous to the sealed value context at `sealed-store.mem:85-106`. Supply the expected context from the authenticated row selector on open; never trust a ciphertext's claimed face. A carrier copied into another face's slot, a different row name, or a different kind fails authentication. F and S use distinct domain names; an S row binds its named node principal and row kind. New names/formats refuse old ciphertext rather than treating it as clear. ''LEAD:'' exact byte layout and migration version receive implementation review before K15.6; these fields and refusal behavior are normative now.
+
+Generalize `writeSealedCarrier` from `(vk, VK tree, carrier)` to an explicit `(row class, owner, key, matching tree/door, bound carrier context)`. The caller proves that the key opens the *same owner and row class* against its standing slot tree; an S writer proves its named node door; F has no sealed-carrier writer. Preserve the existing exclusive act, absent-or-authentically-opened standing row rule, and refusal without replacement (`packages/lararium-mesh/src/sealed-writer.ts:208-218,279-288`). Seal a full caller-supplied replacement with the same context, write a sidecar, read it back byte-identical, authenticate/open it, then rename (`:290-304`). A failed old-row open, class mismatch, tree mismatch, stale/ambiguous migration shape or failed readback leaves the occupied carrier byte-for-byte unchanged. A whole archive replacement is not an implicit read-modify-write. No encrypt-only capability can perform this overwrite proof. The matching-key rule also governs delete and rotation; never use A's key or node S to authenticate B's standing row.
+
+<<~/ahu>>
+
+<<~ ahu #/one-face-bundle>>
+
+!!! One-face bundle
+
+
+A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil archive, X's selected proof/recovery keys and rows, X's guardian set/commitments, intended wrapped FCK recovery route, X's selected private roster/book lines, and X's content-key memory section and eligible history. It is sealed under the bundle key and its own route (`sealed-store.mem:68`; `vault-carriers.ts:123-165,301-342,377-397`). It never contains a bare FCK, another face's slot or row, another face's identifiers or content keys, a node place signer, a node S key, guardian-held secret shares, or local-only vessel seat/outbox state. `bundle: stays` remains local unless an explicit per-face recovery rule supersedes it. Restore X into a fresh vessel without opening Y, and refuse an ambiguous old mixed archive. Restore does not mint authority over a sibling.
+
+<<~/ahu>>
+
+<<~ ahu #/reds-executable-acceptance-statements>>
+
+!!! Reds — executable acceptance statements
+
+
+# ''Isolation red, every row:'' found A and B with independently random FCKs/trees, occupied D carriers for both, and F plus any named node S values. Unlock A alone. Bypass routers, sessions, UI and store adapters; try direct authenticated open, occupied-row replacement, delete, rotation, backup and restore on *each* B carrier using every A key (FCK, member, identity, content, outbox, recovery), all floor values, and all node S/VK legacy values. Every B operation refuses cryptographically and leaves each B occupied ciphertext byte-for-byte unchanged. Copy A ciphertext into B's slot and swap row name/kind: authentication fails. A's same-row replacement succeeds. Restore A's bundle on a fresh vessel: B identity, key, archive and identifiers are absent; B stays unopened. Remove A: B and F still work. This red is stronger than owner-route refusal (`stable-founding-road.mem:459`; `sealed-writer.ts:279-304`).
+# ''Browser desktop / laptop:'' two A tabs and one B tab each ask independently; A-caused seal reaches its admitted asker. If that asker cannot answer, only another admitted unlocked A tab may seal; otherwise work names `seal-awaits-session`. Last tab closes, all live FCKs vanish and F remains. A cannot open B even by bypassing holder routing (`holder-routes.ts:23-31`; `shared-holder-core.ts:117-125`; `stable-founding-road.mem:199,202,205`).
+# ''iOS phone / Home Screen app:'' suspend or kill the asker during an occupied write. The write waits or completes from an eligible same-face session; it never uses a sibling or infers death from silence. Relaunch starts at F and asks for that face again. ''LEAD:'' device lifecycle must be exercised on the target browser (round 4's YIN handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>).
+# ''Android phone / WebAPK:'' kill worker/process and restart; F reads, no D opens before that face unlocks, and A's former worker state cannot open B. Install mode adds no key authority. ''LEAD:'' exercise on target device (round 4's YANG handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>).
+# ''Tablet waking floor:'' unattended public/ciphertext sync succeeds; direct D decrypt or transformation fails until that face's session is admitted. The open product requirement for unattended *private* sync cannot silently borrow FCK (`stable-founding-road.mem:207`).
+# ''Native desktop shell, LEAD:'' keychain/biometric, if used, opens only the selected face's FCK. A second account/session and process restart cannot open A or B without their routes; F remains.
+# ''Probe / Mudlet seat:'' with A admitted, request B through the node and by direct local ciphertext open. Both refuse; the probe retains no FCK or node S. ''LEAD:'' probe adapter implementation is outside this carrier census.
+# ''Node daemon / hearth:'' boot with no face admission and no omnibus VK; F serves. Admit A and run the isolation red over every B node carrier, including archive, roster, pending join and outbox. Lock/restart drops volatile face keys. Hearth composition grants no extra row principal. Separately verify the place signer only under whichever OPEN JOINT option is ruled (`vault-carriers.ts:239-398`; `node-vessel-identity.ts:429-487`).
+# ''Herm / crossroads:'' zero face rows and zero current serving rows; public card/relay service works before any face. No private seed leaks to output. Reboot drops raised ephemeral caps. The place signer's boot behavior follows the OPEN JOINT ruling, not an assumed F classification (`vault-carriers.ts:12-14,240-256`; `stable-founding-road.mem:207`).
+# ''CLI:'' each run proves its own face; A's prior node admission cannot authorize a B run. No credential/key bytes enter receipts or logs (`stable-founding-road.mem:201`).
+# ''MCP / watcher:'' each invocation/session proves its face; restarting client transport does not inherit A or authorize B. B succeeds only after B admission (`stable-founding-road.mem:201`).
+# ''Container node, including harbor/civic/mesh scenarios:'' restart unattended with persistent storage. Public F service starts; all D and any door-gated S refuse until explicit authorized unlock. No image, environment, health endpoint or restart policy supplies a credential. Place signer follows the unresolved option (`stable-founding-road.mem:207`).
+# ''Guest island / Unreal host, LEAD:'' hostile guest with A context cannot open host B or guest B. If guest persists its own keys, repeat the full isolation red against its *independent vessel* store and never inherit host FCK (`stable-founding-road.mem:207`).
+# ''Generic worker host / LarVessel:'' giving a worker A's context and bypassing its router still fails to open or replace B; worker lifetime changes availability only. Public floor and ciphertext carriage continue without face keys.
+
+<<~/ahu>>
+
+<<~ ahu #/build-order-and-dependencies>>
+
+!!! Build order and dependencies
+
+
+''K15.0, this gate:'' freeze the exhaustive node/browser row census, prove each split and owner selector, define FCK/tree/recovery and carrier context, specify old-shape refusal and the isolation red. No identity or custody bytes move. ''K15.1:'' use the existing two-hive same-process isolation probe, then give each face its own store, registry, archive and key seat. ''K15.2:'' make the face the sole identity/group owner; capture two-face event bytes and reject any shared creator/issuer. ''K15.3:'' route sessions and registries by exactly one face and land ''F6 slice three'' asker sealing with the correct row-class key and occupied-row proof. ''K15.4:'' separate content-key rolls and removal by face, including K12 fresh group behavior. ''K15.5:'' one-face restore and a herm that carries without face authoring. ''K15.6:'' one migration fence for identity bytes, split stores, FCK slot trees, archives and custody formats; refuse old mixed archives by name. This follows `stable-founding-road.mem:459,507`. ''B1'' consumes browser no-VK, per-tab face asks, slot-before-first-secret and last-tab floor (`:199-202,206-207`). F6 routing does not precede the key boundary.
+
+<<~/ahu>>
+
+<<~ ahu #/open-joints>>
+
+!!! OPEN JOINTS
+
+
+# ''Node private place signing seed.'' Current `.vessel-key*.json` contains a private signing seed in a floor file and `loadVesselSigningSeed` reads it without a human route (`vault-carriers.ts:240-242`; `node-vessel-identity.ts:429-442`). ''Option A:'' keep a *named floor signer* owned by the node, protected at rest under an explicit mechanism; floor means no custody VK/FCK, while this narrowly scoped signer can support faceless Herm startup. Specify the protection, allowed signing/derivation domains, and restart behavior. ''Option B:'' put that signer behind an explicit boot custody door; public card/relay can stand before unlock, while operations requiring its signature wait/refuse until the door opens. Specify Herm boot and unattended container behavior. Neither option is selected here. The private seed is never F, never the current VK, and never the empty serving SK.
+# ''Node archive row selector.'' The single `keyhive-archive` carrier is proven (`vault-carriers.ts:290-291`), but the path from each node provider/archive save to the selected face row remains unproved in the handbacks (round 1's YIN handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>; round 4's YANG handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>). Trace every node archive writer and restore reader and show an authenticated PersonaGroup selector before migration. Until then, the D target is a ''LEAD'' and bytes do not move.
+# ''Tablet unattended sync.'' Public and ciphertext copy is F. Unattended D decrypt/transform needs a separate product ruling: route it to an authorized always-on node or define a narrowly named S principal, payload and boot door. No background worker receives an FCK by implication (`stable-founding-road.mem:207`).
+# ''Guest-owned store.'' Prove whether the guest persists its own keys/rows. If yes, it is a separate vessel with its own D/F split, FCK trees, floor, and isolation red; if no, every private guest act remains under the host's admitted face session. Host keys never silently become guest keys (`stable-founding-road.mem:207`).
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
+
+<<^ code="&#x0003;">>ni:///sha-256;_OUoarOWw8T8dknrxPgzYHFlKhpseiAre6x4UTnvHug
+
+<<^ code="&#x0004;" -> to="?">>
