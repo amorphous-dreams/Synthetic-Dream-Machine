@@ -48,6 +48,9 @@ export function makeCapVerify(verifier: CapabilityVerifier | undefined, requeste
 export function deriveRoutedCap(invocation: Verb): { access: CapabilityAccess; bagUrl: string } {
   const a = invocation.args as Record<string, unknown>;
   const pick = (k: string): string | null => (typeof a[k] === "string" ? (a[k] as string) : null);
+  // A hand asking to keep a realm-carried book seals its ask under its own worn face; the book is the realm's, and
+  // the stewards' consent on the realm doc decides. The ask therefore answers to the asking vessel's own ground.
+  if (invocation.action === "realm-bag" && a["join"] === true) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   const bagUrl = pick("bagUrl") ?? pick("toBag") ?? pick("dest") ?? pick("bag") ?? pick("targetBag") ?? DAEMON_BAG_ID;
   return { access: "admin", bagUrl };
 }

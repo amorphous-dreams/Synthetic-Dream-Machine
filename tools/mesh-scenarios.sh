@@ -1153,10 +1153,11 @@ run_quorum_realm() {
 # `$origin-bag` is the host's stamp on the wiki tiddler alone and never rides the carrier; residency
 # rides the envelope. The canonical hash names the same bytes on both sides, or the crossing lied.
 #
-# THE ONE SHARED DOOR: `meme put --bag lares` refuses (the daemon mounts `lares` read-only) and
-# `--recipe lares` lands in a per-DID draft nobody else mounts, so a promotion rides `act LOAD --to
-# lar:///ha.ka.ba/bags/lares` — the residency verbs reach the bag by access. Measured in the two-vessel
-# witness; walked here across real vessels.
+# THE BOOK A MINTS. System canon takes live writes from the Kahu alone, so the crossing rides a user book A
+# mints (`wiki init`), the shape `herm-reshares` walks: `meme put --recipe <book>` lands in the book's working
+# layer, `act MOVE` promotes the carrier group into the book's canon through the island its wiki opens, and
+# `nexus realm-bag <book>` registers that canon on the realm at CONTRACT. A LOAD into canon refuses
+# (`load-into-canon`), so every write lands on working first.
 #
 # The browser leg rides `browser-a`: its probe boots a REAL island in Chromium and calls the in-VM face
 # (`$tw.lares.meme`) inside the island's own worker — place · read · check · project — and its exit
@@ -1166,7 +1167,8 @@ run_meme() {
   say "MEME — an author's bag crosses two contracted operators, and the browser island speaks the laws"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
-  local URI="lar:///t.witness.npc/inventory" LARES_BAG="lar:///ha.ka.ba/bags/lares"
+  local URI="lar:///t.witness.npc/inventory" BOOK="meme-witness-book"
+  local BOOK_BAG="lar:///ha.ka.ba/bags/meme-witness-book" BOOK_WORKING="lar:///ha.ka.ba/wikis/meme-witness-book/working"
   # The author's line as WRITTEN, and as the canonical render ALIGNS it (`bag      = "…"`): the VALUE is what
   # must read back byte-whole; the key column is the carrier's own alignment. Two-vessel-bag reads the same.
   local BAG_LINE='bag = "backpack: rope, lantern"' BAG_RE='^bag +=  *"backpack: rope, lantern"$'
@@ -1176,11 +1178,11 @@ run_meme() {
     local s; for s in "$@"; do printf '<<~ ahu #/%s>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
     printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n'
   }
-  # One `meme get --bag lares --json` on a hearth — the whole JSON, for the caller to read fields off.
+  # One `meme get --bag <book> --json` on a hearth — the whole JSON, for the caller to read fields off.
   # B stands on her own seed: A's realm reaches her as a carried charter's realm, named on every realm-scoped call.
   meme_get() {
-    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --realm "$AID_A" --json 2>&1
-    else $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --json 2>&1; fi
+    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag "$BOOK" --realm "$AID_A" --json 2>&1
+    else $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag "$BOOK" --json 2>&1; fi
   }
   json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.text??""))}catch{}})'; }
   json_hash() { printf '%s' "$1" | grep -oE '"canonicalHash":"[^"]+"' | head -1 | cut -d'"' -f4; }
@@ -1222,23 +1224,29 @@ run_meme() {
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "the relation never stood"; clear_all; return; fi
 
-  step "A puts the witness meme — the author's bag rides its meta"
+  step "A mints the witness book — a user wiki and its canon bag"
+  local INIT
+  INIT=$($COMPOSE exec -T lararium-a $LARES wiki init "$BOOK" --json 2>&1)
+  if printf '%s' "$INIT" | grep -q '"ok":true'; then ok
+  else bad "A minted no book"; printf '%s\n' "$INIT" | tail -3 | sed 's/^/      /'; clear_all; return; fi
+
+  step "A puts the witness meme into the book's working layer — the author's bag rides its meta"
   local PUT HASH_A
   meme_text a | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/npc.mem'
-  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/npc.mem --json 2>&1)
+  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe "$BOOK" --file /tmp/npc.mem --json 2>&1)
   HASH_A=$(json_hash "$PUT")
   if printf '%s' "$PUT" | grep -q '"ok":true' && [ -n "$HASH_A" ]; then ok
   else bad "A's put refused"; printf '%s\n' "$PUT" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
-  step "A promotes through the one shared door: act LOAD into bags/lares"
-  local LD
-  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/npc.mem --to "$LARES_BAG" --yes --json 2>&1)
-  if printf '%s' "$LD" | grep -q '"ok":true'; then ok
-  else bad "the LOAD refused"; printf '%s\n' "$LD" | tail -3 | sed 's/^/      /'; clear_all; return; fi
+  step "A promotes the meme from the book's working layer into its canon: act MOVE"
+  local LD MV
+  MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "$URI" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+  if printf '%s' "$MV" | grep -q '"ok":true' && printf '%s' "$MV" | grep -qE '"moved":[1-9]'; then ok
+  else bad "the promotion MOVE refused"; printf '%s\n' "$MV" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
   # THE REALM BAG (realm-bag-brief). Both sides re-fold the relation they just stood — A's
   # running node folds the admit its CLI wrote beside it, B stands the realm the imported charter names — and
-  # A registers her `lares` on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming
+  # A registers her book on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming
   # only that it exists and who keeps it.
   step "both sides re-fold the relation; the realm stands under ONE doc id"
   local RA RB
@@ -1259,9 +1267,9 @@ run_meme() {
     printf '      A wears: %s\n      B wears: %s\n' "$(printf '%s' "$WEAR_A" | tail -1 | cut -c1-200)" "$(printf '%s' "$WEAR_B" | tail -1 | cut -c1-200)"
   fi
 
-  step "A registers bags/lares on the realm — steward-signed, read at CONTRACT"
+  step "A registers her book on the realm — steward-signed, read at CONTRACT"
   local REG
-  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --json 2>&1)
+  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --json 2>&1)
   if printf '%s' "$REG" | grep -q '"readTier":"contract"'; then ok
   else bad "the registration refused"; printf '%s\n' "$REG" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
@@ -1274,7 +1282,7 @@ run_meme() {
      && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
   else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
-  # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `meme get --bag lares` walks
+  # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `meme get --bag <book>` walks
   # the realm plane first (reach-by-access) and reads A's doc across the dial — A's wire gate federates the
   # realm doc and the registered bag's doc to a contracted MEMBER and to nobody else.
   step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
@@ -1292,7 +1300,8 @@ run_meme() {
   # THE BYTES BEHIND A PUBLIC POINTER (tiddler-carriage #/measured, step 2). The law: a public pointer's
   # RECORD federates and its BYTES ride the public CAS — a peer holding the pointer fetches them by cid
   # over the public read-face and verifies `sha256(bytes) == cid` before it trusts a byte. This step
-  # LOADs a `.png` on A (bytes into A's `cid/`, a pointer into A's bag) and asks the one content-addressed
+  # LOADs a `.png` into A's book working layer and MOVEs it to the book's canon (bytes into A's `cid/`, a pointer
+  # into A's book) and asks the one content-addressed
   # public read-face the mesh stands — the Herm's bulb, `GET /bulb/<cid>.bin` — for that cid.
   # MEASURED (`bulb-serves-boot-cas-alone.test.ts`): the bulb answers the GENESIS manifest's
   # blobs alone (`bulb-read-face.ts` builds `blobByCid` off `buildBulb(bulb)`), so a hearth's staged blob
@@ -1302,9 +1311,13 @@ run_meme() {
   # until B reads A's bag, B holds no pointer to fetch for.
   step "★ a PUBLIC pointer's bytes: the Herm's read-face serves A's staged blob ★"
   local PNG_CID BULB_CODE
-  $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/lares/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/lares/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/lares/t.witness.blob/photo.png.meta' 2>/dev/null
-  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/lares/t.witness.blob --to "$LARES_BAG" --yes --json 2>&1)
-  PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/lares/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)
+  $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/meme-witness-book/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png.meta' 2>/dev/null
+  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/meme-witness-book/t.witness.blob --to "$BOOK_WORKING" --yes --json 2>&1)
+  if printf '%s' "$LD" | grep -q '"ok":true'; then
+    MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "lar:///t.witness.blob/photo" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+    printf '%s' "$MV" | grep -q '"ok":true' || LD="$MV"
+  fi
+  PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)
   BULB_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${MESH_PORT_SOURCE:-18092}/bulb/${PNG_CID}.bin" 2>/dev/null || printf 000)
   if printf '%s' "$LD" | grep -q '"ok":true' && [ "$BULB_CODE" = "200" ]; then ok
   elif printf '%s' "$LD" | grep -q '"ok":true'; then
@@ -1312,7 +1325,7 @@ run_meme() {
     printf '      A staged: %s\n' "$($COMPOSE exec -T lararium-a $LARES bag cas --no-json 2>&1 | sed -n 2p | sed 's/^ *//')"
     printf '      herm-source GET /bulb/%s.bin → %s\n' "${PNG_CID:0:16}…" "$BULB_CODE"
     printf '      wakes when a holder serves GET /cas/<cid>.bin off its cid/ tier, verify-on-pull\n'
-  else bad "A's pointer LOAD refused"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+  else bad "A's pointer LOAD or its promotion refused"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   if [ "$crossed" -eq 0 ]; then
     step "B projects · B edits and A gets it · PARTITION"
@@ -1325,40 +1338,40 @@ run_meme() {
 
   step "B projects it to md — the pair renders"
   local PJ
-  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag lares --realm "$AID_A" --json 2>&1)
+  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag "$BOOK" --realm "$AID_A" --json 2>&1)
   if printf '%s' "$PJ" | grep -q '"ok":true' && printf '%s' "$PJ" | grep -q '"meta"'; then ok
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
   # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), her worn
   # face sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
-  # nothing until A consents on hers (`--cosign`). B's `meme put --bag lares` then resolves the REALM doc
+  # nothing until A consents on hers (`--cosign`). B's `meme put --bag <book>` then resolves the REALM doc
   # rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
   local HASH_B GB2 GA2 ASK COSIGN PUT
   HASH_B=$(json_hash "$GB")
   meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
   # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
-  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
-    bad "B's put --bag lares LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
-  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --join --realm "$AID_A" --json 2>&1)
+  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
+    bad "B's put --bag <book> LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
+  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" --join --realm "$AID_A" --json 2>&1)
   # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
   # rides it back; neither vessel reads the other's seal before the doc syncs. So each next act repeats until
   # the realm answers it or its budget ends (the budget only bounds the wait; the verb's own answer decides).
   local until_ms=$((SECONDS + 90))
   while :; do
-    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --cosign --json 2>&1)
+    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --cosign --json 2>&1)
     if printf '%s' "$COSIGN" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
   until_ms=$((SECONDS + 90))
   while :; do
-    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
     if printf '%s' "$PUT" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
   if ! printf '%s' "$PUT" | grep -q '"ok":true'; then
-    bad "B's put --bag lares refused AFTER A's co-sign — the steward write path never resolved"
+    bad "B's put --bag <book> refused AFTER A's co-sign — the steward write path never resolved"
     printf '      B asks:     %s\n' "$(printf '%s' "$ASK" | tail -1 | cut -c1-220)"
     printf '      A co-signs: %s\n' "$(printf '%s' "$COSIGN" | tail -1 | cut -c1-220)"
     printf '      B puts:     %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-220)"
@@ -1379,13 +1392,15 @@ run_meme() {
   step "PARTITION: B is cut, edits while cut, returns — A gets the edit"
   local NET="${MESH_PROJECT}_mesh" CB="${MESH_PROJECT}-lararium-b-1"
   if ! docker network disconnect "$NET" "$CB" >/dev/null 2>&1; then bad "could not cut B off the mesh"; clear_all; return; fi
+  # B writes the way she wrote slot b, on the base her own replica reads: the steward placement on the realm doc.
+  local HASH_C; HASH_C=$(json_hash "$(meme_get lararium-b)")
   meme_text a b c | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-c.mem'
-  LD=$($COMPOSE exec -T lararium-b $LARES act LOAD --source-uri /tmp/npc-c.mem --to "$LARES_BAG" --yes --json 2>&1)
+  LD=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_C" --file /tmp/npc-c.mem --json 2>&1)
   local cut_ok=1; printf '%s' "$LD" | grep -q '"ok":true' || cut_ok=0
   # A MUST NOT see it while B is cut — a slot that crosses a partition names a channel that is not the mesh.
   local leaked=0; GA2=$(meme_get lararium-a); json_text "$GA2" | grep -qF "<<~ ahu #/c>>" && leaked=1
   docker network connect "$NET" "$CB" >/dev/null 2>&1 || { bad "could not return B to the mesh"; clear_all; return; }
-  if [ "$cut_ok" -eq 0 ]; then bad "B's LOAD refused while cut — a sovereign vessel writes offline"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'
+  if [ "$cut_ok" -eq 0 ]; then bad "B's put refused while cut — a sovereign vessel writes offline"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'
   elif [ "$leaked" -eq 1 ]; then bad "A read B's edit WHILE B was cut — the partition did not partition"
   elif GA2=$(await_meme lararium-a "<<~ ahu #/c>>" 180) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
   else
