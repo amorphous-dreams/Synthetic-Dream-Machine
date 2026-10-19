@@ -105,8 +105,12 @@ export function holderWorkerHandle(port: MessagePort): VesselWorkerHandle {
         const d = e.data as { kind?: unknown };
         if (d && d.kind === "holder:hello") return;   // the greeting is the door's, never the island's
         const incoming = validateSessionEnvelope(e.data);
-        if (!incoming || incoming.ownerEpoch !== envelope.ownerEpoch) {
-          console.warn(`[shared-holder] dropped ${incoming ? "stale-owner-epoch" : "malformed-message"}`);
+        const refusal = !incoming ? "malformed-message"
+          : incoming.ownerEpoch !== envelope.ownerEpoch ? "stale-owner-epoch"
+          : incoming.sessionId !== envelope.sessionId ? "unknown-session"
+          : incoming.generation !== envelope.generation ? "stale-generation" : null;
+        if (refusal) {
+          console.warn(`[shared-holder] dropped ${refusal}`);
           return;
         }
         const { ownerEpoch: _epoch, sessionId: _session, generation: _generation, ...message } = e.data as Record<string, unknown>;

@@ -114,6 +114,42 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(seenB).toEqual([]);
   });
 
+  test("the tab's handle hears only its own session: another session or generation under its owner's epoch drops by name", async () => {
+    const hello = { kind: "holder:hello", islandBoots: 1, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0 };
+    let holderSide!: MessagePort;
+    class GreetingSharedWorker {
+      readonly port: MessagePort;
+      constructor() {
+        const { port1, port2 } = new MessageChannel();
+        this.port = port1; holderSide = port2;
+        port2.postMessage(hello);
+      }
+    }
+    const attached = await attachSharedHolder({
+      holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host: { SharedWorker: GreetingSharedWorker as unknown as SharedWorkerHost["SharedWorker"] },
+    });
+    if (attached.kind !== "attached") throw new Error("the fake holder did not attach");
+    const heard: unknown[] = [];
+    const drops: unknown[] = [];
+    const warn = console.warn;
+    console.warn = (...line: unknown[]) => { drops.push(line.join(" ")); };
+    try {
+      holderWorkerHandle(attached.port).listen((m) => heard.push(m));
+      const envelope = { ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0 };
+      holderSide.postMessage({ type: "breath", wikiUri: "other-session", ...envelope, sessionId: "session-theirs" });
+      holderSide.postMessage({ type: "breath", wikiUri: "other-generation", ...envelope, generation: 1 });
+      holderSide.postMessage({ type: "breath", wikiUri: "other-owner", ...envelope, ownerEpoch: "epoch-y" });
+      holderSide.postMessage({ type: "breath", wikiUri: "mine", ...envelope });
+      await expect.poll(() => heard.length).toBe(1);
+      expect(heard).toEqual([{ type: "breath", wikiUri: "mine" }]);
+      expect(drops).toEqual(["[shared-holder] dropped unknown-session", "[shared-holder] dropped stale-generation", "[shared-holder] dropped stale-owner-epoch"]);
+    } finally {
+      console.warn = warn;
+      holderSide.close();
+    }
+  });
+
   test("CONTROL — no SharedWorker on the host: the floor, named; the lock refuses as today with no holder to attach to", async () => {
     const r = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: {} });
     expect(r.kind).toBe("floor");
