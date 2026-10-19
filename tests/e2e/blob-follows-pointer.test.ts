@@ -26,6 +26,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -42,6 +43,7 @@ const LOCI  = "t.witness.blob";
 const LOCI_EARLY = "t.witness.early";
 const TITLE = `lar:///${LOCI}/photo`;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
+const WORKING_LARES = "lar:///ha.ka.ba/wikis/lares/working";
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const casDirOf = (v: LarInstance): string => join(vesselStorageDir(v), "cas");
@@ -122,7 +124,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
         mkdirSync(earlyDir, { recursive: true });
         writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
         writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
-        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", LARES_BAG, "--yes", "--json"]);
+        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", WORKING_LARES, "--yes", "--json"]);
         const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
         console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
       },
@@ -145,8 +147,9 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", srcDir, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", srcDir, "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const casA = listCas(A!);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     console.error(`blob-follows-pointer MEASURE A: LOAD → ${said(ld).trim().slice(0, 600)}\n  A cid/ (${casDirOf(A!)}): ${casA.length} blobs; raw-cid ${casA.includes(CID_RAW)} · base64-cid ${casA.includes(CID_BASE64)}`);

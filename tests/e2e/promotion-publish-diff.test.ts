@@ -19,11 +19,13 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
 const BOOT_URI  = "lar:///ha.ka.ba/lares/api/noosphere-boot";
-const LARES_URI    = "lar:///ha.ka.ba/bags/lares";
+const WORKING_LARES = "lar:///ha.ka.ba/wikis/lares/working";
+const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 const LARARIUM_URI = "lar:///ha.ka.ba/bags/lararium";
 const REL = "ha.ka.ba/lares/api/noosphere-boot.mem";
 
@@ -55,8 +57,9 @@ async function awaitPublishDiff(gainPath: string, losePath: string, timeoutMs = 
 beforeAll(async () => {
   lar = await targetInstance();
   if (lar.mode !== "staged") return;          // mutating — staged only
-  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING_LARES, "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
+  await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
   if (!(await awaitFileState(join(lar.root, "bags/lares", REL), true)))
     throw new Error("seed: the lares-bag projection never materialized");
 }, 120_000);

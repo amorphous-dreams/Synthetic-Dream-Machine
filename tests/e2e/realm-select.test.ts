@@ -22,6 +22,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -74,8 +75,9 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     const dir = join(A!.root, "realms-stage/bags/lares", "t.witness.realms");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "minutes.mem"), meme());
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", dir, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", dir, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
   }, 120_000);
 
   test("② CONTROL (before): the realm nobody entered reads empty, and the read enters nothing", async () => {

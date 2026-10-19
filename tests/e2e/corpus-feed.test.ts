@@ -19,13 +19,13 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
 import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../packages/lararium-tw5/src/deserializer.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 // `@` marks a SURFACE (the bag), never a meme namespace — so the content tree inside the bag reads
 // bare. `BOOT_PROJ` below already carried that; this constant is the one that needed to follow.
 const CORPUS    = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares");
-const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 const BOOT_REL  = "api/noosphere-boot.mem";
 // Projected (staged) siting under the full-path-inside-bag rule:
 const BOOT_PROJ = "ha.ka.ba/lares/api/noosphere-boot.mem";
@@ -153,9 +153,10 @@ beforeAll(async () => {
   lar = await targetInstance();
   if (lar.mode !== "staged") return;        // mutating, corpus-scale — staged only
   const at = Date.now();
-  const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", LARES_URI, "--yes", "--json"]);
+  const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
+  if (loadOk) await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
   // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
   // answered, and those are different faults with different cures.
   console.error(`corpus-feed MEASURE the LOAD landed ${loadCount} record(s) in ${Math.round((Date.now() - at) / 1000)}s · code ${r.code} · ${`${r.stdout}\n${r.stderr}`.trim().slice(-600)}`);
@@ -214,7 +215,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
     if (lar.mode !== "staged") return;
     const projected = join(lar.root, "bags/lares", BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
-    const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", LARES_URI, "--yes", "--json"]);
+    const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     let late = "";
     if (r.json?.["ok"] !== true) {
       // A verb that answered `outcome-unknown` may still be running: read its receipt once more after a
@@ -229,6 +230,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
       r.json?.["ok"],
       `re-feed LOAD answered code ${r.code} · json ${JSON.stringify(r.json ?? null).slice(0, 800)} · stderr ${String(r.stderr ?? "").trim().slice(-600)} · stdout ${String(r.stdout ?? "").trim().slice(-600)}${late}`,
     ).toBe(true);
+    await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     // allow a flush wave, then assert the canonical form held still
     await new Promise((res) => setTimeout(res, 8_000));
     expect(readFileSync(projected, "utf8")).toBe(before);

@@ -21,11 +21,11 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../packages/lararium-tw5/src/deserializer.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
-const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 const BOOT_URI  = "lar:///ha.ka.ba/lares/api/noosphere-boot";
 
 /** Canonical render of carrier text through the membrane (the V4 law's left side). */
@@ -63,8 +63,9 @@ async function awaitMirrorFiles(root: string, timeoutMs = 30_000): Promise<strin
 beforeAll(async () => {
   lar = await targetInstance();
   if (lar.mode !== "staged") return;        // mutating vectors — staged only
-  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
+  if (loadOk) await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
 });
 afterAll(async () => { await lar.stop(); });
 

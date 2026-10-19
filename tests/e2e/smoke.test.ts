@@ -108,7 +108,8 @@ describe("smoke — the vessel stands", () => {
 describe("smoke — residency canon through the real CLI", () => {
   test("LOAD feeds the hearth carrier-borne: boot meme → parent + every ahu child", async () => {
     if (lar.mode !== "staged") return;   // mutating gesture — staged only
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+    const working = "lar:///ha.ka.ba/wikis/lares/working";
+    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", working, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as { count: number; titles: string[] };
     // DERIVE FROM THE DESERIALIZER, never from a formula over the source. `1 + ahuCount` encoded a
@@ -123,12 +124,22 @@ describe("smoke — residency canon through the real CLI", () => {
 
   test("LOAD refuses a carrier-less gesture loudly (islands never fetch)", async () => {
     if (lar.mode !== "staged") return;
-    const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", LARES_URI, "--yes", "--json"]);
+    const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     // The CLI's error rides a STRUCTURED envelope — `{ code, message, hint? }`. Stringifying the whole
     // object yields "[object Object]", which matches no assertion and names no cause.
     const err = r.json?.["error"] as { message?: string } | string | undefined;
     expect(typeof err === "string" ? err : (err?.message ?? "")).toMatch(/no carriers/);
+  });
+
+  test("LOAD into canon names the working slot and its promotion MOVE", async () => {
+    if (lar.mode !== "staged") return;
+    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+    expect(r.json?.["ok"]).toBe(false);
+    const err = r.json?.["error"] as { code?: string; message?: string } | undefined;
+    expect(err?.code).toBe("load-into-canon");
+    expect(err?.message).toContain("lar:///ha.ka.ba/wikis/lares/working");
+    expect(err?.message).toContain("MOVE");
   });
 
   test("wiki init + add-bag compose the user registry", async () => {

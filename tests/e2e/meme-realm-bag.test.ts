@@ -59,6 +59,7 @@ import {
   openStaged, freePort, stageDir, awaitRendezvous, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
   type LarInstance,
 } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -250,8 +251,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const dir = join(A!.root, "ford-stage/bags/lares", "t.witness.ford");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "ledger.mem"), meme());
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", dir, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", dir, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const got = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
