@@ -2071,7 +2071,7 @@
       }
     ],
     "results": [
-      "{\"radius\":1,\"glues\":false,\"vacuous\":false,\"obstructionLocus\":[\"Beta\",\"Delta\",\"lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext\"],\"lociTotal\":3,\"gate\":{\"kind\":\"reconcilable\",\"dimH1\":0,\"cost\":0},\"corpusSize\":5,\"bindingPairs\":1}"
+      "{\"radius\":1,\"glues\":false,\"vacuous\":false,\"obstructionLocus\":[\"Alpha\",\"Beta\",\"Delta\"],\"lociTotal\":3,\"gate\":{\"kind\":\"reconcilable\",\"dimH1\":0,\"cost\":0},\"corpusSize\":5,\"bindingPairs\":1}"
     ]
   },
   {
