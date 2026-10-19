@@ -74,6 +74,10 @@ const SURFACE_BODY = `\\whitespace trim
 <p class="lares-persona-note">A mint adds a private face at the next index and names it for you; rename it off-surface. Wearing dons that face for the mesh — the switch lands on the next reboot (one face at a time).</p>
 </div>
 
+<$list filter="[{${PERSONA_STATE_TITLE}!!custody}match[sealed]]" variable="_">
+<div class="lares-persona-custody"><$button class="lares-persona-clear-btn" message="tm-clear-password" param={{${PERSONA_STATE_TITLE}!!custodyClears}} data-lares-clear-password="1">Clear the passphrase</$button></div>
+</$list>
+
 </div>`;
 
 /** The sidebar button names the persona surface as the active panel — the same in-place

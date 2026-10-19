@@ -114,8 +114,8 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
-import { BrowserCustodyRefused, clearBrowserCustody, readBrowserCustody } from "./browser-custody.js";
-import { standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
+import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody } from "./browser-custody.js";
+import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
@@ -958,9 +958,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const petnames = await makeBrowserPersonaPetnameStore(idbName);
     const view     = await personaMultitudeView(vault, petnames);   // no publicView → private-only
     const active   = await loadBrowserActivePersona(idbName);
+    const custody  = await readBrowserCustody(idbName);
     void daemon.placeVerb({
       verb:        "persona-state",
-      args:        personaPanelStateArgs(view, active),
+      args:        { ...personaPanelStateArgs(view, active), custody: custody.reading, custodyClears: CLEAR_CUSTODY_CLEARS },
       requestedBy: "persona",
     });
   };
@@ -1438,11 +1439,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // with the question; the wiki's confirm road parks it and re-dispatches with `confirmed: "yes"`, and only that
       // literal answer opens the confirm door (`browser-custody.ts`).
       registry.register("custody-clear", async (args) => {
-        if (!opts.askCustody) throw new Error("custody-clear: this page offers no custody door");
-        const route = await opts.askCustody({ kind: "clear" });
-        if (route === null) return { verb: "custody-clear", reading: "declined" };
-        const cleared = await clearBrowserCustody(idbName, [route], () => args["confirmed"] === "yes");
-        return { verb: "custody-clear", ...cleared };
+        const answer = await clearCustodyVerb({ idbName, confirmed: args["confirmed"], clears: args["clears"], ...(opts.askCustody ? { askCustody: opts.askCustody } : {}) });
+        if (answer.reading === "cleared") void pushPersonaState();
+        return { verb: "custody-clear", ...answer };
       });
 
       // persona-wear — don the face at `index` (reboot-to-switch, one-face-to-mesh). FAIL CLOSED

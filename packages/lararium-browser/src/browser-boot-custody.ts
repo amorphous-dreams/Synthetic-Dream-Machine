@@ -10,9 +10,12 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-boot-custody
  */
 import type { Credential } from "@lararium/mesh";
-import type { UnsettledRow } from "./browser-custody.js";
+import type { BrowserCustodyClear, UnsettledRow } from "./browser-custody.js";
 import {
   BrowserCustodyRefused,
+  CLEAR_CUSTODY_CLEARS,
+  CLEAR_CUSTODY_QUESTION,
+  clearBrowserCustody,
   readBrowserCustody,
   sealBrowserKeystore,
   unlockBrowserCustody,
@@ -82,4 +85,26 @@ export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Pro
     notes = opened.notes;
   }
   return { reading: "no-slot-opens", attempts, notes };
+}
+
+/** What the clear-password verb answers: the confirm door's question, a declined route, or the clear's own reading. */
+export type ClearCustodyVerbAnswer = BrowserCustodyClear | { readonly reading: "declined" };
+
+/**
+ * The clear-password verb (`custody-clear`, reached from the wiki's `tm-clear-password` road). The yes binds to the
+ * scope its question named: before a literal yes over the very scope this act clears (`CLEAR_CUSTODY_CLEARS`) it
+ * answers the true question and asks this tab's custody door nothing, so a person is asked for a route only once they
+ * have agreed to clear exactly what clears; with that yes it asks the door for the route that opens the slot it clears.
+ */
+export async function clearCustodyVerb(opts: {
+  readonly idbName: string;
+  readonly confirmed: unknown;
+  readonly clears: unknown;
+  readonly askCustody?: (question: { readonly kind: "clear" }) => Promise<CustodyAnswer>;
+}): Promise<ClearCustodyVerbAnswer> {
+  if (opts.confirmed !== "yes" || opts.clears !== CLEAR_CUSTODY_CLEARS) return { reading: "asks", question: CLEAR_CUSTODY_QUESTION };
+  if (!opts.askCustody) throw new Error("custody-clear: this page offers no custody door");
+  const route = await opts.askCustody({ kind: "clear" });
+  if (route === null) return { reading: "declined" };
+  return clearBrowserCustody(opts.idbName, [route], () => true);
 }

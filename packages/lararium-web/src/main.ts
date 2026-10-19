@@ -274,8 +274,21 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   });
 }
 
+let pendingAdmit: DeviceAdmitPayload | null = null;
+function offerBootRetry(): void {
+  if (document.getElementById("retry-unlock")) return;
+  const button = document.createElement("button");
+  button.id = "retry-unlock";
+  button.type = "button";
+  button.textContent = "Unlock and retry";
+  button.addEventListener("click", () => { button.remove(); void bootVessel(); });
+  $("status").insertAdjacentElement("afterend", button);
+}
+
 async function bootVessel(): Promise<void> {
+  document.getElementById("retry-unlock")?.remove();
   const phasesEl = $("phases");
+  phasesEl.replaceChildren();
   const paint = (p: string): void => {
     const d = document.createElement("div"); d.className = "phase"; d.textContent = p;
     phasesEl.appendChild(d);
@@ -288,7 +301,8 @@ async function bootVessel(): Promise<void> {
   // #floor=<card> → the hearth's oracle floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
-  const admit = takeStashedAdmit();
+  const admit = pendingAdmit ?? takeStashedAdmit();
+  pendingAdmit = admit;
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
   // the vessel names which one it just performed. A shore nobody can see is a shore nobody watches, and an
   // absent crossing that reports nothing reads exactly like a crossing that worked.
@@ -313,13 +327,15 @@ async function bootVessel(): Promise<void> {
         peers: meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null),
       }
     : undefined;
+  let vesselOpened = false;
   try {
     // THE BOOT'S CUSTODY STEP, before the vessel opens: a sealed keystore asks this tab's person for its unlock. A boot
     // that opens over a locked keystore refuses `sealed-locked` and gives the store lock back, so declining here
     // leaves the page able to try again.
     const custody = await standBrowserCustody({ idbName: VESSEL_IDB, ask: askCustody });
     if (custody.reading === "declined" || custody.reading === "no-slot-opens" || custody.reading === "unreadable") {
-      set("status", `this browser's vessel stays locked (${custody.reading}) — reload to unlock`, "warn");
+      set("status", `this browser's vessel stays locked (${custody.reading})`, "warn");
+      offerBootRetry();
       return;
     }
     const result = await openBrowserVessel({
@@ -339,6 +355,8 @@ async function bootVessel(): Promise<void> {
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });
+    vesselOpened = true;
+    pendingAdmit = null;
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
     // by that opening instead of opening the key store a second time just to paint it.
     const did = didFromVerifyingKey(result.identity.verifyingKey);
@@ -387,6 +405,7 @@ async function bootVessel(): Promise<void> {
     }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
   } catch (e) {
     set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
+    if (!vesselOpened) offerBootRetry();
   }
 }
 
