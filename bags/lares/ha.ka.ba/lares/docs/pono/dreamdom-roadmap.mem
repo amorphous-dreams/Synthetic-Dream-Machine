@@ -204,12 +204,12 @@ A ruling reaches the operator only where its answer changes who holds authority,
 * `D8` The glass port adaptor behind a flag, the multi-tab leader, the full-width walk of the five sites. D3. Their rulings stand (2026-10-16).
 * `D9` The three-boot spike's numbers and the default width. D3. The default width stays the operator's, after the spike.
 * `D10` The actor's manifest, gate, states, attachments, wake-on-act and recipe refusal; `worker-trust` retired. D4. Their rulings stand (2026-10-16).
-* `D11` `filter-cts.json` reviewed and pinned; the `html` and `text` goldens on three hosts. D5. The `core` charter stays open.
+* `D11` `filter-cts.json` reviewed and pinned; the `html` and `text` goldens on three hosts. D5. The `core` charter stays open. Stands (PR #63): 254 reviewed cases over the frozen world `pono-small` and the `html` and `text` camera goldens on Node and Chromium; quickjs-ng stays owed. Measured there: in a single-file wiki the standalone plugin carries the title `$:/plugins/lares/memetic-wikitext`, so `[all[memes]]` answers nothing on that host.
 * `D12` The Annex B pass and the `blocks` golden; `label-html` derived. D5.
 * `D13` The interaction goldens' runner and section, green at none, full and blocks. D5. The goldens family stays open. Stands in part (measured 2026-10-19): the runner, its README and fourteen scripts stand, 01 through 13 green at none on the engine and page harnesses (the page half in Chromium alone); full and blocks widths, a Playwright whole-road run and golden 14 (held red until `D10`) stay owed.
 * `D14` The CLI text camera, the SSR face, the MCP projection and the Mudlet weekend, each with a published row. D6. Mudlet's carrier stands ruled (2026-10-16).
 * `D15` `tm-http-request` as `lar:service{kind: http-request}`: the door law with a per-face list of allowed origins, no credential in a tiddler, private and loopback ranges refused, the response as a sensed snapshot with its provenance; its goldens run against a recorded fixture, never the network (`lar-root-services.ts` refuses it by name today). D1.
-* `D16` `$eventcatcher` bound for declared discrete events through a declared selector, with continuous streams and pointer capture refused by name; `$keyboard`'s reserved-chord refusal and a layout-aware chord test. D1.
+* `D16` `$eventcatcher` bound for declared discrete events through a declared selector, with continuous streams and pointer capture refused by name; `$keyboard`'s reserved-chord refusal and a layout-aware chord test. D1. Stands (PR #64): the catcher binds declared discrete events through its selector, continuous events and pointer capture refuse by name, and reserved chords never cross.
 * `D17` Each width names beside the editor what it cannot run, and two surfaces editing one tiddler (a draft among them, since a draft is a tiddler) meet on one record, settled by the shared-state ruling and the house's conflict-surfacing law, with a red test across two surfaces of one actor. D1 and D4.
 
 <<~/ahu>>
@@ -245,6 +245,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ar0HzKmsQGo4XK5UJG5YzZf58Iz4j2NdTY_a6T0oMb8
+<<^ code="&#x0003;">>ni:///sha-256;BVJ7_v9CUDlkYSlzVLABwpDGYW2-22zSlQi2ge-XFiw
 
 <<^ code="&#x0004;" -> to="?">>
