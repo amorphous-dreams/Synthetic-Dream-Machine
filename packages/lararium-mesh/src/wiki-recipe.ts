@@ -15,13 +15,17 @@
  *   wikis/{slug}/working  — the SAVED live write layer, CRDT; normal edits route here
  *   bags/{slug}           — the wiki's CANON bag (read-only from the wiki), published
  *                            to only by a promotion MOVE (shore-law)
- *   libraryBags[]          — optional content libraries, CRDT, read-only from wiki
- *                            (the lares wiki-recipe carries the lararium and lares bags here)
- *   oracle                 — runtime system island: engine core + plugins + grammar +
- *                            bag-oracle; the UNIVERSAL FLOOR of every recipe, CRDT, required
+ *   libraryBags[]          — optional content libraries, CRDT; each lays its flags from
+ *                            `slotLayerFlags`, which writes every slot but the floor
+ *                            (the lares wiki-recipe carries the live lararium bag here)
+ *   oracle                 — the floor's read-face, READ-ONLY, under every recipe: the pinned
+ *                            history-free lares and lararium snapshots a manifest CID names
+ *                            (`floor-manifest.ts`), over the live seed rows (engine core,
+ *                            plugins, grammar, bag-oracle)
  *
- * The lares bag (personality) and the lararium bag (engine corpus) never stand as the floor — they
- * ride a wiki's libraryBags. The lares wiki-recipe = oracle floor + lararium bag + lares bag.
+ * Every wiki reads the lares and lararium carriers through the floor, and an edit aimed there copies
+ * up into the wiki's working layer. The system wikis themselves still compose their live documents:
+ * the lares wiki-recipe = oracle floor + live lararium + its own live lares canon.
  * The memetic-wikitext plugin rides the oracle island (CID-frozen), so it is universal.
  *
  * Above-stack projections defer (separate concern). When they land they will
