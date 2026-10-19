@@ -90,6 +90,7 @@ case "$MESH_PROJECT" in
 esac
 export COMPOSE_PROJECT_NAME="$MESH_PROJECT"
 COMPOSE="docker compose -f docker-compose.mesh.yml"
+BOOT_WAIT_SECONDS=600
 FAILED=0
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"
 if [ -n "$ARTIFACT_DIR" ]; then mkdir -p "$ARTIFACT_DIR"; fi
@@ -330,6 +331,15 @@ contract_ab() {
 # carry-for`), A's quorum carries it with the pin beside the act (`nexus carry --floor-pin`), and the place takes the
 # carry bundle onto its own replica (`nexus carry-take`). A running place refolds on the take and its floor gate stands
 # at once (`oracle-read-face` follows the gate set at every refold). $1 = the herm joining; A's charter travels to it first.
+await_a_boot() {
+  # This bound serves the witness's own liveness and decides nothing about the product.
+  if ! (set +o pipefail; timeout "${BOOT_WAIT_SECONDS}s" $COMPOSE logs --follow --no-color lararium-a 2>&1 | grep -m 1 -F '[boot] serving…' >/dev/null); then
+    bad "lararium-a refused: no boot line within ${BOOT_WAIT_SECONDS}s"
+    $COMPOSE logs --tail 20 --no-color lararium-a 2>&1 | tail -4 | sed 's/^/      /'
+    return 1
+  fi
+}
+
 carry_place() {
   local svc="$1"
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
@@ -871,6 +881,7 @@ run_nexus() {
   # files, presenting what it stands as at that Nexus. Each herm joins A's Nexus by carry; A presents its founder face
   # with the admit it takes at its own Nexus.
   local joined=1 svc
+  await_a_boot || { clear_all; return; }
   for svc in herm-source herm-relay; do carry_place "$svc" || joined=0; done
   admit_self_a || joined=0
   if [ "$joined" != 1 ]; then clear_all; return; fi
