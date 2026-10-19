@@ -18,416 +18,7 @@ uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
 
 ! Custody per face, the wave-two handbacks
 
-Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); only Markdown transliterated to memetic-wikitext. Each round's two handbacks trade findings, so a later round confirms or refutes an earlier one, and round four outranks the rest. The rulings and the per-vessel table rest at <<~ ahu #/r5-yin-wave1-yin-wave-one-internet-scout-place-signer>>
-
-!! YIN wave-one internet scout — place signer
-
-
-Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASURED'' means read directly in the cited primary source/code; ''LEAD'' means an inference or proposed Lares design. Round-four handbacks `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first. The repo `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write was run. This is wave one's internet lens: Q3 is deepest; Q1 is mapped only to the handed-off canon, not freshly re-audited.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-q3-how-always-on-identities-are-protected>>
-
-!!! Q3 — how always-on identities are protected
-
-
-| System | MEASURED, 2026-10-19 | Boot consequence and Lares mapping (LEAD) |
-| ''systemd credentials'' | `LoadCredentialEncrypted=` accepts a credential encrypted by `systemd-creds`; credentials may bind to TPM2, host key, or both. With persistent `/var` and TPM2, default encryption combines them so the credential is tied to local hardware and OS installation. Plain `SetCredential=` is unsuitable for private keys because unit files are world-readable. Sources: [[systemd credential documentation|https://systemd.io/CREDENTIALS/]], [[systemd-creds manual|https://www.freedesktop.org/software/systemd/man/257/systemd-creds.html]], [[systemd credential implementation docs|https://github.com/systemd/systemd/blob/main/docs/CREDENTIALS.md]]. | This encrypts the file credential at rest, then systemd decrypts and delivers it to service at boot. No person is required if machine key/TPM policy allows release. Disk theft alone is reduced; compromise of an accepted boot/service context can still expose the credential. Local key + TPM binding is the closest off-the-shelf analogue to candidate (1), but TPM auto-release is still unattended authorization, not a human unlock. |
-| ''TPM2-sealed key'' | systemd-creds can use TPM2 keying and PCR policy. PCR binding gates release against measured boot state; a signed PCR policy can authorize selected boot measurements. Sources above. | Machine releases only under configured boot state; a human PIN can add presence, but is incompatible with unattended release. TPM sealing does not protect against a hostile authorized running OS that can ask TPM for the key. Lares can use hardware protection as an optional wrapper, not as proof of operator presence. |
-| ''HashiCorp Vault auto-unseal'' | Vault supports delegated auto-unseal using cloud KMS/HSM; on startup Vault connects to delegate with an encrypted root key for decryption. Instance identity/permissions authorize KMS access. Source: [[Vault integrated storage deployment guide|https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-deployment-guide]], [[Vault HSM partners|https://developer.hashicorp.com/vault/docs/partners/hsm]]. | No human shares are entered at each start; delegated machine identity performs unseal. This shifts trust to the KMS/HSM and host identity. It is availability-oriented delegated custody, not unattended public-only service. It maps to a boot door only if the house explicitly accepts a node machine principal. |
-| ''Kubernetes Secrets'' | Secret objects are base64-encoded and, by default, stored unencrypted in etcd. Encryption at rest is separately configured; local encryption key on control-plane host does not protect against host compromise. KMS envelope encryption keeps KEK outside Kubernetes. Pod creation rights can indirectly expose namespace secrets. Sources: [[Secrets|https://kubernetes.io/docs/concepts/configuration/secret/]], [[encryption at rest|https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/]], [[good practices|https://kubernetes.io/docs/concepts/security/secrets-good-practices/]]. | Kubernetes delivery to a pod is not itself a safe custody boundary. At rest depends on configured provider; at runtime an authorized pod can read the mounted value. A mounted signer credential can be exposed through pod/host/admin compromise. Do not treat orchestrator secret injection as an automatic Lares human unlock. |
-| ''Tor onion-service identity'' | Tor v3 keeps a private master Ed25519 key in the service directory; it is the stable service identity and derives blinded signing keys. Tor spec explicitly labels the master key long-term and distinguishes online descriptor signing keys; spec notes offline master-key possibility. Sources: [[directory format|https://tpo.pages.torproject.net/core/torspec/rend-spec/fs-contents.html]], [[v3 protocol overview|https://spec.torproject.org/rend-spec/protocol-overview.html]]. | Conventional host persists key locally and starts unattended; a copy can impersonate the onion identity. Offline master-key use improves separation but requires a delegated operational flow. This is the closest identity analogy: a service key establishes public place identity; it does not imply authority to open unrelated user custody. |
-| ''WireGuard'' | WireGuard model configures private keys for interfaces and associates peer public keys with allowed IP routing; the paper illustrates reading private key from configuration. Source: [[WireGuard paper|https://www.wireguard.com/papers/wireguard.pdf]]. | A long-lived host key enables unattended tunnel identity; protecting the config/host is operator responsibility. Theft lets attacker impersonate that peer and claim configured routes. It is network admission, not evidence for Lares face data access. |
-| ''OpenSSH host keys'' | `sshd_config`'s `HostKey` names private host keys; sshd refuses key files that are group/world accessible. Source: [[OpenBSD sshd_config|https://man.openbsd.org/sshd_config.5]]. | File permissions protect against ordinary local users, not disk/root theft. sshd reads keys and starts without a person; compromise enables host impersonation. This supports a narrow named place signer protected by ownership/permissions, but not calling it public data. |
-| ''Let's Encrypt / ACME'' | ACME account is associated with a key; Let’s Encrypt account ID can be rediscovered by registering with the same key. CAA docs note account key as a barrier to a domain hijacker issuing malicious certificates. Sources: [[account IDs|https://letsencrypt.org/docs/account-id/]], [[CAA|https://letsencrypt.org/docs/caa/]]. | ACME clients persist account keys and renew unattended; theft allows attacker to act as that account, subject to ACME/domain validation controls. A compromised ACME account is revocable/replacable, but this is not by itself a KEL recovery mechanism. |
-| ''KERI / KERIpy'' | KERI establishment events publish current signing keys and commit by digest to next keys. Rotation needs current signatures and opens committed next keys; next private keys are the recovery boundary. KERI docs state pre-rotation helps mitigate later current-key compromise; if root pre-rotated keys are captured, no KERI-internal recovery exists. Sources: [[KERI 1.0 spec|https://trustoverip.github.io/kswg-keri-specification/]], [[KID0005 commentary|https://identity.foundation/keri/kids/kid0005Comment.html]], [[vLEI KERI infrastructure governance|https://www.gleif.org/media/pages/organizational-identity/become-a-vlei-issuer-qvi/vlei-ecosystem-governance-framework/23f7b8278d-1774607226/2025-04-16_vlei-egf-v3.0-technical-requirements-part-1-keri-infrastructure-2024_v1.3_final.pdf]]. KERIpy's keeper model has current/next public lots and rotation indexing ([[keripy keeping.py|https://github.com/WebOfTrust/keripy/blob/main/src/keri/app/keeping.py]]). | Pre-rotation key should be kept offline or under stronger threshold custody; its exposure is much more serious than current online signer exposure. A human need not be present for ordinary current-key signing, but recovery rotation needs access to next key(s). Pre-rotation cannot prevent forgery while stolen current key remains authoritative; it supplies verifiable path to supersede it. |
-| ''Signal'' | Signal's server-side key transparency service maintains append-only, cryptographically protected key mappings and proofs to make service tampering detectable; it is distinct from end-to-end user identity keys. Sources: [[Signal Automatic Key Verification|https://signal.org/blog/automatic-key-verification/]], [[Signal key-transparency server|https://github.com/signalapp/key-transparency-server]]. Signal protocol publishes user identity keys/prekeys to server; the server does not thereby receive the user's private identity key ([[PQXDH spec|https://signal.org/docs/specifications/pqxdh/]]). | Transparency/consistency proofs help detect equivocation; they do not make the server's own host signing key inaccessible or create a human boot ceremony. Analogy: public floor artifacts can be witnessed/transparency-checked; per-face private keys remain separate and client-held. |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-q3-synthesis-lead>>
-
-!!!! Q3 synthesis (LEAD)
-
-
-At-rest protection claims differ. `chmod 0600` / owner-only file (OpenSSH-style) protects against other unprivileged local users. TPM/systemd machine binding protects more strongly against copied disks and wrong boot states, while still auto-releasing under the approved host. Cloud KMS/HSM auto-unseal removes the key-encryption key from local disk but grants service identity a machine-authorized decrypt path. Kubernetes Secret API storage alone promises no at-rest encryption by default. Tor, WireGuard, and ACME examples show the common operational reality: identity keys are persistent and automatically loaded for availability, so compromise of the host's effective runtime identity compromises its public service identity. KERI adds independently committed future control, while Signal transparency supplies detection of inconsistent public mappings.
-
-None of those analogies means a place signer should open a face's custody row. The place identity's authority must remain typed and scoped to public place acts. A hardware root that silently auto-unseals a signer changes the threat from “file readable” to “machine identity can request use”; it does not make the operator present.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-q4-third-shape>>
-
-!!! Q4 — third shape
-
-
-''LEAD recommendation: split a long-lived place root from a boot signer, and give the place identifier a KERI-like pre-rotated recovery path.'' The online signer may sign a tightly enumerated set of place acts and public floor-gate derivations. An offline owner-held root or threshold-held next key authorizes rotation of the online signer and publishes a verifiable KEL event. Keep at least one next key outside the always-on node. Use TPM/systemd encrypted credential as an optional at-rest wrapper for the online signer on supported nodes, with explicit fallback policy on systems lacking TPM.
-
-This third shape improves on plain clear-file candidate (1) by making stale online-key theft recoverable and machine-tied at rest where available. It improves on human-at-every-boot candidate (2) by preserving Herm public service and unattended container restart. It does ''not'' erase the theft window: attacker with current signer can forge until verifiers accept the rotation; attacker with next/root key can seize or permanently lose the place identity. If recovery cannot be implemented with independently protected next key, do not claim pre-rotation protection. Root/next compromise in pure KERI can require abandoning the identifier and re-founding identity with ecosystem-level rebinding.
-
-An alternative is candidate (1) strictly bounded and wrapped by owner-only file / OS keystore: simple and compatible, but a disk reader with the file gets the place identity. Candidate (2) can protect a sensitive private serving payload if there is one, but current evidence says no serving row exists, and gating the place signer would interrupt unattended floor identity. Do not conflate the two secrets.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-q2-if-attacker-reads-the-current-seed-at-rest>>
-
-!!! Q2 — if attacker reads the current seed at rest
-
-
-''MEASURED from round-four code audit, 2026-10-19:'' the node privately reads `signingKey` from local key file (`packages/lararium-node/src/node-vessel-identity.ts:429-442`), uses it for floor signing/device capability (`:451-487,491-499`), and supplies it to Herm (`packages/lararium-node/src/open-node-vessel.ts:3283`). It is independent of VK and SK; `packages/lararium-node/src/vault-carriers.ts:239-251` places `vessel-key` and `sk-slots` at floor. The prior handbacks report no current serving row/SK consumer. Herm has zero PersonaGroup slots and raises with recognized operator caps (`vessel-standing.ts:60-79,113-119`; `open-node-vessel.ts:558-614`).
-
-''LEAD threat model:'' a seed reader can impersonate the place/vessel wherever verifiers accept its public key, forge any act signed by that key, and derive/sign any child floor-gate keys that the implementation derives from it. They can forge a place card/device identity, KEL inception or rotation only where that seed is the controlling KEL signer, and any dial/gate proof or carry-for seal using it. Exact cryptographic domains and callers need Q1's source audit; the handback names place acts and floor-gate derivation, not a verified exhaustive caller list. They cannot mathematically derive VK, a face FCK, a PersonaGroup identity root, or decrypt a face's ciphertext solely from this seed. A forged place admission/proof could still cause service-level deception if a relying gate trusts place signature as face authorization; design must ensure it does not. It cannot open custody rows unless code incorrectly uses place signer as a wrapper/opener, which current round-four evidence says it does not.
-
-Detection: compare KEL histories / witnessed public floor records, keep tamper-evident receipts and independent public-key pins, and alert on conflicting valid histories or unexpected rotation. Recovery: rotate place key through authenticated KEL pre-rotation if next key remains safe; revoke/replace relying pins and re-found/rebind if recovery authority is also lost. Kapae/re-found semantics are house-specific and were not independently verified in this internet pass, so this mapping is ''LEAD'', not a measured procedure. A stolen current key enables forgery until rotation is accepted; pre-rotation does not retroactively erase that window.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-q1-bounded-mapping-from-the-round-four-canon>>
-
-!!! Q1 — bounded mapping from the round-four canon
-
-
-''MEASURED (round-four audit, dated 2026-10-19):'' private `vesselSeed`/`vessel-key` seed is clear at rest and auto-loaded at node boot without a person; it is not VK or SK. Public floor identity/card material is distinct from the seed. The seed signs as vessel/place and derives public floor-gate children, per the caller/line summary in the prompt: `node-vessel-identity.ts:296-314,340-348,429-499`; `vault-carriers.ts:239-248`; `open-node-vessel.ts:3283`.
-
-''MEASURED scope caveat:'' I have not freshly opened source in the read-only repo for an exhaustive caller/domain inventory. The handoff specifically names place acts, floor-gate child keys, place DID, KEL inception, vessel card, carry-for seals, dial and gate proofs as candidate signing/derivation sites. Treat this enumeration as user-provided audit context, not independently confirmed completeness. Public relay/card/gate-floor identity must be available before a face exists for Herm boot, node restart, and waking floor if it stands in that role. Face-private access and face-authored acts can wait for their face admission. Whether all listed proofs must be emitted at boot vs on demand is a code-call-graph question unresolved here.
-
-''LEAD:'' named floor signer should never sign a face act or open custody; KEL inception/rotation authority is a special high-impact place identity operation and should likely require owner/next-key ceremony rather than ordinary boot signer. Derived children need domain separation and a public manifest naming exactly which derivations are permitted; otherwise “place acts only” is not an enforceable boundary.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-ranked-recommendation-and-per-vessel-effect>>
-
-!!! Ranked recommendation and per-vessel effect
-
-
-# ''Third shape: named place signer + separately protected offline/threshold place root and pre-rotated next key; optionally TPM/systemd-wrap online signer.'' Best blend for unattended public availability and recoverability. It still recognizes an online signer as a limited place authority. Herm/node can start at floor; a compromised online seed is revocable only while next/root authority is safe.
-# ''Candidate (1): named floor signer protected at rest by owner-only file, OS keystore where available, ideally machine-bound encrypted credential.'' Operationally simple and supports herm/container/waking-floor unattended startup. Disk seed theft gives place impersonation; face custody stays cryptographically separate. Must explicitly name signer S and allow no VK/FCK at floor.
-# ''Candidate (2): human boot custody door.'' Strongest human-presence gate for whatever key it gates, but makes Herm's public place identity wait for an operator and breaks unattended container restart/waking-floor identity unless service remains deliberately anonymous/public-key cached. Use only for a genuinely sensitive node serving S, not automatically for this public place signer.
-
-| Vessel | Effect under ranked third shape (LEAD) |
-| Herm | TPM/systemd or owner-only protected online place signer auto-available; public card/relay/gate floor starts without face; no face rows. Offline next/root required to rotate. |
-| Full node | Same place signer behavior; VK/FCK remain absent at floor. Any genuinely private serving S has its own boot door and remains locked without authorized unlock. |
-| Hearth | Composition inherits node place identity, not extra key; every face's D rows remain individually admitted. |
-| Container | Unattended restart resumes public floor if host-bound credential releases; no credential injected from image/env/log; unsupported host falls back to owner-only file or public-only mode. |
-| Waking floor | Carries public identity/ciphertext and may verify proofs; unattended private-row decryption/transformation still needs a face or separately ruled S. |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-red-test-lead>>
-
-!!!! Red test (LEAD)
-
-
-Build one end-to-end adversarial test around a copied data disk and a no-human reboot: (a) on approved machine/boot, public place card and public relay start; every exact place signer domain is logged against an allowlist; (b) neither `vesselSeed` nor derived private child bytes appear in disk image, environment, logs, API, or public artifacts; (c) a different host cannot unwrap the credential; (d) no VK/FCK is present and direct attempts to open, replace, restore, rotate, or decrypt any face row fail byte-preservingly; (e) same-host restart does not admit a face; (f) attack-simulate theft of the current place signer and show an independently held pre-rotated key emits a valid KEL rotation, after which old-key place acts are rejected; (g) compromise of the offline next key is treated as identity-loss/re-found, not claimed recoverable. For candidate (2), add the expected deliberate tradeoff assertion: no person means no signer and no signed place identity at boot.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave1-source-provenance-notes>>
-
-!!! Source / provenance notes
-
-
-Internet claims above cite primary vendor/project specifications or official docs and were accessed 2026-10-19. Links are included inline. Systemd and TPM documentation evolves with versions; deployment details require checking the installed systemd release and firmware/TPM policy. Kubernetes data-at-rest behavior is configuration-specific. KERI is an identity-rotation analogy, not evidence that Lares currently implements KERI semantics. Signal evidence concerns key transparency and user key handling, not a specific server host-key storage promise. `kapae` / `re-found` handling and exhaustive Lares signing caller inventory remain open for the next source-focused pass.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-yang-handback-place-signer-code-audit>>
-
-!! YANG handback — place signer code audit
-
-
-Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` before source work. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write ran. `MEASURED` means directly read in source; `LEAD` marks implications or recommendations. No web search was done in wave one, per assignment. Claims below carry their date and evidence mark.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-q1-what-the-place-signer-can-do-today>>
-
-!!! Q1 — what the place signer can do today
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-key-file-and-identity-lifecycle>>
-
-!!!! Key file and identity lifecycle
-
-
-* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/node-vessel-identity.ts:140-170,185-198,429-448` stores the Ed25519 secret seed as clear hex JSON in a runtime-store-sibling identity directory, file mode `0600`; the seed is explicitly described as local and never synced. `loadVesselSigningSeed()` reads it, checks the seed derives the named public key, verifies the adjacent KEL inception, and returns a fresh 32-byte seed. This is filesystem permission protection, not encryption, hardware sealing, or an interactive door.
-* ''MEASURED — 2026-10-19:'' `generateOrLoadVesselIdentity()` can mint only within an open custody claim and writes the key and inception together; `loadVesselIdentity()` is load-only. Normal daemon boot loads both public identity and private seed at `open-node-vessel.ts:945-946`, with no human unlock on that path. The identity is the place/vessel Ed25519 key, distinct in code and purpose from custody VK/SK and PersonaGroup root.
-* ''MEASURED — 2026-10-19:'' The signer is also listed as `vessel-key` at floor in `packages/lararium-node/src/vault-carriers.ts:239-248`; `open-node-vessel.ts:3283` passes the seed into Herm composition. Therefore the earlier blanket wording “floor holds no vessel key” conflicts with current code. More precisely: floor has no *custody VK/FCK*, but currently has this private place signer seed.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-direct-seed-consumers-and-signing-derivation-purposes>>
-
-!!!! Direct seed consumers and signing/derivation purposes
-
-
-* ''MEASURED — 2026-10-19:'' `node-vessel-identity.ts:312` signs the place KEL inception when founding. `packages/lararium-mesh/src/vessel-kel.ts:2-13,35-59` fixes the signed domain to `vessel-kel`, with an `icp` event containing one public key and its self-signature.
-* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/commands/nexus-contract.ts:250-268` uses the seed to sign `nexus carry-for`'s place carrier contract and, when a Nexus is present, the place floor-pin statement. These are place claims, not face signatures.
-* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:1217` signs vessel-origin `askSeatDuties` asks; `:3087,3103,3115` signs node-island memory asks (`cut`, `door`, `import`). These signer calls authenticate this device/place at internal node verbs.
-* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:1450` constructs a `carriageSignerFromSeed` used by `vesselCarriagePull`; its herm path signs place-floor carriage presentations and statements. The same region `:1394` derives relay-gate seed from this seed unless an explicit relay seed config overrides it. `carriage-relay.ts:61-76` HMAC-SHA256 domain-separates this transport gate from the Ed25519 place key; it does not reuse the raw key bytes.
-* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:2279-2280` uses the seed as the device key signer and as `groupSecretOpenerFromSeed` for the sibling channel. `:2150` supplies it to daemon auth (`seed`). This means the seed is not merely a public-floor announcer key: node code uses it for device and group-secret cryptographic operations too. Mesh `persona-group-secret.ts:192` defines the opener; exact data exposure from a stolen seed depends on the sealed group-secret records and does not establish general access to face rows.
-* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:3283` provides the seed to Herm as `signerSeed`; Herm has no PersonaGroup slot, but it does need this identity for its place-facing floor functions.
-* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/commands/fleet-join.ts:285+` loads the place seed for a joining-device request signature. `packages/lares-cli/src/commands/meme.ts:1117` supplies a seed-backed signer to promote-check flow. `packages/lararium-node/src/commands/init.ts:246-251,320-327,491-510` uses it during founding/admit and place composition. These are explicit CLI/founding acts, generally operator-invoked, rather than unattended boot duties.
-* ''MEASURED — 2026-10-19:'' `packages/lararium-mesh/src/dyad.ts:399-402` derives a founder veil keypair from `vesselSeed` and a group tag using hardened persona derivation. `open-node-vessel.ts:2150` hands the seed into daemon identity composition. Those derived identities are purpose-separated keys, but compromise of the root seed allows deterministic derivation where the derivation inputs/tags are available.
-* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/main.ts:765-769` uses vessel identity as the publisher on a floor card. The public card itself is a derived/public artifact; the signing seed does not need to appear in the card.
-* ''MEASURED — 2026-10-19:'' Floor-gate children do ''not'' expose the root seed. `node-vessel-identity.ts:454-499` implements `vesselFloorKeyDoor`: it re-reads and proves the key file for each registered domain, derives HKDF-SHA256 with empty salt and domain-as-info, clears its local seed buffer, and returns a fresh child. It refuses unregistered domains and the sovereign gate-bundle domain. `hearth-sovereign-pin.ts:56` and `herm-carriage.ts:64` derive floor gate bundles through that door. Thus a thief of the root seed can reproduce all registered floor children, but callers are intentionally denied the raw seed via this door.
-* ''MEASURED — 2026-10-19:'' The CLI `loadVesselCard()` only reads cached ContactCard JSON (`node-vessel-identity.ts:375-393`); card persistence is mode `0600` (`:359-372`). The card is not freshly signed with the seed at each boot. The seed may have participated in founding Keyhive identity creation; the cached card is public-facing identity material, not proof of at-rest seed protection.
-* ''MEASURED — 2026-10-19:'' `rg` across non-test source in the three assigned packages found no `loadVesselSigningSeed` caller in `packages/lares-cli/src` beyond `commands/meme.ts`; node callers include `open-node-vessel.ts`, `main.ts`, `commands/init.ts`, `commands/nexus-contract.ts`, and `commands/fleet-join.ts`. `device-admit.ts` mentions the loader in a comment but does not itself call it. In meshes, `dyad.ts` accepts the seed as an argument; it does not load disk state.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-humanless-versus-operator-acts>>
-
-!!!! Humanless versus operator acts
-
-
-* ''MEASURED — 2026-10-19:'' Boot loads the seed before floor and node composition (`open-node-vessel.ts:945-946`), then derives floor cards/gates and can establish relay and internal node signing capabilities. The `vesselFloorKeyDoor` explicitly answers while locked (`node-vessel-identity.ts:454-470`). A herm can therefore publish/serve the place floor without a face or a person present.
-* ''LEAD — 2026-10-19:'' To preserve an unattended herm boot, container restart, and waking floor service, the place signer or a prederived equivalent must be available at boot. A boot custody door would suspend those signer-dependent floor actions until a person unlocks. Public reads not requiring a signature may continue, but exact degraded service needs product-level testing/specification.
-* ''MEASURED — 2026-10-19:'' Fleet join, `carry-for`, founding, and promotion CLI paths occur under explicit commands; those can wait for a person. Daemon boot, floor gate reconstruction, boot-time floor card and internal signer setup cannot wait without changing the availability contract.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-q2-consequence-of-seed-theft>>
-
-!!! Q2 — consequence of seed theft
-
-
-* ''MEASURED — 2026-10-19:'' A seed thief can sign as the place key anywhere a relying party accepts that key: forge future place carrier seals/floor pins, device/place assertions, floor-card publications, and vessel-authenticated internal asks; derive relay and registered floor-gate children; recreate seed-derived founder veil identities given their derivation tags. The exact reachable operations depend on verifier policy and available public context.
-* ''MEASURED — 2026-10-19:'' The place seed is not the custody VK, no VK/FCK derivation is shown, and carrier mapping puts private custody rows behind the custody key (`vault-carriers.ts:239-251`). Thus the place signer alone does not directly open the custody rows or automatically decrypt every face's archives/data. Avoid the stronger claim “cannot expose any face-related material”: it is also supplied to a group-secret opener and dyad-veil derivation path, so targeted sibling/founder-derived material needs a separate cryptographic impact audit.
-* ''MEASURED — 2026-10-19:'' The place KEL offers no recovery: `vessel-kel.ts:2-13` and `node-vessel-identity.ts:185-198` explicitly define non-transferable identity, no next-key commitment, and fresh founding after loss/theft. There is no place KEL rotation path in the assigned source; `rg` found only inception/decode/verify. `lares nexus seal rotate` rotates charter seats/epoch, not the place key. Vault `--rotate` rotates custody VK, not this seed.
-* ''LEAD — 2026-10-19:'' With current non-rotatable KEL, recovery means abandon/re-found the place identity and re-pin/re-carry it through the relevant Nexus, fleet, and floor-gate relationships. The board can detect signatures that fail, but cannot distinguish attacker signatures made with the stolen valid seed from the real place. Kapae can shadow relationships/edges under their own authorities; it does not recover the compromised place identity or revoke every consumer automatically. Re-found carries continuity and coordination costs.
-* ''LEAD — 2026-10-19:'' A named protected signer reduces offline disk theft risk only if the file/keystore boundary actually withholds or cryptographically seals the seed. Owner-only mode `0600` does not protect against root, same-user compromise, backup leakage, or an attacker who can read the boot volume. A TPM/OS-bound design also needs an explicit threat model for a running compromised host.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-place-kel-and-the-proposed-third-shape>>
-
-!!! Place KEL and the proposed third shape
-
-
-* ''MEASURED — 2026-10-19:'' Unlike the persona KEL or Nexus charter epoch chain, the place KEL has one self-signed inception and no `n`/next-key digest, threshold, sequence, or successor event. The module comments expressly reject a same-disk next key as offering no theft protection.
-* ''LEAD — 2026-10-19:'' A genuinely useful split would put a long-term place root offline and have it certify replaceable boot keys, with explicit expiry/revocation/recovery authority; merely certifying one static boot signer does not help if that signer cannot be revoked. But this changes all verifiers/pins and recovery semantics. A pre-rotation place KEL could make compromise recoverable only if the next private key stays outside the stolen boundary and all consumers enforce the chain.
-* ''LEAD — 2026-10-19:'' For the existing code contract, prefer a narrowly named place-signer S protected at rest and auto-available for public floor, while explicitly excluding VK/FCK and documenting non-rotatable identity/re-found recovery. This is a decision recommendation, not a claim that code already meets the protection standard.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-q3-comparison-research-deliberately-deferred>>
-
-!!! Q3 — comparison research deliberately deferred
-
-
-* ''MEASURED — 2026-10-19:'' No web research was performed in wave one, as assigned. I therefore make no source-backed claims here about systemd encrypted credentials/TPM2, TPM sealing, Vault auto-unseal, Kubernetes secrets, Tor, WireGuard, SSH host keys, Let's Encrypt, KERI witnesses, or Signal server keys. Those analogies need primary-source review in wave two; do not treat prior-round analogies as this audit's verified comparison.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave1-ranked-ruling-per-vessel-effect-and-red-proof>>
-
-!!! Ranked ruling, per-vessel effect, and red proof
-
-
-# ''LEAD — 2026-10-19 — Rank 1: named place signer, protected at rest, auto-loaded for floor only.'' Keep the floor free of custody VK/FCK; name the signer as a place-identity capability, constrain its APIs to the existing place/floor domains, and protect the seed with an owner-only file at minimum or an OS/TPM keystore where it can actually boot unattended. Document the remaining host-compromise risk and mandatory re-found recovery under today's KEL. This best preserves current herm availability, though code currently uses the signer beyond a narrow signing API (including derivation/group-secret opener), so implementation must narrow/justify each of those uses.
-# ''LEAD — 2026-10-19 — Rank 2: split offline root plus replaceable boot signer.'' This offers the strongest recoverability if KEL/verifiers/pins gain a root-certified rotation chain and next authority stays offline. It has a larger migration and compatibility burden; it outranks a simple unlock door for deployments that can operate a carefully provisioned online key.
-# ''LEAD — 2026-10-19 — Rank 3: boot custody door around the existing signer.'' It improves protection while powered off but breaks unattended herm/container/waking-floor service until a person arrives. Use only where operator presence at boot is an explicit availability choice. The existing place KEL still cannot rotate after a theft.
-
-| Vessel | Effect (LEAD, 2026-10-19) |
-| Herm | Needs unattended place identity and floor gate; rank 1 or a redesigned rank 2 supports it. Rank 3 leaves floor signer-dependent service waiting. |
-| Node/hearth | Separate face custody remains behind its own face/VK doors. Place signer protections do not grant or replace face FCKs. Explicit operator acts can wait for unlock. |
-| Container | Rank 1/2 allows restart with place identity; no container should restore face VK/FCK from orchestration. Rank 3 makes signer-dependent service wait for a human. |
-| Waking floor | Can rederive public gates and carry ciphertext only if the place signer is available under rank 1/2; no derivation implies face-data decryption authority. |
-
-''Red test — LEAD, 2026-10-19:'' From a clean persistent state, boot a faceless herm and restart its container with no human and no VK/SK/FCK. Public floor card, registered floor-gate children, and configured relay identity must reconstruct consistently; outputs/logs expose no seed. Assert every face/custody open and every operation requiring face authority refuses. Then copy only the at-rest image into an attacker-readable environment: the chosen protection must either withhold the signer (protected-store rank 1/2) or explicitly demonstrate/document the clear-file exposure; seed-only access must not unlock custody rows or face archives. For rank 2, additionally rotate the place boot key using the offline root and prove old-key signatures fail after consumers advance, while an offline stolen current seed cannot forge the successor chain.
-
-''Method boundary — MEASURED, 2026-10-19:'' Read-only source inspection and `rg` only. No tests were run, no builds, no git writes, no web search. Principal source paths: `packages/lararium-node/src/node-vessel-identity.ts`, `open-node-vessel.ts`, `carriage-relay.ts`, `commands/nexus-contract.ts`, `commands/fleet-join.ts`, `main.ts`; `packages/lararium-node/src/vault-carriers.ts`; `packages/lararium-mesh/src/vessel-kel.ts`, `dyad.ts`, `persona-group-secret.ts`; `packages/lares-cli/src/commands/meme.ts`.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-yin-wave-two-handback-place-signer>>
-
-!! YIN wave-two handback — place signer
-
-
-Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' means read in source or on a primary project/vendor page; ''LEAD'' means inference or proposed design. Provenance labels: ''confirmed-by-both'' (supported in both YIN and YANG wave-one handbacks), ''yours-alone'' (YIN), ''twin-alone'' (YANG). I read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, `MINE.md`, and `TWIN.md`. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no tests, builds, or git writes were run. All edits are confined to this directory.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-trade-a-audit-of-twin-s-top-claims>>
-
-!!! Trade (a): audit of TWIN's top claims
-
-
-| TWIN claim | Trade verdict and source check (2026-10-19) | Provenance |
-| Place seed rests as clear hex JSON, mode 0600, in identity directory; boot loader validates key and inception. | ''CONFIRM.'' `node-vessel-identity.ts:140-170,185-198,429-448`; startup load at `open-node-vessel.ts:945-946`. 0600 limits other local users; it is not encryption or host/root protection. | twin-alone |
-| Identity is separate from custody VK/SK and is listed at floor; Herm receives it. | ''CONFIRM.'' `vault-carriers.ts:239-251`; `open-node-vessel.ts:3283`. This is a private place key at floor, so the earlier literal “no vessel key” law conflicts with code; no-custody-key is accurate. | confirmed-by-both |
-| Place KEL has only self-signed inception, no next-key commitment or rotation/recovery path. | ''CONFIRM.'' `vessel-kel.ts:2-13,35-59`; `node-vessel-identity.ts:185-198`; TWIN's source search found only inception/decode/verify. `nexus seal rotate` and VK rotation are different key/authority lanes. Current recovery is abandon/re-found and update dependent pins/relationships (the operational steps are LEAD). | twin-alone |
-| Seed consumer inventory includes carry-for contracts/floor pins, asks, device/group-secret operations, relay gate derivation, carriage, CLI/founding, dyad founder veil derivation, and floor card. | ''CONFIRM, with scope caveat.'' Opened cited sites: `commands/nexus-contract.ts:250-268`; `open-node-vessel.ts:1217,1394,1450,2150,2279-2280,3087,3103,3115`; `commands/fleet-join.ts:285+`; `commands/init.ts:246-251,320-327,491-510`; `lares-cli/src/commands/meme.ts:1117`; `lararium-mesh/src/dyad.ts:399-402`; `main.ts:765-769`. TWIN's inventory is substantially more complete than the initial YIN handoff. Exact data reachable through the group-secret opener still requires separate record-level audit. | twin-alone |
-| Floor-gate child derivation uses a narrow registered-domain door and clears its local seed buffer. | ''CONFIRM.'' `node-vessel-identity.ts:454-499`; `hearth-sovereign-pin.ts:56`; `herm-carriage.ts:64`. A stolen root seed can still reproduce registered derivations; caller API restriction is not protection after seed theft. | twin-alone |
-| Public card is cached material rather than freshly signed at each boot. | ''CONFIRM.'' `node-vessel-identity.ts:359-393`; card file mode at `:359-372`. Seed participation in Keyhive founding does not make the cached card a secret. | twin-alone |
-| KEL signatures or current code detect a thief's valid signatures / rotate to recover. | ''REFUTE if implied.'' Current KEL has no succession record: valid attacker signatures under the stolen key are indistinguishable to a verifier that only has the existing key. Kapae/re-found are not an automatic revoke protocol. Independent witnesses might detect conflicting histories only if a transparency/consistency mechanism is built and relied on; that is proposed, not measured. | yours-alone |
-| Herm can publish/serve floor without a human; founding, fleet join, and carry-for can wait for an operator. | ''CONFIRM.'' Seed loads at boot and floor door is usable while locked (`open-node-vessel.ts:945-946`; `node-vessel-identity.ts:454-470`). Explicit CLI paths cited above are operator commands. Exact products that need to be available on an asleep/waking floor remain deployment/product decisions. | confirmed-by-both |
-| A seed-only attacker cannot access any face-related material. | ''QUALIFY / PARTIAL REFUTE.'' No derivation of VK/FCK or general face-row opening is shown; however the seed is supplied to `groupSecretOpenerFromSeed` (`open-node-vessel.ts:2279-2280`) and a founder veil derivation (`dyad.ts:399-402`). It may expose specifically seed-derived group-secret/veil material depending on records and input availability. Do not promise “no face-related material” without auditing those formats. | twin-alone |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-trade-b-yin-internet-lens-on-yang-s-code-paths>>
-
-!!! Trade (b): YIN internet lens on YANG's code paths
-
-
-''MEASURED — 2026-10-19 — twin-alone:'' The actual implementation is broader than “floor place acts only”: the place seed participates in internal daemon asks/authentication, group-secret opening, and founder veil derivation, as well as public/place signing and relay/floor-gate operations. Therefore the named-floor-signer ruling is a policy boundary that code must enforce or explicitly justify, not a label we can assign to the current seed and declare solved. Do not allow it to open custody rows; independently audit the group-secret and dyad paths for any indirect secret reach.
-
-''LEAD — 2026-10-19 — yours-alone:'' Systems analogies support treating a service identity as a separate named principal, not a face secret. Systemd/TPM and cloud KMS can protect the signer while enabling approved unattended boot, but they still delegate release to the machine/service identity. They do not satisfy human-presence semantics. Kubernetes Secret delivery has configuration-dependent at-rest protection and exposes data to authorized pods at runtime. Tor and SSH demonstrate ordinary persistent service-identity operation, with theft consequences scoped to that identity. WireGuard keys establish peer/network identity and routing scope. ACME account keys authorize account operations under domain-validation and CAA limits. Signal's transparency work can help check consistency of public key mappings, but it neither keeps a server key offline nor grants key recovery. None of these mechanisms implies authority over Lares face rows.
-
-''LEAD — 2026-10-19 — confirmed-by-both:'' Separate the place signer from VK, SK and every face FCK. Require caller-side type/domain allowlists for signer capabilities and independent face proof for D-row operations. A floor signer exception must be named and protected at rest, with the signer/API restricted to place identity and required floor operations. The current `groupSecretOpenerFromSeed` / founder veil use should either be removed from the general floor signer or specified as a distinct, audited capability with explicit data limits.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-q3-primary-source-comparison-scoped-to-this-signer>>
-
-!!! Q3: primary-source comparison, scoped to this signer
-
-
-| System | MEASURED promise at rest and boot (2026-10-19) | Lares mapping (LEAD) |
-| ''systemd credentials / TPM2'' | `LoadCredentialEncrypted=` decrypts a credential for delivery to the service. systemd credentials can use local TPM2 key, host key, or combination; `SetCredential=` literal data is in a world-readable unit and unsuitable for private material. TPM PCR policy can bind release to boot state. [[systemd Credentials|https://systemd.io/CREDENTIALS/]] and [[systemd-creds manual|https://www.freedesktop.org/software/systemd/man/257/systemd-creds.html]]. | Good at-rest wrapper for candidate (1), subject to installed systemd/firmware policy. A no-human boot still releases it automatically under machine policy; a compromised authorized running host may use it. |
-| ''TPM-sealed key'' | TPM sealing gates unseal on configured policy/state; a PCR policy can bind measured boot. systemd docs demonstrate TPM-backed credential encryption. | Machine-state release reduces copied-disk/wrong-host exposure, not humanless runtime compromise. PIN/presence policy would impede unattended herm startup. |
-| ''HashiCorp Vault auto-unseal'' | Vault auto-unseal delegates release to cloud KMS/HSM; Vault connects on startup and supplies encrypted root key for decryption. The delegate substitutes machine/service authorization for human Shamir shares. [[Vault sealing best practices|https://developer.hashicorp.com/vault/docs/configuration/seal/seal-best-practices]], [[HSM support|https://developer.hashicorp.com/vault/docs/partners/hsm]]. | Analogy to machine-authorized signer release, not a human boot door. Trust shifts to IAM/KMS/HSM and host identity. |
-| ''Kubernetes Secrets'' | Secret values are base64 and stored unencrypted in etcd by default; at-rest encryption must be configured. Local encryption keys on control-plane hosts do not protect against host compromise; KMS envelope encryption keeps KEK outside cluster. Mounted/env Secret is available to authorized workload. [[Good practices|https://kubernetes.io/docs/concepts/security/secrets-good-practices/]], [[encryption at rest|https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/]]. | Orchestrator injection alone is not signer protection or human authorization. A pod/host/admin with access can read runtime secret. |
-| ''Tor onion-service key'' | v3 identity is a long-term master Ed25519 key; blinded and descriptor keys are distinct. The spec directory format stores private master key in service directory; the proposal describes offline master key as a design possibility and online descriptor signer. [[Tor proposal 224|https://spec.torproject.org/proposals/224-rend-spec-ng.html]]. | Strong service-identity analogy: persistence supports unattended service; compromise impersonates place identity. Key separation can inform root/online signer split. |
-| ''WireGuard'' | Peer identity is its public key, private key configures interface, and allowed IPs bind peer keys to routing scope. [[WireGuard paper|https://www.wireguard.com/papers/wireguard.pdf]], [[quick start|https://www.wireguard.com/quickstart/]]. | A stolen key impersonates peer within configured routes; it does not imply access to unrelated face custody. |
-| ''OpenSSH host keys'' | `HostKey` points to private host-key file; sshd refuses group/world-readable key files. [[OpenBSD sshd_config|https://man.openbsd.org/sshd_config.5]]. | Owner-only permissions protect against ordinary local users, not root/disk theft; unattended host identity is common but theft enables host impersonation. |
-| ''Let's Encrypt / ACME'' | Account ID can be rediscovered by registering with same key; CAA can constrain CA and optionally account URI. CAA/domain validation remains a separate authorization gate. [[Account IDs|https://letsencrypt.org/docs/account-id/]], [[CAA|https://letsencrypt.org/docs/caa/]]. | Key theft grants account-level ability, but account key is not a Lares KEL recovery root. ACME illustrates bounded authority plus independent issuance controls. |
-| ''KERI / KERIpy'' | KERI events commit to next-key digests; rotation uses precommitted next keys. The KERI specification says this can regain control after current-key compromise, if next keys remain safe. [[KERI spec|https://trustoverip.github.io/kswg-keri-specification/]], [[KID0005|https://identity.foundation/keri/kids/kid0005Comment.html]], [[KERIpy keeper source|https://github.com/WebOfTrust/keripy/blob/main/src/keri/app/keeping.py]]. | Useful recovery design, not existing Lares behavior. Place KEL currently lacks next commitment or rotation; adding it requires verifier, pin and carry-chain migration. |
-| ''Signal'' | Signal's key-transparency service uses log/index structures and independent auditors to detect inconsistent views of user key mappings; PQXDH puts user identity/prekeys on server while private keys stay with user. [[Automatic Key Verification|https://signal.org/blog/automatic-key-verification/]], [[PQXDH spec|https://signal.org/docs/specifications/pqxdh/]]. | Analogy for witnessing public place-key history and keeping face keys separate. Transparency detects equivocation; it does not prevent place-seed theft or itself authorize recovery. |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-q2-seed-theft-detection-recovery>>
-
-!!! Q2: seed theft, detection, recovery
-
-
-''MEASURED — 2026-10-19 — twin-alone:'' A reader of current seed can sign wherever public-key verifiers accept it: place carrier contract/floor pin, vessel/device assertions and internal asks; can derive registered floor-gate children and relay gate seed; and may reproduce seeded founder veil identities when derivation tags are known. The current key file is clear hex, mode 0600 (`node-vessel-identity.ts:140-170`).
-
-''MEASURED — 2026-10-19 — confirmed-by-both:'' Seed is not VK/SK/FCK. The vault carrier table places VK/slot tree and serving-key/serving tree as separate custody mechanisms (`vault-carriers.ts:239-251`); a place seed alone has no demonstrated direct path to open those rows or decrypt all face data. ''Qualification:'' specific face-adjacent group-secret or founder-derived material may be exposed through the explicit seed-fed helpers noted above; do not overclaim zero face-related impact.
-
-''MEASURED — 2026-10-19 — twin-alone:'' Existing place KEL provides no next-key commitment, rotation, or recovery. Therefore it offers no cryptographic way to distinguish legitimate from attacker signatures made with the same stolen seed. Independent transparency witnesses and authenticated pins could reveal inconsistent public histories, but are not in the measured place KEL.
-
-''LEAD — 2026-10-19 — yours-alone:'' Kapae may shadow or sever relationships under its own authority, but cannot undo the compromised signer or automatically revoke every consumer. Under current code the robust recovery path is re-found a new place identity, then re-pin/re-carry/update dependent gates and fleet relations. With an implemented pre-rotation chain, rotate using offline next authority, have consumers verify and advance, then reject old-key signatures; compromise of next/root means re-found. Forgery window persists until consumers accept rotation.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-q4-and-ranked-ruling>>
-
-!!! Q4 and ranked ruling
-
-
-''Rank 1 — LEAD — 2026-10-19 — confirmed-by-both: third shape, split root and boot signer with pre-rotated recovery.'' Keep an owner/threshold-controlled place root and committed next key offline; use a replaceable, narrowly scoped online place signer for unattended floor operations. Optionally protect its at-rest credential with TPM/systemd or OS keystore where available. Publish and verify a KEL-like rotation chain across all consumers. This improves theft recovery while preserving service. It is not a quick wrapper change: existing KEL and relying pins do not support this today, and current signer consumers must be narrowed/audited first.
-
-''Rank 2 — LEAD — 2026-10-19 — confirmed-by-both: candidate (1), named floor signer protected at rest.'' Explicitly amend floor law to “no custody VK/FCK; named place signer may be S.” Use owner-only storage at minimum and OS/TPM protection where available; make release policy and unsupported-platform fallback explicit. This aligns with present unattended behavior, but a stolen key currently requires re-found and source shows broader uses than the proposed “place acts only.”
-
-''Rank 3 — LEAD — 2026-10-19 — yours-alone: candidate (2), boot custody door around place signer.'' It makes the signer unavailable until a human arrives, conflicting with faceless Herm and unattended container/waking-floor identity service. Reserve such a door for a distinct sensitive serving S if one is introduced; current table says no serving row stands. If chosen for the place signer, explicitly accept unavailable signed identity until unlock.
-
-| Vessel | Effect of Rank 1 (LEAD, 2026-10-19) |
-| Herm | Starts faceless at public floor with online signer; no VK/FCK or face rows. Offline root/next required for place-key rotation. |
-| Full node | Same floor identity; face data remains behind face/VK doors. Any genuinely sensitive serving payload gets its own separately named key and unlock policy. |
-| Hearth | Inherits node place identity; every face's D rows still require that face's own admission. |
-| Container | No-human restart restores only place-floor signer through configured machine protection; it must not restore VK/FCK from images, environment, or orchestration. |
-| Waking floor | May carry public identity/proofs/ciphertext unattended; private D decryption or transformation still requires face authority or a separately ruled S. |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-red-test-lead-2026-10-19>>
-
-!!!! Red test (LEAD, 2026-10-19)
-
-
-Run an adversarial no-human boot and copied-disk test. On the authorized host, a faceless Herm and restarted container must publish the expected place card/relay/gate identity; no seed or child secret appears in disk-visible public artifacts, logs, environment, or API. On a copied disk / wrong host, signer release fails if TPM/host binding was selected (or the documented owner-only file exposure is demonstrated if not). With no VK/FCK, attempts to read, replace, restore, rotate, or decrypt any face row fail byte-preservingly. Verify allowlisted signer domains only, and specifically assert that group-secret and dyad derivations cannot become broad custody opens. Then simulate current online-key theft: offline pre-rotated authority emits a valid successor; all consumers advance and reject old-key place acts. If offline next/root is also compromised, require re-found rather than claiming recovery. Candidate (2) variant must assert that no human means no signed place floor identity.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yin-wave2-primary-source-references-and-limits>>
-
-!!! Primary-source references and limits
-
-
-All external pages above were read 2026-10-19. Systemd/TPM behavior depends on installed versions, firmware and PCR policy; Kubernetes depends on configured encryption provider and RBAC; KERI is a proposed analogue, not a Lares implementation. Signal evidence concerns user-key transparency, not server host-key storage. This handback does not establish house-specific kapae/re-found procedure, exhaustive transitive effects of group-secret opening, or waking-floor product availability requirements.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave2-yang-place-signer-handback-wave-two>>
-
-!! YANG — place signer handback, wave two
-
-
-Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = read in repository code or primary source; LEAD = inference/design. Provenance: ''confirmed-by-both'', ''yours-alone'' (YANG/MINE), ''twin-alone'' (YIN/TWIN). Repo stayed read-only; no suite, build, or git write ran. Read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, then `TWIN.md`; code details in `MINE.md`.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave2-1-twin-s-principal-claims-checked-against-code>>
-
-!!! 1. Twin's principal claims checked against code
-
-
-| Twin claim | Finding and evidence | Provenance |
-| Node place seed is private, auto-loaded, independent from VK/SK; Herm receives it. | ''CONFIRM.'' `node-vessel-identity.ts` has distinct `loadVesselSigningSeed`; `open-node-vessel.ts:945,568-582,3283`; carrier table `vault-carriers.ts:239-251`. Qualify: this key also derives/signs capabilities beyond simple place identity (MINE Q1). | confirmed-by-both |
-| Herm has zero face slots and serves before any face; SK has no current serving row. | ''CONFIRM.'' Prior code citations `vessel-standing.ts:60-79,113-119`, `vault-carriers.ts:12-14,239-251`, `open-node-vessel.ts:3242-3291`; no code indicates an SK consumer. | confirmed-by-both |
-| Private place seed may be called F/public floor data. | ''REFUTE.'' It is private signing material. It can be named separately as S; public verifying key/card may be F. | confirmed-by-both |
-| Place KEL can recover by pre-rotation. | ''REFUTE for current code.'' `lararium-mesh/src/vessel-kel.ts:1-17,38-45` explicitly says non-transferable, one-key inception, no next digest/sequence/version; stealing/loss requires re-founding. Charter seat KEL rotation is a different mechanism. | yours-alone |
-| Clear current key + offline pre-rotated successor is viable third shape. | ''CONFIRM as LEAD only.'' It is a redesign, not extant behavior; current parser/verifier rejects extra fields / next key. Needs schema, rotation, acceptance/pinning, and independently stored successor. | twin-alone |
-| Systemd/TPM can bind a credential to host/boot; auto-release remains unattended authorization. | ''CONFIRM'' from twin's cited systemd primary docs. Fits candidate (1) at-rest strengthening, not human presence. A hostile approved runtime can still ask for/use it. | twin-alone |
-| Vault auto-unseal/Kubernetes secret delivery make human boot optional, but shift trust to machine identity/configuration; Kubernetes default etcd storage lacks encryption. | ''CONFIRM'' from sources linked in `TWIN.md`; not Lares face authorization. | twin-alone |
-| Tor, WireGuard, SSH host, ACME demonstrate persistent unattended service identity; theft permits impersonation within that key's domain. | ''CONFIRM'' source claims; the analogy supports narrowly typed place identity, not face-row access. | twin-alone |
-| Signal transparency protects service private key at rest. | ''REFUTE/qualify.'' Twin correctly notes its transparency service detects inconsistent mappings, distinct from E2E user keys; it does not itself protect the server's own host key or make boot attended. | twin-alone |
-| Attacker with seed cannot open face rows. | ''CONFIRM with qualification.'' Distinct custody root/FCK doors reject floor key substitution (`gate-bundle.ts`, node identity). However seed-derived dyad veil and device/Keyhive uses widen impersonation surface. Audit/contain those consumers before claiming “place acts only.” | confirmed-by-both on custody boundary; yours-alone on derived-use qualification |
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave2-2-yang-code-lens-on-yin-s-ground>>
-
-!!! 2. YANG code lens on YIN's ground
-
-
-''MEASURED 2026-10-19:'' The system analogies describe at-rest and boot-release controls; none grants Lares row-key authority. The current mesh floor KEL does not possess KERI pre-rotation. Its format has exactly one self-signed `icp` key and rejects next-key commitment (`vessel-kel.ts:1-17,38-45`). Thus KERI's recovery guarantee cannot be mapped onto today's place key. Nexus charter/seat rotation and Kapae do not repair the place identity: they govern charter seats/participants, not floor KEL. Signal-like public transparency could help detect conflicting announcements, but no place witness/transparency path surfaced in the audited code.
-
-''MEASURED 2026-10-19:'' Candidate (1)'s narrow “place acts only” is not literally true today: seed reaches floor HKDF children, relay gate derivation, `carry-for` seal and floor pin, promotion assertion, device-enrolment signing/opening, and `deriveDyadVeil`; it is supplied into node/Keyhive setup. The red design boundary must inventory and type these uses. The floor gate itself is carefully separate from custody root: both tier doors refuse the other's domain (`gate-bundle.ts:250-310`; `node-vessel-identity.ts`), so the existing typed boundary supports “cannot open custody row,” not “no other credentials derived.”
-
-''LEAD 2026-10-19:'' Map systemd encrypted credentials/TPM to wrapping the place signer at rest and unattended boot release. This may reduce copied-disk theft while preserving Herm uptime; it does not address compromise of a running host. Vault auto-unseal and Kubernetes secret mounts resemble delegated machine release and have similar runtime trust; plain Kubernetes Secret is not enough. Tor/SSH/WireGuard/ACME show how operators accept an always-on service identity and respond to theft by replacing/rebinding public identity. KERI pre-rotation is the closest recovery design only after adding the absent place-KEL machinery. Signal transparency is useful detection inspiration, not key protection.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave2-3-ranked-ruling-and-per-vessel-effect>>
-
-!!! 3. Ranked ruling and per-vessel effect
-
-
-''Rank 1 — third shape: split long-lived place root from scoped boot signer, with independently protected pre-rotated successor. LEAD, 2026-10-19.'' Keep Herm's operational signer online, narrowly authorized for explicitly named floor/place domains. Let an offline owner-held root or threshold process authorize successor rotation; keep next seed off host. Optionally wrap online signer with TPM/systemd credential on supported systems. First remove or separately justify non-place uses (notably dyad veil/face enrollment). This preserves unattended public boot and adds a recovery path; it does not prevent forgery while a current signer remains accepted. Requires new KEL contract, verifier, rotation command, witness/pin update, and recovery runbook.
-
-''Rank 2 — candidate (1): named protected floor signer. LEAD, 2026-10-19.'' Explicitly classify place signer as private floor S, separate from VK/FCK/SK; owner-only file or OS keystore, TPM wrapper when available. Permit only the named place and public floor duties. This is closest to current behavior and preserves herm/container/waking floor availability, but a copied seed can impersonate indefinitely because present KEL cannot rotate. Owner-only mode helps against other local accounts, not disk theft/root.
-
-''Rank 3 — candidate (2): human boot custody door. LEAD, 2026-10-19.'' Stronger protection while powered off, but blocks place identity and floor child derivation until a person unlocks. Keep public card/charter/ciphertext readable if they do not require signer; Herm cannot deliver authenticated floor service before unlock. Use only if operator ranks unattended service below boot-person presence.
-
-| Vessel | Effect under rank 1 / 2 | Effect under rank 3 |
-| Herm / crossroads | Auto-start public place identity and floor gates; successor root stays offline. | Waits for person before signer-backed identity/floor endpoints; no-face Herm remains unable to unlock itself. |
-| Full node / hearth | Public floor boots unattended; each face row still requires its own face custody. | Node boot door must not be conflated with face unlock; public signer-backed service pauses, face rows remain face-scoped. |
-| Container restart | TPM/credential policy releases scoped signer unattended; no face or serving key restored. | Container starts public static floor only; signer services wait for attended unlock. |
-| Waking floor | Derive/serve public floor routes, carry ciphertext; never decrypt D rows. | Wakes without signer-backed floor functionality until person arrives. |
-| CLI/MCP | Operator acts can request signer-scoped act; face proof remains required for face rows. | CLI may unlock explicitly; MCP must not inherit a prior face or unattended service credential. |
-
-''Red test (LEAD, 2026-10-19):'' fresh zero-face Herm boot and unattended container restart must serve public card/charter and derive only allowlisted floor-gate pins; no VK/FCK/SK or face row opens. Read copied signer file and show attacker can forge current place assertion, then rotate through separately held next authority and prove old key fails while new KEL verifies; attempted floor-door sovereign derivation and cross-face decrypt must refuse. Repeat on rank 2 without offline rotation to demonstrate expected permanent-key recovery gap; rank 3 must demonstrably refuse signer-backed endpoints before human unlock while leaving public unsigned bytes readable.
-
-<<~/ahu>>
-
-<<~ ahu #/r5-yang-wave2-4-decision-critical-caveat>>
-
-!!! 4. Decision-critical caveat
-
-
-Current seed's direct and derived uses exceed the candidate's “place acts only” statement. A ruling for named floor signer should either narrow the code capability passed from `vesselSeed` or enumerate every approved domain, including floor gate derivation, relay, carriage, promotion, enrollment, and dyad veil. Custody independence appears strong in typed gate doors, but that alone does not neutralize credential/identity misuse. No implementation changes or tests were requested or performed.
-
-<<~/ahu>>
-
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>.
+Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); only Markdown transliterated to memetic-wikitext. Each round's two handbacks trade findings, so a later round confirms or refutes an earlier one, and round four outranks the rest. The rulings and the per-vessel table rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>.
 
 <<~/ahu>>
 
@@ -1467,8 +1058,417 @@ No test, build, suite, or git write was run. The tree remained read-only. Local 
 
 <<~/ahu>>
 
+<<~ ahu #/r5-yin-wave1-yin-wave-one-internet-scout-place-signer>>
+
+!! YIN wave-one internet scout — place signer
+
+
+Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASURED'' means read directly in the cited primary source/code; ''LEAD'' means an inference or proposed Lares design. Round-four handbacks `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first. The repo `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write was run. This is wave one's internet lens: Q3 is deepest; Q1 is mapped only to the handed-off canon, not freshly re-audited.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-q3-how-always-on-identities-are-protected>>
+
+!!! Q3 — how always-on identities are protected
+
+
+| System | MEASURED, 2026-10-19 | Boot consequence and Lares mapping (LEAD) |
+| ''systemd credentials'' | `LoadCredentialEncrypted=` accepts a credential encrypted by `systemd-creds`; credentials may bind to TPM2, host key, or both. With persistent `/var` and TPM2, default encryption combines them so the credential is tied to local hardware and OS installation. Plain `SetCredential=` is unsuitable for private keys because unit files are world-readable. Sources: [[systemd credential documentation|https://systemd.io/CREDENTIALS/]], [[systemd-creds manual|https://www.freedesktop.org/software/systemd/man/257/systemd-creds.html]], [[systemd credential implementation docs|https://github.com/systemd/systemd/blob/main/docs/CREDENTIALS.md]]. | This encrypts the file credential at rest, then systemd decrypts and delivers it to service at boot. No person is required if machine key/TPM policy allows release. Disk theft alone is reduced; compromise of an accepted boot/service context can still expose the credential. Local key + TPM binding is the closest off-the-shelf analogue to candidate (1), but TPM auto-release is still unattended authorization, not a human unlock. |
+| ''TPM2-sealed key'' | systemd-creds can use TPM2 keying and PCR policy. PCR binding gates release against measured boot state; a signed PCR policy can authorize selected boot measurements. Sources above. | Machine releases only under configured boot state; a human PIN can add presence, but is incompatible with unattended release. TPM sealing does not protect against a hostile authorized running OS that can ask TPM for the key. Lares can use hardware protection as an optional wrapper, not as proof of operator presence. |
+| ''HashiCorp Vault auto-unseal'' | Vault supports delegated auto-unseal using cloud KMS/HSM; on startup Vault connects to delegate with an encrypted root key for decryption. Instance identity/permissions authorize KMS access. Source: [[Vault integrated storage deployment guide|https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-deployment-guide]], [[Vault HSM partners|https://developer.hashicorp.com/vault/docs/partners/hsm]]. | No human shares are entered at each start; delegated machine identity performs unseal. This shifts trust to the KMS/HSM and host identity. It is availability-oriented delegated custody, not unattended public-only service. It maps to a boot door only if the house explicitly accepts a node machine principal. |
+| ''Kubernetes Secrets'' | Secret objects are base64-encoded and, by default, stored unencrypted in etcd. Encryption at rest is separately configured; local encryption key on control-plane host does not protect against host compromise. KMS envelope encryption keeps KEK outside Kubernetes. Pod creation rights can indirectly expose namespace secrets. Sources: [[Secrets|https://kubernetes.io/docs/concepts/configuration/secret/]], [[encryption at rest|https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/]], [[good practices|https://kubernetes.io/docs/concepts/security/secrets-good-practices/]]. | Kubernetes delivery to a pod is not itself a safe custody boundary. At rest depends on configured provider; at runtime an authorized pod can read the mounted value. A mounted signer credential can be exposed through pod/host/admin compromise. Do not treat orchestrator secret injection as an automatic Lares human unlock. |
+| ''Tor onion-service identity'' | Tor v3 keeps a private master Ed25519 key in the service directory; it is the stable service identity and derives blinded signing keys. Tor spec explicitly labels the master key long-term and distinguishes online descriptor signing keys; spec notes offline master-key possibility. Sources: [[directory format|https://tpo.pages.torproject.net/core/torspec/rend-spec/fs-contents.html]], [[v3 protocol overview|https://spec.torproject.org/rend-spec/protocol-overview.html]]. | Conventional host persists key locally and starts unattended; a copy can impersonate the onion identity. Offline master-key use improves separation but requires a delegated operational flow. This is the closest identity analogy: a service key establishes public place identity; it does not imply authority to open unrelated user custody. |
+| ''WireGuard'' | WireGuard model configures private keys for interfaces and associates peer public keys with allowed IP routing; the paper illustrates reading private key from configuration. Source: [[WireGuard paper|https://www.wireguard.com/papers/wireguard.pdf]]. | A long-lived host key enables unattended tunnel identity; protecting the config/host is operator responsibility. Theft lets attacker impersonate that peer and claim configured routes. It is network admission, not evidence for Lares face data access. |
+| ''OpenSSH host keys'' | `sshd_config`'s `HostKey` names private host keys; sshd refuses key files that are group/world accessible. Source: [[OpenBSD sshd_config|https://man.openbsd.org/sshd_config.5]]. | File permissions protect against ordinary local users, not disk/root theft. sshd reads keys and starts without a person; compromise enables host impersonation. This supports a narrow named place signer protected by ownership/permissions, but not calling it public data. |
+| ''Let's Encrypt / ACME'' | ACME account is associated with a key; Let’s Encrypt account ID can be rediscovered by registering with the same key. CAA docs note account key as a barrier to a domain hijacker issuing malicious certificates. Sources: [[account IDs|https://letsencrypt.org/docs/account-id/]], [[CAA|https://letsencrypt.org/docs/caa/]]. | ACME clients persist account keys and renew unattended; theft allows attacker to act as that account, subject to ACME/domain validation controls. A compromised ACME account is revocable/replacable, but this is not by itself a KEL recovery mechanism. |
+| ''KERI / KERIpy'' | KERI establishment events publish current signing keys and commit by digest to next keys. Rotation needs current signatures and opens committed next keys; next private keys are the recovery boundary. KERI docs state pre-rotation helps mitigate later current-key compromise; if root pre-rotated keys are captured, no KERI-internal recovery exists. Sources: [[KERI 1.0 spec|https://trustoverip.github.io/kswg-keri-specification/]], [[KID0005 commentary|https://identity.foundation/keri/kids/kid0005Comment.html]], [[vLEI KERI infrastructure governance|https://www.gleif.org/media/pages/organizational-identity/become-a-vlei-issuer-qvi/vlei-ecosystem-governance-framework/23f7b8278d-1774607226/2025-04-16_vlei-egf-v3.0-technical-requirements-part-1-keri-infrastructure-2024_v1.3_final.pdf]]. KERIpy's keeper model has current/next public lots and rotation indexing ([[keripy keeping.py|https://github.com/WebOfTrust/keripy/blob/main/src/keri/app/keeping.py]]). | Pre-rotation key should be kept offline or under stronger threshold custody; its exposure is much more serious than current online signer exposure. A human need not be present for ordinary current-key signing, but recovery rotation needs access to next key(s). Pre-rotation cannot prevent forgery while stolen current key remains authoritative; it supplies verifiable path to supersede it. |
+| ''Signal'' | Signal's server-side key transparency service maintains append-only, cryptographically protected key mappings and proofs to make service tampering detectable; it is distinct from end-to-end user identity keys. Sources: [[Signal Automatic Key Verification|https://signal.org/blog/automatic-key-verification/]], [[Signal key-transparency server|https://github.com/signalapp/key-transparency-server]]. Signal protocol publishes user identity keys/prekeys to server; the server does not thereby receive the user's private identity key ([[PQXDH spec|https://signal.org/docs/specifications/pqxdh/]]). | Transparency/consistency proofs help detect equivocation; they do not make the server's own host signing key inaccessible or create a human boot ceremony. Analogy: public floor artifacts can be witnessed/transparency-checked; per-face private keys remain separate and client-held. |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-q3-synthesis-lead>>
+
+!!!! Q3 synthesis (LEAD)
+
+
+At-rest protection claims differ. `chmod 0600` / owner-only file (OpenSSH-style) protects against other unprivileged local users. TPM/systemd machine binding protects more strongly against copied disks and wrong boot states, while still auto-releasing under the approved host. Cloud KMS/HSM auto-unseal removes the key-encryption key from local disk but grants service identity a machine-authorized decrypt path. Kubernetes Secret API storage alone promises no at-rest encryption by default. Tor, WireGuard, and ACME examples show the common operational reality: identity keys are persistent and automatically loaded for availability, so compromise of the host's effective runtime identity compromises its public service identity. KERI adds independently committed future control, while Signal transparency supplies detection of inconsistent public mappings.
+
+None of those analogies means a place signer should open a face's custody row. The place identity's authority must remain typed and scoped to public place acts. A hardware root that silently auto-unseals a signer changes the threat from “file readable” to “machine identity can request use”; it does not make the operator present.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-q4-third-shape>>
+
+!!! Q4 — third shape
+
+
+''LEAD recommendation: split a long-lived place root from a boot signer, and give the place identifier a KERI-like pre-rotated recovery path.'' The online signer may sign a tightly enumerated set of place acts and public floor-gate derivations. An offline owner-held root or threshold-held next key authorizes rotation of the online signer and publishes a verifiable KEL event. Keep at least one next key outside the always-on node. Use TPM/systemd encrypted credential as an optional at-rest wrapper for the online signer on supported nodes, with explicit fallback policy on systems lacking TPM.
+
+This third shape improves on plain clear-file candidate (1) by making stale online-key theft recoverable and machine-tied at rest where available. It improves on human-at-every-boot candidate (2) by preserving Herm public service and unattended container restart. It does ''not'' erase the theft window: attacker with current signer can forge until verifiers accept the rotation; attacker with next/root key can seize or permanently lose the place identity. If recovery cannot be implemented with independently protected next key, do not claim pre-rotation protection. Root/next compromise in pure KERI can require abandoning the identifier and re-founding identity with ecosystem-level rebinding.
+
+An alternative is candidate (1) strictly bounded and wrapped by owner-only file / OS keystore: simple and compatible, but a disk reader with the file gets the place identity. Candidate (2) can protect a sensitive private serving payload if there is one, but current evidence says no serving row exists, and gating the place signer would interrupt unattended floor identity. Do not conflate the two secrets.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-q2-if-attacker-reads-the-current-seed-at-rest>>
+
+!!! Q2 — if attacker reads the current seed at rest
+
+
+''MEASURED from round-four code audit, 2026-10-19:'' the node privately reads `signingKey` from local key file (`packages/lararium-node/src/node-vessel-identity.ts:429-442`), uses it for floor signing/device capability (`:451-487,491-499`), and supplies it to Herm (`packages/lararium-node/src/open-node-vessel.ts:3283`). It is independent of VK and SK; `packages/lararium-node/src/vault-carriers.ts:239-251` places `vessel-key` and `sk-slots` at floor. The prior handbacks report no current serving row/SK consumer. Herm has zero PersonaGroup slots and raises with recognized operator caps (`vessel-standing.ts:60-79,113-119`; `open-node-vessel.ts:558-614`).
+
+''LEAD threat model:'' a seed reader can impersonate the place/vessel wherever verifiers accept its public key, forge any act signed by that key, and derive/sign any child floor-gate keys that the implementation derives from it. They can forge a place card/device identity, KEL inception or rotation only where that seed is the controlling KEL signer, and any dial/gate proof or carry-for seal using it. Exact cryptographic domains and callers need Q1's source audit; the handback names place acts and floor-gate derivation, not a verified exhaustive caller list. They cannot mathematically derive VK, a face FCK, a PersonaGroup identity root, or decrypt a face's ciphertext solely from this seed. A forged place admission/proof could still cause service-level deception if a relying gate trusts place signature as face authorization; design must ensure it does not. It cannot open custody rows unless code incorrectly uses place signer as a wrapper/opener, which current round-four evidence says it does not.
+
+Detection: compare KEL histories / witnessed public floor records, keep tamper-evident receipts and independent public-key pins, and alert on conflicting valid histories or unexpected rotation. Recovery: rotate place key through authenticated KEL pre-rotation if next key remains safe; revoke/replace relying pins and re-found/rebind if recovery authority is also lost. Kapae/re-found semantics are house-specific and were not independently verified in this internet pass, so this mapping is ''LEAD'', not a measured procedure. A stolen current key enables forgery until rotation is accepted; pre-rotation does not retroactively erase that window.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-q1-bounded-mapping-from-the-round-four-canon>>
+
+!!! Q1 — bounded mapping from the round-four canon
+
+
+''MEASURED (round-four audit, dated 2026-10-19):'' private `vesselSeed`/`vessel-key` seed is clear at rest and auto-loaded at node boot without a person; it is not VK or SK. Public floor identity/card material is distinct from the seed. The seed signs as vessel/place and derives public floor-gate children, per the caller/line summary in the prompt: `node-vessel-identity.ts:296-314,340-348,429-499`; `vault-carriers.ts:239-248`; `open-node-vessel.ts:3283`.
+
+''MEASURED scope caveat:'' I have not freshly opened source in the read-only repo for an exhaustive caller/domain inventory. The handoff specifically names place acts, floor-gate child keys, place DID, KEL inception, vessel card, carry-for seals, dial and gate proofs as candidate signing/derivation sites. Treat this enumeration as user-provided audit context, not independently confirmed completeness. Public relay/card/gate-floor identity must be available before a face exists for Herm boot, node restart, and waking floor if it stands in that role. Face-private access and face-authored acts can wait for their face admission. Whether all listed proofs must be emitted at boot vs on demand is a code-call-graph question unresolved here.
+
+''LEAD:'' named floor signer should never sign a face act or open custody; KEL inception/rotation authority is a special high-impact place identity operation and should likely require owner/next-key ceremony rather than ordinary boot signer. Derived children need domain separation and a public manifest naming exactly which derivations are permitted; otherwise “place acts only” is not an enforceable boundary.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-ranked-recommendation-and-per-vessel-effect>>
+
+!!! Ranked recommendation and per-vessel effect
+
+
+# ''Third shape: named place signer + separately protected offline/threshold place root and pre-rotated next key; optionally TPM/systemd-wrap online signer.'' Best blend for unattended public availability and recoverability. It still recognizes an online signer as a limited place authority. Herm/node can start at floor; a compromised online seed is revocable only while next/root authority is safe.
+# ''Candidate (1): named floor signer protected at rest by owner-only file, OS keystore where available, ideally machine-bound encrypted credential.'' Operationally simple and supports herm/container/waking-floor unattended startup. Disk seed theft gives place impersonation; face custody stays cryptographically separate. Must explicitly name signer S and allow no VK/FCK at floor.
+# ''Candidate (2): human boot custody door.'' Strongest human-presence gate for whatever key it gates, but makes Herm's public place identity wait for an operator and breaks unattended container restart/waking-floor identity unless service remains deliberately anonymous/public-key cached. Use only for a genuinely sensitive node serving S, not automatically for this public place signer.
+
+| Vessel | Effect under ranked third shape (LEAD) |
+| Herm | TPM/systemd or owner-only protected online place signer auto-available; public card/relay/gate floor starts without face; no face rows. Offline next/root required to rotate. |
+| Full node | Same place signer behavior; VK/FCK remain absent at floor. Any genuinely private serving S has its own boot door and remains locked without authorized unlock. |
+| Hearth | Composition inherits node place identity, not extra key; every face's D rows remain individually admitted. |
+| Container | Unattended restart resumes public floor if host-bound credential releases; no credential injected from image/env/log; unsupported host falls back to owner-only file or public-only mode. |
+| Waking floor | Carries public identity/ciphertext and may verify proofs; unattended private-row decryption/transformation still needs a face or separately ruled S. |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-red-test-lead>>
+
+!!!! Red test (LEAD)
+
+
+Build one end-to-end adversarial test around a copied data disk and a no-human reboot: (a) on approved machine/boot, public place card and public relay start; every exact place signer domain is logged against an allowlist; (b) neither `vesselSeed` nor derived private child bytes appear in disk image, environment, logs, API, or public artifacts; (c) a different host cannot unwrap the credential; (d) no VK/FCK is present and direct attempts to open, replace, restore, rotate, or decrypt any face row fail byte-preservingly; (e) same-host restart does not admit a face; (f) attack-simulate theft of the current place signer and show an independently held pre-rotated key emits a valid KEL rotation, after which old-key place acts are rejected; (g) compromise of the offline next key is treated as identity-loss/re-found, not claimed recoverable. For candidate (2), add the expected deliberate tradeoff assertion: no person means no signer and no signed place identity at boot.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave1-source-provenance-notes>>
+
+!!! Source / provenance notes
+
+
+Internet claims above cite primary vendor/project specifications or official docs and were accessed 2026-10-19. Links are included inline. Systemd and TPM documentation evolves with versions; deployment details require checking the installed systemd release and firmware/TPM policy. Kubernetes data-at-rest behavior is configuration-specific. KERI is an identity-rotation analogy, not evidence that Lares currently implements KERI semantics. Signal evidence concerns key transparency and user key handling, not a specific server host-key storage promise. `kapae` / `re-found` handling and exhaustive Lares signing caller inventory remain open for the next source-focused pass.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-yang-handback-place-signer-code-audit>>
+
+!! YANG handback — place signer code audit
+
+
+Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` before source work. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write ran. `MEASURED` means directly read in source; `LEAD` marks implications or recommendations. No web search was done in wave one, per assignment. Claims below carry their date and evidence mark.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-q1-what-the-place-signer-can-do-today>>
+
+!!! Q1 — what the place signer can do today
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-key-file-and-identity-lifecycle>>
+
+!!!! Key file and identity lifecycle
+
+
+* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/node-vessel-identity.ts:140-170,185-198,429-448` stores the Ed25519 secret seed as clear hex JSON in a runtime-store-sibling identity directory, file mode `0600`; the seed is explicitly described as local and never synced. `loadVesselSigningSeed()` reads it, checks the seed derives the named public key, verifies the adjacent KEL inception, and returns a fresh 32-byte seed. This is filesystem permission protection, not encryption, hardware sealing, or an interactive door.
+* ''MEASURED — 2026-10-19:'' `generateOrLoadVesselIdentity()` can mint only within an open custody claim and writes the key and inception together; `loadVesselIdentity()` is load-only. Normal daemon boot loads both public identity and private seed at `open-node-vessel.ts:945-946`, with no human unlock on that path. The identity is the place/vessel Ed25519 key, distinct in code and purpose from custody VK/SK and PersonaGroup root.
+* ''MEASURED — 2026-10-19:'' The signer is also listed as `vessel-key` at floor in `packages/lararium-node/src/vault-carriers.ts:239-248`; `open-node-vessel.ts:3283` passes the seed into Herm composition. Therefore the earlier blanket wording “floor holds no vessel key” conflicts with current code. More precisely: floor has no *custody VK/FCK*, but currently has this private place signer seed.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-direct-seed-consumers-and-signing-derivation-purposes>>
+
+!!!! Direct seed consumers and signing/derivation purposes
+
+
+* ''MEASURED — 2026-10-19:'' `node-vessel-identity.ts:312` signs the place KEL inception when founding. `packages/lararium-mesh/src/vessel-kel.ts:2-13,35-59` fixes the signed domain to `vessel-kel`, with an `icp` event containing one public key and its self-signature.
+* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/commands/nexus-contract.ts:250-268` uses the seed to sign `nexus carry-for`'s place carrier contract and, when a Nexus is present, the place floor-pin statement. These are place claims, not face signatures.
+* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:1217` signs vessel-origin `askSeatDuties` asks; `:3087,3103,3115` signs node-island memory asks (`cut`, `door`, `import`). These signer calls authenticate this device/place at internal node verbs.
+* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:1450` constructs a `carriageSignerFromSeed` used by `vesselCarriagePull`; its herm path signs place-floor carriage presentations and statements. The same region `:1394` derives relay-gate seed from this seed unless an explicit relay seed config overrides it. `carriage-relay.ts:61-76` HMAC-SHA256 domain-separates this transport gate from the Ed25519 place key; it does not reuse the raw key bytes.
+* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:2279-2280` uses the seed as the device key signer and as `groupSecretOpenerFromSeed` for the sibling channel. `:2150` supplies it to daemon auth (`seed`). This means the seed is not merely a public-floor announcer key: node code uses it for device and group-secret cryptographic operations too. Mesh `persona-group-secret.ts:192` defines the opener; exact data exposure from a stolen seed depends on the sealed group-secret records and does not establish general access to face rows.
+* ''MEASURED — 2026-10-19:'' `open-node-vessel.ts:3283` provides the seed to Herm as `signerSeed`; Herm has no PersonaGroup slot, but it does need this identity for its place-facing floor functions.
+* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/commands/fleet-join.ts:285+` loads the place seed for a joining-device request signature. `packages/lares-cli/src/commands/meme.ts:1117` supplies a seed-backed signer to promote-check flow. `packages/lararium-node/src/commands/init.ts:246-251,320-327,491-510` uses it during founding/admit and place composition. These are explicit CLI/founding acts, generally operator-invoked, rather than unattended boot duties.
+* ''MEASURED — 2026-10-19:'' `packages/lararium-mesh/src/dyad.ts:399-402` derives a founder veil keypair from `vesselSeed` and a group tag using hardened persona derivation. `open-node-vessel.ts:2150` hands the seed into daemon identity composition. Those derived identities are purpose-separated keys, but compromise of the root seed allows deterministic derivation where the derivation inputs/tags are available.
+* ''MEASURED — 2026-10-19:'' `packages/lararium-node/src/main.ts:765-769` uses vessel identity as the publisher on a floor card. The public card itself is a derived/public artifact; the signing seed does not need to appear in the card.
+* ''MEASURED — 2026-10-19:'' Floor-gate children do ''not'' expose the root seed. `node-vessel-identity.ts:454-499` implements `vesselFloorKeyDoor`: it re-reads and proves the key file for each registered domain, derives HKDF-SHA256 with empty salt and domain-as-info, clears its local seed buffer, and returns a fresh child. It refuses unregistered domains and the sovereign gate-bundle domain. `hearth-sovereign-pin.ts:56` and `herm-carriage.ts:64` derive floor gate bundles through that door. Thus a thief of the root seed can reproduce all registered floor children, but callers are intentionally denied the raw seed via this door.
+* ''MEASURED — 2026-10-19:'' The CLI `loadVesselCard()` only reads cached ContactCard JSON (`node-vessel-identity.ts:375-393`); card persistence is mode `0600` (`:359-372`). The card is not freshly signed with the seed at each boot. The seed may have participated in founding Keyhive identity creation; the cached card is public-facing identity material, not proof of at-rest seed protection.
+* ''MEASURED — 2026-10-19:'' `rg` across non-test source in the three assigned packages found no `loadVesselSigningSeed` caller in `packages/lares-cli/src` beyond `commands/meme.ts`; node callers include `open-node-vessel.ts`, `main.ts`, `commands/init.ts`, `commands/nexus-contract.ts`, and `commands/fleet-join.ts`. `device-admit.ts` mentions the loader in a comment but does not itself call it. In meshes, `dyad.ts` accepts the seed as an argument; it does not load disk state.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-humanless-versus-operator-acts>>
+
+!!!! Humanless versus operator acts
+
+
+* ''MEASURED — 2026-10-19:'' Boot loads the seed before floor and node composition (`open-node-vessel.ts:945-946`), then derives floor cards/gates and can establish relay and internal node signing capabilities. The `vesselFloorKeyDoor` explicitly answers while locked (`node-vessel-identity.ts:454-470`). A herm can therefore publish/serve the place floor without a face or a person present.
+* ''LEAD — 2026-10-19:'' To preserve an unattended herm boot, container restart, and waking floor service, the place signer or a prederived equivalent must be available at boot. A boot custody door would suspend those signer-dependent floor actions until a person unlocks. Public reads not requiring a signature may continue, but exact degraded service needs product-level testing/specification.
+* ''MEASURED — 2026-10-19:'' Fleet join, `carry-for`, founding, and promotion CLI paths occur under explicit commands; those can wait for a person. Daemon boot, floor gate reconstruction, boot-time floor card and internal signer setup cannot wait without changing the availability contract.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-q2-consequence-of-seed-theft>>
+
+!!! Q2 — consequence of seed theft
+
+
+* ''MEASURED — 2026-10-19:'' A seed thief can sign as the place key anywhere a relying party accepts that key: forge future place carrier seals/floor pins, device/place assertions, floor-card publications, and vessel-authenticated internal asks; derive relay and registered floor-gate children; recreate seed-derived founder veil identities given their derivation tags. The exact reachable operations depend on verifier policy and available public context.
+* ''MEASURED — 2026-10-19:'' The place seed is not the custody VK, no VK/FCK derivation is shown, and carrier mapping puts private custody rows behind the custody key (`vault-carriers.ts:239-251`). Thus the place signer alone does not directly open the custody rows or automatically decrypt every face's archives/data. Avoid the stronger claim “cannot expose any face-related material”: it is also supplied to a group-secret opener and dyad-veil derivation path, so targeted sibling/founder-derived material needs a separate cryptographic impact audit.
+* ''MEASURED — 2026-10-19:'' The place KEL offers no recovery: `vessel-kel.ts:2-13` and `node-vessel-identity.ts:185-198` explicitly define non-transferable identity, no next-key commitment, and fresh founding after loss/theft. There is no place KEL rotation path in the assigned source; `rg` found only inception/decode/verify. `lares nexus seal rotate` rotates charter seats/epoch, not the place key. Vault `--rotate` rotates custody VK, not this seed.
+* ''LEAD — 2026-10-19:'' With current non-rotatable KEL, recovery means abandon/re-found the place identity and re-pin/re-carry it through the relevant Nexus, fleet, and floor-gate relationships. The board can detect signatures that fail, but cannot distinguish attacker signatures made with the stolen valid seed from the real place. Kapae can shadow relationships/edges under their own authorities; it does not recover the compromised place identity or revoke every consumer automatically. Re-found carries continuity and coordination costs.
+* ''LEAD — 2026-10-19:'' A named protected signer reduces offline disk theft risk only if the file/keystore boundary actually withholds or cryptographically seals the seed. Owner-only mode `0600` does not protect against root, same-user compromise, backup leakage, or an attacker who can read the boot volume. A TPM/OS-bound design also needs an explicit threat model for a running compromised host.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-place-kel-and-the-proposed-third-shape>>
+
+!!! Place KEL and the proposed third shape
+
+
+* ''MEASURED — 2026-10-19:'' Unlike the persona KEL or Nexus charter epoch chain, the place KEL has one self-signed inception and no `n`/next-key digest, threshold, sequence, or successor event. The module comments expressly reject a same-disk next key as offering no theft protection.
+* ''LEAD — 2026-10-19:'' A genuinely useful split would put a long-term place root offline and have it certify replaceable boot keys, with explicit expiry/revocation/recovery authority; merely certifying one static boot signer does not help if that signer cannot be revoked. But this changes all verifiers/pins and recovery semantics. A pre-rotation place KEL could make compromise recoverable only if the next private key stays outside the stolen boundary and all consumers enforce the chain.
+* ''LEAD — 2026-10-19:'' For the existing code contract, prefer a narrowly named place-signer S protected at rest and auto-available for public floor, while explicitly excluding VK/FCK and documenting non-rotatable identity/re-found recovery. This is a decision recommendation, not a claim that code already meets the protection standard.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-q3-comparison-research-deliberately-deferred>>
+
+!!! Q3 — comparison research deliberately deferred
+
+
+* ''MEASURED — 2026-10-19:'' No web research was performed in wave one, as assigned. I therefore make no source-backed claims here about systemd encrypted credentials/TPM2, TPM sealing, Vault auto-unseal, Kubernetes secrets, Tor, WireGuard, SSH host keys, Let's Encrypt, KERI witnesses, or Signal server keys. Those analogies need primary-source review in wave two; do not treat prior-round analogies as this audit's verified comparison.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave1-ranked-ruling-per-vessel-effect-and-red-proof>>
+
+!!! Ranked ruling, per-vessel effect, and red proof
+
+
+# ''LEAD — 2026-10-19 — Rank 1: named place signer, protected at rest, auto-loaded for floor only.'' Keep the floor free of custody VK/FCK; name the signer as a place-identity capability, constrain its APIs to the existing place/floor domains, and protect the seed with an owner-only file at minimum or an OS/TPM keystore where it can actually boot unattended. Document the remaining host-compromise risk and mandatory re-found recovery under today's KEL. This best preserves current herm availability, though code currently uses the signer beyond a narrow signing API (including derivation/group-secret opener), so implementation must narrow/justify each of those uses.
+# ''LEAD — 2026-10-19 — Rank 2: split offline root plus replaceable boot signer.'' This offers the strongest recoverability if KEL/verifiers/pins gain a root-certified rotation chain and next authority stays offline. It has a larger migration and compatibility burden; it outranks a simple unlock door for deployments that can operate a carefully provisioned online key.
+# ''LEAD — 2026-10-19 — Rank 3: boot custody door around the existing signer.'' It improves protection while powered off but breaks unattended herm/container/waking-floor service until a person arrives. Use only where operator presence at boot is an explicit availability choice. The existing place KEL still cannot rotate after a theft.
+
+| Vessel | Effect (LEAD, 2026-10-19) |
+| Herm | Needs unattended place identity and floor gate; rank 1 or a redesigned rank 2 supports it. Rank 3 leaves floor signer-dependent service waiting. |
+| Node/hearth | Separate face custody remains behind its own face/VK doors. Place signer protections do not grant or replace face FCKs. Explicit operator acts can wait for unlock. |
+| Container | Rank 1/2 allows restart with place identity; no container should restore face VK/FCK from orchestration. Rank 3 makes signer-dependent service wait for a human. |
+| Waking floor | Can rederive public gates and carry ciphertext only if the place signer is available under rank 1/2; no derivation implies face-data decryption authority. |
+
+''Red test — LEAD, 2026-10-19:'' From a clean persistent state, boot a faceless herm and restart its container with no human and no VK/SK/FCK. Public floor card, registered floor-gate children, and configured relay identity must reconstruct consistently; outputs/logs expose no seed. Assert every face/custody open and every operation requiring face authority refuses. Then copy only the at-rest image into an attacker-readable environment: the chosen protection must either withhold the signer (protected-store rank 1/2) or explicitly demonstrate/document the clear-file exposure; seed-only access must not unlock custody rows or face archives. For rank 2, additionally rotate the place boot key using the offline root and prove old-key signatures fail after consumers advance, while an offline stolen current seed cannot forge the successor chain.
+
+''Method boundary — MEASURED, 2026-10-19:'' Read-only source inspection and `rg` only. No tests were run, no builds, no git writes, no web search. Principal source paths: `packages/lararium-node/src/node-vessel-identity.ts`, `open-node-vessel.ts`, `carriage-relay.ts`, `commands/nexus-contract.ts`, `commands/fleet-join.ts`, `main.ts`; `packages/lararium-node/src/vault-carriers.ts`; `packages/lararium-mesh/src/vessel-kel.ts`, `dyad.ts`, `persona-group-secret.ts`; `packages/lares-cli/src/commands/meme.ts`.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-yin-wave-two-handback-place-signer>>
+
+!! YIN wave-two handback — place signer
+
+
+Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' means read in source or on a primary project/vendor page; ''LEAD'' means inference or proposed design. Provenance labels: ''confirmed-by-both'' (supported in both YIN and YANG wave-one handbacks), ''yours-alone'' (YIN), ''twin-alone'' (YANG). I read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, `MINE.md`, and `TWIN.md`. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no tests, builds, or git writes were run. All edits are confined to this directory.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-trade-a-audit-of-twin-s-top-claims>>
+
+!!! Trade (a): audit of TWIN's top claims
+
+
+| TWIN claim | Trade verdict and source check (2026-10-19) | Provenance |
+| Place seed rests as clear hex JSON, mode 0600, in identity directory; boot loader validates key and inception. | ''CONFIRM.'' `node-vessel-identity.ts:140-170,185-198,429-448`; startup load at `open-node-vessel.ts:945-946`. 0600 limits other local users; it is not encryption or host/root protection. | twin-alone |
+| Identity is separate from custody VK/SK and is listed at floor; Herm receives it. | ''CONFIRM.'' `vault-carriers.ts:239-251`; `open-node-vessel.ts:3283`. This is a private place key at floor, so the earlier literal “no vessel key” law conflicts with code; no-custody-key is accurate. | confirmed-by-both |
+| Place KEL has only self-signed inception, no next-key commitment or rotation/recovery path. | ''CONFIRM.'' `vessel-kel.ts:2-13,35-59`; `node-vessel-identity.ts:185-198`; TWIN's source search found only inception/decode/verify. `nexus seal rotate` and VK rotation are different key/authority lanes. Current recovery is abandon/re-found and update dependent pins/relationships (the operational steps are LEAD). | twin-alone |
+| Seed consumer inventory includes carry-for contracts/floor pins, asks, device/group-secret operations, relay gate derivation, carriage, CLI/founding, dyad founder veil derivation, and floor card. | ''CONFIRM, with scope caveat.'' Opened cited sites: `commands/nexus-contract.ts:250-268`; `open-node-vessel.ts:1217,1394,1450,2150,2279-2280,3087,3103,3115`; `commands/fleet-join.ts:285+`; `commands/init.ts:246-251,320-327,491-510`; `lares-cli/src/commands/meme.ts:1117`; `lararium-mesh/src/dyad.ts:399-402`; `main.ts:765-769`. TWIN's inventory is substantially more complete than the initial YIN handoff. Exact data reachable through the group-secret opener still requires separate record-level audit. | twin-alone |
+| Floor-gate child derivation uses a narrow registered-domain door and clears its local seed buffer. | ''CONFIRM.'' `node-vessel-identity.ts:454-499`; `hearth-sovereign-pin.ts:56`; `herm-carriage.ts:64`. A stolen root seed can still reproduce registered derivations; caller API restriction is not protection after seed theft. | twin-alone |
+| Public card is cached material rather than freshly signed at each boot. | ''CONFIRM.'' `node-vessel-identity.ts:359-393`; card file mode at `:359-372`. Seed participation in Keyhive founding does not make the cached card a secret. | twin-alone |
+| KEL signatures or current code detect a thief's valid signatures / rotate to recover. | ''REFUTE if implied.'' Current KEL has no succession record: valid attacker signatures under the stolen key are indistinguishable to a verifier that only has the existing key. Kapae/re-found are not an automatic revoke protocol. Independent witnesses might detect conflicting histories only if a transparency/consistency mechanism is built and relied on; that is proposed, not measured. | yours-alone |
+| Herm can publish/serve floor without a human; founding, fleet join, and carry-for can wait for an operator. | ''CONFIRM.'' Seed loads at boot and floor door is usable while locked (`open-node-vessel.ts:945-946`; `node-vessel-identity.ts:454-470`). Explicit CLI paths cited above are operator commands. Exact products that need to be available on an asleep/waking floor remain deployment/product decisions. | confirmed-by-both |
+| A seed-only attacker cannot access any face-related material. | ''QUALIFY / PARTIAL REFUTE.'' No derivation of VK/FCK or general face-row opening is shown; however the seed is supplied to `groupSecretOpenerFromSeed` (`open-node-vessel.ts:2279-2280`) and a founder veil derivation (`dyad.ts:399-402`). It may expose specifically seed-derived group-secret/veil material depending on records and input availability. Do not promise “no face-related material” without auditing those formats. | twin-alone |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-trade-b-yin-internet-lens-on-yang-s-code-paths>>
+
+!!! Trade (b): YIN internet lens on YANG's code paths
+
+
+''MEASURED — 2026-10-19 — twin-alone:'' The actual implementation is broader than “floor place acts only”: the place seed participates in internal daemon asks/authentication, group-secret opening, and founder veil derivation, as well as public/place signing and relay/floor-gate operations. Therefore the named-floor-signer ruling is a policy boundary that code must enforce or explicitly justify, not a label we can assign to the current seed and declare solved. Do not allow it to open custody rows; independently audit the group-secret and dyad paths for any indirect secret reach.
+
+''LEAD — 2026-10-19 — yours-alone:'' Systems analogies support treating a service identity as a separate named principal, not a face secret. Systemd/TPM and cloud KMS can protect the signer while enabling approved unattended boot, but they still delegate release to the machine/service identity. They do not satisfy human-presence semantics. Kubernetes Secret delivery has configuration-dependent at-rest protection and exposes data to authorized pods at runtime. Tor and SSH demonstrate ordinary persistent service-identity operation, with theft consequences scoped to that identity. WireGuard keys establish peer/network identity and routing scope. ACME account keys authorize account operations under domain-validation and CAA limits. Signal's transparency work can help check consistency of public key mappings, but it neither keeps a server key offline nor grants key recovery. None of these mechanisms implies authority over Lares face rows.
+
+''LEAD — 2026-10-19 — confirmed-by-both:'' Separate the place signer from VK, SK and every face FCK. Require caller-side type/domain allowlists for signer capabilities and independent face proof for D-row operations. A floor signer exception must be named and protected at rest, with the signer/API restricted to place identity and required floor operations. The current `groupSecretOpenerFromSeed` / founder veil use should either be removed from the general floor signer or specified as a distinct, audited capability with explicit data limits.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-q3-primary-source-comparison-scoped-to-this-signer>>
+
+!!! Q3: primary-source comparison, scoped to this signer
+
+
+| System | MEASURED promise at rest and boot (2026-10-19) | Lares mapping (LEAD) |
+| ''systemd credentials / TPM2'' | `LoadCredentialEncrypted=` decrypts a credential for delivery to the service. systemd credentials can use local TPM2 key, host key, or combination; `SetCredential=` literal data is in a world-readable unit and unsuitable for private material. TPM PCR policy can bind release to boot state. [[systemd Credentials|https://systemd.io/CREDENTIALS/]] and [[systemd-creds manual|https://www.freedesktop.org/software/systemd/man/257/systemd-creds.html]]. | Good at-rest wrapper for candidate (1), subject to installed systemd/firmware policy. A no-human boot still releases it automatically under machine policy; a compromised authorized running host may use it. |
+| ''TPM-sealed key'' | TPM sealing gates unseal on configured policy/state; a PCR policy can bind measured boot. systemd docs demonstrate TPM-backed credential encryption. | Machine-state release reduces copied-disk/wrong-host exposure, not humanless runtime compromise. PIN/presence policy would impede unattended herm startup. |
+| ''HashiCorp Vault auto-unseal'' | Vault auto-unseal delegates release to cloud KMS/HSM; Vault connects on startup and supplies encrypted root key for decryption. The delegate substitutes machine/service authorization for human Shamir shares. [[Vault sealing best practices|https://developer.hashicorp.com/vault/docs/configuration/seal/seal-best-practices]], [[HSM support|https://developer.hashicorp.com/vault/docs/partners/hsm]]. | Analogy to machine-authorized signer release, not a human boot door. Trust shifts to IAM/KMS/HSM and host identity. |
+| ''Kubernetes Secrets'' | Secret values are base64 and stored unencrypted in etcd by default; at-rest encryption must be configured. Local encryption keys on control-plane hosts do not protect against host compromise; KMS envelope encryption keeps KEK outside cluster. Mounted/env Secret is available to authorized workload. [[Good practices|https://kubernetes.io/docs/concepts/security/secrets-good-practices/]], [[encryption at rest|https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/]]. | Orchestrator injection alone is not signer protection or human authorization. A pod/host/admin with access can read runtime secret. |
+| ''Tor onion-service key'' | v3 identity is a long-term master Ed25519 key; blinded and descriptor keys are distinct. The spec directory format stores private master key in service directory; the proposal describes offline master key as a design possibility and online descriptor signer. [[Tor proposal 224|https://spec.torproject.org/proposals/224-rend-spec-ng.html]]. | Strong service-identity analogy: persistence supports unattended service; compromise impersonates place identity. Key separation can inform root/online signer split. |
+| ''WireGuard'' | Peer identity is its public key, private key configures interface, and allowed IPs bind peer keys to routing scope. [[WireGuard paper|https://www.wireguard.com/papers/wireguard.pdf]], [[quick start|https://www.wireguard.com/quickstart/]]. | A stolen key impersonates peer within configured routes; it does not imply access to unrelated face custody. |
+| ''OpenSSH host keys'' | `HostKey` points to private host-key file; sshd refuses group/world-readable key files. [[OpenBSD sshd_config|https://man.openbsd.org/sshd_config.5]]. | Owner-only permissions protect against ordinary local users, not root/disk theft; unattended host identity is common but theft enables host impersonation. |
+| ''Let's Encrypt / ACME'' | Account ID can be rediscovered by registering with same key; CAA can constrain CA and optionally account URI. CAA/domain validation remains a separate authorization gate. [[Account IDs|https://letsencrypt.org/docs/account-id/]], [[CAA|https://letsencrypt.org/docs/caa/]]. | Key theft grants account-level ability, but account key is not a Lares KEL recovery root. ACME illustrates bounded authority plus independent issuance controls. |
+| ''KERI / KERIpy'' | KERI events commit to next-key digests; rotation uses precommitted next keys. The KERI specification says this can regain control after current-key compromise, if next keys remain safe. [[KERI spec|https://trustoverip.github.io/kswg-keri-specification/]], [[KID0005|https://identity.foundation/keri/kids/kid0005Comment.html]], [[KERIpy keeper source|https://github.com/WebOfTrust/keripy/blob/main/src/keri/app/keeping.py]]. | Useful recovery design, not existing Lares behavior. Place KEL currently lacks next commitment or rotation; adding it requires verifier, pin and carry-chain migration. |
+| ''Signal'' | Signal's key-transparency service uses log/index structures and independent auditors to detect inconsistent views of user key mappings; PQXDH puts user identity/prekeys on server while private keys stay with user. [[Automatic Key Verification|https://signal.org/blog/automatic-key-verification/]], [[PQXDH spec|https://signal.org/docs/specifications/pqxdh/]]. | Analogy for witnessing public place-key history and keeping face keys separate. Transparency detects equivocation; it does not prevent place-seed theft or itself authorize recovery. |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-q2-seed-theft-detection-recovery>>
+
+!!! Q2: seed theft, detection, recovery
+
+
+''MEASURED — 2026-10-19 — twin-alone:'' A reader of current seed can sign wherever public-key verifiers accept it: place carrier contract/floor pin, vessel/device assertions and internal asks; can derive registered floor-gate children and relay gate seed; and may reproduce seeded founder veil identities when derivation tags are known. The current key file is clear hex, mode 0600 (`node-vessel-identity.ts:140-170`).
+
+''MEASURED — 2026-10-19 — confirmed-by-both:'' Seed is not VK/SK/FCK. The vault carrier table places VK/slot tree and serving-key/serving tree as separate custody mechanisms (`vault-carriers.ts:239-251`); a place seed alone has no demonstrated direct path to open those rows or decrypt all face data. ''Qualification:'' specific face-adjacent group-secret or founder-derived material may be exposed through the explicit seed-fed helpers noted above; do not overclaim zero face-related impact.
+
+''MEASURED — 2026-10-19 — twin-alone:'' Existing place KEL provides no next-key commitment, rotation, or recovery. Therefore it offers no cryptographic way to distinguish legitimate from attacker signatures made with the same stolen seed. Independent transparency witnesses and authenticated pins could reveal inconsistent public histories, but are not in the measured place KEL.
+
+''LEAD — 2026-10-19 — yours-alone:'' Kapae may shadow or sever relationships under its own authority, but cannot undo the compromised signer or automatically revoke every consumer. Under current code the robust recovery path is re-found a new place identity, then re-pin/re-carry/update dependent gates and fleet relations. With an implemented pre-rotation chain, rotate using offline next authority, have consumers verify and advance, then reject old-key signatures; compromise of next/root means re-found. Forgery window persists until consumers accept rotation.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-q4-and-ranked-ruling>>
+
+!!! Q4 and ranked ruling
+
+
+''Rank 1 — LEAD — 2026-10-19 — confirmed-by-both: third shape, split root and boot signer with pre-rotated recovery.'' Keep an owner/threshold-controlled place root and committed next key offline; use a replaceable, narrowly scoped online place signer for unattended floor operations. Optionally protect its at-rest credential with TPM/systemd or OS keystore where available. Publish and verify a KEL-like rotation chain across all consumers. This improves theft recovery while preserving service. It is not a quick wrapper change: existing KEL and relying pins do not support this today, and current signer consumers must be narrowed/audited first.
+
+''Rank 2 — LEAD — 2026-10-19 — confirmed-by-both: candidate (1), named floor signer protected at rest.'' Explicitly amend floor law to “no custody VK/FCK; named place signer may be S.” Use owner-only storage at minimum and OS/TPM protection where available; make release policy and unsupported-platform fallback explicit. This aligns with present unattended behavior, but a stolen key currently requires re-found and source shows broader uses than the proposed “place acts only.”
+
+''Rank 3 — LEAD — 2026-10-19 — yours-alone: candidate (2), boot custody door around place signer.'' It makes the signer unavailable until a human arrives, conflicting with faceless Herm and unattended container/waking-floor identity service. Reserve such a door for a distinct sensitive serving S if one is introduced; current table says no serving row stands. If chosen for the place signer, explicitly accept unavailable signed identity until unlock.
+
+| Vessel | Effect of Rank 1 (LEAD, 2026-10-19) |
+| Herm | Starts faceless at public floor with online signer; no VK/FCK or face rows. Offline root/next required for place-key rotation. |
+| Full node | Same floor identity; face data remains behind face/VK doors. Any genuinely sensitive serving payload gets its own separately named key and unlock policy. |
+| Hearth | Inherits node place identity; every face's D rows still require that face's own admission. |
+| Container | No-human restart restores only place-floor signer through configured machine protection; it must not restore VK/FCK from images, environment, or orchestration. |
+| Waking floor | May carry public identity/proofs/ciphertext unattended; private D decryption or transformation still requires face authority or a separately ruled S. |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-red-test-lead-2026-10-19>>
+
+!!!! Red test (LEAD, 2026-10-19)
+
+
+Run an adversarial no-human boot and copied-disk test. On the authorized host, a faceless Herm and restarted container must publish the expected place card/relay/gate identity; no seed or child secret appears in disk-visible public artifacts, logs, environment, or API. On a copied disk / wrong host, signer release fails if TPM/host binding was selected (or the documented owner-only file exposure is demonstrated if not). With no VK/FCK, attempts to read, replace, restore, rotate, or decrypt any face row fail byte-preservingly. Verify allowlisted signer domains only, and specifically assert that group-secret and dyad derivations cannot become broad custody opens. Then simulate current online-key theft: offline pre-rotated authority emits a valid successor; all consumers advance and reject old-key place acts. If offline next/root is also compromised, require re-found rather than claiming recovery. Candidate (2) variant must assert that no human means no signed place floor identity.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yin-wave2-primary-source-references-and-limits>>
+
+!!! Primary-source references and limits
+
+
+All external pages above were read 2026-10-19. Systemd/TPM behavior depends on installed versions, firmware and PCR policy; Kubernetes depends on configured encryption provider and RBAC; KERI is a proposed analogue, not a Lares implementation. Signal evidence concerns user-key transparency, not server host-key storage. This handback does not establish house-specific kapae/re-found procedure, exhaustive transitive effects of group-secret opening, or waking-floor product availability requirements.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave2-yang-place-signer-handback-wave-two>>
+
+!! YANG — place signer handback, wave two
+
+
+Research date: ''2026-10-19''. All claims below dated 2026-10-19. MEASURED = read in repository code or primary source; LEAD = inference/design. Provenance: ''confirmed-by-both'', ''yours-alone'' (YANG/MINE), ''twin-alone'' (YIN/TWIN). Repo stayed read-only; no suite, build, or git write ran. Read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, then `TWIN.md`; code details in `MINE.md`.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave2-1-twin-s-principal-claims-checked-against-code>>
+
+!!! 1. Twin's principal claims checked against code
+
+
+| Twin claim | Finding and evidence | Provenance |
+| Node place seed is private, auto-loaded, independent from VK/SK; Herm receives it. | ''CONFIRM.'' `node-vessel-identity.ts` has distinct `loadVesselSigningSeed`; `open-node-vessel.ts:945,568-582,3283`; carrier table `vault-carriers.ts:239-251`. Qualify: this key also derives/signs capabilities beyond simple place identity (MINE Q1). | confirmed-by-both |
+| Herm has zero face slots and serves before any face; SK has no current serving row. | ''CONFIRM.'' Prior code citations `vessel-standing.ts:60-79,113-119`, `vault-carriers.ts:12-14,239-251`, `open-node-vessel.ts:3242-3291`; no code indicates an SK consumer. | confirmed-by-both |
+| Private place seed may be called F/public floor data. | ''REFUTE.'' It is private signing material. It can be named separately as S; public verifying key/card may be F. | confirmed-by-both |
+| Place KEL can recover by pre-rotation. | ''REFUTE for current code.'' `lararium-mesh/src/vessel-kel.ts:1-17,38-45` explicitly says non-transferable, one-key inception, no next digest/sequence/version; stealing/loss requires re-founding. Charter seat KEL rotation is a different mechanism. | yours-alone |
+| Clear current key + offline pre-rotated successor is viable third shape. | ''CONFIRM as LEAD only.'' It is a redesign, not extant behavior; current parser/verifier rejects extra fields / next key. Needs schema, rotation, acceptance/pinning, and independently stored successor. | twin-alone |
+| Systemd/TPM can bind a credential to host/boot; auto-release remains unattended authorization. | ''CONFIRM'' from twin's cited systemd primary docs. Fits candidate (1) at-rest strengthening, not human presence. A hostile approved runtime can still ask for/use it. | twin-alone |
+| Vault auto-unseal/Kubernetes secret delivery make human boot optional, but shift trust to machine identity/configuration; Kubernetes default etcd storage lacks encryption. | ''CONFIRM'' from sources linked in `TWIN.md`; not Lares face authorization. | twin-alone |
+| Tor, WireGuard, SSH host, ACME demonstrate persistent unattended service identity; theft permits impersonation within that key's domain. | ''CONFIRM'' source claims; the analogy supports narrowly typed place identity, not face-row access. | twin-alone |
+| Signal transparency protects service private key at rest. | ''REFUTE/qualify.'' Twin correctly notes its transparency service detects inconsistent mappings, distinct from E2E user keys; it does not itself protect the server's own host key or make boot attended. | twin-alone |
+| Attacker with seed cannot open face rows. | ''CONFIRM with qualification.'' Distinct custody root/FCK doors reject floor key substitution (`gate-bundle.ts`, node identity). However seed-derived dyad veil and device/Keyhive uses widen impersonation surface. Audit/contain those consumers before claiming “place acts only.” | confirmed-by-both on custody boundary; yours-alone on derived-use qualification |
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave2-2-yang-code-lens-on-yin-s-ground>>
+
+!!! 2. YANG code lens on YIN's ground
+
+
+''MEASURED 2026-10-19:'' The system analogies describe at-rest and boot-release controls; none grants Lares row-key authority. The current mesh floor KEL does not possess KERI pre-rotation. Its format has exactly one self-signed `icp` key and rejects next-key commitment (`vessel-kel.ts:1-17,38-45`). Thus KERI's recovery guarantee cannot be mapped onto today's place key. Nexus charter/seat rotation and Kapae do not repair the place identity: they govern charter seats/participants, not floor KEL. Signal-like public transparency could help detect conflicting announcements, but no place witness/transparency path surfaced in the audited code.
+
+''MEASURED 2026-10-19:'' Candidate (1)'s narrow “place acts only” is not literally true today: seed reaches floor HKDF children, relay gate derivation, `carry-for` seal and floor pin, promotion assertion, device-enrolment signing/opening, and `deriveDyadVeil`; it is supplied into node/Keyhive setup. The red design boundary must inventory and type these uses. The floor gate itself is carefully separate from custody root: both tier doors refuse the other's domain (`gate-bundle.ts:250-310`; `node-vessel-identity.ts`), so the existing typed boundary supports “cannot open custody row,” not “no other credentials derived.”
+
+''LEAD 2026-10-19:'' Map systemd encrypted credentials/TPM to wrapping the place signer at rest and unattended boot release. This may reduce copied-disk theft while preserving Herm uptime; it does not address compromise of a running host. Vault auto-unseal and Kubernetes secret mounts resemble delegated machine release and have similar runtime trust; plain Kubernetes Secret is not enough. Tor/SSH/WireGuard/ACME show how operators accept an always-on service identity and respond to theft by replacing/rebinding public identity. KERI pre-rotation is the closest recovery design only after adding the absent place-KEL machinery. Signal transparency is useful detection inspiration, not key protection.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave2-3-ranked-ruling-and-per-vessel-effect>>
+
+!!! 3. Ranked ruling and per-vessel effect
+
+
+''Rank 1 — third shape: split long-lived place root from scoped boot signer, with independently protected pre-rotated successor. LEAD, 2026-10-19.'' Keep Herm's operational signer online, narrowly authorized for explicitly named floor/place domains. Let an offline owner-held root or threshold process authorize successor rotation; keep next seed off host. Optionally wrap online signer with TPM/systemd credential on supported systems. First remove or separately justify non-place uses (notably dyad veil/face enrollment). This preserves unattended public boot and adds a recovery path; it does not prevent forgery while a current signer remains accepted. Requires new KEL contract, verifier, rotation command, witness/pin update, and recovery runbook.
+
+''Rank 2 — candidate (1): named protected floor signer. LEAD, 2026-10-19.'' Explicitly classify place signer as private floor S, separate from VK/FCK/SK; owner-only file or OS keystore, TPM wrapper when available. Permit only the named place and public floor duties. This is closest to current behavior and preserves herm/container/waking floor availability, but a copied seed can impersonate indefinitely because present KEL cannot rotate. Owner-only mode helps against other local accounts, not disk theft/root.
+
+''Rank 3 — candidate (2): human boot custody door. LEAD, 2026-10-19.'' Stronger protection while powered off, but blocks place identity and floor child derivation until a person unlocks. Keep public card/charter/ciphertext readable if they do not require signer; Herm cannot deliver authenticated floor service before unlock. Use only if operator ranks unattended service below boot-person presence.
+
+| Vessel | Effect under rank 1 / 2 | Effect under rank 3 |
+| Herm / crossroads | Auto-start public place identity and floor gates; successor root stays offline. | Waits for person before signer-backed identity/floor endpoints; no-face Herm remains unable to unlock itself. |
+| Full node / hearth | Public floor boots unattended; each face row still requires its own face custody. | Node boot door must not be conflated with face unlock; public signer-backed service pauses, face rows remain face-scoped. |
+| Container restart | TPM/credential policy releases scoped signer unattended; no face or serving key restored. | Container starts public static floor only; signer services wait for attended unlock. |
+| Waking floor | Derive/serve public floor routes, carry ciphertext; never decrypt D rows. | Wakes without signer-backed floor functionality until person arrives. |
+| CLI/MCP | Operator acts can request signer-scoped act; face proof remains required for face rows. | CLI may unlock explicitly; MCP must not inherit a prior face or unattended service credential. |
+
+''Red test (LEAD, 2026-10-19):'' fresh zero-face Herm boot and unattended container restart must serve public card/charter and derive only allowlisted floor-gate pins; no VK/FCK/SK or face row opens. Read copied signer file and show attacker can forge current place assertion, then rotate through separately held next authority and prove old key fails while new KEL verifies; attempted floor-door sovereign derivation and cross-face decrypt must refuse. Repeat on rank 2 without offline rotation to demonstrate expected permanent-key recovery gap; rank 3 must demonstrably refuse signer-backed endpoints before human unlock while leaving public unsigned bytes readable.
+
+<<~/ahu>>
+
+<<~ ahu #/r5-yang-wave2-4-decision-critical-caveat>>
+
+!!! 4. Decision-critical caveat
+
+
+Current seed's direct and derived uses exceed the candidate's “place acts only” statement. A ruling for named floor signer should either narrow the code capability passed from `vesselSeed` or enumerate every approved domain, including floor gate derivation, relay, carriage, promotion, enrollment, and dyad veil. Custody independence appears strong in typed gate doors, but that alone does not neutralize credential/identity misuse. No implementation changes or tests were requested or performed.
+
+<<~/ahu>>
+
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 
-<<^ code="&#x0003;">>ni:///sha-256;qN1v78iKWZj0u_VS_oQixIEB_jcaTd2KRsv0BI4tyNw
+<<^ code="&#x0003;">>ni:///sha-256;smSVH0WR7rlYIhRp7fWyD8pIpPJgVECdxdOnk4V3aXQ
 
 <<^ code="&#x0004;" -> to="?">>
