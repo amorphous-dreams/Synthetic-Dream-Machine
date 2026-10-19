@@ -50,8 +50,8 @@ export function browserIdentityContinuityKey(idbName: string): string {
 }
 
 // The keystore holds device and persona secrets; bootstrap holds the founding floor.
-// A schema upgrade removes retired clear root stores without carrying their records.
-const IDB_VERSION       = 10;
+// A schema upgrade drops clear secret stores without carrying their records.
+const IDB_VERSION       = 11;
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
 const ANCHORS_STORE        = "anchors";           // per-index veiled-Handle anchors (public doc-ids)
 const ANCHOR_ROSTER_STORE  = "anchor-roster";     // the EXPLICIT anchored-index record
@@ -63,19 +63,12 @@ const PERSONA_PUBLIC_HANDLE_STORE = "persona-public-handles"; // handleIndex →
 // between the two above so a private compartment label never becomes a public commitment by accident.
 const PERSONA_DECLARATION_STORE  = "persona-declarations";    // handleIndex → PersonaDeclaration
 // v4 additive stores (all causal-island-LOCAL, never federated):
-export const WALK_STORE             = "hosting-walk";        // hearth gate key → WalkRecord (the walker's own, never federated)
 export const CIRCLE_STORE           = "circles-follow";      // circleId → nym[] (the IoC follow-graph, private)
 export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → HandleBookSnapshot (others' nyms + labels)
 // The optional PRF wrap uses the persona's `h${N}` key; custody still gates the root row.
 export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → SeedWrapRecord
-// v8 additive: each face's PER-NEXUS KEY, 32 bytes minted at random (never derived from the persona seed), keyed
-// `h${N}:${nexusAid}`. It rests beside the face's root and in the root's own class.
-export const NEXUS_KEY_STORE        = "nexus-keys";          // `h${N}:${aid}` → Uint8Array(32)
-// v9 additive: the fleet-join door's rows. A joined vessel's OWN face-scoped key per (face key, Nexus), minted here
-// and never carried; and the join itself: the pending request beside its seal secret, the face's record, and the
-// face's address secret the answer delivered.
-export const VESSEL_FACE_KEY_STORE  = "vessel-face-keys";    // `${nexus}|${faceKey}` → Uint8Array(32)
-export const FLEET_JOIN_STORE       = "fleet-join";          // "pending" · `record:${group}` · `secret:${group}` · `dial:${group}`
+// The fleet-join store carries signed public material for each joined face.
+export const FLEET_JOIN_STORE       = "fleet-join";          // `record:${group}` · `dial:${group}`
 const ROSTER_RECORD        = "roster";            // the anchor roster key
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
@@ -120,15 +113,23 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(HANDLE_BOOK_STORE))      db.createObjectStore(HANDLE_BOOK_STORE);
       // The optional seed-wrap store stays distinct from the custody row.
       if (!db.objectStoreNames.contains(SEED_WRAP_STORE))        db.createObjectStore(SEED_WRAP_STORE);
-      // v7: the walker's own store — per hearth, the carried invite until it settles and the grant that hearth
-      // pushed. The newcomer-side burn store it replaces goes: the HEARTH burns an invite, at its own gate.
-      if (!db.objectStoreNames.contains(WALK_STORE))             db.createObjectStore(WALK_STORE);
+      // A leaf re-founds after clear secret stores leave the schema; no clear secret carries into custody.
+      for (const secretStore of ["hosting-walk", "nexus-keys", "vessel-face-keys"]) {
+        if (db.objectStoreNames.contains(secretStore)) db.deleteObjectStore(secretStore);
+      }
       if (db.objectStoreNames.contains("boot-invite-burned"))    db.deleteObjectStore("boot-invite-burned");
-      // v8: each face's per-Nexus key, minted at random where a face first presents at a Nexus.
-      if (!db.objectStoreNames.contains(NEXUS_KEY_STORE))        db.createObjectStore(NEXUS_KEY_STORE);
-      // v9: the fleet-join door's two stores, empty until this browser joins a face's fleet.
-      if (!db.objectStoreNames.contains(VESSEL_FACE_KEY_STORE))  db.createObjectStore(VESSEL_FACE_KEY_STORE);
+      // The public fleet rows stand beside the custody tree.
       if (!db.objectStoreNames.contains(FLEET_JOIN_STORE))       db.createObjectStore(FLEET_JOIN_STORE);
+      else {
+        const rows = (e.target as IDBOpenDBRequest).transaction!.objectStore(FLEET_JOIN_STORE);
+        const cursor = rows.openCursor();
+        cursor.onsuccess = () => {
+          const at = cursor.result;
+          if (!at) return;
+          if (at.key === "pending" || String(at.key).startsWith("secret:")) at.delete();
+          at.continue();
+        };
+      }
     };
     req.onsuccess = () => {
       // A newer version opening in another tab closes this connection, so that open never waits on this one.

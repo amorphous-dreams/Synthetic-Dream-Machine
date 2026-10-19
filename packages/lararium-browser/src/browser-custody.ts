@@ -4,8 +4,9 @@
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
  * The vessel's IndexedDB `keystore` keeps three kinds of custody row: `vessel-key` (the device seed and its public
  * half), `keyhive-archive` (the vessel individual's Archive) and `veil-archive-h<N>` (face N's creator-veil
- * Archive), plus `persona-root-h<N>` and `persona-root-roster`. The device seed and Archives may stand clear before
- * a slot binds; a persona-root mint requires a slot. Once a slot binds, the mesh slot tree rests
+ * Archive), plus persona roots, per-Nexus keys, face keys, fleet-join secrets and pending joins, and walk records.
+ * The device seed and Archives may stand clear before a slot binds; the face's secret rows require a slot.
+ * Once a slot binds, the mesh slot tree rests
  * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
  * custody row R rests sealed under the vessel key at `sealed/R`, its AEAD binding the carrier name
  * `browser-keystore/R`, so bytes moved from one row to another open nowhere. Every other keystore row
@@ -46,7 +47,7 @@
 import {
   bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintVk, vkEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
+  isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 
@@ -56,9 +57,9 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-h\d+|persona-root-h\d+|persona-root-roster)$/;
+const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-h\d+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|fleet-join-secret\/.+|fleet-join-pending|walk\/.+)$/;
 
-/** Is `row` one the slot tree wraps: the device seed, an Archive or a persona root row. */
+/** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
 
 /** The sealed carrier a custody row rests in once a slot binds. */
@@ -72,7 +73,7 @@ export type BrowserCustodyRefusalReading =
 
 const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "sealed-locked": "the keystore rests sealed and this page holds no unlock; unlock it with its passphrase first",
-  "no-custody-slot": "a persona root needs a passphrase or paper slot before it can be minted",
+  "no-custody-slot": "this secret row needs a passphrase or paper slot before it can be kept",
   "already-sealed": "a slot tree already stands; bind another slot instead of sealing again",
   "not-sealed": "no slot tree stands; the keystore rests in the clear",
   "unsettled": "a clear row stands beside the slot tree; an unlock settles it, and nothing chooses between two values",
@@ -245,6 +246,55 @@ const archiveCodec: RowCodec = {
   fromBytes: (bytes) => new Uint8Array(bytes),
 };
 
+const key32Codec: RowCodec = {
+  toBytes(value) {
+    if (!(value instanceof Uint8Array) || value.length !== 32) throw new Error("[browser-custody] a face key holds exactly 32 bytes");
+    return new Uint8Array(value);
+  },
+  fromBytes(bytes) { return this.toBytes(bytes); },
+};
+
+/** JSON carries nested typed bytes as numbered data, and rejects malformed byte tags on opening. */
+function jsonRecordCodec(check: (value: unknown) => boolean, name: string): RowCodec {
+  const unpack = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(unpack);
+    if (value && typeof value === "object") {
+      const obj = value as Record<string, unknown>;
+      if (Object.prototype.hasOwnProperty.call(obj, "$bytes")) {
+        const items = obj.$bytes;
+        if (Object.keys(obj).length !== 1 || !Array.isArray(items) || !items.every((n) => Number.isInteger(n) && n >= 0 && n <= 255)) throw new Error(`[browser-custody] ${name} holds malformed bytes`);
+        return Uint8Array.from(items);
+      }
+      return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, unpack(v)]));
+    }
+    return value;
+  };
+  const pack = (value: unknown): unknown => {
+    if (value instanceof Uint8Array) return { $bytes: [...value] };
+    if (Array.isArray(value)) return value.map(pack);
+    if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, pack(v)]));
+    return value;
+  };
+  return {
+    toBytes(value) {
+      if (!check(value)) throw new Error(`[browser-custody] ${name} holds no valid record`);
+      return new TextEncoder().encode(JSON.stringify(pack(value)));
+    },
+    fromBytes(bytes) {
+      const value = unpack(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)));
+      this.toBytes(value);
+      return value;
+    },
+  };
+}
+
+const pendingCodec = jsonRecordCodec((v) => {
+  const p = v as { offer?: { kind?: unknown }; request?: { kind?: unknown }; sealSecret?: unknown; landed?: unknown } | null;
+  return !!p && p.offer?.kind === "fleet-join-offer" && p.request?.kind === "fleet-join-request"
+    && typeof p.sealSecret === "string" && /^[0-9a-f]+$/.test(p.sealSecret) && (p.landed === undefined || p.landed === true);
+}, "fleet join pending");
+const walkCodec = jsonRecordCodec(isWalkRecord, "walk");
+
 /** The device seed's record: its public half and its seed, as the clear row has always held them. */
 const deviceSeedCodec: RowCodec = {
   toBytes(value) {
@@ -277,7 +327,10 @@ const personaRosterCodec: RowCodec = {
 
 const codecOf = (row: string): RowCodec =>
   row === DEVICE_SEED_ROW || /^persona-root-h\d+$/.test(row) ? deviceSeedCodec
-    : row === "persona-root-roster" ? personaRosterCodec : archiveCodec;
+    : row === "persona-root-roster" ? personaRosterCodec
+    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") ? key32Codec
+    : row === "fleet-join-pending" ? pendingCodec
+    : row.startsWith("walk/") ? walkCodec : archiveCodec;
 
 function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
@@ -307,7 +360,10 @@ function treeOrRefuse(idbName: string, held: unknown, row?: string): SlotTree {
  * row never stood. Sealed and locked refuses `sealed-locked`; a clear row beside a tree refuses `unsettled`.
  */
 export async function readKeystoreRow(idbName: string, row: string): Promise<unknown> {
-  return withCustodyActLock(idbName, "shared", async () => {
+  return withCustodyActLock(idbName, "shared", () => readKeystoreRowHeld(idbName, row));
+}
+
+async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknown> {
     const carrier = sealedCarrierOf(row);
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
@@ -324,7 +380,6 @@ export async function readKeystoreRow(idbName: string, row: string): Promise<unk
     const opened = await openSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, carrier });
     if (opened.reading !== "opens") throw new BrowserCustodyRefused("row-unopened", idbName, row, opened.reading);
     return codecOf(row).fromBytes(opened.plaintext);
-  });
 }
 
 /**
@@ -332,13 +387,18 @@ export async function readKeystoreRow(idbName: string, row: string): Promise<unk
  * write lands through the mesh writer, so the standing seal stays until the new one reads back and opens.
  */
 export async function writeKeystoreRow(idbName: string, row: string, value: unknown): Promise<void> {
-  return withCustodyActLock(idbName, "shared", async () => {
+  return withCustodyActLock(idbName, "shared", () => writeKeystoreRowHeld(idbName, row, value));
+}
+
+async function writeKeystoreRowHeld(idbName: string, row: string, value: unknown): Promise<void> {
     const carrier = sealedCarrierOf(row);
     const plaintext = codecOf(row).toBytes(value);
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
-      if (row.startsWith("persona-root-")) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      // House reading under the operator's delegation, 2026-10-18: a face's secret rows take a slot first.
+      // A ruling that permits clear face secrets before a slot flips this gate.
+      if (!/^(?:vessel-key|keyhive-archive|veil-archive-h\d+)$/.test(row)) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);
@@ -346,7 +406,32 @@ export async function writeKeystoreRow(idbName: string, row: string, value: unkn
     const vk = unlocked.get(idbName);
     if (!vk) throw new BrowserCustodyRefused("sealed-locked", idbName, row);
     await writeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
-  });
+}
+
+/** Hold one exclusive act across a read, decision and any number of custody row writes. */
+export interface CustodyRowsAct {
+  read(row: string): Promise<unknown>;
+  write(row: string, value: unknown): Promise<void>;
+  delete(row: string): Promise<void>;
+}
+
+export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct) => Promise<T>): Promise<T> {
+  if (!(globalThis as { navigator?: { locks?: LockManager } }).navigator?.locks) {
+    throw new Error("[browser-custody] this engine offers no Web Locks, so a custody rows act cannot hold the keystore alone");
+  }
+  return withCustodyActLock(idbName, "exclusive", () => body({
+    read: (row) => readKeystoreRowHeld(idbName, row),
+    write: (row, value) => writeKeystoreRowHeld(idbName, row, value),
+    delete: async (row) => {
+      const carrier = sealedCarrierOf(row);
+      const st = await rowState(idbName, row);
+      if (st.tree === undefined) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      treeOrRefuse(idbName, st.tree, row);
+      if (st.clear !== undefined) throw new BrowserCustodyRefused("unsettled", idbName, row);
+      const vk = heldOrRefuse(idbName);
+      await removeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, treePath: CUSTODY_TREE_ROW, carrier });
+    },
+  }));
 }
 
 // ── the acts ─────────────────────────────────────────────────────────────────────────────────────

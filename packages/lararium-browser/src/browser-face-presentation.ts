@@ -32,7 +32,8 @@ import {
   type FacePresentation, type FaceScope, type GateBundlePin, type PlaceOraclePresentation, type SessionBinding,
 } from "@lararium/mesh";
 import { browserVesselFaceKeyCustody, dialRow, type KeptFleetJoinDial } from "./browser-fleet-join.js";
-import { FLEET_JOIN_STORE, VESSEL_FACE_KEY_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";
+import { FLEET_JOIN_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";
+import { BrowserCustodyRefused, readKeystoreRow } from "./browser-custody.js";
 
 /** Why no face presentation stands, by name. */
 export interface BrowserFacePresentationRefusal { readonly refusal: string; readonly detail?: string }
@@ -104,9 +105,12 @@ export async function composeBrowserFacePresentation(args: {
   if (grant === null) return { refusal: "grant-absent" };
 
   // THIS BROWSER'S OWN KEY for the scope, named from its custody row and never from the certificate.
-  const keyDb = await openVesselIdb(args.idbName);
-  let secret: Uint8Array | undefined;
-  try { secret = await idbGet<Uint8Array>(keyDb, VESSEL_FACE_KEY_STORE, `${scope.nexus}|${scope.faceKey.toLowerCase()}`); } finally { keyDb.close(); }
+  let secret: unknown;
+  try { secret = await readKeystoreRow(args.idbName, `vessel-face-key/${scope.nexus}|${scope.faceKey.toLowerCase()}`); }
+  catch (error) {
+    if (error instanceof BrowserCustodyRefused && error.reading === "sealed-locked") return { refusal: "custody-locked" };
+    throw error;
+  }
   if (!(secret instanceof Uint8Array) || secret.length !== 32) return { refusal: "vessel-face-key-absent" };
   const held = Uint8Array.from(secret);
   let vesselFaceKey: string;

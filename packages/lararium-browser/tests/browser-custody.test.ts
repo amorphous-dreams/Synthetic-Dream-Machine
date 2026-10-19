@@ -80,6 +80,7 @@ import {
   BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, SEALED_ROW_PREFIX,
   bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRow, lockBrowserCustody,
   readBrowserCustody, readKeystoreRow, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
+  withCustodyRows, writeKeystoreRow,
   type BrowserCustodyRefusalReading, type ConfirmDoor,
 } from "../src/browser-custody.js";
 
@@ -188,6 +189,63 @@ function parkedDoor() {
 }
 
 describe("browser custody seals the keystore's device seed and Keyhive Archives", () => {
+  test("BC29 every face-secret family takes a slot, seals and refuses a locked read", async () => {
+    const idbName = `custody-secret-families-${crypto.randomUUID()}`;
+    const pending = { offer: { kind: "fleet-join-offer" }, request: { kind: "fleet-join-request" }, sealSecret: "ab".repeat(32) };
+    const values: Array<[string, unknown]> = [
+      ["nexus-key/h0/nexus.synthetic", randomBytes(32)],
+      ["vessel-face-key/nexus.synthetic|" + "ab".repeat(32), randomBytes(32)],
+      ["fleet-join-secret/group", randomBytes(32)],
+      ["fleet-join-pending", pending],
+      ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }],
+    ];
+    for (const [row, value] of values) {
+      await expectRefused(writeKeystoreRow(idbName, row, value), "no-custody-slot", row);
+      expect(await rowOf(idbName, row)).toBeUndefined();
+    }
+    // CONTROL: a device seed row still stands clear before the slot binds.
+    const seed = { verifyingKey: "ab".repeat(32), signingKey: "cd".repeat(32) };
+    await writeKeystoreRow(idbName, "vessel-key", seed);
+    expect(await readKeystoreRow(idbName, "vessel-key")).toEqual(seed);
+    await sealBrowserKeystore(idbName, PASS);
+    for (const [row, value] of values) {
+      await writeKeystoreRow(idbName, row, value);
+      expect(await readKeystoreRow(idbName, row)).toEqual(value);
+      expect(await rowOf(idbName, row)).toBeUndefined();
+      expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`))).toBe(true);
+    }
+    lockBrowserCustody(idbName);
+    for (const [row] of values) await expectRefused(readKeystoreRow(idbName, row), "sealed-locked", row);
+    expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
+    for (const [row, value] of values) expect(await readKeystoreRow(idbName, row)).toEqual(value);
+  }, SLOW);
+
+  test("BC30 one custody act reads, decides and writes two rows; a thrown decision leaves its second row unwritten", async () => {
+    const idbName = `custody-many-rows-${crypto.randomUUID()}`;
+    await sealBrowserKeystore(idbName, PASS);
+    const a = "nexus-key/h0/one.synthetic";
+    const b = "nexus-key/h0/two.synthetic";
+    const c = "nexus-key/h0/three.synthetic";
+    const d = "nexus-key/h0/four.synthetic";
+    const first = randomBytes(32);
+    await withCustodyRows(idbName, async (rows) => {
+      expect(await rows.read(a)).toBeUndefined();
+      await rows.write(a, first);
+      expect(await rows.read(b)).toBeUndefined();
+      await rows.write(b, randomBytes(32));
+    });
+    expect(await readKeystoreRow(idbName, a)).toEqual(first);
+    expect(await readKeystoreRow(idbName, b)).toBeInstanceOf(Uint8Array);
+    // CONTROL: the first write in a body reaches its carrier before a later decision throws.
+    await expect(withCustodyRows(idbName, async (rows) => {
+      await rows.write(c, randomBytes(32));
+      if ((await rows.read(c)) instanceof Uint8Array) throw new Error("decision refused");
+      await rows.write(d, randomBytes(32));
+    })).rejects.toThrow("decision refused");
+    expect(await readKeystoreRow(idbName, c)).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRow(idbName, d)).toBeUndefined();
+  }, SLOW);
+
   test("BC1 the row law: each custody shape has its sealed carrier", () => {
     for (const row of ["vessel-key", "keyhive-archive", "veil-archive-h0", "veil-archive-h12", "persona-root-h0", "persona-root-h12", "persona-root-roster"]) {
       expect(isCustodyRow(row), row).toBe(true);
@@ -861,6 +919,35 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       expect(db.objectStoreNames.contains("persona-roster")).toBe(false);
       expect(await idbGet(db, "keystore", "persona-root-h3")).toBeUndefined();
       expect(await idbGet(db, "keystore", "persona-root-roster")).toBeUndefined();
+    } finally { db.close(); }
+  });
+
+  test("BC31 a schema upgrade drops clear secret stores and fleet secret rows while keeping signed public rows", async () => {
+    const idbName = `custody-secret-upgrade-${crypto.randomUUID()}`;
+    const old = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(idbName, 10);
+      req.onupgradeneeded = () => {
+        for (const store of ["keystore", "hosting-walk", "nexus-keys", "vessel-face-keys", "fleet-join"]) req.result.createObjectStore(store);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    await idbPut(old, "hosting-walk", "gate", { nexusAid: "nexus.synthetic", invite: "bearer" });
+    await idbPut(old, "nexus-keys", "h0:nexus.synthetic", randomBytes(32));
+    await idbPut(old, "vessel-face-keys", "scope", randomBytes(32));
+    await idbPut(old, "fleet-join", "pending", { sealSecret: "ab".repeat(32) });
+    await idbPut(old, "fleet-join", "secret:group", randomBytes(32));
+    await idbPut(old, "fleet-join", "record:group", { rootKey: "ab".repeat(32) });
+    await idbPut(old, "fleet-join", "dial:group", { charter: "public" });
+    old.close();
+    const db = await openVesselIdb(idbName);
+    try {
+      for (const store of ["hosting-walk", "nexus-keys", "vessel-face-keys"]) expect(db.objectStoreNames.contains(store)).toBe(false);
+      expect(await idbGet(db, "fleet-join", "pending")).toBeUndefined();
+      expect(await idbGet(db, "fleet-join", "secret:group")).toBeUndefined();
+      // CONTROL: the signed public homes survive the upgrade.
+      expect(await idbGet(db, "fleet-join", "record:group")).toEqual({ rootKey: "ab".repeat(32) });
+      expect(await idbGet(db, "fleet-join", "dial:group")).toEqual({ charter: "public" });
     } finally { db.close(); }
   });
 });
