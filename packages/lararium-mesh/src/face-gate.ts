@@ -176,7 +176,9 @@ export async function verifyPresentedCarry(arm: Pick<PlaceArm, "contract" | "lin
   let rosters: ReadonlyMap<string, KahuQuorumSeats> = new Map([[head.sealEpochCid, head]]);
   let chain: readonly RollAnchor[] = [];
   // Every act names an epoch on the lineage the gate reads at, or the reading refuses by that name before any walk.
-  const at = [contract, ...acts].map((act) => (act.sealEpochCid === head.sealEpochCid ? (seals?.length ?? 1) - 1 : seals?.findIndex((e) => e.epochCid === act.sealEpochCid) ?? -1));
+  // An act at the head stands on the chain however short the lineage the gate holds (a seeded charter may hold none).
+  const headAt = Math.max((seals?.length ?? 0) - 1, 0);
+  const at = [contract, ...acts].map((act) => (act.sealEpochCid === head.sealEpochCid ? headAt : seals?.findIndex((e) => e.epochCid === act.sealEpochCid) ?? -1));
   if (at.some((i) => i < 0)) return verdict("wrong-epoch", "lineage-epoch-not-on-chain");
   const earliest = Math.min(...at);
   if (contract.sealEpochCid !== head.sealEpochCid || anchors.length) {

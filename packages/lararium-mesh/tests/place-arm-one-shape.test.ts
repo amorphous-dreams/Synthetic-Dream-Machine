@@ -31,4 +31,15 @@ describe("one place arm shape and anchored charter prefix", () => {
     const reordered = Object.fromEntries(Object.entries(next.chain[0]!).reverse()) as unknown as SealEpoch;
     expect(await verifyPresentedCarry({ contract, lineage: [], sealLineage: [reordered, ...next.chain.slice(1)] }, held)).toMatchObject({ state: "held" });
   });
+
+  test("CONTROL: a head contract holds where the gate's root carries no epoch lineage of its own", async () => {
+    const charter = await seatedCharter({ seats: 3, threshold: 2, seed: 813 });
+    const contract = await carriageAct(new Uint8Array(32).fill(83), "carry", {
+      kahu: charter.seeds.slice(0, charter.threshold), epoch: charter.head.epochCid, parents: [],
+    });
+    const held = heldNexusRoot({ nexus: charter.aid, charter: charter.doc(), denyBoard: [], antigen: [], antigenVerifier: makeMultiSigQuorumVerifier() });
+    if ("absent" in held) throw new Error(`fixture root absent: ${held.absent}`);
+    const bare = { ...held, sealLineage: [] };
+    expect(await verifyPresentedCarry({ contract, lineage: [], sealLineage: [] }, bare)).toMatchObject({ state: "held" });
+  });
 });
