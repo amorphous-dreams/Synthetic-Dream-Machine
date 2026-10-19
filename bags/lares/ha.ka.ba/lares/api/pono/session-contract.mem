@@ -40,8 +40,8 @@ written           = "2026-10-11"
 !! What a session carries ~ an id that routes, a binding that authorizes
 
 |! Field |! What it holds |! What it never holds |
-| `sessionId` | a fresh handle the owner mints; it ROUTES a message to its session | authority: a copied id opens nothing |
-| `ownerEpoch` | the owner's own boot epoch; it fences a restarted holder | a wall-clock reading |
+| `sessionId` | a fresh random handle the owner mints; it ROUTES a message to its session | authority: a copied id opens nothing |
+| `ownerEpoch` | the owner's own boot epoch, a fresh random mint at each boot; it fences a restarted holder | a wall-clock reading, or a counter derived from one |
 | `generation` | a counter that advances at a switch; an effect of an earlier generation never lands in a later one | |
 | `face` | the resolved face, immutable within one generation: the PersonaGroup, its proof subject, its verified admit, the causal revision the relation stood at, and the absolute ids of its four planes (`@persona` · `@circles` · `@identities` · `@sessions`) | a persona root, or any root bytes |
 | `caps` | operation facets the sovereign worker holds for this session | a Repo, a root, or a signer map |
@@ -167,7 +167,7 @@ The resolver keys bindings by `prefix/fingerprint` and stores them through `daem
 
 !! The holder's message kinds ~ every reply returns to the binding that asked
 
-''Every message after the open carries `schemaVersion`, `ownerEpoch`, `sessionId` and `generation`.'' A request adds `requestId`; surface traffic adds `surfaceId` and, where a mount matters, `mountEpoch`. A reply returns to the originating binding alone. The holder broadcasts nothing.
+''Every message after the open carries `ownerEpoch`, `sessionId` and `generation`.'' Shape and kind discriminate a message; no field names a format number, and the generation counts switches alone. A request adds `requestId`; surface traffic adds `surfaceId` and, where a mount matters, `mountEpoch`. A reply returns to the originating binding alone. The holder broadcasts nothing.
 
 |! Kind |! What it carries, and what answers it |
 | `session:open` → `session:opened` / `session:refused` | A request id and an explicit local face reference. The answer carries the owner epoch, the minted id, the generation, a safe face reference and the facet labels, and never a root or a general signer. A faceless vessel boots over a separate maintenance channel that grants no content session. |
@@ -261,7 +261,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''One vessel-wide selector.'' `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) moves one active pointer; the node and browser openers (`packages/lararium-node/src/open-node-vessel.ts`, `packages/lararium-browser/src/open-browser-vessel.ts`) each resolve one worn face at vessel boot.
 * ''A broad sync port, on every production mount.'' Every wiki island mounts through the pool's wiki door (`mountWiki`, `packages/lararium-mesh/src/vessel-island-pool-core.ts`) and boots a Repo over a transferred `syncPort`, which carries unrestricted Repo sync.
 * ''A wiki door keyed by wiki alone.'' That door keys its slots by `wikiId`, so two tabs of one wiki fold into one island.
-* ''A holder that broadcasts.'' The shared holder forwards each island message to every attached port (`packages/lararium-browser/src/shared-holder-core.ts`).
+* ''A holder that answers the asker and fences its epoch, faceless.'' The shared holder delivers each island message by one closed route table (`packages/lararium-browser/src/holder-routes.ts`): a reply to the port that asked, camera traffic to the port that leases the camera, the island's own asks to the port whose manifest it took; it drops the rest by name and broadcasts nothing. It mints one random `ownerEpoch` per boot and one random `sessionId` per port, greets each port with its envelope, and refuses by name, to that port alone, a message with no envelope, another owner's epoch, an unknown session, another port's session or another generation; the island sees no envelope (`packages/lararium-browser/src/shared-holder-core.ts`, the tab's half in `shared-holder.ts`). These sessions carry the maintenance channel and wear no face.
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`); no socket binds a session to a face.
 * ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
@@ -281,7 +281,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 # ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). The subjects, private authority, the session signer and the one face supplier stand specified in code. The debt closes when the node's session open on the local socket and the browser holder call the supplier and mint a signer at every open. Those callers wait on three things: the custody rows for the face proof key and each vessel's face-scoped key, an admit that signs what it carries, and the ring's lookup by face subject (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>). The supplier's face names one PersonaGroup at one Nexus; a face at two Nexuses waits on this contract's word.
 # ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount. The resolver and the whole-key pool stand specified in code, with one proof through the node vessel's own parts that a recipe naming an offering resolves. The working-layer binding stays owed and waits on the join door, where the face secret arrives. The callers stay owed too: the compose sites resolve through the one function at surface mount, the browser's plugin selection folds into it, and the wiki door, its retained mount specs and the recipe watch retire with the last caller.
 # ''Node callers move to sessions.'' Two CLI sessions wear different faces at once over one Repo; a copied socket and a cross-face receipt read both refuse; a same-face receipt reads after the CLI that asked has exited.
-# ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry.
+# ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry. The routing and the faceless envelope stand (#/standing-and-owed). The face-bearing `session:open`, `session:call` and `session:switch` wait on the face supplier's browser caller, `W4` (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>), and the holder's custody fork waits on the operator.
 # ''Browser surfaces.'' Two tabs mount one wiki under separate sessions; frames and control answers reach their source surface alone; no wiki engine runs on the page's main thread.
 # ''The switch, and the selector retires.'' Switching one session leaves another live; an old generation's effect never paints the new face; no boot path reads a vessel-wide active face.
 # ''The disk as a surface.'' The watcher opens a session and leases each projected wiki; a disk edit returns under the leasing session's face; an edit from an earlier generation and a file changed under no lease both surface as drafts; a move between two faces' folders asks for a copy by name.
@@ -312,6 +312,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lvri4xiBN9vOovdlTxeZgW9KwoA--F7PDOUVbMzmZtU
+<<^ code="&#x0003;">>ni:///sha-256;05SkNG6UGG8AoVoH9UCXNnlBiWqswcQ6eTTHmNgUiZ0
 
 <<^ code="&#x0004;" -> to="?">>

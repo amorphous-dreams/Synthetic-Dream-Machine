@@ -38,7 +38,18 @@ function harness() {
     return {
       endpoint,
       received,
-      send: (data: unknown) => { for (const listener of listeners) listener({ data, ports: [] } as unknown as MessageEvent); },
+      send: (data: unknown) => {
+        const hello = received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch?: string; sessionId?: string; generation?: number } | undefined;
+        const enveloped = hello ? { ownerEpoch: hello.ownerEpoch, sessionId: hello.sessionId, generation: hello.generation, ...data as object } : data;
+        for (const listener of listeners) listener({ data: enveloped, ports: [] } as unknown as MessageEvent);
+      },
+      sendRaw: (data: unknown) => {
+        for (const listener of listeners) listener({ data, ports: [] } as unknown as MessageEvent);
+      },
+      envelope: () => {
+        const hello = received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
+        return { ownerEpoch: hello.ownerEpoch, sessionId: hello.sessionId, generation: hello.generation };
+      },
     };
   };
   const fromIsland = (message: unknown) => { for (const listener of islandListeners) listener(message); };
@@ -46,6 +57,79 @@ function harness() {
 }
 
 describe("shared holder routing keeps every island answer on its binding", () => {
+  test("hello gives each port a distinct session in one owner epoch", async () => {
+    const h = harness(); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    const hello = (port: typeof a) => port.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch?: string; sessionId?: string; generation?: number };
+    expect(hello(a)).toMatchObject({ generation: 0 });
+    expect(hello(b)).toMatchObject({ generation: 0 });
+    expect(hello(a).ownerEpoch).toEqual(expect.any(String));
+    expect(hello(a).ownerEpoch).toBe(hello(b).ownerEpoch);
+    expect(hello(a).sessionId).toEqual(expect.any(String));
+    expect(hello(b).sessionId).toEqual(expect.any(String));
+    expect(hello(a).sessionId).not.toBe(hello(b).sessionId);
+  });
+
+  test("the core mints once per epoch and once per port without reading the wall clock", async () => {
+    let minted = 0;
+    const island: HolderIsland = { post() {}, listen() { return () => {}; }, onError() { return () => {}; }, terminate() {} };
+    const core = makeSharedHolderCore({
+      lockName: "mint-witness",
+      locks: { request: async (_name, _options, callback) => callback({ name: "mint-witness" }) },
+      spawnIsland: () => island,
+      mint: () => `mint-${++minted}`,
+    });
+    const makePort = () => {
+      const received: unknown[] = [];
+      const port: HolderPort = { postMessage: (message) => received.push(message), addEventListener() {}, start() {} };
+      return { port, received };
+    };
+    const a = makePort(); const b = makePort();
+    await core.connect(a.port); await core.connect(b.port);
+    expect(minted).toBe(3);
+    expect(a.received.at(-1)).toMatchObject({ ownerEpoch: "mint-1", sessionId: "mint-2" });
+    expect(b.received.at(-1)).toMatchObject({ ownerEpoch: "mint-1", sessionId: "mint-3" });
+    expect(makeSharedHolderCore.toString()).not.toMatch(/Date\.now|new Date/);
+  });
+
+  test("the holder refuses stale epochs, unknown sessions, other ports and stale generations", async () => {
+    const h = harness(); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    const hello = (port: typeof a) => port.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
+    const base = { type: "wiki:place-verb", requestId: "refused" };
+    a.send({ ...base, ownerEpoch: "stale-epoch" });
+    a.send({ ...base, sessionId: "unknown-session" });
+    a.send({ ...base, sessionId: hello(b).sessionId });
+    a.send({ ...base, generation: hello(a).generation + 1 });
+    a.sendRaw(base);
+    expect(h.islandPosts).toHaveLength(0);
+    expect(a.received.filter((m) => (m as { kind?: string }).kind === "holder:refused").map((m) => (m as { cause: string }).cause))
+      .toEqual(["stale-owner-epoch", "unknown-session", "unbound-session", "stale-generation", "malformed-message"]);
+    expect(b.received.filter((m) => (m as { kind?: string }).kind === "holder:refused")).toHaveLength(0);
+  });
+
+  test("a restarted core has a fresh epoch and refuses the old tab envelope", async () => {
+    const first = harness(); const a = first.port(); await first.core.connect(a.endpoint);
+    const old = a.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
+    const restarted = harness(); const b = restarted.port(); await restarted.core.connect(b.endpoint);
+    const fresh = b.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
+    expect(fresh.ownerEpoch).not.toBe(old.ownerEpoch);
+    // The tab that spoke to the first holder reaches the restarted one still carrying the old envelope.
+    b.sendRaw({ type: "wiki:place-verb", requestId: "old", ownerEpoch: old.ownerEpoch, sessionId: old.sessionId, generation: old.generation });
+    expect(restarted.islandPosts).toHaveLength(0);
+    expect(b.received.at(-1)).toMatchObject({ kind: "holder:refused", cause: "stale-owner-epoch" });
+    expect(first.islandPosts).toHaveLength(0);
+  });
+
+  test("island sees a stripped request and its answer returns with the asker's envelope", async () => {
+    const h = harness(); const a = h.port(); await h.core.connect(a.endpoint);
+    a.send({ type: "wiki:place-verb", requestId: "single" });
+    const sent = h.islandPosts.at(-1) as Record<string, unknown>;
+    for (const field of ["ownerEpoch", "sessionId", "generation"]) expect(sent).not.toHaveProperty(field);
+    h.fromIsland({ type: "wiki:verb-result", requestId: sent.requestId, result: { ok: true } });
+    expect(a.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "single", result: { ok: true }, ...a.envelope() });
+  });
+
   test("colliding tab request ids return only to each asker with its own id", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
     await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
@@ -55,8 +139,8 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     expect(sent[0].requestId).not.toBe("same"); expect(sent[1].requestId).not.toBe("same");
     h.fromIsland({ type: "wiki:verb-result", requestId: sent[0].requestId, result: { tab: "a" } });
     h.fromIsland({ type: "wiki:verb-result", requestId: sent[1].requestId, result: { tab: "b" } });
-    expect(a.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "same", result: { tab: "a" } });
-    expect(b.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "same", result: { tab: "b" } });
+    expect(a.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "same", result: { tab: "a" }, ...a.envelope() });
+    expect(b.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "same", result: { tab: "b" }, ...b.envelope() });
     expect(a.received.filter((m) => (m as { type?: string }).type === "wiki:verb-result")).toHaveLength(1);
     expect(b.received.filter((m) => (m as { type?: string }).type === "wiki:verb-result")).toHaveLength(1);
   });
@@ -108,7 +192,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     h.fromIsland({ type: "wiki:verb-result", requestId: sent[0].requestId });
     h.fromIsland({ type: "wiki:verb-result", requestId: sent[1].requestId });
     expect(a.received.some((m) => (m as { type?: string }).type === "wiki:verb-result")).toBe(false);
-    expect(b.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "b-pending" });
+    expect(b.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "b-pending", ...b.envelope() });
     expect(h.drops).toEqual(expect.arrayContaining([expect.objectContaining({ kind: "wiki:verb-result" })]));
   });
 
@@ -118,7 +202,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
     a.send({ type: "wiki:place-verb", requestId: "single" });
     const sent = h.islandPosts.at(-1) as { requestId: string };
     h.fromIsland({ type: "wiki:verb-result", requestId: sent.requestId, result: { ok: true } });
-    expect(a.received.at(-1)).toEqual({ type: "wiki:verb-result", requestId: "single", result: { ok: true } });
+    expect(a.received.at(-1)).toMatchObject({ type: "wiki:verb-result", requestId: "single", result: { ok: true } });
   });
 
   test("every island-to-vessel kind in the protocol has one declared route", () => {

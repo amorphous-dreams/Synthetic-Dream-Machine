@@ -8,11 +8,15 @@
  *
  * Pure: the lock surface, the island spawn and the ports ride in, so a witness drives it with fakes and counts
  * island boots. The worker entry wires the platform pieces around it and nothing else.
+ * These sessions carry the faceless maintenance channel, not a content session. Face-bearing open, call and
+ * switch take the face supplier when W4 lands.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/moves
  */
 
 import type { LockHost } from "./vessel-lock.js";
+import { defaultCryptoProvider } from "@lararium/mesh/crypto";
+import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { HOLDER_ROUTES } from "./holder-routes.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
@@ -44,6 +48,9 @@ export interface HolderIsland {
 /** The greeting every tab receives on connect. */
 export interface HolderHello {
   readonly kind:         "holder:hello";
+  readonly ownerEpoch:   string;
+  readonly sessionId:    string;
+  readonly generation:   number;
   /** How many times this holder booted its island — ONE for the holder's whole life. */
   readonly islandBoots:  number;
   /** How many tabs stand attached, this one included. */
@@ -71,6 +78,7 @@ export interface SharedHolderCoreOptions {
   readonly locks:       LockHost | null;
   readonly spawnIsland: () => HolderIsland;
   readonly onDrop?: (kind: string, reason: string) => void;
+  readonly mint?: () => string;
 }
 
 export interface SharedHolderCore {
@@ -86,6 +94,11 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const ended = new WeakSet<HolderPort>();
   const pending = new Map<string, { port: HolderPort; requestId: string }>();
   const cameras = new Map<string, HolderPort>();
+  const sessions = new Map<string, HolderPort>();
+  const portSessions = new Map<HolderPort, SessionEnvelope>();
+  const mint = opts.mint ?? (() => defaultCryptoProvider.randomUUID());
+  const ownerEpoch = mint();
+  if (!ownerEpoch) throw new Error("owner-epoch-absent");
   const requestNamespace = crypto.randomUUID();
   let nextRequest = 0;
   let owner: HolderPort | null = null;
@@ -96,6 +109,10 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const onDrop = opts.onDrop ?? ((kind: string, reason: string) => {
     console.warn(`[shared-holder] dropped ${kind}: ${reason}`);
   });
+  const deliver = (port: HolderPort, message: WireMessage): void => {
+    const envelope = portSessions.get(port);
+    if (envelope) port.postMessage({ ...message, ...envelope });
+  };
 
   const routeFromIsland = (raw: unknown): void => {
     const msg = wireMessage(raw);
@@ -104,7 +121,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     if (!route) { onDrop(msg.type, "unknown-route"); return; }
     if (route === "owner") {
       if (!owner || !ports.has(owner)) { onDrop(msg.type, "no-owner"); return; }
-      owner.postMessage(raw);
+      deliver(owner, msg);
       return;
     }
     if (route === "camera") {
@@ -112,7 +129,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       if (typeof cameraId !== "string") { onDrop(msg.type, "missing-camera-id"); return; }
       const port = cameras.get(cameraId);
       if (!port || !ports.has(port)) { onDrop(msg.type, "no-camera-lease"); return; }
-      port.postMessage(raw);
+      deliver(port, msg);
       return;
     }
     const holderId = msg.requestId;
@@ -120,7 +137,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     const asking = pending.get(holderId);
     if (!asking || !ports.has(asking.port)) { onDrop(msg.type, "unknown-request"); return; }
     pending.delete(holderId);
-    asking.port.postMessage({ ...msg, requestId: asking.requestId });
+    deliver(asking.port, { ...msg, requestId: asking.requestId });
   };
 
   // Take the store's lock for the holder's whole life. The callback's promise never settles, so the platform
@@ -175,6 +192,9 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     disconnect(port) {
       ended.add(port);
       ports.delete(port);
+      const envelope = portSessions.get(port);
+      if (envelope) sessions.delete(envelope.sessionId);
+      portSessions.delete(port);
       if (owner === port) owner = null;
       for (const [id, asking] of pending) if (asking.port === port) pending.delete(id);
       for (const [id, holder] of cameras) if (holder === port) cameras.delete(id);
@@ -193,16 +213,32 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       // stands (the first one ended), and it then sends its own manifest.
       if (owner === null || !ports.has(owner)) owner = port;
       const isl = bootIsland();
+      const sessionId = mint();
+      if (!sessionId || sessions.has(sessionId)) throw new Error("session-id-mint-refused");
+      const envelope = Object.freeze({ ownerEpoch, sessionId, generation: 0 });
+      sessions.set(sessionId, port);
+      portSessions.set(port, envelope);
       ports.add(port);
       // A transferred manifest sync port rides to the one island with its owner's manifest.
       port.addEventListener("message", (e) => {
         if (!ports.has(port)) return;
         const msg = wireMessage(e.data);
         if (!msg) { onDrop("unknown", "invalid-message"); return; }
+        const sent = validateSessionEnvelope(msg);
+        const refusal = !sent ? "malformed-message"
+          : sent.ownerEpoch !== ownerEpoch ? "stale-owner-epoch"
+          : !sessions.has(sent.sessionId) ? "unknown-session"
+          : sessions.get(sent.sessionId) !== port ? "unbound-session"
+          : sent.generation !== envelope.generation ? "stale-generation" : null;
+        if (refusal) {
+          port.postMessage({ kind: "holder:refused", storeName: opts.lockName, cause: refusal, ...envelope });
+          onDrop(msg.type, refusal);
+          return;
+        }
         if (msg.type === "manifest") {
           if (owner && owner !== port) {
             const refused: HolderRefused = { kind: "holder:refused", storeName: opts.lockName, cause: "island-owned" };
-            port.postMessage(refused);
+            port.postMessage({ ...refused, ...envelope });
             onDrop(msg.type, "island-owned");
             return;
           }
@@ -211,17 +247,18 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         if ((msg.type === "lar:control-event" || msg.type === "lar:resend") && typeof msg.cameraId === "string") {
           cameras.set(msg.cameraId, port);
         }
-        let forwarded: unknown = e.data;
+        const { ownerEpoch: _epoch, sessionId: _session, generation: _generation, ...islandMessage } = msg;
+        let forwarded: unknown = islandMessage;
         if (TAB_REQUESTS.has(msg.type) && typeof msg.requestId === "string") {
           const holderId = `${requestNamespace}:${++nextRequest}`;
           pending.set(holderId, { port, requestId: msg.requestId });
-          forwarded = { ...msg, requestId: holderId };
+          forwarded = { ...islandMessage, requestId: holderId };
         }
         const transfer = (e.ports ?? []) as unknown as unknown[];
         isl.post(forwarded, transfer.length ? transfer : undefined);
       });
       port.start?.();
-      const hello: HolderHello = { kind: "holder:hello", islandBoots, tabs: ports.size, lockClientId };
+      const hello: HolderHello = { kind: "holder:hello", islandBoots, tabs: ports.size, lockClientId, ...envelope };
       port.postMessage(hello);
     },
   };

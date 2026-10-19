@@ -16,7 +16,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, test, expect } from "vitest";
 import {
-  CAPABILITY_PROFILES, HAND_PROFILES, SESSION_SCHEMA_VERSION, SessionContractError, isCapabilityProfile, refuseBeyondProfile, SessionTable, sessionBinding,
+  CAPABILITY_PROFILES, HAND_PROFILES, SessionContractError, isCapabilityProfile, refuseBeyondProfile, SessionTable, sessionBinding,
   sessionTransitionLegal, validateSessionEnvelope, validateSessionFace,
   type SessionFace, type SessionState,
 } from "../src/session-contract.js";
@@ -26,7 +26,7 @@ const face = (suffix = "a"): SessionFace => ({
   causalRevision: `revision-${suffix}`,
   planes: { persona: `plane-persona-${suffix}`, circles: `plane-circles-${suffix}`, identities: `plane-identities-${suffix}`, sessions: `plane-sessions-${suffix}` },
 });
-const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch, sessionId, generation });
+const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ ownerEpoch, sessionId, generation });
 const opened = (table: SessionTable, binding = sessionBinding("port"), wearing: SessionFace = face()) => {
   const result = table.open(binding, wearing, "face");
   if (!result.ok) throw new Error(result.refusal);
@@ -132,7 +132,7 @@ describe("session contract", () => {
     const binding = sessionBinding("port");
     const other = sessionBinding("port");
     const session = opened(table, binding);
-    expect(table.check({ ...envelope(session.sessionId), schemaVersion: 99 }, other)).toMatchObject({ refusal: "malformed-message" });
+    expect(table.check({ ...envelope(session.sessionId), ownerEpoch: "" }, other)).toMatchObject({ refusal: "malformed-message" });
     expect(table.check(envelope("absent", "epoch-b"), other)).toMatchObject({ refusal: "stale-owner-epoch" });
     expect(table.check(envelope("absent"), other)).toMatchObject({ refusal: "unknown-session" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), other)).toMatchObject({ refusal: "unbound-session" });
@@ -260,7 +260,7 @@ describe("session contract", () => {
     const lawful = envelope("session-a");
     expect(validateSessionEnvelope(lawful)).toEqual(lawful);
     for (const invalid of [
-      { ...lawful, schemaVersion: 2 }, { ...lawful, generation: -1 }, { ...lawful, generation: 0.5 },
+      { ...lawful, ownerEpoch: "" }, { ...lawful, generation: -1 }, { ...lawful, generation: 0.5 },
       { ...lawful, generation: "0" }, { ...lawful, sessionId: "" },
     ]) expect(validateSessionEnvelope(invalid)).toBeNull();
   });

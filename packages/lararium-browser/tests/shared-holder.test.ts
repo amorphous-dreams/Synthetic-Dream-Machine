@@ -88,6 +88,9 @@ describe("the shared holder — one island per origin, a port per tab", () => {
 
     expect(island.boots()).toBe(1);                       // ONE island
     expect(a.hello.islandBoots).toBe(1); expect(b.hello.islandBoots).toBe(1);
+    expect(a.hello).toMatchObject({ ownerEpoch: expect.any(String), sessionId: expect.any(String), generation: 0 });
+    expect(b.hello.ownerEpoch).toBe(a.hello.ownerEpoch);
+    expect(b.hello.sessionId).not.toBe(a.hello.sessionId);
     expect(a.hello.tabs).toBe(1);        expect(b.hello.tabs).toBe(2);
     expect(a.port).not.toBe(b.port);                      // two ports
     expect(lockTable.get(vesselLockName(IDB))).toBe("holder-1");   // the holder took the lock
@@ -104,6 +107,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const ha = holderWorkerHandle(a.port); const hb = holderWorkerHandle(b.port);
     const seenA = new Promise<unknown>((r) => ha.listen((m) => r(m)));
     ha.post({ type: "wiki:place-verb", requestId: "from-a" });
+    // The handle stamps the tab's envelope going out and reads it off coming in: the daemon core sees the bare message.
     expect(await seenA).toEqual({ type: "wiki:verb-result", requestId: "from-a", result: { ok: true } });
     const seenB: unknown[] = [];
     hb.listen((message) => seenB.push(message));
