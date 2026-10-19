@@ -190,6 +190,20 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
+<<~ ahu #/rank-consensus>>
+
+!! Rank consensus ~ several lenses over one item set
+
+''The fold.'' Several strict, best-first rankings over the SAME named items yield one reproducible order. Each ranking names every item exactly once; an absent or repeated item stops the fold rather than inviting a guessed position. The first ranking supplies the stable tie order.
+
+''Two readings.'' Borda adds each item's zero-based positions and advances the lowest sum, a tied sum following the first ranking's order (`bordaConsensus`). Kemeny searches the permutations for the order with the least total Kendall-tau pair disagreement (`kemenyConsensus`, `kendallTauCost`); seeded with Borda and keeping the first equal-cost order, its disagreement never exceeds Borda's. Exhaustive search reaches at most eight items (`KEMENY_MAX_ITEMS`); a larger set takes another method or a refusal, never an unbounded silent search (`packages/lararium-mesh/src/rank-consensus.ts`).
+
+''The ladder boundary.'' Aperture, the action ladder, scope, rating and stage each name a vocabulary of their own, so their five rows rank no shared set of candidates. A caller first names the common candidates and takes a strict order over them from each lens it means to fold. Without that mapping, the separate readings stand side by side and no consensus gets announced.
+
+''The authority boundary.'' A consensus order compresses the disagreement among the readings it received; it grants no federation rank, gate authority or world verdict. The input orders and the Kendall cost ride beside the result, so another reader can inspect what the fold moved.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -201,6 +215,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7tu9OzyXO3DsOZcb3Su2It5cZEi49YT_4b6_pZHSULk
+<<^ code="&#x0003;">>ni:///sha-256;s6gBxLeZzh5IvmHwVD-VWW9E9dQmle7UetUMdKNJkcc
 
 <<^ code="&#x0004;" -> to="?">>
