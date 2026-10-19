@@ -26,8 +26,8 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import {
-  admittedKeyOf, checkVesselChain, faceKeyGrantRevision, foldWithdrawals, heldNexusRoot, hex, hexToBytes,
-  makeMultiSigQuorumVerifier, nexusAidOf, openJoinedFaceSession, parseNexusDoc, presentedAdmitReader, readFaceKeyGrant,
+  admittedKeyOf, checkVesselChain, faceKeyGrantRevision, foldWithdrawals, heldNexusRoot, hex,
+  makeMultiSigQuorumVerifier, nexusAidOf, nexusAidOfPin, openJoinedFaceSession, parseNexusDoc, presentedAdmitReader, readFaceKeyGrant,
   sessionBinding, SessionTable,
   type FacePresentation, type FaceScope, type GateBundlePin, type PlaceOraclePresentation, type SessionBinding,
 } from "@lararium/mesh";
@@ -37,11 +37,6 @@ import { BrowserCustodyRefused, readKeystoreRow } from "./browser-custody.js";
 
 /** Why no face presentation stands, by name. */
 export interface BrowserFacePresentationRefusal { readonly refusal: string; readonly detail?: string }
-
-/** The Nexus AID text a pin names, or null where its hex does not read as text. */
-export function nexusAidOfPin(pin: Pick<GateBundlePin, "nexus">): string | null {
-  try { return new TextDecoder("utf-8", { fatal: true }).decode(hexToBytes(pin.nexus)); } catch { return null; }
-}
 
 interface KeptFaceRecord { readonly personaGroup: string; readonly rootKey: string; readonly certificates: readonly unknown[]; readonly grants: readonly unknown[] }
 

@@ -38,7 +38,7 @@
  * `node:`.
  */
 
-import { defaultCryptoProvider, type RandomProvider } from "./crypto.js";
+import { bytesEqual, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
 import { bindSlot, encodeSlotTree, decodeSlotTree, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { sealUnderVk, openUnderVk, vkAnswersCheck, type VesselKey, type VkOpening } from "./vk.js";
 import { readVkCarrier, type VkCarrierReading } from "./vk-envelope.js";
@@ -200,11 +200,9 @@ async function proveAgainstTree(io: CustodyIo, treePath: string, vk: VesselKey):
 
 const isSidecar = (path: string): boolean => path.endsWith(SEALING_SUFFIX) || path.endsWith(ROTATING_SUFFIX);
 
-function bytesEqual(a: Uint8Array | null, b: Uint8Array | null): boolean {
-  if (a === null || b === null) return a === b;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
+/** Two readings agree: both absent, or both present with equal bytes. */
+function sameReading(a: Uint8Array | null, b: Uint8Array | null): boolean {
+  return a === null || b === null ? a === b : bytesEqual(a, b);
 }
 
 /** Open the carrier under `vk`, reading what stands. */
@@ -294,14 +292,14 @@ async function writeHeld(args: WriteSealedCarrierArgs): Promise<void> {
   await io.write(side, sealed);
   await readBackOrDiscard(io, side, sealed, (back) => {
     const o = openUnderVk(vk, carrier.name, back);
-    return o.reading === "opens" && bytesEqual(o.plaintext, args.plaintext);
+    return o.reading === "opens" && sameReading(o.plaintext, args.plaintext);
   });
   await io.rename(side, carrier.path);
 }
 
 async function readBackOrDiscard(io: CustodyIo, side: string, written: Uint8Array, opens: (back: Uint8Array) => boolean): Promise<void> {
   const back = await io.read(side);
-  if (back !== null && bytesEqual(back, written) && opens(back)) return;
+  if (back !== null && sameReading(back, written) && opens(back)) return;
   await io.remove(side);
   throw new Error(`sealed-writer: the sidecar at ${side} did not read back as written; nothing replaced the standing bytes`);
 }
@@ -333,7 +331,7 @@ export interface CommitSlotTreeArgs {
 async function commitHeld(args: CommitSlotTreeArgs): Promise<void> {
   const { io, path } = args;
   const standing = await io.read(path);
-  if (!bytesEqual(standing, args.expected)) {
+  if (!sameReading(standing, args.expected)) {
     throw new Error(`sealed-writer: the slot tree at ${path} moved since it was read; read it again before binding`);
   }
   if (standing !== null) await proveAgainstTree(io, path, args.vk);
@@ -411,7 +409,7 @@ async function rotateHeld(args: RotateVkArgs): Promise<SlotTree> {
       await io.write(side, sealed);
       await readBackOrDiscard(io, side, sealed, (back) => {
         const o = openUnderVk(args.newVk, carrier.name, back);
-        return o.reading === "opens" && bytesEqual(o.plaintext, plaintext);
+        return o.reading === "opens" && sameReading(o.plaintext, plaintext);
       });
     }
     sides.push(treeSide);

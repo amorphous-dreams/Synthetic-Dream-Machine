@@ -26,7 +26,7 @@
 import { pbkdf2 } from "@noble/hashes/pbkdf2.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import type { RandomProvider } from "./crypto.js";
+import { bytesEqual, type RandomProvider } from "./crypto.js";
 import { interpolateAt, type ShareBytes } from "./shamir-gf256.js";
 import { SLIP39_WORDS } from "./slip39-wordlist.js";
 
@@ -347,11 +347,6 @@ export function combineMnemonics(mnemonics: readonly string[], passphrase = ""):
   return feistel(ems, passphrase, first.iterationExponent, first.identifier, first.extendable, true);
 }
 
-function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
-}
 
 /** Where a read-back first departs from its sheet: a 1-based word position, the sheet's word there, and the typed
  *  word (null when the read-back ended early). Case and spacing never count as a departure. */

@@ -42,7 +42,7 @@ import { blake3 } from "@noble/hashes/blake3.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { digestsEqual, formatDigest } from "./agile-digest.js";
-import { defaultCryptoProvider, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
+import { constantTimeBytesEqual, defaultCryptoProvider, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import {
   CONTENT_KEY_ID_INFO, SEALED_CHUNK_COMMITMENT_INFO, SEALED_CHUNK_DOMAIN, SEALED_CHUNK_KEY_INFO,
 } from "./domains.js";
@@ -153,7 +153,7 @@ export function readSealedImage(name: string, bytes: unknown, count: number): Ui
     }
     if (parts.length !== count + 1) return refuse();
     const lead = utf8Bytes(name);
-    if (!bytesEqual(parts[0]!, lead)) return refuse();
+    if (!constantTimeBytesEqual(parts[0]!, lead)) return refuse();
     return parts.slice(1);
   } catch { return refuse(); }
 }
@@ -259,12 +259,6 @@ function segmentNonce(index: bigint, final: boolean): Uint8Array {
   nonce[11] = final ? 1 : 0;
   return nonce;
 }
-function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
-  return diff === 0;
-}
 
 // ── Seal ────────────────────────────────────────────────────────────────────────────────────────
 /**
@@ -326,13 +320,13 @@ export function openChunk(args: {
     if (!(args.sealed instanceof Uint8Array) || args.sealed.length < SEALED_HEADER_LEN + SEALED_TAG_LEN) return { refusal: "envelope-malformed" };
     const sealed = args.sealed;
     if (!digestsEqual(sealedAddressOf(sealed), args.authorized.address)) return { refusal: "address-mismatch" };
-    if (!bytesEqual(sealed.subarray(0, SEALED_MARK_LEN), SEALED_CHUNK_MARK)) return { refusal: "format-unknown" };
+    if (!constantTimeBytesEqual(sealed.subarray(0, SEALED_MARK_LEN), SEALED_CHUNK_MARK)) return { refusal: "format-unknown" };
     if (keyVersionIdOf(key, context.bagId) !== context.keyVersion) return { refusal: "key-mismatch" };
     const hintAt = SEALED_MARK_LEN, saltAt = hintAt + SEALED_HINT_LEN, commitAt = saltAt + SEALED_SALT_LEN;
-    if (!bytesEqual(sealed.subarray(hintAt, saltAt), hexToBytes(context.keyVersion).subarray(0, SEALED_HINT_LEN))) return { refusal: "version-mismatch" };
+    if (!constantTimeBytesEqual(sealed.subarray(hintAt, saltAt), hexToBytes(context.keyVersion).subarray(0, SEALED_HINT_LEN))) return { refusal: "version-mismatch" };
     const salt = sealed.subarray(saltAt, commitAt);
     const digest = digestOfContext(context);
-    if (!bytesEqual(sealed.subarray(commitAt, SEALED_HEADER_LEN), commitmentOf(key, salt, digest))) return { refusal: "context-mismatch" };
+    if (!constantTimeBytesEqual(sealed.subarray(commitAt, SEALED_HEADER_LEN), commitmentOf(key, salt, digest))) return { refusal: "context-mismatch" };
 
     const bodyKey = bodyKeyOf(key, salt, digest);
     try {

@@ -114,6 +114,11 @@ function leadingName(image: Uint8Array): string | null {
 /** How many bytes may name a Nexus. */
 export const NEXUS_AID_MAX_BYTES = 256;
 
+/** Decode the pin's Nexus AID as UTF-8 text, or return null when its hex or text is malformed. */
+export function nexusAidOfPin(pin: Pick<GateBundlePin, "nexus">): string | null {
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(hexToBytes(pin.nexus)); } catch { return null; }
+}
+
 /** A route in its one spelling: one or more segments, each led by a slash, no trailing slash. */
 const ROUTE = /^(?:\/[A-Za-z0-9._~-]+)+$/;
 const ROUTE_MAX = 256;

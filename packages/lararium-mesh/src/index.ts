@@ -357,7 +357,7 @@ export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnno
 // `dialFaceGate` over their own sockets.
 export {
   deriveGateBundle, floorGateRoot, sovereignGateRoot, floorRoute, sovereignRoute, gateBundleDigest, gateKnock, knockSegment, readGateBundlePin,
-  readGateSignature, GateBundleRefused, GATE_BUNDLE_REFUSALS, GATE_TIERS,
+  readGateSignature, nexusAidOfPin, GateBundleRefused, GATE_BUNDLE_REFUSALS, GATE_TIERS,
 } from "./gate-bundle.js";
 export type { GateBundle, GateBundlePin, GateBundleRoot, GateRoute, GateTier, GateBundleRefusalName } from "./gate-bundle.js";
 export { makeFaceGate, presentedAdmitReader, memoryBackedWithdrawals, GATE_SILENCE_REASONS } from "./face-gate.js";
