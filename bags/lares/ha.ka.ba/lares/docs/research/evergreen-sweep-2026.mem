@@ -1,0 +1,154 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "field research, two traded Luna-6 waves and a Sol-6 code reader (2026-10-18), on lifting shared shapes into their packages and yanking authored version numbers and deciding wall clocks; the six rulings the operator approved; the Sol plan verbatim, Markdown transliterated only"
+status    = "research; read 2026-10-18; no code changed; row G37 carries the build"
+tags      = ["research", "evergreen", "aftermath", "no-global-now", "isomorphism"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/evergreen-sweep-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/evergreen-sweep-2026"
+```
+
+<<~ ahu #/head>>
+
+! The evergreen sweep, 2026 ~ isomorphisms to lift, clocks and version numbers to yank
+
+After the long buildout the operator called a deep Aftermath and Evergreen pass over `packages/*/src` and `tools/` (2026-10-18): shapes two packages re-derive lift into the shared package that owns them (federated-mesh shapes into `@lararium/mesh`, TW5 shapes into `@lararium/tw5`), authored version numbers yield to CIDs and edges, and wall clocks that decide yield to causal events. A Luna-6 YIN and YANG pair read the code in two traded waves over pre-grepped inventories (281 clock lines, 373 version-shaped lines, 208 narrating comments, 76 names defined in two or more packages); a Sol-6 code reader then verified their findings against source, refuted ten, and wrote the plan as fourteen lanes. The plan rests verbatim from #/plan-refutations-and-corrections on, and #/rulings answers its open questions; the pair's wave-two handbacks rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>. Row `G37` carries the build.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! The operator's rulings (2026-10-18, approving the controller's leans)
+
+# ''`prune-stale` keeps its idle report.'' The report decides nothing and prunes nothing (`wiki-draft-handlers.ts`); a person reads it as a mirror, never as a judge, and the evergreen witness lists it as an allowed exception with its reason beside it.
+# ''A persisted time rides as optional display metadata, and no parser refuses for its lack.'' `parseEffectRecord` and `parseRetirementRecord` read a record whole without `timestamp` or `retiredAt`; order rides the request id and causal links, so a device clock set to 1970 or 3000 changes what a person sees and never whether a record stands.
+# ''A reader tolerates every grammar it will meet, named as an archive set.'' Capture keeps reading the heads a written turn may carry (`focus`, `feedback`) as a named archive set beside the live grammar, its comment stating the set and never its history. `rotate-recipe` keeps its prior canon readable, addressed by the doc's CID and a `rotated-from` link; `canon/vN` and `rotation-gen` leave.
+# ''The numbered preimages and formats rename together, in one deliberate re-genesis before the second operator.'' `engine/v1`, `plugins/v1`, `grammar/v1`, `lararium-genesis-seed/v1` and `lararium-genesis-cas/v1` take semantic names in the bake that closes `W26`, never by search and replace and never mid-slice, since each rename moves every CID the floor carries.
+# ''The floor announcement and the browser's store take their current shape.'' The announcement's signed body names its kind (`floor-announcement`) in the same re-genesis, and no reader of the numbered body remains. `openVesselIdb` lays its current stores and drops its additive migration branches; a store that does not match re-founds by name. The browser API's numeric open argument stays.
+# ''Worldline replay orders by parent links.'' A spawn names its parent turn, an inject its spawn, a handback its inject; producers add the missing parent link first, and a skip announces itself the way a cascade gap does (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> #/totality-law), never a silent `continue`.
+
+''The order between lanes'' (controller lean, approved): the standing witness lands first at today's count and only ever moves down, the way `unbuilt-laws` does; the byte, hex and pin lifts (lanes 1–3) run beside the Wrights' lanes on disjoint files; lanes that touch mesh session or genesis code wait for `W26` slice 2, and the preimage renames ride the bake that closes `W26`.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-refutations-and-corrections>>
+
+!! Refutations and corrections
+
+
+All paths below are relative to `/home/joshu/Synthetic-Dream-Machine`. Findings marked ''MEASURED'' were read in source. This is a code reading and PR plan; no suites, builds, or git writes ran.
+
+# ''MEASURED — refute draft deletion.'' YIN 3/YANG 4 say the clock removes old drafts. `packages/lararium-tw5/src/wiki-draft-handlers.ts:65-73,87-115` only returns a `stale` advisory list; it makes no write or delete. The clock changes a human-facing candidate report, so a 1970/3000 clock does not itself authorize pruning. It still deserves a product ruling because a human may rely on the report. The separate draft writer does persist `drafted-at` at `wiki-draft-handlers.ts:40-61`.
+# ''MEASURED — refute build-patch compatibility arm.'' YIN 26/YANG 23 call `deriveSurface` an active legacy acceptance branch. `packages/lararium-mesh/src/capture/build-patch.ts:127-139` returns `unknown` for absent or unprefixed input; it does not recreate the old `claude` default. `deriveRootHandle` at `build-patch.ts:186-198` rejects an unprefixed root. Rewrite the historical comments, but keep honest unknown provenance unless an input contract explicitly forbids it.
+# ''MEASURED — refute parser “back-compat” removal.'' `packages/lararium-tw5/src/meme-ast/builder.ts:106-125` accepts `:` because the live TiddlyWiki macro parser accepts it. The comment calls it back-compat, but deleting `:` would make the reader disagree with the host parser. This is present input semantics, not a dead shim. Update the comment only.
+# ''MEASURED — refute rotate-recipe as mere retention residue.'' `packages/lararium-tw5/src/compaction-handlers.ts:138-154,180-197,200-235` implements an operator-invoked fresh canonical plus a readable prior underlay. That is live product behavior. Its `canon/v${nextGen}` URI and `rotation-gen` fields are authored global-order claims to replace, but whether prior canon remains readable needs an operator decision; deleting the underlay is not a safe cleanup.
+# ''MEASURED — refute “strict” mesh hex decoder.'' YIN 7/YANG 25 call `packages/lararium-mesh/src/crypto.ts:125-135` strict. `parseInt` accepts a valid prefix inside a pair (`"0g"` becomes zero), so this decoder does not reject every non-hex byte. `packages/lararium-mesh/src/cold-boot-ceremony.ts:39-45` has a second permissive decoder. The lift must harden the mesh export first, then move the local copy. `packages/lararium-keyhive/src/keyhive-provider.ts:114-117` additionally accepts `0x` at its Keyhive edge; keep that normalization there.
+# ''MEASURED — refute all byte comparisons as one security contract.'' Browser/node `sameBytes` copies are equal early-exit algorithms (`packages/lararium-browser/src/browser-fleet-join.ts:78`; `packages/lararium-node/src/fleet-join-custody.ts:43`, `seat-key-store.ts:98`, `face-key-custody.ts:96`). Mesh `sealed-chunk.ts:262-267` accumulates XOR differences across equal-length inputs. Do not replace it with an early-exit export. Mesh `sealed-writer.ts:203-208` also accepts null pairs, unlike the byte-only copies.
+# ''MEASURED — refute a generic record reader and broad name-based lifts.'' Mesh `readRecord` authenticates sealed content and checks writer standing (`packages/lararium-mesh/src/sealed-records.ts:422-455`); node guardian JSON parsing throws on malformed rows (`packages/lararium-node/src/guardian-enrolment.ts:98-104`); node roll-circle parsing returns null (`packages/lararium-node/src/roll-circle-record.ts:40-55`). Likewise `splitHash` feeds different mirror decisions (`packages/lararium-mesh/src/mirror-paths.ts:25-33`; `packages/lararium-node/src/bag-paths.ts:88-115`), and frame text hashing and mesh injected-provider byte hashing have different boundaries (`packages/lararium-memetic-frame/src/check.ts:60-63`; `packages/lararium-mesh/src/crypto.ts:138-164`). No lift follows from those names.
+# ''MEASURED — already lifted.'' `readWornPersonaMount` lives in mesh (`packages/lararium-mesh/src/persona-vault.ts:272-312`) and node only binds its fs vault (`packages/lararium-node/src/worn-mount.ts:9-19`). Recovery reconstruction likewise lives in mesh (`packages/lararium-mesh/src/recovery-keel-core.ts:95-105`) while node injects the Keyhive signer (`packages/lararium-node/src/recovery-keel.ts:15-23,44-53`). A second lift would duplicate or invert the package graph. Mesh roster helpers read `PersonaVault`, while node roster calls use one explicit row with keys (`persona-vault.ts:173-183`; `node-vessel-identity.ts:795-830`); replacing them blindly loses that contract.
+# ''MEASURED — liveness clocks stay.'' Mesh boot wait and retry (`packages/lararium-mesh/src/boot-resolver.ts:208-228`, `sibling-channel.ts:656-658`, `capture/capture-engine.ts:192-200`), node UDS receipt wait (`packages/lararium-node/src/uds-channel.ts:680-710`), browser teardown and hello wait (`packages/lararium-browser/src/guarded-boot.ts:37-45`, `shared-holder.ts:65-80`), TW5 sensorium request timeout (`packages/lararium-tw5/src/wiki-sense-supervision.ts:318-344`), and browser dial timer (`packages/lararium-browser/src/browser-gate-pins.ts:67-74`) bound only the holder's wait or retry. TW5 notification dismissal (`packages/lararium-tw5/src/modules/lar-root-services.ts:102-108`) changes transient UI. These do not expire a remote act.
+# ''MEASURED — preserve protocol and key identity.'' MCP `protocolVersion` belongs to the external initialization exchange (`packages/lararium-mempalace/src/mempalace-client.ts:218-222`). `SealContext.keyVersion` identifies a content key (`packages/lararium-mesh/src/sealed-chunk.ts:161-189`), and recovery epochs are supplied causal inputs, not clock readings (`packages/lararium-mesh/src/recovery-keel-core.ts:120-145,172-190`). `device-admit/v1` (`packages/lararium-browser/src/admit-carriage.ts:12-15`; `packages/lararium-keyhive/src/index.ts:104-110`), frozen `/v1` signing domains (`packages/lararium-mesh/src/domains.ts:29-62`), and the signed floor-announcement version byte (`packages/lararium-mesh/src/floor-announcement.ts:32-48,104-110,153-164`) bind existing bytes. They are authored residue, but a mass rename would invalidate live commitments. IndexedDB's numeric open parameter (`packages/lararium-browser/src/browser-vessel-identity.ts:92-95`) is required by the browser API; the authored migration branches at `:97-132` are the actual sweep target.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-lane-plan>>
+
+!! Lane plan
+
+
+Each lane fits one reviewable PR. “Red” names the failing test or static witness to add before changing production code. Numbered dependencies refer to lanes below. Shared lifts land at the mesh floor; node/browser/TW5 compose them. The highest-yield missed findings appear in lanes 5, 8, and 9.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-lifts>>
+
+!!! LIFTS
+
+
+''1. Byte comparison at the mesh floor.'' Red: a table test for equal/unequal/length-mismatched byte arrays across all migrated call sites, plus a timing-contract test or source witness that `sealed-chunk` continues scanning all equal-length bytes. Target `@lararium/mesh` export `bytesEqual` for ordinary `Uint8Array` comparison in `packages/lararium-mesh/src/crypto.ts` and `index.ts`; move browser `browser-fleet-join.ts:78,198` and node `fleet-join-custody.ts:43`, `seat-key-store.ts:98,161`, `face-key-custody.ts:96,193-295`, and mesh `slip39.ts:350-354`. Leave constant-time `sealed-chunk.ts:262-267` local or export a distinctly named `constantTimeBytesEqual` with its security property. Keep null handling at `sealed-writer.ts:203-208` as a wrapper. No prerequisite. Risk: accidentally changing comparison timing in authenticated or secret-key paths.
+
+''2. Strict hex decoding.'' Red: `@lararium/mesh` `hexToBytes` rejects `0g`, `g0`, odd length, and non-ASCII digits; accepts valid upper/lowercase pairs. Harden `packages/lararium-mesh/src/crypto.ts:120-135`, then replace its duplicate in `packages/lararium-mesh/src/cold-boot-ceremony.ts:39-45,61`; existing mesh export is the target. `packages/lararium-keyhive/src/keyhive-provider.ts:114-117` keeps `0x` normalization and upstream decoding; the browser stub at `packages/lararium-browser/src/__stubs__/crypto-stub.ts:46-51` is a test seam, not a production lift. No prerequisite. Risk: existing malformed hex once accepted will now fail closed.
+
+''3. Nexus pin text decode.'' Red: a node/browser parity test gives both helpers valid UTF-8 hex, invalid hex, and malformed UTF-8 and demands the same `string | null` answer. Target `@lararium/mesh` export `nexusAidOfPin` in a gate/pin module; move identical node `packages/lararium-node/src/dial-presentation.ts:39-42` and browser `packages/lararium-browser/src/browser-face-presentation.ts:41-44` implementations to imports. Depends on lane 2 so the one decoder rejects malformed hex. Risk: pin parsing may refuse malformed values previously decoded permissively; that is the intended fail-closed behavior and needs a witness.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-clock-yanks>>
+
+!!! CLOCK YANKS
+
+
+''4. Opaque action and sensorium IDs.'' Red: freeze the wall clock at 1970 and 3000 and assert emitted identifiers contain no time-derived prefix; assert distinct IDs still identify repeated calls and `changeId` survives COPY/MOVE. Target mesh `newEventId` (`packages/lararium-mesh/src/effect-record.ts:154-160`) and `newChangeId` (`packages/lararium-mesh/src/residency-actions.ts:310-323`) share a cryptographic opaque mint helper, with distinct namespaces and exported functions retained. Node `newSensoriumId` (`packages/lararium-node/src/sense-sensorium.ts:69-72`) uses the same mesh helper. TW5 `makeRequestId` (`packages/lararium-tw5/src/handler-args.ts:30-34`) and alert origin (`wiki-behavior.ts:59-76`) move in the same PR through the mesh mint; TW5 callers keep their semantic prefixes. No prerequisite. Risk: consumers that sort IDs as time will change; locate and move them to causal order before deleting that assumption.
+
+''5. Causal worldline replay, missed by both.'' Red: permute the source edge array and set `valid_from`/`ended` to contradictory years (1970 and 3000); `worldlineCausalFromEdges` must preserve the same spawn→inject→handback result and never skip a valid injection because a wall timestamp sorted it before its spawn. Target `@lararium/mesh` `worldlineCausalFromEdges` at `packages/lararium-mesh/src/worldline-trajectory.ts:168-213`; the producer `deriveInjectionEdges` at `worldline-inject-detect.ts:99-115` may retain transcript time as display provenance, but replay must use causal edge/turn links and stable topological order. No prerequisite. Risk: current edge shapes may lack enough dependency links; add them at producers before changing projection. The present implementation explicitly sorts by timestamp and silently skips an unknown target at `worldline-trajectory.ts:203-226`.
+
+''6. Mount freshness without wall time.'' Red: mount, restart/reset the worker state, and replay an old target frame under clocks at 1970 and 3000; stale targets still reject while the current target succeeds. Target `@lararium/tw5` `mintEpoch`/mount protocol in `packages/lararium-tw5/src/tw5-projection.ts:133-139,776-786`, with any type change carried through the mesh session/island message contracts (`packages/lararium-mesh/src/session-contract.ts:203-205`). Use an opaque mount nonce and causal association to the live mount, not `Math.max(..., Date.now())`. Depends on lane 4's opaque mint. Risk: a wire shape change across worker/page boundaries; update sender and receiver atomically.
+
+''7. Event records and lifecycle transitions.'' Red: run writers with clocks at 1970 and 3000; identity, authorization, status, and parsed validity agree. Target mesh `EffectRecord`/`mapActionToEffects` (`packages/lararium-mesh/src/effect-record.ts:132-133,174,208-218,259-266`), verb builders/parser (`packages/lararium-mesh/src/verb-tiddler.ts:473,541,578,603,635`), and `RetirementRecord` parser (`packages/lararium-mesh/src/sensorium-lifecycle.ts:129-145`). Move node mailbox and retirement writers (`packages/lararium-node/src/vessel-mailbox.ts:39-73`, `sensorium-lifecycle-verbs.ts:277-290`) and TW5 delegate/alert writers (`packages/lararium-tw5/src/daemon-vm-core.ts:574-584`, `wiki-behavior.ts:62-80`) to causal request IDs/status/grounds; make time optional display metadata only if the operator retains it. Node tick `packages/lararium-node/src/lar-event-bus-impl.ts:198-204` emits an ordinal or bare tick rather than `{ts}`. Depends on lane 4. Risk: current readers require `timestamp`/`retiredAt`; change reader and writer together and keep a clear present-data policy.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-version-yanks>>
+
+!!! VERSION YANKS
+
+
+''8. Engine watch uses CID, missed by both.'' Red: an incoming engine with a lower human `version` but a new SHA must show “different engine waiting,” never “rollback”; an unchanged SHA produces no alert. Target `@lararium/tw5` `startEngineWatch` (`packages/lararium-tw5/src/engine-watch.ts:40-87`) and booted engine shape (`sovereign-kernel.ts:381-424`, `island-context.ts:54-57`). Remove `compareVersions`, `waiting-version`, and `booted-version` as authority; report both hashes, with release ancestry only if a verified manifest edge supplies it. The blob descriptor's version can remain display-only pending operator ruling (`packages/lararium-mesh/src/cas.ts:37-45`). Depends on lane 4 for the alert request ID. Risk: operators lose a familiar rollback warning until verified ancestry lands; do not substitute lexical CID order.
+
+''9. LarDoc and genesis shape.'' Red: a source witness finds no authored `LarDoc.schemaVersion` field or literal `"0.1"` in a produced document; genesis seed and manifest round-trip under their content CIDs. Target `@lararium/mesh` `LarDoc`/`emptyLarDoc` (`packages/lararium-mesh/src/base-doc.ts:80-95`), `materializeGenesisDoc` and `GENESIS_SEED_FORMAT` (`genesis-doc.ts:243-250,279-283,351-355,686-697`), and `GENESIS_CAS_MANIFEST_FORMAT` (`cas.ts:35-49`). Move mesh projections (`mesh-palace.ts:525-530,565-568`; `oracle-substrate.ts:90-101`) and TW5 synthetic doc (`packages/lararium-tw5/src/cabal-realm-verbs.ts:60-67`). Keep a semantic discriminator only where shape ambiguity requires it; `engine/v1`, `plugins/v1`, `grammar/v1` at `genesis-doc.ts:469-520` are hash preimages, so changing them needs explicit CID transition design, not a search/replace. No prerequisite. Risk: generated CIDs and existing oracle bytes change; plan a fresh genesis/founding boundary.
+
+''10. Session envelope shape.'' Red: `validateSessionEnvelope` accepts the current kind/owner epoch/session/generation without `schemaVersion`, and rejects wrong owner or stale generation. Target `@lararium/mesh` `SessionEnvelope`, `validateSessionEnvelope`, and `SessionTable.check` (`packages/lararium-mesh/src/session-contract.ts:179-225`); move the producer in `session-signer.ts:92` and all worker bindings of that envelope. Distinguish the causal `generation` from a format generation. Depends on lane 6 if mount nonce changes message types. Risk: mixed running workers cannot exchange the new shape; deploy a synchronized worker/page boundary.
+
+''11. Other authored versions at signed and storage boundaries.'' Red: a witness reports `version` counters in newly minted house objects, while fixtures verify old signatures remain byte-for-byte valid. Target `@lararium/mesh` `FloorAnnouncementBody`/`readFloorAnnouncement` (`packages/lararium-mesh/src/floor-announcement.ts:32-48,95-110,125-165`) and record metadata (`tiddler-store.ts:89-96`). Retain old floor version bytes as a frozen signed format unless the operator authorizes a new announcement identity; new formats get semantic names. Browser `openVesselIdb` (`packages/lararium-browser/src/browser-vessel-identity.ts:53-54,92-141`) keeps the numeric IndexedDB API argument but replaces historical store deletion/additive migration branches with an explicit current-state/re-found policy. Depends on lane 9 for document shape. Risk: signed announcements and persisted browser custody can become unreadable; do not silently rewrite either.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-evergreen-sweep>>
+
+!!! EVERGREEN SWEEP
+
+
+''12. Historical capture names and comments.'' Red: a fixture of currently supported capture heads still harvests, and a source witness flags historical prose in active source. Target `@lararium/mesh` capture `turn-harvest.ts:196-207`: decide whether historical transcript heads remain supported inputs; if yes, keep them in a named archive reader rather than calling them live grammar. Rewrite the old-default narrative in `capture/build-patch.ts:127-139,186-198`, lift narrative in `persona-vault.ts:1-16`, and future wiring narrative in `recovery-keel-core.ts:164-167`; node wrappers `worn-mount.ts:1-6` and `recovery-keel.ts:29-42` describe present behavior. No prerequisite. Risk: removing old heads may lose capture from extant transcripts; this needs an explicit input retention ruling.
+
+''13. Canon rotation names.'' Red: two rotate calls with the same canonical history produce distinct prior-canon references by CID/causal edge, without `canon/vN` or `rotation-gen`; the old canonical remains readable if the operator keeps that feature. Target `@lararium/tw5` `makeRotateRecipeReactor` (`packages/lararium-tw5/src/compaction-handlers.ts:138-154,185-197,203-245`) and the catalog/recipe readers of prior-canon slots. Depends on lane 9 and the operator retention ruling. Risk: recipe stack and catalog URI change; existing rotations need a deliberate transition policy.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-standing-witnesses>>
+
+!!! STANDING WITNESSES
+
+
+''14. Source boundary and behavior instruments.'' Red: plant one forbidden authored `schemaVersion`, one `Date.now()` identity, and one active historical comment in fixtures; the witness must fail each, while allowing `MCP protocolVersion`, `keyVersion`, frozen domains, and own-liveness timers. Add a static `tools/evergreen-boundary-witness` over `packages/*/src` and `tools/`, with an allowlist requiring a reason and source line for each exception. Pair it with focused clock-adversary tests for lanes 5, 6, 7, 8 and the existing `tools/domain-registry-witness.sh` rule cited at `packages/lararium-mesh/src/domains.ts:41-43`. Depends on lanes 1-13 for a clean baseline. Risk: noisy grep rules invite meaningless suppressions; check semantic sinks (IDs, validity gates, durable fields) rather than banning every clock or `version` token.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-open-questions-for-the-operator>>
+
+!! Open questions for the operator
+
+
+# Should advisory `prune-stale` keep wall-based `daysIdle`/candidate selection for humans (`packages/lararium-tw5/src/wiki-draft-handlers.ts:65-73,87-115`), or should even the report use an explicit abandonment/review queue? No automatic deletion exists in the current code.
+# Which persisted times stay as clearly display-only metadata: effect `timestamp` (`packages/lararium-mesh/src/effect-record.ts:132-133,208-218`), verb `requested-at`/`completed-at` (`verb-tiddler.ts:473,541`), draft `drafted-at` (`packages/lararium-tw5/src/wiki-draft-handlers.ts:40-61`), mailbox stamps (`packages/lararium-node/src/vessel-mailbox.ts:39-73`), and sensorium `retiredAt` (`packages/lararium-mesh/src/sensorium-lifecycle.ts:129-145`)? A required timestamp in a parser currently makes clock metadata a validity gate.
+# Are earlier transcript heads supported input forever, or may capture drop `focus`/`feedback` (`packages/lararium-mesh/src/capture/turn-harvest.ts:202-207`)? Is prior canonical readability a standing rotate-recipe feature (`packages/lararium-tw5/src/compaction-handlers.ts:138-154,230-235`)?
+# May a new founding invalidate existing generated genesis CIDs and document bytes (`packages/lararium-mesh/src/genesis-doc.ts:469-520,686-697`), or must frozen hash preimages and seed/manifest format strings continue to read old artifacts?
+# Does the floor announcement's signed numeric byte remain frozen forever with only new semantic formats minted (`packages/lararium-mesh/src/floor-announcement.ts:32-48,104-110`)? Likewise, should existing browser IndexedDB custody be re-founded instead of migrated (`packages/lararium-browser/src/browser-vessel-identity.ts:92-141`)?
+# Which causal edge is the authoritative order for worldline replay when source transcript timestamps contradict the spawn/inject/handback relation (`packages/lararium-mesh/src/worldline-trajectory.ts:176-213`)? The current edge triple exposes timestamps and turn keys, but the replay needs a tie to its parent event to be clock-independent.
+
+The inventory's 68 cross-package-name rows are search leads, not 68 isomorphisms (`../inv/cross-package-names.tsv`). The plan selects shared byte and pin primitives plus high-impact causal/version sinks; it leaves upstream protocols, content-key identities, and local liveness pacing intact.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>
+
+<<^ code="&#x0003;">>ni:///sha-256;eWJsQcAtTO70EJ9APBaasUwIcws8-7aqLqnf8QlvezY
+
+<<^ code="&#x0004;" -> to="?">>

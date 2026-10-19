@@ -167,7 +167,7 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 | A content-key holder is beside vessel and veil identities and currently receives both providers. | Own | CONFIRMED | `operator-daemon-behavior.ts:195-202,1036-1054`. **Change of mind:** my wave-one wording that the holder was already face-seated overstated the implementation. Per-face seating is a target; current holder is shared by the mounted vessel process. |
 | A single process can use multiple isolated Keyhive instances with separate event stores/archives. | Own | LEAD | Vendored `keyhive/keyhive_core/src/keyhive.rs:85-127` puts identity, groups, docs, pending events and ciphertext store on each `Keyhive` object. This supports object-local maps, but does not prove WASM/global-state or runtime isolation. Probe two instances with disjoint stores, interleaved operations, export/reboot, and cross-instance lookup; no conclusion from docs alone. |
 | Herm may retain a floor/place identity with no face capability. | Twin / own | CONFIRMED | `boot-daemon-keyhive.ts:109-124` supports faceless boot; **target constraint** from framing: no identity above faces. Whether floor identity can be made incapable of face authorship needs a red test. |
-| Removal is causal; group reach rolls documents, not sentinel itself. | Twin / own | CONFIRMED | `kapae.mem` #/keys; `sealed-store.mem` #/owed and #/the-content-key-holder; `stable-founding-road.mem` K12. Founder/implicit-seat removal and successor founding need explicit handling. |
+| Removal is causal; group reach rolls documents, not sentinel itself. | Twin / own | CONFIRMED | `kapae.mem` #/keys; `sealed-store.mem` #/owed and #/the-store; `stable-founding-road.mem` K12. Founder/implicit-seat removal and successor founding need explicit handling. |
 | Current node/browser restore rows already provide one-face bundles. | Own | REFUTED | Carrier code stores face veil rows, but also vessel archive (`identity-anchors.ts:124-168`; browser rows `browser-keyhive-archive.ts:18-31`). That is not the approved selected-face-only bundle or fresh face identity restore. |
 | Fresh per-face identity and archive split is the correct migration. | Twin / own | CONFIRMED | Ruling and fence in `stable-founding-road.mem` #/rulings; current shared store/registration paths above establish the migration need. Exact byte migration remains a design choice. |
 
@@ -224,6 +224,6 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jnipC6Pk64W02QgePAJ6zoVmhqqwu6JAINh9aeUwEDA
+<<^ code="&#x0003;">>ni:///sha-256;E0_H2ALmvgohW_StUV_nujsmVK_lyMRo6yxeTOnmcZQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -35,7 +35,7 @@ A YIN and a YANG Luna-6 spirit researched apart with live web search, then trade
 !! What both faces hold, sourced
 
 * ''The per-tab ruling holds on every surface walked.'' Each session asks and wears its own face; two faces never share an opening.
-* ''The shared holder moves ciphertext and coordinates storage, and holds no session's key.'' Quiet sync stays sealed until the matching session opens its own rows. "Shared holder" names shared coordination, never shared authority. This answers the myth-QA joint: keys live in sessions alone, and a holder that opened documents per session would hold the key cache neither source nor ruling supports.
+* ''The holder keeps each face's content keys only while some session wearing that face stands unlocked, and never one face's keys for another face's session'' (operator, 2026-10-18, approving the house reading). Each tab's own ask proves the person present for that tab and admits the tab to its face's open hive; it derives no key of its own, so two tabs of one face hold one opening, never two. The last session of a face to close locks that face's hive and overwrites its keys. On a node the boot opens the face and each run proves it at the gate. The holder lives where the face's Keyhive seat lives (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">> #/the-store, the content-key holder), and it answers a port only for a session it admitted, never for every port on the origin; that guard carries the reading, and row `B1` owes its red: an unadmitted port that asks for a sealed body refuses by name.
 * ''A synced passkey never counts as device-bound custody.'' Apple's iCloud Keychain and Google Password Manager both sync passkeys across devices. This confirms the caution of <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> #/custody-leans: a synced passkey reads `cloud-synced`, and a PRF wrap stands as one keyslot beside passphrase and paper, never alone.
 * ''No browser worker gives a durable vault.'' SharedWorker and ServiceWorker lifetimes end when their last reference goes; browser storage stays evictable by default.
 * ''Native keystores reach no web code.'' The Secure Enclave and Android Keystore hardware-back keys for native code; a native surface reaches them only through its own adapter, its hardware level measured.
@@ -209,6 +209,6 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wqcC6dpgDP8YSgnZslRFeUbG1tlHKoonBVSbWIrnHjU
+<<^ code="&#x0003;">>ni:///sha-256;uY8QEk_12rvmZfETDft6HnVnQ0Hrzb7qkNs23igdEdQ
 
 <<^ code="&#x0004;" -> to="?">>

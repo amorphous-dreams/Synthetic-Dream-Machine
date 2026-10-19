@@ -162,7 +162,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''A write to one realm never appears in another's plane.'' Each realm keeps its own shared doc, its own standing registrations, its own steward pin and its own gate.
 * ''An act stands the vessel in a realm; a read never does.'' Registering, asking and consenting in a cabal realm stand its plane and note the realm in the vessel's own ledger. Naming a realm the vessel never entered reads empty.
 * ''A cabal takes no key and no roster.'' Standing in a cabal realm reads as a live query over its vouch lineage (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/reach">>). The plane holds no member list, and a steward's key there derives against the Nexus the realm stands under.
-* ''A realm stands under one Nexus'' (a house reading, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>). The vessel's own ledger keeps the Nexus its first act there named. The planes stand each realm the ledger notes under the Nexus that stands here, or under none yet; a realm noted under another Nexus stands no plane here, and an act that would enter it refuses `realm-under-another-nexus`.
+* ''A realm stands under one charter, a seed's or a Nexus's'' (operator ruling, 2026-10-18; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>). A council that meets at one hearth stands under its seed charter, and one two hearths carry stands under the Nexus they found. The vessel's own ledger keeps the charter its first act there named. The planes stand each realm the ledger notes under the charter that stands here, or under none yet; a realm noted under another charter stands no plane here, and an act that would enter it refuses `realm-under-another-nexus`.
 * ''A Nexus member outside a cabal reads nothing of its realm.'' The Nexus lane and the charter-hearth lane answer for the charter-derived realm alone. A contracted carrier still carries a cabal realm's PUBLIC-tier book by hash.
 * ''Wire access attaches to the document, never to the record that named it.'' Where the vessel's own steward keeps a book in some realm, those realms alone answer for it: a record another hand wrote in another realm neither opens that book nor shuts it. A book two answering realms both hold crosses to a peer every one of them admits. The vessel's own hand in a realm reads as the name its steward pin holds there, the face it last sealed with.
 * ''A registration widens who reads a book and never narrows it.'' Whatever the vessel already carries to every peer, its public and infrastructure planes, stays carried once a realm registers it.
@@ -303,6 +303,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;NJp_jIot77IraYca07ujIHnaRhpm69xfxPw2c-_du0c
+<<^ code="&#x0003;">>ni:///sha-256;6w0mclyrq9a4FDpn9her_9f_1YD8_0HN8cYlQk3cixs
 
 <<^ code="&#x0004;" -> to="?">>
