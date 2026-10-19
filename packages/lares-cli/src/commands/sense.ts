@@ -18,7 +18,7 @@
  * the daemon's composed caps, and nothing behind it opens a store.
  */
 
-import { openMemorySensorium, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
+import { openMemorySensorium, makeLaresQuery, runTrialServing, trialContentDir, verifyTrialModel, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdHarvest, cmdCapture, cmdSweep } from "./capture/harvest.js";
@@ -85,6 +85,7 @@ type Verb = (typeof VERBS)[number];
  * stale daemon dist or a dirty sovereign store, never a wrong-store read.
  */
 const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | number>> = {
+  "trial-run": cmdTrialRun,
   // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling).
   // A vessel founds and serves without a single sensorium, so standing one rides its own act — on the
   // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --install`
@@ -167,7 +168,8 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   const lens = args.options["lens"] ?? "content";
   // `crossplane` is a search MODE, not a plane-dir (it widens content hits across form+structure by the
   // cid-join), so it rides the lens slot beside the real planes without a dir of its own.
-  const known = [...Object.keys(sensoriumLenses()), "crossplane"];
+  const trialRoot = args.options["trial-root"];
+  const known = trialRoot ? ["content"] : [...Object.keys(sensoriumLenses()), "crossplane"];
 
   if (!verb || !VERBS.includes(verb as Verb)) {
     emit(args, {
@@ -194,8 +196,78 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     return exitFor("verb-error");
   }
 
-  const q = openMemorySensorium();
+  if (trialRoot && verb === "status") {
+    try {
+      const result = await runTrialServing("status", { operationRoot: trialRoot });
+      emit(args, { ok: true, data: { lens, verb, result }, human: () => console.log(JSON.stringify(result, null, 1)) });
+      return 0;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      emit(args, { ok: false, error: { code: "verb-error", message }, human: () => console.error(message) });
+      return exitFor("verb-error");
+    }
+  }
+  if (trialRoot && verb !== "search") {
+    const message = `trial ${verb} is unsupported; this operation serves Content search and status only`;
+    emit(args, { ok: false, error: { code: "verb-error", message }, human: () => console.error(message) });
+    return exitFor("verb-error");
+  }
+  // The holder loads the same pinned model assets as the projector. Scope HOME to this
+  // one CLI request and restore it after the holder closes.
+  const priorHome = process.env["HOME"];
+  let q: ReturnType<typeof openMemorySensorium> | undefined;
   try {
+    if (!trialRoot && (args.options["source-key"] || args.options["revision"]))
+      throw new Error("--source-key and --revision require --trial-root");
+    if (trialRoot && !args.options["model-home"]) throw new Error("trial search needs --model-home for the pinned query model");
+    const trialStatus = trialRoot ? await runTrialServing("status", { operationRoot: trialRoot }) : undefined;
+    let allowedCids: ReadonlySet<string> | undefined;
+    let trialSourceKey: string | undefined;
+    let trialRevision: string | undefined;
+    if (trialStatus) {
+      const receipts = trialStatus["receipts"] as Record<string, Record<string, unknown>> | undefined;
+      const intake = receipts?.["intake"];
+      const typedReceipt = receipts?.["typed"];
+      const semanticReceipt = receipts?.["semantic"];
+      const typed = Number(trialStatus["content_frontier"] ?? 0);
+      const semantic = Number(trialStatus["semantic_frontier"] ?? 0);
+      const sourceKey = typedReceipt?.["source_key"];
+      const viewKey = semanticReceipt?.["view_key"];
+      const views = trialStatus["semantic_frontiers"] as Record<string, Record<string, number>> | undefined;
+      if (trialStatus["operation_status"] !== "complete" || !intake || !typedReceipt || !semanticReceipt
+          || !Number.isInteger(typed) || !Number.isInteger(semantic) || typed < 1 || semantic < typed
+          || intake["observation_id"] !== typedReceipt["observation_id"]
+          || intake["observation_id"] !== semanticReceipt["observation_id"]
+          || typedReceipt["source_frontier"] !== semanticReceipt["source_frontier"]
+          || typeof sourceKey !== "string" || typeof viewKey !== "string"
+          || views?.[viewKey]?.[sourceKey] !== semantic
+          || trialStatus["content_root"] !== trialContentDir(trialRoot!)) {
+        throw new Error("trial Content lacks a complete current-observation semantic receipt and frontier");
+      }
+      if (trialStatus["model_home"] !== args.options["model-home"])
+        throw new Error("trial query model home differs from the operation's pinned model home");
+      const allowed = await runTrialServing("allowed-cids", { operationRoot: trialRoot! });
+      if (allowed["observation_id"] !== intake["observation_id"]
+          || allowed["source_key"] !== sourceKey
+          || allowed["revision_sha256"] !== intake["revision_sha256"]
+          || allowed["view_key"] !== viewKey
+          || allowed["model_basis_sha256"] !== semanticReceipt["model_basis_sha256"]
+          || allowed["content_frontier"] !== typed
+          || allowed["semantic_frontier"] !== semantic
+          || !Array.isArray(allowed["cids"])
+          || allowed["cids"].some((cid: unknown) => typeof cid !== "string")
+          || allowed["cids"].length !== typedReceipt["typed_blocks"]
+          || allowed["cids"].length !== semanticReceipt["blocks"]
+          || new Set(allowed["cids"]).size !== allowed["cids"].length) {
+        throw new Error("trial allowed-CID read disagrees with the current semantic receipt");
+      }
+      allowedCids = new Set(allowed["cids"] as string[]);
+      trialSourceKey = sourceKey;
+      trialRevision = intake["revision_sha256"] as string;
+      await verifyTrialModel(args.options["model-home"]!);
+    }
+    if (trialRoot) process.env["HOME"] = args.options["model-home"]!;
+    q = trialRoot ? makeLaresQuery({ content: trialContentDir(trialRoot) }) : openMemorySensorium();
     const arg = rest.join(" ").trim();
     const k = Number(args.options["k"] ?? 5);
     let data: unknown;
@@ -216,12 +288,38 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
         const selfWeight = args.options["self-weight"] !== undefined
           ? Number(args.options["self-weight"])
           : 0.25;
-        data = await q.search(lens, arg, {
-          k,
+        const sourceKey = args.options["source-key"];
+        const revision = args.options["revision"];
+        const search = await q.search(lens, arg, {
+          k: trialRoot ? Math.max(k * 8, 32) : k,
           ...(args.options["wing"] ? { wing: args.options["wing"] } : {}),
           ...(args.options["room"] ? { room: args.options["room"] } : {}),
           ...(notRoot ? { notRoot, selfWeight } : {}),
         });
+        if (trialRoot) {
+          if (!("results" in search) || !Array.isArray(search.results))
+            throw new Error("trial Content search returned no hit array; refusing unfiltered response");
+          const hits = (search.results as Array<Record<string, unknown>>).filter((hit) => {
+            const metadata = (hit["metadata"] ?? {}) as Record<string, unknown>;
+            const cid = hit["drawer_id"];
+            return typeof cid === "string" && allowedCids?.has(cid) === true
+              && metadata["lar_occurrence_id"] === cid
+              && metadata["lar_source_key"] === trialSourceKey
+              && metadata["lar_revision_sha256"] === trialRevision
+              && (!sourceKey || metadata["lar_source_key"] === sourceKey)
+              && (!revision || metadata["lar_revision_sha256"] === revision);
+          });
+          const selected = hits.slice(0, k).map((hit) => {
+            const metadata = (hit["metadata"] ?? {}) as Record<string, unknown>;
+            return { ...hit,
+              cid: hit["drawer_id"],
+              source_key: metadata["lar_source_key"] ?? null,
+              revision_sha256: metadata["lar_revision_sha256"] ?? null };
+          });
+          data = { ...search, results: selected, total_after_filter: hits.length,
+            filter_exhaustive: false,
+            trial: trialStatus };
+        } else data = search;
         break;
       }
       case "relate":
@@ -256,7 +354,32 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     });
     return exitFor("verb-error");
   } finally {
-    await q.close();
+    await q?.close();
+    if (trialRoot) {
+      if (priorHome === undefined) delete process.env["HOME"];
+      else process.env["HOME"] = priorHome;
+    }
+  }
+}
+
+async function cmdTrialRun(args: ParsedArgs): Promise<number> {
+  try {
+    const root = args.options["trial-root"];
+    if (!root) throw new Error("trial-run needs --trial-root <absolute disposable operation root>");
+    const result = await runTrialServing("run", {
+      operationRoot: root,
+      ...(args.options["freeze-receipt"] ? { freezeReceipt: args.options["freeze-receipt"] } : {}),
+      ...(args.options["intent"] ? { intent: args.options["intent"] } : {}),
+      ...(args.options["source-host"] ? { sourceHost: args.options["source-host"] } : {}),
+      ...(args.options["model-home"] ? { modelHome: args.options["model-home"] } : {}),
+      ...(args.options["device"] ? { device: args.options["device"] as "auto" | "cpu" | "cuda" } : {}),
+    });
+    emit(args, { ok: true, data: result, human: () => console.log(JSON.stringify(result, null, 1)) });
+    return 0;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    emit(args, { ok: false, error: { code: "verb-error", message }, human: () => console.error(message) });
+    return exitFor("verb-error");
   }
 }
 
