@@ -43,6 +43,7 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **The engine watch names an engine by its hash.** A waiting engine reads "a different engine waits" with both short hashes; the version shows as a label, and no two engines get ordered.
 - **Each face owns its bags.** A face's own identity creates and grants every bag it holds; the vessel delegates none of them.
 - **A second boot re-mints nothing.** A bag keeps one Document across boots, and a replayed Archive lands no event twice.
+- **The worldline replays by cause, never by clock.** A delegation, an inject and a handback order by their parent links; an event that cannot apply is named with its reason.
 - **A meme crosses a realm through a user book.** A member reads a book another operator keeps through the realm's counted registration; a vessel outside the realm refuses.
 - **The vessel page applies the island's scroll and focus hints, and reports its long-animation frames and heap after first paint.**
 - **Genesis carries the first floor.** The seed names a floor manifest and the `lares` and `lararium` snapshots by CID, `@oracle` reads that floor by CID, and a session surface admits the floor's CIDs; a title riding two bags refuses by name.

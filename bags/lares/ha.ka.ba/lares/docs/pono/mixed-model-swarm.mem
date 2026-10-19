@@ -156,6 +156,8 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''Every background Codex launch closes its stdin'' (`< /dev/null`): `codex exec` otherwise waits at "Reading additional input from stdin..." and never starts.
 * ''`-o` and the handback never share a file'' (measured 2026-10-18). A spirit briefed to write `out.md` wrote its full handback there, then `-o out.md` replaced it with the one-line final message, and wave two traded those lines. The brief names `out.md` for the handback, `-o` names `final.md`, and the launcher gates each wave on the handback's word count before it trades.
 * ''A builder's walls name its own directory beside the worktree'' (measured 2026-10-18, Evergreen-Wright). With `-C <worktree>` the spirit writes inside the worktree alone, so its `<d>/.tmp`, its heredocs, vitest's temp dirs and `<d>/out.md` refuse and it stops; the builder's launch adds `--add-dir <d>`. A reader launched with `-C <d>` needs none.
+* ''A tw5 builder cannot test past the dist guard.'' Any tw5 source or test edit leaves its dist stale, and a spirit builds nothing, so the lead builds tw5 (`npm run build`, then `node tools/stamp-build.mjs <tree> --pkg lararium-tw5`) before each red or green run, or the builder writes and the lead runs.
+* ''A moved plugin source runs `witness-all`.'' The plugin bundle regenerates, and genesis-parity reads DRIFT until `genesis/unbaked.json` declares the new sha or a labelled re-bake lands; generated bundle bytes regenerate from merged source and never merge by hand.
 * ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
 * ''A Copilot read names its target.'' Each brief names the branch, its head sha and the pull request, and the eye reads the code through `git show <branch>:<path>` or from the lane's own worktree path; the main tree holds the span, never the lane's code. Where a read pairs two faces, wave one runs each alone and wave two hands each its twin's handback to confirm or refute against the named branch.
@@ -185,6 +187,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BYBYJL6fiefkiiQGk78xCb2-BgiMj5evJHY-_s1nF1U
+<<^ code="&#x0003;">>ni:///sha-256;X4yN0m-zQZ8w7Ogqo9jGc75q6rxjRUcT85pbaW8g8fI
 
 <<^ code="&#x0004;" -> to="?">>
