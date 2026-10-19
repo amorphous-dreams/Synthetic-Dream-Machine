@@ -90,19 +90,22 @@ function read(rows: readonly Row[]): Reading {
 
 const live = (page: Page) => page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")].some((p) => p.textContent === "live"), undefined, { timeout: 60_000 });
 
-/** The store once two readings a second apart agree: the boot has finished writing. */
+/** The signature a reading settles on: every Document's heads and every peer row. */
+const signature = (r: Reading): string => JSON.stringify([[...r.heads].sort(), [...r.peers].sort()]);
+
+/** The store once three readings a second apart agree on heads and peer rows: the boot has finished writing. */
 async function settled(page: Page): Promise<Reading> {
   await live(page);
-  let prev = JSON.stringify([...read(await dump(page)).heads]);
-  for (let look = 0; look < 40; look++) {
+  let now = read(await dump(page));
+  let agreed = 0;
+  for (let look = 0; look < 60; look++) {
     await page.waitForTimeout(1000);
-    const rows = await dump(page);
-    const now = read(rows);
-    const text = JSON.stringify([...now.heads]);
-    if (text === prev) return now;
-    prev = text;
+    const next = read(await dump(page));
+    agreed = signature(next) === signature(now) ? agreed + 1 : 0;
+    now = next;
+    if (agreed >= 3) return now;
   }
-  assert.fail("the store never settled inside 40 s");
+  assert.fail("the store never settled inside 60 s");
 }
 
 const names = (m: Map<string, string>) => [...m.keys()].sort();
@@ -125,8 +128,8 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
     await wiki.locator('button[title="Confirm changes to this tiddler"]').click();
     await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection")?.textContent?.includes("Second Boot Control") ?? false, undefined, { timeout: 30_000 });
     const edited = await settled(page);
-    const moved = [...edited.heads].filter(([k, h]) => one.heads.get(k) !== h).map(([k]) => k);
-    assert.ok(moved.length > 0, "CONTROL: the saved edit moves at least one Document's heads");
+    const moved = [...edited.heads].filter(([k, h]) => one.heads.has(k) && one.heads.get(k) !== h).map(([k]) => k);
+    assert.ok(moved.length > 0, "CONTROL: the saved edit moves the heads of a Document the first boot already held");
 
     await page.reload();
     const two = await settled(page);
@@ -138,8 +141,10 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
       const drifted = [...after.heads].filter(([k, h]) => before.heads.get(k) !== h).map(([k]) => k);
       assert.deepEqual(drifted, [], `${label} adds no content head to any Document`);
     }
-    const fresh = [...three.peers].filter((p) => !two.peers.has(p));
-    assert.deepEqual(fresh, [], "boot 3 rests no sync row for a peer boot 2 did not already hold");
+    for (const [label, before, after] of [["boot 2", edited, two], ["boot 3", two, three]] as const) {
+      const fresh = [...after.peers].filter((p) => !before.peers.has(p));
+      assert.deepEqual(fresh, [], `${label} rests no sync row for a peer the boot before did not already hold`);
+    }
     assert.deepEqual(faults, [], "no page error in three boots");
   } finally { await context.close(); }
 });
