@@ -45,7 +45,7 @@ describe("admitCanonDocs — the canon documents the carried admit names", () =>
     const src = readFileSync(new URL("../src/commands/device-admit.ts", import.meta.url), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     const hearth = src.slice(src.indexOf("const hearth: AdmitHearthReading = {"));
-    expect(hearth.slice(0, hearth.indexOf("};")), "the hearth reading names no canon documents").toMatch(/canon:\s*await admitCanonDocs\(repo, hearthCatalogUrl\(\)\)/);
+    expect(hearth.slice(0, hearth.indexOf("};")), "the hearth reading names no canon documents").toMatch(/canon:\s*opts.catalogUrl \? await admitCanonDocs\(repo, opts.catalogUrl\) : \{\}/);
     expect(src, "a carried admit composes beside the signed edge").not.toMatch(/CarriedAdmitPayload\s*=/);
   });
 });

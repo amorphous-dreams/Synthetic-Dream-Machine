@@ -563,7 +563,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   //         `reach`/`realmReach` (`packages/lararium-tw5/src/meme-verbs.ts` resolveSink, the `mode === "get"`
   //         fall-through). A's PUT walks the realm FIRST (`opts.realmWritable` in the same function). So
   //         A writing a marker and failing to read it back proves the two doors land on DIFFERENT docs.
-  //   (iii) A's VERDICT — the registry pointer A's oracle plane holds for `bags/lares` against the
+  //   (iii) A's VERDICT — the registry pointer A's catalog holds for `bags/lares` against the
   //         `docUrl` the standing registration names: one book, or two chests.
   test("⑬ MEASURE: where the return lane stops — A's read, A's replica, or the book's identity", async (ctx) => {
     if (!bPut) ctx.skip();
@@ -606,7 +606,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     lines.push(`(ii) A reads back its OWN write: ${readsOwnWrite} — false means the put door and the get door hold DIFFERENT docs`);
 
     // (i) A'S REPLICA, OFF DISK. The daemon owns the store while it stands, so it stops first.
-    const oracleUrl = bootDocUrl(A!, "oracle");
+    const catalogUrl = bootDocUrl(A!, "catalog");
     await A!.stopDaemonOnly();
     let pointer = "";
     let replicaHasB = "unmeasured";
@@ -615,8 +615,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     let bRealmTitles: string[] = [];
     try {
       const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(A!)) });
-      if (oracleUrl) {
-        const isle = await repo.find(oracleUrl as never);
+      if (catalogUrl) {
+        const isle = await repo.find(catalogUrl as never);
         pointer = String((isle.doc() as { tiddlers?: Record<string, { tiddler?: { text?: string } }> })?.tiddlers?.[LARES_BAG]?.tiddler?.text ?? "");
       }
       if (realmDoc) {
@@ -663,7 +663,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // wire runs and the BAG doc alone stays behind; one that carries neither says the direction itself.
     const onlyB = bRealmTitles.filter((t) => !aRealmTitles.includes(t));
     lines.push(`(v) the realm doc ${realmDoc || "(none)"} — A holds ${aRealmTitles.length} record(s), B holds ${bRealmTitles.length}; B-only: ${onlyB.length === 0 ? "(none)" : onlyB.join(", ").slice(0, 300)}`);
-    lines.push(`(iii-b) A's oracle registry names ${pointer || "(none)"} for ${LARES_BAG}`);
+    lines.push(`(iii-b) A's catalog registry names ${pointer || "(none)"} for ${LARES_BAG}`);
     lines.push(`(iii-b) registry pointer === registration doc: ${pointer !== "" && pointer === registered}`);
     lines.push(`(i) A's on-disk replica of the registered doc carries B's #/b: ${replicaHasB} · carries A's marker: ${replicaHasMarker}`);
     console.error(`meme-realm-bag ⑬ MEASURE where the lane stops:\n  ${lines.join("\n  ")}`);

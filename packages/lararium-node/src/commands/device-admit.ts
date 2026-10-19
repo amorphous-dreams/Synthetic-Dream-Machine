@@ -4,7 +4,6 @@
  *
  * Node-specific shores (only these belong here):
  *   - readFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
- *   - readFileSync for the hearth catalog pointer beside its persisted store
  *   - findWithProgress on the store's one holder for daemon doc access — the standing vessel's own Repo
  *     when the door runs inside it, the direct holder's (`ownedStore`) when no vessel stands
  *   - loadVesselSigningSeed (disk keypair)
@@ -20,7 +19,6 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join } from "node:path";
 import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
@@ -29,7 +27,7 @@ import {
   leaseEpochPrefix, effectiveLeaseEpoch,
   LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
-import { larBootstrapPath, larDataDir, larSealHome } from "../vessel-paths.js";
+import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
@@ -113,13 +111,6 @@ export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
 /** The catalog titles whose documents a joinee mounts as its hearth's base canon. */
 const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
 
-/** The hearth's own catalog pointer rests beside its persisted store. */
-export function hearthCatalogUrl(): string {
-  const url = process.env["LAR_CATALOG"]?.trim() || readFileSync(join(larDataDir(), "catalog-url"), "utf8").trim();
-  if (!isValidAutomergeUrl(url)) throw new Error("[lares admit] this hearth names no valid catalog document");
-  return url;
-}
-
 /**
  * THE CANON DOCUMENTS THIS HEARTH NAMES TO A JOINEE — `@lares` and `@lararium`, by document url, as this
  * vessel's own catalog holds them. They ride the fleet-join answer's signed carriage, so the joinee's gate widens
@@ -170,6 +161,8 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
 export interface DeviceAdmitOptions {
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:           Repo;
+  /** This hearth's catalog, supplied by the holder of its store; absence names no canon. */
+  readonly catalogUrl?:   string | undefined;
   readonly syncUrl?:       string;
   /** The joining vessel's PUBLIC Ed25519 verifying-key hex — the delegate the founder's root signs. */
   readonly joineeVerifyingKey: string;
@@ -375,7 +368,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const hearth: AdmitHearthReading = {
     gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
-    canon:   await admitCanonDocs(repo, hearthCatalogUrl()),
+    canon:   opts.catalogUrl ? await admitCanonDocs(repo, opts.catalogUrl) : {},
     islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };

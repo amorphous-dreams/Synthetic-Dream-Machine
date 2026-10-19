@@ -72,7 +72,7 @@ import { judgeStillBeforeWrite } from "../partial-landing.js";
 import { realmNexusIn } from "../edge-board.js";
 import { edgeRollAnchorRealms } from "./edge-roll-anchor.js";
 import type { AdmitBundle } from "../admit-bundle.js";
-import { admitCanonDocs, hearthCatalogUrl } from "./device-admit.js";
+import { admitCanonDocs } from "./device-admit.js";
 import { carryBundleFrom, type CarryBundle } from "../carry-bundle.js";
 import { oracleFloorPinAt } from "../herm-carriage.js";
 import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
@@ -101,6 +101,8 @@ export interface NexusContractOptions {
   readonly sealHome:    string;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:        Repo;
+  /** The catalog named by this store holder; absence names no canon. */
+  readonly catalogUrl?: string | undefined;
   /** The Nexus the act lands under, where this vessel carries its charter beside the primary; absent names the primary. */
   readonly aid?:        string;
   /** The custody door the admit's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
@@ -330,7 +332,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
-    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo, hearthCatalogUrl()) })
+    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: opts.catalogUrl ? await admitCanonDocs(opts.repo, opts.catalogUrl) : {} })
     : null;
   const floorPin = opts.action === "carry" && opts.floorPin ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home)) : null;
   return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin };

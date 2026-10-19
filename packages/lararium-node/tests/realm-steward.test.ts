@@ -88,7 +88,7 @@ function standingPlanes(repo: Repo, labels: readonly string[], guardOf?: (label:
   const entries = labels.map((label) => {
     const crossroads = repo.create<LarDoc>(emptyLarDoc());
     return { crossroads, plane: makeRealmPlane({
-    repo, oracleHandle: repo.create<LarDoc>(emptyLarDoc()), crossroadsHandle: crossroads,
+    repo, registry: repo.create<LarDoc>(emptyLarDoc()), crossroadsHandle: crossroads,
     membership: noMembers, base: denyAll,
     ...(guardOf ? { stewardGuard: stewardGuard(guardOf(label)) } : {}),
   }) };
@@ -210,7 +210,7 @@ describe("the realm steward door", () => {
 
   test("D7 null and unstood planes refuse; control: null-plane list is empty", async () => {
     const repo = new Repo({}), [{ plane }] = await standingPlanes(repo, ["A"]), a = await actor(80);
-    const unstood = makeRealmPlane({ repo, oracleHandle: repo.create<LarDoc>(emptyLarDoc()), crossroadsHandle: repo.create<LarDoc>(emptyLarDoc()), membership: noMembers, base: denyAll });
+    const unstood = makeRealmPlane({ repo, registry: repo.create<LarDoc>(emptyLarDoc()), crossroadsHandle: repo.create<LarDoc>(emptyLarDoc()), membership: noMembers, base: denyAll });
     const opts = { args: { bag: BAG }, registryDocs: () => [registryDoc()], vault: a.vault };
     await expect(runRealmBag({ plane: null, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });
     await expect(runRealmBag({ plane: unstood, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });

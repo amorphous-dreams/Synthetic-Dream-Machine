@@ -2670,7 +2670,7 @@ async function prepareNodeBootOn(
     // (above) serves as the one after-write hook every row that lands a board or a practice joint fires; the
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
-      storageDir, sealHome, repo,
+      storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.

@@ -58,6 +58,8 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
@@ -97,6 +99,8 @@ export interface StoreDoorDeps {
   readonly sealHome:   string;
   /** The store's one holder — the running vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
+  /** The catalog named by the held store; absent when the store names none. */
+  readonly catalogUrl?: string | undefined;
   /**
    * A write just counted. `nexusAid` names the Nexus whose reading a row moved (a carried charter's take); every other caller
    * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
@@ -224,7 +228,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-contract": (args) => answer("nexus-contract", async () => {
       const action = args["action"] as CarriageAction;
       const r = await runNexusContract({
-        action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
+        action, nym: need("nexus-contract", args, "nym"), sealHome, repo, catalogUrl: deps.catalogUrl,
         ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])), ...opt("aid", str(args["aid"])),
         ...opt("syncUrl", str(args["syncUrl"])), ...opt("floorPin", str(args["floorPin"])),
       });
@@ -416,7 +420,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // The answer notes the certificates it issued beside the joining device; the refold it sets off resweeps a standing
     // vessel's gates, and each sweep reads that issued book again, so the gate binds the device's face-scoped key.
     "fleet-join-answer": (args) => answer("fleet-join-answer", async () => {
-      const issued = await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args) });
+      const issued = await runFleetJoinAnswer({ repo, sealHome, catalogUrl: deps.catalogUrl, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])), ...opt("docUrl", str(args["docUrl"])), ...joinFace(args) });
       await awaitOnRolled(deps.onRolled?.());
       return { answer: issued };
     }),
@@ -470,6 +474,10 @@ export async function storeDoorDirect(
   opts: { readonly sealHome: string; readonly storageDir?: string },
 ): Promise<Record<string, unknown>> {
   const storageDir = opts.storageDir ?? larDataDir();
-  return await ownedStore(storageDir, (repo) =>
-    storeDoorRows({ storageDir, sealHome: opts.sealHome, repo })[verb](args));
+  return await ownedStore(storageDir, (repo) => {
+    // The direct holder reads the catalog named beside the store it owns. An unnamed store carries no canon.
+    let catalogUrl: string | undefined;
+    try { catalogUrl = readFileSync(join(storageDir, "catalog-url"), "utf8").trim() || undefined; } catch { /* No catalog stands. */ }
+    return storeDoorRows({ storageDir, sealHome: opts.sealHome, repo, catalogUrl })[verb](args);
+  });
 }

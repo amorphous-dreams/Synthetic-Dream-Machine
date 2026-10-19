@@ -5,10 +5,10 @@
  * bytes a CID names are FETCHED on request by a peer holding the pointer and the read cap, never
  * synced with the record. This witness stands the pair `meme-two-vessel-bag` proves — a founder A
  * and a same-operator joiner B — and carries a `.png` POINTER (bytes in A's `cid/`, the handle in
- * the CRDT) through the one shared door into `bags/lares`, then measures what B holds:
+ * the CRDT) into A’s own `bags/lares`, then measures what B holds:
  *
  *   ⑤ A LOADs `photo.png` (+ `.meta`) once B stands → A's `cid/` holds the bytes; the CRDT the handle
- *   ⑦ B, after sync, projects the POINTER (`_is_skinny` · `textCid` · `_integrity`, no `text`)
+ *   ⑦ B, after sync, measures the absence of A’s live system pointer (W24/W27 owns its BOOK crossing)
  *   ★ B's `cid/` — do the BYTES stand there? By which door?
  *
  * The rite (①–⑥) copies `meme-two-vessel-bag` step for step; that file stays untouched.
@@ -112,7 +112,7 @@ let joinGate = "";
 /** The cid the stager wrote on A — whichever derivation its `cid/` answers. */
 let cid = "";
 
-describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYTES follow? ★", () => {
+describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B measures the byte door ★", () => {
   beforeAll(async () => {
     // The joinee rite — one door in the harness; the early LOAD lands on A before B stands.
     pair = await openStagedJoinee({
@@ -177,22 +177,13 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     expect(B!.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
-  test("★ ⑦ on B: the RECORD crossed — B projects the POINTER (_is_skinny · textCid · _integrity, no text) ★", async () => {
-    // The CRDT read gates the crossing; the projection reads the fields the record carries.
-    const which = await awaitWhich(B!, 90_000);
-    console.error(`blob-follows-pointer MEASURE B: wiki which ${TITLE}\n${which.trim()}`);
-    expect(which, "the record did not cross — B's bag never answered the title").toContain(`  ${LARES_BAG}`);
-    expect(/primary:\s+(\S+)/.exec(which)?.[1]).toBe(LARES_BAG);
-    const deadline = Date.now() + 60_000;
-    let p = projectedPointer(B!.root);
-    while (!p && Date.now() < deadline) { await new Promise((r) => setTimeout(r, 1000)); p = projectedPointer(B!.root); }
-    console.error(`blob-follows-pointer MEASURE B: bags/lares tree: ${walk(join(B!.root, "bags/lares")).join(" · ") || "(empty)"}\n  pointer file: ${p?.file ?? "(none projected)"}\n  ${p ? JSON.stringify(p.fields) : ""}`);
-    if (p) {
-      expect(p.fields["textCid"]).toBe(cid);
-      expect(p.fields["_is_skinny"]).toBeDefined();
-      expect(p.fields["_integrity"]).toMatch(/^ni:\/\/\/sha-256;/);
-      expect(p.fields["text"]).toBeUndefined();
-    }
+  test("★ ⑦ MEASURE on B: A's live system pointer stays outside B's own lares book ★", async () => {
+    // W24/W27 owns the same-face BOOK crossing. B holds its own system doc and no record from A's live lares doc.
+    const which = await B!.cli(["wiki", "which", TITLE, "--no-json"]);
+    const pointer = projectedPointer(B!.root);
+    console.error(`blob-follows-pointer MEASURE B: wiki which ${TITLE}\n${which.stdout.trim()}\n  pointer file: ${pointer?.file ?? "(none projected)"}`);
+    expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
+    expect(pointer).toBeNull();
   });
 
   test("⑦ MEASURE on B: what the cid/ dir, the projection, the boot log and `bag cas` say about the BYTES", async () => {
@@ -228,8 +219,8 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
     expect(r.json?.["ok"], said(r)).toBe(true);
     // THE CARRIAGE SHIPS SHUT BY NAME (the shut-routes house ruling, stable-founding-road #/rulings: carriage peering ships
-    // SHUT; a closed route grants no silent authority). The pointer crossed on the sealed gate (step 7); the bytes ride the
-    // carriage's fetch door, which has no gate-native caller, so the read answers "not held" and writes nothing. The witness
+    // SHUT; a closed route grants no silent authority). W24/W27 owns the BOOK crossing; B holds no live pointer
+    // from A. The carriage's fetch door has no gate-native caller, so the read answers "not held" and writes nothing. The witness
     // is the door the read names.
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     expect(data?.["held"]).toBe(false);
