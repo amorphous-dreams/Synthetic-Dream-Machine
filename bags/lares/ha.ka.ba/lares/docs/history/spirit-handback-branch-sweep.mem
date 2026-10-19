@@ -1,0 +1,261 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep.mem"
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM Branch-Scout and Sweep-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the scout’s table A named `origin/main` and the span for deletion against its brief; the controller re-sorted by measurement. The cold reader’s verdict “not pono as written” drove a rewrite (class-proven targets, one atomic leased push, restore lines). The operator ran the rewritten sweep on 2026-10-18 and every one of its 39 deletes landed. Name: the lens law’s own example, `lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm#/the-lens-law`."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep"
+```
+
+<<~ ahu #/head>>
+
+! Branch-Scout and Sweep-Reader handback
+
+Verbatim final message of Branch-Scout and Sweep-Reader (2026-10-18); only Markdown transliterated to memetic-wikitext. Controller note: the scout’s table A named `origin/main` and the span for deletion against its brief; the controller re-sorted by measurement. The cold reader’s verdict “not pono as written” drove a rewrite (class-proven targets, one atomic leased push, restore lines). The operator ran the rewritten sweep on 2026-10-18 and every one of its 39 deletes landed. Name: the lens law’s own example, `lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm#/the-lens-law`.
+
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback>>
+
+!! Branch-Scout handback
+
+<<~ ahu #/branch-scout-handback/opening-scout>>
+
+```text
+<<~ status "Branch-Scout: Lares (Tasked Spirit) — handback ready; no Git writes; core.bare=false on direct repo read (REACHED)." >>
+```
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/branch-handback>>
+
+! Branch handback
+
+Claims marked INFERRED derive from `branch-inventory.tsv`; claims marked REACHED come directly from supplied PR/worktree files or the read-only direct-repository config query returned `false` (REACHED). PR state was re-read: no PR has state OPEN (REACHED). `merged-by` records evidence for the merge rule, not a human merger identity.
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/a-safe-to-delete>>
+
+!! A. Safe to delete
+
+Local branches and origin refs are listed separately.
+
+|! branch |! tip |! date |! merged-by |! PR |! worktree |! verdict |
+| `feature/bcc-restamp` | `fba5ff5a8` | 2026-09-22 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/github-pages` | `12f7ebf02` | 2026-01-07 | INFERRED: inventory; REACHED: PR/worktree files | #5 MERGED | no | safe delete |
+| `feature/jekyll` | `b49d03486` | 2026-01-07 | INFERRED: inventory; REACHED: PR/worktree files | #7 MERGED | no | safe delete |
+| `feature/lararium-node-4` | `31cf10dbc` | 2026-08-25 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/lararium-node-5` | `6460d02e4` | 2026-10-14 | INFERRED: inventory; REACHED: PR/worktree files | #39 MERGED | no | safe delete |
+| `feature/normalize-drift-classes` | `771957de1` | 2026-09-23 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `layer-wright-effect` | `1d7bc9b0d` | 2026-06-29 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `worktree-agent-a02ba494b7a8905b3` | `b4c5c92df` | 2026-07-24 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `worktree-agent-a23a1f0db69506ac1` | `693bd7d87` | 2026-07-23 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `worktree-agent-a3ccbd391d4612f00` | `f8541a97f` | 2026-07-24 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `worktree-agent-ae821088d85a3d297` | `817dd0623` | 2026-07-24 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `ccr-8b5c1611-cq1m1m` | `f4a908e40` | 2026-10-16 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `claude/project-thread-d64x6o` | `b9a44572a` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `claude/project-thread-gxj82m` | `b846c454c` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `claude/project-thread-x1rm9w` | `b276b6458` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/ftls-powers` | `2942e2c69` | 2026-04-08 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5` | `20728cdd6` | 2026-10-18 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--art-sigils-inscription-folio` | `7fbc5668b` | 2026-10-17 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--browser-custody` | `c464234dc` | 2026-10-16 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--cutover` | `1b508573a` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--kahu-plane` | `7054ab283` | 2026-10-16 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--mesh-goldens-2` | `5becb6b8e` | 2026-10-16 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--nexus` | `4e04c7a82` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--nexus-host` | `756eab318` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--pre-fence` | `b9a44572a` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--scout` | `897cdce87` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--wire` | `c4725d25b` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/green-jello-dinosaur-5--wire-socket` | `02fe2a4cc` | 2026-10-16 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/lararium-node-4` | `31cf10dbc` | 2026-08-25 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `feature/lararium-node-5` | `6460d02e4` | 2026-10-14 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+| `main` | `e36b3e346` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | safe delete |
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/b-merged-but-held>>
+
+!! B. Merged but held
+
+|! branch |! tip |! date |! merged-by |! PR |! worktree |! verdict |
+| `feature/green-jello-dinosaur-5--mesh-goldens` | `65bdeeb49` | 2026-10-16 | INFERRED: inventory; REACHED: controller handoff | — | no | held: active wave-one lane (controller state) |
+| `feature/green-jello-dinosaur-5--mesh-goldens-2` | `5becb6b8e` | 2026-10-16 | INFERRED: inventory; REACHED: controller handoff | #45 MERGED | no | held: PR #45 merged; mesh-goldens work remains active (controller state) |
+| `feature/green-jello-dinosaur-5--w26-floor` | `fb82fbaa3` | 2026-10-16 | INFERRED: inventory; REACHED: controller handoff | — | yes | held: operator rulings unresolved; provisioning refused (controller state) |
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/c-unmerged>>
+
+!! C. Unmerged
+
+|! branch |! tip |! date |! merged-by |! PR |! worktree |! verdict |
+| `backup/remove-sqlite-before-rewrite` | `4a14a6188` | 2026-04-26 | INFERRED: inventory | — | no | ahead_of_span=5; build and runs, white screen spinner loop though |
+| `feature/FLS` | `f5a392379` | 2025-12-30 | INFERRED: inventory | #2 MERGED | no | ahead_of_span=15; cleaning it up! |
+| `feature/FTLS-Alpha` | `b1080bba7` | 2026-01-07 | INFERRED: inventory | #3 MERGED | no | ahead_of_span=27; alpha PR |
+| `feature/FTLS-refinement` | `f89a640ea` | 2026-02-02 | INFERRED: inventory | #14 MERGED | no | ahead_of_span=17; wrap up this branch |
+| `feature/ftls-dev` | `521784713` | 2026-02-20 | INFERRED: inventory | #23 MERGED | no | ahead_of_span=23; fix linebreak/lists |
+| `feature/ftls-gear` | `83e6c0293` | 2026-03-29 | INFERRED: inventory | #25 MERGED | no | ahead_of_span=41; Remove deprecated scripts for type prefix handling in power card and index files |
+| `feature/github-pages-markdown` | `6bcf222a4` | 2026-01-07 | INFERRED: inventory | #8 MERGED | no | ahead_of_span=5; Merge branch 'main' into feature/github-pages-markdown |
+| `feature/lararium-node` | `42ab276a0` | 2026-04-25 | INFERRED: inventory | #34 MERGED | no | ahead_of_span=9; feat: add multi-view rendering and navigation for Lararium UI |
+| `feature/lararium-node-2` | `6bc1f49cc` | 2026-04-28 | INFERRED: inventory | #35 MERGED | no | ahead_of_span=28; critical juncture. can't have spa web2 seed-app hydrate via api model. Introduces inherent race conditions in |
+| `feature/lararium-node-3` | `5e6ca6c99` | 2026-05-14 | INFERRED: inventory | #36 MERGED | no | ahead_of_span=332; refactor: implement synchronous SHA-256 hashing for build-time tooling and update related modules |
+| `feature/osr-power-text` | `0e1d02dca` | 2026-04-05 | INFERRED: inventory | #26 MERGED | no | ahead_of_span=33; feat: Add README files for Flying Triremes and Laser Swords and Lares AI Agent architecture |
+| `feature/remove-jekyll` | `0ca42aafe` | 2026-02-07 | INFERRED: inventory | #15 MERGED | no | ahead_of_span=4; reorg _agents files |
+| `feature/seed-ftls-alpha` | `74e9236e7` | 2025-12-16 | INFERRED: inventory | #1 MERGED | no | ahead_of_span=12; SDM done |
+| `fix/green-jello-dinosaur-4` | `0845e8f7f` | 2026-04-25 | INFERRED: inventory | #33 MERGED | no | ahead_of_span=22; prepare for branch swirch |
+| `fix/green-jello-dinosaurs-3` | `a10ef7859` | 2026-04-24 | INFERRED: inventory | #32 MERGED | no | ahead_of_span=221; save research g |
+| `fold-prep-local` | `dc88ab8a2` | 2026-10-12 | INFERRED: inventory | — | yes | ahead_of_span=5; lar:///ha.ka.ba/lararium/packages/the-agents-page.names.the-pins — the packages guide states the Repo and Ke |
+| `github-pages` | `6bcf222a4` | 2026-01-07 | INFERRED: inventory | — | no | ahead_of_span=5; Merge branch 'main' into feature/github-pages-markdown |
+| `github-pages-test` | `b6b2f80d9` | 2026-01-11 | INFERRED: inventory | #10 MERGED | no | ahead_of_span=27; fix pages |
+| `worktree-agent-a0dc149b4485dc86c` | `1c666a3c4` | 2026-07-24 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///crystal.shared.fixes — the memetic crystallization cap (born-across-strata ⊕ rigid) |
+| `worktree-agent-a522be6155f677695` | `3c119b3b8` | 2026-10-05 | INFERRED: inventory | — | yes | ahead_of_span=1; lar:///ha.ka.ba/lararium/mesh/auth-wire — a presented admit takes its seat on the wire; the relation witness |
+| `worktree-agent-adb91b79fb7e6057c` | `746d718bb` | 2026-07-23 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///ha.ka.ba/@lares/mu/rank-consensus |
+| `worktree-agent-af25400e6dae63a9d` | `d22df8350` | 2026-07-23 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///flow.holed.circulates — te-hodge reads the genuine harmonic over an incomplete graph |
+| `worktree-agent-af6a1df74297568b3` | `9b56c0954` | 2026-07-23 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///rank-te.ordinal.escalates — symbolic (Bandt-Pompe) transfer entropy, the coupling plane's principled |
+| `feature/green-jello-dinosaur-5--art-sigils-yin` | `fa680437c` | 2026-10-17 | INFERRED: inventory | — | no | ahead_of_span=5; docs(art-sigils): scope Olympos visual refs and add portable art-pocket example |
+| `feature/green-jello-dinosaur-5--gate-ancestry` | `eb53f266e` | 2026-10-15 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///ha.ka.ba/lararium/mesh/carriage-ancestry/the-gates.read-the-roll — PARKED: the carrier gates and the |
+| `feature/green-jello-dinosaur-5--instruments` | `2167cdbdc` | 2026-10-16 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///ha.ka.ba/tools/witnesses/prose-passes-nothing — four gates stop passing on prose, strings, an empty c |
+| `feature/green-jello-dinosaur-5--persona-root-seal` | `14f55ce9e` | 2026-10-15 | INFERRED: inventory | — | no | ahead_of_span=1; lar:///ha.ka.ba/lararium-browser/custody/the-persona-root.rests-under-the-slot — a browser persona root and |
+| `feature/green-jello-dinosaur-5--symbol-anchor-truth` | `ff90135cb` | 2026-10-16 | INFERRED: inventory | — | no | ahead_of_span=2; lar:///ha.ka.ba/tools/symbol-anchor/a-definition.is-code — PARKED: the symbol anchor reads a name as defined |
+| `feature/lararium-node` | `42ab276a0` | 2026-04-25 | INFERRED: inventory | — | no | ahead_of_span=9; feat: add multi-view rendering and navigation for Lararium UI |
+| `feature/lararium-node-2` | `6bc1f49cc` | 2026-04-28 | INFERRED: inventory | — | no | ahead_of_span=28; critical juncture. can't have spa web2 seed-app hydrate via api model. Introduces inherent race conditions in |
+| `feature/lararium-node-3` | `5e6ca6c99` | 2026-05-14 | INFERRED: inventory | — | no | ahead_of_span=332; refactor: implement synchronous SHA-256 hashing for build-time tooling and update related modules |
+| `fix/green-jello-dinosaur-4` | `0845e8f7f` | 2026-04-25 | INFERRED: inventory | — | no | ahead_of_span=22; prepare for branch swirch |
+| `fix/green-jello-dinosaurs-3` | `a10ef7859` | 2026-04-24 | INFERRED: inventory | — | no | ahead_of_span=221; save research g |
+| `github-pages` | `6bcf222a4` | 2026-01-07 | INFERRED: inventory | — | no | ahead_of_span=5; Merge branch 'main' into feature/github-pages-markdown |
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/d-origin-ci-throwaways>>
+
+!! D. Origin `ci/*` throwaways
+
+|! branch |! tip |! date |! merged-by |! PR |! worktree |! verdict |
+| `ci/ctl-gjd-5` | `f276dab5f` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-2` | `bd7e4115a` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-3` | `69012c96f` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-4` | `828ac37b6` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-5` | `a95be7505` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-6` | `53b7b3b15` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/cutover-7` | `1b508573a` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/nexus-1` | `0d74aeaf8` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/nexus-2` | `a50bfa2e2` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/nexus-3` | `e2df91d79` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+| `ci/pre-fence-1` | `4a7378a3f` | 2026-10-15 | INFERRED: inventory; REACHED: PR/worktree files | — | no | throwaway; merged by ancestry (INFERRED) |
+<<~/ahu>>
+
+<<~ ahu #/branch-scout-handback/commands-for-table-a-not-run>>
+
+!! Commands for table A (NOT RUN)
+
+- `git branch -d feature/bcc-restamp`
+- `git branch -d feature/github-pages`
+- `git branch -d feature/jekyll`
+- `git branch -d feature/lararium-node-4`
+- `git branch -d feature/lararium-node-5`
+- `git branch -d feature/normalize-drift-classes`
+- `git branch -d layer-wright-effect`
+- `git branch -d worktree-agent-a02ba494b7a8905b3`
+- `git branch -d worktree-agent-a23a1f0db69506ac1`
+- `git branch -d worktree-agent-a3ccbd391d4612f00`
+- `git branch -d worktree-agent-ae821088d85a3d297`
+- `git push origin --delete ccr-8b5c1611-cq1m1m`
+- `git push origin --delete claude/project-thread-d64x6o`
+- `git push origin --delete claude/project-thread-gxj82m`
+- `git push origin --delete claude/project-thread-x1rm9w`
+- `git push origin --delete feature/ftls-powers`
+- `git push origin --delete feature/green-jello-dinosaur-5`
+- `git push origin --delete feature/green-jello-dinosaur-5--art-sigils-inscription-folio`
+- `git push origin --delete feature/green-jello-dinosaur-5--browser-custody`
+- `git push origin --delete feature/green-jello-dinosaur-5--cutover`
+- `git push origin --delete feature/green-jello-dinosaur-5--kahu-plane`
+- `git push origin --delete feature/green-jello-dinosaur-5--mesh-goldens-2`
+- `git push origin --delete feature/green-jello-dinosaur-5--nexus`
+- `git push origin --delete feature/green-jello-dinosaur-5--nexus-host`
+- `git push origin --delete feature/green-jello-dinosaur-5--pre-fence`
+- `git push origin --delete feature/green-jello-dinosaur-5--scout`
+- `git push origin --delete feature/green-jello-dinosaur-5--wire`
+- `git push origin --delete feature/green-jello-dinosaur-5--wire-socket`
+- `git push origin --delete feature/lararium-node-4`
+- `git push origin --delete feature/lararium-node-5`
+- `git push origin --delete main`
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback>>
+
+!! Sweep-Reader handback
+
+<<~ ahu #/sweep-reader-handback/opening-reader>>
+
+```text
+<<~ status "COLD READER: reviewed the script, inventory, PR record, and read-only Git state; no Git state changed; verdict: not pono as written">>
+```
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback/cold-reader-lares-tasked-spirit-branch-sweep-handback>>
+
+! COLD READER: Lares (Tasked Spirit) — branch sweep handback
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback/findings-ranked-by-consequence>>
+
+!! Findings, ranked by consequence
+
+1. ''The first delete command can make a partial sweep and then stop.'' [REACHED: lines 11–25, 129] Six names in `LOCAL_MERGED` do not descend into the current span or main: `feature/github-pages`, `feature/jekyll`, and `worktree-agent-a02ba494b7a8905b3`, `-a23a1f0db69506ac1`, `-a3ccbd391d4612f00`, `-ae821088d85a3d297`. The inventory records one ahead commit for each. Read-only `merge-base --is-ancestor` checks returned false for `feature/github-pages`, `feature/jekyll`, and `-a02ba494b7a8905b3`; the first has a gone upstream, and the sampled spirit has no upstream. `git branch -d` requires ancestry into HEAD or a merged upstream, so it will refuse at least those checked names. With several names in one invocation, Git may delete acceptable branches before returning failure; `set -e` then stops before `LOCAL_SQUASHED`, `LOCAL_HARVESTED`, and `ORIGIN`. The four spirit commits have `cherry_plus=0` in the scout inventory, which supports patch equivalence but does not make `-d` accept them. PR #5 and #7 mark the two feature branches merged, likewise without making their old tips ancestors.
+
+2. ''A remote branch with exclusive history falls outside the stated deletion rule.'' [REACHED: lines 56–57] `origin/ci/ctl-gjd-5` stands five commits ahead of the span and neither span nor main contains its tip, per the inventory. A read-only `git log span..branch` showed those five commits, while `git cherry` marked all five patches equivalent (`-`). That offers a reason to consider deletion, but the operator's stated set names fully merged ancestry, squash-merged PR branches, four harvested July spirits, `feature/ftls-powers`, and superseded PR #46. This CI branch fits none of those named exceptions. Remove it from `ORIGIN` unless the operator explicitly extends the ruling to patch-equivalent CI history.
+
+3. ''The remote tip check cannot protect against a later remote move.'' [INFERRED: lines 101, 105–116, 131] `git fetch` updates local tracking refs, and `check` compares those refs to nine-character scout IDs. A push by someone else after fetch and before line 131 can move a remote branch while the local tracking ref still passes. `git push origin --delete` carries no expected-old-tip lease and can then delete the new work. Pin full object IDs and use server-enforced expected-tip leases for every deletion. If the server supports it, request an atomic push for the remote batch; otherwise report partial success explicitly.
+
+4. ''The preflight promises more than it checks.'' [INFERRED: lines 5–6, 100–122] It checks listed target tips and local worktree occupancy, but never checks the protected span or main tips, current repository identity, or remote URL. The span's local tracking tip now reads `381596346c02`, while the scout inventory captured `20728cdd6`; the script does not notice that base change. Recheck merge evidence against the freshly fetched bases and bind the run to `/home/joshu/Synthetic-Dream-Machine` and the expected origin. `git fetch` happens before any prompt and writes Git state even when the operator answers `n`.
+
+5. ''A successful `mapfile` can hide a failed list builder.'' [REACHED: lines 118–122] `mapfile -t A < <(names ...)` returns the status of `mapfile`, not the process substitution. A read-only Bash reproduction confirmed that `mapfile` returns success after a failing producer under `set -euo pipefail`. The `names` helpers also use `n` without `local`, though the current callers do not depend on its previous value. Build arrays with checked producer status, or count and validate every expected ref before prompting. `mapfile` also requires Bash 4 or newer, which the shebang alone does not guarantee on a stock macOS Bash.
+
+6. ''Failure reporting will leave an uncertain partial state.'' [INFERRED: lines 126–136] A `read` EOF exits under `set -e` without the `REFUSED` explanation. A rejected `git branch -d` or `-D` may follow earlier successful deletions in its batch. A multi-ref `git push --delete` may delete some remote refs before reporting another ref's rejection; the final `core.bare` check and `Done` line then never run. Print a per-ref result or reconciliation command on failure, and do not present line 124 as a guarantee about the server's state at deletion time.
+
+7. ''The script ends by suggesting deletion of a branch the operator wants kept.'' [REACHED: lines 93–96, 135–136] The arrays correctly omit `worktree-agent-a522be6155f677695`, and the worktree listing confirms it remains checked out. Yet the final message tells the operator how to remove that worktree and force-delete its branch. Remove those two lines; their suggestion conflicts with the explicit keep ruling.
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback/mechanics-read>>
+
+!! Mechanics read
+
+[REACHED: lines 98–116, 126–133] `core.bare=false` currently passes; its first check runs before `git fetch`. The worktree parser found no listed local delete target checked out, while the kept `a522be6155f677695` branch does have a worktree. `grep -qxF ... && refuse` correctly allows an absent match under `set -e`; a match calls `refuse`. A moved tracked tip sets `moved=1` and refuses before deletion, while a missing ref prints `gone already` and silently leaves that target out. `[ "${#A[@]}" -gt 0 ] && ...` and its B/O counterparts safely skip empty arrays under Bash `set -e`; a minimal Bash check confirmed that a false left side of `&&` continues. The `read` prompt, however, comes after the fetch, and `n` refuses only then. The short-tip comparison detects movement in fetched local refs, subject to the remote race above. `git fetch` without pruning can also leave a stale remote-tracking ref for an already deleted server branch; the later push can fail after other deletes.
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback/scope-read>>
+
+!! Scope read
+
+[REACHED: lines 11–96] The arrays hold 13 local `-d`, 15 local `-D` for merged PRs, four harvested July locals, and 35 origin refs. Comparing them with `branch-inventory.tsv` found no protected name in a delete array and no omitted inventory branch already marked as an ancestor of the span or main, after the explicit keep list. The four harvested locals appear exactly once. `feature/ftls-powers` and `--art-sigils-yin` appear in `ORIGIN`; the latter has PR #46 marked `CLOSED`, while #47 reads `MERGED`. The live `--w26-own-canon` and `--browser-secrets` lanes stay out, as do the four parked lanes, `--w26-floor`, `fold-prep-local`, backup, `github-pages`, main, and the span. Targeted short-tip reads matched the script for a harvested spirit, `--browser-custody`, and `--art-sigils-yin`. I did not independently reread all 67 target refs; the scout inventory supplies that broader comparison.
+<<~/ahu>>
+
+<<~ ahu #/sweep-reader-handback/opinion-and-verdict>>
+
+!! Opinion and verdict
+
+''Not pono as written.'' First, repair `LOCAL_MERGED`: separate genuine ancestors from patch-equivalent or PR-merged old tips, and decide the latter's force deletion explicitly. Second, remove `ci/ctl-gjd-5` absent an expanded ruling. Third, protect remote deletion with expected-tip leases and a clear partial-failure report. Fourth, pin the repository, remote, and protected bases, then make list construction failures visible. Fifth, remove the closing suggestion to delete the kept worktree.
+
+The order `-d` then `-D` then remote deletion sensibly places Git's conservative local check first and the shared remote last. It does not provide a transaction or rollback. Once a batch fails, the operator should reconcile actual refs before retrying rather than assume an untouched set.
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+Sources: `in/branch-scout-luna.md; in/sweep-cold-reader.md`. Persona: Branch-Scout and Sweep-Reader. Date: 2026-10-18.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;IjcyWW4CS_bUdUBpP5JGEL7dIcbig220BI7S0jSB7Fc
+
+<<^ code="&#x0004;" -> to="?">>

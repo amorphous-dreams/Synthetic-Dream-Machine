@@ -1,0 +1,74 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest.mem"
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM Harvest-Clerk handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the single HARVEST verdict missed that `rank-consensus.ts` had moved from lararium-core to lararium-mesh; the controller measured it already carried. The drafted ahu landed at `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s#/rank-consensus`. The five branches left in the operator’s branch sweep."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest"
+```
+
+<<~ ahu #/head>>
+
+! Harvest-Clerk handback
+
+Verbatim final message of Harvest-Clerk (2026-10-18); only Markdown transliterated to memetic-wikitext. Controller note: the single HARVEST verdict missed that `rank-consensus.ts` had moved from lararium-core to lararium-mesh; the controller measured it already carried. The drafted ahu landed at `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s#/rank-consensus`. The five branches left in the operator’s branch sweep.
+
+<<~/ahu>>
+
+<<~ ahu #/opening>>
+
+```text
+<<~ status "harvest read-only · five branch tips read · one ahu drafted · repository untouched">>
+```
+
+Harvest-Clerk: Lares (Tasked Spirit). The table reads `origin/feature/green-jello-dinosaur-5`; REACHED marks a commit, source, or carrier inspected here, and INFERRED marks the judgment drawn from those readings.
+
+|! Branch · sha |! Holds |! Span state |! Verdict |! Target |
+| `worktree-agent-a0dc149b4485dc86c` · `1c666a3c4` | ''REACHED:'' `crystallization.ts`, barrel export, and tests compose `nucleate` across caller-chosen strata with `temporalRigidity` over ordinal bins. The cap grants `crystallized` only when birth and standing both hold; a lone stratum cannot supply cross-stratum birth. | ''REACHED:'' the span carries the source and tests. The source differs only in one comment word, `shore`/`seam`; the test diff reads empty. | ''ALREADY-CARRIED:'' the executable claim survives in the span. | Existing code: `packages/lararium-mesh/src/crystallization.ts`; no new ahu. |
+| `worktree-agent-adb91b79fb7e6057c` · `746d718bb` | ''REACHED:'' `rank-consensus.ts`, barrel export, and tests supply Borda position sums, exhaustive Kemeny/Kendall consensus through eight items, stable Borda-seeded ties, and strict shared-item validation. No consumer rides the commit. | ''REACHED:'' the span carries no `rank-consensus.ts`; `bags/` carries no `rank-consensus`, `Borda`, or `Kemeny` hit. ''INFERRED:'' the claim needs a carrier, with a boundary: the five named ladders carry different item vocabularies and cannot directly serve as five rankings of one set. | ''HARVEST:'' preserve the general fold and its precondition; withhold any claim that the five ladders themselves form ready input. | Existing `bags/lares/ha.ka.ba/lares/api/mu/the-law-of-5s.mem#/rank-consensus` — draft below. |
+| `worktree-agent-af25400e6dae63a9d` · `d22df8350` | ''REACHED:'' `te-hodge.ts` plus tests decompose a TE flow over explicitly present edges into potential, triangle curl, and harmonic residual; report harmonic energy and `β₁ = E − N + C − rank(B₂)`. Missing pairs remain holes; flow-graph H¹ stays distinct from sheaf H¹. | ''REACHED:'' the span carries the implementation and unchanged tests. Its source differs only in explanatory comments, including a corrected `SIAM Review` citation. | ''ALREADY-CARRIED:'' the complete mathematical read and its tests survive. | Existing code: `packages/lararium-mesh/src/te-hodge.ts`; no new ahu. |
+| `worktree-agent-af6a1df74297568b3` · `9b56c0954` | ''REACHED:'' `rank-te.ts`, barrel export, and tests add Bandt–Pompe ordinal symbols, directed and conditioned symbolic TE, Miller–Madow correction, and optional shuffled-source surrogate statistics. The claim reads directed predictability, not causation. | ''REACHED:'' the span carries byte-identical `rank-te.ts` and unchanged tests. | ''ALREADY-CARRIED:'' the estimator survives whole. | Existing code: `packages/lararium-mesh/src/rank-te.ts`; no new ahu. |
+| `worktree-agent-a522be6155f677695` · `3c119b3b8` | ''REACHED:'' `auth-wire.ts`, client adapter, daemon gate, tests, domains, barrel, and `hearths.mem` move a public `PresentedAdmit { admit, lineage }` onto `lar:auth`, keep it untrusted per socket, and retire the transient relation witness. The commit also records an unresolved `open-node-vessel.ts` getter call and typecheck break. | ''REACHED:'' `dreamnet-architecture.mem` already names presentation of the admit and receiver-side verification. The span carries no old `auth-wire.ts` or `daemon-auth-gate.ts`; `face-proof.mem` and `gate-exchange.ts` place the arm inside a sealed Noise presentation, sign the presentation digest in the finish, and let `face-gate.ts` read the admit against held Nexus state. ''INFERRED:'' the old public vessel-key-bound wire and partial call-site migration conflict with that newer face-gate path. The face-proof carrier still marks the socket cutover owed. | ''SUPERSEDED:'' retain the presentation principle through the face gate; do not transplant the old `lar:auth` layout or retired getter. | Existing `bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem#/the-gate-exchange` and `#/owed` already carry the successor; no old-wire ahu. |
+<<~/ahu>>
+
+<<~ ahu #/draft-ahu-bags-lares-ha-ka-ba-lares-api-mu-the-law-of-5s-mem-rank-consensus>>
+
+!! Draft ahu → `bags/lares/ha.ka.ba/lares/api/mu/the-law-of-5s.mem#/rank-consensus`
+
+```text
+<<~ ahu #/rank-consensus>>
+
+!! Rank consensus ~ several lenses over one item set
+
+''REACHED ~ the fold.'' Several strict, best-first rankings over the SAME named items may yield one reproducible order. Each ranking names every item exactly once; an absent or repeated item stops the fold rather than inviting a guessed position. A first ranking supplies the stable tie order.
+
+''REACHED ~ two readings.'' Borda adds each item's zero-based positions and advances the lowest sum; a tied sum follows first-ranking order. Kemeny searches the permutations for the order with least total Kendall-tau pair disagreement. Seed that search with Borda, keep the first equal-cost order, and the returned disagreement never exceeds Borda's. Exhaustive search reaches at most eight items; a larger set calls for another method or a refusal, never an unbounded silent search.
+
+''INFERRED ~ the ladder boundary.'' Aperture, action ladder, scope, rating, and stage each name a distinct vocabulary. Their five rows do not themselves rank one shared set of candidates. A caller must first name the common candidates and obtain a strict order over those candidates from each lens it intends to fold. Without that mapping, preserve the separate readings and decline to announce a consensus.
+
+''INFERRED ~ the authority boundary.'' A consensus order compresses disagreement among the supplied readings; it grants no federation rank, gate authority, or world verdict. Keep the input orders and Kendall cost beside the result so another reader can inspect what the fold moved.
+
+<<~/ahu>>
+```
+
+Read boundary: no branch received a cherry-pick, merge, stash, or other repository write. The draft rests in this workspace for the controller to place.
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+Sources: `in/july-spirits-harvest.md`. Persona: Harvest-Clerk. Date: 2026-10-18.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ttjcXyaf8g9WGS0nrcfsogBzO0y1-hp6e0zc-0VNifI
+
+<<^ code="&#x0004;" -> to="?">>
