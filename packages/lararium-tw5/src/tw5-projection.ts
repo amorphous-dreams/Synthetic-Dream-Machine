@@ -322,6 +322,28 @@ function invokesChildActions(widget: DeclaringWidget): boolean {
 const KEY_INFO_CHORD = (info: { keyCode: number; ctrlKey?: boolean; altKey?: boolean; shiftKey?: boolean; metaKey?: boolean }): string =>
   larKeyChordName({ keyCode: info.keyCode, ctrl: !!info.ctrlKey, alt: !!info.altKey, shift: !!info.shiftKey, meta: !!info.metaKey });
 
+/**
+ * The chords an editor intercepts for itself: TW5's editor runs a toolbar button whose `data-tw-keyboard-shortcut`
+ * descriptors match a keydown (`editor/factory.js` handleKeydownEvent), so those chords are the editor's own declared
+ * keys. An editor without a toolbar (TW5 renders none over the fake document) declares none: its keydown propagates
+ * to a container `$keyboard`, whose own keys stamp there.
+ */
+export interface ToolbarNode { readonly attributes?: Readonly<Record<string, string | undefined>>; readonly children?: readonly ToolbarNode[] }
+export function editorDeclaredKeys(
+  toolbar: ToolbarNode | undefined,
+  parse: (descriptor: string) => readonly Parameters<typeof KEY_INFO_CHORD>[0][],
+): string {
+  const chords = new Set<string>();
+  const walk = (node: ToolbarNode | undefined): void => {
+    if (!node?.attributes) return;
+    const descriptor = node.attributes["data-tw-keyboard-shortcut"];
+    if (descriptor) for (const info of parse(descriptor)) if (info) chords.add(KEY_INFO_CHORD(info));
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(toolbar);
+  return [...chords].join(" ");
+}
+
 const CATCHER_EVENTS = new Set(["click", "dblclick", "contextmenu", "focusin", "focusout", "drop"]);
 
 function stampCatchTree(node: RidNode | undefined): void {
@@ -379,6 +401,7 @@ const DECLARATIONS: Readonly<Record<string, (w: DeclaringWidget) => Declaration>
   radio: (w) => ({ node: w.inputDomNode ?? w.domNodes[0], live: "checked" }),
   select: (w) => ({ node: w.domNodes[0], live: "selected" }),
   range: (w) => ({ node: w.inputDomNode ?? w.domNodes[0], live: "value" }),
+  browse: (w) => ({ node: w.domNodes[0], on: "change", bubble: "yes" }),
 };
 
 function stamp(node: RidNode, name: string, value: string | undefined): void {
@@ -417,7 +440,15 @@ export function patchWidgetDeclarations(tw: Record<string, any>): void {
   }
   const classes = tw.rootWidget?.widgetClasses as Record<string, { prototype: Record<string | symbol, any> }> | undefined;
   if (!classes) throw new Error("TW5 projection cannot declare its bindings: $tw.rootWidget.widgetClasses is unavailable");
-  for (const [name, read] of Object.entries(DECLARATIONS)) {
+  const declarations = {
+    ...DECLARATIONS,
+    "edit-text": (w: DeclaringWidget): Declaration => {
+      const keys = editorDeclaredKeys(w.toolbarNode as ToolbarNode | undefined,
+        (descriptor) => (tw.keyboardManager?.parseKeyDescriptors(descriptor, { wiki: w.wiki }) ?? []) as Parameters<typeof KEY_INFO_CHORD>[0][]);
+      return { node: w.engine?.domNode ?? w.domNodes[0], live: "value", ...(keys ? { keys } : {}) };
+    },
+  };
+  for (const [name, read] of Object.entries(declarations)) {
     const proto = classes[name]?.prototype;
     if (!proto || proto[WIDGET_DECLARATIONS_PATCHED]) continue;
     proto[WIDGET_DECLARATIONS_PATCHED] = true;

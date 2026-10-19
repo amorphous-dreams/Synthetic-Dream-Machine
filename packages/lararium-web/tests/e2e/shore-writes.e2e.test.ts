@@ -111,6 +111,33 @@ test("served wiki saves a draft tiddler without worker errors", async () => {
 
 });
 
+test("the vessel page reports its instruments: long animation frames and heap after first paint, or names each absent", async () => {
+  wikiWorkerErrors.length = 0;
+  const bootContext = await browser.newContext();
+  await armTestCustody(bootContext, "page-instruments");
+  const bootPage = await bootContext.newPage();
+  try {
+    await bootPage.goto(baseUrl);
+    await waitForLivePage(bootPage);
+    const instruments = await bootPage.waitForFunction(() =>
+      (window as Window & { __larVesselMetrics?: unknown }).__larVesselMetrics ?? false)
+      .then((handle) => handle.jsonValue() as Promise<{
+        longAnimationFrames: { supported: boolean; entries?: unknown[]; reading?: string };
+        heapAfterFirstPaint: { bytes?: number; reading?: string };
+      }>);
+    assert.ok(instruments.longAnimationFrames.supported
+      ? Array.isArray(instruments.longAnimationFrames.entries)
+      : instruments.longAnimationFrames.reading === "absent", "LoAF reports entries or names absence");
+    assert.ok(typeof instruments.heapAfterFirstPaint.bytes === "number"
+      || instruments.heapAfterFirstPaint.reading === "absent", "heap after first paint reports bytes or names absence");
+    // Chromium carries both instruments, so here each reads a number, never the absence.
+    assert.equal(instruments.longAnimationFrames.supported, true, "Chromium carries the long-animation-frames observer");
+    assert.equal(typeof instruments.heapAfterFirstPaint.bytes, "number", "Chromium reports heap bytes after first paint");
+  } finally {
+    await bootContext.close();
+  }
+});
+
 test("a stale render target answers on its originating projected surface", async () => {
   wikiWorkerErrors.length = 0;
   await page.goto(baseUrl);
@@ -152,16 +179,16 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
-async function waitForLivePage(): Promise<void> {
+async function waitForLivePage(target = page): Promise<void> {
   try {
-    await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
+    await target.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
       .some((phase) => phase.textContent === "live"), undefined, { timeout: 20_000 });
-    await page.waitForFunction(() => {
+    await target.waitForFunction(() => {
       const pane = document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection");
       return pane !== null && pane !== undefined && pane.childElementCount > 0;
     }, undefined, { timeout: 20_000 });
   } catch (error) {
     const faults = browserConsole.filter((line) => line.includes("[daemon-island:fault]"));
-    assert.fail(`${String(error)}\nphases=${await page.locator("#phases").innerText()}\nfaults=${faults.join("\n")}`);
+    assert.fail(`${String(error)}\nphases=${await target.locator("#phases").innerText()}\nfaults=${faults.join("\n")}`);
   }
 }

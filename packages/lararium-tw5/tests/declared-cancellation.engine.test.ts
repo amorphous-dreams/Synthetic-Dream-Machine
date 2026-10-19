@@ -38,6 +38,7 @@ const STAMPED_ROOT = [
   `<$keyboard key="enter alt-shift-N" actions="<$action-setfield $tiddler='lar:///t/d/target' text='key'/>" class="kb">keys</$keyboard>`,
   `<$dropzone class="dz">drop here</$dropzone>`,
   `<$edit-text tiddler="lar:///t/d/target" class="field"/>`,
+  `<span class="browse"><$browse message="tm-import-tiddlers"/></span>`,
   `<$checkbox tiddler="lar:///t/d/target" field="flag" checked="yes" class="tick">tick</$checkbox>`,
   `<span class="bare">bare</span>`,
   `</$navigator>`,
@@ -56,6 +57,7 @@ describe.skipIf(wikiSkip)(`declared cancellation and bubbling, engine half${skip
         ".kb": { "data-lar-on": "keydown", "data-lar-cancel": "keydown:declared", "data-lar-keys": "enter alt-shift-N", "data-lar-bubble": "yes" },
         ".dz": { "data-lar-on": "dragenter dragover drop", "data-lar-cancel": "dragenter dragover drop", "data-lar-bubble": "no" },
         ".field": { "data-lar-on": "input", "data-lar-live": "value" },
+        ".browse input": { "data-lar-on": "change", "data-lar-bubble": "yes" },
         ".bare": { "data-lar-on": null, "data-lar-cancel": null, "data-lar-rid": null },
       } } } },
     ]))).toEqual([]);

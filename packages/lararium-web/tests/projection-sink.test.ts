@@ -6,7 +6,7 @@
  * returned event with the surface that painted its target, and carries nothing across a switch. Real Chromium,
  * the shipped idiomorph, the keyed `lar:frame` of the camera contract.
  */
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { LAR_CAMERA_STORY, LAR_FRAME, LAR_KEY_STYLE, LAR_KEY_SURFACE, type LarMsg_ControlEvent } from "../../lararium-mesh/src/lar-camera.js";
 import { createProjectionSink, type LarSurfaceFrame } from "../src/projection-sink.js";
 
@@ -50,6 +50,39 @@ describe("★ revisions belong to a surface ★", () => {
     // Back to the wiki: its frame paints whatever number the daemon reached, and whatever it last showed.
     expect(m.sink.apply(frame("lares", 2, `<p id="w">wiki, a fresh island</p>`))).toBe("painted");
     expect(m.pane().textContent).toBe("wiki, a fresh island");
+    m.done();
+  });
+});
+
+describe("★ the page carries island hints once per rising number ★", () => {
+  test("scroll and focus run once for a hint and run again only when its number rises; CONTROL: no hint does nothing", () => {
+    const m = mount();
+    const target = document.createElement("div");
+    target.id = "hint-target";
+    target.scrollIntoView = vi.fn();
+    const input = document.createElement("input");
+    input.className = "hint-field";
+    const hint = (n: number): string => `<span data-lar-scroll-to="#hint-target" data-lar-focus=".hint-field" data-lar-hint="${n}"></span>`;
+    m.sink.apply(frame("lares", 1, `${target.outerHTML}${input.outerHTML}`));
+    const paintedTarget = m.pane().querySelector<HTMLElement>("#hint-target")!;
+    const paintedInput = m.pane().querySelector<HTMLInputElement>(".hint-field")!;
+    paintedTarget.scrollIntoView = vi.fn();
+    paintedInput.focus = vi.fn();
+    expect(paintedTarget.scrollIntoView).not.toHaveBeenCalled();
+    expect(paintedInput.focus).not.toHaveBeenCalled();
+    m.sink.apply(frame("lares", 2, `${target.outerHTML}${input.outerHTML}${hint(1)}`));
+    expect(paintedTarget.scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(paintedInput.focus).toHaveBeenCalledTimes(1);
+    m.sink.apply(frame("lares", 3, `${target.outerHTML}${input.outerHTML}${hint(1)}`));
+    expect(paintedTarget.scrollIntoView, "a repeated number scrolls nothing more").toHaveBeenCalledTimes(1);
+    expect(paintedInput.focus, "a repeated number focuses nothing more").toHaveBeenCalledTimes(1);
+    m.sink.apply(frame("lares", 4, `${target.outerHTML}${input.outerHTML}${hint(2)}`));
+    expect(paintedTarget.scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(paintedInput.focus).toHaveBeenCalledTimes(2);
+    m.sink.apply(frame("daemon", 1, "<p>another surface</p>"));
+    m.sink.apply(frame("lares", 4, `${target.outerHTML}${input.outerHTML}${hint(2)}`));
+    expect(paintedTarget.scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(paintedInput.focus).toHaveBeenCalledTimes(2);
     m.done();
   });
 });
