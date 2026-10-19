@@ -12,7 +12,10 @@ import { readPins } from "./mesh-pins.mjs";
 
 const [bundlePath, fromArg] = process.argv.slice(2);
 if (!bundlePath || !process.env.LAR_ROOT) throw new Error("the probe needs an opening bundle and its founded reader root");
-const bundle = JSON.parse(readFileSync(bundlePath, "utf8"));
+// The file holds A's `nexus carry --json` answer; the bundle rides it as `data.carryBundle`, as carry-take reads it.
+const answer = JSON.parse(readFileSync(bundlePath, "utf8"));
+const bundle = answer?.data?.carryBundle ?? answer?.carryBundle ?? answer;
+if (bundle?.kind === undefined || !bundle.contract) throw new Error("the opening file carries no carry bundle");
 const publisher = fromArg || readPins().HERM_RELAY_2_PUBLISHER;
 if (!/^[0-9a-f]{64}$/.test(publisher ?? "")) throw new Error("relay-2 names no publisher key");
 
