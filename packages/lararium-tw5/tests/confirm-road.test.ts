@@ -16,7 +16,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { type LarTiddlerRecord } from "@lararium/mesh";
-import { CLEAR_CUSTODY_QUESTION, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
+import { clearCustodyQuestion, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import { ENVELOPE_FIELDS } from "../src/envelope-fields.js";
 import { neverPersists } from "../src/island-adaptor.js";
 import { dispatchLarControlEvent } from "../src/tw5-projection.js";
@@ -95,11 +95,17 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     const verbTitle = "lar:///lararium.local.vm/verb/custody-clear";
     expect($tw.wiki.getTiddler(verbTitle), "CONTROL: no clear verb stands before the event").toBeUndefined();
     const mark = r.calls.length;
+    // The scope rides the message from the vessel's persona state; the wiki names it and never supplies its own.
+    const clears = "the rows the vessel named";
 
     nav.dispatchEvent({ type: "tm-clear-password" });
+    expect(questions(r), "a clear that names nothing asks nothing").toEqual([]);
+    expect($tw.wiki.getTiddler(verbTitle), "and dispatches nothing").toBeUndefined();
+
+    nav.dispatchEvent({ type: "tm-clear-password", param: clears });
     const question = standingQuestion(r);
     expect(question.fields["confirm-type"]).toBe("action");
-    expect(question.fields["text"], "the wiki asks the browser's own words").toBe(CLEAR_CUSTODY_QUESTION);
+    expect(question.fields["text"], "the question names what the clear clears").toBe(clearCustodyQuestion(clears));
     expect($tw.wiki.getTiddler(verbTitle), "asking writes no verb").toBeUndefined();
 
     answer(nav, question.title, "no");
@@ -109,7 +115,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     await turns(24);
     expect(r.calls.slice(mark), "a no leaves no trace in any store another vessel reads").toEqual([]);
 
-    nav.dispatchEvent({ type: "tm-clear-password" });
+    nav.dispatchEvent({ type: "tm-clear-password", param: clears });
     const confirmed = standingQuestion(r);
     answer(nav, confirmed.title, "yes");
     await afterDispatch();
@@ -121,7 +127,9 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(verb?.verb).toBe("custody-clear");
     expect(verb?.[LARES_DISPATCH_FIELD]).toBe("1");
     expect(verb?.[`${LARES_VERB_ARG_PREFIX}confirmed`]).toBe("yes");
-    expect(Object.keys(verb ?? {}).filter((field) => field.startsWith(LARES_VERB_ARG_PREFIX))).toEqual([`${LARES_VERB_ARG_PREFIX}confirmed`]);
+    expect(verb?.[`${LARES_VERB_ARG_PREFIX}clears`], "the yes rides with the scope it answered").toBe(clears);
+    expect(Object.keys(verb ?? {}).filter((field) => field.startsWith(LARES_VERB_ARG_PREFIX)).sort())
+      .toEqual([`${LARES_VERB_ARG_PREFIX}clears`, `${LARES_VERB_ARG_PREFIX}confirmed`]);
     expect(JSON.stringify(verb)).not.toMatch(/passphrase|route|credential/i);
     await r.stop();
   }, 120_000);

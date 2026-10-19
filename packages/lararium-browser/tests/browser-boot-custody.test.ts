@@ -4,7 +4,7 @@ import { openBrowserVessel } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
 import { clearCustodyVerb, standBrowserCustody } from "../src/browser-boot-custody.js";
-import { CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
+import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;
@@ -47,16 +47,20 @@ describe("browser boot custody asks before secret rows rest", () => {
     const asked: unknown[] = [];
     const askCustody = async (question: { readonly kind: "clear" }) => { asked.push(question); return route; };
     for (const confirmed of [undefined, "no", "true", true]) {
-      expect(await clearCustodyVerb({ idbName, confirmed, askCustody }), String(confirmed)).toEqual({ reading: "asks", question: CLEAR_CUSTODY_QUESTION });
+      expect(await clearCustodyVerb({ idbName, confirmed, clears: CLEAR_CUSTODY_CLEARS, askCustody }), String(confirmed)).toEqual({ reading: "asks", question: CLEAR_CUSTODY_QUESTION });
     }
-    expect(asked, "no route was asked before the literal yes").toEqual([]);
+    // A yes binds to the scope its question named: a yes over any other scope, or none, clears nothing and asks the true question.
+    for (const clears of [undefined, "", "the rows of another face"]) {
+      expect(await clearCustodyVerb({ idbName, confirmed: "yes", clears, askCustody }), String(clears)).toEqual({ reading: "asks", question: CLEAR_CUSTODY_QUESTION });
+    }
+    expect(asked, "no route was asked before a yes over the scope this act clears").toEqual([]);
     expect((await readBrowserCustody(idbName)).reading).toBe("sealed");
 
-    const declined = await clearCustodyVerb({ idbName, confirmed: "yes", askCustody: async () => null });
+    const declined = await clearCustodyVerb({ idbName, confirmed: "yes", clears: CLEAR_CUSTODY_CLEARS, askCustody: async () => null });
     expect(declined).toEqual({ reading: "declined" });
     expect((await readBrowserCustody(idbName)).reading, "a declined route clears nothing").toBe("sealed");
 
-    const cleared = await clearCustodyVerb({ idbName, confirmed: "yes", askCustody });
+    const cleared = await clearCustodyVerb({ idbName, confirmed: "yes", clears: CLEAR_CUSTODY_CLEARS, askCustody });
     expect(cleared.reading).toBe("cleared");
     expect(asked).toEqual([{ kind: "clear" }]);
     expect((await readBrowserCustody(idbName)).reading).toBe("clear");

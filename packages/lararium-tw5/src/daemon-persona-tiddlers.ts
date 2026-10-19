@@ -75,7 +75,7 @@ const SURFACE_BODY = `\\whitespace trim
 </div>
 
 <$list filter="[{${PERSONA_STATE_TITLE}!!custody}match[sealed]]" variable="_">
-<div class="lares-persona-custody"><$button class="lares-persona-clear-btn" message="tm-clear-password" data-lares-clear-password="1">Clear this browser's passphrase</$button></div>
+<div class="lares-persona-custody"><$button class="lares-persona-clear-btn" message="tm-clear-password" param={{${PERSONA_STATE_TITLE}!!custodyClears}} data-lares-clear-password="1">Clear the passphrase</$button></div>
 </$list>
 
 </div>`;
