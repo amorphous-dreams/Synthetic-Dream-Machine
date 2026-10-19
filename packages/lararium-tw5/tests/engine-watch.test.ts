@@ -57,7 +57,7 @@ describe("engine-watch", () => {
     stop?.();
   });
 
-  test("newer core arriving writes the engine-waiting alert", async () => {
+  test("an incoming engine with a HIGHER display version uses the hash alert shape", async () => {
     const { handle, setCore } = fakeLarariumHandle(BOOTED);
     const { composite, ctx } = makeCtx(handle);
     const stop = startEngineWatch(ctx);
@@ -68,38 +68,51 @@ describe("engine-watch", () => {
     expect(alert?.tiddler["tags"]).toBe("$:/tags/Alert");
     expect(alert?.tiddler["alert-kind"]).toBe("engine-waiting");
     expect(alert?.tiddler["waiting-sha256"]).toBe("bbb222");
-    expect(alert?.tiddler["waiting-version"]).toBe("5.4.0");
     expect(alert?.tiddler["booted-sha256"]).toBe(BOOTED.sha256);
-    expect(String(alert?.tiddler["text"])).toContain("waiting");
+    expect(alert?.tiddler["waiting-version"]).toBeUndefined();
+    expect(alert?.tiddler["booted-version"]).toBeUndefined();
+    expect(String(alert?.tiddler["text"])).toMatch(/different engine/i);
+    expect(String(alert?.tiddler["text"])).toContain("bbb222");
+    expect(String(alert?.tiddler["text"])).toContain("aaa111");
+    expect(String(alert?.tiddler["text"])).not.toMatch(/upgrade|newer/i);
     stop?.();
   });
 
-  test("a LOWER incoming version names the rollback in the alert body", async () => {
+  test("an incoming engine with a LOWER display version uses the hash alert shape", async () => {
     const { handle, setCore } = fakeLarariumHandle(BOOTED);
     const { composite, ctx } = makeCtx(handle);
     const stop = startEngineWatch(ctx);
     setCore({ sha256: "ccc333", version: "5.2.0" });
     await settle();
     const alert = await composite.get(ENGINE_WAITING_ALERT_TITLE);
-    expect(String(alert?.tiddler["text"])).toContain("BACKWARD");
+    expect(String(alert?.tiddler["text"])).toMatch(/different engine/i);
+    expect(String(alert?.tiddler["text"])).toContain("ccc333");
+    expect(String(alert?.tiddler["text"])).toContain("aaa111");
+    expect(String(alert?.tiddler["text"])).not.toMatch(/rollback|backward/i);
     stop?.();
   });
 
-  test("an EMPTY booted-version DEFEATS rollback naming — why the kernel must source a real version", async () => {
-    // Pins HOLE 2: sovereign-kernel once hardcoded `coreVersion = ""`, so ctx.engine.version
-    // arrived blank. compareVersions(incoming, "") sorts EVERY incoming as newer, so a LOWER
-    // incoming version silently reads as an upgrade instead of a rollback. The kernel now sources
-    // the booted version from the oracle doc's blobs[ENGINE_CORE_ID].version; this guards the
-    // consumer's dependency on that being populated.
-    const { handle, setCore } = fakeLarariumHandle({ sha256: "aaa111", version: "" });
+  test("same sha with a changed display version stays quiet; changed sha alerts", async () => {
+    const { handle, setCore } = fakeLarariumHandle(BOOTED);
     const { composite, ctx } = makeCtx(handle);
-    (ctx as unknown as { engine: { sha256: string; version: string } }).engine = { sha256: "aaa111", version: "" };
     const stop = startEngineWatch(ctx);
-    setCore({ sha256: "ccc333", version: "5.2.0" });
+    setCore({ sha256: BOOTED.sha256, version: "5.9.0" });
     await settle();
-    const alert = await composite.get(ENGINE_WAITING_ALERT_TITLE);
-    // With a blank booted-version the rollback is NOT named — the hole this fix closes upstream.
-    expect(String(alert?.tiddler["text"])).not.toContain("BACKWARD");
+    expect(await composite.get(ENGINE_WAITING_ALERT_TITLE)).toBeNull();
+    setCore({ sha256: "fff666", version: "5.9.0" });
+    await settle();
+    expect(await composite.get(ENGINE_WAITING_ALERT_TITLE)).not.toBeNull();
+    stop?.();
+  });
+
+  test("the request id names the waiting sha and carries no time", async () => {
+    const { handle, setCore } = fakeLarariumHandle(BOOTED);
+    const { composite, ctx } = makeCtx(handle);
+    const putSpy = vi.spyOn(composite, "put");
+    const stop = startEngineWatch(ctx);
+    setCore({ sha256: "bbb222", version: "5.4.0" });
+    await settle();
+    expect(putSpy.mock.calls[0]?.[1]).toEqual({ kind: "lares-verb", requestId: "engine-watch-bbb222" });
     stop?.();
   });
 

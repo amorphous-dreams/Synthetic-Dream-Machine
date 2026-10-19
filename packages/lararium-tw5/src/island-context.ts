@@ -49,10 +49,11 @@ export interface IslandContext {
    */
   oracleUrl: string | null;
   /**
-   * The engine identity this island actually booted — sha256 the kernel computed
-   * over the core bytes it eval'd (never the blob entry's self-claim) + the blob
-   * entry's version string. The engine-watch compares the live `lararium` doc
-   * against this to detect a waiting engine epoch (alert-only; reboot adopts).
+   * The engine this island actually booted. `sha256` is its identity: the hash the
+   * kernel computed over the core bytes it eval'd (never the blob entry's self-claim).
+   * `version` is the blob entry's display label; nothing compares it. The engine-watch
+   * reads the live `lararium` doc's core sha against `sha256` to see a different engine
+   * waiting (alert-only; reboot adopts).
    */
   engine: { sha256: string; version: string };
   /**

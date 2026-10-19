@@ -11,8 +11,11 @@
  * reboot re-verifies the new engine from genesis the same way the first booted.
  *
  * Hazard handling (engine-epoch design):
- *   - rollback  — a pointer moving to a LOWER version gets named as such in the
- *                 alert body, never silently presented as an upgrade.
+ *   - identity  — an engine IS its hash. A core blob whose sha256 differs from the
+ *                 booted one reads "a different engine waits", naming both hashes;
+ *                 the watch orders no two engines, since neither a version string
+ *                 nor a CID carries a release order. The blob descriptor's version
+ *                 rides the text as a display label alone.
  *   - ethics    — "waiting" framing (Service-Worker vocabulary): readiness, not
  *                 coercion. No enforcement lives here.
  *   - authority — deliberately ABSENT (held open until the wiki-mesh lives):
@@ -37,10 +40,11 @@ export const ENGINE_WAITING_ALERT_TITLE = "$:/temp/lares/alert/engine-waiting";
 /** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. */
 const TW5_ALERT_TAG = "$:/tags/Alert";
 
-/** Numeric-aware version order: negative = a older than b. Empty sorts oldest. */
-function compareVersions(a: string, b: string): number {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
-}
+/** A hash's short form for the alert text; the tiddler fields carry it whole. */
+const short = (sha: string): string => sha.slice(0, 12);
+
+/** The display label a version string reads as, or nothing where the descriptor names none. */
+const label = (version: string): string => (version ? ` (labelled ${version})` : "");
 
 /**
  * startEngineWatch — subscribe to the island's lararium-doc handle; on any change
@@ -60,19 +64,19 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
     if (entry.sha256 === ctx.engine.sha256) return;          // still the booted engine
     if (entry.sha256 === lastAlertedSha) return;             // already alerted this epoch
     // The sha guard advances SYNCHRONOUSLY (coalesces repeat change-events for this epoch to
-    // one put), but a FAILED write must NOT stay swallowed: the engine-waiting / rollback notice
+    // one put), but a FAILED write must NOT stay swallowed: the engine-waiting notice
     // is an operator-critical alert. On a put rejection we roll the guard back to `prevAlerted`
     // so the NEXT change retries, and surface the failure LOUD — never a silent drop.
     const prevAlerted = lastAlertedSha;
     lastAlertedSha = entry.sha256;
 
-    const incoming  = String(entry.version ?? "");
-    const direction = compareVersions(incoming, ctx.engine.version);
-    const message = direction < 0
-      ? `Engine pointer moved BACKWARD (${ctx.engine.version} → ${incoming}) — possible rollback; verify the source before rebooting.`
-      : `Engine ${incoming} waiting — reboot to verify and adopt (running ${ctx.engine.version}).`;
+    const incoming = String(entry.version ?? "");
+    const message =
+      `A different engine waits: ${short(entry.sha256)}${label(incoming)} — reboot to verify and adopt it, ` +
+      `or verify its source first (running ${short(ctx.engine.sha256)}${label(ctx.engine.version)}).`;
 
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: `engine-watch-${Date.now()}` };
+    // One alert per waiting engine, so its hash names the request.
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: `engine-watch-${entry.sha256}` };
     void ctx.composite.put(
       {
         tiddler: {
@@ -81,10 +85,7 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
           tags:            TW5_ALERT_TAG,
           "alert-kind":    "engine-waiting",
           "waiting-sha256":  entry.sha256,
-          "waiting-version": incoming,
           "booted-sha256":   ctx.engine.sha256,
-          "booted-version":  ctx.engine.version,
-          ts:              new Date().toISOString(),
         },
       },
       origin,
@@ -95,7 +96,7 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
       // back so the next change retries, and surface the drop LOUD.
       lastAlertedSha = prevAlerted;
       console.warn(
-        `[engine-watch] FAILED to write the engine-waiting alert for ${incoming} ` +
+        `[engine-watch] FAILED to write the engine-waiting alert for ${short(entry.sha256)}${label(incoming)} ` +
         `(sha ${entry.sha256}); rolled back — will retry on the next oracle-doc change: ${String(err)}`,
       );
     });
