@@ -52,12 +52,12 @@ afterEach(async () => {
 
 type Carry = Awaited<ReturnType<typeof runNexusCarryFor>>;
 
-/** A place mints its carrier seal over the charter the hearth stands on now. */
-async function carryFor(peer: string): Promise<Carry> {
+/** A place mints its carrier seal over the charter the hearth stands on now; a place that stands already re-mints. */
+async function carryFor(peer: string, again = false): Promise<Carry> {
   at(roots.hearth);
   const charter = readNexusDoc(larSealHome())!;
   at(peer);
-  await sealTestCustody();
+  if (again) await openTestCustody(); else await sealTestCustody();
   await generateOrLoadVesselIdentity();
   writeNexusDoc(larSealHome(), charter);
   const carry = await runNexusCarryFor({ sealHome: larSealHome() });
@@ -163,5 +163,53 @@ describe("a carrier fold crosses a charter roll through its anchor alone (W18)",
     const after = await later();
     const read = await filed([after.nym]);
     expect(read).toEqual({ pins: [true], counted: [true] });
+  }, 90_000);
+});
+
+/** Carry one place through an optional revoke/re-admit-like carrier cycle around a roll. */
+async function carryCycle(rollBetween: boolean): Promise<Carry> {
+  at(roots.hearth);
+  await sealTestCustody();
+  await generateOrLoadVesselIdentity();
+  for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
+  const seats = await seatChairs([0, 1, 2]);
+  const next = await seatChairs([0, 1, 2], { generation: 1 });
+  const genesis = heldCharter({ keys: seats.keys, threshold: 2, successors: { keys: next.keys, threshold: 2 } });
+  writeNexusDoc(larSealHome(), genesis.doc());
+  await openTestCustody();
+
+  const first = await carryFor(roots.peers[0]!);
+  await land([first]);
+  at(roots.hearth);
+  await ownedStore(larDataDir(), async (repo) => {
+    await runNexusContract({ action: "uncarry", nym: first.nym, sealHome: larSealHome(), repo });
+  });
+  if (rollBetween) {
+    const rolled = await genesis.roll(next.hands);
+    await ownedStore(larDataDir(), async (repo) => {
+      await runNexusRollAnchor({
+        sealHome: larSealHome(), repo, closing: foundingRoster(readNexusDoc(larSealHome())!),
+        opened: { keys: [...rolled.keys], threshold: rolled.threshold, sealEpochCid: rolled.head.epochCid },
+      });
+    });
+    writeNexusDoc(larSealHome(), rolled.doc());
+  }
+  const again = await carryFor(roots.peers[0]!, true);
+  expect(again.nym, "the same place carries again").toBe(first.nym);
+  await land([again]);
+  return again;
+}
+
+describe("a re-carry follows its carried uncarry through a charter roll", () => {
+  it("RED: uncarry at E, roll to E', then re-carry the same place at E' counts", async () => {
+    const again = await carryCycle(true);
+    expect(again.nym).toBeTruthy();
+    expect(await filed([again.nym])).toEqual({ pins: [true], counted: [true] });
+  }, 90_000);
+
+  it("CONTROL: uncarry and re-carry at E counts without a roll", async () => {
+    const again = await carryCycle(false);
+    expect(again.nym).toBeTruthy();
+    expect(await filed([again.nym])).toEqual({ pins: [true], counted: [true] });
   }, 90_000);
 });
