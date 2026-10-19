@@ -1,6 +1,6 @@
 /**
- * oracle-holds-no-face — the shared oracle document names no face, no catalog and no plane of a person.
- * Reconciling writes the oracle's own url, the lares url and the daemon url, and nothing else; a second
+ * oracle-holds-no-face — the shared oracle document keeps its seed rows; the vessel catalog names the lares document.
+ * Reconciling writes the lares url to the catalog alone; a second
  * call over the same values writes nothing.
  */
 import { describe, test, expect } from "vitest";
@@ -17,8 +17,8 @@ const face = personaSiblingBagIds(personaBagIdFor(G));
 const reconcile = (h: ReturnType<Repo["create"]>) =>
   (reconcileWellKnownTiddlers as unknown as (...a: unknown[]) => void)(h, "automerge:lares", "automerge:daemon");
 
-describe("the oracle holds no face", () => {
-  test("reconcile writes the lares url alone: no self pointer, no daemon, no face tag, no catalog", () => {
+describe("the catalog holds no face", () => {
+  test("reconcile writes the lares url alone: no self pointer, no daemon, no face tag", () => {
     const repo = new Repo({ network: [] });
     const h = repo.create<LarDoc>(emptyLarDoc());
     reconcile(h);

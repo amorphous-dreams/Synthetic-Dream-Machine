@@ -72,7 +72,7 @@ import { judgeStillBeforeWrite } from "../partial-landing.js";
 import { realmNexusIn } from "../edge-board.js";
 import { edgeRollAnchorRealms } from "./edge-roll-anchor.js";
 import type { AdmitBundle } from "../admit-bundle.js";
-import { admitCanonDocs } from "./device-admit.js";
+import { admitCanonDocs, hearthCatalogUrl } from "./device-admit.js";
 import { carryBundleFrom, type CarryBundle } from "../carry-bundle.js";
 import { oracleFloorPinAt } from "../herm-carriage.js";
 import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
@@ -330,7 +330,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
-    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo) })
+    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo, hearthCatalogUrl()) })
     : null;
   const floorPin = opts.action === "carry" && opts.floorPin ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home)) : null;
   return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin };

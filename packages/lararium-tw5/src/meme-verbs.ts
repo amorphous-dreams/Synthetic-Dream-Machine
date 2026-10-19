@@ -133,7 +133,7 @@ export function memeVerbOptions(
     realmWritable: async (bag, namedRealm) => {
       const standing = await realmStanding(namedRealm);
       if (!standing) return null;
-      const nym = tiddlerText(await oracle!.recordOf(realmStewardPointer(standing.realmId)).catch(() => null));
+      const nym = tiddlerText(await catalog!.recordOf(realmStewardPointer(standing.realmId)).catch(() => null));
       if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
       const rec = standing.bags.get(bag)!;
       const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
@@ -142,15 +142,15 @@ export function memeVerbOptions(
   };
 
   /** The realm this vessel stands in, and the registrations its doc carries as of the last sync. Null when
-   *  no oracle plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
+   *  no catalog plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
   async function realmStanding(namedRealm?: string): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
-    if (!oracle) return null;
-    const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
+    if (!catalog) return null;
+    const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await catalog.recordOf(REALM_ID_TIDDLER).catch(() => null));
     if (!realmId) return null;
     // A realm this vessel stands in pins its doc on the vessel's own plane: with no such pin the vessel stands
     // outside that realm, and no verdict a departed plane left behind answers for it.
-    if (tiddlerText(await oracle.recordOf(realmDocPointer(realmId)).catch(() => null)) !== realmDocUrl(realmId)) return null;
-    const text = tiddlerText(await oracle.recordOf(realmStandingPointer(realmId)).catch(() => null));
+    if (tiddlerText(await catalog.recordOf(realmDocPointer(realmId)).catch(() => null)) !== realmDocUrl(realmId)) return null;
+    const text = tiddlerText(await catalog.recordOf(realmStandingPointer(realmId)).catch(() => null));
     return { realmId, bags: readRealmStanding(text) };
   }
 

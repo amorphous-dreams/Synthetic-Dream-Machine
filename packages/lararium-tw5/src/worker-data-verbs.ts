@@ -165,7 +165,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: await sysPlane.urlOf(bagUri), kind: "system", composition: "default" };
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "system", composition: "default" };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");

@@ -38,7 +38,7 @@ import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
 import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
 import type { DocumentFacet, FacetLayer, SessionDocumentFacets } from "./session-document-view.js";
 import {
-  CROSSROADS_BAG, ORACLE_BAG, SYSTEM_BAGS, expandRecipe, recipeFromRecord, wikiBagUri, wikiSlotKindOf,
+  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiSlotKindOf,
   type SlotUri, type WikiRecipe, type WikiSlotKind,
 } from "./wiki-recipe.js";
 
@@ -162,11 +162,10 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   if (standing && typeof standing.record.tiddler["bag-stack"] !== "string") return refused("recipe-malformed", standing.title);
   const recipe: WikiRecipe = standing ? recipeFromRecord(standing.record, slug) : { wikiSlug: slug };
 
-  // A name resolves on the plane that owns it: the system bags and the public board on the oracle plane,
-  // every other bag on the catalog.
+  // A name resolves on the plane that owns it: the oracle seed on its own plane, and each vessel document pointer in the catalog.
   const documentOf = (bag: SlotUri): string | null => {
     if (bag === ORACLE_BAG) return planes.oracleDocument;
-    const plane: RecipePlane = SYSTEM_BAGS.has(bag) || bag === CROSSROADS_BAG ? "oracle" : "catalog";
+    const plane: RecipePlane = "catalog";
     return tiddlerText(planes.read(plane, bag));
   };
 

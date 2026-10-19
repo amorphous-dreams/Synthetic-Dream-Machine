@@ -23,7 +23,7 @@
 import {
   DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX,
   computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, tiddlerText,
-  SYSTEM_BAGS, wikiBagUri, wikiDraftDocKey, requireLarDid,
+  wikiBagUri, wikiDraftDocKey, requireLarDid,
   type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
@@ -42,8 +42,6 @@ export interface SlotDocResolverArgs {
   readonly keyhive: CapabilityProvider;
   /** The user registry — floor docs and user wikis' canon urls. Null when the vessel holds no catalog grant. */
   readonly catalog: CatalogAccessor | null;
-  /** The oracle system plane — system wikis' canon urls (lares, lararium). */
-  readonly oracle: CatalogAccessor | null;
   /** The vessel DID, the one spelling (`didFromVerifyingKey`) — the floor key derives from it. */
   readonly vesselDid: () => string | Promise<string>;
   readonly mintedByHex: () => string;
@@ -83,15 +81,13 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    * doc it actually holds (`bindings`, the mount's call); every later site — a verb, a `where`, an
    * action — reuses that trace, never re-deriving it from a registry pointer that can move under a
    * running session (a shared oracle plane a peer's founding rewrites). A wiki never mounted this
-   * session derives its trace from the plane its pointer rides — a SYSTEM bag's (lares, lararium)
-   * from the oracle plane's well-known tiddlers, a user wiki's from the catalog registry.
+   * session derives its trace from the vessel catalog, where every bag pointer rides.
    */
   const mounted = new Map<string, { fingerprint: string; recipeTrace: RecipeTrace }>();
 
   const wikiUrlOf = async (slug: string): Promise<string> => {
     const key = wikiBagUri(slug);
-    const plane = SYSTEM_BAGS.has(key) ? args.oracle : args.catalog;
-    const url = (await plane?.urlOf(key).catch(() => null)) ?? null;
+    const url = (await args.catalog?.urlOf(key).catch(() => null)) ?? null;
     if (!url) throw new Error(`slot-doc: wiki "${slug}" registers no canon doc in any registry plane — run \`lares wiki init ${slug}\` first`);
     return url;
   };

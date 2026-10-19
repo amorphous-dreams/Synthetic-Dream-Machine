@@ -13,10 +13,9 @@
  * ## Recipe law — one model across all wikis
  *
  *   Manifest carries `recipe: WikiRecipe + grants: IslandGrants`. Structural
- *   slots arrive as typed grants; the bag-oracle resolves from the oracle doc's
- *   well-known tiddlers (protocol-invariant plane); library bags resolve from
- *   the catalog registry ONLY (boot = first reconcile — the same path recipe-watch walks
- *   live). `buildIslandRecipe()` lays the stack:
+ *   slots arrive as typed grants; bag document pointers resolve through the
+ *   vessel catalog, while the oracle supplies the read-only seed floor.
+ *   `buildIslandRecipe()` lays the stack:
  *
  *     temp        (MemoryTiddlerStore, volatile)
  *     draft       (CRDT, high-churn drafts)
@@ -43,11 +42,7 @@
 import {
   CompositeStore,
   ENGINE_CORE_ID,
-  LARES_BAG,
-  LARARIUM_BAG,
   ORACLE_BAG,
-  CROSSROADS_BAG,
-  tiddlerText,
   wikiBagUri,
   wikiSlotUri,
   expandRecipe,
@@ -334,11 +329,8 @@ export function runSovereignKernel(
     const catalogUrl = resolved ? null : msg.grants.catalogUrl ?? null;
     const catalog    = catalogUrl ? makeCatalogAccessor(_repo, catalogUrl) : null;
 
-    // Three oracle planes, three authorities: system bags (lares, lararium)
-    // resolve from the oracle doc's well-known tiddlers — the system plane the
-    // island already holds; user library bags resolve from the catalog registry; public bags
-    // will resolve from the crossroads plane. Structural instance slots arrive as typed
-    // grants.
+    // The catalog names each vessel's document pointers; the oracle supplies seed rows.
+    // Structural instance slots arrive as typed grants.
     const slug = msg.recipe.wikiSlug;
     const slotUrl = async (slot: SlotUri): Promise<string | null> => {
       if (resolved) return slot === ORACLE_BAG ? msg.grants.islandUrl : resolved[slot] ?? null;
@@ -347,15 +339,7 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
-      // System bags (lares, lararium) resolve from the oracle doc's well-known
-      // tiddlers — the system plane the island already holds. User library
-      // bags fall through to the catalog registry.
-      if (slot === LARES_BAG)                    return tiddlerText(laraiumHandle.doc()?.tiddlers?.[LARES_BAG]) ?? null;
-      if (slot === LARARIUM_BAG)                 return tiddlerText(laraiumHandle.doc()?.tiddlers?.[LARARIUM_BAG]) ?? null;
-      // crossroads — the PUBLIC oracle plane; its pointer rides the oracle plane (public infra), resolved the same
-      // well-known-tiddler way as the system bags. Public bags in turn resolve FROM the crossroads plane.
-      if (slot === CROSSROADS_BAG)               return tiddlerText(laraiumHandle.doc()?.tiddlers?.[CROSSROADS_BAG]) ?? null;
-      return catalog ? await catalog.urlOf(slot) : null;   // user library bags
+      return catalog ? await catalog.urlOf(slot) : null;
     };
 
     const slots = expandRecipe(msg.recipe);

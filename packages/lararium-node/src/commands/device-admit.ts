@@ -4,6 +4,7 @@
  *
  * Node-specific shores (only these belong here):
  *   - readFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - readFileSync for the hearth catalog pointer beside its persisted store
  *   - findWithProgress on the store's one holder for daemon doc access — the standing vessel's own Repo
  *     when the door runs inside it, the direct holder's (`ownedStore`) when no vessel stands
  *   - loadVesselSigningSeed (disk keypair)
@@ -19,15 +20,16 @@
  */
 
 import { existsSync, readFileSync } from "fs";
+import { join } from "node:path";
 import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   leaseEpochPrefix, effectiveLeaseEpoch,
-  LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
+  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
-import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
+import { larBootstrapPath, larDataDir, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
@@ -108,22 +110,27 @@ export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
   return wsUrlForOrigin(url.origin);
 }
 
-/** The oracle titles whose documents a joinee mounts as its hearth's base canon. */
+/** The catalog titles whose documents a joinee mounts as its hearth's base canon. */
 const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
+
+/** The hearth's own catalog pointer rests beside its persisted store. */
+export function hearthCatalogUrl(): string {
+  const url = process.env["LAR_CATALOG"]?.trim() || readFileSync(join(larDataDir(), "catalog-url"), "utf8").trim();
+  if (!isValidAutomergeUrl(url)) throw new Error("[lares admit] this hearth names no valid catalog document");
+  return url;
+}
 
 /**
  * THE CANON DOCUMENTS THIS HEARTH NAMES TO A JOINEE — `@lares` and `@lararium`, by document url, as this
- * vessel's own oracle holds them. They ride the fleet-join answer's signed carriage, so the joinee's gate widens
- * by exactly these documents; the oracle plane itself (which also names this vessel's catalog, its daemon doc
- * and its faces' planes) never crosses. A pointer the oracle lacks, or holds torn, goes unnamed. A read: a vessel whose
- * store holds no oracle names nothing, and nothing gets minted here.
+ * vessel's own catalog holds them. They ride the fleet-join answer's signed carriage, so the joinee's gate widens
+ * by exactly these documents. A pointer the catalog lacks, or holds torn, goes unnamed.
  */
-export async function admitCanonDocs(repo: Repo): Promise<Readonly<Record<string, string>>> {
-  let oracle: LarDoc | undefined;
-  try { oracle = (await repo.find<LarDoc>(oracleGenesisDocUrl())).doc(); } catch { return {}; }
+export async function admitCanonDocs(repo: Repo, registryUrl: string): Promise<Readonly<Record<string, string>>> {
+  let registry: LarDoc | undefined;
+  try { registry = (await repo.find<LarDoc>(registryUrl as AutomergeUrl)).doc(); } catch { return {}; }
   const named: Record<string, string> = {};
   for (const title of HEARTH_CANON_TITLES) {
-    const url = tiddlerText(oracle?.tiddlers?.[title]);
+    const url = tiddlerText(registry?.tiddlers?.[title]);
     if (url && isValidAutomergeUrl(url)) named[title] = url;
   }
   return named;
@@ -368,7 +375,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const hearth: AdmitHearthReading = {
     gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
-    canon:   await admitCanonDocs(repo),
+    canon:   await admitCanonDocs(repo, hearthCatalogUrl()),
     islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };

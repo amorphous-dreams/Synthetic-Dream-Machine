@@ -294,7 +294,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     slotDocs = makeSlotDocResolver({
       repo: restDocuments ? restingMinter(ctx.repo, restDocuments) : ctx.repo, daemonStore: ctx.composite, keyhive: kh,
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
-      oracle:  ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
@@ -925,8 +924,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // the PLACE is what asks, never the persona root.
       if (ctx.catalogUrl) {
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
-        // System plane (oracle) accessor — list-wikis reads system wiki-recipes
-        // (the lares and lararium bags) from here, user recipes from the catalog registry (two-plane).
+        // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
         const wikiMintOpts = {
           composite:   ctx.composite,

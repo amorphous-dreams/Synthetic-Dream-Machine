@@ -365,7 +365,7 @@ describe("the leaf climb stays scoped to antigen and crossroads", () => {
     const scopeDoor  = bootSrc.indexOf("nexusScopeOrThrow(nexusStanding)");
     const climbAt    = bootSrc.indexOf("await climbNexusBoards");
     const kelCarryAt = bootSrc.indexOf("await carryPersonaKelUpTheGradient");
-    const crossroads = bootSrc.indexOf("await registerCrossroadsInOracle");
+    const crossroads = bootSrc.indexOf("await registerCrossroadsPointer");
     const gateReadAt = bootSrc.indexOf("personaKelChainForPrefix(kelBoard.doc()");
     for (const [what, at] of [["the scope door", scopeDoor], ["the board climb", climbAt],
                               ["the KEL carry", kelCarryAt], ["the crossroads register", crossroads],
