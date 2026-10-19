@@ -44,7 +44,7 @@ describe("a rename re-homes records that stand", () => {
     const table = new VerbTable();
     registerActionReactors(table, { composite });
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-rename",
+      "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-rename",
       carriers: [{ uri: URI, text: D, diskHash: carrierHash(D), syncedHash: null, ext: ".mem" }],
       // The vanished source shares the arriving carrier's bytes: the gate pairs the two as a rename.
       deletions: [{ uri: FROM, syncedHash: carrierHash(D) }],

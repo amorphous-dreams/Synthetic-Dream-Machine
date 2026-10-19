@@ -30,7 +30,7 @@
 import {
   BagStowage,
   makeWikiActivationCap,
-  slugFromUri, wikiBagUri, tiddlerText, recipeUri, recipeFromRecord,
+  slugFromUri, wikiBagUri, tiddlerText, recipeUri, deriveWikiRecipe,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
   pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
 } from "@lararium/mesh";
@@ -203,11 +203,13 @@ export function makeVesselResidency(
     const resolveWikiSpec: ResolveWikiSpec = async (wikiId) => {
       const slug    = slugFromUri(wikiId);
       const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
-      if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
       // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
       // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
       const rec = plainRecordOrNull(catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)]);
-      const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
+      const derived = deriveWikiRecipe({ slug, record: rec, canonUrl: wikiUrl });
+      if (!derived.ok) return derived;
+      if (!wikiUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(slug) };
+      const grainRecipe = derived.recipe;
       const libraryBags = grainRecipe?.libraryBags;
       const pluginOfferings = grainRecipe?.pluginOfferings;
       // M2 — threaded alongside, never thrown: a torn plugin-offerings field on THIS grain's
@@ -225,7 +227,7 @@ export function makeVesselResidency(
         ...(pluginOfferings ? { pluginOfferings } : {}),
         ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
       });
-      return spec;
+      return { ok: true, spec };
     };
 
     // ── C. The activation-on-reference CAP the vessel HOLDS + the resolver READS. Its grant is
@@ -275,7 +277,7 @@ export function makeVesselResidency(
         requestedBy: "daemon",
       };
       void wikiActivation.ensureActive(wikiId)
-        .then((live) => (live
+        .then((live) => (live.ok
           ? pool.placeWikiVerb(wikiId, verbOpts).then(() => {}).catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "raced-cold"))
           : hooks.onUndeliverableAlert(wikiId, verbOpts, "unmounted-no-mailbox")))
         .catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "not-activatable"));

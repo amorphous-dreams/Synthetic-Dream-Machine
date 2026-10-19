@@ -161,7 +161,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
       const r = rig(storeOf);
       const good = "a lawful note\n";
       const args = {
-        "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
+        "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
         carriers: [
           { uri: FILE_URI, file: "/scratch/carried.tid", text: TID, diskHash: carrierHash(TID), syncedHash: null, ext: ".tid" },
           { uri: GOOD, file: "/scratch/good.md", text: good, diskHash: carrierHash(good), syncedHash: null, ext: ".md" },
@@ -180,7 +180,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
       const r = rig(storeOf);
       for (const bad of [{ text: TID, ext: ".tid" }, { text: HEADED, ext: ".mem" }]) {
         const args = {
-          "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
+          "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
           carriers: [{ title: GOOD, text: "a lawful note\n", ext: ".md" }, bad],
         };
         const refusal = await (r.table.get("LOAD")!(args, actionCtx(r.composite, "LOAD", args)) as Promise<unknown>).catch((e: unknown) => e);
@@ -195,7 +195,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
     const r = rig(STORES[0]![1]);
     const lawful = "a lawful note\n";
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
+      "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
       carriers: [
         // A skinny handle lands before any parse: the row must refuse it first.
         { uri: BAD_URI, textCid: "ab".repeat(32), skinny: true, size: 9, diskHash: "sha256:" + "ab".repeat(32), syncedHash: null, ext: ".png" },
@@ -236,7 +236,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
   test("LOAD past its slice quantum still lands nothing: the refusal rides ahead of the first slice", async () => {
     const r = rig(STORES[0]![1]);
     const lawful = Array.from({ length: LOAD_YIELD_QUANTUM + 3 }, (_, i) => ({ title: `lar:///ha.ka.ba/t/title/lawful-${i}`, text: `note ${i}\n`, ext: ".md" }));
-    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title", carriers: [...lawful, { text: TID, ext: ".tid" }] };
+    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title", carriers: [...lawful, { text: TID, ext: ".tid" }] };
     const refusal = await (r.table.get("LOAD")!(args, actionCtx(r.composite, "LOAD", args)) as Promise<unknown>).catch((e: unknown) => e);
     expect((refusal as { reason: string }).reason).toBe(CODE);
     expect(await r.carriersIn()).toEqual([]);
@@ -249,7 +249,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
   test("CONTROL: INGEST and LOAD land a carrier whose TEXT carries a userinfo, byte for byte", async () => {
     const r = rig(STORES[0]![1]);
     const text = `${CAPTURE_BODY}\n`;
-    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title", carriers: [{ uri: GOOD, text, diskHash: carrierHash(text), syncedHash: null, ext: ".md" }] };
+    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title", carriers: [{ uri: GOOD, text, diskHash: carrierHash(text), syncedHash: null, ext: ".md" }] };
     const rows = (await r.table.get("INGEST")!(args, actionCtx(r.composite, "INGEST", args)) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
     expect(rows[0]!["decision"]).toBe("ingest");
     expect((await r.store.get(GOOD))?.tiddler["text"]).toBe(text);

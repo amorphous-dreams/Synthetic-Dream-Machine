@@ -40,6 +40,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -185,8 +186,9 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   });
 
   test("⑦ A promotes through the one door: `act LOAD` the carrier into lar:///ha.ka.ba/bags/lares", async () => {
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", join(A!.root, "npc.mem"), "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", join(A!.root, "npc.mem"), "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
     expect(which.stdout).toContain(`  ${LARES_BAG}`);
     // A's own working layer still shadows the recipe read; the bag read names the promoted copy.
@@ -211,8 +213,9 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // W24/W27 owns the same-face BOOK crossing. A and B each promote within their own live system document.
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));
-    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const local = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const localText = String((local.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(localText).toContain("<<~ ahu #/b>>");

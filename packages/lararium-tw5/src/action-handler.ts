@@ -428,6 +428,12 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     const action = residencyFromContext(verb, args, ctx.invocation);
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
 
+    if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag) && args["seed-door"] !== "founding") {
+      const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);
+      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug}`);
+    }
+    // INGEST returns disk edits through the shore's own hash gate; this LOAD door does not govern it.
+
     // `--dry-run` / preview: the cap-gate STILL runs (a preview you're not
     // authorized for fails loud the same); only the WRITES are captured + nothing
     // commits. The flag rides the raw args, ignored by the validator.

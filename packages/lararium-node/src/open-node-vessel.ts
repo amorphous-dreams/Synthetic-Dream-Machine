@@ -49,6 +49,7 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   genesisCasCidsFromOracle, provenVesselKeyOf,
+  wikiSlugOfBag,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -1920,7 +1921,7 @@ async function prepareNodeBootOn(
     // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
     // (`meme get --bag <x>`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
     // The wire gate widens the self-slot shelf by the member-read lane and nothing else: a stranger draws
-    // the same denial as any private plane. A vessel with no charter stands no realm — the shelf stays as it was.
+    // the same denial as any private plane. A vessel with no primary or carried charter stands no realm.
     if (!realmPlane && nexusMembership && selfSlotFedGate) {
       realmPlane = makeRealmPlane({
         repo,
@@ -2648,16 +2649,27 @@ async function prepareNodeBootOn(
         verb: "sync-wiki", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
       });
     });
-    // wiki-act: command a residency ACTION verb to run IN the active wiki
-    // island over ITS composite (promotion executes
-    // where working + canon both live — the island owns its composition; the
-    // daemon commands, never reaches the per-fingerprint working binding). The
-    // inner verb (MOVE/LOAD/…) routes to the island's own action reactors.
+    // wiki-act places slot-targeted residency verbs in the slot's wiki.
+    // Promotion from a working slot stays in that slot's wiki island.
     registry.register("wiki-act", async (args, ctx) => {
-      await wikiActivation.ensureActive(slotActiveWikiId);
-      return vmManager.placeWikiVerb(slotActiveWikiId, {
-        verb: String(args["verb"]),
-        args: (args["args"] as Record<string, unknown>) ?? {},
+      const verb = String(args["verb"]);
+      const innerArgs = (args["args"] as Record<string, unknown>) ?? {};
+      const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
+      // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
+      const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
+      const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
+      const destinationWiki = wikiVerb && typeof destination === "string" && slot(destination)
+        ? wikiSlugOfBag(destination) : null;
+      const source = innerArgs["from-bag"];
+      const sourceWiki = verb === "MOVE" && typeof source === "string" && slot(source)
+        ? wikiSlugOfBag(source) : null;
+      const target = typeof args["wiki"] === "string" && args["wiki"]
+        ? args["wiki"] : sourceWiki ?? destinationWiki ?? slotActiveWikiId;
+      const activation = await wikiActivation.ensureActive(target);
+      if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
+      return vmManager.placeWikiVerb(target, {
+        verb,
+        args: innerArgs,
         requestedBy: ctx.invocation.requestedBy,
       });
     });
@@ -2793,7 +2805,7 @@ async function prepareNodeBootOn(
       const slug = String(args["slug"] ?? "");
       if (!slug) throw new Error("wiki-switch: `slug` required");
       const active = await wikiActivation.ensureActive(slug);
-      return { verb: "wiki-switch", slug, active, held: [...wikiActivation.held()] };
+      return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...wikiActivation.held()] };
     });
     // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
@@ -2914,7 +2926,8 @@ async function prepareNodeBootOn(
       // (on `ea` the grain is already live → a cheap no-op; this covers a drain raced
       // ahead of the breath). A grain that cannot activate rejects → stays parked.
       async (wikiId, v) => {
-        if (!(await wikiActivation.ensureActive(wikiId))) throw new Error(`[mailbox] ${wikiId} not activatable — kept parked`);
+        const activation = await wikiActivation.ensureActive(wikiId);
+        if (!activation.ok) throw new Error(`[mailbox] ${wikiId} ${activation.cause}: ${activation.detail} — kept parked`);
         return vmManager.placeWikiVerb(wikiId, v);
       },
       (line) => console.log(line),

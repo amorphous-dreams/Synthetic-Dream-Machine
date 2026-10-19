@@ -394,7 +394,7 @@ describe("DROP handler", () => {
     await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
     const argsFor = (verb: string, bag: string): Record<string, unknown> => {
       if (verb === "CLEAR") return { bag };
-      if (verb === "LOAD") return { "source-uri": "seed", "to-bag": bag, "change-id": "c-1", carriers: [] };
+      if (verb === "LOAD") return { "source-uri": "seed", "to-bag": bag, "seed-door": "founding", "change-id": "c-1", carriers: [] };
       if (verb === "INGEST") {
         const carrier = { uri: "lar:///ha.ka.ba/x/A", text: "a", diskHash: "d", syncedHash: null };
         return { "source-uri": "seed", "to-bag": bag, "change-id": "c-1", carriers: [carrier] };
@@ -493,7 +493,7 @@ describe("LOAD handler", () => {
     const table = new VerbTable();
     registerActionReactors(table, { composite });
     const handler = table.get("LOAD")!;
-    const args = { "source-uri": "https://example.org/seed.json", "to-bag": BAG_HIGH, "change-id": "c" };
+    const args = { "source-uri": "https://example.org/seed.json", "to-bag": BAG_HIGH, "seed-door": "founding", "change-id": "c" };
     await expect(handler(args, makeContext(composite, "LOAD", args))).rejects.toThrow(/no carriers/);
   });
 
@@ -505,6 +505,7 @@ describe("LOAD handler", () => {
     const args = {
       "source-uri": "bags/lares/api/example.md",
       "to-bag": BAG_HIGH,
+      "seed-door": "founding",
       "change-id": "c-load-1",
       carriers: [{ title: "lar:///ha.ka.ba/lares/example", text: "Aloha — carrier body.\n" }],
     };

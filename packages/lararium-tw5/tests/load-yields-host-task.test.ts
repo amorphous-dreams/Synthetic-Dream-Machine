@@ -50,7 +50,7 @@ async function runLoad(
   options: { store?: CountingStore; yieldHostTask?: () => Promise<void> } = {},
 ) {
   const { composite, store, load } = setup(options.store, options.yieldHostTask);
-  const result = await load({ "to-bag": BAG, "source-uri": "file:///load", "change-id": "load-yields", carriers: carriers(count) }, context(composite));
+  const result = await load({ "to-bag": BAG, "seed-door": "founding", "source-uri": "file:///load", "change-id": "load-yields", carriers: carriers(count) }, context(composite));
   return { result, store };
 }
 
@@ -145,7 +145,7 @@ describe("LOAD yields a host task by landing quantum", () => {
     };
     try {
       const load = table.get("LOAD")!({
-        "to-bag": BAG, "source-uri": "file:///load", "change-id": "load-with-invocation", carriers: carriers(400),
+        "to-bag": BAG, "seed-door": "founding", "source-uri": "file:///load", "change-id": "load-with-invocation", carriers: carriers(400),
       }, context(composite));
       await load;
       await started;

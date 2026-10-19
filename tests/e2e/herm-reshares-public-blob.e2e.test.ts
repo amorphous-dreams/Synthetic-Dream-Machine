@@ -6,8 +6,8 @@
  * dialing it, a same-operator joiner C dialing A's `/ws` for the CRDT and the Herm for bytes, naming the Herm's
  * read-face as its public shore (`LAR_HERM_SHORE`). Then:
  *
- *   ③ A LOADs `photo.png` (+ `.meta`) into its user canon and declares the book PUBLIC → A's `cid/` holds the bytes, the CRDT the pointer
- *   ④ MEASURE: C's realm view names no user book or canon pointer
+ *   ③ The book walks W27's road: A LOADs `photo.png` (+ `.meta`) into working, MOVEs it to canon, and declares it PUBLIC → A's `cid/` holds the bytes
+ *   ④ C lists its face's public book and canon pointer through every realm it stands in
  *   ⑤ MEASURE: what the Herm's `/cas/<cid>` answers while A still stands
  *   ⑥ A goes DARK (`stopDaemonOnly` — A's staged root only; the home vessel is never touched)
  *   ★ ⑦ THE SHUT: with A dark and a Herm that dials no hearth (`a herm dials no hearth`), the Herm holds no public
@@ -94,11 +94,12 @@
  * Run ALONE (`LAR_STAGE_DIR` under a tmp dir): three daemons, ~2 min.
  */
 
-import { describe, test, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, test, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { openStagedFleet, vesselStorageDir, type LarInstance, type StagedFleet } from "../harness/instance.js";
+import { expectEntry } from "../harness/journal-expect.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -114,6 +115,7 @@ const GHOST      = createHash("sha256").update("a likeness nobody ever staged").
 const LOCI  = "t.witness.herm";
 const BOOK_SLUG = "herm-public-photo";
 const BOOK_BAG = `lar:///ha.ka.ba/bags/${BOOK_SLUG}`;
+const BOOK_WORKING = `lar:///ha.ka.ba/wikis/${BOOK_SLUG}/working`;
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const casDirOf = (v: LarInstance): string => join(vesselStorageDir(v), "cas");
@@ -175,43 +177,39 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
-  test("③ A LOADs the png into its user canon and declares it PUBLIC: A holds bytes and a CRDT pointer", async () => {
+  test("③ A LOADs the png into working, MOVEs it to canon, and declares the book PUBLIC", async () => {
     const { A } = fleet!;
     const srcDir = join(A.root, "blob-stage", "bags", BOOK_SLUG, LOCI);
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    // This witness stages a public blob for a Herm to re-share, not a promotion through a working slot.
-    // The catalog registers the canon at mint; an unmounted wiki has no working slot document, so daemon LOAD
-    // to that slot refuses with `destination bag "lar:///ha.ka.ba/wikis/herm-public-photo/working" unreachable — not registered`.
-    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", BOOK_BAG, "--yes", "--json"]);
+    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", BOOK_WORKING, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    const moved = await A.cli(["act", "MOVE", "--title", `lar:///${LOCI}/photo`, "--from", BOOK_WORKING, "--to", BOOK_BAG, "--yes", "--json"]);
+    expect(moved.json?.["ok"], said(moved)).toBe(true);
+    await expectEntry(A, { kind: "bag-projected", match: (entry) => (entry.data as Record<string, unknown>)["bagId"] === BOOK_BAG }, { budgetMs: 90_000 });
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
-    // MEASURED (shards 39199905657 and 39201808065): a canon the daemon's reach writes for a wiki no island mounts
-    // lays no disk mirror. The journal names no bag-projected entry for it, and `bag declare`, which reads the bag
-    // on disk, answers "no bag … stands under …/bags". The public tier this story needs rides the realm
-    // registration (`nexus realm-bag <slug> --tier public` in the fleet), which the herm's lanes read. So the step
-    // records the disk reading and asserts only what stands: the bytes in A's cid/ and the record in A's canon.
     const decl = await A.cli(["bag", "declare", BOOK_SLUG, "--tier", "public", "--json"]);
-    const show = await A.cli(["wiki", "which", `lar:///${LOCI}/photo`, "--no-json"]);
-    console.error(`herm-reshares MEASURE A: mirror bags/${BOOK_SLUG} ${existsSync(join(A.root, "bags", BOOK_SLUG)) ? "stands" : "absent"} · bag declare → ${said(decl).trim().slice(0, 200)}\n  wiki which → ${said(show).trim().slice(0, 300)}`);
-  }, 90_000);
+    expect(decl.json?.["ok"], said(decl)).toBe(true);
+  }, 120_000);
 
-  test("④ MEASURE: C holds no realm or pointer to A's public user book", async () => {
-    // The sharing-after-the-gate ruling grants a sibling vessel transport through PersonaGroup, not blanket
-    // document access. F1's scoped document view and P3's member consult across a cabal realm would change
-    // this row; C's same-operator edge alone leaves it outside A's realm and user book.
+  test("④ C lists its face's public book and A's canon through its stood realms", async () => {
     const aBags = await fleet!.A.cli(["nexus", "realm-bags", "--json"]);
     const aRows = (aBags.json?.["data"] as { bags?: Array<Record<string, unknown>> } | undefined)?.bags ?? [];
     const aBook = aRows.find((row) => row["bag"] === BOOK_BAG && row["readTier"] === "public");
     expect(typeof aBook?.["doc"] === "string" && aBook["doc"].length > 0, said(aBags)).toBe(true);
-    const bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
-    console.error(`herm-reshares MEASURE C: nexus realm-bags → ${said(bags).trim().slice(0, 600)}`);
-    expect(bags.json?.["ok"], said(bags)).toBe(true);
-    expect(bags.json?.["data"], "C holds no cabal realm or A's public user book").toMatchObject({ realm: null, realmDoc: null, realms: [], bags: [] });
-  }, 30_000);
+    await vi.waitFor(async () => {
+      const bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
+      expect(bags.json?.["ok"], said(bags)).toBe(true);
+      const data = bags.json?.["data"] as { realms?: string[]; bags?: Array<Record<string, unknown>> } | undefined;
+      expect(data?.realms?.length, said(bags)).toBeGreaterThan(0);
+      expect(data?.bags, said(bags)).toContainEqual(expect.objectContaining({
+        realm: expect.any(String), bag: BOOK_BAG, readTier: "public", doc: aBook!["doc"],
+      }));
+    }, { timeout: 90_000, interval: 500 });
+  }, 95_000);
 
   test("⑤ MEASURE: the Herm's /cas/<cid> while A still stands", async () => {
     await new Promise((r) => setTimeout(r, 3000));
