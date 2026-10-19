@@ -86,7 +86,13 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
         if (pin !== null) await deps.layStatement(url, await signPlaceFloorPin({ placeKey, pin, sign: deps.sign }));
       }
       const nexusHex = Buffer.from(r.aid, "utf8").toString("hex");
-      const { filed, refused } = filePlaceFloorPins(deps.pins, placeFloorPinsFromBoard(await deps.openBoard(url)), { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
+      const statements = placeFloorPinsFromBoard(await deps.openBoard(url));
+      // WHICH READING READ WHICH BOARD: the reading's way in, its board, the carriers its own replica counts and the
+      // places whose statements that board holds, so a refused pin names the relation it missed.
+      const named = (keys: Iterable<string>): string => [...keys].map((k) => k.slice(0, 8)).sort().join(",") || "none";
+      const stated = statements.map((s) => (typeof s === "object" && s !== null && typeof (s as { placeKey?: unknown }).placeKey === "string" ? (s as { placeKey: string }).placeKey : "?"));
+      deps.onLog?.(`${r.aid}: refresh ${deps.placeClass} via=${r.via} board=${url} carriers=[${named(carriers)}] statements=[${named(stated)}]`);
+      const { filed, refused } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
       if (refused.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${refused.length} place floor pin(s) refused (${[...new Set(refused)].join(", ")})`);
       if (filed.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${filed.length} place floor pin(s) read`);
     }
