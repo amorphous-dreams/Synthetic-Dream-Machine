@@ -21,21 +21,22 @@ import { carriageEntriesFromBoard, writeCarriageEntry } from "../src/carriage-bo
 import type { LarDoc } from "../src/base-doc.js";
 import { hex, utf8Bytes } from "../src/crypto.js";
 import { dialSocketTo, gateOver } from "./gate-dial-fixture.js";
-import { AUDIENCE, handDeadlines, place, world, type Place, type World } from "./face-gate-fixture.js";
+import { AUDIENCE, handDeadlines, place, wire, world, type Place, type World } from "./face-gate-fixture.js";
 
 const HERM_SEED = Uint8Array.from({ length: 32 }, (_, i) => i + 11);   // the herm's vessel key: publisher and place key
 const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
-const turn = () => new Promise((resolve) => setImmediate(resolve));
 
 /** The herm: a floor gate at `w`'s Nexus serving one FLOW map signed by its vessel key, as the node face serves it. */
-async function herm(w: World) {
+async function herm(w: World, serve: (send: () => void) => void = (send) => send()) {
   const snap = await exportOracleSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@oracle/node/alpha" } } }));
   const ptr = await buildOraclePointer({ snapshot: snap, parents: [], signerSeed: HERM_SEED });
   const served = { count: 0 };
   const gate = gateOver(w, channelSessionTable((channel: GateSessionChannel) => {
     served.count++;
-    channel.send("session", enc(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: ptr })));
-    channel.send("session", snap.bytes);
+    serve(() => {
+      channel.send("session", enc(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: ptr })));
+      channel.send("session", snap.bytes);
+    });
   }));
   const key = hex(await ed25519.getPublicKeyAsync(HERM_SEED));
   return { gate, key, served, sign: (image: Uint8Array) => ed25519.signAsync(image, HERM_SEED) };
@@ -43,19 +44,24 @@ async function herm(w: World) {
 
 const asPlace = (pl: Place, arm: Place["arm"] | null = pl.arm): PlaceOraclePresentation => ({ kind: "place", placeKey: pl.key, sign: pl.sign, arm });
 
-/** Pull with the reader's own deadline; a gate that stays silent is lapsed by hand on both sides. */
+/**
+ * Pull with the reader's own deadline. The gate's own outcome decides the lapse, never a count of turns: a reader the
+ * gate fell silent to can learn nothing more, so its deadline lapses by hand on both sides; a reader the gate attached
+ * or answered finishes by itself; a reader that never dialed settles before any gate runs.
+ */
 async function pull(w: World, h: Awaited<ReturnType<typeof herm>>, presentation: PlaceOraclePresentation, pins = hearthPinIndex()) {
   if (pins.size === 0) pins.put(h.key, w.pin);
   const deadlines = handDeadlines();
   const urls: string[] = [];
+  const { dial, accepted } = wire();
+  const accepting = accepted.then((socket) => h.gate.accept(socket));
   const pulling = pullAndVerifyOracle("http://herm.test", {
     pins, hearth: h.key, nexus: w.pin.nexus, presentation, audience: AUDIENCE, deadlines, verifyingKey: h.key,
-    dialSocket: (url) => { urls.push(url); return dialSocketTo(h.gate).socket; },
+    dialSocket: (url) => { urls.push(url); return dial; },
   });
-  // A verified pull returns on its own; a silent one waits on the reader's deadline, which this lapse fires.
-  const settled = await Promise.race([pulling.then((r) => r), (async () => { for (let i = 0; i < 400; i++) await turn(); return null; })()]);
-  if (settled !== null) return { res: settled, urls };
-  deadlines.fire(); w.deadlines.fire();
+  const first = await Promise.race([pulling.then((res) => ({ res })), accepting.then((gate) => ({ gate }))]);
+  if ("res" in first) return { res: first.res, urls };
+  if (first.gate.outcome === "silence") { deadlines.fire(); w.deadlines.fire(); }
   return { res: await pulling, urls };
 }
 
@@ -63,6 +69,16 @@ describe("the faceless reader at a herm's floor gate", () => {
   test("CONTROL: a place the Nexus carries presents its counted contract and reads the map, verified", async () => {
     const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
     const h = await herm(w);
+    const { res } = await pull(w, h, asPlace(await place(w, "relay herm")));
+    expect(res.ok, res.reason).toBe(true);
+    expect(h.served.count).toBe(1);
+  });
+
+  test("CONTROL: a herm slow to serve still reads verified; no count of turns lapses an honest pull", async () => {
+    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    // The herm answers only after the reader's side has turned many times over, as a loaded runner can.
+    const later = (send: () => void) => { void (async () => { for (let i = 0; i < 2_000; i++) await new Promise((r) => setImmediate(r)); send(); })(); };
+    const h = await herm(w, later);
     const { res } = await pull(w, h, asPlace(await place(w, "relay herm")));
     expect(res.ok, res.reason).toBe(true);
     expect(h.served.count).toBe(1);
