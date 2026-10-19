@@ -15,6 +15,8 @@
  */
 import { chromium } from "playwright";
 import { joinThroughPage, pasteAnswer, JoinRefused } from "./browser-ci-join.mjs";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../packages/lararium-node/dist/probes/browser-test-custody.js";
 
 const URL_ = process.env.LARES_URL ?? "http://localhost:4321";
 const TIMEOUT = Number(process.env.SMOKE_TIMEOUT_MS ?? 60000);
@@ -88,6 +90,7 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
 let code = 0;
 try {
   const page = await browser.newPage();
+  await armTestCustody(page, "browser-ci-smoke");
   page.on("console", (m) => { if (/\[vessel\]|\[face-join\]|\[lararium-browser\]|\[dyad\]/.test(m.text())) trace.push(m.text()); });
   await page.goto(URL_, { waitUntil: "domcontentloaded" });
   const secure = await page.evaluate(() => globalThis.isSecureContext);

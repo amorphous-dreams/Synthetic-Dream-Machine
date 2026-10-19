@@ -1,4 +1,6 @@
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 
 const base = process.env.LARES_URL ?? "http://localhost:4321";
 const gate = process.env.LIVE_WIKI_GATE;
@@ -13,6 +15,7 @@ if (process.env.LIVE_WIKI_RELAY === "1") {
 
 const browser = await chromium.launch({ args: ["--no-sandbox"] });
 const context = await browser.newContext();
+await armTestCustody(context, "two-tab-walk");
 const errors = [];
 const pageStatus = () => {
   const rows = [...document.querySelectorAll("#vessel .row")];

@@ -3,6 +3,8 @@ import { spawn } from "node:child_process";
 import { afterAll, beforeAll, test } from "vitest";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 
 const root = resolve(import.meta.dirname, "../../../..");
 const port = Number(process.env.LAR_WEB_E2E_PORT ?? 5418);
@@ -26,6 +28,7 @@ beforeAll(async () => {
   }
   browser = await chromium.launch({ headless: true });
   context = await browser.newContext();
+  await armTestCustody(context, "shore-writes");
   page = await context.newPage();
   page.on("console", (message) => {
     browserConsole.push(message.text());
