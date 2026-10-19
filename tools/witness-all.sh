@@ -21,6 +21,7 @@ declare -A HELD_OUT=(
   [harbor-walk-witness]="stands a docker vessel"
   [crossing-witness]="stands a docker-compose crossing matrix"
   [herm-mesh-witness]="stands the docker-compose relay mesh"
+  [herm-mesh-roll-witness]="stands the docker-compose relay mesh and rolls A's charter between its joins"
   [mesh-scenarios]="stands the docker-compose mesh on the product image, scenario by scenario — needs docker"
   [browser-weld-witness]="drives a real browser against a standing web surface"
   [tree-clean-witness]="the e2e set runs through the CI shards; a local run stages vessels and reads any write into the tracked tree as red"
