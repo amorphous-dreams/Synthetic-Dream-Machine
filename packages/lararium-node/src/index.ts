@@ -389,6 +389,7 @@ export type { GraphCap, GraphCapOptions } from "./graph-cap.js";
 export { composePalaceCaps } from "./sensorium.js";
 export type { PalaceCaps, PalaceCapsOptions } from "./sensorium.js";
 export { makeLaresQuery, openMemorySensorium } from "./lares-query.js";
+export { runTrialServing, trialContentDir, verifyTrialModel } from "./sensorium-trial-serving.js";
 export type { LaresQuery, Lens } from "./lares-query.js";
 export { makeEmbedCap } from "./embed-cap.js";
 export type { EmbedCap, EmbedResult, EmbedCapOptions } from "./embed-cap.js";
