@@ -1107,8 +1107,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // of an unseated vessel falls to the device floor and says so (`resolveSlotDoc`). The callback
     // reads `daemonAuth.personaGroupId` directly rather than through `faceGroup()`, so a
     // floor offering it cannot throw during boot and take its own standing with it.
-    resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) =>
-      slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug),
+    resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) => {
+      const bindings = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug);
+      if (!kh) throw new Error("binding: keyhive unbooted");
+      // The first mount mints each slot's bag cap in the same act as its document binding.
+      for (const kind of ["working", "draft"] as const) {
+        const bag = wikiSlotUri(wikiSlug, kind);
+        await kh.registerBag(bag);
+        if (daemonAuth.personaGroupId && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupId)) {
+          await delegateToFaceViaVeil(bag, "admin");
+        }
+      }
+      return bindings;
+    },
 
   };
 }

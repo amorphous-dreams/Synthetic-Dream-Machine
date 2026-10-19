@@ -11,7 +11,7 @@
 import { describe, test, expect } from "vitest";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
 import { BagStowage } from "../src/bag-residency.js";
-import { makeWikiActivationCap } from "../src/wiki-activation.js";
+import { makeWikiActivationCap, type ResolveWikiSpec } from "../src/wiki-activation.js";
 import { mkEa, mkTeardownAck } from "../src/island-protocol.js";
 import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js";
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
@@ -48,7 +48,7 @@ function countingHost(): { host: VesselIslandHost; spawns: () => number } {
 // requires every pool to carry a resolver, so a no-offerings floor stands in.
 const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
 
-function makeVesselTrio(wikiCap: number, resolveSpec?: (id: string) => Promise<WikiMountSpec | null>) {
+function makeVesselTrio(wikiCap: number, resolveSpec?: ResolveWikiSpec) {
   const { host, spawns } = countingHost();
   const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
   const residency = new BagStowage({
@@ -63,7 +63,7 @@ function makeVesselTrio(wikiCap: number, resolveSpec?: (id: string) => Promise<W
 describe("wiki-activation cap — activation-on-reference over the one collector", () => {
   test("a never-opened grain refuses without stranding a phantom resident", async () => {
     const { residency, cap } = makeVesselTrio(2);
-    expect(await cap.ensureActive("lar:///wiki/never")).toBe(false);
+    expect(await cap.ensureActive("lar:///wiki/never")).toMatchObject({ ok: false, cause: "no-such-bag" });
     expect(residency.tier("lar:///wiki/never")).toBeNull();   // no phantom wela in the collector
   });
 
@@ -71,23 +71,23 @@ describe("wiki-activation cap — activation-on-reference over the one collector
     const W3 = "lar:///wiki/three";
     let resolvedFor = "";
     // The resolver knows W3 (a wiki the pool never mounted) but not others.
-    const resolveSpec = async (id: string): Promise<WikiMountSpec | null> => {
-      if (id !== W3) return null;
+    const resolveSpec: ResolveWikiSpec = async (id) => {
+      if (id !== W3) return { ok: false, cause: "no-such-bag", detail: id };
       resolvedFor = id;
-      return spec();
+      return { ok: true, spec: spec() };
     };
     const { pool, residency, cap, spawns } = makeVesselTrio(2, resolveSpec);
 
     // A bare reference to a never-opened wiki: resolveSpec → registerSpec → touch → mount.
     expect(pool.knowsSpec(W3)).toBe(false);
-    expect(await cap.ensureActive(W3)).toBe(true);
+    expect(await cap.ensureActive(W3)).toEqual({ ok: true });
     expect(resolvedFor).toBe(W3);
     expect(pool.tier(W3)).toBe("wela");
     expect(residency.tier(W3)).toBe("wela");
     expect(spawns()).toBe(1);                       // one clean activation
 
     // An unknown reference the resolver refuses → false, no phantom.
-    expect(await cap.ensureActive("lar:///wiki/unknown")).toBe(false);
+    expect(await cap.ensureActive("lar:///wiki/unknown")).toMatchObject({ ok: false, cause: "no-such-bag" });
     expect(residency.tier("lar:///wiki/unknown")).toBeNull();
 
     await pool.disposeAll();
@@ -96,15 +96,15 @@ describe("wiki-activation cap — activation-on-reference over the one collector
   test("concurrent references to a never-opened grain resolve + spawn exactly ONE worker", async () => {
     const W3 = "lar:///wiki/three";
     let resolveCalls = 0;
-    const resolveSpec = async (id: string): Promise<WikiMountSpec | null> => {
+    const resolveSpec: ResolveWikiSpec = async (id) => {
       resolveCalls++;
-      return id === W3 ? spec() : null;
+      return id === W3 ? { ok: true, spec: spec() } : { ok: false, cause: "no-such-bag", detail: id };
     };
     const { pool, cap, spawns } = makeVesselTrio(4, resolveSpec);
 
     // Fire six references at one never-opened grain in one tick — single-owner holds.
     const results = await Promise.all(Array.from({ length: 6 }, () => cap.ensureActive(W3)));
-    expect(results.every((r) => r === true)).toBe(true);
+    expect(results.every((r) => r.ok)).toBe(true);
     expect(pool.tier(W3)).toBe("wela");
     expect(spawns()).toBe(1);                       // never two sovereign workers for one stream
 
@@ -114,7 +114,7 @@ describe("wiki-activation cap — activation-on-reference over the one collector
   test("an already-live grain short-circuits to true", async () => {
     const { pool, cap } = makeVesselTrio(2);
     await pool.mountWiki(W1, spec());
-    expect(await cap.ensureActive(W1)).toBe(true);
+    expect(await cap.ensureActive(W1)).toEqual({ ok: true });
     await pool.disposeAll();
   });
 
@@ -132,7 +132,7 @@ describe("wiki-activation cap — activation-on-reference over the one collector
     expect(residency.tier(W1)).toBe("anu");
 
     // A REFERENCE reactivates it: ensureActive → collector.touch → onHydrate → ensureWiki.
-    expect(await cap.ensureActive(W1)).toBe(true);
+    expect(await cap.ensureActive(W1)).toEqual({ ok: true });
     expect(pool.tier(W1)).toBe("wela");
     expect(residency.tier(W1)).toBe("wela");
     expect(spawns()).toBe(2);   // one original + one reactivation, never a double-spawn
@@ -149,7 +149,7 @@ describe("wiki-activation cap — activation-on-reference over the one collector
     // collector enforces cap 1 → evicts W1 (onEvict → unmountWiki). One live wiki.
     await pool.mountWiki(W2, spec());
     await pool.unmountWiki(W2);                           // make W2 cold+known, then activate on reference
-    expect(await cap.ensureActive(W2)).toBe(true);
+    expect(await cap.ensureActive(W2)).toEqual({ ok: true });
 
     expect(pool.tier(W2)).toBe("wela");
     expect(residency.tier(W1)).toBe("anu");              // W1 evicted by the collector's wiki cap
@@ -161,7 +161,7 @@ describe("wiki-activation cap — activation-on-reference over the one collector
 
 describe("wiki-activation cap — rotatable pins + pin-budget (the switcher's hold)", () => {
   const W1 = "lar:///wiki/one", W2 = "lar:///wiki/two", W3 = "lar:///wiki/three";
-  const anySpec = async (): Promise<WikiMountSpec> => spec();
+  const anySpec: ResolveWikiSpec = async () => ({ ok: true, spec: spec() });
 
   // makeVesselTrio wires pinBudget 1 (the browser gradient: the daemon bag always + ONE rotatable).
   test("hold pins a live wiki; release unpins it; held() tracks the set", async () => {

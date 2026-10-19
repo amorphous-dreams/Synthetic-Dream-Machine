@@ -43,17 +43,17 @@ describe("lares act MOVE carrying a tombstone", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     await cmdAct(actArgs(["MOVE"], { title: T, from: WORKING, to: CANON }, { shadow: true }));
-    const move = h.calls.find((c) => c.verb === "MOVE");
-    expect(move?.args).toMatchObject({ title: T, "from-bag": WORKING, "to-bag": CANON, shadow: true });
+    const move = h.calls.find((c) => c.verb === "wiki-act");
+    expect(move?.args).toMatchObject({ wiki: "w", verb: "MOVE", args: { title: T, "from-bag": WORKING, "to-bag": CANON, shadow: true } });
   });
 
   test("CONTROL: a MOVE without the ask carries no shadow key", async () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     await cmdAct(actArgs(["MOVE"], { title: T, from: WORKING, to: CANON }));
-    const move = h.calls.find((c) => c.verb === "MOVE");
+    const move = h.calls.find((c) => c.verb === "wiki-act");
     expect(move).toBeDefined();
-    expect(move!.args).not.toHaveProperty("shadow");
+    expect(move!.args["args"]).not.toHaveProperty("shadow");
   });
 
   test("a MOVE naming no --to prints the bags holding the title and summons no MOVE", async () => {

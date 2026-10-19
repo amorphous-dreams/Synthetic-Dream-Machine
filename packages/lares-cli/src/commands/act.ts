@@ -42,7 +42,7 @@ import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
@@ -105,6 +105,8 @@ function printUsage(): void {
   console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>] [--in-wiki]");
   console.error("");
   console.error("  --yes              skip confirmation prompt");
+  console.error("  --dry-run          preview the effect without committing it");
+  console.error("  --in-wiki          use the wiki island (acts naming a wiki bag route there automatically)");
 }
 
 /**
@@ -230,7 +232,8 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdAct(args: ParsedArgs): Promise<number> {
+/** The founding door comes from the rite's in-process seed call; CLI parsing never supplies it. */
+export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -337,6 +340,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     actionArgs["source-uri"] = sourceUri;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
+    if (seedDoor) actionArgs["seed-door"] = seedDoor;
 
     // The disk grant lives HERE — the operator gesture reads the carriers and
     // sends content WITH the verb (islands hold no fetch capability). A local
@@ -446,13 +450,17 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // dispatcher's outcome-keyed dedup then gives exactly-once EFFECT. A fresh
   // change-id (the --change-id default) means a genuinely distinct change → runs.
   const subject   = String(actionArgs["to-bag"] ?? actionArgs["bag"] ?? "");
-  // --in-wiki: run the ACTION IN the active wiki island over ITS composite
-  // (where working + canon both live) — the daemon commands via `wiki-act`,
-  // never reaching the per-fingerprint working binding. The default path
-  // executes daemon-side (write-then-sync).
-  const inWiki     = Boolean(args.flags["in-wiki"]);
+  // A wiki bag sends its act to its own composite. A MOVE from a working slot
+  // remains there through promotion; --in-wiki also accepts acts without a named wiki.
+  const destinationWiki = wikiSlugOfBag(subject);
+  const source = actionArgs["from-bag"];
+  const sourceWiki = verb === "MOVE" && typeof source === "string" &&
+    /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(source)
+    ? wikiSlugOfBag(source) : null;
+  const wiki = sourceWiki ?? destinationWiki;
+  const inWiki = Boolean(args.flags["in-wiki"]) || wiki !== null;
   const submitName = inWiki ? "wiki-act" : verb;
-  const submitArgs = inWiki ? { verb, args: actionArgs } : actionArgs;
+  const submitArgs = inWiki ? { verb, args: actionArgs, ...(wiki ? { wiki } : {}) } : actionArgs;
   // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.
   // EVERY action verb now SPLITS its id from it (E1 commit 4′, generalizing H4's LOAD-only fix,
   // D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH nonce per attempt, so a retry after an

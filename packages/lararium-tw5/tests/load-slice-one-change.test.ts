@@ -57,7 +57,7 @@ async function load(store: AutomergeDocStore | MemoryTiddlerStore, yieldHostTask
   composite.addLayer({ bagId: BAG, store, writable: true });
   const table = new VerbTable();
   registerActionReactors(table, { composite, yieldHostTask });
-  return table.get("LOAD")!({ "to-bag": BAG, "source-uri": "file:///load", "change-id": "load-slice", carriers: CARRIERS }, context(composite));
+  return table.get("LOAD")!({ "to-bag": BAG, "source-uri": "file:///load", "change-id": "load-slice", "seed-door": "founding", carriers: CARRIERS }, context(composite));
 }
 
 describe("a LOAD slice lands as one store change", () => {

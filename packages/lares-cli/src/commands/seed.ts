@@ -81,6 +81,7 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
 export async function seedHolding(
   args: ParsedArgs,
   h: { holding: string; source: string; toBag: string },
+  founding = false,
 ): Promise<SeedHolding> {
   if (SYSTEM_HOLDINGS.has(h.holding)) {
     // Infrastructure bags (lares/lararium) flow as NAMELESS ENTITIES — no special auto-confirm.
@@ -117,7 +118,7 @@ export async function seedHolding(
     positional: ["LOAD"],
     options: { ...args.options, "source-uri": h.source, to: h.toBag },
     flags,
-  });
+  }, founding ? "founding" : undefined);
   return { ...h, gesture: "load", exitCode };
 }
 
@@ -126,14 +127,14 @@ export async function seedHolding(
  * write contention). Continues past a failing holding (converge what it can); the
  * caller reads per-holding exit codes.
  */
-export async function seedRun(args: ParsedArgs): Promise<SeedHolding[]> {
+export async function seedRun(args: ParsedArgs, founding = false): Promise<SeedHolding[]> {
   const holdings = discoverHoldings(larBagsDir());
   const ledger: SeedHolding[] = [];
-  for (const h of holdings) ledger.push(await seedHolding(args, h));
+  for (const h of holdings) ledger.push(await seedHolding(args, h, founding));
   return ledger;
 }
 
-export async function cmdSeed(args: ParsedArgs): Promise<number> {
+export async function cmdSeed(args: ParsedArgs, founding = false): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
@@ -145,7 +146,7 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     return 3;
   }
   console.log(`[seed] ${holdings.length} holding(s): ${holdings.map((h) => h.holding).join(" · ")}${args.flags["apply"] ? "" : "  (preview — pass --apply)"}`);
-  const ledger = await seedRun(args);
+  const ledger = await seedRun(args, founding);
   const failed = ledger.filter((h) => h.exitCode !== 0);
   for (const h of failed) console.error(`[seed] ${h.holding} (${h.gesture}) → exit ${h.exitCode}`);
   console.log(`[seed] ${ledger.length - failed.length}/${ledger.length} holding(s) converged`);

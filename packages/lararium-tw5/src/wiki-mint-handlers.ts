@@ -126,7 +126,7 @@ export function makeOpenWikiReactor(opts: WikiHandlerOptions): VerbReactor {
     // Wiki oracle lives in the catalog registry — read via the accessor, not the composite.
     const wikiUrl = await opts.catalog.urlOf(wikiKey);
     if (!wikiUrl) {
-      throw new Error(`wiki "${slug}" not registered — run \`lares wiki init ${slug}\` first`);
+      throw new Error(`no-such-bag: ${wikiKey}`);
     }
 
     const marker = await opts.composite.get(ACTIVE_WIKI_URI);

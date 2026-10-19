@@ -29,6 +29,7 @@
 import { interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
 import { tiddlerText } from "./base-doc.js";
 import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { GENESIS_FLOOR_TIDDLER, readFloorManifest } from "./floor-manifest.js";
@@ -121,6 +122,31 @@ export type SurfaceRecipeVerdict =
 
 const refused = (refusal: SurfaceRecipeRefusal, detail: string): SurfaceRecipeVerdict => Object.freeze({ ok: false, refusal, detail });
 
+export type WikiRecipeDerivation =
+  | { readonly ok: true; readonly recipe: WikiRecipe; readonly source: "record" | "floor" }
+  | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable"; readonly detail: string };
+
+/** Derive one standing record or the floor; every wiki names a resolving canon bag. */
+export function deriveWikiRecipe(input: { slug: string; record: LarTiddlerRecord | null | undefined; canonUrl: string | null }): WikiRecipeDerivation {
+  if (!input.canonUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(input.slug) };
+  if (!input.record || input.record.meta?.deleted === true) return { ok: true, recipe: { wikiSlug: input.slug }, source: "floor" };
+  if (typeof input.record.tiddler["bag-stack"] !== "string") {
+    return { ok: false, cause: "record-unparsable", detail: `torn bag-stack: ${input.slug}` };
+  }
+  try {
+    const recipe = recipeFromRecord(input.record, input.slug);
+    return { ok: true, recipe, source: "record" };
+  } catch (error) {
+    return { ok: false, cause: "record-unparsable", detail: String(error) };
+  }
+}
+
+/** Name the wiki that owns a slot or canon bag URI. */
+export function wikiSlugOfBag(bagUri: string): string | null {
+  const match = /^lar:\/\/\/ha\.ka\.ba\/(?:wikis\/([^/]+)\/(?:temp|draft|personal|working)|bags\/([^/]+))$/.exec(bagUri);
+  return match?.[1] ?? match?.[2] ?? null;
+}
+
 function documentIdOf(document: string): string | null {
   try { return interpretAsDocumentId(document as AutomergeUrl); } catch { return null; }
 }
@@ -159,8 +185,6 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const standing = effectiveRecipe(slug, (plane, title) => planes.read(plane, title));
   // A record that stands names its stack as a list string. A `bag-stack` torn away, or one that fails to read
   // as that string, would lay the recipe with its bags missing; it refuses, and never reads as a narrower recipe.
-  if (standing && typeof standing.record.tiddler["bag-stack"] !== "string") return refused("recipe-malformed", standing.title);
-  const recipe: WikiRecipe = standing ? recipeFromRecord(standing.record, slug) : { wikiSlug: slug };
 
   // A name resolves on the plane that owns it: the oracle seed on its own plane, and each vessel document pointer in the catalog.
   const documentOf = (bag: SlotUri): string | null => {
@@ -170,7 +194,9 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   };
 
   const canon = wikiBagUri(slug);
-  if (!standing && documentOf(canon) === null) return refused("wiki-unknown", wikiId);
+  const derived = deriveWikiRecipe({ slug, record: standing?.record, canonUrl: documentOf(canon) });
+  if (!derived.ok) return refused(derived.cause === "no-such-bag" ? "wiki-unknown" : "recipe-malformed", derived.detail);
+  const recipe = derived.recipe;
 
   const slots: SurfaceSlot[] = [];
   const unresolved: SlotUri[] = [];
