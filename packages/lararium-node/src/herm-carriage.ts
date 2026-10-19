@@ -91,7 +91,9 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
       // places whose statements that board holds, so a refused pin names the relation it missed.
       const named = (keys: Iterable<string>): string => [...keys].map((k) => k.slice(0, 8)).sort().join(",") || "none";
       const stated = statements.map((s) => (typeof s === "object" && s !== null && typeof (s as { placeKey?: unknown }).placeKey === "string" ? (s as { placeKey: string }).placeKey : "?"));
-      deps.onLog?.(`${r.aid}: refresh ${deps.placeClass} via=${r.via} board=${url} carriers=[${named(carriers)}] statements=[${named(stated)}]`);
+      const acts = [...r.denyBoard].filter((e) => e.action === "carry" || e.action === "uncarry")
+        .map((e) => `${e.action}:${e.nym.slice(0, 8)}@${e.sealEpochCid.slice(-8)}`).sort().join(",") || "none";
+      deps.onLog?.(`${r.aid}: refresh ${deps.placeClass} via=${r.via} board=${url} head=${r.roster.sealEpochCid.slice(-8)} lineage=${String(r.sealLineage.length)} acts=[${acts}] carriers=[${named(carriers)}] statements=[${named(stated)}]`);
       const { filed, refused } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
       if (refused.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${refused.length} place floor pin(s) refused (${[...new Set(refused)].join(", ")})`);
       if (filed.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${filed.length} place floor pin(s) read`);
