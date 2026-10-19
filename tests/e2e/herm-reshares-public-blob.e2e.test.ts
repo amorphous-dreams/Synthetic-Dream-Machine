@@ -191,13 +191,15 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
+    // The projector lays the user canon mirror as the loaded record lands and names that bag in the journal;
+    // `bag declare` reads the bag on disk, so it waits for that entry (measured: run 39199905657 declared first
+    // and drew "no bag … stands under …/bags").
+    await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === BOOK_BAG });
+    expect(existsSync(join(A.root, "bags", BOOK_SLUG))).toBe(true);
     const decl = await A.cli(["bag", "declare", BOOK_SLUG, "--tier", "public", "--json"]);
     const show = await A.cli(["bag", "show", BOOK_SLUG, "--json"]);
     console.error(`herm-reshares MEASURE A: bag declare ${BOOK_SLUG} --tier public → ${said(decl).trim().slice(0, 200)}\n  bag show ${BOOK_SLUG} → ${said(show).trim().slice(0, 300)}`);
     expect(decl.json?.["ok"], said(decl)).toBe(true);
-    // The projector lays the user canon mirror as the loaded record lands and names that bag in the journal.
-    await expectEntry(A, { kind: "bag-projected", match: (e) => e.kind === "bag-projected" && (e as JournalEntry<"bag-projected">).data.bagId === BOOK_BAG });
-    expect(existsSync(join(A.root, "bags", BOOK_SLUG))).toBe(true);
   }, 90_000);
 
   test("④ MEASURE: C holds no realm or pointer to A's public user book", async () => {
