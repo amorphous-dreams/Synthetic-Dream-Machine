@@ -116,7 +116,22 @@ export async function takeCarryBundle(opts: {
   const candidates = (peerRaw as CarriageEntry[]).filter((e) => (e.action === "carry" || e.action === "uncarry") && e.nym.toLowerCase() !== own);
   const existing = carriageEntriesFromBoard(handle.doc());
   const union = [...existing, ...acts, ...candidates];
-  const ancestry = { sealLineage: charter?.sealLineage ?? [], anchors: [...rollAnchorsFromBoard(handle.doc()), ...(anchorRaw as RollAnchor[])] };
+  const sealLineage = charter?.sealLineage ?? [];
+  const landingAnchors: RollAnchor[] = [];
+  if (sealLineage.length > 1 && verifySealLineage(sealLineage)
+    && sealLineage[sealLineage.length - 1]?.epochCid === roster.sealEpochCid) {
+    for (const anchor of anchorRaw as RollAnchor[]) {
+      const at = sealLineage.findIndex((epoch) => epoch.epochCid === anchor.sealEpochCid);
+      if (at < 1 || anchor.prevEpochCid !== sealLineage[at - 1]!.epochCid) continue;
+      const closing = epochSeats(sealLineage[at - 1]!);
+      const opening = epochSeats(sealLineage[at]!);
+      if (!closing || !opening || anchor.prevThreshold !== closing.threshold
+        || anchor.prevKeys.length !== closing.keys.length
+        || !anchor.prevKeys.map((key) => key.toLowerCase()).sort().every((key, i) => key === closing.keys[i])) continue;
+      if (await rollAnchorCounts(anchor, { ...opening, sealEpochCid: anchor.sealEpochCid })) landingAnchors.push(anchor);
+    }
+  }
+  const ancestry = { sealLineage, anchors: [...rollAnchorsFromBoard(handle.doc()), ...landingAnchors] };
   const folded = await foldCarriageDetails(union, roster, ancestry);
   for (let i = 0; i < acts.length; i++) {
     if (!folded.entries[existing.length + i]?.counted) {
@@ -128,22 +143,6 @@ export async function takeCarryBundle(opts: {
     throw new CarryBundleError("the bundle's carry does not head this vessel's relation on its own replica (an uncarry descends from it, or its past does not chain). Nothing was written.");
   }
   const carriers = await foldCarrierSet(union, roster, ancestry);
-  // A bundle can supply anchors for the fold to inspect, but only an anchor counted by this charter's
-  // opening roster earns a place on the shared board.
-  const openingRosters = new Map<string, typeof roster>();
-  const sealLineage = charter?.sealLineage ?? [];
-  if (sealLineage.length > 0 && verifySealLineage(sealLineage)
-    && sealLineage[sealLineage.length - 1]?.epochCid === roster.sealEpochCid) {
-    for (const epoch of sealLineage) {
-      const seats = epochSeats(epoch);
-      if (seats) openingRosters.set(epoch.epochCid, { ...seats, sealEpochCid: epoch.epochCid });
-    }
-  }
-  const landingAnchors: RollAnchor[] = [];
-  for (const anchor of anchorRaw as RollAnchor[]) {
-    const opened = openingRosters.get(anchor.sealEpochCid);
-    if (opened && await rollAnchorCounts(anchor, opened)) landingAnchors.push(anchor);
-  }
   const nexusHex = Buffer.from(aid, "utf8").toString("hex");
   const landing: PlaceFloorPinStatement[] = [];
   for (const raw of floorPins) {

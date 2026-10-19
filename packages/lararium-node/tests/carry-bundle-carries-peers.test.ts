@@ -13,10 +13,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, signCarriageQuorum, carriageEntryCounts, ORACLE_SOCKET_ROUTE, type LarDoc,
+  placeFloorPinsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, ORACLE_SOCKET_ROUTE, type LarDoc,
   ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, type CarryBundle } from "../src/carry-bundle.js";
@@ -116,6 +116,48 @@ describe("a carry bundle carries the counted carries of the places whose floor p
       return rollAnchorsFromBoard(board.doc());
     });
     expect(anchors).toEqual([counted]);
+  }, 60_000);
+
+  it("RED: opened seats cannot land an anchor that names different closing seats or its carried act", async () => {
+    const { reader, readerBundle } = await carryBoth(true);
+    at(roots.reader);
+    const charter = readNexusDoc(larSealHome())!;
+    const [closed, opened] = charter.sealLineage!;
+    const closing = epochSeats(closed!)!;
+    const opening = epochSeats(opened!)!;
+    expect(opening.keys).not.toEqual(closing.keys);
+    at(roots.outsider);
+    await generateOrLoadVesselIdentity();
+    writeNexusDoc(larSealHome(), charter);
+    const stranger = await runNexusCarryFor({ sealHome: larSealHome() });
+    const contractSig = await signCarrierContract(stranger.nym, closed!.epochCid,
+      ed25519SignerFromSeed(await loadVesselSigningSeed()));
+    const closedHands = await Promise.all([0, 1].map(async (face) => ({
+      signer: await chairKey(face), sign: ed25519SignerFromSeed(chairSeed(face)),
+    })));
+    const carried = await signCarriageQuorum({ nym: stranger.nym, action: "carry", parents: [],
+      sealEpochCid: closed!.epochCid }, closedHands, contractSig);
+    expect(await carriageEntryCounts(carried, { ...closing, sealEpochCid: closed!.epochCid })).toBe(true); // control
+    const openingHands = await Promise.all([0, 1].map(async (face) => ({
+      signer: await chairKey(face, 1), sign: ed25519SignerFromSeed(chairSeed(face, 1)),
+    })));
+    const forged = await signRollAnchor({
+      prevEpochCid: closed!.epochCid, sealEpochCid: opened!.epochCid,
+      prevKeys: opening.keys, prevThreshold: opening.threshold,
+      parents: [carriageEntryActCid(carried)],
+    }, openingHands);
+    expect(await rollAnchorCounts(forged, foundingRoster(charter))).toBe(true); // signature control
+    at(roots.reader);
+    const taken = await direct(takeCarryBundle)({ raw: JSON.stringify({
+      ...readerBundle, peers: [...(readerBundle.peers ?? []), carried], rollAnchors: [forged],
+    }), ownVesselKey: reader });
+    expect(taken.floorPins).not.toContain(stranger.nym);
+    const board = await ownedStore(larDataDir(), async (repo) => {
+      const island = nodeNexusIsland({ ownVesselKey: reader, sealHome: larSealHome() });
+      return (await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts")).doc();
+    });
+    expect(rollAnchorsFromBoard(board)).not.toContainEqual(forged);
+    expect(carriageEntriesFromBoard(board)).not.toContainEqual(carried);
   }, 60_000);
 
   it("A refreshes pins after its founding roll and the witness joins", async () => {
