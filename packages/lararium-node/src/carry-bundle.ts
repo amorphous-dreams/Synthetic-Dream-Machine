@@ -63,7 +63,9 @@ export async function carryBundleFrom(opts: {
   const own = opts.nym.toLowerCase();
   const peers = carriageEntriesFromBoard(opts.board)
     .filter((e) => (e.action === "carry" || e.action === "uncarry") && e.nym.toLowerCase() !== own);
-  return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: arm.lineage,
+  // The arm's lineage carries its acts and the anchors that chain them to the head; the bundle keeps the two apart.
+  const acts = arm.lineage.filter((act): act is CarriageEntry => !isRollAnchor(act));
+  return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: acts,
     floorPins: placeFloorPinsFromBoard(opts.board), peers, rollAnchors: ancestry.anchors };
 }
 

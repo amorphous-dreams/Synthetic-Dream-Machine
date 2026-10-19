@@ -208,10 +208,11 @@ export async function presentationFromBoardDoc(
   doc: LarDoc | undefined | null,
   nym: string,
   roster: KahuQuorumSeats,
+  sealLineage?: readonly SealEpoch[],
 ): Promise<BoardPresentation> {
   const anchors = rollAnchorsFromBoard(doc);
   return {
-    presentation: await readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, anchors),
+    presentation: await readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, anchors, sealLineage),
     findings:     await forksOnBoard(anchors, roster),
   };
 }
@@ -273,13 +274,15 @@ async function readBoardPresentation(
   nym: string,
   roster: KahuQuorumSeats,
   anchors: readonly RollAnchor[],
+  sealLineage?: readonly SealEpoch[],
 ): Promise<AdmitPresentation | null> {
   const want = nym.toLowerCase();
   const source = [...entries];
   const anchorList = anchors;
 
   const walk = async (at: KahuQuorumSeats, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
-    const fold = await foldCarriageDetails(source, at);
+    const fold = await foldCarriageDetails(source, at,
+      at.sealEpochCid === roster.sealEpochCid && sealLineage ? { sealLineage, anchors: anchorList } : undefined);
     // The fold's details run in source order, one per entry — zip them to recover each counted act.
     const byCid = new Map<string, CarriageEntry>();
     fold.entries.forEach((detail, i) => {

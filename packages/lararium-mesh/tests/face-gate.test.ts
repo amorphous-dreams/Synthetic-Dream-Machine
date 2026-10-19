@@ -1045,7 +1045,7 @@ describe("the place arm: a faceless place proves its own key, outside the face p
       reasons.push(detail === undefined ? { reason } : { reason, detail });
     };
     const elsewhere = await other.carryFor(herm.seed);
-    await silent(dialPlace(w, herm, { arm: { kind: "place", contract: elsewhere, lineage: [] } }));
+    await silent(dialPlace(w, herm, { arm: { kind: "place", contract: elsewhere, lineage: [], sealLineage: [] } }));
     w.placeAside.add(herm.key);
     await silent(dialPlace(w, herm));
     w.placeAside.clear();
@@ -1059,7 +1059,7 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     const thief = await place(w, "refused herm thief");
     const forged = { ...herm.contract, contractSig: { signer: herm.key, sig: thief.contract.contractSig!.sig } };
     expect(thief.contract.sealEpochCid).toBe(herm.contract.sealEpochCid);                      // the setup took: only the signer differs
-    await silent(dialPlace(w, herm, { arm: { kind: "place", contract: forged, lineage: [] } }));
+    await silent(dialPlace(w, herm, { arm: { kind: "place", contract: forged, lineage: [], sealLineage: [] } }));
     expect(reasons).toEqual([
       { reason: "place-contract-unheld", detail: "wrong-epoch" },
       { reason: "place-shadowed" },

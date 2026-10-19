@@ -58,7 +58,7 @@ describe("the gate sorter — four classes, and silence", () => {
   });
 
   test("a place's held carriage contract sorts contracted, standing as the place key; a place arm with no contract draws nothing", async () => {
-    const arm = { kind: "place" as const, contract: entry, lineage: [] };
+    const arm = { kind: "place" as const, contract: entry, lineage: [], sealLineage: [] };
     const input = face({ scope: null, placeKey: PLACE, place, arm, fleetAside: true });
     expect(await sorter().sort(input)).toEqual({ class: "contracted", standing: { nym: PLACE, aid: N } });
     expect(await sorter("open").sort({ ...input, place: null })).toBeNull();

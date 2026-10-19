@@ -318,8 +318,8 @@ async function ownPresentationFor(opts: {
 }): Promise<DialPresentation | null> {
   const surfaced = new Set<string>();
   const onFinding = opts.onFinding ?? ((f: PresentationFinding) => console.warn(`[nexus-dial] ${presentationFindingLine(f)}`));
-  const present = async (board: Parameters<typeof presentationFromBoardDoc>[0], nym: string, roster: Parameters<typeof presentationFromBoardDoc>[2]) => {
-    const { presentation, findings } = await presentationFromBoardDoc(board, nym, roster);
+  const present = async (board: Parameters<typeof presentationFromBoardDoc>[0], nym: string, roster: Parameters<typeof presentationFromBoardDoc>[2], sealLineage: Parameters<typeof presentationFromBoardDoc>[3]) => {
+    const { presentation, findings } = await presentationFromBoardDoc(board, nym, roster, sealLineage);
     for (const f of findings) {
       const key = `${f.epochCid}:${f.anchorCids.join(",")}`;
       if (surfaced.has(key)) continue;
@@ -346,7 +346,7 @@ async function ownPresentationFor(opts: {
     const kept = readKeptAdmitBundle(opts.sealHome, aid);
     const keptLeaf = kept ? held.find((l) => admittedOf(l) === kept.admit.nym.toLowerCase()) : undefined;
     if (kept && keptLeaf && (await admitBundleHolds(kept, doc))) {
-      const head = await present(board, kept.admit.nym.toLowerCase(), roster);
+      const head = await present(board, kept.admit.nym.toLowerCase(), roster, doc?.sealLineage);
       const keptCid = carriageEntryActCid(kept.admit);
       const extends_ = head !== null &&
         (carriageEntryActCid(head.admit) === keptCid || head.lineage.some((e) => presentedActCid(e) === keptCid));
@@ -356,7 +356,7 @@ async function ownPresentationFor(opts: {
     for (const leaf of held) {
       const admitted = admittedOf(leaf);
       if (admitted === null) continue;
-      const presented = await present(board, admitted, roster);
+      const presented = await present(board, admitted, roster, doc?.sealLineage);
       if (presented) return { ...presented, aid, island, leaf };
     }
     return null;

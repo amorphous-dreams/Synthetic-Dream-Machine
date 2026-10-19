@@ -462,7 +462,7 @@ export async function place(w: World, label: string): Promise<Place> {
   const seed = seedOf(`place ${label}`);
   const key = hex(await ed25519.getPublicKeyAsync(seed));
   const contract = await w.carryFor(seed);
-  return { seed, key, contract, arm: { kind: "place", contract, lineage: [] }, sign: (image) => ed25519.signAsync(image, seed) };
+  return { seed, key, contract, arm: { kind: "place", contract, lineage: [], sealLineage: [] }, sign: (image) => ed25519.signAsync(image, seed) };
 }
 
 /** One honest dial of a place, start to end, as `dial` runs a face's. */
