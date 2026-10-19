@@ -1,13 +1,13 @@
 /**
  * e2e/corpus-feed — vector 4's staged witness: the WHOLE lares corpus
  * (bags/lares/ha.ka.ba/lares, the hearth's content tree) rides one directory-batch LOAD
- * into a staged vessel, and the disk co-projection writes back carrier-whole.
+ * into the lares working slot, whose disk projection writes carrier-whole.
  *
  * What this soaks (first contact at scale for the 2026-06-11 grain burn):
  *   F1 — the batch LOAD lands (one gesture, one change-id family)
  *   F2 — group routing at scale: one file per carrier root, NO fragment
  *        files, count parity with the distinct lares-bag root URIs
- *   F3 — the boot meme (corpus-canonical) projects byte-exact
+ *   F3 — the boot meme projects byte-exact in the working slot
  *
  * The live-hearth feed stays the operator's gesture; this vector proves the
  * shape so that gesture carries no surprises.
@@ -19,7 +19,6 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
 import { targetInstance, type LarInstance } from "../harness/instance.js";
-import { promoteLoadedTitles } from "../harness/promote.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../packages/lararium-tw5/src/deserializer.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -71,7 +70,7 @@ function walkFiles(dir: string): string[] {
   return out;
 }
 
-/** Distinct carrier-root URIs in the source corpus that mirror under the lares bag. */
+/** Distinct carrier-root URIs in the source corpus that mirror under the lares working slot. */
 function expectedRoots(): Set<string> {
   // THE CORPUS CARRIES `.mem`. This hunted `*.md` — the extension the carrier convention left behind —
   // so `find` returned nothing, the staged mirror stood empty, and every read below ENOENT'd on a boot
@@ -102,7 +101,7 @@ function expectedRoots(): Set<string> {
 interface MirrorReading { readonly files: string[]; readonly measure: string }
 
 async function awaitStableMirror(root: string, expected: ReadonlySet<string>, capMs = 300_000): Promise<MirrorReading> {
-  const mirrorRoot = join(root, "bags/lares");
+  const mirrorRoot = join(root, "wikis/lares");
   const start = Date.now();
   const seconds = (): number => Math.round((Date.now() - start) / 1000);
   let last = -1;
@@ -156,7 +155,6 @@ beforeAll(async () => {
   const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
-  if (loadOk) await promoteLoadedTitles(lar, r.json, "lares");
   // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
   // answered, and those are different faults with different cures.
   console.error(`corpus-feed MEASURE the LOAD landed ${loadCount} record(s) in ${Math.round((Date.now() - at) / 1000)}s · code ${r.code} · ${`${r.stdout}\n${r.stderr}`.trim().slice(-600)}`);
@@ -179,11 +177,11 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
     const projectorWindows = lar.bootLog().split("\n").filter((line) => line.includes("[disk-projector] MEASURE")).map((line) => line.slice(line.indexOf("MEASURE") + 8).trim());
     console.error(`corpus-feed MEASURE projector windows (${projectorWindows.length}): ${projectorWindows.slice(-6).join(" | ") || "none of a second or longer"}`);
     expect(files.filter((f) => f.includes("#") || /%23/.test(f))).toEqual([]);
-    // Full-path-inside-bag ruling: the mirror carries EVERY name the bag
+    // Full-path-inside-slot ruling: the mirror carries EVERY name the slot
     // holds (lawful residents outside the corpus namespace included), so the
     // law reads as membership: every corpus root projects to exactly one
     // file at its full-name path; fragments never surface.
-    const mirrorRoot = join(lar.root, "bags/lares");
+    const mirrorRoot = join(lar.root, "wikis/lares");
     const fileUris = new Set(files.map((f) =>
       "lar:///" + relative(mirrorRoot, f).split(sep).join("/").replace(/\.mem$/, ""),
     ));
@@ -201,7 +199,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
 
   test("F3 — the boot meme projects content-whole (iam framing normalizes once)", async () => {
     if (lar.mode !== "staged") return;
-    const projected = join(lar.root, "bags/lares", BOOT_PROJ);
+    const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
     expect(existsSync(projected)).toBe(true);
     const metaFence = /```toml meta\n[\s\S]*?```\n/g;
     const contentView = (s: string) => s.replace(metaFence, "```toml meta\n<normalized>\n```\n");
@@ -213,7 +211,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
 
   test("F4 — pipeline idempotence: re-feeding a projection leaves it byte-stable", async () => {
     if (lar.mode !== "staged") return;
-    const projected = join(lar.root, "bags/lares", BOOT_PROJ);
+    const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
     const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     let late = "";
@@ -230,8 +228,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
       r.json?.["ok"],
       `re-feed LOAD answered code ${r.code} · json ${JSON.stringify(r.json ?? null).slice(0, 800)} · stderr ${String(r.stderr ?? "").trim().slice(-600)} · stdout ${String(r.stdout ?? "").trim().slice(-600)}${late}`,
     ).toBe(true);
-    await promoteLoadedTitles(lar, r.json, "lares");
-    // allow a flush wave, then assert the canonical form held still
+    // allow a flush wave, then assert the working projection held still
     await new Promise((res) => setTimeout(res, 8_000));
     expect(readFileSync(projected, "utf8")).toBe(before);
   }, 120_000);

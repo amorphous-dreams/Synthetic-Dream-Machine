@@ -18,6 +18,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 
 const root = "lar:///ha.ka.ba";
 const slot = `${root}/wikis/witness/working`;
+const daemonSlot = `${root}/wikis/daemon/working`;
 const canon = `${root}/bags/witness`;
 const act = (verb: string, options: Record<string, string>, flags: Record<string, boolean> = {}) =>
   cmdAct({ command: "act", positional: [verb], options, flags: { json: true, yes: true, ...flags } } as ParsedArgs);
@@ -41,6 +42,20 @@ describe("act placement", () => {
     await act("MOVE", { title: "lar:///witness/book/title", from: slot, to: canon });
     expect(calls.map((call) => call.verb)).toEqual(["wiki-act", "wiki-act", "wiki-act", "wiki-act"]);
     expect(calls.every((call) => call.args["wiki"] === "witness")).toBe(true);
+  });
+
+  test("daemon working slots keep daemon reach while witness slots route to their wiki", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await act("LOAD", { "source-uri": "https://example.invalid/book", to: daemonSlot });
+    await act("MOVE", { title: "lar:///daemon/book/title", from: daemonSlot, to: `${root}/bags/crossroads` });
+    await act("LOAD", { "source-uri": "https://example.invalid/book", to: slot });
+    await act("MOVE", { title: "lar:///witness/book/title", from: slot, to: canon });
+    expect(calls.map((call) => call.verb)).toEqual(["LOAD", "MOVE", "wiki-act", "wiki-act"]);
+    expect(calls[0]!.args["to-bag"]).toBe(daemonSlot);
+    expect(calls[1]!.args["from-bag"]).toBe(daemonSlot);
+    expect(calls[2]!.args["wiki"]).toBe("witness");
+    expect(calls[3]!.args["wiki"]).toBe("witness");
   });
 
   test("without --in-wiki, a canon LOAD and a bag CLEAR keep the daemon's reach", async () => {

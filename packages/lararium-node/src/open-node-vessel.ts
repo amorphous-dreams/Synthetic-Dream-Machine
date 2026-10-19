@@ -2655,7 +2655,8 @@ async function prepareNodeBootOn(
       const verb = String(args["verb"]);
       const innerArgs = (args["args"] as Record<string, unknown>) ?? {};
       const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
-      const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag);
+      // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
+      const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
       const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
       const destinationWiki = wikiVerb && typeof destination === "string" && slot(destination)
         ? wikiSlugOfBag(destination) : null;

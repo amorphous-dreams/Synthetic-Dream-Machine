@@ -446,7 +446,8 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
   const subject   = String(actionArgs["to-bag"] ?? actionArgs["bag"] ?? "");
   // An explicit --in-wiki ask uses the active wiki. A slot act without that ask
   // reaches the named wiki; other acts use the daemon's reach.
-  const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag);
+  // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
+  const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
   const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
   const destinationWiki = wikiVerb && slot(subject) ? wikiSlugOfBag(subject) : null;
   const source = actionArgs["from-bag"];

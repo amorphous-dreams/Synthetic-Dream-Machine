@@ -9,10 +9,17 @@ export async function promoteLoadedTitles(
   const data = answer && typeof answer === "object" && !Array.isArray(answer)
     ? (answer as { data?: unknown }).data
     : undefined;
+  const titleAnswer = data && typeof data === "object"
+    ? (data as { titles?: unknown }).titles
+    : undefined;
+  if (titleAnswer && typeof titleAnswer === "object" && !Array.isArray(titleAnswer) &&
+      typeof (titleAnswer as { boundedArrayCount?: unknown }).boundedArrayCount === "number") {
+    throw new Error("the answer bounds its titles; promote a smaller LOAD");
+  }
   const titles = Array.isArray(answer)
     ? answer.filter((title): title is string => typeof title === "string")
-    : data && typeof data === "object" && Array.isArray((data as { titles?: unknown }).titles)
-      ? (data as { titles: unknown[] }).titles.filter((title): title is string => typeof title === "string")
+    : Array.isArray(titleAnswer)
+      ? titleAnswer.filter((title): title is string => typeof title === "string")
       : [];
   if (titles.length === 0) {
     throw new Error(`promotion refused: LOAD answer carries no landed titles: ${JSON.stringify(answer)}`);
