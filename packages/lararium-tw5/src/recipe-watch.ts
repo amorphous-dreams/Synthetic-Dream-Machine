@@ -7,12 +7,15 @@
  * watched, never rendered), reads the island's OWN recipe record, and applies
  * the diff to its own composite:
  *
- *   - bag added to the recipe   → resolve via the catalog oracle, insert the
+ *   - bag added to the recipe   → resolve through its registry plane, insert the
  *     layer above the lares bag (library position), replay its content into the wiki.
  *   - bag removed               → removeLayerLive: departed titles tombstone,
  *     unshadowed lower records resurface (no reboot).
- *   - oracle URL moved (epoch)  → swap the layer's store in place at the same
- *     cascade position, replay from the new doc.
+ *   - registry URL moved        → resolve the new doc before removing the old
+ *     layer; an unresolved pointer leaves the old layer and handle in place.
+ *     A resolved doc swaps in at the same cascade position and replays.
+ *   - system wiki's own canon  → hold its mounted handle when the shared
+ *     oracle plane names another URL; the island's grant anchors that canon.
  *
  * Pono: the daemon never reaches in — it writes the catalog and each island
  * reconciles itself. After a successful reconcile the island clears its own
@@ -29,9 +32,13 @@ import {
   ORACLE_BAG,
   SYSTEM_BAGS,
   structuralSlots,
+  slotLayerFlags,
+  wikiBagUri,
   wikiSlotUri,
   bagStackFromRec,
   type ChangeOrigin,
+  type DocHandle,
+  type LarDoc,
   type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
@@ -84,27 +91,33 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   const origin = (): ChangeOrigin =>
     ({ kind: "canon-hydrate", receipt: `recipe-watch:${slug}` });
 
-  // A library that cannot resolve (its doc has not synced to this worker yet)
-  // MUST NOT crash the reconcile — a thrown findOrThrow would abort the whole
-  // wave and destabilize the island (taking the disk mirror down with it). Skip
-  // it; the next change event (or the doc's arrival) re-kicks the reconcile.
-  const mountAt = async (bagId: string, docUrl: string, at: number): Promise<boolean> => {
-    let handle;
+  // A document that cannot resolve leaves the current composition intact.
+  // A later change event can kick another reconcile.
+  const resolveBag = async (bagId: string, docUrl: string): Promise<DocHandle<LarDoc> | null> => {
     try {
-      handle = await findOrThrow(ctx.repo, docUrl, `bag ${bagId}`);
+      return await findOrThrow(ctx.repo, docUrl, `bag ${bagId}`);
     } catch (err) {
       ctx.post({
         type: "event", wikiUri: ctx.wikiUri,
         listenable: "recipe-watch:bag-unresolved",
         payload: { bagId, docUrl, reason: String(err) },
       });
-      return false;
+      return null;
     }
+  };
+
+  const layAt = (bagId: string, handle: DocHandle<LarDoc>, at: number): void => {
     const store = new AutomergeDocStore(handle, bagId);
-    ctx.composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, at);
+    ctx.composite.addLayer({ bagId, store, ...slotLayerFlags(bagId, slug) }, at);
     ctx.handles.set(bagId, handle);
     store.emitInitialReplay();
     store.markSyncComplete();
+  };
+
+  const mountAt = async (bagId: string, docUrl: string, at: number): Promise<boolean> => {
+    const handle = await resolveBag(bagId, docUrl);
+    if (!handle) return false;
+    layAt(bagId, handle, at);
     return true;
   };
 
@@ -118,6 +131,10 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
 
   let busy = false;
   let rerun = false;
+  // Each held or kept move speaks once per (bag, named url), so a pointer that stays moved across many reconciles
+  // leaves one line in the vessel log, never one per change event.
+  const heldOwnCanonUrls = new Set<string>();
+  const keptMoves = new Set<string>();
 
   const reconcile = async (): Promise<void> => {
     const rec = loadRecipeRec();
@@ -141,7 +158,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       if (await mountAt(bagId, docUrl, libraryInsertIndex())) applied = true;
     }
 
-    // ── oracle moves: any mounted CRDT slot whose plane oracle changed doc URL ──
+    // ── registry moves: resolve first, then swap the mounted CRDT slot ──
     const tempBag = wikiSlotUri(slug, "temp");
     for (const bagId of ctx.composite.layerIds) {
       if (bagId === tempBag) continue;
@@ -149,9 +166,26 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       if (!current) continue;
       const docUrl = await urlOfBag(bagId);
       if (!docUrl || docUrl === current) continue;
+      if (bagId === wikiBagUri(slug) && SYSTEM_BAGS.has(bagId) && sysPlane) {
+        if (!heldOwnCanonUrls.has(docUrl)) {
+          console.log(`[recipe-watch] ${slug}: layer ${bagId} held at ${current}; the shared plane names ${docUrl}`);
+          heldOwnCanonUrls.add(docUrl);
+        }
+        continue;
+      }
+      const handle = await resolveBag(bagId, docUrl);
+      if (!handle) {
+        const kept = `${bagId} ${docUrl}`;
+        if (!keptMoves.has(kept)) {
+          console.log(`[recipe-watch] ${slug}: layer ${bagId} kept at ${current}; ${docUrl} unresolved`);
+          keptMoves.add(kept);
+        }
+        continue;
+      }
       const at = ctx.composite.layerIndexOf(bagId);
       await ctx.composite.removeLayerLive(bagId);
-      await mountAt(bagId, docUrl, at);   // re-mount at the same slot; skip-safe on unresolved
+      layAt(bagId, handle, at);
+      console.log(`[recipe-watch] ${slug}: layer ${bagId} moved ${current} -> ${docUrl}`);
       applied = true;
     }
 
