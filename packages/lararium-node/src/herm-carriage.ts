@@ -13,13 +13,13 @@
  *     the key the quorum's act names, and lays the statement on its own replica of that Nexus's carriage board; a reader
  *     files it only where its own replica counts the herm as a carrier (`place-floor-pin`).
  *   · WHAT A READER PRESENTS (lar:///ha.ka.ba/lararium/mesh/carriage-pull#/what-it-presents). A place carried at that Nexus presents the quorum's
- *     counted `carry` over its own key (the place arm, class `contracted`); a lararium otherwise presents its worn face with
+ *     counted head-epoch `carry` over its own key (the place arm, class `contracted`); a lararium otherwise presents its worn face with
  *     the admit it took for that Nexus. Nothing composed, nothing dialed.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/herm-carriage
  */
 import {
-  foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
+  carriageAncestryFromBoard, foldCarriageDetails, foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
   signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, ORACLE_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
   type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
@@ -80,21 +80,28 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
   const refresh = async (): Promise<void> => {
     for (const r of await deps.readings()) {
       const url = carriageDocUrl(r.island) as AutomergeUrl;
-      const carriers = await foldCarrierSet(r.denyBoard, r.roster);
+      const board = await deps.openBoard(url);
+      const ancestry = carriageAncestryFromBoard(r.sealLineage, board);
+      const carriers = await foldCarrierSet(r.denyBoard, r.roster, ancestry);
       if (deps.placeClass === "herm" && r.via === "carrier-seal" && carriers.has(placeKey) && deps.ownFloorPin && deps.layStatement) {
         const pin = await deps.ownFloorPin(r.aid);
         if (pin !== null) await deps.layStatement(url, await signPlaceFloorPin({ placeKey, pin, sign: deps.sign }));
       }
       const nexusHex = Buffer.from(r.aid, "utf8").toString("hex");
-      const statements = placeFloorPinsFromBoard(await deps.openBoard(url));
+      const statements = placeFloorPinsFromBoard(board);
       // WHICH READING READ WHICH BOARD: the reading's way in, its board, the carriers its own replica counts and the
       // places whose statements that board holds, so a refused pin names the relation it missed.
       const named = (keys: Iterable<string>): string => [...keys].map((k) => k.slice(0, 8)).sort().join(",") || "none";
       const stated = statements.map((s) => (typeof s === "object" && s !== null && typeof (s as { placeKey?: unknown }).placeKey === "string" ? (s as { placeKey: string }).placeKey : "?"));
       const acts = [...r.denyBoard].filter((e) => e.action === "carry" || e.action === "uncarry")
         .map((e) => `${e.action}:${e.nym.slice(0, 8)}@${e.sealEpochCid.slice(-8)}`).sort().join(",") || "none";
-      deps.onLog?.(`${r.aid}: refresh ${deps.placeClass} via=${r.via} board=${url} head=${r.roster.sealEpochCid.slice(-8)} lineage=${String(r.sealLineage.length)} acts=[${acts}] carriers=[${named(carriers)}] statements=[${named(stated)}]`);
       const { filed, refused } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
+      if (refused.length > 0 && deps.onLog) {
+        const folded = await foldCarriageDetails(r.denyBoard, r.roster, ancestry);
+        const reasons = folded.entries.filter((e) => (e.action === "carry" || e.action === "uncarry") && stated.includes(e.nym))
+          .map((e) => `${e.action}:${e.nym.slice(0, 8)}=${e.reason}`).join(",") || "no matching carry act";
+        deps.onLog(`${r.aid}: refresh ${deps.placeClass} via=${r.via} board=${url} head=${r.roster.sealEpochCid.slice(-8)} lineage=${String(r.sealLineage.length)} acts=[${acts}] carriers=[${named(carriers)}] statements=[${named(stated)}] fold=[${reasons}]`);
+      }
       if (refused.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${refused.length} place floor pin(s) refused (${[...new Set(refused)].join(", ")})`);
       if (filed.length > 0) deps.onLog?.(`${r.aid.slice(0, 18)}…: ${filed.length} place floor pin(s) read`);
     }
@@ -109,8 +116,13 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
     presentationFor: async (nexus, pin) => {
       const aid = nexus.trim().toLowerCase();
       const reading = (await standing()).find((r) => r.aid.toLowerCase() === aid);
-      const arm = reading ? await placeArmFor(reading.denyBoard, reading.roster, placeKey) : null;
-      if (arm !== null) return { kind: "place", placeKey, sign: deps.sign, arm };
+      const arm = reading ? await placeArmFor(reading.denyBoard, reading.roster, placeKey,
+        carriageAncestryFromBoard(reading.sealLineage, await deps.openBoard(carriageDocUrl(reading.island) as AutomergeUrl))) : null;
+      // The gate's place reader checks every act at its head roster and receives no roll anchors.
+      if (reading && arm !== null && arm.contract.sealEpochCid === reading.roster.sealEpochCid
+        && arm.lineage.every((act) => act.sealEpochCid === reading.roster.sealEpochCid)) {
+        return { kind: "place", placeKey, sign: deps.sign, arm };
+      }
       // A place presents its contract or nothing: it wears no face.
       if (deps.placeClass === "herm" || !deps.facePresentation) return null;
       return deps.facePresentation(pin);

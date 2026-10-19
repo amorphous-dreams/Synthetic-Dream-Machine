@@ -386,7 +386,8 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
     }
   }
   const carryBundle = action === "carry"
-    ? await carryBundleFrom({ aid: nexusAidOrRefuse(core.home), nym, board: handle.doc(), roster })
+    ? await carryBundleFrom({ aid: nexusAidOrRefuse(core.home), nym, board: handle.doc(), roster,
+      sealLineage: readNexusDoc(core.home)?.sealLineage })
     : null;
   return {
     action, nym, parents: entry.parents, evidenceCid: carriageEntryActCid(entry),

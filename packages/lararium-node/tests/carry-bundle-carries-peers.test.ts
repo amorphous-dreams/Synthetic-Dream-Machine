@@ -14,6 +14,7 @@ import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
   placeFloorPinsFromBoard, signCarriageQuorum, carriageEntryCounts, ORACLE_SOCKET_ROUTE, type LarDoc,
+  ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -30,7 +31,7 @@ import { restEvery } from "./resting-repo.js";
 import { direct } from "./direct-store.js";
 import { vesselCarriagePull } from "../src/herm-carriage.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
-import { seatChairs } from "./seat-fixture.js";
+import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 
 const roots: Record<"hearth" | "herm" | "relay" | "lastHop" | "reader" | "outsider", string> = { hearth: "", herm: "", relay: "", lastHop: "", reader: "", outsider: "" };
 let prior: string | undefined;
@@ -92,6 +93,31 @@ async function carryBoth(rolled = false): Promise<{ herm: string; reader: string
 }
 
 describe("a carry bundle carries the counted carries of the places whose floor pins it carries", () => {
+  it("RED: the take lands a counted roll anchor and leaves a forged copy off the shared board", async () => {
+    const { reader, readerBundle } = await carryBoth(true);
+    at(roots.reader);
+    const charter = readNexusDoc(larSealHome())!;
+    const [closed, opened] = charter.sealLineage!;
+    const prev = epochSeats(closed!)!;
+    const signers = await Promise.all([0, 1].map(async (face) => ({
+      signer: await chairKey(face, 1), sign: ed25519SignerFromSeed(chairSeed(face, 1)),
+    })));
+    const counted = await signRollAnchor({
+      prevEpochCid: closed!.epochCid, sealEpochCid: opened!.epochCid,
+      prevKeys: prev.keys, prevThreshold: prev.threshold, parents: [],
+    }, signers);
+    expect(await rollAnchorCounts(counted, foundingRoster(charter))).toBe(true); // control
+    const forged = { ...counted, signatures: counted.signatures.map((s, i) => i === 0 ? { ...s, sig: "0".repeat(128) } : s) };
+    expect(await rollAnchorCounts(forged, foundingRoster(charter))).toBe(false); // control
+    await direct(takeCarryBundle)({ raw: JSON.stringify({ ...readerBundle, rollAnchors: [counted, forged] }), ownVesselKey: reader });
+    const anchors = await ownedStore(larDataDir(), async (repo) => {
+      const island = nodeNexusIsland({ ownVesselKey: reader, sealHome: larSealHome() });
+      const board = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");
+      return rollAnchorsFromBoard(board.doc());
+    });
+    expect(anchors).toEqual([counted]);
+  }, 60_000);
+
   it("A refreshes pins after its founding roll and the witness joins", async () => {
     const { herm, reader, lastHop } = await carryBoth(true);
     at(roots.hearth);

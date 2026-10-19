@@ -201,7 +201,7 @@ export {
 } from "./held-nexus-root.js";
 export {
   carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX, coerceCarriageEntry,
-  rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
+  rollAnchorsFromBoard, carriageAncestryFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
 } from "./carriage-board.js";
 export {
   personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
