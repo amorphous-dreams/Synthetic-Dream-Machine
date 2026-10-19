@@ -33,6 +33,10 @@ describe("delegationEdge — the SPAWN prov:Delegation triple (parent → child)
     expect(() => delegationEdge("", "x")).toThrow();
     expect(() => delegationEdge("x", "")).toThrow();
   });
+
+  test("carries the parent turn when a spawn follows a known event", () => {
+    expect(delegationEdge("run.a", "run.a.b", { turnKey: "b0", parentKey: "a1" }).parentKey).toBe("a1");
+  });
 });
 
 describe("communicationEdge — the INJECT prov:Communication triple (injector → target)", () => {
@@ -42,6 +46,7 @@ describe("communicationEdge — the INJECT prov:Communication triple (injector �
     expect(e.subject).toBe("operator");
     expect(e.object).toBe("run.grandchild");
     expect(e.turnKey).toBe("t2");
+    expect(communicationEdge("operator", "run.grandchild", { parentKey: "spawn" }).parentKey).toBe("spawn");
   });
 });
 
@@ -54,5 +59,9 @@ describe("handbackClose — the twin-reunion interval close (the spawn edge)", (
   test("ended omitted ⇒ the KG defaults it (today); not fabricated here", () => {
     const c = handbackClose("run", "run.child");
     expect("ended" in c).toBe(false);
+  });
+
+  test("carries the event that precedes a handback", () => {
+    expect(handbackClose("run", "run.child", undefined, "inject").parentKey).toBe("inject");
   });
 });
