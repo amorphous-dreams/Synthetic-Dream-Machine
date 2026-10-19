@@ -54,6 +54,20 @@ export default defineConfig(async () => ({
           testTimeout: 90_000,
         },
       },
+      {
+        // Golden 01 on the whole road: a staged hearth (a scratch LAR_ROOT of its own) serves the page and a real
+        // Chromium acts on it. It stands a daemon, so its waits are long and it owns the process for its run.
+        test: {
+          name: "golden-whole-road-e2e",
+          include: ["tests/e2e/golden-whole-road.e2e.test.ts"],
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+          // Every staged vessel declares its origins: the hearth serves its page, its relay and its oracle on one origin.
+          env: { LAR_SAME_ORIGIN: "true" },
+        },
+      },
     ],
   },
 }));
