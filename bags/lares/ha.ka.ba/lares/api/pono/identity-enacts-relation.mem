@@ -36,6 +36,80 @@ uri-path      = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
 
 <<~/ahu>>
 
+<<~ ahu #/identity-as-bond>>
+
+!!! Identity enacts a bond ~ lineage within a root, covenant between roots
+
+
+''Operator ruling, 2026-10-19'', re-forming this meme's pattern after five custody research rounds (<<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>). The living human stands as the singularity of #/head and the vault (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-vault): no root, key or row names the person.
+
+!!!! Roots
+
+
+A ''root'' is a secret one locus of custody mints and holds, whose loss or theft lands on that locus alone. Five kinds stand:
+
+| Root | Minted by | What it may derive | Rests | Rotates or recovers |
+| compartment seed (a vault, a me-Circle) | the human, once per compartment | its own persona keys along hardened paths, its circle-scope pseudonyms, its self-recovery leaf | the human's own cards, never a wire | the persona KEL, then guardians |
+| vessel key (the device's substrate; a node's place) | the device, its private half never leaving | its own floor-gate children through the domain-registered door, and nothing naming another root | a node under its scoped place signer; a browser in device custody | the place KEL, its next key on the founding card |
+| face custody key (FCK) | the vessel, at random, for one PersonaGroup on it | nothing; it seals that face's rows on that vessel | wrapped by that face's own slot tree alone | its slot tree; a one-face bundle carries its route |
+| charter seat key | each seat's holder | nothing outside its seat | the holder's own custody | the charter epoch chain, each next key committed |
+| content key (one per bag version) | the bag's key group | nothing | lockboxes to the group's members | a removal mints the successor |
+
+''Law 1 — lineage stays within a root.'' A root derives children for its own duties alone, under domain-separated hardened paths; no root derives, wraps or opens another root's secret.
+
+!!!! Bonds
+
+
+A ''bond'' is a relation between two roots, enacted by an act each end signs down its own key; the act seats a ''fresh random key that belongs to the bond'', and that key dies with the bond while both roots stand.
+
+| Bond | Ends | Act | The bond's key | Rests with | Presents | Lapses by |
+| the atom (a face on a vessel) | a vessel key and a PersonaGroup | the device joining that face's fleet | the veil, random per (vessel, PersonaGroup) | that face's FCK on that vessel, vessel-local, never bundled | never; outward it reads mint-shaped | departure or kapae of the dyad; it never resurrects |
+| the fleet edge | two atoms of one face | each signs its own half | none | each atom's custody | never | either half withdrawing |
+| wearing a face (a session) | a session and a face on this vessel | a tab's unlock or a node run's face proof | none; the open FCK | the holder, while some session of that face stands | never | the face's last session closing |
+| the graft (a face in a cabal) | a face and a cabal's closure | the threshold's graft; the face's own leaving | a member seat in a keyless Keyhive group | the face's own identity | to co-members, as a face | departure, kapae at threshold, a fork by omission |
+| the carriage contract | a place or face and a charter | consent plus at least k Kahu | the contract, carry apart from read | the deny-only board | to the Nexus | kapae or a roll |
+| the seat | a seat key and a charter | the seal lineage | the seat key, committed per seat | its holder | to the quorum | a roll alone |
+| the Handle | a quorum owner-set and a public name | the Handle KEL's inception and grafts | the seated Handle key, signing collective acts alone | the presenting set | publicly, by its card | a burn or a graft |
+
+''Law 2 — a relation is an act, never a function.'' An identity that spans two roots is a bond, signed by both ends, holding its own key, lapsing by its own act. A binding built as a derivation makes one root the relation's ancestor, and one stolen root then reaches every bond it computed.
+
+''Law 3 — the bond's key rests with the end whose privacy it serves.'' The veil guards the face against linkage, so it rests under the face's key and the vessel carries it.
+
+''Law 4 — edges run sideways, and composition chains them.'' A PersonaGroup collects atoms and stands as no root above them; reach attenuates down a chain of signed bonds and never hashes two roots together.
+
+!!!! Closures, custody, sessions
+
+
+''Law 5 — no closure holds a root.'' A fleet, a cabal, a realm and a Nexus resolve as the reciprocal-edge closure of their bonds (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>); a closure may hold a keyless Keyhive group of its bonded identities, and where it speaks as one name a quorum of its members presents.
+
+''Law 6 — a shared act never makes a shared secret.'' A vessel's at-rest rows sort D (a face's bonds on this vessel, under that face's FCK), F (public by design, at the floor) or S (the place's named secrets); the browser holds no vessel custody key.
+
+''Law 7 — the floor holds no custody key.'' It holds its own named place signer, scoped to an allowlist of floor duties, under a KEL whose next key rests offline.
+
+A session wears one face: each browser tab asks that face's unlock, a node opens its S once per boot, each CLI, MCP or watcher run proves its face at the gate, the asker seals, and the last session of a face rests its keys.
+
+!!!! The grammar enacts the same law
+
+
+A memetic-wikitext turn names its speaker as a bond: `lar://dreamnet-wright:agent@crossroads/...` reads as a persona at a place, and `aim` and `yield` enact that bond for one turn, its `from` and `to` naming the relation's two ends. A turn never derives its speaker from its place; it signs the relation anew.
+
+!!!! What a theft reaches
+
+
+| Stolen or lost | Reaches | Recovers by |
+| a vessel key or the place signer | that place's floor duties; no face's rows; no veil | rotation by the founding card |
+| a face's FCK on one vessel | that face's rows on that vessel | its slot tree; a fresh atom |
+| a veil | that face's atom on that vessel | kapae of the dyad, then a fresh atom |
+| a compartment seed | that compartment's persona keys alone | the persona KEL; guardians |
+| a device, lost whole | nothing at rest beyond its sealed rows | each face admits a fresh atom elsewhere |
+
+!!!! Bonds the code still builds as derivations
+
+
+`deriveDyadVeil(vesselSeed, groupTag)` (`packages/lararium-mesh/src/dyad.ts`) and `groupSecretOpenerFromSeed` (`packages/lararium-node/src/open-node-vessel.ts`) compute face-bearing keys from the one vessel seed; roadmap row `K15` carries their cure, the veil minting at random per atom.
+
+<<~/ahu>>
+
 <<~ ahu #/acts-faces-relations>>
 
 !! Acts · Faces · Relations ~ the whole plane in three words
@@ -84,7 +158,7 @@ uri-path      = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
 
 ''RULED.'' A mutual hold (`hoʻokipa`) at scale N constitutes an entity at scale N+1 — and nothing else in the model makes a new scale ABOVE the singularity.
 
-''TWO CONSTRUCTORS MEET AT THE SEAM, and the seam sits at the living human.'' BELOW it, `compose` binds ONE principal's instruments (vessel-key ⊗ veil-key; a fleet, a dyad) and buys ''REACH''. AT AND ABOVE it, `hoʻokipa` binds DISTINCT loci of cost and deposits ''DEPTH''. The gauge therefore reads a fleet ''nominal BY LAW rather than by measurement'' — one locus of cost cannot carry non-aggregative state, so a zero there reports which side of the seam a thing sits on and never a weakness to cure.
+''TWO CONSTRUCTORS MEET AT THE SEAM, and the seam sits at the living human.'' BELOW it, `compose` binds ONE principal's instruments (vessel-key ⊗ veil-key; a fleet, a dyad) and buys ''REACH''. `compose`'s ⊗ reads as a bond, never a derivation: each instrument keeps its own root, and the act that binds them seats a key of its own (#/identity-as-bond, Law 2). AT AND ABOVE it, `hoʻokipa` binds DISTINCT loci of cost and deposits ''DEPTH''. The gauge therefore reads a fleet ''nominal BY LAW rather than by measurement'' — one locus of cost cannot carry non-aggregative state, so a zero there reports which side of the seam a thing sits on and never a weakness to cure.
 
 `hoʻokipa` reads causative of `kipa` (to visit) and runs ''one-directional by grammar'': the host causes a visit. One firing = a visit. ''Two opposed firings'' = belonging. The model does not stipulate reciprocity; the morphology requires it.
 
@@ -311,6 +385,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EJmkSU3JNVogg8S_KeG8E2prtaUxwA5iNiWqwssA-r8
+<<^ code="&#x0003;">>ni:///sha-256;gbgL9QyAWXI6smaR0FczQgFxRjjCDr-CXK4pAkt070o
 
 <<^ code="&#x0004;" -> to="?">>

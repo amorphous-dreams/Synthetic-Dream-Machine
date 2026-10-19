@@ -192,6 +192,7 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 !!! The place seed's reach (ruled 2026-10-19)
 
 * ''The veil leaves the seed.'' `deriveDyadVeil(vesselSeed, groupTag)` (`packages/lararium-mesh/src/dyad.ts`) and `groupSecretOpenerFromSeed` (`packages/lararium-node/src/open-node-vessel.ts`) make the vessel seed an ancestor of every face's device veil and group secret. Each becomes D: the veil mints at random at the join and rests under that face's FCK; the opener reads the face's own key. The isolation red gains the row: a thief holding the place seed derives no veil and opens no group secret of any face.
+* ''The veil stays with its atom.'' A face's veil rests under that face's FCK on that vessel and rides no one-face bundle; a restore onto a fresh vessel mints a fresh atom and never resurrects the dead one (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond, Law 3). The one-face bundle's never-carries list gains the veil.
 * ''The seed's other reach narrows to an allowlist.'' The online place signer serves the floor duties the roadmap's place-signer ruling enumerates; every other present use (the daemon's auth, the device-key signer, the internal asks) either names its domain on that allowlist or takes a key of its own.
 
 !! OPEN JOINTS
@@ -208,6 +209,6 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;51CWJcMDoRDvEGLqA4av5btCYrStSp8tbmP-jxC38oc
+<<^ code="&#x0003;">>ni:///sha-256;kFEOnbSlPq2OBICSOAI8FPQUFSaaRVUY_ncyU7WYEZI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -62,7 +62,7 @@ This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-K
 
 ''One seed, persona-side only.'' The ''veiled-user / persona'' keys derive from ONE seed via ''ed25519 HD-derivation, all-hardened paths'' — recover the seed, re-derive the whole persona constellation; ed25519-HD stands structurally immune to the xpub-linkage trap (SLIP-0010 = hardened-only). The ''vessel-key stays outside the seed'' (device-minted). So recovery comes cheap on the persona side without fusing substrate sovereignty. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
 
-''THE DYAD'S VEIL DERIVES OFF THE DEVICE TREE (ruled 2026-09-05) — the word "veil" splits by layer.'' Two keys wear one word: the ''veiled-user-key'' above (seed-derived, layer ② — spans a fleet BY DESIGN, and recovery re-derives exactly that) and the ''dyad's veil'' — the face a VESSEL wears into ONE handle-group. The dyad's veil derives off the ''vessel seed'', one hardened domain-separated leaf per PersonaGroup (`deriveDyadVeil`): local by construction (the vessel seed never leaves its device, so no derivation of it spans), one face per group (no roster carries a key that appears on another), and ''never resurrected'' — it dies with the device, and re-admission minting a fresh atom cures it. Both ceremony sites MINT the dyad slot (self-stood signs its binding at the genesis epoch; a joinee lands `binding: null` — presented, not yet gathered — and the absence travels). ''The seed's ledger, closed:'' the persona seed derives layers ② and ③; the vessel seed derives layer ① entire. Neither tree reaches into the other.
+''THE DYAD'S VEIL IS THE ATOM'S OWN KEY (operator ruling, 2026-10-19, re-reading 2026-09-05) — the word "veil" splits by layer.'' Two keys wear one word: the ''veiled-user-key'' above (seed-derived, layer ② — spans a fleet BY DESIGN, and recovery re-derives exactly that) and the ''dyad's veil'' — the face a VESSEL wears into ONE handle-group. The dyad's veil mints at random when the device joins that PersonaGroup and rests under that face's FCK on that vessel: local by construction (it rides no bundle and no wire), one face per group (no roster carries a key that appears on another), and ''never resurrected'' — it dies with the device, and re-admission minting a fresh atom cures it. No device seed stands as its ancestor, so a stolen vessel seed reaches no face's veil (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond). The code still derives it from the vessel seed (`deriveDyadVeil`), and roadmap row `K15` carries the cure. Both ceremony sites MINT the dyad slot (self-stood signs its binding at the genesis epoch; a joinee lands `binding: null` — presented, not yet gathered — and the absence travels).
 
 <<~/ahu>>
 
@@ -224,6 +224,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;1EEo9uflFZTnWavaSLm7vedJDzxZ3mQvJeYLeRw6dis
+<<^ code="&#x0003;">>ni:///sha-256;J31MKiEZy17B4wv4mugkiYGYUjvZ7Q9kPoPKb9t3NnQ
 
 <<^ code="&#x0004;" -> to="?">>
