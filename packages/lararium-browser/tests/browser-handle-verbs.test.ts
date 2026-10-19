@@ -8,6 +8,7 @@
  * proof is isomorphism-by-composition: the browser twin produces the SAME burned chain / attestation the node
  * adapter does. The owner-burn HAND mirrors node's `resolveOwnerBurnHand` case-for-case.
  */
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   PERSONA_KEL_PREFIX_TIDDLER, currentOwnerSet, isBurned, headHandleKey, verifyAttestation,
@@ -55,6 +56,7 @@ function daemonDoc(prefix?: string): LarDoc {
 /** Publish a face onto the board + into the origin's store, returning the board + idb the twins read. */
 async function publishFace(): Promise<{ name: string; board: ReturnType<typeof makeFakeBoard>; actCid: string }> {
   const name = idb();
+  await bindSyntheticBrowserCustodySlot(name);
   await generateOrLoadBrowserPersonaRoot(name, 0);
   const board = makeFakeBoard();
   const card = await publishHandleBrowser({
@@ -67,6 +69,7 @@ async function publishFace(): Promise<{ name: string; board: ReturnType<typeof m
 describe("the browser burn twin — a phone vessel closes its own name", () => {
   test("★ SELF-burn: the seated handle key buries the name; the chain reads terminal ★", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const board = makeFakeBoard();
     const published = await publishHandleBrowser({
@@ -88,6 +91,7 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
 
   test("★ owner-burn FAILS CLOSED when the persona-KEL head is unreachable — honest, toward self-burn ★", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const board = makeFakeBoard();
     await publishHandleBrowser({
@@ -102,6 +106,7 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
 
   test("no published face at the index refuses — publish first", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     await expect(burnFaceBrowser({ board: makeFakeBoard() as never, handleIndex: 0, idbName: name }))
       .rejects.toThrow(/no published face/i);
@@ -141,6 +146,7 @@ describe("resolveOwnerBurnHandBrowser — the owner-hand mirrors node case-for-c
 describe("the browser attest twin — a face signs a claim under its head", () => {
   test("★ attests under the head; the statement verifies reader-locally against the chain ★", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const board = makeFakeBoard();
     const card = await publishHandleBrowser({
@@ -160,6 +166,7 @@ describe("the browser attest twin — a face signs a claim under its head", () =
 
   test("a claim that reads as PROSE, or names no known surface, attests nothing — refuse", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const board = makeFakeBoard();
     await publishHandleBrowser({

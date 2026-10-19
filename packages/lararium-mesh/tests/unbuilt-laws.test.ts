@@ -530,6 +530,13 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(browser).toMatch(/\.mountSurface\(/);
   });
 
+  test("BROWSER_SECRET_ROWS_REST_UNDER_THE_SLOT — cleartext lives in the live wiki and the person's projected files alone: a browser face's per-Nexus keys, face-scoped keys, address secret, pending join and walk records rest as custody rows under the slot tree, and the schema keeps no clear store for them. `packages/lararium-browser/tests/browser-secret-census.test.ts` measures the whole database.", () => {
+    const identity = stripped(["lararium-browser", "src", "browser-vessel-identity.ts"]);
+    expect(identity).not.toMatch(/createObjectStore\((NEXUS_KEY_STORE|VESSEL_FACE_KEY_STORE|WALK_STORE)\)/);
+    const join = stripped(["lararium-browser", "src", "browser-fleet-join.ts"]);
+    expect(join).not.toMatch(/`secret:\$\{/);
+  });
+
   test.skip("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — DEFERRED: `content-key-holder.ts` already refuses an admission without `freshBase`, but the node document store supplies no production callback that writes a fresh checkpoint before the new version's first change; sealed-store step 3 connects and witnesses that callback.", () => {
     const node = stripped(["lararium-node", "src", "node-daemon-island.ts"]);
     expect(node).toMatch(/freshBase\s*:/);

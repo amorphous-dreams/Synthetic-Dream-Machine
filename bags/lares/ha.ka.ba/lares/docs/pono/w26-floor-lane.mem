@@ -62,7 +62,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 !! The evidence that drew it (2026-10-18, lane `--w26-own-canon`)
 
-* ''The shared document merges siblings' pointers.'' `oracleGenesisDocUrl()` gives every vessel one id, and each vessel writes its own `lares` and `lararium` urls, crossroads pin and realm pointers into it (`genesis-artifact.ts` `mintLaresIfAbsent`, `who-face.ts`, `realm-plane.ts`). Two vessels that each mint their own `lares` document settle on ONE `LARES_DOC_URI` once they sync; the control, never connected, keeps each its own (`packages/lararium-mesh/tests/shared-oracle-doc.probe.test.ts`).
+* ''The shared document merges siblings' pointers.'' `oracleGenesisDocUrl()` gives every vessel one id, and each vessel writes its own `lares` and `lararium` urls, crossroads pin and realm pointers into it (`genesis-artifact.ts` `mintLaresIfAbsent`, `who-face.ts`, `realm-plane.ts`). Two vessels that each mint their own `lares` document settle on ONE `LARES_DOC_URI` once they sync; the control, never connected, keeps each its own (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`, on lane `--w26-floor-1`).
 * ''The split moves rather than closes.'' With the lares wiki's own canon held to its granted document, `herm-reshares-public-blob` step ③ failed three of three runs: the MOVE landed in A's document while `wiki which` and sync read the document the shared plane named. A's log in each run: `layer lar:///ha.ka.ba/bags/lararium moved …` then `layer lar:///ha.ka.ba/bags/lares held at …; the shared plane names …`. A's lares wiki then mounted the joinee's lararium corpus, the reverse of `W21`'s ruling.
 * ''One signed floor object stands, and it names no Nexus.'' `OraclePointer` (domain `oracle-pointer`) signs a cid, heads and parents under the vessel seed (`oracle-substrate.ts`, `mountOracleReadFace`); readers pin the hearth's key.
 * ''The system bags mount writable everywhere.'' `slotLayerFlags` marks every slot but `@oracle` writable, and every vessel registers `lares` and `lararium` as its own ground (`register-bags.ts` `OWN_GROUND`).
@@ -76,7 +76,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 # ''The floor.'' A manifest CID names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs; `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
 # ''The live system documents rest in the Kahu realm.'' A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` gains its production caller; `bags/` projects on the Kahu's vessel alone. Red: a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document.
-# ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain (house lean `floor-release`, awaiting the operator's word), the promotion approval over the manifest's exact bytes attached; the crossroads board carries it; `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
+# ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the crossroads board carries it; `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
 # ''The accept act.'' A person's act moves a sealed hot row per (face, Nexus) to a newer release that verifies against that Nexus's charter at its epoch and links to the pinned release; no clock and no automatic accept. With no Nexus speaking, a face stands on its last accepted floor, or genesis.
 # ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
 
@@ -127,6 +127,6 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9sKjfWjy2jtcsOGScTgg83o5BLxiFCenFdsqd2Uso68
+<<^ code="&#x0003;">>ni:///sha-256;9W05IKg6Azt9dm_BXezMY9KYzhdv8RmDMWjBFSQ5PQM
 
 <<^ code="&#x0004;" -> to="?">>

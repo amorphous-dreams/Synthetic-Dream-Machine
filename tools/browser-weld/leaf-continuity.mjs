@@ -14,6 +14,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const BOOT_MS = Number(process.env.LEAF_BOOT_MS ?? 90_000);
@@ -345,6 +347,7 @@ async function withProfile(run) {
   let context;
   try {
     context = await chromium.launchPersistentContext(profile, { headless: true, args: ["--no-sandbox"] });
+    await armTestCustody(context, "leaf-continuity");
     return await run(context);
   } finally {
     await context?.close();

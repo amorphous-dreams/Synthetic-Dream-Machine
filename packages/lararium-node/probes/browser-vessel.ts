@@ -38,6 +38,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { readFileSync, existsSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
 import { chromium, type Browser, type Page, type Worker } from "playwright";
+import { armTestCustody } from "./browser-test-custody.js";
 import { frameCarrier } from "@lararium/memetic-frame";
 
 const WEB_DIR   = process.env["LAR_WEB_DIR"]  ?? resolve("packages/lararium-web/dist");
@@ -210,6 +211,8 @@ async function main(): Promise<number> {
   try {
     browser = await chromium.launch({ args: ["--no-sandbox"] });   // container: no user namespace
     const page = await browser.newPage();
+    // A fresh vessel founds its first face over a slot: the harness types the published test route into the form.
+    await armTestCustody(page, LABEL);
     page.on("pageerror", (e) => console.error(`[browser-vessel] page: ${e.message}`));
     await page.goto(`http://localhost:${WEB_PORT}/`, { waitUntil: "domcontentloaded" });
 

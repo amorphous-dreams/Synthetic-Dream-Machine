@@ -6,6 +6,7 @@
  * fail-closed fence: a face anchors to its persona (the daemon doc's persona-KEL prefix owns it), and a
  * daemon doc with no prefix REFUSES — a browser face never self-owns, exactly as the node CLI refuses.
  */
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   PERSONA_KEL_PREFIX_TIDDLER, currentOwnerSet,
@@ -43,6 +44,7 @@ function daemonDoc(prefix?: string): LarDoc {
 describe("the browser publish surface — a phone vessel names itself", () => {
   test("★ publishes a persona-anchored Handle — the owner is the daemon doc's persona-KEL prefix ★", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);   // seed the origin's persona vault
     const card = await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: makeFakeBoard() as never,
@@ -55,6 +57,7 @@ describe("the browser publish surface — a phone vessel names itself", () => {
 
   test("★ FAIL-CLOSED — no persona-KEL prefix on the daemon doc refuses; a browser face never self-owns ★", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
     await expect(publishHandleBrowser({
       daemonDoc: daemonDoc(undefined), board: makeFakeBoard() as never,

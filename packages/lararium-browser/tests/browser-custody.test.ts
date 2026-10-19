@@ -8,7 +8,7 @@
  * from this page's memory. A census reads every keystore row (key -> bytes or JSON) so a refusal can prove it wrote
  * nothing.
  *
- *   BC1  THE ROW LAW: `isCustodyRow` answers true for exactly `vessel-key`, `keyhive-archive`, `veil-archive-h<N>`;
+ *   BC1  THE ROW LAW: `isCustodyRow` names device, Archive, root and roster rows;
  *        `sealedCarrierOf` names the keystore carrier and its `sealed/` path.
  *   BC2  THE SEAL: one slot binds, every custody row moves to `sealed/<row>` under the house magic and its clear row
  *        leaves; `catalog-url` and every other row stand as they stood; the page stays unlocked. The status reads
@@ -51,6 +51,12 @@
  *        answers the device seed and Archive while the writer pauses before removing the first sealed carrier.
  *   BC20 THE STANDING CARRIER: a torn replacement sidecar leaves the sealed bytes intact and the old value opens.
  *   BC21 THE FREE QUESTION: the clear asks its confirm door with the act lock free, so a waiting person holds no row door.
+ *   BC22 a persona-root mint without a slot refuses and writes no row; the device-key mint remains open.
+ *   BC23 a bound slot seals the root and its roster; neither rests in the clear.
+ *   BC24 a locked root read refuses before any row read; unlock returns the same seed.
+ *   BC25 a confirmed clear returns the root and roster to clear rows and removes their carriers.
+ *   BC27 the schema holds no retired root stores; its keystore remains available.
+ *   BC28 an upgrade drops retired clear root records while preserving its custody row.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
@@ -62,7 +68,8 @@ import {
 import { BootHalted } from "./wire-vessel-rig.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
-  browserIdentityContinuityKey, generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, openVesselIdb, idbGet, idbPut, idbKeys,
+  browserIdentityContinuityKey, generateOrLoadBrowserVesselIdentity, generateOrLoadBrowserPersonaRoot,
+  loadBrowserPersonaRootSeed, listBrowserPersonaRoots, loadBrowserSigningSeed, openVesselIdb, idbGet, idbPut, idbKeys,
 } from "../src/browser-vessel-identity.js";
 import {
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, requireBrowserKeyhiveArchive,
@@ -73,6 +80,7 @@ import {
   BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, SEALED_ROW_PREFIX,
   bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRow, lockBrowserCustody,
   readBrowserCustody, readKeystoreRow, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
+  withCustodyRows, writeKeystoreRow,
   type BrowserCustodyRefusalReading, type ConfirmDoor,
 } from "../src/browser-custody.js";
 
@@ -137,9 +145,11 @@ async function plantedVessel(tag: string) {
   return { idbName, archive, veil, key, seed };
 }
 
-/** Found a browser vessel for real and halt once its catalog stands. */
+/** Bind a founding slot, then found a browser vessel and halt once its catalog stands. */
 async function foundHalted(): Promise<string> {
   const idbName = `custody-found-${crypto.randomUUID()}`;
+  await generateOrLoadBrowserVesselIdentity(idbName);
+  await sealBrowserKeystore(idbName, PASS);
   const opts = {
     idbName,
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
@@ -179,11 +189,68 @@ function parkedDoor() {
 }
 
 describe("browser custody seals the keystore's device seed and Keyhive Archives", () => {
-  test("BC1 the row law: exactly the three custody shapes, each with its sealed carrier", () => {
-    for (const row of ["vessel-key", "keyhive-archive", "veil-archive-h0", "veil-archive-h12"]) {
+  test("BC29 every face-secret family takes a slot, seals and refuses a locked read", async () => {
+    const idbName = `custody-secret-families-${crypto.randomUUID()}`;
+    const pending = { offer: { kind: "fleet-join-offer" }, request: { kind: "fleet-join-request" }, sealSecret: "ab".repeat(32) };
+    const values: Array<[string, unknown]> = [
+      ["nexus-key/h0/nexus.synthetic", randomBytes(32)],
+      ["vessel-face-key/nexus.synthetic|" + "ab".repeat(32), randomBytes(32)],
+      ["fleet-join-secret/group", randomBytes(32)],
+      ["fleet-join-pending", pending],
+      ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }],
+    ];
+    for (const [row, value] of values) {
+      await expectRefused(writeKeystoreRow(idbName, row, value), "no-custody-slot", row);
+      expect(await rowOf(idbName, row)).toBeUndefined();
+    }
+    // CONTROL: a device seed row still stands clear before the slot binds.
+    const seed = { verifyingKey: "ab".repeat(32), signingKey: "cd".repeat(32) };
+    await writeKeystoreRow(idbName, "vessel-key", seed);
+    expect(await readKeystoreRow(idbName, "vessel-key")).toEqual(seed);
+    await sealBrowserKeystore(idbName, PASS);
+    for (const [row, value] of values) {
+      await writeKeystoreRow(idbName, row, value);
+      expect(await readKeystoreRow(idbName, row)).toEqual(value);
+      expect(await rowOf(idbName, row)).toBeUndefined();
+      expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`))).toBe(true);
+    }
+    lockBrowserCustody(idbName);
+    for (const [row] of values) await expectRefused(readKeystoreRow(idbName, row), "sealed-locked", row);
+    expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
+    for (const [row, value] of values) expect(await readKeystoreRow(idbName, row)).toEqual(value);
+  }, SLOW);
+
+  test("BC30 one custody act reads, decides and writes two rows; a thrown decision leaves its second row unwritten", async () => {
+    const idbName = `custody-many-rows-${crypto.randomUUID()}`;
+    await sealBrowserKeystore(idbName, PASS);
+    const a = "nexus-key/h0/one.synthetic";
+    const b = "nexus-key/h0/two.synthetic";
+    const c = "nexus-key/h0/three.synthetic";
+    const d = "nexus-key/h0/four.synthetic";
+    const first = randomBytes(32);
+    await withCustodyRows(idbName, async (rows) => {
+      expect(await rows.read(a)).toBeUndefined();
+      await rows.write(a, first);
+      expect(await rows.read(b)).toBeUndefined();
+      await rows.write(b, randomBytes(32));
+    });
+    expect(await readKeystoreRow(idbName, a)).toEqual(first);
+    expect(await readKeystoreRow(idbName, b)).toBeInstanceOf(Uint8Array);
+    // CONTROL: the first write in a body reaches its carrier before a later decision throws.
+    await expect(withCustodyRows(idbName, async (rows) => {
+      await rows.write(c, randomBytes(32));
+      if ((await rows.read(c)) instanceof Uint8Array) throw new Error("decision refused");
+      await rows.write(d, randomBytes(32));
+    })).rejects.toThrow("decision refused");
+    expect(await readKeystoreRow(idbName, c)).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRow(idbName, d)).toBeUndefined();
+  }, SLOW);
+
+  test("BC1 the row law: each custody shape has its sealed carrier", () => {
+    for (const row of ["vessel-key", "keyhive-archive", "veil-archive-h0", "veil-archive-h12", "persona-root-h0", "persona-root-h12", "persona-root-roster"]) {
       expect(isCustodyRow(row), row).toBe(true);
     }
-    for (const row of ["catalog-url", "veil-archive-hx", "veil-archive-h", "sealed/vessel-key", "custody-slots", "vessel-key2", ""]) {
+    for (const row of ["catalog-url", "veil-archive-hx", "veil-archive-h", "persona-root-hx", "sealed/vessel-key", "custody-slots", "vessel-key2", ""]) {
       expect(isCustodyRow(row), row).toBe(false);
     }
     expect(sealedCarrierOf("keyhive-archive")).toEqual({ name: "browser-keystore/keyhive-archive", path: "sealed/keyhive-archive" });
@@ -472,7 +539,9 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
     expect(archive.byteLength).toBeGreaterThan(0);
     expect(veil.byteLength).toBeGreaterThan(0);
 
-    const { slot } = await sealBrowserKeystore(idbName, PASS);
+    const standing = await readBrowserCustody(idbName);
+    expect(standing.reading).toBe("sealed");
+    const slot = standing.reading === "sealed" ? standing.slots[0]!.id : "";
     lockBrowserCustody(idbName);
     const lockedCensus = await census(idbName);
 
@@ -759,4 +828,126 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       navigator.locks.request(`lares:custody-act:${v.idbName}`, { mode: "exclusive", ifAvailable: true }, (lock) => lock !== null));
     expect(taken).toBe(false);
   }, SLOW);
+
+  test("BC22 a root mint needs a slot and changes no keystore byte", async () => {
+    const v = await plantedVessel("root-no-slot");
+    // CONTROL: the device key minted before any slot was bound.
+    expect(v.key.signingKey).toBeDefined();
+    const before = await census(v.idbName);
+    await expectRefused(generateOrLoadBrowserPersonaRoot(v.idbName, 0), "no-custody-slot", "persona-root-h0");
+    expect(await census(v.idbName)).toEqual(before);
+    expect(await listBrowserPersonaRoots(v.idbName)).toEqual([]);
+  }, SLOW);
+
+  test("BC23 a bound slot keeps the root and roster only in sealed carriers", async () => {
+    const v = await plantedVessel("root-sealed");
+    await sealBrowserKeystore(v.idbName, PASS);
+    // CONTROL: an unlocked slot already opens the device seed.
+    expect(await loadBrowserSigningSeed(v.idbName)).toEqual(v.seed);
+    expect((await generateOrLoadBrowserPersonaRoot(v.idbName, 0)).created).toBe(true);
+    expect(await listBrowserPersonaRoots(v.idbName)).toEqual([0]);
+    for (const row of ["persona-root-h0", "persona-root-roster"]) {
+      expect(await rowOf(v.idbName, row)).toBeUndefined();
+      expect(startsWithMagic(await rowOf(v.idbName, `sealed/${row}`))).toBe(true);
+    }
+  }, SLOW);
+
+  test("BC24 a locked root refuses before reading and unlock returns its seed", async () => {
+    const v = await plantedVessel("root-locked");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
+    const seed = await loadBrowserPersonaRootSeed(v.idbName, 0);
+    // CONTROL: the unlocked root reads the same seed twice.
+    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
+    lockBrowserCustody(v.idbName);
+    const before = await census(v.idbName);
+    await expectRefused(loadBrowserPersonaRootSeed(v.idbName, 0), "sealed-locked", "persona-root-h0");
+    expect(await census(v.idbName)).toEqual(before);
+    expect((await unlockBrowserCustody(v.idbName, [PASS])).reading).toBe("opens");
+    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
+  }, SLOW);
+
+  test("BC25 a confirmed clear returns the root and roster to clear rows", async () => {
+    const v = await plantedVessel("root-clear");
+    await sealBrowserKeystore(v.idbName, PASS);
+    await generateOrLoadBrowserPersonaRoot(v.idbName, 0);
+    const seed = await loadBrowserPersonaRootSeed(v.idbName, 0);
+    // CONTROL: before clear both rows stand sealed.
+    expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-h0"))).toBe(true);
+    expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-roster"))).toBe(true);
+    expect((await clearBrowserCustody(v.idbName, [PASS], () => true)).reading).toBe("cleared");
+    expect(await rowOf(v.idbName, "persona-root-h0")).toMatchObject({ signingKey: hex(seed) });
+    expect(await rowOf(v.idbName, "persona-root-roster")).toEqual({ roots: [0] });
+    expect(await rowOf(v.idbName, "sealed/persona-root-h0")).toBeUndefined();
+    expect(await rowOf(v.idbName, "sealed/persona-root-roster")).toBeUndefined();
+    expect(await loadBrowserPersonaRootSeed(v.idbName, 0)).toEqual(seed);
+  }, SLOW);
+
+  test("BC27 a fresh schema omits retired root stores", async () => {
+    const idbName = `custody-schema-${crypto.randomUUID()}`;
+    const db = await openVesselIdb(idbName);
+    try {
+      // CONTROL: the keystore remains available for custody rows.
+      expect(db.objectStoreNames.contains("keystore")).toBe(true);
+      expect(db.objectStoreNames.contains("persona-roots")).toBe(false);
+      expect(db.objectStoreNames.contains("persona-roster")).toBe(false);
+    } finally { db.close(); }
+  });
+
+  test("BC28 an upgrade retires clear root stores without carrying their records", async () => {
+    const idbName = `custody-upgrade-${crypto.randomUUID()}`;
+    const old = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(idbName, 9);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore("keystore");
+        req.result.createObjectStore("persona-roots");
+        req.result.createObjectStore("persona-roster");
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    await idbPut(old, "keystore", "catalog-url", "automerge:kept");
+    await idbPut(old, "persona-roots", "h3", { signingKey: "clear" });
+    await idbPut(old, "persona-roster", "roster", { roots: [3] });
+    old.close();
+
+    const db = await openVesselIdb(idbName);
+    try {
+      // CONTROL: the custody store and its unrelated row survive the upgrade.
+      expect(await idbGet(db, "keystore", "catalog-url")).toBe("automerge:kept");
+      expect(db.objectStoreNames.contains("persona-roots")).toBe(false);
+      expect(db.objectStoreNames.contains("persona-roster")).toBe(false);
+      expect(await idbGet(db, "keystore", "persona-root-h3")).toBeUndefined();
+      expect(await idbGet(db, "keystore", "persona-root-roster")).toBeUndefined();
+    } finally { db.close(); }
+  });
+
+  test("BC31 a schema upgrade drops clear secret stores and fleet secret rows while keeping signed public rows", async () => {
+    const idbName = `custody-secret-upgrade-${crypto.randomUUID()}`;
+    const old = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(idbName, 10);
+      req.onupgradeneeded = () => {
+        for (const store of ["keystore", "hosting-walk", "nexus-keys", "vessel-face-keys", "fleet-join"]) req.result.createObjectStore(store);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    await idbPut(old, "hosting-walk", "gate", { nexusAid: "nexus.synthetic", invite: "bearer" });
+    await idbPut(old, "nexus-keys", "h0:nexus.synthetic", randomBytes(32));
+    await idbPut(old, "vessel-face-keys", "scope", randomBytes(32));
+    await idbPut(old, "fleet-join", "pending", { sealSecret: "ab".repeat(32) });
+    await idbPut(old, "fleet-join", "secret:group", randomBytes(32));
+    await idbPut(old, "fleet-join", "record:group", { rootKey: "ab".repeat(32) });
+    await idbPut(old, "fleet-join", "dial:group", { charter: "public" });
+    old.close();
+    const db = await openVesselIdb(idbName);
+    try {
+      for (const store of ["hosting-walk", "nexus-keys", "vessel-face-keys"]) expect(db.objectStoreNames.contains(store)).toBe(false);
+      expect(await idbGet(db, "fleet-join", "pending")).toBeUndefined();
+      expect(await idbGet(db, "fleet-join", "secret:group")).toBeUndefined();
+      // CONTROL: the signed public homes survive the upgrade.
+      expect(await idbGet(db, "fleet-join", "record:group")).toEqual({ rootKey: "ab".repeat(32) });
+      expect(await idbGet(db, "fleet-join", "dial:group")).toEqual({ charter: "public" });
+    } finally { db.close(); }
+  });
 });

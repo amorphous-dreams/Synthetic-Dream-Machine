@@ -114,6 +114,8 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
+import { BrowserCustodyRefused, clearBrowserCustody, readBrowserCustody } from "./browser-custody.js";
+import { standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
@@ -266,6 +268,12 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   sharedHolderUrl?: URL;
   /** How long a failed boot waits on each thing it stood to come down before it reads as one that will not (default 5000). */
   teardownBudgetMs?: number;
+  /**
+   * This tab's custody door to the person (operator ruling 2026-10-18: each tab asks for its own unlock). A verb that
+   * mints a face secret asks here for the first slot (`persona-mint`); `custody-clear` asks here for the route that
+   * opens the slot it clears. Absent, both verbs refuse by name: no credential rides a verb's arguments or a tiddler.
+   */
+  askCustody?: (question: CustodyAsk | { readonly kind: "clear" }) => Promise<CustodyAnswer>;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
   /** Camera sink: a keyed `lar:frame` from the gated surface, named by its transport id. */
@@ -468,6 +476,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   held.lock = lockHold;
   if (holder?.kind === "attached") held.stood.push({ what: "shared holder port", down: () => holder.port.close() });
   if (lockHold.attached) console.log(`[vessel] attached to the shared holder (${lockHold.holder}); island boots ${holder?.kind === "attached" ? holder.hello.islandBoots : "?"}, tabs ${holder?.kind === "attached" ? holder.hello.tabs : "?"}`);
+
+  // A SEALED KEYSTORE THIS TAB HOLDS NO UNLOCK FOR REFUSES BEFORE ANYTHING STANDS BESIDE THE LOCK: no Repo opens over
+  // a store whose boot cannot read its own device seed, so the refusal gives the lock back with nothing to take
+  // down (each tab unlocks for itself, operator ruling 2026-10-18; `standBrowserCustody` asks before this boot).
+  const custodyAtBoot = await readBrowserCustody(idbName);
+  if (custodyAtBoot.reading === "sealed" && !custodyAtBoot.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "vessel-key");
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
   // The federation ring split. This vessel's own islands (daemon + wiki workers) sync over
@@ -689,6 +703,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // a DISTINCT PersonaGroup ROOT signs the device-delegation edge. Mint that root founder-side (root-on-
     // founder), load its seed as the signer, and WEAR it — mirroring node's `lares vessel found` (init.ts: mint
     // generateOrLoadPersonaGroupRoot → loadPersonaGroupRootSeed → runFoundingCeremony{signerSeed}).
+    // A ROOT MINTS ONLY OVER A SLOT: a keystore with no slot asks this tab's person to bind one first, and a boot
+    // with no custody door refuses `no-custody-slot` at the mint, by name (#/rulings: a browser leaf holds a
+    // passphrase or paper slot before it holds a persona root).
+    if (opts.askCustody) {
+      const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
+      if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
+        throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
+      }
+    }
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
     await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
@@ -1395,6 +1418,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // peer from a stranger, and the label is PRIVATE. Next index = max(held) + 1, or 0 when the
       // vessel holds no root (a joinee founding its first face).
       registry.register("persona-mint", async () => {
+        // A FACE SECRET MINTS ONLY OVER A SLOT: the person binds a passphrase or paper slot first, in this tab.
+        if (!opts.askCustody) throw new Error("persona-mint: this page offers no custody door, so no slot can bind before the root mints");
+        const custody = await standBrowserCustody({ idbName, ask: opts.askCustody, secretMintDue: true });
+        if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
+          return { verb: "persona-mint", refused: custody.reading };
+        }
         const roster = await listBrowserPersonaRoots(idbName);
         const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
         const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex);
@@ -1402,6 +1431,18 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
         void pushPersonaState();
         return { verb: "persona-mint", index: nextIndex, created: root.created };
+      });
+
+      // custody-clear — THE CLEAR-PASSWORD ACT (`tm-clear-password`): return this browser's custody rows to the clear.
+      // The route comes from the page's custody door, never from the verb's arguments. The first pass answers `asks`
+      // with the question; the wiki's confirm road parks it and re-dispatches with `confirmed: "yes"`, and only that
+      // literal answer opens the confirm door (`browser-custody.ts`).
+      registry.register("custody-clear", async (args) => {
+        if (!opts.askCustody) throw new Error("custody-clear: this page offers no custody door");
+        const route = await opts.askCustody({ kind: "clear" });
+        if (route === null) return { verb: "custody-clear", reading: "declined" };
+        const cleared = await clearBrowserCustody(idbName, [route], () => args["confirmed"] === "yes");
+        return { verb: "custody-clear", ...cleared };
       });
 
       // persona-wear — don the face at `index` (reboot-to-switch, one-face-to-mesh). FAIL CLOSED

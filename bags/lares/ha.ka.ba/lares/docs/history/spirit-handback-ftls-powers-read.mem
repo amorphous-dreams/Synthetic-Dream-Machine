@@ -1,0 +1,82 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read.mem"
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM FTLS-Reader handback (2026-10-18) — Markdown transliterated only; source wording retained. Controller note: the branch left in the operator’s sweep; every file stands on the span. The unfinished-thread list stands for the operator’s return to the powers epic (the operator’s own solo work)."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read"
+```
+
+<<~ ahu #/head>>
+
+! FTLS-Reader handback
+
+Verbatim final message of FTLS-Reader (2026-10-18); only Markdown transliterated to memetic-wikitext. Controller note: the branch left in the operator’s sweep; every file stands on the span. The unfinished-thread list stands for the operator’s return to the powers epic (the operator’s own solo work).
+
+<<~/ahu>>
+
+<<~ ahu #/opening>>
+
+```text
+<<~ status "REACHED: origin/feature/ftls-powers (2942e2c69) sits in origin/feature/green-jello-dinosaur-5 (20728cdd6); it holds no branch-exclusive commit. Older wording and pending stubs changed on the span. INFERRED: its name need not remain as a work marker once the named records below stay preserved.">>
+```
+<<~/ahu>>
+
+<<~ ahu #/ftls-reader-ink-clerk-handback>>
+
+! FTLS-Reader (Ink-Clerk) handback
+
+`REACHED` marks a direct Git or file observation. `INFERRED` marks my reading of what that observation means. Repo paths below start at `/home/joshu/Synthetic-Dream-Machine`.
+<<~/ahu>>
+
+<<~ ahu #/branch-against-the-span>>
+
+!! Branch against the span
+
+REACHED — `git log span..powers` returned no commits; `merge-base --is-ancestor powers span` returned 0; the tip matched `2942e2c69`; `git config core.bare` returned `false` before and after. No Git command wrote to the repository. `diff --stat 2942e2c69 powers` returned no changes. The branch holds ''no exclusive commit or lost file''; its earlier wording and unconverted stubs differ from the span. The table records its substantive contents and their present homes.
+
+|! Branch file and subject |! Reading |! Evidence on the span |
+| `FTLS/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` — Powers and ECM rules, imported OSR text, conversion stubs | ''LANDED · REACHED'' | Renamed to `ftls/Flying_Triremes_and_Laser_Swords_06_Powers_and_ECM.md` with 98% Git similarity. Its locked attributes, ECM modes, and `{pending conversion}` cards remain; the latter count fell from 196 matching pending/review lines on the branch to 194 in the span. The changed light/dark cards show some later conversion. |
+| Same Chapter 06 file — older `[hijack]` ECM wording, Light/Darkness pending cards | ''OBSOLETE · REACHED'' | The span's targeted diff replaces `[hijack]` with `[control]` and replaces the Light/Darkness pending cards with drafted entries. These older branch forms add no unfinished work to preserve. |
+| `FTLS/Flying_Triremes_and_Laser_Swords_01…10*.md` — surrounding FTLS book | ''LANDED · REACHED'' | All ten chapters appear under `ftls/`; Git detects each rename at 84–100% similarity. Chapters 02–05 and 07–10 still carry the work described in `_osr/FTLS/TODO_FTLS_Chapter_Action_Plan.md`. |
+| `Synthetic_Dream_Machine_04_Powers_Index.md` — source Powers index and QA corpus | ''LANDED · REACHED'' | Git detects the rename to `sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_04_Powers_Index.md` at 98% similarity; `_osr/FTLS/TODO_SDM_Powers_Index.md` preserves the source scan and confidence table. |
+| `_todo/FTLS/TODO_FTLS_Chapter_Action_Plan.md`, `TODO_SDM_Powers_Index.md`, `TODO_Magitech_Fantascience_Chapter05.md`, and the other five FTLS TODOs — trackers and unfinished subjects | ''LANDED / UNFINISHED · REACHED'' | All eight moved to `_osr/FTLS/` at 85–100% similarity. The Chapter 06 tracker still leaves alpha scope/consistency work open; the Chapter 05 tracker says alpha verification remains pending. Other chapters retain unchecked items. “Unfinished” describes their contents, not branch-only commits. |
+| `_todo/BECMI/` spell crosswalk, staged corpus, and `scripts/` extraction/import/validation tools — legacy OSR import workflow | ''LANDED · REACHED'' | The scripts survive under `_osr/BECMI/scripts/` with 99–100% rename similarity; the crosswalk and staging documents survive under `_osr/BECMI/`. The chapter tracker records the 195-card import pass and one `Finger of Death` review case. I found no basis to call these tools ''OBSOLETE''; they remain an archived provenance and validation path. |
+| Branch powers doctrine: P/R/T/D/Ox, tags, mounts, locked Powers and ECM | ''MOVED, selectively · REACHED'' | `bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem` names those concepts and references FTLS Chapter 06. `bags/sdm/ha.ka.ba/sdm/modules/powers/{read-magic,floating-disc,shield-ward}.mem`, matching `projections/powers/ftls-card/` and `witness/powers/osr-spells/`, demonstrate the new shape. ''INFERRED:'' these examples carry the model, not the whole Chapter 06 catalog; the remaining Markdown does not count as fully converted memes. |
+<<~/ahu>>
+
+<<~ ahu #/unfinished-threads-and-present-carriers>>
+
+!! Unfinished threads and present carriers
+
+- ''REACHED:'' Chapter 06 still carries many pending power conversions (194 matching pending/review lines in the span), a `Finger of Death` review case recorded by the tracker, and open alpha checks for tag/Overcharge consistency, recognizer discoverability, and Level versus Power Level. ''INFERRED:'' each converted Power would live in `bags/sdm/ha.ka.ba/sdm/modules/powers/`, with its source account under `witness/powers/osr-spells/` and FTLS view under `projections/powers/ftls-card/`; `templates/modules/power.mem` and `templates/projections/powers/ftls-card.mem` supply the current shapes. The chapter and `_osr/FTLS/TODO_FTLS_Chapter_Action_Plan.md` retain the full backlog.
+- ''REACHED:'' Chapter 06's locked Overcharge/rank-tag, ritual, and ECM material includes placeholders; the current epic explicitly leaves lock state, rank tags, interaction doctrine, and hard cases open while Sprints 0–3 stand complete and further Power work remains deferred. ''INFERRED:'' shared doctrine belongs with `bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem` and `docs/composition-model.mem`; particular implementations belong with component, module, mount-point, and witness memes. This names the carriers without deciding the design.
+- ''REACHED:'' The FTLS action tracker leaves Chapter 02 Paths, 03 Heritage, 04 RSS additions, 07 danger/corruption, 08 conflict, 09 loot procedure, 10 referee aids, and cross-chapter checks unchecked. The Chapter 05 item bridge and `_osr/FTLS/TODO_Loot_Treasure_Conversion.md` also remain open. ''INFERRED:'' their detailed book prose still lands in `ftls/`; when one becomes an addressed SDM pattern, `bags/sdm/ha.ka.ba/sdm/` supplies the corresponding carrier. The powers epic does not absorb these whole chapters.
+- ''REACHED:'' `_osr/FTLS/TODO_SDM_Powers_Index.md` records completed scans of five named sources but still asks whether other sources require a scan. ''INFERRED:'' that question remains in the source QA record until the operator settles its scope; individual source attestations fit the `bags/sdm/ha.ka.ba/sdm/witness/` pattern.
+<<~/ahu>>
+
+<<~ ahu #/verdict>>
+
+!! Verdict
+
+''Safe to delete the branch reference · INFERRED'', conditional on keeping this named preservation set on the span: `ftls/` chapters 01–10 (especially Chapter 06), `sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_04_Powers_Index.md`, `_osr/FTLS/` eight trackers, `_osr/BECMI/` crosswalk/staging/scripts, and `bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem` with its current module, projection, and witness examples. ''REACHED:'' all already stand on the descendant span; the branch adds no exclusive commit. The pause and solo ownership remain the operator's frame. No deletion or repository write occurred.
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+Sources: `in/ftls-powers-reader.md`. Persona: FTLS-Reader. Date: 2026-10-18.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ecYi4kqqVPxl2iVRgFcbbLN6g1ji0JhaO1MPq5Cj8PQ
+
+<<^ code="&#x0004;" -> to="?">>

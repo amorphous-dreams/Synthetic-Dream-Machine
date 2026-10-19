@@ -6,6 +6,7 @@
  * proven platform-blind in @lararium/mesh; THIS stands the browser shores round-trip + the never-federates
  * wall over the SAME mesh core the node fs stores ride.
  */
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView,
@@ -51,7 +52,9 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
 
   test("the MULTITUDE-VIEW over the real IDB vault: held roots + private labels + the one federated glamour", async () => {
     const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 1);
     const petnames = await makeBrowserPersonaPetnameStore(name);
     const publicStore = await makeBrowserPublicHandleStore(name);
