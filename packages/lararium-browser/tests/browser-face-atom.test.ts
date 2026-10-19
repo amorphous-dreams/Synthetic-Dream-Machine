@@ -72,5 +72,6 @@ describe("the browser's face atom", () => {
   test("A4 — a vessel with no slot mints no atom", async () => {
     const idbName = `face-atom-noslot-${crypto.randomUUID()}`;
     await expect(browserFaceAtom(idbName, GROUP_A)).rejects.toBeInstanceOf(BrowserCustodyRefused);
+    expect(await readKeystoreRow(idbName, faceAtomRow(GROUP_A)), "the refused call left no row").toBeUndefined();
   });
 });

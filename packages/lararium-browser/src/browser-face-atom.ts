@@ -40,8 +40,10 @@ export async function browserFaceAtom(idbName: string, personaGroup: string): Pr
     const standing = await rows.read(row);
     const seed = standing === undefined ? mintFaceAtomSeed() : seedOf(standing, personaGroup);
     try {
+      // The key builds before the seed rests: a seed that makes no key never lands in a row.
+      const atom = faceAtomKeyFromSeed(seed, personaGroup);
       if (standing === undefined) await rows.write(row, seed);
-      return faceAtomKeyFromSeed(seed, personaGroup);
+      return atom;
     } finally { seed.fill(0); }
   });
 }
