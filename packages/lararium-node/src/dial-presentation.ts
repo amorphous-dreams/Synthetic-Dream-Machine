@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/dial-presentation
  */
 import {
-  admittedKeyOf, heldNexusRoot, hexToBytes, makeMultiSigQuorumVerifier, presentedAdmitReader, readFaceScope,
+  admittedKeyOf, heldNexusRoot, makeMultiSigQuorumVerifier, nexusAidOfPin, presentedAdmitReader, readFaceScope,
   type FaceScope, type GateBundlePin,
 } from "@lararium/mesh";
 import { readKeptAdmitBundle } from "./admit-bundle.js";
@@ -35,11 +35,6 @@ import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { readNexusDoc } from "./nexus-doc.js";
 
 type FaceInputs = Pick<Parameters<typeof nodeFacePresentation>[0], "table" | "binding" | "profile">;
-
-/** The Nexus AID text a pin names, or null where its hex does not read as text. */
-export function nexusAidOfPin(pin: Pick<GateBundlePin, "nexus">): string | null {
-  try { return new TextDecoder("utf-8", { fatal: true }).decode(hexToBytes(pin.nexus)); } catch { return null; }
-}
 
 /** The doors this module reaches beyond the seal home; a vector replaces them, a vessel uses the defaults. */
 export interface DialPresentationDoors {

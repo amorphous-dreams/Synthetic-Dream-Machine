@@ -42,7 +42,7 @@
  */
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { readdirSync } from "node:fs";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -95,7 +95,6 @@ function keyOf(secret: Uint8Array) {
 function publicOf(secret: Uint8Array): string {
   return Buffer.from((createPublicKey(keyOf(secret)).export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
 }
-const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
 
 /** Every seat key this vessel holds, by name. Reads the directory alone: it opens no row and answers at the floor. */
 export function listSeatKeys(): HeldSeatKey[] {
@@ -158,7 +157,7 @@ export async function storeSeatKey(handleIndex: number, secret: Uint8Array): Pro
       // The writer seals this store's own copy, which zero-fills below once the write has settled: no second
       // image of the secret outlives the store.
       if (bytes === null) return { plaintext: own, value: undefined };
-      if (!sameBytes(bytes, own)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (!bytesEqual(bytes, own)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
       return { plaintext: null, value: undefined };
     });
     return verifyingKey;

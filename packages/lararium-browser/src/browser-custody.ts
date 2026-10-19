@@ -47,7 +47,7 @@
 import {
   bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintVk, vkEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
+  constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 
@@ -225,7 +225,7 @@ async function deleteClearIfUnchanged(idbName: string, row: string, expected: Ui
         if (g.result === undefined) { resolve(false); return; }
         let now: Uint8Array;
         try { now = codecOf(row).toBytes(g.result); } catch { resolve(false); return; }
-        if (!bytesEqual(now, expected)) { resolve(false); return; }
+        if (!constantTimeBytesEqual(now, expected)) { resolve(false); return; }
         s.delete(row); resolve(true);
       };
     });
@@ -331,13 +331,6 @@ const codecOf = (row: string): RowCodec =>
     : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") ? key32Codec
     : row === "fleet-join-pending" ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;
-
-function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  let d = 0;
-  for (let i = 0; i < a.length; i++) d |= a[i]! ^ b[i]!;
-  return d === 0;
-}
 
 // ── the row door: every custody reader and writer rides it ───────────────────────────────────────
 
@@ -517,11 +510,11 @@ async function settleClearRows(idbName: string, vk: VesselKey): Promise<{ moved:
       await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
     } else if (standing.reading !== "opens") {
       left.push({ row: key, why: `its sealed row reads ${standing.reading}` }); continue;
-    } else if (!bytesEqual(standing.plaintext, plaintext)) {
+    } else if (!constantTimeBytesEqual(standing.plaintext, plaintext)) {
       left.push({ row: key, why: "its sealed row holds a different value; nothing chooses between the two" }); continue;
     }
     const back = await openSealedCarrier({ io, vk, carrier });
-    if (back.reading !== "opens" || !bytesEqual(back.plaintext, plaintext)) { left.push({ row: key, why: "its seal did not read back" }); continue; }
+    if (back.reading !== "opens" || !constantTimeBytesEqual(back.plaintext, plaintext)) { left.push({ row: key, why: "its seal did not read back" }); continue; }
     if (await deleteClearIfUnchanged(idbName, key, plaintext)) moved.push(key);
     else left.push({ row: key, why: "the clear row changed while it settled" });
   }
@@ -645,7 +638,7 @@ export async function clearBrowserCustody(idbName: string, credentials: readonly
     const io = browserKeystoreCustodyIo(idbName);
     // The tree must still read as the one the route opened: another tab's bind, unbind or rotation meanwhile refuses.
     const tree = await io.read(CUSTODY_TREE_ROW);
-    if (tree === null || !bytesEqual(tree, o.bytes)) {
+    if (tree === null || !constantTimeBytesEqual(tree, o.bytes)) {
       throw new BrowserCustodyRefused("unsettled", idbName, undefined, "the slot tree moved since the question; nothing was written");
     }
     await settleRotation({ io, treePath: CUSTODY_TREE_ROW, carriers: await standingCarriers(idbName) });
@@ -655,11 +648,11 @@ export async function clearBrowserCustody(idbName: string, credentials: readonly
       // a newer seal another tab wrote meanwhile refuses the clear rather than losing to an older value.
       await putClearWhileSealedHolds(idbName, row, codecOf(row).fromBytes(plaintext), frame);
       const back = (await rowState(idbName, row)).clear;
-      if (back === undefined || !bytesEqual(codecOf(row).toBytes(back), plaintext)) {
+      if (back === undefined || !constantTimeBytesEqual(codecOf(row).toBytes(back), plaintext)) {
         throw new Error(`[browser-custody] the clear ${row} row did not read back as opened; its sealed row stays`);
       }
       // The sealed carrier leaves only while it still opens to what now rests in the clear.
-      const gone = await removeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, when: (p) => bytesEqual(p, plaintext) });
+      const gone = await removeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, when: (p) => constantTimeBytesEqual(p, plaintext) });
       if (!gone) throw new BrowserCustodyRefused("unsettled", idbName, row, "its sealed row changed during the clear; both rows stay");
       cleared.push(row);
     }
@@ -667,7 +660,7 @@ export async function clearBrowserCustody(idbName: string, credentials: readonly
       const left = (await io.list()).filter((k) => k.startsWith(SEALED_ROW_PREFIX));
       if (left.length > 0) throw new Error(`[browser-custody] sealed rows still stand (${left.join(", ")}); the tree stays`);
       const now = await io.read(CUSTODY_TREE_ROW);
-      if (now === null || !bytesEqual(now, o.bytes)) throw new Error("[browser-custody] the slot tree moved during the clear; it stays");
+      if (now === null || !constantTimeBytesEqual(now, o.bytes)) throw new Error("[browser-custody] the slot tree moved during the clear; it stays");
       await io.remove(CUSTODY_TREE_ROW);
     });
     unlocked.delete(idbName);
@@ -704,7 +697,7 @@ async function putClearWhileSealedHolds(idbName: string, row: string, value: unk
       const g = s.get(`${SEALED_ROW_PREFIX}${row}`);
       g.onerror = () => reject(g.error);
       g.onsuccess = () => {
-        if (!(g.result instanceof Uint8Array) || !bytesEqual(g.result, frame)) {
+        if (!(g.result instanceof Uint8Array) || !constantTimeBytesEqual(g.result, frame)) {
           resolve(new BrowserCustodyRefused("unsettled", idbName, row, "its sealed row changed since the clear opened it; nothing was written")); return;
         }
         const c = s.get(row);

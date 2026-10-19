@@ -23,7 +23,7 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import {
-  composeFleetJoinRequest, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
+  bytesEqual, composeFleetJoinRequest, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
   readFleetJoinRequest,
   type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
 } from "@lararium/mesh";
@@ -75,7 +75,6 @@ function inOneTransaction<T>(db: IDBDatabase, store: string, act: (os: IDBObject
     act(tx.objectStore(store), (e) => { refusal = e; tx.abort(); }, (v) => { value = v; });
   });
 }
-const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
 
 /** The face-scoped key standing for `scope`, or `fresh` sealed there when none stands, read and written in one
  *  custody act: a key an earlier request left at rest answers again, so the same offer retries clean. */
@@ -195,7 +194,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
         throw new BrowserFleetJoinRefused("join-absent", "no join pending here matches the request this answer lands.");
       }
       const standingSecret = await rows.read(secretRow);
-      if (standingSecret !== undefined && !(standingSecret instanceof Uint8Array && sameBytes(standingSecret, addressSecret))) {
+      if (standingSecret !== undefined && !(standingSecret instanceof Uint8Array && bytesEqual(standingSecret, addressSecret))) {
         throw new BrowserFleetJoinRefused("secret-other", "this browser holds another address secret for that face.");
       }
       const standingRecord = await withDb(idbName, (db) => idbGet<{ rootKey?: unknown }>(db, FLEET_JOIN_STORE, recordRow));

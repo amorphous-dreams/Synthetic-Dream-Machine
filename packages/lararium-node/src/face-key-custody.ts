@@ -36,7 +36,7 @@
  */
 import { createPrivateKey, createPublicKey, randomBytes, sign } from "node:crypto";
 import { mkdirSync, readdirSync } from "node:fs";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, readCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -93,7 +93,6 @@ function signUnder(file: string, secret: Uint8Array, answersTo: string, image: U
 function assertSecret(secret: Uint8Array): void {
   if (!(secret instanceof Uint8Array) || secret.length !== 32) throw new RangeError("face-key-custody: a key row holds exactly 32 secret bytes");
 }
-const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
 
 /** The standing key of a per-Nexus row's plaintext: its first 32 bytes, whole or mid re-issue; null for any other
  *  length. */
@@ -190,7 +189,7 @@ export async function finishNexusKeyReissue(handleIndex: number, nexus: string, 
   const file = faceProofKeyFile(handleIndex, nexus);
   await updateColdCustodyRow("identity", file, (bytes) => {
     if (bytes === null) throw new CustodyRowUnavailable("identity", file, "absent");
-    if (bytes.length !== 64 || !sameBytes(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: Uint8Array.from(to), value: undefined };
   });
 }
@@ -202,7 +201,7 @@ export async function abandonNexusKeyReissue(handleIndex: number, nexus: string,
   const file = faceProofKeyFile(handleIndex, nexus);
   await updateColdCustodyRow("identity", file, (bytes) => {
     if (bytes === null) throw new CustodyRowUnavailable("identity", file, "absent");
-    if (bytes.length !== 64 || !sameBytes(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: Uint8Array.from(bytes.subarray(0, 32)), value: undefined };
   });
 }
@@ -220,7 +219,7 @@ export async function storeFaceProofKey(scope: FaceKeyScope, secret: Uint8Array,
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateColdCustodyRow("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!sameBytes(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -232,7 +231,7 @@ export async function storeVesselFaceKey(scope: FaceKeyScope, secret: Uint8Array
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRow("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!sameBytes(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -278,7 +277,7 @@ export async function faceProofKeyStanding(scope: string, secret: Uint8Array, ha
   try { names = readdirSync(larIdentityDir()); } catch { names = []; }
   const file = `face-proof-key-h${handleIndex}-${scope}.bin`;
   if (!names.includes(file)) return "absent";
-  return openColdCustodyRow("identity", file, (bytes) => (sameBytes(bytes, secret) ? "same" : "conflict"));
+  return openColdCustodyRow("identity", file, (bytes) => (bytesEqual(bytes, secret) ? "same" : "conflict"));
 }
 
 /**
@@ -292,7 +291,7 @@ export async function landFaceProofKey(scope: string, secret: Uint8Array, handle
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateColdCustodyRow("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!sameBytes(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }

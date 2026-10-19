@@ -118,9 +118,9 @@ export function hex(bytes: Uint8Array): string {
 }
 
 /**
- * Decode a lowercase/uppercase hex string into bytes. Inverse of `hex`.
- * Throws on odd length or non-hex characters — callers pass already-validated
- * hex (e.g. an ed25519 key or signature whose length the caller guards first).
+ * Decode a hex string into bytes. Inverse of `hex`. Each byte reads from exactly two ASCII hex digits, either
+ * case; an odd length, a sign, a space, a `0x` prefix or any other character throws `TypeError`, so a string
+ * that is not whole hex never decodes to a prefix of itself.
  */
 export function hexToBytes(hexStr: string): Uint8Array {
   if (hexStr.length % 2 !== 0) {
@@ -128,11 +128,32 @@ export function hexToBytes(hexStr: string): Uint8Array {
   }
   const out = new Uint8Array(hexStr.length / 2);
   for (let i = 0; i < out.length; i++) {
-    const byte = Number.parseInt(hexStr.slice(i * 2, i * 2 + 2), 16);
-    if (Number.isNaN(byte)) throw new TypeError(`hexToBytes: non-hex at offset ${i * 2}`);
-    out[i] = byte;
+    const pair = hexStr.slice(i * 2, i * 2 + 2);
+    if (!/^[0-9a-fA-F]{2}$/.test(pair)) throw new TypeError(`hexToBytes: non-hex at offset ${i * 2}`);
+    out[i] = Number.parseInt(pair, 16);
   }
   return out;
+}
+
+/**
+ * Two byte arrays hold the same bytes. Returns at the first difference, so its time shows where two inputs part: a
+ * comparison an outside party can time against a secret, a tag or a commitment takes `constantTimeBytesEqual`.
+ */
+export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+/**
+ * Two byte arrays hold the same bytes, read in time that depends on their length alone: equal-length inputs scan
+ * every byte and accumulate XOR differences, and the loop never returns early. Unequal lengths answer false at once.
+ */
+export function constantTimeBytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
+  return diff === 0;
 }
 
 /**

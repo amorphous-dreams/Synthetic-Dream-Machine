@@ -6,10 +6,10 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, hex, type GateBundlePin } from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, nexusAidOfPin, sovereignGateRoot, sovereignRoute, hex, type GateBundlePin } from "@lararium/mesh";
 import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-contract.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";
-import { composeDialPresentation, nexusAidOfPin } from "../src/dial-presentation.js";
+import { composeDialPresentation } from "../src/dial-presentation.js";
 
 const AID = `nexus-${"ab".repeat(32)}`;
 const pinAt = (aid: string): GateBundlePin => {

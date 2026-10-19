@@ -26,7 +26,7 @@
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -40,7 +40,6 @@ export const FACE_JOIN_RECORD_FILE = /^face-join-record-([0-9a-f]{32})\.json$/;
 
 const utf8 = new TextEncoder();
 const PERSONA_GROUP = /^(?:0x)?(?:[0-9a-f]{2}){4,64}$/;
-const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
 
 function faceRowName(row: string, personaGroup: string): string {
   if (!PERSONA_GROUP.test(personaGroup)) throw new RangeError("fleet-join-custody: a PersonaGroup id reads as lower-case hex");
@@ -88,7 +87,7 @@ export async function landFaceAddressSecret(personaGroup: string, secret: Uint8A
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRow("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!sameBytes(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -109,7 +108,7 @@ export async function keepPendingFleetJoin(pending: PendingFleetJoin): Promise<v
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRow("identity", FLEET_JOIN_PENDING_FILE, (standing) => {
     if (standing === null) return { plaintext: bytes, value: undefined };
-    if (!sameBytes(standing, bytes)) throw new CustodyRowUnavailable("identity", FLEET_JOIN_PENDING_FILE, "names-another-key");
+    if (!bytesEqual(standing, bytes)) throw new CustodyRowUnavailable("identity", FLEET_JOIN_PENDING_FILE, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -193,7 +192,7 @@ export async function keepFaceJoinRecord(record: FaceJoinRecord): Promise<void> 
         try { issued = readIssued(kept); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
       }
       const bytes = recordBytes(record, issued);
-      if (sameBytes(standing, bytes)) return { plaintext: null, value: undefined };
+      if (bytesEqual(standing, bytes)) return { plaintext: null, value: undefined };
       return { plaintext: bytes, value: undefined };
     }
     return { plaintext: recordBytes(record, issued), value: undefined };
@@ -231,7 +230,7 @@ export async function noteIssuedFaceKeys(args: {
     }
     const replaced = (e: IssuedFaceKey): boolean => fresh.some((f) => f.nexus === e.nexus && f.faceKey === e.faceKey && f.vesselFaceKey === e.vesselFaceKey);
     const bytes = recordBytes(base, [...issued.filter((e) => !replaced(e)), ...fresh]);
-    if (standing !== null && sameBytes(standing, bytes)) return { plaintext: null, value: undefined };
+    if (standing !== null && bytesEqual(standing, bytes)) return { plaintext: null, value: undefined };
     return { plaintext: bytes, value: undefined };
   });
 }
