@@ -27,6 +27,27 @@
       "kind": "grammar",
       "license": "MIT",
       "author": "lares"
+    },
+    "floor-manifest": {
+      "id": "floor-manifest",
+      "version": "1",
+      "sha256": "980f3308bcfc93faeaba78fa2a5651b8000c186359f5cfac916324c33b1a5e90",
+      "mimeType": "application/vnd.lararium.floor-manifest+json",
+      "kind": "floor"
+    },
+    "floor-lares": {
+      "id": "floor-lares",
+      "version": "1",
+      "sha256": "accccd6f7cfa0581c4d7af77d6555e81f42a339c56b55fea517789f34562a6c9",
+      "mimeType": "application/vnd.lararium.floor-snapshot",
+      "kind": "floor"
+    },
+    "floor-lararium": {
+      "id": "floor-lararium",
+      "version": "1",
+      "sha256": "c3e3b110e7939013551d7288a47c285c5a2591d704289f6fdb86db46e848f7d2",
+      "mimeType": "application/vnd.lararium.floor-snapshot",
+      "kind": "floor"
     }
   },
   "tiddlers": {
@@ -95,6 +116,48 @@
         "label": "lararium",
         "bag-stack": "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium",
         "writable-bag": "lar:///ha.ka.ba/wikis/lararium/working"
+      },
+      "meta": {
+        "authority": "genesis"
+      }
+    },
+    "lar:///ha.ka.ba/bags/oracle/blobs/floor-lararium": {
+      "tiddler": {
+        "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-lararium",
+        "text": "floor-lararium",
+        "sha256": "c3e3b110e7939013551d7288a47c285c5a2591d704289f6fdb86db46e848f7d2",
+        "version": "1",
+        "mimeType": "application/vnd.lararium.floor-snapshot",
+        "tags": "blob-descriptor",
+        "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
+      },
+      "meta": {
+        "authority": "genesis"
+      }
+    },
+    "lar:///ha.ka.ba/bags/oracle/blobs/floor-lares": {
+      "tiddler": {
+        "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-lares",
+        "text": "floor-lares",
+        "sha256": "accccd6f7cfa0581c4d7af77d6555e81f42a339c56b55fea517789f34562a6c9",
+        "version": "1",
+        "mimeType": "application/vnd.lararium.floor-snapshot",
+        "tags": "blob-descriptor",
+        "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
+      },
+      "meta": {
+        "authority": "genesis"
+      }
+    },
+    "lar:///ha.ka.ba/bags/oracle/blobs/floor-manifest": {
+      "tiddler": {
+        "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-manifest",
+        "text": "floor-manifest",
+        "sha256": "980f3308bcfc93faeaba78fa2a5651b8000c186359f5cfac916324c33b1a5e90",
+        "version": "1",
+        "mimeType": "application/vnd.lararium.floor-manifest+json",
+        "tags": "blob-descriptor",
+        "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
       "meta": {
         "authority": "genesis"
@@ -190,6 +253,18 @@
         "text": "",
         "cid": "bafkreibhztjvj4ifc65lds6qxiyrhwfkcaxkmjun3na6pmvzqbvqmwfwmq",
         "note": "plugins content-CID — THIS operator's own collection, layered on the required base",
+        "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
+      },
+      "meta": {
+        "authority": "genesis"
+      }
+    },
+    "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor": {
+      "tiddler": {
+        "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor",
+        "text": "",
+        "cid": "980f3308bcfc93faeaba78fa2a5651b8000c186359f5cfac916324c33b1a5e90",
+        "note": "genesis floor manifest content-CID",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
       "meta": {
