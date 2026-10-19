@@ -131,11 +131,11 @@ describe("bag document bindings across boots", () => {
     }
   });
 
-  test("without the archive, ledger remints once and adopts its binding on the next boot", { timeout: 90_000 }, async () => {
+  test("without the archive, the ledger keeps its binding and the replayed remint lands no event twice", { timeout: 90_000 }, async () => {
     const { ids, deltas } = await runLostArchiveLedgerControl();
     expect(ids[1]).toEqual(ids[0]);
     expect(ids[2]).toEqual(ids[1]);
-    expect(deltas[1]!.DELEGATED ?? 0).toBeGreaterThan(0);
+    expect(deltas[1]!.DELEGATED ?? 0).toBe(0);
     expect(deltas[1]!.CGKA_OPERATION ?? 0).toBe(0);
     expect(deltas[2]!.DELEGATED ?? 0).toBe(0);
     expect(deltas[2]!.CGKA_OPERATION ?? 0).toBe(0);

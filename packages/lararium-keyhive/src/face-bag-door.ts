@@ -13,15 +13,15 @@ export function makeFaceBagDoor({ face, groupId, ledger }: { face: CapabilityPro
   return {
     async mint(bagUrl, access) {
       const { docId } = await face.registerBag(bagUrl);
-      if (ledger) await ledger.put(bagUrl, docId);
       await face.delegate({ bagUrl, audience: groupId, access });
+      if (ledger) await ledger.put(bagUrl, docId);
       return { docId };
     },
     adopt: (bagUrl, docId) => face.adoptBag(bagUrl, docId),
     async remint(bagUrl) {
       const { docId } = await face.remintBag(bagUrl);
-      if (ledger) await ledger.put(bagUrl, docId);
       await face.delegate({ bagUrl, audience: groupId, access: "admin" });
+      if (ledger) await ledger.put(bagUrl, docId);
       return { docId };
     },
   };
