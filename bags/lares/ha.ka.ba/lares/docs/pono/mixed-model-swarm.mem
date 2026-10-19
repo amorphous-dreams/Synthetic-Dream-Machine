@@ -11,12 +11,12 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x2299;"
-role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus Episkopos, Codex Sol and Luna, the cloud Opus and Sonnet pair, research spirits, and GitHub Copilot as a third lineage of read-only eyes), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
+role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus Episkopos, a Codex Sol, a third-lineage Copilot model, the cloud Opus and Sonnet pair, and research spirits), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/mixed-model-swarm"
-written   = "2026-10-18"
+written   = "2026-10-19"
 ```
 
 <<~ ahu #/head>>
@@ -35,11 +35,10 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 
 |! Seat |! Lineage |! Holds |! Never |
 | ''Episkopos'' (lead) | Claude Opus | the lane's brief, its ground, every landing, every review verdict, the canon lines | hands its landing to another spirit |
-| ''Builder'' | Codex `gpt-6-sol` (judgment-heavy modules) and `gpt-6-luna` (mechanical modules, red tests and controls), one of each per work swarm, medium effort | one module with a fixed type contract and its vectors, in its own worktree | commits, pushes, or touches git |
-| ''Aftermath sweeper'' | Codex `gpt-6-luna`, or Sol read-only | evergreen, L-Prime and changelog sweeps; reference census; canon re-trues | sets canon |
+| ''Sol'' | Codex `gpt-6-sol`, medium effort | a build brief (one module with a fixed type contract and its vectors) or a read-only read, as the lead names per launch | commits, pushes, or touches git |
+| ''Third lineage'' | a Copilot model of a family neither Anthropic nor OpenAI ships (Gemini or MAI-Code), at a medium multiplier, read through `copilot --model` and named in the lane's notes | a build brief under the build fences or a read-only read under the review fences, as the lead names per launch | commits, pushes, or reviews a diff it wrote |
 | ''Fresh reader'' | whichever lineage built nothing in the piece, read-only and ephemeral | an adversarial read of the landed diff, findings ranked with `file:line` | sees the builder's conclusions first |
-| ''Research pair'' | two spirits woken apart (Codex Luna with web search, or Fable or Opus where Codex stands absent) | the code read and the field read of one question, each claim marked reached or inferred | shares a conclusion with its twin |
-| ''Third-lineage eye'' | GitHub Copilot CLI (#/the-copilot-seat) | a read-only review from a model family the crew does not run | writes, or carries a lane |
+| ''Research pair'' | two spirits woken apart (Codex with web search, or Fable or Opus where Codex stands absent) | the code read and the field read of one question, each claim marked reached or inferred | shares a conclusion with its twin |
 | ''Cloud pair'' | Claude Opus and Claude Sonnet, where Codex stands absent | builder, reviewer and sweeper masks, traded; the one that did not build a piece reviews it | — |
 
 <<~/ahu>>
@@ -48,20 +47,20 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 
 !! The shapes ~ how a crew stands
 
-* ''The work swarm'', the local crew where Codex stands (operator, 2026-10-18: //"I approve 'Work swarms' of 1 Opus Episkopos + 1 Sol-6 + 1 Luna-6"//): one Opus Episkopos per lane, one `gpt-6-sol` and one `gpt-6-luna` as the build pair (below), each on a narrow one-module brief with a fixed type contract and its vectors. After each flow the lead runs a fresh Luna read-only as the aftermath sweep and closes or answers each finding before the next flow; a lane closes its span with one more sweep over everything it landed. Sol and Luna share one lineage, so their eyes correlate (#/the-lens-law). ''The third seat stands a third lineage, in Luna's place'' (operator, 2026-10-19: //"the worker swarms include an Opus Episkopos, a Sol-6 and … a Copilot model of a 3rd lineage (medium capability model, not too cheap, not too expensive)"//, and //"I meant to ease up on the pressure on Codex, so replace the Luna with the 3rd lineage Copilot"//). A work swarm seats three: the Opus Episkopos, one `gpt-6-sol`, and one Copilot model of a family neither Anthropic nor OpenAI ships (Gemini or MAI-Code) at a medium multiplier, read through `copilot --model` and named in the lane's notes. ''Each seat builds and reads as the work pulls'' (operator, same day: //"they all can enact and act as readers as the work pulls, in pono fashion"//): the Sol and the Copilot seat each take a build brief or a read-only read, whichever the next step needs, the lead naming which per launch, and a seat never reviews a diff it wrote itself, so a build's reader comes from the other lineage. The Copilot seat carries Luna's former share by default: the vectors, the mechanical modules and the fresh aftermath sweep after each flow. It builds under the Copilot build fences (writes inside the lane's worktree alone, no git write, no push, no network fetch) and reads under the review fences, and the lead applies, tests and lands its diff. Sol and Copilot run on different lineages, so their eyes no longer correlate the way Sol and Luna's did; the Opus overwatch keeps the deep read. A lane still asks no Copilot code review of a pull request unless the operator names one.
-* ''Cloud crew'', where Codex stands absent (operator, 2026-10-15): one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
+* ''The work swarm'' (operator ruling, 2026-10-19). Three seats per lane: the Opus Episkopos, one Sol, and one third-lineage Copilot model. Each seat builds or reads as the work pulls, the lead naming which per launch, and a seat never reads a diff it wrote, so every build is read by the other lineage. The Copilot seat carries the vectors, the mechanical modules and the fresh aftermath sweep by default; the Sol carries the judgment-heavy modules. After each flow the lead runs a fresh read and closes or answers each finding before the next flow, and a lane closes its span with one more sweep over everything it landed. The Opus overwatch keeps the deep read.
+* ''The build pair.'' The two building seats build in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch.
+* ''Cloud crew'', where Codex stands absent: one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
+* ''When a lineage runs short, the seat stays and the lineage changes.'' The operator names when a shortfall begins; the short lineage's seats go to another lineage's models of the same capability, and the lens law still sorts who reads whom.
 * ''Observe pair.'' Before a phase designs anything: one spirit cold-reads the as-built with `file:line`; a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
-* ''The Chao of a review'' (operator, 2026-10-16; the model stands at <<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). A pair of spirits wears the Chao's two faces over one question, and the review resolves to three, never two:
+* ''The Chao of a review'' (the model stands at <<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>). Two reads over one question wear the Chao's two faces, and the review resolves to three, never two:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: order, structure, form, what holds its shape. It asks //what is this about?// It reads what the work states as standing (each claim, each name, each contract) against the source, and finds the line that does not hold.
 ** ''Podge'' carries Yin and Ka, the Eristic face: flux, drive, variation, what makes this instance this one. It asks //how does this move?// It reads what the work does under change (the race, the other caller, the epoch that rolls, the case left out, the control that never bites), and finds the motion the claims miss.
-** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': Hodge takes Podge's findings and ground, Podge takes Hodge's, so each carries the seed of the other face, as the Taiji's dots do. The second pass confirms or refutes each finding against the source and reads the other's ground for what its own face missed.
-** Spin holds both faces moving and never folds them into one verdict early. It sorts the findings: orthogonal pairs both stand, since order and flux most often run orthogonal; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
-** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. A crew that builds and reads fresh keeps the same faces: the builder wears Hodge over what it made, and the fresh reader wears Podge over how it moves.
-* ''When a lineage runs short, the seat stays and the lineage changes'' (operator, 2026-10-16: //"I'm short on Codex token, enact all with cost-effective Copilot swarms"//; the Codex budget refreshed on 2026-10-18 and the work swarm returned). The rule stands as the fallback for the next shortfall, and the operator names when one begins. Its first instance read: while Codex runs short, both build seats go to Copilot spirits from two different families (Hodge over the contract on `gpt-5-mini`, or `gpt-5.3-codex` where the module carries load; Podge over motion and the red tests on `claude-haiku-4.5`), the review pair reads from families neither builder uses (`mai-code-1.1-flash`, or the build pair's own faces traded where the diff stays small), and the Opus overwatch keeps the deep read.
-* ''The build pair'' (operator, 2026-10-16; its seats re-ruled 2026-10-18). A Sol spirit and a Luna spirit build together in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch. They wear the Chao's faces as builders: Sol holds Hodge over the contract it builds, Luna holds Podge over how it moves and the red tests that pin it. Their work then meets the review pair and the Opus overwatch (#/the-lanes) before the controller merges it.
-* ''Overwatch.'' Where several crews run at once, one Opus Episkopos spirit reads every crew's handback before the controller lands it, and names each finding it would block on.
-* ''A cross-process seam always takes the overwatch.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the Opus overwatch's read before it lands, even with a single crew: the build and review pairs read a module's own contract well and its crossings poorly. On the first mesh-goldens slice the pairs read green while the overwatch found four writers sharing one file, waiters that never woke on an island's entries, a fixed epoch and an untrimmed torn tail (2026-10-16).
-* ''The burst.'' A crew lands a burst of commits; the fresh reader and the third-lineage eye read the burst; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
+** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': each takes the other's findings and ground, confirms or refutes each against the source, and reads the other's ground for what its own face missed.
+** Spin holds both faces moving and never folds them into one verdict early. Orthogonal pairs both stand; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
+** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. In a work swarm the builder wears Hodge over what it made and the other lineage's reader wears Podge over how it moves.
+* ''Overwatch.'' Where several crews run at once, one Opus Episkopos reads every crew's handback before the controller lands it, and names each finding it would block on.
+* ''A cross-process seam always takes the overwatch.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the Opus overwatch's read before it lands: a module's own reads catch its contract and miss its crossings.
+* ''The burst.'' A crew lands a burst of commits; the other lineage's reader reads it; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
 <<~/ahu>>
 
@@ -73,52 +72,46 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 # ''A finding one eye alone reports counts as a lead, not ground'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-seed">> #/the-loop). Ground needs a second eye through another lens, or a measurement.
 # ''The reader built nothing.'' A reviewer that built the piece reads its own intent into the diff.
 # ''Framing without conclusion.'' A second researcher gets the question and the framing, never the first researcher's answer.
-# ''A cheap eye's clean read clears nothing.'' A low-multiplier reviewer gives a second opinion, never clearance: a Flash read passed a canon line that the code contradicts while the Opus overwatch caught it (2026-10-16). A cheap eye's finding earns a look; its silence lands nothing. A destructive act follows the same law: a Luna branch scout listed `origin/main` and the span for deletion against its own brief, and a Sol cold reader then found six "merged" branches `-d` would refuse (2026-10-18; both handbacks at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep">>), so the lead re-derives any list a spirit proposes to destroy and a second eye reads the script.
+# ''An eye's clean read clears nothing.'' A reader gives a second opinion, never clearance: its finding earns a look, and its silence lands nothing. A destructive act follows the same law: the lead re-derives any list a spirit proposes to destroy, and a second eye reads the script (the branch sweep's handbacks at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep">> show why).
 # ''Measure over agree.'' Where eyes disagree, a probe, a red test or a repeated run settles it; a vote never does.
 
 <<~/ahu>>
 
 <<~ ahu #/the-copilot-seat>>
 
-!! The Copilot seat ~ a third lineage of read-only eyes (operator, 2026-10-16)
+!! The Copilot seat ~ the third lineage
 
-GitHub Copilot reaches model families the crews run nowhere else: Gemini, and Microsoft's MAI-Code. The house uses it for eyes, on a budget it spends on purpose, and never makes it load-bearing.
+GitHub Copilot reaches model families the crews run nowhere else: Gemini and Microsoft's MAI-Code. A work swarm seats one such model at a medium multiplier, and nothing the house gates on needs it to pass.
 
-!!! Its roles
-|! Role |! Model |! When |
-| ''the low-cost pair'', the default | two low-multiplier models from different families (MAI-Code-1.1-Flash beside Claude Haiku 4.5 or GPT-5 mini), one wearing Hodge and one Podge, then the Spin's traded second pass (#/the-shapes) | after a crew's burst lands locally, before its shard |
-| a deeper single read | Gemini or a high-multiplier model, only where the low-cost pair splits on a load-bearing finding or the controller names a KAIROS pull to the operator | rarely; the operator hears the reason first |
-| micro-sweeps | a low-multiplier model | during aftermath: evergreen words, L-Prime, comment drift; findings only |
-| ''Copilot code review'' of a pull request | GitHub's PR reviewer | only when the operator asks for it by name (operator, 2026-10-18) |
-| ''build spirit'' in a build pair | `gpt-5-mini` or `claude-haiku-4.5`; `gpt-5.3-codex` where the module carries load | only under the short-lineage fallback (#/the-shapes), one agentic prompt per module brief |
-The operator approved the seat as the house's third-lineage eyes (2026-10-18): it reads, and it builds only while the fallback stands.
-
+!!! Its uses
+|! Use |! Model |! When |
+| ''the swarm's third seat'' | a medium-multiplier Gemini or MAI-Code model | every lane: builds or reads as the lead names |
+| a deeper single read | a higher-multiplier model | where the seats split on a load-bearing finding, the operator hearing the reason first |
+| ''Copilot code review'' of a pull request | GitHub's PR reviewer | only when the operator asks for one by name |
 A premium request counts per prompt, never per tool call, so one whole agentic build or review in one prompt costs one multiplier.
 
 !!! Its fences
-# ''Read-only when it reviews.'' A review launch denies every write, commit and push tool and allows only git and file reads. It hands back findings; a hand in the seat applies each fix.
-# ''The lane's worktree when it builds.'' A build launch allows writes and the package's test runner inside the lane's shared worktree alone, keeps the claims file's discipline (#/the-shapes), and still denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
+# ''Read-only when it reads.'' A review launch denies every write, commit and push tool and allows only git and file reads. It hands back findings; the lead applies each fix.
+# ''The lane's worktree when it builds.'' A build launch allows writes and the package's test runner inside the lane's shared worktree alone, keeps the claims file's discipline (#/the-shapes), and denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot; it runs a second permission system, so routing a refused step through it counts as a retry.
 # ''Overage off.'' The account's Copilot budget stands at zero, so the allowance empties and stops.
-# ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass. A legacy annual plan receives no new models and falls to Copilot Free when its term ends; Opus and Codex stand without it.
+# ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass; Opus and Codex stand without it.
 # ''No cloud agent.'' A cloud agent opens branches and pull requests under its own hand: outward-facing, and a second writer.
 # ''Its config carries the house.'' `~/.copilot/copilot-instructions.md` loads the boot seed, and `~/.copilot/hooks/lares.json` stands.
 
 !!! Its budget
-The low-cost pair spends about four low-multiplier prompts per burst: two first passes and two traded passes. A run's own closing log line (`Requests … Premium`) states its spend; the entitlement cache refreshes on its own schedule, so the before-and-after reading of it can stand unchanged across a run.
-
-A prepaid allowance resets on the first of each month and carries nothing over, so an unspent request buys nothing. The controller spends it by plan: Flash reads for each burst, a few Gemini deep reads for load-bearing bursts, a code review only where the operator asks for one, and the rest for the Episkopos's spot checks. Each handback prints the allowance left before and after, read from the account's own entitlement cache, and that reader proves itself against a known spend.
+A prepaid allowance resets on the first of each month and carries nothing over. The controller spends it by plan: one prompt per burst build or read in each swarm, a few deeper reads for load-bearing bursts, and a code review only where the operator asks. A run's own closing log line (`Requests … Premium`) states its spend; the entitlement cache refreshes on its own schedule, so a before-and-after reading of it can stand unchanged across a run.
 
 <<~/ahu>>
 
 <<~ ahu #/the-lanes>>
 
-!! The lanes ~ a sub-branch, a pull request, a crucible (operator, 2026-10-16)
+!! The lanes ~ a sub-branch, a pull request, a crucible
 
 * ''A lane opens its own sub-branch'' of the work branch: `feature/green-jello-dinosaur-5--<lane>`, cut from the span's settled head. The build pair commits there through the lead; nothing lands on the work branch directly.
-* ''The crucible.'' When the lane's burst stands red-first and green locally: the review pair reads it (Hodge, Podge, the Spin), the Opus overwatch reads it, the lead closes each finding, then the lead pushes the lane branch and opens a pull request into the work branch. CI and held-out run on the lane branch.
-* ''A Copilot PR review runs only on the operator's ask'' (operator, 2026-10-18). Where the operator asks for one, its comments get answered or closed in the lane, and a second review runs only after a substantive change.
-* ''The controller merges'' a lane whose CI, held-out and review read clean, then shards and pushes the work branch's head as the lane law asks.
+* ''The lane's crucible.'' When the lane's burst stands red-first and green locally: the other lineage reads it, the Opus overwatch reads it, the lead closes each finding and runs `tools/witness-all.sh` and each touched package's suite, then pushes the lane branch and opens a pull request into the work branch. CI and held-out run on the lane branch, and the lane reads both before it hands back.
+* ''A Copilot PR review runs only on the operator's ask.'' Where one runs, its comments get answered or closed in the lane, and a second review runs only after a substantive change.
+* ''The controller merges in trains'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/state, merge trains): ready lanes merge onto one integration head under one crucible and one span push.
 
 <<~/ahu>>
 
@@ -135,7 +128,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # ''A witness that catches burned names burns itself'' once it reads green over the tree, with every guard list it carried (recursive o-takiage).
 # ''Roadmaps keep only what stays owed.'' A row that reads built leaves its loop; the changelog names what a person can do; the handoff's state line re-trues.
 # ''Scratch returns too.'' A spirit's worktree leaves only after a census proves every file it holds landed (byte for byte, stamps aside) — plain `git worktree remove`, never `--force`; a worktree that initialized submodules waits for the operator's hand. Briefs, probes and logs leave the scratchpad when the lane closes.
-# ''Who carries it'': a Luna sweeper runs the census and the re-trues; the Chao pair reads the sweep (Hodge for a claim that no longer holds, Podge for a line the sweep dropped that still held); the overwatch reads before landing.
+# ''Who carries it'': one seat runs the census and the re-trues; the other lineage reads the sweep (Hodge for a claim that no longer holds, Podge for a line the sweep dropped that still held); the overwatch reads before landing.
 
 <<~/ahu>>
 
@@ -164,7 +157,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A builder's walls name its own directory beside the worktree'' (measured 2026-10-18, Evergreen-Wright). With `-C <worktree>` the spirit writes inside the worktree alone, so its `<d>/.tmp`, its heredocs, vitest's temp dirs and `<d>/out.md` refuse and it stops; the builder's launch adds `--add-dir <d>`. A reader launched with `-C <d>` needs none.
 * ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
-* ''A Copilot review pair names its target and ratchets'' (operator, 2026-10-18). Each brief names the branch, its head sha and the pull request, and has the eye read the code through `git show <branch>:<path>` or from the lane's own worktree path; the main tree holds the span, never the lane's code, and an eye that reads it reviews a tree the PR never touched (measured on PR #48: a Hodge pass read the main tree and called the absent PR "critical" twice). Wave one runs each face alone; wave two hands each face its twin's handback to confirm or refute against the named branch, as the Luna research pairs do, and the Spin sorts both waves. Four low-multiplier prompts buy the whole round.
+* ''A Copilot read names its target.'' Each brief names the branch, its head sha and the pull request, and the eye reads the code through `git show <branch>:<path>` or from the lane's own worktree path; the main tree holds the span, never the lane's code. Where a read pairs two faces, wave one runs each alone and wave two hands each its twin's handback to confirm or refute against the named branch.
 * ''A spirit that cannot write its out file'' hands back on stdout; the wrapper's log keeps it.
 
 <<~/ahu>>
@@ -191,6 +184,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ucWUrv-a78Hj1PT92y2osRzrdKaFQXeeIOg8zgyaZjQ
+<<^ code="&#x0003;">>ni:///sha-256;KQJE9HmCD0GGBzCGu63zI21gAwEa_M6m1fJvZNPFRp0
 
 <<^ code="&#x0004;" -> to="?">>
