@@ -41,7 +41,9 @@
  */
 import { sha256 } from "@noble/hashes/sha2.js";
 import { isPresentedAdmit } from "./leaf-presentation.js";
-import type { CarriageEntry, PresentedLineageAct } from "./carriage-registry.js";
+import { isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
+import type { SealEpoch } from "./wax-stamp.js";
+import { verifySealLineage } from "./wax-stamp.js";
 import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import { CARRIAGE_ENTRY_DOMAIN, GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN, GATE_PRESENTATION_DOMAIN, GATE_VERDICT_DOMAIN } from "./domains.js";
 import { acceptEd25519Key } from "./ed25519-door.js";
@@ -303,7 +305,8 @@ export function gatePresentationDigest(bytes: Uint8Array): string {
 export interface PlaceArm {
   readonly kind:     "place";
   readonly contract: CarriageEntry;
-  readonly lineage:  readonly CarriageEntry[];
+  readonly lineage:  readonly PresentedLineageAct[];
+  readonly sealLineage: readonly SealEpoch[];
 }
 
 /**
@@ -319,9 +322,10 @@ export interface PlacePresentation {
 }
 
 const PLACE_KEYS = ["placeKey", "arm", "audience"] as const;
-const PLACE_ARM_KEYS = ["kind", "contract", "lineage"] as const;
+const PLACE_ARM_KEYS = ["kind", "contract", "lineage", "sealLineage"] as const;
 /** How many acts a contract's lineage may carry. */
 export const PLACE_LINEAGE_BOUND = 64;
+export const PLACE_SEAL_LINEAGE_BOUND = 64;
 
 function isCarrierAct(value: unknown): value is CarriageEntry {
   if (!isRecord(value)) return false;
@@ -362,10 +366,13 @@ export function readPlacePresentation(bytes: Uint8Array): ReadPlacePresentation 
     if (value["arm"] !== null) {
       const raw = value["arm"];
       if (!isRecord(raw) || !exactKeys(raw, PLACE_ARM_KEYS) || raw["kind"] !== "place") return null;
-      const { contract, lineage } = raw;
+      const { contract, lineage, sealLineage } = raw;
       if (!isCarrierAct(contract) || contract.action !== "carry" || contract.nym !== placeKey) return null;
-      if (!Array.isArray(lineage) || lineage.length > PLACE_LINEAGE_BOUND || !lineage.every((act) => isCarrierAct(act) && act.nym === placeKey)) return null;
-      arm = { kind: "place", contract, lineage: lineage as CarriageEntry[] };
+      if (!Array.isArray(lineage) || lineage.length > PLACE_LINEAGE_BOUND || !lineage.every((act) =>
+        isRollAnchor(act) || (isCarrierAct(act) && act.nym === placeKey))) return null;
+      if (!Array.isArray(sealLineage) || sealLineage.length > PLACE_SEAL_LINEAGE_BOUND ||
+        (sealLineage.length > 0 && !verifySealLineage(sealLineage as SealEpoch[]))) return null;
+      arm = { kind: "place", contract, lineage: lineage as PresentedLineageAct[], sealLineage: sealLineage as SealEpoch[] };
     }
     return Object.freeze({ placeKey, arm, audience, digest: gatePresentationDigest(bytes) });
   } catch { return null; }

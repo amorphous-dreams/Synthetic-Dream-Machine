@@ -45,8 +45,8 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
 import {
-  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant,
-  type CarriageEntry, type PresentedAdmitVerdict, type PresentedAdmitState, type PresentedLineageAct,
+  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant, isRollAnchor, resolveAnchoredChain, rollAnchorCid,
+  type CarriageEntry, type RollAnchor, type PresentedAdmitVerdict, type PresentedAdmitState, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { hex, utf8Bytes } from "./crypto.js";
@@ -60,7 +60,8 @@ import {
 import type { GateBundle, GateTier } from "./gate-bundle.js";
 import {
   GATE_FRAME, encodeGateAnswer, gateFinishPayload, gateFrame, gatePartReader, gateParts, gatePlaceFinishImage,
-  gateVerdictImage, readGatePresentation, readPlacePresentation, type GateAnswer, type PlaceArm, type PresentationArm,
+  gateVerdictImage, readGatePresentation, readPlacePresentation, PLACE_LINEAGE_BOUND, PLACE_SEAL_LINEAGE_BOUND,
+  type GateAnswer, type PlaceArm, type PresentationArm,
   type ReadPlacePresentation,
 } from "./gate-exchange.js";
 import type { PeerClass } from "./island-protocol.js";
@@ -70,6 +71,8 @@ import { PLACE_PROFILE, type SeatProfile } from "./session-contract.js";
 import type { FaceAdmitReading, FaceGrantReading } from "./session-face.js";
 import { NO_HELD_ROOT, readAdmitAtHeldRoot } from "./held-nexus-root.js";
 import type { HeldNexusRoot } from "./held-nexus-root.js";
+import { epochSeats, verifySealLineage } from "./wax-stamp.js";
+import type { KahuQuorumSeats } from "./kapae-antigen.js";
 export type { HeldNexusRoot } from "./held-nexus-root.js";
 
 // ── The socket and the deadline ─────────────────────────────────────────────────────────────────
@@ -100,7 +103,7 @@ export interface GateDeadlines {
 export interface GateAdmitReader {
   read(arm: { readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[] }): Promise<FaceAdmitReading | { readonly refusal: string }>;
   /** The same held-root door, for a place's carriage contract. */
-  readPlace(arm: { readonly contract: CarriageEntry; readonly lineage: readonly CarriageEntry[] }): Promise<PlaceContractReading | { readonly refusal: string }>;
+  readPlace(arm: PlaceArm): Promise<PlaceContractReading | { readonly refusal: string }>;
 }
 
 /** A place's carriage contract, as the held-root door read it. */
@@ -133,31 +136,91 @@ export function presentedAdmitReader(held: () => HeldNexusRoot | null | Promise<
 
 /**
  * Read a PRESENTED carriage contract against a held root: the quorum's `carry` act over a place's key, with
- * the place's own carrier seal, at the roster's own epoch. The board stays deny-only: a counted `uncarry`
- * that descends from the contract closes it, one that stands concurrent leaves it unsettled, and a held
- * kapae on the place's key denies it. A contract at an earlier epoch reads `wrong-epoch`: a place carries
- * across a roll by the new quorum's own `carry` act.
+ * the place's own carrier seal. The shared anchor walk resolves an ancestor contract; a verified
+ * presentation lineage may extend the gate's held charter for this one reading. The board stays deny-only:
+ * a counted `uncarry` that descends from the contract closes it, one that stands concurrent leaves it
+ * unsettled, and a held kapae on the place's key denies it.
  */
-export async function verifyPresentedCarry(arm: { readonly contract: CarriageEntry; readonly lineage: readonly CarriageEntry[] }, root: HeldNexusRoot): Promise<PresentedAdmitVerdict> {
+export async function verifyPresentedCarry(arm: Pick<PlaceArm, "contract" | "lineage" | "sealLineage">, root: HeldNexusRoot): Promise<PresentedAdmitVerdict> {
   const { contract } = arm;
   const nym = typeof contract?.nym === "string" ? contract.nym.toLowerCase() : "";
   const verdict = (state: PresentedAdmitVerdict["state"], reason: string): PresentedAdmitVerdict => ({ state, reason, nym });
   if (contract?.action !== "carry") return verdict("rejected", "not-a-carry");
-  if (contract.sealEpochCid !== root.roster.sealEpochCid) return verdict("wrong-epoch", "contract-not-at-head-epoch");
-  if (!(await carriageEntryCounts(contract, root.roster))) return verdict("rejected", "contract-not-counted");
+  if (!Array.isArray(arm.lineage) || arm.lineage.length > PLACE_LINEAGE_BOUND) return verdict("rejected", "lineage-malformed");
+  if (!Array.isArray(arm.sealLineage) || arm.sealLineage.length > PLACE_SEAL_LINEAGE_BOUND)
+    return verdict("wrong-epoch", "charter-lineage-malformed");
+  const held = root.sealLineage;
+  const presented = arm.sealLineage;
+  let head = root.roster;
+  let seals = held;
+  if (contract.sealEpochCid !== head.sealEpochCid && presented?.length && held?.length) {
+    // This reading borrows the presented extension at its head; it moves no held charter.
+    // The deny board and antigen stay with this gate's own replica.
+    if (presented.length < held.length || !verifySealLineage(presented) ||
+      held.some((epoch, i) => epoch.epochCid !== presented[i]?.epochCid)) {
+      return verdict("wrong-epoch", "charter-lineage-does-not-extend-held");
+    }
+    if (presented.length > held.length) {
+      const extension = presented[presented.length - 1]!;
+      if (!extension.roll || !extension.roll.keys || !extension.roll.threshold) return verdict("wrong-epoch", "charter-extension-unseated");
+      head = { keys: [...extension.roll.keys], threshold: extension.roll.threshold, sealEpochCid: extension.epochCid };
+    }
+    seals = presented;
+  }
+  const acts: CarriageEntry[] = [];
+  const anchors: RollAnchor[] = [];
+  for (const act of arm.lineage) {
+    if (isRollAnchor(act)) anchors.push(act);
+    else acts.push(act);
+  }
+  let rosters: ReadonlyMap<string, KahuQuorumSeats> = new Map([[head.sealEpochCid, head]]);
+  let chain: readonly RollAnchor[] = [];
+  // Every act names an epoch on the lineage the gate reads at, or the reading refuses by that name before any walk.
+  // An act at the head stands on the chain however short the lineage the gate holds (a seeded charter may hold none).
+  const headAt = Math.max((seals?.length ?? 0) - 1, 0);
+  const at = [contract, ...acts].map((act) => (act.sealEpochCid === head.sealEpochCid ? headAt : seals?.findIndex((e) => e.epochCid === act.sealEpochCid) ?? -1));
+  if (at.some((i) => i < 0)) return verdict("wrong-epoch", "lineage-epoch-not-on-chain");
+  const earliest = Math.min(...at);
+  if (contract.sealEpochCid !== head.sealEpochCid || anchors.length) {
+    const firstEpoch = seals?.[earliest]?.epochCid ?? contract.sealEpochCid;
+    const resolved = await resolveAnchoredChain(firstEpoch, head, seals, anchors);
+    if (typeof resolved === "string") return verdict("wrong-epoch", resolved);
+    if ("rejected" in resolved) return verdict("rejected", resolved.rejected);
+    rosters = resolved.rosters;
+    chain = [...resolved.anchors];
+  } else if (anchors.length) return verdict("rejected", "lineage-unchained-anchor");
+  const contractRoster = rosters.get(contract.sealEpochCid);
+  if (!contractRoster) return verdict("wrong-epoch", "contract-epoch-not-held");
+  if (!(await carriageEntryCounts(contract, contractRoster))) return verdict("rejected", "contract-not-counted");
   const contractCid = carriageEntryActCid(contract);
   const causal = new Map<string, { readonly parents: readonly string[] }>();
-  for (const act of arm.lineage) {
+  for (const act of acts) {
+    if (act === null || typeof act !== "object" || typeof act.nym !== "string" || !Array.isArray(act.parents))
+      return verdict("rejected", "lineage-malformed-entry");
     if (act.nym.toLowerCase() !== nym || (act.action !== "carry" && act.action !== "uncarry")) return verdict("rejected", "lineage-foreign-act");
-    if (!(await carriageEntryCounts(act, root.roster))) return verdict("rejected", "lineage-not-counted");
+    const at = rosters.get(act.sealEpochCid);
+    if (!at) return verdict("wrong-epoch", "lineage-epoch-not-on-chain");
+    if (!(await carriageEntryCounts(act, at))) return verdict("rejected", "lineage-not-counted");
     causal.set(carriageEntryActCid(act), act);
   }
-  for (const node of [contract, ...arm.lineage]) if (node.parents.some((parent) => !causal.has(parent))) return verdict("rejected", "lineage-broken-chain");
+  for (const anchor of chain) causal.set(rollAnchorCid(anchor), anchor);
+  for (const node of [contract, ...acts]) if (node.parents.some((parent) => !causal.has(parent))) return verdict("rejected", "lineage-broken-chain");
   causal.set(contractCid, contract);
+  for (const act of acts) if (!isCarriageDescendant(contractCid, carriageEntryActCid(act), causal)) return verdict("rejected", "lineage-unchained-entry");
+  const contractAt = seals?.findIndex((e) => e.epochCid === contract.sealEpochCid) ?? -1;
+  for (const anchor of chain) if ((seals?.findIndex((e) => e.epochCid === anchor.sealEpochCid) ?? -1) > contractAt &&
+    !isCarriageDescendant(rollAnchorCid(anchor), contractCid, causal)) return verdict("wrong-epoch", "contract-not-in-anchor-past");
   let closing = false, concurrent = false;
+  const denyRosters = new Map(rosters);
+  for (const epoch of held ?? []) {
+    if (denyRosters.has(epoch.epochCid)) continue;
+    const seats = epochSeats(epoch);
+    if (seats) denyRosters.set(epoch.epochCid, { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: epoch.epochCid });
+  }
   for (const entry of root.denyBoard) {
     if (entry === null || typeof entry !== "object" || entry.action !== "uncarry" || typeof entry.nym !== "string" || entry.nym.toLowerCase() !== nym) continue;
-    if (!(await carriageEntryCounts(entry, root.roster))) continue;
+    const at = denyRosters.get(entry.sealEpochCid);
+    if (!at || !(await carriageEntryCounts(entry, at))) continue;
     const cid = carriageEntryActCid(entry);
     if (!causal.has(cid)) causal.set(cid, entry);
     if (isCarriageDescendant(cid, contractCid, causal)) closing = true;
@@ -519,7 +582,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       if (!verifyEd25519(finish.subarray(1), image, shown.placeKey)) return silence("place-finish-refused");
       let contract: PlaceContractReading | null = null;
       if (shown.arm !== null) {
-        const reading = await deps.admits.readPlace({ contract: shown.arm.contract, lineage: shown.arm.lineage });
+        const reading = await deps.admits.readPlace(shown.arm);
         if (own(reading, "refusal")) return silence("place-contract-refused");
         if (reading.verdict.state !== "held") return silence("place-contract-unheld", reading.verdict.state);
         if (reading.verdict.nym !== shown.placeKey) return silence("place-contract-other-place");

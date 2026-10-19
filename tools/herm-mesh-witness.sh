@@ -30,6 +30,7 @@ COMPOSE="docker compose -f docker-compose.mesh.yml"
 LARES="node packages/lares-cli/dist/src/bin/lares.js"
 WORK=$(mktemp -d)
 CHARTER=""
+BOOT_WAIT_SECONDS=600
 
 # refused <label> <door> <output>: a join step that did not land names its door and the tail of what it said, and the
 # witness stops there.
@@ -37,6 +38,14 @@ refused() {
   echo "✗ $1 did not join A's Nexus: $2 refused" >&2
   printf '%s\n' "$3" | tail -4 | sed 's/^/    /' >&2
   exit 1
+}
+
+# This bound serves the witness's own liveness and decides nothing about the product.
+# A's staged boot can roll its seed charter before serving; join only after that product boot line lands.
+await_a_boot() {
+  if ! (set +o pipefail; timeout "${BOOT_WAIT_SECONDS}s" $COMPOSE logs --follow --no-color lararium-a 2>&1 | grep -m 1 -F '[boot] serving…' >/dev/null); then
+    refused "lararium-a" "boot line within ${BOOT_WAIT_SECONDS}s" "$($COMPOSE logs --tail 20 --no-color lararium-a 2>&1)"
+  fi
 }
 
 # join <label> <runner…>: the runner runs the CLI where the place stands (a container's exec, or the host reader's own).
@@ -68,6 +77,7 @@ join() {
   fi
   echo "  joined A's Nexus: $label (${nym:0:16}…)"
 }
+await_a_boot
 for herm in herm-source herm-relay herm-relay-2; do join "$herm" $COMPOSE exec -T "$herm" $LARES; done
 join host-reader $LARES
 

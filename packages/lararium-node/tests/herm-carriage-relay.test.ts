@@ -182,7 +182,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     // CONTROL beside it: the same map named under the origin's key does not verify — the pointer binds its publisher.
     const misnamed = await pullAndVerifyOracle(H2.origin, {
       pins: { get: (k) => reader.pins.get({ ...k, hearth: relayTwo.key }) }, hearth: relayTwo.key, nexus: w.pin.nexus,
-      presentation: { kind: "place", placeKey: lastHop.key, sign: lastHop.sign, arm: { kind: "place", contract: lastHop.carry!, lineage: [] } },
+      presentation: { kind: "place", placeKey: lastHop.key, sign: lastHop.sign, arm: { kind: "place", contract: lastHop.carry!, lineage: [], sealLineage: [] } },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: origin.key, dialSocket: dialer,
     });
     expect(misnamed.ok).toBe(false);
@@ -218,7 +218,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     // Handed relay two's pin out of band, it presents its own Nexus's contract at this Nexus's gate, which reads it unheld.
     const forced = await pullAndVerifyOracle(H2.origin, {
       pins: { get: (k) => H2.pins.get(k) ?? reader.pins.get(k) ?? lastHopPin() }, hearth: relayTwo.key, nexus: w.pin.nexus,
-      presentation: { kind: "place", placeKey: foreign.key, sign: foreign.sign, arm: { kind: "place", contract: foreign.carry!, lineage: [] } },
+      presentation: { kind: "place", placeKey: foreign.key, sign: foreign.sign, arm: { kind: "place", contract: foreign.carry!, lineage: [], sealLineage: [] } },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: relayTwo.key, dialSocket: dialer,
     });
     expect(forced.ok).toBe(false);

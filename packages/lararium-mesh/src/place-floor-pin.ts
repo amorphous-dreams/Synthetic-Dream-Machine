@@ -30,7 +30,7 @@
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
-import { carriageEntryActCid, foldCarriageDetails, isCarriageDescendant, type CarriageAncestry, type CarriageEntry } from "./carriage-registry.js";
+import { carriageEntryActCid, foldCarriageDetails, isCarriageDescendant, resolveAnchoredChain, rollAnchorCid, type CarriageAncestry, type CarriageEntry, type RollAnchor } from "./carriage-registry.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import { PLACE_FLOOR_PIN_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
@@ -185,6 +185,29 @@ export async function placeArmFor(entries: readonly CarriageEntry[], roster: Kah
     lineage.push(node);
     todo.push(...node.parents);
   }
-  if (lineage.length > PLACE_LINEAGE_BOUND) return null;
-  return { kind: "place", contract, lineage };
+  const seals = ancestry?.sealLineage ?? [];
+  const anchors: RollAnchor[] = [];
+  const earliest = [contract, ...lineage].reduce((at, act) => Math.min(at, seals.findIndex((e) => e.epochCid === act.sealEpochCid)), seals.length - 1);
+  if (earliest >= 0 && earliest < seals.length - 1) {
+    const from = earliest;
+    if (from < 0) return null;
+    const graph = new Map<string, { readonly parents: readonly string[] }>(
+      [...counted.map((entry) => [carriageEntryActCid(entry), entry] as const),
+        ...(ancestry?.anchors ?? []).map((anchor) => [rollAnchorCid(anchor), anchor] as const)]);
+    let previous: RollAnchor | null = null;
+    for (let i = from + 1; i < seals.length; i++) {
+      const candidates = (ancestry?.anchors ?? []).filter((a) => a.sealEpochCid === seals[i]!.epochCid &&
+        (previous === null || a.parents.includes(rollAnchorCid(previous))) &&
+        (seals.findIndex((e) => e.epochCid === contract.sealEpochCid) >= i ||
+          isCarriageDescendant(rollAnchorCid(a), carriageEntryActCid(contract), graph)));
+      const selected = candidates.sort((a, b) => rollAnchorCid(a).localeCompare(rollAnchorCid(b)))[0];
+      if (!selected) return null;
+      anchors.push(selected);
+      previous = selected;
+    }
+    const resolved = await resolveAnchoredChain(seals[from]!.epochCid, roster, seals, anchors);
+    if (typeof resolved === "string" || "rejected" in resolved) return null;
+  }
+  if (lineage.length + anchors.length > PLACE_LINEAGE_BOUND) return null;
+  return { kind: "place", contract, lineage: [...lineage, ...anchors], sealLineage: seals };
 }

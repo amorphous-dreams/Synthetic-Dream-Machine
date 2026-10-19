@@ -380,7 +380,7 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
   let bundle: AdmitBundle | null = null;
   let findings: readonly PresentationFinding[] = [];
   if (action === "admit") {
-    const read = await presentationFromBoardDoc(handle.doc(), nym, roster);
+    const read = await presentationFromBoardDoc(handle.doc(), nym, roster, readNexusDoc(core.home)?.sealLineage);
     findings = read.findings;
     const presented = read.presentation;
     // The bundle names the hearth the admit committed to as its pin (the vault that opened the act, wherever it

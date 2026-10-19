@@ -118,9 +118,7 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
       const reading = (await standing()).find((r) => r.aid.toLowerCase() === aid);
       const arm = reading ? await placeArmFor(reading.denyBoard, reading.roster, placeKey,
         carriageAncestryFromBoard(reading.sealLineage, await deps.openBoard(carriageDocUrl(reading.island) as AutomergeUrl))) : null;
-      // The gate's place reader checks every act at its head roster and receives no roll anchors.
-      if (reading && arm !== null && arm.contract.sealEpochCid === reading.roster.sealEpochCid
-        && arm.lineage.every((act) => act.sealEpochCid === reading.roster.sealEpochCid)) {
+      if (reading && arm !== null) {
         return { kind: "place", placeKey, sign: deps.sign, arm };
       }
       // A place presents its contract or nothing: it wears no face.

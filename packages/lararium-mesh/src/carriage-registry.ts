@@ -970,7 +970,7 @@ function presentedVerdict(state: PresentedAdmitState, reason: string, nym: strin
 }
 
 /** The rosters a counted anchor chain resolves, keyed by epoch cid, and the anchors oldest-first. */
-interface AnchoredChain {
+export interface AnchoredChain {
   readonly rosters: ReadonlyMap<string, KahuQuorumSeats>;
   readonly anchors: readonly RollAnchor[];
 }
@@ -1003,7 +1003,7 @@ function rosterClosedBy(anchor: RollAnchor, closed: SealEpoch): KahuQuorumSeats 
  * the anchor that opens lineage[j+1]. Every presented anchor must sit on the walk. A string names the
  * wrong-epoch reason; a `{ rejected }` names a malformed presentation.
  */
-async function resolveAnchoredChain(
+export async function resolveAnchoredChain(
   admitEpoch: string,
   head: KahuQuorumSeats,
   sealLineage: readonly SealEpoch[] | undefined,
