@@ -30,7 +30,7 @@
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
-import { carriageEntryActCid, carriageEntryCounts, isCarriageDescendant, type CarriageEntry } from "./carriage-registry.js";
+import { carriageEntryActCid, foldCarriageDetails, isCarriageDescendant, type CarriageAncestry, type CarriageEntry } from "./carriage-registry.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import { PLACE_FLOOR_PIN_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
@@ -158,16 +158,17 @@ export function filePlaceFloorPins(
  * counted head `carry` and its counted causal past, or null where none stands, an `uncarry` closes it, or the past runs
  * past the lineage bound.
  */
-export async function placeArmFor(entries: readonly CarriageEntry[], roster: KahuQuorumSeats, placeKey: string): Promise<PlaceArm | null> {
+export async function placeArmFor(entries: readonly CarriageEntry[], roster: KahuQuorumSeats, placeKey: string, ancestry?: CarriageAncestry): Promise<PlaceArm | null> {
   const nym = placeKey.toLowerCase();
   const counted: CarriageEntry[] = [];
-  for (const entry of entries) {
+  const folded = await foldCarriageDetails(entries, roster, ancestry);
+  for (const [i, entry] of entries.entries()) {
     if (typeof entry?.nym !== "string" || entry.nym.toLowerCase() !== nym) continue;
     if (entry.action !== "carry" && entry.action !== "uncarry") continue;
-    if (await carriageEntryCounts(entry, roster)) counted.push(entry);
+    if (folded.entries[i]?.counted) counted.push(entry);
   }
   const byCid = new Map<string, CarriageEntry>(counted.map((e) => [carriageEntryActCid(e), e]));
-  const carries = [...byCid].filter(([, e]) => e.action === "carry" && e.sealEpochCid === roster.sealEpochCid);
+  const carries = [...byCid].filter(([, e]) => e.action === "carry");
   // The head: a counted carry no other counted act of this place descends from.
   const heads = carries.filter(([cid]) => ![...byCid.keys()].some((other) => other !== cid && isCarriageDescendant(other, cid, byCid)));
   if (heads.length === 0) return null;

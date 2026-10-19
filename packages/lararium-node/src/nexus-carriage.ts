@@ -57,6 +57,7 @@ import {
   seatedKahuKeys,
   foundingRoster,
   foldCarrierSet,
+  carriageAncestryFromBoard,
   carriageEntriesFromBoard,
   antigenEntriesFromBoard,
   carriageDocUrl,
@@ -468,7 +469,9 @@ export function makeNexusMembership(opts: {
     // THE OTHER FOLD, off this vessel's own board: the places. Never unioned into the leaf map.
     const board = await ensureBoard();
     if (board && sealHome) {
-      const placed = await foldCarrierSet(carriageEntriesFromBoard(board.doc()), foundingRoster(readNexusDoc(sealHome)));
+      const charter = readNexusDoc(sealHome);
+      const placed = await foldCarrierSet(carriageEntriesFromBoard(board.doc()), foundingRoster(charter),
+        carriageAncestryFromBoard(charter?.sealLineage, board.doc()));
       carriers = new Set<string>([...placed].map((n) => n.toLowerCase()));
     }
     current = readings;

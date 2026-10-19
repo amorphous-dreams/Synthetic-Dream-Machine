@@ -42,8 +42,10 @@ import {
   type CarriageEntry,
   type CarriageAction,
   type RollAnchor,
+  type CarriageAncestry,
 } from "./carriage-registry.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
+import type { SealEpoch } from "./wax-stamp.js";
 import { storedLarRecord } from "./stored-record.js";
 
 /**
@@ -188,6 +190,11 @@ export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor
     });
   }
   return anchors;
+}
+
+/** The ancestry a board reader holds beside its charter; the fold verifies each anchor before counting it. */
+export function carriageAncestryFromBoard(sealLineage: readonly SealEpoch[] | undefined, board: LarDoc | undefined | null): CarriageAncestry {
+  return { sealLineage: sealLineage ?? [], anchors: rollAnchorsFromBoard(board) };
 }
 
 /**

@@ -49,7 +49,7 @@ import {
   signCarrierContract, verifyCarrierContract, verifyCarriageConsent, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
-  rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
+  rollAnchorsFromBoard, carriageAncestryFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
   admitCarriageCommit, openAdmitCarriage,
   realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
   edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
@@ -325,8 +325,10 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   if (opts.action === "admit") contract = await resolveContractIn(homed, nym, roster.sealEpochCid);
   else if (opts.action === "carry") contract = { contractSig: await resolveCarrierIn(homed, nym, roster.sealEpochCid), how: "supplied" };
   const { gateKey, boardUrl, handle } = await carriageBoardFor(opts.repo, home);
-  const boardFold = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
-  const parents  = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
+  const board = handle.doc();
+  const boardFold = await foldCarriageDetails(carriageEntriesFromBoard(board), roster,
+    carriageAncestryFromBoard(readNexusDoc(home)?.sealLineage, board));
+  const parents  = causalHeadsForNym(boardFold.entries, nym, opts.action);
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
@@ -364,7 +366,9 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
   // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
   // separate sets and never union. A `carry` moves the carrier observation and never `memberHeld` — the
   // structural half of the class law, reported so a caller reads which relation it actually landed.
-  const after       = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
+  const board       = handle.doc();
+  const after       = await foldCarriageDetails(carriageEntriesFromBoard(board), roster,
+    carriageAncestryFromBoard(readNexusDoc(core.home)?.sealLineage, board));
   const memberHeld  = holdsCarriage(nym, after.members);
   const carrierHeld = holdsCarrier(nym, after.carriers);
 
@@ -386,7 +390,8 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
     }
   }
   const carryBundle = action === "carry"
-    ? await carryBundleFrom({ aid: nexusAidOrRefuse(core.home), nym, board: handle.doc(), roster })
+    ? await carryBundleFrom({ aid: nexusAidOrRefuse(core.home), nym, board: handle.doc(), roster,
+      sealLineage: readNexusDoc(core.home)?.sealLineage })
     : null;
   return {
     action, nym, parents: entry.parents, evidenceCid: carriageEntryActCid(entry),
@@ -1098,14 +1103,13 @@ export async function runNexusMembersList(opts: {
 
 /** Return all locally observed causal heads for one relation family and nym. */
 function causalHeadsForNym(
-  details: ReadonlyArray<{ readonly nym: string; readonly action: string; readonly parents: readonly string[]; readonly evidenceCid: string; readonly sealEpochCid: string; readonly counted: boolean; readonly state: string }>,
+  details: ReadonlyArray<{ readonly nym: string; readonly action: string; readonly parents: readonly string[]; readonly evidenceCid: string; readonly counted: boolean; readonly state: string }>,
   nym: string,
   action: CarriageAction,
-  sealEpochCid: string,
 ): string[] {
   const memberFamily = action === "admit" || action === "revoke";
   const candidates = details.filter((detail) =>
-    detail.nym === nym && detail.sealEpochCid === sealEpochCid && detail.counted && detail.state !== "unavailable" &&
+    detail.nym === nym && detail.counted && detail.state !== "unavailable" &&
     (memberFamily ? detail.action === "admit" || detail.action === "revoke" : detail.action === "carry" || detail.action === "uncarry"));
   const referenced = new Set(candidates.flatMap((entry) => entry.parents));
   return candidates.map((entry) => entry.evidenceCid).filter((cid) => !referenced.has(cid)).sort();
