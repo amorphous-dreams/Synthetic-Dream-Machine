@@ -36,8 +36,14 @@ composite. The recipe + bag-oracle reach run ''two-source'' (operator ruling,
   the running wiki.
 * ''bag removed'' → `CompositeStore.removeLayerLive`: departed titles
   tombstone to projections, records the bag shadowed resurface.
-* ''oracle URL moved'' (bag compact / rotate-recipe) → swap the layer's store
-  in place at the same cascade position, replay from the new doc.
+* ''registry URL moved'' (bag compact / rotate-recipe) → resolve the new doc
+  first; a resolved doc swaps in at the same cascade position and replays, and
+  an unresolved one leaves the old layer and its handle standing
+  (`recipe-watch:bag-unresolved`, one `kept at` log line).
+* ''a system wiki's own canon'' (the `lares` wiki's `bags/lares`) → holds the
+  doc its island's grant laid when the shared `@oracle` plane names another
+  url, and logs one `held at` line: every vessel writes its own lares pointer
+  into that shared doc, so following it would mount a sibling's canon.
 
 Reconciles serialize (one at a time; a change mid-run queues one rerun). The
 wiki behavior starts it at `onEa`, stops it at demote.
@@ -71,8 +77,8 @@ structural set 2026-06-19: it is a per-(PersonaGroup×fingerprint) grant slot
 recipe `bag-stack` — so the reconcile MUST exempt it, else it evicts the live
 write layer the island just mounted (the OCI writable-upper-layer law). `lararium` is ''not''
 structural: it mounts as a ''library layer'' (above `lares`), so the corpus
-composes into a recipe that names it. Oracle-move swaps apply to any mounted
-CRDT slot the oracles point at.
+composes into a recipe that names it. Registry-move swaps apply to every mounted
+CRDT slot but temp, and a system wiki's own canon holds its granted doc.
 
 <<~/ahu>>
 
@@ -86,6 +92,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZIMUmZ5SnDY_9vtjRXwL1fuhkupItPOCZHe7_Swsqt0
+<<^ code="&#x0003;">>ni:///sha-256;NVkxnDNTzGSOqwA1g26zUEAP4ARe6gaIyoej7pjfL0I
 
 <<^ code="&#x0004;" -> to="?">>
