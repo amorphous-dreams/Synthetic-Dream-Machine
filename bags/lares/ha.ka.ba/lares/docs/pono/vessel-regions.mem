@@ -57,11 +57,11 @@ the sealed face gate · `ListeningWSServerAdapter` · the five peer maps (`peerI
 
 The carriage serve-loop over Socket B, the carriage relay stand, the fetch door and its ''process-global'' `setCasDoor`, and the dial CONFIG read. Both reconnect sites call `afterRoll`, the one hook that refolds membership, refreshes the realm plane and then reverdicts.
 
-''The dial itself fires far later'' (`maybeStartNexusClientDial`), inside `openDaemon`, after `registerCrossroadsInOracle` and the realm plane, and it must: a `find` a connected peer answers "unavailable" settles ahead of the local materialize, measured as a fatal `slot bags/crossroads unavailable`. ''Nothing but the physical position of that call enforces the order.''
+''The dial itself fires far later'' (`maybeStartNexusClientDial`), inside `openDaemon`, after `registerCrossroadsPointer` and the realm plane, and it must: a `find` a connected peer answers "unavailable" settles ahead of the local materialize, measured as a fatal `slot bags/crossroads unavailable`. ''Nothing but the physical position of that call enforces the order.''
 
 !!! ④ The planes — oracle · realm · crossroads
 
-`loadGenesis` — the oracle materialize, the core-blob check, the bootstrap parse, and the persona-plane resolution it hands to `bootFacePlanes` and `bootDaemonUrl` (`boot-face-planes.ts`) — and five boot HALTs. `registerCrossroadsInOracle`. The realm plane, which stands `realmPlane` and ''RE-ASSIGNS'' `selfSlotFedGate = realmPlane.gate` — the second write to a cell the verdict already reads. The PersonaGroup ring writes that cell a third time (`ring.compose(selfSlotFedGate)`).
+`loadGenesis` — the oracle materialize, the core-blob check, the bootstrap parse, and the persona-plane resolution it hands to `bootFacePlanes` and `bootDaemonUrl` (`boot-face-planes.ts`) — and five boot HALTs. `registerCrossroadsPointer`. The realm plane, which stands `realmPlane` and ''RE-ASSIGNS'' `selfSlotFedGate = realmPlane.gate` — the second write to a cell the verdict already reads. The PersonaGroup ring writes that cell a third time (`ring.compose(selfSlotFedGate)`).
 
 !!! ⑤ The Herm shore
 
@@ -108,7 +108,7 @@ Regions ①②③④ co-own the verdict cells: `antigenRing` · `selfSlotFedGate
 Four orderings bear load. The first three stand unpinned as orderings, and the fourth already throws. A region plan that moves a line before the reds stand amounts to a rewrite with no instrument.
 
 # ''THE ADMISSION LANDS FIRST.'' The share verdict awaits a microtask before reading `network.sockets[peerId]`, because the WS adapter emits `peer-candidate` BEFORE it keys the socket, and the Repo resolves the verdict synchronously inside that emit. Without the yield a WS peer reads as an in-process house member and every private plane the vessel holds at that instant syncs. ''RED'' (UNBUILT): a staged WS peer that never passed the gate asks for a private plane on its FIRST verdict and draws `false`; ''CONTROL'': the same peer after `peer-candidate` lands draws the same `false` for a different reason (unadmitted), and an in-process island peer draws `true`. The red must fail once the `queueMicrotask` yield goes — collide it by removing the line and re-running.
-# ''THE DIAL FIRES AFTER THE BOARDS'' (`maybeStartNexusClientDial` after `registerCrossroadsInOracle` and the realm plane). ''RED'' (UNBUILT): a joinee boot whose hearth dial pin (`readHearthDialPin`, packed from the root-signed answer’s `--sync-url` and gate pin) names a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
+# ''THE DIAL FIRES AFTER THE BOARDS'' (`maybeStartNexusClientDial` after `registerCrossroadsPointer` and the realm plane). ''RED'' (UNBUILT): a joinee boot whose hearth dial pin (`readHearthDialPin`, packed from the root-signed answer’s `--sync-url` and gate pin) names a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsPointer` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
 # ''EVERY WRITER REVERDICTS''. ''RED'': for each verdict cell, a write followed by a verdict read answers the NEW value. The three tests named under #/what-becomes-a-module pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape; the per-cell verdict reds stand UNBUILT. The red makes an extraction safe, since a missed `reverdict` in a refactor reads as a peer that syncs what it should not and shows up nowhere else.
 # ''THE PREFAB ORDER.'' `openDaemon` writes `pendingVerbContribution` and `wireVerbs` reads it, throwing when it finds none. This one already throws; the other three want that shape.
 
@@ -144,6 +144,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;03mvKV88pBZUHj-JX-2loiWqCrYJ3gYCnS2PJLcTjug
+<<^ code="&#x0003;">>ni:///sha-256;DtlIFaUump_8jaMADUAnPWXpLoiNmciNZn0-BgppONg
 
 <<^ code="&#x0004;" -> to="?">>
