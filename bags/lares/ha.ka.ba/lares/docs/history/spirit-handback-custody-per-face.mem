@@ -1,0 +1,1065 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM custody-per-face wave-two handbacks (four Luna-6 YIN and YANG rounds, 2026-10-19) — Markdown transliterated only; source wording retained; round four outranks the earlier rounds"
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face.mem"
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face"
+```
+
+<<~ ahu #/head>>
+
+! Custody per face, the wave-two handbacks
+
+Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); only Markdown transliterated to memetic-wikitext. Each round's two handbacks trade findings, so a later round confirms or refutes an earlier one, and round four outranks the rest. The rulings and the per-vessel table rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yin-opening>>
+
+YIN-Luna · merged F6 seal-fork handback · platform lens · accessed 2026-10-19
+
+Evidence marks: MEASURED means read directly in cited source or on a cited vendor/spec page. LEAD means inference, an unverified detail, or a proposed design consequence. Claim provenance in the ratchet: confirmed-by-both, yours-alone, or twin-alone (TWIN.md = YANG code lens; MINE.md = YIN platform lens). Local paths below are repository-relative to `/home/joshu/Synthetic-Dream-Machine`, unless a path begins `bags/`.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yin-platform-ground>>
+
+!!! Platform ground
+
+
+''MEASURED — lifecycle does not promise an awake tab or a continuously executing SharedWorker.'' HTML specifies SharedWorker sharing and ports, not a guaranteed execution schedule when clients become backgrounded/frozen. Chrome’s Page Lifecycle guidance documents frozen pages as suspending freezable task queues and its Energy Saver behavior can freeze eligible background tabs; Android Chrome explicitly warns SharedWorker instances can terminate unexpectedly. A discarded page has unloaded, so its JS cannot answer. Worker survival while all tabs freeze is implementation-dependent; there is no cross-engine guarantee that it will run, be throttled in a particular way, or remain alive. Sources, consulted 2026-10-19: [[HTML Standard, Shared workers|https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface]]; [[Chrome Page Lifecycle API|https://developer.chrome.com/blog/page-lifecycle-api]]; [[Chrome freezing on Energy Saver, 2025-01-20|https://developer.chrome.com/blog/freezing-on-energy-saver]]; [[Chrome 148 release notes, stable 2026-05-05|https://developer.chrome.com/release-notes/148]]. The last source says Android SharedWorkers were long disabled over unpredictable process lifetimes and are being re-enabled while reliability is investigated. ''LEAD:'' treat a worker as volatile and make outstanding writes retryable or name their wait/refusal; do not make security depend on it waking.
+
+''MEASURED — availability as of 2026-10-19.'' SharedWorker works in current desktop Chrome, Firefox, and Safari, and Safari on iOS supports it (MDN compatibility table/Baseline 2026). Chrome stable 148 re-enabled SharedWorker on Android on 2026-05-05, explicitly while lifecycle reliability remains under investigation. Firefox Android support appears in the MDN compatibility table; version availability can drift, so query runtime support rather than hard-code a cross-platform lifecycle assumption. Sources: [[MDN SharedWorker, accessed 2026-10-19|https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker]]; [[Chrome 148 release notes, 2026-05-05|https://developer.chrome.com/release-notes/148]]. The `SharedWorker` feature row does not guarantee equivalent process lifetime across desktop/mobile.
+
+''MEASURED — no peer-death `MessagePort` close event contract.'' `MessagePort.close()` is a method that a script invokes to close its own endpoint; MDN documents it as disconnecting that port. MessagePort’s standard event model supplies message/messageerror, not a dependable remote-close event when a tab or process vanishes. Sources, accessed 2026-10-19: [[MDN MessagePort.close(), last modified 2025-09-18|https://developer.mozilla.org/en-US/docs/Web/API/MessagePort/close]]; [[HTML Standard, MessagePort|https://html.spec.whatwg.org/multipage/web-messaging.html#message-ports]]. ''LEAD:'' explicit disconnect improves normal teardown only; frozen, crashed, discarded, or killed tabs need not run it. Don’t infer tab death or wakefulness from a missing response except through an explicit named timeout policy—which this house forbids as a lock decision.
+
+''MEASURED — Web Locks and BroadcastChannel do not identify an awake sealing tab.'' Web Locks coordinate/serialize same-origin scripts (including workers), and are useful for exclusive store ownership; a held lock does not promise its owner can promptly service a message. BroadcastChannel sends messages among eligible same-origin/storage-partition contexts; it has no authoritative roster, and silence cannot distinguish asleep, frozen, dead, or absent. Sources, accessed 2026-10-19: [[MDN Web Locks API|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]]; [[MDN Broadcast Channel API|https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API]]; [[HTML Standard, Web Locks|https://w3c.github.io/web-locks/]]; [[HTML Standard, BroadcastChannel|https://html.spec.whatwg.org/multipage/web-messaging.html#broadcasting-to-other-browsing-contexts]].
+
+''MEASURED — same-origin scripts can attach to the SharedWorker.'' MDN says same-origin contexts can access a SharedWorker, and specifically warns that once created, any same-origin script can obtain a reference and communicate with it. The constructor URL must be same-origin with the caller’s document. Sources, accessed 2026-10-19: [[MDN SharedWorker|https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker]]; [[MDN SharedWorker constructor security considerations|https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker/SharedWorker]]; [[HTML Standard|https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface]]. ''LEAD:'' origin alone cannot authenticate a trusted tab against same-origin injected/compromised script; the holder must bind each port to an admitted session and enforce allowed verbs. This is a threat-model inference, not a finding of a present vulnerability.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yin-ratchet-claims-in-twin-md-checked-against-source>>
+
+!!! Ratchet: claims in TWIN.md checked against source
+
+
+# ''confirmed-by-both, with a boundary. MEASURED:'' Browser `HOLDER_ROUTES` maps `custody:write` to `owner` (`packages/lararium-browser/src/holder-routes.ts:3-6,30`); the island route delivers owner messages only to current owner (`shared-holder-core.ts:117-125`). Browser vessel boot persists Keyhive/Veil archives through `saveBrowserKeyhiveArchive` / `saveBrowserVeilArchive` (`open-browser-vessel.ts:678-679,732-737`). `writeKeystoreRowHeld` obtains the unlocked VK for the `idbName` and calls `writeSealedCarrier` (`browser-custody.ts:386-402`). ''LEAD / not confirmed from these excerpts:'' exact `custody:write` shape `{carrier,bytes}`, whether it always means a full Keyhive export, and global absence of any browser handler; the owner route alone does not establish payload schema or exhaustive absence.
+# ''confirmed-by-both. MEASURED:'' `writeSealedCarrier` accepts an absent row or one whose bytes open under the supplied VK (`sealed-writer.ts:213-218,279-288`). It seals replacement plaintext, writes and reads back a sidecar, opens that sidecar for validation, then renames (`:290-298`). Thus the writer opens/proves the previous same carrier on overwrite; it does not imply caller-level read-modify-write. The value supplied by caller may still be a whole replacement archive. TWIN’s correction is sound.
+# ''confirmed-by-both, narrowly stated. MEASURED:'' browser custody rows in this path use `unlocked.get(idbName)` as VK (`browser-custody.ts:386-402`); sealed-store key table distinguishes vessel key and per-bag content keys (`bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem:65-72`). Content key holder separately holds bare content keys only while unlocked and has a lock operation (`packages/lararium-mesh/src/content-key-holder.ts:2-17`). ''LEAD:'' do not generalize that every kind of private row in every store seals under this VK without a complete writer census. For the named browser custody carrier path, it is vessel-wide, not face-keyed.
+# ''twin-alone, not established. LEAD:'' the specific node veil-row selection via vessel-wide `mountedFace` remains unverified in the inspected requested source. Browser archive helpers key Veil rows by handle (`browser-keyhive-archive.ts:86-94`, as cited in TWIN.md); that does not prove the node selector or refute it.
+# ''confirmed-by-both, qualified. MEASURED:'' route owner-only (`holder-routes.ts:30`, `shared-holder-core.ts:117-125`). ''LEAD:'' “no browser handler exists anywhere” only follows after exhaustive registration/dispatch search; no such exhaustive result was established here.
+# ''twin-alone / partly confirmed. MEASURED:'' `withCustodyRows` offers one exclusive browser read/decision/write act (`browser-custody.ts:404-417`); node behavior wires content-key operations into daemon behavior (`operator-daemon-behavior.ts:1034-1068`, as inspected in TWIN.md). ''LEAD:'' approximately 20 node `updateCustodyRow` callers and the full listed caller inventory were not checked in this pass. Keep them as separate vessel-thread verbs unless routed/atomicity is demonstrated; do not treat the island route as their universal write door.
+
+''MEASURED — owner/session mechanics.'' Shared holder core stores a port set, session-to-port bindings, and one owner (`shared-holder-core.ts:92-105`). Owner routing drops with `no-owner` or delivers to that port (`:117-125`). `disconnect` removes a port/session and clears owner only when explicitly called (`:192-200`). `connect` assigns first live port as owner, boots the island, and binds a session envelope to the port (`:202-221`). Incoming messages are validated against owner epoch, session ID, bound port, and generation (`:223-250`). This is explicit core cleanup; no evidence says a `MessagePort` peer-death event invokes it automatically.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yin-consequence-of-the-one-vk>>
+
+!!! Consequence of the one VK
+
+
+''MEASURED:'' The operator’s rule gives each tab its own unlock; holder retains face content keys only while a same-face session remains unlocked, with last-session close locking that face (`bags/lares/ha.ka.ba/lares/docs/research/session-unlock-2026.mem:25-40`). The sealed-store table separates VK from per-bag content keys (`bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem:65-72`). Browser custody obtains one VK by `idbName`, then uses it for the carrier (`browser-custody.ts:386-402`).
+
+''LEAD — security interpretation:'' if the same VK opens every face’s custody carrier, (a) and (a′) constrain *which unlocked tab may invoke sealing* and keep the VK out of the SharedWorker, but they do not create cryptographic face isolation. Any authorized path holding that VK may open any row sealed under it. A per-face content key does not automatically solve custody archives: Keyhive archive/root material may be vessel-wide, whereas Veil archive rows can be face-specific. The ruling should ask for per-face custody wrapping/sealing keys for face-private rows, while explicitly naming vessel-wide rows and recovery semantics. Distinct face keys change what a compromised or mistaken session can open; a per-face route policy alone only narrows ordinary requests.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yin-ranked-merged-verdict>>
+
+!!! Ranked merged verdict
+
+
+# ''(a′) Asker seals — preferred for session-caused work, with row scope and queued wait.'' The cause tab already owns its unlock, so route a tab-caused sealed write back to that admitted, unlocked session. For sync/delegation with no asker, target an admitted unlocked session of the row’s face. If none responds/stands, leave a named `seal-awaits-session`; do not use a clock to lock or pretend Web Locks/BroadcastChannel prove wakefulness. This best matches one unlock per tab and no holder unlock. Current code’s owner-only route must change, and occupied-carrier proof means the chosen sealer still needs open authority under the current writer. ''Holds across:'' normal awake tab writes, concurrent tabs when each session remains admitted, quiet sync waiting, owner tab closing while another suitable session remains. ''Does not alone hold:'' face confidentiality under a shared VK; tab death without explicit disconnect; persistent write completion when all tabs freeze/close.
+# ''(a) Owner tab seals — viable compatibility fallback.'' Current browser routing already sends the owner these requests. It keeps VK tab-side and has a simple custodian. It couples unrelated write availability to the manifest owner; frozen/discarded/dead owner may strand work and no dependable peer-close event repairs this. ''Holds across:'' owner awake, owner-unlock write flow. ''Flips upward:'' product rule gives owner exclusive authority and accepts waiting until owner reconnects. ''Flips downward:'' owner must not monopolize face-specific write rights or owner can close while other face sessions remain.
+# ''(b) Seal-only facet — conditional future design.'' It could limit a capability to encrypt/sign and lower plaintext/VK exposure if the crypto and store protocol genuinely do not require opening the standing row. Current `writeSealedCarrier` explicitly opens the old carrier and sidecar under VK (`sealed-writer.ts:279-298`), so a pure non-opening sealer cannot perform this exact replacement proof. SharedWorker lifetime and same-origin port admission also remain concerns. ''Holds across:'' only after append-only/new-generation writes or an independent transition proof removes old-row opening, capability scope is face/operation limited, explicit lock revokes it, and port messages are session-authenticated. ''Flips upward:'' a verified non-opening, revocable, scoped primitive and storage protocol.
+# ''(c) Tab-side sealed store — lowest under current one-Repo/one-owner law.'' It may create a stronger boundary if it also has distinct keys and face-specific custody stores, but merely adding a second store under the same VK does not. It adds locks, reconciliation and crash/consistency paths contrary to the single-store owner shape. ''Holds across:'' only if face-separated stores/keys become a required architecture and the house defines one authoritative writer/restore protocol for each.
+
+''Biggest uncertainty / single settling probe:'' instrument one browser vessel with two faces A and B and two independently unlocked tabs. Write distinct archive carriers, then issue (i) A-caused replacement after the owner tab closes, (ii) B-caused replacement, and (iii) uncaused sync replacement while both tabs are frozen/discarded/closed in turn. Record which admitted session receives each request, whether old carrier opens under each proposed key, whether no-tab work waits with `seal-awaits-session`, and whether last-session close leaves no VK or face content key in the holder. Repeat a cross-face open attempt using distinct proposed per-face custody keys. This one probe settles routing/liveness and whether the current one-VK premise violates the required face boundary; it should use real target browser versions because docs do not promise worker scheduling.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-opening>>
+
+YANG handback — F6 seal fork (code lens)
+
+Evidence labels: MEASURED means directly present in source; LEAD means inferred or unverified. Repository paths are relative to /home/joshu/Synthetic-Dream-Machine. Read on 2026-10-19; no suites, builds, or git writes were run.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-sharp-answer>>
+
+!!! Sharp answer
+
+
+Yes: a VK-sealed custody carrier overwrite must open the previous same carrier when it exists. `writeSealedCarrier` permits landing only if the carrier is absent or the supplied VK opens it (packages/lararium-mesh/src/sealed-writer.ts:208-218); the write path opens the prior value, then writes a sidecar, reads/opens it back, and renames it (same file:17-23,279-309). This is a validation/open, not caller-side read-modify-write: callers supply a full replacement value. Browser `writeKeystoreRowHeld` serializes the full value, reads row state, obtains the unlocked VK, then calls this writer (packages/lararium-browser/src/browser-custody.ts:386-402). Composite custody callers can explicitly read and write under one act (`browser-custody.ts:404-417`), but a whole archive value does not merge with the old archive.
+
+No: the daemon mesh's sealed content records do not update an old sealed row. They append/new-address lockboxes, signed records, ciphertext values, and index rows. `#mint` writes a fresh lockbox and key-version record (packages/lararium-mesh/src/content-key-holder.ts:383-421); blob seal writes ciphertext, manifest, index, and new head pointer (`:480-515`); receive lands supplied parcels/records before reload/index (`:717-736`); memory import writes fresh memory-import records and lockboxes (`:841-857`). It does read state to choose lineage, prior manifest-head parents, validate records, and index manifests, but does not open a previous row to rewrite that row. The manifest-head read at `:501-505` only decides the new manifest's parent list.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-call-site-inventory-cause-read-key>>
+
+!!! Call-site inventory: cause, read, key
+
+
+| Write | Cause | Prior read? | Required key |
+| Vessel Keyhive Archive export | Boot/identity setup, not sync arrival (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:1002-1033`; browser setup `packages/lararium-browser/src/open-browser-vessel.ts:678-679,732-737`) | Whole archive exported; no old archive RMW in persistArchiveFloor (`packages/lararium-keyhive/src/archive-floor-write.ts:120-148`). Sealed overwrite still opens same carrier. | VK seals row; Keyhive archive is the exported state. Locked archive bars export/write. |
+| Veil Archive export | Boot/identity setup after veil stands (`operator-daemon-behavior.ts:1028-1033,1045-1049`) | Whole archive; same old-carrier proof on overwrite. | VK seals row; veil identity state is payload. Browser archives are indexed by handle (`browser-keyhive-archive.ts:86-94`). |
+| custody:write | Kernel request; currently holder router sends it only to owner (`packages/lararium-browser/src/holder-routes.ts:23-31`), not asker | Payload-level RMW is absent for a whole carrier; destination writer opens current carrier for validation. | VK. Exact `{carrier,bytes}` protocol shape and provenance are LEAD until protocol definition is checked. No handler was found in browser sources; route alone does not prove no adapter elsewhere. |
+| sealed-seal body + manifest | Explicit daemon verb/session act (`operator-daemon-behavior.ts:758-772`) | Reads staged body and content-key lineage; no prior body-row rewrite. New ciphertext and manifest. | Per-bag/version content key seals body/private record; session signer signs record. |
+| New key-version + lockbox | Roll triggered by session action, seat roll, admission/removal, or holder operation (`content-key-holder.ts:383-421`; seat composed `operator-daemon-behavior.ts:1034-1064`) | Reads lineage/parents/readers; does not replace prior lockbox/record. | Content key signs record; Keyhive member seat wraps lockbox. VK persists the archive needed to reopen identity state. |
+| Checkpoint, hand-over, admission records | Explicit daemon verbs; e.g. hand-over `operator-daemon-behavior.ts:807-817` | Reads plans/lineage, writes new record/lockbox. | Relevant content key + session signer; Keyhive seat for lockbox. |
+| sealed-receive | Explicit local receive verb for remotely delivered member-lane data (`operator-daemon-behavior.ts:834-841`) | Lands ciphertext/records then reloads; no prior row open (`content-key-holder.ts:717-736`). | No key to copy ciphertext; content key to verify/open/index. Keyhive seat to open lockbox. |
+| Outbox parcels | Explicit hand-over/parcels/serve verbs (`operator-daemon-behavior.ts:792-848`) | Fresh parcel seal, no old parcel open. | Separate outbox key; VK unlocks its wrapped key; content key/Keyhive operations provide parcel content. |
+| Memory section cut | Explicit session request (`operator-daemon-behavior.ts:867-878`) | Reads currently held material to construct new section, no old sealed row update. | Bundle key seals section; payload carries content keys. |
+| Memory import | Explicit session import (`operator-daemon-behavior.ts:887-902`) | Reads/verifies section and lineage; adds fresh signed memory-import records and lockboxes (`content-key-holder.ts:841-857`). | Imported content key signs; Keyhive seat wraps local lockbox; VK preserves archive. |
+| Browser custody row write | Setup/custody act | Opens existing carrier as above (`browser-custody.ts:386-402`). | One VK for this idbName/store, including vessel and face-indexed archive rows. |
+
+LEAD: a sync-triggered `sealed-rolls` catch-up may itself create roll writes (`operator-daemon-behavior.ts:907-909`); its writes should be verified as additions, which the content holder's write patterns suggest. A remote arrival itself is not currently shown autonomously invoking receive; the daemon verb is explicit.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-lead-claim-review>>
+
+!!! Lead claim review
+
+
+# Archive writes are whole-value exports: confirmed (`archive-floor-write.ts:120-148`; browser saves `browser-keyhive-archive.ts:82-94`). `custody:write` route-to-owner confirmed (`holder-routes.ts:23-31`). The exact payload cited from node source remains LEAD in this scope. Correction: storage layer itself opens an occupied carrier before overwrite, even though no read-modify-write rides the door.
+# Carrier overwrite opens prior same carrier: confirmed (`sealed-writer.ts:11-23,208-218,279-309`).
+# VK is per vessel, not per face: confirmed by key table (`bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem:65-69`) and browser `idbName` VK lookup (`browser-custody.ts:386-402`). Thus face isolation for these rows is policy/session routing, not cryptographic separation. A session holding this VK can technically open any carrier it seals, including another face's archive.
+# Node veil-row choice via vessel-wide mountedFace: not established by requested files. Browser rows use handleIndex (`browser-keyhive-archive.ts:86-94`); node identity-specific writer selection is provider-based (`operator-daemon-behavior.ts:1045-1049`). Treat mountedFace detail as LEAD.
+# Browser route to owner is measured; no handler found in searched browser source, but absent-handler claim remains qualified by search scope.
+# Node's many updateCustodyRow callers fall outside this kernel subset; their RMW should not be routed as arbitrary whole-value writes without preserving atomicity.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-what-each-option-protects-with-a-shared-vk>>
+
+!!! What each option protects with a shared VK
+
+
+(a) Owner tab seals: VK never leaves owner tab; owner can still open all vessel rows, so this does not cryptographically isolate faces. Writes stall if owner disappears unless authorized ownership transfers while preserving tab-only key custody. Current owner selection is the port that stands island (`shared-holder-core.ts:211-220`).
+
+(a′) Asker seals: best causal attribution and tab-only key residency. But occupied-carrier validation requires open power. With one VK across faces, any eligible session carrying it can open/replace another face's carrier unless row-level face authorization or distinct face keys gate it. Sync arrival can wait by named `seal-awaits-session`; good fit to no-clock rule. Current router sends custody writes owner-only, so routing must change.
+
+(b) Seal-only facet: current custody writer cannot express it. It accepts a full `VesselKey` and invokes open-under-VK for the old carrier (`sealed-writer.ts:43,208-218,279-309`). A pure encrypt/sign facet cannot prove an occupied row is its own without opening it. Append-only generation writes or an independent transition proof could change this. No split sealer/opener abstraction appears in this path.
+
+(c) Tab-side sealed store: could isolate only if keys and rows split per face. A second store under the same VK adds no crypto boundary and conflicts with one Repo/one owner, adding two locks/stores and a merge problem.
+
+Per-face keys: LEAD recommendation is to ask for distinct face archive/custody sealing keys if one face must never open another face's documents. Existing per-face content-key seat is for bag content, not the VK custody table (`sealed-store.mem:65-67`). Decide explicitly which rows are vessel-common (vessel archive/root) and face-private (veil archive) before changing the key hierarchy. Content keys alone do not solve Keyhive archive custody.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-ranked-verdict>>
+
+!!! Ranked verdict
+
+
+# (a′) Asker seals, conditional on row-to-face authorization or per-face keys. It keeps the VK in tabs and ties tab-caused writes to their cause; uncaused sync writes wait for an unlocked same-face session. Without that additional boundary it is only routing policy over a vessel-wide key.
+# (a) Owner seals. Simple key residency and current routing shape, but owner lifetime becomes availability and it does not improve cross-face reach.
+# (b) Seal-only facet. Not expressible with current occupied-carrier proof. Rank rises if append-only/new-generation storage or an independent authenticated ownership proof removes need for plaintext open.
+# (c) Tab-side store. Rank rises only if independent per-face stores/keys are desired and a one-owner/Repo replication law is supplied.
+
+What flips ranking: owner-only authority as an explicit product rule favors (a); a storage protocol that can validate generation ownership without decryption favors (b); settled independent face stores with distinct keys favors (c). (a′) loses if writes lack trustworthy face labels or admission/session identity.
+
+Biggest probe: in one browser vessel, seal distinct A and B archives, unlock each in separate tabs, close the owner tab, then issue A-caused, B-caused, and sync-arrival replacement writes. Trace recipient tab and whether it can open the other face's existing carrier. Finally close the last tab and verify no VK/content keys remain and writes wait/refuse by named cause until re-unlock. This resolves routing, prior-row open, cross-face reach, and last-tab floor together.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-house-constraints-read>>
+
+!!! House constraints read
+
+
+MEASURED: per-tab unlock, face-scoped sessions, holder retains face content keys only while a same-face session is unlocked, and last-session close locks that face (`bags/lares/ha.ka.ba/lares/docs/research/session-unlock-2026.mem:25-40`). Key table distinguishes VK, content keys, Keyhive member keys, bundle key, and outbox key (`bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem:65-72`). Browser SharedWorker owns one island and port/session binding (`packages/lararium-browser/src/shared-holder-core.ts:181-220`). No browser-platform compatibility claim is needed for this code verdict; no external platform source was used.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-wave-two-twin-claim-audit-and-merged-view>>
+
+!!! Wave two: twin claim audit and merged view
+
+
+YIN's twin handback is TWIN.md; its platform evidence is distinct from this code lens. Status tags below say whether a finding was supported independently by both handbacks, only by YANG's code pass, or only by YIN's platform/code pass. MEASURED and LEAD retain their original meanings.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-twin-claim-audit>>
+
+!!!! Twin claim audit
+
+
+* ''MEASURED — confirmed-by-both:'' SharedWorker should not be treated as a durable awake-tab detector or vault. YIN cites the HTML SharedWorker model, Chrome lifecycle/release documentation, MDN, and compatibility sources dated/accessed 2026-10-19. YANG's code pass independently finds explicit port/session bookkeeping but no liveness oracle (`shared-holder-core.ts:181-220`). Chrome Android SharedWorker support/reliability statements are time-sensitive and are dated in YIN's cited Chrome 148 release note (2026-05-05); do not generalize that Android status to other browsers.
+* ''MEASURED — twin-alone:'' MessagePort has no dependable peer-death close notification; Web Locks and BroadcastChannel do not prove a tab can answer promptly. Sources in TWIN.md: MDN MessagePort.close (last modified 2025-09-18), HTML MessagePort, MDN Web Locks and BroadcastChannel, accessed 2026-10-19. YANG did not independently inspect these platform APIs.
+* ''MEASURED — confirmed-by-both, qualified:'' Browser `custody:write` routes to the owner, and owner messages go to the selected owner port (`holder-routes.ts:23-31`; `shared-holder-core.ts:117-125`). YIN likewise found `holder-routes.ts:30`. Neither handback proves an end-to-end browser custody handler is absent outside the inspected scope; that absence remains ''LEAD''.
+* ''MEASURED — YANG-alone:'' A current custody overwrite opens the occupied same carrier before replacement (`sealed-writer.ts:208-218,279-309`); writing is full-value replacement, not caller-level read-modify-write. YIN explicitly left this detail unverified. Browser `writeKeystoreRowHeld` passes the VK into that path (`browser-custody.ts:383-402`).
+* ''MEASURED — confirmed-by-both, scoped:'' Browser custody persistence uses the vessel key, while a separate face content-key seat exists (`browser-custody.ts:386-402`; `operator-daemon-behavior.ts:1034-1068`; `sealed-store.mem:65-72`). Both handbacks conclude that session routing over a shared VK is not cryptographic face separation. The phrase “every sealed row” should remain qualified: the inventory distinguishes VK-sealed custody rows from content-key records, bundles, and outbox parcels.
+* ''LEAD — twin-alone / still unsettled:'' YIN flags the exact node veil-row choice via `mountedFace` as unconfirmed. The requested browser and daemon files inspected here do not settle that node-specific path; inspect `open-node-vessel.ts` and its writer call chain before relying on the prompt's mountedFace claim.
+* ''MEASURED/LEAD — confirmed-by-both with scope caveat:'' Browser owner route is measured. The exact custody message payload and “no handler anywhere” are not proven by the inspected browser files. Likewise, YIN's statement that node `sessionProof` signs the session-caused act is supported by `operator-daemon-behavior.ts:77-80,1041-1062`; the claimed roughly 20 `updateCustodyRow` call sites and their complete caller list were not independently counted here and remain ''LEAD''.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-what-the-platform-lens-adds-to-this-code-verdict>>
+
+!!!! What the platform lens adds to this code verdict
+
+
+''MEASURED — twin-alone:'' A tab may freeze, be discarded, or terminate while the SharedWorker and other tabs have different lifetimes; the worker's survival is not a contract that a sealing tab will answer. The browser design must treat an unanswered seal request as an explicit unavailable condition, not infer wakefulness from a port, Web Lock, BroadcastChannel presence, or wall-clock timeout. The specific platform claims and dates are recorded in TWIN.md and cited there: Chrome Energy Saver freezing guidance (2025-01-20), Chrome extended-lifetime SharedWorker trial (2025-07-31), Chrome 148 release notes (2026-05-05), and MDN/HTML pages accessed 2026-10-19.
+
+''LEAD — inferred from measured platform behavior:'' (a′) must authenticate each port/session and bind the request to its admitted face; same-origin SharedWorker connection alone is not authorization. If no qualifying tab answers, keep/retry the named `seal-awaits-session` operation without using elapsed time as lock policy. Abrupt tab loss cannot be treated as a clean lock event; explicit lock and last-session removal must clear held face content keys, while process death naturally destroys in-memory secrets when the holder itself dies.
+
+<<~/ahu>>
+
+<<~ ahu #/r1-yang-merged-ranked-verdict>>
+
+!!!! Merged ranked verdict
+
+
+# ''(a′) Asker seals — preferred, conditional on face-key policy and a safe replacement protocol.'' A tab-caused write should go back to its admitted asking session; an uncaused sync/delegation write should target an admitted unlocked session of the named face or wait as `seal-awaits-session`. It best preserves per-tab unlock and avoids a holder-retained VK/facet. However, the existing occupied-carrier proof opens the previous row, so an eligible tab needs open power for that carrier. With a vessel-wide VK that means routing is not face-level cryptographic isolation. Add per-face wrapping/sealing keys for face-private carriers, and identify the vessel-wide rows that remain common. ''What flips it:'' the operator requires a write to finish with all tabs asleep, or face labels/session provenance cannot be trusted; a proven scoped seal-only capability could also supersede it.
+# ''(a) Owner tab seals — compatible fallback.'' Existing browser routing is already owner-only, and the VK stays in a tab. It makes owner liveness the availability bottleneck and still does not isolate faces under one VK. ''What flips it upward:'' the owner is deliberately the only authority allowed to perform all vessel custody writes and writes may wait for that owner.
+# ''(b) Seal-only facet — not expressible by the current occupied-carrier contract.'' The current writer receives a VK and opens the old row on replacement. A true encrypt/sign-only facet cannot perform that proof. It could rise if append-only/versioned carriers or a separately verifiable transition proof removes old-row opening, and a capability can be scoped by face, revoked at explicit lock, and safely admitted to the holder. It would constrain operation authority, but with a shared VK it still would not itself create face separation.
+# ''(c) Tab-side sealed store — least supported by present architecture.'' It introduces another store and lock while the holder owns one Repo. Under the same VK it creates no cryptographic boundary. It rises only if separate per-face stores and keys are a product requirement and ownership/replication rules resolve the two-store consistency problem.
+
+''Per-face key ruling:'' MEASURED: the VK is vessel-level in the key table and browser custody lookup; face content keys are a separate seat (`sealed-store.mem:65-72`; `browser-custody.ts:386-402`; `operator-daemon-behavior.ts:1034-1068`). LEAD recommendation: define vessel-common versus face-private custody rows and use distinct face wrapping/sealing keys for face-private rows. This addresses the fact that (a), (a′), and even a seal-only capability over a single VK are authority/routing limits, not cryptographic face boundaries. Existing content keys should not be presumed suitable for Keyhive archive custody without checking restore/recovery semantics.
+
+''Single biggest probe:'' instrument one browser vessel with two faces A/B and separate unlocked tabs. Seal and then replace each face's occupied carrier while logging which admitted port receives each tab-caused write and each sync/delegation write; test whether A can open or substitute B's carrier and vice versa. Freeze, discard, and terminate the owner and asker independently, then close the last tab and verify held keys are gone and the waiting/refusal cause is named. This single probe resolves the key uncertainty: whether current write routing, overwrite proof, face-key boundaries, and browser lifecycle can jointly satisfy the operator's tab-unlock stories. No suites/builds were run as part of this research.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-yin-wave-two-ratchet-handback-per-face-custody-keys>>
+
+!! YIN · Wave-two ratchet handback — per-face custody keys
+
+
+Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or dated primary/vendor source; ''LEAD'' = inference or recommendation. Provenance suffixes: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' refer to MINE.md (YIN) and TWIN.md (YANG). Repository paths are relative to `/home/joshu/Synthetic-Dream-Machine`; repository was read-only. No suites, builds, or git writes were run.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-ratchet-audit-twin-s-top-claims-against-cited-lines-pages>>
+
+!!! Ratchet audit: twin's top claims against cited lines/pages
+
+
+| Twin claim | Finding and why | Provenance |
+| ''MEASURED:'' SharedWorker is not a durable awake-tab detector; browser lifecycle can freeze/discard tabs, and Android behavior is implementation/version-sensitive. | ''CONFIRM.'' HTML defines worker sharing and ports, not an execution guarantee. Chrome Page Lifecycle guidance and Chrome 148 notes (2026-05-05) document freezing/reliability caveats; these do not promise a worker or tab will answer. The code's explicit port/session bookkeeping (`shared-holder-core.ts:92-105,192-250`) has no liveness oracle. | confirmed-by-both (code confirms no oracle; YIN supplies platform evidence) |
+| ''MEASURED:'' MessagePort has no dependable peer-death close event; Web Locks/BroadcastChannel cannot prove an awake sealer. | ''CONFIRM.'' HTML MessagePort event model and MDN `MessagePort.close()` describe local close/message events, not reliable notification that a remote page died. Web Locks serialize ownership; BroadcastChannel delivers messages but provides no authoritative roster. Silence cannot establish asleep versus dead. Sources accessed 2026-10-19: [[HTML MessagePort|https://html.spec.whatwg.org/multipage/web-messaging.html#message-ports]], [[MDN close|https://developer.mozilla.org/en-US/docs/Web/API/MessagePort/close]], [[MDN Web Locks|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], [[MDN BroadcastChannel|https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API]]. | twin-alone |
+| ''MEASURED:'' Browser custody writes route to the owner, and owner messages reach the selected owner port. | ''CONFIRM.'' `holder-routes.ts:23-31` routes `custody:write` to owner; `shared-holder-core.ts:117-125` resolves owner-only dispatch. This establishes route behavior, not that no downstream adapter exists elsewhere. | confirmed-by-both |
+| ''MEASURED:'' Occupied carrier replacement opens the prior carrier; it is full-value replacement, not caller-side read/merge. | ''CONFIRM.'' `sealed-writer.ts:208-218` checks/openUnderVk on the standing bytes; `:279-298` proves tree, opens old carrier, seals sidecar and opens it back before rename. Caller can still supply a complete archive value. | twin-alone (YIN round one had not checked the writer) |
+| ''MEASURED:'' Browser custody uses one vessel VK, so routing over it is not cryptographic face isolation. | ''CONFIRM, scoped to the named browser custody carriers.'' `browser-custody.ts:54-68,386-402` stores one `unlocked.get(idbName)` and passes that VK to carrier writer; key table `sealed-store.mem:65-72` distinguishes VK from content keys. Do not generalize to every mesh/content record: the latter have their own keys. | confirmed-by-both |
+| ''LEAD:'' Node Veil row selection may be vessel-wide via mountedFace. | ''REFUTE as established claim / leave unresolved.'' The cited browser helper indexes Veil rows by handle (`browser-keyhive-archive.ts:86-94`); node provider-based archive write (`operator-daemon-behavior.ts:1045-1049`) does not prove a mountedFace selector. Need inspect the exact node carrier writer chain before asserting either behavior. | confirmed-by-both that this is unsettled |
+| ''MEASURED/LEAD:'' Current code has owner route; exact `custody:write` payload and exhaustive lack of a browser handler are not established. | ''CONFIRM.'' The route excerpt proves destination only. Neither handback establishes payload schema or an exhaustive registration/dispatch search. Keep those as LEAD. | confirmed-by-both |
+| ''MEASURED/LEAD:'' Node has many custody row update callers; retain atomicity and don't route them as arbitrary full-row writes. | ''PARTLY CONFIRM.'' `browser-custody.ts:404-417` has an exclusive composite read/decision/write act; the cited operator daemon wires key operations (`operator-daemon-behavior.ts:1034-1068`). The approximate caller count/inventory was not verified in this audit. Preserve atomic acts as a design constraint; caller count remains LEAD. | twin-alone |
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-twin-lens-added-to-yin-s-platform-and-prior-art-ground>>
+
+!!! Twin lens added to YIN's platform and prior-art ground
+
+
+''MEASURED — confirmed-by-both:'' Existing browser flow grants the VK for the vessel `idbName`; the browser custody comment explicitly says custody rows seal under vessel key (`browser-custody.ts:1-9,54-68,386-402`). Existing one-slot-tree-per-vessel behavior is measured there; independent face trees are a target, not current behavior. Existing carrier replacement must open the old carrier, so F6's asker must have the correct row-class *open* key under the current protocol (`sealed-writer.ts:208-218,279-298`). A seal-only facet cannot satisfy this overwrite contract as written.
+
+''LEAD — twin-alone, accepted:'' A shared worker port, Web Lock, or broadcast presence cannot establish a tab's wakefulness; unanswered asker writes need a named wait/refusal, not wall-clock lock policy. Bind each request to admitted session and face; same-origin access alone is not authority. Browser house behavior remains per-tab unlock, last-tab floor; node unlocks once per boot. Platform references and dates above plus [[HTML Shared Workers|https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface]], [[Chrome Page Lifecycle|https://developer.chrome.com/blog/page-lifecycle-api]], [[Chrome freezing on Energy Saver (2025-01-20)|https://developer.chrome.com/blog/freezing-on-energy-saver]], [[Chrome 148 notes (2026-05-05)|https://developer.chrome.com/release-notes/148]], all accessed 2026-10-19.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-q3-prior-art-keys-and-what-a-person-touches>>
+
+!!! Q3 — prior art, keys and what a person touches
+
+
+| Product | Separation and per-identity action | What the analogy does and does not establish |
+| ''1Password'' | ''MEASURED (accessed 2026-10-19):'' A new account/device sign-in uses account password plus that account's 34-character Secret Key; the Secret Key is locally retained after enrollment and can be found in the Emergency Kit. Multiple accounts can coexist. Current support says accounts with the same account password unlock together; with different passwords, unlock separately. A person enters an account password, not the Secret Key on every routine unlock. [[Multiple accounts|https://support.1password.com/multiple-accounts/]] (published ~2026-08); [[Secret Key|https://support.1password.com/understanding-account-key/]]; [[Security Design v0.4.7 (2024-06-25)|https://1password.com/files/1Password-White-Paper.pdf]]. | Closest precedent for account-specific roots. It also shows shared human unlock passwords can intentionally collapse app unlock boundaries. Vaults inside an account are not separate account unlocks. |
+| ''Bitwarden'' | ''MEASURED (white paper 2025; accessed 2026-10-19):'' One master-password login opens personal User Symmetric Key; the user's RSA private key (under that user key) opens each authorized Organization Symmetric Key. Item keys are wrapped under the personal or organization key by ownership. The person does not type an organization password for each organization in the described design. [[Security white paper|https://bitwarden.com/pdf/help-bitwarden-security-white-paper.pdf]]; [[Organizations|https://bitwarden.com/help/about-organizations/]]. | Good precedent for distinct key domains and explicit public-key delivery. Organization keys are deliberately shared with authorized members, so not equivalent to a face-private key inaccessible to VK holders. |
+| ''Signal Desktop / linked devices'' | ''MEASURED (Signal article 2025-01-27; support page accessed 2026-10-19):'' A new linked device displays a QR; a person authenticates on primary phone and scans/approves. The primary provisions account keys encrypted to the new device's generated key. Devices share identity key material but have device-specific message keys. Optional history transfer uses a one-time history-encryption key. [[Synchronized Start|https://signal.org/blog/a-synchronized-start-for-linked-devices/]]; [[Linked Devices|https://support.signal.org/hc/en-us/articles/360007320551-Linked-Devices]]; [[Sesame spec|https://signal.org/docs/specifications/sesame/]]. | This is one identity across devices, not several identities locally unlocked on one desktop. QR is an enrollment touch, not a per-tab unlock prompt. |
+| ''Matrix / Element'' | ''MEASURED (Matrix spec v1.7; Element guide accessed 2026-10-19):'' Cross-signing is a per-user master/self-signing/user-signing trust hierarchy over devices/users. Secure Secret Storage encrypts private cross-signing and backup secrets; a new device is verified from an existing device or restored with recovery/security key or passphrase. [[Matrix Client-Server spec v1.7|https://spec.matrix.org/v1.7/client-server-api/]]; [[Element recovery key guide|https://docs.element.io/latest/element-support/device-verification/how-to-ensure-you-have-a-recovery-key/]]; [[Element security guide|https://docs.element.io/latest/element-support/matrix-account-management/securing-a-matrix-account/]]. | Again primarily per-account device trust/recovery, not a guarantee that multiple accounts in a client share or separate local unlock boundaries. Matrix spec describes keys; Element guide describes user recovery UX. |
+
+''LEAD comparison:'' Lares's per-tab ask is stricter than these app-level examples: every tab asks its own face unlock; an enrolled tab's key material lives only in that session and last-tab close returns browser to floor. For face-only work, the face route should be sufficient; vessel route is needed only for VESSEL-COMMON acts. Avoid making every face operation demand both prompts if no common row is touched. For node, unlock VK once per boot and load each face only through its own face unlock/recovery authority.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-q1-row-classes-unlock-shapes-restore-and-removal>>
+
+!!! Q1 — row classes, unlock shapes, restore and removal
+
+
+''Current measurement boundary:'' `browser-custody.ts:1-9,54-68,386-402` documents the named browser rows and seals the custody set under one VK. `sealed-store.mem:65-72` names separate VK, member, content, bundle and outbox keys. The following row classification is a target recommendation; some carriers mix face and vessel material and need splitting before classification is implementable.
+
+| Named custody material | Target class | Reason / caveat |
+| Vessel Keyhive archive | ''VESSEL-COMMON only if truly floor/transport-only.'' Otherwise split its face identity/archive payload into one archive per PersonaGroup and mark each ''FACE-PRIVATE''. | Current archive is vessel-level (`operator-daemon-behavior.ts:1002-1033`; browser saves `open-browser-vessel.ts:678-679,732-737`). K15 requires one identity per PersonaGroup and none above. Do not call an archive common if it contains face authority. |
+| Each `veil-archive-h<N>` | ''FACE-PRIVATE'' | Handle-indexed archive (`browser-keyhive-archive.ts:86-94`; node anchors `identity-anchors.ts:138-168`). |
+| Face-key custody (`face-proof-key-h<N>`, `vessel-face-key…`) | ''FACE-PRIVATE'' | Scoped to one face; bundle selection is face-specific (`face-key-custody.ts:8-20`; `vault-carriers.ts:315-318,376-382`). |
+| Guardian sets `guardian-set-h<N>` | ''FACE-PRIVATE'' | A face's guardian policy/recovery association; its guardian secrets remain with guardians. Bundle only that face's set (`guardian-enrolment.ts:1-18`; `vault-carriers.ts:334-338`). |
+| Face-provisional | ''FACE-PRIVATE'' | Pending/restore confirmation for one face (`face-provisional.ts:1-18,55-70`; bundle selector `vault-carriers.ts:339-342`). |
+| Fleet-join custody | ''FACE-PRIVATE'', with one exception: pending join protocol envelope is transient and must be bound to its target face. | Group-named address secret/record belongs to joining face (`fleet-join-custody.ts:4-20`; `vault-carriers.ts:319-331`). `fleet-join-pending` has one in-flight request and sensitive secret but lacks durable face identity (`fleet-join-custody.ts:9-11,91+; vault-carriers.ts:324-327`): redesign/bind to one face; until then it is a vessel-common transient exposure, never bundle it. |
+| Handle book | ''Split:'' minimal routing index ''VESSEL-COMMON''; each face's labels/recognition/private entries ''FACE-PRIVATE''. | The recognizer book is a VK carrier; a selected face bundle copies only its recognized records (`browser-circle-store.ts:57-67`; `vault-carriers.ts:332-333`). A common whole-book encryption key would expose face-private entries. |
+| Persona roster | ''VESSEL-COMMON'' opaque routing metadata; roots, identity material and content-bearing fields ''FACE-PRIVATE''. | Current roster is a hot VK row and lists roots/handles (`browser-custody.ts:60`; `vault-carriers.ts:305-306`). Minimize face labels/existence disclosure. |
+| Slot tree | ''Two classes:'' VK tree ''VESSEL-COMMON''; independent face-X tree ''FACE-PRIVATE'' and opens only FCK-X. | Current tree is one `custody-slots` per vessel, VK lookup by `idbName` (`browser-custody.ts:54-68,386-402`). Never wrap a face tree/key under VK. |
+| Device seed / `vessel-key` | ''VESSEL-COMMON, but never a face-key ancestor.'' | Device seed and public half are vessel key row and current slot tree wraps VK (`browser-custody.ts:5-9,298-306`; `vault-carriers.ts:287-290`). If K15 uses per-face device material, mint distinct face secrets independently; do not let the vessel seed derive/open FCKs. |
+
+''Three shapes — what each browser tab types/touches (LEAD):''
+
+# ''(i) Two independent slot trees — recommendation.'' For face-X-only action, tab supplies/touches X's passphrase/paper/approved PRF slot to open random FCK-X. If the same act needs common rows, separately unlock VK through vessel slot. Each tab performs its own unlock; credentials may coincidentally match but must remain independent trees/keys. Node opens VK once per boot for common operations; face X's own unlock is separately required for X-private authority. Recovery: X bundle contains X FCK recovery slots/material, identity/archive, guardian set and X rows only. Restore X without opening Y. Removing X revokes join/member admission and discards local X FCK/slots when its last session closes; VK and Y remain. Old X backups remain readable to holders of X recovery material until rotated/re-encrypted.
+# ''(ii) derive FCK from face Keyhive secret.'' Tab first unlocks X's hive with X's face-specific route; derivation must use high-entropy private material, domain-separated and versioned, never public identity bytes. Human can do one face touch if that same touch opens the hive. Recovery requires X bundle to restore that secret plus KDF context before deriving FCK; removal/re-found identity can strand old rows unless migration rewraps them. Risk: archive/key bootstrap circularity; current K15 description does not establish a dedicated custody KDF secret.
+# ''(iii) FCK wrapped to X's member key.'' Tab unlocks X's hive and uses X's private member key to unwrap FCK; one face touch only if hive unlock genuinely supplies that key. Restore requires X archive/member key and wrapped FCK plus X guardian route. Member revocation alone does not erase cached keys or old bundles; circularity arises if the member key can only be opened from the archive that FCK is supposed to protect.
+
+''Joint invariant:'' In every design, FCK wrapped under VK is no isolation: any VK holder unwraps it. Isolation exists only if X's own unlock/recovery path can open X key while VK alone cannot. No wall-clock timeout is a lock event. Last tab/session close drops its held keys and rests browser at floor.
+
+''Bundle and guardian rule (LEAD):'' face-X bundle is one-face: X identity/archive/event slice/content-key seat, X FCK plus recovery slots or wrapped form and enough X bootstrap material, X guardian set, X face-private provisional/join/face-key rows selected for restore. Guardian secrets stay with guardians; bundle carries X's authenticated recovery metadata, not Y's set or keys. Common bundle carries only VK recovery plus minimized opaque roster/routing data. Removing X revokes X future admissions and rekeys X's live group where that group protocol supports it; it cannot revoke already exported plaintext or old offline bundles. It must not rotate VK or make Y/common data unreadable.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-reconciliation-shape-choice>>
+
+!!! Reconciliation: shape choice
+
+
+''LEAD — Q1 ranked:'' (i) first, with independent per-face FCK slot trees; (iii) second only if Keyhive member-key bootstrap is proven non-circular and guardian recovery can restore independently; (ii) third unless K15 explicitly adds a stable secret root and lifecycle. YIN's wave-one preference for (iii) is revised after comparing twin's recovery analysis: member-key/archive circularity is a real architecture dependency, while independent slot recovery is direct and testable. (i) does not require two prompts for every act: face-only action asks X; common-row action additionally asks VK. Any common VK-readable payload containing face secrets invalidates the classification regardless of routing.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-q2-placement-in-k15-and-composition-with-f6-slice-three-a>>
+
+!!! Q2 — placement in K15 and composition with F6 slice three (a′)
+
+
+''MEASURED:'' K15 defines a Keyhive identity, store, registry, archive and content-key seat per PersonaGroup; K15 step 6 migrates identity bytes, split stores and archive format together (`keyhive-per-persona-group-2026.mem:55-72`; `stable-founding-road.mem:203,456`). The existing writer opens prior carrier on overwrite (`sealed-writer.ts:208-218,279-298`).
+
+''LEAD — dependency/order:'' per-face custody keys belong *inside K15* because keys, archive/store ownership and one-face restore are all part of that PersonaGroup boundary. F6 slice-three (a′) is the write choreography layered onto the K15 row/key ownership; it cannot manufacture isolation over VK.
+
+# ''K15.1 substrate proof:'' separate two-hive stores, registries, archives and key seats; interleave/reboot/replay and cross-read/mutate red probe. No FCK derived from process-global/shared state.
+# ''Before bytes move, specify row classes and key hierarchy:'' VK slot for common; independent random FCK and own recovery slot tree per face; authenticated carrier-name/face/key-class binding, versioning and face-only bundle shape. Separate mixed carriers (archive, handle book, roster) where necessary.
+# ''K15.1/.2 face contexts/identity ownership:'' face provider gets its own hive, event store, registry, archive, FCK and content seat; remove vessel identity delegation from face events. FCK never derives from VK. Preserve common VK only for floor metadata.
+# ''K15.3 sessions + F6 slice three (a′):'' bind each tab session to one face and its independent unlock; caused write asks the admitted asker tab. Uncaused sync/delegation targets an unlocked admitted tab for that named face or waits as `seal-awaits-session`. Common writes target a VK-unlocked session. Because current replacement opens old row, the chosen sealer must hold that row class's open key. No wall-clock lock; last tab returns browser to floor; node VK once per boot plus per-face authority.
+# ''K15.4 removal/content keys:'' keep FCK distinct from per-bag content keys; face removal rolls/revokes that face's group only. Carry guardian lifecycle and key rotation semantics.
+# ''K15.5 one-face restore/herm:'' restore only X's identity/archive/events/key memory/FCK/guardian set; herm transports ciphertext without face capability. Restore X and prove Y absent/unopenable.
+# ''K15.6 single migration fence:'' identity bytes + split stores + slot trees/FCK + archive/custody formats migrate together as one class change. Mixed legacy material refuses by name and follows re-found path; no silent cross-face import or “A now, B later.” F6 routing ships against this scoped format as one end state.
+
+```text
+K15.1 substrate proof
+       ↓
+row classes + independent FCK/slot/recovery + authenticated binding
+       ↓
+K15.1/.2 face contexts and identities
+       ↓
+K15.3 tab/session binding + F6 slice-three asker sealing (open with row-class key)
+       ↓
+K15.4 removal/content-key lifecycle → K15.5 one-face restore → K15.6 atomic migration fence
+```
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yin-final-ranked-recommendations-and-one-red-test>>
+
+!!! Final ranked recommendations and one red test
+
+
+# ''Q1:'' choose ''(i)'', separate VK and random independent FCK slot trees. Class rows as above; split mixed rows. Per-tab face-only action touches that face's route; common operation additionally opens VK. Bundle/guardian restore contains exactly one face. Removal affects only that face and its old backups remain recoverable by holders of its recovery material.
+# ''Q2:'' place FCK ownership and row partition in K15.1/.2, bind it to K15.3 and F6 slice three (a′), complete K15.4/.5, then migrate atomically at K15.6. F6 asker routing follows established key scope; it never substitutes for crypto separation.
+# ''Single red test proving key isolation, not policy:'' create occupied A and B face-private carriers and distinct FCK/slot trees. Unlock only A; bypass router and try to open, replace and export B using every key available to A, ''including VK and A's Keyhive/member keys''. Require authenticated-open failure and byte-for-byte unchanged B. Same-face A replacement must succeed. Restore A's bundle on a fresh vessel and prove B rows/keys/identifiers are absent and cannot open; repeat for B. Any B open via A or VK is red. This directly tests the key boundary, not route denial.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-yang-wave-two-ratchet-per-face-custody-keys>>
+
+!! YANG · Wave two ratchet: per-face custody keys
+
+
+Research date: 2026-10-19. Repository source is read-only; no suites, builds, or git writes were run. Paths are relative to `/home/joshu/Synthetic-Dream-Machine`. ''MEASURED'' = directly shown in source or cited vendor/spec page; ''LEAD'' = inference or recommendation. Each finding also identifies provenance: ''confirmed-by-both'', ''yours-alone'' (YANG code lens), or ''twin-alone'' (YIN platform lens). Round-one baseline: [[PRIOR-YANG.md|../PRIOR-YANG.md]], [[PRIOR-YIN.md|../PRIOR-YIN.md]]; ratchet handbacks: [[MINE.md|MINE.md]], [[TWIN.md|TWIN.md]].
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-a-ratchet-audit-of-twin-md>>
+
+!!! A. Ratchet audit of TWIN.md
+
+
+# ''MEASURED · confirmed-by-both:'' browser custody takes one VK from `unlocked.get(idbName)` and passes it into the sealed carrier path (`packages/lararium-browser/src/browser-custody.ts:386-402`); the sealed-store key table distinguishes vessel key and content keys (`bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem:65-72`). This supports the narrow claim that the browser custody carriers here are vessel-key protected, not per-face protected. It does ''not'' establish that all stored ciphertext everywhere uses VK: sealed content records use their content-key / Keyhive lockbox hierarchy. TWIN’s caution against saying “every sealed row” without scope is correct.
+
+# ''MEASURED · yours-alone:'' occupied-carrier replacement opens/proves the existing carrier under the supplied key before landing replacement (`packages/lararium-mesh/src/sealed-writer.ts:208-218,279-309`). This is not caller-side read-modify-write: browser callers can supply a whole replacement value. TWIN did not independently verify that code detail. Consequence: a separate encrypt-only facet cannot replace an existing carrier under the current contract.
+
+# ''MEASURED · confirmed-by-both, scoped:'' `custody:write` is routed to the owner in the closed browser route table (`packages/lararium-browser/src/holder-routes.ts:23-31`), and owner delivery resolves to the selected port (`shared-holder-core.ts:117-125`). Neither handback proves that no adapter/handler exists anywhere else; “no handler anywhere” remains LEAD unless the full dispatch graph is inspected.
+
+# ''MEASURED · twin-alone:'' SharedWorker execution/lifetime is not a promise that a tab remains awake or will service a request; HTML defines the worker interface, while Chrome lifecycle guidance describes frozen/discarded pages. MDN/HTML do not provide a dependable remote `MessagePort`-death signal; Web Locks/BroadcastChannel likewise do not certify responsiveness. Sources consulted 2026-10-19: [[HTML Shared workers|https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface]], [[Chrome Page Lifecycle|https://developer.chrome.com/blog/page-lifecycle-api]], [[Chrome Energy Saver freezing (2025-01-20)|https://developer.chrome.com/blog/freezing-on-energy-saver]], [[Chrome 148 release notes (2026-05-05)|https://developer.chrome.com/release-notes/148]], [[MDN MessagePort.close|https://developer.mozilla.org/en-US/docs/Web/API/MessagePort/close]], [[MDN Web Locks|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], [[MDN BroadcastChannel|https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API]]. YANG’s code pass did not independently audit those platform contracts.
+
+# ''MEASURED · confirmed-by-both, qualified:'' holder tracks explicit ports/sessions/owner and clears owner on explicit `disconnect` (`shared-holder-core.ts:92-105,192-221`); no code finding shows peer process death automatically runs disconnect. Platform silence must not be read as proof of death/wakefulness. ''LEAD:'' no qualifying unlocked face session means a named wait/refusal such as `seal-awaits-session`, never a wall-clock lock or guessed liveness.
+
+# ''LEAD · confirmed-by-both:'' with a shared VK, asker/owner routing is authority policy, not cryptographic face separation. A tab that gets VK can open VK-sealed carriers of other faces. Distinct FCKs must be cryptographically independent of VK; wrapping an FCK only under VK makes every VK holder an FCK holder.
+
+# ''MEASURED · yours-alone, correction to TWIN’s unresolved census:'' node’s one `keyhive-archive.bin` row is vessel-wide and VK-hot (`packages/lararium-node/src/vault-carriers.ts:290-291`, `identity-anchors.ts:124-146`), while `veil-archive-h<N>.bin` is face-indexed but also VK-hot today (`vault-carriers.ts:292-293`; `identity-anchors.ts:138-168`). Browser `CUSTODY_ROW` likewise seals both archives and many face rows under one VK (`packages/lararium-browser/src/browser-custody.ts:20-27,386-402`). Face naming and bundle selection do not change current encryption keys.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-b-twin-lens-applied-to-code-row-census-and-corrections>>
+
+!!! B. Twin lens applied to code: row census and corrections
+
+
+The table below separates ''current code custody'' (the existing carrier class) from ''target cryptographic ownership''. “Hot/cold under VK” means current VK protection. The target scopes are LEAD design judgments; K15 can retire or split current “vessel” carriers. Carrier table is the authoritative node census (`packages/lararium-node/src/vault-carriers.ts:1-22,238-405`); browser has its own narrower IndexedDB row matcher (`browser-custody.ts:20-27`).
+
+| Named material | Current code fact | Target class and design note |
+| Vessel Keyhive archive | `keyhive-archive`, hot, VK (`vault-carriers.ts:290-291`); archive is a whole vessel identity archive (`identity-anchors.ts:124-146`). | ''VESSEL-COMMON only as a transitional/floor archive with no face capability.'' K15 says one identity/archive per PersonaGroup and no identity above them (`stable-founding-road.mem:203,456`); so any face-bearing archive must be split and is FACE-PRIVATE. Do not call a secret-bearing old archive “common” and leave it VK-openable. |
+| Each `veil-archive-h<N>` | Per-face file; hot/VK and bundle semantics separate (`vault-carriers.ts:292-293`; `identity-anchors.ts:138-168`). | ''FACE-PRIVATE.'' Seal under FCK-N; bundle carries that face only. |
+| Face-key custody | `face-proof-key-h<N>-…` is cold/VK and bundle whole; `vessel-face-key-…` is hot/VK and stays local (`vault-carriers.ts:313-318,379-382`). | ''FACE-PRIVATE.'' Face proof-key rows ride only face bundle when specified; local vessel face key remains bound to that face and is removed/rotated with that face. |
+| Guardian sets | `guardian-set-h<N>` hot/VK, face-indexed, bundle whole (`vault-carriers.ts:334-338`). | ''FACE-PRIVATE.'' Guardian recovery set and its commitments must accompany the face’s recovery unit. Guardian-held secrets remain with guardians; only recovery material intended for local custody/bundle is present. |
+| Face-provisional | hot/VK, face-indexed, no bundle (`vault-carriers.ts:339-342`). | ''FACE-PRIVATE.'' Local restore state for that face. |
+| Fleet-join custody | Face address secret and join record are hot/VK, grouped by PersonaGroup, no face bundle; pending join is one hot/VK transient (`vault-carriers.ts:322-331`). | Address secret and join record ''FACE-PRIVATE''. Pending join is ''FACE-PRIVATE transient'', bound to the admitted target face; it must not cross-import. The twin’s “vessel-common transient” label is technically current carrier classification, but poor target security semantics: it contains face-specific X25519 request/secret and should be isolated or held under a short-lived face/join key. |
+| Handle book | `.handle-book.json` hot/VK and bundle treatment `lines` (`vault-carriers.ts:332-333`). | ''FACE-PRIVATE partitions plus minimal common index.'' The code comment calls petnames/handle book private and says it closes the social graph at rest (`vault-carriers.ts:1-6`); one whole common-keyed book can leak cross-face relationships. Bundle `lines` already indicates face-selective export, not crypto separation. |
+| Persona roster | Hot/VK, bundle `lines` (`vault-carriers.ts:303-309`). | ''VESSEL-COMMON routing metadata only'', with opaque IDs and minimal existence disclosure. Face roots/identity material must be private. If faces must not learn one another exist, partition/obfuscate roster too. |
+| Slot tree | Node `vk-slots.bin` is floor/outside VK and wraps VK (`vault-carriers.ts:97-100,246-248`); browser has one `custody-slots` tree per vessel (`browser-custody.ts:20-27,54-68`). | Two classes: VK slots ''VESSEL-COMMON''; each face’s independently recovered FCK slot tree ''FACE-PRIVATE''. Do not wrap FCK under VK. |
+| Device seed / vessel key | `vessel-key` plus `vk-slots` are floor-level vessel key material (`vault-carriers.ts:238-248`); browser binds device seed to VK tree (`browser-custody.ts:20-27`). | ''VESSEL-COMMON'', and never an ancestor/wrapper of FCK. Distinguish the vessel key from per-face device-share rows (`device-share` is face-indexed, cold/VK at `vault-carriers.ts:396`). |
+
+''MEASURED · yours-alone:'' node’s `face` and `bundle` fields model ownership/export selection, not key class. All `hot` and `cold` entries are VK sealed in the carrier table’s class law (`vault-carriers.ts:1-22`), and the VK rotation derives its set from that table. Therefore, “face bundle carries only X” does not mean “X’s key is needed to read X at rest.” Browser storage is even clearer: all matched custody rows are sealed to the `idbName` VK (`browser-custody.ts:20-27,386-402`).
+
+''MEASURED · yours-alone:'' key table already distinguishes VK, Keyhive member keys, content keys, bundle key and outbox key (`sealed-store.mem:65-72`). FCK must be a new explicit key class or intentionally defined wrapper domain; existing per-bag content keys are not an interchangeable custody key because they protect sealed content and have different seat/roll/restore lifecycles (`operator-daemon-behavior.ts:1034-1068`; `content-key-holder.ts:383-421`).
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-c-q1-shapes-per-tab-unlock-and-recovery>>
+
+!!! C. Q1 shapes, per-tab unlock and recovery
+
+
+''LEAD · confirmed-by-both:'' select ''shape (i), made genuinely independent'': keep one VK slot tree for vessel-common records, and add a random FCK plus independent face slot/recovery tree for each PersonaGroup. A face slot opens only its FCK. It is never wrapped solely by VK. Shape (i) describes the simplest auditable human/recovery boundary; the FCK must also bind face ID, row name and format/version in authenticated associated data. Old-row overwrite opens with the same row-class key, as required by the measured writer behavior above.
+
+* ''What Kalani or Leilani does per tab (LEAD):'' every browser tab performs its own face X unlock. If the tab needs only X-private work, it asks/touches X’s passphrase, paper route, or a measured device PRF slot and opens FCK-X. It does not unlock sibling faces. A vessel-common act additionally asks for the VK route in that tab, unless a distinct common session is already explicitly authorized; never treat having FCK-X as implicit VK authority. A node opens the VK once per boot per house law, but face-private operations still require the corresponding face’s own recovery/unlock admission. Last tab rests browser at floor; no idle timer.
+* ''Recovery:'' a face-X bundle restores X’s identity/archive, FCK and its face slot recovery material, X’s guardian set/recovery references, X’s face-key custody, provisional state if policy requires it, and only X’s other bundle-selected rows. It contains no Y secrets/rows. Common VK slots/roster/opaque handle routing live in a separate vessel-common recovery unit. Guardian sets ride the relevant face bundle; guardian secret shares remain with their holders. A restore of X must succeed without ever opening Y. Keep one-face restore semantics already required by K15 step 5 (`stable-founding-road.mem:456`) and the carrier bundle selectors (`vault-carriers.ts:334-342,376-382`).
+* ''Removal:'' explicit X removal revokes X admission/member authority, removes X local slot and FCK access and retires X face rows/bundle references; it does not rotate VK or Y’s FCK. Old copies of X’s bundle or cached plaintext remain usable to whoever retained X recovery material; removal cannot retroactively erase offline copies. K15’s fresh PersonaGroup/removal behavior applies to X alone (`stable-founding-road.mem:455-456`).
+
+''LEAD · confirmed-by-both:'' shape (ii), deriving FCK from a face Keyhive identity secret, only works if that secret is itself a private, recoverable, stable unlock root and not public identity bytes or VK-encrypted data. It creates circularity if opening the archive is needed to recover the derivation input, and rotation/re-founding must preserve old-row migration.
+
+''LEAD · confirmed-by-both:'' shape (iii), wrapping FCK to a face Keyhive member key, gives one face prompt only if the face’s private member key is already available through that face’s independent unlock. It can bind authority to membership, but creates bootstrap circularity if archive/member key is itself inside FCK-protected archive; removal requires rewrapping all active copies. Prefer only if K15 defines a non-circular identity key bootstrap. Neither (ii) nor (iii) should wrap FCK under VK.
+
+''LEAD · yours-alone:'' the twin’s direct (i) choice is right, but its proposed “face restore bundle carries face slot tree” needs care: a recoverable slot tree may itself encode a usable credential wrapper. Put only the intended face recovery route/wrapped FCK in that face bundle, preserve secrecy of paper/passphrase/guardian secret shares, and test bundle import does not mint access to other face slot trees. Also separate target schema decision from current code: device seed is common, while per-face `recovery-device-share-h<N>` is face-private.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-d-q2-k15-owns-the-key-data-boundary-f6-slice-three-consumes>>
+
+!!! D. Q2: K15 owns the key/data boundary; F6 slice three consumes it
+
+
+''MEASURED · confirmed-by-both:'' K15 is the roadmap owner for one Keyhive identity, event store, registry, archive and content-key seat per PersonaGroup; its numbered order is explicit, and step 6 migrates identity bytes, split stores and archive format together (`stable-founding-road.mem:203,456`). F6 says slice three waits on its face context and lists owner-seals, scoped facet, or tab-side store as the current unresolved sealed-write shape (`stable-founding-road.mem:504`). Current occupied-carrier opening means (a′) needs the matching FCK or VK, not merely encrypt authority (`sealed-writer.ts:208-218,279-309`).
+
+''LEAD · confirmed-by-both:'' cryptographic custody split belongs inside K15’s face context and step-6 migration fence, not as a route-only F6 patch. F6 slice three under (a′) is the write choreography after key class and row-to-face ownership are fixed.
+
+''Dependency/order (LEAD):''
+
+# ''K15.1:'' run the specified two-hive isolation probe and establish independent face contexts. In parallel before any bytes move, define the exhaustive row census, VESSEL-COMMON/FACE-PRIVATE schema, FCK class, independent slot/recovery tree, associated-data binding and legacy refusal rules.
+# ''K15.1 completion / K15.2:'' each PersonaGroup owns its own hive/store/registry/archive and FCK domain. Remove vessel delegation from face-bearing events as K15.2 requires. Face archive bytes and custody rows cannot be reachable through an above-face identity or VK wrapper.
+# ''K15.3 + F6 slice three:'' bind every tab/session to exactly one face and its own unlock. For tab-caused face writes, asker tab seals; for uncaused sync/delegation, target a currently unlocked tab for that named face or wait with a named cause. Common-row requests use a VK-authorized act. Maintain route/session authentication, and do not use timeout as a lock decision. The designated writer must open an existing carrier with its same-class key before replacement.
+# ''K15.4:'' keep FCK distinct from per-bag content keys; implement per-face roll/removal, guardian lifecycle and no sibling rotation. A face removal cuts that face only.
+# ''K15.5:'' implement one-face bundle/restore and herm carrying without face authoring; guardian recovery restores only that face.
+# ''K15.6 + F6 end state:'' one migration fence moves identity bytes, split stores, per-face slots/FCKs, archive formats and custody row formats together. Reject mixed/ambiguous legacy archives by name; no “A now, B later” state. F6 slice three ships against the resulting row/key schema, not before it.
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-e-prior-art-check-four-systems-dated-2026-10-19>>
+
+!!! E. Prior art check: four systems, dated 2026-10-19
+
+
+These systems are precedents, not evidence of Lares isolation. “Type per identity” distinguishes initial enrollment from every local unlock.
+
+| System | MEASURED key boundary and human action | Provenance |
+| ''1Password'' | Account data uses account password plus account-specific Secret Key in its published security design; new account/device setup needs both, while Secret Key is retained on enrolled devices and may be recovered from Emergency Kit. Multiple account contexts are supported; vaults under one account are not equivalent to separate account unlock roots. A person unlocking separate accounts types each account password when distinct; Secret Key is not retyped every unlock after enrollment. | ''MEASURED · twin-alone:'' [[Security Design white paper v0.4.7 (2024-06-25)|https://1password.com/files/1Password-White-Paper.pdf]], [[Secret Key support|https://support.1password.com/understanding-account-key/]], [[multiple accounts support|https://support.1password.com/multiple-accounts/]] (accessed 2026-10-19). ''LEAD:'' analogy is independent account unlock roots, not per-vault isolation. |
+| ''Bitwarden'' | Personal items use User Symmetric Key; organization items use Organization Symmetric Key wrapped to each member’s RSA public key. One account login opens personal key and, if member, RSA private key/org key; organization does not normally demand a second password. Removal changes org membership/key access, not personal-vault key. | ''MEASURED · twin-alone:'' [[Security White Paper (2025)|https://bitwarden.com/pdf/help-bitwarden-security-white-paper.pdf]] (accessed 2026-10-19). ''LEAD:'' org keys are deliberately shared to members, unlike an isolated face key. |
+| ''Signal Desktop linked devices'' | QR approval from authenticated primary provisions keys to a newly linked device. Devices are linked to the same Signal account; they share identity key pair while each has independent prekeys/session encryption keys. User touches/authenticates primary during linking; thereafter local device unlock, not one password per identity on desktop. This is one identity across devices, not several local identities. | ''MEASURED · twin-alone:'' [[Signal synchronized start (2025-01-27)|https://signal.org/blog/a-synchronized-start-for-linked-devices/]], [[Sesame specification|https://signal.org/docs/specifications/sesame/]], [[Signal linked device support|https://support.signal.org/hc/en-us/articles/360007320551-Linked-Devices]] (accessed 2026-10-19). |
+| ''Matrix / Element'' | Cross-signing establishes user/device trust; Secure Secret Storage / recovery key protects account backup and cross-signing secrets. On a new device, the person verifies from an existing device or enters that account’s recovery key/passphrase. This is per-account recovery/device trust, not one password per device or a universal key across accounts. | ''MEASURED · twin-alone, updated with primary spec:'' [[Matrix Client-Server spec v1.7|https://spec.matrix.org/v1.7/client-server-api/]], [[Element recovery key guide|https://docs.element.io/latest/element-support/device-verification/how-to-ensure-you-have-a-recovery-key/]], [[Element security guide|https://docs.element.io/latest/element-support/matrix-account-management/securing-a-matrix-account/]] (accessed 2026-10-19). ''LEAD:'' closest analogy is account-scoped recovery plus device trust. |
+
+<<~/ahu>>
+
+<<~ ahu #/r2-yang-f-one-red-test-and-ranked-recommendation>>
+
+!!! F. One red test and ranked recommendation
+
+
+''Single red test (LEAD · confirmed-by-both):'' create faces A and B with distinct random FCKs and independent slot/recovery trees, plus occupied veil archives and guardian/face-key/fleet carriers. Unlock only A; bypass every route check and attempt cryptographic open and replacement of B’s already occupied carriers using every key A receives, explicitly including VK, A’s member/identity secrets and common slots. Require authenticated-open failure and byte-for-byte unchanged B ciphertext. A can open and replace A. Restore A from A’s face bundle on a fresh vessel and prove B’s secrets/identifiers are absent and still unopened; repeat for B, then remove B and prove A and common rows remain usable. Any successful B open via VK/A material is red. This distinguishes key isolation from routing policy.
+
+''Ranked final recommendation:''
+
+# ''Q1: (i), independent FCK and face recovery slot tree.'' Vessel slot opens VK for common records; X’s per-tab ask opens only FCK-X. Face bundles are self-contained for exactly one face, with its guardian set; no VK-only wrapper, no sibling credentials. Classify carrier rows as above, and split private partitions out of common roster/book metadata.
+# ''Q2: K15 owns the key boundary and data model.'' Define rows/FCK during K15.1, establish per-face contexts by K15.1–2, integrate asker-seals at K15.3/F6 slice three, finish per-face removal at K15.4 and one-face restore at K15.5, then migrate identity bytes, stores, key slots and archives atomically at K15.6. F6 depends on key ownership and occupied-carrier open authority.
+# ''Red test:'' direct A-to-B authenticated-open and replacement attempt using all A and VK material against occupied B carriers, bypassing routing. It must fail cryptographically and preserve bytes; same-face replacement succeeds; one-face restore contains no sibling.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-yin-wave-two-merged-handback-unasking-vessel-common-unlock>>
+
+!! YIN — wave-two merged handback: unasking vessel-common unlock
+
+
+Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes run. `MEASURED` means directly stated by checked-in source or a primary/vendor source page accessed 2026-10-19. `LEAD` means classification/design inference. Provenance after each finding: ''confirmed-by-both'', ''yours-alone'', or ''twin-alone'' (MINE=YIN; TWIN=YANG). Repo paths are relative to `/home/joshu/Synthetic-Dream-Machine`.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-prior-rulings-held>>
+
+!!! Prior rulings held
+
+
+''MEASURED (prior-round ruling, confirmed-by-both):'' asker seals. A caused sealed write routes to the admitted tab whose session caused it, else to any admitted unlocked tab of that face, else waits as `seal-awaits-session`; no wall clock decides. ''MEASURED (prior-round ruling, confirmed-by-both):'' shape (i): each PersonaGroup has independently random FCK opened only by that face's own slot tree; VK never wraps FCK. FCK lands inside K15; F6 slice three lands with K15 step 3. Sources: `../PRIOR-YIN.md`, `../PRIOR-YANG.md` (2026-10-19).
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-wave-two-ratchet-test-twin-against-code-and-sources>>
+
+!!! Wave-two ratchet: test TWIN against code and sources
+
+
+| Twin claim | Verdict after opening its source | Provenance |
+| Browser's named custody carriers use a single vessel VK; current browser code is not per-face cryptographic isolation. | ''CONFIRM, scoped to those rows.'' `browser-custody.ts:2-12,54-68` names one `custody-slots` tree and seals the listed carrier set under VK; `:386-402` retrieves that one VK for writes. Other mesh/content records may have separate keys, so don't generalize to the whole application. | confirmed-by-both |
+| Node's VK and slot tree currently sit at floor; many face-specific records nevertheless enter VK carriers. | ''CONFIRM, with a needed distinction.'' `vault-carriers.ts:239-259` describes floor-class VK/slots; `:287-398` inventories hot/cold carriers, including face-scoped rows. Being at floor is current custody classification, not proof that floor must retain VK in the target end state. | confirmed-by-both |
+| Browser replacement opens the existing carrier before overwrite, and the writer verifies a new seal before rename. | ''CONFIRM.'' `sealed-writer.ts:208-218,279-298`. A proposed face-key writer must define an equally safe occupied-row replacement path. | twin-alone |
+| A running shared worker, Web Lock or BroadcastChannel can prove a tab is awake and able to seal. | ''REFUTE.'' These APIs don't supply an authoritative awake-tab roster; freezing/discarding and absent messages don't distinguish dead from suspended. TWIN's web pointers: HTML [[Shared Workers|https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface]], [[MessagePort|https://html.spec.whatwg.org/multipage/web-messaging.html#message-ports]], [[Web Locks|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], Chrome [[Page Lifecycle|https://developer.chrome.com/blog/page-lifecycle-api]], all accessed 2026-10-19. Thus keep the ruling's named wait, not a timeout-based owner substitution. | twin-alone |
+| Owner routing proves a safe owner-only write protocol end-to-end. | ''PARTLY CONFIRM.'' `holder-routes.ts:23-31` routes `custody:write` to owner and `shared-holder-core.ts:117-125` dispatches owner-only; that establishes routing mechanics, not full payload schema or every downstream handler. Don't claim more. | confirmed-by-both |
+| Node Veil archive writes select a mounted face or are necessarily vessel-wide. | ''UNRESOLVED / REFUTE as established.'' Browser handle-indexed API is `browser-keyhive-archive.ts:86-94`; the node provider archive caller at `operator-daemon-behavior.ts:1045-1049` alone does not settle the node row selector. Keep node archive selector as an audit item before implementation. | confirmed-by-both that evidence does not settle it |
+| Number/cadence of node custody update callers is measured. | ''REFUTE as measured.'' Carrier table and some callers are visible, but neither handback exhaustively enumerated all callers or supplied telemetry. Describe human semantic cadence as estimate, not observed frequency. | twin-alone |
+| Current browser clear-custody (`tm-clear-password`) is an exceptional explicit-confirmation act. | ''CONFIRM.'' `browser-custody.ts:34-39,613-650`; dispatch `open-browser-vessel.ts:1436` per TWIN. The UI asks about clearing device seed, Keyhive archives and persona roots, so the present operation is broader than simply removing a password. Target operation must split by row class. | twin-alone |
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-twin-lens-additions-to-my-prior-art-and-story-lens>>
+
+!!!! Twin-lens additions to my prior-art and story lens
+
+
+''MEASURED (confirmed-by-both):'' Current browser name `custody-slots` and one VK are established, while independent per-face FCK trees remain target design (`browser-custody.ts:54-68,386-402`). Node's current floor/VK division does not make VK the parent of a face key by law. ''MEASURED (twin-alone):'' occupied carrier replacement authenticates the old ciphertext first (`sealed-writer.ts:208-218`); F6 implementation must keep atomicity and refusal semantics when it moves to per-face keys. ''LEAD (twin-alone):'' owner routing cannot prove liveness; the asker rule must bind the initiating admitted face/session, with named wait when no suitable live sealer answers. My platform review adds the important counterexample to a casual “device key solves it”: non-extractable WebCrypto is neither a device boundary nor user verification (MDN source below), and WebAuthn authorizes a scoped ceremony but doesn't decrypt app rows. (The routing additions don't overturn the no-browser-VK conclusion.)
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-prior-art-system-versus-per-user-custody>>
+
+!!! Prior art: system versus per-user custody
+
+
+All descriptions below carry ''MEASURED'', pages accessed 2026-10-19. These systems describe different OS boundaries, not requirements imposed on Lares.
+
+| System | What a person types/touches for system-class acts | What stays protected before user unlock | Lares lesson |
+| ''Android FBE / Direct Boot'' | DE data is available after boot, including Direct Boot, without a user unlock; CE becomes available only after that user unlocks. System DE can support narrowly scoped system work. [[AOSP File-Based Encryption|https://source.android.com/docs/security/features/encryption/file-based]], accessed 2026-10-19. | CE private user data remains unavailable. DE remains encrypted but is device/system accessible; AOSP says audit it and prefer CE, avoiding personal information in DE. | ''LEAD:'' a no-prompt device class can exist, but it carries weaker privacy than per-face custody. It does not justify placing identity or recovery material in common rows. |
+| ''Apple Data Protection / keybags'' | Complete Protection uses a class key tied to passcode/password and device UID; unlock can use passcode or device biometric. Other classes support data while locked/after first auth. Apple silicon Mac draws its boundary at login/logout, not iPhone lock/unlock. [[Data Protection classes|https://support.apple.com/guide/security/secb010e978a/web]], published 2024-12-19; [[Keybags|https://support.apple.com/guide/security/sec6483d5760/web]], published 2024-12-19. | Class A can become inaccessible after lock; Class C remains accessible after first authentication; Class D on supported iOS-family devices is UID-only and affords limited protection. iOS/iPadOS/visionOS do ''not'' cryptographically separate filesystem contents per user; default iPhone/iPad device and user keybags coincide. | ''LEAD:'' classify rows by when/whose authority needs them. Apple is not evidence for arbitrary multiple face identities sharing device authority. |
+| ''ChromeOS cryptohome'' | User signs in with key, usually password; cryptohome mounts then. No separate per-file prompt for system features already running in the user session. [[ChromiumOS User Sessions|https://www.chromium.org/chromium-os/developer-library/reference/user-sessions/user-sessions/]], accessed 2026-10-19. | Each user's unique vault is encrypted and unmounted at logout/reboot; system files are outside that user vault. [[Security whitepaper|https://www.chromium.org/chromium-os/developer-library/reference/security/security-whitepaper/]], accessed 2026-10-19. | ''LEAD:'' system work can occur outside private user storage; it need not open every user's private rows. |
+| ''Windows DPAPI'' | Default `CryptProtectData` follows the same user's logon credential, normally with no second typed prompt while that context is active. `CRYPTPROTECT_LOCAL_MACHINE` allows any user on that computer to decrypt. [[Microsoft CryptProtectData|https://learn.microsoft.com/en-us/windows/desktop/api/Dpapi/nf-dpapi-cryptprotectdata]], accessed 2026-10-19. | User-scoped blobs require that account context; machine scope broadens access to local users. | ''LEAD:'' “device” authority is a broader principal; scope any such secret tightly and keep it from becoming an ancestor to face keys. |
+| ''WebAuthn'' | No typed app secret is inherent. Authenticator may locally authorize key operation by touch, PIN/password or biometric. Its private-key operation and user verification occur inside authenticator boundary. [[W3C WebAuthn Level 3|https://www.w3.org/TR/webauthn-3/]], Recommendation dated 2026-08-25, accessed 2026-10-19. | Authenticator protects scoped credential operations; an assertion is not general local decryption of arbitrary Lares rows. | ''LEAD:'' a platform authenticator could act as a custody door, but would need a design tying it to actual row cryptography and recovery. |
+| ''WebCrypto non-extractable key'' | Nothing is typed or touched by `extractable:false`; it forbids export/wrap via WebCrypto APIs. [[MDN CryptoKey.extractable|https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey/extractable]], accessed 2026-10-19. | It protects against API key export, not same-origin code using a live key; non-extractability alone doesn't promise hardware binding or user-verification. | ''LEAD:'' not a device unlock by itself. Don't relabel IndexedDB `CryptoKey` as hardware-held custody. |
+
+''Synthesis (LEAD, confirmed-by-both):'' prior art distinguishes system/device operations from private per-user storage; it doesn't demand a human vessel password for browser system activity. A node-only boot custody door remains possible if a defined device-only confidential row survives partition. No surveyed precedent requires a browser vessel secret above per-face roots.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-census-of-current-vessel-common-carriers-and-acts>>
+
+!!! Census of current vessel-common carriers and acts
+
+
+The D/F/S label gives target disposition: ''D'' dissolve into independent per-face rows; ''F'' floor/public-by-design (no vessel key at floor); ''S'' retain a real vessel secret only for a demonstrated irreducible shared confidential payload. Where a row mixes classes, split first. Cause/frequency means semantic expected cadence, not telemetry.
+
+| Act / current row(s) | Cause and cadence | Target sort and evidence |
+| Founding: device seed / vessel key, VK and slot tree | Person, once per new vessel; repair can recur. | ''D+F'' for browser: face roots and FCKs independently random in their PersonaGroup; publish only opaque/public vessel routing facts. ''S'' only for a surviving node-only secret. Current browser root/tree/writer: `browser-custody.ts:2-12,54-68`; node floor classes: `vault-carriers.ts:239-259,287-290`. ''LEAD.'' |
+| Fleet join offer, request, answer, land, abandon; pending row | Joining face/operator per join/rejoin; one pending request at a time; abandon only pending ceremony. | ''D'' pending secret, address secret and durable join record to the admitted target face. ''F'' signed/public offers and transport envelope. Node states one pending and X25519 secret: `fleet-join-custody.ts:4-20,95-110`; carriers `vault-carriers.ts:319-331`; browser `browser-fleet-join.ts:19-20,92-220`. ''MEASURED current, LEAD target.'' |
+| Add/remove passphrase, paper or PRF slot | Face owner per enrollment/removal/recovery; occasional. PRF not enabled in current browser without measurement. | ''D'' each face's slot tree wraps only that face FCK. ''F'' any public slot metadata. ''S'' VK slots only if an actual irreducible common secret remains. Browser supports passphrase/paper and explicitly gates passkey/PRF: `browser-custody.ts:41-43,54-68`; slot APIs `:570-612`. ''MEASURED current, LEAD target.'' |
+| Opaque roster / active face / petnames / declarations | Person when a face is founded/removed/renamed; occasional reads for selection. | ''D'' labels, roots, declarations and recognition records to face; ''F'' minimum opaque routing index if needed. Current rows: `vault-carriers.ts:301-314`, browser `browser-custody.ts:59-63`. ''LEAD:'' opaque does not mean harmless; minimize floor metadata. |
+| Vessel Keyhive archive and face Veil archives | Initial founding plus archive saves/checkpoints; updates as identity changes. | ''D'' one Keyhive identity/archive per PersonaGroup, no identity above them; ''F'' only a truly public transport artifact. Browser currently names vessel archive and face archives in same custody matcher (`browser-custody.ts:5-8,59-60`); face archive indexing `browser-keyhive-archive.ts:81-94`; node writer selector unresolved above. ''LEAD'' target; selector audit unresolved. |
+| Handle-book routing index / circle book | Recognizer writes when contacts/relations change; reads on route. Irregular. | ''D'' face-private labels/recognition/graph; ''F'' only minimal opaque routing index. Browser store says private memory of keys + labels: `browser-circle-store.ts:57-67`; node carrier `vault-carriers.ts:332-333`. Whole existing book should not become public. ''MEASURED payload characterization; LEAD split.'' |
+| Device dyads, face/device edges, face proof/member keys, per-Nexus keys | Enrollment/join/reissue/revocation; verification reads on relevant operations. | ''D'' all face-specific private keys/relations; ''F'' signed public verification endpoints/claims where safe. Carrier face keys and bundle scope: `vault-carriers.ts:315-318,376-382`; `identity-anchors.ts:138-168`; browser wires face dyads `open-browser-vessel.ts:517,810-833`. ''LEAD target.'' |
+| Herm's floor transport key / serving key | Node boot/raise and transport setup; usually per boot/read, rotates only on policy/compromise. | ''F'' public pin/certificate and public transport configuration. If serving key is actually secret, ''S'' only for that node's local custody domain, never a browser VK shared by faces. Node serving key currently separately wrapped under VK: `vault-carriers.ts:239-251`; browser reads floor card before face admission `open-browser-vessel.ts:220-225,752-769,835-843`. Need distinguish public pin from secret serving authority. ''MEASURED current, LEAD classification.'' |
+| VK rotation / slot removal with rotation | Explicit operator action after route removal or compromise; uncommon. | ''D'' per-face rewraps if VK eliminated. ''S'' only if real common ciphertext remains. Current rotation opens/re-wraps census carriers `vault-carriers.ts:477-491`; browser unbind returns rotation offer and needs held VK `browser-custody.ts:594-606`. This current mechanism does not prove the common rows need that key. ''MEASURED current, LEAD target.'' |
+| Face recovery / bundle restore / pending restore commit | Person on backup/restore or device loss; occasional per face. | ''D'' face-only bundle holds that face identity/archive/FCK/recovery/rows. ''F'' public routing inputs. ''S'' only if common recovery material truly remains. `face-bundle-restore.ts:200-240,338-390`; carriers `vault-carriers.ts:392-397`; custody law `bags/lararium/ha.ka.ba/lararium/mesh/custody.mem:56,62,213-235`. ''LEAD target.'' |
+| `tm-clear-password` / browser clear custody | Person deliberately asks to clear local custody; rare, explicit confirmation. | ''D'' clear each face route/rows separately; ''F'' public rows; remove VK only if no S row. Existing browser act opens and clears all sealed rows, then drops tree (`browser-custody.ts:613-650`); prompt explicitly names seed, archives, persona roots (`:613-625`). It must split under end-state design. ''MEASURED current, LEAD target.'' |
+
+''Census result (LEAD, confirmed-by-both):'' none of these activities, as named, demonstrates a need for a browser-wide human-held vessel secret after mixed identity and face records split. Public transport/routing can sit at floor; private state partitions by PersonaGroup. A node may retain a boot-scoped secret only after naming a node-only secret payload. The words “device” or “vessel” in a carrier name do not establish that requirement. Floor has no vessel key in the end state.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-re-asked-question-and-candidate-answer>>
+
+!!! Re-asked question and candidate answer
+
+
+''The truer question:'' After each PersonaGroup owns its independently random FCK, slot tree, Keyhive identity/archive, fleet state and recovery bundle, and after floor rows expose only intentionally public routing/transport data, does any measured browser or node operation still require confidential bytes shared above the waking floor—and, if yes, which principal's custody door must open those bytes?
+
+''Candidate answer (LEAD, confirmed-by-both):'' The census names no necessary browser-common secret. Browser end state has no VK: common operations either dissolve into face rows (''D'') or use public/floor data (''F''). Each tab asks for its own face unlock and receives only that face's FCK; any caused write routes by ruling (a′). The last tab drops face keys and rests at waking floor. Node follows the same per-face rule; its one-per-boot door opens only a specifically measured node-only secret, if any survives. If none survives, node has no common VK either. Thus the operator's A/B choice was framed around a secret the acts do not yet establish.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-what-kalani-types-touches>>
+
+!!!! What Kalani types/touches
+
+
+* ''One face on phone:'' one face credential or approved local face-unlock gesture for private actions; public floor operation asks nothing. No second vessel password. ''LEAD, confirmed-by-both.''
+* ''Three faces on laptop:'' each face tab independently asks for that face's credential/approved authenticator. To use all three, unlock each face in its own tab; A's unlock never opens B/C. Public floor routing needs no credential. Final tab close returns to floor. ''LEAD, confirmed-by-both.''
+* ''Node:'' no common credential if the D/F partition leaves no node-only secret. Otherwise operator uses the node custody door once per boot for that narrow system secret, and a face-private action separately requires that face's authority. ''LEAD, confirmed-by-both.''
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-single-red-test>>
+
+!!!! Single red test
+
+
+Create A, B and C with independent random FCKs, distinct slot trees, archives, fleet edges and recovery bundles. Put only public opaque routing/transport bytes at floor. Unlock A alone. Bypass all routing/session checks and try direct authenticated open, occupied-carrier replacement, restore and rotation of B/C using every key A received plus any floor/node-common key. Every B/C operation must fail cryptographically and leave ciphertext byte-for-byte unchanged; same-face A replacement must succeed. Run each census act while only A is unlocked: any act that requires A's key to operate on common data, or reads/writes B/C without B/C's own key, fails. Finally restore A alone to a fresh vessel and verify no B/C identity/key appears and floor can boot/read without VK. ''LEAD.''
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-platform-source-links>>
+
+!!! Platform source links
+
+
+* Android: [[AOSP File-Based Encryption / Direct Boot|https://source.android.com/docs/security/features/encryption/file-based]] (accessed 2026-10-19).
+* Apple: [[Data Protection classes|https://support.apple.com/guide/security/secb010e978a/web]] and [[Keybags|https://support.apple.com/guide/security/sec6483d5760/web]] (published 2024-12-19; accessed 2026-10-19).
+* ChromeOS: [[User Sessions|https://www.chromium.org/chromium-os/developer-library/reference/user-sessions/user-sessions/]] and [[Security whitepaper|https://www.chromium.org/chromium-os/developer-library/reference/security/security-whitepaper/]] (accessed 2026-10-19).
+* Windows: [[Microsoft CryptProtectData|https://learn.microsoft.com/en-us/windows/desktop/api/Dpapi/nf-dpapi-cryptprotectdata]] (accessed 2026-10-19).
+* WebAuthn: [[W3C WebAuthn Level 3|https://www.w3.org/TR/webauthn-3/]] (Recommendation 2026-08-25; accessed 2026-10-19).
+* WebCrypto: [[MDN CryptoKey.extractable|https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey/extractable]] (accessed 2026-10-19).
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yin-roadmap-placement>>
+
+!!! Roadmap placement
+
+
+''MEASURED (confirmed-by-both):'' K15 owns one identity, store, registry, archive and content-key seat per PersonaGroup; K15 step 6 migrates identity bytes, split stores and archive format together (`stable-founding-road.mem:203,456`; `keyhive-per-persona-group-2026.mem:55-72`). F6 slice three consumes face context for asker-sealed writes (`stable-founding-road.mem:504`). ''LEAD (confirmed-by-both):'' define the exhaustive D/F/S row schema, independent FCK and slot/recovery tree in K15.1; establish per-face ownership and remove above-face identity delegation in K15.1/.2; bind each tab to one face/session and apply (a′) in K15.3 + F6 slice three, ensuring the selected sealer can open the existing row before replacement; complete face-only removal in K15.4 and one-face recovery/restore in K15.5; move identity bytes, split stores, FCK slots and archives behind one migration fence in K15.6. F6 routes writes over this established key ownership; it cannot grant isolation over a VK. Build floor rows without a vessel key throughout, and make node-only VK contingent on a measured S row. Sources: `../PRIOR-YIN.md:66-89`, `../PRIOR-YANG.md:56-69`, `sealed-writer.ts:208-218,279-309`.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-yang-wave-two-merged-handback-what-remains-common>>
+
+!! YANG wave-two merged handback — what remains common?
+
+
+Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` was read-only; no suite, build, or git write was run. ''MEASURED'' means direct code or primary-source statement. ''LEAD'' means classification, target architecture, or inference. Provenance: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' compares my first-pass MINE.md and the YIN lens in local `TWIN.md`. Repo line numbers refer to the checked-in snapshot read on 2026-10-19. Frequency is semantic cadence, not telemetry.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-wave-two-ratchet-audit-of-local-twin-md>>
+
+!!! Wave-two ratchet: audit of local TWIN.md
+
+
+| Twin claim | Finding | Provenance |
+| Browser has one VK slot tree and mixes face and vessel rows under it. | ''CONFIRM.'' `browser-custody.ts:2-12,54-68,93-99,386-402`: one tree, page-held key, all matched rows passed to same writer. Current behavior, not target FCK separation. | confirmed-by-both |
+| None of the listed browser-common acts inherently needs a person-held VK; node might need a narrow key for an operational secret. | ''CONFIRM as LEAD.'' Current node table has both floor and hot/cold rows (`vault-carriers.ts:239-259,287-398`); placement proves current handling, not necessity. The D/F audit supports no browser VK; node S requires a named surviving row. | confirmed-by-both |
+| Join pending is transient and should bind to a target face. | ''CONFIRM with protocol caveat.'' `browser-fleet-join.ts:57-58,106-145,171-222`; node `vault-carriers.ts:319-331`; currently vessel-wide and may be unassigned before offer validation. | confirmed-by-both |
+| Handle-book, roster, archives and dyads should split face-private from floor-public material. | ''CONFIRM as target, not current cryptographic property.'' Node has a single handle book (`vault-carriers.ts:332-333`) and mixed roster rows (`:301-314`); audit and minimize before moving any data to F. | confirmed-by-both |
+| Herm floor transport key belongs at F. | ''PARTLY CONFIRM.'' Public pin/card/charter are F (`vault-carriers.ts:253-259`). Private serving key is not public and today uses VK wrapping (`:249-251`). Its necessity and exact caller were not established; S only conditionally and node-local. | confirmed-by-both |
+| Android, Apple, ChromeOS and Windows exemplify system/per-user separation; WebAuthn and WebCrypto can provide a device-held operation. | ''CONFIRM with scope refinements.'' Android CE is credential-gated while DE supports Direct Boot; Apple classes differ and iOS-family files lack per-user separation; ChromeOS per-user cryptohome locks at logout/reboot; DPAPI machine scope permits all local users. WebAuthn authorizes a local operation, while nonextractable WebCrypto only blocks export/wrap through that API. Detailed primary links follow. | confirmed-by-both |
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-1-census-each-currently-vessel-common-row-act>>
+
+!!! 1. Census — each currently vessel-common row act
+
+
+''MEASURED:'' current browser custody matcher names `vessel-key`, `keyhive-archive`, veil archives, face roots, roster, nexus keys, face keys, join secrets, pending join and walks (`packages/lararium-browser/src/browser-custody.ts:54-68`). Bound rows are sealed under VK (`:10-12,386-402`). Node carrier definitions classify floor/hot/cold and identify face rows (`packages/lararium-node/src/vault-carriers.ts:239-259,287-398`). ''LEAD:'' D/F/S below gives target disposition, not current placement. D means split mixed carrier into independent face-owned rows. F means unsealed/public by design, each leaf starts at floor with its own root, and floor holds no vessel key. S is reserved for a named confidential cross-face system payload; the census has not demonstrated one.
+
+| Act / current common material | Cause and cadence | Target | Evidence and boundary |
+| Founding: mint device seed/VK, initial slot tree, archives, persona root/roster, charter/card | Person founding a vessel; once, with retry/repair if interrupted | ''D+F; S conditional'' | Browser founding persists seed/tree and archives (`open-browser-vessel.ts:700-745`; custody APIs `browser-custody.ts:298-306,524-612`). Node founds VK/SK (`custody-session.ts:80-100`); public card/charter are floor (`vault-carriers.ts:239-259`). Founding per-face root/archive D; signed card/charter and minimum opaque routes F. Only retain S if a distinct confidential system row is specified. |
+| Fleet join: offer, request, answer, land, settle/abandon | Joining face and fleet, per join/rejoin; not normal boot | ''D'' pending, address secret, face key, records/certificates; ''F'' public signed carriage | Browser request and pending (`browser-fleet-join.ts:79-145`), landing/settlement (`:166-222`); node row definitions (`vault-carriers.ts:319-331`). Pending transient must bind to target PersonaGroup. Public offer/answer transport is not secret storage. |
+| Add/remove passphrase, paper, or PRF slot; VK rotation after removal | Person per slot lifecycle, uncommon | ''D'' independent face trees and FCK; ''F'' public slot metadata as appropriate; ''S only conditionally'' | Browser slot kinds (`browser-custody.ts:41-43`) and bind/unbind (`:570-612`); node slot management/rotation (`custody-session.ts:80-100,267-329`; `vault-carriers.ts:477-510`). Current tree is vessel-wide. Under ruling 2, face route mutates only its face tree; no sibling-wide rotation. PRF only after device derivation is measured. |
+| Opaque persona roster, active face, petnames, declarations, handles; add/remove face | Face founding/removal or operator selection; lifecycle and occasional selection | ''D'' labels, roots, declarations, private recognition; ''F'' minimal opaque routing index | Browser roster codec stores root indexes (`browser-custody.ts:313-325`); node rows (`vault-carriers.ts:301-314`); browser founding around `open-browser-vessel.ts:700-745`. Keep one Keyhive identity per PersonaGroup and none above them. Face existence/labels should not leak through a “minimal” index. |
+| Keyhive archive / veil archive | Founding and each archive checkpoint/save | ''D'' each face's archive; ''F'' only if a remainder is a genuinely public transport artifact | Browser saves veil and Keyhive archives (`open-browser-vessel.ts:729-737`); node archive/anchor rows (`identity-anchors.ts:124-168`, `vault-carriers.ts:290-293`). No identity-bearing vessel archive survives K15. |
+| Handle-book routing index | Peer/discovery/relationship updates and route reads | ''D'' face graph, labels and private relations; ''F'' minimal opaque routing facts | Node single `.handle-book.json` row (`vault-carriers.ts:332-333`); browser circle carrier cited in prior handback (`browser-circle-store.ts:57-67`). Split before declaring all common. |
+| Device dyads, face/device edge, face proof/member keys, per-Nexus keys | Join/enrolment and relation change; reads during boot/verification | ''D'' private key and relation authority; ''F'' signed public endpoint/claim | Browser dyad and relationship call sites (`open-browser-vessel.ts:517,810-843`); node face/key carriers (`vault-carriers.ts:315-318,376-397`). “Device” does not make face authority vessel-common. |
+| Herm floor transport key / serving key / transport configuration | Node raise/boot and transport setup; generally each boot, key rotation when explicitly required | ''F'' public pin/card/config; ''S only if'' secret serving authority really must be available before face unlock, scoped to node system custody | Floor rows and serving-tree distinction (`vault-carriers.ts:239-259`). Browser reads floor card/pins before face admission (`open-browser-vessel.ts:752-769,835-843`). Do not call a public pin a secret or bury a secret serving key in browser VK by analogy. |
+| VK rotation (including removal with rotate) | Explicit slot-removal/recovery lifecycle; uncommon | ''D'' per-face rewrap; ''F'' floor excluded; ''S'' only if remaining named S carriers | Node rotation enumerates and reseals VK carriers (`vault-carriers.ts:477-510`; `custody-session.ts:267-329`); current implementation is broad, not proof of need. |
+| Face bundle cut, recovery, restore, pending restore commit | Person recovering/moving one face; occasional | ''D'' all face bundle and restore rows; ''F'' required public routing inputs; ''S'' only for truly common secret | Node selectors and bundle semantics (`vault-carriers.ts:230-231,392-397`); restore preflight/commit (`face-bundle-restore.ts:200-240,338-390`); mesh bundle law (`bags/lararium/ha.ka.ba/lararium/mesh/custody.mem:56,62,213-235`). Restore one face without opening another. |
+| `tm-clear-password` / browser clear-custody | Person explicitly clears custody; rare and destructive | ''D'' each face separately; ''F'' public rows; remove only any genuinely necessary S | Confirm door and no-write refusal (`browser-custody.ts:34-39,613-665`); command dispatch (`open-browser-vessel.ts:1436`). This is not routine unlock. |
+
+''Census result — LEAD, confirmed-by-both:'' no listed act by itself establishes a browser-wide shared secret. Founding, identity, join, roster, dyad, archive and recovery data dissolve into per-face roots (D); intentionally public/signed bootstrap and routing material belongs at floor (F). A node may retain an S class only after naming a secret-only system function and proving it cannot move to D or F. Its “once per boot” policy describes cadence, not necessity. No wall clock decides routing; browser asks each tab; last tab returns browser to floor; node unlocks once per boot if and only if S exists.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-2-prior-art-system-versus-per-user-keys>>
+
+!!! 2. Prior art: system versus per-user keys
+
+
+Sources opened/accessed ''2026-10-19''. These systems show useful splits, not requirements for Lares.
+
+| System | What the person types/authorizes for system work | Protection while no user is logged in/unlocked |
+| ''Android File-Based Encryption (FBE)'' | Direct Boot / Device-Encrypted (DE) data is available without entering the user's credential after boot. Credential-Encrypted (CE) data requires that user's PIN/password/pattern unlock. ''MEASURED:'' [[AOSP FBE|https://source.android.com/docs/security/features/encryption/file-based]], [[Android 15 CDD|https://source.android.com/docs/compatibility/15/android-15-cdd]] (accessed 2026-10-19). | CE user data remains unavailable until unlock. DE is deliberately available to Direct-Boot-aware software, so it must hold only data needed in that state; Android also separates system DE and per-user DE. |
+| ''Apple Data Protection / keybags'' | Complete Protection classes need passcode or an allowed biometric unlock; less restrictive classes can remain available after first unlock or while locked, depending class. macOS login/logout boundary differs from iPhone/iPad lock. ''MEASURED:'' [[Data Protection classes|https://support.apple.com/en-sg/guide/security/secb010e978a/web]], [[keybags|https://support.apple.com/en-sg/guide/security/sec6483d5760/web]] (published 2024-12-19, accessed 2026-10-19). | Complete-protection class keys become inaccessible under their lock policy, while device-protected classes remain available. Caution: iOS/iPadOS/visionOS do not cryptographically separate filesystem contents per user; not a direct model for multiple local faces. |
+| ''ChromeOS cryptohome'' | User signs in with account credentials; cryptohome mounts transparently. System processes outside a user profile do not demand a second per-file password. ''MEASURED:'' [[ChromeOS security whitepaper|https://www.chromium.org/chromium-os/developer-library/reference/security/security-whitepaper/]], [[user sessions|https://www.chromium.org/chromium-os/developer-library/reference/user-sessions/user-sessions/]] (accessed 2026-10-19). | Each user has a separate encrypted vault/keyset, locked on logout or reboot; logged-out cached data remains encrypted. System-only operation continues outside that user vault. |
+| ''Windows DPAPI'' | Ordinary DPAPI use is bound to current user credentials/context and usually same machine, generally with no separate prompt if already logged in. `CRYPTPROTECT_LOCAL_MACHINE` allows any user on the computer to decrypt. ''MEASURED:'' [[Microsoft CryptProtectData|https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata]] (accessed 2026-10-19). | User-scope data is protected from another ordinary user; machine-scope data is available to any machine user. Neither implies protection from a privileged/admin process. |
+| ''WebAuthn / device-bound key operation and non-extractable WebCrypto'' | WebAuthn authenticator may authorize with touch, PIN/password, or biometric locally; no site secret need be typed. ''MEASURED:'' [[W3C WebAuthn Level 3|https://www.w3.org/TR/webauthn-3/]] (accessed 2026-10-19). | WebAuthn keeps authenticator private-key operations local and returns an assertion; it does not automatically encrypt arbitrary app storage. WebCrypto `extractable:false` blocks export/wrap through that API ([[MDN CryptoKey|https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey/extractable]], accessed 2026-10-19), but is not necessarily hardware-bound and same-origin code may invoke the key while usable. Thus it can provide a device-held unlock/touch, not a free system data class. |
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-3-the-re-asked-question-and-candidate-end-state>>
+
+!!! 3. The re-asked question and candidate end state
+
+
+''Re-asked question — LEAD, confirmed-by-both:'' “After each face-bearing row has an independent root and each floor-readable item is public by design, what confidential cross-face data remains, and which custody boundary needs to unlock it?” This unasks “how do vessel-common acts unlock?” because the census classifies acts by their rows; the verb common to multiple faces does not itself require a common secret.
+
+''Candidate answer — LEAD, confirmed-by-both:'' Browser holds no VK. Dissolve all confidential identity/join/roster/dyad/archive/recovery records to per-face roots; leave only intentionally public opaque routing/transport at floor. Each admitted tab unlocks only that face's independent random FCK using that face's own slot tree. No FCK is wrapped by VK. If future node requirements identify a genuinely secret system-only payload that must survive before face unlock, give the node a separately named device custody root and open it once per boot; keep it out of browser and all face roots. If no such payload survives D/F, node has no common key either. A floor holds no vessel key. One Keyhive identity per PersonaGroup, none above them.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-what-kalani-types>>
+
+!!!! What Kalani types
+
+
+* ''One face on phone:'' one face credential/touch to open its FCK in that tab. Public floor operations ask nothing. No second VK prompt.
+* ''Three faces on laptop:'' each face tab asks for its own face credential/touch: three independent asks to unlock all three (or per-face authenticator gestures). No one face opens another.
+* ''Node:'' if a named secret S class remains, one device custody-door authorization once per boot; a face-private act also needs that face's admission/FCK. If all rows resolve D/F, no common credential at boot.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-roadmap-landing>>
+
+!!!! Roadmap landing
+
+
+* ''K15 step 3:'' land an independently random FCK for each PersonaGroup, with only its own slot tree able to open it; keep FCK out of VK. Partition mixed carriers and enforce one identity per PersonaGroup.
+* ''F6 slice three:'' seal the write at its asker; route it to that admitted session's tab, else an admitted unlocked tab of the same face, else park it as `seal-awaits-session`. An unawake tab is not inferred from a timer or worker roster. A replacement must satisfy the standing carrier open contract.
+* ''B1:'' no browser vessel secret; per-face rows under FCK and public floor rows only. Node S remains conditional on an explicit system-only secret inventory; node unlock once per boot if present.
+
+<<~/ahu>>
+
+<<~ ahu #/r3-yang-single-red-test>>
+
+!!!! Single red test
+
+
+Create faces A, B, C with independent random FCKs, distinct slot trees, face archives, join pending/secrets, dyads, guardian rows, handle-book partitions and restore bundles; put only public opaque routing/transport data at floor. Unlock A alone. Bypass routers and directly try authenticated open, overwrite, VK/face-key rotation, backup and restore of every occupied B carrier using every byte/key A receives and every floor/node-common value. ''Every B open must fail and preserve ciphertext byte-for-byte; same-face A replacement succeeds.'' Then restore A alone on a fresh browser: it gains no B identifiers/key/archive, and public floor work runs with no key. Invoke each census act with A admitted/unlocked and B locked; any operation that succeeds in reading or writing B, or demands A's key for a genuinely public/common row, fails the test. Test the F6 routing rule separately by issuing from A's admitted session: the write reaches that session, falls back only to another admitted unlocked A tab, otherwise waits under `seal-awaits-session`.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-yin-round-four-confirmation-and-lock>>
+
+!! YIN — round-four confirmation and lock
+
+
+Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` first, then `MINE.md` and `TWIN.md`. The repo stayed read-only; I ran no suite, build, or git write. `MEASURED` means source/spec/vendor evidence directly says it; `LEAD` means target allocation or inference. Provenance marks compare the wave-one notes: ''confirmed-by-both'', ''yours-alone'' (YIN/MINE), ''twin-alone'' (YANG/TWIN). File paths below are relative to `/home/joshu/Synthetic-Dream-Machine`; all external pages were accessed 2026-10-19.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-1-ratchet-twin-claims-against-source>>
+
+!!! 1. Ratchet: TWIN claims against source
+
+
+| TWIN claim | Verdict after opening cited source | Provenance |
+| Node founds VK, SK, and custody root; VK opens SK through serving tree. | ''CONFIRM.'' `packages/lararium-node/src/custody-session.ts:80-116,154-190,227-242` mints VK/SK, writes SK tree under VK and opens both on unlock. | twin-alone |
+| No serving carrier exists yet; Herm does not presently consume SK to raise/read. | ''CONFIRM.'' `vault-carriers.ts:12-14,249-251` says no serving row stands. `vessel-standing.ts:60-79,113-119` fixes Herm persona ceiling at zero and says raised operator caps ride with the recognized operator. `open-node-vessel.ts:3242-3291` composes Herm; the cited raise path is separate. This makes SK a future conditional secret, not today's Herm S row. | twin-alone |
+| Herm has no seated PersonaGroup (`personaSlotCeiling("herm") === 0`). | ''CONFIRM.'' The implementation returns zero unconditionally for Herm. | twin-alone |
+| Node's place signing seed is private and currently floor-loaded, and is distinct from VK/SK. | ''CONFIRM, with consequential qualification.'' `node-vessel-identity.ts:429-442` reads private `signingKey` from a local key file; `:451-487,491-499` separates floor signing/device capability from PersonaGroup root. `vault-carriers.ts:239-251` explicitly puts `vessel-key` and `sk-slots` at floor; `open-node-vessel.ts:3283` supplies seed to Herm. It is confidential, auto-loaded at boot, and not VK or SK. However, it is a private vessel key at floor by the source's own naming. That ''breaks'' an unqualified “floor holds no vessel key / floor contains only public material” law. TWIN's proposed exception is not the operator's existing ruling; it needs an explicit house ruling or a code/design change. | twin-alone |
+| Node's current VK/SK hierarchy is not a reason to keep face rows under VK. | ''CONFIRM.'' Current carrier table `vault-carriers.ts:287-398` describes placement. The prior-round census independently sorts private face-bearing pieces D and public artifacts F; it found no necessary browser S. | confirmed-by-both |
+| Container restart cannot itself authorize private work. | ''CONFIRM as target, not an observed orchestrator policy.'' Roadmap says every boot starts at floor and a sovereign verb refuses pending `lares vault unlock` (`stable-founding-road.mem:66-68`); container entry point is `tools/lares-container.sh` named at `:68`; `founding-runbook.mem:156` covers unlock flow. No source here establishes unattended orchestrator credential delivery, so no claim that every deployed orchestrator behaves safely. | twin-alone |
+| CLI and MCP do not each hold separate vessel secrets; face authority must be presented at the node gate. | ''CONFIRM as roadmap target.'' `stable-founding-road.mem:201` says CLI/MCP run proves face; `packages/lares-cli/src/sealed-act-door.ts:1-21`, `custody-door.ts:2-26`, `custody-frames.ts:135-202` implement the seat/door framing. | twin-alone |
+| Guest island is an established separate key store / vessel. | ''REFUTE as measured.'' `device-capabilities-2026.mem:142-143` identifies Mudlet as a probe/leaf behind a node and Unreal as guest island/camera-on-streaming-server, but `wiki-layer-ontology.mem:249` defines a Lua object-model guest, not an independent custody store. Separate guest-owned keys would make it a new vessel by LEAD; source does not prove they exist. | twin-alone |
+| Mobile/browser worker lifetime can hold custody across suspension. | ''REFUTE as authority claim.'' House matrix reports iOS no SharedWorker lifetime guarantee and Android support varies by version (`device-capabilities-2026.mem:137-140`). Safari's official extension guidance requires iOS nonpersistent background pages and says use storage to save/restore state ([[Apple Developer|https://developer.apple.com/documentation/safariservices/optimizing-your-web-extension-for-safari?changes=_5]], accessed 2026-10-19). Worker liveness cannot substitute for each tab/session's face admission. | confirmed-by-both |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-yin-lens-applied-to-node-side-types-what-wave-one-missed>>
+
+!!!! YIN lens applied to node-side types (what wave one missed)
+
+
+''MEASURED (twin-alone):'' Node daemon begins with an empty in-memory custody holder (`packages/lararium-node/src/main.ts:336-345,371-374`); lock clears held VK/SK (`custody-holder.ts:151-155`). Herm has no face slots. The private place signing seed nevertheless remains available from a clear-at-rest file and supports floor signing (`node-vessel-identity.ts:429-442,451-487`). This is the principal counterexample to the blanket browser-derived statement “floor only holds public data.”
+
+''LEAD (confirmed-by-both):'' Hearth is a composition over the node floor (`main.ts:353-374`; `vessel-caps.mem:139-143`), not a new key principal. It inherits the node's D/F/S partition and still needs per-face admission for face rows. A Herm's need to serve before a face exists is a real timing constraint: it cannot seat a face, and its raise carries ephemeral caps on a recognized operator (`vessel-standing.ts:60-79,113-119`). No current serving S row solves that need; the place signer is the distinct existing floor secret.
+
+''LEAD (twin-alone):'' Docker `harbor`, `civic`, and `mesh-scenarios` package the node rather than adding a vessel secret. State may persist across restart while volatile face/serving keys must not; unattended restart may restore only agreed floor behavior. A humanless container cannot type the one-per-boot custody unlock, so any private D/S service pauses. Do not inject credentials through environment, image layers, health checks, or orchestration. Sources: `stable-founding-road.mem:56,66-68`; `tools/lares-container.sh` at roadmap `:68`; `founding-runbook.mem:156`.
+
+''LEAD (twin-alone):'' CLI/MCP are seats against the daemon, not vessels with a second copy of VK/FCK. Each run/session proves its face; restarting an MCP client must not inherit another session's authority (`stable-founding-road.mem:201`; CLI door citations above). A node's boot unlock, if required, is distinct from that face proof.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-2-locked-law-including-the-one-unresolved-house-conflict>>
+
+!!! 2. Locked law, including the one unresolved house conflict
+
+
+''LEAD — lock the D/F partition:'' A shared act never creates a shared secret by itself. Split every mixed carrier first: every confidential row attributable to a PersonaGroup is ''D'', sealed under that group's own independent random FCK and opened only by that group's own slot tree; no VK wraps an FCK. Only deliberately public/bootstrap/transport/routing bytes are ''F''. Retain ''S'' only for a named confidential system payload that cannot be dissolved into a face row and must act before any face exists; name its principal and opener. Each browser tab asks for its face independently; a node opens any approved node-only S once per boot; CLI/MCP sessions each present face authority. The last browser tab discards live FCKs and leaves floor; node shutdown/restart drops volatile face and serving keys. No wall clock picks an owner or expires a session. One Keyhive identity per PersonaGroup, none above them; asker seals.
+
+''MEASURED conflict:'' The agreed phrase “a floor holds no vessel key” cannot be applied literally to current node code. It stores a private *vessel signing seed* at floor and loads it without a human at boot. This is not the custody VK (the slot-tree key that wraps mixed carriers), but it is still a vessel private key and cannot truthfully be called public F. The serving key (SK) is a third key, wrapped by VK; no serving row currently exists. ''House ruling needed to close the lock:'' either (1) amend “floor holds no vessel key” to “floor holds no custody VK/FCK; a separately named floor signer S may exist,” and explicitly accept/protect the current signer-at-rest behavior; or (2) require this signer S to live behind a named boot custody mechanism, which changes Herm's no-human-before-face startup behavior and must state how public relay service stands before authorization. Until that ruling, the shared D/F/FCK/asker law locks, but “every floor is public-only” does not. TWIN's suggested “explicitly accept clear-at-rest” option still needs the operator's express choice; it is not silently inferred from the prior agreement.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-3-every-vessel-type-and-one-red-test-each>>
+
+!!! 3. Every vessel type and one red test each
+
+
+Rows refer to the common act census in `../PRIOR-YIN.md` (“Census of current vessel-common carriers and acts”) and `../PRIOR-YANG.md` (“Census — each currently vessel-common row act”), read 2026-10-19. In short: founding and slot trees; join offer/request/answer/land/pending; face slot changes and rotation; roster/labels/declarations; Keyhive/Veil archives; handle/circle routing; dyads/face proof/member/Nexus keys; transport configuration; recovery/bundle/restore; clear-custody. Their private face pieces are D; signed offers/public cards, charters, pins, public config and minimum deliberate route bytes are F. Mixed existing carriers must be split. Current browser one-VK tree: `packages/lararium-browser/src/browser-custody.ts:2-12,54-68,386-402`; current node classes: `packages/lararium-node/src/vault-carriers.ts:239-398`.
+
+| Type / current common rows → target | S set and interaction | Face unlock / floor or shutdown transition | Bend / house ruling | Single red test |
+| ''LarVessel class / worker host'' (`lar-vessel.mem:20-24,34-40`) | D per face, F public/bootstrap; no additional S absent named payload. | Owning face opens its own FCK; last face session discards it. | Host capability is not authority. | Give worker A context, bypass router and open/replace B ciphertext: refuse; A own-row replacement passes. |
+| ''Desktop browser, laptop leaf'' (`device-capabilities-2026.mem:133,140`) | Census D/F; S=∅. Person enters that face's passphrase/paper route or a configured, FCK-bound authenticator action. | Per tab; final tab gone → erase live FCK, F only. | SharedWorker/Web Locks may coordinate but do not prove awake-tab liveness; caused write reaches asker, else admitted face session, else waits `seal-awaits-session` (ruling a′). W3C Web Locks describes coordination, not app authority ([[MDN|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], accessed 2026-10-19). | Unlock A only; direct open/replace/restore/rotate B using all A and F bytes: fail, B ciphertext unchanged; A replacement succeeds. |
+| ''iOS phone leaf'' (`device-capabilities-2026.mem:137`) | Same D/F, S=∅. Face secret or a configured authenticator gesture cryptographically bound to FCK unwrap. | Per tab; process eviction/relaunch starts at F and asks again. | No SharedWorker lifetime guarantee in house matrix; Safari background extensions are nonpersistent; never use their presence as a key lease ([[Apple Developer|https://developer.apple.com/documentation/safariservices/optimizing-your-web-extension-for-safari?changes=_5]], 2026-10-19). | Suspend/kill the asker while a seal is pending; only asker result or named wait allowed; relaunch asks again, B remains cryptographically closed. |
+| ''Android phone leaf'' (`device-capabilities-2026.mem:138`) | Same D/F, S=∅. No Direct Boot DE bytes become Lares cross-face keys. Android platform has separate CE and DE with Direct Boot availability ([[AOSP FBE|https://source.android.com/docs/security/features/encryption/file-based]], accessed 2026-10-19), but this does not reclassify Lares D. | Per tab; process/worker loss or reboot → floor; each selected face unlocks. | SharedWorker/version support is not key authority; unattended system work is limited to F unless house creates named S. | Kill shared worker/reboot with A formerly active: all face opens now refuse until A re-unlocks; B never opens via A or DE. |
+| ''Tablet leaf / proposed waking-floor carrier'' (`device-capabilities-2026.mem:139`; `waking-floor.mem:148,200-202`) | D on mounted faces, F public/ciphertext carriage, S=∅. | Face tabs per-tab unlock; unattended floor sync cannot decrypt D. At final session only F/ciphertext remains. | ''Break:'' any requirement to decrypt/transform private D while unattended conflicts with no-key floor. Ruling: route it to an always-on node, or explicitly add narrowly specified S and boot authorization. Background sync must not silently gain FCK. One tablet probe is bounded to one device (`device-capabilities-2026.mem:200-206`). | Mutate remote private D while tablet is unattended: it may carry ciphertext/F, cannot decrypt or commit a D transformation; after face unlock, that face can sync. |
+| ''Installed PWA / iOS Home Screen web app / Android WebAPK'' (`device-capabilities-2026.mem:137-139`) | D/F; S=∅. Install grants no secret. | Per app tab/session; close/relaunch/eviction → F. | Installation affects capability/lifecycle, not row ownership. On iOS it changes web-app mode/push; on Android WebAPK can be a full vessel per house matrix. | Terminate/reinstall/clear volatile state; no D opens before per-face unlock, public F remains readable. |
+| ''Probe, e.g. Mudlet'' (`device-capabilities-2026.mem:133,142`) | Target seat owns D/F; probe holds no FCK or S. Reconnect token, if used, is a session credential, not row key. | Each node session presents authority at node; closing probe drops its session, node floor remains. | Outbound-only probe is not a LarVessel; it cannot turn node gate into local custody. | With A session only, ask node for B row; node refuses and probe cannot decrypt bytes locally. |
+| ''Planned native / desktop shell'' (`device-capabilities-2026.mem:137-143`; `stable-founding-road.mem:68,104-109,397`) | D/F; S=∅ unless separately specified node-class system payload. OS keychain/biometric is only an FCK unlock mechanism. | Per shell face session; last session clears live FCK, floor only. | Shell storage/authentication details are not established. A keychain does not change face ownership. | Instrument shell's storage adapter: A OS credential cannot open B; process termination leaves no live key and F remains. |
+| ''Host↔lararium guest island; Unreal/Verse guest'' (`device-capabilities-2026.mem:143`; `wiki-layer-ontology.mem:249`; roadmap `:191-192`) | Host owns ordinary D/F. Guest has no S. If guest owns persistent rows/keys, its own D/F and FCK make it a separate LarVessel, never an inherited host-key child. | Host-mediated guest asks bind to selected face/session; guest end drops capability. | ''Break:'' host may own its own key store / Pixel Streaming server hosts the vessel. House ruling: boundary follows actual storage/key owner; explicit distinct vessel if guest stores keys. UE6/Verse timing and Mudlet transport remain planned/uncertain. | Hostile guest with A context tries guest B and host B direct store reads: both refuse; host-authorized A request succeeds. |
+| ''Node daemon / full node'' (`device-capabilities-2026.mem:141`; `vault-carriers.ts:287-398`) | All node common private face rows D; public card/charter/floor data F; future serving rows are S only once instantiated. Current place signing seed is separate floor S exception. | Each face row session requires its face; node S custody target once per boot if approved; process lock/restart drops volatile keys. Current place seed auto-loads from file without prompt. | Current VK wraps mixed carriers. Node archive selector still unresolved in prior census. Floor signer conflict above must be ruled. | Boot with no VK: F service works; no face row opens. Unlock A and attack every B carrier/rotation/restore directly: fail unchanged. Verify place signer is separately recorded, not mislabeled F or SK. |
+| ''Hearth composition'' (`packages/lararium-node/src/main.ts:353-374`; `vessel-caps.mem:139-143`) | Same node rows and S as node; hearth adds no new principal. | Per-face after node boot; shutdown/lock clears face and serving keys to floor. | Composition today follows VK paths; must keep hearth face access from inheriting node-wide custody. | Mount hearth with only A: A succeeds, direct B identity/archive access fails; lock leaves only F plus whatever separately ruled place S. |
+| ''Herm / crossroads node'' (`vessel-standing.ts:60-79,113-119`; `open-node-vessel.ts:3242-3291`; `device-capabilities-2026.mem:141`) | Zero face rows. Public card, inception, charter and public relay bytes F. Private place signing seed is current ''S'', clear-file and boot-loaded. SK has no serving payload, so serving S=∅ today (`vault-carriers.ts:12-14,249-251`). | Herm auto-loads place signer each boot today; no face prompt, no serving-key use measured. Raise uses recognized operator's ephemeral caps; stops when no longer renewed. | ''Break:'' herm must serve before any face exists and cannot seat one. Must choose: permit separately named floor signer S; or gate it and specify how herm public service stands pre-unlock. Do not call signer F, VK, or SK. | Boot faceless: public relay/card work succeeds; no VK/SK or face opens; no face rows are written; private signer never appears in output; reboot retains only persistent place identity/public bytes and no raised caps. |
+| ''CLI opening node session'' (`sealed-act-door.ts:1-21`; `custody-door.ts:2-26`; `stable-founding-road.mem:201`) | CLI owns no vessel S; addressed face rows are D, public verbs F. | Node unlock at most once/boot if S needs it; every CLI run proves its own face; CLI exit doesn't clear daemon boot state. | Offline CLI cannot silently cache VK or reuse previous face admission. | Admit A, then forge/omit B binding through CLI; A operations succeed, B operations refuse; receipts/logs contain no credentials or key bytes. |
+| ''MCP / watcher seat'' (`codex-wire.ts:70-93`; `vscode-wire.ts:84-150`; `stable-founding-road.mem:201`) | No MCP-local S; node D/F/S governs. | Each MCP session/invocation presents face authority; node boot unlock is separate. | Long-lived MCP transport cannot inherit whichever face last used node; client restart loses its session authority. | Keep A admitted; submit B request without B proof and after MCP restart; both refuse; B succeeds only with B admission. |
+| ''Docker/container vessel: harbor, civic, mesh-scenarios'' (`stable-founding-road.mem:56,66-68`; `founding-runbook.mem:156`) | Same node D/F and any named node S; container adds none. | Start at floor; human unlock after restart only if the S law requires it; no-human restart remains public/ciphertext only. | ''Break:'' orchestrator restart has no human. It cannot auto-open D/S. Availability pauses for private work; public floor can resume. | Restart unattended with persistent state: F starts; D/S reads refuse until explicit authorized unlock; inspect env/image/log/health route for no credential. |
+| ''Node daemon packaged inside container'' | Same node rows; place signing seed remains separate current S exception. | Daemon boot currently auto-loads place signer; face/serving volatile keys start absent. Container restart clears those volatile keys. | Distinguish daemon restart from CLI/MCP client restart. | Restart with state mount: place identity/public floor only; no face/SK authority restored; every private operation refuses until relevant face/node door. |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-platform-vendor-spec-facts-that-constrain-the-law>>
+
+!!!! Platform/vendor/spec facts that constrain the law
+
+
+* ''MEASURED (yours-alone):'' AOSP says CE storage is available only after user unlock and DE is available during Direct Boot; it recommends CE where possible. This proves the OS supports a system/user storage split, not that Lares should put a vessel key in DE. [[AOSP File-Based Encryption|https://source.android.com/docs/security/features/encryption/file-based]], accessed 2026-10-19.
+* ''MEASURED (yours-alone):'' Apple says iOS background extension pages are nonpersistent, may unload, and must save/restore state from storage. This supports re-opening after lifecycle loss, not assuming a live worker as a custody holder. [[Apple Safari extension guidance|https://developer.apple.com/documentation/safariservices/optimizing-your-web-extension-for-safari?changes=_5]], accessed 2026-10-19.
+* ''MEASURED (confirmed-by-both):'' Web Locks coordinate same-origin scripts/workers; lock ownership is coordination, not proof of an awake tab or authorization to open a face. [[MDN Web Locks API|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], accessed 2026-10-19.
+* ''MEASURED (confirmed-by-both):'' WebAuthn Level 3 describes scoped public-key credentials and authenticator ceremonies; touch/PIN is not generic decryption of arbitrary IndexedDB. Bind any authenticator result cryptographically to the face FCK route before calling it an unlock. [[W3C WebAuthn Level 3|https://www.w3.org/TR/webauthn-3/]], Recommendation dated 2026-08-25, accessed 2026-10-19.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-4-roadmap-landing>>
+
+!!! 4. Roadmap landing
+
+
+''MEASURED (confirmed-by-both):'' K15 owns one identity/store/registry/archive/content-key seat per PersonaGroup; step 6 moves identity bytes, split stores and archive format together (`stable-founding-road.mem:203,456`; `keyhive-per-persona-group-2026.mem:55-72`). F6 slice three moves Repo/kernel into browser holder, routes sealed writes to asker, and lands with K15 step 3 so each face's custody rows seal under its own key (`stable-founding-road.mem:504-507`). B1 is the browser one-face/custody work referenced by prior handback (`../PRIOR-YIN.md` and `../PRIOR-YANG.md`, 2026-10-19); the exact B1 source lines were not re-opened in this pass, so treat that label as inherited rather than newly measured.
+
+''LEAD sequencing:'' K15.1 define exhaustive row schema and independent FCK/slot/recovery tree; K15.2 enforce per-face identity ownership and split mixed carriers; K15.3 bind browser tab/session and node session to one face, apply (a′), land F6 slice three with authenticated occupied-row replacement; K15.4 remove one face and its rows without sibling rotation; K15.5 one-face recovery/restore; K15.6 migrate identity bytes/stores/FCK routes/archive in one fence. F6 routes writes over established key ownership; it cannot create isolation over VK. Keep Herm's private place signer decision and container no-human restart behavior explicit prerequisites. `sealed-writer.ts:208-218,279-309` shows current occupied-row replacement authenticates existing ciphertext and verifies before rename; preserve that refusal/atomicity in the face writer.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-lock-witness>>
+
+!!!! Lock witness
+
+
+For every vessel, instantiate faces A/B/C with independent random FCKs, distinct slot trees, archives, joins, dyads, handle-book partitions and recovery bundles; put only intended public bytes at F. Unlock A alone, bypass session/router checks, and try to decrypt, overwrite, rotate, export, back up and restore every B row using all A and floor-held bytes. B must always fail with ciphertext unchanged; same-face A replacement must pass. Then perform each row-bearing act and prove it touches only its owner or F. End by killing sessions/restarting: browser leaves F; node loses volatile face/SK keys; herm has only whichever separately ruled place signer and public floor. For tablet, unattended private D transform must fail. For containers, unattended restart must refuse D/S. For guest, a hostile boundary must not read either sibling face. For CLI/MCP, forged or restarted sessions must not retain authority. These are intended red tests, not executed.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yin-5-open-evidence-ruling-items>>
+
+!!! 5. Open evidence/ruling items
+
+
+# ''Critical ruling:'' approve the private place signing seed as a separately named floor S (then amend “floor holds no vessel key” precisely), or move it behind a named custody door and accept that a herm's no-face public service changes. Current code is clear-file and auto-load; neither handback's browser finding nor the node SK settles this.
+# Current serving key has no serving row; future serving class is conditional and must not be used to justify current VK unlock.
+# Prior census leaves node Keyhive archive row selector unresolved; prove row selector before migration.
+# Exact native-shell custody and guest-owned persistent store are not measured; treat the latter as separate LarVessel if it appears.
+# Tablet unattended sync supports F/ciphertext only under current law. Any demand for private D work requires a separately approved system S or work shifted to node.
+# No suites, builds, device experiments, or proposed red tests ran in this read-only research round.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-yang-wave-three-node-side-confirmation-and-lock>>
+
+!! YANG — wave-three node-side confirmation and lock
+
+
+Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` was read-only; no suites, builds, or git writes were run. This handback is the complete wave-three note. ''MEASURED'' means direct source/code evidence. ''LEAD'' means classification or target design. Paths and line numbers below refer to the repository snapshot read today. `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first; their shared D/F/S census is the row inventory used here.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-ruling-what-the-herm-serving-key-is>>
+
+!!! Ruling: what the herm serving key is
+
+
+''MEASURED:'' Node founding currently mints a vessel key (VK), serving key (SK), and custody root; SK is wrapped by the VK entry in `sk-slots.bin`. Unlock opens VK then SK and holds both; lock drops them. `packages/lararium-node/src/custody-session.ts:80-116,154-190,227-242`; `packages/lararium-node/src/custody-holder.ts:151-155`. The carrier table says the serving class is for rows sealed under SK, but explicitly reports that ''no serving row stands yet'': `packages/lararium-node/src/vault-carriers.ts:12-14,249-251`.
+
+''MEASURED:'' A Herm has no seated PersonaGroup: `personaSlotCeiling("herm")` is unconditionally zero, and its raise carries a recognized operator's caps on that operator's keys, with no persistence across reboot: `packages/lararium-mesh/src/vessel-standing.ts:60-79,113-119`; `bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem:143`; `bags/lares/ha.ka.ba/lares/api/pono/waking-floor.mem:200-202`. Herm boot composes a place DID, public/replicated crossroads and read/relay faces; the raise door is a separate ephemeral recognition path: `packages/lararium-node/src/open-node-vessel.ts:3242-3258,3264-3291`; `packages/lararium-node/src/main.ts:558-575,604-614`. No current Herm caller opens SK for its raise or read-face.
+
+''Verdict — LEAD, with a material exception to the earlier handback's broad “no node S” candidate:'' SK is a *secret key by nature*, but it is ''not a current Herm S row'', because there is no serving payload for it to protect and no Herm call site that consumes it. It cannot be made F: the canon says future serving rows are confidential, independently sealed under SK, with a serving gate distinct from both floor and sovereign gates (`bags/lararium/ha.ka.ba/lararium/mesh/custody.mem:27,40-49`; `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:188,214`). Nor should SK be replaced by the Herm's place key: place identity and serving-row custody have distinct scopes. If a future serving row lands, it creates a genuine node-local S class and requires the row's own serving authorization.
+
+''MEASURED exception:'' The node already has a distinct private *place signing seed* (`vesselSeed`), read from a clear keypair file at boot. It signs as the vessel/place and derives public-floor gate children; it is explicitly distinct from the PersonaGroup root. `packages/lararium-node/src/node-vessel-identity.ts:296-314,340-348,429-487,491-499`; carrier table calls `vessel-key` a floor row (`vault-carriers.ts:239-248`); Herm composition receives the seed at `open-node-vessel.ts:3283`. Its public half/card/inception are F, but the private seed itself is confidential and not F. ''LEAD classification: this place key is an existing node-only S'', opened by the daemon at each boot without a human typing or touching anything today. It must be named separately from VK: current usage proves it cannot simply be erased or moved into a face FCK. This is exactly where the abstract law needs a node-specific clause: “floor has no VK” remains true, but “floor is only public material” is false for current node code. To meet the agreed custody law, either protect this S under a narrowly named node boot custody mechanism, or explicitly accept and document the present clear-at-rest place-seed exception; do not disguise it as public F. Thus the node has S today even though no serving S row is measured. The code's SK is redundant for current Herm behavior and must not be conflated with this place-key S.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-locked-law>>
+
+!!! Locked law
+
+
+''LEAD — lock (reconciled):'' Every private record attributable to a PersonaGroup dissolves into that face's rows (D), sealed by that face's independently random FCK and opened only by that face's own slot tree. A floor contains intentionally public/bootstrap/routing material (F), never a VK; any private node place key is separately named S, never relabeled F. A vessel may have an S set only where an inventoried confidential cross-face/system payload cannot be dissolved into D or made public by design; name each row, its owning principal, and its boot-opening mechanism. Browser tabs ask separately per face; CLI and MCP calls present their own face/session at the node gate. Current node daemon opens its place signing seed automatically at boot (an existing, unresolved S exception); any VK-protected node S additionally requires the node's once-per-boot custody unlock. No clock chooses an owner or expires an unlock. The final browser tab leaves browser floor only; node shutdown/restart drops volatile face and serving keys and returns to floor, while persistent place S is available again to the next boot under current code.
+
+The two prior handbacks' current-row census remains authoritative: founding/roster/identity/archive/handle-book/dyad/join/recovery/rotation/clear-custody are mixed current carriers, but the private pieces are D and the deliberately public pieces F; no browser S was found. Their file:line evidence and D/F/S assignments are in `../PRIOR-YIN.md` sections “Census of current vessel-common carriers and acts” and `../PRIOR-YANG.md` section “Census — each currently vessel-common row act.” Node carrier classes are measured at `packages/lararium-node/src/vault-carriers.ts:239-398`; those current placements do not establish target necessity.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-node-side-census-and-type-lock>>
+
+!!! Node-side census and type lock
+
+
+The type list below combines canon's one LarVessel/four-host/no-subclass rule (`bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem:20,34`), device-seat matrix (`bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem:129-143`), node classes, and the named planned surfaces. For each, “rows” means the shared census above, filtered to rows that surface can actually hold. `S = ∅` refers to an additional shared *custody payload* after the named place signing seed; current VK wrapping of mixed node rows is not endorsed as target placement. The place signing seed is an extant, separate node S exception detailed below.
+
+| Vessel / seat | Common rows and D/F/S | Any target S; unlock / floor transition | Break or required seam | Single red test |
+| ''Node daemon, Lararium/full node'' | Can host all node rows in the prior census: face roots, archives, roster/maps, joins, dyads, handle-book, recovery and outbox-related records → ''D'' by PersonaGroup; public vessel card/charter/floor route data → ''F''; serving rows → ''S only if actually instantiated''. Current hot/cold carrier table: `vault-carriers.ts:287-398`; each boot starts with empty custody holder: `main.ts:336-345,371-374`. | ''Conditional S:'' extant nonempty serving payload only (none measured in current table: `vault-carriers.ts:12-14`). Operator uses face route at `lares vault unlock` once per boot if the target node S class exists; process lock/restart zero-fills keys and composes floor (`custody-holder.ts:18-27,151-155`; `main.ts:462-469`). | Today the single VK is ancestor to mixed rows. Must partition by face and define an SK owner/route before implementing S. Daemon outputs and receipt/log surfaces must not leak typed credentials (`custody-frames.ts:6-23,37`). | With only face A unlocked, direct carrier open/replace/restore/rotation of B must fail and preserve B bytes; floor and public service still boot with no VK; if S rows exist, VK unlock opens only those node rows and no B row. |
+| ''Hearth composition'' | Same node store/census as full node; hearth is a lift over the floor, not a new vessel type. Face rows D, public foundation/gate rows F, serving rows conditional S. `main.ts:353-374`; canon `vessel-caps.mem:139-143`. | Same conditional node S; once-per-boot node door; shutdown/lock returns to floor. | A face-bearing hearth needs face admission after node custody unlock; do not treat “node unlocked” as opening every PersonaGroup. Existing implementation binds composition to VK, so target face separation remains work. | Unlock A and mount hearth: read/write A succeeds; B direct row access and B Keyhive/archive appearance fail; lock returns hearth to public floor without losing public serving. |
+| ''Herm / crossroads node'' | Place signing seed = ''S'' (private node-only identity, auto-loaded at boot); public verifying key/inception/card/charter and public crossroads/read-face/CAS bytes = ''F''; no held PersonaGroup means no face rows to hold. Future recognized operator data must be D under that operator, never retained as Herm face rows. No serving S row currently: `vault-carriers.ts:12-14`. | Place S auto-opens by process boot today, no human prompt (`node-vessel-identity.ts:429-442`; `open-node-vessel.ts:3283`). There is no current SK/serving-row unlock. Raise uses a recognized operator's own authority and ends at causal boundary/reboot (`main.ts:558-575,604-614`). | Herm cannot seat a face (`personaSlotCeiling` fixed 0). Place S is a measured exception to “floor all public.” Future herm serving rows would add separate S; do not substitute place key for SK. | Boot Herm with zero faces: place signing/read/public carriage works; assert no VK or SK prompt/data opens, no face row is written, and place seed never appears in public output. Reboot preserves only place identity and public floor, not raised caps or face keys. |
+| ''CLI seat opening a node session'' | CLI is not a separate LarVessel; it addresses node-owned rows through the socket. Face-scoped commands/backup/recovery are ''D'' to addressed face; public commands are ''F''; CLI holds no vessel S. `packages/lares-cli/src/sealed-act-door.ts:1-21`; `custody-door.ts:2-26`; node frames `custody-frames.ts:135-202`. | ''S = ∅ at CLI.'' Human types node credential only for node unlock (one per boot); each CLI invocation proves its own face/session at gate, no repeat custody prompt. The terminal does not keep keys after the node's lock/shutdown. Roadmap explicitly says each CLI run proves face: `stable-founding-road.mem:201`. | An offline CLI cannot use node-held row keys unless it explicitly receives face recovery material; it must not cache VK or turn successful prior command into implicit cross-face session. | Unlock node as A; invoke CLI under A and then forge/omit/swap face binding for B. A works; every B operation refuses; inspect CLI receipt/daemon outputs for credential bytes and key material—any appearance fails. |
+| ''MCP seat / watcher'' | Session seat over CLI/node; same D face rows, F public floor, no MCP-local S. Roadmap classifies MCP and watcher with CLI: own face proof per run (`stable-founding-road.mem:201`). MCP wiring is seat configuration, not authority: `packages/lares-cli/src/codex-wire.ts:70-93`; `vscode-wire.ts:84-150`. | ''S = ∅ at MCP.'' Node unlock remains once/boot; MCP process presents its own face/session on each invocation. Process end does not change node boot state; node lock/restart drops keys. | Long-lived MCP transport can outlive a UI tab; it must re-prove face per session/operation rather than inherit whichever face last used the node. | Keep node unlocked as A; send MCP call claiming B without B admission: it must refuse. Restart MCP and retry: no authority carried. B unlocked separately succeeds only for B. |
+| ''Docker/container vessel (harbor, civic, mesh-scenarios)'' | Container's persistent `/state` may carry the same node census; `/workspace` holds bags/wikis. Face rows D, public rows F, optional instantiated serving rows S. Roadmap fixes state mount and host CLI boundary: `stable-founding-road.mem:68,104-109`; restart/unlock flow: `founding-runbook.mem:156`. | ''Conditional S'' exactly same as node; no new container S. Container starts at floor; an attached terminal types unlock after each restart; with no attached human it remains locked/floor. `lararium-container-boot.sh:41-66,110`. Shutdown drops in-memory keys. | Orchestrator restart with no human must not auto-inject a credential or silently unlock. Unattended restart can preserve public floor service, but face/serving capabilities pause until node unlock. This is a deliberate availability boundary. | Kill/restart under unattended orchestration with a surviving state mount: public floor starts; every D and S read refuses until an explicit authorized unlock; no env, image layer, log, or health route contains the unlock credential. |
+| ''Node daemon inside harbor / civic / mesh-scenarios'' | Same node D/F/S; place signing seed remains S; container packaging changes lifecycle, not row ownership. `stable-founding-road.mem:56,68,104-109`; seed read `node-vessel-identity.ts:429-442`. | Place S auto-opens each process boot today; any future VK-protected S needs explicit once-per-boot custody door. Container restart returns face/serving keys to floor, but current clear-at-rest place seed remains. | Distinguish daemon restart from CLI/MCP client restart. Orchestrator must not auto-unlock face or serving S without human. | Unattended restart restores place identity/public floor but no face/SK custody; every face/serving operation refuses until authorized node unlock. |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-cross-house-types-included-in-lock>>
+
+!!!! Cross-house types included in lock
+
+
+These are listed to close the house inventory; prior YIN/YANG handbacks give the broader browser and device-census evidence. Their details are ''LEAD'' extrapolations of the same law unless explicitly called MEASURED.
+
+| Type | D/F/S set; unlock and floor | Break / red test |
+| ''LarVessel generic class / worker host'' | Face-common rows D, public host/bootstrap F, S empty absent named payload. Face key opens per owning face; final face session returns host to floor. Canon one class, four hosts/no subclass: `lar-vessel.mem:20,34`. | Worker/process identity is not authority. Red: give worker A's key context, request B's bytes; refuse cryptographically. |
+| ''Browser desktop tab / installed PWA / WebAPK'' | Browser census: D face rows; public boot/transport F; S empty. Each tab asks its face; last tab rests floor. Device-seat evidence `device-capabilities-2026.mem:137-143`; fuller browser census in prior handbacks. | Worker lifetime and storage differ by browser; no global tab liveness or key owner inference. Red: close/freeze owner tab during write; write waits under `seal-awaits-session`, never routes by timeout; B remains unopened. |
+| ''iOS phone leaf / full installed home-screen web app'' | D face rows, F public floor, S empty. Per-tab face ask; final tab to floor. `device-capabilities-2026.mem:137,158`; install is user gesture and grants no new key authority. | iOS leaf lacks guaranteed SharedWorker lifetime, so coordination cannot depend on it. Red: two tabs with one suspended; caused write lands only with asker or waits; never touches sibling face. |
+| ''Android phone leaf / WebAPK'' | D/F/empty S; per-tab face ask; WebAPK still face custody. `device-capabilities-2026.mem:138`. | Do not promote Android Direct Boot/platform storage to cross-face Lares key without an explicit named S row. Red: reboot and verify public floor only, all face roots locked. |
+| ''Tablet as waking-floor carrier'' | D face rows on any mounted face; F public sync/transport material; S empty under current inventory. A tablet that acts as browser still requires face unlock for face data; floor sync may run unattended only over public/ciphertext carriage. `device-capabilities-2026.mem:139`; `waking-floor.mem:148,200`. | If “sync unattended” means decrypting/manipulating face-private state, current law breaks: node must carry that work or a future narrowly specified S/system capability must be added. Red: locked tablet performs public/ciphertext sync but cannot decrypt/update any face row. |
+| ''Guest island (host ↔ lararium / UE guest)'' | Guest has its own D rows only if it is explicitly a separate LarVessel; host bridge/public frames F; no inherited S. Device-seat planned guest island `device-capabilities-2026.mem:143`; `wiki-layer-ontology` shore-law location is referenced in brief but exact checked-in path/lines not established in this pass. | If guest owns its own key store, it is a separate vessel boundary and must not share host VK/FCK; bridge passes public claims or face-authorized payload. Red: guest with host A context cannot open guest B or host B. ''LEAD; source-location audit remains.'' |
+| ''Native/desktop shell (planned)'' | Same D/F/empty S absent explicit local system secret; each shell session face unlock; last shell session drops face keys. Roadmap names desktop/browser app boundary at `stable-founding-road.mem:68,104-109`; no native-shell storage row was verified. | OS keychain integration would add a custody mechanism, not alter row owner. Red: another OS account/shell session cannot open face ciphertext without that face's slot route. |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-per-type-inventory-of-expected-common-acts>>
+
+!!! Per-type inventory of expected common acts
+
+
+For every row-bearing node/container type above, acts are filtered from the merged census: (1) found place / VK / slot tree → place signing seed ''S'' under today's implementation; public place/card/charter F; each PersonaGroup root/FCK/slot tree D; serving key/tree only becomes S if a serving payload is actually present; (2) fleet offer/join pending → public signed transport F, target face's pending secret/address/record D; (3) slot bind/remove/recovery → that face's route tree D; (4) roster, labels, declarations, handle-book → face-specific content D, minimal opaque public routing only F; (5) Keyhive/Veil archive, dyads, face proof/member and Nexus keys → D; (6) face backup/restore → D; (7) clear custody removes that face's rows and routes, while F survives; (8) floor card, public charter, public gate and public artifact carriage → F. Prior precise carrier/caller citations: `../PRIOR-YIN.md` census table and `../PRIOR-YANG.md` census table. Node carrier line inventory: `vault-carriers.ts:287-398`; rotation's current VK-carrier sweep: `vault-carriers.ts:477-510` (current mechanic to be replaced by face/row-aware rotation).
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-single-law-s-node-cadence>>
+
+!!! Single law's node cadence
+
+
+''MEASURED:'' Node's current process starts with an empty custody holder (`main.ts:336-345`); vault unlock opens node custody, and `custody-holder.ts:151-155` holds VK/SK until lock. ''LEAD target:'' retain the one-per-boot node unlock only for a named node S set; then every CLI/MCP/watcher invocation proves its own face as the roadmap directs. If S is empty, node starts and remains at floor without asking anything. Container supervisors never turn restart policy into key custody; restart is a causal boundary that drops volatile keys. No wall clock, last-seen timer, or silent orchestrator retry may select a face owner.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-evidence-gaps-kept-explicit>>
+
+!!! Evidence gaps kept explicit
+
+
+# `herm` has no current serving rows and no current SK consumer at raise. Future ember serving rows are canonically planned but not yet represented in the carrier table; thus there is no current Herm *serving-key* S. The place signing seed is a different, current Herm S loaded at boot. `vault-carriers.ts:12-14`; `custody.mem:49,80,98`; `node-vessel-identity.ts:429-442`.
+# The guest-island `wiki-layer-ontology #/shore-law` exact repo file and line were not located in this pass. The brief names the law; the guest separation statement above is ''LEAD'', not measured.
+# Prior census already marks node archive row selection unresolved (`../PRIOR-YIN.md`, node archive-selector note). Keep selector proof as a prerequisite to D partition migration.
+# Browser device-specific storage/liveness matrix and roster of every planned vessel type are not re-derived in this node-side pass; see prior handbacks for the browser row census. Device table lines cited above directly name iOS, Android, tablet, node, guest island.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-lock-tests-compact-set>>
+
+!!! Lock tests, compact set
+
+
+The per-row RED tests in the tables are the single red witnesses for each type. The shared cryptographic witness must additionally show A's FCK/slot tree cannot open, overwrite, restore, rotate, or derive B's rows even when routing is bypassed; occupied-row replacement authenticates the previous ciphertext before rename (`packages/lararium-browser/src/sealed-writer.ts:208-218,279-309`, already measured in `../PRIOR-YIN.md`). For node, add process-restart and unattended-container restart: fresh boot has no admitted face keys; floor serves only F rows; a named S opens only with node's explicit boot door; no common key opens any face row. This proves the locked D/F/S partition instead of merely proving the router behaved.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-wave-two-ratchet-against-twin-md-yin>>
+
+!!! Wave-two ratchet against `TWIN.md` (YIN)
+
+
+The user asked to compare the twin's top claims to code and sources, then apply that lens to node-side types. Provenance labels below use ''confirmed-by-both'' when both handbacks said it, ''yours-alone'' for evidence this YANG pass added, and ''twin-alone'' for evidence only TWIN supplied. Status marks still distinguish ''MEASURED'' facts from ''LEAD'' design.
+
+| TWIN/YIN claim | Ratchet result on source | Provenance |
+| Browser has one VK tree mixing face and vessel carriers today. | ''CONFIRM, scoped to the named custody rows.'' `packages/lararium-browser/src/browser-custody.ts:2-12,54-68,386-402` has one `custody-slots` tree and uses VK for those rows. This says nothing about unrelated content encryption. | confirmed-by-both |
+| Browser common acts establish no browser-wide secret. | ''CONFIRM as LEAD.'' The merged census resolves confidential face material to D and intentionally public transport/bootstrap to F; no measured browser S remains. | confirmed-by-both |
+| Herm private serving key is the one candidate S. | ''REFINE/REFUTE as a current Herm S.'' `vault-carriers.ts:12-14,249-251` says no serving row exists; `open-node-vessel.ts:558-614` raises with operator caps and has no SK caller. The serving key is a future conditional S, not current. | yours-alone |
+| Herm's place signing seed is just public floor material. | ''REFUTE.'' `node-vessel-identity.ts:429-487` reads private seed bytes and uses them to sign; only the public half/card is F. The private seed is a current node-local S-like authority loaded automatically at boot, distinct from VK/SK and face roots. | yours-alone |
+| Herm cannot serve before a face exists, because `personaSlotCeiling("herm") === 0`. | ''REFUTE if “serve” means its public/read/relay floor.'' It cannot seat a PersonaGroup, but boots a public read-face/relay and can raise recognized operator caps: `vessel-standing.ts:60-79,113-119`; `open-node-vessel.ts:3242-3291,558-614`. Floor service works without a face or VK. | yours-alone |
+| Tablet may do unattended private D sync at floor. | ''REFUTE under the locked law.'' Tablet can carry public/ciphertext sync unattended, but if it must decrypt/transform face rows it needs an authorized face session; otherwise that requirement is an explicit future system S exception. `device-capabilities-2026.mem:139,121`; waking-floor model `waking-floor.mem:148,200`. | confirmed-by-both on boundary; twin-alone on direct device cite |
+| Container restart may silently restore face/SK unlock for availability. | ''REFUTE as target.'' Restart drops volatile custody and leaves F; without an explicit human boot authorization, any D or future S is locked. Container wiring is deployment, not authority. `main.ts:336-345,427-430`; `founding-runbook.mem:156`; container entrypoint cited in MINE. | yours-alone |
+| CLI and MCP inherit whichever node face last unlocked. | ''REFUTE.'' CLI is a seat against node's socket and must provide act/session authority; roadmap says each CLI run proves face. `sealed-act-door.ts:1-21`, `custody-door.ts:13-30`, `stable-founding-road.mem:201`; MCP wire only configures a session (`codex-wire.ts:70-93`). | yours-alone |
+| Guest island is always a client of host and owns no key store. | ''UNRESOLVED; do not lock this as fact.'' Device-seat canon identifies a planned guest, and ontology contains a guest island; if the guest owns its own key store, it becomes an independent vessel boundary and needs its own D/F split. The exact guest-store contract remains a LEAD/open seam. | confirmed-by-both on open seam |
+| Installed PWA/WebAPK or SharedWorker can own authority across tabs. | ''REFUTE as authority.'' They change host capability/lifecycle, not face ownership; an available worker is not proof of a live/awake tab. TWIN's Safari source supports background unloading: [[Apple Safari extension lifecycle|https://developer.apple.com/documentation/safariservices/optimizing-your-web-extension-for-safari?changes=_6]] (accessed 2026-10-19). | confirmed-by-both |
+| F6 owner routing alone proves safe end-to-end write. | ''PARTLY CONFIRM.'' `holder-routes.ts:23-31` and `shared-holder-core.ts:117-125` establish owner-only route mechanics, not every downstream handler/payload. F6 still needs row-key authority, existing-row authentication, and wait semantics. `sealed-writer.ts:208-218,279-309` shows current occupied-row safety contract. | confirmed-by-both |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-yin-lens-applied-to-node-types-additions-and-corrections>>
+
+!!! YIN lens applied to node types: additions and corrections
+
+
+''MEASURED:'' The node-wide custody tree currently wraps VK to SK, then keeps both in process memory (`custody-session.ts:80-116,154-190,227-242`; `custody-holder.ts:151-155`). Carrier classification is implementation, not target necessity. There are no serving rows today (`vault-carriers.ts:12-14`). The exception TWIN did not see is the independently loaded place signing seed. It cannot be called F because it is a private signing capability; it also cannot be collapsed into the future serving key. The house must decide whether to protect this key behind a narrow node boot custody door or accept a documented clear-at-rest S exception. The current code auto-opens it on each daemon boot, without a human gesture. This means the strict candidate law “all floor material is public” needs exactly one present-day bend; “floor holds no VK” remains intact.
+
+''LEAD:'' A Herm's zero face ceiling forbids a seated identity, not public operation. The Herm stands before any face and must carry its own place identity. A future Herm serving row could create another S class, but the current serving key has no row to protect. If future system work decrypts a face row while face-less, that breaks D ownership and requires an explicit operator ruling; it cannot silently be charged to SK.
+
+For every node/container/seat type in the previous table, common acts filter as follows (''MEASURED current carriers; LEAD target rows''): founding place signing seed is S on node (public verifying half/card/charter F); PersonaGroup root, FCK and slot tree D; fleet public signed offer/answer F while target-face pending secret/address/join record D; face slot changes/recovery D; private roster, labels, handle-book/recognition graph D while minimal public opaque routes F only after leakage review; Keyhive/Veil archives, dyads, proof/member/Nexus keys D; per-face backup/restore D; clear-custody removes only that face's D and leaves F; future serving rows S only when instantiated and named. The carrier/caller evidence appears in `../PRIOR-YIN.md` and `../PRIOR-YANG.md` census tables and `packages/lararium-node/src/vault-carriers.ts:287-398`; archive row selector remains unresolved.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-browser-and-device-roster-for-the-all-vessel-lock>>
+
+!!! Browser and device roster, for the all-vessel lock
+
+
+Canon defines ''one LarVessel class, four host families, no subclass'' (`bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem:20-37`); device-seat canon names full vessel, leaf, herm, probe, Android/iOS phones, waking-floor tablet, desktop browser, installed PWA/WebAPK, Mudlet probe, Unreal guest, and planned host/guest surfaces (`bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem:129-143,192`). The following are ''LEAD target'' classifications except where noted. All face-bearing rows in the census are D per PersonaGroup; floor rows are F and hold no VK; browser/leaf/guest S is empty absent a newly named system payload.
+
+| Vessel type | Common row set / S set; face unlock; floor and last-session transition | Bend and single red test |
+| Desktop browser tab / browser LarVessel | All private identity, join, archive, roster, dyad, handle, recovery and slots D; public bootstrap/transport F; ''S=∅''. Each tab asks for its own face unlock. Last tab erases live FCK and rests at floor. | Worker lifetime cannot establish an awake-tab roster. Freeze/close asker during seal: route only to its admitted session or same-face admitted unlocked tab, else wait `seal-awaits-session`; no timeout substitution. B direct open/replace fails byte-preserving. |
+| iOS phone leaf / Home Screen web app | Same D/F; ''S=∅''; each tab asks independently; app/process loss returns to F and asks again. Installed mode grants no new authority. | No SharedWorker lifetime guarantee in house matrix (`device-capabilities-2026.mem:137`). Red: terminate/suspend tab during asker write; it waits or same-face fallback, never opens sibling row. |
+| Android phone leaf | Same D/F; ''S=∅''; per-tab ask; worker/process death returns to floor. | SharedWorker availability is optimization only (`device-capabilities-2026.mem:138`). Red: kill worker while A open; A must re-unlock, B remains cryptographically closed. |
+| Tablet waking-floor carrier | Face rows D; public/ciphertext sync F; ''S=∅''; a foreground face session unlocks per tab; last tab leaves floor. | Unattended sync may carry ciphertext/public rows, cannot decrypt or commit D. Red: while unattended, allow F sync and assert D read/modify fails; admit face, then D sync works. |
+| Installed PWA / iOS home-screen web app / Android WebAPK | Same D/F; ''S=∅''; each face session unlock; app exit/relaunch returns to F. | Install or OS keychain cannot create a common secret. Red: kill/relaunch and verify no D opens before that face unlock; F stays readable. |
+| Probe (Mudlet or other outbound seat) | Probe holds no face custody S and no FCK; addressed node rows remain D/F there; ''S=∅ at probe''. It presents a face/session to node for each call. | Red: with A admitted, ask probe for B row; node refuses, no key material is cached in probe. |
+| Native/desktop shell (planned) | D/F; ''S=∅'' unless explicitly reclassified as node herm; app window/session asks for face; final session clears live FCK to F. | OS keychain/biometric may authorize a face FCK unwrap but doesn't alter row ownership. Red: second OS account/session cannot open A/B ciphertext without that face's slot tree. |
+| Host ↔ lararium / Unreal guest island (planned) | Host public bridge frames F; face-authorized payload D; guest ''S=∅'' unless it owns a separate key store, in which case independent D/F and own FCK. Guest call presents host-admitted face; end drops guest capability. | If the guest owns keys, model it as a separate vessel; never inherit host VK/FCK. Red: hostile guest reads sibling host row and guest row without its own route; both fail. Exact `#/shore-law` storage contract remains open. |
+| Node daemon / full Lararium | D all PersonaGroup records; F public place card/charter/routing; S includes current private place signing seed plus only future named serving payloads. Face sessions present per act; node custody door, if retained for other S, opens once per boot. Restart/shutdown clears volatile VK/SK/FCK; current persistent place seed auto-loads next boot. | Red: one-face node unlock cannot open sibling carriers; fresh restart has no face/serving keys; public floor works and only narrowly named place identity survives. |
+| Hearth composition | Same rows as node; place identity S; face D; public shelf F; future serving S conditional. Face admission remains independent after any node boot unlock; lock tears down sovereign composition to floor. | Red: unlock A; A works, B fails cryptographically; lock returns to public floor while preserving public service. |
+| Herm / crossroads node | No PersonaGroup rows (ceiling zero); private place seed S; public verifying key/card/crossroads/read/relay F; future serving S only if instantiated; current SK has no consumer. Boot opens place seed automatically, no person prompt; recognized raise uses operator's own caps only for visit; reboot drops raise. | Must serve publicly before any face and cannot store a face. Red: zero-face boot serves public floor, no VK/SK unlock or face rows; private seed never appears in output; reboot drops raised caps but keeps place identity. |
+| CLI seat | No local S; node rows addressed by CLI are D by owning face, public operations F. Node unlock once/boot if needed; each CLI run presents own face proof/session. Process exit holds no node keys. | Red: A CLI act passes; missing/forged B binding refuses; receipts/logs contain no credentials or key bytes. |
+| MCP / watcher seat | No local S; same node D/F; each invocation/session presents face proof; MCP restart carries no authority; node boot state persists until node lock/restart. | Red: node unlocked under A, MCP call claims B without B admission and refuses; restart MCP does not change that; separate B admission allows only B. |
+| Docker/container vessel: harbor, civic, mesh-scenarios | Persistent state may contain node rows: D by face, public F, same node S set (private place seed + only instantiated serving rows); no container-specific S. Start/restart has no face/SK keys; attached operator unlocks node once/boot; absent operator stays floor. | Orchestrator restart cannot auto-inject credentials. Red: restart unattended with persistent volume: public floor comes up; all D/future S refuses; inspect env/image/log/health outputs for no credential. |
+| Worker host / generic LarVessel | Same D/F/S according to actual host function; worker role grants no authority. Each face context unlocks only its own FCK; worker/session end drops volatile key; floor F remains. | Red: worker supplied A key context requests B bytes; cryptographic refusal independent of route. |
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-roadmap-lock-and-required-house-rulings>>
+
+!!! Roadmap lock and required house rulings
+
+
+''MEASURED:'' K15 assigns one identity/store/registry/archive/content-key seat per PersonaGroup; step 6 migrates identity bytes, split stores, archive format together (`bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:203,456`; `keyhive-per-persona-group-2026.mem:55-72`). F6 slice three consumes face context for asker-sealed writes (`stable-founding-road.mem:504`). The road map calls for per-run CLI face proof (`:201`); the previously merged handbacks identify B1 as browser/no-VK target (`../PRIOR-YIN.md`, `../PRIOR-YANG.md`).
+
+''LEAD sequencing:'' K15.1 defines exhaustive D/F/S row schema and independent FCK + own slot/recovery tree; K15.1/.2 puts identity, archives and mixed carrier splits under each PersonaGroup with no identity above them; K15.3 plus F6 slice three binds each tab/session to one face and enforces (a′), including safe open-before-replace; K15.4 clears one face's rows/route without sibling rotation; K15.5 restores one face alone; K15.6 migrates identity bytes, split stores, FCK slots and archives under one migration fence. B1 lands browser D/F, no VK, per-tab asks and final-tab floor. Node/CLI/MCP consume the same D/F ownership, while node boot custody applies only to an explicitly retained S. The Herm serving-key row remains conditional and empty today. Containers honor node cadence but never unlock unattended. The place signing seed requires a separate operator ruling because it is already a private boot-loaded key: narrow boot protection or documented clear-at-rest exception. Tablet unattended private transformation and guest-owned key store also require explicit ruling if demanded.
+
+<<~/ahu>>
+
+<<~ ahu #/r4-yang-source-and-method-boundaries>>
+
+!!! Source and method boundaries
+
+
+No test, build, suite, or git write was run. The tree remained read-only. Local repository claims above name file:line; standards/vendor facts are dated at access. Primary/vendor references carried forward from merged handbacks: [[AOSP File-Based Encryption|https://source.android.com/docs/security/features/file-based]], [[Apple Data Protection classes|https://support.apple.com/guide/security/secb010e978a/web]], [[Apple keybags|https://support.apple.com/guide/security/sec6483d5760/web]], [[ChromeOS user sessions|https://www.chromium.org/chromium-os/developer-library/reference/user-sessions/user-sessions/]], [[ChromeOS security whitepaper|https://www.chromium.org/chromium-os/developer-library/reference/security/security-whitepaper/]], [[Microsoft CryptProtectData|https://learn.microsoft.com/en-us/windows/desktop/api/Dpapi/nf-dpapi-cryptprotectdata]], [[W3C WebAuthn Level 3|https://www.w3.org/TR/webauthn-3/]], and [[MDN CryptoKey.extractable|https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey/extractable]] (all accessed 2026-10-19; W3C Recommendation dated 2026-08-25; Apple guides published 2024-12-19). These are contextual analogies, not requirements on Lares.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
+
+<<^ code="&#x0003;">>ni:///sha-256;P86ZxZnt9HHn7bwmgp4f4O6AjA7GRnOFrQjPA5tYlVU
+
+<<^ code="&#x0004;" -> to="?">>

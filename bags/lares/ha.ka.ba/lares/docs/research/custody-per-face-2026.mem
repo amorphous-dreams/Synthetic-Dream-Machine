@@ -1,0 +1,62 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "field research, four ratcheted Luna-6 YIN and YANG rounds (2026-10-19), on browser and vessel custody: the asker seals, each face seals under its own key, and a shared act never makes a shared secret; the per-vessel table and the open joints"
+status    = "research; read 2026-10-19; rulings landed; the place signer open"
+tags      = ["research", "custody", "browser", "keyhive", "persona-group", "no-global-now"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/custody-per-face-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/custody-per-face-2026"
+```
+
+<<~ ahu #/head>>
+
+! Custody per face, 2026 ~ who seals, under whose key, and what no vessel holds
+
+F6 moves the browser's Repo and daemon kernel into its shared holder, and the kernel's sealed writes asked where the key lives. Four ratcheted research rounds (2026-10-19) answered, each a Luna-6 YIN and YANG pair in two traded waves, YIN with live search over vendor and spec pages, YANG over the code: round one on the fork, round two on per-face custody keys, round three on the question the operator answered Mu, round four confirming the model across every vessel type. The rulings rest at #/rulings; the eight wave-two handbacks rest verbatim at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>. Rows `K15`, `F6`, `B1` and `X0` of <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carry the build.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! The rulings (operator, 2026-10-19)
+
+# ''The asker seals.'' The browser holder routes each sealed write to the admitted tab whose session caused it, else to any admitted, unlocked tab of that face; with no awake admitted tab the write waits, named `seal-awaits-session`. A SharedWorker carries no promise to run while its tabs freeze, and no `MessagePort` event reports a peer's death, so a wait names itself and no clock decides it.
+# ''A face's custody rows seal under its own key.'' Each PersonaGroup holds an independent random face custody key (FCK) that only its own slot tree opens, never wrapped under a vessel key; a holder of the VK or of a sibling's unlock opens none of its rows.
+# ''A shared act never makes a shared secret.'' Every act touching more than one face sorts D (its private bytes dissolve into the owning face's rows), F (its public bytes stand at the floor by design) or S (a named vessel secret, its principal and opener named). The browser holds no vessel key; a node holds S only for rows it names.
+
+!! What each vessel holds
+
+|! vessel |! its S set |! how a face unlocks |! what its floor and its last transition hold |
+| desktop browser tab | none | each tab asks its own face | the last tab drops every live FCK and rests at the floor |
+| iOS and Android leaves, installed web app or WebAPK | none | each tab or app session asks its face | app loss returns to the floor; installing grants no key |
+| tablet as waking floor | none | a foreground face session asks its face | unattended, it carries ciphertext and public rows and decrypts no face's row |
+| probe, CLI, MCP and watcher seats | none | each run or session presents its own face at the node's gate | a seat's exit holds no key |
+| native or desktop shell (planned) | none | each shell session asks its face | an OS keychain may unwrap a face's FCK and never owns a row |
+| guest island (planned) | none, unless it owns a key store, and then it stands as its own vessel | a host-admitted face | the guest's end drops its capability |
+| node daemon and hearth | the serving key's rows once they exist (none today), and the open place signer | the node unlocks once per boot for its S; each face proves itself apart | restart drops every volatile face and serving key |
+| herm | the open place signer | no face sits (`personaSlotCeiling("herm") === 0`) | it serves its public floor before any face; a reboot drops a raise |
+| container vessels | the node's set | an attached hand unlocks after each restart | an unattended restart stands at the floor and unlocks nothing |
+
+!! Open joints
+
+* ''The place signer.'' A node's private place signing seed rests clear and loads at boot, so a herm serves its floor with no face (`node-vessel-identity.ts:429-442`). Either it stands as a named floor signer protected at rest, the floor then holding no custody key rather than no key, or it moves behind a boot custody door and a herm's unattended floor waits for a hand.
+* ''The node archive selector.'' Which veil row the node writes rests unproven against its writer chain; K15's step 0 proves it before bytes move.
+* ''Unattended private work.'' A tablet or herm that must decrypt a face's row while no face sits would need a named S of its own; the law grants none.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
+
+<<^ code="&#x0003;">>ni:///sha-256;qjGxwLCiICHBDTIveuOSi39b4gFowTUEPwXGs-Vs49A
+
+<<^ code="&#x0004;" -> to="?">>
