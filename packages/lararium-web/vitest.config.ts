@@ -20,6 +20,8 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
     return all;
   } catch (err) {
     const text = String((err as Error).message);
+    // Only the host-dependency refusal drops the instance; a missing executable or a broken install fails the run loud.
+    if (!/missing dependencies/i.test(text)) throw err;
     const libs = text.match(/lib[\w.-]+\.so[\d.]*/g) ?? [];
     const words = libs.length > 0
       ? `the host lacks ${libs.length} system libraries (${libs.slice(0, 3).join(", ")}, ...); a root run of "playwright install-deps webkit" cures it`

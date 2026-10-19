@@ -11,6 +11,7 @@ export function createLoafBuffer(cap: number = LOAF_WINDOW): {
   entries(): readonly LoafEntry[];
   observed(): number;
 } {
+  if (!Number.isSafeInteger(cap) || cap < 1) throw new RangeError(`the LoAF window holds at least one entry (got ${cap})`);
   const window: LoafEntry[] = [];
   let seen = 0;
   return {

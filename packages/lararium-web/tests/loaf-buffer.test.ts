@@ -19,4 +19,11 @@ describe("★ the LoAF buffer caps its window and keeps counting ★", () => {
     expect(small.entries().map((e) => e.startTime)).toEqual([8, 9, 10]);
     expect(small.observed(), "every frame counts").toBe(10);
   });
+
+  test("a cap that bounds nothing refuses by name; CONTROL: a cap of one holds the newest entry", () => {
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, 0, -3, 1.5]) expect(() => createLoafBuffer(bad), String(bad)).toThrow(RangeError);
+    const one = createLoafBuffer(1);
+    one.push(entry(1)); one.push(entry(2));
+    expect(one.entries().map((e) => e.startTime)).toEqual([2]);
+  });
 });
