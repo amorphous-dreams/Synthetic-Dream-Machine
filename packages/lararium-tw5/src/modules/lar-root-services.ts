@@ -37,6 +37,8 @@ module-type: startup
  * A browser page that runs stock TW5 keeps stock's own listeners: this module binds nothing there.
  */
 
+import { CLEAR_CUSTODY_QUESTION, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
+
 export const name        = "lar-root-services";
 export const after       = ["startup"];
 export const synchronous = true;
@@ -69,6 +71,7 @@ interface Tw {
   hooks: { invokeHook(name: string, value: string[]): string[] };
   config?: { preferences?: { notificationDuration?: number } };
   lares?: Record<string, unknown>;
+  utils: { confirm(message: string, options: { type: string; widget: unknown; event: WidgetEvent }): boolean };
 }
 
 // TW5's evalGlobal injects $tw as a direct function parameter.
@@ -85,6 +88,7 @@ const COPY_FAILED = "$:/language/Notifications/CopiedToClipboard/Failed";
 const SWITCHER = "$:/core/ui/SwitcherModal";
 const DEFAULT_SAVE_TEMPLATE = "$:/core/save/all";
 const DEFAULT_EXTERNAL = "https://tiddlywiki.com/";
+const VERB_PREFIX = "lar:///lararium.local.vm/verb/";
 
 export function startup(): void {
   if (!$tw || $tw.browser || !$tw.rootWidget) return;
@@ -148,6 +152,15 @@ export function installRootServices(tw: Tw): void {
   root.addEventListener("tm-modal", (event) => { if (event.param) modal(event.param, event); });
   root.addEventListener("tm-show-switcher", (event) => modal(SWITCHER, event));
   root.addEventListener("tm-notify", (event) => { if (event.param) notify(event.param, variablesOf(event)); });
+  root.addEventListener("tm-clear-password", (event) => {
+    if (!tw.utils.confirm(CLEAR_CUSTODY_QUESTION, { type: "action", widget: root, event })) return;
+    wiki.addTiddler({
+      title: VERB_PREFIX + "custody-clear",
+      verb: "custody-clear",
+      [LARES_DISPATCH_FIELD]: "1",
+      [LARES_VERB_ARG_PREFIX + "confirmed"]: "yes",
+    });
+  });
 
   // The node a stock scroller reads off the event: the island names it by the render id the page holds.
   const ridSelector = (event: WidgetEvent): string | undefined => {

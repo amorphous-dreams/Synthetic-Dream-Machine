@@ -3,7 +3,8 @@ import { BrowserCustodyRefused, lockBrowserCustody, readBrowserCustody, readKeys
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
-import { standBrowserCustody } from "../src/browser-boot-custody.js";
+import { clearCustodyVerb, standBrowserCustody } from "../src/browser-boot-custody.js";
+import { CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;
@@ -38,6 +39,29 @@ async function snapshot(idbName: string): Promise<unknown[]> {
 }
 
 describe("browser boot custody asks before secret rows rest", () => {
+  test("RED: the clear verb asks the custody door nothing before the yes; the yes asks once and clears", async () => {
+    const idbName = vessel();
+    await generateOrLoadBrowserVesselIdentity(idbName);
+    const route = { kind: "passphrase", passphrase: "right route" } as const;
+    await sealBrowserKeystore(idbName, route);
+    const asked: unknown[] = [];
+    const askCustody = async (question: { readonly kind: "clear" }) => { asked.push(question); return route; };
+    for (const confirmed of [undefined, "no", "true", true]) {
+      expect(await clearCustodyVerb({ idbName, confirmed, askCustody }), String(confirmed)).toEqual({ reading: "asks", question: CLEAR_CUSTODY_QUESTION });
+    }
+    expect(asked, "no route was asked before the literal yes").toEqual([]);
+    expect((await readBrowserCustody(idbName)).reading).toBe("sealed");
+
+    const declined = await clearCustodyVerb({ idbName, confirmed: "yes", askCustody: async () => null });
+    expect(declined).toEqual({ reading: "declined" });
+    expect((await readBrowserCustody(idbName)).reading, "a declined route clears nothing").toBe("sealed");
+
+    const cleared = await clearCustodyVerb({ idbName, confirmed: "yes", askCustody });
+    expect(cleared.reading).toBe("cleared");
+    expect(asked).toEqual([{ kind: "clear" }]);
+    expect((await readBrowserCustody(idbName)).reading).toBe("clear");
+  });
+
   test("RED: a boot over a locked seal refuses sealed-locked and gives the store lock back; the stand then opens and the same page reads", async () => {
     const idbName = vessel();
     await generateOrLoadBrowserVesselIdentity(idbName);

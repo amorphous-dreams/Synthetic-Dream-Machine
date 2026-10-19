@@ -104,6 +104,11 @@ export const LARES_DISPATCH_FIELD = "lares-dispatch";
  *  reaction-router lifts every `arg-<name>` field into the structured args payload. */
 export const LARES_VERB_ARG_PREFIX = "arg-";
 
+/** The clear-password act's one question: the wiki asks it on its confirm road, and the browser's confirm door
+ *  answers it, so the person reads the same words wherever the act asks. */
+export const CLEAR_CUSTODY_QUESTION =
+  "Clear this browser's passphrase? The device seed, Keyhive Archives and persona roots will rest in the clear in this browser's storage, readable by anyone who can read it.";
+
 /** The single flat-wire key the structured summon args ride as a JSON string. IslandMsg_Event
  *  payloads admit only scalars (GP-2), so the router's structured args serialize to this key
  *  crossing the worker→vessel boundary; the vessel re-parses via `verbArgsFromPayload` (#48). */

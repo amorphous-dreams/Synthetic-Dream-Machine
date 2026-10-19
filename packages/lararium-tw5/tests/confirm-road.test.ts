@@ -16,6 +16,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { type LarTiddlerRecord } from "@lararium/mesh";
+import { CLEAR_CUSTODY_QUESTION, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import { ENVELOPE_FIELDS } from "../src/envelope-fields.js";
 import { neverPersists } from "../src/island-adaptor.js";
 import { dispatchLarControlEvent } from "../src/tw5-projection.js";
@@ -87,6 +88,44 @@ const snapshot = (r: Rig, titles: readonly string[]): string =>
   JSON.stringify(titles.map((t) => r.wiki.getTiddler(t)?.fields ?? null));
 
 describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
+  test("RED: clearing a password parks the wiki confirm; yes alone writes the custody-clear verb", async () => {
+    const r = await shoreRig();
+    const $tw = tw(r);
+    const nav = standNavigator(r);
+    const verbTitle = "lar:///lararium.local.vm/verb/custody-clear";
+    expect($tw.wiki.getTiddler(verbTitle), "CONTROL: no clear verb stands before the event").toBeUndefined();
+    const mark = r.calls.length;
+
+    nav.dispatchEvent({ type: "tm-clear-password" });
+    const question = standingQuestion(r);
+    expect(question.fields["confirm-type"]).toBe("action");
+    expect(question.fields["text"], "the wiki asks the browser's own words").toBe(CLEAR_CUSTODY_QUESTION);
+    expect($tw.wiki.getTiddler(verbTitle), "asking writes no verb").toBeUndefined();
+
+    answer(nav, question.title, "no");
+    expect($tw.wiki.getTiddler(verbTitle), "no dispatches nothing").toBeUndefined();
+    expect(questions(r)).toEqual([]);
+    await afterDispatch();
+    await turns(24);
+    expect(r.calls.slice(mark), "a no leaves no trace in any store another vessel reads").toEqual([]);
+
+    nav.dispatchEvent({ type: "tm-clear-password" });
+    const confirmed = standingQuestion(r);
+    answer(nav, confirmed.title, "yes");
+    await afterDispatch();
+    await turns(24);
+    expect(r.calls.slice(mark), "neither the question, the answer nor the verb takes a store call").toEqual([]);
+    for (const title of [question.title, confirmed.title, verbTitle]) expect(neverPersists(title), title).toBe(true);
+    const verb = $tw.wiki.getTiddler(verbTitle)?.fields;
+    expect(verb).toBeDefined();
+    expect(verb?.verb).toBe("custody-clear");
+    expect(verb?.[LARES_DISPATCH_FIELD]).toBe("1");
+    expect(verb?.[`${LARES_VERB_ARG_PREFIX}confirmed`]).toBe("yes");
+    expect(Object.keys(verb ?? {}).filter((field) => field.startsWith(LARES_VERB_ARG_PREFIX))).toEqual([`${LARES_VERB_ARG_PREFIX}confirmed`]);
+    expect(JSON.stringify(verb)).not.toMatch(/passphrase|route|credential/i);
+    await r.stop();
+  }, 120_000);
+
   test("weld: the engine carries the question door, and the plugin's ignored-fields list names every envelope field", async () => {
     const r = await shoreRig();
     const $tw = tw(r);

@@ -50,6 +50,7 @@ import {
   constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
+import { CLEAR_CUSTODY_QUESTION } from "@lararium/mesh/lar-uris";
 
 const STORE = "keystore";
 export const CUSTODY_TREE_ROW = "custody-slots";
@@ -610,8 +611,7 @@ export async function unbindBrowserCustodySlot(idbName: string, slotId: string):
 /** The door the clear-password act asks through: false parks the question, true on the person's confirmed pass. */
 export type ConfirmDoor = (question: string) => boolean;
 
-export const CLEAR_CUSTODY_QUESTION =
-  "Clear this browser's passphrase? The device seed, Keyhive Archives and persona roots will rest in the clear in this browser's storage, readable by anyone who can read it.";
+export { CLEAR_CUSTODY_QUESTION };
 
 export type BrowserCustodyClear =
   | { readonly reading: "asks"; readonly question: string }
