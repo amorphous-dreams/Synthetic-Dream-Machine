@@ -3,8 +3,8 @@
  *
  * The island booted an engine it witnessed (ctx.engine — sha256 the kernel
  * computed over the eval'd core bytes). The lararium doc keeps syncing after
- * boot; when a new genesis merges in (reconcileIslandFromGenesis on a vessel
- * carrying a newer artifact), the blobs[ENGINE_CORE_ID] entry moves under the
+ * boot; when another genesis merges in (reconcileIslandFromGenesis on a vessel
+ * carrying a different artifact), the blobs[ENGINE_CORE_ID] entry moves under the
  * running island. This watch observes that move and writes an "engine waiting"
  * alert into the island's OWN temp — alert-only, never auto-reboot: the
  * update arrives as an offer; the operator holds the reboot capability, and
@@ -61,14 +61,16 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
   const check = (): void => {
     const entry = handle.doc()?.blobs?.[ENGINE_CORE_ID];
     if (!entry?.sha256) return;
-    if (entry.sha256 === ctx.engine.sha256) return;          // still the booted engine
-    if (entry.sha256 === lastAlertedSha) return;             // already alerted this epoch
-    // The sha guard advances SYNCHRONOUSLY (coalesces repeat change-events for this epoch to
-    // one put), but a FAILED write must NOT stay swallowed: the engine-waiting notice
-    // is an operator-critical alert. On a put rejection we roll the guard back to `prevAlerted`
-    // so the NEXT change retries, and surface the failure LOUD — never a silent drop.
+    if (entry.sha256 === ctx.engine.sha256) { lastAlertedSha = null; return; }   // the booted engine: a later move alerts afresh
+    if (entry.sha256 === lastAlertedSha) return;             // already alerted this engine
+    // The sha guard advances SYNCHRONOUSLY (coalesces repeat change-events for this engine to
+    // one put), and a FAILED write never stays swallowed: the engine-waiting notice is an
+    // operator-critical alert. A put rejection rolls the guard back to `prevAlerted` while the
+    // guard still names this engine, so the NEXT change retries, and surfaces the failure LOUD.
+    // A later engine's guard stands through an earlier engine's late failure.
     const prevAlerted = lastAlertedSha;
-    lastAlertedSha = entry.sha256;
+    const alerting = entry.sha256;
+    lastAlertedSha = alerting;
 
     const incoming = String(entry.version ?? "");
     const message =
@@ -91,10 +93,9 @@ export function startEngineWatch(ctx: IslandContext): (() => void) | undefined {
       origin,
       { bag: wikiSlotUri(ctx.recipe.wikiSlug, "temp") },
     ).catch((err: unknown) => {
-      // The alert write FAILED. Without this leg the notice vanished silently AND stayed
-      // suppressed forever (the sha guard already advanced past this epoch). Roll the guard
-      // back so the next change retries, and surface the drop LOUD.
-      lastAlertedSha = prevAlerted;
+      // The alert write FAILED: the guard rolls back (when it still names this engine) so the
+      // next change retries, and the drop surfaces LOUD.
+      if (lastAlertedSha === alerting) lastAlertedSha = prevAlerted;
       console.warn(
         `[engine-watch] FAILED to write the engine-waiting alert for ${short(entry.sha256)}${label(incoming)} ` +
         `(sha ${entry.sha256}); rolled back — will retry on the next oracle-doc change: ${String(err)}`,

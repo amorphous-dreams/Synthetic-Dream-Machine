@@ -129,6 +129,45 @@ describe("engine-watch", () => {
     stop?.();
   });
 
+  test("a late failure of an earlier engine's write leaves the later engine's guard standing", async () => {
+    const { handle, setCore } = fakeLarariumHandle(BOOTED);
+    const { composite, ctx } = makeCtx(handle);
+    const realPut = composite.put.bind(composite);
+    let failFirst: (err: Error) => void = () => {};
+    const putSpy = vi
+      .spyOn(composite, "put")
+      .mockImplementationOnce(() => new Promise((_, reject) => { failFirst = reject; }))
+      .mockImplementation((...args: Parameters<typeof composite.put>) => realPut(...args));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const stop = startEngineWatch(ctx);
+    setCore({ sha256: "bbb222", version: "5.4.0" });   // its write hangs
+    setCore({ sha256: "ccc333", version: "5.5.0" });   // a second engine, written at once
+    await settle();
+    failFirst(new Error("store offline"));             // the first write fails after the second landed
+    await settle();
+    setCore({ sha256: "ccc333", version: "5.5.0" });   // the same engine again: already alerted
+    await settle();
+    expect(putSpy).toHaveBeenCalledTimes(2);
+    expect((await composite.get(ENGINE_WAITING_ALERT_TITLE))?.tiddler["waiting-sha256"]).toBe("ccc333");
+    warnSpy.mockRestore();
+    stop?.();
+  });
+
+  test("a doc that returns to the booted engine and leaves again alerts again", async () => {
+    const { handle, setCore } = fakeLarariumHandle(BOOTED);
+    const { composite, ctx } = makeCtx(handle);
+    const putSpy = vi.spyOn(composite, "put");
+    const stop = startEngineWatch(ctx);
+    setCore({ sha256: "bbb222", version: "5.4.0" });
+    await settle();
+    setCore(BOOTED);
+    await settle();
+    setCore({ sha256: "bbb222", version: "5.4.0" });
+    await settle();
+    expect(putSpy).toHaveBeenCalledTimes(2);
+    stop?.();
+  });
+
   test("a doc already carrying a waiting epoch at ea alerts immediately", async () => {
     const { handle } = fakeLarariumHandle({ sha256: "ddd444", version: "5.4.1" });
     const { composite, ctx } = makeCtx(handle);
