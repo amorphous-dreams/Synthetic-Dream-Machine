@@ -1,0 +1,205 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM evergreen-sweep wave-two handbacks (YIN and YANG, Luna-6, 2026-10-18) — Markdown transliterated only; source wording retained; the Sol reader refuted ten claims, recorded in research/evergreen-sweep-2026"
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep.mem"
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
+```
+
+<<~ ahu #/head>>
+
+! Evergreen sweep handbacks, wave two
+
+Verbatim wave-two handbacks of the Luna-6 YIN and YANG spirits (2026-10-18); only Markdown transliterated to memetic-wikitext. YIN read isomorphisms first, YANG clocks and version numbers first; each then confirmed or refuted its twin against the code. A Sol-6 reader verified both and refuted ten claims; its plan and the operator's rulings rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>, and a refutation there outranks a claim here.
+
+<<~/ahu>>
+
+<<~ ahu #/yin-evergreen-sweep-yin-wave-two>>
+
+!! Evergreen sweep — YIN wave two
+
+<<~/ahu>>
+
+<<~ ahu #/yin-ranked-findings-by-inherited-shape>>
+
+!!! Ranked findings by inherited shape
+
+
+# ''MEASURED · confirmed-by-both — Timestamped IDs propagate clock authority.'' `newEventId()` in `packages/lararium-mesh/src/effect-record.ts:155-160` and `newChangeId()` in `packages/lararium-mesh/src/residency-actions.ts:320-325` both encode `Date.now()` in base 32 before random material. The latter explicitly says the lineage “MAY legitimately sort by mint time”; neither identity needs clock order when causal links/heads supply succession. Node repeats the pattern in `packages/lararium-node/src/sense-sensorium.ts:71-73`. Replace with random/CID identity; preserve lineage continuity on transfer. Twin’s findings 1–3 confirmed by the opened bodies.
+
+# ''MEASURED · confirmed-by-both — TW5 epoch freshness derives from wall time.'' `mintEpoch()` in `packages/lararium-tw5/src/tw5-projection.ts:133-139` uses `max(lastEpoch + 1, Date.now())`, explicitly to distinguish worker restarts. Use an opaque fresh epoch and a causal/owner relation for stale-message rejection. Twin finding 4 confirmed.
+
+# ''MEASURED · confirmed-by-both — Draft deletion is an expiry decision.'' `packages/lararium-tw5/src/wiki-draft-handlers.ts:87-103` computes a Date.now cutoff, parses stored timestamps, and marks old drafts stale for later cleanup. Replace time-authorized deletion with an abandonment/retirement event; timestamps can remain descriptive only. Twin finding 5 confirmed.
+
+# ''MEASURED · confirmed-by-both — Durable effect records write wall time as event truth.'' `mapActionToEffects()` in `packages/lararium-mesh/src/effect-record.ts:255-263` defaults `timestamp` to a new ISO time. The effect ID/order and causal action link can carry event identity and order. Remove from decision data or label as non-authoritative display metadata. Twin finding 6 confirmed.
+
+# ''MEASURED · confirmed-by-both — Verb outcomes write completion/request/start wall stamps.'' `packages/lararium-mesh/src/verb-tiddler.ts:473-487` writes `completed-at`; the same file’s `requested-at` and `started-at` writes at `541-542`, `578-579`, and `635-636` also need treatment. These are event-state records; causal refs should identify transitions. Twin finding 7 confirmed for opened completion body; other listed writes are in twin handback and remain confirmed by its inspection, not re-opened in this ratchet.
+
+# ''MEASURED · confirmed-by-both — Shared byte equality should live at the mesh floor.'' Browser `sameBytes` at `packages/lararium-browser/src/browser-fleet-join.ts:78` and node `sameBytes` at `packages/lararium-node/src/fleet-join-custody.ts:43` are byte-identical length-plus-element comparisons. Mesh has three `bytesEqual` variants at `packages/lararium-mesh/src/sealed-chunk.ts:262-267`, `slip39.ts:350-355`, and `sealed-writer.ts:203-209`. Lift a `bytesEqual` primitive into `@lararium/mesh`; adapt null handling in sealed-writer. The sealed-chunk version accumulates XOR differences (constant-time intent), unlike early-exit variants, so do not flatten that semantic/security difference into one implementation without preserving its timing property. Node/browser copies have no such distinction. Depends only upward from node/browser; direction remains valid.
+
+# ''MEASURED · confirmed-by-both — Strict hex decode is a mesh primitive; edge normalization differs.'' `@lararium/mesh` `hexToBytes` in `packages/lararium-mesh/src/crypto.ts:125-138` rejects odd length and invalid digits while accepting upper/lower hex. Keyhive `packages/lararium-keyhive/src/keyhive-provider.ts:114-117` strips `0x` then calls its upstream decoder; retain prefix handling at Keyhive boundary. Browser stub `packages/lararium-browser/src/__stubs__/crypto-stub.ts:46-51` omits validation and exists only for stubbing. Share strict decoder for production callers, not stub or upstream-specific normalization. Export already exists from mesh. No dependency inversion.
+
+# ''MEASURED · yours-alone — Persona mount algorithm is already centralized.'' `readWornPersonaMount` in `packages/lararium-mesh/src/persona-vault.ts:272-312` reads the selector and all four anchor pins, refuses incomplete anchor sets, and returns one platform-blind mount. Node `packages/lararium-node/src/worn-mount.ts:9-19` imports it and supplies the fs vault and warning sink. Do not lift a second algorithm; browser should compose through its PersonaVault. Its wrapper’s historical “bug and cure” wording at `worn-mount.ts:4-6` is evergreen residue.
+
+# ''MEASURED · yours-alone — Recovery algorithm already lives at the mesh/Keyhive seam.'' `packages/lararium-mesh/src/recovery-keel-core.ts:95-105` reconstructs the root and zeroizes it in `finally`; node `packages/lararium-node/src/recovery-keel.ts:44-53` injects `runReadmitEdge`. Keep injection: moving Keyhive signing into mesh would invert the graph (`mesh -> keyhive` is forbidden). Provisioning cores likewise reside in mesh; node binds vault storage. The node docblock around `recovery-keel.ts:8-12` narrates a prior design rather than current behavior.
+
+# ''MEASURED · yours-alone — Persona roster operations have shared answers but different storage contracts.'' Mesh `listPersonaRoots`/`personaRootExists` in `packages/lararium-mesh/src/persona-vault.ts:173-188` operate through `PersonaVault`; node `packages/lararium-node/src/node-vessel-identity.ts:804-831` reads an explicit roster including verifying keys and avoids root-row reads. Reuse only if node preserves this one-read roster invariant and richer roster result; not a blind replacement.
+
+# ''MEASURED · yours-alone — Same-name record readers are not an isomorphism.'' Mesh `readRecord` at `packages/lararium-mesh/src/sealed-records.ts:422-453` verifies signed/capability-bound content and returns refusal results. Node `readRecord` at `packages/lararium-node/src/guardian-enrolment.ts:98-104` decodes a guardian JSON row; `packages/lararium-node/src/roll-circle-record.ts:40-55` parses another format and returns null on malformed data. Distinct formats, trust checks, and failure contracts; do not make a shared `readRecord`.
+
+# ''MEASURED · yours-alone — Refusal helpers need domain-specific contracts.'' Browser `isRefusal` at `packages/lararium-browser/src/browser-fleet-join.ts:45-47` tests only object/property presence. Inventory counterparts in mesh (`fleet-join.ts:212`, `content-key-holder.ts:211`) and node (`commands/fleet-join.ts:86`) must retain their precise result unions. A property-presence guard cannot establish an isomorphism. Inventory has many `refuse`/`bare` helpers; counts do not prove one refusal algebra.
+
+# ''MEASURED · yours-alone — `splitHash` shares a character operation, not a projection.'' Mesh `packages/lararium-mesh/src/mirror-paths.ts:25-33` splits mirror URIs whose fragment suffix maps to path segments. Node `packages/lararium-node/src/bag-paths.ts:88-115` splits carrier URIs where a fragment means no file. Keep projection semantics local; a generic string helper is low leverage unless additional consumers prove need.
+
+# ''MEASURED · yours-alone — Digest helpers cross the frame boundary illegally as a lift.'' Mesh `packages/lararium-mesh/src/crypto.ts:142-150` hashes bytes asynchronously through an injected provider; frame `packages/lararium-memetic-frame/src/check.ts:61-72` hashes UTF-8 text synchronously with noble. `@lararium/memetic-frame` has no workspace dependencies and sits below mesh; importing mesh into frame inverts the package graph. Preserve local implementation and differing input/provider semantics.
+
+# ''MEASURED · twin-alone — `LarDoc.schemaVersion` propagates one authored counter through mesh.'' `packages/lararium-mesh/src/base-doc.ts:81-94` types the field and puts `"0.1"` in empty docs; `mesh-palace.ts:530` copies it and line 568 recreates it. Genesis injects `"0.1"` at `packages/lararium-mesh/src/genesis-doc.ts:691`. Remove the authored counter throughout the doc shape and projections; content CID/heads identify state. The claim that this field appears in other generated schema sites remains bounded to twin’s inventory.
+
+# ''MEASURED · twin-alone — Session envelopes require an authored numeric schema selector.'' `packages/lararium-mesh/src/session-contract.ts:181-225` requires `schemaVersion === SESSION_SCHEMA_VERSION` alongside owner epoch, session ID and generation. Preserve session ownership/generation checks; remove the format counter or name the actual message shape semantically. This is mesh wire format we own, not an upstream protocol.
+
+# ''MEASURED · twin-alone — Genesis carries contradictory authored version tags.'' `packages/lararium-mesh/src/genesis-doc.ts:243-250` declares `lararium-genesis-seed/v1` while saying seed carries no version, and `materializeGenesisDoc` writes `schemaVersion: "0.1"` at line 691. Remove schema counter and replace numbered authored shape label with a semantic name where a discriminator remains necessary. Twin also cites `engine/v1`, `plugins/v1`, `grammar/v1` at lines 470/500/520; those exact lines were not re-opened in this ratchet.
+
+# ''MEASURED · twin-alone — Browser IndexedDB schema numbers encode additive migration branches.'' `packages/lararium-browser/src/browser-vessel-identity.ts:65,105-111` opens at `IDB_VERSION` and adds stores in v3/v4 branches while retaining prior stores. This is authored local-generation/migration behavior; remove compatibility branches when the store takes the current shape. Distinguish that from upstream wire numbers.
+
+# ''MEASURED · twin-alone — Residency records invite per-record schema generations.'' `packages/lararium-mesh/src/tiddler-store.ts:93-96` documents `schemaVersion` values such as `v1`, `lore-2`, dates, and says no read-time lens projects them. Remove authored format counter if no consumer depends on it; use content identity/causal heads.
+
+# ''MEASURED · twin-alone — Keep upstream protocol versions at the island edge.'' `packages/lararium-mempalace/src/mempalace-client.ts:219-221` sends MCP `protocolVersion` and client metadata; protocol negotiation belongs to upstream boundary. `packages/lararium-mesh/src/sealed-chunk.ts:165-189` uses `keyVersion` as a cryptographic key identity in sealed context, not a package release counter. `packages/lararium-browser/src/admit-carriage.ts:15` names signed `device-admit/v1`; preserve existing signed bytes as a wire commitment. Do not confuse these with house schema counters.
+
+# ''MEASURED · twin-alone — Authored domain `/v1` suffixes are frozen bytes, not a safe mass rename.'' `packages/lararium-mesh/src/domains.ts:29-62` mints domain strings used in signing/HKDF. Existing values bind signatures/derivations; preserve live bytes while adding no new numbered domains. This is an authored version-like naming residue but changing it would invalidate commitments.
+
+# ''MEASURED · twin-alone — Durable records and UI events leak wall time.'' Node tick event writes `{ts: Date.now()}` at `packages/lararium-node/src/lar-event-bus-impl.ts:203`; TW5 alerts use `Date.now()` request IDs and ISO `ts` at `packages/lararium-tw5/src/wiki-behavior.ts:62-80`; mailbox records write `parked-at`/`delivered-at` at `packages/lararium-node/src/vessel-mailbox.ts:49,70`. These fields need causal IDs/state for decisions; retain wall time only as explicitly non-authoritative presentation metadata. Confirmed-by-both for tick/alert/mailbox evidence (twin raised tick and alert; mailbox is this ratchet addition).
+
+# ''MEASURED · twin-alone — Retirement writes a wall stamp into lifecycle state.'' `packages/lararium-node/src/sensorium-lifecycle-verbs.ts:288` writes `retiredAt` with `new Date().toISOString()` beside grounds and prior state. Grounds/event should identify retirement; timestamp cannot authorize expiry. Twin finding 11 confirmed by its cited code; line not re-opened in this ratchet.
+
+# ''MEASURED · confirmed-by-both — Liveness clocks are lawful when they govern only the holder’s wait.'' Mesh `packages/lararium-mesh/src/boot-resolver.ts:213-228` uses monotonic elapsed time and a timer to end its own boot wait; node `packages/lararium-node/src/uds-channel.ts:688-710` bounds a pending response and measures local duration. Retry scheduling in `packages/lararium-mesh/src/sibling-channel.ts:658` only paces a future dial. These do not grant or revoke remote authority. Twin findings 12, 13, 16 confirmed.
+
+# ''MEASURED · yours-alone — Recovery epoch is causal protocol state, not a clock.'' Mesh `packages/lararium-mesh/src/recovery-keel-core.ts:120-145,172-192` receives the epoch supplied by readmit/founding inputs; it does not mint from wall time. Do not remove numeric epochs merely because they are numbers: owner/lease epochs can encode causal succession.
+
+<<~/ahu>>
+
+<<~ ahu #/yin-evergreen-findings>>
+
+!!! Evergreen findings
+
+
+# ''MEASURED · twin-alone — Live compatibility arms violate the present-shape rule.'' `packages/lararium-mesh/src/capture/turn-harvest.ts:206` accepts both head forms; `packages/lararium-mesh/src/capture/build-patch.ts:129,190` narrates and accepts legacy/unprefixed sources; `packages/lararium-tw5/src/compaction-handlers.ts:145` retains an old generation read-only; `packages/lararium-tw5/src/meme-ast/builder.ts:116` retains back-compat. Remove obsolete arms and state the accepted present shape, after checking whether any currently supported input still requires them. These have more inherited impact than isolated comments.
+
+# ''MEASURED · yours-alone — Lift comments narrate project history.'' `packages/lararium-mesh/src/persona-vault.ts:2-16` describes lifted control flow; `packages/lararium-node/src/worn-mount.ts:4-6` says “bug and its cure”; `packages/lararium-mesh/src/recovery-keel-core.ts:164-167` narrates future wiring/already-standing behavior. Rewrite as present behavior when code cleanup is authorized.
+
+# ''LEAD · twin-alone — Timer classification still requires callback inspection.'' Twin cites `packages/lararium-tw5/src/wiki-sense-supervision.ts:331` and `packages/lararium-browser/src/browser-gate-pins.ts:71` as possible authority expiry. This ratchet did not open those callbacks, so do not mark them as proven violations. In contrast, browser `guarded-boot.ts:43` is a local teardown budget, and liveness timers above are holder-controlled waits.
+
+<<~/ahu>>
+
+<<~ ahu #/yin-ratchet-disposition>>
+
+!!! Ratchet disposition
+
+
+Confirmed from twin by opening implementation: timestamp IDs (twin 1–4), TW5 draft expiry (5), durable effect timestamp (6), completion timestamp (7), tick/alert timestamps (8–9), the listed authored schema/version examples (20–26, 28–29), and liveness cases (12–13,16). Twin’s retirement timestamp and historical compatibility citations were accepted from its inspected wave-one evidence; this ratchet did not re-open every cited line. Nothing in this pass refutes those code claims; the important qualification is that clock metadata can remain only as non-authoritative display data, and signed/upstream version bytes cannot be silently changed.
+
+My wave-one shape findings remain yours-alone where YANG did not address them: byte comparator and strict hex decoder lifts; persona mount and recovery already composed; roster nuance; same-name record/refusal semantics; splitHash and digest boundary. Added mailbox stamps and the sealed-chunk constant-time comparator distinction by reading the implementations. No finding asks node/browser/CLI to import upward into mesh; dependency direction remains mesh at the floor, TW5 above mesh, and node/browser/CLI composing both.
+
+<<~/ahu>>
+
+<<~ ahu #/yin-tail-of-counts>>
+
+!!! Tail of counts
+
+
+The cross-package-name inventory lists 68 shared-name rows (inventory itself, not 68 isomorphisms); `refuse` has 20 listed definitions, `bare` 12, `readBody` 3, `isRefusal` 4, `hexToBytes` 4, `sameBytes` 4, `bytesEqual` 4, `sha256Hex` 2, `splitHash` 2, and `readRecord` 3. Counts indicate search surface, not shared semantics. This ratchet re-opened the cited high-rank clock, version, codec, comparator, mount and recovery implementations; remaining noisy inventory hits stay leads. No suites, builds, or git writes ran. Only `out.md` in the handoff directory was written.
+
+<<~/ahu>>
+
+<<~ ahu #/yang-merged-aftermath-handback>>
+
+!! Merged aftermath handback
+
+<<~/ahu>>
+
+<<~ ahu #/yang-ranked-findings>>
+
+!!! Ranked findings
+
+
+# ''MEASURED — ID — yours-alone.'' `packages/lararium-mesh/src/effect-record.ts:154-160` and `packages/lararium-mesh/src/residency-actions.ts:316-323` mint timestamp-prefixed random IDs (`newEventId`, `newChangeId`). The latter comment explicitly says lineage IDs may sort by mint time. Remove clock ordering from identity; use opaque random identity and let causal links/heads carry order. The two constructors duplicate one identity shape; a shared mesh mint could replace both if their distinct event-versus-lineage namespaces remain explicit.
+
+# ''MEASURED — ID — yours-alone.'' `packages/lararium-node/src/sense-sensorium.ts:71-73` similarly embeds `Date.now()` in a sensorium ID. Use opaque random identity; causal record/head links name succession.
+
+# ''MEASURED — DECIDES — yours-alone.'' `packages/lararium-tw5/src/tw5-projection.ts:133-139,776-786` chooses mount epochs with `max(lastEpoch+1, Date.now())`; stale-target rejection therefore depends on a device clock after restart. Use a fresh opaque epoch and establish freshness through the mount's causal relation.
+
+# ''MEASURED — DECIDES — yours-alone.'' `packages/lararium-tw5/src/wiki-draft-handlers.ts:87-103` computes a wall-clock cutoff and removes drafts whose authored timestamps predate it. Expiry belongs to an explicit causal retire/abandon act; timestamps may only describe display time.
+
+# ''MEASURED — WRITTEN-AS-TRUTH — yours-alone.'' `packages/lararium-mesh/src/effect-record.ts:232-263` places current ISO time in durable effect records. The effect's causal position should establish order; omit the field or make it demonstrably non-authoritative display metadata.
+
+# ''MEASURED — WRITTEN-AS-TRUTH — yours-alone.'' `packages/lararium-mesh/src/verb-tiddler.ts:473-487,541-542,578-579,635-636` writes `completed-at`, `requested-at`, and `started-at`. The outcome/request events and their causal links identify acts; timestamps must not become validity or ordering truth.
+
+# ''MEASURED — WRITTEN-AS-TRUTH — yours-alone.'' `packages/lararium-node/src/lar-event-bus-impl.ts:203` emits `{ts: Date.now()}` in a tick event. The scheduler's timer can pace local liveness, but its wall timestamp must not stand as event order.
+
+# ''MEASURED — WRITTEN-AS-TRUTH — yours-alone.'' `packages/lararium-node/src/vessel-mailbox.ts:49,70` writes `parked-at` and `delivered-at`; transitions already carry causal state. Remove clock authority from mailbox records.
+
+# ''MEASURED — WRITTEN-AS-TRUTH — yours-alone.'' `packages/lararium-node/src/sensorium-lifecycle-verbs.ts:288` records `retiredAt` from the wall clock. The retirement grounds/event establish retirement; the timestamp cannot authorize it.
+
+# ''MEASURED — OWN-LIVENESS — yours-alone (lawful).'' `packages/lararium-mesh/src/boot-resolver.ts:213-228`, `packages/lararium-node/src/uds-channel.ts:688-710`, `packages/lares-cli/src/commands/mempalace.ts:239-249`, and `packages/lararium-browser/src/guarded-boot.ts:43` use monotonic elapsed time or timers to bound the holder's own wait/teardown. These do not decide shared validity.
+
+# ''MEASURED — OWN-LIVENESS — yours-alone (lawful).'' `packages/lararium-mesh/src/sibling-channel.ts:658` schedules a retry; `packages/lararium-mesh/src/capture/capture-engine.ts:198-200` paces flush/backoff. Keep as local liveness only; ensure elapsed values never enter durable records.
+
+# ''MEASURED — OWN-LIVENESS — yours-alone (lawful).'' `packages/lararium-tw5/src/modules/lar-root-services.ts:108` dismisses a transient UI alert after a local presentation interval. This does not revoke durable authority.
+
+# ''MEASURED — EDGE — yours-alone (keep).'' `packages/lararium-mempalace/src/mempalace-client.ts:219-221` carries MCP `protocolVersion`; upstream negotiation belongs at the web2.5 edge.
+
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/base-doc.ts:80-94` defines `LarDoc.schemaVersion` and seeds `"0.1"`; `packages/lararium-mesh/src/mesh-palace.ts:530,568` returns that same field. Remove the house schema counter; content CID and causal heads/edges identify bytes and succession.
+
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/session-contract.ts:181-225` requires numeric `schemaVersion` on session envelopes. Let the message shape and causal session/owner epoch identify current state; no global version counter.
+
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/genesis-doc.ts:243-250,280-283,351-354,691` has `lararium-genesis-seed/v1`, rejects a `schemaVersion`, and injects a schema field into generated data. Canon says the seed carries no version (`stable-founding-road.mem:307,593`); use seed CID/manifest CID for bytes and remove contradictory counter/guards. Retain a semantic format discriminator only if a reader needs a distinct shape name, without a numbered generation.
+
+# ''MEASURED — AUTHORED — yours-alone, with signed-byte caveat.'' `packages/lararium-mesh/src/domains.ts:29-62` builds authored signing/HKDF domain strings ending `/v1`. They are not upstream protocol numbers, but changing live domains changes signatures/key derivation. Preserve existing signed commitments as frozen edge bytes; mint no new numbered domains, and use semantic names for new separations.
+
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-browser/src/browser-vessel-identity.ts:65,105-141` uses IndexedDB database version generations and additive upgrade/blocked-version behavior. The house's no-migration ruling makes these authored compatibility branches suspect. Current browser state should identify durable content by CID/head; local store opening must accept its one current shape rather than migrate old experiments.
+
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/tiddler-store.ts:93-96` carries a record `schemaVersion`; remove this house counter and let record content identity/causal heads identify the state.
+
+# ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-mesh/src/sealed-chunk.ts:165-189` uses `keyVersion` as a content-key identity, not a release counter. Canon explicitly keeps content-key versions and places rolls at causal removal acts (`stable-founding-road.mem:182,218`).
+
+# ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-browser/src/admit-carriage.ts:15` and `packages/lararium-keyhive/src/index.ts:105` bind `device-admit/v1` into a signed wire discriminator. Keep existing signed bytes as an edge contract; do not generalize it into house releases.
+
+# ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-keyhive/src/keyhive-provider.ts:17-19` says Keyhive Archives/events lack a format tag and pins the upstream dependency because version moves re-found vessels. This is an upstream format compatibility boundary, not a house version.
+
+# ''MEASURED — Evergreen and active compatibility — yours-alone.'' `packages/lararium-mesh/src/capture/turn-harvest.ts:206` says a reader “tolerates both” old and new heads; the code accepts both. Retire the backward arm and state the accepted head shape. `packages/lararium-mesh/src/capture/build-patch.ts:129,190` similarly names and accepts an unprefixed legacy source; remove that branch. Both conflict with no migration/shim.
+
+# ''MEASURED — Evergreen and active retention — yours-alone.'' `packages/lararium-tw5/src/compaction-handlers.ts:145` keeps an old generation accessible read-only. Retire this compatibility retention and anchor current reads to the current causal head/manifest.
+
+# ''MEASURED — Isomorphism confirmation — twin-alone.'' Confirmed YIN findings 1–4 and 8–9 by opening the cited lines. `packages/lararium-mesh/src/persona-vault.ts:269-275` owns platform-blind `readWornPersonaMount`; `packages/lararium-node/src/worn-mount.ts:9-18` imports it and binds the fs vault/warning sink. Already composed; no second node algorithm to lift. `packages/lararium-mesh/src/recovery-keel-core.ts:92-105` owns generic reconstruction/readmission; `packages/lararium-node/src/recovery-keel.ts:15-20,44-53` injects the Keyhive edge. Keep dependency direction mesh→no Keyhive. `packages/lararium-browser/src/browser-fleet-join.ts:78` and `packages/lararium-node/src/fleet-join-custody.ts:43` have identical byte equality (`length` plus indexed comparison), also repeated in mesh `sealed-chunk.ts:262`, `slip39.ts:350`, `sealed-writer.ts:203` per inventory. Lift only `bytesEqual` into `@lararium/mesh`; callers' custody transactions remain local. YIN also identifies strict mesh hex decoding (`crypto.ts:125`) as a candidate; Keyhive's `keyhive-provider.ts:114` strips optional `0x`, so retain normalization at the edge.
+
+# ''MEASURED — Isomorphism distinctions — twin-alone.'' `packages/lararium-mesh/src/sealed-records.ts:422-453`, `packages/lararium-node/src/guardian-enrolment.ts:98-104`, and `packages/lararium-node/src/roll-circle-record.ts:40-55` all name a helper `readRecord`, but the first verifies signed/capability-authorized sealed records and returns a refusal union, the second parses guardian JSON and throws, and the third parses roll-circle JSON and returns null. They are not isomorphic; do not lift a generic `readRecord`.
+
+# ''MEASURED — Isomorphism distinctions — twin-alone.'' Frame digest at `packages/lararium-memetic-frame/src/check.ts:61` and mesh digest at `packages/lararium-mesh/src/crypto.ts:142,163` differ in input/runtime contract (UTF-8 text+noble versus bytes/injected provider); frame has no mesh dependency and importing mesh would invert package edges. Keep local. Likewise `splitHash` at `packages/lararium-mesh/src/mirror-paths.ts:25` and `packages/lararium-node/src/bag-paths.ts:88` feeds distinct projections (mirror fragments become path segments; carrier fragments resolve no file); do not merge projections.
+
+# ''MEASURED — Evergreen residue — twin-alone.'' `packages/lararium-mesh/src/persona-vault.ts:2-16`, `packages/lararium-node/src/worn-mount.ts:1-6`, `packages/lararium-mesh/src/recovery-keel-core.ts:164-167`, and `packages/lararium-node/src/recovery-keel.ts:38-42` narrate lifting, bugs/cures, unchanged semantics, or a future absent consumer. Rewrite in present tense during the code pass. In particular, the node recovery comment itself says no live CLI consumer exists, so this is descriptive lead evidence, not a second implementation.
+
+# ''LEAD — Evergreen, yours-alone.'' The archaeology inventory contains many “no longer” hits that state present causal absence, so it cannot justify blanket deletion. Prioritize concrete compatibility branches and retention above; inspect each remaining body before classifying.
+
+<<~/ahu>>
+
+<<~ ahu #/yang-tail-of-counts>>
+
+!!! Tail of counts
+
+
+Measured here: 13 clock classifications (9 suspect, 3 lawful own-liveness groups, 1 lawful edge); 9 authored-version findings and 4 keep/noise distinctions; 7 cross-package findings confirmed from YIN's isomorphism lens; 5 concrete evergreen/compatibility findings, plus one inventory lead. Inventories are noisy and this is a ranked sample, not a full source census. Package direction remains mesh at bottom, TW5 above mesh, and node/browser/CLI composing them; no proposed lift reverses that direction. No suites, builds, or git writes ran.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>
+
+<<^ code="&#x0003;">>ni:///sha-256;3kxvNBozYhHbj6emPSGOQq-tKBAS9bFPhIssCBjafBU
+
+<<^ code="&#x0004;" -> to="?">>

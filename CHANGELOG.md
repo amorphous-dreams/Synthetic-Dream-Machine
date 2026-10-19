@@ -1,6 +1,6 @@
 # Flying Triremes and Laser Swords — Changelog
 
-No release has shipped, and no version tag exists. The eras below name turns in the work, newest first. The first version number arrives with the first tagged release.
+No release has shipped. A release names its floor by CID under the steward's `floor-release` seal, and no version number marks it. The eras below name turns in the work, newest first.
 
 ## Unreleased
 
