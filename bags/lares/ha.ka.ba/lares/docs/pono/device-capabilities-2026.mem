@@ -203,7 +203,7 @@ The probe grants classic and module SharedWorker; two tabs share one instance, w
 
 `storage.persist()` refuses in a plain tab, so storage stays evictable. A platform authenticator advertises `extension:prf`; the PRF derivation itself remains unmeasured. Chrome sends a desktop user-agent string from this tablet; never branch on UA.
 
-Owed measurements: owner-kill, one-tab lock fallback, long background, PRF derivation, eviction over days and further device classes.
+Owed measurements: owner-kill, one-tab lock fallback, long background, PRF derivation and its output across a synced credential's second device, which lifecycle signals reach a page, eviction over days and further device classes. The session-unlock research of 2026-10-18 names each probe and the scenario it settles (<<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>).
 
 <<~/ahu>>
 
@@ -225,6 +225,7 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
@@ -239,6 +240,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vQNCpppbbatuUi_i-NDXsMpnVmEigE_v2m6UAVRejGc
+<<^ code="&#x0003;">>ni:///sha-256;S0jgZ2Y3CL_sKYDpUXo6aSe6iegzDukNElMrBkAgZA8
 
 <<^ code="&#x0004;" -> to="?">>

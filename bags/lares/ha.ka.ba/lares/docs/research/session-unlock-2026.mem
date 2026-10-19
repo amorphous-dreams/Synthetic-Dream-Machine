@@ -1,0 +1,214 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/session-unlock-2026.mem"
+l-space   = "lares"
+mana      = 14
+manao     = 14
+manaoio   = 13
+role      = "field research, two traded waves (a Luna-6 YIN and YANG pair with live web search, 2026-10-18), on how a person opens a vessel's sealed custody once per session across every vessel type the house targets, read against the per-tab unlock ruling; the controller's sort of what both faces hold, the leads with their probes, one overreach corrected, the forks; both wave-two handbacks kept verbatim"
+status    = "research; read 2026-10-18; no code changed; the per-tab ruling stands as written, and the leans of secure-context#/custody-leans stand confirmed"
+tags      = ["research", "custody", "session", "browser", "device-capabilities", "testimony"]
+title     = "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/session-unlock-2026"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/question>>
+
+! Session unlock, 2026 ~ one ask per session, across every vessel
+
+The operator ruled on 2026-10-18 that each browser tab asks for its own unlock and the shared holder carries no unlock between tabs (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings). A myth-QA walk of user stories then found one joint the ruling's words leave open: once sealed-store step three seals storage values, does the shared holder open documents for a session, or do keys live in sessions alone? The operator unasked an amendment (Mu) and sent the question to research instead.
+
+A YIN and a YANG Luna-6 spirit researched apart with live web search, then traded handbacks and ratcheted: each confirmed or refuted the other's claims against vendor and standards pages. They walked eight scenarios (the morning cup, a second session on one face, two faces at once, the walk-up, the last session closing, the quiet sync, an unattended restart, a spirit's or watcher's session) over every vessel type: desktop browsers, mobile browsers and installed PWAs, the node in its container, the herm, and the future native-mobile, Mudlet and Unreal surfaces. Two spirits of one lineage count as one lens (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">> #/the-lens-law): their agreement reads as one lead their sources strengthen.
+
+<<~/ahu>>
+
+<<~ ahu #/what-both-faces-hold>>
+
+!! What both faces hold, sourced
+
+* ''The per-tab ruling holds on every surface walked.'' Each session asks and wears its own face; two faces never share an opening.
+* ''The shared holder moves ciphertext and coordinates storage, and holds no session's key.'' Quiet sync stays sealed until the matching session opens its own rows. "Shared holder" names shared coordination, never shared authority. This answers the myth-QA joint: keys live in sessions alone, and a holder that opened documents per session would hold the key cache neither source nor ruling supports.
+* ''A synced passkey never counts as device-bound custody.'' Apple's iCloud Keychain and Google Password Manager both sync passkeys across devices. This confirms the caution of <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> #/custody-leans: a synced passkey reads `cloud-synced`, and a PRF wrap stands as one keyslot beside passphrase and paper, never alone.
+* ''No browser worker gives a durable vault.'' SharedWorker and ServiceWorker lifetimes end when their last reference goes; browser storage stays evictable by default.
+* ''Native keystores reach no web code.'' The Secure Enclave and Android Keystore hardware-back keys for native code; a native surface reaches them only through its own adapter, its hardware level measured.
+
+<<~/ahu>>
+
+<<~ ahu #/leads-and-probes>>
+
+!! Leads, each with the probe that settles it
+
+* ''PRF per browser, OS, authenticator and sync provider.'' The W3C spec settles PRF's semantics and no vendor publishes a coverage matrix. The house scout's dated table already names the shipping releases (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> #/capability-table), and one tablet advertises `extension:prf` with the derivation unmeasured (#/measured-tablet there). The probe: register, request PRF, sync the credential, compare the output on a second device. It rides `tools/capability-probe/` on the operator's devices, row `B3`.
+* ''Lifecycle signals'' (suspend, OS lock, tab freeze, process kill) arrive unevenly by platform. Until each device class measures them, a walk-up lock stands as an explicit lock plus best-effort signals, and no clock decides.
+* ''A container's TPM reach'' depends on its host's device passthrough, and gets measured per deployment.
+
+<<~/ahu>>
+
+<<~ ahu #/the-node-scope>>
+
+!! The node keeps its own boundary ~ a house reading
+
+Both faces wrote "an ask per CLI command" for the node. The rulings stand otherwise: one holder keeps the opened vessel key in node-main for the boot, a raise lives one boot and lapses at the next causal boundary, and every session proves its own face-scoped key at the gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). On a browser the tab marks the unlock boundary; on the always-on node the boot marks the unlock boundary and the session marks the face boundary. The per-tab ruling names browser tabs, and this reading keeps it there; the operator may widen it.
+
+<<~/ahu>>
+
+<<~ ahu #/forks>>
+
+!! Forks the research leaves with the operator
+
+# ''The last tab closes.'' Does the browser vessel's sovereign composition drop to the floor? Both faces lean yes; the SharedWorker's death gives it almost free.
+# ''Cross-device PRF.'' The leans of secure-context#/custody-leans stand confirmed; what remains reads as a measurement, never a ruling, before a PRF slot enters the slot tree.
+# ''The ember'' stands settled by ruling (it raises to SERVING alone, never signs or admits), though both faces offered it as a fork.
+
+<<~/ahu>>
+
+<<~ ahu #/testimony-yin>>
+
+!! Testimony ~ Yin-Luna, wave two (verbatim)
+
+```text
+Yin-Luna: Lares (Tasked Spirit), YIN face; YANG evidence carried.
+
+<<~ status "LEAN: each session unlocks with a human route; shared holders coordinate sealed storage without retaining session keys. Passkeys may wrap a key only as an opted-in convenience after provider and PRF probing; they do not change the session boundary. The node may serve its floor while locked." >>
+
+## Claims checked
+
+Dates below are publication/update dates where the page supplies one; otherwise accessed 2026-10-18. House sources are local files read 2026-10-18. **LEAD** means the material source or combination-specific behavior remains unverified.
+
+| Claim | Twin's or own | Result | Source |
+|---|---|---|---|
+| WebAuthn PRF produces a credential-associated 32-byte output from supplied inputs; use it as optional key-wrap material. | Both | CONFIRMED (semantics); browser/authenticator availability is LEAD | [W3C WebAuthn Level 3 §10.1.4](https://www.w3.org/TR/webauthn-3/) (Recommendation 2026-08-25; accessed 2026-10-18). It specifies PRF semantics, not which consumer authenticators implement it. |
+| PRF/passkey is available across Chromium, Firefox, Safari, and iOS PWA as wave-one capability matrices imply. | Twin / own | LEAD | Same W3C source makes support runtime- and authenticator-dependent; no direct vendor compatibility matrix was found covering the named combinations. Probe `getClientCapabilities`/extension result with each target browser × authenticator. |
+| Passkeys can sync across devices and ecosystems, so a synced passkey is not evidence of device-bound custody. | Both | CONFIRMED | [Apple Passkeys](https://developer.apple.com/passkeys/) (undated; accessed 2026-10-18) says iCloud Keychain syncs and supports external providers; [Google passkey environments](https://developers.google.com/identity/passkeys/supported-environments) (undated; accessed 2026-10-18) documents Google Password Manager synchronization across Android/Chrome platforms. Apple says iCloud passkeys are end-to-end encrypted; that does not make them device-bound. |
+| SharedWorker may share same-origin state across browsing contexts; its lifetime is not a durable session guarantee. | Twin / own | CONFIRMED in principle; engine-specific lifetime is LEAD | [HTML Standard](https://html.spec.whatwg.org/) (living standard; accessed 2026-10-18) defines shared worker ownership/lifetime; [Chrome shared-worker extended lifetime](https://developer.chrome.com/blog/extended-lifetime-shared-workers-origin-trial) (2025-07-31) describes a limited trial and short post-page lifetime. No cross-engine promise permits treating it as a durable key vault. |
+| ServiceWorker is not a persistent key vault. | Twin / own | CONFIRMED for Chrome extension workers; general browser lifetime details LEAD | [Chrome extension ServiceWorker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle) (updated 2023-05-02) states idle termination and loss of globals. This page is extension-specific; do not universalize its 30-second threshold to web ServiceWorkers. |
+| Browser/PWA storage may be evicted; persistent mode is not a universal custody guarantee. | Both | CONFIRMED for WebKit | [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-policy/) (2023-08-10) includes IndexedDB, ServiceWorker, and File System; best-effort data can be evicted under pressure/quota/ITP, while persistent mode is conditional. Other engines' detailed eviction behavior is LEAD here. |
+| Native secure hardware can protect keys, with device-specific availability and constraints. | Twin | CONFIRMED | [Apple Secure Enclave](https://developer.apple.com/documentation/Security/protecting-keys-with-the-secure-enclave) (undated; accessed 2026-10-18) says enclave private keys remain device-bound and can require unlocked device/user verification. [Android Keystore](https://developer.android.com/privacy-and-security/keystore) (undated; accessed 2026-10-18) requires checking security level; StrongBox is not universal. |
+| Web/PWA cannot claim direct native enclave/keystore custody. | Twin | CONFIRMED as an API boundary, but a blanket claim across all browser bridges is LEAD | Apple documents native Security/Authentication Services APIs; Android documents app Keystore APIs. Neither source grants ordinary web JavaScript these interfaces. A particular installed app bridge needs its own audit. |
+| Containers automatically lack TPM/secure-hardware access. | Twin | LEAD | No vendor/runtime source checked establishes this as a universal. It depends on host configuration and device passthrough; probe deployment socket/device mounts and key security level. |
+| House law: per-tab asks; a session wears one face; no vessel-wide face/session roster; quiet sync stays sealed until authorized session opens. | Both | CONFIRMED against house ground | Local `stable-founding-road.mem` #/rulings and `session-contract.mem` #/the-hands; `sealed-store.mem` #/owed. The 2026-10-18 operator ruling explicitly fixes per-tab unlock. |
+
+## What changed after Yang's ground
+
+My wave one already leaned per-session unlock, no shared-holder session key, and ciphertext-only quiet sync. Yang adds useful implementation nuance: a holder may serialize vessel-store operations and a native adapter may wrap a session key, provided neither turns into an ambient face cache. I accept that distinction; “shared holder” need not mean “shared authority.” I withdraw any reading of my “same gesture each app/tab” that implied a passkey is necessarily device-local: Apple and Google vendor pages document sync, including cross-device availability. Classify the credential provider, and keep a human recovery route. Yang's broad capability matrix (PRF on named browsers, container security assumptions) is not independently established by its cited sources; I downgrade those to LEAD rather than adopt them.
+
+Yang's evidence did not overturn my per-session conclusion. It sharpens platform claims: Chrome's 30-second ServiceWorker threshold is specifically the extension service worker lifecycle, and Apple's passkey syncing is end-to-end encrypted but still synced. My wave-one exact “7-day” WebKit statement rests on a 2020 ITP post; the newer 2023 WebKit policy confirms conditional eviction but I did not revalidate that precise interval, so that interval is now LEAD.
+
+## Converged scenario × vessel
+
+| Scenario | Desktop browser | Mobile / PWA | Node container / CLI / MCP | Herm / native / Mudlet / Unreal |
+|---|---|---|---|---|
+| Morning / second session | Each tab asks; reload/new tab starts locked. SharedWorker may coordinate store only. | Foreground session asks; relaunch/eviction means re-open. | TTY/owner socket ceremony per command/session. | Herm floor; native session asks; attached surfaces inherit vessel session. |
+| Two faces / walk-up / last close | One face per tab; explicit lock and clear tab key on close. Screen-lock signals are advisory. | Same boundary; lifecycle kill can drop key, not guarantee a lock event. | Bind owner-socket response to caller; exit/lock drops session key. | No vessel-wide active face; native keystore may wrap, not merge sessions. |
+| Quiet sync | Shared holder passes sealed rows; only matching authorized session decrypts. | Queue sealed changes until session open. | Daemon ingests ciphertext at floor; caller session opens permitted rows. | Adapter transports ciphertext; surface session opens its own permitted data. |
+| Restart / spirit + watcher | Browser stays locked absent ceremony. | No background unlock assumed. | Restart at public/nonsecret floor; ember may only serve within its explicit ceiling. Spirit and watcher receive separate, narrow leases. | No special AI principal; future adapter must preserve same leases and human route. |
+
+These paths follow the house's one-face-per-session law. Device lifecycle timing and PRF support are not treated as universal guarantees.
+
+## Standing disagreements and settling probes
+
+* **Last session close:** Yin leans auto-lock sovereign composition while floor services continue; Yang permits vessel custody operations to remain. Probe two simultaneous tab sessions: close one and confirm the other remains usable; close the last and inspect holder memory and ability to decrypt without fresh ceremony. Keep only keyless storage work alive.
+* **Walk-up / background lock:** both favor explicit and lifecycle-triggered lock, but lifecycle delivery is uncertain. Measure suspend, OS-lock, tab-freeze, process-kill, and resume behavior per target; verify cleartext/key references disappear. Until measured, expose explicit lock and treat signals as best-effort.
+* **Ember ceiling:** Yin leans serving-only, Yang allows a bounded/countable ember. Probe restart with no human and attempt private read, persona action, and signing. Any success beyond the recorded floor flips the lean toward no ember; only a bounded public-serving proof supports the exception.
+* **PRF:** both allow optional wrap, not mandatory unlock. Probe each browser × platform authenticator × provider, including credential restore on another device; verify `prf` result and UX policy before enabling. Any synced credential remains labeled synced.
+
+## Operator-owned forks
+
+* **Last close auto-lock:** lean yes for sovereign access; flip only if a live authorized session explicitly owns a still-needed operation and key residency is demonstrably session-scoped.
+* **Background/screen lock:** lean best-effort immediate lock on signals plus explicit lock; measurement of missed lifecycle events strengthens the need for short-lived, user-controlled sessions, not a clock expiry.
+* **PRF/passkey wrapper:** lean opt-in convenience with passphrase/paper route; flip to broader support only after per-combination probes and provider classification. Do not call synced credentials device-bound.
+* **Ember:** lean no private unlock and serving-only ceiling; flip only on a specified, tested capability ceiling with human recovery route.
+* **Sibling private sync:** lean ciphertext queue, authorized-session hydration; flip only if a session-bound decrypt path proves no shared key cache and no cross-face plaintext.
+
+<<~ lares yield from="lar://yin-luna:agent@crossroads/wave-two.handback" -> to="?">>
+```
+
+<<~/ahu>>
+
+<<~ ahu #/testimony-yang>>
+
+!! Testimony ~ Yang-Luna, wave two (verbatim)
+
+```text
+<<~ status "YANG-Luna: wave-two review complete; per-session unlock retained; browser capability claims narrowed to sourced facts; repository read-only" >>
+
+# YANG-Luna (Lares, tasked spirit) · Persona: Ink-Clerk
+
+## Claims checked
+
+Platform-source access date is 2026-10-18 unless a publication date is given. “Confirmed” means the cited first-party page supports the claim as stated; “refuted” means it contradicts it; unsupported coverage remains a lead.
+
+| Claim | From | Finding | Source |
+|---|---|---|---|
+| PRF is credential-associated output requested through WebAuthn, useful as a key input; support/outputs may be absent. | Both | CONFIRMED | [W3C WebAuthn Level 3 §10.1.4](https://www.w3.org/TR/webauthn-3/#prf-extension), Recommendation 2026-08-25; accessed 2026-10-18. |
+| Chromium, Firefox, Safari and their passkeys uniformly support PRF; PRF support in iOS/Android PWAs. | Own/twin | LEAD | W3C specifies extension behavior, not browser/authenticator coverage. Need runtime matrix probes by browser, OS, authenticator, sync provider. |
+| Apple passkeys sync across Apple devices via iCloud Keychain. | Both | CONFIRMED | [Apple Passkeys](https://developer.apple.com/passkeys/), accessed 2026-10-18; [Apple WWDC23](https://developer.apple.com/videos/play/wwdc2023/10263/), published 2023. |
+| A synced passkey is not device-bound custody; synced PRF output behavior is known. | Both | LEAD | Apple confirms passkeys sync, not PRF-extension output synchronization or custody suitability. I narrow my earlier assertion: classify sync as cross-device credential availability, but probe the actual PRF path. |
+| SharedWorker can serve multiple same-origin contexts; its life is not durable. | Both | CONFIRMED | [MDN SharedWorker lifetime](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#shared_worker_lifetime) and [constructor](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker/SharedWorker), accessed 2026-10-18. Spec behavior permits shutdown without references; browser grace period varies. |
+| ServiceWorker is an unreliable persistent vault / global session holder. | Twin | CONFIRMED (coordination only) | [Chrome extension service worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle), published 2023; accessed 2026-10-18: termination loses globals. This page is extension-specific; generic browser/PWA lifecycle coverage remains LEAD. |
+| Browser storage can be evicted; persistence is not absolute by default. | Both | CONFIRMED | [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-policy/), published 2023-08-10; accessed 2026-10-18. Also [MDN quotas/eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria), accessed 2026-10-18: best-effort default, eviction conditions vary. |
+| Apple Secure Enclave protects supported keys; Android Keystore/StrongBox can hardware-back keys, with device/API limits. | Both | CONFIRMED | [Apple Secure Enclave](https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave), accessed 2026-10-18; [Android Keystore](https://developer.android.com/privacy-and-security/keystore), accessed 2026-10-18. Neither proves ordinary web/PWA code gets these native facilities. |
+| Native secure enclave/key store should wrap custody only where native adapter and hardware capability are measured. | Own/twin | CONFIRMED | Same Apple and Android vendor pages; Android explicitly recommends checking security level. |
+
+## Converged scenario × vessel
+
+In every cell a session gets its own face-bound capability in its own live boundary; sealed data may move, but only that capability opens authorized rows. “Ask” is the human route, with optional authenticator wrapper only after a local capability probe.
+
+| Scenario | Desktop browser | Mobile browser / PWA | Container node / CLI / MCP | Herm / native / Mudlet / Unreal |
+|---|---|---|---|---|
+| Morning | Ask in tab; PRF optional if measured. | Ask in foreground app/session; do not assume native key APIs. | Ask through owner-only route. | Herm remains floor; native surface asks its vessel. |
+| Second session/reload | Ask again; SharedWorker coordinates store only. | Ask again after tab/relaunch. | New command/connection asks. | New surface session asks. |
+| Two faces | Separate sessions and keys; no shared holder key cache. | Same. | Separate capabilities via owner socket. | Separate leases; no vessel-wide active face. |
+| Walk-up | Explicit lock; lifecycle signals advisory. | Lock on available background signal, re-ask on resume. | Lock/terminate local session. | Platform lock can trigger lock; verify behavior. |
+| Last close | Drop tab capability. | Drop session capability; eviction/reap is expected. | Drop process/session capability; floor may continue. | Drop surface lease. |
+| Quiet sync | Replicate ciphertext; authorized tab opens its rows. | Same; foreground session opens after arrival. | Daemon ingests sealed bytes; session opens. | Surface transports ciphertext under a lease. |
+| Unattended restart | Locked floor. | Locked floor. | Floor by default; bounded ember may raise serving tier only. | Herm floor; native key wrapper requires adapter and human recovery. |
+| Spirit + watcher | Each is a distinct, narrow lease/session. | Background watcher not assumed durable. | Spirit and disk watcher each lease narrowly; no ambient root. | Attach through vessel lease; no independent custody. |
+
+This retains my wave-one per-tab ruling and the twin’s strongest correction: browser support facts must not be inferred from a dated house scout as if each vendor page had been rechecked. Quiet sync also stays ciphertext-only until the matching session opens it. No source establishes that shared holder must be a key cache; the house’s per-session law rules that out.
+
+## Standing disagreements and probes
+
+- **Exact PRF availability and output continuity across synced passkeys:** twin and I both leaned toward optional PRF and treated sync cautiously, but our evidence did not establish platform details. Probe a matrix of named browser/OS/authenticator/provider combinations; register, request PRF, sync credential, then compare usable output and recovery behavior. Until then it is a LEAD, not a supported unlock path.
+- **Last-session close returns node to floor:** Yin leans yes; I allow floor services to continue and previously left auto-lock as an operator fork. Measure an explicit lifecycle trace with two sessions and sealed-store reads. Keep floor service keyless; choose whether remaining non-sovereign work requires an ember policy.
+- **Background lock timing:** immediate lock on a lifecycle signal is desirable, but delivery/reliability is platform-specific. Probe suspend, app-switch, process kill, and resume on supported devices; no wall-clock expiry decides authority.
+
+## Operator-owned forks
+
+- **Always-on ember:** lean toward floor-only restart, allowing a bounded, counted serving ember that never opens persona content. Flip only on a concrete necessity plus causal recognition, independent human route, and audit of its ceiling.
+- **PRF/passkey wrapping:** optional wrapper, never sole route; no claim of device-bound custody for synced credential. Flip to supported convenience only after the probe above demonstrates output availability and threat assumptions per provider.
+- **Last-session close:** lean toward returning sovereign operations to floor. Flip if a specific attended workflow needs key continuity and demonstrates two-face isolation with no persistent shared key.
+- **Background/screen lock:** best-effort lock on event, not timer as authority. Flip lifecycle policy per vessel only on measured signal reliability and an explicit recovery cost decision.
+- **Shared holder:** coordination and sealed operations only. No evidence or ruling supports caching session roots there; reopen only if operator changes per-tab law.
+- **Native adapters / future surfaces:** use OS keystore only through a native adapter with measured hardware level; all other surfaces attach to a vessel session. Flip on tested adapter and recovery route.
+
+<<~ lares yield from="lar://yang-luna:agent@crossroads/wave-two.handback" -> to="?">>
+```
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;wqcC6dpgDP8YSgnZslRFeUbG1tlHKoonBVSbWIrnHjU
+
+<<^ code="&#x0004;" -> to="?">>
