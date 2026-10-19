@@ -59,11 +59,19 @@ join() {
   if [ "$label" != "host-reader" ]; then
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' || refused "$label" "the charter copy" ""
     out=$("$@" nexus seal import /tmp/a-charter.mem --json 2>&1) || refused "$label" "nexus seal import" "$out"
+  elif [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+    # The reader joins twice across the roll. A's charter is a partner's to it, so it lands beside the
+    # reader's primary, where the second import moves forward along its seal lineage.
+    out=$("$@" nexus seal import --carry "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import --carry" "$out"
+    carried=$(printf '%s' "$out" | grep -oE '"aid":"[^"]+"' | head -1 | cut -d'"' -f4)
+    [ -n "$carried" ] || refused "$label" "nexus seal import --carry (no aid)" "$out"
   else
     out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
   fi
+  local at=()
+  if [ "$label" = "host-reader" ] && [ -n "${carried:-}" ]; then at=(--nexus "$carried"); fi
   # A --json answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
-  cf=$("$@" nexus carry-for --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
+  cf=$("$@" nexus carry-for "${at[@]}" --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
   nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
   sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
   [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
@@ -78,7 +86,60 @@ join() {
   echo "  joined A's Nexus: $label (${nym:0:16}…)"
 }
 await_a_boot
-for herm in herm-source herm-relay herm-relay-2; do join "$herm" $COMPOSE exec -T "$herm" $LARES; done
+join herm-source $COMPOSE exec -T herm-source $LARES
+join herm-relay $COMPOSE exec -T herm-relay $LARES
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  # Keep this reader's opening-epoch arm for the forged control; join it again at the opened head below.
+  join host-reader $LARES
+  cp "$WORK/bundle-host-reader.json" "$WORK/opening-reader-bundle.json"
+  before=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>/dev/null \
+    | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  card=$($COMPOSE logs --no-color lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
+  [ -n "$before" ] && [ -n "$card" ] || refused "lararium-a" "opening head and staged seed card" "$before"
+  # The card enters the staged test root's own rite. Its code never prints in the witness log.
+  out=$($COMPOSE exec -T lararium-a $LARES nexus seal rotate --cold-key "$card" --threshold 1 --json 2>&1) \
+    || refused "lararium-a" "nexus seal rotate" "$out"
+  unset card
+  after=$(printf '%s' "$out" | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  [ -n "$after" ] && [ "$after" != "$before" ] || refused "lararium-a" "head move" "$out"
+  echo "  A's product rite rolled ${before:0:18}… → ${after:0:18}…"
+fi
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then relay2_since=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi
+join herm-relay-2 $COMPOSE exec -T herm-relay-2 $LARES
 join host-reader $LARES
-
-exec node "$(dirname "$0")/herm-mesh-witness.mjs"
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  # Each herm names the head its own charter took: the relay joined before the roll, relay-2 after it.
+  head_of() {
+    $COMPOSE exec -T "$1" $LARES nexus seal show --json 2>/dev/null \
+      | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4
+  }
+  relay_head=$(head_of herm-relay); relay2_head=$(head_of herm-relay-2)
+  [ "$relay_head" = "$before" ] || refused "herm-relay" "the opening head" "${relay_head:-none} (A opened at ${before})"
+  [ "$relay2_head" = "$after" ] || refused "herm-relay-2" "the rolled head" "${relay2_head:-none} (A rolled to ${after})"
+  echo "  herm-relay holds ${relay_head:0:18}…; herm-relay-2 holds ${relay2_head:0:18}…"
+  # The relay's own merge event pins the crossing; the verified reader then takes one reading.
+  if ! (set +o pipefail; timeout 120s $COMPOSE logs --follow --no-color --since "$relay2_since" herm-relay-2 2>&1 \
+    | grep -m 1 -F 'carriage: merged' >/dev/null); then
+    refused "herm-relay-2" "carriage merge within 120s" "$($COMPOSE logs --tail 20 --no-color herm-relay-2 2>&1)"
+  fi
+  WITNESS_ATTEMPTS=1 node "$(dirname "$0")/herm-mesh-witness.mjs"
+else
+  node "$(dirname "$0")/herm-mesh-witness.mjs"
+fi
+if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
+  for herm in herm-source herm-relay herm-relay-2; do
+    logs=$($COMPOSE logs --no-color "$herm" 2>&1)
+    if printf '%s\n' "$logs" | grep -E '\[(carriage|herm|lar-gate)\].*place-contract-unheld' >/dev/null; then
+      refused "$herm" "carriage gate across the roll" "$(printf '%s\n' "$logs" | grep -E '\[(carriage|herm|lar-gate)\].*place-contract-unheld')"
+    fi
+  done
+  before_silence=$($COMPOSE logs --no-color herm-relay-2 2>&1 | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
+  node tools/herm-mesh-forged-anchor.mjs "$WORK/opening-reader-bundle.json" "${HERM_RELAY_2_PUBLISHER:-}" \
+    || refused "host-reader" "anchor probe" "the twin under A's anchor did not verify, or the forgery did not meet silence"
+  # The floor gate logs its own refusal; only a named place-contract silence passes this control.
+  logs=$($COMPOSE logs --no-color herm-relay-2 2>&1)
+  after_silence=$(printf '%s\n' "$logs" | grep -Ec '\[lar-gate\].*fell silent: place-contract-(unheld|refused)' || true)
+  [ "$after_silence" -gt "$before_silence" ] \
+    || refused "herm-relay-2" "named forged-anchor silence" "$logs"
+  echo "✓ FORGED ANCHOR: relay-2's floor gate verified A's anchor and fell silent by place-contract name at the same act signed outside its seats"
+fi

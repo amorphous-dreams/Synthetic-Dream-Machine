@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DRIVERS } from "./held-out-cells.mjs";
 import { MERGE_JOB, driverOf, exitOf, failing, heldOutDrivers, heldOutUnreadable, readHeldOut, readVerdict, render, renderHeldOut } from "./ci-verdict.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -120,6 +121,7 @@ const unfolded = (over = {}) => ({ jobs: [
   { name: "Held-out · civic", status: "completed", conclusion: "success" },
   { name: "Held-out · crossing", status: "completed", conclusion: "success" },
   { name: "Held-out · herm-mesh", status: "completed", conclusion: "success" },
+  { name: "Held-out · herm-mesh-roll", status: "completed", conclusion: "success" },
   { name: "Held-out · mesh-scenarios-crossing", status: "completed", conclusion: "success" },
   { name: "Held-out · mesh-scenarios-meme", status: "completed", conclusion: "success" },
   { name: "Merge the cells", status: "completed", conclusion: "success" },
@@ -134,6 +136,7 @@ test("CONTROL: the held-out recording holds a whole red run of one job per drive
   assert.equal(driverOf("Held-out · mesh-scenarios-realm-crossing"), "mesh-scenarios");
   assert.equal(driverOf("Held-out · crossing"), "crossing", "the crossing driver never takes the crossing scenario's cell, nor gives its own away");
   assert.equal(driverOf("Held-out · herm-mesh"), "herm-mesh");
+  assert.equal(driverOf("Held-out · herm-mesh-roll"), "herm-mesh-roll", "the roll cell is its own driver, never a herm-mesh scenario");
   assert.equal(driverOf("Held-out · meshless"), null);
   assert.equal(driverOf("Merge the cells"), null);
 });
@@ -144,7 +147,8 @@ test("RED: the recorded held-out run reads red for its own head and names each d
   assert.equal(h.coversHead, true);
   assert.equal(h.behind, 0);
   assert.deepEqual(Object.fromEntries(h.drivers.map((d) => [d.driver, d.result])),
-    { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "mesh-scenarios": "success" });
+    // The recorded run predates the roll cell, so that driver answered no job there.
+    { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "herm-mesh-roll": "unread", "mesh-scenarios": "success" });
   const text = renderHeldOut(h).join("\n");
   assert.match(text, /^held-out: RED for cb8a1a9a8 — run 38491127984 reads failure: browser-weld, herm-mesh failed/);
   assert.match(text, /herm-mesh: failure — red: herm-mesh/);
@@ -212,7 +216,7 @@ test("GREEN: an unfolded run on the head reads green only with every driver gree
   assert.equal(running.state, "unread");
   assert.equal(running.drivers.find((d) => d.driver === "civic").result, "running");
   assert.equal(readHeldOut({ runs: heldRun({ conclusion: "cancelled" }), head, views: { 7: unfolded({ "Held-out · civic": { conclusion: "cancelled" } }) } }).state, "unread");
-  assert.deepEqual(heldOutDrivers(undefined).rows.map((r) => r.result), ["unread", "unread", "unread", "unread", "unread"]);
+  assert.deepEqual(heldOutDrivers(undefined).rows.map((r) => r.result), DRIVERS.map(() => "unread"));
 });
 
 test("the third reading says and never blocks: the door's exit code follows the CI reading alone", () => {

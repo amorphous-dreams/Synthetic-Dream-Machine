@@ -84,7 +84,7 @@ for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
   const detail = last.ok ? `relay-2 verified (${last.dials.length} dials) but "${NEEDLE}" not yet carried`
                          : `relay-2 unverified: ${last.reason}`;
   console.log(`  attempt ${attempt}: ${detail} — waiting…`);
-  await new Promise((r) => setTimeout(r, 1000));
+  if (attempt < ATTEMPTS) await new Promise((r) => setTimeout(r, 1000));
 }
 
 console.error(`✗ WITNESS FAILED: "${NEEDLE}" never reached the last hop, verified, in ${ATTEMPTS} attempts.`);

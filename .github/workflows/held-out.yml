@@ -187,7 +187,7 @@ jobs:
       # The mesh witnesses' readers hold to a known positive: a field the pointer builder stops minting
       # reds here, before a mesh run can read every act as one frozen default.
       - name: Herm mesh readers read a known positive
-        if: matrix.driver == 'herm-mesh'
+        if: matrix.driver == 'herm-mesh' || matrix.driver == 'herm-mesh-roll'
         run: node --test tools/herm-mesh-reader.test.mjs
       - name: Mesh pins stand in the order the compose file derives
         if: matrix.mesh == 'true'
@@ -199,12 +199,13 @@ jobs:
       # boots against the keys read off the wave before it. A bare `compose up` stands relays whose peer entries carry
       # no key, and those refuse aloud.
       - name: Stand the Herm mesh in pin order
-        if: matrix.driver == 'herm-mesh'
+        if: matrix.driver == 'herm-mesh' || matrix.driver == 'herm-mesh-roll'
         shell: bash
         run: |
           # AN EXPLICIT NEXUS OPENS THE HERM RELAY (house ruling "Routes at the cutover"): a herm stands its floor gate only
           # where a quorum counted its carry, so lararium-a, which seats the founding kahu, stands with the herms and the
           # witness joins every herm and its reader to A's Nexus by hand (tools/herm-mesh-witness.sh).
+          if [ "${{ matrix.driver }}" = herm-mesh-roll ]; then export LAR_A_KAHU=; fi
           timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 lararium-a 2>&1 \
             | tee "$ARTIFACT_DIR/mesh-setup.log"
 
@@ -238,7 +239,7 @@ jobs:
               run_logged 25m bash tools/crossing-witness.sh
               status=$?
               ;;
-            herm-mesh)
+            herm-mesh|herm-mesh-roll)
               # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
               # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
               reader_root="$(mktemp -d)"
@@ -259,7 +260,11 @@ jobs:
                 echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
                 status=1
               else
-                LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
+                if [ "${{ matrix.driver }}" = herm-mesh-roll ]; then
+                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-roll-witness.sh
+                else
+                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
+                fi
                 status=$?
               fi
               rm -rf "$reader_root"

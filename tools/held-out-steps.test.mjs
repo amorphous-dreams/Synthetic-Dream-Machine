@@ -233,7 +233,7 @@ test("$GITHUB_ENV reads plain and heredoc lines, and refuses a line it cannot re
 test("every held-out job installs, renders, builds, stamps, then drives, and uploads its evidence", () => {
   const wf = parseWorkflow(HELD_OUT);
   const drivers = wf.matrix.map(cellOf);
-  assert.deepEqual([...new Set(wf.matrix.map((m) => m.driver))], ["browser-weld", "civic", "crossing", "herm-mesh", "mesh-scenarios"]);
+  assert.deepEqual([...new Set(wf.matrix.map((m) => m.driver))], ["browser-weld", "civic", "crossing", "herm-mesh", "herm-mesh-roll", "mesh-scenarios"]);
   // The scenario driver unfolds: one cell per scenario its own script lists, and none written in the workflow.
   const listed = spawnSync("bash", [join(ROOT, "tools/mesh-scenarios.sh"), "--list"], { encoding: "utf8" }).stdout.trim().split("\n").map((l) => l.split(" ")[0]);
   assert.ok(listed.length > 1, "CONTROL: the scenario script lists its scenarios");

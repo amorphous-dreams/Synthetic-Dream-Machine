@@ -45,6 +45,7 @@ export const DRIVERS = [
   { driver: "civic", seconds: 200, image: true },
   { driver: "crossing", seconds: 150, image: true },
   { driver: "herm-mesh", seconds: 120, image: true, mesh: true },
+  { driver: "herm-mesh-roll", seconds: 180, image: true, mesh: true },
   { driver: "mesh-scenarios", image: true, mesh: true, unfold: "tools/mesh-scenarios.sh" },
 ];
 
