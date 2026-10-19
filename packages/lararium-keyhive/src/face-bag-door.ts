@@ -27,20 +27,14 @@ export function makeFaceBagDoor({ face, groupId, ledger }: { face: CapabilityPro
   };
 }
 
-const bareId = (id: string): string => id.replace(/^0x/i, "").toLowerCase();
-
-export function faceOwnerVerifier({ vessel, face, vesselVerifyingKey }: {
+export function faceOwnerVerifier({ vessel, face }: {
   vessel: KeyhiveProvider;
   face: KeyhiveProvider | null;
-  vesselVerifyingKey: string;
 }): CapabilityVerifier {
   return {
     async verify(args) {
       if (!face || !face.docIdOfBag(args.bagUrl)) return vessel.verify(args);
-      const presenter = bareId(args.presenter) === bareId(vesselVerifyingKey)
-        ? await face.vesselIdentifierHex()
-        : args.presenter;
-      return face.verify({ ...args, presenter });
+      return face.verify(args);
     },
   };
 }

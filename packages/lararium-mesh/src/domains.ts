@@ -64,6 +64,12 @@ const frozen = (name: string): string => declare(`${DOMAIN_ROOT}/${name}/v1`);
 // ── IDENTITY + DELEGATION ───────────────────────────────────────────────────────────────────────
 /** A device delegation: an operator root vouching one device into a PersonaGroup. */
 export const DEVICE_DELEGATION_DOMAIN = frozen("device-delegation");
+/** The atom's countersignature over a device delegation: the atom signs the root's proof and the root's signature, so
+ *  a root half never reads as a complete edge. */
+export const DEVICE_ATOM_COUNTERSIGN_DOMAIN = mint("device-atom-countersign");
+/** The key and context a ceremony checkpoint seals under: the atom's seed through HKDF, so a re-entered founding or
+ *  admit lands the end state it first reached. Apart from every other child of the atom seed. */
+export const FACE_CHECKPOINT_INFO = mint("face-checkpoint");
 /** A persona's key-event log entry — the inception/rotation chain at persona scale. */
 export const PERSONA_KEL_DOMAIN = frozen("persona-kel");
 /** The announced outward face: a self-certifying HandleCard. */

@@ -124,7 +124,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
+import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
@@ -133,7 +133,7 @@ import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
-import { MEMORY_CUT_SHADOW_READ, ed25519SignerFromSeed, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
+import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
@@ -204,6 +204,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let contentKeys: ContentKeySeat | null = null;
   const faceDoor = () => veilKh && daemonAuth.personaGroupId
     ? makeFaceBagDoor({ face: veilKh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
+  const faceAtom = () => {
+    if (!daemonAuth.dyadVeil || !daemonAuth.personaGroupId || !daemonAuth.deviceEdge) throw new Error("[daemon] face atom absent");
+    const atom = faceAtomKeyFromSeed(meshHexToBytes(daemonAuth.dyadVeil.signingKey), daemonAuth.personaGroupId);
+    if (atom.key !== daemonAuth.deviceEdge.deviceVerifyingKey) throw new Error("[daemon] face atom differs from the device edge");
+    return atom;
+  };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
@@ -217,14 +223,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   /**
    * The joinee's half of THE LATER GRANT. Reads the PersonaGroup plane (the doc both vessels sync by membership)
    * for a `face-join-grant/v1` record naming THIS vessel; verifies it against the persona root pinned at admit
-   * and the founder's edge under that root; on a verdict, ingests the cap events into BOTH identities and
+   * and the founder's edge under that root; on a verdict, ingests the cap events into the atom and
    * persists them as cap-event records so the next boot re-hydrates the seat. Returns whether the face now
    * reads seated. Any failure → false, a logged refusal, and NO binding moved.
    */
   const takeFaceGrantIfPublished = async (ctx: IslandContext): Promise<boolean> => {
     const group = daemonAuth.personaGroupId;
     const ownEdge = daemonAuth.deviceEdge;
-    if (!group || !ownEdge || !kh || !ctx.catalogUrl) return false;
+    if (!group || !ownEdge || !veilKh || !ctx.catalogUrl) return false;
     // NO CLOCK. Absent a founder persona-KEL chain to walk, ABSTAIN rather than fall back to a
     // pinned-root-only verify gated on a wall clock — fail-closed, event order or nothing (no global now).
     if (!daemonAuth.personaKel) return false;
@@ -232,7 +238,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     try { store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(group)); } catch { return false; }
     if (!store) return false;
     const prefix = `${FACE_GRANT_PREFIX}${group}/`;
-    const self = daemonAuth.vesselVerifyingKey.toLowerCase();
+    const self = ownEdge.deviceVerifyingKey.toLowerCase();
     let titles: string[];
     try { titles = (await store.listVisible()).filter((t) => t.startsWith(prefix) && t.toLowerCase().endsWith(self)); } catch { return false; }
     for (const title of titles) {
@@ -266,10 +272,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // Ingest is also the READING — the vessel's own handler stamps the true variant and island on the
       // events keyhive accepts, so it must reach the store before any backstop row masks them.
       const events = rec.capEvents.map(base64ToBytes);
-      const eventStore = new DaemonEventStore({ daemon: ctx.composite });
-      try { await absorbCapEvents(kh, eventStore, events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
-      try { await veilKh?.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: veil ingest faulted: ${(err as Error)?.message ?? err}`); }
-      const seated = await (veilKh ?? kh).knowsAgent(group);
+      try { await absorbCapEvents(veilKh, new DaemonEventStore({ daemon: ctx.composite }), events); } catch (err) { console.log(`[daemon] face-join grant: atom ingest faulted: ${(err as Error)?.message ?? err}`); }
+      const seated = await veilKh.knowsAgent(group);
       console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, ${rec.reSealed.length} chunks re-sealed) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
       if (seated) return true;
     }
@@ -290,7 +294,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceSeated: async () => {
         const agent = daemonAuth.personaGroupId;
         if (!agent) return false;
-        let seated = await (veilKh ?? kh!).knowsAgent(agent);
+        let seated = veilKh ? await veilKh.knowsAgent(agent) : false;
         // THE LATER GRANT (basket-one #/the-later-grant): not seated → read the PersonaGroup plane for a grant
         // record naming this vessel, verify it OFFLINE against the published seal, and take the seat by this
         // kit's own act. Reading alone re-cuts nothing — a record that fails stays a record.
@@ -578,13 +582,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // wiki island's surface, a session island and a peer's summons hold no such key, whatever requester
           // they name. The check runs before any read of the facts.
           registry.register("seat-duties", async (args, context) => {
+            const ownEdge = daemonAuth.deviceEdge;
+            if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
             const unlicensed = seatDutiesAskRefusal({
-              requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: daemonAuth.vesselVerifyingKey,
+              requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: ownEdge.deviceVerifyingKey,
             });
             if (unlicensed) throw new Error(`[daemon] seat-duties: ${unlicensed}`);
             if (!veilKh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
-            const ownEdge = daemonAuth.deviceEdge;
-            if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
             const facts = args["facts"] as FleetSeatFacts | undefined;
             if (!facts || typeof facts !== "object" || typeof facts.fleetRoot !== "string" || !Array.isArray(facts.acts) || !Array.isArray(facts.rolled)) {
               throw new Error("[daemon] seat-duties: no facts in args — carry {fleetRoot, acts, rolled}.");
@@ -593,9 +597,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               provider: veilKh, facts,
               wornFleetRoot: ownEdge.personaRootDid,
               groupId: faceGroup(),
-              ownIdentifiers: [await veilKh.vesselIdentifierHex(), ...(kh ? [await kh.vesselIdentifierHex()] : []), daemonAuth.vesselVerifyingKey],
+              ownIdentifiers: [await veilKh.vesselIdentifierHex(), faceAtom().key],
               sink: announceSeatRoll,
-              signReceipt: ed25519SignerFromSeed(daemonAuth.seed),
+              signReceipt: faceAtom().sign,
             });
             return { verb: "seat-duties", ran: true, ...answered };
           });
@@ -620,7 +624,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // root its boot pins) and seat itself, while the hearth seats it too: two writers, one group, one
             // seat, racing to re-key. The joinee is exactly the vessel that must not answer, and it knows itself
             // by the key it just presented.
-            if (summons.deviceEdge?.deviceVerifyingKey?.toLowerCase() === daemonAuth.vesselVerifyingKey.toLowerCase()) {
+            if (summons.deviceEdge?.deviceVerifyingKey?.toLowerCase() === ownEdge.deviceVerifyingKey.toLowerCase()) {
               return {
                 verb: "face-join", admitted: false, self: true,
                 reason: "this vessel IS the joinee — a summons is answered by the hearth that holds the face, never by the device asking to join it.",
@@ -636,18 +640,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // The veil seats the joinee and carries the face's grant events.
             if (!veilKh) return { verb: "face-join", admitted: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
             const veil = veilKh;
-            const vessel = kh;
             const joinProvider = {
-              receiveContactCard: async (bytes: Uint8Array) => {
-                const got = await veil.receiveContactCard(bytes);
-                try { await vessel.receiveContactCard(bytes); } catch { /* already known reads fine */ }
-                return got;
-              },
+              receiveContactCard: (bytes: Uint8Array) => veil.receiveContactCard(bytes),
               verifyGroupMembership:    (a: string, g: string) => veil.verifyGroupMembership(a, g),
               addGroupMember:           (a: string, g: string) => veil.addGroupMember(a, g),
               revokeGroupSeat:          (a: string, g: string) => veil.revokeGroupSeat(a, g),
               // The provider holding each bag re-seals its standing chunks for the new seat.
-              reSealBag:                (bagUrl: string) => (veil.docIdOfBag(bagUrl) ? veil : vessel).reSealBag(bagUrl),
+              reSealBag:                (bagUrl: string) => veil.reSealBag(bagUrl),
               eventsForPeer:            (peer: string) => veil.eventsForPeer(peer),
               contactCard:              () => veil.contactCard(),
             };
@@ -689,7 +688,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 const rec = await signFaceGrantRecord({
                   kind: "face-join-grant/v1", groupId: faceGroup(), ...grantBody,
                   founderEdge: ownEdge,
-                }, ed25519SignerFromSeed(daemonAuth.seed));
+                }, faceAtom().sign);
                 recordTitle = faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex);
                 await store.put(
                   { tiddler: { title: recordTitle, text: JSON.stringify(rec), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
@@ -836,7 +835,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // key its own ask named, a door stands for an import its replayer cannot seal to, and an import meets no door.
       const memoryAsked = new Set<string>();
       const memoryAsk = (verb: string, act: MemoryAct, facts: unknown, args: Record<string, unknown>, requestId: unknown): void => {
-        const unlicensed = memoryAskRefusal({ requestId, act, facts, ask: args["ask"], vesselVerifyingKey: daemonAuth.vesselVerifyingKey });
+        const unlicensed = memoryAskRefusal({ requestId, act, facts, ask: args["ask"], vesselVerifyingKey: faceAtom().key });
         if (unlicensed) throw new VerbRefusal("memory-ask-unlicensed", `[daemon] ${verb}: ${unlicensed}`);
         if (memoryAsked.has(requestId as string)) throw new VerbRefusal("memory-ask-spent", `[daemon] ${verb}: this island already answered that request; a fresh ask carries a fresh request id.`);
         memoryAsked.add(requestId as string);
@@ -885,7 +884,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // head that arrived after a raise settled still takes its roll, and a forged roll moves nothing.
       registry.register("sealed-rolls", async (args) => {
         const rolls = Array.isArray(args["rolls"]) ? args["rolls"] : [];
-        return { verb: "sealed-rolls", ...(await holderFor("sealed-rolls").catchUp(rolls, daemonAuth.vesselVerifyingKey)) };
+        return { verb: "sealed-rolls", ...(await holderFor("sealed-rolls").catchUp(rolls, faceAtom().key)) };
       });
 
       // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
@@ -960,7 +959,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
         // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
         ...(daemonAuth.deviceEdge
-          ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.vesselVerifyingKey) } : {}),
+          ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
         ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
         ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
       });
@@ -1034,7 +1033,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const fleetRoot = daemonAuth.deviceEdge?.personaRootDid;
         const bareId = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
         contentKeys = seatContentKeys({
-          providers: [...(veilKh ? [veilKh] : []), keyhive],
+          providers: veilKh ? [veilKh] : [keyhive],
           rest: sealedStore.rest,
           values: sealedStore.values,
           restArchive: async (provider) => {
@@ -1050,7 +1049,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // as `clear`.
           ...(fleetRoot ? {
             standingOf: async (member: string) => requireDyadReader(dyadReading, "the content-key seat")(fleetRoot, bareId(member)),
-            ownEdgeShadowed: async () => (await requireDyadReader(dyadReading, "the content-key seat")(fleetRoot, daemonAuth.vesselVerifyingKey)) === "aside",
+            ownEdgeShadowed: async () => (await requireDyadReader(dyadReading, "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
           } : {}),
           ...(countedRaises && fleetRoot ? { countedRaises: () => countedRaises(fleetRoot) } : {}),
           ...(sessionProof ? { session: sessionProof } : {}),
@@ -1086,7 +1085,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
-      return faceOwnerVerifier({ vessel: keyhive, face: veilKh, vesselVerifyingKey: daemonAuth.vesselVerifyingKey });
+      return faceOwnerVerifier({ vessel: keyhive, face: veilKh });
     },
 
     // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket

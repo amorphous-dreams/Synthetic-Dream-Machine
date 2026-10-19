@@ -1,6 +1,6 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
-import type { DeviceDelegationTiddler, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
+import type { DeviceDelegationRootHalf, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
 
 export type {
   CapabilityProvider, CapabilityProviderInitOpts,
@@ -120,9 +120,8 @@ export interface DeviceAdmitPayload {
    *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
    *  falling back to a federated-board wait. */
   readonly personaKelChain:       readonly PersonaKelEvent[];
-  /** The signed root→joinee device-delegation edge (the founder's signer signs the joinee's
-   *  vessel key × hearthTrueName) — the joinee's binding, verified at its Binding Gate. No Beelay. */
-  readonly deviceEdge:             DeviceDelegationTiddler;
+  /** The root-signed delegation half addressed to the joinee's atom; the joinee countersigns it. */
+  readonly deviceEdge:             DeviceDelegationRootHalf;
   /** The PersonaGroup secret the same root sealed to the joinee's device key, beside the edge — the secret its
    *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
    *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */

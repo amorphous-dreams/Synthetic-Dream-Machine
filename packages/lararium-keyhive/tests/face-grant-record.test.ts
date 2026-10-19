@@ -35,9 +35,8 @@ function clockKeys(v: unknown, path = ""): string[] {
 }
 
 async function founderEdge(rootSeed = ROOT_SEED, boundEpoch = 0) {
-  const founderKey = await ed25519VerifyingKeyFromSeed(FOUNDER_SEED);
   return buildDeviceDelegation({
-    personaRootSeed: rootSeed, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
+    personaRootSeed: rootSeed, atomSeed: FOUNDER_SEED, hearthTrueName: HEARTH,
     boundEpoch,
   });
 }

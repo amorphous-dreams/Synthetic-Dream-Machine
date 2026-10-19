@@ -85,7 +85,7 @@ describe("the typed first enrolment", () => {
     const { inception } = await oneOfOne();
     const { hash } = await friends();
     const edge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vessel), hearthTrueName: "", boundEpoch: 0,
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vessel, hearthTrueName: "", boundEpoch: 0,
     });
     const r = await mintGuardianEnrolment({ head: inception, guardianSetHash: hash, sign: signerOf(SEEDS.opA) });
     expect(r.ok, r.ok ? "" : r.reason).toBe(true);

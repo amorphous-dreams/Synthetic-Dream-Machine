@@ -60,7 +60,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
   const pg = await phone.createGroup();
   const edge = await buildDeviceDelegation({
     personaRootSeed:    seedOf(213),
-    deviceVerifyingKey: (await laptop.whoami()).replace(/^0x/, ""),
+    atomSeed: laptopSeed,
     hearthTrueName:     "",
     boundEpoch:         0,
   });

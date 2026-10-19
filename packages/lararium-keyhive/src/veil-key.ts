@@ -1,21 +1,6 @@
 /**
- * veil-key — THE VEIL DERIVES FROM A DEVICE-MINTED KEY AND NOTHING ELSE (the veil ruling, 2026-09-05).
- *
- * The dyad veil derives per-handle from the DEVICE-MINTED vessel key — never the persona-root seed (layers ②
- * and ③ only), never a cloud-synced key (a passkey the vendor syncs reads identical on every device: a seed
- * wearing a device name; `packages/lararium-mesh/src/key-class.ts` names the closed vocabulary). The mesh
- * `deriveDyadVeil` takes raw bytes and cannot tell the three apart. This door can.
- *
- * ── THE BRAND ────────────────────────────────────────────────────────────────────────────────────
- * `DeviceMintedKey` carries a type-level brand no literal can spell, so a raw `Uint8Array` or a `ClassedKey`
- * of another class refuses at compile time. The brand also stands at RUNTIME: every key the ONE door
- * (`mintDeviceMintedKey`) mints enters a module-private WeakSet, and the derivation refuses a key it never
- * minted with a NAMED error — a caller that forges `{ class: "device-minted", seed }` never passes.
- *
- * The door mints where the vessel key stands: the ceremony core (whose `vesselSeed` input IS the per-vessel
- * device seed by contract) and the browser vessel-identity store. A persona root never reaches it.
- *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/pattern-integrity-rhymes
+ * veil-key — a branded device-minted derivation service for key-class-specific callers.
+ * Face ceremonies receive independent random atom seeds.
  */
 
 import { deriveDyadVeil } from "@lararium/mesh";

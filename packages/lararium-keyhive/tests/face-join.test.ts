@@ -7,22 +7,23 @@
  * CGKA behaviour to keyhive's tests.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation, hexToBytes } from "@lararium/mesh";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
 // A REAL verifying key (RFC 8032 §7.1 TEST 1): a device edge names only a key the Ed25519 door accepts.
 const JOINEE_KEY   = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
+const JOINEE_SEED  = hexToBytes("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60");
 const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
 
 /** The identifier a card derives ends in the raw verifying key — the relationship the Binding Gate leans on. */
 const cardIdFor = (key: string) => `0x${key}`;
 
-async function edgeFor(opts: { seed?: Uint8Array; key?: string; hearth?: string } = {}) {
+async function edgeFor(opts: { seed?: Uint8Array; hearth?: string } = {}) {
   return buildDeviceDelegation({
     personaRootSeed:    opts.seed ?? FOUNDER_SEED,
-    deviceVerifyingKey: opts.key  ?? JOINEE_KEY,
+    atomSeed: JOINEE_SEED,
     hearthTrueName:     opts.hearth ?? HEARTH,
     boundEpoch:         0,
   });
@@ -213,8 +214,8 @@ describe("the Binding Gate reads the dyad's shadow", () => {
     const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "aside" });
     // MU: word for word what an edge with a false signature draws at this door.
     const forged = await runFaceJoin(fakeProvider(), summons({ ...(await edgeFor()), signature: "00".repeat(64) }), base);
-    expect(forged).toEqual({ ok: false, reason: "edge refused: signature mismatch" });
-    expect(refused).toEqual(forged);
+    expect(forged).toEqual({ ok: false, reason: "edge refused: atom countersignature mismatch" });
+    expect(refused).toEqual({ ok: false, reason: "edge refused: signature mismatch" });
     expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
     const control = await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" });
     expect(control.ok).toBe(true);

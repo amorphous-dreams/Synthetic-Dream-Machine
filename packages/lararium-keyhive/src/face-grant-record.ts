@@ -76,7 +76,7 @@ function signedBytes(rec: UnsignedFaceGrantRecord): Uint8Array {
   return out;
 }
 
-/** Sign a grant record under the founder's device key (`sign` = `ed25519SignerFromSeed(vesselSeed)`). */
+/** Sign a grant record under the founder's face atom. */
 export async function signFaceGrantRecord(
   rec: UnsignedFaceGrantRecord,
   sign: (bytes: Uint8Array) => Promise<string>,

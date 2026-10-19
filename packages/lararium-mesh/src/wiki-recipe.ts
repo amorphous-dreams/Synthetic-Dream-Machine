@@ -96,8 +96,8 @@ export function wikiDraftBagUri(slug: string): SlotUri {
  *  `resolveSlotDoc`). ONE spelling for the resolver and every reader. The DID carries the one
  *  spelling (`didFromVerifyingKey`); any other refuses loud, so no host keys a floor under a name the
  *  others cannot find. */
-export function wikiDraftDocKey(slug: string, vesselDid: LarDid): SlotUri {
-  return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(vesselDid, "wikiDraftDocKey"))}`;
+export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
+  return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(placeDid, "wikiDraftDocKey"))}`;
 }
 
 /** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the

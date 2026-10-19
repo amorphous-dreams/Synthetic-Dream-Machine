@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import { hex, hexToBytes } from "../src/crypto.js";
 import {
   dyadId, deviceEdgeId, dyadSlotKey, writeDyad, dyadsFromDoc,
-  dyadsOnVessel, fleetOfGroup, fleetSpan,
+  fleetOfGroup, fleetSpan,
   nameFleet, unnameFleet, fleetPetnameResolver,
   verifiedFleetOfGroup, signDyadBinding, dyadBindingSubject, delegationBytes, DELEGATION_DOMAIN,
   emptyLarDoc, type DyadRecord, type LarDoc, type DelegationEdge,
@@ -35,14 +35,14 @@ const bsigner = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).t
 /** A dyad carrying a REAL edge signed by the named root. */
 async function bound(vessel: string, veil: string, rootSeed: Uint8Array, epochCid = "nexus-aaa") {
   const root = await ed.getPublicKeyAsync(rootSeed).then(hex);
-  const ref  = { vesselDid: vessel, veilDid: veil };
+  const ref  = { deviceDid: veil };
   return rec(vessel, veil, await signDyadBinding(ref, root, epochCid, bsigner(rootSeed)));
 }
 
 /** The ruled record shape: an EXPLICIT ref (place × derived face), the edge as carriage. */
 function rec(vessel: string, veil: string, binding: DelegationEdge | null = null): DyadRecord {
-  const ref = { vesselDid: vessel, veilDid: veil };
-  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: edge(vessel, veil), binding };
+  const ref = { deviceDid: veil };
+  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: edge(veil, veil), binding };
 }
 
 beforeAll(async () => {
@@ -63,7 +63,7 @@ function edge(vesselDid: string, veilDid: string): DeviceDelegationTiddler {
     personaRootDid: veilDid, deviceDid: vesselDid,
     deviceVerifyingKey: vesselDid.slice(2), hearthTrueName: "bafyHearth",
     
-    boundEpoch: "0", signature: "00".repeat(128),
+    boundEpoch: "0", signature: "00".repeat(64), atomSignature: "00".repeat(64),
   };
 }
 
@@ -75,18 +75,17 @@ function docOf(records: readonly DyadRecord[]): LarDoc {
 
 describe("the dyad names a relationship, derived from the edge that makes it", () => {
   test("the id derives deterministically, and case never forks it", () => {
-    const a = dyadId({ vesselDid: VESSEL_A, veilDid: VEIL_WORK });
-    expect(dyadId({ vesselDid: VESSEL_A.toUpperCase(), veilDid: VEIL_WORK.toUpperCase() })).toBe(a);
-    // ORDER carries meaning — place-then-face. Swapping the ends names a different relationship.
-    expect(dyadId({ vesselDid: VEIL_WORK, veilDid: VESSEL_A })).not.toBe(a);
+    const a = dyadId({ deviceDid: VEIL_WORK });
+    expect(dyadId({ deviceDid: VEIL_WORK.toUpperCase() })).toBe(a);
+    expect(dyadId({ deviceDid: VEIL_PLAY })).not.toBe(a);
   });
 
   test("distinct pairs derive distinct ids across BOTH axes", () => {
     const ids = new Set([
-      dyadId({ vesselDid: VESSEL_A, veilDid: VEIL_WORK }),
-      dyadId({ vesselDid: VESSEL_A, veilDid: VEIL_PLAY }),
-      dyadId({ vesselDid: VESSEL_B, veilDid: VEIL_WORK }),
-      dyadId({ vesselDid: VESSEL_B, veilDid: VEIL_PLAY }),
+      dyadId({ deviceDid: VEIL_WORK }),
+      dyadId({ deviceDid: VEIL_PLAY }),
+      dyadId({ deviceDid: VEIL_AWAY }),
+      dyadId({ deviceDid: VESSEL_B }),
     ]);
     expect(ids.size).toBe(4);
   });
@@ -128,8 +127,7 @@ describe("N dyads live on ONE vessel", () => {
       rec(VESSEL_A, VEIL_PLAY),
       rec(VESSEL_B, VEIL_AWAY),
     ];
-    expect(dyadsOnVessel(all, VESSEL_A)).toHaveLength(2);     // one place, two faces
-    expect(dyadsOnVessel(all, VESSEL_B)).toHaveLength(1);
+    expect(dyadsFromDoc(docOf(all))).toHaveLength(3);
   });
 });
 
@@ -165,13 +163,13 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
     const away = await bound(VESSEL_B, VEIL_AWAY, ROOT_ME_SEED);
     const stood = await verifiedFleetOfGroup([work, away], GROUP_ME);
     expect(stood).toHaveLength(2);
-    expect(new Set(stood.map((d) => d.ref.veilDid))).toEqual(new Set([VEIL_WORK, VEIL_AWAY]));
+    expect(new Set(stood.map((d) => d.ref.deviceDid))).toEqual(new Set([VEIL_WORK, VEIL_AWAY]));
   });
 
   test("★ a CLAIMED binding the root never signed dies at the verify ★", async () => {
     const honest = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     // a forger names the real root and signs with its OWN key — the textbook confused-deputy attempt
-    const ref = { vesselDid: VESSEL_B, veilDid: VEIL_PLAY };
+    const ref = { deviceDid: VEIL_PLAY };
     const forged = rec(VESSEL_B, VEIL_PLAY,
       await signDyadBinding(ref, GROUP_ME, "nexus-aaa", bsigner(ROOT_MASKED_SEED)));
 
@@ -223,11 +221,10 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
   // One primitive now signs both this and the fleet-proof, so the DOMAIN carries the separation an edge
   // minted for one purpose must never verify at another.
   test("the binding bytes cover both ends, the root, the epochCid AND the domain", () => {
-    const r = { vesselDid: VESSEL_A, veilDid: VEIL_WORK };
+    const r = { deviceDid: VEIL_WORK };
     const D = DELEGATION_DOMAIN.dyadBinding;
     const a = hex(delegationBytes(D, dyadBindingSubject(r), "root1", "e1"));
-    expect(a).not.toBe(hex(delegationBytes(D, dyadBindingSubject({ ...r, vesselDid: VESSEL_B }), "root1", "e1")));
-    expect(a).not.toBe(hex(delegationBytes(D, dyadBindingSubject({ ...r, veilDid: VEIL_PLAY }), "root1", "e1")));
+    expect(a).not.toBe(hex(delegationBytes(D, dyadBindingSubject({ ...r, deviceDid: VEIL_PLAY }), "root1", "e1")));
     expect(a).not.toBe(hex(delegationBytes(D, dyadBindingSubject(r), "root2", "e1")));
     expect(a).not.toBe(hex(delegationBytes(D, dyadBindingSubject(r), "root1", "e2")));
     // and an edge minted under the OTHER domain never matches
@@ -291,17 +288,16 @@ describe("membership binds at the DYAD grain", () => {
   test("the agent identifier reads the VEIL, so each relationship binds on its own", () => {
     const work = rec(VESSEL_A, VEIL_WORK);
     const play = rec(VESSEL_A, VEIL_PLAY);
-    expect(work.ref.veilDid).toBe(VEIL_WORK);
+    expect(work.ref.deviceDid).toBe(VEIL_WORK);
     // two faces on ONE device carry DIFFERENT identifiers — which is what makes them separable
-    expect(work.ref.veilDid).not.toBe(play.ref.veilDid);
-    expect(work.ref.vesselDid).toBe(play.ref.vesselDid);
+    expect(work.ref.deviceDid).not.toBe(play.ref.deviceDid);
   });
 
   test("★ two faces on one vessel gather INDEPENDENTLY — one may come, the other stay behind ★", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);          // the root signed this one
     const play = rec(VESSEL_A, VEIL_PLAY);                 // and never signed this one
     const stood = await verifiedFleetOfGroup([work, play], GROUP_ME);
-    expect(stood.map((d) => d.ref.veilDid)).toEqual([VEIL_WORK]);
+    expect(stood.map((d) => d.ref.deviceDid)).toEqual([VEIL_WORK]);
   });
 });
 
@@ -314,7 +310,7 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     expect(await verifiedFleetOfGroup([work, away], GROUP_ME)).toHaveLength(2);
 
     // the marker goes up over ONE relationship; its signature stays as valid as it ever was
-    const shadowed = new Set([deviceEdgeId(GROUP_ME, work.ref.vesselDid)]);
+    const shadowed = new Set([deviceEdgeId(GROUP_ME, work.ref.deviceDid)]);
     const stood = await verifiedFleetOfGroup([work, away], GROUP_ME, shadowed);
     expect(stood.map((d) => d.dyadId)).toEqual([away.dyadId]);
   });
@@ -325,15 +321,15 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     const work  = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const again = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "epoch1-bbb");   // fresh edge, later epochCid
     expect(again.dyadId).toBe(work.dyadId);                                        // same relationship
-    expect(await verifiedFleetOfGroup([again], GROUP_ME, new Set([deviceEdgeId(GROUP_ME, work.ref.vesselDid)]))).toEqual([]);
+    expect(await verifiedFleetOfGroup([again], GROUP_ME, new Set([deviceEdgeId(GROUP_ME, work.ref.deviceDid)]))).toEqual([]);
   });
 
   test("the shadow scopes to ONE fleet — the same device under another fleet's root stands untouched", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const play = await bound(VESSEL_A, VEIL_PLAY, ROOT_MASKED_SEED);
-    const shadowed = new Set([deviceEdgeId(GROUP_ME, VESSEL_A)]);
+    const shadowed = new Set([deviceEdgeId(GROUP_ME, VEIL_WORK)]);
     expect(await verifiedFleetOfGroup([work, play], GROUP_ME, shadowed)).toEqual([]);
     const stood = await verifiedFleetOfGroup([work, play], GROUP_MASKED, shadowed);
-    expect(stood.map((d) => d.ref.veilDid)).toEqual([VEIL_PLAY]);
+    expect(stood.map((d) => d.ref.deviceDid)).toEqual([VEIL_PLAY]);
   });
 });
