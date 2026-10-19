@@ -11,7 +11,7 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x2299;"
-role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus Episkopos, a Codex Sol, a third-lineage Copilot model, the cloud Opus and Sonnet pair, and research spirits), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
+role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus controller, a Sonnet Episkopos, a Codex Sol, a third-lineage Copilot model, the cloud Opus and Sonnet pair, and research spirits), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -34,7 +34,8 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 !! The seats ~ which lineage holds what
 
 |! Seat |! Lineage |! Holds |! Never |
-| ''Episkopos'' (lead) | Claude Opus | the lane's brief, its ground, every landing, every review verdict, the canon lines | hands its landing to another spirit |
+| ''Controller'' | Claude Opus | the session's seat: rulings relayed, every lane's brief, a careful read of every chunk's diff before it merges, every merge train, the canon lines | lands a chunk it has not read |
+| ''Episkopos'' (lane lead) | Claude Sonnet | the lane's brief, its ground, its crew, its landing onto its lane branch, its review verdicts | hands its landing to another spirit |
 | ''Sol'' | Codex `gpt-6-sol`, medium effort | a build brief (one module with a fixed type contract and its vectors) or a read-only read, as the lead names per launch | commits, pushes, or touches git |
 | ''Third lineage'' | a Copilot model of a family neither Anthropic nor OpenAI ships (Gemini or MAI-Code), at a medium multiplier, read through `copilot --model` and named in the lane's notes | a build brief under the build fences or a read-only read under the review fences, as the lead names per launch | commits, pushes, or reviews a diff it wrote |
 | ''Fresh reader'' | whichever lineage built nothing in the piece, read-only and ephemeral | an adversarial read of the landed diff, findings ranked with `file:line` | sees the builder's conclusions first |
@@ -47,7 +48,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 
 !! The shapes ~ how a crew stands
 
-* ''The work swarm'' (operator ruling, 2026-10-19). Three seats per lane: the Opus Episkopos, one Sol, and one third-lineage Copilot model. Each seat builds or reads as the work pulls, the lead naming which per launch, and a seat never reads a diff it wrote, so every build is read by the other lineage. The Copilot seat carries the vectors, the mechanical modules and the fresh aftermath sweep by default; the Sol carries the judgment-heavy modules. After each flow the lead runs a fresh read and closes or answers each finding before the next flow, and a lane closes its span with one more sweep over everything it landed. The Opus overwatch keeps the deep read.
+* ''The work swarm'' (operator ruling, 2026-10-19). Three seats per lane: a Sonnet Episkopos, one Sol, and one third-lineage Copilot model. Each seat builds or reads as the work pulls, the lead naming which per launch, and a seat never reads a diff it wrote, so every build is read by the other lineage. The Copilot seat carries the vectors, the mechanical modules and the fresh aftermath sweep by default; the Sol carries the judgment-heavy modules. After each flow the lead runs a fresh read and closes or answers each finding before the next flow, and a lane closes its span with one more sweep over everything it landed. The Opus controller keeps the deep read: it reads every chunk's diff with care before the chunk merges, since the lane's own lead no longer runs on the deepest lineage.
 * ''The build pair.'' The two building seats build in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch.
 * ''Cloud crew'', where Codex stands absent: one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
 * ''When a lineage runs short, the seat stays and the lineage changes.'' The operator names when a shortfall begins; the short lineage's seats go to another lineage's models of the same capability, and the lens law still sorts who reads whom.
@@ -58,8 +59,8 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 ** ''Spin'' carries the counter-push-pull and Ba. It asks //what does this do?// Each face reads alone first; then the pair ''trades research for a second pass'': each takes the other's findings and ground, confirms or refutes each against the source, and reads the other's ground for what its own face missed.
 ** Spin holds both faces moving and never folds them into one verdict early. Orthogonal pairs both stand; tensioned pairs get measured (a probe, a red test), never voted. A finding both passes confirm counts as ground; one the second pass refutes drops with its reason; one a single face raised stays a lead.
 ** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. In a work swarm the builder wears Hodge over what it made and the other lineage's reader wears Podge over how it moves.
-* ''Overwatch.'' Where several crews run at once, one Opus Episkopos reads every crew's handback before the controller lands it, and names each finding it would block on.
-* ''A cross-process seam always takes the overwatch.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the Opus overwatch's read before it lands: a module's own reads catch its contract and miss its crossings.
+* ''Overwatch.'' The Opus controller reads every crew's handback and every chunk's diff before it merges, and names each finding it would block on.
+* ''A cross-process seam always takes the Opus read.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the controller's own read of the crossing before it lands: a module's own reads catch its contract and miss its crossings.
 * ''The burst.'' A crew lands a burst of commits; the other lineage's reader reads it; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
 <<~/ahu>>
@@ -184,6 +185,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KQJE9HmCD0GGBzCGu63zI21gAwEa_M6m1fJvZNPFRp0
+<<^ code="&#x0003;">>ni:///sha-256;BYBYJL6fiefkiiQGk78xCb2-BgiMj5evJHY-_s1nF1U
 
 <<^ code="&#x0004;" -> to="?">>

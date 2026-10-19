@@ -139,7 +139,7 @@ The merged road carries the fleet-join door on every face, the sealed face gate 
 ** Then the operator founds the persistent node vessel by hand.
 * ''Rulings the crew still needs from the operator'': D3's default width, after the three-boot spike; DreamDOM's key grain, its interaction goldens family and its `core` charter (`dreamdom#/open-rulings`); the moʻolelo's blessing. The rulings of 2026-10-16 stand in `stable-founding-road#/rulings` and `dreamdom#/open-rulings`.
 * ''Shared ground'': lanes meet on the two vessel composers; one lane at a time holds a composer hunk, and the others hand theirs to the controller as a patch.
-* ''The crew'': each lane runs the work swarm, one Opus Episkopos, one Sol and one third-lineage Copilot model, each seat building or reading as the work pulls; a Copilot PR review runs only when the operator asks for one (`mixed-model-swarm#/the-shapes`).
+* ''The crew'': each lane runs the work swarm, a Sonnet Episkopos, one Sol and one third-lineage Copilot model, each seat building or reading as the work pulls, and the Opus controller reads every chunk's diff before it merges; a Copilot PR review runs only when the operator asks for one (`mixed-model-swarm#/the-shapes`).
 * ''The Copilot allowance'': 300 premium requests a month on a legacy annual plan, resetting on the first; the Chao pair costs about one request per burst, and a PR review, about 13, runs only on the operator's ask.
 * ''The operator's focus'' (2026-10-18): the DreamNet and the browser's capabilities. The art-sigil carriers (`docs/art-sigils/`, PR #47) stand set aside, off this road.
 * ''The span head'' (2026-10-19): CI reads green at `fc1e442f7`, #49's merge, shard 2's ③ gone with the shared pointer. Held-out reads red on herm-mesh and the nexus cell alone, waiting on `P20`'s gate half. Merge order in flight: #50 (merged), #52 (`W26` slice 2), #51 (G37's lifts), then #53 (the evergreen witness) last, so its ceilings count what the span holds. The restore file of the branch sweep burns on or before 2026-10-31.
@@ -171,6 +171,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XT51wiWuipj0gQ138yb7wOKg08iNCAfBJBFdQPB6zPw
+<<^ code="&#x0003;">>ni:///sha-256;A7zqMnvhxajFP31wf3HEe2AxwjG85T5C8VOTt3-wrt0
 
 <<^ code="&#x0004;" -> to="?">>
