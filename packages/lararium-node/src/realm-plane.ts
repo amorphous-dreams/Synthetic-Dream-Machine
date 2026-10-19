@@ -7,8 +7,8 @@
  * folds the standing registrations into the wire gate, and lands a steward's registration + its @crossroads
  * announce.
  *
- * A vessel that holds no charter stands no realm: the holder rests INERT (no doc, no pointer, the base gate
- * unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
+ * A vessel that holds no primary or carried charter stands no realm: the holder rests INERT (no doc, no pointer,
+ * the base gate unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
  * import itself pokes the vessel's refold at once (no separate verb to run), and this holder's own
  * `refresh(charter)` re-reads the realm id and materializes on first sight; a re-read of the same realm
  * changes nothing. The realm id NEVER moves for a standing realm (a genesis epoch is fixed for life), so a different id
@@ -127,7 +127,7 @@ export interface RealmPlaneHolder {
  * default a verb routes to when it names none); `plane` hands out one realm's plane by name.
  */
 export interface RealmPlanesHolder extends RealmPlaneHolder {
-  /** Every realm this vessel stands a plane for: the charter-derived realm first, then its cabal realms, sorted. */
+  /** Every realm this vessel stands a plane for: the primary charter first when stood, then the rest sorted. */
   realms(): readonly string[];
   /** The plane of one realm: the charter-derived realm for `null`, `undefined` or its own id; a cabal realm's
    *  plane by its id; null for a realm this vessel stands no plane for. Each plane answers for ITS realm alone,
@@ -500,8 +500,7 @@ export function makeRealmPlane(opts: {
 
   async function refreshNow(charter: NexusDoc | null): Promise<void> {
     const id = nexusAidOf(charter);
-    // NO CHARTER → INERT (a vessel outside every realm). A Nexus this vessel stood under and no longer holds takes
-    // every plane and pin with it: no realm stays standing under a Nexus no charter here names.
+    // A primary charter that leaves takes its dependent planes and pins. Carried charters stand on their own.
     if (!id) {
       if (charterRealm !== null) {
         const left = [...stood.keys()];
@@ -509,10 +508,10 @@ export function makeRealmPlane(opts: {
         for (const realm of left) unpin(realm);
         charterRealm = null;
         entered.clear();
+      } else {
+        for (const s of stood.values()) await s.refold();
       }
-      return;
-    }
-    if (id !== charterRealm) {
+    } else if (id !== charterRealm) {
       // ANOTHER NEXUS: every plane re-stands under it, since a steward's key derives against the Nexus.
       // Every plane leaves with its pins: a steward's key derives against the Nexus, so no pin of the Nexus
       // this vessel left answers under the next, and a failed stand leaves no realm readable. A realm this run
@@ -529,19 +528,18 @@ export function makeRealmPlane(opts: {
     } else {
       for (const s of stood.values()) await s.refold();
     }
-    // Every cabal realm this run entered, and every one the ledger notes, stands under the Nexus that stands now,
-    // save one the ledger notes under ANOTHER Nexus (kapae#/edge-hands).
-    for (const realm of await notedRealms()) entered.add(realm);
-    const elsewhere = new Set((await readNoted()).filter((n) => n.conflict || (n.nexus !== null && n.nexus !== charterRealm)).map((n) => n.realm.trim().toLowerCase()));
-    // A realm already standing that the ledger now pins elsewhere, or reads conflicted (two replicas met), leaves
-    // with its pins: no plane stands under a Nexus the realm does not stand under here.
-    for (const realm of [...stood.keys()]) {
-      if (realm === charterRealm || !elsewhere.has(realm)) continue;
-      stood.get(realm)!.drop(); stood.delete(realm); unpin(realm); entered.delete(realm);
-    }
-    for (const realm of [...entered].sort()) {
-      if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
-      stood.set(realm, await standPlane(realm, "cabal"));
+    if (charterRealm !== null) {
+      // Cabal realms stand only beneath this vessel's primary charter.
+      for (const realm of await notedRealms()) entered.add(realm);
+      const elsewhere = new Set((await readNoted()).filter((n) => n.conflict || (n.nexus !== null && n.nexus !== charterRealm)).map((n) => n.realm.trim().toLowerCase()));
+      for (const realm of [...stood.keys()]) {
+        if (realm === charterRealm || !elsewhere.has(realm)) continue;
+        stood.get(realm)!.drop(); stood.delete(realm); unpin(realm); entered.delete(realm);
+      }
+      for (const realm of [...entered].sort()) {
+        if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
+        stood.set(realm, await standPlane(realm, "cabal"));
+      }
     }
     // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel no longer carries leaves with its
     // pins. A carried plane that fails to stand stands again at the next refresh.
@@ -575,7 +573,7 @@ export function makeRealmPlane(opts: {
     join:     async (input) => { const p = charterPlane(); if (!p) throw unstood("join");     return p.join(input); },
     coSign:   async (input) => { const p = charterPlane(); if (!p) throw unstood("coSign");   return p.coSign(input); },
     dispose,
-    realms: () => (charterRealm ? [charterRealm, ...[...stood.keys()].filter((r) => r !== charterRealm).sort()] : []),
+    realms: () => (charterRealm ? [charterRealm, ...[...stood.keys()].filter((r) => r !== charterRealm).sort()] : [...stood.keys()].sort()),
     plane(realm) {
       if (realm === null || realm === undefined) return charterPlane();
       return stood.get(realm.trim().toLowerCase())?.plane ?? null;

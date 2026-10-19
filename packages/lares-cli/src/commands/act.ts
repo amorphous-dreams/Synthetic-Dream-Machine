@@ -9,7 +9,6 @@
  *     --source <file>   the disk bundle (.json / .multids) whose pack the island collects
  *     --from <bag>      the bag holding the pack's members (their aside provenance)
  *     --out <file>      (optional) where the re-rendered bundle lands; defaults to --source
- *     --in-wiki         render through the active wiki island's composite layer stack
  *
  *   ADD / COPY / MOVE
  *     --title <t>       tiddler title (Work-level identity)
@@ -102,11 +101,11 @@ function printUsage(): void {
   console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
   console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
-  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>] [--in-wiki]");
+  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
   console.error("");
   console.error("  --yes              skip confirmation prompt");
   console.error("  --dry-run          preview the effect without committing it");
-  console.error("  --in-wiki          use the wiki island (acts naming a wiki bag route there automatically)");
+  console.error("  --in-wiki          run any act in the active wiki");
 }
 
 /**
@@ -149,20 +148,15 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     return exitFor("not-found");
   }
 
-  // --in-wiki: run REPACK IN the active wiki island, so the members render through THAT wiki's
-  // composite layer stack — the SAME bundle of titles renders distinctly per wiki (shadowing edits
-  // above the canon), on purpose. The default path resolves daemon-side (canon bags, no working-layer
-  // shadow).
-  const inWiki     = Boolean(args.flags["in-wiki"]);
   const repackArgs = { bag: fromBag, "pack-path": packPath };
-  const submitName = inWiki ? "wiki-act" : "REPACK";
-  const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
 
   // REPACK READS — it registers as a QUERY verb (no residency mutation, no effect record), so it
   // carries NO effectKey (H7). An effect-dedup key names a MUTATION this attempt would produce; a
   // read produces none, and a re-render from the same aside provenance is always safe to repeat —
   // there is no "ran twice" to guard against. Only `requestId` rides, a fresh nonce every attempt.
   const repackRequestId  = newRequestId();
+  const submitName = args.flags["in-wiki"] ? "wiki-act" : "REPACK";
+  const submitArgs = args.flags["in-wiki"] ? { verb: "REPACK", args: repackArgs } : repackArgs;
   let result;
   try {
     result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
@@ -450,15 +444,17 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
   // dispatcher's outcome-keyed dedup then gives exactly-once EFFECT. A fresh
   // change-id (the --change-id default) means a genuinely distinct change → runs.
   const subject   = String(actionArgs["to-bag"] ?? actionArgs["bag"] ?? "");
-  // A wiki bag sends its act to its own composite. A MOVE from a working slot
-  // remains there through promotion; --in-wiki also accepts acts without a named wiki.
-  const destinationWiki = wikiSlugOfBag(subject);
+  // An explicit --in-wiki ask uses the active wiki. A slot act without that ask
+  // reaches the named wiki; other acts use the daemon's reach.
+  const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag);
+  const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
+  const destinationWiki = wikiVerb && slot(subject) ? wikiSlugOfBag(subject) : null;
   const source = actionArgs["from-bag"];
-  const sourceWiki = verb === "MOVE" && typeof source === "string" &&
-    /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(source)
+  const sourceWiki = verb === "MOVE" && typeof source === "string" && slot(source)
     ? wikiSlugOfBag(source) : null;
-  const wiki = sourceWiki ?? destinationWiki;
-  const inWiki = Boolean(args.flags["in-wiki"]) || wiki !== null;
+  const explicitInWiki = args.flags["in-wiki"] === true;
+  const wiki = explicitInWiki ? null : sourceWiki ?? destinationWiki;
+  const inWiki = explicitInWiki || wiki !== null;
   const submitName = inWiki ? "wiki-act" : verb;
   const submitArgs = inWiki ? { verb, args: actionArgs, ...(wiki ? { wiki } : {}) } : actionArgs;
   // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.

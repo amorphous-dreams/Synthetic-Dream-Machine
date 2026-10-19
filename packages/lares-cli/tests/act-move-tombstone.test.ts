@@ -56,6 +56,14 @@ describe("lares act MOVE carrying a tombstone", () => {
     expect(move!.args["args"]).not.toHaveProperty("shadow");
   });
 
+  test("canon-to-canon MOVE stays on the daemon reach", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    await cmdAct(actArgs(["MOVE"], { title: T, from: CANON, to: "lar:///ha.ka.ba/bags/other" }));
+    expect(h.calls.map((c) => c.verb)).toEqual(["MOVE"]);
+    expect(h.calls[0]?.args).toMatchObject({ title: T, "from-bag": CANON, "to-bag": "lar:///ha.ka.ba/bags/other" });
+  });
+
   test("a MOVE naming no --to prints the bags holding the title and summons no MOVE", async () => {
     h.replies["where"] = { tiddler: T, bags: [CANON, "lar:///ha.ka.ba/bags/library"] };
     const lines: string[] = [];
