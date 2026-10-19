@@ -16,6 +16,7 @@
  * story). Location-agnostic: served from localhost / LAN / elyncia.app, the vessel
  * always runs here; the origin is a static host, never an authority.
  */
+import { createLoafBuffer } from "./loaf-buffer.js";
 import {
   openBrowserVessel,
   parseAdmitCarriage, toAdmitCarriage,
@@ -64,7 +65,7 @@ const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElemen
 const VESSEL_IDB = "lares:vessel";
 
 // Page instruments report what the browser exposes. They never decide whether a boot succeeds.
-const vesselLoaf: Array<{ startTime: number; duration: number; blockingDuration: number }> = [];
+const vesselLoaf = createLoafBuffer();
 const vesselLoafSupported = typeof PerformanceObserver !== "undefined"
   && PerformanceObserver.supportedEntryTypes.includes("long-animation-frame");
 if (vesselLoafSupported) {
@@ -86,7 +87,7 @@ const showPageInstruments = (): void => {
     if (existing) existing.textContent = value;
     else row(vessel, label, value);
   };
-  show("LoAF", vesselLoafSupported ? `${vesselLoaf.length} observed` : "absent");
+  show("LoAF", vesselLoafSupported ? `${vesselLoaf.observed()} observed` : "absent");
   show("heap after first paint", firstPaintHeap === null ? "absent" : `${firstPaintHeap} bytes`);
 };
 function reportFirstPaint(): void {
@@ -96,7 +97,7 @@ function reportFirstPaint(): void {
     const heap = (performance as Performance & { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize;
     firstPaintHeap = typeof heap === "number" ? heap : null;
     const reading = {
-      longAnimationFrames: vesselLoafSupported ? { supported: true, entries: vesselLoaf } : { supported: false, reading: "absent" },
+      longAnimationFrames: vesselLoafSupported ? { supported: true, observed: vesselLoaf.observed(), entries: [...vesselLoaf.entries()] } : { supported: false, reading: "absent" },
       heapAfterFirstPaint: typeof heap === "number" ? { bytes: heap } : { reading: "absent" },
     };
     (window as Window & { __larVesselMetrics?: typeof reading }).__larVesselMetrics = reading;
