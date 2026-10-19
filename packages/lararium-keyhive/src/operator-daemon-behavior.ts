@@ -327,7 +327,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       if (faceDoor() && await veilKh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");
-      else await kh.registerBag(working);
+      else await registerBagsDurably({ provider: kh, bags: [working], ledger: daemonBagDocLedger(ctx.composite) });
       const temp = wikiSlotUri(slug, "temp");
       if (ctx.composite.hasWritableBag(temp)) {
         const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };

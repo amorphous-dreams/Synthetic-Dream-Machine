@@ -31,7 +31,9 @@ function context(options: { daemonHandle?: boolean; composite?: CompositeStore }
   if (options.daemonHandle) handles.set(daemonBag, { url: "automerge:daemon" });
   const composite = options.composite ?? new CompositeStore();
   if (!composite.hasBag(daemonBag)) {
-    const handle = { doc: () => ({ tiddlers: {} }), heads: () => [], on: () => () => {} };
+    // A writable stand-in: the daemon's bag holds the working layer's document ledger row after attach.
+    const state: { tiddlers: Record<string, unknown> } = { tiddlers: {} };
+    const handle = { doc: () => state, change: (edit: (doc: typeof state) => void) => { edit(state); }, heads: () => [], on: () => () => {} };
     composite.addLayer({ bagId: daemonBag, store: new AutomergeDocStore(handle as never, daemonBag), writable: true });
   }
   return {

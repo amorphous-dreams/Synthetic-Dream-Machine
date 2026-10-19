@@ -18,7 +18,7 @@ export default defineConfig({
       {
         test: {
           name: "shore-writes-e2e",
-          include: ["tests/e2e/shore-writes.e2e.test.ts"],
+          include: ["tests/e2e/shore-writes.e2e.test.ts", "tests/e2e/second-boot.e2e.test.ts"],
           environment: "node",
           browser: { enabled: false },
           testTimeout: 90_000,
