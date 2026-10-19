@@ -11,7 +11,7 @@
  *   - a `lar-order-list` writes its whole ordered list; an id it lacks never deletes a member;
  *   - `lar:shortcuts` carries the chords `$:/tags/KeyboardShortcut` declares; the document leg runs the manager;
  *     a declared crossing set (`data-lar-keys`) refuses a chord it never named;
- *   - `$eventcatcher` refuses by name;
+ *   - `$eventcatcher` runs a declared discrete event through its selector alone; a continuous stream refuses by name;
  *   - `lar:story-order` carries the story and the history tail; `lar:route` navigates, and an unknown title refuses.
  */
 import { afterEach, describe, expect, test } from "vitest";
@@ -162,14 +162,18 @@ describe.skipIf(wikiSkip)(`files, drops, order, keys and navigate on the island$
     expect(s.wiki.getTiddler(T("outer"))?.fields["text"]).toBe("a");
   }, 120_000);
 
-  test("RED: an act that reaches a $eventcatcher refuses unsupported-control and runs nothing — CONTROL: a button beside it applies", async () => {
+  test("a $eventcatcher runs a declared click only through its selector, and a continuous stream refuses by name — CONTROL: a button beside it applies", async () => {
     s = await mountSurface([
       `<$eventcatcher $click="""<$action-setfield $tiddler="${T("caught")}" text="yes"/>""" selector=".inside" class="catcher"><span class="inside">inside</span></$eventcatcher>`,
       `<$button class="beside" set="${T("beside")}" setTo="yes">beside</$button>`,
     ].join(""));
-    expect(dispatchLarControlEvent(s.event("catcher", { kind: "lar:act", action: "lar:click", modifiers: NO_MODS }))).toMatchObject({ status: "refused", reason: "unsupported-control" });
+    expect(dispatchLarControlEvent(s.event("catcher", { kind: "lar:act", action: "lar:click", modifiers: NO_MODS })), "a click on the catcher itself misses its selector").toMatchObject({ status: "refused", reason: "unclaimed" });
     await s.flush();
     expect(s.wiki.getTiddler(T("caught"))).toBeUndefined();
+    expect(dispatchLarControlEvent(s.event("inside", { kind: "lar:act", action: "lar:pointermove", modifiers: NO_MODS }))).toMatchObject({ status: "refused", reason: "continuous-event-refused" });
+    expect(dispatchLarControlEvent(s.event("inside", { kind: "lar:act", action: "lar:click", modifiers: NO_MODS }))).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(s.wiki.getTiddler(T("caught"))?.fields["text"]).toBe("yes");
     expect(dispatchLarControlEvent(s.event("beside", { kind: "lar:act", action: "lar:click", modifiers: NO_MODS }))).toMatchObject({ status: "applied" });
     await s.flush();
     expect(s.wiki.getTiddler(T("beside"))?.fields["text"]).toBe("yes");

@@ -43,7 +43,7 @@ import { Idiomorph } from "idiomorph";
 import {
   LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_VALUE_MAX_CHARS,
   LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_ON,
-  larKeyChordName, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarService, readLarStampTokens,
+  larKeyChordName, larLogicalKeyCode, larReservedChord, mkLarControlEvent, readLarCancel, readLarControlResult, readLarFrame, readLarService, readLarStampTokens,
   type LarControlKind, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service, type LarRefusal,
   type LarServiceKind, type LarSurfaceManifest,
   LAR_CONTROL_DOCUMENT, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_WHOLE_BYTES_MAX,
@@ -126,6 +126,9 @@ export const LAR_REFUSAL_WORDS: Readonly<Partial<Record<LarRefusal, string>>> = 
   "unsupported-control": "This control has no page binding in this vessel. Your change has not saved.",
   "binding-unavailable": "This control has no page binding in this vessel. Your change has not saved.",
   "page-action-unavailable": "This browser action has no page control here.",
+  "continuous-event-refused": "This event streams continuously and cannot cross this surface.",
+  "pointer-capture-refused": "Pointer capture cannot cross this surface.",
+  "reserved-chord": "This shortcut belongs to the browser or system.",
 };
 const wordsFor = (reason: LarRefusal, bound: number): string =>
   reason === "input-too-long"
@@ -472,7 +475,24 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
 
   /** The act target for one event type: the nearest declared control, or the nearest node whose stamp binds the type. */
   const bindingTargetOf = (from: Element | null, type: string): Target | null => {
+    const catcher = from?.closest?.(".tc-eventcatcher");
+    const catcherDeclares = !!catcher && paneEl.contains(catcher) && readLarStampTokens(catcher.getAttribute(LAR_STAMP_ON)).has(type);
+    const selector = catcher?.getAttribute("data-lar-catcher-selector");
+    const matchSelector = catcher?.getAttribute("data-lar-catcher-match-selector");
+    let catcherMatches = !catcherDeclares;
+    if (catcherDeclares && from) {
+      try {
+        const selected = selector ? from.closest(selector) : from;
+        catcherMatches = (!matchSelector || from.matches(matchSelector))
+          && (!selector || !!selected && selected !== catcher && catcher!.contains(selected));
+      } catch { catcherMatches = false; }
+    }
+    if (catcherDeclares && catcherMatches) {
+      const rid = from?.getAttribute("data-lar-rid");
+      if (rid) return { id: rid, field: "renderId", node: from! };
+    }
     for (let node = from; node && node !== paneEl; node = node.parentElement) {
+      if (node === catcher && !catcherMatches) continue;
       const controlId = node.getAttribute("data-control-id");
       if (controlId) return { id: controlId, field: "controlId", node };
       const renderId = node.getAttribute("data-lar-rid");
@@ -515,7 +535,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const target = bindingTargetOf(src, "keydown");
     if (!target) return;
     const escape = key.key === "Escape" || key.keyCode === 27;
-    const chord = larKeyChordName({ keyCode: key.keyCode, ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
+    if (larReservedChord(key.key, modifiersOf(key))) return;
+    const chord = larKeyChordName({ keyCode: larLogicalKeyCode(key.key, key.keyCode), ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
     const declared = declaresCancel(target, "keydown", false, chord);
     if (!declared && !escape && !key.ctrlKey && !key.metaKey && !key.altKey) return;
     if (declared || (escape && src?.closest?.('[aria-modal="true"]'))) key.preventDefault();
@@ -553,6 +574,18 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   };
   paneEl.addEventListener("click", (e) => relayClick(e as MouseEvent));
   paneEl.addEventListener("auxclick", (e) => relayClick(e as MouseEvent));
+  for (const type of ["dblclick", "contextmenu", "focusin", "focusout"]) {
+    paneEl.addEventListener(type, (event) => {
+      const src = origin(event);
+      const catcher = src?.closest?.(".tc-eventcatcher");
+      if (!catcher || !paneEl.contains(catcher) || !readLarStampTokens(catcher.getAttribute(LAR_STAMP_ON)).has(type)) return;
+      const target = bindingTargetOf(src, type);
+      if (!target || !doors || shownSurface === null) return;
+      if (declaresCancel(target, type, true)) event.preventDefault();
+      relay(target, "lar:act", { action: "lar:event", eventType: type,
+        ...(event instanceof MouseEvent ? { modifiers: { ...modifiersOf(event), button: event.button } } : {}) });
+    });
+  }
 
   // ── The text leg ──────────────────────────────────────────────────────────────────────────────
 
@@ -734,7 +767,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const zone = dropZoneOf(origin(event));
     if (!zone) return;
     event.preventDefault();
-    const target = targetOf(zone);
+    const target = zone.classList.contains("tc-eventcatcher") ? bindingTargetOf(origin(event), "drop") : targetOf(zone);
     const dt = (event as DragEvent).dataTransfer;
     if (!target || !dt || !doors || shownSurface === null) return;
     const modifiers = modifiersOf(event as DragEvent);
@@ -780,7 +813,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     action: "lar:key", key: { key: key.key, code: key.code, keyCode: key.keyCode, repeat: key.repeat }, modifiers: modifiersOf(key),
   });
   const keyHeld = (key: KeyboardEvent): boolean =>
-    key.isComposing || key.keyCode === 229 || holdKeysAfterComposition || ["Control", "Meta", "Alt", "Shift"].includes(key.key);
+    key.isComposing || key.keyCode === 229 || holdKeysAfterComposition || ["Control", "Meta", "Alt", "Shift"].includes(key.key)
+    || larReservedChord(key.key, modifiersOf(key));
   const crossedKeys = new WeakSet<Event>();
   const relayDocumentChord = (key: KeyboardEvent): boolean => {
     if (shownSurface === null || !matchChord(key, offerPageOf(stateOf(shownSurface)).chords)) return false;
@@ -794,7 +828,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   paneEl.addEventListener("keydown", (event) => {
     const key = event as KeyboardEvent;
     if (keyHeld(key) || crossedKeys.has(key)) return;
-    const chord = larKeyChordName({ keyCode: key.keyCode, ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
+    const chord = larKeyChordName({ keyCode: larLogicalKeyCode(key.key, key.keyCode), ctrl: key.ctrlKey, alt: key.altKey, shift: key.shiftKey, meta: key.metaKey });
     for (let node: Element | null = origin(key); node && node !== paneEl; node = node.parentElement) {
       if (readLarStampTokens(node.getAttribute(LAR_STAMP_KEYS)).has(chord)) return;
     }

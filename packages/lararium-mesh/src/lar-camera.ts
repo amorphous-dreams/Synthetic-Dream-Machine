@@ -146,6 +146,8 @@ export interface LarMsg_ControlEvent {
   readonly controlType?: string;
   /** What the person did: `lar:click`, `lar:key`, `lar:commit`, `lar:toggle`, `lar:choice`, `lar:drop`, `lar:import-offer`, `lar:order`, `lar:confirm`, `lar:route`, `lar:sense`, `lar:write`, a service kind. */
   readonly action: string;
+  /** The DOM type of a declared `$eventcatcher` act. */
+  readonly eventType?: string;
   /** The revision of the surface key the page showed when the person acted. */
   readonly seenFrameRev: number;
   /** The membership key's revision the page showed. */
@@ -181,6 +183,7 @@ export interface LarMsg_ControlEvent {
 export type LarRefusal =
   | "invalid-integer" | "input-too-long" | "stale-target" | "selection-unavailable" | "geometry-unavailable"
   | "route-unresolved" | "unsupported-control" | "binding-unavailable" | "page-action-unavailable"
+  | "continuous-event-refused" | "pointer-capture-refused" | "reserved-chord"
   | "activation-required" | "unknown-request"
   | "unclaimed" | "actor-not-spawned" | "superseded" | "cap-refused";
 
@@ -291,6 +294,21 @@ export function larKeyChordName(chord: { readonly keyCode: number; readonly ctrl
   return `${chord.ctrl ? "ctrl-" : ""}${chord.alt ? "alt-" : ""}${chord.shift ? "shift-" : ""}${chord.meta ? "meta-" : ""}${name}`;
 }
 
+/** TW5 compares key codes; letter descriptors follow the produced key across keyboard layouts. */
+export function larLogicalKeyCode(key: string, keyCode: number): number {
+  return /^[a-z]$/i.test(key) ? key.toUpperCase().charCodeAt(0)
+    : /^[0-9]$/.test(key) ? key.charCodeAt(0) : keyCode;
+}
+
+/** Browser, OS and assistive technology chords stay on the glass. */
+export function larReservedChord(key: string, mods: { readonly ctrl: boolean; readonly alt: boolean; readonly shift: boolean; readonly meta: boolean }): boolean {
+  const k = key.toLowerCase();
+  if (mods.alt && k === "f4" || mods.ctrl && mods.alt && k === "delete") return true;
+  if (mods.meta && ["q", "w", "t", "n", "r", "l", "tab", " ", "space", "spacebar"].includes(k)) return true;
+  if (mods.ctrl && !mods.alt && !mods.meta && ["w", "t", "n", "r", "l", "tab"].includes(k)) return true;
+  return false;
+}
+
 // ── Readers (fail closed) ───────────────────────────────────────────────────────────────────────
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -319,6 +337,7 @@ export function readLarControlEvent(v: unknown): LarMsg_ControlEvent | null {
   if (v["kind"] === "lar:sense" && v["localRev"] === undefined) return null;   // a sense without its revision cannot be ordered
   if (v["checked"] !== undefined && typeof v["checked"] !== "boolean") return null;
   if (v["controlType"] !== undefined && !isName(v["controlType"])) return null;
+  if (v["eventType"] !== undefined && !isName(v["eventType"])) return null;
   if (v["fieldId"] !== undefined && !isName(v["fieldId"])) return null;
   if (v["selection"] !== undefined && !isSelection(v["selection"])) return null;
   if (v["wholeValue"] !== undefined && boundedWholeValue(v["wholeValue"]) === null) return null;

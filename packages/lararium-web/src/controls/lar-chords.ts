@@ -11,6 +11,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/what-a-sink-keeps
  */
 import type { LarShortcutChord } from "@lararium/mesh/lar-camera";
+import { larLogicalKeyCode } from "@lararium/mesh/lar-camera";
 
 const NAMED: Readonly<Record<string, number>> = {
   cancel: 3, help: 6, backspace: 8, tab: 9, clear: 12, return: 13, enter: 13, pause: 19, escape: 27, space: 32,
@@ -53,6 +54,6 @@ export function parseChords(descriptors: string): LarShortcutChord[] {
 }
 
 /** The first chord a keydown matches, or undefined. */
-export function matchChord(event: Pick<KeyboardEvent, "keyCode" | "ctrlKey" | "shiftKey" | "altKey" | "metaKey">, chords: readonly LarShortcutChord[]): LarShortcutChord | undefined {
-  return chords.find((c) => c.keyCode === event.keyCode && c.ctrl === event.ctrlKey && c.shift === event.shiftKey && c.alt === event.altKey && c.meta === event.metaKey);
+export function matchChord(event: Pick<KeyboardEvent, "key" | "keyCode" | "ctrlKey" | "shiftKey" | "altKey" | "metaKey">, chords: readonly LarShortcutChord[]): LarShortcutChord | undefined {
+  return chords.find((c) => c.keyCode === larLogicalKeyCode(event.key, event.keyCode) && c.ctrl === event.ctrlKey && c.shift === event.shiftKey && c.alt === event.altKey && c.meta === event.metaKey);
 }

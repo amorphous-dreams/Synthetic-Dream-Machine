@@ -45,6 +45,7 @@ import {
   type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
   type LarMsg_Resend, type LarMsg_Service, type LarRefusal, type LarResultStatus, type LarServiceKind, type LarSurfaceManifest,
   LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_LIVE, LAR_STAMP_ON, larKeyChordName,
+  larLogicalKeyCode, larReservedChord,
 } from "@lararium/mesh";
 import type { LaresServiceArgs, LaresServiceDoor } from "./types/lares-globals.js";
 
@@ -147,8 +148,40 @@ function postLar(ctx: IslandContext, msg: LarMsg_Frame | LarMsg_ControlResult | 
 /** `data-lar-on`: the types the node binds, in the order TW5 bound them; the page relays only these. */
 function stampBoundTypes(node: RidNode): void {
   const types = [...new Set((node._larListeners ?? []).map((l) => l.type))];
+  if ((node.attributes["class"] ?? "").split(/\s+/).includes("tc-eventcatcher")) {
+    const allowed = types.filter((type) => CATCHER_EVENTS.has(type));
+    if (allowed.length) node.setAttribute(LAR_STAMP_ON, allowed.join(" "));
+    else delete node.attributes[LAR_STAMP_ON];
+    return;
+  }
   if (types.length) node.setAttribute(LAR_STAMP_ON, types.join(" "));
   else delete node.attributes[LAR_STAMP_ON];
+}
+
+/** A bounded selector reader for the fake DOM; unknown CSS syntax matches nothing. */
+function fakeMatches(node: RidNode, selector: string): boolean {
+  return selector.split(",").some((part) => {
+    const atoms = part.trim().split(/\s+/);
+    if (!atoms.length || atoms.some((atom) => !/^(?:[a-z][\w-]*)?(?:[#.][\w-]+|\[[\w-]+(?:=["']?[^\]"']+["']?)?\])*$/.test(atom))) return false;
+    const matchesAtom = (n: RidNode, atom: string): boolean => {
+      const tag = /^[a-z][\w-]*/.exec(atom)?.[0];
+      if (tag && n.tag?.toLowerCase() !== tag.toLowerCase()) return false;
+      for (const id of atom.matchAll(/#([\w-]+)/g)) if (n.attributes["id"] !== id[1]) return false;
+      for (const cls of atom.matchAll(/\.([\w-]+)/g)) if (!(n.attributes["class"] ?? "").split(/\s+/).includes(cls[1]!)) return false;
+      for (const attr of atom.matchAll(/\[([\w-]+)(?:=["']?([^\]"']+)["']?)?\]/g)) {
+        if (n.attributes[attr[1]!] === undefined || attr[2] !== undefined && n.attributes[attr[1]!] !== attr[2]) return false;
+      }
+      return atom !== "";
+    };
+    let cursor: RidNode | null | undefined = node;
+    if (!matchesAtom(cursor, atoms.at(-1)!)) return false;
+    for (let i = atoms.length - 2; i >= 0; i--) {
+      cursor = cursor?.parentNode;
+      while (cursor && !matchesAtom(cursor, atoms[i]!)) cursor = cursor.parentNode;
+      if (!cursor) return false;
+    }
+    return true;
+  });
 }
 
 const FAKE_DOM_ANIMATION_PATCHED = Symbol("lararium.fake-dom-animation-patched");
@@ -160,6 +193,16 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
   const proto = Object.getPrototypeOf(fakeDoc.createElement("div")) as Record<string, unknown>;
   if (proto["_larEventsPatched"]) return;
   proto["_larEventsPatched"] = true;
+  Object.defineProperty(proto, "nodeName", { get(this: RidNode) { return this.tag?.toUpperCase() ?? ""; } });
+  proto["matches"] = function (this: RidNode, selector: string): boolean { return fakeMatches(this, selector); };
+  proto["closest"] = function (this: RidNode, selector: string): RidNode | null {
+    for (let node: RidNode | null | undefined = this; node; node = node.parentNode) if (fakeMatches(node, selector)) return node;
+    return null;
+  };
+  proto["contains"] = function (this: RidNode, other: RidNode): boolean {
+    for (let node: RidNode | null | undefined = other; node; node = node.parentNode) if (node === this) return true;
+    return false;
+  };
   proto["addEventListener"] = function (this: RidNode, type: string, handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void }): void {
     let rid = this.attributes["data-lar-rid"];
     if (rid === undefined) {
@@ -262,6 +305,10 @@ interface Declaration {
   readonly keys?: string;
   readonly bubble?: "yes" | "no";
   readonly live?: "value" | "checked" | "selected";
+  readonly on?: string;
+  readonly selector?: string;
+  readonly matchSelector?: string;
+  readonly refused?: string;
 }
 /** The loose widget surface the table reads: TW5's own fields, never a copy of them. */
 type DeclaringWidget = Record<string, any> & { domNodes: RidNode[]; children: DeclaringWidget[] };
@@ -274,6 +321,20 @@ function invokesChildActions(widget: DeclaringWidget): boolean {
 
 const KEY_INFO_CHORD = (info: { keyCode: number; ctrlKey?: boolean; altKey?: boolean; shiftKey?: boolean; metaKey?: boolean }): string =>
   larKeyChordName({ keyCode: info.keyCode, ctrl: !!info.ctrlKey, alt: !!info.altKey, shift: !!info.shiftKey, meta: !!info.metaKey });
+
+const CATCHER_EVENTS = new Set(["click", "dblclick", "contextmenu", "focusin", "focusout", "drop"]);
+
+function stampCatchTree(node: RidNode | undefined): void {
+  if (!node) return;
+  if (node.attributes && node.attributes["data-lar-rid"] === undefined && activeEventScope) {
+    const rid = String(++ridSeq);
+    node.setAttribute("data-lar-rid", rid);
+    ridMap.set(rid, node);
+    eventScopes.set(rid, activeEventScope);
+    activeEventScope.renderIds.add(rid);
+  }
+  for (const child of node.children ?? []) if (child.attributes) stampCatchTree(child);
+}
 
 /**
  * The small table: per widget class, the node it binds and what that node declares.
@@ -297,6 +358,20 @@ const DECLARATIONS: Readonly<Record<string, (w: DeclaringWidget) => Declaration>
     node: w.domNodes[0], bubble: "yes", cancel: "keydown:declared",
     keys: [...new Set(((w.keyInfoArray ?? []) as Parameters<typeof KEY_INFO_CHORD>[0][]).map(KEY_INFO_CHORD))].join(" "),
   }),
+  eventcatcher: (w) => {
+    const node = w.domNode as RidNode | undefined;
+    const types = (w.types ?? []) as string[];
+    const allowed = types.filter((type) => CATCHER_EVENTS.has(type) && w.getAttribute("disabled", "no") !== "yes" && w.getAttribute("pointerCapture", "no") === "no");
+    stampCatchTree(node);
+    const stop = w.getAttribute("stopPropagation", "onaction");
+    const selector = w.getAttribute("selector") as string | undefined;
+    const matchSelector = w.getAttribute("matchSelector") as string | undefined;
+    const refused = w.getAttribute("pointerCapture", "no") !== "no" ? "pointer-capture-refused"
+      : types.some((type) => !CATCHER_EVENTS.has(type)) ? "continuous-event-refused" : undefined;
+    return { node, on: [...new Set(allowed)].join(" "), bubble: "yes",
+      cancel: allowed.filter((type) => stop === "always" || stop === "onaction" && !!w.getAttribute(`$${type}`)).join(" "),
+      ...(selector ? { selector } : {}), ...(matchSelector ? { matchSelector } : {}), ...(refused ? { refused } : {}) };
+  },
   dropzone: (w) => ({ node: w.domNodes[0], bubble: "no", cancel: "dragenter dragover drop" }),
   droppable: (w) => ({ node: w.domNodes[0], bubble: "no", cancel: "dragenter dragover drop" }),
   "edit-text": (w) => ({ node: w.engine?.domNode ?? w.domNodes[0], live: "value" }),
@@ -318,12 +393,28 @@ function declare(widget: DeclaringWidget, read: (w: DeclaringWidget) => Declarat
   stamp(d.node, LAR_STAMP_KEYS, d.keys);
   stamp(d.node, LAR_STAMP_BUBBLE, d.bubble);
   stamp(d.node, LAR_STAMP_LIVE, d.live);
+  if (d.on !== undefined) stamp(d.node, LAR_STAMP_ON, d.on);
+  stamp(d.node, "data-lar-catcher-selector", d.selector);
+  stamp(d.node, "data-lar-catcher-match-selector", d.matchSelector);
+  stamp(d.node, "data-lar-catcher-refused", d.refused);
 }
 
 const WIDGET_DECLARATIONS_PATCHED = Symbol("lararium.widget-declarations-patched");
 
 /** Wrap each table widget's `render` and `refresh` once per class, so every binding it makes carries its declaration. */
 export function patchWidgetDeclarations(tw: Record<string, any>): void {
+  const collect = tw.utils.collectDOMVariables;
+  if (collect && !tw.utils._larCollectDOMVariablesPatched) {
+    tw.utils._larCollectDOMVariablesPatched = true;
+    tw.utils.collectDOMVariables = function (selected: RidNode | undefined, catcher: RidNode | undefined, event: unknown): unknown {
+      if (!selected?.attributes || Array.isArray(selected.attributes)) return collect(selected, catcher, event);
+      const attrs = selected.attributes;
+      // TW5's DOM collector iterates Attr objects; the fake DOM stores string values in a map.
+      (selected as unknown as { attributes: unknown }).attributes = Object.entries(attrs).filter(([, value]) => value !== undefined).map(([name, value]) => ({ name, value }));
+      try { return collect(selected, catcher, event); }
+      finally { selected.attributes = attrs; }
+    };
+  }
   const classes = tw.rootWidget?.widgetClasses as Record<string, { prototype: Record<string | symbol, any> }> | undefined;
   if (!classes) throw new Error("TW5 projection cannot declare its bindings: $tw.rootWidget.widgetClasses is unavailable");
   for (const [name, read] of Object.entries(DECLARATIONS)) {
@@ -374,7 +465,7 @@ function projectedEvent(type: string, el: RidNode, scope: CameraScope, ev: LarMs
   return {
     type, target: el, currentTarget: el,
     button: m?.button ?? 0, ctrlKey: m?.ctrl ?? false, metaKey: m?.meta ?? false, altKey: m?.alt ?? false, shiftKey: m?.shift ?? false,
-    ...(ev.key ? { key: ev.key.key, code: ev.key.code, keyCode: ev.key.keyCode, which: ev.key.keyCode, repeat: ev.key.repeat } : {}),
+    ...(ev.key ? { key: ev.key.key, code: ev.key.code, keyCode: larLogicalKeyCode(ev.key.key, ev.key.keyCode), which: larLogicalKeyCode(ev.key.key, ev.key.keyCode), repeat: ev.key.repeat } : {}),
     // TW5 navigator.js reads event.event.view before save/cancel/rename. A worker event carries the
     // worker-local, explicitly refusing view capability; no global `window` or DOM crosses the seam.
     view: makeProjectedViewContract((_capability, message) => {
@@ -936,7 +1027,7 @@ export function mountProjection(ctx: IslandContext): () => void {
 //     `unclaimed` and runs nothing.
 //   - `lar:route` on `lar:document` navigates the story the way TW5's own `Story` does; the frame's
 //     `lar:story-order` key carries the story order and the history tail the page composes `#` from.
-//   - an act that reaches a `$eventcatcher` refuses `unsupported-control` by name and runs nothing.
+//   - a catcher runs only its declared discrete listener; continuous streams and pointer capture refuse by name.
 
 const IMPORT_TITLE = "$:/Import";
 const STORY_LIST = "$:/StoryList";
@@ -1093,6 +1184,7 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
     if (ev.action === "lar:key") {
       const km = tw.keyboardManager;
       if (!km || !ev.key) return answer("refused", "unclaimed");
+      if (larReservedChord(ev.key.key, { ctrl: !!ev.modifiers?.ctrl, alt: !!ev.modifiers?.alt, shift: !!ev.modifiers?.shift, meta: !!ev.modifiers?.meta })) return answer("refused", "reserved-chord");
       const event = projectedEvent("keydown", scope.popupRoot, scope, ev);
       let handled = false;
       try { handled = km.handleKeydownEvent(event) === true; } catch (error) {
@@ -1139,12 +1231,28 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
 
   const el = resolveTarget(ev, scope);
   if (!el) return undefined;
-  const type = DOM_TYPE[ev.action];
+  const type = ev.action === "lar:event" ? ev.eventType : DOM_TYPE[ev.action] ?? (/^lar:(pointer|mouse|touch|wheel|scroll)/.test(ev.action) ? ev.action.slice(4) : undefined);
+  if (ev.action === "lar:event" && !type) return answer("refused", "unsupported-control");
   for (let node: RidNode | null | undefined = el; node && type; node = node.parentNode) {
-    if ((node.attributes["class"] ?? "").split(/\s+/).includes("tc-eventcatcher") && binds(node, type)) return answer("refused", "unsupported-control");
+    if (!(node.attributes["class"] ?? "").split(/\s+/).includes("tc-eventcatcher")) continue;
+    // The ruling (page-controls, 2026-10-16): a catcher that asks for pointer capture refuses it by name; any event
+    // outside the declared discrete set refuses as a continuous stream.
+    if (node.attributes["data-lar-catcher-refused"] === "pointer-capture-refused") return answer("refused", "pointer-capture-refused");
+    if (!CATCHER_EVENTS.has(type)) return answer("refused", "continuous-event-refused");
+    const match = node.attributes["data-lar-catcher-match-selector"];
+    const selector = node.attributes["data-lar-catcher-selector"];
+    if (match && !fakeMatches(el, match)) return answer("refused", "unclaimed");
+    if (selector) {
+      let found = false;
+      for (let selected: RidNode | null | undefined = el; selected && selected !== node; selected = selected.parentNode) {
+        if (fakeMatches(selected, selector)) { found = true; break; }
+      }
+      if (!found) return answer("refused", "unclaimed");
+    }
   }
 
   if (ev.action === "lar:key") {
+    if (ev.key && larReservedChord(ev.key.key, { ctrl: !!ev.modifiers?.ctrl, alt: !!ev.modifiers?.alt, shift: !!ev.modifiers?.shift, meta: !!ev.modifiers?.meta })) return answer("refused", "reserved-chord");
     const event = projectedEvent("keydown", el, scope, ev);
     const stamps: string[] = [];
     for (let node: RidNode | null | undefined = el; node; node = node.parentNode) {
@@ -1153,6 +1261,18 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
     }
     if (stamps.length > 0 && !chordDeclared(tw, stamps.join(" "), event)) return answer("refused", "unclaimed");
     return undefined;
+  }
+
+  if (ev.action === "lar:event") {
+    if (!CATCHER_EVENTS.has(type!)) return answer("refused", "continuous-event-refused");
+    let catcherBound = false;
+    for (let node: RidNode | null | undefined = el; node; node = node.parentNode) {
+      if ((node.attributes["class"] ?? "").split(/\s+/).includes("tc-eventcatcher") && binds(node, type!)) { catcherBound = true; break; }
+    }
+    if (!catcherBound) return answer("refused", "unclaimed");
+    bubble(scope, el, type!, projectedEvent(type!, el, scope, ev));
+    scope.mark();
+    return answer("applied");
   }
 
   if (ev.action === "lar:import-offer" || ev.action === "lar:drop") {
@@ -1169,7 +1289,10 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
     if (!binds(el, "drop")) return answer("refused", ev.action === "lar:drop" ? "unclaimed" : "unsupported-control");
     const dataTransfer = dataTransferOf(state, ev);
     if (!dataTransfer) return answer("refused", "unsupported-control");
-    runOffer(state, scope, el, "drop", { ...projectedEvent("drop", el, scope, ev), dataTransfer, isTrusted: false });
+    const dropEvent = { ...projectedEvent("drop", el, scope, ev), dataTransfer, isTrusted: false };
+    for (let node: RidNode | null | undefined = el; node && !(dropEvent.stopped as () => boolean)(); node = node.parentNode) {
+      if (binds(node, "drop")) runOffer(state, scope, node, "drop", dropEvent);
+    }
     scope.mark();
     return answer("applied");
   }
