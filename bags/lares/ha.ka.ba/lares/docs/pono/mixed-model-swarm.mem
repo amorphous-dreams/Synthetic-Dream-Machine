@@ -11,7 +11,7 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x2299;"
-role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus controller, a Sonnet Episkopos, a Codex Sol, a third-lineage Copilot model, the cloud Opus and Sonnet pair, and research spirits), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
+role      = "mixed-model-swarm — how the house works across model lineages: which lineage holds which seat (the Opus controller, a Sonnet Episkopos, a Codex Sol, a Copilot gpt-5.3-codex seat, the cloud Opus and Sonnet pair, and research spirits), the shapes a crew takes, the lens law that makes several eyes worth more than one, the fences every lineage keeps, the launch and retry practice, the budget a prepaid allowance gets spent by, and the provenance each landed line carries."
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -37,7 +37,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 | ''Controller'' | Claude Opus | the session's seat: rulings relayed, every lane's brief, a careful read of every chunk's diff before it merges, every merge train, the canon lines | lands a chunk it has not read |
 | ''Episkopos'' (lane lead) | Claude Sonnet | the lane's brief, its ground, its crew, its landing onto its lane branch, its review verdicts | hands its landing to another spirit |
 | ''Sol'' | Codex `gpt-6-sol`, medium effort | a build brief (one module with a fixed type contract and its vectors) or a read-only read, as the lead names per launch | commits, pushes, or touches git |
-| ''Third lineage'' | a Copilot model of a family neither Anthropic nor OpenAI ships (Gemini or MAI-Code), at a medium multiplier, read through `copilot --model` and named in the lane's notes | a build brief under the build fences or a read-only read under the review fences, as the lead names per launch | commits, pushes, or reviews a diff it wrote |
+| ''Copilot seat'' | Copilot `gpt-5.3-codex` at medium reasoning effort (`--model gpt-5.3-codex --reasoning-effort medium`); the third-family models answered `model unavailable` on this account (2026-10-19) | a build brief under the build fences or a read-only read under the review fences, as the lead names per launch | commits, pushes, or reviews a diff it wrote |
 | ''Fresh reader'' | whichever lineage built nothing in the piece, read-only and ephemeral | an adversarial read of the landed diff, findings ranked with `file:line` | sees the builder's conclusions first |
 | ''Research pair'' | two spirits woken apart (Codex with web search, or Fable or Opus where Codex stands absent) | the code read and the field read of one question, each claim marked reached or inferred | shares a conclusion with its twin |
 | ''Cloud pair'' | Claude Opus and Claude Sonnet, where Codex stands absent | builder, reviewer and sweeper masks, traded; the one that did not build a piece reviews it | — |
@@ -48,7 +48,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 
 !! The shapes ~ how a crew stands
 
-* ''The work swarm'' (operator ruling, 2026-10-19). Three seats per lane: a Sonnet Episkopos, one Sol, and one third-lineage Copilot model. Each seat builds or reads as the work pulls, the lead naming which per launch, and a seat never reads a diff it wrote, so every build is read by the other lineage. The Copilot seat carries the vectors, the mechanical modules and the fresh aftermath sweep by default; the Sol carries the judgment-heavy modules. After each flow the lead runs a fresh read and closes or answers each finding before the next flow, and a lane closes its span with one more sweep over everything it landed. The Opus controller keeps the deep read: it reads every chunk's diff with care before the chunk merges, since the lane's own lead no longer runs on the deepest lineage.
+* ''The work swarm'' (operator ruling, 2026-10-19). Three seats per lane: a Sonnet Episkopos, one Sol, and one Copilot `gpt-5.3-codex` seat at medium effort. Sol and `gpt-5.3-codex` share the OpenAI lineage, so where a finding needs a second lens the Sonnet lead or the Opus controller supplies it (#/the-lens-law). Each seat builds or reads as the work pulls, the lead naming which per launch, and a seat never reads a diff it wrote, so every build is read by the other lineage. The Copilot seat carries the vectors, the mechanical modules and the fresh aftermath sweep by default; the Sol carries the judgment-heavy modules. After each flow the lead runs a fresh read and closes or answers each finding before the next flow, and a lane closes its span with one more sweep over everything it landed. The Opus controller keeps the deep read: it reads every chunk's diff with care before the chunk merges, since the lane's own lead no longer runs on the deepest lineage.
 * ''The build pair.'' The two building seats build in ONE worktree the lead provisions, so their work composes as it lands and no patch waits to merge. They coordinate through a claims file at the worktree's root (`.lane-claims.md`, untracked): a spirit appends `claim <path> <mask>` before it writes a file and `release <path>` once the file stands, never writes a path the other holds, runs tests only over released files, and appends its handback notes there; the ledger only grows. One splits the work by module, or one builds a module while the other builds its red tests and controls. The lead reads the ledger and the diff as overwatch.
 * ''Cloud crew'', where Codex stands absent: one Opus Episkopos per lane with an Opus and a Sonnet spirit as its worker pair, trading builder, reviewer and sweeper masks on narrow one-module briefs; the lead applies, tests and lands their work, and whichever did not build a piece reviews it. Research spirits wake on Fable or Opus with web search loaded.
 * ''When a lineage runs short, the seat stays and the lineage changes.'' The operator names when a shortfall begins; the short lineage's seats go to another lineage's models of the same capability, and the lens law still sorts who reads whom.
@@ -80,13 +80,13 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 
 <<~ ahu #/the-copilot-seat>>
 
-!! The Copilot seat ~ the third lineage
+!! The Copilot seat ~ Copilot's models in the swarm
 
-GitHub Copilot reaches model families the crews run nowhere else: Gemini and Microsoft's MAI-Code. A work swarm seats one such model at a medium multiplier, and nothing the house gates on needs it to pass.
+GitHub Copilot reaches models the Codex budget does not spend. A work swarm seats one Copilot model, `gpt-5.3-codex` at medium effort, and nothing the house gates on needs it to pass.
 
 !!! Its uses
 |! Use |! Model |! When |
-| ''the swarm's third seat'' | a medium-multiplier Gemini or MAI-Code model | every lane: builds or reads as the lead names |
+| ''the swarm's third seat'' | `gpt-5.3-codex`, medium effort | every lane: builds or reads as the lead names |
 | a deeper single read | a higher-multiplier model | where the seats split on a load-bearing finding, the operator hearing the reason first |
 | ''Copilot code review'' of a pull request | GitHub's PR reviewer | only when the operator asks for one by name |
 A premium request counts per prompt, never per tool call, so one whole agentic build or review in one prompt costs one multiplier.
@@ -187,6 +187,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;X4yN0m-zQZ8w7Ogqo9jGc75q6rxjRUcT85pbaW8g8fI
+<<^ code="&#x0003;">>ni:///sha-256;LsVqjw71gCKXBJf8sUbCUGaTtEtUHII1HkF1bGam_cI
 
 <<^ code="&#x0004;" -> to="?">>
