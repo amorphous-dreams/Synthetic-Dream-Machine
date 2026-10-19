@@ -8,7 +8,7 @@
  * (injector → target) records a mid-flight INJECTION (the rhizome leg, merge-where-messages-
  * land). HANDBACK closes the spawn edge's valid-interval (the twin-reunion). Each triple
  * carries the TURN-DAG key (the C-cut: handoffs key to the turn-DAG node, so the edge
- * survives rewind/fork) and a valid_from.
+ * survives rewind/fork), a causal parent turn when known, and display valid_from.
  *
  * These functions build the triple DESCRIPTORS only — pure, bundle-able, no IO. The node-side
  * shore (lararium-mempalace/worldline-kg.ts) writes them through the mempalace KG API
@@ -43,6 +43,8 @@ export interface WorldlineEdgeTriple {
   readonly valid_from?: string;
   /** The turn-DAG key this edge keys to (→ KG source_drawer_id; the kapae filter). */
   readonly turnKey?: string;
+  /** The turnKey of the event this edge causally follows. */
+  readonly parentKey?: string;
 }
 
 /** A descriptor for closing an edge's valid-interval (the handback / kapae move). */
@@ -52,6 +54,8 @@ export interface WorldlineEdgeClose {
   readonly object: string;
   /** When the edge stopped being true (ISO); the KG defaults to today when omitted. */
   readonly ended?: string;
+  /** The turnKey of the event this handback causally follows. */
+  readonly parentKey?: string;
 }
 
 export interface EdgeOpts {
@@ -59,6 +63,8 @@ export interface EdgeOpts {
   readonly validFrom?: string;
   /** The turn-DAG key (the C-cut handoff key). */
   readonly turnKey?: string;
+  /** The turnKey of the event this edge causally follows. */
+  readonly parentKey?: string;
 }
 
 /** SPAWN → the prov:Delegation triple (parent happened-before child). */
@@ -70,6 +76,7 @@ export function delegationEdge(parent: string, child: string, opts: EdgeOpts = {
     object: child,
     ...(opts.validFrom !== undefined ? { valid_from: opts.validFrom } : {}),
     ...(opts.turnKey !== undefined ? { turnKey: opts.turnKey } : {}),
+    ...(opts.parentKey !== undefined ? { parentKey: opts.parentKey } : {}),
   };
 }
 
@@ -82,16 +89,18 @@ export function communicationEdge(injector: string, target: string, opts: EdgeOp
     object: target,
     ...(opts.validFrom !== undefined ? { valid_from: opts.validFrom } : {}),
     ...(opts.turnKey !== undefined ? { turnKey: opts.turnKey } : {}),
+    ...(opts.parentKey !== undefined ? { parentKey: opts.parentKey } : {}),
   };
 }
 
 /** HANDBACK → the close descriptor for the spawn edge (the twin-reunion interval-close). */
-export function handbackClose(parent: string, child: string, ended?: string): WorldlineEdgeClose {
+export function handbackClose(parent: string, child: string, ended?: string, parentKey?: string): WorldlineEdgeClose {
   if (!parent || !child) throw new Error("handbackClose: parent and child handles required");
   return {
     subject: parent,
     predicate: PRED_DELEGATION,
     object: child,
     ...(ended !== undefined ? { ended } : {}),
+    ...(parentKey !== undefined ? { parentKey } : {}),
   };
 }

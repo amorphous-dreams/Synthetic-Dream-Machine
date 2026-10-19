@@ -29,13 +29,12 @@
  *                                       ride harvest's kapaeTurn path.
  *   lares sense worldline diff <A> <B>        NOT AVAILABLE — an honest gap (below)
  *
- * The ∥ mark rides the edge-DAG's OWN replay law (the same valid-time replay the mesh
- * projection `worldlineCausalFromEdges` enacts: events ordered by valid-time, spawn
- * ranking BEFORE handback at the same instant): a sibling reads SEQUENTIAL only when the
- * previous sibling's handback replays before its spawn — otherwise the DAG holds no path
- * between them and they read ∥. Never a wall-clock guess beyond the ordering the durable
- * projection itself is defined by. (Comparing two PAST frontiers by their ITC stamps is
- * exactly the persisted-stamp gap `diff` refuses on — see below.)
+ * The ∥ mark reads the KG rows' recorded intervals, a display reading: a sibling reads
+ * SEQUENTIAL only when the previous sibling's recorded close stands strictly before its
+ * recorded open, and ∥ otherwise. The mesh replay (`replayWorldlineEdges`) orders events by
+ * causal links alone and never by these times; the KG rows carry no parent links, so this
+ * tree reads the intervals the rows hold. (Comparing two PAST frontiers by their ITC stamps
+ * is exactly the persisted-stamp gap `diff` refuses on — see below.)
  *
  * THE DIFF GAP (reported, not faked): ITC STAMPS ARE NOT QUERYABLY PERSISTED — the stamp
  * values live only in the in-memory registry (mesh/worldline-clock; the daemon's
@@ -133,10 +132,9 @@ export function buildWorldlineTree(
 ): WorldlineTree {
   const bareRun = run.split("~")[0] ?? run;
 
-  // The ∥ verdict — the edge-DAG's replay law (worldlineCausalFromEdges' event order:
-  // valid-time ascending, spawn(0) < inject(1) < handback(2) at the same instant). The
-  // previous sibling's handback happens-before the next spawn ONLY when it replays
-  // strictly earlier; an open interval or a same-instant close leaves the pair ∥.
+  // The ∥ mark — a display reading of the rows' recorded intervals: the previous sibling
+  // reads sequential ONLY when its recorded close stands strictly before the next one's
+  // recorded open; an open interval or a same-instant close leaves the pair ∥.
   const sequentialAfter = (prev: WorldlineKgRow, cur: WorldlineKgRow): boolean =>
     prev.valid_to !== null && cur.valid_from !== null && prev.valid_to < cur.valid_from;
 

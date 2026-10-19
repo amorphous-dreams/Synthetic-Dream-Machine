@@ -93,6 +93,7 @@ describe("deriveInjectionEdges — a re-entry → a prov:Communication edge", ()
       predicate: PRED_COMMUNICATION,
       object: "run.spirit",
       turnKey: "u3",
+      parentKey: "u1",
       valid_from: "2026-06-29T00:00:04Z",
     });
   });

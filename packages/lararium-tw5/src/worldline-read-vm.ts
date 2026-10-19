@@ -49,7 +49,7 @@ module-type: startup
  */
 
 import {
-  worldlineCausalFromEdges,
+  replayWorldlineEdges,
   worldlineCompare,
   orderTrajectory,
   joinFormVectors,
@@ -63,6 +63,7 @@ import {
   type LarTickCounter,
   type WorldlineEdgeTriple,
   type WorldlineEdgeClose,
+  type WorldlineReplaySkip,
 } from "@lararium/mesh/worldline";
 
 // TW5 injects $tw as a module parameter (vm.runInContext sandbox); reach it as the injected var.
@@ -99,20 +100,23 @@ export interface WorldlineTrajectoryInput {
 // compare re-projects it from the carried edge-DAG (idempotent re-derive); holding it lets a future
 // read→filter-compute chain read the last-projected registry without re-shipping the edges.
 let _causal: WorldlineCausal | null = null;
+let _skipped: readonly WorldlineReplaySkip[] = [];
 
 /**
  * Well 1 — the ITC LIVE-READ. Project the registry from the edge-DAG (HOLD it), then compare.
  * `ingestEdges` + `compare` fuse into one read (the registry persists as a side
  * effect). THROWS when either handle is unknown to the registry (the host wraps the helpful error).
  */
-export function computeWorldlineCompare(input: WorldlineCompareInput): { order: ItcOrder } {
+export function computeWorldlineCompare(input: WorldlineCompareInput): { order: ItcOrder; skipped: readonly WorldlineReplaySkip[] } {
   // Re-project the registry from the carried edge-DAG when fresh edges arrive (the idempotent
   // re-derive); else read the HELD registry (a compare riding a prior ingest — the cross-read
   // persistence the future read→filter chain leans on). No edges + no held registry → throws below.
   if (input.opens.length > 0 || !_causal) {
-    _causal = worldlineCausalFromEdges(input.root ?? "operator", input.opens, input.closes ?? []);
+    const replay = replayWorldlineEdges(input.root ?? "operator", input.opens, input.closes ?? []);
+    _causal = replay.causal;
+    _skipped = replay.skipped;
   }
-  return { order: worldlineCompare(_causal, input.a, input.b) };
+  return { order: worldlineCompare(_causal, input.a, input.b), skipped: _skipped };
 }
 
 /** The held registry snapshot (read-only) — for inspection / a downstream re-projection. */
@@ -144,7 +148,7 @@ export function computeWorldlineTrajectory(
 
 export const name  = "lararium-worldline-read-vm";
 
-export type WorldlineCompareVm    = (input: WorldlineCompareInput) => { order: ItcOrder };
+export type WorldlineCompareVm    = (input: WorldlineCompareInput) => { order: ItcOrder; skipped: readonly WorldlineReplaySkip[] };
 export type WorldlineTrajectoryVm = (input: WorldlineTrajectoryInput) => { trajectory: WorldlineTrajectory; nullBaseline?: WorldlineTrajectory };
 
 export function startup(): void {
