@@ -21,6 +21,7 @@ import {
   parseAdmitCarriage, toAdmitCarriage,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
+  standBrowserCustody, readBrowserCustody, type CustodyAsk, type CustodyAnswer,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -59,6 +60,42 @@ const sharedHolderUrl = (() => {
 })();
 
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
+
+const VESSEL_IDB = "lares:vessel";
+
+/**
+ * THIS TAB'S CUSTODY DOOR (operator ruling 2026-10-18: each browser tab asks for its own unlock, and the shared holder
+ * carries no unlock between tabs). One small form on the page asks the person; the passphrase lives in this page's
+ * memory for the one act and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" answers null.
+ */
+function askCustody(question: CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> {
+  return new Promise((resolve) => {
+    const form = document.createElement("form");
+    form.className = "custody-ask";
+    form.dataset["ask"] = question.kind;
+    const say = document.createElement("div");
+    say.textContent =
+      question.kind === "unlock" ? `Unlock this browser's vessel (attempt ${String(question.attempt)} of ${String(question.of)})${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}`
+        : question.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
+          : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
+    const pass = document.createElement("input");
+    pass.type = "password"; pass.autocomplete = question.kind === "bind-first" ? "new-password" : "current-password"; pass.required = true;
+    const again = question.kind === "bind-first" ? document.createElement("input") : null;
+    if (again) { again.type = "password"; again.autocomplete = "new-password"; again.required = true; again.placeholder = "again"; }
+    const go = document.createElement("button"); go.type = "submit"; go.textContent = question.kind === "clear" ? "clear" : question.kind === "bind-first" ? "bind" : "unlock";
+    const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
+    const done = (answer: CustodyAnswer): void => { pass.value = ""; if (again) again.value = ""; form.remove(); resolve(answer); };
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (again && again.value !== pass.value) { say.textContent = "The two passphrases differ; type them again."; again.value = ""; return; }
+      done({ kind: "passphrase", passphrase: pass.value });
+    });
+    not.addEventListener("click", () => done(null));
+    form.append(say, pass, ...(again ? [again] : []), go, not);
+    document.body.prepend(form);
+    pass.focus();
+  });
+}
 
 
 /**
@@ -203,6 +240,11 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
         try {
           if (file.kind === "fleet-join-offer") {
             // Another join standing pending would strand this page: the human may abandon it here, by name.
+            // A JOIN MINTS FACE SECRETS (the face-scoped key, then the address secret): the slot binds first, in this tab.
+            const custody = await standBrowserCustody({ idbName: VESSEL_IDB, ask: askCustody, secretMintDue: true });
+            if (custody.reading !== "bound" && custody.reading !== "opens" && custody.reading !== "held") {
+              throw new Error(`this browser's custody reads ${custody.reading}; a fleet join mints a face's secrets only over a slot`);
+            }
             const request = await browserFleetJoinRequest({ offer: file.value }).catch(async (err: unknown) => {
               if (!(err instanceof BrowserFleetJoinRefused && err.refusal === "join-pending")) throw err;
               if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
@@ -272,7 +314,16 @@ async function bootVessel(): Promise<void> {
       }
     : undefined;
   try {
+    // THE BOOT'S CUSTODY STEP, before the vessel opens: a sealed keystore asks this tab's person for its unlock. A boot
+    // that opens over a locked keystore refuses `sealed-locked` and gives the store lock back, so declining here
+    // leaves the page able to try again.
+    const custody = await standBrowserCustody({ idbName: VESSEL_IDB, ask: askCustody });
+    if (custody.reading === "declined" || custody.reading === "no-slot-opens" || custody.reading === "unreadable") {
+      set("status", `this browser's vessel stays locked (${custody.reading}) — reload to unlock`, "warn");
+      return;
+    }
     const result = await openBrowserVessel({
+      askCustody,
       hostId: "elyncia-browser",
       wikiId: "lares",
       genesisSeed: genesisSeed as unknown as GenesisSeed,
@@ -328,8 +379,10 @@ async function bootVessel(): Promise<void> {
       const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
       if (offer) row(vesselEl, "phone seat", offer, "warn");
     }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
-    // THE SEED AT REST — the worn persona's root: cleartext, or wrapped under a passkey whose class the line names.
-    void loadBrowserActivePersona().then((h) => readBrowserSeedWrap(undefined, h ?? 0)).then((wrap) => {
+    // THE SEED AT REST — sealed under this browser's slot tree, or else cleartext or a passkey wrap whose class the line names.
+    void readBrowserCustody(VESSEL_IDB).then(async (custodyNow) => {
+      if (custodyNow.reading === "sealed") { row(vesselEl, "seed", "sealed under this browser's passphrase slot", "ok"); return; }
+      const wrap = await readBrowserSeedWrap(undefined, (await loadBrowserActivePersona()) ?? 0);
       row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
     }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
   } catch (e) {

@@ -38,10 +38,7 @@ async function snapshot(idbName: string): Promise<unknown[]> {
 }
 
 describe("browser boot custody asks before secret rows rest", () => {
-  // DEFERRED to the controller's composer patch, which reads custody before the boot stands a Repo and unskips this
-  // vector: over this composer the refused boot leaves the Repo's storage-id save in flight past teardown, an unhandled
-  // rejection in three runs of four (measured 2026-10-18).
-  test.skip("RED: a boot over a locked seal refuses sealed-locked and gives the store lock back; the stand then opens and the same page reads", async () => {
+  test("RED: a boot over a locked seal refuses sealed-locked and gives the store lock back; the stand then opens and the same page reads", async () => {
     const idbName = vessel();
     await generateOrLoadBrowserVesselIdentity(idbName);
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
