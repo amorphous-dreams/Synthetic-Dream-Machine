@@ -66,6 +66,7 @@ export * from "./guardian-card.js";
 export * from "./recovery-registration.js";
 export * from "./capability.js";
 export * from "./domains.js";
+export * from "./custody-carrier-context.js";
 export * from "./crypto.js";
 export * from "./agile-digest.js";
 export * from "./projection-registry.js";

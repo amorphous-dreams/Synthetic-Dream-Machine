@@ -507,6 +507,14 @@ export const PROMOTION_APPROVAL_DOMAIN = mint("promotion-approval");
  *  vouch (`lararium/mesh/kahu#/cabal-admission`). */
 export const KAHU_CABAL_ADMIT_DOMAIN = mint("kahu-cabal-admit");
 
+// ── CUSTODY CARRIER CONTEXT ─────────────────────────────────────────────────────────────────────
+/** A D row's seal context: confidential material one PersonaGroup owns, sealed under that group's face custody key. */
+export const CUSTODY_D_DOMAIN = mint("custody-carrier-d");
+/** An F row's context: deliberately public bytes. No sealed-carrier writer stands for it; the name keeps it apart. */
+export const CUSTODY_F_DOMAIN = mint("custody-carrier-f");
+/** An S row's seal context: a named node-only secret under a named node principal. */
+export const CUSTODY_S_DOMAIN = mint("custody-carrier-s");
+
 /**
  * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands
  * here, so a declared domain cannot be left out of the table. The witness also refuses any domain literal
