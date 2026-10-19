@@ -501,7 +501,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `F3` One working document per (face, wiki, slot kind) at a face-secret address. O1.
 * `F4` Node callers move to sessions; receipts bind to the face; verb outcomes and the effect index follow the working layer with their reader (`verb-vm.ts`, `uds-channel.ts`). O1.
 * `F5` The durability receipt, rung 2's node half. O1.
-* `F6` The browser holder as owner, with unicast replies (`shared-holder-core.ts` broadcasts). O1.
+* `F6` The browser holder as owner, with unicast replies. Slice one stands (PR #56): a closed routing table (`holder-routes.ts`) sends each island message to exactly one port, a reply by its request id, camera traffic by its lease, the island's own asks to its owner port, and drops a kind with no route by name. Slice two, the holder's session envelope and stale-epoch fence (faceless; `session:open` with its face waits on `W4`'s face supplier), rides `--holder-envelope`. Slices three and four move the Repo and the daemon kernel into the holder, and their sealed writes wait on the operator's custody ruling: (a) the holder asks the owner tab per sealed write, (b) a session-scoped sealing facet the unlocking tab hands the holder, dropped with the face's last session, or (c) a tab-side sealed store. O1.
 * `F8` The control-event leg stands built: `lar:control-event` and `lar:control-result` replace `wiki:dom-event` and `wiki:dom-input` (`lar-camera.ts`, `projection-sink.ts`). Owed to the o-takiage: burned-name guard assertions in `lar-wire.test.ts` and `projection-input-leg.test.ts`. O1.
 * `F9` The switch; the vessel-wide selector retires. O1.
 * `F10` A person's fleet view and removal; the long-silent device rule of #/decisions. O1.
@@ -802,6 +802,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_MgBICs32qBiwxKF6dwVw8xch-Q5VqOk-RJrEAK2vIM
+<<^ code="&#x0003;">>ni:///sha-256;YCoXUba7yFcIXnHRbb1c0p8cX2VMzfZb8tT1mOoQ4ng
 
 <<^ code="&#x0004;" -> to="?">>
