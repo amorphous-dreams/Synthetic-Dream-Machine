@@ -3,9 +3,20 @@ import type { LarInstance } from "./instance.js";
 /** Move each landed carrier family from a wiki working slot into its canon bag. */
 export async function promoteLoadedTitles(
   lar: LarInstance,
-  titles: readonly string[],
+  answer: unknown,
   slug: string,
 ): Promise<void> {
+  const data = answer && typeof answer === "object" && !Array.isArray(answer)
+    ? (answer as { data?: unknown }).data
+    : undefined;
+  const titles = Array.isArray(answer)
+    ? answer.filter((title): title is string => typeof title === "string")
+    : data && typeof data === "object" && Array.isArray((data as { titles?: unknown }).titles)
+      ? (data as { titles: unknown[] }).titles.filter((title): title is string => typeof title === "string")
+      : [];
+  if (titles.length === 0) {
+    throw new Error(`promotion refused: LOAD answer carries no landed titles: ${JSON.stringify(answer)}`);
+  }
   const working = `lar:///ha.ka.ba/wikis/${slug}/working`;
   const canon = `lar:///ha.ka.ba/bags/${slug}`;
   const roots = titles.filter((title) =>

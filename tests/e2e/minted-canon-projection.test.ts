@@ -9,10 +9,10 @@
  * for a minted wiki, while the system wikis keep their literal roots.
  *
  *   mint a user wiki → set it active → REBOOT (the active marker only loads on
- *   boot) → LOAD a carrier into its @{slug} canon → it lands under bags/{slug}.
+ *   boot) → LOAD a carrier into its working slot → MOVE it to canon → it lands under bags/{slug}.
  *
  * Staged-only (lifecycle-mutating). Rides the reboot harness pattern
- * (vessel-reboot) + the live CLI (--in-wiki LOAD into the minted canon).
+ * (vessel-reboot) + the live CLI (LOAD into the minted working slot).
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -21,13 +21,14 @@ import { createServer } from "node:net";
 import { existsSync, readdirSync, statSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { targetInstance, unlockStaged, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
 const SLUG      = "my-world";
-const MY_WORLD  = `lar:///ha.ka.ba/bags/${SLUG}`;
+const WORKING   = `lar:///ha.ka.ba/wikis/${SLUG}/working`;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -123,9 +124,10 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     // asserted only once the causal marker above proves the activation line has been written.
     expect(secondLog, "reboot did not activate the minted wiki").toContain(`→ ${SLUG}`);
 
-    // 4) LOAD a carrier into the minted wiki's OWN canon (@{slug}), in-wiki
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", MY_WORLD, "--in-wiki", "--yes", "--json"]);
-    expect(r.json?.["ok"], `LOAD --to @${SLUG} --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
+    // 4) LOAD into the minted wiki's working slot, then promote its landed family.
+    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--yes", "--json"]);
+    expect(r.json?.["ok"], `LOAD --to ${WORKING} failed: ${JSON.stringify(r.json)}`).toBe(true);
+    await promoteLoadedTitles(lar, r.json, SLUG);
 
     // 5) the self-canon mirror projects @{slug} canon to bags/{slug}
     const projected = await awaitCarrier(join(lar.root, `bags/${SLUG}`));

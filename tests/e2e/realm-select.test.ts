@@ -10,9 +10,9 @@
  *   · an act stands the vessel in a realm, and a read never does;
  *   · a verb that names a realm reads that realm alone.
  *
- * THE VECTOR: the bag registered in R lists under `realm-bags --realm R` and under no other realm; `meme get
- * --bag lares --realm R` answers through R's registration. CONTROLS: the default listing holds nothing of it
- * until the same bag registers in the charter-derived realm too, and then each realm lists its own record; a
+ * THE VECTOR: the bag registered in R lists under `realm-bags --realm R`; `meme get
+ * --bag lares --realm R` answers through R's registration. CONTROLS: the charter-derived and R listings each
+ * hold their own record, while the unscoped listing names both stood realms; a
  * realm the vessel never entered reads empty, answers `not-found`, and stays unentered.
  *
  * One vessel only: a cabal realm's documents cross between two operators once the realm's member consult
@@ -52,6 +52,8 @@ let charterRealm = "";
 const dataOf = (r: { json: Record<string, unknown> | null }): Record<string, unknown> => (r.json?.["data"] ?? {}) as Record<string, unknown>;
 const bagsOf = (r: { json: Record<string, unknown> | null }): string[] =>
   ((dataOf(r)["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["bag"]));
+const rowsOf = (r: { json: Record<string, unknown> | null }): Array<Record<string, unknown>> =>
+  (dataOf(r)["bags"] ?? []) as Array<Record<string, unknown>>;
 
 describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb names its realm ★", () => {
   beforeAll(async () => {
@@ -101,7 +103,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect(dataOf(inR)["realm"]).toBe(REALM_R);
     expect((dataOf(inR)["realms"] as string[]).sort()).toEqual([charterRealm, REALM_R].sort());
     // THE RED: the charter-derived realm's plane holds nothing of it.
-    const inDefault = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const inDefault = await A!.cli(["nexus", "realm-bags", "--realm", charterRealm, "--json"]);
     expect(dataOf(inDefault)["realm"]).toBe(charterRealm);
     expect(bagsOf(inDefault)).toEqual([]);
     const elsewhere = await A!.cli(["nexus", "realm-bags", "--realm", REALM_NEVER, "--json"]);
@@ -130,8 +132,13 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     const reg = await A!.cli(["nexus", "realm-bag", "lares", "--json"]);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(charterRealm);
-    expect(bagsOf(await A!.cli(["nexus", "realm-bags", "--json"]))).toEqual([LARES_BAG]);
+    expect(bagsOf(await A!.cli(["nexus", "realm-bags", "--realm", charterRealm, "--json"]))).toEqual([LARES_BAG]);
     expect(bagsOf(await A!.cli(["nexus", "realm-bags", "--realm", REALM_R, "--json"]))).toEqual([LARES_BAG]);
+    const unscoped = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const rows = rowsOf(unscoped);
+    expect(rows.map((row) => row["realm"]).sort()).toEqual([charterRealm, REALM_R].sort());
+    expect(rows.every((row) => typeof row["realm"] === "string")).toBe(true);
+    expect(rows.map((row) => row["bag"])).toEqual([LARES_BAG, LARES_BAG]);
     // A name that reads as no realm refuses by name.
     const bad = await A!.cli(["nexus", "realm-bag", "lares", "--realm", "not-a-realm", "--json"]);
     expect(bad.json?.["ok"], said(bad)).toBe(false);

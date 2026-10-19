@@ -156,7 +156,7 @@ beforeAll(async () => {
   const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
-  if (loadOk) await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
+  if (loadOk) await promoteLoadedTitles(lar, r.json, "lares");
   // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
   // answered, and those are different faults with different cures.
   console.error(`corpus-feed MEASURE the LOAD landed ${loadCount} record(s) in ${Math.round((Date.now() - at) / 1000)}s · code ${r.code} · ${`${r.stdout}\n${r.stderr}`.trim().slice(-600)}`);
@@ -230,7 +230,7 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
       r.json?.["ok"],
       `re-feed LOAD answered code ${r.code} · json ${JSON.stringify(r.json ?? null).slice(0, 800)} · stderr ${String(r.stderr ?? "").trim().slice(-600)} · stdout ${String(r.stdout ?? "").trim().slice(-600)}${late}`,
     ).toBe(true);
-    await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
+    await promoteLoadedTitles(lar, r.json, "lares");
     // allow a flush wave, then assert the canonical form held still
     await new Promise((res) => setTimeout(res, 8_000));
     expect(readFileSync(projected, "utf8")).toBe(before);

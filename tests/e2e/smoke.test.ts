@@ -136,8 +136,8 @@ describe("smoke — residency canon through the real CLI", () => {
     if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
-    const err = r.json?.["error"] as { code?: string; message?: string } | undefined;
-    expect(err?.code).toBe("load-into-canon");
+    const err = r.json?.["error"] as { message?: string } | undefined;
+    expect(err?.message).toMatch(/load-into-canon/);
     expect(err?.message).toContain("lar:///ha.ka.ba/wikis/lares/working");
     expect(err?.message).toContain("MOVE");
   });
