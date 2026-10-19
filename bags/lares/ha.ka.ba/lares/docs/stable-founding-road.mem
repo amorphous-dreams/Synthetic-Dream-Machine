@@ -540,6 +540,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `B5` The leaf continuity walk (`tools/browser-weld/leaf-continuity.mjs`) drives an offline founding, reload, and Binding Gate fault that must refuse; the admit and join path still lacks a real-browser proof. B.
 * `B6` Rung 4: a two-hearth browser walk. X.
 * `X0` The founding bake: one deliberate re-genesis before a second operator stands, after which CIDs are meant to last because another operator pins them. It moves together `K15` step 6 (identity bytes, split stores, slot trees and FCKs, archive and custody formats, each face's random device veil), the place KEL's pre-rotation and the scoped place signer, `W26`'s closing bake (the floor release), and `G37`'s preimage and format renames (`engine/v1` and its kin, the floor announcement's kind, the genesis seed and CAS formats). Each member carries its own readiness red, so the bake waits on the slowest by name, never on a date; the bake's own red: a fresh genesis founds, no CID from before the bake verifies after it, and a mixed old archive refuses by name. The gate it opens: a second operator may found a Nexus fresh at two of two. X.
+* `X0b` The idempotent-by-intent pass, after the founding bake, paralleling the isomorphic-by-intent law (operator, 2026-10-19): a replay, a reboot and a retry land nothing new. Every row names itself by its content or its causal id, never a clock or a counter; every write reads first-writer-wins or merges by its CRDT; every boot reads as a function of its stores; and every multi-step act either completes or re-enters to the same end. Its instrument: N boots, each Archive replayed twice, each verb retried, and the second pass of each adds no head and no row. Each finding before the bake cures as its own bug; this pass sweeps what remains. X.
 * `X1` The automated two-container witness, with no volume in common. X.
 * `X2` The ceremony as a walk, in the runbook (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>). X.
 * `X3` The fresh start by hand on both machines. Operator's hands. X.
@@ -809,6 +810,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5HrJOVTOg9HYmBy3IC4ENu8i75hc7eyLrxCKmiYZjTg
+<<^ code="&#x0003;">>ni:///sha-256;XvQzATQLYbie0ciwXnA6Fvqma6y3sVJC8gxJ88HE1Ms
 
 <<^ code="&#x0004;" -> to="?">>
