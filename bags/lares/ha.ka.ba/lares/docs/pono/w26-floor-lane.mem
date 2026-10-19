@@ -75,7 +75,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 # ''The floor.'' A manifest CID names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs; `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`) turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
-# ''The live system documents rest in the Kahu realm'', under the Kahu face's own group once `K15`'s face context stands, so this slice waits on that step (#/rulings, 2026-10-18). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` gains its production caller; `bags/` projects on the Kahu's vessel alone. Red: a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document.
+# ''The live system documents rest in the Kahu realm'', under the Kahu face's own group once `K15`'s face context stands, so this slice waits on that step (#/rulings, 2026-10-18). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` gains its production caller; `bags/` projects on the Kahu's vessel alone. The first red stands before any document moves, since no production path calls `kahuCabalCanonAccess` today (`kahu-cabal-admission.ts`): a one-seat founding reads system canon through it over a founded island. Then the red: a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document.
 # ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the crossroads board carries it; `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
 # ''The accept act.'' A person's act moves a sealed hot row per (face, Nexus) to a newer release that verifies against that Nexus's charter at its epoch and links to the pinned release; no clock and no automatic accept. With no Nexus speaking, a face stands on its last accepted floor, or genesis.
 # ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
@@ -127,6 +127,6 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9JHrhGwQMf4veKYyEObVDjvHtL9CctK5AyAODcyc3uw
+<<^ code="&#x0003;">>ni:///sha-256;1KfEkh0Sw5TquRSYqReglE-BNVBtcWHk14z8fArBLPM
 
 <<^ code="&#x0004;" -> to="?">>
