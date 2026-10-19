@@ -25,7 +25,7 @@
 // its wasm as CONTENT (off the module graph), the same law the engine bytes obey.
 import * as KH from "@keyhive/keyhive/slim";
 import { wasmBase64 } from "@keyhive/keyhive/wasm-base64";
-import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
+import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, sha256HexBytesSync, webDigest } from "@lararium/mesh";
 import { base64ToBytes } from "./bytes-base64.js";
 import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";
@@ -209,9 +209,9 @@ export class KeyhiveProvider implements CapabilityProvider {
       try {
         const variant = e.variant;
         const bytes   = e.toBytes();
-        // The in-memory store uses synthetic hashes here; a
-        // tiddler-backed store will compute content hashes itself.
-        const hash    = `${variant}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        // A row is named by its own bytes: keyhive fires this handler again for every event a restored
+        // Archive and a replay carry, so any other name lands the same event once more at every boot.
+        const hash    = sha256HexBytesSync(bytes);
         // CIV-3 — stamp the island (target Document): DELEGATED / REVOKED self-attribute off their
         // own bytes; CGKA_OPERATION borrows the doc-op's `_activeIsland` (synchronous, single-writer
         // safe); PREKEY_ROTATED stays unattributed (per-principal → co-loaded across every slice).

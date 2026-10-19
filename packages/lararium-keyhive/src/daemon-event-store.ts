@@ -174,8 +174,8 @@ export async function absorbCapEvents(
   }
   // The handler persists fire-and-forget, so its typed rows are not yet in the store when ingest returns.
   await kh.settleEvents();
-  // What the handler already wrote, read by CONTENT — a store keys its rows by whatever hash its writer
-  // supplied (the handler's is synthetic), so only the bytes identify an event across both writers.
+  // What the handler already wrote, read by CONTENT: both writers name a row by the sha256 of its bytes, and the
+  // bytes are what identify an event across them.
   const taken = new Set<string>();
   for (const rec of await store.list()) taken.add(bytesKey(rec.bytes));
   for (const bytes of events) {
