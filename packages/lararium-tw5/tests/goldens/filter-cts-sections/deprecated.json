@@ -1,0 +1,112 @@
+[
+  {
+    "id": "deprecated-001-standalone-0",
+    "filter": "[all[tiddlers]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "deprecated-002-standalone-1",
+    "filter": "[all[shadows]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "deprecated-003-standalone-2",
+    "filter": "[tag[topic]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-004-standalone-3",
+    "filter": "[has[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-005-standalone-4",
+    "filter": "[prefix[A]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-006-standalone-5",
+    "filter": "[is[system]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "deprecated-007-standalone-6",
+    "filter": "[enlist[Alpha Beta]]",
+    "tags": [
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-008-standalone-7",
+    "filter": "[enlist[Alpha Beta]sort[]]",
+    "tags": [
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-009-standalone-8",
+    "filter": "[enlist[Alpha Beta]reverse[]]",
+    "tags": [
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "deprecated-010-standalone-9",
+    "filter": "[enlist[Alpha Beta]join[,]]",
+    "tags": [
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  }
+]

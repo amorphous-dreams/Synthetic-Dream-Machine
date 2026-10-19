@@ -1,0 +1,11 @@
+[
+  {"title":"Camera heading","text":"! A heading\n\nA paragraph with [[Beta]]."},
+  {"title":"Camera list","text":"* first\n* second"},
+  {"title":"Camera link","text":"A [[link|Beta]] and a [[missing link|Missing target]]."},
+  {"title":"Camera transclusion","text":"Before {{Camera included}} after."},
+  {"title":"Camera included","text":"included text"},
+  {"title":"Camera table","text":"|left|right|\n|one|two|"},
+  {"title":"Camera code","text":"{{{const answer = 42;}}}"},
+  {"title":"Camera missing link","text":"[[Missing target]]"},
+  {"title":"Camera unpaintable widget","text":"<$unknown-widget attribute=\"value\">body</$unknown-widget>"}
+]

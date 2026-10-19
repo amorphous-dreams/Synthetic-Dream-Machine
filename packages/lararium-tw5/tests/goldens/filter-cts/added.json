@@ -1,0 +1,4866 @@
+[
+  {
+    "id": "added-001-lar-uri-0",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "fragment",
+            "suffixes": [
+              [
+                "fragment"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-002-lar-uri-1",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "parent",
+            "suffixes": [
+              [
+                "parent"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-003-lar-uri-2",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "bare",
+            "suffixes": [
+              [
+                "bare"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-004-lar-uri-3",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "depth",
+            "suffixes": [
+              [
+                "depth"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "0"
+    ]
+  },
+  {
+    "id": "added-005-lar-uri-4",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "root",
+            "suffixes": [
+              [
+                "root"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "ha.ka.ba"
+    ]
+  },
+  {
+    "id": "added-006-lar-uri-5",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "path",
+            "suffixes": [
+              [
+                "path"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-007-lar-uri-6",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "authority",
+            "suffixes": [
+              [
+                "authority"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-008-lar-uri-7",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "scheme",
+            "suffixes": [
+              [
+                "scheme"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar"
+    ]
+  },
+  {
+    "id": "added-009-lar-uri-8",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "fragment",
+            "suffixes": [
+              [
+                "fragment"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "head"
+    ]
+  },
+  {
+    "id": "added-010-lar-uri-9",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "parent",
+            "suffixes": [
+              [
+                "parent"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-011-lar-uri-10",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "bare",
+            "suffixes": [
+              [
+                "bare"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-012-lar-uri-11",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "depth",
+            "suffixes": [
+              [
+                "depth"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "1"
+    ]
+  },
+  {
+    "id": "added-013-lar-uri-12",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "root",
+            "suffixes": [
+              [
+                "root"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "ha.ka.ba"
+    ]
+  },
+  {
+    "id": "added-014-lar-uri-13",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "path",
+            "suffixes": [
+              [
+                "path"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-015-lar-uri-14",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "authority",
+            "suffixes": [
+              [
+                "authority"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-016-lar-uri-15",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "scheme",
+            "suffixes": [
+              [
+                "scheme"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar"
+    ]
+  },
+  {
+    "id": "added-017-lar-uri-16",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "fragment",
+            "suffixes": [
+              [
+                "fragment"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "head/child"
+    ]
+  },
+  {
+    "id": "added-018-lar-uri-17",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "lar-uri:parent of a two-step fragment writes `#head`, dropping the slash its input carries",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "parent",
+            "suffixes": [
+              [
+                "parent"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme#head"
+    ]
+  },
+  {
+    "id": "added-019-lar-uri-18",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "bare",
+            "suffixes": [
+              [
+                "bare"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-020-lar-uri-19",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "depth",
+            "suffixes": [
+              [
+                "depth"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "2"
+    ]
+  },
+  {
+    "id": "added-021-lar-uri-20",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "root",
+            "suffixes": [
+              [
+                "root"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "ha.ka.ba"
+    ]
+  },
+  {
+    "id": "added-022-lar-uri-21",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "path",
+            "suffixes": [
+              [
+                "path"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lares/api/pono/meme"
+    ]
+  },
+  {
+    "id": "added-023-lar-uri-22",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "authority",
+            "suffixes": [
+              [
+                "authority"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-024-lar-uri-23",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme#/head/child"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "scheme",
+            "suffixes": [
+              [
+                "scheme"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar"
+    ]
+  },
+  {
+    "id": "added-025-lar-uri-24",
+    "filter": "[[Alpha]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "fragment",
+            "suffixes": [
+              [
+                "fragment"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-026-lar-uri-25",
+    "filter": "[[Alpha]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "parent",
+            "suffixes": [
+              [
+                "parent"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "added-027-lar-uri-26",
+    "filter": "[[Alpha]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "bare",
+            "suffixes": [
+              [
+                "bare"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "added-028-lar-uri-27",
+    "filter": "[[Alpha]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "depth",
+            "suffixes": [
+              [
+                "depth"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "0"
+    ]
+  },
+  {
+    "id": "added-029-lar-uri-28",
+    "filter": "[[Alpha]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "root",
+            "suffixes": [
+              [
+                "root"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-030-lar-uri-29",
+    "filter": "[[Alpha]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "path",
+            "suffixes": [
+              [
+                "path"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-031-lar-uri-30",
+    "filter": "[[Alpha]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "authority",
+            "suffixes": [
+              [
+                "authority"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-032-lar-uri-31",
+    "filter": "[[Alpha]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "scheme",
+            "suffixes": [
+              [
+                "scheme"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      ""
+    ]
+  },
+  {
+    "id": "added-033-house-32",
+    "filter": "[[Alpha]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "lar-kind",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "content"
+    ]
+  },
+  {
+    "id": "added-034-house-33",
+    "filter": "[[Alpha]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "lares"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-035-house-34",
+    "filter": "[[Alpha]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "engine"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-036-house-35",
+    "filter": "[[Alpha]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "wiki-shadow"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-037-house-36",
+    "filter": "[[$:/config/pono-small]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "$:/config/pono-small"
+              }
+            ]
+          },
+          {
+            "operator": "lar-kind",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "system"
+    ]
+  },
+  {
+    "id": "added-038-house-37",
+    "filter": "[[$:/config/pono-small]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "$:/config/pono-small"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "lares"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-039-house-38",
+    "filter": "[[$:/config/pono-small]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "$:/config/pono-small"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "engine"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-040-house-39",
+    "filter": "[[$:/config/pono-small]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "$:/config/pono-small"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "wiki-shadow"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-041-house-40",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "lar-kind",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "content"
+    ]
+  },
+  {
+    "id": "added-042-house-41",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "lares"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-043-house-42",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "engine"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-044-house-43",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "lar:///ha.ka.ba/lares/api/pono/meme"
+              }
+            ]
+          },
+          {
+            "operator": "bagPath",
+            "operands": [
+              {
+                "text": "wiki-shadow"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lares/api/pono/meme.mem"
+    ]
+  },
+  {
+    "id": "added-045-sense-44",
+    "filter": "[wikisense:recall:title[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "wikisense",
+            "suffix": "recall:title",
+            "suffixes": [
+              [
+                "recall"
+              ],
+              [
+                "title"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "added-046-sense-45",
+    "filter": "[wikisense:recall:title:ordinary[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "wikisense",
+            "suffix": "recall:title:ordinary",
+            "suffixes": [
+              [
+                "recall"
+              ],
+              [
+                "title"
+              ],
+              [
+                "ordinary"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "added-047-sense-46",
+    "filter": "[wikisense:recall:structure[ahu]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense recall by structure finds nothing in the frozen world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "wikisense",
+            "suffix": "recall:structure",
+            "suffixes": [
+              [
+                "recall"
+              ],
+              [
+                "structure"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "ahu"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-048-sense-47",
+    "filter": "[wikisense:recall:form[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense recall by form reaches the engine's language shadows, not only the world",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "wikisense",
+            "suffix": "recall:form",
+            "suffixes": [
+              [
+                "recall"
+              ],
+              [
+                "form"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "$:/language/ControlPanel/Settings/MissingLinks/Description",
+      "$:/language/ControlPanel/SocialCard/Hint",
+      "$:/language/ControlPanel/Settings/TitleLinks/Yes/Description",
+      "$:/language/ControlPanel/Settings/TitleLinks/No/Description",
+      "$:/language/Snippets/ListByTag",
+      "$:/language/ControlPanel/Settings/TitleLinks/Hint",
+      "$:/language/Snippets/Table4x3",
+      "$:/core/modules/filters/substitute.js",
+      "$:/core/modules/parsers/pdfparser.js",
+      "$:/core/modules/filters/links.js"
+    ]
+  },
+  {
+    "id": "added-049-sense-48",
+    "filter": "[wikisense:cohere:ordinary[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "wikisense",
+            "suffix": "cohere:ordinary",
+            "suffixes": [
+              [
+                "cohere"
+              ],
+              [
+                "ordinary"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "{\"radius\":1,\"glues\":false,\"vacuous\":false,\"obstructionLocus\":[\"Beta\",\"Delta\",\"lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext\"],\"lociTotal\":3,\"gate\":{\"kind\":\"reconcilable\",\"dimH1\":0,\"cost\":0},\"corpusSize\":5,\"bindingPairs\":1}"
+    ]
+  },
+  {
+    "id": "added-050-operator-49",
+    "filter": "[[Alpha]stack[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "stack[] over a world tiddler with no stack answers nothing",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "stack",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-051-operator-50",
+    "filter": "[[Alpha]stack:has[topic]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "stack:has[] over a world tiddler with no stack answers nothing",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "stack",
+            "suffix": "has",
+            "suffixes": [
+              [
+                "has"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "topic"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-052-operator-51",
+    "filter": "[[Alpha]toml:field[title]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "toml:field over a non-TOML tiddler answers nothing",
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "toml",
+            "suffix": "field",
+            "suffixes": [
+              [
+                "field"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "title"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-053-operator-52",
+    "filter": "[[Alpha]meme-pin[kind]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "meme-pin",
+            "operands": [
+              {
+                "text": "kind"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "unresolved"
+    ]
+  },
+  {
+    "id": "added-054-all-memes",
+    "filter": "[all[memes]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "all",
+            "operands": [
+              {
+                "text": "memes"
+              }
+            ]
+          },
+          {
+            "operator": "sort",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext"
+    ]
+  },
+  {
+    "id": "added-055-all-memes-shadows",
+    "filter": "[all[memes+shadows]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "all",
+            "operands": [
+              {
+                "text": "memes+shadows"
+              }
+            ]
+          },
+          {
+            "operator": "sort",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "$:/Acknowledgements",
+      "$:/AdvancedSearch",
+      "$:/config/AnimationDuration",
+      "$:/config/AutoFocus",
+      "$:/config/AutoSave",
+      "$:/config/BitmapEditor/Colour",
+      "$:/config/BitmapEditor/ImageSizes",
+      "$:/config/BitmapEditor/LineWidth",
+      "$:/config/BitmapEditor/LineWidths",
+      "$:/config/BitmapEditor/Opacities",
+      "$:/config/BitmapEditor/Opacity",
+      "$:/config/ConfirmIgnoredFields",
+      "$:/config/ControlPanel/Basics/DefaultTiddlers/RetainStory",
+      "$:/config/DefaultMoreSidebarTab",
+      "$:/config/DefaultSidebarTab",
+      "$:/config/DownloadSaver/AutoSave",
+      "$:/config/Drafts/TypingTimeout",
+      "$:/config/EditMode/fieldname-filter",
+      "$:/config/Editor/EnableImportFilter",
+      "$:/config/Editor/ImportContentTypesFilter",
+      "$:/config/EditorToolbarButtons/Visibility/$:/core/ui/EditorToolbar/heading-4",
+      "$:/config/EditorToolbarButtons/Visibility/$:/core/ui/EditorToolbar/heading-5",
+      "$:/config/EditorToolbarButtons/Visibility/$:/core/ui/EditorToolbar/heading-6",
+      "$:/config/EditorTypeMappings/image/gif",
+      "$:/config/EditorTypeMappings/image/heic",
+      "$:/config/EditorTypeMappings/image/heif",
+      "$:/config/EditorTypeMappings/image/jpeg",
+      "$:/config/EditorTypeMappings/image/jpg",
+      "$:/config/EditorTypeMappings/image/png",
+      "$:/config/EditorTypeMappings/image/webp",
+      "$:/config/EditorTypeMappings/image/x-icon",
+      "$:/config/EditorTypeMappings/text/vnd.tiddlywiki",
+      "$:/config/EditTabIndex",
+      "$:/config/EditTemplateBodyFilters/canonical-uri",
+      "$:/config/EditTemplateBodyFilters/default",
+      "$:/config/EditTemplateFields/Visibility/bag",
+      "$:/config/EditTemplateFields/Visibility/created",
+      "$:/config/EditTemplateFields/Visibility/creator",
+      "$:/config/EditTemplateFields/Visibility/draft.of",
+      "$:/config/EditTemplateFields/Visibility/draft.title",
+      "$:/config/EditTemplateFields/Visibility/modified",
+      "$:/config/EditTemplateFields/Visibility/modifier",
+      "$:/config/EditTemplateFields/Visibility/revision",
+      "$:/config/EditTemplateFields/Visibility/tags",
+      "$:/config/EditTemplateFields/Visibility/text",
+      "$:/config/EditTemplateFields/Visibility/title",
+      "$:/config/EditTemplateFields/Visibility/type",
+      "$:/config/FieldEditorFilters/default",
+      "$:/config/Manager/Filter",
+      "$:/config/Manager/Order",
+      "$:/config/Manager/Show",
+      "$:/config/Manager/Sort",
+      "$:/config/Manager/System",
+      "$:/config/Manager/Tag",
+      "$:/config/MissingLinks",
+      "$:/config/Navigation/openLinkFromInsideRiver",
+      "$:/config/Navigation/openLinkFromOutsideRiver",
+      "$:/config/Navigation/UpdateAddressBar",
+      "$:/config/Navigation/UpdateHistory",
+      "$:/config/NewImageType",
+      "$:/config/NewJournal/Tags",
+      "$:/config/NewJournal/Text",
+      "$:/config/NewJournal/Title",
+      "$:/config/OfficialPluginLibrary",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/advanced-search",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/close-all",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/encryption",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/export-page",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/fold-all",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/full-screen",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/home",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/import",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/language",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/layout",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/manager",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/more-page-actions",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/network-activity",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/new-image",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/new-journal",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/palette",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/permaview",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/print",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/refresh",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/storyview",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/tag-manager",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/theme",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/timestamp",
+      "$:/config/PageControlButtons/Visibility/$:/core/ui/Buttons/unfold-all",
+      "$:/config/Performance/Instrumentation",
+      "$:/config/RecentLimit",
+      "$:/config/RegisterPluginType/import",
+      "$:/config/RegisterPluginType/info",
+      "$:/config/RegisterPluginType/language",
+      "$:/config/RegisterPluginType/plugin",
+      "$:/config/RegisterPluginType/theme",
+      "$:/config/SaverFilter",
+      "$:/config/SaveWikiButton/Template",
+      "$:/config/Search/AutoFocus",
+      "$:/config/Search/MinLength",
+      "$:/config/SearchResults/Default",
+      "$:/config/Server/ExternalFilters/[all[tiddlers]!is[system]sort[title]]",
+      "$:/config/ShortcutInfo/add-field",
+      "$:/config/ShortcutInfo/advanced-search",
+      "$:/config/ShortcutInfo/advanced-search-sidebar",
+      "$:/config/ShortcutInfo/bold",
+      "$:/config/ShortcutInfo/cancel-edit-tiddler",
+      "$:/config/ShortcutInfo/change-sidebar-layout",
+      "$:/config/ShortcutInfo/delete-field",
+      "$:/config/ShortcutInfo/excise",
+      "$:/config/ShortcutInfo/heading-1",
+      "$:/config/ShortcutInfo/heading-2",
+      "$:/config/ShortcutInfo/heading-3",
+      "$:/config/ShortcutInfo/heading-4",
+      "$:/config/ShortcutInfo/heading-5",
+      "$:/config/ShortcutInfo/heading-6",
+      "$:/config/ShortcutInfo/input-accept",
+      "$:/config/ShortcutInfo/input-accept-variant",
+      "$:/config/ShortcutInfo/input-cancel",
+      "$:/config/ShortcutInfo/input-down",
+      "$:/config/ShortcutInfo/input-tab-left",
+      "$:/config/ShortcutInfo/input-tab-right",
+      "$:/config/ShortcutInfo/input-up",
+      "$:/config/ShortcutInfo/italic",
+      "$:/config/ShortcutInfo/layout-switcher",
+      "$:/config/ShortcutInfo/link",
+      "$:/config/ShortcutInfo/linkify",
+      "$:/config/ShortcutInfo/list-bullet",
+      "$:/config/ShortcutInfo/list-number",
+      "$:/config/ShortcutInfo/mono-block",
+      "$:/config/ShortcutInfo/mono-line",
+      "$:/config/ShortcutInfo/new-image",
+      "$:/config/ShortcutInfo/new-journal",
+      "$:/config/ShortcutInfo/new-tiddler",
+      "$:/config/ShortcutInfo/open-control-panel",
+      "$:/config/ShortcutInfo/picture",
+      "$:/config/ShortcutInfo/preview",
+      "$:/config/ShortcutInfo/quote",
+      "$:/config/ShortcutInfo/refresh",
+      "$:/config/ShortcutInfo/save-tiddler",
+      "$:/config/ShortcutInfo/save-wiki",
+      "$:/config/ShortcutInfo/sidebar-search",
+      "$:/config/ShortcutInfo/stamp",
+      "$:/config/ShortcutInfo/strikethrough",
+      "$:/config/ShortcutInfo/subscript",
+      "$:/config/ShortcutInfo/superscript",
+      "$:/config/ShortcutInfo/toggle-sidebar",
+      "$:/config/ShortcutInfo/transcludify",
+      "$:/config/ShortcutInfo/underline",
+      "$:/config/shortcuts-mac/bold",
+      "$:/config/shortcuts-mac/italic",
+      "$:/config/shortcuts-mac/new-image",
+      "$:/config/shortcuts-mac/new-journal",
+      "$:/config/shortcuts-mac/new-tiddler",
+      "$:/config/shortcuts-mac/refresh",
+      "$:/config/shortcuts-mac/save-wiki",
+      "$:/config/shortcuts-mac/underline",
+      "$:/config/shortcuts-not-mac/bold",
+      "$:/config/shortcuts-not-mac/italic",
+      "$:/config/shortcuts-not-mac/new-image",
+      "$:/config/shortcuts-not-mac/new-journal",
+      "$:/config/shortcuts-not-mac/new-tiddler",
+      "$:/config/shortcuts-not-mac/refresh",
+      "$:/config/shortcuts-not-mac/underline",
+      "$:/config/shortcuts/add-field",
+      "$:/config/shortcuts/advanced-search",
+      "$:/config/shortcuts/advanced-search-sidebar",
+      "$:/config/shortcuts/cancel-edit-tiddler",
+      "$:/config/shortcuts/change-sidebar-layout",
+      "$:/config/shortcuts/delete-field",
+      "$:/config/shortcuts/excise",
+      "$:/config/shortcuts/heading-1",
+      "$:/config/shortcuts/heading-2",
+      "$:/config/shortcuts/heading-3",
+      "$:/config/shortcuts/heading-4",
+      "$:/config/shortcuts/heading-5",
+      "$:/config/shortcuts/heading-6",
+      "$:/config/shortcuts/input-accept",
+      "$:/config/shortcuts/input-accept-variant",
+      "$:/config/shortcuts/input-cancel",
+      "$:/config/shortcuts/input-down",
+      "$:/config/shortcuts/input-tab-left",
+      "$:/config/shortcuts/input-tab-right",
+      "$:/config/shortcuts/input-up",
+      "$:/config/shortcuts/layout-switcher",
+      "$:/config/shortcuts/link",
+      "$:/config/shortcuts/linkify",
+      "$:/config/shortcuts/list-bullet",
+      "$:/config/shortcuts/list-number",
+      "$:/config/shortcuts/mono-block",
+      "$:/config/shortcuts/mono-line",
+      "$:/config/shortcuts/open-control-panel",
+      "$:/config/shortcuts/picture",
+      "$:/config/shortcuts/preview",
+      "$:/config/shortcuts/quote",
+      "$:/config/shortcuts/save-tiddler",
+      "$:/config/shortcuts/save-wiki",
+      "$:/config/shortcuts/sidebar-search",
+      "$:/config/shortcuts/stamp",
+      "$:/config/shortcuts/strikethrough",
+      "$:/config/shortcuts/subscript",
+      "$:/config/shortcuts/superscript",
+      "$:/config/shortcuts/toggle-sidebar",
+      "$:/config/shortcuts/transcludify",
+      "$:/config/StoryTiddlerTemplateFilters/default",
+      "$:/config/StoryTiddlerTemplateFilters/draft",
+      "$:/config/SwitcherTargets/language",
+      "$:/config/SwitcherTargets/layout",
+      "$:/config/SwitcherTargets/palette",
+      "$:/config/SwitcherTargets/theme",
+      "$:/config/SyncFilter",
+      "$:/config/SyncSystemTiddlersFromServer",
+      "$:/config/Tags/MinLength",
+      "$:/config/TextEditor/EditorHeight/Height",
+      "$:/config/TextEditor/EditorHeight/Mode",
+      "$:/config/TiddlerColourFilters/color-field",
+      "$:/config/TiddlerColourFilters/default",
+      "$:/config/TiddlerIconFilters/default",
+      "$:/config/TiddlerIconFilters/icon-field",
+      "$:/config/TiddlerInfo/Default",
+      "$:/config/TiddlerInfo/Mode",
+      "$:/config/Tiddlers/TitleLinks",
+      "$:/config/Toolbar/ButtonClass",
+      "$:/config/Toolbar/Icons",
+      "$:/config/Toolbar/Text",
+      "$:/config/ui/EditTemplate",
+      "$:/config/ui/ViewTemplate",
+      "$:/config/ViewTemplateBodyFilters/code-body",
+      "$:/config/ViewTemplateBodyFilters/core-ui-tags",
+      "$:/config/ViewTemplateBodyFilters/default",
+      "$:/config/ViewTemplateBodyFilters/hide-body",
+      "$:/config/ViewTemplateBodyFilters/html",
+      "$:/config/ViewTemplateBodyFilters/import",
+      "$:/config/ViewTemplateBodyFilters/plugin",
+      "$:/config/ViewTemplateBodyFilters/stylesheet",
+      "$:/config/ViewTemplateBodyFilters/system",
+      "$:/config/ViewTemplateBodyFilters/testcase",
+      "$:/config/ViewTemplateSubtitleFilters/default",
+      "$:/config/ViewTemplateTagsFilters/default",
+      "$:/config/ViewTemplateTitleFilters/default",
+      "$:/config/ViewTemplateTitleFilters/system",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/clone",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/close-others",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/delete",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/export-tiddler",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/fold",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/fold-bar",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/fold-others",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/info",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/more-tiddler-actions",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/new-here",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/new-journal-here",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/open-window",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/permalink",
+      "$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/permaview",
+      "$:/config/WikiParserRules/Inline/wikilink",
+      "$:/ControlPanel",
+      "$:/core/buttonstyles/Borderless",
+      "$:/core/buttonstyles/Boxed",
+      "$:/core/buttonstyles/Rounded",
+      "$:/core/config/GlobalImportFilter",
+      "$:/core/config/TagPillDragFilter",
+      "$:/core/copyright.txt",
+      "$:/core/Filters/AllTags",
+      "$:/core/Filters/AllTiddlers",
+      "$:/core/Filters/Drafts",
+      "$:/core/Filters/Missing",
+      "$:/core/Filters/Orphans",
+      "$:/core/Filters/OverriddenShadowTiddlers",
+      "$:/core/Filters/RecentSystemTiddlers",
+      "$:/core/Filters/RecentTiddlers",
+      "$:/core/Filters/SessionTiddlers",
+      "$:/core/Filters/ShadowTiddlers",
+      "$:/core/Filters/StoryList",
+      "$:/core/Filters/SystemTags",
+      "$:/core/Filters/SystemTiddlers",
+      "$:/core/Filters/TypedTiddlers",
+      "$:/core/icon",
+      "$:/core/images/add-comment",
+      "$:/core/images/advanced-search-button",
+      "$:/core/images/auto-height",
+      "$:/core/images/blank",
+      "$:/core/images/bold",
+      "$:/core/images/cancel-button",
+      "$:/core/images/chevron-down",
+      "$:/core/images/chevron-left",
+      "$:/core/images/chevron-right",
+      "$:/core/images/chevron-up",
+      "$:/core/images/clone-button",
+      "$:/core/images/close-all-button",
+      "$:/core/images/close-button",
+      "$:/core/images/close-others-button",
+      "$:/core/images/copy-clipboard",
+      "$:/core/images/delete-button",
+      "$:/core/images/discord",
+      "$:/core/images/done-button",
+      "$:/core/images/down-arrow",
+      "$:/core/images/download-button",
+      "$:/core/images/edit-button",
+      "$:/core/images/erase",
+      "$:/core/images/excise",
+      "$:/core/images/export-button",
+      "$:/core/images/file",
+      "$:/core/images/fixed-height",
+      "$:/core/images/fold-all-button",
+      "$:/core/images/fold-button",
+      "$:/core/images/fold-others-button",
+      "$:/core/images/folder",
+      "$:/core/images/full-screen-button",
+      "$:/core/images/github",
+      "$:/core/images/gitter",
+      "$:/core/images/globe",
+      "$:/core/images/heading-1",
+      "$:/core/images/heading-2",
+      "$:/core/images/heading-3",
+      "$:/core/images/heading-4",
+      "$:/core/images/heading-5",
+      "$:/core/images/heading-6",
+      "$:/core/images/help",
+      "$:/core/images/home-button",
+      "$:/core/images/import-button",
+      "$:/core/images/info-button",
+      "$:/core/images/input-button",
+      "$:/core/images/italic",
+      "$:/core/images/language",
+      "$:/core/images/layout-button",
+      "$:/core/images/left-arrow",
+      "$:/core/images/line-width",
+      "$:/core/images/link",
+      "$:/core/images/linkify",
+      "$:/core/images/list",
+      "$:/core/images/list-bullet",
+      "$:/core/images/list-number",
+      "$:/core/images/locked-padlock",
+      "$:/core/images/mail",
+      "$:/core/images/mastodon",
+      "$:/core/images/menu-button",
+      "$:/core/images/minus-button",
+      "$:/core/images/mono-block",
+      "$:/core/images/mono-line",
+      "$:/core/images/network-activity",
+      "$:/core/images/new-button",
+      "$:/core/images/new-here-button",
+      "$:/core/images/new-image-button",
+      "$:/core/images/new-journal-button",
+      "$:/core/images/opacity",
+      "$:/core/images/open-window",
+      "$:/core/images/options-button",
+      "$:/core/images/paint",
+      "$:/core/images/palette",
+      "$:/core/images/permalink-button",
+      "$:/core/images/permaview-button",
+      "$:/core/images/picture",
+      "$:/core/images/plugin-generic-language",
+      "$:/core/images/plugin-generic-plugin",
+      "$:/core/images/plugin-generic-theme",
+      "$:/core/images/plus-button",
+      "$:/core/images/preview-closed",
+      "$:/core/images/preview-open",
+      "$:/core/images/print-button",
+      "$:/core/images/quote",
+      "$:/core/images/refresh-button",
+      "$:/core/images/right-arrow",
+      "$:/core/images/rotate-left",
+      "$:/core/images/save-button",
+      "$:/core/images/save-button-dynamic",
+      "$:/core/images/size",
+      "$:/core/images/spiral",
+      "$:/core/images/stamp",
+      "$:/core/images/standard-layout",
+      "$:/core/images/star-filled",
+      "$:/core/images/storyview-classic",
+      "$:/core/images/storyview-pop",
+      "$:/core/images/storyview-zoomin",
+      "$:/core/images/strikethrough",
+      "$:/core/images/subscript",
+      "$:/core/images/superscript",
+      "$:/core/images/tag-button",
+      "$:/core/images/theme-button",
+      "$:/core/images/timestamp-off",
+      "$:/core/images/timestamp-on",
+      "$:/core/images/tip",
+      "$:/core/images/transcludify",
+      "$:/core/images/twitter",
+      "$:/core/images/underline",
+      "$:/core/images/unfold-all-button",
+      "$:/core/images/unfold-button",
+      "$:/core/images/unlocked-padlock",
+      "$:/core/images/up-arrow",
+      "$:/core/images/video",
+      "$:/core/images/warning",
+      "$:/core/macros/colour-picker",
+      "$:/core/macros/copy-to-clipboard",
+      "$:/core/macros/CSS",
+      "$:/core/macros/CSS/property",
+      "$:/core/macros/deprecated",
+      "$:/core/macros/diff",
+      "$:/core/macros/dumpvariables",
+      "$:/core/macros/export",
+      "$:/core/macros/image-picker",
+      "$:/core/macros/keyboard-driven-input",
+      "$:/core/macros/lingo",
+      "$:/core/macros/list",
+      "$:/core/macros/show-filter-count",
+      "$:/core/macros/tabs",
+      "$:/core/macros/tag",
+      "$:/core/macros/tag-picker",
+      "$:/core/macros/testcase",
+      "$:/core/macros/thumbnails",
+      "$:/core/macros/timeline",
+      "$:/core/macros/toc",
+      "$:/core/macros/translink",
+      "$:/core/macros/tree",
+      "$:/core/macros/utils",
+      "$:/core/modules/background-actions.js",
+      "$:/core/modules/browser-messaging.js",
+      "$:/core/modules/config.js",
+      "$:/core/modules/deserializers.js",
+      "$:/core/modules/editor/engines/framed.js",
+      "$:/core/modules/editor/engines/simple.js",
+      "$:/core/modules/editor/factory.js",
+      "$:/core/modules/editor/operations/bitmap/clear.js",
+      "$:/core/modules/editor/operations/bitmap/resize.js",
+      "$:/core/modules/editor/operations/bitmap/rotate-left.js",
+      "$:/core/modules/editor/operations/text/excise.js",
+      "$:/core/modules/editor/operations/text/focus-editor.js",
+      "$:/core/modules/editor/operations/text/insert-text.js",
+      "$:/core/modules/editor/operations/text/make-link.js",
+      "$:/core/modules/editor/operations/text/prefix-lines.js",
+      "$:/core/modules/editor/operations/text/replace-all.js",
+      "$:/core/modules/editor/operations/text/replace-selection.js",
+      "$:/core/modules/editor/operations/text/save-selection.js",
+      "$:/core/modules/editor/operations/text/wrap-lines.js",
+      "$:/core/modules/editor/operations/text/wrap-selection.js",
+      "$:/core/modules/filter-tracker.js",
+      "$:/core/modules/filterrunprefixes/all.js",
+      "$:/core/modules/filterrunprefixes/and.js",
+      "$:/core/modules/filterrunprefixes/cascade.js",
+      "$:/core/modules/filterrunprefixes/else.js",
+      "$:/core/modules/filterrunprefixes/except.js",
+      "$:/core/modules/filterrunprefixes/filter.js",
+      "$:/core/modules/filterrunprefixes/intersection.js",
+      "$:/core/modules/filterrunprefixes/let.js",
+      "$:/core/modules/filterrunprefixes/map.js",
+      "$:/core/modules/filterrunprefixes/or.js",
+      "$:/core/modules/filterrunprefixes/reduce.js",
+      "$:/core/modules/filterrunprefixes/sort.js",
+      "$:/core/modules/filterrunprefixes/then.js",
+      "$:/core/modules/filters.js",
+      "$:/core/modules/filters/addprefix.js",
+      "$:/core/modules/filters/addsuffix.js",
+      "$:/core/modules/filters/after.js",
+      "$:/core/modules/filters/all.js",
+      "$:/core/modules/filters/all/current.js",
+      "$:/core/modules/filters/all/missing.js",
+      "$:/core/modules/filters/all/orphans.js",
+      "$:/core/modules/filters/all/shadows.js",
+      "$:/core/modules/filters/all/tags.js",
+      "$:/core/modules/filters/all/tiddlers.js",
+      "$:/core/modules/filters/backlinks.js",
+      "$:/core/modules/filters/backtranscludes.js",
+      "$:/core/modules/filters/before.js",
+      "$:/core/modules/filters/commands.js",
+      "$:/core/modules/filters/compare.js",
+      "$:/core/modules/filters/contains.js",
+      "$:/core/modules/filters/count.js",
+      "$:/core/modules/filters/crypto.js",
+      "$:/core/modules/filters/days.js",
+      "$:/core/modules/filters/decodeuricomponent.js",
+      "$:/core/modules/filters/deserialize.js",
+      "$:/core/modules/filters/deserializers.js",
+      "$:/core/modules/filters/duplicateslugs.js",
+      "$:/core/modules/filters/each.js",
+      "$:/core/modules/filters/eachday.js",
+      "$:/core/modules/filters/editiondescription.js",
+      "$:/core/modules/filters/editions.js",
+      "$:/core/modules/filters/else.js",
+      "$:/core/modules/filters/enlist.js",
+      "$:/core/modules/filters/field.js",
+      "$:/core/modules/filters/fields.js",
+      "$:/core/modules/filters/filter.js",
+      "$:/core/modules/filters/format.js",
+      "$:/core/modules/filters/format/date.js",
+      "$:/core/modules/filters/format/json.js",
+      "$:/core/modules/filters/format/relativedate.js",
+      "$:/core/modules/filters/format/timestamp.js",
+      "$:/core/modules/filters/format/titlelist.js",
+      "$:/core/modules/filters/function.js",
+      "$:/core/modules/filters/get.js",
+      "$:/core/modules/filters/getindex.js",
+      "$:/core/modules/filters/getvariable.js",
+      "$:/core/modules/filters/has.js",
+      "$:/core/modules/filters/haschanged.js",
+      "$:/core/modules/filters/indexes.js",
+      "$:/core/modules/filters/insertafter.js",
+      "$:/core/modules/filters/insertbefore.js",
+      "$:/core/modules/filters/is.js",
+      "$:/core/modules/filters/is/binary.js",
+      "$:/core/modules/filters/is/blank.js",
+      "$:/core/modules/filters/is/current.js",
+      "$:/core/modules/filters/is/draft.js",
+      "$:/core/modules/filters/is/image.js",
+      "$:/core/modules/filters/is/missing.js",
+      "$:/core/modules/filters/is/orphan.js",
+      "$:/core/modules/filters/is/shadow.js",
+      "$:/core/modules/filters/is/system.js",
+      "$:/core/modules/filters/is/tag.js",
+      "$:/core/modules/filters/is/tiddler.js",
+      "$:/core/modules/filters/is/variable.js",
+      "$:/core/modules/filters/json-ops.js",
+      "$:/core/modules/filters/limit.js",
+      "$:/core/modules/filters/links.js",
+      "$:/core/modules/filters/list.js",
+      "$:/core/modules/filters/listed.js",
+      "$:/core/modules/filters/listops.js",
+      "$:/core/modules/filters/lookup.js",
+      "$:/core/modules/filters/match.js",
+      "$:/core/modules/filters/math.js",
+      "$:/core/modules/filters/minlength.js",
+      "$:/core/modules/filters/moduleproperty.js",
+      "$:/core/modules/filters/modules.js",
+      "$:/core/modules/filters/moduletypes.js",
+      "$:/core/modules/filters/next.js",
+      "$:/core/modules/filters/parse-diagnostics.js",
+      "$:/core/modules/filters/plugintiddlers.js",
+      "$:/core/modules/filters/prefix.js",
+      "$:/core/modules/filters/previous.js",
+      "$:/core/modules/filters/range.js",
+      "$:/core/modules/filters/reduce.js",
+      "$:/core/modules/filters/regexp.js",
+      "$:/core/modules/filters/removeprefix.js",
+      "$:/core/modules/filters/removesuffix.js",
+      "$:/core/modules/filters/sameday.js",
+      "$:/core/modules/filters/search.js",
+      "$:/core/modules/filters/shadowsource.js",
+      "$:/core/modules/filters/slugify.js",
+      "$:/core/modules/filters/sort.js",
+      "$:/core/modules/filters/sortsub.js",
+      "$:/core/modules/filters/splitbefore.js",
+      "$:/core/modules/filters/storyviews.js",
+      "$:/core/modules/filters/strings.js",
+      "$:/core/modules/filters/subfilter.js",
+      "$:/core/modules/filters/substitute.js",
+      "$:/core/modules/filters/subtiddlerfields.js",
+      "$:/core/modules/filters/suffix.js",
+      "$:/core/modules/filters/tag.js",
+      "$:/core/modules/filters/tagging.js",
+      "$:/core/modules/filters/tags.js",
+      "$:/core/modules/filters/then.js",
+      "$:/core/modules/filters/title.js",
+      "$:/core/modules/filters/transcludes.js",
+      "$:/core/modules/filters/unknown.js",
+      "$:/core/modules/filters/untagged.js",
+      "$:/core/modules/filters/variables.js",
+      "$:/core/modules/filters/wikiparserrules.js",
+      "$:/core/modules/filters/x-listops.js",
+      "$:/core/modules/indexers/back-indexer.js",
+      "$:/core/modules/indexers/field-indexer.js",
+      "$:/core/modules/indexers/tag-indexer.js",
+      "$:/core/modules/info/mediaquerytracker.js",
+      "$:/core/modules/info/platform.js",
+      "$:/core/modules/info/windowdimensions.js",
+      "$:/core/modules/keyboard.js",
+      "$:/core/modules/language.js",
+      "$:/core/modules/macros/changecount.js",
+      "$:/core/modules/macros/contrastcolour.js",
+      "$:/core/modules/macros/csvtiddlers.js",
+      "$:/core/modules/macros/displayshortcuts.js",
+      "$:/core/modules/macros/jsontiddler.js",
+      "$:/core/modules/macros/jsontiddlers.js",
+      "$:/core/modules/macros/makedatauri.js",
+      "$:/core/modules/macros/now.js",
+      "$:/core/modules/macros/qualify.js",
+      "$:/core/modules/macros/resolvepath.js",
+      "$:/core/modules/macros/unusedtitle.js",
+      "$:/core/modules/macros/version.js",
+      "$:/core/modules/parsers/audioparser.js",
+      "$:/core/modules/parsers/binaryparser.js",
+      "$:/core/modules/parsers/csvparser.js",
+      "$:/core/modules/parsers/htmlparser.js",
+      "$:/core/modules/parsers/imageparser.js",
+      "$:/core/modules/parsers/pdfparser.js",
+      "$:/core/modules/parsers/textparser.js",
+      "$:/core/modules/parsers/videoparser.js",
+      "$:/core/modules/parsers/wikiparser/rules/codeblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/codeinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/commentblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/commentinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/conditional.js",
+      "$:/core/modules/parsers/wikiparser/rules/dash.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/bold.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/italic.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/strikethrough.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/subscript.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/superscript.js",
+      "$:/core/modules/parsers/wikiparser/rules/emphasis/underscore.js",
+      "$:/core/modules/parsers/wikiparser/rules/entity.js",
+      "$:/core/modules/parsers/wikiparser/rules/extlink.js",
+      "$:/core/modules/parsers/wikiparser/rules/filteredtranscludeblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/filteredtranscludeinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/fnprocdef.js",
+      "$:/core/modules/parsers/wikiparser/rules/hardlinebreaks.js",
+      "$:/core/modules/parsers/wikiparser/rules/heading.js",
+      "$:/core/modules/parsers/wikiparser/rules/horizrule.js",
+      "$:/core/modules/parsers/wikiparser/rules/html.js",
+      "$:/core/modules/parsers/wikiparser/rules/image.js",
+      "$:/core/modules/parsers/wikiparser/rules/import.js",
+      "$:/core/modules/parsers/wikiparser/rules/list.js",
+      "$:/core/modules/parsers/wikiparser/rules/macrocallblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/macrocallinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/macrodef.js",
+      "$:/core/modules/parsers/wikiparser/rules/mvvdisplayinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/parameters.js",
+      "$:/core/modules/parsers/wikiparser/rules/parsermode.js",
+      "$:/core/modules/parsers/wikiparser/rules/prettyextlink.js",
+      "$:/core/modules/parsers/wikiparser/rules/prettylink.js",
+      "$:/core/modules/parsers/wikiparser/rules/quoteblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/rules.js",
+      "$:/core/modules/parsers/wikiparser/rules/styleblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/styleinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/syslink.js",
+      "$:/core/modules/parsers/wikiparser/rules/table.js",
+      "$:/core/modules/parsers/wikiparser/rules/transcludeblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/transcludeinline.js",
+      "$:/core/modules/parsers/wikiparser/rules/typedblock.js",
+      "$:/core/modules/parsers/wikiparser/rules/whitespace.js",
+      "$:/core/modules/parsers/wikiparser/rules/wikilink.js",
+      "$:/core/modules/parsers/wikiparser/rules/wikilinkprefix.js",
+      "$:/core/modules/parsers/wikiparser/rules/wikirulebase.js",
+      "$:/core/modules/parsers/wikiparser/wikiparser.js",
+      "$:/core/modules/pluginswitcher.js",
+      "$:/core/modules/relinkers/tiddlers.js",
+      "$:/core/modules/saver-handler.js",
+      "$:/core/modules/savers/andtidwiki.js",
+      "$:/core/modules/savers/custom.js",
+      "$:/core/modules/savers/download.js",
+      "$:/core/modules/savers/fsosaver.js",
+      "$:/core/modules/savers/gitea.js",
+      "$:/core/modules/savers/github.js",
+      "$:/core/modules/savers/gitlab.js",
+      "$:/core/modules/savers/manualdownload.js",
+      "$:/core/modules/savers/msdownload.js",
+      "$:/core/modules/savers/postmessage.js",
+      "$:/core/modules/savers/put.js",
+      "$:/core/modules/savers/tiddlyfox.js",
+      "$:/core/modules/savers/tiddlyie.js",
+      "$:/core/modules/savers/twedit.js",
+      "$:/core/modules/savers/upload.js",
+      "$:/core/modules/startup.js",
+      "$:/core/modules/startup/confirm.js",
+      "$:/core/modules/startup/eventbus.js",
+      "$:/core/modules/startup/favicon.js",
+      "$:/core/modules/startup/info.js",
+      "$:/core/modules/startup/load-modules.js",
+      "$:/core/modules/startup/password.js",
+      "$:/core/modules/startup/plugins.js",
+      "$:/core/modules/startup/render.js",
+      "$:/core/modules/startup/rootwidget.js",
+      "$:/core/modules/startup/story.js",
+      "$:/core/modules/startup/windows.js",
+      "$:/core/modules/story.js",
+      "$:/core/modules/storyviews/classic.js",
+      "$:/core/modules/storyviews/pop.js",
+      "$:/core/modules/storyviews/zoomin.js",
+      "$:/core/modules/syncer.js",
+      "$:/core/modules/tiddler.js",
+      "$:/core/modules/upgraders/plugins.js",
+      "$:/core/modules/upgraders/system.js",
+      "$:/core/modules/upgraders/themetweaks.js",
+      "$:/core/modules/utils/base64.js",
+      "$:/core/modules/utils/confirm.js",
+      "$:/core/modules/utils/crypto.js",
+      "$:/core/modules/utils/csv.js",
+      "$:/core/modules/utils/deprecated.js",
+      "$:/core/modules/utils/diff-match-patch/diff_match_patch.js",
+      "$:/core/modules/utils/dom.js",
+      "$:/core/modules/utils/dom/animations/slide.js",
+      "$:/core/modules/utils/dom/animator.js",
+      "$:/core/modules/utils/dom/browser.js",
+      "$:/core/modules/utils/dom/csscolorparser.js",
+      "$:/core/modules/utils/dom/dragndrop.js",
+      "$:/core/modules/utils/dom/http.js",
+      "$:/core/modules/utils/dom/keyboard.js",
+      "$:/core/modules/utils/dom/modal.js",
+      "$:/core/modules/utils/dom/notifier.js",
+      "$:/core/modules/utils/dom/popup.js",
+      "$:/core/modules/utils/dom/scroller.js",
+      "$:/core/modules/utils/errors.js",
+      "$:/core/modules/utils/escapecss.js",
+      "$:/core/modules/utils/fakedom.js",
+      "$:/core/modules/utils/linkedlist.js",
+      "$:/core/modules/utils/logger.js",
+      "$:/core/modules/utils/messaging.js",
+      "$:/core/modules/utils/parsetree.js",
+      "$:/core/modules/utils/parseutils.js",
+      "$:/core/modules/utils/performance.js",
+      "$:/core/modules/utils/pluginmaker.js",
+      "$:/core/modules/utils/transliterate.js",
+      "$:/core/modules/utils/utils.js",
+      "$:/core/modules/widgets/action-confirm.js",
+      "$:/core/modules/widgets/action-createtiddler.js",
+      "$:/core/modules/widgets/action-deletefield.js",
+      "$:/core/modules/widgets/action-deletetiddler.js",
+      "$:/core/modules/widgets/action-listops.js",
+      "$:/core/modules/widgets/action-log.js",
+      "$:/core/modules/widgets/action-navigate.js",
+      "$:/core/modules/widgets/action-popup.js",
+      "$:/core/modules/widgets/action-sendmessage.js",
+      "$:/core/modules/widgets/action-setfield.js",
+      "$:/core/modules/widgets/action-setmultiplefields.js",
+      "$:/core/modules/widgets/audio.js",
+      "$:/core/modules/widgets/browse.js",
+      "$:/core/modules/widgets/button.js",
+      "$:/core/modules/widgets/checkbox.js",
+      "$:/core/modules/widgets/codeblock.js",
+      "$:/core/modules/widgets/count.js",
+      "$:/core/modules/widgets/data.js",
+      "$:/core/modules/widgets/dialog.js",
+      "$:/core/modules/widgets/diff-text.js",
+      "$:/core/modules/widgets/draggable.js",
+      "$:/core/modules/widgets/droppable.js",
+      "$:/core/modules/widgets/dropzone.js",
+      "$:/core/modules/widgets/edit-binary.js",
+      "$:/core/modules/widgets/edit-bitmap.js",
+      "$:/core/modules/widgets/edit-shortcut.js",
+      "$:/core/modules/widgets/edit-text.js",
+      "$:/core/modules/widgets/edit.js",
+      "$:/core/modules/widgets/element.js",
+      "$:/core/modules/widgets/encrypt.js",
+      "$:/core/modules/widgets/entity.js",
+      "$:/core/modules/widgets/error.js",
+      "$:/core/modules/widgets/eventcatcher.js",
+      "$:/core/modules/widgets/fieldmangler.js",
+      "$:/core/modules/widgets/fields.js",
+      "$:/core/modules/widgets/fill.js",
+      "$:/core/modules/widgets/genesis.js",
+      "$:/core/modules/widgets/image.js",
+      "$:/core/modules/widgets/importvariables.js",
+      "$:/core/modules/widgets/jsontiddler.js",
+      "$:/core/modules/widgets/keyboard.js",
+      "$:/core/modules/widgets/let.js",
+      "$:/core/modules/widgets/link.js",
+      "$:/core/modules/widgets/linkcatcher.js",
+      "$:/core/modules/widgets/list.js",
+      "$:/core/modules/widgets/log.js",
+      "$:/core/modules/widgets/macrocall.js",
+      "$:/core/modules/widgets/messagecatcher.js",
+      "$:/core/modules/widgets/navigator.js",
+      "$:/core/modules/widgets/parameters.js",
+      "$:/core/modules/widgets/password.js",
+      "$:/core/modules/widgets/qualify.js",
+      "$:/core/modules/widgets/radio.js",
+      "$:/core/modules/widgets/range.js",
+      "$:/core/modules/widgets/raw.js",
+      "$:/core/modules/widgets/reveal.js",
+      "$:/core/modules/widgets/scrollable.js",
+      "$:/core/modules/widgets/select.js",
+      "$:/core/modules/widgets/set.js",
+      "$:/core/modules/widgets/setmultiplevariables.js",
+      "$:/core/modules/widgets/slot.js",
+      "$:/core/modules/widgets/testcase.js",
+      "$:/core/modules/widgets/text.js",
+      "$:/core/modules/widgets/tiddler.js",
+      "$:/core/modules/widgets/transclude.js",
+      "$:/core/modules/widgets/vars.js",
+      "$:/core/modules/widgets/view.js",
+      "$:/core/modules/widgets/void.js",
+      "$:/core/modules/widgets/widget.js",
+      "$:/core/modules/widgets/wikify.js",
+      "$:/core/modules/wiki-bulkops.js",
+      "$:/core/modules/wiki.js",
+      "$:/core/readme",
+      "$:/core/save/all",
+      "$:/core/save/all-external-js",
+      "$:/core/save/empty",
+      "$:/core/save/lazy-all",
+      "$:/core/save/lazy-images",
+      "$:/core/save/offline-external-js",
+      "$:/core/stylesheets/custom-properties",
+      "$:/core/templates/alltiddlers.template.html",
+      "$:/core/templates/canonical-uri-external-image",
+      "$:/core/templates/canonical-uri-external-raw",
+      "$:/core/templates/canonical-uri-external-text",
+      "$:/core/templates/css-tiddler",
+      "$:/core/templates/exporters/CsvFile",
+      "$:/core/templates/exporters/JsonFile",
+      "$:/core/templates/exporters/StaticRiver",
+      "$:/core/templates/exporters/StaticRiver/Content",
+      "$:/core/templates/exporters/TidFile",
+      "$:/core/templates/html-div-skinny-tiddler",
+      "$:/core/templates/html-div-tiddler",
+      "$:/core/templates/html-json-skinny-tiddler",
+      "$:/core/templates/html-json-tiddler",
+      "$:/core/templates/html-tiddler",
+      "$:/core/templates/javascript-tiddler",
+      "$:/core/templates/json-tiddler",
+      "$:/core/templates/module-tiddler",
+      "$:/core/templates/MOTW.html",
+      "$:/core/templates/plain-text",
+      "$:/core/templates/plain-text-tiddler",
+      "$:/core/templates/raw-static-tiddler",
+      "$:/core/templates/rendered-text",
+      "$:/core/templates/server/static.sidebar.wikitext",
+      "$:/core/templates/server/static.tiddler.html",
+      "$:/core/templates/server/static.tiddler.wikitext",
+      "$:/core/templates/single.tiddler.window",
+      "$:/core/templates/social-metadata",
+      "$:/core/templates/split-recipe",
+      "$:/core/templates/static-tiddler",
+      "$:/core/templates/static.area",
+      "$:/core/templates/static.content",
+      "$:/core/templates/static.template.css",
+      "$:/core/templates/static.template.html",
+      "$:/core/templates/static.tiddler.html",
+      "$:/core/templates/store.area.template.html",
+      "$:/core/templates/tid-tiddler",
+      "$:/core/templates/tiddler-metadata",
+      "$:/core/templates/tiddlywiki.js/load-tiddler",
+      "$:/core/templates/tiddlywiki5-external-js.html",
+      "$:/core/templates/tiddlywiki5.html",
+      "$:/core/templates/tiddlywiki5.js",
+      "$:/core/templates/tiddlywiki5.js/tiddlers",
+      "$:/core/templates/version",
+      "$:/core/templates/wikified-tiddler",
+      "$:/core/ui/AboveStory/tw2-plugin-check",
+      "$:/core/ui/Actions/new-image",
+      "$:/core/ui/Actions/new-journal",
+      "$:/core/ui/Actions/new-tiddler",
+      "$:/core/ui/AdvancedSearch/Filter",
+      "$:/core/ui/AdvancedSearch/Filter/FilterButtons/clear",
+      "$:/core/ui/AdvancedSearch/Filter/FilterButtons/delete",
+      "$:/core/ui/AdvancedSearch/Filter/FilterButtons/dropdown",
+      "$:/core/ui/AdvancedSearch/Filter/FilterButtons/export",
+      "$:/core/ui/AdvancedSearch/Shadows",
+      "$:/core/ui/AdvancedSearch/Standard",
+      "$:/core/ui/AdvancedSearch/System",
+      "$:/core/ui/AlertTemplate",
+      "$:/core/ui/BinaryWarning",
+      "$:/core/ui/Buttons/advanced-search",
+      "$:/core/ui/Buttons/cancel",
+      "$:/core/ui/Buttons/clone",
+      "$:/core/ui/Buttons/close",
+      "$:/core/ui/Buttons/close-all",
+      "$:/core/ui/Buttons/close-others",
+      "$:/core/ui/Buttons/control-panel",
+      "$:/core/ui/Buttons/delete",
+      "$:/core/ui/Buttons/edit",
+      "$:/core/ui/Buttons/encryption",
+      "$:/core/ui/Buttons/export-page",
+      "$:/core/ui/Buttons/export-tiddler",
+      "$:/core/ui/Buttons/fold",
+      "$:/core/ui/Buttons/fold-all",
+      "$:/core/ui/Buttons/fold-bar",
+      "$:/core/ui/Buttons/fold-others",
+      "$:/core/ui/Buttons/full-screen",
+      "$:/core/ui/Buttons/home",
+      "$:/core/ui/Buttons/import",
+      "$:/core/ui/Buttons/info",
+      "$:/core/ui/Buttons/language",
+      "$:/core/ui/Buttons/layout",
+      "$:/core/ui/Buttons/manager",
+      "$:/core/ui/Buttons/more-page-actions",
+      "$:/core/ui/Buttons/more-tiddler-actions",
+      "$:/core/ui/Buttons/network-activity",
+      "$:/core/ui/Buttons/new-here",
+      "$:/core/ui/Buttons/new-image",
+      "$:/core/ui/Buttons/new-journal",
+      "$:/core/ui/Buttons/new-journal-here",
+      "$:/core/ui/Buttons/new-tiddler",
+      "$:/core/ui/Buttons/open-window",
+      "$:/core/ui/Buttons/palette",
+      "$:/core/ui/Buttons/permalink",
+      "$:/core/ui/Buttons/permaview",
+      "$:/core/ui/Buttons/print",
+      "$:/core/ui/Buttons/refresh",
+      "$:/core/ui/Buttons/save",
+      "$:/core/ui/Buttons/save-wiki",
+      "$:/core/ui/Buttons/storyview",
+      "$:/core/ui/Buttons/tag-manager",
+      "$:/core/ui/Buttons/theme",
+      "$:/core/ui/Buttons/timestamp",
+      "$:/core/ui/Buttons/unfold-all",
+      "$:/core/ui/Components/plugin-info",
+      "$:/core/ui/Components/tag-link",
+      "$:/core/ui/Confirmations",
+      "$:/core/ui/ConfirmTemplate",
+      "$:/core/ui/ControlPanel/Advanced",
+      "$:/core/ui/ControlPanel/Appearance",
+      "$:/core/ui/ControlPanel/Basics",
+      "$:/core/ui/ControlPanel/Cascades",
+      "$:/core/ui/ControlPanel/EditorTypes",
+      "$:/core/ui/ControlPanel/EditTemplateBody",
+      "$:/core/ui/ControlPanel/FieldEditor",
+      "$:/core/ui/ControlPanel/Info",
+      "$:/core/ui/ControlPanel/KeyboardShortcuts",
+      "$:/core/ui/ControlPanel/LoadedModules",
+      "$:/core/ui/ControlPanel/Modals/AddPlugins",
+      "$:/core/ui/ControlPanel/Palette",
+      "$:/core/ui/ControlPanel/Parsing",
+      "$:/core/ui/ControlPanel/Plugins",
+      "$:/core/ui/ControlPanel/Plugins/Add/Languages",
+      "$:/core/ui/ControlPanel/Plugins/Add/Plugins",
+      "$:/core/ui/ControlPanel/Plugins/Add/Themes",
+      "$:/core/ui/ControlPanel/Plugins/Add/Updates",
+      "$:/core/ui/ControlPanel/Plugins/AddPlugins",
+      "$:/core/ui/ControlPanel/Plugins/Installed/Languages",
+      "$:/core/ui/ControlPanel/Plugins/Installed/Plugins",
+      "$:/core/ui/ControlPanel/Plugins/Installed/Themes",
+      "$:/core/ui/ControlPanel/Saving",
+      "$:/core/ui/ControlPanel/Saving/DownloadSaver",
+      "$:/core/ui/ControlPanel/Saving/General",
+      "$:/core/ui/ControlPanel/Saving/Gitea",
+      "$:/core/ui/ControlPanel/Saving/GitHub",
+      "$:/core/ui/ControlPanel/Saving/GitLab",
+      "$:/core/ui/ControlPanel/Saving/TiddlySpot",
+      "$:/core/ui/ControlPanel/Settings",
+      "$:/core/ui/ControlPanel/Settings/CamelCase",
+      "$:/core/ui/ControlPanel/Settings/DefaultMoreSidebarTab",
+      "$:/core/ui/ControlPanel/Settings/DefaultSidebarTab",
+      "$:/core/ui/ControlPanel/Settings/DefaultTiddlerInfoTab",
+      "$:/core/ui/ControlPanel/Settings/EditorToolbar",
+      "$:/core/ui/ControlPanel/Settings/InfoPanelMode",
+      "$:/core/ui/ControlPanel/Settings/LinkToBehaviour",
+      "$:/core/ui/ControlPanel/Settings/MissingLinks",
+      "$:/core/ui/ControlPanel/Settings/NavigationAddressBar",
+      "$:/core/ui/ControlPanel/Settings/NavigationHistory",
+      "$:/core/ui/ControlPanel/Settings/NavigationPermalinkviewMode",
+      "$:/core/ui/ControlPanel/Settings/PerformanceInstrumentation",
+      "$:/core/ui/ControlPanel/Settings/RecentLimit",
+      "$:/core/ui/ControlPanel/Settings/TiddlyWiki",
+      "$:/core/ui/ControlPanel/Settings/TitleLinks",
+      "$:/core/ui/ControlPanel/Settings/ToolbarButtons",
+      "$:/core/ui/ControlPanel/Settings/ToolbarButtonStyle",
+      "$:/core/ui/ControlPanel/SocialCard",
+      "$:/core/ui/ControlPanel/StoryTiddler",
+      "$:/core/ui/ControlPanel/StoryView",
+      "$:/core/ui/ControlPanel/Stylesheets",
+      "$:/core/ui/ControlPanel/TestCases",
+      "$:/core/ui/ControlPanel/TestCases/All",
+      "$:/core/ui/ControlPanel/TestCases/Failed",
+      "$:/core/ui/ControlPanel/Theme",
+      "$:/core/ui/ControlPanel/TiddlerColour",
+      "$:/core/ui/ControlPanel/TiddlerFields",
+      "$:/core/ui/ControlPanel/TiddlerIcon",
+      "$:/core/ui/ControlPanel/Toolbars",
+      "$:/core/ui/ControlPanel/Toolbars/EditorItemTemplate",
+      "$:/core/ui/ControlPanel/Toolbars/EditorToolbar",
+      "$:/core/ui/ControlPanel/Toolbars/EditToolbar",
+      "$:/core/ui/ControlPanel/Toolbars/ItemTemplate",
+      "$:/core/ui/ControlPanel/Toolbars/PageControls",
+      "$:/core/ui/ControlPanel/Toolbars/ViewToolbar",
+      "$:/core/ui/ControlPanel/ViewTemplateBody",
+      "$:/core/ui/ControlPanel/ViewTemplateSubtitle",
+      "$:/core/ui/ControlPanel/ViewTemplateTags",
+      "$:/core/ui/ControlPanel/ViewTemplateTitle",
+      "$:/core/ui/ControlPanel/WikiInformation",
+      "$:/core/ui/DefaultSearchResultList",
+      "$:/core/ui/DownloadFullWiki",
+      "$:/core/ui/EditorToolbar/bold",
+      "$:/core/ui/EditorToolbar/clear",
+      "$:/core/ui/EditorToolbar/clear-dropdown",
+      "$:/core/ui/EditorToolbar/editor-height",
+      "$:/core/ui/EditorToolbar/editor-height-dropdown",
+      "$:/core/ui/EditorToolbar/excise",
+      "$:/core/ui/EditorToolbar/excise-dropdown",
+      "$:/core/ui/EditorToolbar/file-import",
+      "$:/core/ui/EditorToolbar/heading-1",
+      "$:/core/ui/EditorToolbar/heading-2",
+      "$:/core/ui/EditorToolbar/heading-3",
+      "$:/core/ui/EditorToolbar/heading-4",
+      "$:/core/ui/EditorToolbar/heading-5",
+      "$:/core/ui/EditorToolbar/heading-6",
+      "$:/core/ui/EditorToolbar/italic",
+      "$:/core/ui/EditorToolbar/line-width",
+      "$:/core/ui/EditorToolbar/line-width-dropdown",
+      "$:/core/ui/EditorToolbar/link",
+      "$:/core/ui/EditorToolbar/link-dropdown",
+      "$:/core/ui/EditorToolbar/linkify",
+      "$:/core/ui/EditorToolbar/list-bullet",
+      "$:/core/ui/EditorToolbar/list-number",
+      "$:/core/ui/EditorToolbar/mono-block",
+      "$:/core/ui/EditorToolbar/mono-line",
+      "$:/core/ui/EditorToolbar/more",
+      "$:/core/ui/EditorToolbar/more-dropdown",
+      "$:/core/ui/EditorToolbar/opacity",
+      "$:/core/ui/EditorToolbar/opacity-dropdown",
+      "$:/core/ui/EditorToolbar/paint",
+      "$:/core/ui/EditorToolbar/paint-dropdown",
+      "$:/core/ui/EditorToolbar/picture",
+      "$:/core/ui/EditorToolbar/picture-dropdown",
+      "$:/core/ui/EditorToolbar/preview",
+      "$:/core/ui/EditorToolbar/preview-type",
+      "$:/core/ui/EditorToolbar/preview-type-dropdown",
+      "$:/core/ui/EditorToolbar/quote",
+      "$:/core/ui/EditorToolbar/rotate-left",
+      "$:/core/ui/EditorToolbar/size",
+      "$:/core/ui/EditorToolbar/size-dropdown",
+      "$:/core/ui/EditorToolbar/stamp",
+      "$:/core/ui/EditorToolbar/stamp-dropdown",
+      "$:/core/ui/EditorToolbar/StampDropdown/ItemTemplate",
+      "$:/core/ui/EditorToolbar/strikethrough",
+      "$:/core/ui/EditorToolbar/subscript",
+      "$:/core/ui/EditorToolbar/superscript",
+      "$:/core/ui/EditorToolbar/transcludify",
+      "$:/core/ui/EditorToolbar/underline",
+      "$:/core/ui/EditTemplate",
+      "$:/core/ui/EditTemplate/body",
+      "$:/core/ui/EditTemplate/body/canonical-uri",
+      "$:/core/ui/EditTemplate/body/default",
+      "$:/core/ui/EditTemplate/body/editor",
+      "$:/core/ui/EditTemplate/body/preview/diffs-current",
+      "$:/core/ui/EditTemplate/body/preview/diffs-shadow",
+      "$:/core/ui/EditTemplate/body/preview/output",
+      "$:/core/ui/EditTemplate/body/toolbar/button",
+      "$:/core/ui/EditTemplate/controls",
+      "$:/core/ui/EditTemplate/fieldEditor/default",
+      "$:/core/ui/EditTemplate/fields",
+      "$:/core/ui/EditTemplate/shadow",
+      "$:/core/ui/EditTemplate/tags",
+      "$:/core/ui/EditTemplate/title",
+      "$:/core/ui/EditTemplate/type",
+      "$:/core/ui/ExportTiddlyWikiCore",
+      "$:/core/ui/ImportListing",
+      "$:/core/ui/ImportPreviews/Diff",
+      "$:/core/ui/ImportPreviews/DiffFields",
+      "$:/core/ui/ImportPreviews/Fields",
+      "$:/core/ui/ImportPreviews/Text",
+      "$:/core/ui/ImportPreviews/TextRaw",
+      "$:/core/ui/KeyboardShortcuts/advanced-search",
+      "$:/core/ui/KeyboardShortcuts/change-sidebar-layout",
+      "$:/core/ui/KeyboardShortcuts/new-image",
+      "$:/core/ui/KeyboardShortcuts/new-journal",
+      "$:/core/ui/KeyboardShortcuts/new-tiddler",
+      "$:/core/ui/KeyboardShortcuts/open-control-panel",
+      "$:/core/ui/KeyboardShortcuts/refresh",
+      "$:/core/ui/KeyboardShortcuts/save-wiki",
+      "$:/core/ui/KeyboardShortcuts/sidebar-search",
+      "$:/core/ui/KeyboardShortcuts/switcher",
+      "$:/core/ui/KeyboardShortcuts/toggle-sidebar",
+      "$:/core/ui/ListItemTemplate",
+      "$:/core/ui/MissingTemplate",
+      "$:/core/ui/MoreSideBar/All",
+      "$:/core/ui/MoreSideBar/Drafts",
+      "$:/core/ui/MoreSideBar/Explorer",
+      "$:/core/ui/MoreSideBar/Missing",
+      "$:/core/ui/MoreSideBar/Orphans",
+      "$:/core/ui/MoreSideBar/Plugins",
+      "$:/core/ui/MoreSideBar/Plugins/Languages",
+      "$:/core/ui/MoreSideBar/Plugins/Plugins",
+      "$:/core/ui/MoreSideBar/Plugins/Theme",
+      "$:/core/ui/MoreSideBar/Recent",
+      "$:/core/ui/MoreSideBar/Shadows",
+      "$:/core/ui/MoreSideBar/System",
+      "$:/core/ui/MoreSideBar/Tags",
+      "$:/core/ui/MoreSideBar/Types",
+      "$:/core/ui/PageStylesheet",
+      "$:/core/ui/PageTemplate",
+      "$:/core/ui/PageTemplate/alerts",
+      "$:/core/ui/PageTemplate/drafts",
+      "$:/core/ui/PageTemplate/pagecontrols",
+      "$:/core/ui/PageTemplate/pluginreloadwarning",
+      "$:/core/ui/PageTemplate/sidebar",
+      "$:/core/ui/PageTemplate/story",
+      "$:/core/ui/PageTemplate/topleftbar",
+      "$:/core/ui/PageTemplate/toprightbar",
+      "$:/core/ui/PluginInfo",
+      "$:/core/ui/PluginInfo/Default/contents",
+      "$:/core/ui/PluginListItemTemplate",
+      "$:/core/ui/RootTemplate",
+      "$:/core/ui/SearchResults",
+      "$:/core/ui/SideBar/More",
+      "$:/core/ui/SideBar/Open",
+      "$:/core/ui/SideBar/Recent",
+      "$:/core/ui/SideBar/Tools",
+      "$:/core/ui/SideBarLists",
+      "$:/core/ui/SideBarSegments/page-controls",
+      "$:/core/ui/SideBarSegments/search",
+      "$:/core/ui/SideBarSegments/site-subtitle",
+      "$:/core/ui/SideBarSegments/site-title",
+      "$:/core/ui/SideBarSegments/tabs",
+      "$:/core/ui/StoryTiddlerTemplate",
+      "$:/core/ui/SwitcherModal",
+      "$:/core/ui/TagPickerTagTemplate",
+      "$:/core/ui/TagTemplate",
+      "$:/core/ui/testcases/actions/Export",
+      "$:/core/ui/testcases/actions/Import",
+      "$:/core/ui/testcases/DefaultTemplate",
+      "$:/core/ui/testcases/DefaultTemplate/SourceTabs",
+      "$:/core/ui/testcases/RawJSONTemplate",
+      "$:/core/ui/TestCaseTemplate",
+      "$:/core/ui/TiddlerFields",
+      "$:/core/ui/TiddlerFieldTemplate",
+      "$:/core/ui/TiddlerIcon",
+      "$:/core/ui/TiddlerInfo",
+      "$:/core/ui/TiddlerInfo/Advanced",
+      "$:/core/ui/TiddlerInfo/Advanced/CascadeInfo",
+      "$:/core/ui/TiddlerInfo/Advanced/PluginInfo",
+      "$:/core/ui/TiddlerInfo/Advanced/ShadowInfo",
+      "$:/core/ui/TiddlerInfo/Fields",
+      "$:/core/ui/TiddlerInfo/List",
+      "$:/core/ui/TiddlerInfo/Listed",
+      "$:/core/ui/TiddlerInfo/References",
+      "$:/core/ui/TiddlerInfo/Tagging",
+      "$:/core/ui/TiddlerInfo/Tools",
+      "$:/core/ui/TopBar/menu",
+      "$:/core/ui/UntaggedTemplate",
+      "$:/core/ui/ViewTemplate",
+      "$:/core/ui/ViewTemplate/body",
+      "$:/core/ui/ViewTemplate/body/blank",
+      "$:/core/ui/ViewTemplate/body/code",
+      "$:/core/ui/ViewTemplate/body/default",
+      "$:/core/ui/ViewTemplate/body/import",
+      "$:/core/ui/ViewTemplate/body/plugin",
+      "$:/core/ui/ViewTemplate/body/rendered-plain-text",
+      "$:/core/ui/ViewTemplate/body/rendered-plain-text/html",
+      "$:/core/ui/ViewTemplate/classic",
+      "$:/core/ui/ViewTemplate/lazy-loading",
+      "$:/core/ui/ViewTemplate/subtitle",
+      "$:/core/ui/ViewTemplate/subtitle/default",
+      "$:/core/ui/ViewTemplate/subtitle/modified",
+      "$:/core/ui/ViewTemplate/subtitle/modifier",
+      "$:/core/ui/ViewTemplate/tags",
+      "$:/core/ui/ViewTemplate/tags/default",
+      "$:/core/ui/ViewTemplate/title",
+      "$:/core/ui/ViewTemplate/title/default",
+      "$:/core/ui/ViewTemplate/title/system",
+      "$:/core/ui/ViewTemplate/unfold",
+      "$:/core/ui/VisibleTransclude",
+      "$:/core/wiki/config/MediaQueryTrackers/DarkLightPreferred",
+      "$:/core/wiki/title",
+      "$:/DefaultTiddlers",
+      "$:/info/browser",
+      "$:/info/node",
+      "$:/info/startup-timestamp",
+      "$:/language",
+      "$:/language/AboveStory/ClassicPlugin/Warning",
+      "$:/language/Alerts",
+      "$:/language/BinaryWarning/Prompt",
+      "$:/language/Buttons/AdvancedSearch/Caption",
+      "$:/language/Buttons/AdvancedSearch/Hint",
+      "$:/language/Buttons/Bold/Caption",
+      "$:/language/Buttons/Bold/Hint",
+      "$:/language/Buttons/Cancel/Caption",
+      "$:/language/Buttons/Cancel/Hint",
+      "$:/language/Buttons/Clear/Caption",
+      "$:/language/Buttons/Clear/Hint",
+      "$:/language/Buttons/Clone/Caption",
+      "$:/language/Buttons/Clone/Hint",
+      "$:/language/Buttons/Close/Caption",
+      "$:/language/Buttons/Close/Hint",
+      "$:/language/Buttons/CloseAll/Caption",
+      "$:/language/Buttons/CloseAll/Hint",
+      "$:/language/Buttons/CloseOthers/Caption",
+      "$:/language/Buttons/CloseOthers/Hint",
+      "$:/language/Buttons/ControlPanel/Caption",
+      "$:/language/Buttons/ControlPanel/Hint",
+      "$:/language/Buttons/CopyToClipboard/Caption",
+      "$:/language/Buttons/CopyToClipboard/Hint",
+      "$:/language/Buttons/Delete/Caption",
+      "$:/language/Buttons/Delete/Hint",
+      "$:/language/Buttons/DeleteTiddlers/Caption",
+      "$:/language/Buttons/DeleteTiddlers/Hint",
+      "$:/language/Buttons/Edit/Caption",
+      "$:/language/Buttons/Edit/Hint",
+      "$:/language/Buttons/EditorHeight/Caption",
+      "$:/language/Buttons/EditorHeight/Caption/Auto",
+      "$:/language/Buttons/EditorHeight/Caption/Fixed",
+      "$:/language/Buttons/EditorHeight/Hint",
+      "$:/language/Buttons/EmergencyDownload/Caption",
+      "$:/language/Buttons/Encryption/Caption",
+      "$:/language/Buttons/Encryption/ClearPassword/Caption",
+      "$:/language/Buttons/Encryption/ClearPassword/Hint",
+      "$:/language/Buttons/Encryption/Hint",
+      "$:/language/Buttons/Encryption/SetPassword/Caption",
+      "$:/language/Buttons/Encryption/SetPassword/Hint",
+      "$:/language/Buttons/Excise/Caption",
+      "$:/language/Buttons/Excise/Caption/Excise",
+      "$:/language/Buttons/Excise/Caption/MacroName",
+      "$:/language/Buttons/Excise/Caption/NewTitle",
+      "$:/language/Buttons/Excise/Caption/Replace",
+      "$:/language/Buttons/Excise/Caption/Replace/Link",
+      "$:/language/Buttons/Excise/Caption/Replace/Macro",
+      "$:/language/Buttons/Excise/Caption/Replace/Transclusion",
+      "$:/language/Buttons/Excise/Caption/Tag",
+      "$:/language/Buttons/Excise/Caption/TiddlerExists",
+      "$:/language/Buttons/Excise/DefaultTitle",
+      "$:/language/Buttons/Excise/Hint",
+      "$:/language/Buttons/ExportPage/Caption",
+      "$:/language/Buttons/ExportPage/Hint",
+      "$:/language/Buttons/ExportTiddler/Caption",
+      "$:/language/Buttons/ExportTiddler/Hint",
+      "$:/language/Buttons/ExportTiddlers/Caption",
+      "$:/language/Buttons/ExportTiddlers/Hint",
+      "$:/language/Buttons/Fold/Caption",
+      "$:/language/Buttons/Fold/FoldBar/Caption",
+      "$:/language/Buttons/Fold/FoldBar/Hint",
+      "$:/language/Buttons/Fold/Hint",
+      "$:/language/Buttons/FoldAll/Caption",
+      "$:/language/Buttons/FoldAll/Hint",
+      "$:/language/Buttons/FoldOthers/Caption",
+      "$:/language/Buttons/FoldOthers/Hint",
+      "$:/language/Buttons/FullScreen/Caption",
+      "$:/language/Buttons/FullScreen/Hint",
+      "$:/language/Buttons/Heading1/Caption",
+      "$:/language/Buttons/Heading1/Hint",
+      "$:/language/Buttons/Heading2/Caption",
+      "$:/language/Buttons/Heading2/Hint",
+      "$:/language/Buttons/Heading3/Caption",
+      "$:/language/Buttons/Heading3/Hint",
+      "$:/language/Buttons/Heading4/Caption",
+      "$:/language/Buttons/Heading4/Hint",
+      "$:/language/Buttons/Heading5/Caption",
+      "$:/language/Buttons/Heading5/Hint",
+      "$:/language/Buttons/Heading6/Caption",
+      "$:/language/Buttons/Heading6/Hint",
+      "$:/language/Buttons/Help/Caption",
+      "$:/language/Buttons/Help/Hint",
+      "$:/language/Buttons/HideSideBar/Caption",
+      "$:/language/Buttons/HideSideBar/Hint",
+      "$:/language/Buttons/Home/Caption",
+      "$:/language/Buttons/Home/Hint",
+      "$:/language/Buttons/Import/Caption",
+      "$:/language/Buttons/Import/Hint",
+      "$:/language/Buttons/Info/Caption",
+      "$:/language/Buttons/Info/Hint",
+      "$:/language/Buttons/Italic/Caption",
+      "$:/language/Buttons/Italic/Hint",
+      "$:/language/Buttons/Language/Caption",
+      "$:/language/Buttons/Language/Hint",
+      "$:/language/Buttons/LayoutSwitcher/Caption",
+      "$:/language/Buttons/LayoutSwitcher/Hint",
+      "$:/language/Buttons/LineWidth/Caption",
+      "$:/language/Buttons/LineWidth/Hint",
+      "$:/language/Buttons/Link/Caption",
+      "$:/language/Buttons/Link/Hint",
+      "$:/language/Buttons/Linkify/Caption",
+      "$:/language/Buttons/Linkify/Hint",
+      "$:/language/Buttons/ListBullet/Caption",
+      "$:/language/Buttons/ListBullet/Hint",
+      "$:/language/Buttons/ListNumber/Caption",
+      "$:/language/Buttons/ListNumber/Hint",
+      "$:/language/Buttons/Manager/Caption",
+      "$:/language/Buttons/Manager/Hint",
+      "$:/language/Buttons/MonoBlock/Caption",
+      "$:/language/Buttons/MonoBlock/Hint",
+      "$:/language/Buttons/MonoLine/Caption",
+      "$:/language/Buttons/MonoLine/Hint",
+      "$:/language/Buttons/More/Caption",
+      "$:/language/Buttons/More/Hint",
+      "$:/language/Buttons/NetworkActivity/Caption",
+      "$:/language/Buttons/NetworkActivity/Hint",
+      "$:/language/Buttons/NewHere/Caption",
+      "$:/language/Buttons/NewHere/Hint",
+      "$:/language/Buttons/NewImage/Caption",
+      "$:/language/Buttons/NewImage/Hint",
+      "$:/language/Buttons/NewJournal/Caption",
+      "$:/language/Buttons/NewJournal/Hint",
+      "$:/language/Buttons/NewJournalHere/Caption",
+      "$:/language/Buttons/NewJournalHere/Hint",
+      "$:/language/Buttons/NewMarkdown/Caption",
+      "$:/language/Buttons/NewMarkdown/Hint",
+      "$:/language/Buttons/NewTiddler/Caption",
+      "$:/language/Buttons/NewTiddler/Hint",
+      "$:/language/Buttons/Opacity/Caption",
+      "$:/language/Buttons/Opacity/Hint",
+      "$:/language/Buttons/OpenControlPanel/Hint",
+      "$:/language/Buttons/OpenWindow/Caption",
+      "$:/language/Buttons/OpenWindow/Hint",
+      "$:/language/Buttons/Paint/Caption",
+      "$:/language/Buttons/Paint/Hint",
+      "$:/language/Buttons/Palette/Caption",
+      "$:/language/Buttons/Palette/Hint",
+      "$:/language/Buttons/Permalink/Caption",
+      "$:/language/Buttons/Permalink/Hint",
+      "$:/language/Buttons/Permaview/Caption",
+      "$:/language/Buttons/Permaview/Hint",
+      "$:/language/Buttons/Picture/Caption",
+      "$:/language/Buttons/Picture/Hint",
+      "$:/language/Buttons/Preview/Caption",
+      "$:/language/Buttons/Preview/Hint",
+      "$:/language/Buttons/PreviewType/Caption",
+      "$:/language/Buttons/PreviewType/Hint",
+      "$:/language/Buttons/Print/Caption",
+      "$:/language/Buttons/Print/Hint",
+      "$:/language/Buttons/Quote/Caption",
+      "$:/language/Buttons/Quote/Hint",
+      "$:/language/Buttons/Refresh/Caption",
+      "$:/language/Buttons/Refresh/Hint",
+      "$:/language/Buttons/RotateLeft/Caption",
+      "$:/language/Buttons/RotateLeft/Hint",
+      "$:/language/Buttons/Save/Caption",
+      "$:/language/Buttons/Save/Hint",
+      "$:/language/Buttons/SaveWiki/Caption",
+      "$:/language/Buttons/SaveWiki/Hint",
+      "$:/language/Buttons/ShowSideBar/Caption",
+      "$:/language/Buttons/ShowSideBar/Hint",
+      "$:/language/Buttons/SidebarSearch/Hint",
+      "$:/language/Buttons/Size/Caption",
+      "$:/language/Buttons/Size/Caption/Height",
+      "$:/language/Buttons/Size/Caption/Resize",
+      "$:/language/Buttons/Size/Caption/Width",
+      "$:/language/Buttons/Size/Hint",
+      "$:/language/Buttons/Stamp/Caption",
+      "$:/language/Buttons/Stamp/Caption/New",
+      "$:/language/Buttons/Stamp/Hint",
+      "$:/language/Buttons/Stamp/New/Text",
+      "$:/language/Buttons/Stamp/New/Title",
+      "$:/language/Buttons/StoryView/Caption",
+      "$:/language/Buttons/StoryView/Hint",
+      "$:/language/Buttons/Strikethrough/Caption",
+      "$:/language/Buttons/Strikethrough/Hint",
+      "$:/language/Buttons/Subscript/Caption",
+      "$:/language/Buttons/Subscript/Hint",
+      "$:/language/Buttons/Superscript/Caption",
+      "$:/language/Buttons/Superscript/Hint",
+      "$:/language/Buttons/TagManager/Caption",
+      "$:/language/Buttons/TagManager/Hint",
+      "$:/language/Buttons/TestCaseImport/Caption",
+      "$:/language/Buttons/TestCaseImport/Hint",
+      "$:/language/Buttons/Theme/Caption",
+      "$:/language/Buttons/Theme/Hint",
+      "$:/language/Buttons/Timestamp/Caption",
+      "$:/language/Buttons/Timestamp/Hint",
+      "$:/language/Buttons/Timestamp/Off/Caption",
+      "$:/language/Buttons/Timestamp/Off/Hint",
+      "$:/language/Buttons/Timestamp/On/Caption",
+      "$:/language/Buttons/Timestamp/On/Hint",
+      "$:/language/Buttons/ToggleSidebar/Hint",
+      "$:/language/Buttons/Transcludify/Caption",
+      "$:/language/Buttons/Transcludify/Hint",
+      "$:/language/Buttons/Underline/Caption",
+      "$:/language/Buttons/Underline/Hint",
+      "$:/language/Buttons/Unfold/Caption",
+      "$:/language/Buttons/Unfold/Hint",
+      "$:/language/Buttons/UnfoldAll/Caption",
+      "$:/language/Buttons/UnfoldAll/Hint",
+      "$:/language/ClassicWarning/Hint",
+      "$:/language/ClassicWarning/Upgrade/Caption",
+      "$:/language/CloseAll/Button",
+      "$:/language/ColourPicker/Recent",
+      "$:/language/ConfirmAction",
+      "$:/language/Confirmation/cancel/No",
+      "$:/language/Confirmation/cancel/Yes",
+      "$:/language/Confirmation/Caption",
+      "$:/language/Confirmation/delete/No",
+      "$:/language/Confirmation/delete/Yes",
+      "$:/language/Confirmation/edit-shadow/No",
+      "$:/language/Confirmation/edit-shadow/Yes",
+      "$:/language/Confirmation/overwrite/No",
+      "$:/language/Confirmation/overwrite/Yes",
+      "$:/language/ConfirmationChanged",
+      "$:/language/ConfirmationWithdrawn",
+      "$:/language/ConfirmCancelTiddler",
+      "$:/language/ConfirmDeleteTiddler",
+      "$:/language/ConfirmDeleteTiddlers",
+      "$:/language/ConfirmEditShadowTiddler",
+      "$:/language/ConfirmOverwriteTiddler",
+      "$:/language/ControlPanel/Advanced/Caption",
+      "$:/language/ControlPanel/Advanced/Hint",
+      "$:/language/ControlPanel/Appearance/Caption",
+      "$:/language/ControlPanel/Appearance/Hint",
+      "$:/language/ControlPanel/Basics/AnimDuration/Prompt",
+      "$:/language/ControlPanel/Basics/AutoFocus/Prompt",
+      "$:/language/ControlPanel/Basics/AutoFocusEdit/Prompt",
+      "$:/language/ControlPanel/Basics/Caption",
+      "$:/language/ControlPanel/Basics/DefaultTiddlers/BottomHint",
+      "$:/language/ControlPanel/Basics/DefaultTiddlers/Prompt",
+      "$:/language/ControlPanel/Basics/DefaultTiddlers/TopHint",
+      "$:/language/ControlPanel/Basics/Language/Prompt",
+      "$:/language/ControlPanel/Basics/NewJournal/Tags/Prompt",
+      "$:/language/ControlPanel/Basics/NewJournal/Text/Prompt",
+      "$:/language/ControlPanel/Basics/NewJournal/Title/Prompt",
+      "$:/language/ControlPanel/Basics/NewTiddler/Tags/Prompt",
+      "$:/language/ControlPanel/Basics/NewTiddler/Title/Prompt",
+      "$:/language/ControlPanel/Basics/OverriddenShadowTiddlers/Prompt",
+      "$:/language/ControlPanel/Basics/RemoveTags",
+      "$:/language/ControlPanel/Basics/RemoveTags/Hint",
+      "$:/language/ControlPanel/Basics/ShadowTiddlers/Prompt",
+      "$:/language/ControlPanel/Basics/Subtitle/Prompt",
+      "$:/language/ControlPanel/Basics/SystemTiddlers/Prompt",
+      "$:/language/ControlPanel/Basics/Tags/Prompt",
+      "$:/language/ControlPanel/Basics/Tiddlers/Prompt",
+      "$:/language/ControlPanel/Basics/Title/Prompt",
+      "$:/language/ControlPanel/Basics/Username/Prompt",
+      "$:/language/ControlPanel/Basics/Version/Prompt",
+      "$:/language/ControlPanel/Cascades/Caption",
+      "$:/language/ControlPanel/Cascades/Hint",
+      "$:/language/ControlPanel/Cascades/TagPrompt",
+      "$:/language/ControlPanel/EditorTypes/Caption",
+      "$:/language/ControlPanel/EditorTypes/Editor/Caption",
+      "$:/language/ControlPanel/EditorTypes/Hint",
+      "$:/language/ControlPanel/EditorTypes/Type/Caption",
+      "$:/language/ControlPanel/EditTemplateBody/Caption",
+      "$:/language/ControlPanel/EditTemplateBody/Hint",
+      "$:/language/ControlPanel/FieldEditor/Caption",
+      "$:/language/ControlPanel/FieldEditor/Hint",
+      "$:/language/ControlPanel/Info/Caption",
+      "$:/language/ControlPanel/Info/Hint",
+      "$:/language/ControlPanel/KeyboardShortcuts/Add/Caption",
+      "$:/language/ControlPanel/KeyboardShortcuts/Add/Prompt",
+      "$:/language/ControlPanel/KeyboardShortcuts/Caption",
+      "$:/language/ControlPanel/KeyboardShortcuts/Hint",
+      "$:/language/ControlPanel/KeyboardShortcuts/NoShortcuts/Caption",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/All",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/Linux",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/Mac",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/NonLinux",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/NonMac",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/NonWindows",
+      "$:/language/ControlPanel/KeyboardShortcuts/Platform/Windows",
+      "$:/language/ControlPanel/KeyboardShortcuts/Remove/Hint",
+      "$:/language/ControlPanel/LayoutSwitcher/Caption",
+      "$:/language/ControlPanel/LoadedModules/Caption",
+      "$:/language/ControlPanel/LoadedModules/Hint",
+      "$:/language/ControlPanel/Palette/Caption",
+      "$:/language/ControlPanel/Palette/Editor/Clone/Caption",
+      "$:/language/ControlPanel/Palette/Editor/Clone/Prompt",
+      "$:/language/ControlPanel/Palette/Editor/Delete/Hint",
+      "$:/language/ControlPanel/Palette/Editor/Names/External/Show",
+      "$:/language/ControlPanel/Palette/Editor/Prompt",
+      "$:/language/ControlPanel/Palette/Editor/Prompt/Modified",
+      "$:/language/ControlPanel/Palette/Editor/Reset/Caption",
+      "$:/language/ControlPanel/Palette/HideEditor/Caption",
+      "$:/language/ControlPanel/Palette/Prompt",
+      "$:/language/ControlPanel/Palette/ShowEditor/Caption",
+      "$:/language/ControlPanel/Parsing/Block/Caption",
+      "$:/language/ControlPanel/Parsing/Caption",
+      "$:/language/ControlPanel/Parsing/Hint",
+      "$:/language/ControlPanel/Parsing/Inline/Caption",
+      "$:/language/ControlPanel/Parsing/Pragma/Caption",
+      "$:/language/ControlPanel/Plugins/Add/Caption",
+      "$:/language/ControlPanel/Plugins/Add/Hint",
+      "$:/language/ControlPanel/Plugins/AlreadyInstalled/Hint",
+      "$:/language/ControlPanel/Plugins/AlsoRequires",
+      "$:/language/ControlPanel/Plugins/Caption",
+      "$:/language/ControlPanel/Plugins/ClosePluginLibrary",
+      "$:/language/ControlPanel/Plugins/Disable/Caption",
+      "$:/language/ControlPanel/Plugins/Disable/Hint",
+      "$:/language/ControlPanel/Plugins/Disabled/Status",
+      "$:/language/ControlPanel/Plugins/Downgrade/Caption",
+      "$:/language/ControlPanel/Plugins/Empty/Hint",
+      "$:/language/ControlPanel/Plugins/Enable/Caption",
+      "$:/language/ControlPanel/Plugins/Enable/Hint",
+      "$:/language/ControlPanel/Plugins/Install/Caption",
+      "$:/language/ControlPanel/Plugins/Installed/Hint",
+      "$:/language/ControlPanel/Plugins/Languages/Caption",
+      "$:/language/ControlPanel/Plugins/Languages/Hint",
+      "$:/language/ControlPanel/Plugins/NoInfoFound/Hint",
+      "$:/language/ControlPanel/Plugins/NotInstalled/Hint",
+      "$:/language/ControlPanel/Plugins/OpenPluginLibrary",
+      "$:/language/ControlPanel/Plugins/Plugins/Caption",
+      "$:/language/ControlPanel/Plugins/Plugins/Hint",
+      "$:/language/ControlPanel/Plugins/PluginWillRequireReload",
+      "$:/language/ControlPanel/Plugins/Reinstall/Caption",
+      "$:/language/ControlPanel/Plugins/Stability/Deprecated",
+      "$:/language/ControlPanel/Plugins/Stability/Experimental",
+      "$:/language/ControlPanel/Plugins/Stability/Legacy",
+      "$:/language/ControlPanel/Plugins/Stability/Stable",
+      "$:/language/ControlPanel/Plugins/SubPluginPrompt",
+      "$:/language/ControlPanel/Plugins/Themes/Caption",
+      "$:/language/ControlPanel/Plugins/Themes/Hint",
+      "$:/language/ControlPanel/Plugins/Update/Caption",
+      "$:/language/ControlPanel/Plugins/Updates/Caption",
+      "$:/language/ControlPanel/Plugins/Updates/Hint",
+      "$:/language/ControlPanel/Plugins/Updates/UpdateAll/Caption",
+      "$:/language/ControlPanel/Saving/Caption",
+      "$:/language/ControlPanel/Saving/DownloadSaver/AutoSave/Description",
+      "$:/language/ControlPanel/Saving/DownloadSaver/AutoSave/Hint",
+      "$:/language/ControlPanel/Saving/DownloadSaver/Caption",
+      "$:/language/ControlPanel/Saving/DownloadSaver/Hint",
+      "$:/language/ControlPanel/Saving/General/Caption",
+      "$:/language/ControlPanel/Saving/General/Hint",
+      "$:/language/ControlPanel/Saving/GitService/Branch",
+      "$:/language/ControlPanel/Saving/GitService/CommitMessage",
+      "$:/language/ControlPanel/Saving/GitService/Description",
+      "$:/language/ControlPanel/Saving/GitService/Filename",
+      "$:/language/ControlPanel/Saving/GitService/Gitea/Caption",
+      "$:/language/ControlPanel/Saving/GitService/Gitea/Password",
+      "$:/language/ControlPanel/Saving/GitService/GitHub/Caption",
+      "$:/language/ControlPanel/Saving/GitService/GitHub/Password",
+      "$:/language/ControlPanel/Saving/GitService/GitLab/Caption",
+      "$:/language/ControlPanel/Saving/GitService/GitLab/Password",
+      "$:/language/ControlPanel/Saving/GitService/Path",
+      "$:/language/ControlPanel/Saving/GitService/Repo",
+      "$:/language/ControlPanel/Saving/GitService/ServerURL",
+      "$:/language/ControlPanel/Saving/GitService/UserName",
+      "$:/language/ControlPanel/Saving/Hint",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Advanced/Heading",
+      "$:/language/ControlPanel/Saving/TiddlySpot/BackupDir",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Backups",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Caption",
+      "$:/language/ControlPanel/Saving/TiddlySpot/ControlPanel",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Description",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Filename",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Heading",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Hint",
+      "$:/language/ControlPanel/Saving/TiddlySpot/Password",
+      "$:/language/ControlPanel/Saving/TiddlySpot/ServerURL",
+      "$:/language/ControlPanel/Saving/TiddlySpot/UploadDir",
+      "$:/language/ControlPanel/Saving/TiddlySpot/UserName",
+      "$:/language/ControlPanel/Settings/AutoSave/Caption",
+      "$:/language/ControlPanel/Settings/AutoSave/Disabled/Description",
+      "$:/language/ControlPanel/Settings/AutoSave/Enabled/Description",
+      "$:/language/ControlPanel/Settings/AutoSave/Hint",
+      "$:/language/ControlPanel/Settings/CamelCase/Caption",
+      "$:/language/ControlPanel/Settings/CamelCase/Description",
+      "$:/language/ControlPanel/Settings/CamelCase/Hint",
+      "$:/language/ControlPanel/Settings/Caption",
+      "$:/language/ControlPanel/Settings/DefaultMoreSidebarTab/Caption",
+      "$:/language/ControlPanel/Settings/DefaultMoreSidebarTab/Hint",
+      "$:/language/ControlPanel/Settings/DefaultSidebarTab/Caption",
+      "$:/language/ControlPanel/Settings/DefaultSidebarTab/Hint",
+      "$:/language/ControlPanel/Settings/DefaultTiddlerInfoTab/Caption",
+      "$:/language/ControlPanel/Settings/DefaultTiddlerInfoTab/Hint",
+      "$:/language/ControlPanel/Settings/EditorToolbar/Caption",
+      "$:/language/ControlPanel/Settings/EditorToolbar/Description",
+      "$:/language/ControlPanel/Settings/EditorToolbar/Hint",
+      "$:/language/ControlPanel/Settings/Hint",
+      "$:/language/ControlPanel/Settings/InfoPanelMode/Caption",
+      "$:/language/ControlPanel/Settings/InfoPanelMode/Hint",
+      "$:/language/ControlPanel/Settings/InfoPanelMode/Popup/Description",
+      "$:/language/ControlPanel/Settings/InfoPanelMode/Sticky/Description",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/Caption",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/InsideRiver/Hint",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/OpenAbove",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/OpenAtBottom",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/OpenAtTop",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/OpenBelow",
+      "$:/language/ControlPanel/Settings/LinkToBehaviour/OutsideRiver/Hint",
+      "$:/language/ControlPanel/Settings/MissingLinks/Caption",
+      "$:/language/ControlPanel/Settings/MissingLinks/Description",
+      "$:/language/ControlPanel/Settings/MissingLinks/Hint",
+      "$:/language/ControlPanel/Settings/NavigationAddressBar/Caption",
+      "$:/language/ControlPanel/Settings/NavigationAddressBar/Hint",
+      "$:/language/ControlPanel/Settings/NavigationAddressBar/No/Description",
+      "$:/language/ControlPanel/Settings/NavigationAddressBar/Permalink/Description",
+      "$:/language/ControlPanel/Settings/NavigationAddressBar/Permaview/Description",
+      "$:/language/ControlPanel/Settings/NavigationHistory/Caption",
+      "$:/language/ControlPanel/Settings/NavigationHistory/Hint",
+      "$:/language/ControlPanel/Settings/NavigationHistory/No/Description",
+      "$:/language/ControlPanel/Settings/NavigationHistory/Yes/Description",
+      "$:/language/ControlPanel/Settings/NavigationPermalinkviewMode/Caption",
+      "$:/language/ControlPanel/Settings/NavigationPermalinkviewMode/CopyToClipboard/Description",
+      "$:/language/ControlPanel/Settings/NavigationPermalinkviewMode/Hint",
+      "$:/language/ControlPanel/Settings/NavigationPermalinkviewMode/UpdateAddressBar/Description",
+      "$:/language/ControlPanel/Settings/PerformanceInstrumentation/Caption",
+      "$:/language/ControlPanel/Settings/PerformanceInstrumentation/Description",
+      "$:/language/ControlPanel/Settings/PerformanceInstrumentation/Hint",
+      "$:/language/ControlPanel/Settings/RecentLimit/Caption",
+      "$:/language/ControlPanel/Settings/RecentLimit/Hint",
+      "$:/language/ControlPanel/Settings/TitleLinks/Caption",
+      "$:/language/ControlPanel/Settings/TitleLinks/Hint",
+      "$:/language/ControlPanel/Settings/TitleLinks/No/Description",
+      "$:/language/ControlPanel/Settings/TitleLinks/Yes/Description",
+      "$:/language/ControlPanel/Settings/ToolbarButtons/Caption",
+      "$:/language/ControlPanel/Settings/ToolbarButtons/Hint",
+      "$:/language/ControlPanel/Settings/ToolbarButtons/Icons/Description",
+      "$:/language/ControlPanel/Settings/ToolbarButtons/Text/Description",
+      "$:/language/ControlPanel/Settings/ToolbarButtonStyle/Caption",
+      "$:/language/ControlPanel/Settings/ToolbarButtonStyle/Hint",
+      "$:/language/ControlPanel/Settings/ToolbarButtonStyle/Styles/Borderless",
+      "$:/language/ControlPanel/Settings/ToolbarButtonStyle/Styles/Boxed",
+      "$:/language/ControlPanel/Settings/ToolbarButtonStyle/Styles/Rounded",
+      "$:/language/ControlPanel/SocialCard/Caption",
+      "$:/language/ControlPanel/SocialCard/Domain/Prompt",
+      "$:/language/ControlPanel/SocialCard/Hint",
+      "$:/language/ControlPanel/SocialCard/PreviewUrl/Preview",
+      "$:/language/ControlPanel/SocialCard/PreviewUrl/Prompt",
+      "$:/language/ControlPanel/SocialCard/Url/Prompt",
+      "$:/language/ControlPanel/StoryTiddler/Caption",
+      "$:/language/ControlPanel/StoryTiddler/Hint",
+      "$:/language/ControlPanel/StoryView/Caption",
+      "$:/language/ControlPanel/StoryView/Prompt",
+      "$:/language/ControlPanel/Stylesheets/Caption",
+      "$:/language/ControlPanel/Stylesheets/Expand/Caption",
+      "$:/language/ControlPanel/Stylesheets/Hint",
+      "$:/language/ControlPanel/Stylesheets/Restore/Caption",
+      "$:/language/ControlPanel/TestCases/All/Caption",
+      "$:/language/ControlPanel/TestCases/All/Hint",
+      "$:/language/ControlPanel/TestCases/Caption",
+      "$:/language/ControlPanel/TestCases/Failed/Caption",
+      "$:/language/ControlPanel/TestCases/Failed/Hint",
+      "$:/language/ControlPanel/TestCases/Hint",
+      "$:/language/ControlPanel/Theme/Caption",
+      "$:/language/ControlPanel/Theme/Prompt",
+      "$:/language/ControlPanel/TiddlerColour/Caption",
+      "$:/language/ControlPanel/TiddlerColour/Hint",
+      "$:/language/ControlPanel/TiddlerFields/Caption",
+      "$:/language/ControlPanel/TiddlerFields/Hint",
+      "$:/language/ControlPanel/TiddlerIcon/Caption",
+      "$:/language/ControlPanel/TiddlerIcon/Hint",
+      "$:/language/ControlPanel/Toolbars/Caption",
+      "$:/language/ControlPanel/Toolbars/EditorToolbar/Caption",
+      "$:/language/ControlPanel/Toolbars/EditorToolbar/Hint",
+      "$:/language/ControlPanel/Toolbars/EditToolbar/Caption",
+      "$:/language/ControlPanel/Toolbars/EditToolbar/Hint",
+      "$:/language/ControlPanel/Toolbars/Hint",
+      "$:/language/ControlPanel/Toolbars/PageControls/Caption",
+      "$:/language/ControlPanel/Toolbars/PageControls/Hint",
+      "$:/language/ControlPanel/Toolbars/ViewToolbar/Caption",
+      "$:/language/ControlPanel/Toolbars/ViewToolbar/Hint",
+      "$:/language/ControlPanel/Tools/Download/Full/Caption",
+      "$:/language/ControlPanel/ViewTemplateBody/Caption",
+      "$:/language/ControlPanel/ViewTemplateBody/Hint",
+      "$:/language/ControlPanel/ViewTemplateSubtitle/Caption",
+      "$:/language/ControlPanel/ViewTemplateSubtitle/Hint",
+      "$:/language/ControlPanel/ViewTemplateTags/Caption",
+      "$:/language/ControlPanel/ViewTemplateTags/Hint",
+      "$:/language/ControlPanel/ViewTemplateTitle/Caption",
+      "$:/language/ControlPanel/ViewTemplateTitle/Hint",
+      "$:/language/ControlPanel/WikiInformation/Caption",
+      "$:/language/ControlPanel/WikiInformation/Drag/Caption",
+      "$:/language/ControlPanel/WikiInformation/Generate/Caption",
+      "$:/language/ControlPanel/WikiInformation/Hint",
+      "$:/language/Count",
+      "$:/language/Date/DaySuffix/1",
+      "$:/language/Date/DaySuffix/10",
+      "$:/language/Date/DaySuffix/11",
+      "$:/language/Date/DaySuffix/12",
+      "$:/language/Date/DaySuffix/13",
+      "$:/language/Date/DaySuffix/14",
+      "$:/language/Date/DaySuffix/15",
+      "$:/language/Date/DaySuffix/16",
+      "$:/language/Date/DaySuffix/17",
+      "$:/language/Date/DaySuffix/18",
+      "$:/language/Date/DaySuffix/19",
+      "$:/language/Date/DaySuffix/2",
+      "$:/language/Date/DaySuffix/20",
+      "$:/language/Date/DaySuffix/21",
+      "$:/language/Date/DaySuffix/22",
+      "$:/language/Date/DaySuffix/23",
+      "$:/language/Date/DaySuffix/24",
+      "$:/language/Date/DaySuffix/25",
+      "$:/language/Date/DaySuffix/26",
+      "$:/language/Date/DaySuffix/27",
+      "$:/language/Date/DaySuffix/28",
+      "$:/language/Date/DaySuffix/29",
+      "$:/language/Date/DaySuffix/3",
+      "$:/language/Date/DaySuffix/30",
+      "$:/language/Date/DaySuffix/31",
+      "$:/language/Date/DaySuffix/4",
+      "$:/language/Date/DaySuffix/5",
+      "$:/language/Date/DaySuffix/6",
+      "$:/language/Date/DaySuffix/7",
+      "$:/language/Date/DaySuffix/8",
+      "$:/language/Date/DaySuffix/9",
+      "$:/language/Date/Long/Day/0",
+      "$:/language/Date/Long/Day/1",
+      "$:/language/Date/Long/Day/2",
+      "$:/language/Date/Long/Day/3",
+      "$:/language/Date/Long/Day/4",
+      "$:/language/Date/Long/Day/5",
+      "$:/language/Date/Long/Day/6",
+      "$:/language/Date/Long/Month/1",
+      "$:/language/Date/Long/Month/10",
+      "$:/language/Date/Long/Month/11",
+      "$:/language/Date/Long/Month/12",
+      "$:/language/Date/Long/Month/2",
+      "$:/language/Date/Long/Month/3",
+      "$:/language/Date/Long/Month/4",
+      "$:/language/Date/Long/Month/5",
+      "$:/language/Date/Long/Month/6",
+      "$:/language/Date/Long/Month/7",
+      "$:/language/Date/Long/Month/8",
+      "$:/language/Date/Long/Month/9",
+      "$:/language/Date/Period/am",
+      "$:/language/Date/Period/pm",
+      "$:/language/Date/Short/Day/0",
+      "$:/language/Date/Short/Day/1",
+      "$:/language/Date/Short/Day/2",
+      "$:/language/Date/Short/Day/3",
+      "$:/language/Date/Short/Day/4",
+      "$:/language/Date/Short/Day/5",
+      "$:/language/Date/Short/Day/6",
+      "$:/language/Date/Short/Month/1",
+      "$:/language/Date/Short/Month/10",
+      "$:/language/Date/Short/Month/11",
+      "$:/language/Date/Short/Month/12",
+      "$:/language/Date/Short/Month/2",
+      "$:/language/Date/Short/Month/3",
+      "$:/language/Date/Short/Month/4",
+      "$:/language/Date/Short/Month/5",
+      "$:/language/Date/Short/Month/6",
+      "$:/language/Date/Short/Month/7",
+      "$:/language/Date/Short/Month/8",
+      "$:/language/Date/Short/Month/9",
+      "$:/language/DefaultNewTiddlerTitle",
+      "$:/language/Diffs/CountMessage",
+      "$:/language/Docs/Fields/_canonical_uri",
+      "$:/language/Docs/Fields/_is_skinny",
+      "$:/language/Docs/Fields/author",
+      "$:/language/Docs/Fields/bag",
+      "$:/language/Docs/Fields/caption",
+      "$:/language/Docs/Fields/class",
+      "$:/language/Docs/Fields/code-body",
+      "$:/language/Docs/Fields/color",
+      "$:/language/Docs/Fields/component",
+      "$:/language/Docs/Fields/core-version",
+      "$:/language/Docs/Fields/created",
+      "$:/language/Docs/Fields/creator",
+      "$:/language/Docs/Fields/current-tiddler",
+      "$:/language/Docs/Fields/dependents",
+      "$:/language/Docs/Fields/description",
+      "$:/language/Docs/Fields/draft.of",
+      "$:/language/Docs/Fields/draft.title",
+      "$:/language/Docs/Fields/footer",
+      "$:/language/Docs/Fields/hide-body",
+      "$:/language/Docs/Fields/icon",
+      "$:/language/Docs/Fields/library",
+      "$:/language/Docs/Fields/list",
+      "$:/language/Docs/Fields/list-after",
+      "$:/language/Docs/Fields/list-before",
+      "$:/language/Docs/Fields/modified",
+      "$:/language/Docs/Fields/modifier",
+      "$:/language/Docs/Fields/module-type",
+      "$:/language/Docs/Fields/name",
+      "$:/language/Docs/Fields/parent-plugin",
+      "$:/language/Docs/Fields/plugin-priority",
+      "$:/language/Docs/Fields/plugin-type",
+      "$:/language/Docs/Fields/released",
+      "$:/language/Docs/Fields/revision",
+      "$:/language/Docs/Fields/source",
+      "$:/language/Docs/Fields/stability",
+      "$:/language/Docs/Fields/subtitle",
+      "$:/language/Docs/Fields/tags",
+      "$:/language/Docs/Fields/text",
+      "$:/language/Docs/Fields/throttle.refresh",
+      "$:/language/Docs/Fields/title",
+      "$:/language/Docs/Fields/toc-link",
+      "$:/language/Docs/Fields/type",
+      "$:/language/Docs/Fields/version",
+      "$:/language/Docs/ModuleTypes/allfilteroperator",
+      "$:/language/Docs/ModuleTypes/animation",
+      "$:/language/Docs/ModuleTypes/authenticator",
+      "$:/language/Docs/ModuleTypes/bitmapeditoroperation",
+      "$:/language/Docs/ModuleTypes/command",
+      "$:/language/Docs/ModuleTypes/config",
+      "$:/language/Docs/ModuleTypes/filteroperator",
+      "$:/language/Docs/ModuleTypes/global",
+      "$:/language/Docs/ModuleTypes/info",
+      "$:/language/Docs/ModuleTypes/isfilteroperator",
+      "$:/language/Docs/ModuleTypes/library",
+      "$:/language/Docs/ModuleTypes/macro",
+      "$:/language/Docs/ModuleTypes/parser",
+      "$:/language/Docs/ModuleTypes/route",
+      "$:/language/Docs/ModuleTypes/saver",
+      "$:/language/Docs/ModuleTypes/startup",
+      "$:/language/Docs/ModuleTypes/storyview",
+      "$:/language/Docs/ModuleTypes/texteditoroperation",
+      "$:/language/Docs/ModuleTypes/tiddlerdeserializer",
+      "$:/language/Docs/ModuleTypes/tiddlerfield",
+      "$:/language/Docs/ModuleTypes/tiddlermethod",
+      "$:/language/Docs/ModuleTypes/upgrader",
+      "$:/language/Docs/ModuleTypes/utils",
+      "$:/language/Docs/ModuleTypes/utils-browser",
+      "$:/language/Docs/ModuleTypes/utils-node",
+      "$:/language/Docs/ModuleTypes/widget",
+      "$:/language/Docs/ModuleTypes/wikimethod",
+      "$:/language/Docs/ModuleTypes/wikirule",
+      "$:/language/Docs/PaletteColours/alert-background",
+      "$:/language/Docs/PaletteColours/alert-border",
+      "$:/language/Docs/PaletteColours/alert-highlight",
+      "$:/language/Docs/PaletteColours/alert-muted-foreground",
+      "$:/language/Docs/PaletteColours/background",
+      "$:/language/Docs/PaletteColours/blockquote-bar",
+      "$:/language/Docs/PaletteColours/button-background",
+      "$:/language/Docs/PaletteColours/button-border",
+      "$:/language/Docs/PaletteColours/button-foreground",
+      "$:/language/Docs/PaletteColours/code-background",
+      "$:/language/Docs/PaletteColours/code-border",
+      "$:/language/Docs/PaletteColours/code-foreground",
+      "$:/language/Docs/PaletteColours/dirty-indicator",
+      "$:/language/Docs/PaletteColours/download-background",
+      "$:/language/Docs/PaletteColours/download-foreground",
+      "$:/language/Docs/PaletteColours/dragger-background",
+      "$:/language/Docs/PaletteColours/dragger-foreground",
+      "$:/language/Docs/PaletteColours/dropdown-background",
+      "$:/language/Docs/PaletteColours/dropdown-border",
+      "$:/language/Docs/PaletteColours/dropdown-tab-background",
+      "$:/language/Docs/PaletteColours/dropdown-tab-background-selected",
+      "$:/language/Docs/PaletteColours/dropzone-background",
+      "$:/language/Docs/PaletteColours/external-link-background",
+      "$:/language/Docs/PaletteColours/external-link-background-hover",
+      "$:/language/Docs/PaletteColours/external-link-background-visited",
+      "$:/language/Docs/PaletteColours/external-link-foreground",
+      "$:/language/Docs/PaletteColours/external-link-foreground-hover",
+      "$:/language/Docs/PaletteColours/external-link-foreground-visited",
+      "$:/language/Docs/PaletteColours/foreground",
+      "$:/language/Docs/PaletteColours/menubar-background",
+      "$:/language/Docs/PaletteColours/menubar-foreground",
+      "$:/language/Docs/PaletteColours/message-background",
+      "$:/language/Docs/PaletteColours/message-border",
+      "$:/language/Docs/PaletteColours/message-foreground",
+      "$:/language/Docs/PaletteColours/modal-backdrop",
+      "$:/language/Docs/PaletteColours/modal-background",
+      "$:/language/Docs/PaletteColours/modal-border",
+      "$:/language/Docs/PaletteColours/modal-footer-background",
+      "$:/language/Docs/PaletteColours/modal-footer-border",
+      "$:/language/Docs/PaletteColours/modal-header-border",
+      "$:/language/Docs/PaletteColours/muted-foreground",
+      "$:/language/Docs/PaletteColours/notification-background",
+      "$:/language/Docs/PaletteColours/notification-border",
+      "$:/language/Docs/PaletteColours/page-background",
+      "$:/language/Docs/PaletteColours/pre-background",
+      "$:/language/Docs/PaletteColours/pre-border",
+      "$:/language/Docs/PaletteColours/primary",
+      "$:/language/Docs/PaletteColours/select-tag-background",
+      "$:/language/Docs/PaletteColours/select-tag-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-button-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-controls-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-controls-foreground-hover",
+      "$:/language/Docs/PaletteColours/sidebar-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-foreground-shadow",
+      "$:/language/Docs/PaletteColours/sidebar-muted-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-muted-foreground-hover",
+      "$:/language/Docs/PaletteColours/sidebar-tab-background",
+      "$:/language/Docs/PaletteColours/sidebar-tab-background-selected",
+      "$:/language/Docs/PaletteColours/sidebar-tab-border",
+      "$:/language/Docs/PaletteColours/sidebar-tab-border-selected",
+      "$:/language/Docs/PaletteColours/sidebar-tab-divider",
+      "$:/language/Docs/PaletteColours/sidebar-tab-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-tab-foreground-selected",
+      "$:/language/Docs/PaletteColours/sidebar-tiddler-link-foreground",
+      "$:/language/Docs/PaletteColours/sidebar-tiddler-link-foreground-hover",
+      "$:/language/Docs/PaletteColours/site-title-foreground",
+      "$:/language/Docs/PaletteColours/stability-deprecated",
+      "$:/language/Docs/PaletteColours/stability-experimental",
+      "$:/language/Docs/PaletteColours/stability-legacy",
+      "$:/language/Docs/PaletteColours/stability-stable",
+      "$:/language/Docs/PaletteColours/static-alert-foreground",
+      "$:/language/Docs/PaletteColours/tab-background",
+      "$:/language/Docs/PaletteColours/tab-background-selected",
+      "$:/language/Docs/PaletteColours/tab-border",
+      "$:/language/Docs/PaletteColours/tab-border-selected",
+      "$:/language/Docs/PaletteColours/tab-divider",
+      "$:/language/Docs/PaletteColours/tab-foreground",
+      "$:/language/Docs/PaletteColours/tab-foreground-selected",
+      "$:/language/Docs/PaletteColours/table-border",
+      "$:/language/Docs/PaletteColours/table-footer-background",
+      "$:/language/Docs/PaletteColours/table-header-background",
+      "$:/language/Docs/PaletteColours/tag-background",
+      "$:/language/Docs/PaletteColours/tag-foreground",
+      "$:/language/Docs/PaletteColours/testcase-accent-level-1",
+      "$:/language/Docs/PaletteColours/testcase-accent-level-2",
+      "$:/language/Docs/PaletteColours/testcase-accent-level-3",
+      "$:/language/Docs/PaletteColours/tiddler-background",
+      "$:/language/Docs/PaletteColours/tiddler-border",
+      "$:/language/Docs/PaletteColours/tiddler-controls-foreground",
+      "$:/language/Docs/PaletteColours/tiddler-controls-foreground-hover",
+      "$:/language/Docs/PaletteColours/tiddler-controls-foreground-selected",
+      "$:/language/Docs/PaletteColours/tiddler-editor-background",
+      "$:/language/Docs/PaletteColours/tiddler-editor-border",
+      "$:/language/Docs/PaletteColours/tiddler-editor-border-image",
+      "$:/language/Docs/PaletteColours/tiddler-editor-fields-even",
+      "$:/language/Docs/PaletteColours/tiddler-editor-fields-odd",
+      "$:/language/Docs/PaletteColours/tiddler-info-background",
+      "$:/language/Docs/PaletteColours/tiddler-info-border",
+      "$:/language/Docs/PaletteColours/tiddler-info-tab-background",
+      "$:/language/Docs/PaletteColours/tiddler-link-background",
+      "$:/language/Docs/PaletteColours/tiddler-link-foreground",
+      "$:/language/Docs/PaletteColours/tiddler-subtitle-foreground",
+      "$:/language/Docs/PaletteColours/tiddler-title-foreground",
+      "$:/language/Docs/PaletteColours/toolbar-cancel-button",
+      "$:/language/Docs/PaletteColours/toolbar-close-button",
+      "$:/language/Docs/PaletteColours/toolbar-delete-button",
+      "$:/language/Docs/PaletteColours/toolbar-done-button",
+      "$:/language/Docs/PaletteColours/toolbar-edit-button",
+      "$:/language/Docs/PaletteColours/toolbar-info-button",
+      "$:/language/Docs/PaletteColours/toolbar-new-button",
+      "$:/language/Docs/PaletteColours/toolbar-options-button",
+      "$:/language/Docs/PaletteColours/toolbar-save-button",
+      "$:/language/Docs/PaletteColours/untagged-background",
+      "$:/language/Docs/PaletteColours/very-muted-foreground",
+      "$:/language/Docs/Types/application/javascript",
+      "$:/language/Docs/Types/application/json",
+      "$:/language/Docs/Types/application/x-tiddler-dictionary",
+      "$:/language/Docs/Types/image/gif",
+      "$:/language/Docs/Types/image/jpeg",
+      "$:/language/Docs/Types/image/png",
+      "$:/language/Docs/Types/image/svg+xml",
+      "$:/language/Docs/Types/text/css",
+      "$:/language/Docs/Types/text/html",
+      "$:/language/Docs/Types/text/plain",
+      "$:/language/Docs/Types/text/vnd.tiddlywiki",
+      "$:/language/Docs/Types/text/vnd.tiddlywiki-multiple",
+      "$:/language/Draft/Attribution",
+      "$:/language/Draft/Title",
+      "$:/language/DropMessage",
+      "$:/language/EditTemplate/Body/External/Hint",
+      "$:/language/EditTemplate/Body/Placeholder",
+      "$:/language/EditTemplate/Body/Preview/Type/DiffCurrent",
+      "$:/language/EditTemplate/Body/Preview/Type/DiffShadow",
+      "$:/language/EditTemplate/Body/Preview/Type/Output",
+      "$:/language/EditTemplate/Caption",
+      "$:/language/EditTemplate/Field/Dropdown/Caption",
+      "$:/language/EditTemplate/Field/Dropdown/Hint",
+      "$:/language/EditTemplate/Field/Remove/Caption",
+      "$:/language/EditTemplate/Field/Remove/Hint",
+      "$:/language/EditTemplate/Fields/Add/Button",
+      "$:/language/EditTemplate/Fields/Add/Button/Hint",
+      "$:/language/EditTemplate/Fields/Add/Dropdown/System",
+      "$:/language/EditTemplate/Fields/Add/Dropdown/User",
+      "$:/language/EditTemplate/Fields/Add/Name/Placeholder",
+      "$:/language/EditTemplate/Fields/Add/Prompt",
+      "$:/language/EditTemplate/Fields/Add/Value/Placeholder",
+      "$:/language/EditTemplate/Shadow/OverriddenWarning",
+      "$:/language/EditTemplate/Shadow/Warning",
+      "$:/language/EditTemplate/Tags/Add/Button",
+      "$:/language/EditTemplate/Tags/Add/Button/Hint",
+      "$:/language/EditTemplate/Tags/Add/Placeholder",
+      "$:/language/EditTemplate/Tags/ClearInput/Caption",
+      "$:/language/EditTemplate/Tags/ClearInput/Hint",
+      "$:/language/EditTemplate/Tags/Dropdown/Caption",
+      "$:/language/EditTemplate/Tags/Dropdown/Hint",
+      "$:/language/EditTemplate/Tags/EmptyMessage",
+      "$:/language/EditTemplate/Tags/EmptyMessage/System",
+      "$:/language/EditTemplate/Title/BadCharacterWarning",
+      "$:/language/EditTemplate/Title/Exists/Prompt",
+      "$:/language/EditTemplate/Title/References/Prompt",
+      "$:/language/EditTemplate/Title/Relink/Prompt",
+      "$:/language/EditTemplate/Type/Delete/Caption",
+      "$:/language/EditTemplate/Type/Delete/Hint",
+      "$:/language/EditTemplate/Type/Dropdown/Caption",
+      "$:/language/EditTemplate/Type/Dropdown/Hint",
+      "$:/language/EditTemplate/Type/Placeholder",
+      "$:/language/EditTemplate/Type/Prompt",
+      "$:/language/Encryption/Cancel",
+      "$:/language/Encryption/ConfirmClearPassword",
+      "$:/language/Encryption/Password",
+      "$:/language/Encryption/PasswordNoMatch",
+      "$:/language/Encryption/PromptSetPassword",
+      "$:/language/Encryption/RepeatPassword",
+      "$:/language/Encryption/SetPassword",
+      "$:/language/Encryption/Username",
+      "$:/language/Error/Caption",
+      "$:/language/Error/DeserializeOperator/MissingOperand",
+      "$:/language/Error/DeserializeOperator/UnknownDeserializer",
+      "$:/language/Error/Filter",
+      "$:/language/Error/FilterRunPrefix",
+      "$:/language/Error/FilterSyntax",
+      "$:/language/Error/FormatFilterOperator",
+      "$:/language/Error/IsFilterOperator",
+      "$:/language/Error/LoadingPluginLibrary",
+      "$:/language/Error/NetworkErrorAlert",
+      "$:/language/Error/PutEditConflict",
+      "$:/language/Error/PutForbidden",
+      "$:/language/Error/PutUnauthorized",
+      "$:/language/Error/RecursiveTransclusion",
+      "$:/language/Error/RetrievingSkinny",
+      "$:/language/Error/SavingToTWEdit",
+      "$:/language/Error/WhileSaving",
+      "$:/language/Error/XMLHttpRequest",
+      "$:/language/Error/ZoominTextNode",
+      "$:/language/Exporters/CsvFile",
+      "$:/language/Exporters/JsonFile",
+      "$:/language/Exporters/StaticRiver",
+      "$:/language/Exporters/TidFile",
+      "$:/language/Filters/AllTags",
+      "$:/language/Filters/AllTiddlers",
+      "$:/language/Filters/Drafts",
+      "$:/language/Filters/Missing",
+      "$:/language/Filters/Orphans",
+      "$:/language/Filters/OverriddenShadowTiddlers",
+      "$:/language/Filters/RecentSystemTiddlers",
+      "$:/language/Filters/RecentTiddlers",
+      "$:/language/Filters/SessionTiddlers",
+      "$:/language/Filters/ShadowTiddlers",
+      "$:/language/Filters/StoryList",
+      "$:/language/Filters/SystemTags",
+      "$:/language/Filters/SystemTiddlers",
+      "$:/language/Filters/TypedTiddlers",
+      "$:/language/Help/build",
+      "$:/language/Help/clearpassword",
+      "$:/language/Help/commands",
+      "$:/language/Help/default",
+      "$:/language/Help/deletetiddlers",
+      "$:/language/Help/editions",
+      "$:/language/Help/fetch",
+      "$:/language/Help/help",
+      "$:/language/Help/import",
+      "$:/language/Help/init",
+      "$:/language/Help/listen",
+      "$:/language/Help/load",
+      "$:/language/Help/makelibrary",
+      "$:/language/Help/notfound",
+      "$:/language/Help/output",
+      "$:/language/Help/password",
+      "$:/language/Help/render",
+      "$:/language/Help/rendertiddler",
+      "$:/language/Help/rendertiddlers",
+      "$:/language/Help/save",
+      "$:/language/Help/savetiddler",
+      "$:/language/Help/savetiddlers",
+      "$:/language/Help/savewikifolder",
+      "$:/language/Help/server",
+      "$:/language/Help/setfield",
+      "$:/language/Help/unpackplugin",
+      "$:/language/Help/verbose",
+      "$:/language/Help/version",
+      "$:/language/Import/Editor/Import/Heading",
+      "$:/language/Import/Imported/Hint",
+      "$:/language/Import/Listing/Cancel/Caption",
+      "$:/language/Import/Listing/Cancel/Warning",
+      "$:/language/Import/Listing/Hint",
+      "$:/language/Import/Listing/Import/Caption",
+      "$:/language/Import/Listing/ImportOptions/Caption",
+      "$:/language/Import/Listing/ImportOptions/NoMatch",
+      "$:/language/Import/Listing/Preview",
+      "$:/language/Import/Listing/Preview/Diff",
+      "$:/language/Import/Listing/Preview/DiffFields",
+      "$:/language/Import/Listing/Preview/Fields",
+      "$:/language/Import/Listing/Preview/Text",
+      "$:/language/Import/Listing/Preview/TextRaw",
+      "$:/language/Import/Listing/Rename/CancelRename",
+      "$:/language/Import/Listing/Rename/ConfirmRename",
+      "$:/language/Import/Listing/Rename/OverwriteWarning",
+      "$:/language/Import/Listing/Rename/Prompt",
+      "$:/language/Import/Listing/Rename/Tooltip",
+      "$:/language/Import/Listing/Select/Caption",
+      "$:/language/Import/Listing/Status/Caption",
+      "$:/language/Import/Listing/Title/Caption",
+      "$:/language/Import/Upgrader/Plugins/Suppressed/Incompatible",
+      "$:/language/Import/Upgrader/Plugins/Suppressed/Version",
+      "$:/language/Import/Upgrader/Plugins/Upgraded",
+      "$:/language/Import/Upgrader/State/Suppressed",
+      "$:/language/Import/Upgrader/System/Alert",
+      "$:/language/Import/Upgrader/System/Disabled",
+      "$:/language/Import/Upgrader/System/Suppressed",
+      "$:/language/Import/Upgrader/System/Warning",
+      "$:/language/Import/Upgrader/ThemeTweaks/Created",
+      "$:/language/Import/Upgrader/Tiddler/Disabled",
+      "$:/language/Import/Upgrader/Tiddler/Selected",
+      "$:/language/Import/Upgrader/Tiddler/Unselected",
+      "$:/language/InternalJavaScriptError/Hint",
+      "$:/language/InternalJavaScriptError/Title",
+      "$:/language/LayoutSwitcher/Description",
+      "$:/language/LazyLoadingWarning",
+      "$:/language/LoginToTiddlySpace",
+      "$:/language/Manager/Controls/FilterByTag/None",
+      "$:/language/Manager/Controls/FilterByTag/Prompt",
+      "$:/language/Manager/Controls/Order/Prompt",
+      "$:/language/Manager/Controls/Search/Placeholder",
+      "$:/language/Manager/Controls/Search/Prompt",
+      "$:/language/Manager/Controls/Show/Option/Tags",
+      "$:/language/Manager/Controls/Show/Option/Tiddlers",
+      "$:/language/Manager/Controls/Show/Prompt",
+      "$:/language/Manager/Controls/Sort/Prompt",
+      "$:/language/Manager/Item/Colour",
+      "$:/language/Manager/Item/Fields",
+      "$:/language/Manager/Item/Icon",
+      "$:/language/Manager/Item/Icon/None",
+      "$:/language/Manager/Item/RawText",
+      "$:/language/Manager/Item/Tags",
+      "$:/language/Manager/Item/Tools",
+      "$:/language/Manager/Item/WikifiedText",
+      "$:/language/MissingTiddler/Hint",
+      "$:/language/Modals/Download",
+      "$:/language/No",
+      "$:/language/Notifications/CopiedToClipboard/Failed",
+      "$:/language/Notifications/CopiedToClipboard/Succeeded",
+      "$:/language/Notifications/Save/Done",
+      "$:/language/Notifications/Save/Starting",
+      "$:/language/OfficialPluginLibrary",
+      "$:/language/OfficialPluginLibrary/Hint",
+      "$:/language/PageTemplate/Description",
+      "$:/language/PageTemplate/Name",
+      "$:/language/PluginReloadWarning",
+      "$:/language/RecentChanges/DateFormat",
+      "$:/language/RelativeDate/Future/Days",
+      "$:/language/RelativeDate/Future/Hours",
+      "$:/language/RelativeDate/Future/Minutes",
+      "$:/language/RelativeDate/Future/Months",
+      "$:/language/RelativeDate/Future/Second",
+      "$:/language/RelativeDate/Future/Seconds",
+      "$:/language/RelativeDate/Future/Years",
+      "$:/language/RelativeDate/Past/Days",
+      "$:/language/RelativeDate/Past/Hours",
+      "$:/language/RelativeDate/Past/Minutes",
+      "$:/language/RelativeDate/Past/Months",
+      "$:/language/RelativeDate/Past/Second",
+      "$:/language/RelativeDate/Past/Seconds",
+      "$:/language/RelativeDate/Past/Years",
+      "$:/language/Search/DefaultResults/Caption",
+      "$:/language/Search/Filter/Caption",
+      "$:/language/Search/Filter/Hint",
+      "$:/language/Search/Filter/Matches",
+      "$:/language/Search/Matches",
+      "$:/language/Search/Matches/All",
+      "$:/language/Search/Matches/NoMatch",
+      "$:/language/Search/Matches/NoResult",
+      "$:/language/Search/Matches/Title",
+      "$:/language/Search/Search",
+      "$:/language/Search/Search/TooShort",
+      "$:/language/Search/Shadows/Caption",
+      "$:/language/Search/Shadows/Hint",
+      "$:/language/Search/Shadows/Matches",
+      "$:/language/Search/Standard/Caption",
+      "$:/language/Search/Standard/Hint",
+      "$:/language/Search/Standard/Matches",
+      "$:/language/Search/System/Caption",
+      "$:/language/Search/System/Hint",
+      "$:/language/Search/System/Matches",
+      "$:/language/Shortcuts/Input/Accept/Hint",
+      "$:/language/Shortcuts/Input/AcceptVariant/Hint",
+      "$:/language/Shortcuts/Input/AdvancedSearch/Hint",
+      "$:/language/Shortcuts/Input/Cancel/Hint",
+      "$:/language/Shortcuts/Input/Down/Hint",
+      "$:/language/Shortcuts/Input/Tab-Left/Hint",
+      "$:/language/Shortcuts/Input/Tab-Right/Hint",
+      "$:/language/Shortcuts/Input/Up/Hint",
+      "$:/language/Shortcuts/SidebarLayout/Hint",
+      "$:/language/SideBar/All/Caption",
+      "$:/language/SideBar/Caption",
+      "$:/language/SideBar/Contents/Caption",
+      "$:/language/SideBar/Drafts/Caption",
+      "$:/language/SideBar/Explorer/Caption",
+      "$:/language/SideBar/Missing/Caption",
+      "$:/language/SideBar/More/Caption",
+      "$:/language/SideBar/Open/Caption",
+      "$:/language/SideBar/Orphans/Caption",
+      "$:/language/SideBar/Recent/Caption",
+      "$:/language/SideBar/Shadows/Caption",
+      "$:/language/SideBar/System/Caption",
+      "$:/language/SideBar/Tags/Caption",
+      "$:/language/SideBar/Tags/Untagged/Caption",
+      "$:/language/SideBar/Tools/Caption",
+      "$:/language/SideBar/Types/Caption",
+      "$:/language/Snippets/FunctionDefinition",
+      "$:/language/Snippets/ListByTag",
+      "$:/language/Snippets/MacroDefinition",
+      "$:/language/Snippets/ProcedureDefinition",
+      "$:/language/Snippets/Table4x3",
+      "$:/language/Snippets/TableOfContents",
+      "$:/language/Switcher/Subtitle/language",
+      "$:/language/Switcher/Subtitle/layout",
+      "$:/language/Switcher/Subtitle/palette",
+      "$:/language/Switcher/Subtitle/theme",
+      "$:/language/SystemTiddler/Tooltip",
+      "$:/language/SystemTiddlers/Include/Prompt",
+      "$:/language/TagManager/Colour/Heading",
+      "$:/language/TagManager/Count/Heading",
+      "$:/language/TagManager/Icon/Heading",
+      "$:/language/TagManager/Icons/None",
+      "$:/language/TagManager/Info/Heading",
+      "$:/language/TagManager/Tag/Heading",
+      "$:/language/ThemeTweaks/Metrics",
+      "$:/language/ThemeTweaks/Metrics/BodyFontSize",
+      "$:/language/ThemeTweaks/Metrics/BodyLineHeight",
+      "$:/language/ThemeTweaks/Metrics/FontSize",
+      "$:/language/ThemeTweaks/Metrics/LineHeight",
+      "$:/language/ThemeTweaks/Metrics/SidebarBreakpoint",
+      "$:/language/ThemeTweaks/Metrics/SidebarBreakpoint/Hint",
+      "$:/language/ThemeTweaks/Metrics/SidebarWidth",
+      "$:/language/ThemeTweaks/Metrics/SidebarWidth/Hint",
+      "$:/language/ThemeTweaks/Metrics/StoryLeft",
+      "$:/language/ThemeTweaks/Metrics/StoryLeft/Hint",
+      "$:/language/ThemeTweaks/Metrics/StoryRight",
+      "$:/language/ThemeTweaks/Metrics/StoryRight/Hint",
+      "$:/language/ThemeTweaks/Metrics/StoryTop",
+      "$:/language/ThemeTweaks/Metrics/StoryTop/Hint",
+      "$:/language/ThemeTweaks/Metrics/StoryWidth",
+      "$:/language/ThemeTweaks/Metrics/StoryWidth/Hint",
+      "$:/language/ThemeTweaks/Metrics/TiddlerWidth",
+      "$:/language/ThemeTweaks/Metrics/TiddlerWidth/Hint",
+      "$:/language/ThemeTweaks/Options",
+      "$:/language/ThemeTweaks/Options/CodeWrapping",
+      "$:/language/ThemeTweaks/Options/SidebarLayout",
+      "$:/language/ThemeTweaks/Options/SidebarLayout/Fixed-Fluid",
+      "$:/language/ThemeTweaks/Options/SidebarLayout/Fluid-Fixed",
+      "$:/language/ThemeTweaks/Options/StickyTitles",
+      "$:/language/ThemeTweaks/Options/StickyTitles/Hint",
+      "$:/language/ThemeTweaks/Settings",
+      "$:/language/ThemeTweaks/Settings/BackgroundImage",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageAttachment",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageAttachment/Fixed",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageAttachment/Scroll",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageSize",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageSize/Auto",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageSize/Contain",
+      "$:/language/ThemeTweaks/Settings/BackgroundImageSize/Cover",
+      "$:/language/ThemeTweaks/Settings/CodeFontFamily",
+      "$:/language/ThemeTweaks/Settings/EditorFontFamily",
+      "$:/language/ThemeTweaks/Settings/FontFamily",
+      "$:/language/ThemeTweaks/ThemeTweaks",
+      "$:/language/ThemeTweaks/ThemeTweaks/Hint",
+      "$:/language/Tiddler/DateFormat",
+      "$:/language/TiddlerInfo/Advanced/Caption",
+      "$:/language/TiddlerInfo/Advanced/CascadeInfo/Detail/ActiveCascadeFilter",
+      "$:/language/TiddlerInfo/Advanced/CascadeInfo/Detail/Template",
+      "$:/language/TiddlerInfo/Advanced/CascadeInfo/Detail/View",
+      "$:/language/TiddlerInfo/Advanced/CascadeInfo/Heading",
+      "$:/language/TiddlerInfo/Advanced/CascadeInfo/Hint",
+      "$:/language/TiddlerInfo/Advanced/PluginInfo/Empty/Hint",
+      "$:/language/TiddlerInfo/Advanced/PluginInfo/Heading",
+      "$:/language/TiddlerInfo/Advanced/PluginInfo/Hint",
+      "$:/language/TiddlerInfo/Advanced/ShadowInfo/Heading",
+      "$:/language/TiddlerInfo/Advanced/ShadowInfo/NotShadow/Hint",
+      "$:/language/TiddlerInfo/Advanced/ShadowInfo/OverriddenShadow/Hint",
+      "$:/language/TiddlerInfo/Advanced/ShadowInfo/Shadow/Hint",
+      "$:/language/TiddlerInfo/Advanced/ShadowInfo/Shadow/Source",
+      "$:/language/TiddlerInfo/Fields/Caption",
+      "$:/language/TiddlerInfo/List/Caption",
+      "$:/language/TiddlerInfo/List/Empty",
+      "$:/language/TiddlerInfo/Listed/Caption",
+      "$:/language/TiddlerInfo/Listed/Empty",
+      "$:/language/TiddlerInfo/References/Caption",
+      "$:/language/TiddlerInfo/References/Empty",
+      "$:/language/TiddlerInfo/Tagging/Caption",
+      "$:/language/TiddlerInfo/Tagging/Empty",
+      "$:/language/TiddlerInfo/Tools/Caption",
+      "$:/language/UnsavedChangesWarning",
+      "$:/language/Yes",
+      "$:/languages/en-GB",
+      "$:/library/sjcl.js/license",
+      "$:/Manager",
+      "$:/Manager/ItemMain/Fields",
+      "$:/Manager/ItemMain/RawText",
+      "$:/Manager/ItemMain/WikifiedText",
+      "$:/Manager/ItemSidebar/Colour",
+      "$:/Manager/ItemSidebar/Icon",
+      "$:/Manager/ItemSidebar/Tags",
+      "$:/Manager/ItemSidebar/Tools",
+      "$:/palette",
+      "$:/PaletteManager",
+      "$:/palettes/Blanca",
+      "$:/palettes/Blue",
+      "$:/palettes/ContrastDark",
+      "$:/palettes/ContrastLight",
+      "$:/palettes/CupertinoDark",
+      "$:/palettes/DarkPhotos",
+      "$:/palettes/DesertSand",
+      "$:/palettes/FlexokiDark",
+      "$:/palettes/FlexokiLight",
+      "$:/palettes/GruvboxDark",
+      "$:/palettes/Muted",
+      "$:/palettes/Nord",
+      "$:/palettes/Rocker",
+      "$:/palettes/SolarFlare",
+      "$:/palettes/SolarizedDark",
+      "$:/palettes/SolarizedLight",
+      "$:/palettes/SpartanDay",
+      "$:/palettes/SpartanNight",
+      "$:/palettes/Twilight",
+      "$:/palettes/Vanilla",
+      "$:/SiteSubtitle",
+      "$:/SiteTitle",
+      "$:/snippets/allfields",
+      "$:/snippets/currpalettepreview",
+      "$:/snippets/DebugStylesheets",
+      "$:/snippets/download-wiki-button",
+      "$:/snippets/languageswitcher",
+      "$:/snippets/LayoutSwitcher",
+      "$:/snippets/ListTaggedCascade",
+      "$:/snippets/minifocuseditswitcher",
+      "$:/snippets/minifocusswitcher",
+      "$:/snippets/minilanguageswitcher",
+      "$:/snippets/minithemeswitcher",
+      "$:/snippets/modules",
+      "$:/snippets/paletteeditor",
+      "$:/snippets/palettepreview",
+      "$:/snippets/paletteswitcher",
+      "$:/snippets/peek-stylesheets",
+      "$:/snippets/retain-story-ordering-button",
+      "$:/snippets/themeswitcher",
+      "$:/snippets/viewswitcher",
+      "$:/state/popup/manager/item/$:/Manager/ItemMain/RawText",
+      "$:/state/showeditpreview",
+      "$:/TagManager",
+      "$:/tags/AdvancedSearch",
+      "$:/tags/AdvancedSearch/FilterButton",
+      "$:/tags/ControlPanel",
+      "$:/tags/ControlPanel/Info",
+      "$:/tags/ControlPanel/Plugins",
+      "$:/tags/EditorToolbar",
+      "$:/tags/EditTemplate",
+      "$:/tags/EditTemplateBodyFilter",
+      "$:/tags/EditToolbar",
+      "$:/tags/Manager/ItemMain",
+      "$:/tags/Manager/ItemSidebar",
+      "$:/tags/MoreSideBar",
+      "$:/tags/PageControls",
+      "$:/tags/PageTemplate",
+      "$:/tags/PluginLibrary",
+      "$:/tags/SideBar",
+      "$:/tags/SideBarSegment",
+      "$:/tags/StoryTiddlerTemplateFilter",
+      "$:/tags/TestCase/Actions",
+      "$:/tags/TextEditor/Snippet",
+      "$:/tags/TiddlerColourFilter",
+      "$:/tags/TiddlerIconFilter",
+      "$:/tags/TiddlerInfo",
+      "$:/tags/TiddlerInfo/Advanced",
+      "$:/tags/ViewTemplate",
+      "$:/tags/ViewTemplate/Subtitle",
+      "$:/tags/ViewTemplateBodyFilter",
+      "$:/tags/ViewTemplateTitleFilter",
+      "$:/tags/ViewToolbar",
+      "$:/temp/advancedsearch",
+      "$:/temp/search",
+      "$:/view",
+      "GettingStarted",
+      "lar:///config/Lar/AhuTemplate/html",
+      "lar:///config/Lar/AkaTemplate/html",
+      "lar:///config/Lar/KaheaTemplate/html",
+      "lar:///config/Lar/KanawaiTemplate/html",
+      "lar:///config/Lar/KauTemplate/html",
+      "lar:///config/Lar/LoulouTemplate/html",
+      "lar:///config/Lar/PranalaHeaderTemplate/html",
+      "lar:///config/Lar/PranalaTemplate/html",
+      "lar:///ha.ka.ba/lararium/config/bag-paths",
+      "lar:///ha.ka.ba/lararium/exporters/memetic-wikitext",
+      "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
+      "lar:///ha.ka.ba/lararium/templates/ahu/html",
+      "lar:///ha.ka.ba/lararium/templates/aka/html",
+      "lar:///ha.ka.ba/lararium/templates/kahea/html",
+      "lar:///ha.ka.ba/lararium/templates/kanawai/html",
+      "lar:///ha.ka.ba/lararium/templates/kau/html",
+      "lar:///ha.ka.ba/lararium/templates/loulou/html",
+      "lar:///ha.ka.ba/lararium/templates/meme/html",
+      "lar:///ha.ka.ba/lararium/templates/meme/html/root",
+      "lar:///ha.ka.ba/lararium/templates/meme/md",
+      "lar:///ha.ka.ba/lararium/templates/meme/md.meta",
+      "lar:///ha.ka.ba/lararium/templates/meme/mem",
+      "lar:///ha.ka.ba/lararium/templates/parallel-drafts/badge",
+      "lar:///ha.ka.ba/lararium/templates/pin/html",
+      "lar:///ha.ka.ba/lararium/templates/pranala-header/html",
+      "lar:///ha.ka.ba/lararium/templates/pranala/html",
+      "lar:///ha.ka.ba/lararium/templates/root-layer",
+      "lar:///ha.ka.ba/lararium/tw5/filters/all-memes",
+      "lar:///ha.ka.ba/lararium/tw5/filters/bag-path",
+      "lar:///ha.ka.ba/lararium/tw5/filters/lar-kind",
+      "lar:///ha.ka.ba/lararium/tw5/filters/lar-uri",
+      "lar:///ha.ka.ba/lararium/tw5/filters/meme-pin",
+      "lar:///ha.ka.ba/lararium/tw5/filters/project",
+      "lar:///ha.ka.ba/lararium/tw5/filters/stack",
+      "lar:///ha.ka.ba/lararium/tw5/filters/toml-field",
+      "lar:///ha.ka.ba/lararium/tw5/filters/wikisense",
+      "lar:///ha.ka.ba/lararium/tw5/lib/memetic-frame",
+      "lar:///ha.ka.ba/lararium/tw5/lib/smol-toml",
+      "lar:///ha.ka.ba/lararium/tw5/lib/wiki-sense-fold",
+      "lar:///ha.ka.ba/lararium/tw5/modules/capture-annotate-vm",
+      "lar:///ha.ka.ba/lararium/tw5/modules/carrier-filetype",
+      "lar:///ha.ka.ba/lararium/tw5/modules/deserializer",
+      "lar:///ha.ka.ba/lararium/tw5/modules/draft-compare",
+      "lar:///ha.ka.ba/lararium/tw5/modules/grammar-cache",
+      "lar:///ha.ka.ba/lararium/tw5/modules/host-globals",
+      "lar:///ha.ka.ba/lararium/tw5/modules/import-floor-upgrader",
+      "lar:///ha.ka.ba/lararium/tw5/modules/lar-root-services",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-ast",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-backstop",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-door-charm",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-face",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-laws",
+      "lar:///ha.ka.ba/lararium/tw5/modules/meme-project",
+      "lar:///ha.ka.ba/lararium/tw5/modules/nalu-engine",
+      "lar:///ha.ka.ba/lararium/tw5/modules/place-meme",
+      "lar:///ha.ka.ba/lararium/tw5/modules/query-derive-vm",
+      "lar:///ha.ka.ba/lararium/tw5/modules/reaction-router",
+      "lar:///ha.ka.ba/lararium/tw5/modules/weave",
+      "lar:///ha.ka.ba/lararium/tw5/modules/wiki-sense-indexer",
+      "lar:///ha.ka.ba/lararium/tw5/modules/worldline-read-vm",
+      "lar:///ha.ka.ba/lararium/tw5/parsers/memetic-parser",
+      "lar:///ha.ka.ba/lararium/tw5/routes/delete-meme",
+      "lar:///ha.ka.ba/lararium/tw5/routes/get-meme",
+      "lar:///ha.ka.ba/lararium/tw5/routes/list-memes",
+      "lar:///ha.ka.ba/lararium/tw5/routes/native-delete-door",
+      "lar:///ha.ka.ba/lararium/tw5/routes/native-door",
+      "lar:///ha.ka.ba/lararium/tw5/routes/native-skinny-door",
+      "lar:///ha.ka.ba/lararium/tw5/routes/put-meme",
+      "lar:///ha.ka.ba/lararium/tw5/styles/memetic-gradient",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aka",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aperture",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-carry",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-confidence",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-config",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-const",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-constraint",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-define",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-drift-ward",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-elif",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-else",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-constraint",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-control",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-dataflow",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-frame",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-message",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-observe",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-reaction",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-relation",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-spatial",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-fragment",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame-eot",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame-etx",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame-soh",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame-soh2",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame-stx",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-function",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hana",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-heihei",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-helu",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-holo",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hoolele",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hud",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hui",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-huli",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-import",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-integrity",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahawai",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kanawai",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kukali",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lares",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-law",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lele",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-let",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-loops",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-loulou",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-meme",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-mu",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-mukuwai",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ooda-ha",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-oracle",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-papalohe",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-persona",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pin",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pono",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala-header",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-puka",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-query",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-race",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-rush",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-scale",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-season",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-set",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-shrine",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-stage",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-stance",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-syad",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-sync",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tiddler",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-transclude",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-type",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-typos",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ui",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-var",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-waiho",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ward",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe",
+      "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-widget",
+      "lar:///ha.ka.ba/lararium/tw5/widgets/action-meme-place",
+      "lar:///ha.ka.ba/lararium/tw5/wikirules/lar-declaration",
+      "lar:///ha.ka.ba/lararium/tw5/wikirules/lar-sigil",
+      "lar:///ha.ka.ba/lararium/tw5/wikirules/lar-sigil-pragma"
+    ]
+  },
+  {
+    "id": "added-056-meme-project-missing",
+    "filter": "[[Alpha]meme-project[mem]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          },
+          {
+            "operator": "meme-project",
+            "operands": [
+              {
+                "text": "mem"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "added-057-toml-rank",
+    "filter": "[all[tiddlers]toml:rank[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "all",
+            "operands": [
+              {
+                "text": "tiddlers"
+              }
+            ]
+          },
+          {
+            "operator": "toml",
+            "suffix": "rank",
+            "suffixes": [
+              [
+                "rank"
+              ]
+            ],
+            "operands": [
+              {
+                "text": "2"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Beta"
+    ]
+  }
+]
