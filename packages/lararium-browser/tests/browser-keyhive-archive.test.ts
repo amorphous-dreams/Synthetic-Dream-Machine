@@ -20,6 +20,7 @@
 import { describe, expect, test } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@lararium/keyhive";
 import { BootHalted } from "./wire-vessel-rig.js";
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { loadBrowserSigningSeed, openVesselIdb, idbPut } from "../src/browser-vessel-identity.js";
 import {
@@ -32,6 +33,7 @@ const BAG = "lar:///browser.reload.bag";
 /** Found a browser vessel for real and halt once its catalog stands. */
 async function foundHalted(): Promise<string> {
   const idbName = `archive-keep-${crypto.randomUUID()}`;
+  await bindSyntheticBrowserCustodySlot(idbName);
   const opts = {
     idbName,
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
@@ -108,6 +110,7 @@ describe("a browser vessel keeps its keyhive Archives", () => {
 
   test("K5 a founded vessel with no Archive in its keystore refuses the boot by row name", async () => {
     const idbName = `archive-missing-${crypto.randomUUID()}`;
+    await bindSyntheticBrowserCustodySlot(idbName);
     const idb = await openVesselIdb(idbName);
     try { await idbPut(idb, "bootstrap", "social-bootstrap", { daemonUrl: "automerge:planted", personaPlanes: [] }); } finally { idb.close(); }
     const phases: string[] = [];

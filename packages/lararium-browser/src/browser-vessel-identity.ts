@@ -49,13 +49,9 @@ export function browserIdentityContinuityKey(idbName: string): string {
   return `${IDENTITY_CONTINUITY_PREFIX}${idbName}`;
 }
 
-// The IndexedDB object stores this vessel keeps. `keystore`/`bootstrap` carry the device key + the
-// social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
-// per-index files. Every store bumps the DB version together, so a reboot upgrades additively (the
-// device key + bootstrap survive; the new stores appear empty until a persona founds).
-const IDB_VERSION       = 9;
-const PERSONA_ROOTS_STORE  = "persona-roots";     // per-index persona-root keypairs (self-sovereign secret)
-const PERSONA_ROSTER_STORE = "persona-roster";    // the EXPLICIT held-root record (never a keys()-scan)
+// The keystore holds device and persona secrets; bootstrap holds the founding floor.
+// A schema upgrade removes retired clear root stores without carrying their records.
+const IDB_VERSION       = 10;
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
 const ANCHORS_STORE        = "anchors";           // per-index veiled-Handle anchors (public doc-ids)
 const ANCHOR_ROSTER_STORE  = "anchor-roster";     // the EXPLICIT anchored-index record
@@ -70,8 +66,7 @@ const PERSONA_DECLARATION_STORE  = "persona-declarations";    // handleIndex →
 export const WALK_STORE             = "hosting-walk";        // hearth gate key → WalkRecord (the walker's own, never federated)
 export const CIRCLE_STORE           = "circles-follow";      // circleId → nym[] (the IoC follow-graph, private)
 export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → HandleBookSnapshot (others' nyms + labels)
-// v6 additive: the OPT-IN PRF wrap of a persona-root seed, BESIDE the cleartext root (seed-wrap-prf.ts). Keyed
-// `h${N}` like the root it wraps; absent = the root rests cleartext (today's finding, unchanged).
+// The optional PRF wrap uses the persona's `h${N}` key; custody still gates the root row.
 export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → SeedWrapRecord
 // v8 additive: each face's PER-NEXUS KEY, 32 bytes minted at random (never derived from the persona seed), keyed
 // `h${N}:${nexusAid}`. It rests beside the face's root and in the root's own class.
@@ -81,11 +76,10 @@ export const NEXUS_KEY_STORE        = "nexus-keys";          // `h${N}:${aid}` �
 // face's address secret the answer delivered.
 export const VESSEL_FACE_KEY_STORE  = "vessel-face-keys";    // `${nexus}|${faceKey}` → Uint8Array(32)
 export const FLEET_JOIN_STORE       = "fleet-join";          // "pending" · `record:${group}` · `secret:${group}` · `dial:${group}`
-const ROSTER_RECORD        = "roster";            // the single key both roster stores write under
+const ROSTER_RECORD        = "roster";            // the anchor roster key
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
-/** The persona-root filename analog — a per-handle-index key inside the persona-roots store. UNIFORM
- *  `h${N}` (no founding special-case), mirroring the node vault's `.persona-group-root-…-h${N}.json`. */
+/** A per-handle-index key shared by persona rows and their adjacent stores. */
 function personaRootKey(handleIndex: number): string { return `h${handleIndex}`; }
 
 interface PersistedBrowserKey {
@@ -107,12 +101,11 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
     const req = indexedDB.open(idbName, IDB_VERSION);
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
-      // Additive migration: each store lands only when absent, so a v1 DB (keystore + bootstrap) keeps
-      // its device key + social bootstrap and gains the persona-multitude stores empty.
+      // Keep custody and social rows while removing stores outside the custody door.
       if (!db.objectStoreNames.contains("keystore"))         db.createObjectStore("keystore");
       if (!db.objectStoreNames.contains("bootstrap"))        db.createObjectStore("bootstrap");
-      if (!db.objectStoreNames.contains(PERSONA_ROOTS_STORE))  db.createObjectStore(PERSONA_ROOTS_STORE);
-      if (!db.objectStoreNames.contains(PERSONA_ROSTER_STORE)) db.createObjectStore(PERSONA_ROSTER_STORE);
+      if (db.objectStoreNames.contains("persona-roots")) db.deleteObjectStore("persona-roots");
+      if (db.objectStoreNames.contains("persona-roster")) db.deleteObjectStore("persona-roster");
       if (!db.objectStoreNames.contains(ACTIVE_PERSONA_STORE)) db.createObjectStore(ACTIVE_PERSONA_STORE);
       if (!db.objectStoreNames.contains(ANCHORS_STORE))        db.createObjectStore(ANCHORS_STORE);
       if (!db.objectStoreNames.contains(ANCHOR_ROSTER_STORE))  db.createObjectStore(ANCHOR_ROSTER_STORE);
@@ -125,8 +118,7 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       // federate. A v3 DB gains them empty; nothing is followed until the vessel acts.
       if (!db.objectStoreNames.contains(CIRCLE_STORE))           db.createObjectStore(CIRCLE_STORE);
       if (!db.objectStoreNames.contains(HANDLE_BOOK_STORE))      db.createObjectStore(HANDLE_BOOK_STORE);
-      // v6 additive: the seed-wrap slot. A v5 DB gains it empty; every root keeps resting cleartext until the
-      // human opts a passkey in.
+      // The optional seed-wrap store stays distinct from the custody row.
       if (!db.objectStoreNames.contains(SEED_WRAP_STORE))        db.createObjectStore(SEED_WRAP_STORE);
       // v7: the walker's own store — per hearth, the carried invite until it settles and the grant that hearth
       // pushed. The newcomer-side burn store it replaces goes: the HEARTH burns an invite, at its own gate.
@@ -221,25 +213,17 @@ const browserKeypairCrypto: KeypairCrypto = {
   },
 };
 
-/**
- * An IndexedDB keypair slot at (store, key) — the keypair-persistence primitive each persona-root rides
- * (custody-by-type: the browser at-rest guard lives HERE in the adapter; the mesh core never sees the bytes).
- * A persona-root still persists CLEARTEXT hex (IDB, origin-scoped): the keystore's slot tree
- * (`browser-custody.ts`) wraps the device seed and the Archives, and the persona-root stores stand outside it.
- */
-function idbKeypairSlot(idbName: string, storeName: string, key: string): KeypairStore {
+/** A persona-root slot rides the same custody row door as the device seed. */
+function idbPersonaRootSlot(idbName: string, handleIndex: number): KeypairStore {
+  const row = `persona-root-${personaRootKey(handleIndex)}`;
   return {
     async load() {
-      const db = await openVesselIdb(idbName);
-      const existing = await idbGet<PersistedBrowserKey>(db, storeName, key);
-      db.close();
+      const existing = await readKeystoreRow(idbName, row) as PersistedBrowserKey | undefined;
       return existing ? { verifyingKey: existing.verifyingKey, signingKey: existing.signingKey } : undefined;
     },
     async save(kp) {
-      const db = await openVesselIdb(idbName);
       const record: PersistedBrowserKey = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
-      await idbPut(db, storeName, key, record);
-      db.close();
+      await writeKeystoreRow(idbName, row, record);
     },
   };
 }
@@ -343,10 +327,9 @@ export async function loadBrowserDeviceKey(idbName = "lares:vessel"): Promise<De
 // a SET of roots keyed by handle-index, WEARS one at a time, and MAY switch.
 //
 // The isomorphic control flow (generate/load/wear/custody-refuse/roster) lives platform-blind in mesh's
-// persona-vault; THIS adapter supplies the browser shores: per-index IDB keypair slots, a JSON active-
+// persona-vault; THIS adapter supplies the browser shores: per-index custody keypair slots, a JSON active-
 // persona selector, the anchor store, and (SURFACED) a NULL recovery store. The at-rest guard stays HERE
-// (custody-by-type) — and each root still persists cleartext (see idbKeypairSlot): the keystore's slot tree
-// wraps the device seed and the Archives, and the persona-root stores stand outside it.
+// (custody-by-type): each root and its roster pass through the keystore's custody row door.
 //
 // ROOT-ON-FOUNDER: the founding ceremony mints founder-side only; a joinee's vault holds anchors at its
 // admitted index with NO matching root (listRoots()=[]). UNIFORM KEYING — every root spells `h${N}`; the
@@ -355,9 +338,7 @@ export async function loadBrowserDeviceKey(idbName = "lares:vessel"): Promise<De
 
 /** Read the persona-root roster's explicit record (ascending), or [] when none / a torn one reads back. */
 async function readPersonaRoster(idbName: string): Promise<number[]> {
-  const db = await openVesselIdb(idbName);
-  const raw = await idbGet<{ roots?: unknown }>(db, PERSONA_ROSTER_STORE, ROSTER_RECORD);
-  db.close();
+  const raw = await readKeystoreRow(idbName, "persona-root-roster") as { roots?: unknown } | undefined;
   if (Array.isArray(raw?.roots)) {
     return [...new Set(raw.roots.filter((n): n is number => Number.isSafeInteger(n) && n >= 0))].sort((a, b) => a - b);
   }
@@ -368,9 +349,7 @@ async function readPersonaRoster(idbName: string): Promise<number[]> {
 async function recordPersonaRoot(idbName: string, handleIndex: number): Promise<void> {
   const roots = new Set(await readPersonaRoster(idbName));
   roots.add(handleIndex);
-  const db = await openVesselIdb(idbName);
-  await idbPut(db, PERSONA_ROSTER_STORE, ROSTER_RECORD, { roots: [...roots].sort((a, b) => a - b) });
-  db.close();
+  await writeKeystoreRow(idbName, "persona-root-roster", { roots: [...roots].sort((a, b) => a - b) });
 }
 
 /** The IDB ActivePersonaStore — one worn-mask pointer (never a root). No inference from an empty home:
@@ -448,7 +427,7 @@ export async function makeBrowserIdbPersonaVault(idbName = "lares:vessel"): Prom
   const anchors = await primeIdbAnchorStore(idbName);
   return {
     rootSlot(handleIndex) {
-      const base = idbKeypairSlot(idbName, PERSONA_ROOTS_STORE, personaRootKey(handleIndex));
+      const base = idbPersonaRootSlot(idbName, handleIndex);
       return {
         load: () => base.load(),
         async save(keypair) {
@@ -461,8 +440,7 @@ export async function makeBrowserIdbPersonaVault(idbName = "lares:vessel"): Prom
     async hasRoot(handleIndex) { return (await readPersonaRoster(idbName)).includes(handleIndex); },
     selector: idbActivePersonaStore(idbName),
     anchors,
-    // SURFACED (identity/security fork, resolved toward null): the browser holds NO at-rest seal for
-    // self-sovereign secrets yet — the device key + persona-roots sit cleartext in IDB. A device
+    // SURFACED (identity/security fork, resolved toward null): a device
     // recovery-share is share material of the root; sealing it needs the WebCrypto seal leg (the browser
     // twin of node's archive-seal) FIRST, else it would land a self-only secret cleartext with LESS
     // protection than node's sealed store. Recovery provisioning is a separate operator ceremony (even on

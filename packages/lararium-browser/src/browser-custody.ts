@@ -1,10 +1,11 @@
 /**
- * browser-custody — the browser keystore's slot tree: a human route wraps the device seed and the Keyhive Archives.
+ * browser-custody — the browser keystore's slot tree wraps the device seed, Keyhive Archives and persona roots.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
  * The vessel's IndexedDB `keystore` keeps three kinds of custody row: `vessel-key` (the device seed and its public
  * half), `keyhive-archive` (the vessel individual's Archive) and `veil-archive-h<N>` (face N's creator-veil
- * Archive). Before a slot binds they rest IN THE CLEAR at those names. Once a slot binds, the mesh slot tree rests
+ * Archive), plus `persona-root-h<N>` and `persona-root-roster`. The device seed and Archives may stand clear before
+ * a slot binds; a persona-root mint requires a slot. Once a slot binds, the mesh slot tree rests
  * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
  * custody row R rests sealed under the vessel key at `sealed/R`, its AEAD binding the carrier name
  * `browser-keystore/R`, so bytes moved from one row to another open nowhere. Every other keystore row
@@ -55,9 +56,9 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-h\d+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-h\d+|persona-root-h\d+|persona-root-roster)$/;
 
-/** Is `row` one the slot tree wraps: the device seed or a Keyhive Archive. */
+/** Is `row` one the slot tree wraps: the device seed, an Archive or a persona root row. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
 
 /** The sealed carrier a custody row rests in once a slot binds. */
@@ -67,10 +68,11 @@ export function sealedCarrierOf(row: string): SealedCarrier {
 }
 
 export type BrowserCustodyRefusalReading =
-  | "sealed-locked" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree";
+  | "sealed-locked" | "no-custody-slot" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree";
 
 const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "sealed-locked": "the keystore rests sealed and this page holds no unlock; unlock it with its passphrase first",
+  "no-custody-slot": "a persona root needs a passphrase or paper slot before it can be minted",
   "already-sealed": "a slot tree already stands; bind another slot instead of sealing again",
   "not-sealed": "no slot tree stands; the keystore rests in the clear",
   "unsettled": "a clear row stands beside the slot tree; an unlock settles it, and nothing chooses between two values",
@@ -258,7 +260,24 @@ const deviceSeedCodec: RowCodec = {
   },
 };
 
-const codecOf = (row: string): RowCodec => (row === DEVICE_SEED_ROW ? deviceSeedCodec : archiveCodec);
+const personaRosterCodec: RowCodec = {
+  toBytes(value) {
+    const roots = (value as { roots?: unknown } | null)?.roots;
+    if (!Array.isArray(roots) || !roots.every((n) => Number.isSafeInteger(n) && n >= 0)) {
+      throw new Error("[browser-custody] the persona-root roster holds no { roots } record");
+    }
+    return new TextEncoder().encode(JSON.stringify({ roots }));
+  },
+  fromBytes(bytes) {
+    const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
+    this.toBytes(value);
+    return value;
+  },
+};
+
+const codecOf = (row: string): RowCodec =>
+  row === DEVICE_SEED_ROW || /^persona-root-h\d+$/.test(row) ? deviceSeedCodec
+    : row === "persona-root-roster" ? personaRosterCodec : archiveCodec;
 
 function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
@@ -309,7 +328,7 @@ export async function readKeystoreRow(idbName: string, row: string): Promise<unk
 }
 
 /**
- * Keep a custody row: in the clear while no tree stands, sealed under this page's unlock once one does. A sealed
+ * Keep a custody row: device and Archive rows may stand clear before binding; roots require a slot. A sealed
  * write lands through the mesh writer, so the standing seal stays until the new one reads back and opens.
  */
 export async function writeKeystoreRow(idbName: string, row: string, value: unknown): Promise<void> {
@@ -319,6 +338,7 @@ export async function writeKeystoreRow(idbName: string, row: string, value: unkn
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
+      if (row.startsWith("persona-root-")) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);
@@ -513,7 +533,7 @@ export async function unbindBrowserCustodySlot(idbName: string, slotId: string):
 export type ConfirmDoor = (question: string) => boolean;
 
 export const CLEAR_CUSTODY_QUESTION =
-  "Clear this browser's passphrase? The device seed and the Keyhive Archives will rest in the clear in this browser's storage, readable by anyone who can read it.";
+  "Clear this browser's passphrase? The device seed, Keyhive Archives and persona roots will rest in the clear in this browser's storage, readable by anyone who can read it.";
 
 export type BrowserCustodyClear =
   | { readonly reading: "asks"; readonly question: string }
