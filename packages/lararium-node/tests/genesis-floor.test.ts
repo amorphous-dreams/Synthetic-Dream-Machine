@@ -57,6 +57,18 @@ describe("genesis floor carrier cut", () => {
     expect(first.larariumRows).toBeGreaterThan(0);
   });
 
+  test("refuses a title carried by both bags while the two-bag control cuts", () => {
+    fixture([realA], [realC]);
+    expect(() => cutGenesisFloor(opts(root))).not.toThrow();
+
+    rmSync(root, { recursive: true, force: true });
+    root = "";
+    fixture([realA], [realA]);
+    expect(() => cutGenesisFloor(opts(root))).toThrow(
+      "[genesis-floor] title lar:///ha.ka.ba/lares/ref/RFC-2119 rides both bags/lares and bags/lararium",
+    );
+  });
+
   test("refuses a torn carrier by path", () => {
     // No end-of-text mark: the frame tears (`verdict` reads it torn).
     const torn = realA.replace(/<<\^ code="&#x0003;">>[\s\S]*$/, "");
