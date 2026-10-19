@@ -102,6 +102,10 @@ const OWN_GROUND = [
   DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle, BAG_IDS.lares, BAG_IDS.lararium,
 ] as const;
 
+export function isVesselGround(bag: string): boolean {
+  return (OWN_GROUND as readonly string[]).includes(bag);
+}
+
 /**
  * The bags this vessel registers, derived — its ground, its wiki, and the union over the groups it stands in.
  *

@@ -344,6 +344,10 @@ export class KeyhiveProvider implements CapabilityProvider {
     return { docId: docIdHex };
   }
 
+  docIdOfBag(bagUrl: string): string | null {
+    return this.bagToDocId.get(bagUrl) ?? null;
+  }
+
   /**
    * Whether this provider still holds its hand in a bag's document: the document resolves and this identity rides
    * its key agreement. It reads KEY AGREEMENT, never access grade: a true answer says this stand can derive the

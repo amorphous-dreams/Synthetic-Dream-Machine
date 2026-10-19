@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import * as bindingModule from "../src/resolve-binding.js";
 import { DAEMON_BAG_ID, mutableLarRecord, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
 import { resolveOrMintBinding, restingMinter, unboundMints } from "../src/resolve-binding.js";
+import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
 const prefix = "lar:///ha.ka.ba/bags/daemon/draft-bindings";
 const fingerprint = "a".repeat(64);
@@ -36,7 +37,8 @@ function harness(options: { failFlush?: boolean; initial?: Array<[string, string
     delegate: async () => { calls.push("delegate"); return { delegationId: "del-1", bytes: new Uint8Array() }; },
     adoptBag: () => {},
   } as never;
-  const args = { kind: "draft-binding" as const, prefix, fingerprint, repo, daemonStore: store, keyhive,
+  const faceDoor = makeFaceBagDoor({ face: keyhive, groupId: "synthetic-agent" });
+  const args = { faceDoor, kind: "draft-binding" as const, prefix, fingerprint, repo, daemonStore: store, keyhive,
     personaGroupId: "synthetic-agent", faceSeated: async () => true,
     mintedByHex: "synthetic", recipeTrace: { wikiDocId: "wiki", libraryBagDocIds: [] } };
   return { args, calls, records, store };

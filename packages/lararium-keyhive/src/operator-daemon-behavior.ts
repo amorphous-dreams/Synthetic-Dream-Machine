@@ -28,7 +28,7 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 
@@ -122,6 +122,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   return reader;
 }
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
@@ -134,6 +135,7 @@ import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRec
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, ed25519SignerFromSeed, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
+import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
@@ -194,27 +196,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   let kh: KeyhiveProvider | null = null;
   // The VEIL identity — the group's creator, re-derived from (vessel seed × persisted tag). Stands
-  // beside the vessel identity at boot; sentinel ops (the face-join seat) run through it, while bag
-  // delegation and transport stay the vessel's. Absent tag → a pre-veil-born doc; joins refuse there.
+  // beside the vessel identity at boot; sentinel ops and face bag grants run through it.
   let veilKh: KeyhiveProvider | null = null;
+  let faceLedger: BagDocLedger | null = null;
   // THE CONTENT-KEY HOLDER, seated beside the two identities once both stand (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
   let contentKeys: ContentKeySeat | null = null;
-  // ONE ROAD for every vessel-bag→face delegation: the vessel delegates the bag to the VEIL (one
-  // per-group edge, non-correlating), the veil ingests the chain, adopts the mapping, and seats the
-  // bag under the face — the vessel never learns the group agent (the byte-law).
-  const delegateToFaceViaVeil = async (bagUrl: string, access: "read" | "admin"): Promise<void> => {
-    if (!kh) throw new Error("delegate: keyhive unbooted");
-    if (!veilKh) throw new Error("delegate: no veil identity stands — this doc predates the veil-born founding; re-found the face.");
-    try { await veilKh.receiveContactCard(await kh.contactCard()); } catch { /* known */ }
-    try { await kh.receiveContactCard(await veilKh.contactCard()); } catch { /* known */ }
-    const veilId = await veilKh.vesselIdentifierHex();
-    await kh.delegate({ bagUrl, audience: veilId, access: "admin" });
-    await veilKh.ingestPeerEvents(await kh.eventsForPeer(veilId));
-    const { docId } = await kh.registerBag(bagUrl);   // idempotent — the cached mapping
-    veilKh.adoptBag(bagUrl, docId);
-    await veilKh.delegate({ bagUrl, audience: faceGroup(), access });
-  };
+  const faceDoor = () => veilKh && daemonAuth.personaGroupId
+    ? makeFaceBagDoor({ face: veilKh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   let mintedByHex = daemonAuth.vesselVerifyingKey;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
@@ -297,7 +286,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
-      ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
+      ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
       faceSeated: async () => {
         const agent = daemonAuth.personaGroupId;
         if (!agent) return false;
@@ -337,10 +326,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       store.emitInitialReplay();
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
-      await kh.registerBag(working);
-      if (daemonAuth.personaGroupId && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupId)) {
-        await delegateToFaceViaVeil(working, "admin");
-      }
+      if (faceDoor() && await veilKh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");
+      else await kh.registerBag(working);
       const temp = wikiSlotUri(slug, "temp");
       if (ctx.composite.hasWritableBag(temp)) {
         const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
@@ -416,11 +403,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!kh) throw new Error("mint: keyhive unbooted — cannot register the new bag's cap");
         // bagUrl = the lar: bag URL — the key registerBag/delegate/verify all share,
         // the same string boot-registration registers (never the automerge doc url).
-        await kh.registerBag(bagUrl);
-        await delegateToFaceViaVeil(bagUrl, FACE_SEATS_AND_UNSEATS);
+        if (faceDoor() && await veilKh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bagUrl, FACE_SEATS_AND_UNSEATS);
+        else await kh.registerBag(bagUrl);
       };
       // THE CONTENT VERBS NEED A FACE. Every ACTION verb mints or writes under the face's reach, and REPACK
-      // registers beside them; a floor holds no face and no bag it minted, so each refuses by naming the lift
+      // registers beside them; a floor holds no face, so each refuses by naming the lift
       // BEFORE the cap check, the mint or any registry write. The set derives from the mesh table, never a list.
       if (daemonAuth.personaGroupId) {
         registerActionReactors(registry, {
@@ -646,9 +633,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               throw new Error(`[daemon] face-join: current lease frontier unavailable (${lease.why}) — no seat moves`);
             }
 
-            // THE TWO-HANDED JOIN: the VEIL seats (it holds the group), the VESSEL re-grants its own
-            // bags, and the joinee ingests BOTH slices. The contact card lands in both registries so
-            // each identity can address the joinee.
+            // The veil seats the joinee and carries the face's grant events.
             if (!veilKh) return { verb: "face-join", admitted: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
             const veil = veilKh;
             const vessel = kh;
@@ -661,15 +646,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               verifyGroupMembership:    (a: string, g: string) => veil.verifyGroupMembership(a, g),
               addGroupMember:           (a: string, g: string) => veil.addGroupMember(a, g),
               revokeGroupSeat:          (a: string, g: string) => veil.revokeGroupSeat(a, g),
-              // A seat reaches each bag FORWARD only; the vessel holds the standing chunks it sealed and re-seals
-              // them at the group's current key, so a fresh seat reaches what the group held before it. The
-              // vessel is the holder because the vessel sealed the content — the same key that delegated the bag.
-              reSealBag:                (bagUrl: string) => vessel.reSealBag(bagUrl),
-              eventsForPeer:            async (peer: string) => [
-                ...(await veil.eventsForPeer(peer)),
-                ...(await vessel.eventsForPeer(peer)),
-              ],
-              contactCard:              () => vessel.contactCard(),
+              // The provider holding each bag re-seals its standing chunks for the new seat.
+              reSealBag:                (bagUrl: string) => (veil.docIdOfBag(bagUrl) ? veil : vessel).reSealBag(bagUrl),
+              eventsForPeer:            (peer: string) => veil.eventsForPeer(peer),
+              contactCard:              () => veil.contactCard(),
             };
             // THE DYAD'S READING, asked of the vessel once for the device this summons names: the gate reads it
             // twice (before and after the card binds) and must read one answer.
@@ -681,8 +661,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               personaGroupId:         faceGroup(),
               leaseEpoch:             lease.n,
               dyad:                   () => joineeDyad,
-              // The bags this vessel ALREADY delegated to its own face, whose standing chunks the join re-seals so
-              // a fresh seat reaches them. `registerBags` IS that set: the mint above delegates each to the face.
+              // Re-seal the standing chunks of registered bags for the new seat.
               reseal: daemonAuth.registerBags,
             });
             // A refusal RETURNS — an unlicensed summons names an absent contract, never an attack, and the
@@ -973,7 +952,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
         ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
         ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
-        registerBags:          daemonAuth.registerBags,
+        registerBags:          daemonAuth.dyadVeil ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+        ledger:                daemonBagDocLedger(ctx.composite),
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
@@ -998,6 +978,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         await v.hydrateFromEventStore();
         veilKh = v;
+        faceLedger = null;
+        if (daemonAuth.personaGroupId) {
+          try {
+            if (!ctx.catalogUrl) throw new Error("catalog unavailable");
+            const store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(daemonAuth.personaGroupId));
+            if (!store) throw new Error("face plane absent");
+            await store.listVisible();
+            faceLedger = planeBagDocLedger(store);
+          } catch {
+            console.warn("[daemon] face bag document plane unavailable; registering face bags without durable bindings");
+          }
+        }
+        const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
+        if (faceLedger) await registerBagsDurably({ provider: v, bags: faceBags, ledger: faceLedger });
+        else for (const bag of faceBags) await v.registerBag(bag);
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // `exportArchive()` captures the founding + hydrated membership/capability DAG (+ prekey
@@ -1026,7 +1021,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(persistVeilArchive ? { persistVeilArchive } : {}),
         },
         // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
-        // two-handed delegation, a face-join, a crossing) presents that same card, so the Archive that
+        // a face-join or a crossing) presents that same card, so the Archive that
         // lands here holds the secret behind every prekey this boot presents.
         exportArchive: () => keyhive.exportArchiveAfterTheCard(),
         ...(veilKh ? { exportVeilArchive: () => veilKh!.exportArchiveAfterTheCard() } : {}),
@@ -1091,32 +1086,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
-      return keyhive;
+      return faceOwnerVerifier({ vessel: keyhive, face: veilKh, vesselVerifyingKey: daemonAuth.vesselVerifyingKey });
     },
 
     // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket
     // itself (`socket-sorter`); the worker vouches no card, device edge or class for a socket.
 
-    // A VESSEL BINDS ON ITS OWN KEY, AND A FACE COMPOSES ONTO THAT.
-    //
-    // These name a wiki's personal/draft/working layers, through THE ONE slot-doc resolver. The MINT
-    // is what confers authority (`registerBag` generates the document; its generator is admin by
-    // construction), so a faceless vessel's binding is a doc the VESSEL holds — the posture its
-    // daemon bag has always stood in. Where a face is SEATED the same doc delegates to the
-    // PersonaGroup on top, so operator and vessel compose over every critical doc; the draft slot
-    // of an unseated vessel falls to the device floor and says so (`resolveSlotDoc`). The callback
-    // reads `daemonAuth.personaGroupId` directly rather than through `faceGroup()`, so a
-    // floor offering it cannot throw during boot and take its own standing with it.
+    // The slot resolver chooses the face creator when seated and the vessel at the floor.
     resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) => {
       const bindings = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug);
       if (!kh) throw new Error("binding: keyhive unbooted");
-      // The first mount mints each slot's bag cap in the same act as its document binding.
+      // The first mount mints each slot's bag cap in the same act as its document binding, on the face when seated.
       for (const kind of ["working", "draft"] as const) {
         const bag = wikiSlotUri(wikiSlug, kind);
-        await kh.registerBag(bag);
-        if (daemonAuth.personaGroupId && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupId)) {
-          await delegateToFaceViaVeil(bag, "admin");
-        }
+        if (faceDoor() && await veilKh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
+        else await kh.registerBag(bag);
       }
       return bindings;
     },

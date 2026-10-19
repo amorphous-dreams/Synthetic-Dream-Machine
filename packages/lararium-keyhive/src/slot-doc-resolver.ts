@@ -12,8 +12,8 @@
  *
  *   draft    — face binding when seated; else the FLOOR doc keyed by the vessel DID in the catalog
  *              registry (`wikiDraftDocKey`: `wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`).
- *   working  — the binding minted on the vessel's own key, delegated to the face when seated
- *   personal — the same as working (its own layer, per operator ruling)
+ *   working  — the face mints when seated; the vessel mints at the floor
+ *   personal — the same ownership choice as working
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
  *
@@ -28,6 +28,7 @@ import {
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
+import type { FaceBagDoor } from "./face-bag-door.js";
 import { resolveOrMintBinding, type BindingKind, type DocMinter } from "./resolve-binding.js";
 
 /** The Automerge-repo surface the resolver needs: mint (`create`) and the floor mint's readiness. */
@@ -47,7 +48,7 @@ export interface SlotDocResolverArgs {
   readonly mintedByHex: () => string;
   readonly personaGroupId?: string | undefined;
   readonly faceSeated?: () => Promise<boolean>;
-  readonly delegateToFace?: (bagUrl: string, access: "read" | "admin") => Promise<void>;
+  readonly faceDoor?: FaceBagDoor;
 }
 
 export interface SlotDoc {
@@ -100,7 +101,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       kind: PREFIX_OF[kind].kind, prefix: PREFIX_OF[kind].prefix, fingerprint, recipeTrace,
       repo: args.repo, daemonStore: args.daemonStore, keyhive: args.keyhive,
       ...(args.personaGroupId ? { personaGroupId: args.personaGroupId } : {}),
-      ...(args.delegateToFace ? { delegateToFace: args.delegateToFace } : {}),
+      ...(args.faceDoor ? { faceDoor: args.faceDoor } : {}),
       ...(args.faceSeated ? { faceSeated: args.faceSeated } : {}),
       mintedByHex: args.mintedByHex(),
     });

@@ -8,16 +8,18 @@
  *   V1 — `knowsAgent` reads false for a group agent the provider never met, true once the seat's events land
  *   V2 — `resolveOrMintBinding` with a face pinned and NO seat mints on the vessel's own key, never throws,
  *        and the binding record says so
- *   V3 — reuse-on-present with a `vessel-only` record and the seat now standing re-delegates through
- *        `delegateToFace` and rewrites the record `face-reach = "face"`; a `face` record re-delegates nothing
+ *   V3 — a seated face re-mints its own Keyhive document for a vessel-only binding.
+ *        A face record adopts its document without another grant.
  *        (CONTROL), and a seat still absent leaves `vessel-only` standing (CONTROL)
  */
 import { describe, test, expect } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { resolveOrMintBinding } from "../src/resolve-binding.js";
+import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -61,7 +63,7 @@ describe("a face pinned is not a face seated", () => {
       repo, daemonStore, keyhive: joinee,
       personaGroupId: "cd".repeat(16),
       faceSeated: async () => false,
-      delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
+      faceDoor: { mint: async () => { throw new Error("unseated mint reached face"); }, adopt: () => {}, remint: async () => { throw new Error("unseated remint reached face"); } },
       mintedByHex: "0x" + "a".repeat(64),
       recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
     });
@@ -92,7 +94,7 @@ describe("a face pinned is not a face seated", () => {
       repo, daemonStore, keyhive: joinee,
       personaGroupId: "cd".repeat(16),
       faceSeated: async () => true,
-      delegateToFace: async (bagUrl, access) => { delegated.push([bagUrl, access]); },
+      faceDoor: { mint: async () => { throw new Error("reuse minted"); }, adopt: () => {}, remint: async (bagUrl: string) => { delegated.push([bagUrl, "admin"]); return { docId: "e1".repeat(32) }; } },
       mintedByHex: "0x" + "a".repeat(64),
       recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
     });
@@ -122,11 +124,11 @@ describe("a face pinned is not a face seated", () => {
       } as never,
       keyhive: joinee, personaGroupId: "cd".repeat(16),
       faceSeated: async () => true,
-      delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
+      faceDoor: { mint: async () => { throw new Error("reuse minted"); }, adopt: (bagUrl: string) => { delegated.push(bagUrl); }, remint: async () => { throw new Error("face reuse reminted"); } },
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
     });
     expect(r.minted).toBe(false);
-    expect(delegated).toEqual([]);
+    expect(delegated).toEqual(["automerge:seatedBinding"]);
     expect(put).toEqual([]);
     await joinee.dispose();
   });
@@ -145,7 +147,7 @@ describe("a face pinned is not a face seated", () => {
       } as never,
       keyhive: joinee, personaGroupId: "cd".repeat(16),
       faceSeated: async () => false,
-      delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
+      faceDoor: { mint: async () => { throw new Error("unseated mint reached face"); }, adopt: () => {}, remint: async () => { throw new Error("unseated remint reached face"); } },
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
     });
     expect(delegated).toEqual([]);
@@ -153,17 +155,18 @@ describe("a face pinned is not a face seated", () => {
     await joinee.dispose();
   });
 
-  test("a seated reuse refuses a binding without its Keyhive document identity by name", async () => {
+  test("a face reuse refuses a binding without its Keyhive document identity by name", async () => {
     const joinee = await vessel(16);
     const key = "lar:///ha.ka.ba/bags/daemon/working-bindings/" + "e".repeat(64);
     const error = await resolveOrMintBinding({
       kind: "working-binding", prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings", fingerprint: "e".repeat(64),
       repo: { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} },
       daemonStore: {
-        get: async () => ({ tiddler: { title: key, text: "automerge:unrestorable", "face-reach": "vessel-only" } }),
+        get: async () => ({ tiddler: { title: key, text: "automerge:unrestorable", "face-reach": "face" } }),
         put: async () => {},
       } as never,
       keyhive: joinee, personaGroupId: "cd".repeat(16), faceSeated: async () => true,
+      faceDoor: makeFaceBagDoor({ face: joinee, groupId: "cd".repeat(16) }),
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     }).catch((err: unknown) => err);
     expect((error as Error).name).toBe("BindingRegistrationRefusal");
@@ -192,6 +195,9 @@ describe("a face pinned is not a face seated", () => {
     };
     const first = new KeyhiveProvider();
     await first.init({ seed: seedOf(13), eventStore });
+    const face = new KeyhiveProvider();
+    await face.init({ seed: seedOf(19), eventStore });
+    await face.receiveContactCard(await audience.contactCard());
     await first.receiveContactCard(await audience.contactCard());
     const agent = await audience.vesselIdentifierHex();
     const bindingUrl = "automerge:working-binding-h3";
@@ -218,6 +224,7 @@ describe("a face pinned is not a face seated", () => {
       fingerprint: "b".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
       daemonStore: provider === first ? firstStore : secondStore,
       keyhive: provider, personaGroupId: agent, faceSeated: async () => faceSeated,
+      faceDoor: makeFaceBagDoor({ face, groupId: agent }),
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     });
 
@@ -230,8 +237,9 @@ describe("a face pinned is not a face seated", () => {
 
     await expect(resolveOrMintBinding(args(second, true))).resolves.toEqual({ url: bindingUrl, minted: false });
     expect(firstDocId, "the binding records the document authority it names").toEqual(expect.any(String));
-    expect(await second.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" }),
-      "the seated face receives authority to the same Keyhive document").toEqual({ ok: true });
+    expect(await face.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" }),
+      "the seated face owns its new Keyhive document").toEqual({ ok: true });
+    expect((await second.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" })).ok, "the vessel holds no reach in the face's document").toBe(false);
     expect(((await secondStore.get(key) as { tiddler?: Record<string, unknown> } | undefined)?.tiddler)?.["face-reach"]).toBe("face");
 
     const third = new KeyhiveProvider();
@@ -241,7 +249,7 @@ describe("a face pinned is not a face seated", () => {
     third.delegate = async (delegateArgs) => { thirdGrants += 1; return originalDelegate(delegateArgs); };
     await expect(resolveOrMintBinding(args(third, true))).resolves.toEqual({ url: bindingUrl, minted: false });
     expect(thirdGrants, "a face binding is not re-granted on the third process").toBe(0);
-    await first.dispose(); await second.dispose(); await third.dispose(); await audience.dispose();
+    await first.dispose(); await second.dispose(); await third.dispose(); await face.dispose(); await audience.dispose();
     rmSync(root, { recursive: true, force: true });
   });
 
@@ -270,10 +278,14 @@ describe("a face pinned is not a face seated", () => {
       kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
       fingerprint: "e".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
       daemonStore, keyhive: provider, personaGroupId: agent, faceSeated: async () => faceSeated,
+      faceDoor: makeFaceBagDoor({ face, groupId: agent }),
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     });
     const docIdAt = (): unknown => (records.get(key) as { tiddler?: Record<string, unknown> } | undefined)?.tiddler?.["keyhive-doc-id"];
 
+    const face = new KeyhiveProvider();
+    await face.init({ seed: seedOf(18), eventStore });
+    await face.receiveContactCard(await audience.contactCard());
     const founding = new KeyhiveProvider();
     await founding.init({ seed: seedOf(17), eventStore });
     await founding.settleEvents();
@@ -304,16 +316,17 @@ describe("a face pinned is not a face seated", () => {
     expect(litDocId, "the record names the document that serves").toEqual(expect.any(String));
     expect(litDocId).not.toBe(floorDocId);
     expect((records.get(key) as { tiddler?: Record<string, unknown> }).tiddler?.["face-reach"]).toBe("face");
-    expect(await lit.holdsHand(bindingUrl)).toBe(true);
-    expect(await lit.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" })).toEqual({ ok: true });
-    expect((await lit.encryptContent(bindingUrl, new Uint8Array([1]))).byteLength, "the lit stand seals into it").toBeGreaterThan(0);
-    await lit.dispose(); await audience.dispose();
+    expect(await face.holdsHand(bindingUrl)).toBe(true);
+    expect(await face.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" })).toEqual({ ok: true });
+    expect((await face.encryptContent(bindingUrl, new Uint8Array([1]))).byteLength, "the face seals into it").toBeGreaterThan(0);
+    await lit.dispose(); await face.dispose(); await audience.dispose();
   });
 
   test("H3 CONTROL — a face-first binding delegates once and same-process reuse does not re-grant", async () => {
     const audience = await vessel(14);
     const provider = await vessel(15);
-    await provider.receiveContactCard(await audience.contactCard());
+    const face = await vessel(18);
+    await face.receiveContactCard(await audience.contactCard());
     const agent = await audience.vesselIdentifierHex();
     const records = new Map<string, Record<string, unknown>>();
     const daemonStore = {
@@ -326,17 +339,18 @@ describe("a face pinned is not a face seated", () => {
     const input = {
       kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
       fingerprint: "c".repeat(64), repo: { create: () => ({ url: "automerge:face-first", documentId: "face-first" }), flush: async () => {} }, daemonStore,
-      keyhive: provider, personaGroupId: agent, faceSeated: async () => true,
+      keyhive: provider, faceDoor: makeFaceBagDoor({ face, groupId: agent }), personaGroupId: agent, faceSeated: async () => true,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     };
     let grants = 0;
-    const originalDelegate = provider.delegate.bind(provider);
-    provider.delegate = async (args) => { grants += 1; return originalDelegate(args); };
+    const originalDelegate = face.delegate.bind(face);
+    face.delegate = async (args) => { grants += 1; return originalDelegate(args); };
 
     expect(await resolveOrMintBinding(input)).toEqual({ url: "automerge:face-first", minted: true });
     expect(await resolveOrMintBinding(input)).toEqual({ url: "automerge:face-first", minted: false });
     expect(grants).toBe(1);
-    expect(await provider.verify({ presenter: agent, bagUrl: "automerge:face-first", access: "admin" })).toEqual({ ok: true });
-    await provider.dispose(); await audience.dispose();
+    expect(await face.verify({ presenter: agent, bagUrl: "automerge:face-first", access: "admin" })).toEqual({ ok: true });
+    expect(provider.docIdOfBag("automerge:face-first")).toBeNull();
+    await provider.dispose(); await face.dispose(); await audience.dispose();
   });
 });
