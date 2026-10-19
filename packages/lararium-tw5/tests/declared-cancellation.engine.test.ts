@@ -136,4 +136,40 @@ describe.skipIf(wikiSkip)(`declared cancellation and bubbling, engine half${skip
     ]));
     expect(failures).toEqual([`step 3: answers ["refused:unclaimed"], the script expects ["applied"]`]);
   }, 120_000);
+
+  test("$eventcatcher stamps its discrete declaration; matching descendants run it, outside nodes do not, and continuous events refuse by name", async () => {
+    const root = `<$eventcatcher $click="<$action-setfield $tiddler='lar:///t/d/target' text=<<event-type>>/>" selector=".hit" class="catch"><button class="hit">inside</button><button class="miss">outside</button></$eventcatcher>`;
+    expect(await walk(script(root, [
+      { frame: "first" },
+      { expect: { frame: { stamps: { ".catch": { "data-lar-on": "click", "data-lar-cancel": "click" } } } } },
+      { act: { control: ".hit", action: "lar:click", geometry: RECT } },
+      { expect: { answers: ["applied"], writes: [{ title: "lar:///t/d/target", text: "click" }] } },
+      { act: { control: ".miss", action: "lar:click", geometry: RECT } },
+      { expect: { answers: ["refused:unclaimed"], writes: [{ title: "lar:///t/d/target", text: "click" }] } },
+      { act: { control: ".hit", action: "lar:pointermove", geometry: RECT } },
+      { expect: { answers: ["refused:continuous-event-refused"] } },
+      { act: { control: ".hit", action: "lar:pointerdown", geometry: RECT } },
+      { expect: { answers: ["refused:continuous-event-refused"] } },
+    ]))).toEqual([]);
+  }, 120_000);
+
+  test("$eventcatcher that asks for pointer capture refuses it by name, even for a declared click", async () => {
+    const root = `<$eventcatcher $click="<$action-setfield $tiddler='lar:///t/d/target' text='ran'/>" pointerCapture="yes" class="catch"><button class="hit">inside</button></$eventcatcher>`;
+    expect(await walk(script(root, [
+      { frame: "first" },
+      { act: { control: ".hit", action: "lar:click", geometry: RECT } },
+      { expect: { answers: ["refused:pointer-capture-refused"], writes: [] } },
+    ]))).toEqual([]);
+  }, 120_000);
+
+  test("$keyboard refuses a reserved chord by name and matches a declared key across layouts using real key and code", async () => {
+    const root = `<$keyboard key="a" actions="<$action-setfield $tiddler='lar:///t/d/target' text=<<event-key>>/>" class="kb">keys</$keyboard>`;
+    expect(await walk(script(root, [
+      { frame: "first" },
+      { act: { control: ".kb", action: "lar:key", key: { key: "l", code: "KeyL", keyCode: 76, repeat: false }, modifiers: { ctrl: true, meta: false, alt: false, shift: false } } },
+      { expect: { answers: ["refused:reserved-chord"] } },
+      { act: { control: ".kb", action: "lar:key", key: { key: "a", code: "KeyQ", keyCode: 65, repeat: false } } },
+      { expect: { answers: ["applied"], writes: [{ title: "lar:///t/d/target", text: "a" }] } },
+    ]))).toEqual([]);
+  }, 120_000);
 });

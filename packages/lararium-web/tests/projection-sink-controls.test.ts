@@ -176,3 +176,40 @@ describe("★ lar-popover and lar-disclosure ★", () => {
     m.done();
   });
 });
+
+describe("★ declared $eventcatcher bindings ★", () => {
+  test("binds the declared discrete click and never subscribes a catcher to pointermove", () => {
+    const m = mount();
+    m.sink.apply(frame(1, '<div class="tc-eventcatcher" data-lar-rid="10" data-lar-on="click" data-lar-cancel="click"><button class="hit" data-lar-rid="11">hit</button></div>'));
+    const hit = m.pane().querySelector<HTMLButtonElement>("button.hit")!;
+    hit.click();
+    expect(m.sent.map((ev) => ev.action)).toEqual(["lar:click"]);
+    hit.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, composed: true }));
+    expect(m.sent.map((ev) => ev.action), "the undeclared continuous event has no catcher crossing").toEqual(["lar:click"]);
+    m.done();
+  });
+
+  test("relays a declared dblclick through the catcher's selector alone, as a named event", () => {
+    const m = mount();
+    m.sink.apply(frame(1, '<div class="tc-eventcatcher" data-lar-rid="20" data-lar-on="dblclick" data-lar-catcher-selector=".hit"><button class="hit" data-lar-rid="21">hit</button><button class="miss" data-lar-rid="22">miss</button></div>'));
+    const pane = m.pane();
+    pane.querySelector("button.miss")!.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, composed: true }));
+    expect(m.sent, "a dblclick outside the selector never crosses").toEqual([]);
+    pane.querySelector("button.hit")!.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, composed: true }));
+    expect(m.sent.map((ev) => [ev.action, (ev as { eventType?: string }).eventType])).toEqual([["lar:event", "dblclick"]]);
+    m.done();
+  });
+
+  test("a reserved chord stays on the glass: Ctrl+L inside a declared keyboard never crosses", () => {
+    const m = mount();
+    m.sink.apply(frame(1, '<div class="kb" data-lar-rid="30" data-lar-on="keydown" data-lar-keys="ctrl-l ctrl-k" data-lar-cancel="keydown:declared" tabindex="0">keys</div>'));
+    const kb = m.pane().querySelector<HTMLElement>(".kb")!;
+    const reserved = new KeyboardEvent("keydown", { key: "l", code: "KeyL", keyCode: 76, ctrlKey: true, bubbles: true, composed: true, cancelable: true });
+    kb.dispatchEvent(reserved);
+    expect(reserved.defaultPrevented, "the browser keeps its own chord").toBe(false);
+    expect(m.sent, "the reserved chord never crosses").toEqual([]);
+    kb.dispatchEvent(new KeyboardEvent("keydown", { key: "k", code: "KeyK", keyCode: 75, ctrlKey: true, bubbles: true, composed: true, cancelable: true }));
+    expect(m.sent.map((ev) => ev.action), "CONTROL: a declared, unreserved chord crosses").toEqual(["lar:key"]);
+    m.done();
+  });
+});
