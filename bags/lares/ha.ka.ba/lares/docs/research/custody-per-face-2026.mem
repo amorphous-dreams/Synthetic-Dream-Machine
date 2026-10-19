@@ -19,7 +19,15 @@ uri-path  = "ha.ka.ba/lares/docs/research/custody-per-face-2026"
 
 ! Custody per face, 2026 ~ who seals, under whose key, and what no vessel holds
 
-F6 moves the browser's Repo and daemon kernel into its shared holder, and the kernel's sealed writes asked where the key lives. Four ratcheted research rounds (2026-10-19) answered, each a Luna-6 YIN and YANG pair in two traded waves, YIN with live search over vendor and spec pages, YANG over the code: round one on the fork, round two on per-face custody keys, round three on the question the operator answered Mu, round four confirming the model across every vessel type. The rulings rest at #/rulings; the eight wave-two handbacks rest verbatim at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>. Rows `K15`, `F6`, `B1` and `X0` of <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carry the build.
+F6 moves the browser's Repo and daemon kernel into its shared holder, and the kernel's sealed writes asked where the key lives. Four ratcheted research rounds (2026-10-19) answered, each a Luna-6 YIN and YANG pair in two traded waves, YIN with live search over vendor and spec pages, YANG over the code: round one on the fork, round two on per-face custody keys, round three on the question the operator answered Mu, round four confirming the model across every vessel type. The rulings rest at #/rulings; the eight wave-two handbacks rest verbatim at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>. Rows `K15`, `F6`, `B1` and `X0` of <<~ ahu #/the-place-signer>>
+
+!! The place signer (a fifth round, 2026-10-19)
+
+A YANG scout read the code and a YIN scout read the field, then they traded. The node's place seed rests clear as hex JSON, mode `0600`, and loads at boot with no hand; it signs the place KEL's inception, `carry-for` seals and floor pins, carriage presentations, the floor card and the floor-gate children (through a domain-registered door that never hands out the seed), and it reaches past the floor: the relay gate, the daemon's auth, internal asks, the device-key signer, `deriveDyadVeil` for every face's device veil, and `groupSecretOpenerFromSeed`. The place KEL commits no next key, so a stolen seed re-founds. SSH host keys, the Tor onion master key, WireGuard and ACME account keys load unattended under file permissions; systemd encrypted credentials with TPM2 bind release to the host and its boot state; Vault auto-unseal and Kubernetes secrets move trust to a machine identity; KERI pre-rotation alone makes a theft recoverable. Both scouts ranked a pre-rotated place KEL with a scoped online signer first, a named protected signer second, and a boot door third. The operator ruled the first, its next key riding the founding card, and ruled each face's device veil a random key of its own under that face's FCK. The four handbacks rest verbatim at <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">> #/r5-yin-wave1-yin-wave-one-internet-scout-place-signer onward.
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carry the build.
 
 <<~/ahu>>
 
@@ -57,6 +65,6 @@ F6 moves the browser's Repo and daemon kernel into its shared holder, and the ke
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
 
-<<^ code="&#x0003;">>ni:///sha-256;qjGxwLCiICHBDTIveuOSi39b4gFowTUEPwXGs-Vs49A
+<<^ code="&#x0003;">>ni:///sha-256;8C80V8YrMZ6B-NZXB0pChd61dev8wwdkMwUcyk9UoKw
 
 <<^ code="&#x0004;" -> to="?">>

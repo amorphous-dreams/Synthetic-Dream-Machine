@@ -189,10 +189,15 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 
 <<~ ahu #/open-joints>>
 
-!!! OPEN JOINTS
+!!! The place seed's reach (ruled 2026-10-19)
+
+* ''The veil leaves the seed.'' `deriveDyadVeil(vesselSeed, groupTag)` (`packages/lararium-mesh/src/dyad.ts`) and `groupSecretOpenerFromSeed` (`packages/lararium-node/src/open-node-vessel.ts`) make the vessel seed an ancestor of every face's device veil and group secret. Each becomes D: the veil mints at random at the join and rests under that face's FCK; the opener reads the face's own key. The isolation red gains the row: a thief holding the place seed derives no veil and opens no group secret of any face.
+* ''The seed's other reach narrows to an allowlist.'' The online place signer serves the floor duties the roadmap's place-signer ruling enumerates; every other present use (the daemon's auth, the device-key signer, the internal asks) either names its domain on that allowlist or takes a key of its own.
+
+!! OPEN JOINTS
 
 
-# ''Node private place signing seed.'' Current `.vessel-key*.json` contains a private signing seed in a floor file and `loadVesselSigningSeed` reads it without a human route (`vault-carriers.ts:240-242`; `node-vessel-identity.ts:429-442`). ''Option A:'' keep a *named floor signer* owned by the node, protected at rest under an explicit mechanism; floor means no custody VK/FCK, while this narrowly scoped signer can support faceless Herm startup. Specify the protection, allowed signing/derivation domains, and restart behavior. ''Option B:'' put that signer behind an explicit boot custody door; public card/relay can stand before unlock, while operations requiring its signature wait/refuse until the door opens. Specify Herm boot and unattended container behavior. Neither option is selected here. The private seed is never F, never the current VK, and never the empty serving SK.
+# ''Node private place signing seed'' (ruled 2026-10-19: a scoped online signer under a pre-rotated place KEL whose next key rides the founding card, built in the founding bake; the options it settled follow). Current `.vessel-key*.json` contains a private signing seed in a floor file and `loadVesselSigningSeed` reads it without a human route (`vault-carriers.ts:240-242`; `node-vessel-identity.ts:429-442`). ''Option A:'' keep a *named floor signer* owned by the node, protected at rest under an explicit mechanism; floor means no custody VK/FCK, while this narrowly scoped signer can support faceless Herm startup. Specify the protection, allowed signing/derivation domains, and restart behavior. ''Option B:'' put that signer behind an explicit boot custody door; public card/relay can stand before unlock, while operations requiring its signature wait/refuse until the door opens. Specify Herm boot and unattended container behavior. Neither option is selected here. The private seed is never F, never the current VK, and never the empty serving SK.
 # ''Node archive row selector.'' The single `keyhive-archive` carrier is proven (`vault-carriers.ts:290-291`), but the path from each node provider/archive save to the selected face row remains unproved in the handbacks (round 1's YIN handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>; round 4's YANG handback in <<~ loulou "lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face">>). Trace every node archive writer and restore reader and show an authenticated PersonaGroup selector before migration. Until then, the D target is a ''LEAD'' and bytes do not move.
 # ''Tablet unattended sync.'' Public and ciphertext copy is F. Unattended D decrypt/transform needs a separate product ruling: route it to an authorized always-on node or define a narrowly named S principal, payload and boot door. No background worker receives an FCK by implication (`stable-founding-road.mem:207`).
 # ''Guest-owned store.'' Prove whether the guest persists its own keys/rows. If yes, it is a separate vessel with its own D/F split, FCK trees, floor, and isolation red; if no, every private guest act remains under the host's admitted face session. Host keys never silently become guest keys (`stable-founding-road.mem:207`).
@@ -203,6 +208,6 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;_OUoarOWw8T8dknrxPgzYHFlKhpseiAre6x4UTnvHug
+<<^ code="&#x0003;">>ni:///sha-256;51CWJcMDoRDvEGLqA4av5btCYrStSp8tbmP-jxC38oc
 
 <<^ code="&#x0004;" -> to="?">>
