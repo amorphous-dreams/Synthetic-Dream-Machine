@@ -63,6 +63,48 @@ const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElemen
 
 const VESSEL_IDB = "lares:vessel";
 
+// Page instruments report what the browser exposes. They never decide whether a boot succeeds.
+const vesselLoaf: Array<{ startTime: number; duration: number; blockingDuration: number }> = [];
+const vesselLoafSupported = typeof PerformanceObserver !== "undefined"
+  && PerformanceObserver.supportedEntryTypes.includes("long-animation-frame");
+if (vesselLoafSupported) {
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const frame = entry as PerformanceEntry & { blockingDuration?: number };
+      vesselLoaf.push({ startTime: frame.startTime, duration: frame.duration, blockingDuration: frame.blockingDuration ?? 0 });
+    }
+  }).observe({ type: "long-animation-frame", buffered: true });
+}
+let firstPaintReported = false;
+let firstPaintHeap: number | null = null;
+const showPageInstruments = (): void => {
+  const vessel = document.getElementById("vessel");
+  if (!vessel || !firstPaintReported) return;
+  const show = (label: string, value: string): void => {
+    const existing = [...vessel.querySelectorAll<HTMLElement>(".row")]
+      .find((item) => item.querySelector(".k")?.textContent === label)?.querySelector<HTMLElement>(".v");
+    if (existing) existing.textContent = value;
+    else row(vessel, label, value);
+  };
+  show("LoAF", vesselLoafSupported ? `${vesselLoaf.length} observed` : "absent");
+  show("heap after first paint", firstPaintHeap === null ? "absent" : `${firstPaintHeap} bytes`);
+};
+function reportFirstPaint(): void {
+  if (firstPaintReported) return;
+  firstPaintReported = true;
+  requestAnimationFrame(() => {
+    const heap = (performance as Performance & { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize;
+    firstPaintHeap = typeof heap === "number" ? heap : null;
+    const reading = {
+      longAnimationFrames: vesselLoafSupported ? { supported: true, entries: vesselLoaf } : { supported: false, reading: "absent" },
+      heapAfterFirstPaint: typeof heap === "number" ? { bytes: heap } : { reading: "absent" },
+    };
+    (window as Window & { __larVesselMetrics?: typeof reading }).__larVesselMetrics = reading;
+    console.log("[vessel] page instruments", reading);
+    showPageInstruments();
+  });
+}
+
 /**
  * THIS TAB'S CUSTODY DOOR (operator ruling 2026-10-18: each browser tab asks for its own unlock, and the shared holder
  * carries no unlock between tabs). One small form on the page asks the person; the passphrase lives in this page's
@@ -348,7 +390,7 @@ async function bootVessel(): Promise<void> {
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
       onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
-      onFrame: (frame) => { projectionSink.apply(frame); },
+      onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) reportFirstPaint(); },
       onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(floor ? { floorCard: floor.text } : {}),
@@ -389,6 +431,7 @@ async function bootVessel(): Promise<void> {
     row(vesselEl, "wiki", result.activeWikiId);
     row(vesselEl, "wiki doc", result.wikiDocUrl);
     row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
+    showPageInstruments();
     // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
     // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed.
     void requestDurableStorage().then((reading) => {

@@ -149,6 +149,8 @@ interface SurfaceState {
   /** Whether the current mount epoch has painted its `lar:surface` key into the pane. */
   painted: boolean;
   breath: LarBreath | null;
+  /** Highest island hint sequence the page acted on during this mount epoch. */
+  hintSequence: number;
 }
 
 /** The target an event names: the template's control id where one stands nearest, else the render id. */
@@ -190,7 +192,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   const surfaces = new Map<string, SurfaceState>();
   const stateOf = (surface: string): SurfaceState => {
     let st = surfaces.get(surface);
-    if (!st) { st = { epoch: null, revs: new Map(), sheet: "", members: null, localRev: new Map(), painted: false, breath: null }; surfaces.set(surface, st); }
+    if (!st) { st = { epoch: null, revs: new Map(), sheet: "", members: null, localRev: new Map(), painted: false, breath: null, hintSequence: 0 }; surfaces.set(surface, st); }
     return st;
   };
   let shownSurface: string | null = null;
@@ -334,7 +336,10 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const switching = frame.surface !== shownSurface;
     const st = stateOf(frame.surface);
     const newEpoch = switching || st.epoch !== frame.mountEpoch;
-    if (newEpoch) { st.epoch = frame.mountEpoch; st.revs.clear(); st.painted = false; }
+    if (newEpoch) {
+      if (st.epoch !== frame.mountEpoch) st.hintSequence = 0;
+      st.epoch = frame.mountEpoch; st.revs.clear(); st.painted = false;
+    }
     const fresh = frame.keys.filter((k) => {
       const held = st.revs.get(k.key);
       if (held !== undefined && k.rev < held) return false;          // a key orders only itself
@@ -432,6 +437,23 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
         restoreRenderId = null;
       }
       modalWasPresent = false;
+    }
+    // The island names a target and a rising sequence; the page owns the physical scroll and focus.
+    // Apply after the page's own route and modal placement so this hint lands on the final painted tree.
+    for (const hint of paneEl.querySelectorAll<HTMLElement>("[data-lar-hint]")) {
+      const sequence = Number(hint.dataset["larHint"]);
+      if (!Number.isSafeInteger(sequence) || sequence <= st.hintSequence) continue;
+      st.hintSequence = sequence;
+      const scrollTo = hint.dataset["larScrollTo"];
+      if (scrollTo) {
+        try { paneEl.querySelector<HTMLElement>(scrollTo)?.scrollIntoView({ block: "nearest" }); }
+        catch { /* An invalid selector names no page action. */ }
+      }
+      const focus = hint.dataset["larFocus"];
+      if (focus) {
+        try { paneEl.querySelector<HTMLElement>(focus)?.focus(); }
+        catch { /* An invalid selector names no page action. */ }
+      }
     }
     return "painted";
   };
