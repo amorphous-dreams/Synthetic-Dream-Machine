@@ -31,7 +31,7 @@ function fakeLocks(clientId: string, shared: Map<string, string>): LockHost {
   };
 }
 
-/** A fake island: counts boots, echoes every post back as `{ echo }`. */
+/** A fake island: counts boots and answers wiki verb requests. */
 function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number } {
   let boots = 0;
   return {
@@ -40,7 +40,12 @@ function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number }
       boots++;
       const listeners = new Set<(raw: unknown) => void>();
       return {
-        post:      (msg) => { for (const l of listeners) l({ echo: msg }); },
+        post:      (msg) => {
+          const request = msg as { type?: string; requestId?: string };
+          if (request.type === "wiki:place-verb") {
+            for (const l of listeners) l({ type: "wiki:verb-result", requestId: request.requestId, result: { ok: true } });
+          }
+        },
         listen:    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
         onError:   () => () => {},
         terminate: () => {},
@@ -95,13 +100,14 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     // A tab that finds the lock held by ANOTHER TAB still refuses loud (the collision the lock exists to stop).
     await expect(holdVesselLock(IDB, fakeLocks("tab-3", lockTable), { attachToHolder: "some-other-holder" })).rejects.toThrow(/already held/);
 
-    // The port speaks to the ONE island: a post from tab A echoes to BOTH tabs.
+    // The port speaks to the ONE island: its reply returns to the asking tab alone.
     const ha = holderWorkerHandle(a.port); const hb = holderWorkerHandle(b.port);
-    const seenB = new Promise<unknown>((r) => hb.listen((m) => r(m)));
     const seenA = new Promise<unknown>((r) => ha.listen((m) => r(m)));
-    ha.post({ ping: 1 });
-    expect(await seenA).toEqual({ echo: { ping: 1 } });
-    expect(await seenB).toEqual({ echo: { ping: 1 } });
+    ha.post({ type: "wiki:place-verb", requestId: "from-a" });
+    expect(await seenA).toEqual({ type: "wiki:verb-result", requestId: "from-a", result: { ok: true } });
+    const seenB: unknown[] = [];
+    hb.listen((message) => seenB.push(message));
+    expect(seenB).toEqual([]);
   });
 
   test("CONTROL — no SharedWorker on the host: the floor, named; the lock refuses as today with no holder to attach to", async () => {
@@ -188,29 +194,29 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(second.hello.islandBoots).toBe(1);
     expect(first.port).not.toBe(second.port);
 
+    // Each tab asks the one island by its own request and hears its own answer; the edit one tab made reads back
+    // through another tab's own request, never through an echo of the first tab's traffic.
+    let n = 0;
+    const ask = (handle: ReturnType<typeof holderWorkerHandle>, verb: "read" | "change", level?: string) => new Promise<unknown>((resolve) => {
+      const requestId = `t-${++n}`;
+      const stop = handle.listen((message) => {
+        const m = message as { type?: unknown; requestId?: unknown; output?: unknown };
+        if (m.type === "wiki:verb-result" && m.requestId === requestId) { stop(); resolve(m.output); }
+      });
+      handle.post({ type: "wiki:place-verb", requestId, verb, args: level ? { level } : {} });
+    });
     const firstHandle = holderWorkerHandle(first.port);
     const secondHandle = holderWorkerHandle(second.port);
-    const firstRead = new Promise<unknown>((resolve) => firstHandle.listen(resolve));
-    firstHandle.post({ kind: "read" });
-    expect(await firstRead).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
-
-    const secondEdit = new Promise<unknown>((resolve) => secondHandle.listen((message) => {
-      if ((message as { level?: unknown }).level === "3") resolve(message);
-    }));
-    firstHandle.post({ kind: "change", level: "3" });
-    expect(await secondEdit).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(firstHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
+    expect(await ask(firstHandle, "change", "3")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(secondHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     second.port.close();
     const reattached = await attachSharedHolder({ holderUrl, host });
     expect(reattached.kind).toBe("attached");
     if (reattached.kind !== "attached") return;
     expect(reattached.hello.islandBoots).toBe(1);
-    const reattachedHandle = holderWorkerHandle(reattached.port);
-    const retained = new Promise<unknown>((resolve) => reattachedHandle.listen((message) => {
-      if ((message as { level?: unknown }).level === "3") resolve(message);
-    }));
-    reattachedHandle.post({ kind: "read" });
-    expect(await retained).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(holderWorkerHandle(reattached.port), "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     first.port.close();
     reattached.port.close();

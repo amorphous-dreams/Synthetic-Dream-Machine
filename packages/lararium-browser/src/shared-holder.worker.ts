@@ -32,5 +32,10 @@ const core = makeSharedHolderCore({
 
 sw.addEventListener("connect", (e: MessageEvent) => {
   const port = e.ports[0];
-  if (port) void core.connect(port);
+  if (port) {
+    // Engines that surface a close event release the port's routes; a failed clone marks it lost too.
+    port.addEventListener("close", () => core.disconnect(port));
+    port.addEventListener("messageerror", () => core.disconnect(port));
+    void core.connect(port);
+  }
 });
