@@ -268,6 +268,6 @@ describe("the boot climb stays scoped to antigen and crossroads", () => {
     expect(src.indexOf("nexusScopeOrThrow(nexusStanding)"))
       .toBeLessThan(src.indexOf("await climbNexusBoards"));
     expect(src.indexOf("await climbNexusBoards"), "before the crossroads plane registers")
-      .toBeLessThan(src.indexOf("await registerCrossroadsInOracle"));
+      .toBeLessThan(src.indexOf("await registerCrossroadsPointer"));
   });
 });

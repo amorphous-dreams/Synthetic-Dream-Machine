@@ -3,7 +3,7 @@
  * no key and no roster here; standing reads as a live query the edge shadow ring answers. The realm-doc pointer
  * names each realm doc, the id pointer names the default realm, the steward pointer names a realm's worn key,
  * and the standing pointer carries that realm's folded registrations. The holder materializes each shared CRDT,
- * charter names, pins the pointer on the vessel's own oracle plane (so the daemon island's reach walks it),
+ * charter names, pins the pointer on the vessel's own catalog plane (so the daemon island's reach walks it),
  * folds the standing registrations into the wire gate, and lands a steward's registration + its @crossroads
  * announce.
  *
@@ -141,8 +141,8 @@ export interface RealmPlanesHolder extends RealmPlaneHolder {
 
 export function makeRealmPlane(opts: {
   readonly repo: Repo;
-  /** The vessel's own oracle plane — the pointer to the realm doc lands here. */
-  readonly oracleHandle: DocHandle<LarDoc>;
+  /** The vessel's own catalog plane — the pointer to the realm doc lands here. */
+  readonly registry: DocHandle<LarDoc>;
   /** The public crossroads doc the announce lands on. */
   readonly crossroadsHandle: DocHandle<LarDoc>;
   readonly membership: NexusMembership;
@@ -199,7 +199,7 @@ export function makeRealmPlane(opts: {
    */
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
 }): RealmPlanesHolder {
-  const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
+  const { repo, registry, crossroadsHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
 
   /** One realm's plane as the holder keeps it: the plane a verb acts through, its gate, and its teardown. */
@@ -284,12 +284,12 @@ export function makeRealmPlane(opts: {
       if (dropped) return;
       await realmGate.refold(realmHandle.doc(), realmId);
       if (dropped) return;
-      // THE VERDICT RESTS ON THE VESSEL'S OWN PLANE: the daemon island reads the standing registrations this
+      // THE VERDICT RESTS ON THE VESSEL'S OWN CATALOG: the daemon island reads the standing registrations this
       // plane folded, and folds nothing itself.
       const folded = realmGate.registrations();
       const image = JSON.stringify([...folded.values()].sort((a, b) => (a.bagUri < b.bagUri ? -1 : a.bagUri > b.bagUri ? 1 : 0)));
       if (image !== lastStanding) {
-        oracleHandle.change((d) => { writeRealmStanding(d, realmId, folded); });
+        registry.change((d) => { writeRealmStanding(d, realmId, folded); });
         lastStanding = image;
       }
       opts.onRefold?.();
@@ -309,20 +309,20 @@ export function makeRealmPlane(opts: {
      *  here. Written the moment this hand seals, never from a name another hand wrote. */
     const pinSteward = (nym: string): void => {
       const key = realmStewardPointer(realmId);
-      if (tiddlerText(oracleHandle.doc()?.tiddlers?.[key]) === nym) return;
-      oracleHandle.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
+      if (tiddlerText(registry.doc()?.tiddlers?.[key]) === nym) return;
+      registry.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
     };
 
-    // The pointers on the vessel's OWN plane: the daemon island's reach reads a realm's doc from here, never off
+    // The pointers on the vessel's OWN catalog: the daemon island's reach reads a realm's doc from here, never off
     // the realm doc itself (a member who could rewrite an id there could make a foreign record count). The
     // charter-derived realm also names itself the DEFAULT a verb routes to.
     const docPointer = realmDocPointer(realmId);
     // A STAND THAT FAILS LEAVES NOTHING: no listener, no pin, no verdict.
     try {
-      const oracle = oracleHandle.doc();
-      const wantsDefault = kind === "charter" && tiddlerText(oracle?.tiddlers?.[REALM_ID_TIDDLER]) !== realmId;
-      if (tiddlerText(oracle?.tiddlers?.[docPointer]) !== realmUrl || wantsDefault) {
-        oracleHandle.change((d) => {
+      const catalog = registry.doc();
+      const wantsDefault = kind === "charter" && tiddlerText(catalog?.tiddlers?.[REALM_ID_TIDDLER]) !== realmId;
+      if (tiddlerText(catalog?.tiddlers?.[docPointer]) !== realmUrl || wantsDefault) {
+        registry.change((d) => {
           d.tiddlers[docPointer] = storedLarRecord(docPointer, { text: realmUrl }, "vessel-boot");
           if (kind === "charter") d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: realmId }, "vessel-boot");
         });
@@ -456,7 +456,7 @@ export function makeRealmPlane(opts: {
       dispose: () => dispose(),
     };
     const keepsOwn = (documentId: DocumentId): boolean => {
-      const own = tiddlerText(oracleHandle.doc()?.tiddlers?.[realmStewardPointer(realmId)]);
+      const own = tiddlerText(registry.doc()?.tiddlers?.[realmStewardPointer(realmId)]);
       if (!own) return false;
       for (const rec of realmGate.registrations().values()) {
         if (rec.keptBy.includes(own) && interpretAsDocumentId(rec.docUrl as AutomergeUrl) === documentId) return true;
@@ -470,8 +470,8 @@ export function makeRealmPlane(opts: {
   /** A realm this vessel left takes its pointers with it: the island reads no verdict of a plane that stands no more. */
   const unpin = (realmId: string): void => {
     const keys = [realmDocPointer(realmId), realmStewardPointer(realmId), realmStandingPointer(realmId)];
-    if (!keys.some((k) => oracleHandle.doc()?.tiddlers?.[k] !== undefined)) return;
-    oracleHandle.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
+    if (!keys.some((k) => registry.doc()?.tiddlers?.[k] !== undefined)) return;
+    registry.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
   };
 
   /** The ledger's notes, read whole; a ledger that will not read notes nothing. */

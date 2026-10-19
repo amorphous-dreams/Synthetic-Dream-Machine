@@ -1,5 +1,5 @@
 /**
- * A system wiki's canon doc and default recipe stand in the oracle plane. The vessel composes it
+ * A system wiki's canon doc stands in the vessel catalog; its default recipe stands in the oracle plane. The vessel composes it
  * through its OWN catalog record: `init-wiki` mints nothing for a system slug, and `add-bag` /
  * `remove-bag` adopt the default into the catalog on the first edit. A user slug walks the
  * mint-and-append path with the system floor carried through @oracle.
@@ -35,10 +35,9 @@ const DEFAULT_STACK = "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium
 
 function rig() {
   const oracle  = plane("automerge:oracle", {
-    [LARES]: rec(LARES, { text: "automerge:lares-canon" }),
     [recipeUri("oracle", "lares")]: rec(recipeUri("oracle", "lares"), { "bag-stack": DEFAULT_STACK }),
   });
-  const catalog = plane("automerge:catalog", {});
+  const catalog = plane("automerge:catalog", { [LARES]: rec(LARES, { text: "automerge:lares-canon" }) });
   const created: string[] = [];
   const repo = {
     create: () => { created.push("create"); return { url: "automerge:minted", whenReady: async () => {} }; },

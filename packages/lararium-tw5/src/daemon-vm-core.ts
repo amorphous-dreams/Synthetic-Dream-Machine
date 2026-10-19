@@ -605,9 +605,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // wait for ready; Node omits the handshake and posts immediately. Deferred (not awaited)
   // so the synchronous return holds — workerEa resolves once the worker boots off this manifest.
   // ISOMORPHIC crossroads plane: the daemon renders the public oracle plane on ANY vessel (node or browser). One
-  // shore, both wrappers funnel through here — so splice the crossroads bag into the recipe (resolves via the oracle plane's
+  // shore, both wrappers funnel through here — so splice the crossroads bag into the recipe (resolves via the catalog's
   // pointer, or skips gracefully when a vessel hasn't registered it) + registerBags (so keyhive can access it).
-  // Writing the oracle plane's pointer rides the vessel boot (registerCrossroadsInOracle), keyed by the nexus the
+  // Writing the catalog pointer rides the vessel boot (registerCrossroadsPointer), keyed by the nexus the
   // vessel belongs to — that value differs (a node's own key vs a browser's relay key), the daemon code does not.
   const daemonRecipe: WikiRecipe = {
     ...recipe,

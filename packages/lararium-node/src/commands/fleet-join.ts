@@ -182,6 +182,8 @@ export async function runFleetJoinOffer(opts: { readonly sealHome: string; reado
 
 export interface FleetJoinAnswerOptions {
   readonly repo:     Repo;
+  /** The catalog named by this store holder; absence names no canon. */
+  readonly catalogUrl?: string | undefined;
   readonly sealHome: string;
   /** The request file as the joinee wrote it. */
   readonly request:  unknown;
@@ -211,12 +213,12 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   await refuseProvisional(face, "fleet join answer");
 
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
+  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
 
   // THE DIAL THE JOINEE NEEDS: the face's admit at this hearth's Nexus (minted once, through the contract door), the
   // charter that seats its quorum, and this hearth's floor pins. The admit commits to the pin the edge's hearth stands
   // under, so the answer's carriage IS the admit's opened carriage.
-  const household = await householdNamed(() => ensureFaceHouseholdAdmit({ repo: opts.repo, sealHome: opts.sealHome, face, ...(payload.syncUrl ? { syncUrl: payload.syncUrl } : {}) }));
+  const household = await householdNamed(() => ensureFaceHouseholdAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, sealHome: opts.sealHome, face, ...(payload.syncUrl ? { syncUrl: payload.syncUrl } : {}) }));
   if (gateBundleDigest(household.opening.carriage.gatePin) !== gateBundleDigest(hearth.gatePin)) {
     throw new FleetJoinRefused("admit-other-pin", "the face's household admit commits to another pin than the gate this hearth stands under.");
   }

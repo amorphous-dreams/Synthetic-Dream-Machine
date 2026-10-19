@@ -32,7 +32,7 @@ import {
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsPointer,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
@@ -1051,9 +1051,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
         oracleAtBoot = islandHandle;
         if (ownHearth) {
-          // The admit names the canon this leaf opens. Seated on this vessel's own oracle replica, the keel and
+          // The admit names the canon this leaf opens. Seated on this vessel's own catalog, the keel and
           // every island mount the hearth's documents through the reading every vessel shares.
-          seatHearthCanon(islandHandle, hearthCanon);
+          seatHearthCanon(catalogHandle, hearthCanon);
           const named = Object.keys(hearthCanon);
           console.log(named.length > 0
             ? `[lararium-browser] hearth canon named by the admit — this leaf mounts ${named.join(", ")}`
@@ -1113,11 +1113,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
     openDaemon: async ({ assembly, slot }) => {
       if (!daemonWorkerUrl) throw new Error("[openBrowserVessel] daemonWorkerUrl REQUIRED (genesis present → sovereign daemon island)");
-      // Register the per-Nexus crossroads (public oracle plane) into the oracle plane so the daemon recipe resolves
-      // it. Isomorphic: node + browser share registerCrossroadsInOracle, and the daemon core splices
+      // Register the per-Nexus crossroads (public oracle plane) in this vessel's catalog so the daemon recipe resolves
+      // it. Isomorphic: node + browser share registerCrossroadsPointer, and the daemon core splices
       // the crossroads bag into the recipe + registerBags for either vessel — only the nexus key differs (here the
       // relay's gate key, so a human's two vessels register the SAME crossroads doc).
-      if (relayGated) await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
+      if (relayGated) await registerCrossroadsPointer(repo, assembly.catalogHandle, nexusPubkey);
       // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
       // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins

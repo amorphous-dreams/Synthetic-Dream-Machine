@@ -6,7 +6,7 @@
  * keeps only what genuinely belongs to node:
  *   - the fs byte source (genesis/seed.json + cas/)
  *   - mintLaresIfAbsent — the operator's node genesis office (gate by placement)
- *   - reconcileWellKnownTiddlers — runtime oracle tiddler writer (the lares url alone)
+ *   - reconcileWellKnownTiddlers — runtime catalog pointer writer (the lares url alone)
  */
 
 import { daemonGenesisDir } from "./lares-config.js";
@@ -196,48 +196,47 @@ export async function loadOrMaterializeOracle(repo: Repo, genesisDir?: string): 
  * placement enforces the gate today — this code runs solely in the operator's
  * node genesis office.
  */
-export function mintLaresIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>): string {
-  const existing = tiddlerText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
+export function mintLaresIfAbsent(repo: Repo, registry: DocHandle<LarDoc>): string {
+  const existing = tiddlerText(registry.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
   if (existing) return existing;
   const minted = repo.create<LarDoc>(emptyLarDoc());
-  islandHandle.change((d) => {
+  registry.change((d) => {
     d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
   });
-  // Two node homes federating one oracle doc may still race; LWW settles
-  // it — re-read and adopt the winner (an orphaned empty mint costs nothing).
-  return tiddlerText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? minted.url;
+  // A concurrent local mint may settle on another pointer; re-read the catalog
+  // and adopt its winner (an orphaned empty mint costs nothing).
+  return tiddlerText(registry.doc()?.tiddlers?.[LARES_DOC_URI]) ?? minted.url;
 }
 
 /**
  * mintLarariumIfAbsent — the lararium memetic corpus as its OWN doc (the oracle,
  * lararium and lares docs stand separate). Mirror
- * of mintLaresIfAbsent: the corpus pointer rides the oracle plane (the
- * island doc), never the catalog registry. The minted doc starts empty; corpus content fills
+ * of mintLaresIfAbsent: the corpus pointer rides this vessel's catalog registry. The minted doc starts empty; corpus content fills
  * it by LOAD/ingest (`lares act LOAD … --to lar:///ha.ka.ba/bags/lararium`) and the
  * disk mirror carries it back to `bags/lararium`. Node genesis office only.
  */
-export function mintLarariumIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>): string {
-  const existing = tiddlerText(islandHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
+export function mintLarariumIfAbsent(repo: Repo, registry: DocHandle<LarDoc>): string {
+  const existing = tiddlerText(registry.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
   if (existing) return existing;
   const minted = repo.create<LarDoc>(emptyLarDoc());
-  islandHandle.change((d) => {
+  registry.change((d) => {
     d.tiddlers[LARARIUM_DOC_URI] = storedLarRecord(LARARIUM_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
   });
-  return tiddlerText(islandHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? minted.url;
+  return tiddlerText(registry.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? minted.url;
 }
 
 // ---------------------------------------------------------------------------
-// reconcileWellKnownTiddlers — runtime oracle tiddler writer
+// reconcileWellKnownTiddlers — runtime catalog pointer writer
 // ---------------------------------------------------------------------------
 
 export function reconcileWellKnownTiddlers(
-  handle:    DocHandle<LarDoc>,
+  registry: DocHandle<LarDoc>,
   laresUrl?: string,
 ): void {
-  const tiddlers = handle.doc()?.tiddlers ?? {};
+  const tiddlers = registry.doc()?.tiddlers ?? {};
   if (!laresUrl || tiddlerText(tiddlers[LARES_DOC_URI]) === laresUrl) return;
-  handle.change((d) => {
+  registry.change((d) => {
     d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
   });
-  console.log("[genesis-artifact] oracle tiddlers  lares=patched");
+  console.log("[genesis-artifact] catalog pointers  lares=patched");
 }

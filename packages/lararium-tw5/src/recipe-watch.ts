@@ -27,7 +27,6 @@ import {
   AutomergeDocStore,
   LARES_BAG,
   ORACLE_BAG,
-  SYSTEM_BAGS,
   structuralSlots,
   wikiSlotUri,
   bagStackFromRec,
@@ -52,17 +51,16 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   const slug        = ctx.recipe.wikiSlug;
 
   // Two registry planes (wiki-layer-ontology#oracle-planes):
-  // the oracle SYSTEM plane carries system-bag pointers + system wiki-recipes
-  // (lares, lararium) as DEFAULTS; the catalog registry carries USER bags and the vessel's own
-  // recipes. System bags resolve from the oracle plane.
+  // The oracle carries system wiki recipes as defaults; the catalog carries every
+  // document pointer and the vessel's own recipes.
   const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
   const sysPlane  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const catHandle = catalog ? await catalog.handle() : null;
   const sysHandle = sysPlane ? await sysPlane.handle() : null;
 
-  // System bags resolve from the oracle plane; everything else from the catalog registry.
+  // Every bag document pointer resolves from the vessel catalog.
   const urlOfBag = async (bagId: string): Promise<string | null> =>
-    (SYSTEM_BAGS.has(bagId) && sysPlane) ? sysPlane.urlOf(bagId) : (catalog ? catalog.urlOf(bagId) : null);
+    catalog ? catalog.urlOf(bagId) : null;
 
   // The island's own recipe record, through the one reader every site shares: the vessel's own
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.

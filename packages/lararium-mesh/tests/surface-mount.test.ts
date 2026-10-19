@@ -113,7 +113,7 @@ function vessel() {
   point(catalog, wikiBagUri(SLUG), canon.url);
   point(catalog, SHARED_BAG, shared.url);
   point(catalog, REFEREE_BAG, referee.url);
-  point(oracle, LARES_BAG, lares.url);
+  point(catalog, LARES_BAG, lares.url);
   const writeRecipe = (plane: "catalog" | "oracle", recipe: WikiRecipe, into: DocHandle<LarDoc> = plane === "catalog" ? catalog : oracle): void => {
     const title = recipeUri(plane, recipe.wikiSlug);
     into.change((d) => { d.tiddlers[title] = storedLarRecord(title, recipeRecordFields(recipe), "test"); });

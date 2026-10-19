@@ -4,7 +4,7 @@
  * against a staged (or live) instance. Current canon only:
  *
  *   1. the vessel boots to live with the lares hearth wiki seated (quine default)
- *   2. the invariant plane carries the operator-minted lares-bag oracle
+ *   2. the vessel catalog carries the operator-minted lares-bag pointer
  *   3. LOAD feeds the hearth carrier-borne (boot meme → 17 records)
  *   4. wiki init + add-bag write the user registry (catalog composition lane)
  *
@@ -12,9 +12,9 @@
  * re-seeded, or asserted against genesis state.
  *
  * THE BOOT LOG IS READ AS IT GROWS, NEVER AS ONE SNAPSHOT. The harness resolves `targetInstance()` on
- * `phase → live`; the `live — wiki:` line and the oracle's operator-mint lares-bag record land a beat after
+ * `phase → live`; the `live — wiki:` line and the catalog's operator-mint lares-bag record land a beat after
  * that, and under whole-set load the beat outlasts a test's first read. So test 1 waits on its causal line
- * in the vessel's own log, and test 2 waits until the oracle doc's STORED history holds the record. Each
+ * in the vessel's own log, and test 2 waits until the catalog doc's STORED history holds the record. Each
  * wait ends on its event; its ceiling bounds a hang and nothing else, and a miss names what never arrived.
  */
 
@@ -62,21 +62,21 @@ async function untilLogLine(instance: LarInstance, line: RegExp, ceilingMs = WAI
 type OracleRecord = { tiddler?: { text?: string }; meta?: { authority?: string } };
 
 /**
- * Wait until the oracle doc's STORED history holds the record at `title`, read off the vessel's own storage through
+ * Wait until the catalog doc's STORED history holds the record at `title`, read off the vessel's own storage through
  * a throwaway repo per read (one repo loads a doc's storage once). The wait ends on the record; the ceiling bounds a
  * hang, and a miss names the record and the doc it never reached.
  */
-async function untilOracleHolds(instance: LarInstance, oracleUrl: string, title: string, ceilingMs = WAIT_CEILING_MS): Promise<OracleRecord> {
+async function untilCatalogHolds(instance: LarInstance, catalogUrl: string, title: string, ceilingMs = WAIT_CEILING_MS): Promise<OracleRecord> {
   const deadline = Date.now() + ceilingMs;
   for (;;) {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(instance)) });
     try {
-      const isle = await repo.find(oracleUrl as never);
+      const isle = await repo.find(catalogUrl as never);
       const rec = (isle.doc() as { tiddlers?: Record<string, OracleRecord> })?.tiddlers?.[title];
       if (rec) return plainRecord(rec as never) as OracleRecord;
     } catch { /* the stored doc is not yet loadable — the next read sees what has landed since */ }
     finally { await repo.shutdown().catch(() => {}); }
-    if (Date.now() > deadline) throw new Error(`the stored oracle doc ${oracleUrl} never held ${title} within ${ceilingMs}ms`);
+    if (Date.now() > deadline) throw new Error(`the stored catalog doc ${catalogUrl} never held ${title} within ${ceilingMs}ms`);
     await new Promise((r) => setTimeout(r, READ_PACE_MS * 5));
   }
 }
@@ -88,14 +88,13 @@ describe("smoke — the vessel stands", () => {
     expect(await untilLogLine(lar, /live — wiki: lares/)).toMatch(/live — wiki: lares/);
   }, TEST_BUDGET_MS);
 
-  test("the invariant plane carries the operator-minted lares-bag oracle", async () => {
+  test("the vessel catalog carries the operator-minted lares-bag pointer", async () => {
     if (lar.mode !== "staged") return;   // raw-storage read assumes an owned root
-    // The lares-bag oracle pointer rides the oracle plane (operator ruling
-    // 2026-06-16: the oracle, lararium and lares docs stand separate).
-    await untilLogLine(lar, /oracle:\s+automerge:[A-Za-z0-9]+/);
-    const oracleUrl = bootDocUrl(lar, "oracle");
-    expect(oracleUrl).toBeTruthy();
-    const rec = await untilOracleHolds(lar, oracleUrl!, LARES_URI);
+    // The vessel catalog names its own lares document.
+    await untilLogLine(lar, /catalog:\s+automerge:[A-Za-z0-9]+/);
+    const catalogUrl = bootDocUrl(lar, "catalog");
+    expect(catalogUrl).toBeTruthy();
+    const rec = await untilCatalogHolds(lar, catalogUrl!, LARES_URI);
     expect(rec.tiddler?.text).toMatch(/^automerge:/);
     expect(rec.meta?.authority).toBe("operator-mint");
   }, TEST_BUDGET_MS);

@@ -29,9 +29,9 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     }
 
     const wikiKey = wikiBagUri(slug);            // canon (bags/{slug}); identity rides wikis/{slug}
-    // A system wiki's canon doc and default recipe stand in the oracle plane; no act mints a second.
+    // A system wiki's canon doc stands in the catalog; its default recipe stands in the oracle.
     if (SYSTEM_BAGS.has(wikiKey)) {
-      const wikiDocUrl = opts.oracle ? await opts.oracle.urlOf(wikiKey) : null;
+      const wikiDocUrl = await opts.catalog.urlOf(wikiKey);
       const defaultRec = opts.oracle ? await opts.oracle.recordOf(recipeUri("oracle", slug)).catch(() => null) : null;
       const effective = wikiDocUrl && defaultRec && defaultRec.meta?.deleted !== true
         ? await effectiveRecipeOf(slug, { catalog: opts.catalog, oracle: opts.oracle })

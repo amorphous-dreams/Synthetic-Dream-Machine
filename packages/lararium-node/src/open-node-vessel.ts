@@ -38,7 +38,7 @@ import {
   emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
-  BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
+  BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsPointer,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, ed25519SignerFromSeed, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -1642,11 +1642,11 @@ async function prepareNodeBootOn(
       const islandHandle = await loadOrMaterializeOracle(repo, genesisDir);
 
       // lares + lararium system-bag mint — operator(admin) office, node home
-      // only. Both pointers ride the oracle system plane (the island doc);
+      // only. Both pointers ride this vessel's catalog;
       // oracle island, lararium bag and lares bag stand as three separate docs. The corpus doc
       // starts empty; LOAD/ingest fills it.
-      mintLaresIfAbsent(repo, islandHandle);
-      mintLarariumIfAbsent(repo, islandHandle);
+      mintLaresIfAbsent(repo, catalogHandle);
+      mintLarariumIfAbsent(repo, catalogHandle);
 
       const coreBlobEntry = (islandHandle.doc()?.blobs ?? {})[ENGINE_CORE_ID];
       if (!coreBlobEntry) {
@@ -1914,7 +1914,7 @@ async function prepareNodeBootOn(
     // compose the SAME `nexusIdentity` ruling — this one off its charter, a leaf off the anchor gate key it
     // passes back — so a node, its browser leaves and its Herm resolve the identical crossroads doc. The daemon core
     // splices the crossroads bag into the recipe + registerBags for either vessel.
-    await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
+    await registerCrossroadsPointer(repo, assembly.catalogHandle, nexusPubkey);
     // ── THE REALM PLANE — the relation's shared CRDT, materialized on every member's boot ──────────────
     // The realm doc's id derives from the charter both stewards hold (its genesis epoch), so A and B compute
     // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
@@ -1924,7 +1924,7 @@ async function prepareNodeBootOn(
     if (!realmPlane && nexusMembership && selfSlotFedGate) {
       realmPlane = makeRealmPlane({
         repo,
-        oracleHandle:     assembly.islandHandle,
+        registry:         assembly.catalogHandle,
         crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
@@ -2670,7 +2670,7 @@ async function prepareNodeBootOn(
     // (above) serves as the one after-write hook every row that lands a board or a practice joint fires; the
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
-      storageDir, sealHome, repo,
+      storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
       onRolled: afterRoll,
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
@@ -2881,8 +2881,8 @@ async function prepareNodeBootOn(
     // settler reads the fold that landed at boot.
     if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined);
 
-    // Keep the oracle's lares pointer current.
-    reconcileWellKnownTiddlers(assembly.islandHandle, assembly.laresHandle?.url);
+    // Keep the catalog's lares pointer current.
+    reconcileWellKnownTiddlers(assembly.catalogHandle, assembly.laresHandle?.url);
   };
 
   const subscribeWorkerEventsToDaemon = (): void => {

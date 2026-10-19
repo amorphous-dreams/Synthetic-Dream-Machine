@@ -73,9 +73,9 @@ const ROSTER = [
     why: "the shared-doc materialisation both vessel doors perform at open.",
   },
   {
-    symbol: "registerCrossroadsInOracle",
+    symbol: "registerCrossroadsPointer",
     pkg: "@lararium/mesh",
-    why: "the crossroads announce both shores make to the oracle they dial.",
+    why: "the crossroads pointer both shores write into their own catalog for the Nexus they dial.",
   },
   {
     symbol: "vesselDyads",

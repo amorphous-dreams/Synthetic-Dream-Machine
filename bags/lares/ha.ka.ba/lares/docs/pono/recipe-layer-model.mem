@@ -67,7 +67,7 @@ Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts`) walked bott
 | `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | fleet | `daemon/personal-bindings/{fingerprint}` — its own layer by ruling | none |
 | `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | fleet | `daemon/working-bindings/{fingerprint}` (the address derives from a secret only that face's vessels hold; a seated face composes on top) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
 | `bags/{slug}` (canon) | `AutomergeDocStore` | yes | no | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` oracle | `bags/{slug}/` via the `selfCanon` grant |
-| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); per-vessel `lares` and `lararium` pointers still ride `@oracle`; bootstrap/catalog relocation remains owed | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
+| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); recipe-watch resolves their document pointers from the vessel's `@catalog`, while genesis recipe seeds remain on `@oracle` | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
 | `bags/oracle` (floor) | `AutomergeDocStore` | no | no | fleet · federatable | `grants.islandUrl` | none |
 
 Two facts the table hides. (1) ''Every CRDT slot except the oracle floor registers `writable:true`'' — the floor mounts read-only, and a write aimed there copies up into the wiki's working layer. A working layer always mounts (operator ruling); `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) names the working slot alone. (2) ''A hand's DELETE shadows a lower layer from working.'' `island-adaptor.ts` routes every hand tombstone through `_tombstoneBag`: a title that landed in the working layer or above it (a draft, a personal record) takes its tombstone where it lives; a title that landed beneath the working layer (a canon bag, writable or read-only) or from an unmounted bag takes an ordinary tombstone where its save would land (the layer the cascade names at or above the working layer: the temp slot for session state, the personal slot for a person's view state; else the working layer), and the lower bag receives no write. ''A hand's SAVE lands at or above the working layer, never beneath it'' (`_settle`, `_saveBag`): the cascade and its pointers choose among the layers the composition mounts there; a title that already lives in a layer above the cascade's choice stays where it lives, so the wiki shows the edit; a verdict naming a lower layer or an unmounted bag refuses by name on the alert rail and writes nothing (`wiki-shore-route.test.ts`). The composite resolves a title's topmost record, a tombstone included (`CompositeStore.resolveLayered`), and the wiki shows what that composition resolves. A wiki that mounts no working layer refuses the delete by name on the alert rail. Witnesses: `packages/lararium-tw5/tests/wiki-shore-shadow.test.ts`; `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot).
@@ -98,7 +98,7 @@ The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:/
 | `wikis/{slug}/working` | yes | ''yes'' — the host working layer | fleet | `wikis/{slug}/` |
 | `bags/{slug}` | yes | no | fleet | catalog `bags/{slug}` |
 | PersonaGroup · circles · identities · sessions · `bags/daemon` | yes | yes (no `defaultWritable` given → true; registered BELOW the wiki, so the wiki's canon shadows them) | fleet (private) | bootstrap |
-| `bags/lares` · `bags/lararium` | yes | no | fleet | oracle well-known tiddlers |
+| `bags/lares` · `bags/lararium` | yes | no | fleet | vessel's `@catalog` pointers |
 | `bags/oracle` | no | no | fleet · federatable | genesis |
 | `bags/catalog` | ''no'' | — | fleet (private) | catalog-url file |
 
@@ -309,6 +309,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Idj4_XW5wGzz-YhAMupyCn1M9UVJFhN3Dvo5cNWkE6U
+<<^ code="&#x0003;">>ni:///sha-256;oafONkTyGf5teiQEawOjp2HuXb68L0OLpb3NsxbGu_I
 
 <<^ code="&#x0004;" -> to="?">>

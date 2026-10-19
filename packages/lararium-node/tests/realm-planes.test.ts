@@ -7,7 +7,7 @@
  * R4 refresh reads the realm ledger / controls: new valid realms stand and invalid names do not.
  * R5 each realm's wire lane answers its own standing / controls: the charter keeps its Nexus lane and unknown docs fall back.
  * R6 boards answer only to standing in their own realm / controls: standing in both opens both; realm docs keep their own lane.
- * R7 a cabal realm carries no key or roster / control: its oracle record holds only its three realm pointers.
+ * R7 a cabal realm carries no key or roster / control: its catalog record holds only its three realm pointers.
  * R8 steward pins stay per realm / control: the charter key and cabal key occupy separate pointers.
  * R10 a book two realms register crosses where every holding realm admits / control: a peer standing in both.
  * R11 a named plane's gate answers its own realm alone / control: the holder's gate answers both.
@@ -77,7 +77,7 @@ function registryDoc(bags: ReadonlyArray<[string, string]>): LarDoc {
   for (const [bag, url] of bags) doc.tiddlers[bag] = mutableLarRecord(bag, { text: url }, "registry");
   return doc;
 }
-const oracles = new WeakMap<object, DocHandle<LarDoc>>();
+const catalogs = new WeakMap<object, DocHandle<LarDoc>>();
 function makeHolder(repo: Repo, options: {
   realms?: () => readonly (string | NotedRealm)[] | Promise<readonly (string | NotedRealm)[]>; noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
   standsInRealm?: (peer: string, realm: string) => boolean;
@@ -85,9 +85,9 @@ function makeHolder(repo: Repo, options: {
   carried?: () => readonly NexusDoc[];
   leafAidOf?: (peerId: string) => string | null; dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null }; charter?: RealmCharterConsult;
 } = {}) {
-  const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
+  const registry = repo.create<LarDoc>(emptyLarDoc());
   const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
-  const holder = makeRealmPlane({ repo, oracleHandle, crossroadsHandle, membership: options.membership ?? noMembers,
+  const holder = makeRealmPlane({ repo, registry, crossroadsHandle, membership: options.membership ?? noMembers,
     base: options.base ?? denyAll,
     // A bare name reads as a realm the ledger notes under no Nexus yet.
     ...(options.realms ? { realms: async () => (await options.realms!()).map((r) => typeof r === "string" ? { realm: r, nexus: null } : r) } : {}),
@@ -98,16 +98,16 @@ function makeHolder(repo: Repo, options: {
     ...(options.dialedHearth ? { dialedHearth: options.dialedHearth } : {}),
     ...(options.charter ? { charter: options.charter } : {}),
   });
-  oracles.set(holder, oracleHandle);
-  return { holder, oracleHandle, crossroadsHandle };
+  catalogs.set(holder, registry);
+  return { holder, registry, crossroadsHandle };
 }
 async function bag(holder: ReturnType<typeof makeHolder>["holder"], args: Record<string, unknown>, who: Actor, docs: ReadonlyArray<[string, string]>) {
   return runRealmBag({ plane: holder as RealmDoorPlanes, args, vault: who.vault, registryDocs: () => [registryDoc(docs)] });
 }
-async function oracleDoc(repo: Repo, holder: ReturnType<typeof makeHolder>["holder"]): Promise<LarDoc> {
+async function catalogDoc(repo: Repo, holder: ReturnType<typeof makeHolder>["holder"]): Promise<LarDoc> {
   void repo;
-  const handle = oracles.get(holder);
-  if (!handle) throw new Error("no oracle plane for this holder");
+  const handle = catalogs.get(holder);
+  if (!handle) throw new Error("no catalog plane for this holder");
   return handle.doc();
 }
 async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await repo.find<LarDoc>(realmDocUrl(id))).doc(); }
@@ -117,15 +117,15 @@ describe("a carried charter's realm", () => {
   test("R24 stands under its own Nexus beside the hearth's own realm; an act naming it registers there — control: uncarried, it leaves", async () => {
     const repo = new Repo({});
     let carried: NexusDoc[] = [charter("r24-theirs")];
-    const { holder, oracleHandle } = makeHolder(repo, { carried: () => carried });
+    const { holder, registry } = makeHolder(repo, { carried: () => carried });
     await holder.refresh(charter("r24-own"));
     const own = aidOf("r24-own"), theirs = aidOf("r24-theirs");
     expect(holder.realmId()).toBe(own);
     expect(holder.realms()).toEqual([own, theirs]);
     expect(holder.plane(theirs)!.nexusAid()).toBe(theirs);                       // its steward keys derive at ITS AID
     expect(holder.plane(own)!.nexusAid()).toBe(own);
-    expect(tiddlerText(oracleHandle.doc().tiddlers[realmDocPointer(theirs)])).toBe(realmDocUrl(theirs));
-    expect(tiddlerText(oracleHandle.doc().tiddlers[REALM_ID_TIDDLER])).toBe(own);  // the default stays the hearth's own
+    expect(tiddlerText(registry.doc().tiddlers[realmDocPointer(theirs)])).toBe(realmDocUrl(theirs));
+    expect(tiddlerText(registry.doc().tiddlers[REALM_ID_TIDDLER])).toBe(own);  // the default stays the hearth's own
     const who = await actor(24), doc = deterministicDocUrl("r24-book");
     const reg = await bag(holder, { bag: BAG_A, realm: theirs }, who, [[BAG_A, doc]]);
     expect(reg.realm).toBe(theirs);
@@ -136,7 +136,7 @@ describe("a carried charter's realm", () => {
     await holder.refresh(charter("r24-own"));
     expect(holder.realms()).toEqual([own]);
     expect(holder.plane(theirs)).toBeNull();
-    expect(oracleHandle.doc().tiddlers[realmDocPointer(theirs)]).toBeUndefined();
+    expect(registry.doc().tiddlers[realmDocPointer(theirs)]).toBeUndefined();
     holder.dispose();
   });
 });
@@ -202,10 +202,10 @@ describe("a plane's lanes scope to its own Nexus", () => {
     expect(cText).not.toContain(docA); expect(cText).not.toContain(registered.bag);
     expect(JSON.stringify((await realmDoc(repo, A)).tiddlers)).toContain(docA);
     for (const id of [B, holder.realmId()!]) {
-      expect(JSON.stringify((await oracleDoc(repo, holder)).tiddlers[realmStandingPointer(id)] ?? null)).not.toContain(BAG_A);
+      expect(JSON.stringify((await catalogDoc(repo, holder)).tiddlers[realmStandingPointer(id)] ?? null)).not.toContain(BAG_A);
     }
-    expect((await oracleDoc(repo, holder)).tiddlers[realmStandingPointer(B)]).toBeUndefined();
-    expect(JSON.stringify((await oracleDoc(repo, holder)).tiddlers[realmStandingPointer(A)])).toContain(BAG_A);
+    expect((await catalogDoc(repo, holder)).tiddlers[realmStandingPointer(B)]).toBeUndefined();
+    expect(JSON.stringify((await catalogDoc(repo, holder)).tiddlers[realmStandingPointer(A)])).toContain(BAG_A);
     const defaultRegistered = await bag(holder, { bag: BAG_B }, actorC, [[BAG_B, DOC_B]]);
     expect((await holder.standing()).has(BAG_B)).toBe(true);
     expect((await holder.plane(A)!.standing()).has(BAG_B)).toBe(false);
@@ -222,7 +222,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     expect((await holder.plane(null)!.standing()).get(BAG_A)).toEqual((await holder.standing()).get(BAG_A));
     expect((await holder.plane(c)!.standing()).get(BAG_A)).toEqual((await holder.standing()).get(BAG_A));
     expect(holder.plane(A)).toBeNull();
-    expect(tiddlerText((await oracleDoc(repo, holder)).tiddlers[REALM_ID_TIDDLER])).toBe(c);
+    expect(tiddlerText((await catalogDoc(repo, holder)).tiddlers[REALM_ID_TIDDLER])).toBe(c);
     holder.dispose();
   });
 
@@ -302,13 +302,13 @@ describe("a plane's lanes scope to its own Nexus", () => {
   });
 
   // R7
-  test("R7 cabal holder exposes no key or roster; control: oracle carries exactly three cabal pointers", async () => {
+  test("R7 cabal holder exposes no key or roster; control: catalog carries exactly three cabal pointers", async () => {
     const repo = new Repo({}), { holder } = makeHolder(repo); await holder.refresh(charter("charter-r7")); await holder.enter(A);
     const who = await actor(13); await bag(holder, { bag: BAG_A, realm: A }, who, [[BAG_A, DOC_A]]);
     const surface = ["gate", "realmId", "nexusAid", "realmUrl", "refresh", "reading", "sealedHere", "standing", "register", "join", "coSign", "dispose"];
     expect(Object.keys(holder.plane(A)!).sort()).toEqual(surface.sort());
     expect(Object.keys(holder).sort()).toEqual([...surface, "realms", "plane", "enter"].sort());
-    const doc = await oracleDoc(repo, holder), realmPointers = [realmDocPointer(A), realmStewardPointer(A), realmStandingPointer(A)];
+    const doc = await catalogDoc(repo, holder), realmPointers = [realmDocPointer(A), realmStewardPointer(A), realmStandingPointer(A)];
     expect(realmPointers.every((key) => doc.tiddlers[key] !== undefined)).toBe(true);
     expect(Object.keys(doc.tiddlers).filter((key) => key.startsWith(`${realmDocPointer(A).split("/doc/")[0]}/`) && key.includes(encodeURIComponent(A))).sort()).toEqual([...realmPointers].sort());
     holder.dispose();
@@ -320,7 +320,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     const c = await actor(11), a = await actor(12);
     await bag(holder, { bag: BAG_A }, c, [[BAG_A, DOC_A]]);
     await bag(holder, { bag: BAG_B, realm: A }, a, [[BAG_B, DOC_B]]);
-    const doc = await oracleDoc(repo, holder);
+    const doc = await catalogDoc(repo, holder);
     expect(tiddlerText(doc.tiddlers[realmStewardPointer(holder.realmId()!)])).toBe(c.worn);
     expect(tiddlerText(doc.tiddlers[realmStewardPointer(A)])).toBe(a.worn); holder.dispose();
   });
@@ -369,10 +369,10 @@ describe("a plane's lanes scope to its own Nexus", () => {
     await bag(holder, { bag: BAG_B, realm: A }, a, [[BAG_B, DOC_B]]);
     const old = holder.realmId()!;
     const pointers = (id: string) => [realmDocPointer(id), realmStewardPointer(id), realmStandingPointer(id)];
-    let doc = await oracleDoc(repo, holder);
+    let doc = await catalogDoc(repo, holder);
     expect(pointers(old).every((k) => doc.tiddlers[k] !== undefined)).toBe(true);
     await holder.refresh(charter("charter-r12-new"));
-    doc = await oracleDoc(repo, holder);
+    doc = await catalogDoc(repo, holder);
     expect(pointers(old).filter((k) => doc.tiddlers[k] !== undefined)).toEqual([]);
     // The cabal realm stands again under the new Nexus with its doc pin and its verdict; its steward pin named a
     // key of the Nexus this vessel left, so it waits on this hand's next seal.
@@ -409,7 +409,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
       expect(most).toBe(1);
       const standing = await holder.plane(A)!.standing();
       expect([...standing.keys()].sort()).toEqual(bags);
-      const pinned = JSON.parse(tiddlerText((await oracleDoc(repo, holder)).tiddlers[realmStandingPointer(A)])!) as Array<{ bagUri: string }>;
+      const pinned = JSON.parse(tiddlerText((await catalogDoc(repo, holder)).tiddlers[realmStandingPointer(A)])!) as Array<{ bagUri: string }>;
       expect(pinned.map((r) => r.bagUri).sort()).toEqual(bags);
     } finally { spy.mockRestore(); holder.dispose(); }
   });
@@ -421,7 +421,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     await holder.refresh(charter("charter-r15"));
     await expect(holder.enter(A)).rejects.toThrow("ledger torn");
     expect(holder.plane(A)).toBeNull(); expect(holder.realms()).toEqual([holder.realmId()]);
-    expect((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(A)]).toBeUndefined();
+    expect((await catalogDoc(repo, holder)).tiddlers[realmDocPointer(A)]).toBeUndefined();
     torn = false; await holder.enter(A);
     expect(noted).toEqual([A]); expect(holder.plane(A)).not.toBeNull(); holder.dispose();
   });
@@ -476,7 +476,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     try {
       await expect(holder.refresh(charter("charter-r18"))).rejects.toThrow("fold torn");
       expect(holder.realmId()).toBeNull(); expect(holder.realms()).toEqual([]);
-      const doc = await oracleDoc(repo, holder);
+      const doc = await catalogDoc(repo, holder);
       expect(Object.keys(doc.tiddlers).filter((k) => k.includes("/doc/") || k.includes("/standing/"))).toEqual([]);
       await holder.refresh(charter("charter-r18"));
       expect(holder.realmId()).not.toBeNull(); expect(holder.realms()).toEqual([holder.realmId(), A]);
@@ -486,7 +486,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
       await expect(holder.refresh(charter("charter-r18b"))).rejects.toThrow("fold torn");
       expect(holder.realmId()).toBeNull();
       // No realm of the Nexus this vessel left stays readable: every doc pin, steward pin and verdict left with its plane.
-      const after = await oracleDoc(repo, holder);
+      const after = await catalogDoc(repo, holder);
       expect(Object.keys(after.tiddlers).filter((k) => k.includes("/doc/") || k.includes("/standing/") || k.includes("/steward/"))).toEqual([]);
       await holder.refresh(charter("charter-r18b"));
       // B entered under the Nexus this vessel left, so it waits for an act under the next; A, noted under none, stands.
@@ -500,7 +500,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     const { holder } = makeHolder(repo, { noteRealm: async () => { if (held) await gate; } });
     await holder.refresh(charter("charter-r19"));
     await holder.enter(B);                                                    // CONTROL: stands and pins
-    expect(tiddlerText((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(B)])).toBe(realmDocUrl(B));
+    expect(tiddlerText((await catalogDoc(repo, holder)).tiddlers[realmDocPointer(B)])).toBe(realmDocUrl(B));
     // An entry waits on its ledger note while a Nexus change arrives whose charter plane fails to stand.
     held = true;
     const real = RealmBagGate.prototype.refold; let torn = false;
@@ -517,7 +517,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
       release();
       await entry; expect(await change).toBe("torn");
       expect(holder.realmId()).toBeNull(); expect(holder.realms()).toEqual([]);
-      const doc = await oracleDoc(repo, holder);
+      const doc = await catalogDoc(repo, holder);
       expect(Object.keys(doc.tiddlers).filter((k) => k.includes("/doc/") || k.includes("/standing/") || k.includes("/steward/"))).toEqual([]);
     } finally { spy.mockRestore(); holder.dispose(); }
   });
@@ -527,10 +527,10 @@ describe("a plane's lanes scope to its own Nexus", () => {
     const folded: string[] = [], real = RealmBagGate.prototype.refold;
     const spy = vi.spyOn(RealmBagGate.prototype, "refold").mockImplementation(async function (this: RealmBagGate, doc, realm) { folded.push(realm); return real.call(this, doc, realm); });
     try {
-      const before = JSON.stringify((await oracleDoc(repo, holder)).tiddlers), realms = holder.realms();
+      const before = JSON.stringify((await catalogDoc(repo, holder)).tiddlers), realms = holder.realms();
       await holder.refresh(charter("charter-r20"));
       expect([...folded].sort()).toEqual([holder.realmId()!, A].sort());
-      expect(JSON.stringify((await oracleDoc(repo, holder)).tiddlers)).toBe(before); expect(holder.realms()).toEqual(realms);
+      expect(JSON.stringify((await catalogDoc(repo, holder)).tiddlers)).toBe(before); expect(holder.realms()).toEqual(realms);
     } finally { spy.mockRestore(); holder.dispose(); }
   });
 
@@ -574,7 +574,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     // The charter leaves: every plane and pin goes with it.
     await holder.refresh(null);
     expect(holder.realms()).toEqual([]); expect(holder.plane(C)).toBeNull();
-    expect((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(C)]).toBeUndefined();
+    expect((await catalogDoc(repo, holder)).tiddlers[realmDocPointer(C)]).toBeUndefined();
     holder.dispose();
   });
   // R23
@@ -589,7 +589,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
     await expect(holder.enter(A)).rejects.toMatchObject({ refusal: "realm-under-another-nexus" });
     await holder.refresh(charter("charter-r23"));
     expect(holder.plane(A)).toBeNull(); expect(holder.realms()).toEqual([aidOf("charter-r23"), B]);
-    expect((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(A)]).toBeUndefined();
+    expect((await catalogDoc(repo, holder)).tiddlers[realmDocPointer(A)]).toBeUndefined();
     holder.dispose();
   });
 });

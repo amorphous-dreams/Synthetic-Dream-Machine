@@ -38,7 +38,7 @@ async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolv
   daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
   const resolver = makeSlotDocResolver({
     repo, daemonStore: daemon, keyhive: kh,
-    catalog: makeCatalogAccessor(repo, catalogHandle.url), oracle: null,
+    catalog: makeCatalogAccessor(repo, catalogHandle.url),
     vesselDid: () => DID, mintedByHex: () => "0x" + "a".repeat(64),
     personaGroupId: "cd".repeat(16),
     faceSeated: async () => opts.seated,

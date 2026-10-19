@@ -15,8 +15,7 @@
  *     the slot documents). Every vessel holds the oracle under ONE derived document id, and a hearth boots
  *     from its own copy; a leaf that synced it would merge its writes into the registry its hearth reads.
  *
- * The leaf mounts by its OWN oracle replica, as every vessel does: `seatHearthCanon` writes the admitted
- * pointers there, and that replica never leaves the leaf.
+ * The leaf mounts by its own catalog: `seatHearthCanon` writes the admitted pointers there.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
@@ -45,7 +44,7 @@ export function isOwnHearthCrossing(at: {
 /**
  * What a carried admit's `hearthCanonDocs` may name, read as DATA: the canon titles alone, each with a
  * well-formed document url. Any other title, a torn url or a non-string falls out, so a carriage names
- * neither a private plane nor a key of the leaf's oracle beyond the two canon pointers.
+ * neither a private plane nor a key of the leaf's catalog beyond the two canon pointers.
  *
  * A CANON TITLE NEVER NAMES A SYSTEM PLANE. The carried fields ride the unsigned part of the admit, so a url
  * whose document id DERIVES (the oracle genesis document, and every board the Nexus boards gate federates
@@ -114,23 +113,23 @@ export function hearthCrossingOf(at: {
   return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
 }
 
-/** The slice of an oracle handle the seating reads and writes. */
-export interface OracleReplica {
+/** The slice of a vessel catalog handle the seating reads and writes. */
+export interface CatalogRegistry {
   doc(): LarDoc | null | undefined;
   change(fn: (doc: LarDoc) => void): void;
 }
 
 /**
- * Seat the admitted canon on this vessel's OWN oracle replica: each named title points at the document the
- * admit named. The keel and every island resolve `@lares` and `@lararium` off that replica, so the leaf's
+ * Seat the admitted canon on this vessel's own catalog: each named title points at the document the
+ * admit named. The keel and every island resolve `@lares` and `@lararium` off that catalog, so the leaf's
  * wiki mounts the hearth's canon. One change carries every pointer that differs; a replica that already
  * names them takes no write.
  */
-export function seatHearthCanon(oracle: OracleReplica, named: HearthCanonDocs): void {
+export function seatHearthCanon(registry: CatalogRegistry, named: HearthCanonDocs): void {
   const owed = Object.entries(admittedCanonDocs(named))
-    .filter(([title, url]) => tiddlerText(oracle.doc()?.tiddlers?.[title]) !== url);
+    .filter(([title, url]) => tiddlerText(registry.doc()?.tiddlers?.[title]) !== url);
   if (owed.length === 0) return;
-  oracle.change((doc) => {
+  registry.change((doc) => {
     for (const [title, url] of owed) doc.tiddlers[title] = storedLarRecord(title, { text: url }, "hearth-canon");
   });
 }

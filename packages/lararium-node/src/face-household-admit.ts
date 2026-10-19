@@ -74,6 +74,7 @@ async function stillStands(bundle: AdmitBundle, sealHome: string, aid: string, p
  */
 export async function ensureFaceHouseholdAdmit(opts: {
   readonly repo:      Repo;
+  readonly catalogUrl?: string | undefined;
   readonly sealHome:  string;
   readonly face:      number;
   readonly syncUrl?:  string;
@@ -91,7 +92,7 @@ export async function ensureFaceHouseholdAdmit(opts: {
     return kept as AdmitBundle & { readonly opening: NonNullable<AdmitBundle["opening"]> };
   }
   const result = await runNexusContract({
-    action: "admit", nym, sealHome: opts.sealHome, repo: opts.repo,
+    action: "admit", nym, sealHome: opts.sealHome, repo: opts.repo, catalogUrl: opts.catalogUrl,
     ...(opts.gateDoor ? { gateDoor: opts.gateDoor } : {}), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}),
   });
   const bundle = result.bundle;
