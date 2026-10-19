@@ -113,6 +113,20 @@ describe("PalaceHolder transport cap — the op round-trip", () => {
 });
 
 describe("PalaceHolderRegistry — reap-don't-pile (ONE holder per dir)", () => {
+  test("last release actually kills the process whose registry entry was dropped", async () => {
+    let killed = 0;
+    const reg = new PalaceHolderRegistry("test-kill");
+    const spawn: PalaceHolderSpawn = (dir) => {
+      const proc = fakeSpawn((op) => op === "ping" ? {} : { dir })(dir);
+      return { ...proc, kill: () => { killed += 1; } };
+    };
+    const holder = reg.acquire("/tmp/kill-on-release", spawn, 5_000);
+    await holder.send("read");
+    reg.release(holder);
+    expect(killed).toBe(1);
+    expect(reg.size()).toBe(0);
+  });
+
   test("two acquires on the SAME dir share ONE holder; freed only on the last release", async () => {
     const reg = new PalaceHolderRegistry("test");
     const spawn = fakeSpawn((op) => (op === "ping" ? {} : { ok: true }));

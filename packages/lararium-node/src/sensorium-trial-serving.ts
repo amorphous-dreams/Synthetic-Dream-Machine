@@ -20,7 +20,7 @@ export function trialContentDir(operationRoot: string): string {
   return join(operationRoot, "sensorium", "content");
 }
 
-export async function runTrialServing(op: "run" | "status", opts: TrialServingOptions): Promise<Record<string, unknown>> {
+export async function runTrialServing(op: "run" | "status" | "allowed-cids", opts: TrialServingOptions): Promise<Record<string, unknown>> {
   trialContentDir(opts.operationRoot);
   const python = resolveMempalacePython();
   if (!python) throw new Error("trial serving needs the pinned MemPalace Python interpreter");

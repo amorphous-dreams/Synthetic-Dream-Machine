@@ -221,6 +221,9 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
       throw new Error("--source-key and --revision require --trial-root");
     if (trialRoot && !args.options["model-home"]) throw new Error("trial search needs --model-home for the pinned query model");
     const trialStatus = trialRoot ? await runTrialServing("status", { operationRoot: trialRoot }) : undefined;
+    let allowedCids: ReadonlySet<string> | undefined;
+    let trialSourceKey: string | undefined;
+    let trialRevision: string | undefined;
     if (trialStatus) {
       const receipts = trialStatus["receipts"] as Record<string, Record<string, unknown>> | undefined;
       const intake = receipts?.["intake"];
@@ -243,6 +246,24 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
       }
       if (trialStatus["model_home"] !== args.options["model-home"])
         throw new Error("trial query model home differs from the operation's pinned model home");
+      const allowed = await runTrialServing("allowed-cids", { operationRoot: trialRoot! });
+      if (allowed["observation_id"] !== intake["observation_id"]
+          || allowed["source_key"] !== sourceKey
+          || allowed["revision_sha256"] !== intake["revision_sha256"]
+          || allowed["view_key"] !== viewKey
+          || allowed["model_basis_sha256"] !== semanticReceipt["model_basis_sha256"]
+          || allowed["content_frontier"] !== typed
+          || allowed["semantic_frontier"] !== semantic
+          || !Array.isArray(allowed["cids"])
+          || allowed["cids"].some((cid: unknown) => typeof cid !== "string")
+          || allowed["cids"].length !== typedReceipt["typed_blocks"]
+          || allowed["cids"].length !== semanticReceipt["blocks"]
+          || new Set(allowed["cids"]).size !== allowed["cids"].length) {
+        throw new Error("trial allowed-CID read disagrees with the current semantic receipt");
+      }
+      allowedCids = new Set(allowed["cids"] as string[]);
+      trialSourceKey = sourceKey;
+      trialRevision = intake["revision_sha256"] as string;
       await verifyTrialModel(args.options["model-home"]!);
     }
     if (trialRoot) process.env["HOME"] = args.options["model-home"]!;
@@ -270,26 +291,33 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
         const sourceKey = args.options["source-key"];
         const revision = args.options["revision"];
         const search = await q.search(lens, arg, {
-          k: trialRoot && (sourceKey || revision) ? Math.max(k * 8, 32) : k,
+          k: trialRoot ? Math.max(k * 8, 32) : k,
           ...(args.options["wing"] ? { wing: args.options["wing"] } : {}),
           ...(args.options["room"] ? { room: args.options["room"] } : {}),
           ...(notRoot ? { notRoot, selfWeight } : {}),
         });
-        if (trialRoot && "results" in search && Array.isArray(search.results)) {
+        if (trialRoot) {
+          if (!("results" in search) || !Array.isArray(search.results))
+            throw new Error("trial Content search returned no hit array; refusing unfiltered response");
           const hits = (search.results as Array<Record<string, unknown>>).filter((hit) => {
             const metadata = (hit["metadata"] ?? {}) as Record<string, unknown>;
-            return (!sourceKey || metadata["lar_source_key"] === sourceKey)
+            const cid = hit["drawer_id"];
+            return typeof cid === "string" && allowedCids?.has(cid) === true
+              && metadata["lar_occurrence_id"] === cid
+              && metadata["lar_source_key"] === trialSourceKey
+              && metadata["lar_revision_sha256"] === trialRevision
+              && (!sourceKey || metadata["lar_source_key"] === sourceKey)
               && (!revision || metadata["lar_revision_sha256"] === revision);
           });
           const selected = hits.slice(0, k).map((hit) => {
             const metadata = (hit["metadata"] ?? {}) as Record<string, unknown>;
             return { ...hit,
-              cid: metadata["lar_occurrence_id"] ?? hit["drawer_id"] ?? null,
+              cid: hit["drawer_id"],
               source_key: metadata["lar_source_key"] ?? null,
               revision_sha256: metadata["lar_revision_sha256"] ?? null };
           });
           data = { ...search, results: selected, total_after_filter: hits.length,
-            ...(sourceKey || revision ? { filter_exhaustive: false } : {}),
+            filter_exhaustive: false,
             trial: trialStatus };
         } else data = search;
         break;

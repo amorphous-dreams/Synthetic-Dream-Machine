@@ -2,6 +2,7 @@
 
 import json
 import os
+import sqlite3
 import shutil
 import subprocess
 import sys
@@ -12,6 +13,7 @@ import pytest
 import trial_intake
 import trial_owned_content
 import trial_project
+import trial_serving
 from trial_serving import run_operation, status_operation
 
 
@@ -40,6 +42,8 @@ def test_run_resumes_receipts_and_status_needs_no_model(tmp_path, monkeypatch):
     model_home = tmp_path / "state"
     root = model_home / "sensorium-serving-smoke"
     model_home.mkdir()
+    stale_marker = model_home / ".sensorium-serving-smoke.operation.json.43210.deadbeef.tmp"
+    stale_marker.write_text('{"schema":')
     from test_trial_intake import frozen
     freeze, _ = frozen(tmp_path, "source", "frozen test evidence")
     calls = {"intake": 0, "typed": 0, "semantic": 0}
@@ -65,6 +69,7 @@ def test_run_resumes_receipts_and_status_needs_no_model(tmp_path, monkeypatch):
     monkeypatch.setattr(trial_owned_content, "project_owned_content", semantic)
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: model_home))
     result = run_operation(root, freeze, "intent-1", "test-host", model_home)
+    assert stale_marker.exists()  # a parent-side crash orphan never blocks or gets erased
     assert result["operation_status"] == "complete"
     assert result["observation_id"] == 1 and result["revision_sha256"] == "abc"
     assert result["content_frontier"] == 1 and result["semantic_frontier"] == 1
@@ -87,6 +92,42 @@ def test_named_root_refuses_different_inputs_or_unmarked_data(tmp_path):
     freeze.write_text("{}")
     with pytest.raises(ValueError, match="non-empty directory"):
         run_operation(root, freeze, "intent", "host", Path.home())
+    assert (root / "foreign.txt").read_text() == "owned by someone else"
+
+
+def test_atomic_json_removes_temp_after_ordinary_failure(tmp_path, monkeypatch):
+    def fail_replace(_source, _destination):
+        raise OSError("simulated replace failure")
+
+    monkeypatch.setattr(trial_serving.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated replace failure"):
+        trial_serving._atomic_json(tmp_path / "operation.json", {"status": "ready"})
+    assert not (tmp_path / "operation.json").exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_operation_lock_refuses_overlapping_same_root_writer(tmp_path):
+    root = tmp_path / "sensorium-serving-concurrent"
+    root.mkdir()
+    first = trial_serving._acquire_operation_lock(root)
+    try:
+        with pytest.raises(ValueError, match="already running"):
+            trial_serving._acquire_operation_lock(root)
+    finally:
+        trial_serving._release_operation_lock(first)
+    second = trial_serving._acquire_operation_lock(root)
+    trial_serving._release_operation_lock(second)
+
+
+def test_operation_lock_refuses_symlink_target(tmp_path):
+    root = tmp_path / "sensorium-serving-lock-symlink"
+    root.mkdir()
+    target = tmp_path / "unrelated.lock"
+    target.write_text("leave untouched")
+    (tmp_path / ".sensorium-serving-lock-symlink.operation.lock").symlink_to(target)
+    with pytest.raises(ValueError, match="regular non-symlink"):
+        trial_serving._acquire_operation_lock(root)
+    assert target.read_text() == "leave untouched"
 
 
 def test_status_refuses_unmarked_operation_root(tmp_path):
@@ -128,3 +169,18 @@ def test_real_minilm_serving_operation_and_status_cli(tmp_path, model_home):
     assert reported["semantic_frontiers"]
     assert reported["pending_typed_intents"] == []
     assert reported["pending_semantic_intents"] == []
+    allowed = subprocess.run([sys.executable, str(_HERE / "trial_serving.py"), "allowed-cids",
+                              "--operation-root", str(root)], env=env, cwd=_REPO, text=True,
+                             capture_output=True, timeout=30)
+    assert allowed.returncode == 0, allowed.stderr
+    membership = json.loads(allowed.stdout)
+    assert set(membership) == {"observation_id", "source_key", "revision_sha256", "view_key",
+                               "model_basis_sha256", "content_frontier", "semantic_frontier", "cids"}
+    assert membership["observation_id"] == reported["observation_id"]
+    assert membership["view_key"] == reported["view_key"]
+    assert membership["content_frontier"] == membership["semantic_frontier"] == 1
+    with sqlite3.connect(root / "state" / "trial-intake-v2.sqlite3") as conn:
+        expected = [row[0] for row in conn.execute(
+            "SELECT cid FROM projection_block WHERE observation_id=? ORDER BY block_index",
+            (membership["observation_id"],))]
+    assert membership["cids"] == expected

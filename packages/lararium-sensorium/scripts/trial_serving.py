@@ -9,13 +9,17 @@ retry can safely re-enter the existing idempotent stage boundaries.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
 import re
+import secrets
 import sqlite3
+import stat
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 
 LAYOUT_VERSION = "sensorium-serving-operation-v1"
@@ -32,19 +36,65 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _atomic_json(path: Path, value: dict) -> None:
+def _atomic_json(path: Path, value: dict, *, staging_dir: Path | None = None,
+                 exclusive: bool = False) -> None:
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    temp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temp_dir = (staging_dir or path.parent).resolve()
+    temp_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    prefix = f".{path.parent.name}." if staging_dir is not None else "."
+    temp = temp_dir / f"{prefix}{path.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp"
     payload = _canonical(value) + b"\n"
-    with temp.open("xb") as handle:
-        os.chmod(temp, 0o600)
-        handle.write(payload)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temp, path)
-    fd = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    created = False
     try:
-        os.fsync(fd)
+        with temp.open("xb") as handle:
+            created = True
+            os.chmod(temp, 0o600)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if exclusive:
+            os.link(temp, path)
+            temp.unlink()
+        else:
+            os.replace(temp, path)
+        created = False
+        fd = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        if temp_dir != path.parent:
+            fd = os.open(temp_dir, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+    finally:
+        if created:
+            temp.unlink(missing_ok=True)
+
+
+def _acquire_operation_lock(root: Path) -> int:
+    lock_path = root.parent / f".{root.name}.operation.lock"
+    flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(lock_path, flags, 0o600)
+    except OSError as exc:
+        raise ValueError("operation lock path must be a regular non-symlink file") from exc
+    if not stat.S_ISREG(os.fstat(fd).st_mode):
+        os.close(fd)
+        raise ValueError("operation lock path must be a regular non-symlink file")
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as exc:
+        os.close(fd)
+        raise ValueError("named operation is already running") from exc
+    return fd
+
+
+def _release_operation_lock(fd: int) -> None:
+    try:
+        fcntl.flock(fd, fcntl.LOCK_UN)
     finally:
         os.close(fd)
 
@@ -111,18 +161,16 @@ def _inputs(root: Path, state: Path, sensorium: Path, freeze_receipt: Path,
 def run_operation(operation_root: Path | str, freeze_receipt: Path | str, intent: str,
                   source_host: str, model_home: Path | str, device: str = "auto") -> dict:
     root, state, sensorium = _operation_paths(Path(operation_root))
+    if (root.exists() and not (root / "operation.json").exists()
+            and any(root.iterdir())):
+        raise ValueError("refusing a non-empty directory without this operation's marker")
     model_home = Path(model_home).expanduser().resolve()
     if Path.home().resolve() != model_home:
         raise ValueError("process HOME must name --model-home before MiniLM imports Chroma")
-    operation_file = root / "operation.json"
-    existing = _read_json(operation_file)
-    if existing is None and root.exists() and any(root.iterdir()):
-        raise ValueError("refusing a non-empty directory without this operation's marker")
     script_dir = str(Path(__file__).resolve().parent)
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
-    from trial_intake import _load_frozen, intake_frozen
-    from trial_project import project_observation
+    from trial_intake import _load_frozen
 
     manifest, *_ = _load_frozen(Path(freeze_receipt), source_host)
     native_root = Path(manifest.get("native_root", manifest.get("fixture_root"))).resolve()
@@ -138,9 +186,26 @@ def run_operation(operation_root: Path | str, freeze_receipt: Path | str, intent
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not root.is_dir() or root.is_symlink():
         raise ValueError("operation root must be a real directory")
+    lock_fd = _acquire_operation_lock(root)
+    try:
+        return _run_locked(root, state, sensorium, freeze_receipt, intent, source_host,
+                           model_home, device)
+    finally:
+        _release_operation_lock(lock_fd)
+
+
+def _run_locked(root: Path, state: Path, sensorium: Path, freeze_receipt: Path | str,
+                intent: str, source_host: str, model_home: Path, device: str) -> dict:
+    script_dir = str(Path(__file__).resolve().parent)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+    from trial_intake import intake_frozen
+    from trial_project import project_observation
+
+    operation_file = root / "operation.json"
     values = _inputs(root, state, sensorium, Path(freeze_receipt), intent, source_host,
                      model_home, device)
-    existing = existing or _read_json(operation_file)
+    existing = _read_json(operation_file)
     if existing is not None:
         if existing.get("inputs") != values:
             raise ValueError("named operation root already belongs to different inputs")
@@ -148,7 +213,8 @@ def run_operation(operation_root: Path | str, freeze_receipt: Path | str, intent
         raise ValueError("refusing a non-empty directory without this operation's marker")
     else:
         _atomic_json(operation_file, {"schema": LAYOUT_VERSION, "inputs": values,
-                                      "status": "ready", "completed_stages": []})
+                                      "status": "ready", "completed_stages": []},
+                     staging_dir=root.parent, exclusive=True)
 
     doc = _read_json(operation_file) or {}
     doc.update({"status": "running", "failed_stage": None, "error": None})
@@ -195,7 +261,6 @@ def run_operation(operation_root: Path | str, freeze_receipt: Path | str, intent
 def _result(root: Path, operation: dict, receipts: dict[str, dict]) -> dict:
     intake = receipts.get("intake") or {}
     typed = receipts.get("typed") or {}
-    semantic = receipts.get("semantic") or {}
     semantic = receipts.get("semantic") or {}
     return {"schema": "lararium.sensorium.serving-operation-receipt.v1",
             "operation_root": str(root), "operation_status": operation.get("status"),
@@ -268,6 +333,104 @@ def status_operation(operation_root: Path | str) -> dict:
     return result
 
 
+def allowed_cids(operation_root: Path | str) -> dict:
+    """Return the current observation's typed occurrence IDs after receipt/frontier checks."""
+    root, state, sensorium = _operation_paths(Path(operation_root))
+    status = status_operation(root)
+    operation = _read_json(root / "operation.json") or {}
+    receipts = status["receipts"]
+    if operation.get("status") != "complete" or operation.get("completed_stages") != list(_STAGES):
+        raise ValueError("allowed CIDs require a complete operation")
+    try:
+        intake = receipts["intake"]
+        typed = receipts["typed"]
+        semantic = receipts["semantic"]
+        observation_id = int(intake["observation_id"])
+        source_key = intake["source_key"]
+        revision = intake["revision_sha256"]
+        view_key = semantic["view_key"]
+        basis = semantic["model_basis_sha256"]
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("operation receipts lack current observation identity") from exc
+    expected = (observation_id, source_key, revision)
+    for receipt in (typed, semantic):
+        if (receipt.get("observation_id"), receipt.get("source_key"),
+                receipt.get("revision_sha256")) != expected:
+            raise ValueError("stage receipts disagree on current observation identity")
+    if (semantic.get("view_key") != view_key or semantic.get("model_basis_sha256") != basis
+            or semantic.get("status") != "landed"
+            or semantic.get("sensorium_root") != str(sensorium)):
+        raise ValueError("semantic receipt does not name the owned landed Content view")
+
+    db = state / "trial-intake-v2.sqlite3"
+    if not db.is_file():
+        raise ValueError("operation custody ledger is absent")
+    script_dir = str(Path(__file__).resolve().parent)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+    from trial_intake import PARSER_VERSION
+    from trial_project import _verify_landed
+
+    conn = sqlite3.connect(f"file:{quote(str(db.resolve()))}?mode=ro", uri=True)
+    try:
+        conn.execute("BEGIN")
+        row = conn.execute(
+            "SELECT o.source_key,o.revision_sha256,o.frontier,p.status,p.parser_version,r.receipt_json "
+            "FROM observation o JOIN projection_intent p USING(observation_id) "
+            "JOIN projection_receipt r USING(observation_id) WHERE o.observation_id=?",
+            (observation_id,),
+        ).fetchone()
+        if row is None or row[:2] != (source_key, revision) or row[3] != "landed":
+            raise ValueError("typed projection is not landed for the current observation")
+        frontier, parser_version = row[2], row[4]
+        projection_receipt = json.loads(row[5])
+        if (projection_receipt != typed or typed.get("status") != "landed"
+                or typed.get("parser_version") != parser_version
+                or parser_version != PARSER_VERSION):
+            raise ValueError("typed receipt disagrees with the custody ledger")
+
+        _verify_landed(conn, observation_id, projection_receipt)
+        semantic_row = conn.execute(
+            "SELECT sensorium_root,model_basis_sha256,status,receipt_json FROM semantic_projection "
+            "WHERE observation_id=? AND view_key=?", (observation_id, view_key),
+        ).fetchone()
+        if (semantic_row is None or semantic_row[:3] != (str(sensorium), basis, "landed")
+                or not semantic_row[3] or json.loads(semantic_row[3]) != semantic):
+            raise ValueError("semantic receipt disagrees with the landed Content intent")
+
+        latest = conn.execute("SELECT max(frontier) FROM observation WHERE source_key=?",
+                              (source_key,)).fetchone()[0]
+        content_frontier = conn.execute(
+            "SELECT o.frontier FROM content_frontier f JOIN observation o USING(observation_id) "
+            "WHERE f.source_key=?", (source_key,),
+        ).fetchone()
+        semantic_frontier = conn.execute(
+            "SELECT f.frontier,o.frontier FROM semantic_frontier f "
+            "JOIN observation o USING(observation_id) "
+            "WHERE f.source_key=? AND f.view_key=?", (source_key, view_key),
+        ).fetchone()
+        if (latest != frontier or content_frontier != (frontier,)
+                or semantic_frontier != (frontier, frontier)
+                or typed.get("content_frontier") != frontier
+                or semantic.get("semantic_frontier") != frontier):
+            raise ValueError("typed or semantic frontier is not current for this observation")
+        if (status["content_frontiers"].get(source_key) != frontier
+                or status["semantic_frontiers"].get(view_key, {}).get(source_key) != frontier):
+            raise ValueError("operation status frontiers disagree with the custody ledger")
+        cids = [item[0] for item in conn.execute(
+            "SELECT cid FROM projection_block WHERE observation_id=? ORDER BY block_index",
+            (observation_id,),
+        )]
+        if len(cids) != typed.get("typed_blocks"):
+            raise ValueError("typed occurrence ledger disagrees with its receipt")
+    finally:
+        conn.close()
+    return {"observation_id": observation_id, "source_key": source_key,
+            "revision_sha256": revision, "view_key": view_key,
+            "model_basis_sha256": basis, "content_frontier": frontier,
+            "semantic_frontier": frontier, "cids": cids}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -282,10 +445,14 @@ def main() -> None:
     run.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     status = sub.add_parser("status", help="read operation receipts and frontiers without loading MiniLM")
     status.add_argument("--operation-root", type=Path, required=True)
+    allowed = sub.add_parser("allowed-cids", help="read current landed occurrence membership")
+    allowed.add_argument("--operation-root", type=Path, required=True)
     args = parser.parse_args()
     try:
         if args.command == "status":
             result = status_operation(args.operation_root)
+        elif args.command == "allowed-cids":
+            result = allowed_cids(args.operation_root)
         else:
             root, state, sensorium = _operation_paths(args.operation_root,
                                                        args.state_root, args.sensorium_root)

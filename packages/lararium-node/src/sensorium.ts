@@ -620,11 +620,13 @@ export class PalaceHolder {
   }
 
   shutdown(): void {
+    // onDown clears this.proc; retain the process before dropping the registry entry.
+    const proc = this.proc;
     this.onDown(new Error(`${this.label} holder closed`));
     try {
-      this.proc?.stdin?.end?.();
+      proc?.stdin?.end?.();
     } catch { /* ignore */ }
-    this.proc?.kill?.();
+    proc?.kill?.();
   }
 }
 
