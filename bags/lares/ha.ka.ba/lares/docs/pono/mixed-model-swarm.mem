@@ -161,6 +161,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A walled spirit's temp files live inside its walls'' (measured 2026-10-18). With `/tmp` excluded, a heredoc refuses `read-only file system` and the spirit stops, as a refused step must. The launch sets `TMPDIR=<dir>/.tmp TMPPREFIX=<dir>/.tmp/zsh` on the `codex exec` line, inside the spirit's own directory, and the stop cures. Three walls stay: vitest needs a writable `/tmp` for its cache, `pnpm` in a provisioned worktree aborts with no TTY (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`), and tsx's IPC socket path runs past the socket length limit under a deep worktree `TMPDIR`. So a walled spirit builds modules and writes red tests and their controls, and the lead runs every suite in the lane worktree.
 * ''Every background Codex launch closes its stdin'' (`< /dev/null`): `codex exec` otherwise waits at "Reading additional input from stdin..." and never starts.
 * ''`-o` and the handback never share a file'' (measured 2026-10-18). A spirit briefed to write `out.md` wrote its full handback there, then `-o out.md` replaced it with the one-line final message, and wave two traded those lines. The brief names `out.md` for the handback, `-o` names `final.md`, and the launcher gates each wave on the handback's word count before it trades.
+* ''A builder's walls name its own directory beside the worktree'' (measured 2026-10-18, Evergreen-Wright). With `-C <worktree>` the spirit writes inside the worktree alone, so its `<d>/.tmp`, its heredocs, vitest's temp dirs and `<d>/out.md` refuse and it stops; the builder's launch adds `--add-dir <d>`. A reader launched with `-C <d>` needs none.
 * ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
 * ''A Copilot review pair names its target and ratchets'' (operator, 2026-10-18). Each brief names the branch, its head sha and the pull request, and has the eye read the code through `git show <branch>:<path>` or from the lane's own worktree path; the main tree holds the span, never the lane's code, and an eye that reads it reviews a tree the PR never touched (measured on PR #48: a Hodge pass read the main tree and called the absent PR "critical" twice). Wave one runs each face alone; wave two hands each face its twin's handback to confirm or refute against the named branch, as the Luna research pairs do, and the Spin sorts both waves. Four low-multiplier prompts buy the whole round.
@@ -190,6 +191,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WLpkpOqTUPh6Ct8rFkZ8O6c_hIqt7VgU8SX83I1qU3o
+<<^ code="&#x0003;">>ni:///sha-256;uWY3sGxlDuFIHBB5EFbo5Z-CnWXrbP1lw_Ie-C5xuy0
 
 <<^ code="&#x0004;" -> to="?">>
