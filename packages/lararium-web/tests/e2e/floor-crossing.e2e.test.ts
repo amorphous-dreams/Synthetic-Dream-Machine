@@ -21,6 +21,8 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import { foundStagedHearth, openStaged, stageDir, type LarInstance } from "../../../../tests/harness/instance.js";
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
@@ -37,6 +39,7 @@ const consoles = new Map<Page, string[]>();
 /** A fresh device: a context of its own, so no store, key or join carries over from another. */
 async function freshDevice(): Promise<Page> {
   const context = await browser!.newContext();
+  await armTestCustody(context, "floor-crossing");
   contexts.push(context);
   const page = await context.newPage();
   const lines: string[] = [];

@@ -8,6 +8,8 @@
  */
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 
 process.env.LEAF_BOOT_TRACE = "1";
 const { instrumentBootSource } = await import("./leaf-continuity.mjs");
@@ -41,6 +43,7 @@ function runnable(source) {
 
 async function runCase(browser, mode) {
   const context = await browser.newContext();
+  await armTestCustody(context, "c4-transform");
   const page = await context.newPage();
   const receipts = [];
   await context.route("**/*", async (route) => {

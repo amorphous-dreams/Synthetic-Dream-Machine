@@ -33,6 +33,8 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 import { joinThroughPage, pasteAnswer } from "../../../tools/browser-ci-join.mjs";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../lararium-node/dist/probes/browser-test-custody.js";
 
 function required(name) {
   const value = process.env[name];
@@ -157,6 +159,7 @@ const TRACE = /\[vessel\]|\[face-join\]|\[lararium-browser\]|\[browser-genesis\]
 async function withBrowser(run) {
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   const context = await browser.newContext();
+  await armTestCustody(context, "live-wiki");
   const page = await context.newPage();
   const errors = [];
   const trace = [];

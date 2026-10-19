@@ -9,6 +9,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId } from "@automerge/automerge-repo";
 import { LARES_DOC_URI, LARARIUM_DOC_URI, admittedJoineeIsland, crossroadsDocUrl } from "@lararium/mesh";
 import { BootHalted, admitNaming, bootOptions, observed, relayPeerArrives, resetObserved } from "./wire-vessel-rig.js";
+import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
@@ -41,7 +42,9 @@ const docIdOf = (url: string) => interpretAsDocumentId(url as AutomergeUrl) as D
 /** Boot an admit of `hearth` that dials `pin`, then ask the vessel's installed policy about one relay peer. */
 async function verdictsUnderPin(pin: string): Promise<{ canon: boolean; board: boolean }> {
   resetObserved();
-  await expect(openBrowserVessel(bootOptions(admitNaming(hearth, named), pin))).rejects.toBeInstanceOf(BootHalted);
+  const options = bootOptions(admitNaming(hearth, named), pin);
+  await bindSyntheticBrowserCustodySlot(options.idbName!);
+  await expect(openBrowserVessel(options)).rejects.toBeInstanceOf(BootHalted);
   relayPeerArrives("wire-relay-peer");
   const policy = observed.policies[0];
   expect(policy, "the vessel's Repo registered its share policy").toBeTypeOf("function");

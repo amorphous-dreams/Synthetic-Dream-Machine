@@ -21,6 +21,8 @@
  * says how much and why, so a slow machine reads as slow rather than as broken.
  */
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
@@ -144,6 +146,7 @@ const main = async () => {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
+    await armTestCustody(page, "browser-weld");
     const consoleErrors = [];
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
     page.on("pageerror", (e) => consoleErrors.push(String(e)));
