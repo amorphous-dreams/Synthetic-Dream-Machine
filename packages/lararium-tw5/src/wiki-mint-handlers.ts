@@ -3,8 +3,6 @@ import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
-  LARES_DOC_URI,
-  LARARIUM_DOC_URI,
   emptyLarDoc,
   storedLarRecord,
   mkDaemonWikiAlert,
@@ -56,8 +54,9 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // The user's wiki recipe is REGISTRY data (the user's composition choice) —
     // it lives in the user's catalog registry, NOT the lararium bag (protocol substrate). Read
     // it through the accessor (access≠load), like the wiki oracle. The record spells the SAME
-    // cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`): a user wiki = the oracle
-    // floor + the lararium and lares libraries + its own canon; `writable-bag` = working.
+    // cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`): the floor carries
+    // lares and lararium read-only through @oracle under every recipe; a user wiki names its
+    // own canon and chosen libraries, and `writable-bag` names working.
     const recipeTitle = recipeUri("catalog", slug);
 
     const existingWikiUrl = await opts.catalog.urlOf(wikiKey);
@@ -82,7 +81,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
         }, "lares-cli:wiki-init");
         if (!existingRecipeRec) {
           tiddlers[recipeTitle] = storedLarRecord(recipeTitle, {
-            ...recipeRecordFields({ wikiSlug: slug, libraryBags: [LARES_DOC_URI, LARARIUM_DOC_URI] }),
+            ...recipeRecordFields({ wikiSlug: slug }),
             "updated-at": updatedAt,
           }, "lares-cli:wiki-init");
         }

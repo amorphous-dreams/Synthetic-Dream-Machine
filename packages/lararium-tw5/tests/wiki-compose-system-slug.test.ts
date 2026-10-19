@@ -2,7 +2,7 @@
  * A system wiki's canon doc and default recipe stand in the oracle plane. The vessel composes it
  * through its OWN catalog record: `init-wiki` mints nothing for a system slug, and `add-bag` /
  * `remove-bag` adopt the default into the catalog on the first edit. A user slug walks the
- * mint-and-append path unchanged.
+ * mint-and-append path with the system floor carried through @oracle.
  */
 import { describe, test, expect } from "vitest";
 import { recipeUri, wikiBagUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
@@ -139,6 +139,8 @@ describe("a system slug composes through the vessel's own record", () => {
       expect(out).toMatchObject({ status: "minted" });
       expect(r.catalog.tiddlers[wikiBagUri("elyncia")]).toBeDefined();
       expect(r.catalog.tiddlers[recipeUri("catalog", "elyncia")]).toBeDefined();
+      expect(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack"))
+        .toBe(`lar:///ha.ka.ba/bags/oracle ${wikiBagUri("elyncia")}`);
       const added = await makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia", bagUrl: X }, ctx);
       expect(added).toMatchObject({ status: "added", recipePlane: "catalog" });
       expect(added).not.toHaveProperty("adopted");

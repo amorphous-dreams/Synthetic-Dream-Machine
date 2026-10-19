@@ -42,6 +42,8 @@ import { ENGINE_CORE_ID, blobDescriptorUri } from "./base-doc.js";
 import { plainField } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
+import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid } from "./floor-manifest.js";
 
 // ---------------------------------------------------------------------------
 // Shared attestation contract
@@ -142,7 +144,8 @@ export async function verifyPluginAttestation(a: PluginBuildAttestation): Promis
 export type GenesisBlobKind =
   | "grammar"   // the memetic-wikitext grammar — REQUIRED, and kāhuli's GRAMMAR tier
   | "base"      // required base seed (API/shadow tiddlers) — ships, ratchets nothing
-  | "plugin";   // an operator's own offering, layered on top of the required base
+  | "plugin"   // an operator's own offering, layered on top of the required base
+  | "floor";   // history-free corpus snapshots and their manifest
 
 export interface GenesisPluginEntry {
   readonly id:          string;
@@ -183,6 +186,7 @@ export interface GenesisInputs {
   readonly coreSha256?:   string;
   /** Vendored plugin blobs. Must include the Lares memetic-wikitext plugin. */
   readonly plugins:       readonly GenesisPluginEntry[];
+  readonly floor?: { readonly manifest: FloorManifest; readonly lares: FloorSnapshot; readonly lararium: FloorSnapshot };
 }
 
 // ---------------------------------------------------------------------------
@@ -497,7 +501,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p)));
+  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
 }
 
 /**
@@ -578,6 +582,22 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
       ...(entry.author  && { author:  entry.author }),
       ...(entry.source  && { source:  entry.source }),
     };
+  }
+
+  if (inputs.floor) {
+    const { manifest, lares, lararium } = inputs.floor;
+    const expected = { engine: computeEngineCid(coreSha), grammar: computeGrammarCid(inputs.plugins), plugins: computePluginsCid(inputs.plugins) };
+    for (const name of ["engine", "grammar", "plugins"] as const) {
+      if (manifest[name] !== expected[name]) throw new Error(`[genesis] floor ${name} CID mismatch: floor=${manifest[name]} artifact=${expected[name]}`);
+    }
+    for (const [id, snapshot, mimeType] of [
+      ["floor-manifest", { cid: floorManifestCid(manifest), bytes: floorManifestBytes(manifest) }, "application/vnd.lararium.floor-manifest+json"],
+      ["floor-lares", lares, "application/vnd.lararium.floor-snapshot"],
+      ["floor-lararium", lararium, "application/vnd.lararium.floor-snapshot"],
+    ] as const) {
+      // METADATA alone, as every genesis blob row: the bytes ride genesis/cas/<cid> (casEntries below).
+      blobs[id] = { id, version: "1", sha256: snapshot.cid, mimeType, kind: "floor" };
+    }
   }
 
   const tiddlers: Record<string, unknown> = {};
@@ -671,6 +691,10 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
     meta: { authority: "genesis" },
   };
 
+  if (inputs.floor) {
+    const cid = blobs["floor-manifest"]!.sha256;
+    tiddlers[GENESIS_FLOOR_TIDDLER] = { tiddler: { title: GENESIS_FLOOR_TIDDLER, text: "", cid, note: "genesis floor manifest content-CID", "$origin-bag": ORACLE_DOC_URI }, meta: { authority: "genesis" } };
+  }
   return { format: GENESIS_SEED_FORMAT, actorSeed: inputs.actorSeed, blobs, tiddlers };
 }
 
@@ -726,6 +750,11 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const casEntries: { cid: string; bytes: Uint8Array }[] = [
     { cid: coreSha, bytes: inputs.coreBlob },
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
+    ...(inputs.floor ? [
+      { cid: floorManifestCid(inputs.floor.manifest), bytes: floorManifestBytes(inputs.floor.manifest) },
+      { cid: inputs.floor.lares.cid, bytes: inputs.floor.lares.bytes },
+      { cid: inputs.floor.lararium.cid, bytes: inputs.floor.lararium.bytes },
+    ] : []),
   ];
   const casManifest = genesisCasManifestFromSeed(seed);
 

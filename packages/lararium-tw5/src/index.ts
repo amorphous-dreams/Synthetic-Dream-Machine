@@ -258,6 +258,8 @@ export {
   SUBMODULES,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
+// The carrier reader the genesis floor cut shares with every door that reads a carrier (`genesis-floor.ts`).
+export { deserializeCarrier, type CarrierReading } from "./deserializer.js";
 // THE ONE READER of WHICH HEADS THE GRAMMAR KNOWS. Four readers rebuilt it from four artifacts, two
 // of them off filenames — and a filename names a tiddler, never a head a call can wear. The VM answers
 // wherever a wiki holds the grammar; ONE fallback reads the packed plugin for a reader whose wiki does

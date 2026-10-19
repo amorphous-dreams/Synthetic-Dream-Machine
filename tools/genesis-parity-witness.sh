@@ -36,6 +36,12 @@
 # source builds, or a genesis file git does not track (a fresh bake leaves its new CAS blob untracked,
 # and a commit by pathspec skips it).
 #
+# ── THE FLOOR ───────────────────────────────────────────────────────────────────────────────────
+# Floor blobs answer to their own coherence and to their release, never to the live tree. The
+# canonical manifest names the two snapshot rows and the seed's engine, grammar and plugins region
+# witnesses. The seed's floor witness names the manifest row. A carrier edit cannot move this floor;
+# only a release cuts and names another snapshot. CAS and git checks cover its files as every blob.
+#
 # ── WHAT IT COMPARES ────────────────────────────────────────────────────────────────────────────
 #   · the ENGINE: `packages/lararium-tw5/tw5-core/<TW5_CORE_SCRIPT_FILENAME>` (a build output; the
 #     filename reads from the tracked `generated-tw5-version.ts`) against the seed's `tiddlywikicore`;
@@ -89,6 +95,7 @@ if not seed_path.is_file():
 try:
     seed = json.loads(seed_path.read_text())
     blobs = {bid: b["sha256"] for bid, b in seed["blobs"].items()}
+    floor_ids = {bid for bid, b in seed["blobs"].items() if b.get("kind") == "floor"}
 except Exception as e:
     fail_early(f"genesis/seed.json does not read as a seed ({e})")
 if not blobs:
@@ -175,9 +182,59 @@ for i, r in enumerate(rows):
         "and no gap answers to that row. A bake deletes the file; a source that moved again re-declares its new sha.")
 
 for bid in sorted(set(blobs) - set(sources)):
+    if bid in floor_ids:
+        continue
     if bid == ENGINE_ID and any(u.startswith("the engine") for u in unread):
         continue
     reds.append(f"NO SOURCE  genesis names blob \"{bid}\" ({blobs[bid]}) and no file the bake reads builds it")
+
+# ── the floor closes under its manifest and release witnesses ───────────────────────────────────
+FLOOR_MANIFEST = "floor-manifest"
+FLOOR_SNAPSHOTS = {"lares": "floor-lares", "lararium": "floor-lararium"}
+WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-"
+manifest_row = seed["blobs"].get(FLOOR_MANIFEST)
+floor_witness = seed.get("tiddlers", {}).get(WITNESS_PREFIX + "floor")
+if floor_ids or floor_witness is not None:
+    if not floor_ids:
+        reds.append("FLOOR  genesis-cid-floor names a release but the seed holds no floor rows")
+    if not manifest_row or FLOOR_MANIFEST not in floor_ids:
+        reds.append("FLOOR  floor-manifest row stands absent or lacks kind floor")
+    else:
+        manifest_path = cas_dir / blobs[FLOOR_MANIFEST]
+        if manifest_path.is_file():
+            try:
+                raw_bytes = manifest_path.read_bytes()
+                manifest = json.loads(raw_bytes.decode("utf-8"))
+                keys = ("format", "engine", "grammar", "plugins", "lares", "lararium")
+                assert isinstance(manifest, dict) and list(manifest) == list(keys), "fields or order differ from the six fixed keys"
+                assert manifest["format"] == "lararium-floor/v1", "format differs from lararium-floor/v1"
+                assert all(isinstance(manifest[k], str) and manifest[k] and not re.search(r"[\x00-\x1f\x7f]", manifest[k]) for k in keys), "a field carries an empty, ill-typed or control-bearing value"
+                canonical = json.dumps(manifest, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                assert raw_bytes == canonical, "bytes differ from canonical encoding"
+            except Exception as e:
+                reds.append(f"FLOOR  floor-manifest does not read as canonical lararium-floor/v1: {e}")
+            else:
+                for field, bid in FLOOR_SNAPSHOTS.items():
+                    row = seed["blobs"].get(bid)
+                    if not row or bid not in floor_ids:
+                        reds.append(f"FLOOR  floor-manifest names {bid} but the seed holds no floor snapshot row")
+                    elif manifest[field] != blobs[bid]:
+                        reds.append(f"FLOOR  floor-manifest {field} {manifest[field]} differs from {bid} row {blobs[bid]}")
+                for field in ("engine", "grammar", "plugins"):
+                    title = WITNESS_PREFIX + field
+                    witness = seed.get("tiddlers", {}).get(title)
+                    cid = witness.get("tiddler", {}).get("cid") if isinstance(witness, dict) else None
+                    if not isinstance(cid, str) or not cid:
+                        reds.append(f"FLOOR  {title} holds no cid witness")
+                    elif manifest[field] != cid:
+                        reds.append(f"FLOOR  floor-manifest {field} {manifest[field]} differs from {title} {cid}")
+    cid = floor_witness.get("tiddler", {}).get("cid") if isinstance(floor_witness, dict) else None
+    if not isinstance(cid, str) or not cid:
+        reds.append(f"FLOOR  {WITNESS_PREFIX}floor holds no cid witness")
+    elif manifest_row and cid != blobs[FLOOR_MANIFEST]:
+        reds.append(f"FLOOR  genesis-cid-floor {cid} differs from floor-manifest row {blobs[FLOOR_MANIFEST]}")
+    for bid in sorted(floor_ids - {FLOOR_MANIFEST, *FLOOR_SNAPSHOTS.values()}):
+        reds.append(f"FLOOR  unknown floor row {bid} has no manifest field")
 
 # ── the CAS closes under the seed ───────────────────────────────────────────────────────────────
 named = set(blobs.values())

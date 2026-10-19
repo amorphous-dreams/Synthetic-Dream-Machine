@@ -28,6 +28,9 @@ import {
   sha256HexBytesSync,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   buildGenesisDoc,
+  computeEngineCid,
+  computeGrammarCid,
+  computePluginsCid,
   verifyGenesisArtifact,
   verifyPluginAttestation,
   type GenesisInputs,
@@ -41,6 +44,7 @@ import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 import { deriveGenesisActorSeed, genesisPackedPluginFiles } from "../src/genesis-actor-seed.js";
+import { cutGenesisFloor } from "../src/genesis-floor.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -215,7 +219,10 @@ async function main(): Promise<void> {
   }
 
   // Layer B: build genesis doc — pure mesh, no fs.
+  // Region folds are pure over the exact inputs buildGenesisDoc consumes, so the floor can name them without a provisional second bake.
+  const floor = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), grammar: computeGrammarCid(plugins), plugins: computePluginsCid(plugins) });
   const inputs: GenesisInputs = {
+    floor,
     actorSeed,
     coreBlob,
     coreVersion: TW5_VERSION,
@@ -246,6 +253,7 @@ async function main(): Promise<void> {
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
+  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  lares=${floor.lares.cid} (${floor.laresRows} rows)  lararium=${floor.lararium.cid} (${floor.larariumRows} rows)`);
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);

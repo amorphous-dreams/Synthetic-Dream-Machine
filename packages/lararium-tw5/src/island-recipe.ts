@@ -4,7 +4,7 @@
  * Canonical assembly:
  *   1) `expandRecipe(recipe)` → ordered slot URIs (top of array = highest priority)
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
- *   3) temp slot uses a MemoryTiddlerStore; all other slots use AutomergeDocStore
+ *   3) temp uses memory, oracle wraps its seed store with the floor read-face, and other slots use AutomergeDocStore
  *   4) IslandAdaptor projection registers
  *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
  *
@@ -19,10 +19,14 @@ import {
   expandRecipe,
   slotLayerFlags,
   wikiSlotUri,
+  ORACLE_BAG,
+  floorReadFace,
   type LarDoc,
   type DocHandle,
   type WikiRecipe,
   type SlotUri,
+  type LarTiddlerRecord,
+  type LarTiddlerStore,
 } from "@lararium/mesh";
 import { IslandAdaptor } from "./island-adaptor.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
@@ -40,6 +44,8 @@ export interface BuildIslandRecipeInput {
   recipe: WikiRecipe;
   /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
   ready: readonly RecipeReadyBinding[];
+  /** Pinned system snapshots beneath the live oracle seed. */
+  floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
 }
 
 /**
@@ -51,9 +57,9 @@ export interface BuildIslandRecipeInput {
  */
 export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
-  stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }>;
+  stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready } = input;
+  const { tw5, composite, recipe, ready, floorRows } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
@@ -62,7 +68,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
-  const stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }> = [];
+  const stores: Array<{ slot: SlotUri; store: LarTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
   let tempStore: MemoryTiddlerStore | null = null;
@@ -76,8 +82,9 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
     const handle = handleBySlot.get(slot);
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
-    const store = new AutomergeDocStore(handle, slot);
-    // All CRDT slots accept writes; the in-wiki bag-paths cascade decides routing
+    const base = new AutomergeDocStore(handle, slot);
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
+    // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default

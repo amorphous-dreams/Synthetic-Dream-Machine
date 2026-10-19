@@ -21,9 +21,8 @@
  *     temp        (MemoryTiddlerStore, volatile)
  *     draft       (CRDT, high-churn drafts)
  *     @<wikiSlug>  (CRDT, operator's edits)
- *     libraryBags[]  (CRDT, optional content libraries — the lares persona bag +
- *                     lararium corpus ride here, resolved island-side from the catalog registry)
- *     oracle       (CRDT, required — the universal floor: engine core + grammar + bag-oracle)
+ *     libraryBags[]  (CRDT, optional content libraries resolved from the catalog registry)
+ *     oracle       (read-only floor snapshots over the live oracle seed)
  *
  *   Write routing happens via the in-wiki cascade
  *   (`lar:///ha.ka.ba/lararium/config/bag-paths`), not by behavior config.
@@ -59,6 +58,9 @@ import {
   makeIslandRepo,
   replicaHeads,
   sha256HexBytesSync,
+  GENESIS_FLOOR_TIDDLER,
+  plainRecordOrNull,
+  resolveFloor,
   type Repo,
   type DocHandle,
   type AutomergeUrl,
@@ -67,6 +69,7 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
+  type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
@@ -438,6 +441,18 @@ export function runSovereignKernel(
     }
 
     const tw5 = handler.tw5()!;
+    const floorCidField = plainRecordOrNull(laraiumHandle.doc()?.tiddlers?.[GENESIS_FLOOR_TIDDLER])?.tiddler.cid;
+    let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
+    if (typeof floorCidField === "string" && floorCidField.length > 0) {
+      const floor = await resolveFloor(floorCidField, resolveByCid);
+      if ("refusal" in floor) {
+        _post(mkFault(msg.wikiUri, `@oracle floor mount refused (${floor.refusal}): ${floor.reason}`));
+        return;
+      }
+      floorRows = [floor.lares, floor.lararium];
+    } else {
+      console.info("[floor] the genesis seed names no floor; @oracle reads the seed rows alone");
+    }
     // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
     // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
     // the seed replay on the shore's quota-bounded host-task queue.
@@ -447,6 +462,7 @@ export function runSovereignKernel(
       composite: _composite,
       recipe: msg.recipe,
       ready,
+      floorRows,
     });
     _adaptor = adaptor;
     // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.

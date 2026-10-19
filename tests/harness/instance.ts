@@ -508,15 +508,16 @@ export interface StagedFleet {
   readonly hermShore: string;
   /** What C's `fleet join land` said. */
   readonly admitted: CliResult;
-  /** Every line of the carriage crossing (export · import · carry-for · carry · re-stand · public registration). */
+  /** Every line of the carriage crossing (export · import · carry-for · carry · mint · public registration). */
   readonly crossing: string;
   /** Tear all three down (C · A · Herm), deleting every staged root. A vessel already stopped is skipped. */
   readonly stop: () => Promise<void>;
 }
 
 /** Stand the fleet. Throws (and tears down what stood) when any of the three never reaches live. */
-export async function openStagedFleet(opts: { readonly tag?: string } = {}): Promise<StagedFleet> {
+export async function openStagedFleet(opts: { readonly bookSlug: string; readonly tag?: string }): Promise<StagedFleet> {
   const tag = opts.tag ? `${opts.tag}-` : "";
+  const bookSlug = opts.bookSlug;
   const [portHerm, portRelay] = await Promise.all([freePort(), freePort()]);
   const relay     = await pinnedCarriageRelay(portRelay);
   const hermShore = `http://127.0.0.1:${portHerm}`;
@@ -555,9 +556,8 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
       // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
       // CARRIER relation and never the member one: A's charter crosses by `seal export`/`seal import`, the
       // place signs "I carry for this Nexus" with its OWN vessel key (`nexus carry-for` — no persona read),
-      // and A's quorum seats that seal (`nexus carry <key> --carrier <hex>`). Then the place stands again
-      // DIALING A on Socket A, so the realm doc A's charter names reaches the Herm's own replica and its
-      // standing fold answers; A registers the book at PUBLIC, which is the one tier the carrier leg opens.
+      // and A's quorum seats that seal (`nexus carry <key> --carrier <hex>`). The Herm dials no hearth;
+      // A mints a user book and registers it at PUBLIC, the tier the carrier leg reads.
       beforeB: async (A) => {
         const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
         crossing.push(`A nexus seal export → ${exp.code} (${exp.stdout.length} chars)`);
@@ -583,10 +583,13 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
         // log, and the legs that need the herm to reach A assert that it does not.
         crossing.push(`herm dial: ${herm.bootLog().includes("a herm dials no hearth") ? "a herm dials no hearth (said)" : "NO herm dial line"}`);
 
+        const minted = await A.cli(["wiki", "init", bookSlug, "--json"]);
+        crossing.push(`A wiki init ${bookSlug} → ${minted.code}: ${minted.stdout.trim().slice(0, 200)}`);
+        if (minted.code !== 0) throw new Error(`fleet: A minted no user book ${bookSlug} (${minted.code})\n${minted.stderr.slice(-600)}`);
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
-        const reg = await A.cli(["nexus", "realm-bag", "lares", "--tier", "public", "--json"]);
-        crossing.push(`A nexus realm-bag lares --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
-        if (reg.code !== 0) throw new Error(`fleet: A registered no public book (${reg.code})\n${reg.stderr.slice(-600)}`);
+        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--tier", "public", "--json"]);
+        crossing.push(`A nexus realm-bag ${bookSlug} --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
+        if (reg.code !== 0) throw new Error(`fleet: A registered no public book ${bookSlug} (${reg.code})\n${reg.stderr.slice(-600)}`);
       },
     });
     pairRef = pair;
