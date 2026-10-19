@@ -189,7 +189,7 @@ jobs:
       # the venv that holds mempalace, never a bare `pytest`.
       # Keep the package verdict visible if the independent Python suite fails.
       # The holder gates package tests that exercise its real subprocess.
-      - name: Install Playwright engines (browser-vessel suite: Chromium, Firefox, WebKit)
+      - name: Install Playwright engines (browser-vessel suite, three engines)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: browser
         run: pnpm exec playwright install --with-deps chromium firefox webkit
