@@ -182,13 +182,11 @@ jobs:
       - name: Witness the holder answers
         id: holder
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
-      # `pnpm test` reaches the sensorium's two TypeScript tests only.  The
-      # holder suite is Python and lives beside its modules under scripts/, so
-      # invoke it through the same venv that holds mempalace.  Calling bare
-      # `pytest` here would let the runner's global interpreter silently stand
-      # in for the holder environment the suite actually requires.
-      - name: Run lararium-sensorium Python suite
-        run: ~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q
+      # `pnpm test` reaches the sensorium's two TypeScript tests only. The holder
+      # suite (Python, beside its modules under scripts/) stands unhooked from CI
+      # while the mempalace lane rests (operator, 2026-10-19); it re-hooks with
+      # that lane through `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts`,
+      # the venv that holds mempalace, never a bare `pytest`.
       # Keep the package verdict visible if the independent Python suite fails.
       # The holder gates package tests that exercise its real subprocess.
       - name: Install Playwright Chromium (browser-vessel suite)
