@@ -28,9 +28,10 @@
  */
 import { interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
 import { tiddlerText } from "./base-doc.js";
-import type { StoredLarRecord } from "./stored-value.js";
+import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { GENESIS_FLOOR_TIDDLER, readFloorManifest } from "./floor-manifest.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
@@ -104,6 +105,7 @@ export interface SurfaceRecipe {
   readonly unresolved:  readonly SlotUri[];
   readonly coreHash:    string | null;
   readonly pluginCids:  readonly string[];
+  readonly floorCids:   readonly string[];
   readonly revision:    string;
 }
 
@@ -217,11 +219,27 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const plugins = await resolveRecipePluginCids(recipe, input.plugins);
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
+  // The seed's floor witness admits the manifest and both snapshots to the session's content view.
+  const floorCid = plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+  const floorCids: string[] = [];
+  if (typeof floorCid === "string" && floorCid.length > 0) {
+    let bytes: Uint8Array | null;
+    try { bytes = await input.plugins.readBytes(floorCid); }
+    catch (error) { return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${String(error)}`); }
+    if (!bytes) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: manifest bytes absent: ${floorCid}`);
+    if (sha256HexBytesSync(bytes) !== floorCid) {
+      return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: manifest bytes differ from CID: ${floorCid}`);
+    }
+    const opened = readFloorManifest(bytes);
+    if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
+    floorCids.push(floorCid, opened.manifest.lares, opened.manifest.lararium);
+  }
+
   const coreHash = input.plugins.coreHash;
   const revision = sha256HexBytesSync(canonicalJsonBytes({
     slots: slots.map((s) => [s.slot, s.layer, s.document]),
     planes: facePlanes.map((p) => [p.name, p.document]),
-    unresolved, coreHash, pluginCids: plugins.pluginCids,
+    unresolved, coreHash, pluginCids: plugins.pluginCids, floorCids,
   }));
   return Object.freeze({
     ok: true,
@@ -229,7 +247,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
       wikiId, wikiSlug: slug, facePlaneId: face.facePlaneId, profile: input.profile, recipe,
       slots: Object.freeze(slots.map((s) => Object.freeze(s))),
       planes: Object.freeze(facePlanes), unresolved: Object.freeze(unresolved),
-      coreHash, pluginCids: Object.freeze([...plugins.pluginCids]), revision,
+      coreHash, pluginCids: Object.freeze([...plugins.pluginCids]), floorCids: Object.freeze(floorCids), revision,
     }),
   });
 }
@@ -242,7 +260,7 @@ export function facetsOfSurfaceRecipe(recipe: SurfaceRecipe): SessionDocumentFac
     documents.push({ name: slot.slot, document: slot.document, layer: slot.layer });
   }
   documents.push(...recipe.planes);
-  return { documents, content: [...(recipe.coreHash ? [recipe.coreHash] : []), ...recipe.pluginCids] };
+  return { documents, content: [...(recipe.coreHash ? [recipe.coreHash] : []), ...recipe.pluginCids, ...recipe.floorCids] };
 }
 
 /** The absolute id of every slot that holds a document, by slot name: what an island's manifest carries. */

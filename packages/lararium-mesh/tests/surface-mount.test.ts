@@ -27,6 +27,7 @@ import { hex, sha256HexBytesSync } from "../src/crypto.js";
 import { ENGINE_CORE_ID, emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import type { CasBlobLike } from "../src/cas.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
+import { FLOOR_MANIFEST_FORMAT, GENESIS_FLOOR_TIDDLER, floorManifestBytes } from "../src/floor-manifest.js";
 import { makeIslandRepo } from "../src/island-repo.js";
 import { mkEa, mkFault, mkTeardownAck, type IslandMsg_Manifest } from "../src/island-protocol.js";
 import { mkLarControlEvent, mkLarFrame } from "../src/lar-camera.js";
@@ -167,7 +168,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
       { slot: LARES_BAG,                     layer: "library",  document: v.lares.url },
       { slot: ORACLE_BAG,                    layer: "oracle",   document: v.oracle.url },
     ]);
-    expect(recipe).toMatchObject({ wikiId: WIKI, wikiSlug: SLUG, facePlaneId: v.faces.player.plane.url, profile: "face", coreHash: CORE_CID, pluginCids: [GRAMMAR_CID], unresolved: [] });
+    expect(recipe).toMatchObject({ wikiId: WIKI, wikiSlug: SLUG, facePlaneId: v.faces.player.plane.url, profile: "face", coreHash: CORE_CID, pluginCids: [GRAMMAR_CID], floorCids: [], unresolved: [] });
     expect(recipe.revision).toMatch(/^[0-9a-f]{64}$/);
     // The same inputs resolve the same revision; the resolver holds no state between two calls.
     expect((await resolved(inputOf(v, "player"))).revision).toBe(recipe.revision);
@@ -181,6 +182,41 @@ describe("one function resolves a session's effective recipe at surface mount", 
     for (const beyond of [v.catalog, v.referee, v.faces.referee.plane, v.faces.referee.working]) {
       expect(facets.documents.map((f) => f.document)).not.toContain(beyond.url);
     }
+  });
+
+  test("a named oracle floor admits its manifest and snapshots through the session view", async () => {
+    const v = vessel();
+    const base = inputOf(v, "player");
+    const withoutFloor = await resolved(base);
+    expect(withoutFloor.floorCids).toEqual([]);
+    expect(facetsOfSurfaceRecipe(withoutFloor).content).toEqual([CORE_CID, GRAMMAR_CID]);
+
+    const lares = "44".repeat(32), lararium = "55".repeat(32);
+    const bytes = floorManifestBytes({
+      format: FLOOR_MANIFEST_FORMAT, engine: CORE_CID, grammar: GRAMMAR_CID,
+      plugins: "66".repeat(32), lares, lararium,
+    });
+    const cid = sha256HexBytesSync(bytes);
+    v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid }, "test"); });
+    const reads: string[] = [];
+    const withBytes = { ...base, plugins: { ...base.plugins, readBytes: async (asked: string) => {
+      reads.push(asked);
+      return asked === cid ? bytes : null;
+    } } };
+    const withFloor = await resolved(withBytes);
+    expect(reads).toEqual([cid]);
+    expect(withFloor.floorCids).toEqual([cid, lares, lararium]);
+    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lares, lararium]);
+    expect(withFloor.revision).not.toBe(withoutFloor.revision);
+
+    const missing = await resolveSurfaceRecipe(base);
+    expect(missing).toMatchObject({ ok: false, refusal: "floor-unresolved" });
+    if (!missing.ok) expect(missing.detail).toContain(GENESIS_FLOOR_TIDDLER);
+    const garbage = new Uint8Array([1, 2, 3]);
+    v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid: sha256HexBytesSync(garbage) }, "test"); });
+    const malformed = await resolveSurfaceRecipe({ ...base, plugins: { ...base.plugins, readBytes: async () => garbage } });
+    expect(malformed).toMatchObject({ ok: false, refusal: "floor-unresolved" });
+    if (!malformed.ok) expect(malformed.detail).toContain(GENESIS_FLOOR_TIDDLER);
   });
 
   test("the vessel's own record shadows the system default, and a tombstoned one counts as nothing", async () => {
