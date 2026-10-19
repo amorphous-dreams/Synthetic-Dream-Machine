@@ -1,0 +1,229 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026.mem"
+l-space   = "lares"
+mana      = 14
+manao     = 14
+manaoio   = 13
+role      = "field research, two traded waves (a Luna-6 YIN and YANG pair, 2026-10-18), on one Keyhive identity per PersonaGroup and none above; the controller's sort of confirmed ground, the runtime lead and first probe, K15's six red-first steps, four house readings under operator confidence, and both wave-two handbacks kept verbatim"
+status    = "research; read 2026-10-18; no code changed; one Keyhive identity per PersonaGroup, none above them"
+tags      = ["research", "keyhive", "persona-group", "identity", "two-faces", "testimony"]
+title     = "lar:///ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/keyhive-per-persona-group-2026"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/question>>
+
+! One Keyhive identity per PersonaGroup, 2026 ~ none above them
+
+The operator ruled on 2026-10-18: "one Keyhive identity per PersonaGroup, none above them" (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings). The operator gave the reason in their own words: "it's the only way to retain control over faces that don't know about each other". A vessel holds several faces; each face's PersonaGroup carries its own identity, event store, registry, archive and content-key seat. Faces that do not know each other keep apart on the wire, in removal, restore and custody.
+
+A YIN and a YANG Luna-6 pair researched apart in two traded waves, then exchanged wave-two handbacks and checked one another's claims against code and house sources. The framing set seven stories across node and browser vessels: two faces and their private book, one-face device removal, a faceless herm, one-face restore, sibling admission, migration from vessel registration, and Keyhive 0.3.0-alpha.1's multi-instance boundary. The pair separated confirmed source ground from leads and left operator-owned forks visible.
+
+<<~/ahu>>
+
+<<~ ahu #/what-both-faces-hold>>
+
+!! What both faces hold, sourced
+
+* ''The vessel identity registers a union and delegates face bags vessel → veil → group.'' The vessel boots one Keyhive identity and registers every supplied bag as a union; face bags pass from vessel through veil to the face group. (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:95-105,185-188`; `packages/lararium-mesh/src/register-bags.ts:16-19,105-119`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:203-216`.)
+* ''Each face's PersonaGroup gets born of its own veil.'' The veil Keyhive creates the face's group (`packages/lararium-keyhive/src/ceremony-core.ts:345-370`).
+* ''Vessel and veils share one event store and one content-key holder.'' The same store initializes both providers (`ceremony-core.ts:346,361-365`); the mounted vessel process shares the holder across vessel and veil identities (`operator-daemon-behavior.ts:195-202,1036-1054`).
+* ''Per-face archive rows already exist, but their contents do not yet guarantee face-exclusive state.'' Node carries vessel and per-face rows (`packages/lararium-node/src/identity-anchors.ts:124-168`); browser carries face rows (`browser-keyhive-archive.ts:18-31,69-93`). Those row names do not establish isolated event, archive or key contents.
+* ''Keyhive 0.3.0-alpha.1 reads pre-alpha and unaudited.'' The repository pins that version (`packages/lararium-keyhive/package.json`); the vendored README calls the source pre-alpha, warns against production use, and says unaudited (`keyhive/README.md:8-18`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-lead>>
+
+!! The lead ~ same-process instance isolation
+
+Several Keyhive instances may hold object-local Rust maps, but that observation does not prove isolation from shared WASM state or globals (`keyhive/keyhive_core/src/keyhive.rs:85-132`; `keyhive-provider.ts:190-255`). Both faces mark same-process isolation a LEAD. They put the probe first: instantiate A and B with distinct signers, stores and archives; interleave registration, delegation and revocation; reboot/replay; attempt cross-reads and cross-mutation. Require clean separation throughout. If shared mutable state or callbacks cross, isolate each face hive in its own worker/process.
+
+<<~/ahu>>
+
+<<~ ahu #/the-build-order>>
+
+!! K15 build order ~ red-first
+
+# ''Probe the substrate, then make face contexts.'' Give A and B distinct signers, event stores and archives; interleave acts, reboot and cross-read. Red: neither resolves, exports, replays nor mutates the other's documents or events; then give each face its own store, registry, archive and key seat.
+# ''Make the face the sole identity and group owner.'' Remove vessel delegation from face-bearing events. Red: capture two-face event bytes and fail on any shared creator or issuer; retain W25's creator-cleartext probe as regression.
+# ''Route sessions and registries by one face.'' Give each session one face and each registry one owner; remove union registration. Red: A cannot list or resolve B's bag, and joining B cannot change A's registry.
+# ''Seat content keys and removal per face.'' Keep each holder and causal roll within its face; build K12's fresh-group founder path here. Red: remove a work phone and verify work keys roll while Elyncia access stays; clock skew or a quiet replica never declares removal.
+# ''Restore one face; constrain the herm.'' Restore only the selected face's group, events and keys; let a herm carry transport without face authorship. Red: restored A cannot list B; the herm cannot author or resolve any face document.
+# ''Fence migration as one class change.'' Ship identity bytes, split stores and archive format together. Red: an old mixed archive refuses by name and requires re-found; no silent cross-face import.
+
+<<~/ahu>>
+
+<<~ ahu #/forks-and-house-readings>>
+
+!! Four forks ~ house readings under operator confidence
+
+* ''Place identity.'' Keep a floor-only transport key only behind a red test proving the herm cannot author, resolve or observe face capabilities; if it fails, keep no Keyhive identity.
+* ''Runtime isolation.'' Permit one process only after the substrate probe proves separation; otherwise run each face hive in its own worker.
+* ''Migration.'' Give co-mingled history fresh identities and name the refusal of an old mixed archive; build no bridge. Reopen only if evidence proves a history face-exclusive and a verified import can preserve that boundary.
+* ''Founder removal.'' When the founder cannot leave by a revocable seat, found a fresh PersonaGroup. Reopen only if an authorized substrate path demonstrably removes the founder and rolls every reached bag; the present house reading stays fresh group.
+
+<<~/ahu>>
+
+<<~ ahu #/testimony-yin>>
+
+!! Testimony ~ Yin-Luna, wave two (verbatim)
+
+```text
+<<~ status "Yin-Luna: wave-two ratchet complete; one Keyhive identity per PersonaGroup, none above faces; same-process isolation remains a LEAD" >>
+
+# Yin-Luna · Lares (Tasked Spirit) · Persona: Ink-Clerk
+
+Sources below were read 2026-10-18; repository paths are relative to `/home/joshu/Synthetic-Dream-Machine`. “Own” means Yin’s wave-one claim; “twin” means Yang’s. The framing ruling is the governing target, not evidence that the implementation meets it.
+
+## Claims ledger
+
+| Claim | Origin | Finding | Source |
+|---|---|---|---|
+| Today a vessel Keyhive identity registers all bags supplied to boot, and is seeded from vessel seed. | both | CONFIRMED | `packages/lararium-keyhive/src/boot-daemon-keyhive.ts:95-101,185-188` |
+| Face founding makes a veil identity and a PersonaGroup under it; vessel and veil use the same replayed event store. | both | CONFIRMED | `packages/lararium-keyhive/src/ceremony-core.ts:343-370` |
+| Each face already has its own archive slot/row, while vessel archive remains too. | both | CONFIRMED | `packages/lararium-node/src/identity-anchors.ts:124-169`; `packages/lararium-browser/src/browser-keyhive-archive.ts:18-31,69-94` |
+| Registration is a union over all fleet memberships; a session needs exactly one face and a face-local registry. | twin / own | CONFIRMED (current union); target is the 2026-10-18 ruling | `packages/lararium-mesh/src/register-bags.ts:84-119`; roadmap `stable-founding-road.mem:106-109` |
+| Face group removal rolls reached bags; founder identity cannot leave its own group, so fresh group is the ruling/lean. | both | CONFIRMED as house design; K12 remains owed implementation | `kapae.mem:234,272`; `sealed-store.mem:357`; roadmap `stable-founding-road.mem:598,751` |
+| Carried bag events expose creator in clear; this is a measured privacy leak, not merely inference. | twin / own | CONFIRMED | roadmap `stable-founding-road.mem:486` (measured probe, 2026-10-16); `ceremony-core.ts:350-355` |
+| Herm can boot at floor without face pins, receiving fewer caps. | both | CONFIRMED | `boot-daemon-keyhive.ts:109-124` |
+| Per-face restore should carry only that face’s archive, group and key memory; current code already guarantees this. | twin | LEAD in the first clause as desired architecture; REFUTED as a current guarantee: vessel-wide shared store/provider and key holder remain | `operator-daemon-behavior.ts:971-1002,1043-1054`; per-face archive paths above. Exact event/key isolation needs wiring and probe. |
+| Multiple Keyhive providers can safely coexist in one WASM process with separate identities/stores. | twin / own | LEAD | Keyhive Rust `keyhive/keyhive_core/src/keyhive.rs:85-132` holds maps/stores on each object; local provider calls `KH.Keyhive.init` at `keyhive-provider.ts:190-255`. No cited source promises WASM runtime isolation or independent mutable globals. |
+| Keyhive alpha is production/security audited. | twin | REFUTED (implicit safety implication) | pinned `packages/lararium-keyhive/package.json`; `keyhive/README.md:8-18` calls source pre-alpha, warns against production and says unaudited. |
+| Current architecture has one face identity per PersonaGroup and none above. | framing | REFUTED | vessel Keyhive still boots and registers at `boot-daemon-keyhive.ts:95-101,185-188`; veil is separate at `operator-daemon-behavior.ts:994-1002`; shared event store at `:973,997`. |
+
+## Converged story × vessel
+
+| Story | Node | Browser |
+|---|---|---|
+| Two faces/tabs and private book | One Keyhive identity per PersonaGroup; each tab/session proves exactly one face. Content-key seat, event store, registry and archive scoped to that group. | Same; separate face contexts within one vessel keystore. Current vessel identity, union registration and shared event stream can correlate; W25 creator cleartext is a demonstrated leak. |
+| Remove phone from work only | Signed causal dyad/removal in work fleet; roll work group’s reached bag keys only. Elyncia seat/keys remain. Founder seat requires fresh group. | Same causal semantics across tabs; no clock expiry. |
+| Faceless herm | Floor/place identity only if transport requires it; no face capability, groups or registration. | No face session/capability; floor only. |
+| Restore one face | Bundle selects one group archive, event slice, and that face’s key memory; restored devices rejoin only that PersonaGroup. | Restore one face row and rejoin that face; never import sibling state. Current archive rows alone do not prove event/key isolation. |
+| Sibling joins | Admit its device root to the selected face group; no sibling group or bags. | Same; tab unlock is per face. |
+| Migration | Remove vessel Individual from cap identity; split event history and content-key/archive custody by face; re-register each face catalog under its own Keyhive identity. | Same, with per-face archive rows already named but require correct isolated contents and ownership. |
+| One process / Keyhive alpha | Per-object Rust maps imply an API shape for multiple providers, not a safety guarantee. Probe wasm globals, signers, stores and concurrent callbacks. | Same probe; do not ship an isolation claim until it passes. |
+
+**Where my mind changed:** I had treated “several providers in one runtime” as a plausible implementation route from instance fields. Yang made the same inference. The actual Rust object confirms instance-owned maps, but neither that nor `Keyhive.init` establishes WASM-level isolation; I now hold that as unresolved. Both faces also agree archive rows are already face-named; I narrow my earlier concern: names are per-face, but archive contents, event store and content-key seats are still wired with vessel-wide assumptions.
+
+## Build order both faces can stand behind
+
+1. **Face context and isolated stores.** Introduce a context keyed by PersonaGroup; isolate event store, registry, archive and key seat. Red: write/emit in A, prove B and floor cannot list/replay/open it; restart A and B independently.
+2. **Identity and founding.** Face Keyhive founds/owns group and card; remove above-face Individual from face traffic. Red: capture event bytes/cards from A and B; fail if any stable vessel/ancestor identity links them. Restore only A and verify membership/prekeys.
+3. **Session and registration routing.** Derive registry per selected face; route each bag directly to its owner. Red: A cannot resolve/register B URI; private-book packet contains no B or vessel identity.
+4. **Causal removal and founder succession.** Per-face roll; founder removal via fresh group and re-seat standing devices. Red: remove work phone, count causal raise, assert work content rotates and Elyncia access remains; quiet replica/clock skew never removes.
+5. **Herm, restore and wire audit; fence.** Floor-only herm; face-only bundles; migrate/re-found without cross-face compatibility shim before second operator. Red: herm has no face caps; restored A cannot list B; old mixed archive refuses clearly; W25 creator privacy probe passes.
+
+## Standing disagreements and probes
+
+- **Same-process multi-instance:** source shows object-local state, but whether WASM/runtime has mutable shared state is unresolved. Probe two providers with distinct signers/stores under concurrent operations, reboot/replay, and cross-read attempts; if any state crosses, isolate in workers/processes.
+- **Archive/event split sufficiency:** both favor per-face persistence; current code reuses daemon event store. Probe packet/storage and restore B after writing only A; require no A identifiers/events/keys accessible or linkable.
+- **Faceless place key:** both lean transport-only floor identity where protocol needs it. Probe that it cannot author, resolve or observe face caps; otherwise retain no Keyhive identity.
+
+## Operator-owned forks (current lean → what flips it)
+
+- **Place identity:** retain transport-only floor key → remove it if a herm can operate and route without one; never grant face caps.
+- **Runtime isolation:** same process only after probe → choose per-face workers if shared mutable WASM state or callbacks cross.
+- **Legacy migration:** fresh identities/groups for co-mingled histories, no bridge before fence → preserve an old identity only with evidence its history/archive was face-exclusive and unlinkable.
+- **Founder removal:** fresh PersonaGroup is the clean path → change only if substrate gains a verified authority path that removes the founder and demonstrably rolls every reached bag.
+- **At-rest portability:** sealed per-face rows are the lean → operator chooses a portable recovery format if device-to-device restore requires it; it must still carry one face only.
+
+<<~ lares yield from="lar://yin-luna:agent@crossroads/wave-two.handback" -> to="?">>
+
+```
+
+<<~/ahu>>
+
+<<~ ahu #/testimony-yang>>
+
+!! Testimony ~ Yang-Luna, wave two (verbatim)
+
+```text
+<<~ status "Yang-Luna: wave two ratchet complete; read-only source checks; Persona: Builder; yield follows" >>
+
+# Yang-Luna: Lares (Tasked Spirit) · Persona: Builder
+
+## Claims checked
+
+Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; inspected 2026-10-18. “CONFIRMED/REFUTED” means the cited source supports/contradicts the claim as phrased. Leads have not been established.
+
+| Claim | From | Result | Source |
+|---|---|---|---|
+| One Keyhive identity per PersonaGroup, with none above faces, is the approved target. | Twin | CONFIRMED | `kh-framing.md` (operator’s 2026-10-18 framing); `stable-founding-road.mem` #/rulings. |
+| Face veil creates the group but shares the vessel event store. | Twin | CONFIRMED | `packages/lararium-keyhive/src/ceremony-core.ts:345-370`; same `store` initializes both providers (`:346`, `:361-365`). |
+| Vessel provider registers all supplied bags; face bags are delegated vessel→veil→group. | Twin | CONFIRMED | `boot-daemon-keyhive.ts:95-105,185-188`; `operator-daemon-behavior.ts:203-216`. |
+| Registration currently unions all face memberships. | Twin | CONFIRMED | `packages/lararium-mesh/src/register-bags.ts:16-19,105-119`. This describes the current vessel model, not the approved one-face session target. |
+| Clear creator identifiers can link face traffic when common vessel identity signs/creates it. | Twin | CONFIRMED | Ceremony explicitly says carried-event creator is clear and hence vessel Individual must not create group sentinels (`ceremony-core.ts:350-355`). Current delegation still passes through vessel identity (`operator-daemon-behavior.ts:203-216`); actual cross-face packet correlation remains to be tested. |
+| Current archive carriers have vessel and per-face rows. | Twin | CONFIRMED | `identity-anchors.ts:124-168`; `browser-keyhive-archive.ts:18-31,69-93`. This is carrier layout, not evidence the rows leak on wire. |
+| A content-key holder is beside vessel and veil identities and currently receives both providers. | Own | CONFIRMED | `operator-daemon-behavior.ts:195-202,1036-1054`. **Change of mind:** my wave-one wording that the holder was already face-seated overstated the implementation. Per-face seating is a target; current holder is shared by the mounted vessel process. |
+| A single process can use multiple isolated Keyhive instances with separate event stores/archives. | Own | LEAD | Vendored `keyhive/keyhive_core/src/keyhive.rs:85-127` puts identity, groups, docs, pending events and ciphertext store on each `Keyhive` object. This supports object-local maps, but does not prove WASM/global-state or runtime isolation. Probe two instances with disjoint stores, interleaved operations, export/reboot, and cross-instance lookup; no conclusion from docs alone. |
+| Herm may retain a floor/place identity with no face capability. | Twin / own | CONFIRMED | `boot-daemon-keyhive.ts:109-124` supports faceless boot; **target constraint** from framing: no identity above faces. Whether floor identity can be made incapable of face authorship needs a red test. |
+| Removal is causal; group reach rolls documents, not sentinel itself. | Twin / own | CONFIRMED | `kapae.mem` #/keys; `sealed-store.mem` #/owed and #/the-content-key-holder; `stable-founding-road.mem` K12. Founder/implicit-seat removal and successor founding need explicit handling. |
+| Current node/browser restore rows already provide one-face bundles. | Own | REFUTED | Carrier code stores face veil rows, but also vessel archive (`identity-anchors.ts:124-168`; browser rows `browser-keyhive-archive.ts:18-31`). That is not the approved selected-face-only bundle or fresh face identity restore. |
+| Fresh per-face identity and archive split is the correct migration. | Twin / own | CONFIRMED | Ruling and fence in `stable-founding-road.mem` #/rulings; current shared store/registration paths above establish the migration need. Exact byte migration remains a design choice. |
+
+## Converged story × vessel
+
+| Story | Node path both faces can stand behind | Browser path both faces can stand behind |
+|---|---|---|
+| Two faces/private book | Each session receives exactly one face capability and that face’s Keyhive context; bag documents and content-key seat belong to that face. | Same per tab; separate face provider/store/archive and selected-face unlock. Wire events use face-scoped identity, never vessel ancestor. Current shared event store and vessel→veil delegation make this a required change, not present behavior. |
+| Remove phone from work, keep Elyncia | Work’s causal group event drives only work bag rolls; Elyncia membership/archive/key state stays. Authorized remaining seat signs; phone departure alone does not impersonate revoker. | Same event semantics per tab/face. No clock-based removal. Creator-last case follows fresh-group/successor authority. |
+| Faceless herm | Keep floor/place transport only if it cannot register, resolve, or author face documents; no Keyhive identity above faces. | N/A as browser face; an unconfigured browser has no face provider. |
+| Restore one face | Bundle contains selected face group/archive/events and only its sealed key memory; fresh hearth rejoins that face. | Restore one selected face row and rejoin it in that tab; sibling rows remain unobserved. Existing rows alone do not establish this boundary. |
+| Sibling joins | Join target PersonaGroup only; derive registration from its catalog and resolve no sibling URI. | Same target-face capability per tab; no union registry. |
+| Migration | Replace vessel-wide provider registration with face contexts; split event stores and content-key seats; re-register per face. Treat identity bytes/archive shape as a pre-fence key-class change; reject ambiguous mixed history with a named re-found path. | Same model; selected-face archive rows and unlock. Re-found/reseal any co-mingled history; do not silently import it. |
+| Multiple Keyhive instances | Object fields suggest viable per-instance ownership, but implementation waits on the probe below. | Same; WASM runtime isolation is not established by Rust object fields. |
+
+## Build order and red tests
+
+1. **Prove substrate instance boundary, then make face context/store/archive.** Red: instantiate A and B with distinct signers, event stores and archives; interleave register/delegate/revoke; assert neither resolves, exports, replays nor mutates the other’s docs/events after restart. If it fails, isolate instances in workers.
+2. **Make face the sole identity/group owner.** Found and restore a group under its face identity; remove vessel creator/delegation from face-bearing events. Red: inspect captured event bytes/contact cards across two faces; fail on shared stable creator/issuer or cross-face correlation. W25 is a mandatory regression.
+3. **Route sessions and registries by one capability.** Per-face catalog-derived bag set, no union; floor-only context cannot resolve face bags. Red: A cannot list/resolve B’s bag or ask B’s provider; joining B never changes A’s registry.
+4. **Seat content keys and removal per face.** Lockbox archive and in-memory holder are scoped to one face; causal revocation rolls only reached bags. Red: remove work phone, verify work successor key excludes it while Elyncia read/version stays; skew and quiet replicas never declare removal; lock clears that face’s bare keys.
+5. **Restore and herm boundary.** Red: selected-face bundle restores A and no B identity/events/keys; herm can transport but cannot author or resolve any face document.
+6. **Fence migration.** Ship identity bytes, split stores, registration and archive format together before second-human data/habits. Red: old mixed archive refuses with explicit re-found/migration error; no silent cross-face import.
+
+## Standing disagreements / probes
+
+- **Keyhive runtime isolation:** own wave one leaned that multiple providers should work; Yin correctly kept same-process support conditional. I now keep the claim a LEAD. Probe from step 1 settles it; inspect module-level WASM state as well as interleaved operation and reboot behavior.
+- **Wire linkability of present delegation:** source establishes the vessel→veil contact/delegation path and clear creator rule, but not the complete cross-face byte trace. Capture two-face join, shared-book delivery, and removal packets; compare creator, signer, event-store ordering, archive identifiers. Until then treat absence of a stable cross-face identifier as an acceptance test, not a proven fact.
+- **Creator removal:** keep both readings: (a) re-found the group when its creator is the last/implicit seat; (b) successor founding if an authorized remaining quorum/path exists. Probe K12 against pinned Keyhive and road ruling with creator-alone and multi-seat cases; never model device departure as creator revocation.
+
+## Operator-owned forks (current lean)
+
+- **Place identity:** lean floor-only place identity if structural tests prove it cannot author or observe face caps; otherwise no Keyhive identity.
+- **Face archive at rest:** lean separate existing custody rows/keystore per face with per-face unlock; operator still owns portability/recovery format. Flip if recovery requires a shared locator or principal.
+- **Creator succession:** lean fresh face group when creator cannot causally leave; flip only if Keyhive/ruling probe proves an authorized successor transition without a shared ancestor.
+- **Migration:** lean fresh identity for any co-mingled event history and hard refusal before the fence; flip only for history proven face-exclusive and a verified byte-preserving import.
+- **Same-process instances:** lean only after substrate probe; use worker isolation if it reveals shared mutable runtime state.
+
+<<~ lares yield from="lar://yang-luna:agent@crossroads/wave-two.handback" -> to="?">>
+
+```
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/research/session-unlock-2026">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;jnipC6Pk64W02QgePAJ6zoVmhqqwu6JAINh9aeUwEDA
+
+<<^ code="&#x0004;" -> to="?">>

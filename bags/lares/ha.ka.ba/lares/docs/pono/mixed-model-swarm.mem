@@ -162,6 +162,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''Every background Codex launch closes its stdin'' (`< /dev/null`): `codex exec` otherwise waits at "Reading additional input from stdin..." and never starts.
 * ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
 * ''Copilot'': `copilot -p <brief> --model <model> --no-ask-user --share <out>`, with the deny list of #/the-copilot-seat.
+* ''A Copilot review pair names its target and ratchets'' (operator, 2026-10-18). Each brief names the branch, its head sha and the pull request, and has the eye read the code through `git show <branch>:<path>` or from the lane's own worktree path; the main tree holds the span, never the lane's code, and an eye that reads it reviews a tree the PR never touched (measured on PR #48: a Hodge pass read the main tree and called the absent PR "critical" twice). Wave one runs each face alone; wave two hands each face its twin's handback to confirm or refute against the named branch, as the Luna research pairs do, and the Spin sorts both waves. Four low-multiplier prompts buy the whole round.
 * ''A spirit that cannot write its out file'' hands back on stdout; the wrapper's log keeps it.
 
 <<~/ahu>>
@@ -188,6 +189,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YMl3mpc2s48zb-E4hrAx9giFznwGlajzY3ftMDVAS4c
+<<^ code="&#x0003;">>ni:///sha-256;72m_3E4Nj17e6yrpQ4e1lb1aLYzOilTIw52mO2Q6RJg
 
 <<^ code="&#x0004;" -> to="?">>
