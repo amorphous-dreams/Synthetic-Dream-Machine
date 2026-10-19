@@ -39,7 +39,7 @@ import {
   type FaceProofRefusal, type KeysHeldApart, type SessionCertificate, type SessionKey, type Signature,
 } from "./face-proof-subjects.js";
 import {
-  SESSION_SCHEMA_VERSION, SessionTable, isCapabilityProfile, validateSessionFace,
+  SessionTable, isCapabilityProfile, validateSessionFace,
   type CapabilityProfile, type Session, type SessionBinding,
 } from "./session-contract.js";
 
@@ -89,7 +89,7 @@ function readSession(value: unknown): SessionRecord | null {
  */
 function standing(table: SessionTable, binding: SessionBinding, at: Pick<SessionSignerBinding, "sessionId" | "ownerEpoch" | "generation">):
   { readonly record: SessionRecord } | { readonly refusal: "stale-generation" | "session-not-live"; readonly gone: boolean } {
-  const checked = table.check({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch: at.ownerEpoch, sessionId: at.sessionId, generation: at.generation }, binding);
+  const checked = table.check({ ownerEpoch: at.ownerEpoch, sessionId: at.sessionId, generation: at.generation }, binding);
   if (!checked.ok) {
     if (checked.refusal === "stale-generation") return { refusal: "stale-generation", gone: true };
     return { refusal: "session-not-live", gone: checked.refusal !== "session-not-live" };

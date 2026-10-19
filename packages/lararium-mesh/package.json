@@ -76,6 +76,10 @@
       "import": "./dist/session-signer.js",
       "types": "./dist/session-signer.d.ts"
     },
+    "./session-contract": {
+      "import": "./dist/session-contract.js",
+      "types": "./dist/session-contract.d.ts"
+    },
     "./rank-te": {
       "import": "./dist/rank-te.js",
       "types": "./dist/rank-te.d.ts"

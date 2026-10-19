@@ -170,7 +170,7 @@ describe("the session contract's surface kinds read the lar: names", () => {
     expectTypeOf<Extract<SessionMessage, { kind: "projection:control-result" }>>().toBeNever();
     // A message a holder relays carries the control event whole, beside the envelope.
     const relayed: SessionMessage = {
-      kind: LAR_CONTROL_EVENT, schemaVersion: 1, ownerEpoch: "epoch-a", sessionId: "s", generation: 0, surfaceId: "surface-a", event: act(),
+      kind: LAR_CONTROL_EVENT, ownerEpoch: "epoch-a", sessionId: "s", generation: 0, surfaceId: "surface-a", event: act(),
     };
     expect(relayed.kind).toBe("lar:control-event");
   });

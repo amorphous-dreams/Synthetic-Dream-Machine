@@ -33,9 +33,6 @@ import type {
   LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LarMsg_ControlEvent, LarMsg_ControlResult, LarMsg_Frame,
 } from "./lar-camera.js";
 
-/** The schema every message after the open names. */
-export const SESSION_SCHEMA_VERSION = 1;
-
 export type SessionState = "opening" | "live" | "switching" | "revoked" | "closing" | "closed";
 
 /** Every named refusal the table answers. A refusal never mutates the table. */
@@ -178,7 +175,6 @@ export function sessionBinding(kind: "port" | "socket"): SessionBinding {
 
 /** What every message after the open carries. */
 export interface SessionEnvelope {
-  readonly schemaVersion: number;
   readonly ownerEpoch:    string;
   readonly sessionId:     string;
   readonly generation:    number;
@@ -213,16 +209,16 @@ export type SessionMessage =
   | (SessionEnvelope & { readonly kind: "session:close"; readonly cause: string })
   | (SessionEnvelope & { readonly kind: "session:closed" });
 
-/** Read the envelope a message carries, or null: the schema it names, non-empty strings, a counting generation. */
+/** Read the envelope a message carries, or null: non-empty strings and a counting generation. */
 export function validateSessionEnvelope(v: unknown): SessionEnvelope | null {
   try { return readSessionEnvelope(v); } catch { return null; }
 }
 function readSessionEnvelope(v: unknown): SessionEnvelope | null {
-  if (!isRecord(v) || v["schemaVersion"] !== SESSION_SCHEMA_VERSION) return null;
+  if (!isRecord(v)) return null;
   const { ownerEpoch, sessionId, generation } = v;
   if (!nonEmptyString(ownerEpoch) || !nonEmptyString(sessionId)) return null;
   if (typeof generation !== "number" || !Number.isSafeInteger(generation) || generation < 0) return null;
-  return Object.freeze({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch, sessionId, generation });
+  return Object.freeze({ ownerEpoch, sessionId, generation });
 }
 
 // ── The state machine ───────────────────────────────────────────────────────────────────────────

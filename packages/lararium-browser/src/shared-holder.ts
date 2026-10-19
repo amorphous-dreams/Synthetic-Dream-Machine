@@ -12,7 +12,10 @@
  */
 
 import type { VesselWorkerHandle } from "@lararium/mesh";
+import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
+
+const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope>();
 
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
@@ -82,18 +85,36 @@ export async function attachSharedHolder(args: {
     port.close();
     throw new SharedHolderRefusal(greeting);
   }
+  const envelope = validateSessionEnvelope(greeting);
+  if (!envelope) {
+    port.close();
+    throw new Error("[shared-holder] malformed holder greeting");
+  }
+  portEnvelopes.set(port, envelope);
   return { kind: "attached", port, hello: greeting };
 }
 
 /** The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. */
 export function holderWorkerHandle(port: MessagePort): VesselWorkerHandle {
+  const envelope = portEnvelopes.get(port);
+  if (!envelope) throw new Error("[shared-holder] holder greeting absent");
   return {
-    post: (msg, transfer) => port.postMessage(msg, (transfer ?? []) as Transferable[]),
+    post: (msg, transfer) => port.postMessage({ ...msg as object, ...envelope }, (transfer ?? []) as Transferable[]),
     listen: (cb) => {
       const fn = (e: MessageEvent): void => {
         const d = e.data as { kind?: unknown };
         if (d && d.kind === "holder:hello") return;   // the greeting is the door's, never the island's
-        cb(e.data);
+        const incoming = validateSessionEnvelope(e.data);
+        const refusal = !incoming ? "malformed-message"
+          : incoming.ownerEpoch !== envelope.ownerEpoch ? "stale-owner-epoch"
+          : incoming.sessionId !== envelope.sessionId ? "unknown-session"
+          : incoming.generation !== envelope.generation ? "stale-generation" : null;
+        if (refusal) {
+          console.warn(`[shared-holder] dropped ${refusal}`);
+          return;
+        }
+        const { ownerEpoch: _epoch, sessionId: _session, generation: _generation, ...message } = e.data as Record<string, unknown>;
+        cb(message);
       };
       port.addEventListener("message", fn);
       port.start();
