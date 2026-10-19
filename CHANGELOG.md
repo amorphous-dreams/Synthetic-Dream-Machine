@@ -41,6 +41,8 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **A restarted holder forces fresh sessions.** Every message between a tab and the shared holder names the holder's boot, the tab's session and a generation, and a stale or unknown one refuses by name.
 - **A browser's clear asks before it acts and names what it clears.** The wiki's clear-password button asks through the wiki's own confirm, writes nothing that syncs, and clears only on a yes; a declined unlock offers a retry in the same page.
 - **The engine watch names an engine by its hash.** A waiting engine reads "a different engine waits" with both short hashes; the version shows as a label, and no two engines get ordered.
+- **Each face owns its bags.** A face's own identity creates and grants every bag it holds; the vessel delegates none of them.
+- **A second boot re-mints nothing.** A bag keeps one Document across boots, and a replayed Archive lands no event twice.
 - **A meme crosses a realm through a user book.** A member reads a book another operator keeps through the realm's counted registration; a vessel outside the realm refuses.
 - **The vessel page applies the island's scroll and focus hints, and reports its long-animation frames and heap after first paint.**
 - **Genesis carries the first floor.** The seed names a floor manifest and the `lares` and `lararium` snapshots by CID, `@oracle` reads that floor by CID, and a session surface admits the floor's CIDs; a title riding two bags refuses by name.
