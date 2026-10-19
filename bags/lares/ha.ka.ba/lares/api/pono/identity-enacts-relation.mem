@@ -50,10 +50,12 @@ A ''root'' is a secret one locus of custody mints and holds, whose loss or theft
 
 | Root | Minted by | What it may derive | Rests | Rotates or recovers |
 | compartment seed (a vault, a me-Circle) | the human, once per compartment | its own persona keys along hardened paths, its circle-scope pseudonyms, its self-recovery leaf | the human's own cards, never a wire | the persona KEL, then guardians |
-| vessel key (the device's substrate; a node's place) | the device, its private half never leaving | its own floor-gate children through the domain-registered door, and nothing naming another root | a node under its scoped place signer; a browser in device custody | the place KEL, its next key on the founding card |
+| place signer (a vessel standing a floor) | the vessel, while it stands a floor, whatever its host | its own floor-gate children through the domain-registered door, for the floor's allowlisted duties, and nothing naming a face | under the host's TPM-bound credential where one stands, an owner-only file elsewhere | the place KEL, its next key on the founding card |
 | face custody key (FCK) | the vessel, at random, for one PersonaGroup on it | nothing; it seals that face's rows on that vessel | wrapped by that face's own slot tree alone | its slot tree; a one-face bundle carries its route |
 | charter seat key | each seat's holder | nothing outside its seat | the holder's own custody | the charter epoch chain, each next key committed |
 | content key (one per bag version) | the bag's key group | nothing | lockboxes to the group's members | a removal mints the successor |
+
+''Read by capability, never by host'' (operator ruling, 2026-10-19). Node and browser stand isomorphic by intent: a vessel holds a place signer exactly while it stands a floor, meets each face through that face's atom alone, and reads another's floor proving nothing private; every row below reads by what a vessel can do, so a future vessel inherits it by construction.
 
 ''Law 1 — lineage stays within a root.'' A root derives children for its own duties alone, under domain-separated hardened paths; no root derives, wraps or opens another root's secret.
 
@@ -385,6 +387,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gbgL9QyAWXI6smaR0FczQgFxRjjCDr-CXK4pAkt070o
+<<^ code="&#x0003;">>ni:///sha-256;l8B6GE1Q2Vzmd5I6P3s1y40ud6cqoKOCUk1SDJv9q-A
 
 <<^ code="&#x0004;" -> to="?">>
