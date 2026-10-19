@@ -15,8 +15,9 @@
  *   · SENSORIUM-DEFERRED — `bures-metric`, `rank-te`, `windowed-coupling`, `partition-monitor`,
  *     `self-coupling`, `synthetic-drift`, `linearity-gate`, `independence-reading` carry an instrument
  *     the Sensorium wiring has not reached yet; no package reads them as a sole consumer today.
- *   · RULING-GATED — `recipe`, `readiness`, `reaction-graph` are pinned as the mesh source-file by their own canon memes;
- *     `pronaos` and `offering-inspection` carry their own mesh-namespace memes. Each move waits on its
+ *   · RULING-GATED — `recipe`, `readiness`, `reaction-graph` and `floor-manifest` hold their mesh
+ *     source-file seats under the recipe and floor rulings; `pronaos` and `offering-inspection` carry
+ *     their own mesh-namespace memes. Each other move waits on its
  *     own ruling, not this cut.
  *   · PERSONA-SELVES NAMING — `PERSONA_SELVES_PREFIX`, `personaSelfTiddlerUri` and
  *     `handleIndexFromSelfTiddlerUri` (in `lar-uris.ts`) carry the self-tiddler naming scheme tw5's
@@ -36,6 +37,7 @@ export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./oracle-doc.js";
+export * from "./floor-manifest.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
 export * from "./resolver.js";
