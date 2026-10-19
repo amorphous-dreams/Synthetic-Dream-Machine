@@ -62,7 +62,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 !! The evidence that drew it (2026-10-18, lane `--w26-own-canon`)
 
-* ''The shared document merges siblings' pointers.'' `oracleGenesisDocUrl()` gives every vessel one id, and each vessel writes its own `lares` and `lararium` urls, crossroads pin and realm pointers into it (`genesis-artifact.ts` `mintLaresIfAbsent`, `who-face.ts`, `realm-plane.ts`). Two vessels that each mint their own `lares` document settle on ONE `LARES_DOC_URI` once they sync; the control, never connected, keeps each its own (`packages/lararium-mesh/tests/shared-oracle-doc.probe.test.ts`).
+* ''The shared document merges siblings' pointers.'' `oracleGenesisDocUrl()` gives every vessel one id, and each vessel writes its own `lares` and `lararium` urls, crossroads pin and realm pointers into it (`genesis-artifact.ts` `mintLaresIfAbsent`, `who-face.ts`, `realm-plane.ts`). Two vessels that each mint their own `lares` document settle on ONE `LARES_DOC_URI` once they sync; the control, never connected, keeps each its own (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`, on lane `--w26-floor-1`).
 * ''The split moves rather than closes.'' With the lares wiki's own canon held to its granted document, `herm-reshares-public-blob` step ③ failed three of three runs: the MOVE landed in A's document while `wiki which` and sync read the document the shared plane named. A's log in each run: `layer lar:///ha.ka.ba/bags/lararium moved …` then `layer lar:///ha.ka.ba/bags/lares held at …; the shared plane names …`. A's lares wiki then mounted the joinee's lararium corpus, the reverse of `W21`'s ruling.
 * ''One signed floor object stands, and it names no Nexus.'' `OraclePointer` (domain `oracle-pointer`) signs a cid, heads and parents under the vessel seed (`oracle-substrate.ts`, `mountOracleReadFace`); readers pin the hearth's key.
 * ''The system bags mount writable everywhere.'' `slotLayerFlags` marks every slot but `@oracle` writable, and every vessel registers `lares` and `lararium` as its own ground (`register-bags.ts` `OWN_GROUND`).
@@ -127,6 +127,6 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ukBBbBhgwPMhWXjWhXvyigvPcA110S3TUI5-1kGUpTM
+<<^ code="&#x0003;">>ni:///sha-256;9W05IKg6Azt9dm_BXezMY9KYzhdv8RmDMWjBFSQ5PQM
 
 <<^ code="&#x0004;" -> to="?">>
