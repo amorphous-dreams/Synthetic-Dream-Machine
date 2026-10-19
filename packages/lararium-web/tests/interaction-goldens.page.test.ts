@@ -419,13 +419,16 @@ function undoDepth(field: HTMLTextAreaElement | HTMLInputElement): number {
   field.addEventListener("input", quiet, true);
   try {
     field.focus();
+    const start = field.value;
     let depth = 0;
     for (let last = field.value; depth < 64; depth += 1) {
       document.execCommand("undo");
       if (field.value === last) break;
       last = field.value;
     }
-    for (let i = 0; i < depth; i += 1) document.execCommand("redo");
+    // Redo until the value returns, never a fixed count: WebKit keeps a value-neutral step at the bottom of the
+    // history, so `depth` redos stop one step short of where the person stood.
+    for (let i = 0; i < depth + 4 && field.value !== start; i += 1) document.execCommand("redo");
     return depth;
   } finally {
     field.removeEventListener("input", quiet, true);
