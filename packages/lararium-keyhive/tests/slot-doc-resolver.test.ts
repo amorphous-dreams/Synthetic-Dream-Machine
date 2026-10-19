@@ -20,6 +20,7 @@ import {
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";
+import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const VK = "ab".repeat(32);
@@ -28,6 +29,7 @@ const DID = didFromVerifyingKey(VK);
 async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
+  const group = await kh.createGroup();
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const catalogHandle = repo.create<LarDoc>(emptyLarDoc());
   const wikiHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -40,9 +42,9 @@ async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolv
     repo, daemonStore: daemon, keyhive: kh,
     catalog: makeCatalogAccessor(repo, catalogHandle.url),
     vesselDid: () => DID, mintedByHex: () => "0x" + "a".repeat(64),
-    personaGroupId: "cd".repeat(16),
+    personaGroupId: group.groupId,
     faceSeated: async () => opts.seated,
-    delegateToFace: async () => {},
+    faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }),
   });
   return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url };
 }

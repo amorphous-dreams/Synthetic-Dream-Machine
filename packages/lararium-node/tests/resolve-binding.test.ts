@@ -29,7 +29,7 @@ import {
   WORKING_BINDINGS_PREFIX,
 } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
-import { resolveOrMintBinding, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
+import { resolveOrMintBinding, makeFaceBagDoor, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
 import { plainRecordOrNull } from "@lararium/mesh";
 
 const AGENT_HEX  = "0xfeedface";
@@ -80,23 +80,25 @@ function commonArgs(repo: Repo, daemonStore: CompositeStore, keyhive: Capability
 }
 
 describe("resolveOrMintBinding", () => {
-  test("mint-on-absent: creates a doc, registers, delegates to PersonaGroup admin, records the binding", async () => {
+  test("mint-on-absent: the face creates and grants its document, then records the binding", async () => {
     const repo = new Repo();
     const { daemonStore, daemonHandle } = makeDaemonStore(repo);
-    const { provider, registered, delegations } = makeFakeKeyhive();
+    const { provider, registered } = makeFakeKeyhive();
+    const face = makeFakeKeyhive();
 
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, provider),
+      faceDoor: makeFaceBagDoor({ face: face.provider, groupId: AGENT_HEX }),
       kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
 
     expect(result.minted).toBe(true);
     expect(result.url).toMatch(/^automerge:/);
 
-    // registerBag THEN delegate, both targeting the minted doc url.
-    expect(registered).toEqual([result.url]);
-    expect(delegations).toHaveLength(1);
-    expect(delegations[0]).toEqual({
+    expect(registered).toEqual([]);
+    expect(face.registered).toEqual([result.url]);
+    expect(face.delegations).toHaveLength(1);
+    expect(face.delegations[0]).toEqual({
       bagUrl:   result.url,
       audience: AGENT_HEX,    // stable PersonaGroup agent id
       access:   "admin",      // edit-intent rounds up to admin (grain debt)
@@ -232,18 +234,20 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     expect(second.url).toBe(first.url);
   });
 
-  /** The control: where a face DOES stand, the delegation composes onto the vessel's own hold. */
-  test("a face still composes onto the vessel's hold when one stands", async () => {
+  /** A seated face creates the binding document and grants its group. */
+  test("a seated face owns its binding document", async () => {
     const repo = new Repo();
     const { daemonStore } = makeDaemonStore(repo);
-    const { provider, registered, delegations } = makeFakeKeyhive();
-
+    const vessel = makeFakeKeyhive();
+    const face = makeFakeKeyhive();
     const result = await resolveOrMintBinding({
-      ...commonArgs(repo, daemonStore, provider),
+      ...commonArgs(repo, daemonStore, vessel.provider),
+      faceDoor: makeFaceBagDoor({ face: face.provider, groupId: AGENT_HEX }),
       kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
     });
-    expect(registered).toEqual([result.url]);
-    expect(delegations).toHaveLength(1);
-    expect(delegations[0]?.audience).toBe(AGENT_HEX);
+    expect(vessel.registered).toEqual([]);
+    expect(vessel.delegations).toEqual([]);
+    expect(face.registered).toEqual([result.url]);
+    expect(face.delegations[0]?.audience).toBe(AGENT_HEX);
   });
 });
