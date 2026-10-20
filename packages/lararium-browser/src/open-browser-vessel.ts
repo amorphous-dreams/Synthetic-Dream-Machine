@@ -74,7 +74,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing } from "@lararium/keyhive";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
-import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { archiveIsOf, keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
@@ -668,7 +668,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
     let placeArchive: Uint8Array;
     try {
-      const keptAtomArchive = await loadBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX);
+      // The veil-archive row rests by handle index and the atom by PersonaGroup, so the row at h0 may hold another face's
+      // Archive (a browser that founded solo as A, now admitted into B). B's hive restores only from an Archive that
+      // belongs to B's atom; any other offers it nothing.
+      const rowAtomArchive = await loadBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX);
+      const keptAtomArchive = rowAtomArchive && await archiveIsOf(atomSeed, rowAtomArchive) ? rowAtomArchive : undefined;
       const place = await foundThePlace({
         repo, vesselSeed, hearthTrueName: admit.hearthTrueName,
         // AN ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The vessel founded on its own before any admit could reach it, so
