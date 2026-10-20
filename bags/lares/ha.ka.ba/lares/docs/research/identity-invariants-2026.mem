@@ -1,0 +1,65 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "field and code research, a two-wave traded Codex and Copilot pass (2026-10-20), on where a face's identity invariants rest: what the Binding Gate verifies and what it takes on trust, which pins read as invariant, local or shared, and why sync carries while verification decides"
+status    = "research; read 2026-10-20; the operator approved its recommendation the same day"
+tags      = ["research", "identity", "crdt", "custody", "kel", "persona-group", "no-global-now"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/identity-invariants-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/identity-invariants-2026"
+```
+
+<<~ ahu #/head>>
+
+! Identity invariants, 2026 ~ sync carries, verification decides
+
+The operator un-asked a founding choice on 2026-10-20: //"When we started, all we had was direct API calls and CRDT docs, so that's where I put everything that should auto-sync based on the capabilities of the currently-in-context keys. But does setting these identity invariants on a mutable CRDT read pono?"// A Codex seat read the code and a Copilot seat read the field, each in two traded waves. Claims read MEASURED (read in code, with file and line) or LEAD (inference, or a recalled source). The ruling stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, //sync carries; verification decides//.
+
+<<~/ahu>>
+
+<<~ ahu #/findings>>
+
+!! Findings
+
+# ''The gate verifies continuity, never selection'' (both seats, MEASURED). The Binding Gate walks the persona KEL to its head, verifies the countersigned edge, requires an epoch and reads the shadow (`boot-daemon-keyhive.ts:123-177`), for the KEL prefix the caller hands it. Boot takes the PersonaGroup, signer, edge and prefix from the worn mount, else from plain daemon-doc tiddlers (`open-node-vessel.ts:1812-1882`; `open-browser-vessel.ts:1185,1241`); the gate leaves the PersonaGroup and the cabal doc outside its proof (`:43`, `:180`). A coherent foreign bundle passes the chain's own checks unless a local commitment names the face a vessel wears.
+# ''The lease frontier carries no authority of its own'' (Codex, MEASURED). The fold accepts any integer under the prefix, with no signature or writer check (`epoch-lease.ts:31`; `lease-rekey.ts:47`): a forged high slot denies; a deletion or a stale replica lowers the observed maximum, and an old edge reads current against it.
+# ''Plane URLs carry structure, not a binding'' (both, MEASURED). Membership and URLs come from the local bootstrap by a group-derived name (`persona-planes.ts:154`), with no signed founding or admission act behind each.
+# ''The house already holds the right pattern'' (both, MEASURED). The KEL board carries signed events in mutable carriage, and its reader folds them and exposes forks rather than taking a winner (`persona-kel-board.ts:50,173`); dyads verify on read; the cabal doc left identity for affiliation.
+# ''The field agrees'' (Copilot, LEAD from recalled sources). KERI, Keybase, Certificate Transparency and signed Git keep authority in signed append-only history; Matrix keeps device lists and indexes in mutable sync, signed on read; Signal keeps a sealed local trust root per device.
+
+<<~/ahu>>
+
+<<~ ahu #/the-sort>>
+
+!! The sort ~ where each pin rests
+
+|! Pin |! Its home |
+| PersonaGroup, persona-KEL prefix (the selectors) | the sealed identity anchor, written only by founding, admission and recovery |
+| device edge, signer, hearth true name | signed records, verified on read; the edge already carries the true name |
+| lease epochs | signed advances in the per-writer shape, beside a sealed local frontier that never falls |
+| dyads | a CRDT of signed entries, verified on read |
+| plane URLs and membership | signed founding and admission acts, projected into the planes |
+| the group secret's seal | a sealed custody row |
+| the cabal doc, the catalog, working content | shared mutable CRDT, with access checks at use |
+
+<<~/ahu>>
+
+<<~ ahu #/recommendation>>
+
+!! The recommendation ~ both seats converged
+
+A sealed anchor per face per device; signed records carried by sync under immutable ids and verified against the anchor and the KEL; the face planes as verified projections; per-vessel records off the mirrored daemon doc; summonses on `@intents`. In-context keys and held grants decide what a vessel may //receive//; the anchor decides which face it //wears//; verification decides what //counts//.
+
+''Reds'': a forged selector row, and a coherent valid foreign bundle, switch no pinned face, and a missing anchor refuses boot; two signed acts at one sequence surface as a fork; a deleted, replayed or forged epoch never lowers the local frontier; reordering face rows moves no pin from its owner on either host; a join bootstraps offline from its admission bundle and the anchor; the floor gains no face authority from an unverified pin; capability-driven sync still converges every plane that carries no authority.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;kOXTc_Dqf0CQbmeebgMwnkNF3obPfRT1YgAjl93Tbxs
+
+<<^ code="&#x0004;" -> to="?">>
