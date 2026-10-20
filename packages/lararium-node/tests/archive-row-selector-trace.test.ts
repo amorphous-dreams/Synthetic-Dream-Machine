@@ -23,8 +23,8 @@ const CALL = (name: string): RegExp => new RegExp(`\\b${name}\\(`, "g");
 const SITES: readonly Site[] = [
   { file: join(NODE, "commands/init.ts"), token: CALL("loadIdentityArchive"), count: 1, selector: "none", act: "place founding reads the place's own archive; a place holds no PersonaGroup" },
   { file: join(NODE, "commands/init.ts"), token: CALL("persistIdentityArchive"), count: 1, selector: "none", act: "place founding writes the place's own archive" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "handle-index", act: "admit reads the joined face's atom archive at h0 and persona new reads the prior face's by h<N>" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 2, selector: "handle-index", act: "admit writes the joined face's atom archive at h0 and persona new writes the new face's by h<N>, after the atom row and before its anchors commit" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "handle-index", act: "admit reads the joined face's atom archive at its handle index and persona new reads the prior face's by h<N>" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 3, selector: "handle-index", act: "admit writes the joined face's atom archive at h0 on a faceless place and at the next index beside a worn face, and persona new writes the new face's by h<N>, after the atom row and before its anchors commit" },
   { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "handle-index", act: "the face presenter reads its atom's archive by the worn h<N>" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the place archive" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "handle-index", act: "boot's write door for the mounted face's veil archive, h<N> captured from the wear pointer" },

@@ -1,6 +1,5 @@
 /**
- * A landing re-founds the joining vessel's bootstrap and its h0 anchors, so a vessel stands one joined face: an
- * answer for another face over a vessel that already wears one refuses by name and writes nothing.
+ * A landing carries another joined face beside the one a vessel wears.
  */
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { rmSync, writeFileSync } from "node:fs";
@@ -54,7 +53,7 @@ import { runFleetJoinLand } from "../src/commands/fleet-join.js";
 
 const bootstrapNaming = (group: string | null) => writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: group === null ? {} : { [GROUP_TIDDLER]: { text: group } } }) }));
 
-describe("a landing keeps the one face a joined vessel wears", () => {
+describe("a landing keeps the face a joined vessel wears", () => {
   beforeEach(() => {
     seam.writes = [];
     seam.bootstrapPath = join(tmpdir(), `lar-fleet-join-land-face-${process.pid}.json`);
@@ -73,10 +72,10 @@ describe("a landing keeps the one face a joined vessel wears", () => {
     expect(seam.writes).toContain("init");
   });
 
-  test("LAND_KEEPS_THE_WORN_FACE: another face's answer over a vessel wearing one refuses face-other and writes nothing", async () => {
+  test("LAND_KEEPS_THE_WORN_FACE: another face's answer lands beside the worn face", async () => {
     bootstrapNaming("group-zero");
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "face-other" });
-    expect(seam.writes).toEqual([]);
+    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "init", "clear"]);
   });
 
   test("a torn bootstrap refuses bootstrap-torn and writes nothing", async () => {

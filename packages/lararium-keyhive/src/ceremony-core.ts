@@ -838,6 +838,8 @@ export interface ApplyAdmitInput {
   nexusPubkey:          string;
   /** The atom's Keyhive archive at rest on this shore. */
   archiveBytes?:        Uint8Array;
+  /** Leave the daemon's singular mount pins with its worn face. */
+  mount?:               boolean;
 }
 
 export interface ApplyAdmitResult {
@@ -895,7 +897,8 @@ export async function runApplyAdmitPayload(
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
-  const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId]);
+  const mount = input.mount !== false;
+  const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId, mount]);
   const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed, applyScope);
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
@@ -1000,6 +1003,10 @@ export async function runApplyAdmitPayload(
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
     writeDyad(doc, joineeDyad);
+    if (!mount) {
+      writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
+      return;
+    }
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: payload.signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init-admit" },
@@ -1034,7 +1041,7 @@ export async function runApplyAdmitPayload(
   }
 
   // Write the face's group pin and the cabal's sentinel pin.
-  daemonHandle.change((doc) => {
+  if (mount) daemonHandle.change((doc) => {
     doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_ID_TIDDLER, text: payload.personaGroupId, kind: "persona-group-id" },
       meta: { authority: "lares-init-admit" },

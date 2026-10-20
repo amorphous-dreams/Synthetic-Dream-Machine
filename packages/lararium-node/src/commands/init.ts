@@ -36,7 +36,7 @@ import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, standPendingFoundingSeed, keepFaceAtom, retirePendingFoundingSeed, type FoundingAtomAsk } from "../face-atom-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
@@ -50,7 +50,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc, SlotSpec } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
-  foundThePlace, foundTheFace, runApplyAdmitPayload,
+  foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,
   retireFaceCheckpoint, retireApplyCheckpoint,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
@@ -162,8 +162,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
   const bootstrap  = larBootstrapPath();
 
-  if (existsSync(bootstrap) && !opts.force && (!opts.admitPayload || readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER])) {
-    if (opts.admitPayload && readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]) {
+  if (existsSync(bootstrap) && !opts.force && (!opts.admitPayload || readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text === opts.admitPayload.personaGroupId)) {
+    if (opts.admitPayload) {
       const group = readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text;
       const atomSeed = group ? await loadFaceAtomOfGroup(group) : null;
       if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
@@ -255,10 +255,24 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     }
     // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
     // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
+    const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;
+    const landsBeside = Boolean(mountedGroup && mountedGroup !== payload.personaGroupId);
+    const anchored = landsBeside ? await listAnchoredPersonas() : [];
+    const stoodIndex = landsBeside ? (await Promise.all(anchored.map(async (index) => ({ index, anchors: await loadIdentityAnchors(index) }))))
+      .find(({ anchors }) => anchors?.personaGroupId === payload.personaGroupId)?.index : undefined;
+    const handleIndex = stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+    if (stoodIndex !== undefined) {
+      const daemonUrl = readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text;
+      if (!daemonUrl) throw new Error("[lares fleet join land] the bootstrap names no daemon doc");
+      await retireApplyCheckpoint(await repo.find<LarDoc>(daemonUrl as AutomergeUrl), admitSeed);
+      await repo.flush();
+      return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
+    }
     // An archive already at rest restores into the admit's provider, so the archive written back keeps what it held.
-    const standingAdmitArchive = await loadVeilArchive(0);
+    const keptArchive = await loadVeilArchive(handleIndex);
+    const standingAdmitArchive = keptArchive && await archiveIsOf(admitSeed, keptArchive) ? keptArchive : null;
     const priorDaemonUrl = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text : undefined;
     const admitDaemon = priorDaemonUrl
       ? await repo.find<LarDoc>(priorDaemonUrl as AutomergeUrl)
@@ -267,13 +281,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       await repo.flush();
       writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin(placeTiddlers(admitDaemon.url))), "utf8");
     }
-    const { archive, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
+    const { archive, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
       daemonHandle: admitDaemon,
       ...(standingAdmitArchive ? { archiveBytes: standingAdmitArchive } : {}),
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
+      ...(landsBeside ? { mount: false } : {}),
       // THE ISLAND. An admit carries a SNAPSHOT of the founder's own RESOLVED NexusIdentity — `kind` +
       // `scope`, minted from the SAME `nexusIdentity` ruling the boot composes (device-admit.ts). A
       // `charter` kind re-enters as a genesis epoch (every charter holder derives the identical scope);
@@ -290,6 +305,24 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       }),
     });
     await repo.flush();
+
+    if (landsBeside) {
+      await persistVeilArchive(archive, handleIndex);
+      await persistIdentityAnchors({
+        personaGroupId: payload.personaGroupId,
+        meshCabalDocIdHex: payload.meshCabalDocIdHex,
+        signerDid: payload.signerDid,
+        personaKelPrefix: payload.personaKelPrefix,
+        deviceEdge,
+      }, handleIndex);
+      writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
+        ...readPackedTiddlers(bootstrap),
+        ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, payload.personaGroupId),
+      }), null, 2), "utf8");
+      await retireApplyCheckpoint(admitDaemon, admitSeed);
+      await repo.flush();
+      return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
+    }
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
     // the edge, so nothing waits on a later ceremony here.
