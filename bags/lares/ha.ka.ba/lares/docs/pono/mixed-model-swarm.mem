@@ -61,7 +61,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 ** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. In a work swarm the builder wears Hodge over what it made and the other lineage's reader wears Podge over how it moves.
 * ''Overwatch.'' The Opus controller reads every crew's handback and every chunk's diff before it merges, and names each finding it would block on.
 * ''A cross-process seam always takes the Opus read.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the controller's own read of the crossing before it lands: a module's own reads catch its contract and miss its crossings.
-* ''The battery runs at the wave's end'' (operator, 2026-10-20: //"Defer testing until the end of each wave. I know it's risky, but we need to land these holistically to prevent code churn."//). A wave writes every red and its control as it builds, since a red names the specification, and runs no suite, witness or e2e between its fixes and pushes nothing midway. When every item stands built, one battery runs: each red proven to fail against the base tree, then every touched package's whole suite, both whole e2e sets, the tool self-tests (`node --test tools/*.test.mjs`) and `tools/witness-all.sh`; the held-out cells run only in CI, so the wave reads their verdict after its one push and before it hands back; the wave cures what the battery finds, re-runs the battery whole, pushes once and hands back once. The controller's train crucible and fresh read follow unchanged.
+* ''The battery runs at the wave's end, on the shards'' (operator, 2026-10-20: //"Defer testing until the end of each wave… to prevent code churn"//, and //"We prefer the sharded CI runs to use the 'Free' VM minutes and parallelize the test work"//). A wave writes every red and its control as it builds, since a red names the specification, and runs nothing between its fixes. At its end it runs locally only what CI cannot: the build and each red's proof against its base, the red files alone over the pre-cure tree. Then it pushes once and lets CI carry the battery: the lane CI runs every package suite, the witnesses and the tool self-tests; `node tools/e2e-shards.mjs push <lane>` spreads both e2e sets across shards; held-out runs its cells. The wave reads every verdict, cures what reads red, pushes again once no run flies, and hands back when CI and held-out read green. The controller's train crucible and fresh read follow unchanged.
 * ''The burst.'' A crew lands a burst of commits; the other lineage's reader reads it; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
 <<~/ahu>>
@@ -189,6 +189,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EUQr1EoaKNor6fIJWjojglE1vO92ImYRfbr5_OYX4jI
+<<^ code="&#x0003;">>ni:///sha-256;1eNpvsyLb5_3Iu20w8XF6OWpAtm1T83Cyn2QGVA574s
 
 <<^ code="&#x0004;" -> to="?">>
