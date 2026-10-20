@@ -189,10 +189,10 @@ jobs:
       # the venv that holds mempalace, never a bare `pytest`.
       # Keep the package verdict visible if the independent Python suite fails.
       # The holder gates package tests that exercise its real subprocess.
-      - name: Install Playwright Chromium (browser-vessel suite)
+      - name: Install Playwright engines (browser-vessel suite, three engines)
         if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
         id: browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
       # because packages share a build tree and a rendezvous directory; running them in parallel
       # measures a different repository than the one an operator measures locally, and its flakes

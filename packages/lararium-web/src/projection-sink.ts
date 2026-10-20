@@ -438,6 +438,12 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       }
       modalWasPresent = false;
     }
+    // A selector the engine refuses names no page action; the console names each such selector once.
+    const nameBadHint = (kind: string, selector: string): void => {
+      if (refusedHintSelectors.has(selector)) return;
+      refusedHintSelectors.add(selector);
+      console.warn(`[lar] a ${kind} hint named a selector this engine refuses and the page acted on nothing: ${selector}`);
+    };
     // The island names a target and a rising sequence; the page owns the physical scroll and focus.
     // Apply after the page's own route and modal placement so this hint lands on the final painted tree.
     for (const hint of paneEl.querySelectorAll<HTMLElement>("[data-lar-hint]")) {
@@ -447,12 +453,12 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       const scrollTo = hint.dataset["larScrollTo"];
       if (scrollTo) {
         try { paneEl.querySelector<HTMLElement>(scrollTo)?.scrollIntoView({ block: "nearest" }); }
-        catch { /* An invalid selector names no page action. */ }
+        catch { nameBadHint("scroll", scrollTo); }
       }
       const focus = hint.dataset["larFocus"];
       if (focus) {
         try { paneEl.querySelector<HTMLElement>(focus)?.focus(); }
-        catch { /* An invalid selector names no page action. */ }
+        catch { nameBadHint("focus", focus); }
       }
     }
     return "painted";
@@ -460,6 +466,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
 
   // ── Up: the control event ─────────────────────────────────────────────────────────────────────
 
+  /** Hint selectors the console already named. */
+  const refusedHintSelectors = new Set<string>();
   /** Every reliable act this page relayed and has no answer for yet, by event id. */
   const pending = new Map<string, { readonly surface: string; readonly target: string }>();
   const PENDING_MAX = 1024;

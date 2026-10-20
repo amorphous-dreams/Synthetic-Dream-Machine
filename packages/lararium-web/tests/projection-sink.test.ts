@@ -87,6 +87,26 @@ describe("★ the page carries island hints once per rising number ★", () => {
   });
 });
 
+describe("★ an invalid hint selector names itself once ★", () => {
+  test("a selector the engine refuses warns once per selector across frames; CONTROL: a valid selector warns nothing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const m = mount();
+      const hint = (n: number, sel: string): string => `<span data-lar-scroll-to="${sel}" data-lar-focus="${sel}" data-lar-hint="${n}"></span>`;
+      m.sink.apply(frame("lares", 1, `<p id="ok">fine</p>${hint(1, "#ok")}`));
+      expect(warn, "CONTROL: a valid selector warns nothing").not.toHaveBeenCalled();
+      m.sink.apply(frame("lares", 2, `<p id="ok">fine</p>${hint(2, "!!bad[")}`));
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]!.join(" "))).toContain("!!bad[");
+      m.sink.apply(frame("lares", 3, `<p id="ok">fine</p>${hint(3, "!!bad[")}`));
+      expect(warn, "the same selector names itself once").toHaveBeenCalledTimes(1);
+      m.sink.apply(frame("lares", 4, `<p id="ok">fine</p>${hint(4, "??other[")}`));
+      expect(warn, "a different selector names itself").toHaveBeenCalledTimes(2);
+      m.done();
+    } finally { warn.mockRestore(); }
+  });
+});
+
 describe("★ an event names the surface that painted its target ★", () => {
   test("Escape relays on a focused button; CONTROL: a bare letter does not", () => {
     const m = mount();
