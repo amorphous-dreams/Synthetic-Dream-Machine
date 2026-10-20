@@ -8,7 +8,7 @@
  * faces holding the same seed would hold the same key, and no two honest faces ever do.
  *
  * The seed rests in the face's own custody row (D). A restore onto a fresh vessel mints a fresh atom and never
- * resurrects the old one (`api/pono/identity-enacts-relation` #/identity-as-bond, Law 3).
+ * resurrects a dead one (`api/pono/identity-enacts-relation` #/identity-as-bond, Law 3).
  *
  * Platform-blind: rides ./crypto, ./lar-did and ./persona-group-secret alone.
  */
