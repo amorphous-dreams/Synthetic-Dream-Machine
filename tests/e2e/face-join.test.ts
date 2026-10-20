@@ -10,7 +10,7 @@
  * the daemon doc would arrive:
  *
  *   V1 — an edge THIS hearth's root signed admits, seats, and RE-GRANTS its standing bags (regranted > 0)
- *   V2 — a repeat hands the seat back and moves no epoch (reKeyed false, regranted 0), material still flowing
+ *   V2 — a repeat of the same summons hands V1's act back: the operation replays its outcome, and no epoch moves
  *   V3 — force re-keys and re-grants again, for a suspected-but-unrevoked key
  *   V4 — an edge signed by ANOTHER root refuses, with a reason a joinee's panel can paint
  *   V5 — a hearth refuses to seat ITSELF, so a fleet-synced summons never draws two writers
@@ -34,14 +34,15 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { Repo, type AutomergeUrl, type UrlHeads } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl, awaitOwnGateKey } from "../harness/instance.js";
+import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import {
   verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
 } from "../../packages/lararium-keyhive/src/face-grant-record.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-mesh/src/crypto.js";
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
-import { plainField } from "../../packages/lararium-mesh/src/stored-value.js";
+import { plainField, plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
+import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 import { countersignDeviceDelegation, type DeviceDelegationRootHalf, type DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { composeFleetJoinRequest, fleetJoinSealPair, readFleetJoinOffer } from "../../packages/lararium-mesh/src/fleet-join.js";
@@ -57,6 +58,9 @@ let joineeCard = "";
 let joineeKey = "";
 let edge: DeviceDelegationTiddler | null = null;
 let courier = "";
+/** V1's whole outcome and its record: V2 is a replay of the same summons and must hand the same act back. */
+let v1Outcome: Record<string, unknown> | null = null;
+let v1Record: FaceGrantRecord | null = null;
 
 /** An Ed25519 signature under a raw 32-byte seed, through node's own key door (PKCS#8 wraps the seed). */
 function signUnder(seed: Uint8Array, image: Uint8Array): Uint8Array {
@@ -155,6 +159,20 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   return rec!;
 }
 
+/** The key this hearth's own face signs under, read off its daemon doc: the delegate of its own device edge (its atom). */
+async function ownAtomKey(): Promise<string> {
+  const daemonUrl = bootDocUrl(lar, "daemon");
+  if (!daemonUrl) throw new Error("the boot log names no daemon doc");
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
+  try {
+    const handle = await repo.find<PlaneDoc>(daemonUrl as AutomergeUrl);
+    const record = plainRecordOrNull(handle.doc()?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER] as never);
+    const delegate = (record?.tiddler as { deviceVerifyingKey?: string } | undefined)?.deviceVerifyingKey;
+    if (!delegate) throw new Error("the hearth's daemon doc names no device edge of its own");
+    return delegate;
+  } finally { await repo.shutdown().catch(() => {}); }
+}
+
 beforeAll(async () => {
   lar = await targetInstance();
   // THE ROOT IS THE ANSWER, and the connector re-derives the socket from it. A hunt for a file named
@@ -209,17 +227,21 @@ describe("e2e/face-join — the join against a live hearth", () => {
     const rec = await recordedGrant(g);
     // The seat moved the group: a Keyhive group carries the seat into every bag it reaches, with no re-grant.
     expect(rec.reKeyed).toBe(true);
+    v1Outcome = g; v1Record = rec;
   }, 120_000);
 
-  test("V2 — a repeat hands the seat back and moves no epoch", async () => {
+  test("V2 — a repeat of the same summons hands V1's act back and moves no epoch", async () => {
+    expect(v1Outcome, "V1 runs first").not.toBeNull();
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge });
     expect(g["admitted"]).toBe(true);
-    // Events still flow (the record's own `capEvents.length > 0`), and that is membership rather than recovery:
-    // a vessel whose store was wiped mints fresh prekeys and opens none of the group's sealed material from
-    // these. Its keel is the archive.
+    // The operation is keyed by the summons' bytes: an identical summons replays the complete outcome it already
+    // issued, so the record it names IS V1's (and says `reKeyed: true`, V1's own word). Nothing moved: the same
+    // record id and plane heads, the same cap events, no further seat and no further seal.
+    expect(g, "an identical summons answers the very outcome V1 returned").toEqual(v1Outcome);
     const rec = await recordedGrant(g);
-    expect(rec.reKeyed).toBe(false);
-    expect(rec.reSealed).toEqual([]);
+    expect(rec, "the record at the title is V1's, byte for byte").toEqual(v1Record);
+    expect(rec.capEvents).toEqual(v1Record!.capEvents);
+    expect(rec.reSealed).toEqual(v1Record!.reSealed);
   }, 120_000);
 
   test("V3 — force re-keys a seated device", async () => {
@@ -234,7 +256,8 @@ describe("e2e/face-join — the join against a live hearth", () => {
     // island sees it too, runs this same verb over the same group under the same root, and would pass its own
     // gate. Two writers racing to seat one member and re-key one group. The joinee knows itself by the key it
     // just presented, and stands down.
-    const ownKey = await awaitOwnGateKey(lar);
+    // The verb knows itself by its own device edge's delegate, which is this hearth's face atom (not the place key).
+    const ownKey = await ownAtomKey();
     const selfEdge = { ...(edge as DeviceDelegationTiddler), deviceVerifyingKey: ownKey, deviceDid: `0x${ownKey}` };
     const g = await summon({ contactCard: joineeCard, deviceEdge: selfEdge });
     expect(g["admitted"]).toBe(false);
