@@ -19,7 +19,8 @@ describe("the holder runtime", () => {
     const islands: Array<{ emit: (m: Message) => void; terminated: number }> = [];
     let shutdowns = 0; const stores: string[] = [];
     const env = {
-      lockName: "runtime-test", locks: { request: async (_name: string, _options: unknown, callback: (lock: { name: string }) => unknown) => callback({ name: "runtime-test" }) },
+      lockName: "runtime-test", // The store lock grants at once; a session's lock stays queued, since its tab holds it for the tab's life.
+      locks: { request: async (name: string, _options: unknown, callback: (lock: { name: string }) => unknown) => (name.startsWith("lares:holder-session:") ? new Promise<void>(() => {}) : callback({ name })) },
       spawnIsland: (): HolderIsland => {
         const listeners = new Set<(m: unknown) => void>();
         const record = { emit: (m: Message) => { for (const listener of listeners) listener(m); }, terminated: 0 };

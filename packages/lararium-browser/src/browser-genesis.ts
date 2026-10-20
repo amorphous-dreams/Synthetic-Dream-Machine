@@ -116,7 +116,7 @@ export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | nul
   } catch {
     return null;
   }
-  if (bytes && !verifyCidBytes(bytes, cid)) throw new Error(`CID mismatch for ${cid}`);
+  if (bytes && !verifyCidBytes(bytes, cid)) throw new Error(`corrupt-bytes: CID mismatch for ${cid}`);
   return bytes;
 }
 

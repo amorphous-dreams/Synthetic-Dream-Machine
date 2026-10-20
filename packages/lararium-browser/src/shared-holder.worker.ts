@@ -11,6 +11,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { attachMessageChannelSync } from "@lararium/mesh";
 import { makeHolderRuntime } from "./shared-holder-runtime.js";
+import { HOLDER_UNAVAILABLE_NO_WORKER } from "./shared-holder-core.js";
 import { browserWorkerHandle } from "./worker-handle.js";
 
 // The SharedWorker global, read structurally — this package's lib is DOM, so the worker scope types stay out.
@@ -44,6 +45,13 @@ const { core } = makeHolderRuntime({
 sw.addEventListener("connect", (e: MessageEvent) => {
   const port = e.ports[0];
   if (port) {
+    // An engine whose SharedWorker scope exposes no Worker cannot start a house's island: the holder refuses before
+    // any admission, by name, and the tab takes its dedicated-worker floor. (Chromium's scope reads so.)
+    if (typeof (globalThis as { Worker?: unknown }).Worker !== "function") {
+      port.postMessage({ kind: "holder:refused", storeName: lockName, cause: HOLDER_UNAVAILABLE_NO_WORKER });
+      port.start();
+      return;
+    }
     // Engines that surface a close event release the port's routes; a failed clone marks it lost too.
     port.addEventListener("close", () => core.disconnect(port));
     port.addEventListener("messageerror", () => core.disconnect(port));

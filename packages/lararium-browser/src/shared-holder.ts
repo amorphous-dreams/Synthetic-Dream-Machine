@@ -14,7 +14,7 @@
 import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
 import { signHolderSessionProof } from "@lararium/mesh";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
-import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
+import { HOLDER_UNAVAILABLE_NO_WORKER, type HolderHello, type HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
@@ -96,6 +96,11 @@ export async function attachSharedHolder(args: {
     }, args.helloTimeoutMs ?? 5_000);
   });
   if (!greeting) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
+  // A holder whose engine cannot start an island refuses before any admission; the tab takes the dedicated-worker floor.
+  if (greeting.kind === "holder:refused" && greeting.cause === HOLDER_UNAVAILABLE_NO_WORKER) {
+    port.close();
+    return { kind: "floor", why: `${greeting.cause}; the daemon island rides a dedicated worker` };
+  }
   if (greeting.kind === "holder:refused") {
     port.close();
     throw new SharedHolderRefusal(greeting);

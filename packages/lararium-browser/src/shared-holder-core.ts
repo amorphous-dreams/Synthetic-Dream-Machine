@@ -108,6 +108,9 @@ export interface HolderLock {
   readonly personaGroup: string;
 }
 
+/** The holder's refusal where its engine cannot start a house's island: the tab takes its dedicated-worker floor. */
+export const HOLDER_UNAVAILABLE_NO_WORKER = "holder-unavailable: no nested Worker in this engine";
+
 /** A port as the holder sees it — the two members `MessagePort` and a fake alike carry. */
 export interface HolderPort {
   postMessage(msg: unknown, transfer?: Transferable[]): void;
@@ -561,7 +564,11 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
             else {
               // The tab takes its lifetime lock before opening; only now may the queued request start.
               opts.armSession?.(sessionId);
-              void admit(port, state, msg);
+              // An admission that throws must not strand its port: the port hears the failure by name.
+              void admit(port, state, msg).catch((error) => {
+                state.opening = false;
+                refuse(port, `session-admission-failed: ${error instanceof Error ? error.message : String(error)}`, msg.type);
+              });
             }
             return;
           }
