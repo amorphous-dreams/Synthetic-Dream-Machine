@@ -1,6 +1,6 @@
 /** Read a device's standing from the island's own signed fleet board. */
 import { DOCUMENT_HANG_BOUND_MS, deviceEdgeId, edgeStandingOf, findOrThrow, fleetEdgeAuthority, fleetEdgeBoardDocUrl, readEdgeBoard } from "@lararium/mesh";
-import type { Repo } from "@automerge/automerge-repo";
+import type { Repo } from "@lararium/mesh";
 import type { DyadReader } from "./operator-daemon-behavior.js";
 
 export function boardDyadReader(repo: Repo): DyadReader {
