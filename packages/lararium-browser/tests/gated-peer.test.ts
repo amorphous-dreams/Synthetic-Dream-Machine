@@ -1,7 +1,7 @@
 /** A house gate releases held Repo frames on clearance and drops them when the house ends. */
 import { describe, expect, test } from "vitest";
 
-type AttachGatedPeer = (attachRepoSide: (port: MessagePort) => void, tab: MessagePort, serving: Promise<void>) => void;
+type AttachGatedPeer = (attachRepoSide: (port: MessagePort) => void, tab: MessagePort, serving: Promise<void>, closed: Promise<void>) => void;
 
 async function relay(): Promise<AttachGatedPeer> {
   // The variable lets the absent extraction reach the named assertion instead of stopping Vite's transform.
@@ -47,10 +47,10 @@ function inbox(port: MessagePort) {
   };
 }
 
-function harness(attach: AttachGatedPeer, serving: Promise<void>) {
+function harness(attach: AttachGatedPeer, serving: Promise<void>, closed: Promise<void> = new Promise<void>(() => {})) {
   const tab = new MessageChannel();
   let repoPort!: MessagePort;
-  attach((port) => { repoPort = port; }, tab.port1, serving);
+  attach((port) => { repoPort = port; }, tab.port1, serving, closed);
   expect(repoPort, "the Repo side attaches at once").toBeDefined();
   const repo = inbox(repoPort);
   const received = inbox(tab.port2);
@@ -124,6 +124,27 @@ describe("the gated peer relay", () => {
       peer.fromRepo("late:three");
       await peer.received.through(3);
       expect(peer.received.frames).toEqual(["held:one", "held:two", "late:three"]);
+    } finally { peer.close(); }
+  });
+
+  test("a cleared house closes both relay directions when its house ends", async () => {
+    const attach = await relay();
+    const gate = deferred(); const closed = deferred();
+    const peer = harness(attach, gate.promise, closed.promise);
+    try {
+      gate.resolve();
+      peer.tab.postMessage("tab:before");
+      peer.fromRepo("repo:before");
+      await Promise.all([peer.repo.through(1), peer.received.through(1)]);
+      expect(peer.repo.frames).toEqual(["tab:before"]);
+      expect(peer.received.frames).toEqual(["repo:before"]);
+      closed.resolve();
+      await nextTurn();
+      peer.tab.postMessage("tab:after");
+      peer.fromRepo("repo:after");
+      await nextTurn();
+      expect(peer.repo.frames, "a closed house receives no tab frame").toEqual(["tab:before"]);
+      expect(peer.received.frames, "a closed house sends no Repo frame").toEqual(["repo:before"]);
     } finally { peer.close(); }
   });
 });
