@@ -214,6 +214,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
       founderCard: "test-founder-card",
       capEvents: [],
       reKeyed: false,
+      serial: 1,
       reSealed: [],
       founderEdge: anchors.deviceEdge,
     }, ed25519SignerFromSeed(founderSeed));

@@ -38,7 +38,19 @@ export interface FaceJoinOperationInput {
   readonly grantPlane: GrantPlane;
 }
 
-export async function runFaceJoinOperation(input: FaceJoinOperationInput): Promise<Record<string, unknown>> {
+/** One lane per group: joins of one face take their serials and publish in turn, so two never read one standing grant. */
+const lanes = new Map<string, Promise<unknown>>();
+
+export function runFaceJoinOperation(input: FaceJoinOperationInput): Promise<Record<string, unknown>> {
+  const key = input.ctx.personaGroupId;
+  const turn = (lanes.get(key) ?? Promise.resolve()).then(() => runOne(input), () => runOne(input));
+  lanes.set(key, turn);
+  const clear = (): void => { if (lanes.get(key) === turn) lanes.delete(key); };
+  turn.then(clear, clear);
+  return turn;
+}
+
+async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unknown>> {
   const { provider, summons, ctx, founderEdge, signGrant, atomSeed, operationStore, grantPlane } = input;
   const signedInput = new TextEncoder().encode(JSON.stringify(summons));
 
