@@ -28,7 +28,7 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 
@@ -928,26 +928,40 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
         console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
       }
-      const { keyhive, did } = await bootDaemonKeyhive({
-        seed:                  daemonAuth.seed,
-        eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
-        vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
-        ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
-        // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
-        ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
-        ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
-        registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
-        ledger:                daemonBagDocLedger(ctx.composite),
-        ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
-        ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
-        ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
-        ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
-        // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
-        ...(daemonAuth.deviceEdge
-          ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
-        ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
-        ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
-      });
+      let booted: Awaited<ReturnType<typeof bootDaemonKeyhive>>;
+      try {
+        booted = await bootDaemonKeyhive({
+          seed:                  daemonAuth.seed,
+          eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
+          vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
+          ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
+          // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
+          ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
+          ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
+          registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+          ledger:                daemonBagDocLedger(ctx.composite),
+          ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
+          ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
+          ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
+          ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
+          // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
+          ...(daemonAuth.deviceEdge
+            ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
+          ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
+          ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+        });
+      } catch (error) {
+        const cause = error instanceof Error ? error.message : String(error);
+        // A persona-bound boot that does not complete refuses the face, whichever step refused it.
+        if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+          ctx.post({ type: "gate:refused", cause });
+        }
+        throw error;
+      }
+      const { keyhive, did } = booted;
+      if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+        ctx.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(daemonAuth.deviceEdge), personaRoot: daemonAuth.deviceEdge.personaRootDid });
+      }
       kh = keyhive;
       mintedByHex = daemonAuth.atom?.key ?? did;
       if (daemonAuth.atom) {

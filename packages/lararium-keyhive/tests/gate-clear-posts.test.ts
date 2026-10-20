@@ -1,7 +1,6 @@
 /** The daemon island tells its vessel which countersigned edge cleared its real Binding Gate. */
-import { createHash } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
-import { makeIslandRepo, type AutomergeUrl } from "@lararium/mesh";
+import { deviceEdgeDigest, makeIslandRepo, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
   AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, leaseEpochSlotUri,
   emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
@@ -11,11 +10,7 @@ import { KeyhiveProvider, runFoundingCeremony } from "../src/index.js";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 
 const seed = new Uint8Array(32).fill(37);
-const digestOf = (edge: Record<string, unknown>) => createHash("sha256").update(JSON.stringify({
-  kind: edge.kind, personaRootDid: edge.personaRootDid, deviceDid: edge.deviceDid,
-  deviceVerifyingKey: edge.deviceVerifyingKey, hearthTrueName: edge.hearthTrueName,
-  boundEpoch: edge.boundEpoch, signature: edge.signature, atomSignature: edge.atomSignature,
-})).digest("hex");
+const digestOf = (edge: Record<string, unknown>) => deviceEdgeDigest(edge as unknown as DeviceDelegationTiddler);
 
 type Ceremony = Awaited<ReturnType<typeof runFoundingCeremony>>;
 let repo: ReturnType<typeof makeIslandRepo>;
