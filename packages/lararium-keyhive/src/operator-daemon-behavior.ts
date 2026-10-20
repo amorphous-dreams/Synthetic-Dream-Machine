@@ -371,6 +371,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
+    // WHO A VERB PRESENTS AS. The vessel's presence channel (the 0600 rendezvous) carries a session, and a session
+    // wears the face this island mounts (session model): authority comes from the channel, never from the unsigned
+    // `requestedBy` claim. With a face lit, a local verb that names this place presents as the mounted face's atom;
+    // at the floor the place presents as itself and reaches floor acts only. A claim naming any other DID stays that
+    // DID, so the verifier judges it as the stranger it is, and a synced summons never borrows the local channel.
+    presenterOf: (invocation, local) => presenterFor({ invocation, local, auth: daemonAuth }),
     // Sovereign-worker data-plane: register the read-only reactors in-worker over the
     // IslandContext composite (verify-then-delegate gate inherited); the residency
     // ACTION reactors register alongside them below.
@@ -1066,7 +1072,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
-      return faceOwnerVerifier({ vessel: keyhive, face: veilKh });
+      return faceOwnerVerifier({ vessel: keyhive, face: veilKh, ...(daemonAuth.atom ? { mount: { atomKey: daemonAuth.atom.key, placeKey: daemonAuth.vesselVerifyingKey } } : {}) });
     },
 
     // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket
@@ -1098,4 +1104,27 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
  */
 export function makeOperatorDaemonBehavior(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): IslandBehavior {
   return makeDaemonBehavior(operatorDaemonOptions(manifest, extra));
+}
+
+/** The bare lowercase hex of a DID claim (`0x…` or bare). */
+const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");
+
+/**
+ * Who one verb presents as (see `presenterOf` in `operatorDaemonOptions`). A verb that names a PersonaGroup must name
+ * the mounted face's, or it refuses by name: a session never falls back silently to another face.
+ */
+export function presenterFor(input: {
+  readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>> };
+  readonly local: boolean;
+  readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "vesselVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge">;
+}): string {
+  const { invocation, local, auth } = input;
+  const claim = invocation.requestedBy;
+  const lit = !!(auth.atom && auth.personaGroupId && auth.deviceEdge);
+  if (!local || !lit) return claim;
+  const named = invocation.args["personaGroup"];
+  if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
+    throw new Error(`this vessel wears ${auth.personaGroupId}; name it or wear ${named} first`);
+  }
+  return bareKey(claim) === bareKey(auth.vesselVerifyingKey) ? `0x${auth.atom!.key}` : claim;
 }

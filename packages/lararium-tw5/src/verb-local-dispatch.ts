@@ -26,6 +26,7 @@ export interface RunLocalVerbOptions {
   readonly registry:  VerbTable;
   readonly signal?:   AbortSignal;
   readonly verifier?: CapabilityVerifier;
+  readonly presenterOf?: (invocation: Verb) => string;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string): CapVerify {
@@ -62,6 +63,6 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
     throw new Error(`no handler registered for "${invocation.action}"`);
   }
 
-  const cap = makeCapVerify(opts.verifier, invocation.requestedBy);
+  const cap = makeCapVerify(opts.verifier, opts.presenterOf?.(invocation) ?? invocation.requestedBy);
   return handler(invocation.args, { daemon: opts.daemon, invocation, cap, ...(opts.signal ? { signal: opts.signal } : {}) });
 }
