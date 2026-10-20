@@ -53,7 +53,7 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A2 the mount material round-trips at index N; the roster records each index once", async () => {
-    const withMount: IdentityAnchors = { ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: edge, veilTag: "ab".repeat(32) };
+    const withMount: IdentityAnchors = { ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: edge };
     expect(await listAnchoredPersonas()).toEqual([]);
     await persistIdentityAnchors(withMount, 2);
     await persistIdentityAnchors(anchors, 0);

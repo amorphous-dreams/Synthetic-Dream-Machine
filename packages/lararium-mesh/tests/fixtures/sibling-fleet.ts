@@ -15,6 +15,7 @@ import { guardianRecoveryRegistrationCard } from "../../src/recovery-registratio
 import {
   enrolDevice, rollEnrolments, leafStandingUnder, enrolmentUnderHead, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
 } from "../../src/persona-group-secret.js";
+import { countersignDeviceDelegation } from "../../src/device-delegation.js";
 import type { LeafPeerSelf } from "../../src/leaf-peer-proof.js";
 import { shareConfigOf } from "../../src/federation-gate.js";
 import {
@@ -46,7 +47,8 @@ export async function founded(): Promise<{ inception: PersonaKelEvent; guardianR
 
 /** A root enrols a device: the edge and the sealed secret, under the KEL prefix. */
 export async function enrol(root: Uint8Array, device: Uint8Array, prefix: string, boundEpoch = 0): Promise<PersonaGroupEnrolment> {
-  return enrolDevice({ opSeed: root, prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch });
+  const issued = await enrolDevice({ opSeed: root, prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch });
+  return { ...issued, edge: await countersignDeviceDelegation(issued.edge, signerOf(device)) };
 }
 
 /** The KEL rotated to opB, re-enrolling exactly `keep` — a device left out is revoked by this rotation. */

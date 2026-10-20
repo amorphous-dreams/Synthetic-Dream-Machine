@@ -144,7 +144,7 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
     const deviceKey = await keyOf(SEEDS.deviceX);
     const opKeyDid = await didOf(SEEDS.opB);
-    const real = await buildDeviceDelegation({ personaRootSeed: SEEDS.opB, deviceVerifyingKey: deviceKey, hearthTrueName: "", boundEpoch: 0 });
+    const real = await buildDeviceDelegation({ personaRootSeed: SEEDS.opB, atomSeed: SEEDS.deviceX, hearthTrueName: "", boundEpoch: 0 });
     const forgedEdge = { ...real, signature: "00".repeat(64) };
     const boxed = sealToRecipient({
       recipientPub: edCurve.utils.toMontgomery(hexToBytes(deviceKey)),

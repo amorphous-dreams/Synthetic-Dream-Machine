@@ -18,7 +18,7 @@ const opDidP = vkOf(opSeed).then((vk) => `0x${vk}`);
 async function mint(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
   return buildDeviceDelegation({
     personaRootSeed: opSeed,
-    deviceVerifyingKey: await vkOf(devSeed),
+    atomSeed: devSeed,
     hearthTrueName: PLACE,
     boundEpoch,
   });
@@ -55,7 +55,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     // attacker mints their OWN edge under their OWN root: internally valid, but not the pin.
     const attackerSeed = new Uint8Array(32).fill(13);
     const attackerEdge = await buildDeviceDelegation({
-      personaRootSeed: attackerSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, boundEpoch: 5,
+      personaRootSeed: attackerSeed, atomSeed: devSeed, hearthTrueName: PLACE, boundEpoch: 5,
     });
     const res = await verifyDeviceDelegation(attackerEdge, await opDidP); // pin = the REAL operator
     expect(res.ok).toBe(false);
@@ -97,7 +97,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
 
   it("rejects an edge with an illegal-character hearthTrueName at mint", async () => {
     await expect(buildDeviceDelegation({
-      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: "evil|injection", boundEpoch: 5,
+      personaRootSeed: opSeed, atomSeed: devSeed, hearthTrueName: "evil|injection", boundEpoch: 5,
     })).rejects.toThrow(/hearthTrueName/);
   });
 
@@ -131,7 +131,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     const edge = await mint(5);
     expect(clockKeys(edge)).toEqual([]);
     expect(Object.keys(edge).sort()).toEqual(
-      ["boundEpoch", "deviceDid", "deviceVerifyingKey", "hearthTrueName", "kind", "personaRootDid", "signature"]);
+      ["atomSignature", "boundEpoch", "deviceDid", "deviceVerifyingKey", "hearthTrueName", "kind", "personaRootDid", "signature"]);
   });
 
   it("CONTROL: the clock scan finds a planted stamp, and the lease still fences a rolled epoch", async () => {
@@ -147,7 +147,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
 
   it("rejects a non-numeric boundEpoch at mint", async () => {
     await expect(buildDeviceDelegation({
-      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, boundEpoch: -1,
+      personaRootSeed: opSeed, atomSeed: devSeed, hearthTrueName: PLACE, boundEpoch: -1,
     })).rejects.toThrow(/boundEpoch/);
   });
 });

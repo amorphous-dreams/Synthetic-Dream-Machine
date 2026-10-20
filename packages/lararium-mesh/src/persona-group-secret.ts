@@ -46,7 +46,7 @@ import {
 import { ed25519VerifyHex } from "./ed25519-door.js";
 import { sealToRecipient, openFromSender } from "./sealed-box.js";
 import { didFromVerifyingKey, verifyingKeyFromDid } from "./lar-did.js";
-import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";
+import { buildDeviceDelegationRootHalf, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf } from "./device-delegation.js";
 import {
   enrolmentsAttested, headOpKey, sealedEnrolmentBytes, verifySealedEnrolment, type PersonaKelEvent, type SealedEnrolment,
 } from "./persona-kel.js";
@@ -85,7 +85,7 @@ export interface GroupSecretSeal {
 
 /** One device's enrolment: the edge the root signed for it, and the secret sealed beside it. */
 export interface PersonaGroupEnrolment {
-  readonly edge: DeviceDelegationTiddler;
+  readonly edge: DeviceDelegationRootHalf;
   readonly seal: GroupSecretSeal;
 }
 
@@ -152,7 +152,7 @@ export async function enrolDevice(args: {
   readonly hearthTrueName:     string;
   readonly boundEpoch:         number;
 }): Promise<PersonaGroupEnrolment> {
-  const edge = await buildDeviceDelegation({
+  const edge = await buildDeviceDelegationRootHalf({
     personaRootSeed: args.opSeed, deviceVerifyingKey: args.deviceVerifyingKey,
     hearthTrueName: args.hearthTrueName, boundEpoch: args.boundEpoch,
   });
@@ -182,6 +182,7 @@ export async function verifyGroupSecretSeal(raw: unknown): Promise<GroupSecretSe
 export interface GroupSecretOpener {
   /** The device key this opener stands for. */
   readonly deviceKey: string;
+  sign(bytes: Uint8Array): Promise<string>;
   /** Open a delivery seal addressed to this device: the 32-byte secret, or null. */
   seal(seal: GroupSecretSeal): Uint8Array | null;
   /** Trial-open a KEL event's sealed enrolment: its plaintext when the box addresses this device, else null. */
@@ -201,6 +202,7 @@ export function groupSecretOpenerFromSeed(deviceSeed: Uint8Array): GroupSecretOp
   };
   return {
     deviceKey,
+    sign: async (bytes) => hex(await ed.signAsync(bytes, deviceSeed)),
     seal: (seal) => {
       if (seal.deviceKey.toLowerCase() !== deviceKey) return null;
       const opened = openBox(seal, SEAL_INFO, sealSalt(seal.prefix, deviceKey));
@@ -234,7 +236,7 @@ export async function rollEnrolments(args: {
   for (const d of args.devices) {
     const deviceKey = d.deviceVerifyingKey.toLowerCase();
     if (!KEY_RE.test(deviceKey)) throw new Error("[persona-group-secret] cannot enrol: the device key is not 32-byte hex");
-    const edge = await buildDeviceDelegation({
+    const edge = await buildDeviceDelegationRootHalf({
       personaRootSeed: args.opSeed, deviceVerifyingKey: deviceKey, hearthTrueName: d.hearthTrueName, boundEpoch: d.boundEpoch,
     });
     const box = sealToRecipient({
@@ -276,13 +278,15 @@ async function openedEnrolments(kel: readonly PersonaKelEvent[], open: GroupSecr
       if (!(await verifySealedEnrolment(sealed, event.prefix, event.opKeyDid))) continue;
       const plaintext = open.enrolment(sealed, { prefix: event.prefix, opKeyDid: event.opKeyDid });
       if (!plaintext) continue;
-      let body: { edge?: DeviceDelegationTiddler; secret?: unknown };
+      let body: { edge?: DeviceDelegationRootHalf; secret?: unknown };
       try { body = JSON.parse(new TextDecoder().decode(plaintext)) as typeof body; } catch { continue; }
       const edge = body.edge;
       if (!edge || edge.deviceVerifyingKey?.toLowerCase() !== key) continue;
       if (typeof body.secret !== "string" || !KEY_RE.test(body.secret)) continue;
-      if (!(await verifyDeviceDelegation(edge, event.opKeyDid)).ok) continue;
-      out.push({ at, edge, secret: { opKeyDid: event.opKeyDid.toLowerCase(), secret: hexToBytes(body.secret) } });
+      let full: DeviceDelegationTiddler;
+      try { full = await countersignDeviceDelegation(edge, open.sign); } catch { continue; }
+      if (!(await verifyDeviceDelegation(full, event.opKeyDid)).ok) continue;
+      out.push({ at, edge: full, secret: { opKeyDid: event.opKeyDid.toLowerCase(), secret: hexToBytes(body.secret) } });
       break;
     }
   }
@@ -331,7 +335,12 @@ export async function leafStandingUnder(args: {
   if (handed && handed.deviceKey === key && handed.prefix === prefix) {
     const at = seatOf(args.kel, handed.opKeyDid);
     const secret = at >= 0 ? args.open.seal(handed) : null;
-    if (secret) held.set(handed.opKeyDid.toLowerCase(), { at, secret, edge: args.enrolment.edge });
+    if (secret) {
+      try {
+        const edge = await countersignDeviceDelegation(args.enrolment.edge, args.open.sign);
+        if ((await verifyDeviceDelegation(edge, handed.opKeyDid)).ok) held.set(handed.opKeyDid.toLowerCase(), { at, secret, edge });
+      } catch { /* A malformed handed half grants no standing. */ }
+    }
   }
   const opened = await openedEnrolments(args.kel, args.open);
   for (const o of opened) held.set(o.secret.opKeyDid, { at: o.at, secret: o.secret.secret, edge: o.edge });

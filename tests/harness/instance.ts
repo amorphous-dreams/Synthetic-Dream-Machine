@@ -23,8 +23,12 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
+import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
+import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -664,9 +668,38 @@ export interface JoineeOptions {
 
 /** Where the fleet-join door's three files rest under B's root. */
 export interface FleetJoinFiles { readonly offer: string; readonly request: string; readonly answer: string }
-/** The device edge B's join carried: the signed edge inside the fleet-join answer. */
-export function joinedDeviceEdge(pair: Pick<StagedJoinee, "fleet">): unknown {
-  return (JSON.parse(readFileSync(pair.fleet.answer, "utf8")) as { edge?: { deviceEdge?: unknown } }).edge?.deviceEdge;
+/**
+ * The device edge B's join carried, COMPLETE: the root's half in the fleet-join answer plus B's own atom countersignature,
+ * which B's landing keeps on its daemon doc. A summons that presents the root's half alone refuses for the missing countersignature.
+ */
+export async function joinedDeviceEdge(pair: Pick<StagedJoinee, "B">): Promise<unknown> {
+  if (!pair.B) throw new Error("joinedDeviceEdge: B never stood, so no countersigned edge rests on its daemon doc");
+  const daemonUrl = bootDocUrl(pair.B, "daemon");
+  if (!daemonUrl) throw new Error("joinedDeviceEdge: B's boot log names no daemon doc");
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(pair.B)) });
+  try {
+    const handle = await repo.find<{ tiddlers?: Record<string, unknown> }>(daemonUrl as AutomergeUrl);
+    const record = plainRecordOrNull(handle.doc()?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER] as never);
+    return record?.tiddler;
+  } finally { await repo.shutdown().catch(() => {}); }
+}
+/**
+ * The contact card of B's face atom: the card a summons presents, which must name the key B's countersigned edge
+ * licenses (the atom), never the place card B's `.vessel-card` rests as. Read in this process under the test route.
+ */
+export async function joinedFaceCard(pair: Pick<StagedJoinee, "rootB">): Promise<string> {
+  const { withLarRoot } = await import("./with-lar-root.js");
+  const { seatStagedCustody } = await import("./test-door.js");
+  const { loadLeafIdentity } = await import("../../packages/lararium-node/src/leaf-identity.js");
+  const { loadIdentityAnchors } = await import("../../packages/lararium-node/src/identity-anchors.js");
+  return withLarRoot(pair.rootB, async () => {
+    const seat = await seatStagedCustody(pair.rootB);
+    try {
+      const anchors = await loadIdentityAnchors(0);
+      if (!anchors) throw new Error("joinedFaceCard: B holds no anchors for face 0");
+      return (await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
+    } finally { await seat.drop(); }
+  });
 }
 export interface StagedJoinee {
   readonly A: LarInstance;

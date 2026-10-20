@@ -1,10 +1,15 @@
 /**
- * device-delegation — the signed capability edge that binds a vessel to its operator.
+ * device-delegation — the signed capability edge from a PersonaGroup root to one face atom.
  *
  * Under capability-is-identity (lar:///ha.ka.ba/lares/api/pono/lararium-identity
  * #capability-and-petnames), the DELEGATION EDGE *is* the relationship and the capability:
- * the operator root signs "Operator O delegates to Device D at place P", and any peer
+ * the operator root signs "Operator O delegates to Atom A at place P", and any peer
  * verifies it offline against a PINNED operator root (CAPABILITY-LAYER, Plane 0→1).
+ *
+ * BOTH HALVES, EACH SIGNED BY ITS OWN SUBJECT. The root delegates to the atom, and the atom countersigns its own
+ * half over the root's proof string and the root's signature: `{DEVICE_ATOM_COUNTERSIGN_DOMAIN}|{root proof}|{root
+ * signature}`. A record carrying the root's half alone is a `DeviceDelegationRootHalf` and verifies nowhere as an
+ * edge; only the countersigned `DeviceDelegationTiddler` counts.
  *
  * The edge is a STANDING MEMBERSHIP grant (long-lived, revocable), NOT a per-use proof:
  * per-use replay defense (nonce + short exp + seen-cache) rides a separate INVOCATION
@@ -31,7 +36,7 @@
  * surface (@noble/ed25519 v3 + ./crypto hex).
  */
 
-import { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
+import { DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "./crypto.js";
 import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
@@ -44,7 +49,7 @@ const SIG_RE  = /^[0-9a-f]{128}$/;         // 64-byte Ed25519 signature hex, low
 const TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/;   // CID / lar:-name safe; no `|`, no whitespace; "" allowed (place-agnostic)
 const EPOCH_RE = /^\d{1,15}$/;             // decimal lease epoch; 1-15 digits, bounded < Number.MAX_SAFE_INTEGER
 
-export interface DeviceDelegationTiddler {
+export interface DeviceDelegationRootHalf {
   readonly kind:                "device-delegation";
   /** "0x"+hex — the operator root that SIGNED this edge; the verifier checks against it AND the pin. */
   readonly personaRootDid:         LarDid;
@@ -63,11 +68,16 @@ export interface DeviceDelegationTiddler {
   readonly signature:           string;
 }
 
+export interface DeviceDelegationTiddler extends DeviceDelegationRootHalf {
+  /** The delegate atom signs the root proof and its signature. */
+  readonly atomSignature: string;
+}
+
 export type DeviceDelegationEvidence = AuthorityEvidenceVerdict<"device-face-delegation">;
 
 
 type ProofFields = Pick<
-  DeviceDelegationTiddler,
+  DeviceDelegationRootHalf,
   "personaRootDid" | "deviceDid" | "deviceVerifyingKey" | "hearthTrueName" | "boundEpoch"
 >;
 
@@ -77,12 +87,16 @@ function delegationProofBytes(d: ProofFields): Uint8Array {
   );
 }
 
+export function deviceAtomProofBytes(edge: DeviceDelegationRootHalf): Uint8Array {
+  return new TextEncoder().encode(`${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${new TextDecoder().decode(delegationProofBytes(edge))}|${edge.signature}`);
+}
+
 /**
  * Field hygiene shared by build (throws — controlled minter) and verify (returns reason —
  * untrusted CRDT input). Strict-charset on EVERY field closes delimiter injection entirely
  * (no field can carry `|`) and honors verify's "never throws" contract via typeof guards.
  */
-function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
+function fieldError(d: Partial<DeviceDelegationRootHalf>, complete = true): string | null {
   if (d.kind !== "device-delegation")                            return "not a device-delegation";
   if (typeof d.personaRootDid !== "string" || !DID_RE.test(d.personaRootDid))                 return "personaRootDid not 0x+32-byte lowercase hex";
   if (typeof d.deviceVerifyingKey !== "string" || !VK_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
@@ -96,6 +110,7 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
   if (typeof d.hearthTrueName !== "string" || !TRUE_NAME_RE.test(d.hearthTrueName))                       return "hearthTrueName has illegal characters";
   if (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))                 return "boundEpoch not a 1-15 digit decimal";
   if (typeof d.signature !== "string" || !SIG_RE.test(d.signature))                     return "signature not 64-byte lowercase hex";
+  if (complete && (typeof (d as Partial<DeviceDelegationTiddler>).atomSignature !== "string" || !SIG_RE.test((d as Partial<DeviceDelegationTiddler>).atomSignature!))) return "atom countersignature missing";
   return null;
 }
 
@@ -105,12 +120,12 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
  * `boundEpoch` are caller-supplied (pure, no clock). Throws on malformed inputs — it is the
  * controlled minter, never fed untrusted data.
  */
-export async function buildDeviceDelegation(args: {
+export async function buildDeviceDelegationRootHalf(args: {
   personaRootSeed:    Uint8Array; // the PERSONA ROOT's 32-byte Ed25519 seed — the HUMAN's side, and the signer
   deviceVerifyingKey: string;     // raw Ed25519 verifying-key hex (64, lowercase) of the delegate
   hearthTrueName:            string;     // hearth true-name (genesis CID), or "" if place-agnostic
   boundEpoch:         number;     // the per-resource lease epoch this grant binds to (non-negative integer)
-}): Promise<DeviceDelegationTiddler> {
+}): Promise<DeviceDelegationRootHalf> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
   const fields: ProofFields = {
     personaRootDid,
@@ -120,10 +135,32 @@ export async function buildDeviceDelegation(args: {
     boundEpoch:         String(args.boundEpoch),
   };
   const candidate = { kind: "device-delegation" as const, ...fields, signature: "0".repeat(128) };
-  const err = fieldError(candidate);
+  const err = fieldError(candidate, false);
   if (err) throw new Error(`[device-delegation] cannot mint: ${err}`);
   const signature = hex(await ed25519.signAsync(delegationProofBytes(fields), args.personaRootSeed));
   return { ...candidate, signature };
+}
+
+export async function countersignDeviceDelegation(
+  half: DeviceDelegationRootHalf,
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<DeviceDelegationTiddler> {
+  const err = fieldError(half, false);
+  if (err) throw new Error(`[device-delegation] cannot countersign: ${err}`);
+  const atomSignature = await sign(deviceAtomProofBytes(half));
+  if (!SIG_RE.test(atomSignature)) throw new Error("[device-delegation] atom countersignature malformed");
+  return { ...half, atomSignature };
+}
+
+export async function buildDeviceDelegation(args: {
+  personaRootSeed: Uint8Array;
+  atomSeed: Uint8Array;
+  hearthTrueName: string;
+  boundEpoch: number;
+}): Promise<DeviceDelegationTiddler> {
+  const deviceVerifyingKey = hex(await ed25519.getPublicKeyAsync(args.atomSeed));
+  const half = await buildDeviceDelegationRootHalf({ ...args, deviceVerifyingKey });
+  return countersignDeviceDelegation(half, async (bytes) => hex(await ed25519.signAsync(bytes, args.atomSeed)));
 }
 
 /**
@@ -192,6 +229,9 @@ export async function evaluateDeviceDelegation(
   }
 
   try {
+    if (!verifyEd25519(edge.atomSignature, deviceAtomProofBytes(edge), edge.deviceVerifyingKey)) {
+      return verdict("rejected", false, "atom countersignature mismatch");
+    }
     const ok = verifyEd25519(edge.signature, delegationProofBytes(edge), verifyingKeyFromDid(edge.personaRootDid));
     if (!ok) return verdict("rejected", false, "signature mismatch");
     return opts?.expectedEpoch === undefined

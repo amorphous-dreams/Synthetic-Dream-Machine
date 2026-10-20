@@ -40,7 +40,7 @@ import {
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsPointer,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
-  type RealmBagRegistration, ed25519SignerFromSeed, MEMORY_CUT_SHADOW_READ,
+  type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
@@ -48,6 +48,8 @@ import {
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
+  faceAtomKeyFromSeed, type FaceAtomKey,
+  placeSignerFromSeed, carriageFloorDutyOf,
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag,
 }                                       from "@lararium/mesh";
@@ -89,7 +91,7 @@ import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
-  standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -100,7 +102,7 @@ import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
-import { vesselDyads, verifiedFleetOfGroup, DYAD_VEIL_TAG_TIDDLER, type LarDid } from "@lararium/mesh";
+import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener,
   type NexusMembershipHolder, type SocketBinding, type CarriedNexusReading,
@@ -119,9 +121,10 @@ import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
+import { loadFaceAtom } from "./face-atom-store.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
-import { ed25519SignerFromSeed as carriageSignerFromSeed, hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
+import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
@@ -149,7 +152,7 @@ import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
-import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
+import { custodyHeld } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
@@ -395,8 +398,6 @@ export interface SovereignReaders {
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
   readonly veilArchive: (handleIndex: number) => Promise<Uint8Array | null>;
-  /** The veil keys a tag names, derived from the sealed custody root. */
-  readonly veil: (groupTag: string) => Promise<{ signingKey: string; verifyingKey: string }>;
   /** Seal the vessel's keyhive archive at rest. */
   readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
   /** Seal one face's veil archive at rest. */
@@ -408,7 +409,7 @@ export interface SovereignReaders {
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
-    archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
+    archive: loadIdentityArchive, veilArchive: loadVeilArchive,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
 }
 
@@ -542,6 +543,7 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
+  wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
@@ -1182,8 +1184,12 @@ async function prepareNodeBootOn(
   let wornFleetRoot: string | null = null;
   /** The face this composition mounts LIT (a sovereign composition presenting that face's signed edge), by handle-index; null where none stands. */
   let litFace: number | null = null;
+  let activeAtom: FaceAtomKey | null = null;
   const builtRing = makeEdgeShadowRing({
-    repo, vesselKey: vesselIdentity.verifyingKey, sealHome,
+    repo, vesselKey: () => {
+      if (sovereign && wornFleetRoot && !activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+      return activeAtom?.key ?? vesselIdentity.verifyingKey;
+    }, sealHome,
     fleetRoots: async () => {
       const roots = new Set<string>();
       if (wornFleetRoot) roots.add(wornFleetRoot);
@@ -1214,7 +1220,10 @@ async function prepareNodeBootOn(
     const vm = daemonVm;
     return askSeatDuties({
       daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), facts,
-      vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+      vesselKey: activeAtom?.key ?? "", sign: (image) => {
+        if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+        return activeAtom.sign(image);
+      },
     });
   };
   const seatSettler = sovereign ? makeSeatSettler({
@@ -1263,7 +1272,10 @@ async function prepareNodeBootOn(
   // D4: the device a presenting face-scoped key was certified to, off this vessel's own records: its own
   // certificates, and on the root holder the issued book each fleet-join answer noted (`face-device-book`). A gate
   // sweep and every refold read it again; a presenter it does not bind reads fleet-aside.
-  const deviceBook = faceDeviceBook({ records: wornFaceRecords, ownVesselKey: async () => vesselIdentity.verifyingKey });
+  const deviceBook = faceDeviceBook({ records: wornFaceRecords, ownVesselKey: async () => {
+    if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+    return activeAtom.key;
+  } });
   deviceOfPresenter = (seat) => deviceBook.deviceOfSeat(seat);
   const gateDeps: VesselGateDeps = {
     readings: readEveryCarried,
@@ -1447,11 +1459,11 @@ async function prepareNodeBootOn(
   //   · WHAT IT PRESENTS: a place's counted `carry` at that Nexus where its own key stands carried (a herm: the place arm,
   //     `place-floor-pin`); otherwise the worn face with the admit it took for that Nexus. Nothing composed, nothing dialed.
   const carriageSessions = opts.dialSessions ?? { table: new SessionTable(`carriage-${globalThis.crypto.randomUUID()}`), binding: sessionBinding("socket"), profile: "face" as const };
-  const carriageSign = carriageSignerFromSeed(vesselSeed);
+  const carriageSign = placeSignerFromSeed(vesselSeed);
   const carriagePull = vesselCarriagePull<MeshPalaceDoc>({
     placeClass,
     ownPlaceKey: vesselIdentity.verifyingKey,
-    sign:        async (image) => carriageHexToBytes(await carriageSign(image)),
+    sign:        async (image) => carriageHexToBytes(await carriageSign.signFloor(carriageFloorDutyOf(image), image)),
     readings:    readEveryCarried,
     ownNexus:    ownNexusAid,
     openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),
@@ -1810,14 +1822,16 @@ async function prepareNodeBootOn(
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
     const signerDid  = wornMount?.signerDid ?? tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
-    // The veil rides the mount with the rest of the pins: the doc's tag is the FOUNDING face's, and a worn
-    // face stands its OWN veil (fresh per founding). Reading the doc here alone put h{N}'s sentinel ops
-    // under h0's veil — the one pin in this cluster that never asked what was worn.
-    const dyadVeilTag = wornMount?.veilTag ?? tiddlerText(daemonDoc?.tiddlers?.[DYAD_VEIL_TAG_TIDDLER]) ?? undefined;
+    // The worn handle selects the atom seed in local custody for this face's live signer and Keyhive Individual.
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
     const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+    const mountedFace = wornMount?.handleIndex ?? 0;
+    const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtom(mountedFace) : null;
+    if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+    activeAtom = atomSeed && personaGroupId ? faceAtomKeyFromSeed(atomSeed, personaGroupId) : null;
+    if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
     // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
     // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
     // this vessel's own seat, the join gate for the device a summons names. The ring folds the fleet this edge
@@ -1946,9 +1960,15 @@ async function prepareNodeBootOn(
         // here, read a peer's lineage standing in a realm off the edge shadow ring, and note a realm under that
         // Nexus the moment an act enters it. A cabal takes no key and no roster: the ledger holds this vessel's
         // own memory of where it acted, and under which Nexus.
-        realms:           () => readVesselRealms(repo, vesselIdentity.verifyingKey),
+        realms:           () => {
+          if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+          return readVesselRealms(repo, activeAtom.key);
+        },
         standsInRealm:    shadowRing.standsInRealm,
-        noteRealm:        (realm, nexusAid) => noteVesselRealm(repo, vesselIdentity.verifyingKey, realm, nexusAid),
+        noteRealm:        (realm, nexusAid) => {
+          if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+          return noteVesselRealm(repo, activeAtom.key, realm, nexusAid);
+        },
         // THE CARRIED CHARTERS: a hearth stands on its own seed charter, so another operator's Nexus it contracted
         // into reaches it as a carried charter, and that Nexus's realm stands as a plane of its own, under ITS AID.
         carried:          () => [...readCarriedCharters(sealHome).values()],
@@ -2120,13 +2140,9 @@ async function prepareNodeBootOn(
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
     // receives it derived and holds no root.
-    const mountedFace = wornMount?.handleIndex ?? 0;
     litFace = sovereign && deviceEdge ? mountedFace : null;
     const archiveBytes = sovereign ? await sovereign.archive() : null;
-    const dyadVeil = sovereign && dyadVeilTag
-      ? { tag: dyadVeilTag, signingKey: (await sovereign.veil(dyadVeilTag)).signingKey }
-      : null;
-    const veilArchiveBytes = sovereign && dyadVeil ? await sovereign.veilArchive(mountedFace) : null;
+    const veilArchiveBytes = sovereign && activeAtom ? await sovereign.veilArchive(mountedFace) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
@@ -2146,15 +2162,18 @@ async function prepareNodeBootOn(
         : sovereign.writeVeilArchive(bytes, mountedFace));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
+    const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
       archiveOpens:         opens,
-      ...(dyadVeil ? { dyadVeil } : {}),
+      ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.
-      ...(personaGroupId   ? { personaGroupId }   : {}),
+      // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
+      // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
+      ...(faceLit && personaGroupId ? { personaGroupId } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -2168,11 +2187,11 @@ async function prepareNodeBootOn(
         })),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
-      ...(signerDid ? { signerDid } : {}),
-      ...(personaKelPrefix && personaKelChain
+      ...(faceLit && signerDid ? { signerDid } : {}),
+      ...(faceLit && personaKelPrefix && personaKelChain
         ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } }
         : {}),
-      ...(deviceEdge ? { deviceEdge } : {}),
+      ...(faceLit && deviceEdge ? { deviceEdge } : {}),
       ...(archiveBytes ? { archiveBytes } : {}),
       ...(outboxKey ? { outboxKey } : {}),
     };
@@ -2262,6 +2281,7 @@ async function prepareNodeBootOn(
     const siblingHerms = opts.siblingHerms
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
     if (siblingHerms.length > 0 && personaGroupId && personaKelPrefix && deviceEdge && siblingGate) {
+      if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
       const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupId)]);
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
@@ -2276,8 +2296,11 @@ async function prepareNodeBootOn(
         }
         siblings = await standSiblingChannel({
           repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
-          deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
-          enrolment: { edge: deviceEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
+          deviceKey: activeAtom?.key ?? "", sign: (image) => {
+            if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+            return activeAtom.sign(image);
+          },
+          enrolment: { edge: deviceEdge, seal }, open: activeAtom.opener,
           expectedEpoch: effectiveLeaseEpoch(leaseSlots),
           onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
@@ -2717,7 +2740,8 @@ async function prepareNodeBootOn(
     registry.register("nexus-rekey", async (args) => {
       const resource = typeof args["resource"] === "string" ? (args["resource"] as string) : "";
       if (!resource) throw new Error("nexus-rekey: `resource` required (the lease resource id to roll)");
-      const r = rollLeaseEpochOnBoard(await readDaemonDoc(), resource, vesselIdentity.verifyingKey);
+      if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+      const r = rollLeaseEpochOnBoard(await readDaemonDoc(), resource, activeAtom.key);
       return { verb: "nexus-rekey", ...r };
     });
 
@@ -3042,7 +3066,7 @@ async function prepareNodeBootOn(
   };
 
   return {
-    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates, carriagePull,
+    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -3073,7 +3097,7 @@ async function prepareNodeBootOn(
         for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
           try { await shadowRing.refold(); } catch { return true; }
         }
-        return shadowRing.deviceStanding(wornFleetRoot, vesselIdentity.verifyingKey) === "aside";
+        return shadowRing.deviceStanding(wornFleetRoot, activeAtom?.key ?? "") === "aside";
       },
       // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
       get cutMemory() {
@@ -3084,7 +3108,10 @@ async function prepareNodeBootOn(
           const out = await askIslandMemory({
             daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "cut",
             facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
-            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+            vesselKey: activeAtom?.key ?? "", sign: (image) => {
+              if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+              return activeAtom.sign(image);
+            },
           }).answer;
           const holds = Array.isArray(out["holds"]) ? out["holds"] as Array<{ bagId: string; founding: string; keyVersion: string }> : [];
           if (typeof out["section"] !== "string") throw new Error("the island answered no memory section");
@@ -3100,7 +3127,10 @@ async function prepareNodeBootOn(
         return async () => {
           const out = await askIslandMemory({
             daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "door", facts: {},
-            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+            vesselKey: activeAtom?.key ?? "", sign: (image) => {
+              if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+              return activeAtom.sign(image);
+            },
           }).answer;
           if (typeof out["door"] !== "string" || !/^[0-9a-f]{64}$/.test(out["door"])) throw new Error("the island named no door");
           return Uint8Array.from(Buffer.from(out["door"], "hex"));
@@ -3112,7 +3142,10 @@ async function prepareNodeBootOn(
         return async (section: string, sealedSecret: string) => {
           const out = await askIslandMemory({
             daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "import", facts: { section, secret: sealedSecret },
-            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+            vesselKey: activeAtom?.key ?? "", sign: (image) => {
+              if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
+              return activeAtom.sign(image);
+            },
           }).answer;
           return Array.isArray(out["results"]) ? out["results"] as Array<{ bagId: string; keyVersion: string; outcome: string; cause?: string }> : [];
         };
@@ -3135,9 +3168,9 @@ async function prepareNodeBootOn(
  * its founding cached. A vessel with no cached card proves nothing, so its carriage carries in nothing —
  * named once here, never a throw that takes the boot with it.
  */
-async function carriageIdentity(tag: string): Promise<LeafIdentity | undefined> {
+async function carriageIdentity(tag: string, arm: "face" | "place", face?: { face: number; personaGroup: string }): Promise<LeafIdentity | undefined> {
   try {
-    return await loadLeafIdentity();
+    return await loadLeafIdentity(arm, face ? { handleIndex: face.face, personaGroupId: face.personaGroup } : undefined);
   } catch (e) {
     console.log(`[${tag}] carriage holds no identity to prove at a peer's gate (${e instanceof Error ? e.message : String(e)})`);
     return undefined;
@@ -3164,7 +3197,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
-  const identity = opts.meshSelf ? await carriageIdentity("lararium") : undefined;
+  const identity = opts.meshSelf ? await carriageIdentity("lararium", p.wornFace() ? "face" : "place", p.wornFace() ?? undefined) : undefined;
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
@@ -3267,7 +3300,7 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
-  const identity = await carriageIdentity("herm");
+  const identity = await carriageIdentity("herm", "place");
   const herm = await composeHerm({
     extraCaps: [whoFaceCap({
       repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,

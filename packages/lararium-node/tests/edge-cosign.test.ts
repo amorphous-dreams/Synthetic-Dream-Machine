@@ -19,6 +19,7 @@ import { carriedCharterHome, primaryNexusAid } from "../src/carried-set.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/edge-cosign.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
 import { ed25519SignerFromSeed, nexusAidOf } from "@lararium/mesh";
+import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 let genesis: ReturnType<typeof heldCharter> | null = null;
 
@@ -31,9 +32,10 @@ const REALM = "af".repeat(32), MEMBER = "bc".repeat(32);
 async function stand(index: number, seatIndex: number, keys: string[]) {
   process.env["LAR_ROOT"] = roots[index]!;
   await generateOrLoadVesselIdentity();
-  await generateOrLoadPersonaGroupRoot(seatIndex);
+  await seedFaceAtom(0);
+  await generateOrLoadPersonaGroupRoot(seatIndex); await seedFaceAtom(seatIndex);
   await seatChairs([seatIndex]);
-  await generateOrLoadPersonaGroupRoot(8);
+  await generateOrLoadPersonaGroupRoot(8); await seedFaceAtom(8);
   writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
@@ -52,9 +54,9 @@ async function withRepo<T>(index: number, run: (repo: Repo) => Promise<T>): Prom
 beforeEach(async () => {
   priorLarRoot = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-cosign-a-")), mkdtempSync(join(tmpdir(), "lares-cosign-b-"))];
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0);
+  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0); await seedFaceAtom(0);
   chairA = (await seatChairs([0])).keys[0]!;
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1);
+  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1); await seedFaceAtom(1);
   chairB = (await seatChairs([1])).keys[0]!;
   const keys = [chairA, chairB];
   // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.
@@ -116,7 +118,7 @@ describe("the cross-vessel quorum cosign door", () => {
     expect(landed.landed).toBe(true); expect(landed.added).toEqual([chairB]);
     // CONTROL: on a realm B pinned under its own primary Nexus, the same act answers to no charter there.
     const other = "ab".repeat(32);
-    await withRepo(1, async (repo) => noteVesselRealm(repo, (await loadVesselVerifyingKey())!, other, primaryNexusAid(larSealHome())!));
+    await withRepo(1, async (repo) => noteVesselRealm(repo, await wornAtomKey(), other, primaryNexusAid(larSealHome())!));
     process.env["LAR_ROOT"] = roots[0]!;
     const elsewhere = await withRepo(0, (repo) => runEdgePartial({ realm: other, member: MEMBER, raised: true, sealHome: larSealHome(), repo }));
     await expect(withRepo(1, (repo) => cosign(repo, elsewhere.partial))).rejects.toThrow(/realm-under-another-nexus/);

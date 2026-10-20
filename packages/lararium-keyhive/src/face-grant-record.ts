@@ -42,6 +42,9 @@ export interface FaceGrantRecord {
   readonly founderCard: string;
   readonly capEvents: readonly string[];
   readonly reKeyed: boolean;
+  /** The grant's order at its title: one more than the serial standing there when the issue was made. A fresh issue
+   *  supersedes the standing grant; a replay of an older issue never rolls a later one back. */
+  readonly serial: number;
   readonly reSealed: readonly { bagUrl: string; contentRefB64: string; ciphertextB64: string }[];
   /** The founder's OWN device-delegation edge — root-signed; the joinee verifies it under the root it pinned. */
   readonly founderEdge: DeviceDelegationTiddler;
@@ -76,7 +79,7 @@ function signedBytes(rec: UnsignedFaceGrantRecord): Uint8Array {
   return out;
 }
 
-/** Sign a grant record under the founder's device key (`sign` = `ed25519SignerFromSeed(vesselSeed)`). */
+/** Sign a grant record under the founder's face atom. */
 export async function signFaceGrantRecord(
   rec: UnsignedFaceGrantRecord,
   sign: (bytes: Uint8Array) => Promise<string>,
@@ -121,7 +124,7 @@ export type FaceGrantVerdict = { ok: true; unreadable?: string } | { ok: false; 
  */
 export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyContext): Promise<FaceGrantVerdict> {
   const r = rec as Partial<FaceGrantRecord> | null;
-  if (!r || r.kind !== "face-join-grant/v1" || typeof r.sig !== "string" || !r.founderEdge || !Array.isArray(r.capEvents)) {
+  if (!r || r.kind !== "face-join-grant/v1" || typeof r.sig !== "string" || !r.founderEdge || !Array.isArray(r.capEvents) || !Number.isSafeInteger(r.serial) || (r.serial as number) < 1) {
     return { ok: false, reason: "not a face-join-grant/v1 record" };
   }
   if (typeof r.groupId !== "string" || r.groupId.toLowerCase() !== ctx.groupId.toLowerCase()) {

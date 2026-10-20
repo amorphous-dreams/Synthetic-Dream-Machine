@@ -18,10 +18,10 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   runFoundingCeremony, replayCapEvents, KeyhiveProvider, InMemoryEventStore, packPersonaCrossing, applyPersonaCrossing,
-  veilFromDeviceKey, mintDeviceMintedKey, keyhiveSeatShore,
+  keyhiveSeatShore,
 } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, hexToBytes, deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { hex } from "@lararium/mesh";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(0x37);
 const DEVICE_SEED  = new Uint8Array(32).fill(0x38);
@@ -34,15 +34,12 @@ async function foundAndSeat() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = hex(await ed25519.getPublicKeyAsync(FOUNDER_SEED));
   const f = await runFoundingCeremony({
-    deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "The Roll Test Hearth",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const handle = await repo.find(f.daemonUrl as AutomergeUrl);
-  const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
-  const veilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
   const veil = new KeyhiveProvider();
-  await veil.init({ seed: hexToBytes(veilKeys.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+  await veil.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
   await veil.hydrateFromEventStore();
   const vessel = new KeyhiveProvider();
   await vessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });

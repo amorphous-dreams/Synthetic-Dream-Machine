@@ -24,9 +24,12 @@ import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
+  buildDeviceDelegationRootHalf,
+  faceAtomKeyFromSeed,
   leaseEpochPrefix, effectiveLeaseEpoch,
   LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
+import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -37,6 +40,7 @@ import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../ne
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAtom } from "../face-atom-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -148,8 +152,11 @@ export class DeviceSetAside extends Error {
 export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, face = 0): Promise<void> {
   // Each face holds its own fleet: the root that signs reads its own board, never the founding face's.
   const fleetRoot = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
-  const ownKey = await loadVesselVerifyingKey();
-  if (!fleetRoot || !ownKey) return;
+  if (!fleetRoot) return;
+  const anchors = await loadIdentityAnchors(face);
+  const atomSeed = await loadFaceAtom(face);
+  if (!anchors || !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+  const ownKey = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId).key;
   const fleet = await readVesselEdgeBoard({
     repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey: ownKey, authorityFor: fleetEdgeAuthority(fleetRoot),
@@ -159,6 +166,7 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
 }
 
 export interface DeviceAdmitOptions {
+  readonly signedRequest?: Uint8Array;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:           Repo;
   /** This hearth's catalog, supplied by the holder of its store; absence names no canon. */
@@ -339,7 +347,17 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);
 
+  if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
+  const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
+  if (!operationStore) throw new Error("the face's PersonaGroup plane is unresolved");
+  const atomSeed = await loadFaceAtom(face);
+  if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+  const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
+    deviceVerifyingKey: opts.joineeVerifyingKey.toLowerCase(), hearthTrueName, boundEpoch });
+  const operation = { store: operationStore, atomSeed,
+    signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
   const payload = await runDeviceAdmitEdge({
+    operation,
     signerSeed,
     joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
     personaKelPrefix,

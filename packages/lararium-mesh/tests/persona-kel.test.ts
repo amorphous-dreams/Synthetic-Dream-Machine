@@ -194,7 +194,7 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
 
     // Founding edge: opA delegates to vesselX. It chains to the inception head (opA).
     const foundingEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 0,
     });
     expect(foundingEdge.personaRootDid).toBe(foundingOpKeyDid);
@@ -212,7 +212,7 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
 
     // The recovering vessel re-issues its device edge under the FRESH op-key opB → still verifies.
     const rotatedEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opB, deviceVerifyingKey: await pubOf(SEEDS.vesselY),
+      personaRootSeed: SEEDS.opB, atomSeed: SEEDS.vesselY,
       hearthTrueName: "", boundEpoch: 0,
     });
     const g2v = await verifyEdgeAgainstPersonaKel(rotatedEdge, chain);
@@ -230,7 +230,7 @@ describe("persona-kel — the gate-walk survives a malformed board", () => {
   test("RED: a junk event planted on the board leaves the valid edge admitted, and names the tail it set aside", async () => {
     const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
     const foundingEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX), hearthTrueName: "", boundEpoch: 0,
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX, hearthTrueName: "", boundEpoch: 0,
     });
     // A board writer plants a "rotation" to a key of its own: its cid recomputes, and no guardian signed it.
     const core = {
@@ -250,7 +250,7 @@ describe("persona-kel — the gate-walk survives a malformed board", () => {
     if (!rot.ok) throw new Error(rot.reason);
     const torn = { ...rot.event, seq: 2, prevEventCid: rot.event.eventCid, eventCid: "pkel2-junk" };
     const rotatedEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opB, deviceVerifyingKey: await pubOf(SEEDS.vesselY), hearthTrueName: "", boundEpoch: 0,
+      personaRootSeed: SEEDS.opB, atomSeed: SEEDS.vesselY, hearthTrueName: "", boundEpoch: 0,
     });
     expect(await verifyEdgeAgainstPersonaKel(rotatedEdge, [inception, rot.event, torn])).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opB) });
     // CONTROL: a truly revoking event — the lawful rotation — still refuses the edge it rolled past, junk or no junk.
@@ -271,7 +271,7 @@ describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a cl
     // A device edge minted at epoch 1 — a PersonaGroup that has since rolled its lease to epoch 3
     // (a retirement / rekey) must deny this device at the door.
     const staleLeaseEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 1,
     });
     const denied = await verifyEdgeAgainstPersonaKel(staleLeaseEdge, [inception], { expectedEpoch: 3 });
@@ -280,7 +280,7 @@ describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a cl
 
     // The SAME device, re-minted at the current epoch (3), admits.
     const currentLeaseEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 3,
     });
     const admitted = await verifyEdgeAgainstPersonaKel(currentLeaseEdge, [inception], { expectedEpoch: 3 });
@@ -292,7 +292,7 @@ describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a cl
     const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
 
     const foundingEdge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 0,
     });
     const freshOpKeyDid = await didOf(SEEDS.opB);
@@ -313,7 +313,7 @@ describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a cl
     const { inception } = await foundedInception();
     // boundEpoch 0 would fail ANY expectedEpoch > 0, but with no expectedEpoch supplied the fence never runs.
     const edge = await buildDeviceDelegation({
-      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      personaRootSeed: SEEDS.opA, atomSeed: SEEDS.vesselX,
       hearthTrueName: "", boundEpoch: 0,
     });
     const v = await verifyEdgeAgainstPersonaKel(edge, [inception]);

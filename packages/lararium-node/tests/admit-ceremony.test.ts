@@ -17,9 +17,9 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
+import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
 
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
@@ -48,13 +48,13 @@ const carry = <T>(payload: T): T =>
 /** Fixed seeds — the test is a constant, never a sample. */
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
+const JOINEE_ATOM  = new Uint8Array(32).fill(12);
 
 /** The founder's vessel: its own Repo, its own PersonaGroup. */
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo,
+  const f = await runFoundingCeremony({ repo,
     vesselSeed:         FOUNDER_SEED,
     vesselVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
@@ -68,7 +68,7 @@ async function found() {
 describe("the admit ceremony — found · admit · carry · apply · BOUND", () => {
   test("a joinee comes up pinned to a signer it could not have written for itself", async () => {
     const founder = await found();
-    const joineeKey = await pubOf(JOINEE_SEED);
+    const joineeKey = await pubOf(JOINEE_ATOM);
 
     // ── ADMIT. The founder's PersonaGroup ROOT signs the joinee's edge. The joinee is not present; it
     //    supplies only its PUBLIC key. Nothing secret crosses.
@@ -93,30 +93,28 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
 
     // ── APPLY. A DIFFERENT Repo — a different vessel entirely.
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
-      repo:                 joineeRepo,
-      vesselSeed:         JOINEE_SEED,
-      vesselVerifyingKey: joineeKey,
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo),
+      atomSeed: JOINEE_ATOM,
       vesselDisplayName:  "Ichi",
       payload:              carried,
-      nexusPubkey:          joineeKey,
+      nexusPubkey:          await pubOf(JOINEE_SEED),
     });
 
     // ── THE ADMIT HANDS OUT THE JOINEE'S ARCHIVE, AND A SECOND ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The
     //    archive behind the card: it restores the joinee's own individual. Handed back in as `archiveBytes` with a
     //    sentinel only the kept archive holds, the next archive still knows that sentinel.
     const kept = new KeyhiveProvider();
-    await kept.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
+    await kept.init({ seed: JOINEE_ATOM, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
     const marker = await kept.createSentinelDoc("lar:///t.witness/kept-by-the-joinee-archive");
-    const again = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
-      repo: new Repo({ sharePolicy: async () => true }), vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
-      vesselDisplayName: "Ichi", payload: carried, nexusPubkey: joineeKey, archiveBytes: await kept.exportArchive(),
+    const anotherRepo = new Repo({ sharePolicy: async () => true });
+    const again = await runApplyAdmitPayload({ repo: anotherRepo, daemonHandle: seedDaemonDoc(anotherRepo), atomSeed: JOINEE_ATOM,
+      vesselDisplayName: "Ichi", payload: carried, nexusPubkey: await pubOf(JOINEE_SEED), archiveBytes: await kept.exportArchive(),
     });
     const restored = new KeyhiveProvider();
-    await restored.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: again.archive });
+    await restored.init({ seed: JOINEE_ATOM, eventStore: new InMemoryEventStore(), archiveBytes: again.archive });
     expect(await restored.knowsAgent(marker.agentIdHex), "the admit kept what the standing archive held").toBe(true);
     const fresh = new KeyhiveProvider();
-    await fresh.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
+    await fresh.init({ seed: JOINEE_ATOM, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
     expect(await fresh.knowsAgent(marker.agentIdHex), "control: the first archive never held it").toBe(false);
 
     // ── BOUND. The joinee pins the FOUNDER's signer — the whole difference between joining a group and
@@ -140,7 +138,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     // them — the read may fail, the record may not (the typed-ingest path is proven in lararium-keyhive's
     // cap-event-absorption).
     const founder = await found();
-    const joineeKey = await pubOf(JOINEE_SEED);
+    const joineeKey = await pubOf(JOINEE_ATOM);
     const base = await runDeviceAdmitEdge({
       signerSeed:             FOUNDER_SEED,
       joineeVerifyingKey:     joineeKey,
@@ -155,9 +153,8 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     const payload = { ...base, capEvents };
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
-      repo: joineeRepo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
-      vesselDisplayName: "Ichi", payload, nexusPubkey: joineeKey,
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: JOINEE_ATOM,
+      vesselDisplayName: "Ichi", payload, nexusPubkey: await pubOf(JOINEE_SEED),
     });
 
     const handle = await joineeRepo.find(applied.daemonUrl as AutomergeUrl);
@@ -174,7 +171,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
   test("the ceremony is DETERMINISTIC — the same seeds yield the same binding, every run", async () => {
     const mint = async () => {
       const founder = await found();
-      const joineeKey = await pubOf(JOINEE_SEED);
+      const joineeKey = await pubOf(JOINEE_ATOM);
       const payload = await runDeviceAdmitEdge({
         signerSeed:         FOUNDER_SEED,
         joineeVerifyingKey: joineeKey,
@@ -207,17 +204,15 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
 
   test("a joinee REFUSES a payload whose binding is incomplete — never a half-bound daemon doc", async () => {
     const founder = await found();
-    const joineeKey = await pubOf(JOINEE_SEED);
+    const joineeKey = await pubOf(JOINEE_ATOM);
     const repo    = new Repo({ sharePolicy: async () => true });
 
     // The binding IS the joinee's whole authority. A half-applied admit is the confused-deputy hole: a
     // vessel that believes it holds a delegation nobody signed.
-    await expect(runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
-      repo,
-      vesselSeed:         JOINEE_SEED,
-      vesselVerifyingKey: joineeKey,
+    await expect(runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo),
+      atomSeed: JOINEE_ATOM,
       vesselDisplayName:  "Ichi",
-      nexusPubkey:          joineeKey,
+      nexusPubkey:          await pubOf(JOINEE_SEED),
       payload: {
         kind: "device-admit/v1",
         signerDid: "",                       // ← the binding is hollow

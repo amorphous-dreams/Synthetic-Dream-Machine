@@ -260,7 +260,6 @@ export interface WornPersonaMount {
   /** The founder-veil tag this face was minted under. A veil derives from (vesselSeed × tag) and the tag is
    *  fresh per founding, so two faces on one vessel stand two veils. The daemon doc pins the FOUNDING
    *  face's; without this the worn face's sentinel ops would run under it. */
-  readonly veilTag:                string;
 }
 
 /**
@@ -284,19 +283,16 @@ export async function readWornPersonaMount(
 
   const anchors = await vault.anchors.load(handleIndex);
   if (!anchors) return refuse("any anchors at all");
-  const { signerDid, personaKelPrefix, deviceEdge, veilTag } = anchors;
-  // ALL OR NONE — see the fail-closed note above. The veil tag joins the set: mounting a face whose tag is
-  // absent would leave the FOUNDING face's veil standing over it, which is the fault this reading exists to
-  // prevent, one pin over. Such anchors owe a re-found.
+  const { signerDid, personaKelPrefix, deviceEdge } = anchors;
+  // ALL OR NONE — these pins identify the face whose atom custody the node opens at boot.
   const lacking = [
     signerDid       ? null : "signerDid",
     personaKelPrefix? null : "personaKelPrefix",
     deviceEdge      ? null : "deviceEdge",
-    veilTag         ? null : "veilTag",
   ].filter((x): x is string => x !== null);
   // The second clause repeats the first as a TYPE guard — the array reads which pins are missing for the
   // operator, the conjunction is what narrows the four to non-optional for the return below.
-  if (lacking.length > 0 || !signerDid || !personaKelPrefix || !deviceEdge || !veilTag) {
+  if (lacking.length > 0 || !signerDid || !personaKelPrefix || !deviceEdge) {
     return refuse(lacking.join(", "));
   }
 
@@ -307,6 +303,5 @@ export async function readWornPersonaMount(
     signerDid,
     personaKelPrefix,
     deviceEdge,
-    veilTag,
   };
 }

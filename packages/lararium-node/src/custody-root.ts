@@ -23,11 +23,6 @@
  * `info`. The domain must stand in the registry (`ALL_DOMAINS`): each child names its own purpose there, so
  * two children of one root never fuse and no purpose hides outside the table.
  *
- * ── THE VEIL'S INPUT MOVES, ITS STRING NEVER DOES ───────────────────────────────────────────────
- * `custodyVeil` derives the dyad veil from the custody root through the same `deriveDyadVeil` the floor key
- * feeds, under the frozen `dyad-veil` string. Only the input differs, so the move changes no derivation
- * byte for a given input.
- *
  * ── THE CARRIER ─────────────────────────────────────────────────────────────────────────────────
  * The carrier rests at `custodyRootPath()`, written once at founding through the one sealed writer
  * (`sealCustodyRoot`). Its seal names it by home and file (`identity/custody-root.bin`), the name the
@@ -37,7 +32,7 @@
 import { hkdfSync, randomBytes } from "node:crypto";
 import { join } from "node:path";
 import {
-  ALL_DOMAINS, deriveDyadVeil, openSealedCarrier, writeSealedCarrier,
+  ALL_DOMAINS, openSealedCarrier, writeSealedCarrier,
   type CustodyIo, type SealedCarrier, type VesselKey, type VkOpening,
 } from "@lararium/mesh";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -151,8 +146,3 @@ export function custodyDerive(root: CustodyRoot, domain: string): Uint8Array {
   return new Uint8Array(hkdfSync("sha256", root.bytes, new Uint8Array(0), domain, 32));
 }
 
-/** The dyad veil for `groupTag`, derived from the custody root under the frozen `dyad-veil` string. */
-export function custodyVeil(root: CustodyRoot, groupTag: string): Promise<{ signingKey: string; verifyingKey: string }> {
-  assertRoot(root);
-  return deriveDyadVeil(root.bytes, groupTag);
-}

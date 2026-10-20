@@ -14,7 +14,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { foundThePlace, foundTheFace, replayCapEvents, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { foundThePlace, foundTheFace, replayCapEvents } from "@lararium/keyhive";
 import { DAEMON_BAG_ID, hex } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 
@@ -24,8 +24,7 @@ async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const vk = hex(await ed.getPublicKeyAsync(SEED));
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  await foundTheFace({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
-    repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, vesselVerifyingKey: vk,
+  await foundTheFace({ repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, vesselVerifyingKey: vk,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
     hearthTrueName: "", nexusPubkey: vk,

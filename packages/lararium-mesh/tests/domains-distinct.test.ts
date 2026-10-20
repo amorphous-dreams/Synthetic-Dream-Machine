@@ -15,8 +15,8 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 35;
-const FROZEN_WELD = "80ac920618e2805b7c9d2e0a69cc08cf69a83352b172614f8608454122fbcfc1";
+const FROZEN_COUNT = 34;
+const FROZEN_WELD = "e30193af53f1aabc6dd768b0594df4d70bcbb0b7d9cf1c653501dc393867d645";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];

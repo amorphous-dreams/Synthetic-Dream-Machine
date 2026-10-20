@@ -40,7 +40,7 @@ import { signFleetProof, signHandleCard, verifyFleetProof, verifyHandleCard } fr
 import { dyadId, signDyadBinding, verifiedFleetOfGroup, type DyadRecord, type DyadRef } from "../src/dyad.js";
 import { signAttestation, verifiedAttestors } from "../src/re-anchoring.js";
 import { signPluginAttestation, verifyPluginAttestation } from "../src/genesis-doc.js";
-import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
+import { buildDeviceDelegation, buildDeviceDelegationRootHalf, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { grantVerifiesAt, hostingEpochOf, issueGrant, mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
 import { introductionBytes, newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
@@ -265,11 +265,13 @@ describe("device edge (verifyDeviceDelegation)", () => {
   const edgeBy = async (root: Hand, deviceKey: string): Promise<DeviceDelegationTiddler> => {
     const fields = { personaRootDid: `0x${root.key}`, deviceDid: `0x${deviceKey}`, deviceVerifyingKey: deviceKey, hearthTrueName: "place", boundEpoch: "5" };
     const bytes = utf8(`${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}|${fields.boundEpoch}`);
-    return { kind: "device-delegation", ...fields, signature: await root.sign(bytes) } as DeviceDelegationTiddler;
+    const half = { kind: "device-delegation" as const, ...fields, signature: await root.sign(bytes) };
+    if (deviceKey === IDENTITY_KEY) return { ...half, atomSignature: "00".repeat(64) };
+    return countersignDeviceDelegation(half, (await honestHand(4)).sign);
   };
   test("CONTROL: the hand-built edge reads exactly as the builder's", async () => {
     const root = await honestHand(3), device = await honestHand(4);
-    const built = await buildDeviceDelegation({ personaRootSeed: seed(3), deviceVerifyingKey: device.key, hearthTrueName: "place", boundEpoch: 5 });
+    const built = await buildDeviceDelegation({ personaRootSeed: seed(3), atomSeed: seed(4), hearthTrueName: "place", boundEpoch: 5 });
     expect(await edgeBy(root, device.key)).toEqual(built);
     expect(await verifyDeviceDelegation(built, `0x${root.key}`)).toEqual({ ok: true });
   });
@@ -278,7 +280,7 @@ describe("device edge (verifyDeviceDelegation)", () => {
     expect(await verifyDeviceDelegation(await edgeBy(root, (await honestHand(4)).key), `0x${root.key}`)).toEqual({ ok: false, reason: "signature mismatch" });
   });
   test("a device key the door refuses never gets edged, by name", async () => {
-    await expect(buildDeviceDelegation({ personaRootSeed: seed(3), deviceVerifyingKey: IDENTITY_KEY, hearthTrueName: "place", boundEpoch: 5 }))
+    await expect(buildDeviceDelegationRootHalf({ personaRootSeed: seed(3), deviceVerifyingKey: IDENTITY_KEY, hearthTrueName: "place", boundEpoch: 5 }))
       .rejects.toThrow(/deviceVerifyingKey refuses at the Ed25519 door \(key-small-order\)/);
     const root = await honestHand(3);
     expect(await verifyDeviceDelegation(await edgeBy(root, IDENTITY_KEY), `0x${root.key}`))
@@ -330,8 +332,8 @@ bothHands("fleet proof (verifyFleetProof)", async (root) => {
 });
 
 bothHands("dyad binding (verifiedFleetOfGroup)", async (root) => {
-  const ref = { vesselDid: `0x${(await honestHand(82)).key}`, veilDid: `0x${(await honestHand(83)).key}` } as DyadRef;
-  const groupRoot = `0x${root.key}` as DyadRef["veilDid"];
+  const ref = { deviceDid: `0x${(await honestHand(83)).key}` } as DyadRef;
+  const groupRoot = `0x${root.key}` as DyadRef["deviceDid"];
   const binding = await signDyadBinding(ref, groupRoot, EPOCH, root.sign);
   const record = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: null, binding } as unknown as DyadRecord;
   return (await verifiedFleetOfGroup([record], groupRoot)).length === 1;

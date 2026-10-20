@@ -10,7 +10,6 @@
  * only sealed content after the join would pass while proving that rule not at all, so the sealed-before case
  * runs here too and is expected to STAY shut.
  */
-import { veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/keyhive";
 import { buildDeviceDelegation } from "@lararium/mesh";
@@ -43,7 +42,7 @@ describe("face-join — the granting half, proven end to end", () => {
 
     const edge = await buildDeviceDelegation({
       personaRootSeed:    ROOT_SEED,
-      deviceVerifyingKey: await rawKeyOf(joinee),
+      atomSeed: seedOf(106),
       hearthTrueName:     HEARTH,
       boundEpoch:         0,
     });
@@ -103,7 +102,7 @@ describe("face-join — the granting half, proven end to end", () => {
 
     const edge = await buildDeviceDelegation({
       personaRootSeed:    ROOT_SEED,
-      deviceVerifyingKey: await rawKeyOf(joinee),
+      atomSeed: seedOf(112),
       hearthTrueName:     HEARTH,
       boundEpoch:         0,
     });
@@ -160,7 +159,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const pg = await founder.createGroup();   // the founder stands seated in the group it founds
 
     const edge = await buildDeviceDelegation({
-      personaRootSeed: ROOT_SEED, deviceVerifyingKey: await rawKeyOf(joinee), hearthTrueName: HEARTH,
+      personaRootSeed: ROOT_SEED, atomSeed: seedOf(118), hearthTrueName: HEARTH,
       boundEpoch: 0,
     });
     const ctx: FaceJoinContext = {
@@ -225,7 +224,7 @@ describe("face-join — the granting half, proven end to end", () => {
 
     const edge = await buildDeviceDelegation({
       personaRootSeed:    ROOT_SEED,
-      deviceVerifyingKey: await rawKeyOf(joinee),
+      atomSeed: seedOf(114),
       hearthTrueName:     HEARTH,
       boundEpoch:         0,
     });
@@ -256,19 +255,18 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
   test("an applied admit lands the door on the joinee's OWN daemon doc, and returns it", async () => {
     const { Repo } = await import("@automerge/automerge-repo");
     const { runApplyAdmitPayload } = await import("@lararium/keyhive");
-    const { HEARTH_DAEMON_URL_TIDDLER, sealGroupSecret } = await import("@lararium/mesh");
+    const { HEARTH_DAEMON_URL_TIDDLER, sealGroupSecret, seedDaemonDoc } = await import("@lararium/mesh");
 
     const HEARTH_DOOR = "automerge:2fakeHearthDoorUrl000000000";
     const joinee = await makeVessel(72);
     const edge = await buildDeviceDelegation({
-      personaRootSeed: ROOT_SEED, deviceVerifyingKey: await rawKeyOf(joinee), hearthTrueName: HEARTH,
+      personaRootSeed: ROOT_SEED, atomSeed: seedOf(72), hearthTrueName: HEARTH,
       boundEpoch: 0,
     });
     const repo = new Repo({});
-    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(new Uint8Array(32).fill(71))),
-      repo,
-      vesselSeed:         new Uint8Array(32).fill(71),
-      vesselVerifyingKey: await rawKeyOf(joinee),
+    const applied = await runApplyAdmitPayload({ repo,
+      atomSeed:           new Uint8Array(32).fill(72),
+      daemonHandle:       seedDaemonDoc(repo),
       vesselDisplayName:  "a joining leaf",
       nexusPubkey:        "8".repeat(64),
       payload: {

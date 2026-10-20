@@ -120,7 +120,7 @@ export interface FleetJoinRequest {
   readonly kind:      "fleet-join-request";
   readonly nonce:     string;
   /** The joining vessel's own Ed25519 verifying key: the delegate the device edge names. */
-  readonly vesselKey: string;
+  readonly atomKey: string;
   /** A fresh X25519 public key, 64 hex: the answer seals the address secret to it. */
   readonly sealKey:   string;
   /** One certificate request per offered scope the joinee takes, each signed by its own face-scoped key. */
@@ -162,7 +162,7 @@ export interface FleetJoinFaceAdmit {
 export interface FleetJoinAnswer {
   readonly kind:         "fleet-join-answer";
   readonly nonce:        string;
-  readonly vesselKey:    string;
+  readonly atomKey:    string;
   readonly personaGroup: string;
   /** The device edge the PersonaGroup root signed, carried whole; the answer's image binds its digest. */
   readonly edge:         unknown;
@@ -242,7 +242,7 @@ export function fleetJoinEdgeDigest(edge: unknown): string {
 /** The bytes the joining vessel's own key signs over its request. */
 export function fleetJoinRequestImage(r: Omit<FleetJoinRequest, "kind" | "signature">): Uint8Array {
   return signed(FLEET_JOIN_REQUEST_DOMAIN, {
-    nonce: r.nonce, vesselKey: r.vesselKey, sealKey: r.sealKey,
+    nonce: r.nonce, atomKey: r.atomKey, sealKey: r.sealKey,
     requests: r.requests.map((q) => ({ faceKey: q.scope.faceKey, nexus: q.scope.nexus, vesselFaceKey: q.vesselFaceKey, signature: q.signature })),
   });
 }
@@ -256,7 +256,7 @@ export function faceKeyGrantImage(personaGroup: string, scope: FaceScope): Uint8
  *  carry their own signatures, and the edge, which rides by digest. */
 export function fleetJoinAnswerImage(a: Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">): Uint8Array {
   return signed(FLEET_JOIN_ANSWER_DOMAIN, {
-    nonce: a.nonce, vesselKey: a.vesselKey, personaGroup: a.personaGroup, edge: fleetJoinEdgeDigest(a.edge),
+    nonce: a.nonce, atomKey: a.atomKey, personaGroup: a.personaGroup, edge: fleetJoinEdgeDigest(a.edge),
     gatePin: admitGatePinDigest(a.carriage.gatePin), canon: a.carriage.canon,
     syncUrl: a.reach.syncUrl, islandKind: a.reach.islandKind, islandScope: a.reach.islandScope,
     secret: { epk: a.secret.epk, nonce: a.secret.nonce, ciphertext: a.secret.ciphertext },
@@ -273,22 +273,22 @@ export function faceKeyGrantRevision(grant: FaceKeyGrant): string {
 
 // ── The address secret's seal ───────────────────────────────────────────────────────────────────
 
-const secretSalt = (nonce: string, vesselKey: string): Uint8Array[] => [hexToBytes(nonce), hexToBytes(vesselKey)];
+const secretSalt = (nonce: string, atomKey: string): Uint8Array[] => [hexToBytes(nonce), hexToBytes(atomKey)];
 
 /** Seal the face's address secret to the request's X25519 key, bound to the nonce and the joining vessel. */
-export function sealAddressSecret(args: { secret: Uint8Array; request: Pick<FleetJoinRequest, "nonce" | "vesselKey" | "sealKey"> }): SealedAddressSecret {
+export function sealAddressSecret(args: { secret: Uint8Array; request: Pick<FleetJoinRequest, "nonce" | "atomKey" | "sealKey"> }): SealedAddressSecret {
   if (!(args.secret instanceof Uint8Array) || args.secret.length !== 32) throw new RangeError("fleet-join: an address secret holds exactly 32 bytes");
   const box = sealToRecipient({
     recipientPub: hexToBytes(args.request.sealKey), plaintext: args.secret, info: utf8Bytes(FLEET_JOIN_SECRET_INFO),
-    extraSalt: secretSalt(args.request.nonce, args.request.vesselKey),
+    extraSalt: secretSalt(args.request.nonce, args.request.atomKey),
   });
   return { epk: hex(box.senderEphemeralPub), nonce: hex(box.aeadNonce), ciphertext: hex(box.ciphertext) };
 }
 
-function openAddressSecret(sealed: SealedAddressSecret, sealSecret: Uint8Array, nonce: string, vesselKey: string): Uint8Array | null {
+function openAddressSecret(sealed: SealedAddressSecret, sealSecret: Uint8Array, nonce: string, atomKey: string): Uint8Array | null {
   const opened = openFromSender({
     recipientSecret: sealSecret, senderEphemeralPub: hexToBytes(sealed.epk), aeadNonce: hexToBytes(sealed.nonce),
-    ciphertext: hexToBytes(sealed.ciphertext), info: utf8Bytes(FLEET_JOIN_SECRET_INFO), extraSalt: secretSalt(nonce, vesselKey),
+    ciphertext: hexToBytes(sealed.ciphertext), info: utf8Bytes(FLEET_JOIN_SECRET_INFO), extraSalt: secretSalt(nonce, atomKey),
   });
   return opened !== null && opened.length === 32 ? opened : null;
 }
@@ -335,17 +335,17 @@ export function fleetJoinOffer(args: { personaGroup: string; rootKey: string; no
  */
 export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apart: KeysHeldApart = []): FleetJoinRequest | FleetJoinRefusal {
   return guarded("request-malformed", () => {
-    if (!record(value) || !exactly(value, ["kind", "nonce", "vesselKey", "sealKey", "requests", "signature"])) return refuse("request-malformed");
-    const { kind, nonce, vesselKey, sealKey, requests, signature } = value;
+    if (!record(value) || !exactly(value, ["kind", "nonce", "atomKey", "sealKey", "requests", "signature"])) return refuse("request-malformed");
+    const { kind, nonce, atomKey, sealKey, requests, signature } = value;
     if (kind !== "fleet-join-request" || typeof nonce !== "string" || !HEX64.test(nonce)) return refuse("request-malformed");
-    if (!isKey(vesselKey) || !isSealKey(sealKey)) return refuse("request-malformed");
+    if (!isKey(atomKey) || !isSealKey(sealKey)) return refuse("request-malformed");
     if (!Array.isArray(requests) || requests.length > FLEET_JOIN_SCOPE_BOUND || typeof signature !== "string" || !HEX128.test(signature)) return refuse("request-malformed");
     if (nonce !== offer.nonce) return refuse("request-other-offer");
     const offered = new Set(offer.scopes.map(scopeName));
     const scopes = new Set<string>();
     const faceKeys = new Set<string>([...offer.scopes.map((s) => s.faceKey), offer.rootKey]);
-    if (faceKeys.has(vesselKey)) return refuse("request-key-reused");
-    const keys = new Set<string>([vesselKey]);
+    if (faceKeys.has(atomKey)) return refuse("request-key-reused");
+    const keys = new Set<string>([atomKey]);
     const read: VesselFaceCertificateRequest[] = [];
     for (const q of requests) {
       const reading = readCertificateRequest(q, apart);
@@ -358,9 +358,9 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
       keys.add(reading.read.vesselFaceKey);
       read.push(reading.read);
     }
-    if (apart.includes(vesselKey)) return refuse("request-key-reused");
-    const body = { nonce, vesselKey, sealKey, requests: read };
-    if (!readEd25519(signature, fleetJoinRequestImage(body), vesselKey).ok) return refuse("request-unsigned");
+    if (apart.includes(atomKey)) return refuse("request-key-reused");
+    const body = { nonce, atomKey, sealKey, requests: read };
+    if (!readEd25519(signature, fleetJoinRequestImage(body), atomKey).ok) return refuse("request-unsigned");
     return Object.freeze({ kind, ...body, requests: Object.freeze(read), signature });
   });
 }
@@ -417,10 +417,10 @@ export function readFleetJoinAnswer(value: unknown, args: {
   request: FleetJoinRequest; personaGroup: string; rootKey: string; sealSecret: Uint8Array; apart?: KeysHeldApart;
 }): VerifiedFleetJoin | FleetJoinRefusal {
   return guarded("answer-malformed", () => {
-    const keys = ["kind", "nonce", "vesselKey", "personaGroup", "edge", "carriage", "reach", "charter", "admit", "floorPins", "certificates", "grants", "secret", "signature"];
+    const keys = ["kind", "nonce", "atomKey", "personaGroup", "edge", "carriage", "reach", "charter", "admit", "floorPins", "certificates", "grants", "secret", "signature"];
     if (!record(value) || !exactly(value, keys) || value["kind"] !== "fleet-join-answer") return refuse("answer-malformed");
     if (!isKey(args.rootKey)) return refuse("answer-unsigned");
-    const { nonce, vesselKey, personaGroup, signature } = value;
+    const { nonce, atomKey, personaGroup, signature } = value;
     const edge = value["edge"] === undefined ? undefined : snapshot(value["edge"], FLEET_JOIN_EDGE_BOUND);
     const carriage = readAdmitCarriage(value["carriage"]);
     const reach = readReach(value["reach"]);
@@ -449,18 +449,18 @@ export function readFleetJoinAnswer(value: unknown, args: {
       || typeof secret["nonce"] !== "string" || !/^[0-9a-f]{48}$/.test(secret["nonce"])
       || typeof secret["ciphertext"] !== "string" || !HEX.test(secret["ciphertext"])) return refuse("answer-malformed");
     if (!Array.isArray(value["certificates"]) || !Array.isArray(value["grants"])) return refuse("answer-malformed");
-    if (nonce !== args.request.nonce || vesselKey !== args.request.vesselKey || personaGroup !== args.personaGroup) return refuse("answer-other-request");
-    const joineeKeys = [args.request.vesselKey, ...args.request.requests.flatMap((q) => [q.vesselFaceKey, q.scope.faceKey])];
+    if (nonce !== args.request.nonce || atomKey !== args.request.atomKey || personaGroup !== args.personaGroup) return refuse("answer-other-request");
+    const joineeKeys = [args.request.atomKey, ...args.request.requests.flatMap((q) => [q.vesselFaceKey, q.scope.faceKey])];
     if (joineeKeys.includes(args.rootKey)) return refuse("answer-root-reused");
     let sealMatches = false;
     try { sealMatches = hex(x25519.getPublicKey(args.sealSecret)) === args.request.sealKey; } catch { sealMatches = false; }
     if (!sealMatches) return refuse("seal-secret-other");
 
     const sealed: SealedAddressSecret = { epk: secret["epk"], nonce: secret["nonce"], ciphertext: secret["ciphertext"] };
-    const body = { nonce, vesselKey, personaGroup, edge, carriage, reach, charter, admit: faceAdmit, floorPins, secret: sealed } as Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">;
+    const body = { nonce, atomKey, personaGroup, edge, carriage, reach, charter, admit: faceAdmit, floorPins, secret: sealed } as Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">;
     if (!readEd25519(signature, fleetJoinAnswerImage(body), args.rootKey).ok) return refuse("answer-unsigned");
 
-    const apart = [...(args.apart ?? []), args.rootKey, args.request.vesselKey];
+    const apart = [...(args.apart ?? []), args.rootKey, args.request.atomKey];
     const asked = new Map(args.request.requests.map((q) => [scopeName(q.scope), q.vesselFaceKey]));
     const certificates: VesselFaceCertificate[] = [];
     const certified = new Set<string>();
@@ -490,7 +490,7 @@ export function readFleetJoinAnswer(value: unknown, args: {
       return refuse("answer-admit-other-face");
     }
 
-    const addressSecret = openAddressSecret(sealed, args.sealSecret, nonce, vesselKey);
+    const addressSecret = openAddressSecret(sealed, args.sealSecret, nonce, atomKey);
     if (addressSecret === null) return refuse("secret-unopened");
     const answer: FleetJoinAnswer = Object.freeze({
       kind: "fleet-join-answer", ...body, certificates: Object.freeze(certificates), grants: Object.freeze(grants), signature,
@@ -517,13 +517,13 @@ export function fleetJoinSealPair(): { readonly secret: Uint8Array; readonly key
  * key refuses here by name and never leaves the vessel.
  */
 export async function composeFleetJoinRequest(args: {
-  offer: FleetJoinOffer; vesselKey: string; sealKey: string;
+  offer: FleetJoinOffer; atomKey: string; sealKey: string;
   mintFaceKey: (scope: FaceScope) => Promise<string>;
   custody: VesselFaceKeyCustody;
   sign: (image: Uint8Array) => Promise<string>;
 }): Promise<FleetJoinRequest | FleetJoinRefusal> {
-  const vesselKey = args.vesselKey.toLowerCase();
-  const apart = [vesselKey, args.offer.rootKey];
+  const atomKey = args.atomKey.toLowerCase();
+  const apart = [atomKey, args.offer.rootKey];
   const requests: VesselFaceCertificateRequest[] = [];
   for (const scope of args.offer.scopes) {
     const vesselFaceKey = (await args.mintFaceKey(scope)).toLowerCase() as VesselFaceKey;
@@ -531,7 +531,7 @@ export async function composeFleetJoinRequest(args: {
     if (!("request" in asked)) return refuse("certificate-request-refused", asked.cause);
     requests.push(asked.request);
   }
-  const body = { nonce: args.offer.nonce, vesselKey, sealKey: args.sealKey, requests };
+  const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, requests };
   const signature = await args.sign(fleetJoinRequestImage(body));
   return readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, args.offer, [args.offer.rootKey]);
 }

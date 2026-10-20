@@ -41,7 +41,7 @@ const signWith = (seed: Uint8Array) => (bytes: Uint8Array): Promise<string> => e
 async function delegation(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
   return buildDeviceDelegation({
     personaRootSeed: opSeed,
-    deviceVerifyingKey: await pubOf(deviceSeed),
+    atomSeed: deviceSeed,
     hearthTrueName: "",
     boundEpoch,
   });

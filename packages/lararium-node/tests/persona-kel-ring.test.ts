@@ -19,7 +19,7 @@ import {
   materializeSharedLarDoc, personaKelBoardDocUrl, writePersonaKelEvent, enrolmentDigestOf, personaEventCidOf,
   verifyEdgeAgainstPersonaKel, attestAndRotate, rollEnrolments, sha256HexSync,
 } from "@lararium/mesh";
-import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony } from "@lararium/keyhive";
 import { makePersonaKelRingHolder, type PersonaKelRingHolder } from "../src/persona-kel-ring.js";
 import { SEEDS, pubOf, didOf, signerOf, founded, enrol, rotatedKeeping } from "../../lararium-mesh/tests/fixtures/sibling-fleet.js";
 
@@ -86,8 +86,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     const did = await probe.whoami();
     const verifyingKey = did.startsWith("0x") ? did.slice(2) : did;
     await probe.dispose();
-    const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
-      repo, vesselSeed: SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
+    const cer = await runFoundingCeremony({ repo, vesselSeed: SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
       binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
     });
     const daemonHandle = await repo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
@@ -101,7 +100,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
         seed: SEED, eventStore: new DaemonEventStore({ daemon: composite }), vesselVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
         meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
-        personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, expectedEpoch: 0,
+        personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, faceVerifyingKey: cer.founderEdge.deviceVerifyingKey, expectedEpoch: 0,
       },
     };
   });

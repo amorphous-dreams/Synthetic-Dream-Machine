@@ -38,9 +38,8 @@ const GROUP         = "ab".repeat(16);
 const JOINEE_KEY    = "6".repeat(64);           // the peer's vessel verifying key
 
 async function founderEdge(opKeySeed = ROOT_SEED) {
-  const founderKey = await ed25519VerifyingKeyFromSeed(FOUNDER_SEED);
   return buildDeviceDelegation({
-    personaRootSeed: opKeySeed, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
+    personaRootSeed: opKeySeed, atomSeed: FOUNDER_SEED, hearthTrueName: HEARTH,
     boundEpoch: 0,
   });
 }
@@ -48,7 +47,7 @@ async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {
   const edge = await founderEdge(opKeySeed);
   return signFaceGrantRecord({
     kind: "face-join-grant/v1", groupId: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
-    founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, reSealed: [],
+    founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, serial: 1, reSealed: [],
     founderEdge: edge,
   }, ed25519SignerFromSeed(FOUNDER_SEED));
 }

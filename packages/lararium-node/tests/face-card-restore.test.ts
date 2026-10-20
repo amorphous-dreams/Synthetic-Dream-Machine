@@ -26,7 +26,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  GUARDIAN_SLOT_CUSTODIAN, attestAndRotate, deriveSelfRecoveryKey, hex, splitToGuardianCards,
+  GUARDIAN_SLOT_CUSTODIAN, attestAndRotate, deriveSelfRecoveryKey, faceAtomKeyFromSeed, hex, splitToGuardianCards,
   type PersonaKelEvent, type RandomProvider,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
@@ -38,6 +38,7 @@ import {
 import { FACE_PROOF_KEY_FILE } from "../src/face-key-custody.js";
 import { RestoreRefused } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
+import { loadFaceAtom } from "../src/face-atom-store.js";
 import { loadNodeHandleBook } from "../src/node-circle-store.js";
 import {
   listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
@@ -83,7 +84,7 @@ afterEach(async () => {
 interface Faces {
   /** The recorded code and escrow carrier each face's founding split handed the person, by handle-index. */
   readonly cards: ReadonlyMap<number, { readonly recordedCode: string; readonly escrowCarrier: string }>;
-  readonly keys:  ReadonlyMap<number, { readonly rootKey: string; readonly prefix: string; readonly group: string; readonly veilTag: string }>;
+  readonly keys:  ReadonlyMap<number, { readonly rootKey: string; readonly prefix: string; readonly group: string; readonly atomKey: string }>;
   readonly vesselKey: string;
 }
 const paper = (f: Faces, index: number): PresentedCard[] => [
@@ -102,7 +103,7 @@ async function splitOnDestroyedVessel(label: string): Promise<Faces> {
   await (await makeNodePersonaPetnameStore()).set(0, "the gardener");
   await (await makeNodePersonaDeclarationStore()).set(0, { handle: "the-gardener-handle" });
   const cards = new Map<number, { recordedCode: string; escrowCarrier: string }>();
-  const keys = new Map<number, { rootKey: string; prefix: string; group: string; veilTag: string }>();
+  const keys = new Map<number, { rootKey: string; prefix: string; group: string; atomKey: string }>();
   for (const index of [0, 1]) {
     const armed = await armRecoveryAtFounding(larDataDir(), index);
     expect(armed.minted, `setup: the split of h${index} armed`).toBe(true);
@@ -110,7 +111,8 @@ async function splitOnDestroyedVessel(label: string): Promise<Faces> {
     const anchors = (await loadIdentityAnchors(index))!;
     keys.set(index, {
       rootKey: (await listPersonaRosterLines()).find((l) => l.handleIndex === index)!.verifyingKey,
-      prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId, veilTag: anchors.veilTag!,
+      prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
+      atomKey: faceAtomKeyFromSeed((await loadFaceAtom(index))!, anchors.personaGroupId).key,
     });
   }
   const out: Faces = { cards, keys, vesselKey: await loadVesselVerifyingKey() };
@@ -172,11 +174,14 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(anchors.personaKelPrefix).toBe(face.prefix);
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(face.rootKey);
     expect(anchors.personaGroupId).not.toBe(face.group);
-    expect(anchors.veilTag).not.toBe(face.veilTag);
+    const atomKey = faceAtomKeyFromSeed((await loadFaceAtom(1))!, anchors.personaGroupId).key;
+    expect(atomKey).not.toBe(face.atomKey);
     expect(existsSync(veilArchivePath(1))).toBe(true);
     const here = await loadVesselVerifyingKey();
     expect(here).not.toBe(a.vesselKey);
-    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(here.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(atomKey.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(here.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(face.atomKey.toLowerCase());
     expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(a.vesselKey.toLowerCase());
     // The board holds the inception alone: the cards carry the root's own first event and no later one.
     expect((await withRepo((repo) => readLocalPersonaKelChain(repo, face.prefix))).map((e) => e.seq)).toEqual([0]);

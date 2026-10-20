@@ -69,7 +69,7 @@ vi.mock("@lararium/mesh", () => ({
   readGateBundlePin: () => ({ refusal: "pin-malformed" }),
   PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
   fleetJoinOffer: (offer: unknown) => offer,
-  readFleetJoinRequest: () => ({ vesselKey: "c".repeat(64), requests: [{ scope: { faceKey: "d", nexus: "nexus-a" } }] }),
+  readFleetJoinRequest: () => ({ atomKey: "c".repeat(64), requests: [{ scope: { faceKey: "d", nexus: "nexus-a" } }] }),
   foldWithdrawals: () => ({ memory: {} }),
   issueCertificate: async () => ({ certificate: { kind: "certificate" } }),
   faceKeyGrantImage: (group: string) => { seam.asked.push(["grant", group]); return new Uint8Array(); },

@@ -1,23 +1,25 @@
 /**
- * dyad — the vessel×veil RELATIONSHIP, made first-class.
+ * dyad — one face atom's relationship with its PersonaGroup, made first-class.
  *
- * A dyad names neither a place nor a person: it names ONE HUMAN'S RELATIONSHIP WITH ONE DEVICE. That reading
- * carries the whole model. A vessel-key names the PLACE; a veil-key names a face AS HELD ON THAT PLACE; the
- * dyad names what stands BETWEEN them, and a single vessel holds N of them.
+ * A dyad names neither a place nor a person: it names ONE HUMAN'S RELATIONSHIP WITH ONE DEVICE, and that device
+ * meets the face through its ATOM alone. The atom is a random key that mints when the device joins the group, rests
+ * in that face's own custody on that vessel, and derives from no device seed. The place key stands in no face
+ * relation, so the dyad has ONE end: the atom's DID. The vessel's own list of its atoms is a local custody row and
+ * rides no wire or board.
  *
- * THE VEIL KEY STAYS LOCAL. Every vessel×veil pair reads UNIQUE at the infra layer — a veil key never spans
- * devices, so no infra-layer key ever links one human's places to each other. Nothing at this layer can be
- * correlated into a person, which is exactly the property the layer exists to hold.
+ * THE ATOM STAYS LOCAL. Every atom reads UNIQUE at the infra layer: it never spans devices, so no infra-layer key
+ * ever links one human's places, or one device's faces, to each other. Nothing at this layer can be correlated
+ * into a person, which is exactly the property the layer exists to hold.
  *
  * WHY THE RELATIONSHIP RATHER THAN EITHER PARTY. Bind identity to a vessel and a human loses themselves when
- * a device dies. Bind it to a veil alone and the vessel carrying it stays anonymous to the model. The dyad
- * holds both ends without merging them — the two-key atom's edge, given a name of its own.
+ * a device dies. Bind it to the atom's relation and a lost device dies alone: the person re-admits and a fresh
+ * atom mints.
  *
  * THE DEEPER READING (operator ruling, 2026-07-26): IDENTITY ALWAYS NAMES A RELATIONSHIP, NEVER A THING.
  * That holds outside this codebase too — every pet-name a human uses names a relation they stand in, and the
  * "thing" underneath reads as an inference nobody ever verifies. So the dyad does not JOIN two identities;
- * the dyad ENACTS the identity-relationship (as all identity functions as relationship-functor), and vessel
- * and veil name its two ends.
+ * the dyad ENACTS the identity-relationship (as all identity functions as relationship-functor), and the atom
+ * names its end.
  *
  * ── THE PERSONA BRIDGES LOCAL INFRA TO THE SOCIAL LAYER, INTERNAL FIRST ─────────────────────────────────
  * Because infra keys correlate to nothing, SOMETHING must gather a human's places back together — and that
@@ -35,19 +37,16 @@
  * vessel spills the dyads admitted TO IT and never the human's map of themselves.
  *
  * ── WHAT A DYAD ID DOES AND DOES NOT REVEAL ─────────────────────────────────────────────────────────────
- * The id content-addresses the ordered pair, so two parties knowing both keys derive the identical id while
- * the id alone yields neither. Slots key by that id rather than by the veil, so a vessel's own storage never
- * lays its faces out in the open for whoever reads a key list.
+ * The id content-addresses the atom's DID, so two parties knowing the key derive the identical id while the id
+ * alone yields no key. Slots key by that id rather than by the atom, so a vessel's own storage never lays its
+ * faces out in the open for whoever reads a key list.
  *
  * Platform-blind: rides ./crypto + ./base-doc + ./device-delegation types only. NO node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-circle · lar:///ha.ka.ba/lares/api/pono/group-as-closure
  */
 
-import { DEVICE_EDGE_DOMAIN, DYAD_ID_DOMAIN, DYAD_VEIL_INFO } from "./domains.js";
-import { hmac } from "@noble/hashes/hmac.js";
+import { DEVICE_EDGE_DOMAIN, DYAD_ID_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { sha256 } from "@noble/hashes/sha2.js";
-import { derivePersonaKeypair } from "./persona-hd.js";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { sha256HexSync, canonicalJson, hex } from "./crypto.js";
@@ -63,12 +62,9 @@ export { DYAD_ID_DOMAIN } from "./domains.js";
 /** The tiddler-key prefix a vessel's dyad slots ride under — N slots, never one `self`. */
 export const DYAD_SLOT_PREFIX = "lar:///ha.ka.ba/dreamnet/dyad/" as const;
 
-/** The two ends of one relationship. Order carries meaning: the PLACE first, the FACE second. */
+/** One atom's device end names the relationship. */
 export interface DyadRef {
-  /** "0x"+hex — the vessel this relationship runs ON (the PLACE's own key). */
-  readonly vesselDid: LarDid;
-  /** "0x"+hex — the veil this relationship runs UNDER (the HUMAN's face). */
-  readonly veilDid:   LarDid;
+  readonly deviceDid: LarDid;
 }
 
 /**
@@ -81,7 +77,7 @@ export interface DyadRecord {
   readonly kind:      typeof DYAD_ID_DOMAIN;
   readonly dyadId:    string;
   readonly ref:       DyadRef;
-  /** The device-delegation the veil signed over this vessel — what makes the relationship real. */
+  /** The two-signature delegation to this atom. */
   readonly edge:      DeviceDelegationTiddler;
   /**
    * The PRESENTED delegation edge binding this relationship into a fleet, or null while it stands unbound.
@@ -95,11 +91,11 @@ export interface DyadRecord {
 }
 
 /**
- * The subject a dyad-binding covers — BOTH ends of the relationship, so an edge cannot lift off one dyad
+ * The subject a dyad-binding covers — the atom DID, so an edge cannot lift off one dyad
  * and land on another. Named once so the mint and the verify can never disagree about what got signed.
  */
 export function dyadBindingSubject(ref: DyadRef): Record<string, string> {
-  return { vesselDid: normalizeDid(ref.vesselDid), veilDid: normalizeDid(ref.veilDid) };
+  return { deviceDid: normalizeDid(ref.deviceDid) };
 }
 
 /** Mint the edge gathering a relationship into a fleet — run where the group ROOT lives. */
@@ -129,24 +125,18 @@ function normalizeDid(did: LarDid): string {
 }
 
 /**
- * The content-address of one relationship. Deterministic and order-fixed, so both ends derive the same id
- * without coordinating, and re-deriving it later needs no stored mapping.
+ * The content-address of one atom relation, derived without a stored mapping.
  */
 export function dyadId(ref: DyadRef): string {
   return sha256HexSync(canonicalJson({
     kind:      DYAD_ID_DOMAIN,
-    vesselDid: normalizeDid(ref.vesselDid),
-    veilDid:   normalizeDid(ref.veilDid),
+    deviceDid: normalizeDid(ref.deviceDid),
   }));
 }
 
 /**
  * The id a dyad's MARKER rides under on the fleet's edge board (kapae#/four-edges) — the same relationship,
- * named by the two ends every device of the fleet can read: the fleet root and the device key.
- *
- * `dyadId` hashes the veil, and a veil key never leaves its device, so no other device and no gate could name
- * a dyad by it. A gate proves a device key and knows the fleet root it serves; the person who sets a lost
- * device aside knows the same two. One device holds one such edge per fleet.
+ * named by the fleet root and the atom key each peer can verify.
  */
 export function deviceEdgeId(fleetRootDid: LarDid | string, deviceDid: LarDid | string): string {
   const bare = (did: string) => did.trim().toLowerCase().replace(/^0x/, "").slice(-64);
@@ -195,17 +185,14 @@ function coerceDyad(parsed: unknown): DyadRecord | null {
       binding = { signer: x["signer"], epochCid: x["epochCid"], sig: x["sig"] };
     }
   }
-  // THE SLOT'S REF IS AUTHORITATIVE FOR THE VEIL: the derived face never appears in the edge — the
-  // edge binds root→device — so the ref is REQUIRED, fenced to the edge's own device. A slot without
-  // one, or whose ref rides another vessel, reads torn and drops. No fallback reading exists: a doc
-  // holding a bare edge re-founds rather than being re-read as (device × root).
+  // The slot's ref names the same atom the edge delegates to. A torn ref grants no dyad.
   const refRaw = p["ref"];
   if (typeof refRaw !== "object" || refRaw === null) return null;
   const r = refRaw as Record<string, unknown>;
-  if (typeof r["vesselDid"] !== "string" || typeof r["veilDid"] !== "string") return null;
-  const storedRef: DyadRef = { vesselDid: r["vesselDid"], veilDid: r["veilDid"] };
+  if (typeof r["deviceDid"] !== "string") return null;
+  const storedRef: DyadRef = { deviceDid: r["deviceDid"] };
   const et = edge as unknown as DeviceDelegationTiddler;
-  if (normalizeDid(storedRef.vesselDid) !== normalizeDid(et.deviceDid)) return null;
+  if (normalizeDid(storedRef.deviceDid) !== normalizeDid(et.deviceDid)) return null;
   const record: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(storedRef), ref: storedRef, edge: et, binding };
   // A slot claiming an id its own ref does not produce reads as torn — drop it rather than trust the label
   // over the content. The id costs nothing to recompute, so nothing excuses trusting the stored one.
@@ -227,12 +214,6 @@ export function dyadsFromDoc(doc: LarDoc | undefined | null): DyadRecord[] {
     if (dyad !== null) out.push(dyad);
   }
   return out;
-}
-
-/** The dyads one VESSEL carries across every veil — a place's faces. */
-export function dyadsOnVessel(dyads: readonly DyadRecord[], vesselDid: LarDid): DyadRecord[] {
-  const want = normalizeDid(vesselDid);
-  return dyads.filter((d) => normalizeDid(d.ref.vesselDid) === want);
 }
 
 /**
@@ -281,7 +262,7 @@ export async function verifiedFleetOfGroup(
   // the fleet's edge board reads (`deviceEdgeId`): the fleet root and the device key.
   const want = scope?.trim().toLowerCase();
   const claimed = fleetOfGroup(dyads, groupRootDid)
-    .filter((d) => !shadowed.has(deviceEdgeId(groupRootDid, d.ref.vesselDid)))
+    .filter((d) => !shadowed.has(deviceEdgeId(groupRootDid, d.ref.deviceDid)))
     .filter((d) => want === undefined || d.binding!.epochCid.trim().toLowerCase() === want);
   const verdicts = await Promise.all(claimed.map((d) =>
     verifyDelegationEdge(DELEGATION_DOMAIN.dyadBinding, dyadBindingSubject(d.ref), d.binding)));
@@ -289,7 +270,7 @@ export async function verifiedFleetOfGroup(
 }
 
 export function fleetSpan(fleet: readonly DyadRecord[]): number {
-  return new Set(fleet.map((d) => normalizeDid(d.ref.vesselDid))).size;
+  return new Set(fleet.map((d) => normalizeDid(d.ref.deviceDid))).size;
 }
 
 // ── The fleet LABEL store — what `fleetUnderPetname` reads ────────────────────────────────────────────────
@@ -336,7 +317,7 @@ export async function fleetPetnameResolver(store: FleetPetnameStore): Promise<(p
 
 /**
  * vesselDyads — every relationship a vessel holds: its ceremony-minted dyad slots, de-duplicated by
- * `dyadId` (the content-address of the ordered pair — one relationship reached twice stays one record).
+ * `dyadId` (the content-address of its atom DID — one relationship reached twice stays one record).
  *
  * PLATFORM-BLIND ON PURPOSE: node and browser vessels read their relationships through THIS one door,
  * and every future vessel class (a phone, a Mudlet, an Unreal client) inherits the same observation —
@@ -351,53 +332,3 @@ export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
 // ── The dyad VEIL — derived off the DEVICE tree ─────────────────────────────────────────────────
 //
 // "The deck stays one deck; the face it wears differs per handle" (persona-circle#the-vault). The
-// veil a dyad runs UNDER derives from the vessel's OWN seed — the device-minted root whose private
-// half never leaves its device — scoped by the PersonaGroup it faces. NEVER from the persona seed:
-// a seed-derived key spans devices exactly as the root does, and the dyad's whole privacy claim
-// rests on the veil staying local. So derived: local by construction, unlinkable across handles
-// (hardened one-way derivation), and never resurrected — it dies with the device key.
-
-const DYAD_VEIL_HMAC_KEY = new TextEncoder().encode(DYAD_VEIL_INFO);
-
-/**
- * dyadVeilIndex — the per-group hardened index for the dyad-veil leaf.
- *
- * Domain-separated HMAC-SHA256 over a GROUP TAG, masked to a 31-bit raw index — the same convention
- * `circleScopeIndex` runs one tree over. CASE-FOLDED (hex-shaped tags spell
- * one group two ways; folding keeps one group from deriving two veils). Same tag → same leaf
- * (rejoin-stable); different tag → a different, unlinkable face.
- *
- * TWO DERIVATION MOMENTS, TWO TAGS — never one input: a FOUNDER derives its creator-veil BEFORE the
- * group exists, from a minted founding tag (`mintVeilTag`, persisted beside the group ids so boot
- * re-derives); a JOINEE derives its own veil AFTER, from the real group doc id its admit carries.
- */
-export function dyadVeilIndex(groupTag: string): number {
-  const mac = hmac(sha256, DYAD_VEIL_HMAC_KEY, new TextEncoder().encode(groupTag.toLowerCase()));
-  const u32 = new DataView(mac.buffer, mac.byteOffset, 4).getUint32(0, false);
-  return u32 & 0x7fffffff;
-}
-
-/** Mint a founder's pre-birth veil tag — 32 random bytes, hex. Not a secret (the veil SEED derives
- *  from the vessel seed; the tag only namespaces the leaf) — it persists in the daemon doc so boot
- *  re-derives the same creator-veil for the life of the group. */
-export function mintVeilTag(): string {
-  const b = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(b);
-  return hex(b);
-}
-
-/** The daemon-doc tiddler carrying a founded group's veil tag — read at boot to stand the veil identity. */
-export const DYAD_VEIL_TAG_TIDDLER = "lar:///ha.ka.ba/dreamnet/dyad-veil-tag" as const;
-
-/**
- * deriveDyadVeil — the per-handle credential a vessel joins a handle-group under, and the veilDid a
- * ceremony writes into the dyad slot. One hardened SLIP-0010 level off the VESSEL seed, so the leaf
- * shares nothing readable with the vessel's presented key or with any other group's leaf, and no
- * roster carries a key that appears on another.
- */
-export async function deriveDyadVeil(
-  vesselSeed: Uint8Array,
-  groupTag: string,
-): Promise<{ signingKey: string; verifyingKey: string }> {
-  return derivePersonaKeypair(vesselSeed, [dyadVeilIndex(groupTag)]);
-}

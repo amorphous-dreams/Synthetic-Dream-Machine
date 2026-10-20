@@ -3,7 +3,7 @@
  *
  *   C1  a cut carries the face's root, roster line, two anchor names, key history, names, proof keys, its own
  *       handle-book records and the memory section; the body opens under the bundle key alone.
- *   C2  the body holds NOTHING of another face, and nothing that names this vessel's seat: no veil tag, no device
+ *   C2  the body holds NOTHING of another face, and nothing that names this vessel's seat: no atom seed, no device
  *       edge, no key group id, no seat claim, no chair label, no vessel-face key.   control: the rows do hold them
  *   C3  the table's bundle column and the cut's extractors name the same rows; a row the column names with no
  *       extractor refuses the cut.
@@ -27,6 +27,7 @@ import {
 import { BUNDLE_EXTRACTOR_ROWS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
+import { persistFaceAtom } from "../src/face-atom-store.js";
 import { IslandVerbRefused } from "../src/island-verb-ask.js";
 import { saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -62,14 +63,16 @@ beforeEach(async () => {
   keys = { face0: r0.verifyingKey, face1: r1.verifyingKey };
   kel0 = [mintPersonaInception(`0x${keys.face0}`, "ab".repeat(32))];
   const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
+  await persistFaceAtom(0, secretOf(21));
+  await persistFaceAtom(1, secretOf(22));
   await persistIdentityAnchors({
     personaGroupId: "GROUP-DOC-OF-FACE-ZERO", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO",
-    signerDid: `0x${keys.face0}`, personaKelPrefix: kel0[0]!.prefix, veilTag: "VEIL-TAG-OF-FACE-ZERO",
+    signerDid: `0x${keys.face0}`, personaKelPrefix: kel0[0]!.prefix,
     deviceEdge: { title: "DEVICE-EDGE-OF-FACE-ZERO" } as never,
   }, 0);
   await persistIdentityAnchors({
     personaGroupId: "GROUP-DOC-OF-FACE-ONE", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ONE",
-    signerDid: `0x${keys.face1}`, personaKelPrefix: kel1[0]!.prefix, veilTag: "VEIL-TAG-OF-FACE-ONE",
+    signerDid: `0x${keys.face1}`, personaKelPrefix: kel1[0]!.prefix,
   }, 1);
   const petnames = await makeNodePersonaPetnameStore();
   await petnames.set(0, "the gardener");
@@ -152,7 +155,7 @@ describe("a cut carries one face's standing section and its memory section", () 
     const strangers = [
       otherSeed, keys.face1, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "FRIEND-OF-ONE", "LABEL-OF-FACE-ONE",
       "UNTAGGED-FRIEND", "LABEL-OF-NOBODY",
-      "VEIL-TAG-OF-FACE-ZERO", "DEVICE-EDGE-OF-FACE-ZERO", "GROUP-DOC-OF-FACE-ZERO", "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
+      hex(secretOf(21)), hex(secretOf(22)), "DEVICE-EDGE-OF-FACE-ZERO", "GROUP-DOC-OF-FACE-ZERO", "CABAL-DOC-OF-FACE-ZERO", "GROUP-AGENT-OF-FACE-ZERO",
       "CHAIR-OF-FACE-ZERO", "\"seat\"", hex(secretOf(9)), hex(seat.vk),
     ];
     for (const word of strangers) expect(text.includes(word), `the body carries ${word.slice(0, 24)}`).toBe(false);
@@ -186,7 +189,7 @@ describe("the table picks the rows a bundle carries", () => {
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
     expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "persona-root"]);
     expect(by("lines")).toEqual(["anchors", "handle-book", "persona-declarations", "persona-petnames", "persona-roster"]);
-    for (const stays of ["veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
+    for (const stays of ["face-atom", "veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
     }
   });

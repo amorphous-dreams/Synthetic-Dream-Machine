@@ -53,11 +53,11 @@ async function world(): Promise<World> {
   const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: NONCE, scopes: [b.scope, a.scope, a.scope] });
   const sealSecret = new Uint8Array(32).fill(9);
   const seal = { secret: sealSecret, key: hex(x25519.getPublicKey(sealSecret)) };
-  const body = { nonce: NONCE, vesselKey: joinee.key, sealKey: seal.key, requests: [a.request, b.request] };
+  const body = { nonce: NONCE, atomKey: joinee.key, sealKey: seal.key, requests: [a.request, b.request] };
   const request: FleetJoinRequest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), joinee) };
   const carriage = { gatePin: PIN, canon: { "@lares": "automerge:canon-lares" } };
   const answerBody = {
-    nonce: NONCE, vesselKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777", islandKind: "charter", islandScope: HEARTH_NEXUS },
     charter: CHARTER_TEXT,
@@ -96,6 +96,15 @@ describe("the fleet-join door's files", () => {
     expect(readFleetJoinRequest(twice, w.offer)).toMatchObject({ refusal: "request-scope-twice" });
     expect(readFleetJoinRequest(w.request, w.offer, [w.a.request.vesselFaceKey])).toMatchObject({ refusal: "request-key-reused" });
     expect(readFleetJoinRequest(w.request, w.offer, [w.joinee.key])).toEqual({ refusal: "request-key-reused" });
+  });
+
+  test("the atom signs the request; another key cannot speak for it", async () => {
+    const w = await world();
+    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, requests: w.request.requests };
+    const honest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), w.joinee) };
+    expect(readFleetJoinRequest(honest, w.offer)).toEqual(honest);
+    const forged = { ...honest, signature: await signHex(fleetJoinRequestImage(body), w.root) };
+    expect(readFleetJoinRequest(forged, w.offer)).toEqual({ refusal: "request-unsigned" });
   });
 
   test("an answer verifies under the root, carries one certificate and one grant per scope, and opens the secret", async () => {
@@ -155,7 +164,7 @@ describe("the fleet-join door's files", () => {
     ({ kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), by) });
   const asking = async (scope: FaceScope, by: Pair): Promise<VesselFaceCertificateRequest> =>
     ({ scope, vesselFaceKey: by.key as VesselFaceKey, signature: await signHex(certificateRequestImage(scope, by.key as VesselFaceKey), by) });
-  const body = (w: World) => ({ nonce: w.request.nonce, vesselKey: w.request.vesselKey, sealKey: w.request.sealKey, requests: w.request.requests });
+  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, requests: w.request.requests });
   /** The answer re-signed by the root after `change`, so only the check under test can refuse it. */
   const resigned = async (w: World, change: Partial<FleetJoinAnswer>, by: Pair = w.root): Promise<FleetJoinAnswer> => {
     const a = { ...w.answer, ...change };
@@ -170,9 +179,9 @@ describe("the fleet-join door's files", () => {
     expect(readFleetJoinRequest(repeated, w.offer)).toEqual({ refusal: "request-key-reused" });
     const asVessel = await signRequest(w, { ...body(w), requests: [w.a.request, await asking(w.b.scope, w.joinee)] });
     expect(readFleetJoinRequest(asVessel, w.offer)).toEqual({ refusal: "request-key-reused" });
-    const vesselIsFace = await signRequest(w, { ...body(w), vesselKey: w.a.face.key }, w.a.face);
+    const vesselIsFace = await signRequest(w, { ...body(w), atomKey: w.a.face.key }, w.a.face);
     expect(readFleetJoinRequest(vesselIsFace, w.offer)).toEqual({ refusal: "request-key-reused" });
-    const vesselIsRoot = await signRequest(w, { ...body(w), vesselKey: w.root.key }, w.root);
+    const vesselIsRoot = await signRequest(w, { ...body(w), atomKey: w.root.key }, w.root);
     expect(readFleetJoinRequest(vesselIsRoot, w.offer)).toEqual({ refusal: "request-key-reused" });
     // CONTROL: the honest request, re-signed by the same helper, reads.
     expect(readFleetJoinRequest(await signRequest(w, body(w)), w.offer)).toMatchObject({ kind: "fleet-join-request" });
@@ -211,13 +220,13 @@ describe("the fleet-join door's files", () => {
     const w = await world();
     const otherNonce = sealAddressSecret({ secret: SECRET, request: { ...w.request, nonce: "ef".repeat(32) } });
     expect(read(w, await resigned(w, { secret: otherNonce }))).toEqual({ refusal: "secret-unopened" });
-    const otherVessel = sealAddressSecret({ secret: SECRET, request: { ...w.request, vesselKey: w.a.vessel.key } });
+    const otherVessel = sealAddressSecret({ secret: SECRET, request: { ...w.request, atomKey: w.a.vessel.key } });
     expect(read(w, await resigned(w, { secret: otherVessel }))).toEqual({ refusal: "secret-unopened" });
     const box = sealToRecipient({ recipientPub: hexToBytes(w.seal.key), plaintext: new Uint8Array(31), info: utf8Bytes(FLEET_JOIN_SECRET_INFO),
       extraSalt: [hexToBytes(NONCE), hexToBytes(w.joinee.key)] });
     const short = { epk: hex(box.senderEphemeralPub), nonce: hex(box.aeadNonce), ciphertext: hex(box.ciphertext) };
     expect(read(w, await resigned(w, { secret: short }))).toEqual({ refusal: "secret-unopened" });
-    expect(read(w, { ...w.answer, vesselKey: w.a.vessel.key })).toEqual({ refusal: "answer-other-request" });
+    expect(read(w, { ...w.answer, atomKey: w.a.vessel.key })).toEqual({ refusal: "answer-other-request" });
     // CONTROL: the true seal, re-signed alike, opens.
     expect("answer" in read(w, await resigned(w, {}))).toBe(true);
   });
@@ -281,17 +290,17 @@ describe("the fleet-join door's files", () => {
     };
     const seal = fleetJoinSealPair();
     expect(seal.key).toBe(hex(x25519.getPublicKey(seal.secret)));
-    const request = await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors });
+    const request = await composeFleetJoinRequest({ offer: w.offer, atomKey: w.joinee.key, sealKey: seal.key, ...doors });
     if ("refusal" in request) throw new Error(request.refusal);
     expect(request.requests.map((q) => q.scope)).toEqual(w.offer.scopes);
     expect(new Set(request.requests.map((q) => q.vesselFaceKey)).size).toBe(w.offer.scopes.length);
     expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), w.offer)).toEqual(request);
     // A custody door that signs under another key refuses before the request exists.
     const astray = { signAsVesselFace: (_s: FaceScope, _k: string, image: Uint8Array) => ed25519.signAsync(image, w.joinee.secret) };
-    expect(await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors, custody: astray }))
+    expect(await composeFleetJoinRequest({ offer: w.offer, atomKey: w.joinee.key, sealKey: seal.key, ...doors, custody: astray }))
       .toMatchObject({ refusal: "certificate-request-refused" });
     // A vessel signature under another key reads back refused, so it never leaves the vessel.
-    expect(await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors, sign: async (image) => signHex(image, w.root) }))
+    expect(await composeFleetJoinRequest({ offer: w.offer, atomKey: w.joinee.key, sealKey: seal.key, ...doors, sign: async (image) => signHex(image, w.root) }))
       .toEqual({ refusal: "request-unsigned" });
   });
 });

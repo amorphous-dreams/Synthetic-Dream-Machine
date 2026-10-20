@@ -29,6 +29,7 @@ import type { PersonaKelEvent } from "../../packages/lararium-mesh/src/persona-k
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../packages/lararium-mesh/src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../../packages/lararium-mesh/src/recovery-registration.js";
 import { knockSegment } from "../../packages/lararium-mesh/src/gate-bundle.js";
+import { countersignDeviceDelegation } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { pinnedRelayAddress } from "../../packages/lararium-mesh/src/persona-kel-drop.js";
 import { DeterministicFederationGate, federationShareDecision, shareConfigOf } from "../../packages/lararium-mesh/src/federation-gate.js";
 import { makePersonaGroupIdentityRing } from "../../packages/lararium-mesh/src/persona-group-ring.js";
@@ -80,7 +81,9 @@ async function standLeaf(
     kel,
     leaf: async (k) => {
       const standing = await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) });
-      return { deviceKey: key, sign, kel: k, standing: presents ? { held: standing.held.map((h) => ({ ...h, edge: presents })) } : standing };
+      // A presented root half rides countersigned by this device's own key, as every held enrolment's edge does.
+      const shown = presents ? await countersignDeviceDelegation(presents, sign) : null;
+      return { deviceKey: key, sign, kel: k, standing: shown ? { held: standing.held.map((h) => ({ ...h, edge: shown })) } : standing };
     },
     transports: [() => dialSiblingHerm({ address: relayUrl, deviceKey: key, sign })],
     drops: siblingKelDropsOf(drops.map((a) => httpPersonaKelDropHerm(a))),

@@ -21,13 +21,14 @@ const CALL = (name: string): RegExp => new RegExp(`\\b${name}\\(`, "g");
 
 /** The trace, one row per source site, in the order the scout read them. */
 const SITES: readonly Site[] = [
-  { file: join(NODE, "commands/init.ts"), token: CALL("loadIdentityArchive"), count: 2, selector: "none", act: "admit and place-founding read the one standing Keyhive archive" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("persistIdentityArchive"), count: 2, selector: "none", act: "admit and place-founding write the one standing Keyhive archive" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "handle-index", act: "persona new reads the prior face's veil archive by h<N>" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 1, selector: "handle-index", act: "persona new writes the new face's veil archive by h<N>, before its anchors commit" },
-  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the vessel archive" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("loadIdentityArchive"), count: 1, selector: "none", act: "place founding reads the place's own archive; a place holds no PersonaGroup" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("persistIdentityArchive"), count: 1, selector: "none", act: "place founding writes the place's own archive" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "handle-index", act: "admit reads the joined face's atom archive at h0 and persona new reads the prior face's by h<N>" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 2, selector: "handle-index", act: "admit writes the joined face's atom archive at h0 and persona new writes the new face's by h<N>, after the atom row and before its anchors commit" },
+  { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "handle-index", act: "the face presenter reads its atom's archive by the worn h<N>" },
+  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the place archive" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "handle-index", act: "boot's write door for the mounted face's veil archive, h<N> captured from the wear pointer" },
-  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.archive\(/g, count: 1, selector: "none", act: "boot reads the vessel archive whatever face is worn" },
+  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.archive\(/g, count: 1, selector: "none", act: "boot reads the place's archive whatever face is worn" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.veilArchive\(/g, count: 1, selector: "handle-index", act: "boot reads the mounted face's veil archive by h<N>" },
   { file: join(NODE, "node-daemon-island.ts"), token: /sealOnVessel\("(?:archive|veil)"/g, count: 2, selector: "bytes-only", act: "the worker port carries a carrier label and bytes, no row" },
   { file: join(KEYHIVE, "operator-daemon-behavior.ts"), token: /\bpersistArchiveFloor\(/g, count: 1, selector: "bytes-only", act: "boot's archive floor writes both rows through byte-only callbacks" },

@@ -1,20 +1,19 @@
 /**
- * veil-born-group — THE GROUP IS BORN UNDER THE VEIL (G1's exit, at ceremony grain).
+ * atom-born-group — THE GROUP IS BORN UNDER THE FACE ATOM.
  *
  * The probe campaign measured the constraints this vector states: a creator cannot leave its roster;
  * any access grade is roster membership; the creator's identifier rides every carried event in
- * CLEARTEXT. So the founding must stand a VEIL-KEYED identity — seed derived from the vessel seed by
- * a minted founding tag, the tag persisted in the daemon doc — and THAT identity creates the
+ * CLEARTEXT. So the founding stands a random atom identity in local custody, and THAT identity creates the
  * PersonaGroup and MeshCabal sentinels. The raw vessel Individual never touches either roster, and
- * every identifier a carrier can grep out of the group's events is a per-group veil.
+ * every identifier a carrier can grep out of the group's events is that face's atom.
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, replayCapEvents, KeyhiveProvider, InMemoryEventStore, packPersonaCrossing, applyPersonaCrossing, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony, replayCapEvents, KeyhiveProvider, InMemoryEventStore, packPersonaCrossing, applyPersonaCrossing } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
-  hex, hexToBytes, deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, vesselDyads,
+  hex, faceAtomKeyFromSeed, vesselDyads,
   type LarDoc,
 } from "@lararium/mesh";
 
@@ -24,8 +23,7 @@ const FOUNDER_SEED = new Uint8Array(32).fill(7);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo,
+  const f = await runFoundingCeremony({ repo,
     vesselSeed:         FOUNDER_SEED,
     vesselVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
@@ -37,24 +35,20 @@ async function found() {
   return { repo, f, handle, doc: handle.doc() as unknown as LarDoc };
 }
 
-describe("the veil-born group", () => {
-  test("★ THE FOUNDING PERSISTS ITS VEIL TAG — boot can re-derive the creator ★", async () => {
-    const { doc } = await found();
-    const tag = tiddlerText(doc.tiddlers[DYAD_VEIL_TAG_TIDDLER]);
-    expect(tag, "a founded face carries the tag its veil derives from").toBeTruthy();
-    expect(tag).toMatch(/^[0-9a-f]{64}$/);
+describe("the atom-born group", () => {
+  test("the daemon document carries no atom seed", async () => {
+    const { f, doc } = await found();
+    expect(f.atomSeed).toHaveLength(32);
+    expect(JSON.stringify(doc)).not.toContain(hex(f.atomSeed));
   });
 
   test("★ THE ROSTERS CARRY THE VEIL, NEVER THE RAW DEVICE KEY ★", async () => {
-    const { f, handle, doc } = await found();
-    const tag = tiddlerText(doc.tiddlers[DYAD_VEIL_TAG_TIDDLER]);
-    expect(tag).toBeTruthy();
+    const { f, handle } = await found();
 
-    // Stand the veil identity exactly as boot will: derive the seed, restore the Archive the founding handed
+    // Stand the atom identity exactly as boot will: open the seed, restore the Archive the founding handed
     // out (the creator's key agreement state rests there and nowhere else), hydrate over the daemon doc.
-    const veil = await deriveDyadVeil(FOUNDER_SEED, tag!);
     const veilKh = new KeyhiveProvider();
-    await veilKh.init({ seed: hexToBytes(veil.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await veilKh.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await veilKh.hydrateFromEventStore();
     const vesselKh = new KeyhiveProvider();
     await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
@@ -81,14 +75,11 @@ describe("the veil-born group", () => {
     expect(after, "the re-derived veil seats a member — the creator's hand works after re-standing").toContain(guestId);
   });
 
-  test("★ THE FOUNDER'S DYAD WEARS THE TAG-DERIVED VEIL ★", async () => {
-    const { doc } = await found();
-    const tag = tiddlerText(doc.tiddlers[DYAD_VEIL_TAG_TIDDLER]);
-    expect(tag).toBeTruthy();
-    const veil = await deriveDyadVeil(FOUNDER_SEED, tag!);
+  test("the founder's dyad names the atom", async () => {
+    const { f, doc } = await found();
     const dyads = vesselDyads(doc);
     expect(dyads).toHaveLength(1);
-    expect(dyads[0]!.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
+    expect(dyads[0]!.ref.deviceDid.toLowerCase()).toBe(faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).did.toLowerCase());
   });
 
   test("★ A JOINEE JOINS UNDER ITS VEIL — the veil-keyed card seats, and the veil reads ★", async () => {
@@ -97,10 +88,8 @@ describe("the veil-born group", () => {
     // joinee key touches no roster and no carried event, and the joinee's VEIL decrypts the content
     // (the group's material keys to the prekeys the seated card carried).
     const { f, handle } = await found();
-    const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
-    const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
 
     const founderVessel = new KeyhiveProvider();
@@ -108,9 +97,9 @@ describe("the veil-born group", () => {
     await founderVessel.hydrateFromEventStore();
 
     const JOINEE_SEED = new Uint8Array(32).fill(41);
-    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupId);
+    const joineeAtomSeed = new Uint8Array(32).fill(42);
     const joineeVeil = new KeyhiveProvider();
-    await joineeVeil.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
+    await joineeVeil.init({ seed: joineeAtomSeed, eventStore: new InMemoryEventStore() });
     const joineeRawId = await (async () => {
       const raw = new KeyhiveProvider();
       await raw.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore() });
@@ -143,10 +132,8 @@ describe("the veil-born group", () => {
     // The archive's whole purpose, proven: content keyed to the veil's FIRST-boot prekeys decrypts
     // on a veil stood FROM THE ARCHIVE — never a fresh mint whose prekeys match nothing.
     const { f, handle } = await found();
-    const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
-    const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
     const founderVessel = new KeyhiveProvider();
     await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
@@ -154,9 +141,9 @@ describe("the veil-born group", () => {
 
     // The joinee's FIRST boot: mint the veil, export the archive, present the card, receive content.
     const JOINEE_SEED = new Uint8Array(32).fill(43);
-    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupId);
+    const joineeAtomSeed = new Uint8Array(32).fill(44);
     const firstBoot = new KeyhiveProvider();
-    await firstBoot.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
+    await firstBoot.init({ seed: joineeAtomSeed, eventStore: new InMemoryEventStore() });
     const card = await firstBoot.contactCard();
     const archive = await firstBoot.exportArchive();
 
@@ -172,7 +159,7 @@ describe("the veil-born group", () => {
     // The SECOND boot: the veil stands FROM THE ARCHIVE (the exact restore path the daemon walks).
     const restored = new KeyhiveProvider();
     await restored.init({
-      seed: hexToBytes(joineeVeilKeys.signingKey),
+      seed: joineeAtomSeed,
       eventStore: new InMemoryEventStore(),
       archiveBytes: archive,
     });

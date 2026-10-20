@@ -115,6 +115,8 @@ describe("the Stable founding act", () => {
       expect(edge.hearthTrueName).toBe(aid);
       const doc = await daemonDoc();
       expect(tiddlerText(doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER])).toBe(aid);
+      // A committed founding leaves no write-ahead checkpoint and no title that spells its atom on the vessel-wide doc.
+      expect(Object.keys(doc.tiddlers).filter((title) => /checkpoint/.test(title) || title.includes(edge.deviceVerifyingKey))).toEqual([]);
       const dyads = vesselDyads(doc);
       expect(dyads.length).toBeGreaterThan(0);
       expect(dyads.every((d) => d.binding?.epochCid === aid)).toBe(true);

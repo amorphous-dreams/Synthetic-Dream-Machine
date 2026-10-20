@@ -17,7 +17,8 @@
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
+import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed,
@@ -125,7 +126,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
 
-    const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+    const f = await runFoundingCeremony({
       repo,
       vesselSeed,
       vesselVerifyingKey: device.verifyingKey,
@@ -140,7 +141,9 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     expect(f.signerDid).toBe(`0x${root.verifyingKey}`);
     expect(f.signerDid).not.toBe(`0x${device.verifyingKey}`);
     expect(f.founderEdge.personaRootDid).toBe(f.signerDid);      // the edge chains to the root
-    expect(f.founderEdge.deviceDid).toBe(`0x${device.verifyingKey}`);  // the delegate is the device
+    // The delegate is the face's atom: a random key under the face, never the device key.
+    expect(f.founderEdge.deviceDid).not.toBe(`0x${device.verifyingKey}`);
+    expect(f.founderEdge.deviceDid).toBe(faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).did);
 
     // A fresh browser founds ONE persona, worn.
     expect(await listBrowserPersonaRoots(name)).toEqual([0]);
@@ -157,7 +160,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const signer0 = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
-    await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+    await runFoundingCeremony({
       repo, vesselSeed, vesselVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });

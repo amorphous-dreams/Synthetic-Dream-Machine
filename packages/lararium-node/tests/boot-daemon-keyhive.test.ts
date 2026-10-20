@@ -26,7 +26,7 @@ import {
 } from "@lararium/mesh";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
-  type BootDaemonKeyhiveInput, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+  type BootDaemonKeyhiveInput } from "@lararium/keyhive";
 
 const SEED = new Uint8Array(32).fill(7);
 
@@ -50,8 +50,7 @@ beforeAll(async () => {
   await probe.dispose();
 
   // Found a real operator into the in-memory repo (host pre-spawn step).
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
-    repo, vesselSeed: SEED,
+  const cer = await runFoundingCeremony({ repo, vesselSeed: SEED,
     vesselVerifyingKey: verifyingKey,
     vesselDisplayName:  "Test Operator",
     binding: { mode: "self-stood", signerSeed: SEED },          // self-signed (signerDid == deviceDid) for the test founder
@@ -83,6 +82,7 @@ beforeAll(async () => {
       signerDid:             cer.signerDid,
       personaKel:            { prefix: cer.personaKelPrefix, chain: kelChain },
       deviceEdge:            cer.founderEdge,
+      faceVerifyingKey:      cer.founderEdge.deviceVerifyingKey,
     },
   };
 });

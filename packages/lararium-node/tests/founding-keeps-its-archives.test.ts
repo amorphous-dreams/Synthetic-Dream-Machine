@@ -33,10 +33,12 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import * as ed from "@noble/ed25519";
 import {
-  DAEMON_BAG_ID, deriveDyadVeil, didFromVerifyingKey, hexToBytes, personaScopedBagIds, readVkCarrier, vesselDyads, type LarDoc,
+  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, vesselDyads, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
+import { loadFaceAtom } from "../src/face-atom-store.js";
 import { CustodyLocked } from "../src/custody-holder.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import {
@@ -120,28 +122,28 @@ describe("a founding keeps its archives, sealed per face", () => {
     expect(await listAnchoredPersonas()).toEqual([0, 1, 2]);
   });
 
-  test("F3 the founder dyad wears the veil the custody root derives, never the floor key's", async () => {
+  test("F3 the founder dyad names its sealed atom, never the floor key", async () => {
     const anchors = (await loadIdentityAnchors(0))!;
-    const tag = anchors.veilTag!;
-    const fromCustody = await seatedCustody()!.veil(tag);
-    const fromFloorKey = await deriveDyadVeil(await loadVesselSigningSeed(), tag);
-    expect(fromCustody.verifyingKey).not.toBe(fromFloorKey.verifyingKey);
+    const atomSeed = (await loadFaceAtom(0))!;
+    const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
+    const floorDid = didFromVerifyingKey(hex(await ed.getPublicKeyAsync(await loadVesselSigningSeed())));
+    expect(atom.did).not.toBe(floorDid);
     const packed = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, { text: string }> };
     const daemonUrl = packed.tiddlers[DAEMON_BAG_ID]!.text;
     const dyads = await ownedStore(larDataDir(), async (repo) => {
       const handle = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
       return vesselDyads(handle.doc() as LarDoc);
     });
-    const veilDids = dyads.map((d) => d.ref.veilDid);
-    expect(veilDids).toContain(didFromVerifyingKey(fromCustody.verifyingKey));
-    expect(veilDids).not.toContain(didFromVerifyingKey(fromFloorKey.verifyingKey));
+    const atomDids = dyads.map((d) => d.ref.deviceDid);
+    expect(atomDids).toContain(atom.did);
+    expect(atomDids).not.toContain(floorDid);
   });
 
   test("F4 the creator re-stands from its sealed archive and seats a member", async () => {
     const anchors = (await loadIdentityAnchors(1))!;
-    const veil = await seatedCustody()!.veil(anchors.veilTag!);
+    const atomSeed = (await loadFaceAtom(1))!;
     const restood = standing(new KeyhiveProvider());
-    await restood.init({ seed: hexToBytes(veil.signingKey), eventStore: new InMemoryEventStore(), archiveBytes: (await loadVeilArchive(1))! });
+    await restood.init({ seed: atomSeed, eventStore: new InMemoryEventStore(), archiveBytes: (await loadVeilArchive(1))! });
     const guest = standing(new KeyhiveProvider());
     await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: new InMemoryEventStore() });
     const { id: guestId } = await restood.receiveContactCard(await guest.contactCard());
@@ -150,7 +152,7 @@ describe("a founding keeps its archives, sealed per face", () => {
 
     // control: the same seed with no archive and no events holds no such group
     const bare = standing(new KeyhiveProvider());
-    await bare.init({ seed: hexToBytes(veil.signingKey), eventStore: new InMemoryEventStore() });
+    await bare.init({ seed: atomSeed, eventStore: new InMemoryEventStore() });
     await expect(bare.addGroupMember(guestId, anchors.personaGroupId)).rejects.toThrow();
   });
 
@@ -239,6 +241,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const holder = seatedCustody()!;
     if (!holder.isUnlocked()) expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
     const before = (await loadIdentityAnchors(2))!;
+    const atomBefore = (await loadFaceAtom(2))!;
     // control: the whole face answers already-stood
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);
     // The founding as it stands one write short: the anchors and the veil archive rest, the entry never landed.
@@ -253,7 +256,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const again = await foundFace({ genesisDir, handleIndex: 2 });
     expect(again.alreadyStood).toBe(false);
     const after = (await loadIdentityAnchors(2))!;
-    expect(after.veilTag, "the resumed founding re-derives the same veil").toBe(before.veilTag);
+    expect(hex((await loadFaceAtom(2))!), "the resumed founding keeps the same atom").toBe(hex(atomBefore));
     const now = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, unknown> };
     expect(now.tiddlers[personaScopedBagIds(after.personaGroupId).identities], "the entry landed").toBeTruthy();
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);

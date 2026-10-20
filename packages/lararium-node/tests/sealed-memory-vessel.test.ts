@@ -42,11 +42,11 @@ async function proof(): Promise<SessionProof> {
 }
 
 /** Boot the real daemon options over one founded island whose composition names `BAG`; answer its verbs. */
-async function stand(over: { veil?: boolean; dyad?: () => "clear" | "aside" } = {}) {
+async function stand(over: { dyad?: () => "clear" | "aside" } = {}) {
   const root = mkdtempSync(join(tmpdir(), "memory-vessel-"));
   teardown.push(() => rmSync(root, { recursive: true, force: true }));
   const st = await standFoundedIsland(teardown);
-  const daemonAuth = { ...st.daemonAuth, registerBags: [...st.daemonAuth.registerBags, BAG], ...(over.veil === false ? {} : st.veil) };
+  const daemonAuth = { ...st.daemonAuth, registerBags: [...st.daemonAuth.registerBags, BAG], ...st.veil };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
     dyadReading: () => (over.dyad ? over.dyad() : "clear"), sealedStore: nodeSealedStoreShore(join(root, "daemon")), persistArchive: () => {}, persistVeilArchive: () => {}, sessionProof: await proof(),
   });
@@ -55,14 +55,14 @@ async function stand(over: { veil?: boolean; dyad?: () => "clear" | "aside" } = 
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, st.ctx);
   let n = 0;
-  const vesselSign = ed25519SignerFromSeed(st.daemonAuth.seed);
+  const vesselSign = ed25519SignerFromSeed(Uint8Array.from(Buffer.from(st.veil.atom.seed, "hex")));
   /** Run one verb as the dispatcher would, under a request id of its own. `sign` signs the ask; `as` overrides the facts signed. */
   const run = async (verb: string, args: Record<string, unknown>, ask?: { act: MemoryAct; facts: unknown; sign?: (bytes: Uint8Array) => Promise<string>; requestId?: string }) => {
     const requestId = `r${++n}`;
     const signed = ask ? { ask: await signMemoryAsk({ requestId: ask.requestId ?? requestId, act: ask.act, facts: ask.facts, sign: ask.sign ?? vesselSign }) } : {};
     return registry.get(verb)!({ ...args, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
   };
-  return { run, registry };
+  return { run, registry, vesselSign };
 }
 const refusal = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
@@ -100,18 +100,6 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     expect(await refusal(run("sealed-memory-import", astray, { act: "import", facts: astray }))).toBe("memory-malformed");
   }, 120_000);
 
-  test("A VESSEL WHOSE VEIL STANDS UNBOOTED HOLDS NO SEAT: the import refuses `seat-not-standing`, and its cut still answers", async () => {
-    const { run } = await stand({ veil: false });
-    await run("sealed-seal", { bag: BAG, text: "a private note" });
-    const pair = mintMemoryKeypair();
-    const to = hex(pair.public);
-    const cut = await run("sealed-memory-cut", { to }, { act: "cut", facts: { to } });
-    expect((cut["holds"] as unknown[]).length).toBe(1);
-    const door = await run("sealed-memory-door", {}, { act: "door", facts: {} });
-    const args = { section: String(cut["section"]), secret: b64(sealMemorySecret(pair.secret, hexToBytes(String(door["door"])))) };
-    expect(await refusal(run("sealed-memory-import", args, { act: "import", facts: args }))).toBe("seat-not-standing");
-  }, 120_000);
-
   test("AN ACT READS ITS SHADOW ONCE: a cut whose signed ask says the vessel read its shadow draws a section under a shadow that landed since; an ask that says nothing refuses", async () => {
     let shadow: "clear" | "aside" = "clear";
     const { run } = await stand({ dyad: () => shadow });
@@ -131,7 +119,7 @@ describe("a memory section leaves and enters a real founded vessel's island seal
   }, 120_000);
 
   test("THE ISLAND ANSWERS ITS OWN VESSEL ALONE: no ask, another key's ask, another request's ask and another act's ask each refuse", async () => {
-    const { run, registry } = await stand();
+    const { run, registry, vesselSign } = await stand();
     await run("sealed-seal", { bag: BAG, text: "a private note" });
     const to = hex(mintMemoryKeypair().public);
     const stranger = ed25519SignerFromSeed(new Uint8Array(32).fill(3));
@@ -146,7 +134,7 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     // CONTROL: the vessel's own ask draws the section.
     expect(typeof (await run("sealed-memory-cut", { to }, { act: "cut", facts: { to } }))["section"]).toBe("string");
     // ONE SIGNED ASK RUNS ONCE: the same signed invocation, placed again under its own request id, refuses.
-    const signed = { to, ask: await signMemoryAsk({ requestId: "replayed", act: "cut", facts: { to }, sign: ed25519SignerFromSeed(new Uint8Array(32).fill(71)) }) };
+    const signed = { to, ask: await signMemoryAsk({ requestId: "replayed", act: "cut", facts: { to }, sign: vesselSign }) };
     const place = () => registry.get("sealed-memory-cut")!(signed, { daemon: {} as never, invocation: { requestId: "replayed" } as never, cap: async () => ({ ok: true }) } as never);
     expect(typeof ((await place()) as Record<string, unknown>)["section"]).toBe("string");
     expect(await refusal(Promise.resolve().then(place))).toBe("memory-ask-spent");

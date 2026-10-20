@@ -158,13 +158,13 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned from outside its 
 
   test("the face's address secret derives under FLEET_JOIN_SECRET_INFO and NOT under another live domain", async () => {
     const seal = fleetJoinSealPair();
-    const request = { nonce: "ab".repeat(32), vesselKey: hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9))), sealKey: seal.key };
+    const request = { nonce: "ab".repeat(32), atomKey: hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9))), sealKey: seal.key };
     const sealed = sealAddressSecret({ secret: new Uint8Array(32).fill(7), request });
     const box = { senderEphemeralPub: hexToBytes(sealed.epk), aeadNonce: hexToBytes(sealed.nonce), ciphertext: hexToBytes(sealed.ciphertext) };
     // The seal additionally salts with the request's nonce and vessel key. This replicates the private `secretSalt`
     // of `fleet-join.ts` ON PURPOSE: a change to the salt SHAPE mirrors here consciously, never absorbed
     // silently, which an imported helper would hide.
-    const salt = [hexToBytes(request.nonce), hexToBytes(request.vesselKey)];
+    const salt = [hexToBytes(request.nonce), hexToBytes(request.atomKey)];
 
     expect(openFromSender({ recipientSecret: seal.secret, ...box, info: ADDRESS_SECRET_INFO, extraSalt: salt })).not.toBeNull();
     expect(openFromSender({ recipientSecret: seal.secret, ...box, info: SEED_WRAP_INFO,      extraSalt: salt })).toBeNull();

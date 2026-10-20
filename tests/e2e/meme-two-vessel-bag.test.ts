@@ -37,9 +37,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
@@ -239,11 +239,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
     expect(before).not.toMatch(/grant record taken/);
     // B's summons — ITS card (the identity dir sits beside the vessel store) + the edge A signed for it.
-    const idDir = join(rootB, "data/lares/identity");
-    const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"));
-    expect(cardFile, `no vessel card under ${idDir}`).toBeDefined();
-    const contactCard = readFileSync(join(idDir, cardFile!), "utf8");
-    const deviceEdge = joinedDeviceEdge(pair!);
+    const contactCard = await joinedFaceCard(pair!);
+    const deviceEdge = await joinedDeviceEdge(pair!);
     expect(deviceEdge, "the join carried no device edge").toBeDefined();
     // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
     const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },

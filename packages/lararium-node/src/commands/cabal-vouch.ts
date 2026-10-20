@@ -30,7 +30,7 @@ import {
   realmVouchBoardDocUrl, materializeSharedLarDoc,
   type CabalInvite,
 } from "@lararium/mesh";
-import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { nodeStewardVault, wornStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
@@ -134,7 +134,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   const boundEpoch = String(opts.boundEpoch ?? await resolveBoundEpoch(realm, opts.repo));
 
   // THE REALM'S NEXUS, and the ledger that keeps it: a vouch stands the vessel in the realm under one Nexus.
-  const vesselKey = await loadVesselVerifyingKey().catch(() => "");
+  const vesselKey = await loadWornFaceAtomKey();
   if (!vesselKey) throw new CabalVouchError("this vessel surfaces no verifying key — it keeps no ledger to note the realm in.");
   const nexusAid = await actingRealmNexus({
     repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome,

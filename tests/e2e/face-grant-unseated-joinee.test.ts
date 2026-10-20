@@ -19,9 +19,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
+import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -96,10 +96,8 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
 
   /** A seats B by summons — the verb runs where A's booted provider lives; the record lands on A's plane. */
   async function seatB(): Promise<Record<string, unknown>> {
-    const idDir = join(rootB, "data/lares/identity");
-    const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"))!;
-    const contactCard = readFileSync(join(idDir, cardFile), "utf8");
-    const deviceEdge = joinedDeviceEdge(pair!);
+    const contactCard = await joinedFaceCard(pair!);
+    const deviceEdge = await joinedDeviceEdge(pair!);
     const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
       `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
       { results?: { summary?: { output?: Record<string, unknown> } } };

@@ -51,7 +51,7 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
 
 async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest, secret: Uint8Array = SECRET) {
   const body = {
-    nonce: request.nonce, vesselKey: request.vesselKey, personaGroup: GROUP,
+    nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
     edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage: CARRIAGE,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: HEARTH_NEXUS },
@@ -74,7 +74,7 @@ describe("the browser's fleet join", () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: JSON.parse(JSON.stringify(s.offer)), idbName: s.idbName });
     expect(request.requests.map((q) => q.scope)).toEqual([s.face.scope]);
-    expect(request.requests[0]!.vesselFaceKey).not.toBe(request.vesselKey);
+    expect(request.requests[0]!.vesselFaceKey).not.toBe(request.atomKey);
     expect(await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName })).toEqual(request);
     const other = fleetJoinOffer({ ...s.offer, nonce: "ef".repeat(32) });
     await expect(browserFleetJoinRequest({ offer: other, idbName: s.idbName })).rejects.toThrow(/join-pending/);
@@ -133,8 +133,8 @@ describe("the browser's fleet join", () => {
     const custody = browserVesselFaceKeyCustody(s.idbName);
     const image = new TextEncoder().encode("synthetic image");
     expect(await custody.signAsVesselFace(s.face.scope, request.requests[0]!.vesselFaceKey, image)).toHaveLength(64);
-    await expect(custody.signAsVesselFace(s.face.scope, request.vesselKey, image)).rejects.toThrow(/face-key-other/);
-    await expect(custody.signAsVesselFace({ ...s.face.scope, nexus: "nexus-other.synthetic" } as never, request.vesselKey, image)).rejects.toThrow(/face-key-absent/);
+    await expect(custody.signAsVesselFace(s.face.scope, request.atomKey, image)).rejects.toThrow(/face-key-other/);
+    await expect(custody.signAsVesselFace({ ...s.face.scope, nexus: "nexus-other.synthetic" } as never, request.atomKey, image)).rejects.toThrow(/face-key-absent/);
   });
 
   test("B5 — a request that broke after minting retries clean over the same offer, on the key it left at rest", async () => {

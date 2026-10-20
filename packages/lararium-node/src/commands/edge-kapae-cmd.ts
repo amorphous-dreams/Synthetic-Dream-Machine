@@ -35,11 +35,14 @@ import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
   realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
+  faceAtomKeyFromSeed,
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
-  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
+  listPersonaRoots, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAtom } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 import { wornNexusLeaf } from "../nexus-leaf.js";
@@ -146,8 +149,11 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     throw new EdgeKapaeError("the quorum hand acts on a realm's edge board — name the realm. A fleet's edge answers to its root alone.");
   }
 
-  const vesselKey = await loadVesselVerifyingKey();
-  if (!vesselKey) throw new EdgeKapaeError("this vessel surfaces no verifying key — it keeps no ledger to read a board against.");
+  const faceIndex = realm !== undefined ? (await loadActivePersonaIndex()) ?? 0 : opts.handleIndex ?? (await listPersonaRoots())[0];
+  const anchors = faceIndex === undefined ? null : await loadIdentityAnchors(faceIndex);
+  const atomSeed = faceIndex === undefined ? null : await loadFaceAtom(faceIndex);
+  if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");
+  const vesselKey = faceAtomKeyFromSeed(atomSeed!, anchors!.personaGroupId).key;
   if (realm !== undefined && opts.handleIndex !== undefined) {
     throw new EdgeKapaeError("a realm's holder hand signs with the key the worn face presents at the realm's Nexus — `--as` names a fleet root, on a fleet's board alone.");
   }

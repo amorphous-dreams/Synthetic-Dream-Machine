@@ -29,6 +29,7 @@ import { runEdgeRollAnchors } from "../src/commands/edge-roll-anchor.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -40,6 +41,7 @@ const chairs = (keys: readonly string[]) => keys.map((_, i) => `Kahu ${i}`);
 /** A charter seated over faces 0-2 at two of three, armed with faces 4-6, and the roll that reveals them. */
 async function seatCharter() {
   await Promise.all([0, 1, 2, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  await Promise.all([0, 1, 2, 4, 5, 6].map((i) => seedFaceAtom(i)));
   const old = await seatChairs([0, 1, 2]);
   const next = await seatChairs([4, 5, 6], { generation: 1 });
   const oldKeys = [...old.keys], newKeys = [...next.keys];
@@ -59,6 +61,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();
@@ -132,6 +135,7 @@ describe("the quorum hand — the seats of the charter act on a realm's edges", 
     await expect(direct(runEdgeKapae)({ member: joiner, realm: REALM, raised: true, hand: "quorum" })).rejects.toBeInstanceOf(EdgeKapaeError);
     // A charter that seats ONE held seat key beside two foreign keys, at two of three: this vessel holds one seat.
     await generateOrLoadPersonaGroupRoot(0);
+    await seedFaceAtom(0);
     const held = (await seatChairs([0])).keys[0]!;
     const keys = [held, await nymOf(21), await nymOf(22)];
     writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: chairs(keys) }));

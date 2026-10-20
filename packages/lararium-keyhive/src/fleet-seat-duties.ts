@@ -67,7 +67,7 @@ export async function answerFleetSeatDuties(input: {
   /** This vessel's own identifiers in the group (its veil, its vessel), and its own device key. */
   readonly ownIdentifiers: readonly string[];
   readonly sink:           SeatRollSink;
-  /** Signs a roll's receipt with the vessel's own key (`ed25519SignerFromSeed(vesselSeed)`). */
+  /** Signs a roll receipt with the face atom. */
   readonly signReceipt:    (bytes: Uint8Array) => Promise<string>;
 }): Promise<FleetSeatAnswer> {
   const fleetRoot = bare(input.wornFleetRoot);

@@ -71,8 +71,10 @@ export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<st
 }
 
 /** The result a faked admit ceremony returns: fresh document urls and a card, no ceremony run. */
-export function fakeAdmitResult(): Record<string, unknown> {
+export function fakeAdmitResult(input?: { readonly payload?: { readonly deviceEdge?: unknown } }): Record<string, unknown> {
   return {
+    // The complete edge the ceremony returns; the faked ceremony carries the payload's own.
+    ...(input?.payload?.deviceEdge ? { deviceEdge: input.payload.deviceEdge } : {}),
     identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(),
     daemonUrl: generateAutomergeUrl(), personaUrl: generateAutomergeUrl(), personaBagId: "persona-wire-rig",
     contactCardJson: "{\"wire\":\"rig\"}", hearthDaemonUrl: null,

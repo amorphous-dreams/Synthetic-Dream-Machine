@@ -135,7 +135,7 @@ describe("⑤ the outward gate", () => {
 
 describe("⑨ the dyad, specified and unwired", () => {
   test("the model exports what the doctrine claims of it", () => {
-    for (const sym of ["dyadId", "fleetOfGroup", "signDyadBinding", "dyadsOnVessel"]) {
+    for (const sym of ["dyadId", "fleetOfGroup", "signDyadBinding", "vesselDyads"]) {
       expect(Object.keys(mesh)).toContain(sym);
     }
   });

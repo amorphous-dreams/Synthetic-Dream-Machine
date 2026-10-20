@@ -70,6 +70,7 @@ const SOWN: Record<string, string> = {
   "identity/outbox-key.bin":                    "x",
   "identity/keyhive-archive.bin":               "x",
   "identity/veil-archive-h0.bin":               "x",
+  "identity/face-atom-h0.bin":                  "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
   [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
@@ -122,7 +123,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which the VK wraps in its own hot row (custody#/the-table, the outbox).
   "sealed-outbox": "outbox", "outbox-key": "hot",
-  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
+  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot", "face-atom": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot",
@@ -186,6 +187,7 @@ describe("the carrier table", () => {
       expect(at("identity", `cadence-key-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "cold", face: "vessel", keyClass: "device-minted" });
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
       expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });
+      expect(at("identity", "face-atom-h0.bin")).toMatchObject({ row: "face-atom", face: 0, bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");
       expect(at("storage", "sealed/own/notes")?.row).toBe("sealed-own");
       expect(at("storage", "sealed/outbox/aa.bb")?.row).toBe("sealed-outbox");

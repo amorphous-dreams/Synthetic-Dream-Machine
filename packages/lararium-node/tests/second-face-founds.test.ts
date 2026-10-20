@@ -18,7 +18,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { foundThePlace, foundTheFace, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, tiddlerText, type LarDoc,
@@ -52,8 +52,7 @@ async function foundFace(
   repo: Repo, daemonHandle: DaemonHandle, signerSeed: Uint8Array, opts: { mount?: boolean } = {},
 ): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string }> {
   const verifyingKey = await pubOf(VESSEL_SEED);
-  const face = await foundTheFace({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(VESSEL_SEED)),
-    repo,
+  const face = await foundTheFace({ repo,
     daemonHandle,
     vesselSeed:         VESSEL_SEED,
     vesselVerifyingKey: verifyingKey,

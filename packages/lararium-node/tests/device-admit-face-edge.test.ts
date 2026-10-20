@@ -39,6 +39,8 @@ vi.mock("../src/node-vessel-identity.js", () => ({
   loadPersonaGroupRootVerifyingKey: async () => undefined,
   loadVesselVerifyingKey: async () => "vessel",
 }));
+vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtom: async () => new Uint8Array(32).fill(9) }));
+vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => ({}) }) }));
 vi.mock("../src/edge-board.js", () => ({ readVesselEdgeBoard: async () => ({ readings: new Map() }) }));
 vi.mock("../src/nexus-standing.js", () => ({
   nodeNexusIsland: () => "island", nodeNexusIslandsBelow: () => [], nodeNexusStanding: () => ({ kind: "own", scope: "island" }),
@@ -71,7 +73,7 @@ const repo = {
   find: async () => ({ doc: () => ({}) }),
   flush: async () => {},
 } as never;
-const admitAt = (face?: number) => runDeviceAdmit({ repo, joineeVerifyingKey: "JOINEE", ...(face === undefined ? {} : { face }) });
+const admitAt = (face?: number) => runDeviceAdmit({ repo, catalogUrl: "catalog", joineeVerifyingKey: "6e7a1cdd29b0b78fd13af4c5598feff4ef2a97166e3ca6f2e4fbfccd80505bf1", ...(face === undefined ? {} : { face }) });
 
 describe("runDeviceAdmit names the face whose root signs", () => {
   beforeEach(() => {

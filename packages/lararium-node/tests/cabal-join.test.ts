@@ -27,6 +27,7 @@ import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { seatOwnCharter, wear } from "./worn-face-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -63,6 +64,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot();
+  await seedFaceAtom(0);
   await seedDaemonBootstrap();
   // The realm stands under this vessel's own charter, and the worn face's key there vouches.
   await seatOwnCharter([0]);

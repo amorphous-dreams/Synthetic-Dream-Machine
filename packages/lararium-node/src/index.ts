@@ -473,7 +473,7 @@ export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReaso
 // The custody root: the hot carrier every sovereign derivation stands on, apart from the floor key — see `custody-root`.
 export {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, mintCustodyRoot, custodyRootFromBytes, isCustodyRoot, custodyRootPath,
-  custodyDerive, custodyVeil, openCustodyRootCarrier, sealCustodyRoot,
+  custodyDerive, openCustodyRootCarrier, sealCustodyRoot,
 } from "./custody-root.js";
 export type { CustodyRoot, OpenedCustodyRoot } from "./custody-root.js";
 // The custody session: found, unlock, bind, unbind, rotate and read the vessel's key custody — see `custody-session`.
@@ -492,7 +492,7 @@ export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_AC
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
-export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
+export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";

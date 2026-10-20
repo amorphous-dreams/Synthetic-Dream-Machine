@@ -11,10 +11,10 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import {
   hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, groupSecretSealTitle,
-  groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, tiddlerText, type LarDoc,
+  groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, seedDaemonDoc, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
@@ -30,8 +30,7 @@ async function restedSeal(repo: Repo, daemonUrl: string, group: string): Promise
 async function founded() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "founder",
+  const f = await runFoundingCeremony({ repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
@@ -52,7 +51,7 @@ async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey:
 const apply = async (payload: Awaited<ReturnType<typeof runDeviceAdmitEdge>>) => {
   const repo = new Repo({ sharePolicy: async () => true });
   const joineeKey = await pubOf(JOINEE_SEED);
-  const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)), repo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
+  const applied = await runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo), atomSeed: JOINEE_SEED, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
   return { repo, applied };
 };
 
@@ -63,7 +62,7 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     expect(await verifyGroupSecretSeal(rested)).not.toBeNull();
     expect(rested).toEqual(f.groupSecretSeal);
     const secret = personaGroupSecret(FOUNDER_SEED, f.personaKelPrefix);
-    expect(groupSecretOpenerFromSeed(FOUNDER_SEED).seal(f.groupSecretSeal)).toEqual(secret);
+    expect(groupSecretOpenerFromSeed(f.atomSeed).seal(f.groupSecretSeal)).toEqual(secret);
     expect(groupSecretOpenerFromSeed(JOINEE_SEED).seal(f.groupSecretSeal)).toBeNull();
   });
 

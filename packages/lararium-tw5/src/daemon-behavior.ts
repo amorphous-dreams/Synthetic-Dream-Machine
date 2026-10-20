@@ -94,6 +94,12 @@ export interface DaemonBehaviorOptions {
    */
   verifierFactory?: (ctx: IslandContext) => Promise<CapabilityVerifier>;
   /**
+   * Who a verb presents as, resolved once per invocation for every cap check; absent: its `requestedBy`. `local` reads
+   * true for a verb that arrived over the vessel's own presence channel (`daemon:place-verb`), false for one a synced
+   * summons carried: the channel decides authority, never the unsigned `requestedBy` claim.
+   */
+  presenterOf?: (invocation: Verb, local: boolean) => string;
+  /**
    * Resolve (or mint+delegate) the personal/draft binding pair island-side —
    * the mint needs keyhive + the island Repo. The platform entry supplies this
    * closing over the booted keyhive; it calls `resolveOrMintBinding` with
@@ -134,6 +140,8 @@ export interface DaemonBehaviorOptions {
 
 export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBehavior {
   let _dispatcher: VerbDispatcher | null = null;
+  /** The requests that came in over the vessel's own presence channel, kept to a bound. */
+  const localAsks = new Set<string>();
 
   const _pendingDelegations = new Map<string, {
     resolve: (result: Record<string, unknown>) => void;
@@ -182,6 +190,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         registry,
         routeFn:  (invocation) => _routeToMain(invocation, post),
         ...(verifier ? { verifier } : {}),
+        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv.requestId)) } : {}),
+        localOf: (inv: Verb) => localAsks.has(inv.requestId),
       });
       _dispatcher.start();
       // The daemon's OWN verb OUT-path (the twin of the pool island-kernel's wiring):
@@ -222,7 +232,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       if (type === "daemon:place-verb") {
         const msg = raw as DaemonMsg_PlaceVerb;
         if (tw5) {
-          placeVerb(tw5, {
+          const placed = placeVerb(tw5, {
             verb:        msg.verb,
             args:        msg.args,
             requestedBy: msg.requestedBy,
@@ -233,6 +243,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.listenable? { listenable: msg.listenable            } : {}),
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
           });
+          localAsks.add(placed);
+          if (localAsks.size > 4096) localAsks.delete(localAsks.values().next().value as string);
         }
         return true;
       }

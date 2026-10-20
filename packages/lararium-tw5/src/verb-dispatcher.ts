@@ -190,6 +190,10 @@ export interface VerbDispatcherOptions {
   readonly daemon:    CompositeStore;
   readonly registry:  VerbTable;
   readonly verifier?: CapabilityVerifier;
+  /** Who a verb presents as. Absent: the invocation's own `requestedBy`. The one place every cap check resolves it. */
+  readonly presenterOf?: (invocation: Verb) => string;
+  /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
+  readonly localOf?: (invocation: Verb) => boolean;
   readonly routeFn?:  (invocation: Verb) => Promise<Record<string, unknown>>;
 }
 
@@ -246,6 +250,8 @@ export class VerbDispatcher {
         registry: this.opts.registry,
         ...(signal ? { signal } : {}),
         ...(this.opts.verifier ? { verifier: this.opts.verifier } : {}),
+        ...(this.opts.presenterOf ? { presenterOf: this.opts.presenterOf } : {}),
+        ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
       });
     }
     if (this.opts.routeFn) {
@@ -256,7 +262,8 @@ export class VerbDispatcher {
       // routes as before.
       if (this.opts.verifier) {
         const { access, bagUrl } = deriveRoutedCap(invocation);
-        const proof = await this.opts.verifier.verify({ presenter: invocation.requestedBy, bagUrl, access });
+        const proof = await this.opts.verifier.verify({ presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, bagUrl, access,
+          ...(this.opts.localOf?.(invocation) ? { channel: "local" as const } : {}) });
         if (!proof.ok) {
           throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
         }

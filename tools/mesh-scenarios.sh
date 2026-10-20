@@ -554,7 +554,7 @@ run_leaf() {
   local FORGED ANSWER ZSIG SEAL
   ZSIG=$(printf '0%.0s' $(seq 128))
   SEAL="09$(printf '0%.0s' $(seq 62))"
-  FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"vesselKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
+  FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"atomKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
   if printf '%s' "$FORGED" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/leaf-forged-request.json'; then
     if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer /tmp/leaf-forged-request.json 2>&1); then
       bad "the hearth answered a request no vessel signed"; printf '%s\n' "$ANSWER" | head -3 | sed 's/^/      /'

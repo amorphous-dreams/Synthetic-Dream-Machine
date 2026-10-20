@@ -37,7 +37,7 @@ export type {
 } from "./browser-connection-state.js";
 
 export {
-  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,
+  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";

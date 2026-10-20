@@ -25,7 +25,7 @@ import {
   type KahuQuorumSeats, type LarDoc,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
-import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { readVesselEdgeBoard, realmNexusIn } from "../edge-board.js";
 import { primaryNexusAid } from "../carried-set.js";
@@ -57,8 +57,8 @@ export async function runEdgeRollAnchors(opts: {
   readonly opened:   KahuQuorumSeats;
   readonly repo:     Repo;
 }): Promise<readonly EdgeRollAnchorLanded[]> {
-  const vesselKey = await loadVesselVerifyingKey().catch(() => "");
-  if (!vesselKey) return [];                                     // a vessel with no key keeps no ledger: nothing to anchor
+  const vesselKey = await loadWornFaceAtomKey().catch(() => "");
+  if (!vesselKey) return [];                                     // a face with no atom keeps no ledger: nothing to anchor
   const repo = opts.repo;
   const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
   // A board with no quorum act in this vessel's ledger carries nothing a roll could strand (a fleet's board

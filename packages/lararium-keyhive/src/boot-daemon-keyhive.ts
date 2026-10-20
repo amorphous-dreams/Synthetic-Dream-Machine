@@ -30,6 +30,8 @@ export interface BootDaemonKeyhiveInput {
   readonly eventStore: CapabilityProviderInitOpts["eventStore"];
   /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A). */
   readonly vesselVerifyingKey: string;
+  /** The mounted face atom that the device edge delegates to. */
+  readonly faceVerifyingKey?: string;
   /** The face's PersonaGroup id (a Keyhive group's), the affiliation layer's membership subject. ABSENT names a
    *  vessel at the WAKING FLOOR — see `face` below. */
   readonly personaGroupId?: string;
@@ -167,10 +169,10 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   }
   // Bind-check: the edge MUST delegate to THIS vessel's key (designation carries authority —
   // a valid edge for a DIFFERENT vessel is not authority for this one).
-  if (input.deviceEdge!.deviceVerifyingKey !== input.vesselVerifyingKey) {
+  if (input.deviceEdge!.deviceVerifyingKey !== input.faceVerifyingKey) {
     throw new Error(
       `[daemon-keyhive] Binding Gate: edge delegates to ${input.deviceEdge!.deviceVerifyingKey.slice(0, 16)}…, ` +
-      `not this vessel ${input.vesselVerifyingKey.slice(0, 16)}…`,
+      `not this face ${(input.faceVerifyingKey ?? "absent").slice(0, 16)}…`,
     );
   }
   }
