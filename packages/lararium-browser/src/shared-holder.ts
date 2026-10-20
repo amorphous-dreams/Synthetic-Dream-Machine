@@ -11,11 +11,12 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/moves
  */
 
-import type { VesselWorkerHandle } from "@lararium/mesh";
+import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
+import { signHolderSessionProof } from "@lararium/mesh";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
 
-const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope>();
+const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
 
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
@@ -90,20 +91,64 @@ export async function attachSharedHolder(args: {
     port.close();
     throw new Error("[shared-holder] malformed holder greeting");
   }
-  portEnvelopes.set(port, envelope);
+  const nonce = (greeting as HolderHello).nonce;
+  if (typeof nonce !== "string" || nonce.length === 0) {
+    port.close();
+    throw new Error("[shared-holder] holder greeting carries no nonce");
+  }
+  portEnvelopes.set(port, { ...envelope, nonce });
   return { kind: "attached", port, hello: greeting };
 }
 
-/** The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. */
-export function holderWorkerHandle(port: MessagePort): VesselWorkerHandle {
-  const envelope = portEnvelopes.get(port);
-  if (!envelope) throw new Error("[shared-holder] holder greeting absent");
+/** The face a tab wears: the countersigned edge it presents and the atom that signs the holder's challenge. */
+export interface HolderFaceSession {
+  readonly personaGroup: string;
+  readonly edge:         DeviceDelegationTiddler;
+  readonly atom:         { sign(bytes: Uint8Array): Promise<string> | string };
+}
+
+/**
+ * The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. With a
+ * `session`, the handle admits the tab's session first: it signs the port's challenge with the face atom and posts
+ * `session:open`, so the holder stands this face's house and the island boots behind it. The holder's refusal
+ * reaches the daemon core as a fault that names its cause.
+ */
+export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSession): VesselWorkerHandle {
+  const held = portEnvelopes.get(port);
+  if (!held) throw new Error("[shared-holder] holder greeting absent");
+  const { nonce, ...envelope } = held;
+  // A tab's asks wait for its admission: the holder answers a port only once its session admitted.
+  let admitted = session === undefined;
+  const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
+  const send = (msg: object, transfer: Transferable[]): void => port.postMessage({ ...msg, ...envelope }, transfer);
+  if (session) {
+    port.addEventListener("message", (e: MessageEvent) => {
+      const d = e.data as { kind?: unknown; sessionId?: unknown };
+      if (admitted || d?.kind !== "holder:admitted" || d.sessionId !== envelope.sessionId) return;
+      admitted = true;
+      for (const queued of waiting.splice(0)) send(queued.msg, queued.transfer);
+    });
+    port.start();
+    void (async () => {
+      const signature = await signHolderSessionProof(session.atom, {
+        ownerEpoch: envelope.ownerEpoch, sessionId: envelope.sessionId, nonce, personaGroup: session.personaGroup,
+      });
+      port.postMessage({ type: "session:open", personaGroup: session.personaGroup, edge: session.edge, signature, ...envelope });
+    })().catch((error) => console.warn(`[shared-holder] session:open failed (${error instanceof Error ? error.message : String(error)})`));
+  }
   return {
-    post: (msg, transfer) => port.postMessage({ ...msg as object, ...envelope }, (transfer ?? []) as Transferable[]),
+    post: (msg, transfer) => {
+      if (admitted) send(msg as object, (transfer ?? []) as Transferable[]);
+      else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
+    },
     listen: (cb) => {
       const fn = (e: MessageEvent): void => {
-        const d = e.data as { kind?: unknown };
-        if (d && d.kind === "holder:hello") return;   // the greeting is the door's, never the island's
+        const d = e.data as { kind?: unknown; cause?: unknown };
+        if (d && (d.kind === "holder:hello" || d.kind === "holder:admitted")) return;   // the door's words, never the island's
+        if (d && d.kind === "holder:refused" && session) {
+          cb({ type: "fault", wikiUri: "", error: `[shared-holder] the holder refused this session: ${String(d.cause)}` });
+          return;
+        }
         const incoming = validateSessionEnvelope(e.data);
         const refusal = !incoming ? "malformed-message"
           : incoming.ownerEpoch !== envelope.ownerEpoch ? "stale-owner-epoch"

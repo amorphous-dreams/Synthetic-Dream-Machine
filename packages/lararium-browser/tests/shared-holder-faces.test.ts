@@ -70,8 +70,9 @@ function harness() {
   const port = () => {
     const listeners = new Set<(event: MessageEvent) => void>();
     const received: Message[] = [];
+    const waiters = new Set<(message: Message) => void>();
     const endpoint: HolderPort = {
-      postMessage: (message) => received.push(message as Message),
+      postMessage: (message) => { received.push(message as Message); for (const waiter of waiters) waiter(message as Message); },
       addEventListener: (_type, listener) => listeners.add(listener), start: () => {},
     };
     const hello = (): Hello => received.find((m) => m.kind === "holder:hello") as Hello;
@@ -83,7 +84,15 @@ function harness() {
       for (const listener of listeners) listener({ data: { ...envelope(), ...message }, ports: [] } as unknown as MessageEvent);
     };
     const messages = (kind: string) => received.filter((m) => m.kind === kind || m.type === kind);
-    return { endpoint, received, hello, envelope, send, messages };
+    // The holder's verdict on a session:open is the product's own event: the port waits on it, never on a clock.
+    const verdict = (): Promise<Message> => new Promise((resolve) => {
+      const waiter = (message: Message): void => {
+        if (message.kind !== "holder:admitted" && message.kind !== "holder:refused") return;
+        waiters.delete(waiter); resolve(message);
+      };
+      waiters.add(waiter);
+    });
+    return { endpoint, received, hello, envelope, send, messages, verdict };
   };
   const open = async (tab: ReturnType<typeof port>, group: string, edge: DeviceDelegationTiddler, atom: FaceAtomKey) => {
     const h = tab.hello();
@@ -91,7 +100,9 @@ function harness() {
       ownerEpoch: h.ownerEpoch, sessionId: h.sessionId,
       nonce: h.nonce ?? "00", personaGroup: group,
     });
+    const answered = tab.verdict();
     tab.send({ type: "session:open", personaGroup: group, edge, signature });
+    await answered;
   };
   const settle = async () => { await Promise.resolve(); await Promise.resolve(); };
   return { core, port, open, settle, spawned, islands, repos, madeRepos, locks, waits };

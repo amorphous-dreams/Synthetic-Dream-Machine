@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { makeSharedHolderCore, type HolderIsland, type HolderPort } from "../src/shared-holder-core.js";
 import { HOLDER_ROUTES } from "../src/holder-routes.js";
+import { admitPort, faceFixture, fakePort, type FakePort } from "./holder-session-fixture.js";
 import type { IslandToVesselMsg } from "../../lararium-mesh/src/island-protocol";
 
 const islandKinds = [
@@ -27,39 +28,17 @@ function harness() {
     spawnIsland: () => island,
     onDrop: (kind, reason) => drops.push({ kind, reason }),
   });
-  const port = () => {
-    const listeners = new Set<(event: MessageEvent) => void>();
-    const received: unknown[] = [];
-    const endpoint: HolderPort = {
-      postMessage: (message) => received.push(message),
-      addEventListener: (_type, listener) => listeners.add(listener),
-      start: () => {},
-    };
-    return {
-      endpoint,
-      received,
-      send: (data: unknown) => {
-        const hello = received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch?: string; sessionId?: string; generation?: number } | undefined;
-        const enveloped = hello ? { ownerEpoch: hello.ownerEpoch, sessionId: hello.sessionId, generation: hello.generation, ...data as object } : data;
-        for (const listener of listeners) listener({ data: enveloped, ports: [] } as unknown as MessageEvent);
-      },
-      sendRaw: (data: unknown) => {
-        for (const listener of listeners) listener({ data, ports: [] } as unknown as MessageEvent);
-      },
-      envelope: () => {
-        const hello = received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
-        return { ownerEpoch: hello.ownerEpoch, sessionId: hello.sessionId, generation: hello.generation };
-      },
-    };
-  };
+  const port = fakePort;
+  const face = faceFixture("face:T");
+  const admit = async (tab: FakePort): Promise<void> => { await admitPort(tab, await face); };
   const fromIsland = (message: unknown) => { for (const listener of islandListeners) listener(message); };
-  return { core, port, islandPosts, fromIsland, drops };
+  return { core, port, admit, islandPosts, fromIsland, drops };
 }
 
 describe("shared holder routing keeps every island answer on its binding", () => {
   test("hello gives each port a distinct session in one owner epoch", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     const hello = (port: typeof a) => port.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch?: string; sessionId?: string; generation?: number };
     expect(hello(a)).toMatchObject({ generation: 0 });
     expect(hello(b)).toMatchObject({ generation: 0 });
@@ -94,7 +73,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("the holder refuses stale epochs, unknown sessions, other ports and stale generations", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     const hello = (port: typeof a) => port.received.find((m) => (m as { kind?: string }).kind === "holder:hello") as { ownerEpoch: string; sessionId: string; generation: number };
     const base = { type: "wiki:place-verb", requestId: "refused" };
     a.send({ ...base, ownerEpoch: "stale-epoch" });
@@ -122,7 +101,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
   });
 
   test("island sees a stripped request and its answer returns with the asker's envelope", async () => {
-    const h = harness(); const a = h.port(); await h.core.connect(a.endpoint);
+    const h = harness(); const a = h.port(); await h.core.connect(a.endpoint); await h.admit(a);
     a.send({ type: "wiki:place-verb", requestId: "single" });
     const sent = h.islandPosts.at(-1) as Record<string, unknown>;
     for (const field of ["ownerEpoch", "sessionId", "generation"]) expect(sent).not.toHaveProperty(field);
@@ -132,7 +111,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("colliding tab request ids return only to each asker with its own id", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     a.send({ type: "wiki:place-verb", requestId: "same", verb: "a" });
     b.send({ type: "wiki:place-verb", requestId: "same", verb: "b" });
     const sent = h.islandPosts.slice(-2) as Array<{ requestId: string }>;
@@ -147,7 +126,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("a camera resend leases that camera's frames to its sending port", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     a.send({ type: "lar:resend", cameraId: "camera-X" });
     h.fromIsland({ type: "lar:frame", cameraId: "camera-X", mountEpoch: 1, sequence: 1, payload: "frame" });
     expect(a.received.at(-1)).toMatchObject({ type: "lar:frame", cameraId: "camera-X" });
@@ -156,11 +135,12 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("manifest owns the island route and owner traffic stays on that port", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     a.send({ type: "manifest", wikiUri: "wiki:a" });
     b.send({ type: "manifest", wikiUri: "wiki:b" });
     expect(h.islandPosts.filter((m) => (m as { type?: string }).type === "manifest")).toHaveLength(1);
     expect(b.received.at(-1)).toMatchObject({ kind: "holder:refused", cause: expect.stringMatching(/island-owned/) });
+    a.send({ type: "session:sealer", ready: true });
     h.fromIsland({ type: "breath", wikiUri: "wiki:a" });
     h.fromIsland({ type: "custody:write", requestId: "custody-1", wikiUri: "wiki:a" });
     expect(a.received.slice(-2).map((m) => (m as { type: string }).type)).toEqual(["breath", "custody:write"]);
@@ -169,7 +149,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("unknown replies and unleased camera or owner traffic drop by kind and reason", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     h.core.disconnect(a.endpoint);   // the owner ends: owner traffic has no destination until a new owner stands
     h.fromIsland({ type: "wiki:verb-result", requestId: "never-issued" });
     h.fromIsland({ type: "lar:frame", cameraId: "unleased", mountEpoch: 1, sequence: 1, payload: "frame" });
@@ -184,7 +164,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("disconnect drops only that port's pending replies and leaves another request routable", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint);
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
     a.send({ type: "wiki:place-verb", requestId: "a-pending" });
     b.send({ type: "wiki:place-verb", requestId: "b-pending" });
     const sent = h.islandPosts.slice(-2) as Array<{ requestId: string }>;
@@ -198,7 +178,7 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("CONTROL — one port receives its one matching reply", async () => {
     const h = harness(); const a = h.port();
-    await h.core.connect(a.endpoint);
+    await h.core.connect(a.endpoint); await h.admit(a);
     a.send({ type: "wiki:place-verb", requestId: "single" });
     const sent = h.islandPosts.at(-1) as { requestId: string };
     h.fromIsland({ type: "wiki:verb-result", requestId: sent.requestId, result: { ok: true } });
@@ -212,9 +192,9 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("the port that stands the island owns its boot: `ready` before any manifest reaches it alone", async () => {
     const h = harness(); const a = h.port(); const b = h.port();
-    await h.core.connect(a.endpoint);
+    await h.core.connect(a.endpoint); await h.admit(a);
     h.fromIsland({ type: "ready" });
-    await h.core.connect(b.endpoint);
+    await h.core.connect(b.endpoint); await h.admit(b);
     expect(a.received.some((m) => (m as { type?: string }).type === "ready")).toBe(true);
     expect(b.received.some((m) => (m as { type?: string }).type === "ready")).toBe(false);
   });
