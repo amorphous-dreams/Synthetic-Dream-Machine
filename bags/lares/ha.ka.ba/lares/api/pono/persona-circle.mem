@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "persona-circle — the identity model (WHO-plane), re-cut on two axes: COMPOSITION (bottom-up emergent Circles: vessel~veil binding → handle-Circle → me-Circle) ⊥ DISCLOSURE (veiled↔known, a per-join dial). Two-key atom (vessel-key device-minted ⊥ veiled-user-key); the persona side derives one-seed ed25519-HD; key-layer unlinkability only"
+role              = "persona-circle — the identity model (WHO-plane), re-cut on two axes: COMPOSITION (bottom-up emergent Circles: the device's face atom → handle-Circle → me-Circle) ⊥ DISCLOSURE (veiled↔known, a per-join dial). Three keys, none derived from another (the place key, the persona root, the face atom); the dyad has one end, the atom; key-layer unlinkability only"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/persona-circle"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -36,7 +36,7 @@ Triple-cruci­bled (local canon · the operator's recorded design · the deep-kn
 
 The WHO plane re-cuts into two ''orthogonal'' axes (the same de-fusing move [[causal-islands]] ran on its ladder — never a new linear ladder):
 
-* ''COMPOSITION (structural, bottom-up emergent):'' `vessel~veil` binding → ''handle-Circle'' (PersonaGroup) → ''the Vault'' (the human's private namespace over its handles — NEVER a published Circle; #the-vault). The cardinality joins FORM the structure — but the top join ''collects, never merges'': a group that //names// its members links them, so a private namespace holds the human's own selves, off every roster.
+* ''COMPOSITION (structural, bottom-up emergent):'' the device's face atom → ''handle-Circle'' (PersonaGroup) → ''the Vault'' (the human's private namespace over its handles — NEVER a published Circle; #the-vault). The cardinality joins FORM the structure — but the top join ''collects, never merges'': a group that //names// its members links them, so a private namespace holds the human's own selves, off every roster.
 * ''DISCLOSURE (a per-join DIAL, not a tier):'' veiled ↔ known. One continuous //linkability// axis (Pfitzmann–Hansen: anonymity ↔ accountability, pseudonymity the whole span). It applies at ''each join independently'' — a vessel, a handle, the human, each veiled or named in any combination.
 
 Fusing them mislabels the boundaries "anon vs known"; the cardinality joins draw the real boundaries. //Which hearth// (composition) and //how-linkable// (disclosure) ask different questions. The veil does not amount to "anon petname relabeled" — it stands as the disclosure axis itself, on which ''anon = name⊥''.
@@ -45,24 +45,25 @@ Fusing them mislabels the boundaries "anon vs known"; the cardinality joins draw
 
 <<~ ahu #/the-atom>>
 
-!! The Atom ~ a `vessel~veil` binding, two keys
+!! The Atom ~ one face's own key on one device
 
-The base atom carries ''two keys'' (Veilid's peer-identity ⊥ user-identity, a real two-axis = substrate ≠ sovereignty rendered as keys):
+Three keys stand in the model, and none derives from another:
 
-* ''vessel-key'' — the device/substrate identity. ''DEVICE-MINTED, forged on its own device, the private half never leaving'' (#vessel-key doctrine; admit-by-signing-never-by-sharing). It ''NEVER derives from the persona seed'' — deriving it would commit the ''copy-the-key antipattern'' that dissolves per-device revocation (Veilid/SSB). It stays a //local substrate secret// and ''MUST NEVER co-surface'' (sign-alongside / share-route / time-correlate) with the veiled-user-key.
-* ''veiled-user-key'' — the sovereign pseudonym presented through the veil. This key serves as the ''anon user-pseudonym'' — a binding whose name reads ⊥ until disclosed.
+* ''The place key'' — the device's own substrate identity, minted on that device, its private half never leaving. It keeps the floor's duties alone (the carriage seal, the floor pin, the served pointer, the raise challenge, its finish at another place's gate) and ''stands in no face relation'': it signs no face act, seals to no face, and sits on no face's roster. A thief holding it derives no face's key and opens no group's secret.
+* ''The persona root'' — the face's own operator key, its op-key under the face's persona KEL. It signs the root half of each device delegation and nothing on a device's behalf; recovery rotates it beneath the same KEL prefix through the face's guardians, so continuity rides the log, never a frozen key.
+* ''The face atom'' — the key ONE device meets ONE face through. It mints at random when that device founds or joins the face, derives from no other seed (not the place key, not the persona root, not a sibling face's atom), and rests as a D row in that face's own custody on that device. It signs every act the device makes on the face's behalf (dial, join, enrolment, sibling channel, proof), the face's group secret seals to it, and it countersigns its own half of its delegation. It rides no bundle and no wire as a secret, and it ''never resurrects'': a lost device dies alone, and re-admission mints a fresh atom.
 
 This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-KEM cut (`lararium-identity#/four-port-swap`); it does not restate it.
 
-''THE TRUE NAME MODEL ~ how the atoms bind without merging.'' The atom holds its two keys apart; a ''signed edge'' joins atoms — never shared key material. ''BIND BY EDGE, NEVER BY SEED.'' The alternative fails at the substrate: a key ''copied'' between vessels //becomes// the collector, presented to every verifier it meets, landing on ''merge'' by the single-bit test (#/the-vault) and linking every self beneath any policy written above it. The edge binds AT the hearth's True Name, which explains why a Place must hold a name of its own (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>).
+''THE DYAD HAS ONE END'' (operator ruling, 2026-10-19). A dyad names one human's relationship with one device, and the device meets the face through its atom alone, so the dyad's end is the atom's DID. The word "veil" once named this per-device face; that face IS the atom now, and the face's fleet-wide presence is its persona root and its Handle. A vessel's own list of its atoms rests as a local custody row on no wire or board. Both ceremony sites MINT the dyad slot: a self-stood face signs its binding at the genesis epoch; a joinee lands `binding: null` (presented, not yet gathered), and the absence travels.
 
-''The edge runs SIDEWAYS, never downward'' (operator ruling — the inversion-of-control eigenstate). Each ''device+veil atom stands as a LOCAL IDENTITY'' in its own right, and the worn veil ''changes at will''. The ''PersonaGroup COLLECTS'' those atoms that share a pet-name for the human into an ''identity-FLEET'' — it does not grant them, does not own them, and stands as no root above them. A fleet reads as ''what the atoms declare when they name each other'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">> — //"no edge speaks for another member"//). So an edge that runs only root→device names a ''hierarchy'', never this fleet; the pono form carries ''both halves, each signed by its own subject'', and membership resolves as the reciprocal-edge closure rather than a pinned grant.
+''THE TRUE NAME MODEL ~ how the atoms bind without merging.'' A ''signed edge'' joins atoms to their face; key material never moves. ''BIND BY EDGE, NEVER BY SEED.'' A key ''copied'' between vessels //becomes// the collector, presented to every verifier it meets, landing on ''merge'' by the single-bit test (#/the-vault) and linking every self beneath any policy written above it. The edge binds AT the hearth's True Name, which explains why a Place holds a name of its own (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>). ''BOTH HALVES, EACH SIGNED BY ITS OWN SUBJECT'': the persona root signs the delegation to the atom, the atom countersigns its half, and a root half alone verifies nowhere as an edge.
+
+''The edge runs SIDEWAYS, never downward'' (operator ruling — the inversion-of-control eigenstate). Each atom stands as a ''LOCAL IDENTITY'' in its own right. The ''PersonaGroup COLLECTS'' the atoms that share a pet-name for the human into an ''identity-FLEET'': it does not own them and stands as no root above them. A fleet reads as ''what the atoms declare when they name each other'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">> — //"no edge speaks for another member"//), and membership resolves as the reciprocal-edge closure rather than a pinned grant.
 
 ''INTERNAL ⊥ EXTERNAL — the hard law.'' The fleet's ''internal'' identity — the pet-name declaring //these atoms form one hand// — ''NEVER equals'' the ''external'' identity the operator publishes as a Handle. The collector stays inside; the face goes out; ''no act may collapse them to one value''. That reads #the-vault's single bit at the fleet scale: publish the face, never the fleet.
 
-''One seed, persona-side only.'' The ''veiled-user / persona'' keys derive from ONE seed via ''ed25519 HD-derivation, all-hardened paths'' — recover the seed, re-derive the whole persona constellation; ed25519-HD stands structurally immune to the xpub-linkage trap (SLIP-0010 = hardened-only). The ''vessel-key stays outside the seed'' (device-minted). So recovery comes cheap on the persona side without fusing substrate sovereignty. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
-
-''THE DYAD'S VEIL IS THE ATOM'S OWN KEY (operator ruling, 2026-10-19, re-reading 2026-09-05) — the word "veil" splits by layer.'' Two keys wear one word: the ''veiled-user-key'' above (seed-derived, layer ② — spans a fleet BY DESIGN, and recovery re-derives exactly that) and the ''dyad's veil'' — the face a VESSEL wears into ONE handle-group. The dyad's veil mints at random when the device joins that PersonaGroup and rests under that face's FCK on that vessel: local by construction (it rides no bundle and no wire), one face per group (no roster carries a key that appears on another), and ''never resurrected'' — it dies with the device, and re-admission minting a fresh atom cures it. No device seed stands as its ancestor, so a stolen vessel seed reaches no face's veil (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond). Built (PR #79, `K15` step 2c): `deriveDyadVeil` retired, and the atom mints at random beside the face's other custody rows. ''The dyad has one end'' (operator ruling B, 2026-10-19): the atom's DID; the place key stands in no face relation, and a vessel's list of its atoms rests as a local custody row on no wire or board. Both ceremony sites MINT the dyad slot (self-stood signs its binding at the genesis epoch; a joinee lands `binding: null` — presented, not yet gathered — and the absence travels).
+''THE ROSTER LAW.'' The atom creates its face's group and sentinel, so the creator the group's key tree seats by construction, and the identifier every carried event names in cleartext, stands the face's own random key. The place's identity sits on no face's roster, and no roster carries a key that appears on another (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond).
 
 <<~/ahu>>
 
@@ -139,20 +140,17 @@ only join between compartments, and it never rides any wire.
 ''A vessel joins each handle-group under a PER-HANDLE PSEUDONYMOUS CREDENTIAL, never its raw device key.'' A
 vessel that joins by its ''immutable device key'' puts that one key on every handle-group's roster, so two
 handles on one device share a roster entry — and by the co-membership law (RFC 9420; Keyhive), anyone in
-either group ''links them''. The credential DERIVES per handle: the deck stays one deck; the face it wears
-differs per handle, and no roster carries a key that appears on another. ''The credential EXISTS'' — the face's atom
-(#the-atom) — ''and the roster law holds by construction'' (PR #79): the atom CREATES the group and its
-sentinel, so the creator the CGKA tree seats by construction and every carried event names in cleartext
-stands the face's own random key, and the place's Individual sits on no group's roster. A test that reads
-the place absent from every face's roster after founding, admit and fleet join stays owed (`K15` Wave B,
-chunk zero), so the law stands built and unwitnessed until it lands.
+either group ''links them''. The credential MINTS per face on each device: the deck stays one deck; the face it
+wears differs per handle, and no roster carries a key that appears on another. ''The credential EXISTS'' — the face's atom
+(#the-atom) — ''and the roster law holds'' (#the-atom, the roster law): the atom creates the group, so no
+roster seats the place, and no two of one human's faces share a roster key.
 
-''THE UPGRADE — the nym must PROVE itself, not merely look unlinkable.'' SLIP-0010 `handle'/context'`
-derivation holds right in //shape// and stays unverifiable in //fact//: a relying party cannot check the derivation, cannot
-enforce one-nym-per-scope, cannot bind a credential to the seed. The sharper primitive rides beside it —
+''THE UPGRADE — the nym must PROVE itself, not merely look unlinkable.'' A random atom per face holds right in
+//shape// and stays unprovable in //fact//: a relying party cannot check that a face holds one nym per scope, cannot
+enforce it, cannot bind a credential to a committed secret. The sharper primitive rides beside it —
 ''scope-exclusive pseudonyms'' `nym = PRF_s(scope)` proven in zero-knowledge (Dodis–Yampolskiy VRF, or
-Hash-DH / ISO 20008-2), bound to the same committed master secret. Keep SLIP-0010 as the //local// tree; let the
-ZK-proven scope pseudonym serve as the NETWORK-facing nym. Then verifiable · per-scope sybil-bounded ·
+Hash-DH / ISO 20008-2), bound to one committed master secret. The random atom stays the //local// key; the ZK-proven scope
+pseudonym would serve as the NETWORK-facing nym. Then verifiable · per-scope sybil-bounded ·
 credential-linkable — the three things bare derivation cannot assert — and ''the vault falls out for free,''
 ''because the vault and the committed secret name one thing.''
 
@@ -223,6 +221,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;kOdavvmzN9u42gfIeT-Wx1NUOl80HwiEciHHLHJMU0U
+<<^ code="&#x0003;">>ni:///sha-256;QQ_-sX33Pc_umjKNKb9rueB_qwtFLfqc0Gb5fA0Rj4Y
 
 <<^ code="&#x0004;" -> to="?">>
