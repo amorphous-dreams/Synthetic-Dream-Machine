@@ -27,11 +27,13 @@ export interface RunLocalVerbOptions {
   readonly signal?:   AbortSignal;
   readonly verifier?: CapabilityVerifier;
   readonly presenterOf?: (invocation: Verb) => string;
+  /** True for a verb the vessel's own presence channel took. */
+  readonly localOf?: (invocation: Verb) => boolean;
 }
 
-export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string): CapVerify {
+export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
   return verifier
-    ? (access, bagUrl) => verifier.verify({ presenter: requestedBy, bagUrl, access })
+    ? (access, bagUrl) => verifier.verify({ presenter: requestedBy, bagUrl, access, ...(local ? { channel: "local" as const } : {}) })
     : async () => ({ ok: true, reason: "no-verifier" });
 }
 
@@ -63,6 +65,6 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
     throw new Error(`no handler registered for "${invocation.action}"`);
   }
 
-  const cap = makeCapVerify(opts.verifier, opts.presenterOf?.(invocation) ?? invocation.requestedBy);
+  const cap = makeCapVerify(opts.verifier, opts.presenterOf?.(invocation) ?? invocation.requestedBy, opts.localOf?.(invocation) ?? false);
   return handler(invocation.args, { daemon: opts.daemon, invocation, cap, ...(opts.signal ? { signal: opts.signal } : {}) });
 }

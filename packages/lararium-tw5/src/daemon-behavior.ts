@@ -191,6 +191,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         routeFn:  (invocation) => _routeToMain(invocation, post),
         ...(verifier ? { verifier } : {}),
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv.requestId)) } : {}),
+        localOf: (inv: Verb) => localAsks.has(inv.requestId),
       });
       _dispatcher.start();
       // The daemon's OWN verb OUT-path (the twin of the pool island-kernel's wiring):

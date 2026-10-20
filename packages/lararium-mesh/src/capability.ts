@@ -17,6 +17,11 @@ export interface CapabilityVerifyArgs {
   readonly presenter: CapabilityPresenter;
   readonly bagUrl:    string;
   readonly access:    CapabilityAccess;
+  /**
+   * HOW THE ASK ARRIVED. `local` reads only when the dispatcher took the verb over the vessel's own presence channel;
+   * it never rides in from a claim, so a verifier that grants more to a local session reads this and nothing a peer wrote.
+   */
+  readonly channel?:  "local";
 }
 
 export interface CapabilityVerifyResult {
