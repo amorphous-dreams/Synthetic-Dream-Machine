@@ -42,14 +42,27 @@ export async function runFaceJoinOperation(input: FaceJoinOperationInput): Promi
   const { provider, summons, ctx, founderEdge, signGrant, atomSeed, operationStore, grantPlane } = input;
   const signedInput = new TextEncoder().encode(JSON.stringify(summons));
 
+  /** The serial of the grant standing at `title`: 0 where none stands or the bytes carry none. */
+  const standingSerial = async (title: string): Promise<{ serial: number; text: string | null }> => {
+    const standing = await grantPlane.store.get(title);
+    if (!standing || standing.meta?.deleted) return { serial: 0, text: null };
+    const text = typeof standing.tiddler.text === "string" ? standing.tiddler.text : null;
+    let serial = 0;
+    try { const read = (JSON.parse(text ?? "null") as { serial?: unknown } | null)?.serial; if (Number.isSafeInteger(read)) serial = read as number; } catch { serial = 0; }
+    return { serial, text };
+  };
+
   const publish = async (issued: Extract<JoinOperation, { state: "issued" }>): Promise<Record<string, unknown>> => {
-    const standing = await grantPlane.store.get(issued.grantTitle);
-    if (!standing || standing.meta?.deleted) {
+    const standing = await standingSerial(issued.grantTitle);
+    const ours = JSON.stringify(issued.grantRecord);
+    // ONE TITLE PER (GROUP, JOINEE), ORDERED BY SERIAL: an absent or older grant gives way to this issue; the same serial
+    // stands only as the same bytes; a newer grant stays, and this issue answers its own outcome without writing.
+    if (standing.text === null || standing.serial < issued.grantRecord.serial) {
       await grantPlane.store.put(
-        { tiddler: { title: issued.grantTitle, text: JSON.stringify(issued.grantRecord), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
+        { tiddler: { title: issued.grantTitle, text: ours, kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
         { kind: "lares-verb", requestId: `face-grant-${issued.grantRecord.sig.slice(0, 12)}` },
       );
-    } else if (standing.tiddler.text !== JSON.stringify(issued.grantRecord)) {
+    } else if (standing.serial === issued.grantRecord.serial && standing.text !== ours) {
       throw new Error("[face-join] the grant title holds different issued bytes");
     }
     const output = {
@@ -69,11 +82,10 @@ export async function runFaceJoinOperation(input: FaceJoinOperationInput): Promi
   if (!outcome.ok) return { verb: "face-join", admitted: false, reason: outcome.reason };
   const { kind: _grantKind, ...grantBody } = outcome.grant;
   void _grantKind;
-  const grantRecord = await signFaceGrantRecord({ kind: "face-join-grant/v1", groupId: ctx.personaGroupId, ...grantBody, founderEdge }, signGrant);
-  const issued = {
-    state: "issued", outcome, grantRecord,
-    grantTitle: faceGrantTitle(ctx.personaGroupId, outcome.grant.joineeAgentIdHex),
-  } satisfies JoinOperation;
+  const grantTitle = faceGrantTitle(ctx.personaGroupId, outcome.grant.joineeAgentIdHex);
+  const serial = (await standingSerial(grantTitle)).serial + 1;
+  const grantRecord = await signFaceGrantRecord({ kind: "face-join-grant/v1", groupId: ctx.personaGroupId, ...grantBody, serial, founderEdge }, signGrant);
+  const issued = { state: "issued", outcome, grantRecord, grantTitle } satisfies JoinOperation;
   await writeFaceOperation(operationStore, atomSeed, signedInput, issued);
   return publish(issued);
 }

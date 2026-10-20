@@ -70,7 +70,7 @@ async function grantFor(overrides: Partial<FaceGrantRecord> = {}, rootSeed = ROO
     joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}',
     capEvents: ["AQID", "BAU="],
-    reKeyed: true, reSealed: [],
+    reKeyed: true, serial: 1, reSealed: [],
     founderEdge: edge,
     ...overrides,
   };
