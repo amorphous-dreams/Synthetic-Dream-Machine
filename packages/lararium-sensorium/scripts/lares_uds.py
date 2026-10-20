@@ -45,7 +45,8 @@ class LaresVerbError(Exception):
 def data_dir() -> str:
     """`<lares>/vessel` — the ONE env contract both sides resolve the socket under, mirroring TS
     `larDataDir()` (vessel-paths.ts): `LAR_ROOT/data/lares/vessel` for an isolated instance, else
-    `$XDG_DATA_HOME/lares/vessel` (unset -> `~/.local/share/lares/vessel`).
+    `$XDG_DATA_HOME/lares/vessel` (`XDG_DATA_HOME` is trimmed; unset/blank-after-trim ->
+    `~/.local/share/lares/vessel`).
 
     THE CRITERION IS WHOSE IT IS. The vessel substrate belongs to the SPIRITS, so it stands in the
     spirits' house; what belongs to the HOUSE stands at `<lararium>`. Under an isolated root every
@@ -54,7 +55,9 @@ def data_dir() -> str:
     root = os.environ.get("LAR_ROOT")
     if root:
         return os.path.join(root, "data", "lares", "vessel")
-    xdg = os.environ.get("XDG_DATA_HOME") or os.path.join(os.path.expanduser("~"), ".local", "share")
+    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
+    if not xdg:
+        xdg = os.path.join(os.path.expanduser("~"), ".local", "share")
     return os.path.join(xdg, "lares", "vessel")
 
 

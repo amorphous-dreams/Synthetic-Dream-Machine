@@ -55,14 +55,14 @@ harness_check() {
 }
 
 check() {
-  local label="$1" root_env="$2"
+  local label="$1"; shift
   local ts py
-  ts=$(env ${root_env:+LAR_ROOT="$root_env"} node --input-type=module -e '
+  ts=$(env "$@" node --input-type=module -e '
     import { rendezvousPath } from "./packages/lararium-mesh/dist/rendezvous-path.js";
     import { larDataDir }     from "./packages/lararium-node/dist/src/vessel-paths.js";
     process.stdout.write(rendezvousPath({ root: larDataDir(), uid: process.getuid() }));
   ')
-  py=$(env ${root_env:+LAR_ROOT="$root_env"} python3 -c '
+  py=$(env "$@" python3 -c '
 import sys; sys.path.insert(0, "packages/lararium-sensorium/scripts")
 import lares_uds as uds; sys.stdout.write(uds.socket_path())
   ')
@@ -77,8 +77,10 @@ import lares_uds as uds; sys.stdout.write(uds.socket_path())
 }
 
 echo "rendezvous-parity: the daemon binds it, the py holder dials it"
-check "xdg default   " ""
-check "isolated root " "/tmp/lares-rendezvous-parity-probe"
+check "xdg default   " -u LAR_ROOT -u XDG_DATA_HOME
+check "xdg padded    " -u LAR_ROOT XDG_DATA_HOME="/tmp/lares-rendezvous-parity-xdg "
+check "xdg blank     " -u LAR_ROOT XDG_DATA_HOME="   "
+check "isolated root " LAR_ROOT="/tmp/lares-rendezvous-parity-probe"
 
 # THE BUDGET IS PART OF THE AGREEMENT. A path both sides spell identically still fails to bind if it
 # outruns `sun_path`, and the whole point of the rendezvous is that it cannot.
