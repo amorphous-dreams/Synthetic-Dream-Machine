@@ -1,0 +1,40 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "code-and-field research, a two-wave traded Copilot and Codex Sol pass (2026-10-20), on where a browser vessel's trust line runs: what the platform walls, what a hand names, a household's shared device without a human constructor, and how one operator's tiers contract outward"
+status    = "research; read 2026-10-20; the law landed at api/pono/session-contract #/the-trust-line the same day"
+tags      = ["research", "browser", "trust", "household", "nexus", "tiers"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/browser-trust-line-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/browser-trust-line-2026"
+```
+
+<<~ ahu #/head>>
+
+! The browser trust line, 2026 ~ one custody context, no human counted
+
+Four fresh reads of `K15` Wave B kept finding that other code on the same browser origin can erase an island's ledger, start a fresh empty one or take a session lock. A Copilot seat read the code and canon; a Codex Sol seat read the field; each traded and checked the other. Claims read MEASURED (read in code, canon or a cited source) or LEAD.
+
+<<~/ahu>>
+
+<<~ ahu #/findings>>
+
+!! Findings
+
+# ''The platform walls profiles, never one origin's contexts'' (both, MEASURED). `vessel-lock.ts` takes one Web Lock per store name on an origin and refuses `steal` in house code; MDN's Web Locks and SharedWorker pages state that any same-origin script may request, steal or reach them. Chrome's profile guidance states that anyone at the device's unlocked login may switch to any profile, so a profile walls storage and a locked OS account walls people.
+# ''A hand names a session, never a person'' (both, MEASURED). `session-contract.mem` uses //hand// for every session actor (tab, CLI run, disk watcher, spirit seat); `persona-circle.mem` forbids a human constructor. "One profile, one vessel, one hand" holds as deployment guidance and never as a cardinality law the vessel tests.
+# ''Today's per-face isolation runs as routing'' (Sol, MEASURED). The browser still seals rows under one vessel key until `K15` step 6's fence; the trust line reads honest once each face's secrets seal under its own key.
+# ''Local absence proves nothing'' (Sol, MEASURED in MDN's storage-eviction guidance and `browser-vessel-identity.ts`). Origin storage can vanish whole, so a missing ledger cannot witness a clean history; peers adjudicate.
+# ''Tiers map to relations'' (both, MEASURED in `cabal-realm.mem`, `identity-enacts-relation.mem`, `bounded-reach-contract.mem`, `kahu.mem`). Realms, charters and seats separate one operator's tiers; carriage carries and reads nothing; each power needs its own grant. Shared substrate correlates tiers by metadata (LEAD).
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;QMiY78LrWArAWfSpkxcrPNh7dTBUZHOzhkWHlxv135s
+
+<<^ code="&#x0004;" -> to="?">>
