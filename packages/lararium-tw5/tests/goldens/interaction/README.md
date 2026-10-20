@@ -3,7 +3,11 @@
 One file per script, `NN-<family>-<name>.json`, each pinning one loss `dreamdom#/conformance` names.
 A script speaks the contract's vocabulary and never a DOM API, so one file runs on every harness: the
 engine harness (vitest over the fake document and a recording sink), the page harness (vitest in Chromium
-over the real sink with the script's frames), and a whole-road harness (Playwright over a staged vessel).
+over the real sink with the script's frames), and a whole-road harness (Playwright over a staged vessel). The whole road runs golden 01
+(`packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts`): it reads the golden's world and claims, makes the
+tiddlers through the page's editor and acts with a real mouse, so it asserts the page template's river (a followed link
+opens below its source) where the bare-navigator world of the two other harnesses puts it on top. Goldens 02 to 13 stand
+owed on this road.
 
 ```
 {
