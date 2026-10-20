@@ -174,8 +174,9 @@ describe("the dyad door", () => {
     // The daemon island resolves standing through its own Repo and signed fleet board.
     expect(island).not.toMatch(/browserDyadAsker|vesselDyadAsker|browser-dyad-door/);
     expect((island.match(/readDyadFromBoard: true/g) ?? []).length).toBe(1);
-    expect(behavior).toMatch(/readDyadFromBoard \? boardDyadReader\(ctx\.repo, [^)]*\) : dyadReading/);
+    expect(behavior).toMatch(/readDyadFromBoard\s*\?[\s\S]*?boardDyadReader\(\s*ctx\.repo,[\s\S]*?:\s*dyadReading/);
     expect(boardReader).toMatch(/findOrThrow\(repo, fleetEdgeBoardDocUrl\(fleetRootDid\)/);
-    expect(boardReader).toMatch(/readEdgeBoard\(\{ board, kept: keptFromLedger\(.*?\), authorityFor: fleetEdgeAuthority\(fleetRootDid\) \}\)/);   // the island counts into its own ledger
+    expect(boardReader).toMatch(/readEdgeBoard\(\{[^}]*board,[^}]*kept[^}]*authorityFor: fleetEdgeAuthority\(fleetRootDid\)[^}]*\}\)/);   // the island counts into its own ledger
+    expect(boardReader).toMatch(/keptFromLedger\(/);
   });
 });

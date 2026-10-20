@@ -30,7 +30,7 @@ describe("the island's dyad consults take a reader or refuse", () => {
     const src = readFileSync(join(__dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
     const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
     expect(code, "the comment strip ate the file").toMatch(/runFaceJoinOperation\(/);
-    expect(code).toMatch(/const dyadReader = \(ctx: IslandContext\): DyadReader \| undefined => readDyadFromBoard \? boardDyadReader\(ctx\.repo, [^)]*\) : dyadReading;/);
+    expect(code).toMatch(/const dyadReader = \(ctx: IslandContext\): DyadReader \| undefined => readDyadFromBoard\s*\?[\s\S]*?boardDyadReader\(\s*ctx\.repo,[\s\S]*?:\s*dyadReading;/);
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the join gate"\)\(/g) ?? []).length).toBe(1);
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the Binding Gate"\)\(/g) ?? []).length).toBe(1);
     // The content-key seat reads a seat's standing and its own shadow through the same guard.
