@@ -61,6 +61,7 @@ This carrier names the seats, the crew shapes, the lens law, the fences, the lau
 ** Hodge without Podge hardens into dogma; Podge without Hodge dissolves into noise; either without Spin becomes a museum or a reflex. In a work swarm the builder wears Hodge over what it made and the other lineage's reader wears Podge over how it moves.
 * ''Overwatch.'' The Opus controller reads every crew's handback and every chunk's diff before it merges, and names each finding it would block on.
 * ''A cross-process seam always takes the Opus read.'' Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the controller's own read of the crossing before it lands: a module's own reads catch its contract and miss its crossings.
+* ''The battery runs at the wave's end'' (operator, 2026-10-20: //"Defer testing until the end of each wave. I know it's risky, but we need to land these holistically to prevent code churn."//). A wave writes every red and its control as it builds, since a red names the specification, and runs no suite, witness or e2e between its fixes and pushes nothing midway. When every item stands built, one battery runs: each red proven to fail against the base tree, then every touched package's whole suite, both whole e2e sets and `tools/witness-all.sh`; the wave cures what the battery finds, re-runs the battery whole, pushes once and hands back once. The controller's train crucible and fresh read follow unchanged.
 * ''The burst.'' A crew lands a burst of commits; the other lineage's reader reads it; the findings close red-first; one shard runs over the burst's head; the push follows a green shard with no CI run in flight.
 
 <<~/ahu>>
@@ -188,6 +189,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9D2RE8DnUWUS-HNvH4naxROFe19r1_y9CnmjkyT5Ecg
+<<^ code="&#x0003;">>ni:///sha-256;D2x7n1iXvBZIss-edYcpu6wK07ZYbTIcou7BjCgYDvg
 
 <<^ code="&#x0004;" -> to="?">>
