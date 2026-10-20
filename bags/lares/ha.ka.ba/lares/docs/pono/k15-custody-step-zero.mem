@@ -59,7 +59,8 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `custody-root` `:288-289` | hot | ''D:'' partition any face-bearing derivation/root by PersonaGroup. ''LEAD:'' prove every remaining use; a node-only secret may enter S only as a separately named row, never by retaining this generic root. |
 | `keyhive-archive` `:290-291` | hot | ''D:'' split the vessel archive into one identity/archive per PersonaGroup, with no identity above them (`stable-founding-road.mem:203,459`). Node archive row selection is an OPEN JOINT below. |
 | `veil-archive` `:292-293` | hot | ''D:'' each `h<N>` maps to its own PersonaGroup and FCK. |
-| `face-atom` `face-atom-store.ts` | hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
+| `face-atom` `face-atom-store.ts` | hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
+| `face-atom-ask` `face-atom-store.ts` | hot | ''D:'' the seed a founding rests before its PersonaGroup exists, named by the digest of the founding's own ask (hearth true name, binding mode, mount flag and compartment); the group row keeps the seed once the group stands and the ask row retires with the bootstrap entry. Same key class and fence as `face-atom`; it never rides a bundle. |
 | `enroll-pending` `:295-296` | hot, reserved | ''D, LEAD:'' if materialized, bind each pending enrolment to its target face; reject a row with no target. There is no current writer. |
 | `grant-pending` `:297-298` | hot, reserved | ''D, LEAD:'' split per granting/target face and bind the authority relation; reject an unassigned pending secret. There is no current writer. |
 | `admissions` `:299-300` | hot, reserved | ''D, LEAD:'' confidential admission state partitions by owning face; public signed proof may be F after payload audit. There is no current writer. |
@@ -211,6 +212,6 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;dA9OwYuA6gdVMnxLRZiHfXFhDZxgiiwMBxgF6M1Uxxk
+<<^ code="&#x0003;">>ni:///sha-256;EHUgXYwwFewh3uGgIh2picbTyRRLHa3a1PSo_ysHmIQ
 
 <<^ code="&#x0004;" -> to="?">>
