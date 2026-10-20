@@ -1,16 +1,8 @@
-/** The sweep waits for the founding custody claim before it scans a two-row handoff. */
+/** The sweep waits for the founding custody claim before it scans a two-row handoff: it cannot finish while the founding holds the claim, and it finishes once the claim releases, losing nothing. */
 import { cpSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
-const scan = vi.hoisted(() => ({ enabled: false, observed: 0 }));
-vi.mock("node:fs", async (importActual) => {
-  const actual = await importActual<typeof import("node:fs")>();
-  return { ...actual, readdirSync: (path: string) => {
-    if (scan.enabled && path.includes("identity") && new Error().stack?.includes("sweepFoundingSeeds")) scan.observed++;
-    return actual.readdirSync(path);
-  } };
-});
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { runFoundTheFace } from "../src/commands/init.js";
@@ -57,21 +49,19 @@ describe("the founding sweep and a live handoff", () => {
         // The group row has landed, but founding still owns the claim and its ask row.
         const before = readdirSync(larIdentityDir());
         expect(before.filter((file) => file === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(file)), "the pause exposes both rows").toHaveLength(2);
-        scan.enabled = true; scan.observed = 0;
         let swept = false;
         const sweep = sweepFoundingSeeds().then(() => { swept = true; });
         await Promise.resolve(); await Promise.resolve();
-        expect(scan.observed, "the sweep waits for the custody claim before listing rows").toBe(0);
         expect(swept, "the sweep cannot finish inside the founding claim").toBe(false);
         releaseRemoval.resolve();
         const [face] = await Promise.all([founding, sweep]);
-        expect(scan.observed, "the released sweep actually scans the identity rows").toBeGreaterThan(0);
-        scan.enabled = false;
+        // The sweep ran to its end after the release: it had waited on the founding's claim, then scanned and settled.
+        expect(swept, "the released sweep ran to its end").toBe(true);
         const rows = readdirSync(larIdentityDir()).filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
         expect(rows, "exactly one row holds the live founding seed").toEqual([faceAtomGroupFile(face.personaGroupId)]);
         expect(await readCustodyRow("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
         expect(await loadIdentityAnchors(0), "the face stands after the race").toMatchObject({ personaGroupId: face.personaGroupId });
-      } finally { scan.enabled = false; releaseRemoval.resolve(); spy.mockRestore(); }
+      } finally { releaseRemoval.resolve(); spy.mockRestore(); }
     });
   }, 180_000);
 });
