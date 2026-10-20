@@ -8,7 +8,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { deviceEdgeDigest } from "../../lararium-mesh/src/device-delegation.js";
-import { makeSharedHolderCore, type HolderIsland, type HolderRepo } from "../src/shared-holder-core.js";
+import { makeSharedHolderCore, type HolderIsland, type HolderPort, type HolderRepo } from "../src/shared-holder-core.js";
 import { holderWorkerHandle, attachSharedHolder, type SharedWorkerHost } from "../src/shared-holder.js";
 import { admitPort, faceFixture, fakePort, type FaceFixture, type FakePort, type Message } from "./holder-session-fixture.js";
 
@@ -263,5 +263,46 @@ describe("the tab's handle delivers the holder's lock and its named end", () => 
     // CONTROL: an island message still reaches the core untouched.
     channel.port2.postMessage({ type: "breath", wikiUri: "w", ...env });
     await expect.poll(() => heard.some((m) => m.type === "breath")).toBe(true);
+  });
+});
+
+describe("a tab boots its island through the gate that waits for the boot", () => {
+  test("H7: the manifest crosses before admission, the island clears on it, and a verb the tab queued then flows", async () => {
+    const face = await faceFixture("face:A", 41, 51);
+    const posts: Message[] = [];
+    let spawned = 0;
+    const core = makeSharedHolderCore({
+      lockName: "holder-boot-test",
+      locks: { request: async (_n, _o, cb) => cb({ name: "holder-boot-test" }) },
+      spawnIsland: (_group, personaRoot, edgeDigest): HolderIsland => {
+        spawned++;
+        const listeners = new Set<(m: unknown) => void>();
+        // The island announces ready, then proves the face only once the tab's manifest reaches it.
+        queueMicrotask(() => { for (const l of listeners) l({ type: "ready" }); });
+        return {
+          post: (m) => {
+            posts.push(m as Message);
+            const type = (m as Message).type;
+            if (type === "manifest") for (const l of listeners) l({ type: "gate:clear", edgeDigest, personaRoot });
+            if (type === "wiki:place-verb") for (const l of listeners) l({ type: "wiki:verb-result", requestId: (m as Message).requestId, result: { ok: true } });
+          },
+          listen: (l) => { listeners.add(l); return () => listeners.delete(l); },
+          onError: () => () => {}, terminate: () => {},
+        };
+      },
+    });
+    class Pair { readonly port: MessagePort; constructor() { const c = new MessageChannel(); this.port = c.port1; void core.connect(c.port2 as unknown as HolderPort); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
+    if (attached.kind !== "attached") throw new Error("not attached");
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom });
+    const heard: Array<Record<string, unknown>> = [];
+    handle.listen((m) => heard.push(m as Record<string, unknown>));
+    // The daemon core waits for `ready` and then posts its manifest; a verb posted early waits for the admission.
+    handle.post({ type: "wiki:place-verb", requestId: "early", verb: "read" });
+    await expect.poll(() => heard.some((m) => m.type === "ready")).toBe(true);
+    handle.post({ type: "manifest", wikiUri: "daemon" });
+    await expect.poll(() => heard.some((m) => m.type === "wiki:verb-result")).toBe(true);
+    expect(posts.map((m) => m.type)).toEqual(["manifest", "wiki:place-verb"]);
+    expect(spawned).toBe(1);
   });
 });

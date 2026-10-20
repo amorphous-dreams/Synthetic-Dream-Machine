@@ -36,6 +36,7 @@ import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh/holder-session-proof";
 import { HOLDER_ROUTES } from "./holder-routes.js";
+import { TAB_REQUESTS, waitsForAdmission } from "./holder-admission.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
 
@@ -43,18 +44,6 @@ function wireMessage(raw: unknown): WireMessage | null {
   if (!raw || typeof raw !== "object" || typeof (raw as { type?: unknown }).type !== "string") return null;
   return raw as WireMessage;
 }
-
-// These tab-originated requests expect an island result. Island-originated asks also carry requestId,
-// but their answers must keep that id whole on the return crossing.
-const TAB_REQUESTS = new Set([
-  "wiki:place-verb",
-  "daemon:place-verb",
-  "daemon:derive-skeleton-request",
-  "daemon:worldline-compare-request",
-  "daemon:worldline-trajectory-request",
-  "daemon:resolve-binding-request",
-]);
-
 
 /** What the holder owns per face — the daemon island's worker handle, by the mesh handle shape. */
 export interface HolderIsland {
@@ -552,8 +541,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         if (!state.admitted) {
           // While its island proves the face, the claimant boots it: the manifest and the answers to the island's asks
           // cross, and no verb or camera lease does. Any other port waits unanswered.
-          const claimantBoot = port === house.claimant && !TAB_REQUESTS.has(msg.type)
-            && msg.type !== "lar:control-event" && msg.type !== "lar:resend" && msg.type !== "session:sealer";
+          const claimantBoot = port === house.claimant && !waitsForAdmission(msg.type);
           if (!claimantBoot) { refuse(port, "session-unadmitted", msg.type); return; }
           forwardToIsland(house, port, msg, e);
           return;

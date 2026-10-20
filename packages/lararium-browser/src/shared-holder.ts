@@ -15,6 +15,7 @@ import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh
 import { signHolderSessionProof } from "@lararium/mesh";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
+import { waitsForAdmission } from "./holder-admission.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
 
@@ -145,7 +146,8 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   }
   return {
     post: (msg, transfer) => {
-      if (admitted) send(msg as object, (transfer ?? []) as Transferable[]);
+      // The island's boot (the manifest, the answers to its asks) crosses while its gate proves the face; a verb waits.
+      if (admitted || !waitsForAdmission(String((msg as { type?: unknown }).type))) send(msg as object, (transfer ?? []) as Transferable[]);
       else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
     },
     listen: (cb) => {
