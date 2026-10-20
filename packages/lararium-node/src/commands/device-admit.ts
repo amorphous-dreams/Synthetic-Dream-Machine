@@ -40,7 +40,7 @@ import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../ne
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { loadFaceAtom } from "../face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -154,7 +154,7 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
   const fleetRoot = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
   if (!fleetRoot) return;
   const anchors = await loadIdentityAnchors(face);
-  const atomSeed = await loadFaceAtom(face);
+  const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
   if (!anchors || !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const ownKey = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId).key;
   const fleet = await readVesselEdgeBoard({
@@ -350,7 +350,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
   const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
   if (!operationStore) throw new Error("the face's PersonaGroup plane is unresolved");
-  const atomSeed = await loadFaceAtom(face);
+  const atomSeed = await loadFaceAtomOfGroup(personaGroupId);
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
     deviceVerifyingKey: opts.joineeVerifyingKey.toLowerCase(), hearthTrueName, boundEpoch });

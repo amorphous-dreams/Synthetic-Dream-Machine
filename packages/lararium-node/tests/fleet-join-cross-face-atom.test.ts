@@ -5,7 +5,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import { faceAtomKeyFromSeed, fleetJoinOffer, mintFaceAtomSeed } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFleetJoinAbandon, runFleetJoinRequest } from "../src/commands/fleet-join.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { atomSeedOf, seedFaceAtom } from "./atom-fixture.js";
 import { sealTestCustody } from "./found-route.js";
@@ -48,7 +48,7 @@ describe("a fleet request keeps each face's atom", () => {
 
       const other = await runFleetJoinRequest({ offer: offerFor(GROUP_B) });
       expect(other.atomKey).not.toBe(atomA.key);
-      expect(await loadFaceAtom(0)).toEqual(seedA);
+      expect(await loadFaceAtomOfGroup(GROUP_A)).toEqual(seedA);
       seedA.fill(0);
     });
   });

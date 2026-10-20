@@ -23,7 +23,7 @@ import { VerbTable } from "@lararium/tw5";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { readFileSync } from "node:fs";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
@@ -61,7 +61,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const seed = await loadVesselSigningSeed();
   const vesselKey = await loadVesselVerifyingKey();
   const kel = await readLocalPersonaKelChain(repo, anchors.personaKelPrefix);
-  const atomSeed = await loadFaceAtom(args.handleIndex);
+  const atomSeed = await loadFaceAtomOfGroup(anchors.personaGroupId);
   if (!atomSeed) throw new Error("fixture: this face holds no atom");
   const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
   const veilArchiveBytes = await loadVeilArchive(args.handleIndex);

@@ -121,7 +121,7 @@ import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
-import { loadFaceAtom } from "./face-atom-store.js";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
@@ -1828,7 +1828,7 @@ async function prepareNodeBootOn(
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
     const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     const mountedFace = wornMount?.handleIndex ?? 0;
-    const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtom(mountedFace) : null;
+    const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtomOfGroup(personaGroupId) : null;
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     activeAtom = atomSeed && personaGroupId ? faceAtomKeyFromSeed(atomSeed, personaGroupId) : null;
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");

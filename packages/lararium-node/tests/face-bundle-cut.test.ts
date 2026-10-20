@@ -27,7 +27,7 @@ import {
 import { BUNDLE_EXTRACTOR_ROWS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
-import { persistFaceAtom } from "../src/face-atom-store.js";
+import { keepFaceAtom } from "../src/face-atom-store.js";
 import { IslandVerbRefused } from "../src/island-verb-ask.js";
 import { saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
@@ -63,8 +63,8 @@ beforeEach(async () => {
   keys = { face0: r0.verifyingKey, face1: r1.verifyingKey };
   kel0 = [mintPersonaInception(`0x${keys.face0}`, "ab".repeat(32))];
   const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
-  await persistFaceAtom(0, secretOf(21));
-  await persistFaceAtom(1, secretOf(22));
+  await keepFaceAtom("GROUP-DOC-OF-FACE-ZERO", secretOf(21));
+  await keepFaceAtom("GROUP-DOC-OF-FACE-ONE", secretOf(22));
   await persistIdentityAnchors({
     personaGroupId: "GROUP-DOC-OF-FACE-ZERO", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO",
     signerDid: `0x${keys.face0}`, personaKelPrefix: kel0[0]!.prefix,

@@ -42,7 +42,6 @@ import {
   gateBundleDigest,
   type FaceKeyGrant, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
   type VesselFaceCertificate,
-  mintFaceAtomSeed,
   faceAtomKeyFromSeed,
 } from "@lararium/mesh";
 import { takeAdmitBundle, type AdmitBundle } from "../admit-bundle.js";
@@ -63,7 +62,7 @@ import {
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { loadFaceAtom, persistFaceAtom } from "../face-atom-store.js";
+import { standFaceAtom } from "../face-atom-store.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
@@ -283,11 +282,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     if (!isRefusal(kept)) return kept;
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
   }
-  let atomSeed = await loadFaceAtom(0);
-  if (!atomSeed) {
-    atomSeed = mintFaceAtomSeed();
-    await persistFaceAtom(0, atomSeed);
-  }
+  const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
   const seal = fleetJoinSealPair();
   const seed = atomSeed;

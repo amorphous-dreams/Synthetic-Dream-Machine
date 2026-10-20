@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { CARRIAGE_CARRIER_DOMAIN, FACE_CHECKPOINT_INFO, PLACE_SIGNER_DOMAINS, faceAtomKeyFromSeed, placeSignerFromSeed, readVkCarrier } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadLeafIdentity } from "../src/leaf-identity.js";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
@@ -37,7 +37,7 @@ afterAll(async () => {
 
 describe("the atom boots the face", () => {
   test("the face presenter names the atom and the place signer refuses face domains", async () => {
-    const seed = (await loadFaceAtom(0))!;
+    const seed = (await loadFaceAtomOfGroup(group))!;
     const atom = faceAtomKeyFromSeed(seed, group);
     const placeKey = await loadVesselVerifyingKey();
     const presenter = await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group });
@@ -51,16 +51,16 @@ describe("the atom boots the face", () => {
   }, 180_000);
 
   test("the atom row is VK sealed and a locked custody seat opens none", async () => {
-    const row = join(larIdentityDir(), "face-atom-h0.bin");
+    const row = join(larIdentityDir(), faceAtomGroupFile(group));
     expect(readVkCarrier(readFileSync(row))).toBe("sealed");
     const holder = seatedCustody()!;
     await holder.lock();
-    await expect(loadFaceAtom(0)).rejects.toThrow(/CustodyLocked|locked|rests unopened/i);
+    await expect(loadFaceAtomOfGroup(group)).rejects.toThrow(/CustodyLocked|locked|rests unopened/i);
     await holder.unlock([{ kind: "passphrase", passphrase: "test-founding-passphrase" }]);
   });
 
   test("a worn face with no atom refuses by name; the row present opens", async () => {
-    const row = join(larIdentityDir(), "face-atom-h0.bin");
+    const row = join(larIdentityDir(), faceAtomGroupFile(group));
     expect(await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group })).toMatchObject({ arm: "face" });
     unlinkSync(row);
     await expect(loadLeafIdentity("face", { handleIndex: 0, personaGroupId: group })).rejects.toThrow("this face holds no atom; re-found or re-admit it");

@@ -70,7 +70,8 @@ const SOWN: Record<string, string> = {
   "identity/outbox-key.bin":                    "x",
   "identity/keyhive-archive.bin":               "x",
   "identity/veil-archive-h0.bin":               "x",
-  "identity/face-atom-h0.bin":                  "x",
+  [`identity/face-atom-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
   [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
@@ -123,7 +124,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which the VK wraps in its own hot row (custody#/the-table, the outbox).
   "sealed-outbox": "outbox", "outbox-key": "hot",
-  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot", "face-atom": "hot",
+  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot", "face-atom": "hot", "face-atom-ask": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot",
@@ -187,7 +188,8 @@ describe("the carrier table", () => {
       expect(at("identity", `cadence-key-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "cold", face: "vessel", keyClass: "device-minted" });
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
       expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });
-      expect(at("identity", "face-atom-h0.bin")).toMatchObject({ row: "face-atom", face: 0, bare: null });
+      expect(at("identity", `face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
+      expect(at("identity", `face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: "vessel", bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");
       expect(at("storage", "sealed/own/notes")?.row).toBe("sealed-own");
       expect(at("storage", "sealed/outbox/aa.bb")?.row).toBe("sealed-outbox");
@@ -197,7 +199,7 @@ describe("the carrier table", () => {
       expect(at("storage", "sealed/own/notes")?.holds).toBeNull();
       expect(at("storage", `sealed/keyhive-chunks/${"ab".repeat(8)}/${"cd".repeat(16)}`)?.row).toBe("sealed-chunk");
       expect(at("identity", "anchors-h0.json")).toMatchObject({ row: "anchors", face: 0 });
-      expect(census.every((entry) => entry.face === "vessel" || typeof entry.face === "number")).toBe(true);
+      expect(census.every((entry) => entry.face === "vessel" || typeof entry.face === "number" || entry.face.startsWith("group:"))).toBe(true);
       // Every sown file lands on exactly one row, and every row stands in the sowing.
       expect(census.length).toBe(Object.keys(SOWN).length);
       expect(new Set(census.map((e) => e.row))).toEqual(new Set(Object.keys(RULED)));

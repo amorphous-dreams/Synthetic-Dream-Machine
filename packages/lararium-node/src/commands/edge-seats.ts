@@ -20,7 +20,7 @@ import {
 } from "@lararium/mesh";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { loadFaceAtom } from "../face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
 export class EdgeSeatError extends Error {}
@@ -54,7 +54,7 @@ async function atomKeyForFleet(fleetRoot: string): Promise<string> {
   for (const index of await listPersonaRoots()) {
     if (bare((await loadPersonaGroupRootVerifyingKey(index)) ?? "") !== fleetRoot) continue;
     const anchors = await loadIdentityAnchors(index);
-    const seed = await loadFaceAtom(index);
+    const seed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
     if (!anchors || !seed) throw new EdgeSeatError("this face holds no atom; re-found or re-admit it");
     return faceAtomKeyFromSeed(seed, anchors.personaGroupId).key;
   }
