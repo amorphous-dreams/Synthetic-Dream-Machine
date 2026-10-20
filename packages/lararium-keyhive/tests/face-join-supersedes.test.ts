@@ -89,6 +89,8 @@ describe("a face's grant orders by its serial", () => {
     const replay = await runFaceJoinOperation(t.input(t.summons(false)));     // the cut op re-enters
     expect(replay["admitted"]).toBe(true);
     expect(t.plane.state.puts, "a replay of an older issue writes no grant").toBe(puts);
+    const standingCid = (await runFaceJoinOperation(t.input({ ...t.summons(true), nonce: "third" } as never)))["recordCid"];
+    expect(replay["recordCid"], "the replay answers its OWN issue, not the grant that stands").not.toBe(standingCid);
     expect(standingGrant(t.plane.records).text).toBe(standing.text);
   });
 
@@ -98,5 +100,21 @@ describe("a face's grant orders by its serial", () => {
     await expect(runFaceJoinOperation(t.input(t.summons(false)))).rejects.toThrow(/cut at put 1/);
     await runFaceJoinOperation(t.input(t.summons(true)));                     // serial 1 stands
     await expect(runFaceJoinOperation(t.input(t.summons(false)))).rejects.toThrow(/holds different issued bytes/);
+  });
+
+  test("S4 — two joins at once for one joinee take two serials and the later one stands", { timeout: 120_000 }, async () => {
+    const t = await stand();
+    // A plane store whose first reads linger, so two unguarded issues read the same standing grant before either writes.
+    let reads = 0;
+    const slow = {
+      get: async (title: string) => { reads += 1; if (reads <= 3) await new Promise((r) => setTimeout(r, 150)); return t.plane.store.get(title); },
+      put: (r: LarTiddlerRecord, o: unknown) => (t.plane.store.put as (r: LarTiddlerRecord, o: unknown) => Promise<void>)(r, o),
+    } as unknown as LarTiddlerStore;
+    const run = (s: ReturnType<typeof t.summons>) => runFaceJoinOperation({ ...t.input(s), grantPlane: { store: slow, heads: () => ["x"] } });
+    const [a, b] = await Promise.all([run(t.summons(false)), run({ ...t.summons(true), nonce: "second" } as never)]);
+    expect(a["admitted"] && b["admitted"]).toBe(true);
+    const serials = [...t.plane.records.values()].filter((r) => r.tiddler.title.startsWith("$:/lares/face-grant/")).map((r) => (JSON.parse(r.tiddler.text as string) as { serial: number }).serial);
+    expect(serials, "one grant stands at the title").toHaveLength(1);
+    expect(serials[0], "the later of two serialised issues carries serial 2").toBe(2);
   });
 });
