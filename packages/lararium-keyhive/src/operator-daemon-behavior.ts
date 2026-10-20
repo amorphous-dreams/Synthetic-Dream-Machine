@@ -333,7 +333,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       if (faceDoor() && await veilKh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");
-      else await kh.registerBag(working);
+      else await registerBagsDurably({ provider: kh, bags: [working], ledger: daemonBagDocLedger(ctx.composite) });
       const temp = wikiSlotUri(slug, "temp");
       if (ctx.composite.hasWritableBag(temp)) {
         const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
@@ -966,8 +966,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
-          } catch {
-            console.warn("[daemon] face bag document plane unavailable; registering face bags without durable bindings");
+          } catch (cause) {
+            console.warn(`[daemon] face bag document plane unavailable (${(cause as Error)?.message ?? String(cause)}); registering face bags without durable bindings`);
           }
         }
         const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));

@@ -47,3 +47,45 @@ export async function browserFaceAtom(idbName: string, personaGroup: string): Pr
     } finally { seed.fill(0); }
   });
 }
+
+/** A face that holds no atom here: its edge delegates to a key this browser cannot sign as. */
+export class BrowserFaceAtomMissing extends Error {
+  override readonly name = "BrowserFaceAtomMissing";
+  constructor(readonly personaGroup: string) {
+    super(`this face holds no atom; re-found or re-admit it (${personaGroup})`);
+  }
+}
+
+/** The atom seed a face rests, or a refusal by name: a boot never mints over a face whose edge names another key. */
+export async function requireBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
+  const held = await readKeystoreRow(idbName, faceAtomRow(personaGroup));
+  if (held === undefined) throw new BrowserFaceAtomMissing(personaGroup);
+  return seedOf(held, personaGroup);
+}
+
+/** The atom seed for a face being joined or founded: the one at rest, or a fresh one sealed there. The caller zeroes the copy. */
+export async function standBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
+  const row = faceAtomRow(personaGroup);
+  return withCustodyRows(idbName, async (rows) => {
+    const standing = await rows.read(row);
+    if (standing !== undefined) return seedOf(standing, personaGroup);
+    const seed = mintFaceAtomSeed();
+    faceAtomKeyFromSeed(seed, personaGroup);
+    await rows.write(row, seed);
+    return Uint8Array.from(seed);
+  });
+}
+
+/** Keep the seed a founding minted under the group it founded; a row already standing must hold the same seed. */
+export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: string, seed: Uint8Array): Promise<void> {
+  const row = faceAtomRow(personaGroup);
+  faceAtomKeyFromSeed(seed, personaGroup);
+  await withCustodyRows(idbName, async (rows) => {
+    const standing = await rows.read(row);
+    if (standing === undefined) { await rows.write(row, seed); return; }
+    const held = seedOf(standing, personaGroup);
+    const same = held.length === seed.length && held.every((b, i) => b === seed[i]);
+    held.fill(0);
+    if (!same) throw new Error(`[browser-face-atom] the atom row for ${personaGroup} holds another seed than the one this founding minted`);
+  });
+}

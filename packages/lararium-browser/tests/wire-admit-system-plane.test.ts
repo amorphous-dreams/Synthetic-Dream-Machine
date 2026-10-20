@@ -15,7 +15,7 @@ import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");
-  return { ...(await orig<object>()), runApplyAdmitPayload: async () => rig.fakeAdmitResult() };
+  return { ...(await orig<object>()), runApplyAdmitPayload: async (input: never) => rig.fakeAdmitResult(input) };
 });
 vi.mock("../src/hearth-canon.js", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");

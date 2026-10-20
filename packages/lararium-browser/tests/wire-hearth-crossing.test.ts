@@ -14,7 +14,7 @@ import { openBrowserVessel } from "../src/open-browser-vessel.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");
-  return { ...(await orig<object>()), runApplyAdmitPayload: async () => rig.fakeAdmitResult() };
+  return { ...(await orig<object>()), runApplyAdmitPayload: async (input: never) => rig.fakeAdmitResult(input) };
 });
 vi.mock("../../lararium-mesh/src/lar-ws-client-adapter.ts", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");

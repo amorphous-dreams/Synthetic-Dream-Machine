@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  deriveDyadVeil, groupSecretOpenerFromSeed, mintVeilTag, sealGroupSecret,
+  groupSecretOpenerFromSeed, sealGroupSecret,
 } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { BrowserCustodyRefused, readKeystoreRow } from "../src/browser-custody.js";
@@ -60,8 +60,6 @@ describe("the browser's face atom", () => {
 
     const thief = groupSecretOpenerFromSeed(deviceSeed);
     expect(thief.seal(seal)).toBeNull();
-    const veil = await deriveDyadVeil(deviceSeed, mintVeilTag());
-    expect(veil.verifyingKey).not.toBe(atom.key);
     expect(thief.deviceKey).not.toBe(atom.key);
     expect(thief.seal({ ...seal, deviceKey: thief.deviceKey })).toBeNull();
 

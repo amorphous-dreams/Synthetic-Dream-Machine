@@ -29,9 +29,10 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, idbGet, loadBrowserSigningSeed, openVesselIdb,
+  FLEET_JOIN_STORE, idbGet, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { browserFaceAtom } from "./browser-face-atom.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
 export class BrowserFleetJoinRefused extends Error {
@@ -121,11 +122,11 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
     if (!isRefusal(kept)) return kept;
     throw new BrowserFleetJoinRefused("join-pending", "another fleet join stands pending in this browser; land its answer, or abandon it.");
   }
-  const seed = await loadBrowserSigningSeed(idbName);
+  const atom = await browserFaceAtom(idbName, offer.personaGroup);
   const seal = fleetJoinSealPair();
   try {
     const request = await composeFleetJoinRequest({
-      offer, vesselKey: hex(await ed25519.getPublicKeyAsync(seed)), sealKey: seal.key,
+      offer, atomKey: atom.key, sealKey: seal.key,
       custody: browserVesselFaceKeyCustody(idbName),
       mintFaceKey: async (scope) => {
         const fresh = crypto.getRandomValues(new Uint8Array(32));
@@ -135,7 +136,7 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
           return hex(await ed25519.getPublicKeyAsync(held));
         } finally { fresh.fill(0); held?.fill(0); }
       },
-      sign: async (image) => hex(await ed25519.signAsync(image, seed)),
+      sign: (image) => atom.sign(image),
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };
@@ -144,7 +145,7 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
       await rows.write(PENDING, kept);
     });
     return request;
-  } finally { seed.fill(0); seal.secret.fill(0); }
+  } finally { seal.secret.fill(0); }
 }
 
 /** Clear the pending row inside one transaction, when `keep` reads it as the one to clear; answers whether it went. */
