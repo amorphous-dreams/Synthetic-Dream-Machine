@@ -12,6 +12,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-face-atom
  */
 import { faceAtomKeyFromSeed, mintFaceAtomSeed, type FaceAtomKey } from "@lararium/mesh";
+import { ArchiveIdentityMismatch, InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 
 /** The custody row that keeps one face's atom seed. */
@@ -90,4 +91,18 @@ export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: str
     held.fill(0);
     if (!same) throw new Error(`[browser-face-atom] the atom row for ${personaGroup} holds another seed than the one this founding minted`);
   });
+}
+
+/** Whether an Archive belongs to this seed's Individual: a throwaway provider stands from the seed over the Archive and refuses by name when it names another identity. */
+export async function archiveIsOf(seed: Uint8Array, archiveBytes: Uint8Array): Promise<boolean> {
+  const provider = new KeyhiveProvider();
+  try {
+    await provider.init({ seed, eventStore: new InMemoryEventStore(), archiveBytes });
+    return true;
+  } catch (cause) {
+    if (cause instanceof ArchiveIdentityMismatch) return false;
+    throw cause;
+  } finally {
+    await provider.dispose().catch(() => undefined);
+  }
 }
