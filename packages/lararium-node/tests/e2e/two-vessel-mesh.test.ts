@@ -49,7 +49,8 @@ import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAn
 import { larSealHome } from "../../src/vessel-paths.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { foundDirect, sealTestCustody, seatSeedCharter } from "../found-route.js";
+import { standFacePlane } from "../face-plane-fixture.js";
+import { foundDirect, openTestCustody, sealTestCustody, seatSeedCharter } from "../found-route.js";
 import { plainEntries, tiddlerText } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
@@ -186,8 +187,9 @@ beforeAll(async () => {
   // Step 3 — the fleet-join door: A offers, B requests, A's PersonaGroup root signs B's edge into its answer.
   const offer   = await withLarRoot(VESSEL_A.root, () => runFleetJoinOffer({ sealHome: larSealHome() }));
   const request = await withLarRoot(VESSEL_B.root, () => runFleetJoinRequest({ offer: JSON.parse(JSON.stringify(offer)) }));
+  const catalogA = await withLarRoot(VESSEL_A.root, async () => { await openTestCustody(); return standFacePlane(VESSEL_A.storage); });
   const answer  = await withLarRoot(VESSEL_A.root, () => direct(runFleetJoinAnswer)({
-    storageDir: VESSEL_A.storage, request: JSON.parse(JSON.stringify(request)), syncUrl: "ws://localhost:3000/automerge",
+    storageDir: VESSEL_A.storage, catalogUrl: catalogA, request: JSON.parse(JSON.stringify(request)), syncUrl: "ws://localhost:3000/automerge",
   }));
   admitPayload = JSON.parse(JSON.stringify(answer.edge)) as Record<string, unknown>;
 

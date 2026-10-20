@@ -59,6 +59,7 @@ import { vesselGate } from "../../src/vessel-gates.js";
 import { larBootstrapPath, larSealHome } from "../../src/vessel-paths.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
+import { standFacePlane } from "../face-plane-fixture.js";
 import { foundDirect, openTestCustody, sealTestCustody, seatSeedCharter } from "../found-route.js";
 
 const TEST_ROOT = join(tmpdir(), `lar-fleet-join-dial-${Date.now()}`);
@@ -98,6 +99,7 @@ http.on("upgrade", (req, socket, head) => { if (!standUpgrade?.(req as never, so
 
 let groupA = "";
 let aidA = "";
+let catalogA = "";
 let offerJson: unknown;
 let requestJson: unknown;
 let answer: FleetJoinAnswer;
@@ -119,7 +121,8 @@ beforeAll(async () => {
   aidA = await withLarRoot(A.root, async () => nexusAidOf(readNexusDoc(larSealHome()))!);
   offerJson = JSON.parse(JSON.stringify(await as(A, () => runFleetJoinOffer({ sealHome: larSealHome() }))));
   requestJson = JSON.parse(JSON.stringify(await as(B, () => runFleetJoinRequest({ offer: offerJson }))));
-  answer = JSON.parse(JSON.stringify(await as(A, () => direct(runFleetJoinAnswer)({ storageDir: A.storage, request: requestJson, syncUrl }))));
+  catalogA = await as(A, () => standFacePlane(A.storage));
+  answer = JSON.parse(JSON.stringify(await as(A, () => direct(runFleetJoinAnswer)({ storageDir: A.storage, catalogUrl: catalogA, request: requestJson, syncUrl }))));
 }, 240_000);
 
 describe("an own-fleet joinee dials on what the answer carried", () => {
@@ -261,7 +264,7 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
   }, 120_000);
 
   test("F3: a second answer reuses the face's admit the first one minted", async () => {
-    const again = await as(A, () => direct(runFleetJoinAnswer)({ storageDir: A.storage, request: requestJson, syncUrl })) as FleetJoinAnswer;
+    const again = await as(A, () => direct(runFleetJoinAnswer)({ storageDir: A.storage, catalogUrl: catalogA, request: requestJson, syncUrl })) as FleetJoinAnswer;
     expect(again.admit).toEqual(answer.admit);
     const kept = await withLarRoot(A.root, async () => readdirSync(join(larSealHome(), "nexus", "face-admit", aidA)));
     expect(kept).toHaveLength(1);
