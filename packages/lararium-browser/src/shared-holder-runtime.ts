@@ -26,14 +26,16 @@ export function makeHolderRuntime(env: HolderRuntimeEnvironment): {
   const core = makeSharedHolderCore({
     lockName: env.lockName,
     locks: env.locks,
-    watchSession: env.locks ? (sessionId, onDead) => { waitingSessions.set(sessionId, onDead); } : undefined,
-    armSession: env.locks ? (sessionId) => {
-      const onDead = waitingSessions.get(sessionId);
-      if (!onDead) return;
-      waitingSessions.delete(sessionId);
-      // A queued request grants only after the tab lets go of its lifetime lock.
-      void env.locks!.request(`lares:holder-session:${sessionId}`, {}, () => { onDead(); }).catch(() => undefined);
-    } : undefined,
+    ...(env.locks ? {
+      watchSession: (sessionId: string, onDead: () => void) => { waitingSessions.set(sessionId, onDead); },
+      armSession: (sessionId: string) => {
+        const onDead = waitingSessions.get(sessionId);
+        if (!onDead) return;
+        waitingSessions.delete(sessionId);
+        // A queued request grants only after the tab lets go of its lifetime lock.
+        void env.locks!.request(`lares:holder-session:${sessionId}`, {}, () => { onDead(); }).catch(() => undefined);
+      },
+    } : {}),
     forgetSession: (sessionId) => { waitingSessions.delete(sessionId); },
     spawnIsland: env.spawnIsland,
     makeRepo: async (group, root) => {
