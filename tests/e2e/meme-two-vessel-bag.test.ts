@@ -37,7 +37,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";

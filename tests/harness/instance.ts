@@ -23,7 +23,7 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
