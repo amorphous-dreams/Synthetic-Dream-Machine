@@ -1,0 +1,79 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-c-lane.mem"
+l-space   = "adjacent"
+role      = "the Wave C lane's kit: K15 step 6, the fence, under the identity model the operator approved on 2026-10-20 (sync carries; verification decides): the sealed identity anchor, the signed @persona log, verified projections, each face's D rows sealed under its own key, the daemon's last singletons split by face, and the browser's per-face planes"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-c-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! Wave C ~ the hearth-stone carries the name
+
+Wave C builds `K15` step 6, the fence, under one identity model the operator approved on 2026-10-20: //sync carries; verification decides// (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings; the research at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">>). Beneath it stands the moʻolelo's first line: the truth rests in the minds of the operators, and the CRDTs carry it to the synced stores. Wave C launches once Wave B lands on a green span; `W26`'s slices 3 to 6 run beside it on the floor's own ground.
+
+<<~/ahu>>
+
+<<~ ahu #/the-stories>>
+
+!! The stories
+
+''Kalani's laptop forgets nothing it swore to.'' Someone with write access to Kalani's synced docs rewrites the daemon doc to name another face's group and KEL prefix, with a perfectly valid edge from that other face. Kalani's laptop boots, reads its own sealed anchor, sees a bundle it never swore to, and refuses by name. The crier shouted a lie; the stone kept the name.
+
+''The Council's lease never runs backward.'' A stale replica of the Council's daemon doc arrives missing the newest lease slot. Before Wave C, an old device edge reads current against it. After it, each device keeps a sealed frontier that never falls, and the stale replica moves nothing.
+
+''A tab knows its face before it speaks.'' Kalani opens a tab; it reads the face's pins from its custody anchor at unlock, never from a document, then proves itself to the holder. The tab's own Repo retires; each face's house Repo serves its documents.
+
+''Two faces, two shelves of books.'' Kalani's browser wears their own face and the Council's, each with its own social planes keyed by its PersonaGroup, as the node already holds them.
+
+''The myth.'' The village crier runs fast and everywhere, and wrong whenever the last shout lied. A family's true name stays carved in its own hearth-stone, where only founding, admission or recovery may carve. The crier repeats the stone; no shout changes it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reds>>
+
+!! The reds ~ grounds before wins, each written as the specification, all proven at the wave's end
+
+# ''The sealed anchor.'' Each face holds, on each device, a D row: its PersonaGroup, persona-KEL prefix, a commitment to its root, its edge's digest, and a known frontier that never falls. Founding, admission and the recovery rites write it; sync never does. Red: a forged selector row in the daemon doc, then a coherent valid foreign bundle, switch no pinned face; a missing anchor refuses face boot by name.
+# ''The signed `@persona` log.'' Founding and admission acts, device edges and lease advances travel as signed entries in the face's `@persona` plane, verified against the anchor and the KEL; the reader folds them as the KEL board does. Red: two signed acts at one sequence surface as a fork, never a CRDT winner.
+# ''The monotone frontier.'' Lease advances carry signatures in the per-writer shape; the sealed local frontier never falls. Red: a deleted, replayed or unsigned high slot lowers nothing and raises nothing. An act that widens authority (admit, grant, re-key, seal to a reader) refuses a target naming a newer bound than the frontier holds, its receipt naming the frontier it acted under.
+# ''Verified projections.'' The face planes and the daemon doc's identity tiddlers read as projections of verified records, disposable and rebuilt. Red: a plane URL with no signed founding or admission act behind it never registers.
+# ''The FCK fence.'' Each face's D rows (atom, archive, anchor, custody root, proof keys) seal under that face's own random FCK and key by its PersonaGroup on both hosts; the vessel key opens none of them. Red: K15's isolation red at the key-class level, where Wave B's `test.fails` rows turn green: unlock A alone, and every key A holds, the vessel key included, opens no B row.
+# ''The daemon's last unions'' (Wave B's census, node items 4 to 6): one keyhive, face ledger, content-key seat and seat-roll set per face, never one per daemon; face-join and seat duties reseal the asking face's bags alone; CLI selectors name their face and never default to `h0`; `fleet-join-pending` keys by face; a joined face's hearth dial pin stands per face.
+# ''The tab reads its pins from custody'' and the tab's own Repo retires; ''each face holds its own social planes in the browser'', keyed by PersonaGroup.
+# ''The place card.'' Every node joinee holds a place card from its own place founding; a joinee path that reaches a place-arm presentation without one reds, cured at the place founding.
+
+<<~/ahu>>
+
+<<~ ahu #/the-crew>>
+
+!! The crew ~ very large work chunks under the mixed-model-swarm protocols
+
+One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request, landed whole and merged by train. A Sonnet Episkopos leads; the Codex Sol (`gpt-6-sol`, walled) builds; the Copilot seat (`gpt-5.3-codex`) reads, scouts and sweeps (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm">>). The battery runs at the wave's end: every red proven against the base tree, every touched suite, both whole e2e sets and `tools/witness-all.sh`. A fresh Sol reader, from a lineage that built none of it, reads the whole diff before the train. The scout census opens the lane: every place an identity pin reads from a mutable doc without verification, by file and line, sorted by what inherits shape from what.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges ~ held outside Wave C
+
+* ''Transparency and witnesses'' for equivocation across devices: their own row, later.
+* ''The far agent's relay seat'': its research after `I1`.
+* ''The signer frames each floor duty's domain'': `X0`.
+* ''Unsigned `requestedBy` on synced summonses'': `I1` moves summonses onto `@intents`, where each entry carries its own signature.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;bdCODgSUI3iYWRoSajadgi7G0RWaREz0jcaQEiwXsKc
+
+<<^ code="&#x0004;" -> to="?">>
