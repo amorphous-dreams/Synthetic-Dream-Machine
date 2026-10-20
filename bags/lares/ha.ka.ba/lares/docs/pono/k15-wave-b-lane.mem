@@ -73,7 +73,7 @@ Each red lands as its own commit, red on that commit, before its cure; each cont
 ''We work in very large work chunks under the mixed-model-swarm protocols'' (operator, 2026-10-19). Wave B runs as ONE joint lane, one sub-branch (`feature/green-jello-dinosaur-5--k15-wave-b`) and one pull request, tested whole once, merged by train. It does not split into a PR per slice; the lead lands the reds and cures as commits in grounds-before-wins order and hands the lane back once.
 
 * ''The Episkopos'' (Sonnet) leads: it briefs each seat from one brief file, reads every build, runs the suites and `witness-all` itself, lands every commit from its own tree with `git commit -F <msg> --only -- <paths>`, and talks a design fork out with the controller before it builds across one.
-* ''Two Copilot seats'' (`gpt-5.3-codex`, medium effort), launched through the house's Copilot launcher, each in its own worktree, each building or reading as the work pulls. They share one lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage, and the controller reads every landed chunk as the third.
+* ''Two Copilot seats'' (`gpt-5.3-codex`, medium effort), each in a worktree the lead provisions for it alone (`node tools/provision-worktree.mjs <dir>`), each building or reading as the work pulls: a build runs through `launch-copilot-builder.sh` (writes in its own worktree, `npx vitest` and `npx tsc` under a scratch `LAR_ROOT`, no git write, no network), a read through `launch-copilot.sh` (no write at all); the lead pulls a seat's diff into the lane by `git diff` and `git apply`, never by a seat's own commit. They share one lineage, so their cross-read counts once; the Episkopos reads every build as the second lineage, and the controller reads every landed chunk as the third.
 * ''Split by ground'': the two seats never write the same file in one burst; one takes the node half, the other the browser holder, and the composer hunks pass through the Episkopos alone.
 * ''The controller'' reads the lane's whole diff before merge, the lane's CI and held-out both, and merges it by train onto a span that reads green.
 
@@ -115,6 +115,6 @@ The lane law stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-ha
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vyG1ChCxWXqYuLCJ8sGfEszjJdxPIbpzAbc_8ki3LCM
+<<^ code="&#x0003;">>ni:///sha-256;0Dru3S3WwPNoi059B9ThzBmxzJdShQx_Ubya7Nk8snQ
 
 <<^ code="&#x0004;" -> to="?">>

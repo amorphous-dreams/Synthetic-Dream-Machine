@@ -93,7 +93,7 @@ A premium request counts per prompt, never per tool call, so one whole agentic b
 
 !!! Its fences
 # ''Read-only when it reads.'' A review launch denies every write, commit and push tool and allows only git and file reads. It hands back findings; the lead applies each fix.
-# ''The lane's worktree when it builds.'' A build launch allows writes and the package's test runner inside the lane's shared worktree alone, keeps the claims file's discipline (#/the-shapes), and denies every git write, push, network fetch and removal. The lead applies, tests and lands its diff like any spirit's.
+# ''Its own worktree when it builds.'' A build launch (`launch-copilot-builder.sh`) runs in a worktree the lead provisioned for that seat alone, split by ground so two seats never write one file in a burst. It allows file writes there, `npx vitest` and `npx tsc` and git and file reads; it denies every git write, push, network fetch, `rm`, `mv`, `npm` and `pnpm`. It refuses to start without a scratch `LAR_ROOT` outside the repo and drops any `LAR_BAGS`. A read launch (`launch-copilot.sh`) denies every write. Either hands back a report; the lead reads its diff, runs every suite itself and lands it like any spirit's.
 # ''No laundering.'' A step this session's safety check refused never travels to Copilot; it runs a second permission system, so routing a refused step through it counts as a retry.
 # ''Overage off.'' The account's Copilot budget stands at zero, so the allowance empties and stops.
 # ''Nothing depends on it.'' No lane, gate or witness needs Copilot to pass; Opus and Codex stand without it.
@@ -188,6 +188,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LFCsAcJMfXAczSxduXvScX0KRkfMI0sNYliqRxl6aTI
+<<^ code="&#x0003;">>ni:///sha-256;mBQHe_TbsDrlbgF1rdAw8L-LvDoK5ynEzzyiqIS83vY
 
 <<^ code="&#x0004;" -> to="?">>
