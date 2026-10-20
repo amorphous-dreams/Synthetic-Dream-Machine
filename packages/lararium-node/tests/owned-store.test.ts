@@ -432,9 +432,42 @@ describe("ownedStore — crash-atomic saves", () => {
     expect(tears).toEqual([]);
   });
 
+  // A stock Repo's constructor starts its own storage-id read beside the caller's; on a fresh dir both save an id,
+  // and the constructor's save, awaited by no one, can land after the fault arms and reject unhandled. A seeded id
+  // means neither read saves, so the fault meets only the chunk writes the control plants it for.
+  async function seedStorageId(): Promise<void> {
+    const seed = new Repo({ storage: new NodeFSStorageAdapter(dir) });
+    await seed.storageId();
+    await seed.shutdown();
+  }
+
+  it("a seeded storage id leaves the stock Repo's construction no id to save", async () => {
+    const saves = (adapter: NodeFSStorageAdapter): string[][] => {
+      const keys: string[][] = [];
+      const real = adapter.save.bind(adapter);
+      adapter.save = async (key, data) => { keys.push([...key]); await real(key, data); };
+      return keys;
+    };
+    const fresh = new NodeFSStorageAdapter(join(dir, "fresh"));
+    const freshKeys = saves(fresh);
+    const a = new Repo({ storage: fresh });
+    await a.storageId();
+    await a.shutdown();
+    expect(freshKeys.filter((k) => k[0] === "storage-adapter-id").length).toBeGreaterThan(0);   // CONTROL: a fresh dir saves one
+
+    await seedStorageId();
+    const seeded = new NodeFSStorageAdapter(dir);
+    const seededKeys = saves(seeded);
+    const b = new Repo({ storage: seeded });
+    await b.storageId();
+    await b.shutdown();
+    expect(seededKeys.filter((k) => k[0] === "storage-adapter-id")).toEqual([]);
+  });
+
   it("CONTROL (planted known positive): the stock adapter under the same fault tears a chunk", async () => {
+    await seedStorageId();                        // no id save stays in flight when the disk fails
     const repo = new Repo({ storage: new NodeFSStorageAdapter(dir) });
-    await repo.storageId();                       // the store's own id lands before the disk fails
+    await repo.storageId();
     const fault = await armMidChunkFault();
     let tears: string[] = [];
     try {
