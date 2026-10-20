@@ -4,6 +4,7 @@ import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-d
 import { verifyEd25519 } from "./ed25519-door.js";
 
 export { HOLDER_SESSION_DOMAIN } from "./domains.js";
+export { deviceEdgeDigest, type DeviceDelegationTiddler } from "./device-delegation.js";
 
 export interface HolderSessionProofFields {
   readonly ownerEpoch: string;

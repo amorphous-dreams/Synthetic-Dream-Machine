@@ -34,7 +34,7 @@
 import type { LockHost } from "./vessel-lock.js";
 import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
-import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh/holder-session-proof";
 import { HOLDER_ROUTES } from "./holder-routes.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
