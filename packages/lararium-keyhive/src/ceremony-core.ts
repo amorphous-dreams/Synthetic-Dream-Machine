@@ -342,17 +342,20 @@ export interface FaceFoundingResult {
 
 const FACE_FOUNDING_CHECKPOINT_PREFIX = "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/";
 type FaceCheckpoint = {
+  /** What the founding was asked: a checkpoint answers only that same ask. */
+  scope: string;
   result: Omit<FaceFoundingResult, "atomSeed" | "veilArchive"> & { veilArchive: string };
   dyad: DyadRecord;
   mount: boolean;
   events: readonly { hash: string; variant: string; bytes: string; island?: string }[];
 };
 
-async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<FaceCheckpoint | null> {
+async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array, scope: string): Promise<FaceCheckpoint | null> {
   const record = handle.doc()?.tiddlers[`${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
-  return openCheckpoint<FaceCheckpoint>(body, atomSeed);
+  const checkpoint = await openCheckpoint<FaceCheckpoint>(body, atomSeed);
+  return checkpoint.scope === scope ? checkpoint : null;
 }
 
 /** Retire the founding write-ahead record after the node commits this face's local carriers. */
@@ -419,7 +422,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === vesselVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
-  const prior = await readFaceCheckpoint(daemonHandle, atomSeed);
+  const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false]);
+  const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);
     return { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
@@ -611,7 +615,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   };
   const events = (await store.list()).filter((e) => !standing.has(e.hash)).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
   const { atomSeed: _heldSeed, ...publicResult } = result;
-  const checkpoint: FaceCheckpoint = { result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
+  const checkpoint: FaceCheckpoint = { scope: foundingScope, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
   daemonHandle.change((doc) => {
@@ -853,15 +857,18 @@ export interface ApplyAdmitResult {
 
 const APPLY_ADMIT_CHECKPOINT_PREFIX = "lar:///ha.ka.ba/dreamnet/apply-admit-checkpoint/";
 type ApplyCheckpoint = {
+  /** What the admit was asked: a checkpoint answers only that same payload. */
+  scope: string;
   result: Omit<ApplyAdmitResult, "archive"> & { archive: string };
   events: readonly { hash: string; variant: string; bytes: string; island?: string }[];
 };
 
-async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<ApplyCheckpoint | null> {
+async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array, scope: string): Promise<ApplyCheckpoint | null> {
   const record = handle.doc()?.tiddlers[`${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
-  return openCheckpoint<ApplyCheckpoint>(body, atomSeed);
+  const checkpoint = await openCheckpoint<ApplyCheckpoint>(body, atomSeed);
+  return checkpoint.scope === scope ? checkpoint : null;
 }
 
 /** Retire the admission write-ahead record after the node commits this face's local carriers. */
@@ -880,7 +887,8 @@ export async function runApplyAdmitPayload(
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
-  const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed);
+  const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId]);
+  const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed, applyScope);
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
   // never write a half-bound daemon doc (the confused-deputy / mycelium-PCD hole). The persona-KEL PREFIX
@@ -967,7 +975,7 @@ export async function runApplyAdmitPayload(
       deviceEdge: fullEdge,
     };
     const events = (await capStore.list()).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
-    const stored: ApplyCheckpoint = { result: { ...result, archive: bytesToBase64(archive) }, events };
+    const stored: ApplyCheckpoint = { scope: applyScope, result: { ...result, archive: bytesToBase64(archive) }, events };
     const checkpointText = await sealCheckpoint(stored, atomSeed);
     const applyCheckpointTitle = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
     daemonHandle.change((doc) => {

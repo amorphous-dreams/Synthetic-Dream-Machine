@@ -52,5 +52,13 @@ describe("atom admit re-entry", () => {
     expect(slots[0]!.edge).toHaveProperty("atomSignature");
     const card = JSON.parse(first.contactCardJson) as { Rotate: { issuer: number[] } };
     expect(Buffer.from(card.Rotate.issuer).toString("hex")).toBe(key(joineeAtomSeed));
+
+    // A checkpoint answers only the payload it was cut for: a different admit to the same atom lands its own edge.
+    const other = await runDeviceAdmitEdge({ signerSeed: rootSeed, joineeVerifyingKey: key(joineeAtomSeed),
+      personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, hearthTrueName: "hearth-two", personaGroupId: face.personaGroupId,
+      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl });
+    const third = await runApplyAdmitPayload({ ...input, payload: other });
+    expect(third.deviceEdge.hearthTrueName).toBe("hearth-two");
+    expect(first.deviceEdge.hearthTrueName).toBe("hearth");
   });
 });

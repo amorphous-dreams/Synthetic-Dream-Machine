@@ -79,6 +79,8 @@ export type {
 } from "./ceremony-core.js";
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
+export { runFaceJoinOperation } from "./face-join-operation.js";
+export type { GrantPlane, FaceJoinOperationInput } from "./face-join-operation.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
   DeviceAdmitEdgeInput,

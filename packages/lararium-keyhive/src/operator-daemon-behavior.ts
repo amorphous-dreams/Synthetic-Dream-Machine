@@ -128,13 +128,13 @@ import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed } from "@lararium/mes
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
-import { runFaceJoin, type FaceJoinSummons, type FaceJoinOutcome } from "./face-join.js";
+import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
-import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
-import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
+import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { runFaceJoinOperation } from "./face-join-operation.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
-import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
+import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
@@ -622,38 +622,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(faceGroup()))
               : null;
             if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
-            const signedInput = new TextEncoder().encode(JSON.stringify(summons));
-            type JoinOperation =
-              | { readonly state: "issued"; readonly outcome: Extract<FaceJoinOutcome, { ok: true }>; readonly grantRecord: FaceGrantRecord; readonly grantTitle: string }
-              | { readonly state: "complete"; readonly output: Record<string, unknown> };
-            const atomSeed = meshHexToBytes(daemonAuth.atom!.seed);
-            const publish = async (issued: Extract<JoinOperation, { state: "issued" }>): Promise<Record<string, unknown>> => {
-              if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
-              const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
-              if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
-              const store = new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()));
-              const standing = await store.get(issued.grantTitle);
-              if (!standing || standing.meta?.deleted) {
-                await store.put(
-                  { tiddler: { title: issued.grantTitle, text: JSON.stringify(issued.grantRecord), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
-                  { kind: "lares-verb", requestId: `face-grant-${issued.grantRecord.sig.slice(0, 12)}` },
-                );
-              } else if (standing.tiddler.text !== JSON.stringify(issued.grantRecord)) {
-                throw new Error("[daemon] face-join: the grant title holds different issued bytes");
-              }
-              const output = {
-                verb: "face-join", admitted: true, ...issued.outcome.grant,
-                recordTitle: issued.grantTitle, recordCid: faceGrantRecordCid(issued.grantRecord),
-                recordHeads: [...planeHandle.heads()],
-              };
-              await writeFaceOperation(operationStore, atomSeed, signedInput, { state: "complete", output } satisfies JoinOperation);
-              return output;
-            };
-            const priorOutcome = await readFaceOperation<JoinOperation>(
-              operationStore, meshHexToBytes(daemonAuth.atom!.seed), signedInput,
-            );
-            if (priorOutcome?.state === "complete") return priorOutcome.output;
-            if (priorOutcome?.state === "issued") return publish(priorOutcome);
             // A HEARTH NEVER SEATS ITSELF.
             //
             // A summons rides the daemon doc, and the daemon doc fleet-syncs across the operator's own devices — so every
@@ -692,40 +660,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // twice (before and after the card binds) and must read one answer.
             const joineeKey = typeof summons.deviceEdge?.deviceVerifyingKey === "string" ? summons.deviceEdge.deviceVerifyingKey : "";
             const joineeDyad = await requireDyadReader(dyadReading, "the join gate")(ownEdge.personaRootDid, joineeKey);
-            const outcome = await runFaceJoin(joinProvider, summons, {
-              personaRootDid:         ownEdge.personaRootDid,
-              hearthTrueName:         ownEdge.hearthTrueName,
-              personaGroupId:         faceGroup(),
-              leaseEpoch:             lease.n,
-              dyad:                   () => joineeDyad,
-              // Re-seal the standing chunks of registered bags for the new seat.
-              reseal: daemonAuth.registerBags,
-            });
-            // A refusal RETURNS — an unlicensed summons names an absent contract, never an attack, and the
-            // reason rides the outcome so the joinee's panel can paint why rather than showing a silence.
+            if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
+            const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
+            if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // THE LATER GRANT LANDS AS A RECORD on the PersonaGroup plane — the doc the joinee already syncs by
-            // membership — signed under this vessel's device key and carrying this vessel's root-signed edge, so
-            // the joinee's own kit verifies it offline against the root it pinned and takes the seat by its own
-            // act. The grant still returns to the caller; a plane that cannot be written is said, never fatal.
-            //
-            // THE OUTCOME NAMES THE RECORD, IT NEVER CARRIES IT. The outcome is a bounded view; the record is the act.
-            // So the outcome names where the record stands (`recordTitle`), what it is (`recordCid`, its tagged
-            // sha256 content address) and the plane's heads just after the write (`recordHeads`). A caller that
-            // must know what the join granted reads the record off the PersonaGroup plane once that plane's
-            // history holds those heads — a causal wait — and recomputes the CID.
-            if (!outcome.ok) return { verb: "face-join", admitted: false, reason: outcome.reason };
-            const { kind: _grantKind, ...grantBody } = outcome.grant;
-            void _grantKind;
-            const grantRecord = await signFaceGrantRecord({
-              kind: "face-join-grant/v1", groupId: faceGroup(), ...grantBody,
-              founderEdge: ownEdge,
-            }, faceAtom().sign);
-            const issued = {
-              state: "issued", outcome, grantRecord,
-              grantTitle: faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex),
-            } satisfies JoinOperation;
-            await writeFaceOperation(operationStore, atomSeed, signedInput, issued);
-            return publish(issued);
+            // membership — signed under this face's atom and carrying its root-signed edge, so the joinee's own kit
+            // verifies it offline against the root it pinned and takes the seat by its own act. The outcome names the
+            // record (`recordTitle`, `recordCid`, the plane's heads after the write) and never carries it: a caller that
+            // must know what the join granted reads the record off the plane once its history holds those heads.
+            return runFaceJoinOperation({
+              provider: joinProvider, summons,
+              ctx: {
+                personaRootDid:         ownEdge.personaRootDid,
+                hearthTrueName:         ownEdge.hearthTrueName,
+                personaGroupId:         faceGroup(),
+                leaseEpoch:             lease.n,
+                dyad:                   () => joineeDyad,
+                // Re-seal the standing chunks of registered bags for the new seat.
+                reseal: daemonAuth.registerBags,
+              },
+              founderEdge: ownEdge, signGrant: faceAtom().sign, atomSeed: meshHexToBytes(daemonAuth.atom!.seed),
+              operationStore,
+              grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup())), heads: () => planeHandle.heads() },
+            });
           });
         }
       }
