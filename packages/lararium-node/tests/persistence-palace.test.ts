@@ -13,10 +13,11 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import { signWitness, verifyWitnessSig, hex, type Witness } from "@lararium/mesh";
 
+import { palaceSuite } from "./helpers/palace-holder.js";
 import { makePersistencePalace, _livePersistenceHolderCount, type PersistencePalace } from "../src/sensorium.js";
 
 const TEST_TIMEOUT = 60_000;
@@ -45,7 +46,7 @@ function openPalace(dir: string): PersistencePalace {
 const palaceDir = (): Promise<string> => mkdtemp(join(tmpdir(), "persistence-"));
 afterEach(async () => { await Promise.all(opened.splice(0).map((p) => p.close())); });
 
-describe("makePersistencePalace (keel ⊕ store, driven live)", () => {
+palaceSuite("makePersistencePalace (keel ⊕ store, driven live)", () => {
   test("record → get round-trips a Testimony, born silent", async () => {
     const pal = openPalace(await palaceDir());
     const { claimCid } = await pal.record("innovation", [0.1, 0.2, 0.3], prov(), { vow: "provisional" });

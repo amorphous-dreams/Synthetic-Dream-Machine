@@ -7,10 +7,11 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { makeContentPalace, type ContentPalace } from "../src/sensorium.js";
 import { makeGraphCap, _liveGraphHolderCount, type GraphCap } from "../src/graph-cap.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 60_000;
 
@@ -19,7 +20,7 @@ beforeAll(() => { process.env["MEMPALACE_EMBEDDING_MODEL"] = "minilm"; });
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map((c) => c())); });
 
-describe("makeGraphCap (consumed structure/graph, live)", () => {
+palaceSuite("makeGraphCap (consumed structure/graph, live)", () => {
   test("entity co-occurrence surfaces a hallway; stats serialize", async () => {
     const dir = await mkdtemp(join(tmpdir(), "graph-"));
     const content: ContentPalace = makeContentPalace(dir);
