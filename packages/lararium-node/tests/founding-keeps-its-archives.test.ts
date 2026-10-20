@@ -23,9 +23,9 @@
  *   F7  A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. A re-seed (`force`) over a standing archive restores from it:
  *       the archive at rest afterwards still knows a sentinel only the kept archive held.
  *                                           control: a provider stood from the seed alone knows no such agent
- *   F8  A FACE FOUNDING THAT STOPPED BEFORE ITS COMMIT POINT RUNS AGAIN WHOLE. Anchors and a veil archive with no
- *       bootstrap entry read as an unfinished founding: the act runs, re-derives the SAME veil from the kept tag,
- *       and lands the entry.                control: with the entry standing, the same call answers already-stood
+ *   F8  REMOVING A COMPLETED FACE'S BOOTSTRAP ENTRY STARTS A FRESH FOUNDING. The old group's atom and archive
+ *       stay with it; the new group receives its own atom and archive.
+ *                                           control: with the entry standing, the same call answers already-stood
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -235,15 +235,16 @@ describe("a founding keeps its archives, sealed per face", () => {
     }
   });
 
-  test("F8 a face founding that stopped before its bootstrap entry runs again and completes", async () => {
+  test("F8 removing a completed face's bootstrap entry founds a fresh group", async () => {
     const genesisDir = join(root, "genesis");
     const holder = seatedCustody()!;
     if (!holder.isUnlocked()) expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
     const before = (await loadIdentityAnchors(2))!;
     const atomBefore = (await loadFaceAtomOfGroup(before.personaGroupId))!;
+    const orphanArchive = readFileSync(veilArchivePath(before.personaGroupId));
     // control: the whole face answers already-stood
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);
-    // The founding as it stands one write short: the anchors and the veil archive rest, the entry never landed.
+    // The completed face loses its plane entry; its group and sealed rows remain an orphan's own.
     const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string };
     const packed = JSON.parse(plugin.text) as { tiddlers: Record<string, { text: string }> };
     const planes = personaScopedBagIds(before.personaGroupId);
@@ -255,7 +256,11 @@ describe("a founding keeps its archives, sealed per face", () => {
     const again = await foundFace({ genesisDir, handleIndex: 2 });
     expect(again.alreadyStood).toBe(false);
     const after = (await loadIdentityAnchors(2))!;
-    expect(hex((await loadFaceAtomOfGroup(after.personaGroupId))!), "the resumed founding keeps the same atom").toBe(hex(atomBefore));
+    expect(after.personaGroupId, "the next founding mints another group").not.toBe(before.personaGroupId);
+    expect(hex((await loadFaceAtomOfGroup(after.personaGroupId))!), "the next group mints another atom").not.toBe(hex(atomBefore));
+    expect(hex((await loadFaceAtomOfGroup(before.personaGroupId))!), "the orphan keeps its atom").toBe(hex(atomBefore));
+    expect(readFileSync(veilArchivePath(before.personaGroupId)).equals(orphanArchive), "the orphan keeps its archive bytes").toBe(true);
+    expect(readFileSync(veilArchivePath(after.personaGroupId)).equals(orphanArchive), "the new group seals its own archive").toBe(false);
     const now = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, unknown> };
     expect(now.tiddlers[personaScopedBagIds(after.personaGroupId).identities], "the entry landed").toBeTruthy();
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);
