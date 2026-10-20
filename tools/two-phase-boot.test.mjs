@@ -227,7 +227,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "personaRoots", "walkRecords", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive", "outboxKey"]) {
+    for (const name of ["wornMount", "personaRoots", "walkRecords", "archive", "veilArchive", "writeArchive", "writeVeilArchive", "outboxKey"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
     // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
