@@ -22,10 +22,16 @@ function harness() {
     onError: () => () => {},
     terminate: () => {},
   };
+  let gate: { edgeDigest: string; personaRoot: string } | null = null;
   const core = makeSharedHolderCore({
     lockName: "holder-routes-test",
     locks: { request: async (_name, _options, callback) => callback({ name: "holder-routes-test" }), query: async () => ({ held: [] }) },
-    spawnIsland: () => island,
+    spawnIsland: (_group, personaRoot, edgeDigest) => {
+      gate = { edgeDigest, personaRoot };
+      // The island's Binding Gate clears for the edge the first session presented.
+      queueMicrotask(() => { for (const l of islandListeners) l({ type: "gate:clear", ...gate }); });
+      return island;
+    },
     onDrop: (kind, reason) => drops.push({ kind, reason }),
   });
   const port = fakePort;

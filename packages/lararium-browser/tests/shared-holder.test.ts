@@ -37,9 +37,11 @@ function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number }
   let boots = 0;
   return {
     boots: () => boots,
-    spawn: () => {
+    spawn: (_group?: string, personaRoot?: string, edgeDigest?: string) => {
       boots++;
       const listeners = new Set<(raw: unknown) => void>();
+      // The island's Binding Gate clears for the edge the first session presented.
+      queueMicrotask(() => { for (const l of listeners) l({ type: "gate:clear", edgeDigest, personaRoot }); });
       return {
         post:      (msg) => {
           const request = msg as { type?: string; requestId?: string };

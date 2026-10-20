@@ -116,7 +116,7 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
-import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock } from "./browser-custody.js";
+import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody } from "./browser-custody.js";
 import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
@@ -1317,7 +1317,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // and the holder stands the face's own house. A vessel with no face edge stands its own island.
           const faceSession = holder?.kind === "attached" && wornEdge
             ? { personaGroup: wornGroup, edge: wornEdge, atom: wornAtom } : null;
-          const handle = holder?.kind === "attached" && faceSession ? holderWorkerHandle(holder.port, faceSession) : browserSpawnWorker(url);
+          const handle = holder?.kind === "attached" && faceSession ? holderWorkerHandle(holder.port, faceSession, { onLock: () => lockBrowserCustody(idbName) }) : browserSpawnWorker(url);
           if (faceSession) {
             // This tab seals under its own key: it announces it can while its custody stands open, and again when it locks.
             handle.post({ type: "session:sealer", ready: true });

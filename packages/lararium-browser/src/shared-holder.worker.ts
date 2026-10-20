@@ -28,22 +28,39 @@ const params    = new URL(sw.location.href).searchParams;
 const islandUrl = params.get("island") ?? "";
 const lockName  = params.get("lock")   ?? "lares:vessel:lares:vessel";
 
-// A face's Repo rests under a name that carries the digest of its PersonaGroup, so the origin's database list never
-// names a face.
-async function houseStoreName(personaGroup: string): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(personaGroup)));
+// A face house's Repo rests under a name that carries the digest of its (PersonaGroup, persona root) pair, so the
+// origin's database list names no face and a claim under a foreign root can never open another house's store.
+async function houseStoreName(personaGroup: string, personaRoot: string): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${personaGroup}|${personaRoot}`)));
   return `${lockName}:house:${Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * Hand a tab's sync port to a house Repo, withholding the Repo's frames from the tab until the house's gate clears:
+ * the tab's frames reach the Repo at once (the island proves the face from them), and the Repo's reach the tab after.
+ */
+function attachGatedPeer(repo: Repo, tab: MessagePort, serving: Promise<void>): void {
+  const relay = new MessageChannel();
+  attachMessageChannelSync(repo, relay.port1);
+  let open = false;
+  const held: unknown[] = [];
+  relay.port2.onmessage = (e: MessageEvent) => { if (open) tab.postMessage(e.data); else held.push(e.data); };
+  tab.onmessage = (e: MessageEvent) => { relay.port2.postMessage(e.data); };
+  void serving.then(() => { open = true; for (const frame of held.splice(0)) tab.postMessage(frame); });
 }
 
 const core = makeSharedHolderCore({
   lockName,
   locks: sw.navigator?.locks ?? null,
   spawnIsland: () => browserWorkerHandle(new Worker(islandUrl, { type: "module" })),
-  makeRepo: async (personaGroup) => {
-    const repo = new Repo({ storage: new IndexedDBStorageAdapter(await houseStoreName(personaGroup)) });
+  makeRepo: async (personaGroup, personaRoot) => {
+    const repo = new Repo({ storage: new IndexedDBStorageAdapter(await houseStoreName(personaGroup, personaRoot)) });
     return {
       shutdown: () => repo.shutdown(),
-      attachPeer: (port) => { attachMessageChannelSync(repo, port); },
+      attachPeer: (port, serving) => {
+        if (serving) attachGatedPeer(repo, port, serving);
+        else attachMessageChannelSync(repo, port);
+      },
     };
   },
 });

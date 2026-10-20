@@ -28,7 +28,7 @@ function harness() {
   const madeRepos: string[] = [];
   const locks: string[] = [];
   const waits: Array<{ kind: string; group: string; type: string }> = [];
-  const spawnIsland = (personaGroup?: string): HolderIsland => {
+  const spawnIsland = (personaGroup?: string, personaRoot?: string, edgeDigest?: string): HolderIsland => {
     const group = personaGroup ?? "unadmitted";
     spawned.push(group);
     const listeners = new Set<(message: unknown) => void>();
@@ -37,6 +37,8 @@ function harness() {
       emit: (message: Message) => { for (const listener of listeners) listener(message); },
     };
     islands.set(group, record);
+    // The island's Binding Gate clears for the edge the first session presented.
+    queueMicrotask(() => record.emit({ type: "gate:clear", edgeDigest, personaRoot }));
     return {
       post: (message) => {
         const msg = message as Message;
@@ -141,12 +143,13 @@ describe("the holder admits face sessions and houses each group", () => {
     expect(valid.messages("holder:admitted").at(-1)).toMatchObject({ personaGroup: A });
   });
 
-  test("R3d: a group pins its first root, while another group pins its own", async () => {
+  test("R3d: a claim under another root fills a house of its own; no pin blocks the real root", async () => {
     const h = harness(); const a = await face(A, 41, 51); const otherRoot = await face(A, 42, 52); const b = await face(B, 42, 53);
     const first = h.port(); await h.core.connect(first.endpoint); await h.open(first, A, a.edge, a.atom);
-    const mismatch = h.port(); await h.core.connect(mismatch.endpoint); await h.open(mismatch, A, otherRoot.edge, otherRoot.atom);
-    expect(mismatch.messages("holder:refused").at(-1)).toMatchObject({ cause: "session-root-mismatch" });
-    expect(first.messages("holder:admitted").at(-1)).toMatchObject({ personaGroup: A });
+    const foreign = h.port(); await h.core.connect(foreign.endpoint); await h.open(foreign, A, otherRoot.edge, otherRoot.atom);
+    expect(foreign.messages("holder:refused")).toHaveLength(0);
+    expect(foreign.messages("holder:admitted").at(-1)).toMatchObject({ personaGroup: A });
+    expect(h.spawned).toHaveLength(2);
     const sameRoot = h.port(); await h.core.connect(sameRoot.endpoint); await h.open(sameRoot, A, a.edge, a.atom);
     expect(sameRoot.messages("holder:admitted").at(-1)).toMatchObject({ personaGroup: A });
     const otherGroup = h.port(); await h.core.connect(otherGroup.endpoint); await h.open(otherGroup, B, b.edge, b.atom);

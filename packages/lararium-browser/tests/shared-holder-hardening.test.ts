@@ -21,6 +21,10 @@ function harness(extra: { makeRepo?: (group: string, root: string) => Promise<Ho
   const repos = new Map<string, { stops: number; peers: Array<{ port: unknown; serving: Promise<void>; served: boolean }> }>();
   const locks: string[] = [];
   const waits: string[] = [];
+  const spawnWaiters = new Map<string, Array<(r: NonNullable<ReturnType<typeof islands.get>>) => void>>();
+  /** Resolves with a house's island once the holder stood it: the product's own event, never a clock. */
+  const island = (k: string): Promise<NonNullable<ReturnType<typeof islands.get>>> =>
+    islands.has(k) ? Promise.resolve(islands.get(k)!) : new Promise((resolve) => { spawnWaiters.set(k, [...(spawnWaiters.get(k) ?? []), resolve]); });
   const drops: Array<{ kind: string; reason: string }> = [];
   const options = {
     lockName: "holder-hardening-test",
@@ -34,6 +38,8 @@ function harness(extra: { makeRepo?: (group: string, root: string) => Promise<Ho
         fail: (e: Error) => { for (const l of errors) l(e); },
       };
       islands.set(key(group, root), record);
+      for (const w of spawnWaiters.get(key(group, root)) ?? []) w(record);
+      spawnWaiters.delete(key(group, root));
       return {
         post: (m) => { record.posts.push(m as Message); },
         listen: (l) => { listeners.add(l); return () => listeners.delete(l); },
@@ -60,12 +66,14 @@ function harness(extra: { makeRepo?: (group: string, root: string) => Promise<Ho
   }
   const core = makeSharedHolderCore(options as never);
   const settle = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
-  return { core, islands, repos, locks, waits, drops, settle, makeRepoRecord };
+  return { core, islands, island, repos, locks, waits, drops, settle, makeRepoRecord };
 }
 
 const clearOf = (face: FaceFixture): Message => ({ type: "gate:clear", edgeDigest: deviceEdgeDigest(face.edge), personaRoot: face.edge.personaRootDid });
 const rootOf = (face: FaceFixture): string => face.edge.personaRootDid;
 const connect = async (h: ReturnType<typeof harness>): Promise<FakePort> => { const tab = fakePort(); await h.core.connect(tab.endpoint); return tab; };
+/** The holder verifies a session:open with async crypto before it counts the admission; a turn of the event loop lets that settle. */
+const waitVerified = (_tab: FakePort): Promise<void> => new Promise((resolve) => setTimeout(resolve, 50));
 const kinds = (tab: FakePort): string[] => tab.received.map((m) => String(m.kind ?? m.type)).filter((k) => k !== "holder:hello");
 
 describe("the holder keys a house by group and root and serves it after its island's gate clears", () => {
@@ -75,9 +83,8 @@ describe("the holder keys a house by group and root and serves it after its isla
     const claimant = await faceFixture("face:B", 42, 52);
     const owner = await connect(h); const stranger = await connect(h);
     const realAdmit = admitPort(owner, real); const strangerAdmit = admitPort(stranger, claimant);
-    await h.settle();
-    h.islands.get(key("face:B", rootOf(real)))?.emit(clearOf(real));
-    h.islands.get(key("face:B", rootOf(claimant)))?.emit(clearOf(claimant));
+    (await h.island(key("face:B", rootOf(real)))).emit(clearOf(real));
+    (await h.island(key("face:B", rootOf(claimant)))).emit(clearOf(claimant));
     await Promise.all([realAdmit, strangerAdmit]);
     expect([...h.islands.keys()].sort()).toEqual([key("face:B", rootOf(real)), key("face:B", rootOf(claimant))].sort());
     expect(owner.messages("holder:admitted")).toHaveLength(1);
@@ -98,11 +105,10 @@ describe("the holder keys a house by group and root and serves it after its isla
     const face = await faceFixture("face:A", 41, 51);
     const first = await connect(h); const second = await connect(h);
     const opened = admitPort(first, face);
-    await h.settle();
-    const island = h.islands.get(key("face:A", rootOf(face)))!;
+    const island = await h.island(key("face:A", rootOf(face)));
     for (const m of [{ type: "event", n: 1 }, { type: "lar:frame", cameraId: "c" }, { type: "custody:write", requestId: "w" }, { type: "view:content" }, { type: "ready" }, { type: "ea" }]) island.emit(m);
     // A second port presenting the same edge waits with the first and hears nothing at all.
-    const secondOpened = admitPort(second, face); await h.settle();
+    const secondOpened = admitPort(second, face); await h.settle(); for (let i = 0; i < 40 && kinds(second).length === 0; i++) await Promise.resolve();
     first.send({ type: "wiki:place-verb", requestId: "early", verb: "read" });
     expect(first.messages("holder:admitted")).toHaveLength(0);
     expect(kinds(first).filter((k) => !HANDSHAKE.has(k) && k !== "holder:refused")).toEqual([]);
@@ -126,8 +132,8 @@ describe("the holder keys a house by group and root and serves it after its isla
     const foreign = await faceFixture("face:A", 43, 51);      // another root
     for (const wrong of [other, foreign]) {
       const tab = await connect(h);
-      const opened = admitPort(tab, face); await h.settle();
-      h.islands.get(key("face:A", rootOf(face)))?.emit(clearOf(wrong));
+      const opened = admitPort(tab, face);
+      (await h.island(key("face:A", rootOf(face)))).emit(clearOf(wrong));
       await opened;
       expect(tab.messages("holder:admitted")).toHaveLength(0);
       expect(tab.messages("holder:refused").at(-1)).toMatchObject({ cause: "session-edge-other" });
@@ -136,8 +142,8 @@ describe("the holder keys a house by group and root and serves it after its isla
       h.islands.delete(key("face:A", rootOf(face)));
     }
     const good = await connect(h);
-    const opened = admitPort(good, face); await h.settle();
-    h.islands.get(key("face:A", rootOf(face)))?.emit(clearOf(face));
+    const opened = admitPort(good, face);
+    (await h.island(key("face:A", rootOf(face)))).emit(clearOf(face));
     await opened;
     expect(good.messages("holder:admitted")).toHaveLength(1);
   });
@@ -147,8 +153,8 @@ describe("the holder keys a house by group and root and serves it after its isla
     const face = await faceFixture("face:A", 41, 51);
     const sameRootOtherEdge = await faceFixture("face:A", 41, 51);
     const tweaked = { ...sameRootOtherEdge, edge: { ...sameRootOtherEdge.edge, boundEpoch: String(Number(sameRootOtherEdge.edge.boundEpoch) + 1) } };
-    const a = await connect(h); const opened = admitPort(a, face); await h.settle();
-    h.islands.get(key("face:A", rootOf(face)))?.emit(clearOf(face)); await opened;
+    const a = await connect(h); const opened = admitPort(a, face);
+    (await h.island(key("face:A", rootOf(face)))).emit(clearOf(face)); await opened;
     const b = await connect(h);
     // A tweaked edge fails its own signatures, so it refuses as a bad edge; an identical edge is the control.
     const refused = await admitPort(b, tweaked as FaceFixture);
@@ -160,9 +166,9 @@ describe("the holder keys a house by group and root and serves it after its isla
   test("H3: a gate:refused ends the house with its cause: ports hear a named end, the island and Repo stand down, the face locks once", async () => {
     const h = harness();
     const face = await faceFixture("face:A", 41, 51);
-    const tab = await connect(h); const opened = admitPort(tab, face); await h.settle();
-    h.islands.get(key("face:A", rootOf(face)))?.emit({ type: "gate:refused", cause: "stale epoch: the edge is bound to epoch 1 and the frontier reads 4" });
-    await opened; await h.settle();
+    const tab = await connect(h); void admitPort(tab, face);
+    (await h.island(key("face:A", rootOf(face)))).emit({ type: "gate:refused", cause: "stale epoch: the edge is bound to epoch 1 and the frontier reads 4" });
+    await h.settle();
     expect(tab.messages("holder:admitted")).toHaveLength(0);
     expect(tab.messages("holder:house-ended").at(-1)).toMatchObject({ personaGroup: "face:A", cause: expect.stringMatching(/stale epoch/) });
     expect(h.islands.get(key("face:A", rootOf(face)))?.terminated).toBe(1);
@@ -177,11 +183,11 @@ describe("the holder keys a house by group and root and serves it after its isla
     const h = harness({ makeRepo: async () => { await gate; made = { shutdown: async () => { stops++; } }; return made; } });
     const face = await faceFixture("face:A", 41, 51);
     const gone = await connect(h); const stays = await connect(h);
-    void admitPort(gone, face); void admitPort(stays, face);
-    await h.settle();
+    void admitPort(gone, face); const stayed = admitPort(stays, face);
+    await waitVerified(gone); await waitVerified(stays);
     h.core.disconnect(gone.endpoint);
-    release(); await h.settle();
-    h.islands.get(key("face:A", rootOf(face)))?.emit(clearOf(face)); await h.settle();
+    release();
+    (await h.island(key("face:A", rootOf(face)))).emit(clearOf(face)); await stayed;
     // The port that stayed is admitted into a house that stands; the one that left heard no admission.
     expect(gone.messages("holder:admitted")).toHaveLength(0);
     expect(stays.messages("holder:admitted")).toHaveLength(1);
@@ -201,9 +207,11 @@ describe("the holder keys a house by group and root and serves it after its isla
     const h = harness({ makeRepo: async () => { await gate; return { shutdown: async () => { stops++; } }; } });
     const face = await faceFixture("face:A", 41, 51);
     const a = await connect(h); const b = await connect(h);
-    void admitPort(a, face); void admitPort(b, face); await h.settle();
+    void admitPort(a, face); void admitPort(b, face);
+    await waitVerified(a); await waitVerified(b);
     h.core.disconnect(a.endpoint); h.core.disconnect(b.endpoint);
-    release(); await h.settle();
+    release();
+    for (let i = 0; i < 200 && h.locks.length === 0; i++) await Promise.resolve();
     expect(stops).toBe(1);
     expect(h.locks).toHaveLength(1);
     expect(a.messages("holder:admitted")).toHaveLength(0);
@@ -214,8 +222,8 @@ describe("the holder keys a house by group and root and serves it after its isla
     const h = harness();
     const a = await faceFixture("face:A", 41, 51); const b = await faceFixture("face:B", 42, 52);
     const ta = await connect(h); const tb = await connect(h);
-    const oa = admitPort(ta, a); const ob = admitPort(tb, b); await h.settle();
-    h.islands.get(key("face:A", rootOf(a)))?.emit(clearOf(a)); h.islands.get(key("face:B", rootOf(b)))?.emit(clearOf(b));
+    const oa = admitPort(ta, a); const ob = admitPort(tb, b);
+    (await h.island(key("face:A", rootOf(a)))).emit(clearOf(a)); (await h.island(key("face:B", rootOf(b)))).emit(clearOf(b));
     await Promise.all([oa, ob]);
     h.islands.get(key("face:A", rootOf(a)))?.fail(new Error("worker died"));
     await h.settle();

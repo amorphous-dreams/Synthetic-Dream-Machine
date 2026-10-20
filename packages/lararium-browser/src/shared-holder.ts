@@ -107,13 +107,19 @@ export interface HolderFaceSession {
   readonly atom:         { sign(bytes: Uint8Array): Promise<string> | string };
 }
 
+/** What a tab does when the holder locks the face it wears. */
+export interface HolderHandleHooks {
+  /** The face locked (its house ended or its last session closed): drop this tab's unlock. */
+  readonly onLock?: (personaGroup: string) => void;
+}
+
 /**
  * The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. With a
  * `session`, the handle admits the tab's session first: it signs the port's challenge with the face atom and posts
  * `session:open`, so the holder stands this face's house and the island boots behind it. The holder's refusal
  * reaches the daemon core as a fault that names its cause.
  */
-export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSession): VesselWorkerHandle {
+export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSession, hooks?: HolderHandleHooks): VesselWorkerHandle {
   const held = portEnvelopes.get(port);
   if (!held) throw new Error("[shared-holder] holder greeting absent");
   const { nonce, ...envelope } = held;
@@ -123,7 +129,8 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   const send = (msg: object, transfer: Transferable[]): void => port.postMessage({ ...msg, ...envelope }, transfer);
   if (session) {
     port.addEventListener("message", (e: MessageEvent) => {
-      const d = e.data as { kind?: unknown; sessionId?: unknown };
+      const d = e.data as { kind?: unknown; sessionId?: unknown; personaGroup?: unknown };
+      if (d?.kind === "holder:lock" && d.sessionId === envelope.sessionId) { hooks?.onLock?.(String(d.personaGroup)); return; }
       if (admitted || d?.kind !== "holder:admitted" || d.sessionId !== envelope.sessionId) return;
       admitted = true;
       for (const queued of waiting.splice(0)) send(queued.msg, queued.transfer);
@@ -144,7 +151,11 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
     listen: (cb) => {
       const fn = (e: MessageEvent): void => {
         const d = e.data as { kind?: unknown; cause?: unknown };
-        if (d && (d.kind === "holder:hello" || d.kind === "holder:admitted")) return;   // the door's words, never the island's
+        if (d && (d.kind === "holder:hello" || d.kind === "holder:admitted" || d.kind === "holder:lock")) return;   // the door's words, never the island's
+        if (d && d.kind === "holder:house-ended" && session) {
+          cb({ type: "fault", wikiUri: "", error: `[shared-holder] the holder ended this house: ${String(d.cause)}` });
+          return;
+        }
         if (d && d.kind === "holder:refused" && session) {
           cb({ type: "fault", wikiUri: "", error: `[shared-holder] the holder refused this session: ${String(d.cause)}` });
           return;

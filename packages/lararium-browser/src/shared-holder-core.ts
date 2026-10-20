@@ -1,20 +1,29 @@
 /**
- * shared-holder-core — THE HOUSE BEHIND THE LOCK: one house per face, a port per tab.
+ * shared-holder-core — THE HOUSE BEHIND THE LOCK: one house per (face, persona root), a port per tab.
  *
  * The Web Lock (vessel-lock.ts) refuses a second holder over one store. This core IS the one holder: it runs
  * inside a module SharedWorker (shared-holder.worker.ts) and takes the store's lock for its own life. A connecting
  * port receives a greeting with a nonce and nothing else: it answers no ask until its tab admits a session.
  *
- * A tab admits a session by presenting its face's countersigned device edge and its atom's signature over
- * (ownerEpoch, sessionId, nonce, personaGroup). The holder checks the signature under the edge's atom key, the
- * edge whole (root half and atom countersignature), and the (PersonaGroup -> persona root) pin it keeps from the
- * face's first admitted session for its own life. The holder holds no secret and verifies a self-contained chain.
+ * A tab opens a session by presenting its face's countersigned device edge and its atom's signature over
+ * (ownerEpoch, sessionId, nonce, personaGroup). The holder checks the signature under the edge's atom key and the
+ * edge whole (root half and atom countersignature). The edge names a persona root and no group, so a claimed group
+ * is no authority: a house keys by the PAIR (PersonaGroup, persona root), and a claim under a foreign root fills a
+ * house of its own that holds none of the real one's island, Repo or store.
  *
- * Each PersonaGroup stands in its own HOUSE: its own island, its own Repo, its own ports, owner, pending requests
- * and camera leases. An island answer reaches the ports of its own house alone. A sealing ask (`custody:write`)
- * goes to a tab of that house that announced it can seal (`session:sealer`), since the key rests in the tab; with
- * none ready the ask waits, named `seal-awaits-session`, and lands when one announces. The last session of a house
- * to close ends its island and Repo and then locks the face (`lockFace`).
+ * A house PROVES its face through its own island. The first session's edge reaches the island with the tab's manifest;
+ * the island's Binding Gate walks the pinned KEL, folds the lease frontier and reads the dyad shadow, then posts
+ * `gate:clear` naming the digest of the edge and the root it verified (or `gate:refused` with a cause). The house
+ * admits a session only for the edge the gate named, and every later session must present the byte-equal edge
+ * (`session-edge-other` otherwise). Until the gate clears, nothing flows to a tab: the claimant hears its island's
+ * boot handshake alone, every other port hears nothing, and the house Repo withholds its frames from the tab.
+ *
+ * Each house holds its own island, Repo, ports, owner, pending requests and camera leases. An island answer reaches
+ * the ports of its own house alone. A sealing ask (`custody:write`) goes to a tab of that house that announced it can
+ * seal (`session:sealer`), since the key rests in the tab; with none ready the ask waits, named `seal-awaits-session`,
+ * and lands when one announces. A house ends when its last session closes, its gate refuses, or its island faults:
+ * the island ends, the Repo shuts down, the surviving ports hear the named end and `holder:lock`, and the face locks
+ * (`lockFace`). One terminal state per house, so no port joins a house that has ended.
  *
  * Pure: the lock surface, the island and Repo spawns and the ports ride in, so a witness drives it with fakes.
  * The worker entry wires the platform pieces around it and nothing else.
@@ -25,7 +34,7 @@
 import type { LockHost } from "./vessel-lock.js";
 import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
-import { verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh";
 import { HOLDER_ROUTES } from "./holder-routes.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
@@ -58,11 +67,12 @@ export interface HolderIsland {
 /**
  * One face house's Repo. The holder holds documents and ciphertext and no key. A Repo that takes sync ports
  * (`attachPeer`) stands as the hub between its house's island and its house's tabs: the holder hands it the tab's
- * end of the manifest channel and gives the island a fresh channel to the same Repo.
+ * end of the manifest channel and gives the island a fresh channel to the same Repo. A tab's port comes with the
+ * promise that settles when the house's gate clears: the Repo withholds its frames from that tab until then.
  */
 export interface HolderRepo {
   shutdown(): Promise<void>;
-  attachPeer?(port: MessagePort): void;
+  attachPeer?(port: MessagePort, serving?: Promise<void>): void;
 }
 
 /** The greeting every tab receives on connect. */
@@ -94,6 +104,19 @@ export interface HolderAdmitted {
   readonly personaGroup: string;
 }
 
+/** A house ended under this port's session: its gate refused, its island faulted or its claimant left. */
+export interface HolderHouseEnded {
+  readonly kind: "holder:house-ended";
+  readonly personaGroup: string;
+  readonly cause: string;
+}
+
+/** The face locked: a tab that wears it drops its unlock. */
+export interface HolderLock {
+  readonly kind: "holder:lock";
+  readonly personaGroup: string;
+}
+
 /** A port as the holder sees it — the two members `MessagePort` and a fake alike carry. */
 export interface HolderPort {
   postMessage(msg: unknown, transfer?: Transferable[]): void;
@@ -104,12 +127,12 @@ export interface HolderPort {
 export interface SharedHolderCoreOptions {
   readonly lockName:    string;
   readonly locks:       LockHost | null;
-  /** Stand the daemon island of one face house. */
-  readonly spawnIsland: (personaGroup: string) => HolderIsland;
+  /** Stand the daemon island of one face house; `edgeDigest` names the edge the first session presented. */
+  readonly spawnIsland: (personaGroup: string, personaRoot: string, edgeDigest: string) => HolderIsland;
   /** Stand the Repo of one face house; the holder shuts it down with the house. */
-  readonly makeRepo?:   (personaGroup: string) => HolderRepo | Promise<HolderRepo>;
-  /** Lock a face once its last session closed and its island and Repo stand down. */
-  readonly lockFace?:   (personaGroup: string) => void | Promise<void>;
+  readonly makeRepo?:   (personaGroup: string, personaRoot: string) => HolderRepo | Promise<HolderRepo>;
+  /** Lock a face once its house ended and its island and Repo stand down. */
+  readonly lockFace?:   (personaGroup: string, personaRoot: string) => void | Promise<void>;
   /** A sealing ask waits because no ready tab of its face stands. */
   readonly onWait?:     (kind: "seal-awaits-session", personaGroup: string, messageType: string) => void;
   readonly onDrop?: (kind: string, reason: string) => void;
@@ -124,20 +147,37 @@ export interface SharedHolderCore {
   readonly tabs:        number;
 }
 
+/** The island kinds a house's claimant hears while its island proves the face: the boot handshake and the gate's own asks. */
+const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "dyad:ask", "cas:want", "doc:rest"]);
+
 interface PortState {
   readonly envelope: SessionEnvelope;
   readonly nonce:    string;
-  /** The face this port admitted, once admitted. */
-  group:             string | null;
+  /** The house this port joined, once its session opened. */
+  house:             House | null;
+  admitted:          boolean;
   opening:           boolean;
 }
 
-/** One face's house: its island, Repo, admitted ports and the routes between them. */
+/** One face's house: its island, Repo, ports and the routes between them. */
 interface House {
+  readonly key:   string;
   readonly group: string;
-  readonly repo:  HolderRepo | null;
+  readonly root:  string;
+  state:          "standing" | "ended";
+  repo:           HolderRepo | null;
+  readonly ready: Promise<void>;
+  /** Sessions still verifying or waiting on the Repo: a house with one never ends for want of ports. */
+  admitting:      number;
   island:         HolderIsland | null;
-  unlisten:       (() => void) | null;
+  unlisten:       Array<() => void>;
+  /** The digest of the edge the first session presented: the one edge this house's gate may clear. */
+  edgeDigest:     string | null;
+  cleared:        boolean;
+  served:         Promise<void>;
+  serve:          () => void;
+  /** The first session, whose manifest boots the island; it hears the boot handshake while the island proves. */
+  claimant:       HolderPort | null;
   readonly ports:    HolderPort[];
   readonly sealers:  Set<HolderPort>;
   readonly pending:  Map<string, { port: HolderPort; requestId: string }>;
@@ -155,9 +195,6 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const sessions = new Map<string, HolderPort>();
   const portStates = new Map<HolderPort, PortState>();
   const houses = new Map<string, House>();
-  const housesStanding = new Map<string, Promise<House>>();
-  /** Each face's persona root, pinned at its first admitted session for the holder's life. */
-  const groupRoots = new Map<string, string>();
   const mint = opts.mint ?? (() => defaultCryptoProvider.randomUUID());
   const ownerEpoch = mint();
   if (!ownerEpoch) throw new Error("owner-epoch-absent");
@@ -185,6 +222,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     return house.ports.find((p) => house.sealers.has(p) && ports.has(p)) ?? null;
   };
   const flushQueue = (house: House): void => {
+    if (!house.cleared) return;
     while (house.queue.length > 0) {
       const sealer = sealerOf(house);
       if (!sealer) return;
@@ -192,11 +230,74 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     }
   };
 
+  /**
+   * End a house once. `cause` names why when the house ends under a session (its gate refused, its island faulted or
+   * its claimant left); a house whose last session closed ends without one. Surviving ports hear the named end and
+   * the lock, and fall back to unadmitted.
+   */
+  const closeHouse = (house: House, cause: string | null): void => {
+    if (house.state === "ended") return;
+    house.state = "ended";
+    if (houses.get(house.key) === house) houses.delete(house.key);
+    for (const stop of house.unlisten.splice(0)) stop();
+    house.island?.terminate();
+    for (const port of house.ports.splice(0)) {
+      const state = portStates.get(port);
+      if (state) { state.house = null; state.admitted = false; }
+      if (!ports.has(port)) continue;
+      if (cause !== null) deliver(port, { type: "holder:house-ended", kind: "holder:house-ended", personaGroup: house.group, cause } as unknown as WireMessage);
+      deliver(port, { type: "holder:lock", kind: "holder:lock", personaGroup: house.group } as unknown as WireMessage);
+    }
+    house.sealers.clear(); house.pending.clear(); house.cameras.clear(); house.queue.length = 0;
+    house.owner = null; house.claimant = null;
+    let shut: Promise<void>;
+    try { shut = house.repo ? house.repo.shutdown() : Promise.resolve(); } catch (error) { shut = Promise.reject(error); }
+    const lock = (): Promise<void> | void => opts.lockFace?.(house.group, house.root);
+    // The face locks after its Repo stands down, and also when the Repo fails to: a face never stays open on a fault.
+    void shut.then(lock, (error) => {
+      onDrop("repo:shutdown", error instanceof Error ? error.message : String(error));
+      return lock();
+    }).catch((error) => onDrop("face:lock", error instanceof Error ? error.message : String(error)));
+  };
+
+  /** The island proved the face for the edge it names: serve the house, or end it for an edge no session presented. */
+  const settleGate = (house: House, msg: WireMessage): void => {
+    if (house.cleared) return;
+    if (msg.type === "gate:refused") {
+      closeHouse(house, `gate refused: ${String(msg["cause"])}`);
+      return;
+    }
+    if (msg["edgeDigest"] !== house.edgeDigest || msg["personaRoot"] !== house.root) {
+      for (const port of [...house.ports]) refuse(port, "session-edge-other", msg.type);
+      closeHouse(house, null);
+      return;
+    }
+    house.cleared = true;
+    house.serve();
+    for (const port of house.ports) {
+      const state = portStates.get(port);
+      if (state && !state.admitted) {
+        state.admitted = true;
+        deliver(port, { type: "holder:admitted", kind: "holder:admitted", personaGroup: house.group } as unknown as WireMessage);
+      }
+    }
+    flushQueue(house);
+  };
+
   const routeFromIsland = (house: House) => (raw: unknown): void => {
+    if (house.state === "ended") return;
     const msg = wireMessage(raw);
     if (!msg) { onDrop("unknown", "invalid-message"); return; }
+    if (msg.type === "gate:clear" || msg.type === "gate:refused") { settleGate(house, msg); return; }
     const route = HOLDER_ROUTES[msg.type as keyof typeof HOLDER_ROUTES];
     if (!route) { onDrop(msg.type, "unknown-route"); return; }
+    if (!house.cleared) {
+      // While the island proves the face, the claimant hears the boot handshake and nothing else; a sealing ask waits.
+      if (msg.type === "custody:write") { house.queue.push(msg); return; }
+      if (route === "owner" && PROVING_KINDS.has(msg.type) && house.claimant && ports.has(house.claimant)) { deliver(house.claimant, msg); return; }
+      onDrop(msg.type, "house-uncleared");
+      return;
+    }
     if (route === "owner") {
       if (msg.type === "custody:write") {
         const sealer = sealerOf(house);
@@ -266,44 +367,31 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     return attempt;
   };
 
-  /** The house of one face: stand its Repo once, and its island on the first admitted session. */
-  const houseOf = (group: string): Promise<House> => {
-    const standing = housesStanding.get(group);
-    if (standing) return standing;
-    const made = (async (): Promise<House> => {
-      const repo = opts.makeRepo ? await opts.makeRepo(group) : null;
-      const house: House = {
-        group, repo, island: null, unlisten: null,
-        ports: [], sealers: new Set(), pending: new Map(), cameras: new Map(), queue: [], owner: null,
-      };
-      houses.set(group, house);
-      return house;
+  /** The standing house of one (group, root), or a new one whose Repo is being made. */
+  const houseOf = (group: string, root: string): House => {
+    const key = `${group}|${root}`;
+    const standing = houses.get(key);
+    if (standing && standing.state === "standing") return standing;
+    let serve!: () => void;
+    const served = new Promise<void>((resolve) => { serve = resolve; });
+    const house: House = {
+      key, group, root, state: "standing", repo: null, ready: Promise.resolve(), admitting: 0,
+      island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, claimant: null,
+      ports: [], sealers: new Set(), pending: new Map(), cameras: new Map(), queue: [], owner: null,
+    };
+    (house as { ready: Promise<void> }).ready = (async () => {
+      if (opts.makeRepo) house.repo = await opts.makeRepo(group, root);
     })();
-    housesStanding.set(group, made);
-    return made;
+    houses.set(key, house);
+    return house;
   };
 
-  /** The last session left: the island ends, the Repo shuts down, and only then does the face lock. */
-  const closeHouse = (house: House): void => {
-    houses.delete(house.group);
-    housesStanding.delete(house.group);
-    house.unlisten?.();
-    house.island?.terminate();
-    let shut: Promise<void>;
-    try { shut = house.repo ? house.repo.shutdown() : Promise.resolve(); } catch (error) { shut = Promise.reject(error); }
-    const lock = (): Promise<void> | void => opts.lockFace?.(house.group);
-    // The face locks after its Repo stands down, and also when the Repo fails to: a face never stays open on a fault.
-    void shut.then(lock, (error) => {
-      onDrop("repo:shutdown", error instanceof Error ? error.message : String(error));
-      return lock();
-    }).catch((error) => onDrop("face:lock", error instanceof Error ? error.message : String(error)));
-  };
-
+  /** A session opened: verify it, join the house of its (group, root), and boot that house's island on the first. */
   const admit = async (port: HolderPort, state: PortState, msg: WireMessage): Promise<void> => {
     const group = msg["personaGroup"];
     const edge = msg["edge"] as DeviceDelegationTiddler | undefined;
     const signature = msg["signature"];
-    if (state.group !== null) { refuse(port, "session-open-malformed", msg.type); return; }
+    if (state.house !== null) { refuse(port, "session-open-malformed", msg.type); return; }
     if (typeof group !== "string" || group.length === 0 || typeof signature !== "string" || !edge || typeof edge !== "object") {
       refuse(port, "session-open-malformed", msg.type);
       return;
@@ -313,27 +401,52 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       edge, signature,
       fields: { ownerEpoch: state.envelope.ownerEpoch, sessionId: state.envelope.sessionId, nonce: state.nonce, personaGroup: group },
     });
-    if (!reading.ok) { state.opening = false; refuse(port, reading.reason, msg.type); return; }
-    const root = edge.personaRootDid;
-    const pinned = groupRoots.get(group);
-    if (pinned !== undefined && pinned !== root) { state.opening = false; refuse(port, "session-root-mismatch", msg.type); return; }
-    if (pinned === undefined) groupRoots.set(group, root);
-    const house = await houseOf(group);
     state.opening = false;
+    if (!reading.ok) { refuse(port, reading.reason, msg.type); return; }
+    const root = edge.personaRootDid;
+    const digest = deviceEdgeDigest(edge);
+    // The house counts this admission before it waits on the Repo, so it cannot end under it; one that ended while
+    // this session waited stands again fresh, and no port joins a house that has ended.
+    let house = houseOf(group, root);
+    for (;;) {
+      house.admitting++;
+      try { await house.ready; } catch (error) {
+        house.admitting--;
+        refuse(port, "session-unadmitted", msg.type);
+        onDrop("house:repo", error instanceof Error ? error.message : String(error));
+        closeHouse(house, null);
+        return;
+      }
+      house.admitting--;
+      if (house.state === "standing") break;
+      if (ended.has(port)) return;
+      house = houseOf(group, root);
+    }
     if (ended.has(port)) {
-      if (house.ports.length === 0) closeHouse(house);
+      if (house.ports.length === 0 && house.admitting === 0) closeHouse(house, null);
       return;
     }
-    state.group = group;
+    if (house.edgeDigest !== null && house.edgeDigest !== digest) {
+      refuse(port, "session-edge-other", msg.type);
+      if (house.ports.length === 0 && house.admitting === 0) closeHouse(house, null);
+      return;
+    }
+    state.house = house;
     house.ports.push(port);
-    if (house.owner === null || !ports.has(house.owner)) house.owner = port;
-    deliver(port, { type: "holder:admitted", kind: "holder:admitted", personaGroup: group } as unknown as WireMessage);
-    // THE OWNER IS THE PORT THAT STANDS THE ISLAND: the island speaks `ready` before any manifest arrives, so its
-    // boot traffic needs a destination from the first message.
-    if (!house.island) {
-      house.island = opts.spawnIsland(group);
+    if (house.edgeDigest === null) {
+      house.edgeDigest = digest;
+      house.claimant = port;
+      house.owner = port;
+      const island = opts.spawnIsland(group, root, digest);
+      house.island = island;
       islandBoots++;
-      house.unlisten = house.island.listen(routeFromIsland(house));
+      house.unlisten.push(island.listen(routeFromIsland(house)));
+      house.unlisten.push(island.onError((error) => closeHouse(house, `island-crashed: ${error.message}`)));
+      return;
+    }
+    if (house.cleared) {
+      state.admitted = true;
+      deliver(port, { type: "holder:admitted", kind: "holder:admitted", personaGroup: group } as unknown as WireMessage);
     }
   };
 
@@ -360,11 +473,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       forwarded = { ...islandMessage, requestId: holderId };
     }
     let transfer = (e.ports ?? []) as unknown as unknown[];
-    // THE REPO STANDS BETWEEN: a manifest's sync port carries the tab's Repo; the house Repo takes it as a peer and
-    // the island syncs with the house Repo over a channel of its own, so the island's documents rest in the holder.
+    // THE REPO STANDS BETWEEN: a manifest's sync port carries the tab's Repo; the house Repo takes it as a peer,
+    // withholding its frames until the gate clears, and the island syncs with the house Repo over a channel of its
+    // own, so the island's documents rest in the holder.
     if (msg.type === "manifest" && house.repo?.attachPeer && transfer.length === 1) {
       const channel = new MessageChannel();
-      house.repo.attachPeer(transfer[0] as MessagePort);
+      house.repo.attachPeer(transfer[0] as MessagePort, house.served);
       house.repo.attachPeer(channel.port1);
       forwarded = { ...(islandMessage as Record<string, unknown>), syncPort: channel.port2 };
       transfer = [channel.port2];
@@ -381,16 +495,20 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       const state = portStates.get(port);
       if (state) sessions.delete(state.envelope.sessionId);
       portStates.delete(port);
-      const group = state?.group;
-      const house = group ? houses.get(group) : undefined;
-      if (!house) return;
+      const house = state?.house;
+      if (!house || house.state === "ended") return;
       const at = house.ports.indexOf(port);
       if (at >= 0) house.ports.splice(at, 1);
       house.sealers.delete(port);
+      if (house.claimant === port && !house.cleared && house.ports.length > 0) {
+        // The island boots from the claimant's manifest: with it gone before the gate cleared, no session can finish proving.
+        closeHouse(house, "claimant-left");
+        return;
+      }
       if (house.owner === port) house.owner = null;
       for (const [id, asking] of house.pending) if (asking.port === port) house.pending.delete(id);
       for (const [id, holder] of house.cameras) if (holder === port) house.cameras.delete(id);
-      if (house.ports.length === 0) closeHouse(house);
+      if (house.ports.length === 0 && house.admitting === 0) closeHouse(house, null);
     },
     async connect(port) {
       // The attachment door needs the named cause now; a silent port would make the tab wait on its bound.
@@ -404,7 +522,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       const sessionId = mint();
       if (!sessionId || sessions.has(sessionId)) throw new Error("session-id-mint-refused");
       const envelope = Object.freeze({ ownerEpoch, sessionId, generation: 0 });
-      const state: PortState = { envelope, nonce: randomHex(16), group: null, opening: false };
+      const state: PortState = { envelope, nonce: randomHex(16), house: null, admitted: false, opening: false };
       sessions.set(sessionId, port);
       portStates.set(port, state);
       ports.add(port);
@@ -423,15 +541,23 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
           onDrop(msg.type, refusal);
           return;
         }
-        // A port answers nothing until its session admits: the one ask it may make is `session:open`.
-        if (state.group === null) {
+        const house = state.house;
+        // A port that has not joined a house may ask one thing: to open a session.
+        if (house === null) {
           if (msg.type === "session:open" && !state.opening) { void admit(port, state, msg); return; }
           refuse(port, "session-unadmitted", msg.type);
           return;
         }
-        const house = houses.get(state.group);
-        if (!house) { onDrop(msg.type, "house-absent"); return; }
         if (msg.type === "session:open") { refuse(port, "session-open-malformed", msg.type); return; }
+        if (!state.admitted) {
+          // While its island proves the face, the claimant boots it: the manifest and the answers to the island's asks
+          // cross, and no verb or camera lease does. Any other port waits unanswered.
+          const claimantBoot = port === house.claimant && !TAB_REQUESTS.has(msg.type)
+            && msg.type !== "lar:control-event" && msg.type !== "lar:resend" && msg.type !== "session:sealer";
+          if (!claimantBoot) { refuse(port, "session-unadmitted", msg.type); return; }
+          forwardToIsland(house, port, msg, e);
+          return;
+        }
         if (msg.type === "session:sealer") {
           if (msg["ready"] === true) { house.sealers.add(port); flushQueue(house); }
           else house.sealers.delete(port);
