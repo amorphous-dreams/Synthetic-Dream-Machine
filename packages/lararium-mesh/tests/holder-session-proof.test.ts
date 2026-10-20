@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildDeviceDelegation } from "../src/device-delegation.js";
+import { buildDeviceDelegation, deviceEdgeDigest } from "../src/device-delegation.js";
 import { faceAtomKeyFromSeed } from "../src/face-atom.js";
 import {
   HOLDER_SESSION_DOMAIN, holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof,
@@ -68,5 +68,17 @@ describe("holder session proof", () => {
     }
     expect(() => holderSessionProofBytes({ ...fields, personaGroup: "face:A|session-2" })).toThrow(/malformed field/);
     expect(await verifyHolderSessionProof({ edge, signature, fields })).toEqual({ ok: true });
+  });
+
+  test("a gate names an edge by its digest: stable for the same edge, different for any changed byte", async () => {
+    const { edge } = await fixtures();
+    const same = await buildDeviceDelegation({ personaRootSeed: root, atomSeed, hearthTrueName: "", boundEpoch: 1 });
+    const later = await buildDeviceDelegation({ personaRootSeed: root, atomSeed, hearthTrueName: "", boundEpoch: 2 });
+    const otherRootEdge = await buildDeviceDelegation({ personaRootSeed: otherRoot, atomSeed, hearthTrueName: "", boundEpoch: 1 });
+    expect(deviceEdgeDigest(edge)).toMatch(/^[0-9a-f]{64}$/);
+    expect(deviceEdgeDigest(same)).toBe(deviceEdgeDigest(edge));
+    expect(deviceEdgeDigest(later)).not.toBe(deviceEdgeDigest(edge));
+    expect(deviceEdgeDigest(otherRootEdge)).not.toBe(deviceEdgeDigest(edge));
+    expect(deviceEdgeDigest({ ...edge, atomSignature: later.atomSignature })).not.toBe(deviceEdgeDigest(edge));
   });
 });

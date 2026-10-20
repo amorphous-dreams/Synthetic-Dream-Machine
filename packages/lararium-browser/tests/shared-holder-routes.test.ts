@@ -8,7 +8,7 @@ const islandKinds = [
   "event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result",
   "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result",
   "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:evict-request",
-  "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write",
+  "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "doc:rest", "custody:write",
   "view:catalog", "view:content", "view:settle", "lar:frame", "lar:control-result", "lar:service",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 

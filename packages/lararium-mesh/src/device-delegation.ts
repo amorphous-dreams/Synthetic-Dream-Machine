@@ -39,6 +39,7 @@
 import { DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "./crypto.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
@@ -85,6 +86,11 @@ function delegationProofBytes(d: ProofFields): Uint8Array {
   return new TextEncoder().encode(
     `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}|${d.boundEpoch}`,
   );
+}
+
+/** The digest a gate names an edge by: SHA-256 hex over the root proof, the root signature and the atom countersignature. */
+export function deviceEdgeDigest(edge: DeviceDelegationTiddler): string {
+  return hex(sha256(new TextEncoder().encode(`${new TextDecoder().decode(deviceAtomProofBytes(edge))}|${edge.atomSignature}`)));
 }
 
 export function deviceAtomProofBytes(edge: DeviceDelegationRootHalf): Uint8Array {
