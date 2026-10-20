@@ -71,7 +71,7 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // seats a key the `dist/` face founding, anchor read and boot below can never reach, and each refuses
 // `CustodyLocked`.
 import {
-  runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
+  runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel,
   larSealHome, readNexusDoc, writeNexusDoc,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
@@ -83,7 +83,8 @@ let seedCharter: NexusDoc | null = null;
 const charterDocAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...seedCharter!, federationPosture });
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { TEST_CUSTODY } from "../found-route.js";
+import { TEST_CUSTODY, openTestCustody } from "../found-route.js";
+import { loadFaceAtom } from "../../src/face-atom-store.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -198,7 +199,9 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // scheme this file's storage law forbids. So EVERY vessel-identity read/write MUST still run inside
     // `withLarRoot` (`tests/harness/with-lar-root.ts`), or it silently reaches the real, non-isolated
     // `~/.local/share/lares/identity` home instead of this test's isolated vessel.
-    const founderSeed = await withLarRoot(FOUNDER.root, () => loadVesselSigningSeed());
+    // The grant record signs under the key the founder's device edge licenses: the face's atom, not the place.
+    const founderSeed = await withLarRoot(FOUNDER.root, async () => { await openTestCustody(); return loadFaceAtom(0); });
+    if (!founderSeed) throw new Error("[persona-ring-cross-operator-admit] the founding face holds no atom");
     const aid = nexusAidOf(seedCharter);
     if (!aid) throw new Error("[persona-ring-cross-operator-admit] the seed charter names no Nexus identifier");
     nexusAid = aid;
