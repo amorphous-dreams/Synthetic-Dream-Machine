@@ -8,7 +8,7 @@
  */
 
 import type { DeviceDelegationTiddler, LarTiddlerRecord, LarTiddlerStore } from "@lararium/mesh";
-import { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { runFaceJoin, type FaceJoinContext, type FaceJoinOutcome, type FaceJoinProvider, type FaceJoinSummons } from "./face-join.js";
 import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 
@@ -54,18 +54,28 @@ async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unk
   const { provider, summons, ctx, founderEdge, signGrant, atomSeed, operationStore, grantPlane } = input;
   const signedInput = new TextEncoder().encode(JSON.stringify(summons));
 
-  /** The serial of the grant standing at `title`: 0 where none stands or the bytes carry none. */
-  const standingSerial = async (title: string): Promise<{ serial: number; text: string | null }> => {
+  /**
+   * The serial of the grant standing at `title`, counted only when the record is this face's own: the joinee's kit reads
+   * records with `verifyFaceGrantRecord`, and so does this lane. A record that fails it (a member's forgery, another
+   * face's, one at the wrong title, a stale edge) reads as serial 0 with its bytes, and a fresh issue supersedes it.
+   */
+  const standingSerial = async (title: string, joineeAgentIdHex: string): Promise<{ serial: number; text: string | null }> => {
     const standing = await grantPlane.store.get(title);
     if (!standing || standing.meta?.deleted) return { serial: 0, text: null };
     const text = typeof standing.tiddler.text === "string" ? standing.tiddler.text : null;
-    let serial = 0;
-    try { const read = (JSON.parse(text ?? "null") as { serial?: unknown } | null)?.serial; if (Number.isSafeInteger(read)) serial = read as number; } catch { serial = 0; }
-    return { serial, text };
+    let rec: FaceGrantRecord | null = null;
+    try { rec = JSON.parse(text ?? "null") as FaceGrantRecord | null; } catch { rec = null; }
+    if (!rec || !Number.isSafeInteger(rec.serial)) return { serial: 0, text };
+    const joineeKey = joineeAgentIdHex.replace(/^0x/i, "").toLowerCase().slice(-64);
+    const verdict = await verifyFaceGrantRecord(rec, { personaRootDid: ctx.personaRootDid, selfVerifyingKey: joineeKey, groupId: ctx.personaGroupId });
+    const own = verdict.ok
+      && rec.founderEdge.deviceVerifyingKey.toLowerCase() === founderEdge.deviceVerifyingKey.toLowerCase()
+      && title === faceGrantTitle(rec.groupId, rec.joineeAgentIdHex);
+    return { serial: own ? rec.serial : 0, text };
   };
 
   const publish = async (issued: Extract<JoinOperation, { state: "issued" }>): Promise<Record<string, unknown>> => {
-    const standing = await standingSerial(issued.grantTitle);
+    const standing = await standingSerial(issued.grantTitle, issued.outcome.grant.joineeAgentIdHex);
     const ours = JSON.stringify(issued.grantRecord);
     // ONE TITLE PER (GROUP, JOINEE), ORDERED BY SERIAL: an absent or older grant gives way to this issue; the same serial
     // stands only as the same bytes; a newer grant stays, and this issue answers its own outcome without writing.
@@ -95,7 +105,7 @@ async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unk
   const { kind: _grantKind, ...grantBody } = outcome.grant;
   void _grantKind;
   const grantTitle = faceGrantTitle(ctx.personaGroupId, outcome.grant.joineeAgentIdHex);
-  const serial = (await standingSerial(grantTitle)).serial + 1;
+  const serial = (await standingSerial(grantTitle, outcome.grant.joineeAgentIdHex)).serial + 1;
   const grantRecord = await signFaceGrantRecord({ kind: "face-join-grant/v1", groupId: ctx.personaGroupId, ...grantBody, serial, founderEdge }, signGrant);
   const issued = { state: "issued", outcome, grantRecord, grantTitle } satisfies JoinOperation;
   await writeFaceOperation(operationStore, atomSeed, signedInput, issued);
