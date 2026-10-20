@@ -2136,7 +2136,7 @@ async function prepareNodeBootOn(
     // writers, and a gate there would leave every other route into the worker unchecked
     // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
     const opens = sovereign !== null;
-    // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own handle-index; the face this
+    // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own PersonaGroup; the face this
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
     // receives it derived and holds no root.

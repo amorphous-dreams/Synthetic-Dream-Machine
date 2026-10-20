@@ -566,16 +566,14 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await generateOrLoadPersonaGroupRoot(handleIndex);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
 
-  // The pending row names this ceremony's exact ask before its group exists.
+  // The pending row keeps an interrupted ask. A completed group's atom stays with that group; only an
+  // authenticated checkpoint can recover a seed after the ask row moves into a group row.
   const foundingAsk: FoundingAtomAsk = {
     hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex,
   };
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
-    ?? (priorAnchors && priorAnchors.foundingAskDigest === foundingAskDigest(foundingAsk)
-      ? await loadFaceAtomOfGroup(priorAnchors.personaGroupId) : null)
     ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
-  const priorVeilArchive = priorAnchors ? await loadVeilArchive(priorAnchors.personaGroupId) : null;
 
   const face = await foundTheFace({
     repo,
@@ -604,7 +602,6 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
         ownVesselKey:    vesselIdentity.verifyingKey,
       }));
     })(),
-    ...(priorVeilArchive ? { veilArchiveBytes: priorVeilArchive } : {}),
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });

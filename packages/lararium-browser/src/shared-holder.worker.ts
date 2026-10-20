@@ -10,6 +10,7 @@
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { attachMessageChannelSync } from "@lararium/mesh";
+import { attachGatedPeer } from "./gated-peer.js";
 import { makeSharedHolderCore } from "./shared-holder-core.js";
 import { browserWorkerHandle } from "./worker-handle.js";
 
@@ -35,20 +36,6 @@ async function houseStoreName(personaGroup: string, personaRoot: string): Promis
   return `${lockName}:house:${Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
-/**
- * Hand a tab's sync port to a house Repo, withholding the Repo's frames from the tab until the house's gate clears:
- * the tab's frames reach the Repo at once (the island proves the face from them), and the Repo's reach the tab after.
- */
-function attachGatedPeer(repo: Repo, tab: MessagePort, serving: Promise<void>): void {
-  const relay = new MessageChannel();
-  attachMessageChannelSync(repo, relay.port1);
-  let open = false;
-  const held: unknown[] = [];
-  relay.port2.onmessage = (e: MessageEvent) => { if (open) tab.postMessage(e.data); else held.push(e.data); };
-  tab.onmessage = (e: MessageEvent) => { relay.port2.postMessage(e.data); };
-  void serving.then(() => { open = true; for (const frame of held.splice(0)) tab.postMessage(frame); });
-}
-
 const core = makeSharedHolderCore({
   lockName,
   locks: sw.navigator?.locks ?? null,
@@ -58,7 +45,7 @@ const core = makeSharedHolderCore({
     return {
       shutdown: () => repo.shutdown(),
       attachPeer: (port, serving) => {
-        if (serving) attachGatedPeer(repo, port, serving);
+        if (serving) attachGatedPeer((peer) => attachMessageChannelSync(repo, peer), port, serving);
         else attachMessageChannelSync(repo, port);
       },
     };

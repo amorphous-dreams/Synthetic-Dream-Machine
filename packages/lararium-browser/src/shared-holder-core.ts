@@ -165,6 +165,7 @@ interface House {
   cleared:        boolean;
   served:         Promise<void>;
   serve:          () => void;
+  endServing:     (reason: Error) => void;
   /** The first session, whose manifest boots the island; it hears the boot handshake while the island proves. */
   claimant:       HolderPort | null;
   readonly ports:    HolderPort[];
@@ -227,6 +228,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const closeHouse = (house: House, cause: string | null): void => {
     if (house.state === "ended") return;
     house.state = "ended";
+    if (!house.cleared) house.endServing(new Error(cause ?? "house ended before its gate cleared"));
     if (houses.get(house.key) === house) houses.delete(house.key);
     for (const stop of house.unlisten.splice(0)) stop();
     house.island?.terminate();
@@ -362,10 +364,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     const standing = houses.get(key);
     if (standing && standing.state === "standing") return standing;
     let serve!: () => void;
-    const served = new Promise<void>((resolve) => { serve = resolve; });
+    let endServing!: (reason: Error) => void;
+    const served = new Promise<void>((resolve, reject) => { serve = resolve; endServing = reject; });
+    void served.catch(() => undefined);
     const house: House = {
       key, group, root, state: "standing", repo: null, ready: Promise.resolve(), admitting: 0,
-      island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, claimant: null,
+      island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, endServing, claimant: null,
       ports: [], sealers: new Set(), pending: new Map(), cameras: new Map(), queue: [], owner: null,
     };
     (house as { ready: Promise<void> }).ready = (async () => {
@@ -489,9 +493,9 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       const at = house.ports.indexOf(port);
       if (at >= 0) house.ports.splice(at, 1);
       house.sealers.delete(port);
-      if (house.claimant === port && !house.cleared && house.ports.length > 0) {
-        // The island boots from the claimant's manifest: with it gone before the gate cleared, no session can finish proving.
-        closeHouse(house, "claimant-left");
+      if (house.claimant === port && !house.cleared) {
+        // The island boots from the claimant's manifest: with it gone before the gate clears, no session can finish proving.
+        closeHouse(house, house.ports.length > 0 ? "claimant-left" : null);
         return;
       }
       if (house.owner === port) house.owner = null;
