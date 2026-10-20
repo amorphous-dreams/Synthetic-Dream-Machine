@@ -139,9 +139,9 @@ describe("the later grant — a signed record the joinee verifies offline", () =
   // The record orders by the plane's causal history, so it carries no wall-clock stamp. The daemon's mint
   // passes only the grant, the group and the founder's edge into the signed bytes.
   test("★ the daemon mints the grant record with no wall-clock stamp ★", () => {
-    const src = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "face-join-operation.ts"), "utf8");
     const start = src.indexOf("await signFaceGrantRecord({");
-    const end = src.indexOf("ed25519SignerFromSeed(", start);
+    const end = src.indexOf("signGrant)", start);
     expect(start, "the daemon's grant-record mint moved").toBeGreaterThan(-1);
     const mint = src.slice(start, end);
     expect(mint).not.toMatch(/issuedAt|Date/);

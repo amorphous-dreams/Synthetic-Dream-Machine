@@ -28,7 +28,7 @@ describe("the island's dyad consults take a reader or refuse", () => {
   test("R2 both consults pass through the guard and none defaults to clear", () => {
     const src = readFileSync(join(__dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
     const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
-    expect(code, "the comment strip ate the file").toMatch(/runFaceJoin\(/);
+    expect(code, "the comment strip ate the file").toMatch(/runFaceJoinOperation\(/);
     expect((code.match(/requireDyadReader\(dyadReading, "the join gate"\)\(/g) ?? []).length).toBe(1);
     expect((code.match(/requireDyadReader\(dyadReading, "the Binding Gate"\)\(/g) ?? []).length).toBe(1);
     // The content-key seat reads a seat's standing and its own shadow through the same guard.
