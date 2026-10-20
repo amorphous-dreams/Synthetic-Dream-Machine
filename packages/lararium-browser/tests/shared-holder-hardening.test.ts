@@ -339,3 +339,77 @@ describe("a tab boots its island through the gate that waits for the boot", () =
     expect(spawned).toBe(1);
   });
 });
+
+describe("a half-started house yields to the dedicated-worker floor", () => {
+  test("a throwing nested island launch closes its house and Repo and refuses by holder-unavailable", async () => {
+    const face = await faceFixture("face:failed-spawn", 91, 92);
+    let stops = 0;
+    const core = makeSharedHolderCore({
+      lockName: "holder-failed-spawn",
+      locks: { request: async (_n, _o, cb) => cb({ name: "holder-failed-spawn" }) },
+      makeRepo: async () => ({ shutdown: async () => { stops++; } }) as HolderRepo,
+      spawnIsland: (): HolderIsland => { throw new Error("constructor refused"); },
+    });
+    const tab = fakePort(); await core.connect(tab.endpoint);
+    const verdict = await admitPort(tab, face);
+    expect(verdict, "the failed island names the floor cause").toMatchObject({ kind: "holder:refused", cause: expect.stringMatching(/^holder-unavailable: the island could not start \(constructor refused\)/) });
+    await expect.poll(() => core.houses).toBe(0);
+    expect(stops, "the half-started house shuts its Repo once").toBe(1);
+  });
+
+  test("a late holder-unavailable refusal reattaches earlier listeners and replays held posts to the floor", async () => {
+    const face = await faceFixture("face:floor", 93, 94);
+    const channel = new MessageChannel();
+    const hello = { kind: "holder:hello", ownerEpoch: "floor-epoch", sessionId: "floor-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
+    class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    expect(attached.kind).toBe("attached");
+    if (attached.kind !== "attached") return;
+    const posts: Message[] = [];
+    const listeners = new Set<(m: unknown) => void>();
+    let floors = 0, terminated = 0;
+    const floor = () => { floors++; return {
+      post: (m: unknown) => { posts.push(m as Message); },
+      listen: (cb: (m: unknown) => void) => { listeners.add(cb); return () => listeners.delete(cb); },
+      onError: () => () => {}, terminate: () => { terminated++; },
+    }; };
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, { floor } as never);
+    const heard: Message[] = [];
+    handle.listen((m) => heard.push(m as Message));
+    handle.post({ type: "wiki:place-verb", requestId: "held", verb: "read" });
+    channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: the island could not start (constructor refused)" });
+    await expect.poll(() => floors).toBe(1);
+    expect(posts.some((m) => m.requestId === "held"), "held asks replay into the floor").toBe(true);
+    handle.post({ type: "wiki:place-verb", requestId: "later", verb: "read" });
+    expect(posts.some((m) => m.requestId === "later"), "later asks use the floor").toBe(true);
+    for (const cb of listeners) cb({ type: "breath", wikiUri: "floor" });
+    expect(heard).toContainEqual({ type: "breath", wikiUri: "floor" });
+    handle.terminate();
+    expect(terminated).toBe(1);
+    channel.port2.close();
+  });
+
+  test("CONTROL: a normal island admission never invokes the floor hook", async () => {
+    const face = await faceFixture("face:normal", 95, 96);
+    const core = makeSharedHolderCore({
+      lockName: "holder-normal",
+      locks: { request: async (_n, _o, cb) => cb({ name: "holder-normal" }) },
+      spawnIsland: (_g, root, digest): HolderIsland => {
+        const listeners = new Set<(m: unknown) => void>();
+        return { post: (m) => { if ((m as Message).type === "manifest") for (const l of listeners) l({ type: "gate:clear", edgeDigest: digest, personaRoot: root }); },
+          listen: (l) => { listeners.add(l); return () => listeners.delete(l); }, onError: () => () => {}, terminate: () => {} };
+      },
+    });
+    class Pair { readonly port: MessagePort; constructor() { const c = new MessageChannel(); this.port = c.port1; void core.connect(c.port2 as unknown as HolderPort); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
+    expect(attached.kind).toBe("attached");
+    if (attached.kind !== "attached") return;
+    let floors = 0;
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, { floor: () => { floors++; throw new Error("unexpected floor"); } } as never);
+    await expect.poll(() => core.houses).toBe(1);
+    await expect.poll(() => core.islandBoots).toBe(1);
+    handle.post({ type: "manifest", wikiUri: "daemon" });
+    expect(floors).toBe(0);
+    handle.terminate();
+  });
+});

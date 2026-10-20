@@ -7,6 +7,7 @@ import {
   makeIslandRepo, materializeSharedLarDoc, signEdgeKapae, writeEdgeKapae,
 } from "@lararium/mesh";
 import { edgeKapaeKey } from "../../lararium-mesh/src/edge-kapae.js";
+import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
 
 async function reader() {
   const path = "../src/index.js";
@@ -36,10 +37,58 @@ describe("the island's fleet board dyad reader", () => {
       expect(await read(root, other), "control: an untouched edge starts clear").toBe("clear");
       board.change((draft) => { delete draft.tiddlers[row]; });
       expect(board.doc()?.tiddlers[row], "the second replica omits the raise").toBeUndefined();
-      expect(await makeRead(repo, absentLedger)(root, device), "control: a ledger that never counted the omitted raise reads clear").toBe("clear");
+      expect(await (makeRead as never as (r: unknown, l: unknown, rest: unknown, own: string) => (r: string, d: string) => Promise<string>)(repo, absentLedger, undefined, other)(root, device), "a peer's fresh ledger cannot clear an omitted raise").toBe("aside");
       expect(await read(root, other), "control: the untouched edge remains clear").toBe("clear");
       expect(await read(root, device), "the island ledger restores an omitted counted raise").toBe("aside");
       expect(board.doc()?.tiddlers[row], "the reader writes its kept signed raise back to the board").toBeDefined();
+    } finally { await repo.shutdown(); }
+  });
+  test("a fresh fleet has unknown peer standing, while its own device still boots and counted evidence decides peers", async () => {
+    const rootSeed = new Uint8Array(32).fill(71);
+    const root = await ed25519VerifyingKeyFromSeed(rootSeed);
+    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(72));
+    const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(73));
+    const other = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(74));
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const ledger = repo.create(emptyLarDoc());
+      const makeRead = await reader() as unknown as (r: unknown, l: unknown, rest: unknown, own: string) => (r: string, d: string) => Promise<string>;
+      const read = makeRead(repo, ledger, undefined, own);
+      expect(await read(root, own), "CONTROL: local absence leaves the device's own gate best effort").toBe("clear");
+      expect(await read(root, peer), "a peer with no local count or signed board evidence stays unknown").toBe("aside");
+      const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
+      const otherRaise = await signEdgeKapae({ edgeId: deviceEdgeId(root, other), raised: true, hand: "holder", parents: [] }, signer);
+      board.change((draft) => writeEdgeKapae(draft, otherRaise));
+      expect(await read(root, peer), "verified fleet evidence lets this unraised peer read clear").toBe("clear");
+      const raise = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: true, hand: "holder", parents: [] }, signer);
+      board.change((draft) => writeEdgeKapae(draft, raise));
+      expect(await read(root, peer), "a verified raise shadows the peer").toBe("aside");
+      expect(await read(root, other), "CONTROL: the other counted raise remains shadowed").toBe("aside");
+    } finally { await repo.shutdown(); }
+  });
+
+  test("a lifted raise remains owing until the seat roll named by this vessel lands", async () => {
+    const rootSeed = new Uint8Array(32).fill(81);
+    const root = await ed25519VerifyingKeyFromSeed(rootSeed);
+    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(82));
+    const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(83));
+    const scope = "ab".repeat(32);
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const ledger = repo.create(emptyLarDoc());
+      const seatLedger = emptyLarDoc();
+      const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
+      const up = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: true, hand: "holder", parents: [] }, signer);
+      const down = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: false, hand: "holder", parents: [up.actCid] }, signer);
+      board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
+      // The reader needs the local seat-roll ledger and its scope in addition to the fleet ledger.
+      const makeRead = await reader() as unknown as (r: unknown, l: unknown, rest: unknown, own: string, rolls: unknown, scope: string) => (r: string, d: string) => Promise<string>;
+      const read = makeRead(repo, ledger, undefined, own, seatLedger, scope);
+      expect(await read(root, peer), "the lift does not return a seat whose raise still lacks a roll").toBe("owing");
+      markRaiseRolled(seatLedger, scope, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" });
+      expect(await read(root, peer), "CONTROL: a rolled lift returns the peer").toBe("returned");
     } finally { await repo.shutdown(); }
   });
   test("a root signed aside reads aside; another device with no event reads clear", async () => {
