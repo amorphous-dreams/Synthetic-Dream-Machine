@@ -44,7 +44,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, personaScopedBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -2179,12 +2179,17 @@ async function prepareNodeBootOn(
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
       // wiki stands in the stack; a Herm carries none, blind by structure rather than by a flag.
       registerBags: deriveRegisterBags({
-        // EVERY compartment registers — a plane absent from the ring stops that compartment's own
-        // devices reconciling. Only ONE mounts; the two verbs part company here.
-        fleets: bootstrap.personaPlanes.map((p) => ({
-          personaGroupId: p.personaGroupId,
-          catalogNamed: p.personaGroupId === personaGroupId ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
-        })),
+        // The mounted face registers its own planes on its own hive, and no hive registers a face it does not
+        // wear: another compartment's planes register when it is worn, under its own atom.
+        // The catalog names every face's plane documents, so the worn face's reading leaves the others' out.
+        fleets: bootstrap.personaPlanes.filter((p) => p.personaGroupId === personaGroupId).map((p) => {
+          const otherFaces = new Set(bootstrap.personaPlanes.filter((o) => o.personaGroupId !== personaGroupId)
+            .flatMap((o) => { const plane = personaScopedBagIds(o.personaGroupId); return [plane.persona, plane.circles, plane.identities, plane.sessions]; }));
+          return {
+            personaGroupId: p.personaGroupId,
+            catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()).filter((bag) => !otherFaces.has(bag)),
+          };
+        }),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),
