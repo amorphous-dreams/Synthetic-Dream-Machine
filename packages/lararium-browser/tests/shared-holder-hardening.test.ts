@@ -18,7 +18,7 @@ const HANDSHAKE = new Set(["ready", "ea", "breath", "fault"]);
 
 function harness(extra: { makeRepo?: (group: string, root: string) => Promise<HolderRepo> } = {}) {
   const islands = new Map<string, { posts: Message[]; emit: (m: Message) => void; fail: (e: Error) => void; terminated: number }>();
-  const repos = new Map<string, { stops: number; peers: Array<{ port: unknown; serving: Promise<void>; closed: Promise<void> | undefined; served: boolean; ended: boolean }> }>();
+  const repos = new Map<string, { stops: number; peers: Array<{ port: unknown; serving: Promise<void>; servingGiven: boolean; closed: Promise<void> | undefined; served: boolean; ended: boolean }> }>();
   const waits: string[] = [];
   const spawnWaiters = new Map<string, Array<(r: NonNullable<ReturnType<typeof islands.get>>) => void>>();
   /** Resolves with a house's island once the holder stood it: the product's own event, never a clock. */
@@ -51,12 +51,12 @@ function harness(extra: { makeRepo?: (group: string, root: string) => Promise<Ho
     onDrop: (kind: string, reason: string) => { drops.push({ kind, reason }); },
   };
   function makeRepoRecord(group: string, root: string): HolderRepo {
-    const record = { stops: 0, peers: [] as Array<{ port: unknown; serving: Promise<void>; closed: Promise<void> | undefined; served: boolean; ended: boolean }> };
+    const record = { stops: 0, peers: [] as Array<{ port: unknown; serving: Promise<void>; servingGiven: boolean; closed: Promise<void> | undefined; served: boolean; ended: boolean }> };
     repos.set(key(group, root), record);
     return {
       shutdown: async () => { record.stops++; },
       attachPeer: (port: MessagePort, serving?: Promise<void>, closed?: Promise<void>) => {
-        const peer = { port, serving: serving ?? Promise.resolve(), closed, served: false, ended: false };
+        const peer = { port, serving: serving ?? Promise.resolve(), servingGiven: serving !== undefined, closed, served: false, ended: false };
         void peer.serving.then(() => { peer.served = true; });
         void closed?.then(() => { peer.ended = true; });
         record.peers.push(peer);
@@ -129,12 +129,14 @@ describe("the holder keys a house by group and root and serves it after its isla
     // The tab's Repo peer is attached, and the holder serves it nothing until the gate clears.
     const peers = h.repos.get(key("face:A", rootOf(face)))?.peers ?? [];
     expect(peers.length, "the claimant manifest attaches a real Repo peer").toBeGreaterThan(0);
-    expect(peers.every((p) => p.served === false)).toBe(true);
+    const gatedPeers = peers.filter((p) => p.servingGiven);
+    expect(gatedPeers.length, "the tab-side Repo peer carries the serving promise").toBeGreaterThan(0);
+    expect(gatedPeers.every((p) => p.served === false)).toBe(true);
     island.emit(clearOf(face));
     await Promise.all([opened, secondOpened]);
     expect(first.messages("holder:admitted")).toHaveLength(1);
     expect(second.messages("holder:admitted")).toHaveLength(1);
-    expect(peers.every((p) => p.served === true)).toBe(true);
+    expect(gatedPeers.every((p) => p.served === true)).toBe(true);
     channel.port2.close();
   });
 

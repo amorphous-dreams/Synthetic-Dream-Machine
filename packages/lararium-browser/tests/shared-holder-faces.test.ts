@@ -26,7 +26,6 @@ function harness() {
   }>();
   const repos = new Map<string, { group: string; shutdown: () => Promise<void>; read: () => string; stops: number }>();
   const madeRepos: string[] = [];
-  const locks: string[] = [];
   const waits: Array<{ kind: string; group: string; type: string }> = [];
   const spawnIsland = (personaGroup?: string, personaRoot?: string, edgeDigest?: string): HolderIsland => {
     const group = personaGroup ?? "unadmitted";
@@ -53,7 +52,6 @@ function harness() {
       terminate: () => { record.terminated++; },
     };
   };
-  // Extra options pass structurally so these tests compile while the core gains the face-house surface.
   const options = {
     lockName: "holder-faces-test",
     locks: { request: async (_name: string, _opts: { ifAvailable: true }, callback: (lock: { name: string } | null) => unknown) => callback({ name: "holder-faces-test" }) },
@@ -64,7 +62,6 @@ function harness() {
       repos.set(group, repo);
       return repo;
     },
-    lockFace: (group: string) => { locks.push(group); },
     onWait: (kind: "seal-awaits-session", group: string, type: string) => { waits.push({ kind, group, type }); },
     onDrop: () => {},
   };
@@ -107,7 +104,7 @@ function harness() {
     await answered;
   };
   const settle = async () => { await Promise.resolve(); await Promise.resolve(); };
-  return { core, port, open, settle, spawned, islands, repos, madeRepos, locks, waits };
+  return { core, port, open, settle, spawned, islands, repos, madeRepos, waits };
 }
 
 describe("the holder admits face sessions and houses each group", () => {
@@ -209,12 +206,14 @@ describe("the holder admits face sessions and houses each group", () => {
     const a1 = h.port(); const a2 = h.port(); const b1 = h.port();
     for (const tab of [a1, a2, b1]) await h.core.connect(tab.endpoint);
     await h.open(a1, A, a.edge, a.atom); await h.open(a2, A, a.edge, a.atom); await h.open(b1, B, b.edge, b.atom);
+    expect(h.core.houses).toBe(2);
     h.core.disconnect(a1.endpoint); await h.settle();
-    expect(h.islands.get(A)?.terminated).toBe(0); expect(h.repos.get(A)?.stops).toBe(0); expect(h.locks).toEqual([]);
+    expect(h.islands.get(A)?.terminated).toBe(0); expect(h.repos.get(A)?.stops).toBe(0);
+    expect(h.core.houses).toBe(2);
     h.core.disconnect(a2.endpoint); await h.settle();
     expect(h.islands.get(A)?.terminated).toBe(1);
     expect(h.repos.get(A)?.stops).toBe(1);
-    expect(h.locks).toEqual([A]);
+    expect(h.core.houses).toBe(1);
     expect(h.islands.get(B)?.terminated).toBe(0); expect(h.repos.get(B)?.stops).toBe(0);
   });
 });

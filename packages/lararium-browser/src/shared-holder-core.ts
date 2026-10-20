@@ -458,13 +458,11 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     const isl = house.island;
     if (!isl) { onDrop(msg.type, "island-absent"); return; }
     if (msg.type === "manifest") {
-      if (house.manifestSent) { refuse(port, "session-unadmitted", msg.type); return; }
       if (house.owner && house.owner !== port) {
-        const refused: HolderRefused = { kind: "holder:refused", storeName: opts.lockName, cause: "island-owned" };
-        port.postMessage({ ...refused, ...portStates.get(port)!.envelope });
-        onDrop(msg.type, "island-owned");
+        refuse(port, "island-owned", msg.type);
         return;
       }
+      if (house.manifestSent) { refuse(port, "session-unadmitted", msg.type); return; }
       house.owner = port;
       house.manifestSent = true;
     }
