@@ -12,7 +12,7 @@
  */
 
 import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
-import { signHolderSessionProof } from "@lararium/mesh";
+import { signHolderSessionProof } from "@lararium/mesh/holder-session-proof";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { HOLDER_UNAVAILABLE_NO_WORKER, type HolderHello, type HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
