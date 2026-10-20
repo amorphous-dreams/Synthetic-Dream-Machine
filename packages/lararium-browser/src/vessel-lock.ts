@@ -35,7 +35,7 @@ export interface HeldLockInfo {
 export interface LockHost {
   request(
     name: string,
-    options: { ifAvailable: true },
+    options: { ifAvailable?: true },
     callback: (lock: { name: string } | null) => Promise<unknown> | unknown,
   ): Promise<unknown>;
   query?(): Promise<{ held?: ReadonlyArray<HeldLockInfo> }>;

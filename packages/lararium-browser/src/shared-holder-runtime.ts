@@ -17,6 +17,7 @@ export function makeHolderRuntime(env: HolderRuntimeEnvironment): {
   core: SharedHolderCore;
   storeName(personaGroup: string, personaRoot: string): Promise<string>;
 } {
+  const waitingSessions = new Map<string, () => void>();
   const storeName = async (personaGroup: string, personaRoot: string): Promise<string> => {
     const bytes = new TextEncoder().encode(`${personaGroup}|${personaRoot}`);
     const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
@@ -25,6 +26,15 @@ export function makeHolderRuntime(env: HolderRuntimeEnvironment): {
   const core = makeSharedHolderCore({
     lockName: env.lockName,
     locks: env.locks,
+    watchSession: env.locks ? (sessionId, onDead) => { waitingSessions.set(sessionId, onDead); } : undefined,
+    armSession: env.locks ? (sessionId) => {
+      const onDead = waitingSessions.get(sessionId);
+      if (!onDead) return;
+      waitingSessions.delete(sessionId);
+      // A queued request grants only after the tab lets go of its lifetime lock.
+      void env.locks!.request(`lares:holder-session:${sessionId}`, {}, () => { onDead(); }).catch(() => undefined);
+    } : undefined,
+    forgetSession: (sessionId) => { waitingSessions.delete(sessionId); },
     spawnIsland: env.spawnIsland,
     makeRepo: async (group, root) => {
       const repo = env.openRepo(await storeName(group, root));

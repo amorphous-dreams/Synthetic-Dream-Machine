@@ -32,6 +32,7 @@ import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, Autom
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
+import type { DocHandle, LarDoc } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -57,7 +58,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
-  restDocuments?: (documentIds: readonly string[]) => Promise<void>;
+  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
@@ -70,6 +71,9 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   dyadReading?: DyadReader;
   /** Read the fleet board from this island's Repo at each gate ask. */
   readDyadFromBoard?: boolean;
+  /** A durable ledger held by the island, outside the claimant's synced Repo. */
+  dyadLedger?: DocHandle<LarDoc> | Promise<DocHandle<LarDoc>>;
+  restDyadLedger?: () => Promise<void>;
   /** `sealedStore` — the SAME inversion for the sealed store (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store):
    *  keyhive stays fs-blind, so the shore injects the rest for lockboxes, records and index rows, the sealed
    *  values' own rest, and the cleartext-local tier a staged body reads from and an opened one lands in. Present →
@@ -185,10 +189,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // persistArchive rides node-only; keep it OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
   const {
     persistArchive, persistVeilArchive, shore, events, journalAppend,
-    bagTier, restDocuments, dyadReading, readDyadFromBoard, sealedStore, sessionProof, countedRaises, ...daemonExtra
+    bagTier, restDocuments, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
-  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard ? boardDyadReader(ctx.repo) : dyadReading;
+  let clearGate!: () => void;
+  let refuseGate!: (reason: Error) => void;
+  let gateCleared = false;
+  const gateClear = new Promise<void>((resolve, reject) => { clearGate = resolve; refuseGate = reject; });
+  // A faceless island has no binding verdict to wait for.
+  if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
+  void gateClear.catch(() => undefined);
+  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard ? boardDyadReader(ctx.repo, dyadLedger, restDyadLedger) : dyadReading;
   if (!daemonAuth) {
     return {
       ...daemonExtra,
@@ -290,7 +301,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
     slotDocs = makeSlotDocResolver({
-      repo: restDocuments ? restingMinter(ctx.repo, restDocuments) : ctx.repo, daemonStore: ctx.composite, keyhive: kh,
+      repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
+        gateCleared ? undefined : gateClear)) : ctx.repo,
+      daemonStore: ctx.composite, keyhive: kh,
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
@@ -958,12 +971,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // A persona-bound boot that does not complete refuses the face, whichever step refused it.
         if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
           ctx.post({ type: "gate:refused", cause });
+          refuseGate(new Error(cause));
         }
         throw error;
       }
       const { keyhive, did } = booted;
       if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
         ctx.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(daemonAuth.deviceEdge), personaRoot: daemonAuth.deviceEdge.personaRootDid });
+        gateCleared = true;
+        clearGate();
       }
       kh = keyhive;
       mintedByHex = daemonAuth.atom?.key ?? did;

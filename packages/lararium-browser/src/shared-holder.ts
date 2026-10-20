@@ -18,6 +18,19 @@ import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
+const sessionLocks = new WeakMap<MessagePort, Promise<void>>();
+
+/** The tab holds its session lock until its browsing context goes away. */
+function holdSessionLock(sessionId: string): Promise<void> {
+  const locks = (globalThis as unknown as { navigator?: { locks?: { request(name: string, callback: () => Promise<void>): Promise<unknown> } } }).navigator?.locks;
+  if (!locks) return Promise.resolve();
+  return new Promise<void>((resolve, reject) => {
+    void locks.request(`lares:holder-session:${sessionId}`, async () => {
+      resolve();
+      await new Promise<void>(() => {});
+    }).catch(reject);
+  });
+}
 
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
@@ -98,6 +111,10 @@ export async function attachSharedHolder(args: {
     throw new Error("[shared-holder] holder greeting carries no nonce");
   }
   portEnvelopes.set(port, { ...envelope, nonce });
+  sessionLocks.set(port, holdSessionLock(envelope.sessionId));
+  globalThis.addEventListener?.("pagehide", () => {
+    try { port.postMessage({ type: "session:close", ...envelope }); } catch { /* a gone port already closed */ }
+  }, { once: true });
   return { kind: "attached", port, hello: greeting };
 }
 
@@ -138,6 +155,7 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
     });
     port.start();
     void (async () => {
+      await (sessionLocks.get(port) ?? holdSessionLock(envelope.sessionId));
       const signature = await signHolderSessionProof(session.atom, {
         ownerEpoch: envelope.ownerEpoch, sessionId: envelope.sessionId, nonce, personaGroup: session.personaGroup,
       });
@@ -184,6 +202,6 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       return () => port.removeEventListener("messageerror", fn);
     },
     // A tab never terminates the shared island; closing its port is the whole of leaving.
-    terminate: () => port.close(),
+    terminate: () => { send({ type: "session:close" }, []); port.close(); },
   };
 }

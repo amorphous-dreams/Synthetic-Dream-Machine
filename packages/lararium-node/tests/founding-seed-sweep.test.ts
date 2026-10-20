@@ -1,10 +1,9 @@
-/** A crash between the destination write and ask removal leaves a pair the boot sweep retires once. */
+/** The boot sweep retires a duplicate ask only after committed anchors name its digest. */
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, describe, expect, test, vi } from "vitest";
+import { afterAll, describe, expect, test } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
-import { FsCustodyIo } from "../src/custody-io.js";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody, readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
@@ -43,20 +42,17 @@ describe("the founding seed sweep", () => {
       expect(await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId)), "control: the anchored group keeps its seed").toEqual(groupSeed);
     });
   }, 180_000);
-  test("a planted removal fault exposes two rows; the sweep retires only the matching ask and stays idempotent", async () => {
+  test("an anchored two-row residue retires only the matching ask and stays idempotent", async () => {
     const { root, genesisDir, ask } = await rig();
     await withLarRoot(root, async () => {
-      const original = FsCustodyIo.prototype.remove;
-      let planted = false;
-      const spy = vi.spyOn(FsCustodyIo.prototype, "remove").mockImplementation(async function (path) {
-        if (!planted && path.endsWith(pendingFoundingFile(ask))) { planted = true; throw new Error("planted between group write and ask removal"); }
-        return original.call(this, path);
-      });
-      try { await expect(foundFace({ storageDir: larDataDir(), genesisDir })).rejects.toThrow("planted between group write and ask removal"); }
-      finally { spy.mockRestore(); }
-      expect(planted, "the fault struck the ask removal seam").toBe(true);
+      // The sweep requires an anchored ask digest. Recreate the two-row crash residue
+      // after founding commits its anchors; a fault inside the move precedes that mark.
+      const face = await foundFace({ storageDir: larDataDir(), genesisDir });
+      const groupSeed = await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId));
+      expect(groupSeed).toHaveLength(32);
+      await writeCustodyRow("identity", pendingFoundingFile(ask), groupSeed!);
       const names = () => readdirSync(larIdentityDir()).filter((name) => name === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(name)).sort();
-      expect(names(), "the fault exposes both sealed rows").toHaveLength(2);
+      expect(names(), "the planted residue exposes both sealed rows").toHaveLength(2);
       const [groupFile] = names().filter((name) => name.startsWith("face-atom-g"));
       expect(await readCustodyRow("identity", groupFile!)).toEqual(await loadPendingFoundingSeed(ask));
       const path = "../src/face-atom-store.js";

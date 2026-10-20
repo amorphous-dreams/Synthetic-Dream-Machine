@@ -154,6 +154,14 @@ export async function moveCustodyRow(home: CustodyHome, source: string, destinat
   return (await openedCustody()).moveRow(home, source, destination, expected);
 }
 
+/** Hold the founding custody claim across a row scan and every retirement it decides. */
+export async function withCustodyRows<T>(act: (rows: {
+  read(home: CustodyHome, file: string): Promise<Uint8Array | null>;
+  remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean>;
+}) => Promise<T>): Promise<T> {
+  return (await openedCustody()).withRows(act);
+}
+
 /**
  * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
  * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where

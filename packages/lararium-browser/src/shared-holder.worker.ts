@@ -20,7 +20,7 @@ const sw = globalThis as unknown as {
   addEventListener(type: "connect", cb: (e: MessageEvent) => void): void;
 };
 interface LockLike {
-  request(name: string, options: { ifAvailable: true }, cb: (lock: { name: string } | null) => unknown): Promise<unknown>;
+  request(name: string, options: { ifAvailable?: true }, cb: (lock: { name: string } | null) => unknown): Promise<unknown>;
   query?(): Promise<{ held?: ReadonlyArray<{ name: string; mode: string; clientId: string }> }>;
 }
 

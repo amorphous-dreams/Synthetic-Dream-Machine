@@ -55,8 +55,9 @@ function malformed(file: string): CustodyRowUnavailable {
 }
 
 /** The anchor roster's explicit record (ascending); `[]` when no roster stands. */
-async function readAnchorRoster(): Promise<number[]> {
-  const bytes = await readCustodyRow("identity", ANCHOR_ROSTER_FILE);
+type RowReader = typeof readCustodyRow;
+async function readAnchorRoster(read: RowReader = readCustodyRow): Promise<number[]> {
+  const bytes = await read("identity", ANCHOR_ROSTER_FILE);
   if (bytes === null) return [];
   let raw: { anchors?: unknown };
   try { raw = JSON.parse(text(bytes)) as { anchors?: unknown }; } catch { throw malformed(ANCHOR_ROSTER_FILE); }
@@ -105,9 +106,9 @@ export async function persistIdentityAnchors(anchors: IdentityAnchors, handleInd
 
 /** Read ONE persona's anchor set back, or null when the index holds no persona. `handleIndex` selects which
  *  persona (0 = founding). */
-export async function loadIdentityAnchors(handleIndex = 0): Promise<IdentityAnchors | null> {
+export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = readCustodyRow): Promise<IdentityAnchors | null> {
   const file = anchorsFile(handleIndex);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await read("identity", file);
   if (bytes === null) return null;
   let parsed: Partial<IdentityAnchors>;
   try { parsed = JSON.parse(text(bytes)) as Partial<IdentityAnchors>; } catch { throw malformed(file); }
@@ -118,8 +119,8 @@ export async function loadIdentityAnchors(handleIndex = 0): Promise<IdentityAnch
 
 /** The anchored-persona ROSTER: every handle-index whose veiled-Handle anchors this vessel holds, ascending,
  *  from the explicit written record (never a dir-scan). A one-persona vessel returns `[0]`. */
-export function listAnchoredPersonas(): Promise<number[]> {
-  return readAnchorRoster();
+export function listAnchoredPersonas(read: RowReader = readCustodyRow): Promise<number[]> {
+  return readAnchorRoster(read);
 }
 
 /** The vessel's own keyhive Archive row. */

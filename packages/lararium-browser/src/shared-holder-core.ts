@@ -125,6 +125,11 @@ export interface SharedHolderCoreOptions {
   /** A sealing ask waits because no ready tab of its face stands. */
   readonly onWait?:     (kind: "seal-awaits-session", personaGroup: string, messageType: string) => void;
   readonly onDrop?: (kind: string, reason: string) => void;
+  /** Watch a minted session until its tab releases its lifetime lock. */
+  readonly watchSession?: (sessionId: string, onDead: () => void) => void;
+  /** Start the queued watch once the tab has opened under its held lock. */
+  readonly armSession?: (sessionId: string) => void;
+  readonly forgetSession?: (sessionId: string) => void;
   readonly mint?: () => string;
 }
 
@@ -139,7 +144,7 @@ export interface SharedHolderCore {
 
 /** The island kinds a house's claimant hears while its island proves the face: the boot handshake and the gate's own asks. */
 const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "cas:want", "doc:rest"]);
-const BOOT_REPLIES: Readonly<Record<string, string>> = { "cas:block": "cas:want", "doc:rested": "doc:rest", "custody:written": "custody:write" };
+const BOOT_REPLIES: Readonly<Record<string, string>> = { "cas:block": "cas:want", "doc:rested": "doc:rest" };
 
 interface PortState {
   readonly envelope: SessionEnvelope;
@@ -490,7 +495,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     isl.post(forwarded, transfer.length ? transfer : undefined);
   };
 
-  return {
+  const core: SharedHolderCore = {
     get islandBoots() { return islandBoots; },
     get tabs()        { return ports.size; },
     get houses()      { return houses.size; },
@@ -498,7 +503,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       ended.add(port);
       ports.delete(port);
       const state = portStates.get(port);
-      if (state) sessions.delete(state.envelope.sessionId);
+      if (state) { sessions.delete(state.envelope.sessionId); opts.forgetSession?.(state.envelope.sessionId); }
       portStates.delete(port);
       const house = state?.house;
       if (!house || house.state === "ended") return;
@@ -531,6 +536,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       sessions.set(sessionId, port);
       portStates.set(port, state);
       ports.add(port);
+      opts.watchSession?.(sessionId, () => core.disconnect(port));
       port.addEventListener("message", (e) => {
         if (!ports.has(port)) return;
         const msg = wireMessage(e.data);
@@ -546,12 +552,17 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
           onDrop(msg.type, refusal);
           return;
         }
+        if (msg.type === "session:close") { core.disconnect(port); return; }
         const house = state.house;
         // A port that has not joined a house may ask one thing: to open a session.
         if (house === null) {
           if (msg.type === "session:open") {
             if (state.opening) refuse(port, "session-open-malformed", msg.type);
-            else void admit(port, state, msg);
+            else {
+              // The tab takes its lifetime lock before opening; only now may the queued request start.
+              opts.armSession?.(sessionId);
+              void admit(port, state, msg);
+            }
             return;
           }
           refuse(port, "session-unadmitted", msg.type);
@@ -582,4 +593,5 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       port.postMessage(hello);
     },
   };
+  return core;
 }

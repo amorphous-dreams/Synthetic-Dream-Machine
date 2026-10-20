@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readdirSync } from "node:fs";
 import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRows, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
-import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow } from "./custody-seat.js";
+import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow, withCustodyRows } from "./custody-seat.js";
 import { loadActivePersonaIndex } from "./node-vessel-identity.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { personaGroupDigest } from "./persona-group-file.js";
@@ -36,27 +36,41 @@ export const pendingFoundingFile = (ask: FoundingAtomAsk): string => `face-atom-
 
 /** Retire an ask only when a group row already holds its exact seed. */
 export async function sweepFoundingSeeds(): Promise<void> {
-  let names: string[];
-  try { names = readdirSync(larIdentityDir()); }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
-    throw error;
-  }
-  const held: Uint8Array[] = [];
-  for (const file of names.filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
-    const seed = await readCustodyRow("identity", file);
-    if (seed) {
-      if (seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
-      held.push(seed);
+  await withCustodyRows(async (rows) => {
+    const groupsByAsk = new Map<string, Set<string>>();
+    for (const index of await listAnchoredPersonas(rows.read)) {
+      const anchors = await loadIdentityAnchors(index, rows.read);
+      if (!anchors?.foundingAskDigest) continue;
+      const groups = groupsByAsk.get(anchors.foundingAskDigest) ?? new Set<string>();
+      groups.add(faceAtomGroupFile(anchors.personaGroupId));
+      groupsByAsk.set(anchors.foundingAskDigest, groups);
     }
-  }
-  for (const file of names.filter((name) => FACE_ATOM_ASK_FILE.test(name))) {
-    const seed = await readCustodyRow("identity", file);
-    if (seed && seed.length !== 32) throw new Error(`pending founding atom ${file} holds no 32-byte seed`);
-    if (!seed || !held.some((groupSeed) => groupSeed.length === seed.length && groupSeed.every((byte, i) => byte === seed[i]))) continue;
-    await removeCustodyRow("identity", file, (standing) =>
-      standing.length === seed.length && standing.every((byte, i) => byte === seed[i]));
-  }
+    let names: string[];
+    try { names = readdirSync(larIdentityDir()); }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw error;
+    }
+    const held = new Map<string, Uint8Array>();
+    for (const file of names.filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
+      const seed = await rows.read("identity", file);
+      if (seed) {
+        if (seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
+        held.set(file, seed);
+      }
+    }
+    for (const file of names.filter((name) => FACE_ATOM_ASK_FILE.test(name))) {
+      const seed = await rows.read("identity", file);
+      if (seed && seed.length !== 32) throw new Error(`pending founding atom ${file} holds no 32-byte seed`);
+      const digest = FACE_ATOM_ASK_FILE.exec(file)?.[1];
+      if (!seed || !digest || ![...(groupsByAsk.get(digest) ?? [])].some((group) => {
+        const groupSeed = held.get(group);
+        return groupSeed?.length === seed.length && groupSeed.every((byte, i) => byte === seed[i]);
+      })) continue;
+      await rows.remove("identity", file, (standing) =>
+        standing.length === seed.length && standing.every((byte, i) => byte === seed[i]));
+    }
+  });
 }
 
 /** Read an ask seed without minting one. */
