@@ -505,17 +505,17 @@ Evidence: `docs/pono/evaluators-one-or-many` §5; `docs/pono/two-way-interaction
 
 <<~ ahu #/moolelo>>
 
-!! The moʻolelo ~ DRAFT, awaiting the operator's blessing
+!! The moʻolelo ~ blessed by the operator, 2026-10-20
 
-Held here as ''draft''; the thread's telling wins over this copy where they differ. Six lines stand proposed, and a seventh stands offered.
+The DreamDOM's founding story: every later DreamDOM ruling answers to these seven lines.
 
-# Four layers stand apart: store, engine, projections out, sensoria in (only where a vessel can enact them).
+# Four layers stand apart: store, engine, projections out, sensoria in (only where a vessel can enact them). The truth rests in the minds of the operators, and the CRDTs carry it to the synced stores.
 # One headless engine per wiki beside its store, lived as an actor: one id, one writer, hibernates.
 # The engine↔projection waist: subscribe, ask, invoke; keyed absolute frames at the grain each camera declares, transclusions resolved; writes travel as writes, never events.
 # A projection chooses a root template and a sink, owns its river and its focused control, never truth.
 # Subscription width scales lean→rich, the whole-replica glass the widest setting.
 # The language carries portability; its suite carries the language.
-# //(proposed)// Any root over any document sink makes a camera; the page template over the DOM stands as the browser's first.
+# Any root over any document sink makes a camera; the page template over the DOM stands as the browser's first, and keeps every native affordance its people depend on.
 
 <<~/ahu>>
 
@@ -536,12 +536,15 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 * ''Mudlet's first carrier'' is the virtual-MUD listener, and Mudlet's MCP `lua` tool stays off as a web2 remote-eval surface (D6).
 * ''The superset name'' DreamDOM stands for every house meme going forward.
 
+!!! Ruled, 2026-10-20 (the operator blessed the moʻolelo with one edit and approved the roundtable's leans)
+* ''The moʻolelo'' stands blessed (#/moolelo): line 1 carries the operator's edit, //the truth rests in the minds of the operators, and the CRDTs carry it to the synced stores//; line 7 joins with its clause, //the page template keeps every native affordance its people depend on//.
+* ''Interaction goldens as a conformance family'': the fourteen scripts of #/conformance and their `interaction/` section join the suite that defines a DreamDOM member, the pinned fork commit as oracle.
+* ''The `core` charter'' (`evaluators-one-or-many#/open-rulings`, 3): `core` holds the drafted operators and sorts strings by code point, locale-free and identical on every host; a locale-aware sort carries the `host-bound` tag.
+* ''Oracle ownership'' (`evaluators-one-or-many#/open-rulings`, 4): an engine-commit bump runs as its own lane that re-pours the goldens, and any diff that changes a result or a parse tree, beyond its format, lands as a hoʻike the operator reads, never a silent re-pour.
+
 !!! Standing open
 # ''The default width of the first surface.'' Rule after the three-boot spike's numbers (glass at full on laptops and skinny on phones, with width none as the lean fallback, stands as the proposal). Blocks the glass default (D3).
 # ''The key grain for the browser camera at width none.'' One whole-surface key until measured, or river frames plus order plus membership. Blocks nothing; D1 measures.
-# ''Bless the moʻolelo'' (#/moolelo), with or without line 7.
-# ''Interaction goldens as a conformance family'': bless the fourteen scripts of #/conformance and their `interaction/` section, with the fork commit as oracle. Blocks D5.
-# ''The `core` charter and oracle ownership'' for `filter-cts` (`evaluators-one-or-many#/open-rulings`, 3 and 4). Blocks D5's host rows.
 
 <<~/ahu>>
 
@@ -601,6 +604,6 @@ Held here as ''draft''; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eyTTiBjStnfY0VYLYlLAoic-8y7n00ScCjOftsOM6Jg
+<<^ code="&#x0003;">>ni:///sha-256;qYFiLtyjO6il8HHFnNBFvFCcaWg8FmLvyTmWHEo3kAw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -186,8 +186,8 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 
 # ''Suite strength.'' `tiddlywiki-wikitext` says a parser SHOULD pass its suite; raise to MUST for the house dialects and for any non-reference evaluator, with a published skip list.
 # ''Suite format.'' Adopt the `filter-cts` shape above (generated, then reviewed), or hand-write in the CommonMark manner at many times the cost.
-# ''The `core` charter.'' Which operators belong, and whether string `sort` belongs given the locale question.
-# ''Oracle ownership.'' Who re-pours the goldens when the engine commit moves, and whether a meaning-changing diff lands as a hoike.
+# ''The `core` charter'' — ruled 2026-10-20: the drafted operators, with string `sort` by code point, locale-free; a locale-aware sort carries `host-bound` (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> #/open-rulings).
+# ''Oracle ownership'' — ruled 2026-10-20: an engine-commit bump runs as its own lane that re-pours; a diff that changes a result or a parse tree lands as a hoʻike the operator reads.
 # ''Camera tolerance.'' Exact for `html` and `text`; `blocks`-derived for `label-html`; `fuzzy` for 3D only.
 # ''Mudlet offline need.'' Mudlet receives results only; reopen the subset evaluator on a named offline use.
 # ''Annex B dependency.'' Start the camera layer at `html`/`text` until the widget-tree pass lands.
@@ -217,6 +217,6 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IcNUd1wFjZIH0XqtAKvdAPFZVIWO1DBfPLoo2dDOHuQ
+<<^ code="&#x0003;">>ni:///sha-256;RV0IVI__AFXHXa3KA1cUCH6klJtINUuhf3qc_ON8lig
 
 <<^ code="&#x0004;" -> to="?">>
