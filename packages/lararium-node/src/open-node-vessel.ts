@@ -49,7 +49,7 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   faceAtomKeyFromSeed, type FaceAtomKey,
-  placeSignerFromSeed, CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN,
+  placeSignerFromSeed, carriageFloorDutyOf,
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag,
 }                                       from "@lararium/mesh";
@@ -1463,11 +1463,7 @@ async function prepareNodeBootOn(
   const carriagePull = vesselCarriagePull<MeshPalaceDoc>({
     placeClass,
     ownPlaceKey: vesselIdentity.verifyingKey,
-    sign:        async (image) => {
-      const body = new TextDecoder().decode(image);
-      const domain = body.includes(PLACE_FLOOR_PIN_DOMAIN) ? PLACE_FLOOR_PIN_DOMAIN : CARRIAGE_CARRIER_DOMAIN;
-      return carriageHexToBytes(await carriageSign.signFloor(domain, image));
-    },
+    sign:        async (image) => carriageHexToBytes(await carriageSign.signFloor(carriageFloorDutyOf(image), image)),
     readings:    readEveryCarried,
     ownNexus:    ownNexusAid,
     openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),
