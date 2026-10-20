@@ -72,9 +72,9 @@ import type { CoherenceStatus } from "@lararium/tw5";
 import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
-import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing } from "@lararium/keyhive";
+import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
-import { archiveIsOf, keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
+import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
