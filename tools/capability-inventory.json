@@ -102,8 +102,6 @@
     "packages/lararium-browser/src/shared-holder-core.ts: \"cas:want\"",
     "packages/lararium-browser/src/shared-holder-core.ts: \"doc:rested\"",
     "packages/lararium-browser/src/shared-holder-core.ts: \"doc:rest\"",
-    "packages/lararium-browser/src/shared-holder-core.ts: \"custody:written\"",
-    "packages/lararium-browser/src/shared-holder-core.ts: \"custody:write\"",
     "packages/lararium-browser/src/shared-holder-core.ts: \"custody:write\"",
     "packages/lararium-browser/src/shared-holder-core.ts: \"cas:want\"",
     "packages/lararium-browser/src/shared-holder-core.ts: \"doc:rest\"",
