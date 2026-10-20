@@ -219,7 +219,9 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(node.custodyHeld(), false, "T2: a seated holder that never unlocked holds nothing");
     assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
     const archiveAt = join(homes.identity, "keyhive-archive.bin");
-    const veilAt = join(homes.identity, "veil-archive-h0.bin");
+    const veilName = readdirSync(homes.identity).find((name) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(name));
+    assert.ok(veilName, "T2 control: no veil-archive-g<64 lowercase hex>.bin row stands in the identity home");
+    const veilAt = join(homes.identity, veilName);
     const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
     phases.length = 0;
     const first = counting(node.seatedSovereignReaders());
