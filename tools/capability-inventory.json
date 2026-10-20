@@ -48,6 +48,7 @@
     "packages/lararium-browser/src/open-browser-daemon-vm.ts: browserSpawnWorker",
     "packages/lararium-browser/src/open-browser-vessel.ts: holderWorkerHandle",
     "packages/lararium-browser/src/open-browser-vessel.ts: browserSpawnWorker",
+    "packages/lararium-browser/src/open-browser-vessel.ts: browserSpawnWorker",
     "packages/lararium-browser/src/shared-holder-core.ts: Worker",
     "packages/lararium-browser/src/shared-holder.ts: SharedWorker",
     "packages/lararium-browser/src/shared-holder.ts: SharedWorker",
