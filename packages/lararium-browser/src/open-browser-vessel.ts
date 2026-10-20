@@ -1253,6 +1253,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
         deviceEdge: wornMount?.deviceEdge ?? social.deviceEdge,
       };
+      wornAtomSeed.fill(0);   // the manifest carries the seed's hex; the byte copy leaves this closure
       // R4 — the daemon VM resolves its plugins through the SAME selector + OPFS CAS path every
       // wiki island does (`resolveBrowserIslandPluginCids`), never a vessel-wide hand-
       // off. The daemon's own one-recipe-model record names no offerings today, so this call is

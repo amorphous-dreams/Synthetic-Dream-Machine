@@ -72,7 +72,9 @@ export async function standBrowserFaceAtomSeed(idbName: string, personaGroup: st
     const seed = mintFaceAtomSeed();
     faceAtomKeyFromSeed(seed, personaGroup);
     await rows.write(row, seed);
-    return Uint8Array.from(seed);
+    const copy = Uint8Array.from(seed);
+    seed.fill(0);
+    return copy;
   });
 }
 
