@@ -27,6 +27,7 @@ import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -44,6 +45,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
+  await seedFaceAtom(0);
   await seatOwnCharter([0]);              // the Nexus the realm stands under
   face = await wear(0);                   // the worn face's key there — the key that signs
 });

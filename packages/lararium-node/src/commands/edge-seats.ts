@@ -15,10 +15,12 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, raisesSeenThrough, markRaiseRolled, verifiedSeatRoll,
+  fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, markRaiseRolled, verifiedSeatRoll,
   type EdgeKapae, type SeatRoll,
 } from "@lararium/mesh";
-import { listPersonaRoots, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAtom } from "../face-atom-store.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
 export class EdgeSeatError extends Error {}
@@ -48,13 +50,22 @@ async function servedFleetRoots(): Promise<string[]> {
   return [...new Set(roots)].sort();
 }
 
+async function atomKeyForFleet(fleetRoot: string): Promise<string> {
+  for (const index of await listPersonaRoots()) {
+    if (bare((await loadPersonaGroupRootVerifyingKey(index)) ?? "") !== fleetRoot) continue;
+    const anchors = await loadIdentityAnchors(index);
+    const seed = await loadFaceAtom(index);
+    if (!anchors || !seed) throw new EdgeSeatError("this face holds no atom; re-found or re-admit it");
+    return faceAtomKeyFromSeed(seed, anchors.personaGroupId).key;
+  }
+  throw new EdgeSeatError("this vessel holds no face under that fleet root");
+}
+
 /**
  * Read the facts for each fleet this vessel serves, or for the one it names among them. The read runs through
  * the vessel's ledger, so a raise a hand deleted from the board still counts here.
  */
 export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fleetRoot?: string }): Promise<{ readonly fleets: readonly EdgeSeatFacts[] }> {
-  const vesselKey = await loadVesselVerifyingKey();
-  if (!vesselKey) throw new EdgeSeatError("this vessel surfaces no verifying key — it keeps no ledger to read a board against.");
   let roots = await servedFleetRoots();
   if (opts.fleetRoot !== undefined) {
     const named = bare(opts.fleetRoot);
@@ -64,6 +75,7 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
   }
   const fleets: EdgeSeatFacts[] = [];
   for (const fleetRoot of roots) {
+    const vesselKey = await atomKeyForFleet(fleetRoot);
     const read = await readVesselEdgeBoard({
       repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
       vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),
@@ -92,13 +104,12 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
 export async function runEdgeSeatMarks(opts: {
   readonly repo: Repo; readonly fleetRoot: string; readonly rolls: readonly unknown[];
 }): Promise<{ readonly fleetRoot: string; readonly marked: readonly string[]; readonly unknown: readonly string[] }> {
-  const vesselKey = await loadVesselVerifyingKey();
-  if (!vesselKey) throw new EdgeSeatError("this vessel surfaces no verifying key — it keeps no ledger to mark.");
   const fleetRoot = bare(opts.fleetRoot);
   if (!HEX64.test(fleetRoot)) throw new EdgeSeatError("a mark names its fleet root — expected 64 hex.");
   if (!(await servedFleetRoots()).includes(fleetRoot)) {
     throw new EdgeSeatError("REFUSED: this vessel holds no face under that fleet root — it keeps no roll for another fleet.");
   }
+  const vesselKey = await atomKeyForFleet(fleetRoot);
   const read = await readVesselEdgeBoard({
     repo: opts.repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey, authorityFor: fleetEdgeAuthority(fleetRoot),

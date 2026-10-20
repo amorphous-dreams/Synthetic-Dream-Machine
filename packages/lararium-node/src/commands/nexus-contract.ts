@@ -63,6 +63,7 @@ import { readNexusDoc } from "../nexus-doc.js";
 import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 
 import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
@@ -814,8 +815,8 @@ interface EdgeRollView {
   readonly anchors: readonly EdgeRollAnchor[];
 }
 
-/** The vessel key that names this vessel's own edge ledger (no board address); empty where the vessel holds none. */
-const edgeLedgerKey = (): Promise<string> => loadVesselVerifyingKey().catch(() => "");
+/** The worn face's atom key names that face's own edge ledger (no board address); empty where the face holds none. */
+const edgeLedgerKey = (): Promise<string> => loadWornFaceAtomKey().catch(() => "");
 
 async function edgeVesselKeyOrRefuse(): Promise<string> {
   const key = await edgeLedgerKey();

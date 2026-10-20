@@ -55,11 +55,12 @@ import {
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,
-  dyadId, dyadSlotKey, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
+  dyadId, signDyadBindingWithSeed, writeDyad,
   mintFaceAtomSeed, faceAtomKeyFromSeed, FACE_CHECKPOINT_INFO,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
+  type LarTiddlerStore,
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -68,30 +69,38 @@ import { KeyhiveProvider } from "./keyhive-provider.js";
 import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
+import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 
-const CHECKPOINT_INFO = new TextEncoder().encode(FACE_CHECKPOINT_INFO);
-
-async function checkpointKey(seed: Uint8Array): Promise<CryptoKey> {
+async function checkpointKey(seed: Uint8Array, domain: string): Promise<CryptoKey> {
   const material = await crypto.subtle.importKey("raw", Uint8Array.from(seed), "HKDF", false, ["deriveKey"]);
   return crypto.subtle.deriveKey(
-    { name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: CHECKPOINT_INFO },
+    { name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: new TextEncoder().encode(domain) },
     material, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"],
   );
 }
 
-async function sealCheckpoint(value: unknown, seed: Uint8Array): Promise<string> {
+export async function sealCheckpoint(value: unknown, seed: Uint8Array, domain: string = FACE_CHECKPOINT_INFO): Promise<string> {
   const nonce = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = new TextEncoder().encode(JSON.stringify(value));
-  const data = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce, additionalData: CHECKPOINT_INFO }, await checkpointKey(seed), plaintext));
+  const data = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce, additionalData: new TextEncoder().encode(domain) }, await checkpointKey(seed, domain), plaintext));
   return JSON.stringify({ nonce: bytesToBase64(nonce), data: bytesToBase64(data) });
 }
 
-async function openCheckpoint<T>(text: string, seed: Uint8Array): Promise<T> {
+export async function openCheckpoint<T>(text: string, seed: Uint8Array, domain: string = FACE_CHECKPOINT_INFO): Promise<T> {
   try {
     const sealed = JSON.parse(text) as { nonce: string; data: string };
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: Uint8Array.from(base64ToBytes(sealed.nonce)), additionalData: CHECKPOINT_INFO }, await checkpointKey(seed), Uint8Array.from(base64ToBytes(sealed.data)));
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: Uint8Array.from(base64ToBytes(sealed.nonce)), additionalData: new TextEncoder().encode(domain) }, await checkpointKey(seed, domain), Uint8Array.from(base64ToBytes(sealed.data)));
     return JSON.parse(new TextDecoder().decode(plaintext)) as T;
   } catch { throw new Error("[ceremony] checkpoint does not open for this atom"); }
+}
+
+async function checkpointId(seed: Uint8Array): Promise<string> {
+  const material = await crypto.subtle.importKey("raw", Uint8Array.from(seed), "HKDF", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({
+    name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0),
+    info: new TextEncoder().encode(`${FACE_CHECKPOINT_INFO}:title`),
+  }, material, 256);
+  return hexEncode(new Uint8Array(bits));
 }
 
 // ---------------------------------------------------------------------------
@@ -339,11 +348,17 @@ type FaceCheckpoint = {
   events: readonly { hash: string; variant: string; bytes: string; island?: string }[];
 };
 
-async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomKey: string, atomSeed: Uint8Array): Promise<FaceCheckpoint | null> {
-  const record = handle.doc()?.tiddlers[`${FACE_FOUNDING_CHECKPOINT_PREFIX}${atomKey}`];
+async function readFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<FaceCheckpoint | null> {
+  const record = handle.doc()?.tiddlers[`${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
   return openCheckpoint<FaceCheckpoint>(body, atomSeed);
+}
+
+/** Retire the founding write-ahead record after the node commits this face's local carriers. */
+export async function retireFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<void> {
+  const title = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
+  if (handle.doc()?.tiddlers[title]) handle.change((doc) => { delete doc.tiddlers[title]; });
 }
 
 async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, checkpoint: FaceCheckpoint): Promise<void> {
@@ -352,30 +367,29 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
   for (const e of checkpoint.events) await events.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
   await flushCapEvents(events, handle);
   handle.change((doc) => {
-    const title = groupSecretSealTitle(result.personaGroupId);
-    if (!doc.tiddlers[title]) writeGroupSecretSeal(doc, result.personaGroupId, result.groupSecretSeal);
+    writeGroupSecretSeal(doc, result.personaGroupId, result.groupSecretSeal);
   });
   if (!checkpoint.mount) return;
   handle.change((doc) => {
-    if (!doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER]) doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = storedRecord({
+    doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = storedRecord({
       tiddler: { title: MESH_CABAL_DOC_ID_TIDDLER, text: result.meshCabalDocIdHex, kind: "sentinel-id" }, meta: { authority: "lares-init" },
     });
-    if (!doc.tiddlers[PERSONA_GROUP_ID_TIDDLER]) doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
+    doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_ID_TIDDLER, text: result.personaGroupId, kind: "persona-group-id" }, meta: { authority: "lares-init" },
     });
   });
   handle.change((doc) => {
-    if (!doc.tiddlers[dyadSlotKey(checkpoint.dyad.dyadId)]) writeDyad(doc, checkpoint.dyad);
-    if (!doc.tiddlers[SIGNER_DID_TIDDLER]) doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
+    writeDyad(doc, checkpoint.dyad);
+    doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: result.signerDid, kind: "operator-root-did" }, meta: { authority: "lares-init" },
     });
-    if (!doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER]) doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
+    doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: result.personaKelPrefix, kind: "persona-kel-prefix" }, meta: { authority: "lares-init" },
     });
-    if (!doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER]) doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
+    doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...result.founderEdge }, meta: { authority: "lares-init" },
     });
-    if (!doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER]) doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
+    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: result.founderEdge.hearthTrueName, kind: "hearth-true-name" }, meta: { authority: "lares-init" },
     });
   });
@@ -405,10 +419,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === vesselVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
-  if (input.binding.mode === "self-stood" && faceAtomKeyFromSeed(input.binding.signerSeed, "root").key === vesselVerifyingKey.toLowerCase()) {
-    throw new Error("[founding] the place key cannot sign a face delegation");
-  }
-  const prior = await readFaceCheckpoint(daemonHandle, atom.key, atomSeed);
+  const prior = await readFaceCheckpoint(daemonHandle, atomSeed);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);
     return { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
@@ -508,7 +519,6 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
         return countersignDeviceDelegation(e, atom.sign);
       })(input.binding.edge);
   const signerDid = founderEdge.personaRootDid;
-  if (signerDid.toLowerCase() === didFromVerifyingKey(vesselVerifyingKey).toLowerCase()) throw new Error("[founding] the place key cannot sign a face delegation");
   const edgeVerdict = await verifyDeviceDelegation(founderEdge, signerDid);
   if (!edgeVerdict.ok) throw new Error(`[founding] face delegation refused (${edgeVerdict.reason})`);
 
@@ -603,8 +613,9 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const { atomSeed: _heldSeed, ...publicResult } = result;
   const checkpoint: FaceCheckpoint = { result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
+  const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
   daemonHandle.change((doc) => {
-    const title = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${atom.key}`;
+    const title = foundingCheckpointTitle;
     doc.tiddlers[title] = storedRecord({ tiddler: { title, text: checkpointText, kind: "face-founding-checkpoint" }, meta: { authority: "lares-init" } });
   });
   await landFaceCheckpoint(daemonHandle, checkpoint);
@@ -704,6 +715,8 @@ export async function runFoundingCeremony(
 // ---------------------------------------------------------------------------
 
 export interface DeviceAdmitEdgeInput {
+  /** The acting atom's face-plane replay shore, keyed by the signed join request. */
+  operation?: { readonly store: LarTiddlerStore; readonly atomSeed: Uint8Array; readonly signedInput: Uint8Array };
   /** The founder's PersonaGroup ROOT 32-byte seed — SIGNS the joinee's edge (never inits Keyhive). */
   signerSeed:             Uint8Array;
   /** The joinee atom's raw Ed25519 verifying key (64 lowercase hex). */
@@ -743,6 +756,10 @@ export interface DeviceAdmitEdgeInput {
 export async function runDeviceAdmitEdge(
   input: DeviceAdmitEdgeInput,
 ): Promise<DeviceAdmitPayload> {
+  if (input.operation) {
+    const prior = await readFaceOperation<DeviceAdmitPayload>(input.operation.store, input.operation.atomSeed, input.operation.signedInput);
+    if (prior) return prior;
+  }
   if (!/^[0-9a-f]{64}$/.test(input.joineeVerifyingKey)) {
     throw new Error("[ceremony] runDeviceAdmitEdge: joineeVerifyingKey must be 64-char lowercase hex");
   }
@@ -774,7 +791,7 @@ export async function runDeviceAdmitEdge(
     // safe direction — never the reverse).
     boundEpoch:         input.boundEpoch ?? 0,
   });
-  return {
+  const issued: DeviceAdmitPayload = {
     kind:                   "device-admit/v1",
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
@@ -789,6 +806,8 @@ export async function runDeviceAdmitEdge(
     hearthDaemonUrl:        input.hearthDaemonUrl,
     personaUrl:             input.personaUrl,
   };
+  if (input.operation) await writeFaceOperation(input.operation.store, input.operation.atomSeed, input.operation.signedInput, issued);
+  return issued;
 }
 
 // ---------------------------------------------------------------------------
@@ -828,6 +847,8 @@ export interface ApplyAdmitResult {
   /** The HEARTH's daemon url — where this vessel asks for its seat. Null when the payload named no door;
    *  the vessel then holds standing and can ask for nothing until an operator carries a route to it. */
   hearthDaemonUrl: string | null;
+  /** The complete edge: the root's half beside the atom's countersignature. */
+  deviceEdge:      DeviceDelegationTiddler;
 }
 
 const APPLY_ADMIT_CHECKPOINT_PREFIX = "lar:///ha.ka.ba/dreamnet/apply-admit-checkpoint/";
@@ -836,11 +857,17 @@ type ApplyCheckpoint = {
   events: readonly { hash: string; variant: string; bytes: string; island?: string }[];
 };
 
-async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomKey: string, atomSeed: Uint8Array): Promise<ApplyCheckpoint | null> {
-  const record = handle.doc()?.tiddlers[`${APPLY_ADMIT_CHECKPOINT_PREFIX}${atomKey}`];
+async function readApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<ApplyCheckpoint | null> {
+  const record = handle.doc()?.tiddlers[`${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`];
   const body = record ? tiddlerText(record) : null;
   if (!body) return null;
   return openCheckpoint<ApplyCheckpoint>(body, atomSeed);
+}
+
+/** Retire the admission write-ahead record after the node commits this face's local carriers. */
+export async function retireApplyCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, atomSeed: Uint8Array): Promise<void> {
+  const title = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
+  if (handle.doc()?.tiddlers[title]) handle.change((doc) => { delete doc.tiddlers[title]; });
 }
 
 /**
@@ -853,7 +880,7 @@ export async function runApplyAdmitPayload(
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
-  const checkpoint = await readApplyCheckpoint(daemonHandle, atom.key, atomSeed);
+  const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed);
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
   // never write a half-bound daemon doc (the confused-deputy / mycelium-PCD hole). The persona-KEL PREFIX
@@ -937,12 +964,14 @@ export async function runApplyAdmitPayload(
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,
+      deviceEdge: fullEdge,
     };
     const events = (await capStore.list()).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
     const stored: ApplyCheckpoint = { result: { ...result, archive: bytesToBase64(archive) }, events };
     const checkpointText = await sealCheckpoint(stored, atomSeed);
+    const applyCheckpointTitle = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
     daemonHandle.change((doc) => {
-      const title = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${atom.key}`;
+      const title = applyCheckpointTitle;
       doc.tiddlers[title] = storedRecord({
         tiddler: { title, text: checkpointText, kind: "apply-admit-checkpoint" },
         meta: { authority: "lares-init-admit" },

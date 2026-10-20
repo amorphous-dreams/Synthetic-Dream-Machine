@@ -45,11 +45,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-circle · lar:///ha.ka.ba/lares/api/pono/group-as-closure
  */
 
-import { DEVICE_EDGE_DOMAIN, DYAD_ID_DOMAIN, DYAD_VEIL_INFO } from "./domains.js";
-import { hmac } from "@noble/hashes/hmac.js";
+import { DEVICE_EDGE_DOMAIN, DYAD_ID_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { sha256 } from "@noble/hashes/sha2.js";
-import { derivePersonaKeypair } from "./persona-hd.js";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { sha256HexSync, canonicalJson, hex } from "./crypto.js";
@@ -335,53 +332,3 @@ export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
 // ── The dyad VEIL — derived off the DEVICE tree ─────────────────────────────────────────────────
 //
 // "The deck stays one deck; the face it wears differs per handle" (persona-circle#the-vault). The
-// veil a dyad runs UNDER derives from the vessel's OWN seed — the device-minted root whose private
-// half never leaves its device — scoped by the PersonaGroup it faces. NEVER from the persona seed:
-// a seed-derived key spans devices exactly as the root does, and the dyad's whole privacy claim
-// rests on the veil staying local. So derived: local by construction, unlinkable across handles
-// (hardened one-way derivation), and never resurrected — it dies with the device key.
-
-const DYAD_VEIL_HMAC_KEY = new TextEncoder().encode(DYAD_VEIL_INFO);
-
-/**
- * dyadVeilIndex — the per-group hardened index for the dyad-veil leaf.
- *
- * Domain-separated HMAC-SHA256 over a GROUP TAG, masked to a 31-bit raw index — the same convention
- * `circleScopeIndex` runs one tree over. CASE-FOLDED (hex-shaped tags spell
- * one group two ways; folding keeps one group from deriving two veils). Same tag → same leaf
- * (rejoin-stable); different tag → a different, unlinkable face.
- *
- * TWO DERIVATION MOMENTS, TWO TAGS — never one input: a FOUNDER derives its creator-veil BEFORE the
- * group exists, from a minted founding tag (`mintVeilTag`, persisted beside the group ids so boot
- * re-derives); a JOINEE derives its own veil AFTER, from the real group doc id its admit carries.
- */
-export function dyadVeilIndex(groupTag: string): number {
-  const mac = hmac(sha256, DYAD_VEIL_HMAC_KEY, new TextEncoder().encode(groupTag.toLowerCase()));
-  const u32 = new DataView(mac.buffer, mac.byteOffset, 4).getUint32(0, false);
-  return u32 & 0x7fffffff;
-}
-
-/** Mint a founder's pre-birth veil tag — 32 random bytes, hex. Not a secret (the veil SEED derives
- *  from the vessel seed; the tag only namespaces the leaf) — it persists in the daemon doc so boot
- *  re-derives the same creator-veil for the life of the group. */
-export function mintVeilTag(): string {
-  const b = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(b);
-  return hex(b);
-}
-
-/** The daemon-doc tiddler carrying a founded group's veil tag — read at boot to stand the veil identity. */
-export const DYAD_VEIL_TAG_TIDDLER = "lar:///ha.ka.ba/dreamnet/dyad-veil-tag" as const;
-
-/**
- * deriveDyadVeil — the per-handle credential a vessel joins a handle-group under, and the face DID a
- * ceremony writes into the dyad slot. One hardened SLIP-0010 level off the VESSEL seed, so the leaf
- * shares nothing readable with the vessel's presented key or with any other group's leaf, and no
- * roster carries a key that appears on another.
- */
-export async function deriveDyadVeil(
-  vesselSeed: Uint8Array,
-  groupTag: string,
-): Promise<{ signingKey: string; verifyingKey: string }> {
-  return derivePersonaKeypair(vesselSeed, [dyadVeilIndex(groupTag)]);
-}

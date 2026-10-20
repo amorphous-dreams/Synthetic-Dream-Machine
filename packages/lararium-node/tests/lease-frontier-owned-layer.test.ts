@@ -20,7 +20,7 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
@@ -42,8 +42,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
+  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -82,6 +81,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     recipe: { wikiSlug: "daemon" },
   } as never;
   const daemonAuth = {
+    atom: { seed: hex(cer.atomSeed), key: cer.founderEdge.deviceVerifyingKey }, veilArchiveBytes: cer.veilArchive,
     seed: FOUNDER_SEED, vesselVerifyingKey: key,
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
@@ -133,9 +133,9 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     await expect(boot(daemonAuth, ctx)).rejects.toThrow(/current lease frontier unavailable/);
   }, 60_000);
 
-  test("C2 — an edge for a different vessel refuses", async () => {
+  test("C2 — an edge for a different atom refuses", async () => {
     const { ctx, daemonAuth } = await standIsland();
-    const other = { ...daemonAuth, seed: OTHER_SEED, vesselVerifyingKey: await pubOf(OTHER_SEED) };
+    const other = { ...daemonAuth, atom: { seed: hex(OTHER_SEED), key: await pubOf(OTHER_SEED) } };
     await expect(boot(other, ctx)).rejects.toThrow(/Binding Gate/);
   }, 60_000);
 

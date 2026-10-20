@@ -16,9 +16,9 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { custodyRootPath, custodyVeil, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
+import { custodyRootPath, custodyDerive, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
   bindCustodySlot, custodyStatus, CustodyFoundingRefused, foundCustody, rotateCustody, unbindCustodySlot, unlockCustody,
 } from "../src/custody-session.js";
@@ -83,9 +83,9 @@ describe("foundCustody", () => {
 });
 
 describe("unlockCustody", () => {
-  test("found, drop the process, unlock from disk: the custody root opens and derives the same veil", async () => {
+  test("found, drop the process, unlock from disk: the custody root opens and derives the same domain child", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
-    const veil = await custodyVeil(f.root, "group-tag");
+    const child = custodyDerive(f.root, DEVICE_DELEGATION_DOMAIN);
 
     const fresh = new FsCustodyIo(homes);                       // nothing carried over but the disk
     const u = await unlockCustody({ io: fresh, homes, credentials: [passphrase(TEST_PASSPHRASE)] });
@@ -94,7 +94,7 @@ describe("unlockCustody", () => {
     const opened = await openCustodyRootCarrier({ io: fresh, vk: u.vk, identityDir: homes.identity });
     expect(opened.reading).toBe("opens");
     if (opened.reading !== "opens") throw new Error("unreachable");
-    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+    expect(custodyDerive(custodyRootFromBytes(opened.opened), DEVICE_DELEGATION_DOMAIN)).toEqual(child);
   });
 
   test("RED: a wrong passphrase reads no-slot-opens and destroys nothing — CONTROL: the right one opens; MUTATION: a tampered tree reads the same", async () => {
@@ -159,7 +159,7 @@ describe("an unbind that rotates runs as ONE act", () => {
 
   test("CONTROL: the removed route opens nothing, the staying route opens the same custody root under a new VK", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
-    const veil = await custodyVeil(f.root, "group-tag");
+    const child = custodyDerive(f.root, DEVICE_DELEGATION_DOMAIN);
     const bound = await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("second route") });
     const out = await unbindCustodySlot({ io, homes, vk: f.vk, slotId: bound.slotId, rotate: [TEST_SLOT] });
     expect(out.rotated).toBe(true);
@@ -171,7 +171,7 @@ describe("an unbind that rotates runs as ONE act", () => {
     expect(u.vk).toEqual(out.vk);
     const opened = await openCustodyRootCarrier({ io, vk: u.vk, identityDir: homes.identity });
     if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
-    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+    expect(custodyDerive(custodyRootFromBytes(opened.opened), DEVICE_DELEGATION_DOMAIN)).toEqual(child);
     expect((await openCustodyRootCarrier({ io, vk: f.vk, identityDir: homes.identity })).reading).not.toBe("opens");
   });
 
@@ -205,7 +205,7 @@ describe("an unbind that rotates runs as ONE act", () => {
 describe("rotateCustody", () => {
   test("a rotation moves the VK: the old passphrase reads no-slot-opens, the new route opens the same custody root", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
-    const veil = await custodyVeil(f.root, "group-tag");
+    const child = custodyDerive(f.root, DEVICE_DELEGATION_DOMAIN);
     const r = await rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf("rotated")] });
     expect(r.vk).not.toEqual(f.vk);
 
@@ -215,7 +215,7 @@ describe("rotateCustody", () => {
     if (u.reading !== "opens") throw new Error("unreachable");
     const opened = await openCustodyRootCarrier({ io, vk: u.vk, identityDir: homes.identity });
     if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
-    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+    expect(custodyDerive(custodyRootFromBytes(opened.opened), DEVICE_DELEGATION_DOMAIN)).toEqual(child);
     // CONTROL: the old VK opens nothing now.
     expect((await openCustodyRootCarrier({ io, vk: f.vk, identityDir: homes.identity })).reading).not.toBe("opens");
   });

@@ -26,6 +26,7 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -38,7 +39,9 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
   await generateOrLoadPersonaGroupRoot(1);
+  await seedFaceAtom(1);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();

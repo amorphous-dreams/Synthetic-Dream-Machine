@@ -38,9 +38,8 @@ const GROUP         = "ab".repeat(16);
 const JOINEE_KEY    = "6".repeat(64);           // the peer's vessel verifying key
 
 async function founderEdge(opKeySeed = ROOT_SEED) {
-  const founderKey = await ed25519VerifyingKeyFromSeed(FOUNDER_SEED);
   return buildDeviceDelegation({
-    personaRootSeed: opKeySeed, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
+    personaRootSeed: opKeySeed, atomSeed: FOUNDER_SEED, hearthTrueName: HEARTH,
     boundEpoch: 0,
   });
 }

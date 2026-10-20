@@ -30,7 +30,7 @@ const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, ""
 export interface EdgeShadowRingDeps {
   readonly repo:       Repo;
   /** This vessel's own verifying key — it keys the ledger, and names this vessel's own device edge. */
-  readonly vesselKey:  string;
+  readonly vesselKey:  () => string;
   /** The charter DOC's authority home: the seats a quorum act answers to. */
   readonly sealHome:   string;
   /** The fleet roots this vessel serves: the root of each face it holds. */
@@ -194,19 +194,19 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         const boardUrl = fleetEdgeBoardDocUrl(fleetRoot);
         urls.push(boardUrl);
         const read = await readVesselEdgeBoard({
-          repo: deps.repo, scope: fleetRoot, kind: "fleet", boardUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey,
+          repo: deps.repo, scope: fleetRoot, kind: "fleet", boardUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey(),
           authorityFor: fleetEdgeAuthority(fleetRoot),
         });
         follow(boardUrl, read.handle);
         fleets.push({
           fleetRoot, readings: read.readings,
-          selfAside: read.readings.get(deviceEdgeId(fleetRoot, deps.vesselKey))?.stands === true,
+          selfAside: read.readings.get(deviceEdgeId(fleetRoot, deps.vesselKey()))?.stands === true,
           rolled: raisesSeenThrough(read.ledger.doc(), fleetRoot),
         });
       }
       const realms: RealmFold[] = [];
       const docs = new Map<DocumentId, string>();
-      const ledger = await materializeSharedLarDoc(deps.repo, edgeLedgerDocUrl(deps.vesselKey), "ledger:edge");
+      const ledger = await materializeSharedLarDoc(deps.repo, edgeLedgerDocUrl(deps.vesselKey()), "ledger:edge");
       const charterRealm = deps.charterRealm?.() ?? null;
       const named = new Set<string>([...(charterRealm ? [charterRealm.trim().toLowerCase()] : []), ...ledgerRealms(ledger.doc())]);
       for (const realm of [...named].sort()) {
@@ -214,12 +214,12 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         docs.set(interpretAsDocumentId(vouchUrl) as DocumentId, realm);
         docs.set(interpretAsDocumentId(edgeUrl) as DocumentId, realm);
         // The vouches read through the vessel's own ledger: a vouch a hand deleted still names its joiner here.
-        const vouches = await readLedgeredVouches({ repo: deps.repo, realm, vesselKey: deps.vesselKey });
+        const vouches = await readLedgeredVouches({ repo: deps.repo, realm, vesselKey: deps.vesselKey() });
         const invites = vouches.invites;
         // The realm's quorum and its lineage roots read off the charter of the Nexus the realm stands under here.
         const charter = vesselEdgeCharter(realm, deps.sealHome, realmNexusIn(ledger.doc(), realm));
         const read = await readVesselEdgeBoard({
-          repo: deps.repo, scope: realm, kind: "realm", boardUrl: edgeUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey,
+          repo: deps.repo, scope: realm, kind: "realm", boardUrl: edgeUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey(),
           authorityFor: realmEdgeAuthority(invites),
           charter,
         });

@@ -59,6 +59,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `custody-root` `:288-289` | hot | ''D:'' partition any face-bearing derivation/root by PersonaGroup. ''LEAD:'' prove every remaining use; a node-only secret may enter S only as a separately named row, never by retaining this generic root. |
 | `keyhive-archive` `:290-291` | hot | ''D:'' split the vessel archive into one identity/archive per PersonaGroup, with no identity above them (`stable-founding-road.mem:203,459`). Node archive row selection is an OPEN JOINT below. |
 | `veil-archive` `:292-293` | hot | ''D:'' each `h<N>` maps to its own PersonaGroup and FCK. |
+| `face-atom` `face-atom-store.ts` | hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
 | `enroll-pending` `:295-296` | hot, reserved | ''D, LEAD:'' if materialized, bind each pending enrolment to its target face; reject a row with no target. There is no current writer. |
 | `grant-pending` `:297-298` | hot, reserved | ''D, LEAD:'' split per granting/target face and bind the authority relation; reject an unassigned pending secret. There is no current writer. |
 | `admissions` `:299-300` | hot, reserved | ''D, LEAD:'' confidential admission state partitions by owning face; public signed proof may be F after payload audit. There is no current writer. |
@@ -210,6 +211,6 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;PfnQVmaouP_vM6uMJWYLIEl5Jj2Rsn9DzVTqDTr4dZg
+<<^ code="&#x0003;">>ni:///sha-256;dA9OwYuA6gdVMnxLRZiHfXFhDZxgiiwMBxgF6M1Uxxk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -244,10 +244,8 @@ export interface IslandMsg_Manifest {
    * boundary (operator-confirmed): the daemon island is the authn/z home.
    */
   daemonAuth?: {
-    /** The mounted face's creator-veil: its tag, and the signing key the SHORE derived for it. The veil's root
-     *  rests with the shore (a sealed custody root the island never holds), so the key arrives derived and the
-     *  island derives none. Absent: no veil identity stands in this island. */
-    dyadVeil?: { readonly tag: string; readonly signingKey: string };
+    /** The mounted face's random atom seed and its verifying key. */
+    atom?: { readonly seed: string; readonly key: string };
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
      *  keeps opening across boots. */
     veilArchiveBytes?: Uint8Array;

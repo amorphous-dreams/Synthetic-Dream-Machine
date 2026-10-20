@@ -7,9 +7,9 @@
  */
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
@@ -23,8 +23,7 @@ const FOUNDER_SEED = seed(71);
 export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
+  const cer = await runFoundingCeremony({ repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -62,15 +61,14 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
   } as never;
+  const atom = faceAtomKeyFromSeed(cer.atomSeed, cer.personaGroupId);
+  const veil = { atom: { seed: hex(cer.atomSeed), key: atom.key }, veilArchiveBytes: cer.veilArchive };
   const daemonAuth = {
+    ...veil,
     seed: FOUNDER_SEED, vesselVerifyingKey: key,
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
   };
-  // The face's creator-veil, as a shore that derives it hands it to the island: the key the founding derived under
-  // its tag, and the Archive that veil left. A suite that needs the veil standing adds both to `daemonAuth`.
-  const veilKeys = await veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED))(cer.veilTag);
-  const veil = { dyadVeil: { tag: cer.veilTag, signingKey: veilKeys.signingKey }, veilArchiveBytes: cer.veilArchive };
   return { ctx, daemonAuth, daemonHandle, vesselRepo, veil };
 }

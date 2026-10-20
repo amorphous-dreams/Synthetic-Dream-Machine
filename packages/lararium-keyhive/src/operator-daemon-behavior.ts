@@ -128,10 +128,11 @@ import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed } from "@lararium/mes
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
-import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
+import { runFaceJoin, type FaceJoinSummons, type FaceJoinOutcome } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -205,12 +206,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const faceDoor = () => veilKh && daemonAuth.personaGroupId
     ? makeFaceBagDoor({ face: veilKh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   const faceAtom = () => {
-    if (!daemonAuth.dyadVeil || !daemonAuth.personaGroupId || !daemonAuth.deviceEdge) throw new Error("[daemon] face atom absent");
-    const atom = faceAtomKeyFromSeed(meshHexToBytes(daemonAuth.dyadVeil.signingKey), daemonAuth.personaGroupId);
+    if (!daemonAuth.atom || !daemonAuth.personaGroupId || !daemonAuth.deviceEdge) throw new Error("[daemon] face atom absent");
+    const atom = faceAtomKeyFromSeed(meshHexToBytes(daemonAuth.atom.seed), daemonAuth.personaGroupId);
+    if (atom.key !== daemonAuth.atom.key) throw new Error("[daemon] face atom key differs from its seed");
     if (atom.key !== daemonAuth.deviceEdge.deviceVerifyingKey) throw new Error("[daemon] face atom differs from the device edge");
     return atom;
   };
-  let mintedByHex = daemonAuth.vesselVerifyingKey;
+  let mintedByHex = daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -287,7 +289,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     slotDocs = makeSlotDocResolver({
       repo: restDocuments ? restingMinter(ctx.repo, restDocuments) : ctx.repo, daemonStore: ctx.composite, keyhive: kh,
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
-      vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
+      vesselDid: () => didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
@@ -511,7 +513,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const circleReactors = makeCircleReactors({
           resolveStore: resolveCirclesStore,
           tw5: ctx.tw5,
-          replica: didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
+          replica: didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
         });
 
         // A FACE'S OWN NAMES ANSWER NO VERB. The private pet-name and the declared Handle ride the persona plane, and
@@ -582,13 +584,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // wiki island's surface, a session island and a peer's summons hold no such key, whatever requester
           // they name. The check runs before any read of the facts.
           registry.register("seat-duties", async (args, context) => {
-            const ownEdge = daemonAuth.deviceEdge;
-            if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
             const unlicensed = seatDutiesAskRefusal({
-              requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: ownEdge.deviceVerifyingKey,
+              requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: faceAtom().key,
             });
             if (unlicensed) throw new Error(`[daemon] seat-duties: ${unlicensed}`);
             if (!veilKh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
+            const ownEdge = daemonAuth.deviceEdge;
+            if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
             const facts = args["facts"] as FleetSeatFacts | undefined;
             if (!facts || typeof facts !== "object" || typeof facts.fleetRoot !== "string" || !Array.isArray(facts.acts) || !Array.isArray(facts.rolled)) {
               throw new Error("[daemon] seat-duties: no facts in args — carry {fleetRoot, acts, rolled}.");
@@ -616,6 +618,42 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!summons || typeof summons !== "object") {
               throw new Error("[daemon] face-join: no summons in args — carry {contactCard, deviceEdge}.");
             }
+            const operationStore = ctx.catalogUrl
+              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(faceGroup()))
+              : null;
+            if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
+            const signedInput = new TextEncoder().encode(JSON.stringify(summons));
+            type JoinOperation =
+              | { readonly state: "issued"; readonly outcome: Extract<FaceJoinOutcome, { ok: true }>; readonly grantRecord: FaceGrantRecord; readonly grantTitle: string }
+              | { readonly state: "complete"; readonly output: Record<string, unknown> };
+            const atomSeed = meshHexToBytes(daemonAuth.atom!.seed);
+            const publish = async (issued: Extract<JoinOperation, { state: "issued" }>): Promise<Record<string, unknown>> => {
+              if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
+              const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
+              if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
+              const store = new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()));
+              const standing = await store.get(issued.grantTitle);
+              if (!standing || standing.meta?.deleted) {
+                await store.put(
+                  { tiddler: { title: issued.grantTitle, text: JSON.stringify(issued.grantRecord), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
+                  { kind: "lares-verb", requestId: `face-grant-${issued.grantRecord.sig.slice(0, 12)}` },
+                );
+              } else if (standing.tiddler.text !== JSON.stringify(issued.grantRecord)) {
+                throw new Error("[daemon] face-join: the grant title holds different issued bytes");
+              }
+              const output = {
+                verb: "face-join", admitted: true, ...issued.outcome.grant,
+                recordTitle: issued.grantTitle, recordCid: faceGrantRecordCid(issued.grantRecord),
+                recordHeads: [...planeHandle.heads()],
+              };
+              await writeFaceOperation(operationStore, atomSeed, signedInput, { state: "complete", output } satisfies JoinOperation);
+              return output;
+            };
+            const priorOutcome = await readFaceOperation<JoinOperation>(
+              operationStore, meshHexToBytes(daemonAuth.atom!.seed), signedInput,
+            );
+            if (priorOutcome?.state === "complete") return priorOutcome.output;
+            if (priorOutcome?.state === "issued") return publish(priorOutcome);
             // A HEARTH NEVER SEATS ITSELF.
             //
             // A summons rides the daemon doc, and the daemon doc fleet-syncs across the operator's own devices — so every
@@ -675,36 +713,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // sha256 content address) and the plane's heads just after the write (`recordHeads`). A caller that
             // must know what the join granted reads the record off the PersonaGroup plane once that plane's
             // history holds those heads — a causal wait — and recomputes the CID.
-            let recordTitle: string | null = null;
-            let recordCid: string | null = null;
-            let recordHeads: readonly string[] | null = null;
-            if (outcome.ok && facePlane) {
-              try {
-                const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
-                if (!planeHandle) throw new Error("the PersonaGroup plane is unresolved");
-                const store = new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()));
-                const { kind: _grantKind, ...grantBody } = outcome.grant;
-                void _grantKind;
-                const rec = await signFaceGrantRecord({
-                  kind: "face-join-grant/v1", groupId: faceGroup(), ...grantBody,
-                  founderEdge: ownEdge,
-                }, faceAtom().sign);
-                recordTitle = faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex);
-                await store.put(
-                  { tiddler: { title: recordTitle, text: JSON.stringify(rec), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
-                  { kind: "lares-verb", requestId: `face-grant-${rec.sig.slice(0, 12)}` },
-                );
-                recordCid = faceGrantRecordCid(rec);
-                recordHeads = [...planeHandle.heads()];
-                console.log(`[daemon] face-join: grant record written to the PersonaGroup plane (${recordTitle.slice(-16)}) — the joinee's kit takes the seat on its next present`);
-              } catch (err) {
-                console.log(`[daemon] face-join: grant record NOT written (${(err as Error)?.message ?? err}) — the grant returns to the caller alone`);
-                recordTitle = null; recordCid = null; recordHeads = null;
-              }
-            }
-            return outcome.ok
-              ? { verb: "face-join", admitted: true,  ...outcome.grant, ...(recordTitle ? { recordTitle, recordCid, recordHeads } : {}) }
-              : { verb: "face-join", admitted: false, reason: outcome.reason };
+            if (!outcome.ok) return { verb: "face-join", admitted: false, reason: outcome.reason };
+            const { kind: _grantKind, ...grantBody } = outcome.grant;
+            void _grantKind;
+            const grantRecord = await signFaceGrantRecord({
+              kind: "face-join-grant/v1", groupId: faceGroup(), ...grantBody,
+              founderEdge: ownEdge,
+            }, faceAtom().sign);
+            const issued = {
+              state: "issued", outcome, grantRecord,
+              grantTitle: faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex),
+            } satisfies JoinOperation;
+            await writeFaceOperation(operationStore, atomSeed, signedInput, issued);
+            return publish(issued);
           });
         }
       }
@@ -910,7 +931,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           catalog,
           ...(sysPlane ? { oracle: sysPlane } : {}),
           rootDir:     "",
-          vesselDid: async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
+          vesselDid: async () => didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
           registerBag: registerBagCap,
           resolveDraftDoc: (slug: string) => slotDocsOf(ctx).draft(slug),
         };
@@ -948,10 +969,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         seed:                  daemonAuth.seed,
         eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
         vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
+        ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
         // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
         ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
         ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
-        registerBags:          daemonAuth.dyadVeil ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+        registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
         ledger:                daemonBagDocLedger(ctx.composite),
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
@@ -964,17 +986,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
       });
       kh = keyhive;
-      mintedByHex = did;
-      if (daemonAuth.dyadVeil) {
-        // THE SHORE DERIVES THE VEIL, never this island: the veil's root rests where the shore keeps it (a sealed
-        // custody root the island never holds), so the mounted face's veil key arrives already derived.
+      mintedByHex = daemonAuth.atom?.key ?? did;
+      if (daemonAuth.atom) {
+        // The face provider opens from the random atom and its own sealed archive.
         const v = new KeyhiveProvider();
         await v.init({
-          seed: meshHexToBytes(daemonAuth.dyadVeil.signingKey),
+          seed: meshHexToBytes(daemonAuth.atom.seed),
           eventStore: new DaemonEventStore({ daemon: ctx.composite }),
           ...(daemonAuth.veilArchiveBytes ? { archiveBytes: daemonAuth.veilArchiveBytes } : {}),
           ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
         });
+        if (!(await v.whoami()).toLowerCase().endsWith(daemonAuth.atom.key.toLowerCase())) {
+          throw new Error("[daemon] Gate A: face atom provider differs from its key");
+        }
         await v.hydrateFromEventStore();
         veilKh = v;
         faceLedger = null;

@@ -5,7 +5,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { describe, expect, it } from "vitest";
 import {
-  deriveDyadVeil, faceAtomKeyFromSeed, groupSecretOpenerFromSeed, hexToBytes, mintFaceAtomSeed, mintVeilTag, sealGroupSecret,
+  faceAtomKeyFromSeed, groupSecretOpenerFromSeed, hexToBytes, mintFaceAtomSeed, sealGroupSecret,
   utf8Bytes,
 } from "../src/index.js";
 
@@ -56,9 +56,7 @@ describe("the face atom", () => {
     // A thief holding the place seed: its own opener opens nothing addressed to the atom,
     const thief = groupSecretOpenerFromSeed(placeSeed);
     expect(thief.seal(seal)).toBeNull();
-    // and every key it can derive from the seed, the old veil road included, differs from the atom's.
-    const veil = await deriveDyadVeil(placeSeed, mintVeilTag());
-    expect(veil.verifyingKey).not.toBe(atom.key);
+    // The place seed's own key differs from the random atom's.
     expect(thief.deviceKey).not.toBe(atom.key);
     // Forging the addressee does not help: the box opens for the atom's secret key alone.
     expect(thief.seal({ ...seal, deviceKey: thief.deviceKey })).toBeNull();

@@ -196,9 +196,10 @@ export function walkArm(record: WalkRecord, leaf: WalkLeaf): UnsignedPresented |
 
 /** The dial identity a walk presents: the base card and proof, the walk arm, and the leaf's signer. No edge. */
 export function walkIdentity(base: LeafIdentity, record: WalkRecord, leaf: WalkLeaf): LeafIdentity | null {
+  if (base.arm !== "face") return null;
   const presented = walkArm(record, leaf);
   if (!presented) return null;
-  return { contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign, presented, leafSign: ed25519SignerFromSeed(leaf.seed) };
+  return { arm: base.arm, contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign, presented, leafSign: ed25519SignerFromSeed(leaf.seed) };
 }
 
 /** The walker's view of a dialed transport: its session, its re-presentation, and its proven peers. */
@@ -231,6 +232,7 @@ export function walkOver(opts: {
   /** Told each message this walk dropped because its store, its act read or its transport refused. */
   readonly onFault:    (fault: WalkFault) => void;
 }): () => void {
+  if (opts.base.arm !== "face") throw new Error("a place identity cannot present a face walk");
   const gate = opts.gatePubKey.toLowerCase();
   const leafKey = opts.leaf.verifyingKey.toLowerCase();
   /** Start work nobody awaits; its refusal reaches the fault port and no farther. */
@@ -251,7 +253,7 @@ export function walkOver(opts: {
       if (!kept) return;
       // Re-present under the grant: the dial that stands on it is the one that settles the invite.
       opts.transport.represent({
-        contactCard: opts.base.contactCard, peerPubKey: opts.base.peerPubKey, sign: opts.base.sign,
+        arm: opts.base.arm, contactCard: opts.base.contactCard, peerPubKey: opts.base.peerPubKey, sign: opts.base.sign,
         presented: { kind: "grant", grant }, leafSign: ed25519SignerFromSeed(opts.leaf.seed),
       });
     });

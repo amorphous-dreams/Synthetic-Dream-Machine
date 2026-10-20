@@ -33,6 +33,7 @@ import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { runEdgeSeatFacts } from "../src/commands/edge-seats.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 const VESSEL_SEED = new Uint8Array(32).fill(41);
 const OTHER_SEED = new Uint8Array(32).fill(42);
@@ -116,6 +117,7 @@ describe("who may ask the island's seat-duties verb", () => {
     try {
       await generateOrLoadVesselIdentity();
       const root = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+      await seedFaceAtom(0);
       const asked: unknown[] = [];
       const repo = new Repo({});
       const withVessel = storeDoorReactors({ storageDir: "/a-synthetic/storage", sealHome: "/a-synthetic/seal", repo, seatDuties: async (facts) => { asked.push(facts); return { ran: true, outcomes: [], rolls: [] }; } });

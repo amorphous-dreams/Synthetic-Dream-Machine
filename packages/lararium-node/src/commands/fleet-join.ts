@@ -42,6 +42,8 @@ import {
   gateBundleDigest,
   type FaceKeyGrant, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
   type VesselFaceCertificate,
+  mintFaceAtomSeed,
+  faceAtomKeyFromSeed,
 } from "@lararium/mesh";
 import { takeAdmitBundle, type AdmitBundle } from "../admit-bundle.js";
 import { importCarriedCharter, primaryNexusAid } from "../carried-set.js";
@@ -59,8 +61,9 @@ import {
   clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
   readFaceJoinRecord, readPendingFleetJoin,
 } from "../fleet-join-custody.js";
-import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselSigningSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAtom, persistFaceAtom } from "../face-atom-store.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
@@ -213,7 +216,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   await refuseProvisional(face, "fleet join answer");
 
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
-  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
+  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, catalogUrl: opts.catalogUrl, face, joineeVerifyingKey: request.atomKey, signedRequest: new TextEncoder().encode(JSON.stringify(request)), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}), ...(opts.docUrl ? { islandDocUrl: opts.docUrl } : {}) });
 
   // THE DIAL THE JOINEE NEEDS: the face's admit at this hearth's Nexus (minted once, through the contract door), the
   // charter that seats its quorum, and this hearth's floor pins. The admit commits to the pin the edge's hearth stands
@@ -240,7 +243,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   }
   // THE ISSUED BOOK, before any answer can leave: the device is the request's vessel key, the key the device edge
   // names and the answer binds beside these certificates. A note that fails sends no answer.
-  await noteIssuedFaceKeys({ personaGroup, rootKey, device: request.vesselKey, certificates });
+  await noteIssuedFaceKeys({ personaGroup, rootKey, device: request.atomKey, certificates });
 
   const seed = await loadPersonaGroupRootSeed(face);
   try {
@@ -252,7 +255,7 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
     let sealed;
     try { sealed = sealAddressSecret({ secret, request }); } finally { secret.fill(0); }
     const body = {
-      nonce, vesselKey: request.vesselKey, personaGroup, edge: payload,
+      nonce, atomKey: request.atomKey, personaGroup, edge: payload,
       carriage: { gatePin: household.opening.carriage.gatePin, canon: { ...household.opening.carriage.canon } },
       reach: { syncUrl: payload.syncUrl, islandKind: hearth.islandKind ?? null, islandScope: hearth.islandScope ?? null },
       charter,
@@ -280,12 +283,17 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     if (!isRefusal(kept)) return kept;
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
   }
-  const vesselKey = (await loadVesselVerifyingKey()).toLowerCase();
+  let atomSeed = await loadFaceAtom(0);
+  if (!atomSeed) {
+    atomSeed = mintFaceAtomSeed();
+    await persistFaceAtom(0, atomSeed);
+  }
+  const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
   const seal = fleetJoinSealPair();
-  const seed = await loadVesselSigningSeed();
+  const seed = atomSeed;
   try {
     const request = await composeFleetJoinRequest({
-      offer, vesselKey, sealKey: seal.key, custody: nodeVesselFaceKeyCustody,
+      offer, atomKey, sealKey: seal.key, custody: nodeVesselFaceKeyCustody,
       // A key a broken request left at rest answers again, so the same offer retries clean.
       mintFaceKey: async (scope) => {
         const standing = await readVesselFaceKeyPublic(scope);

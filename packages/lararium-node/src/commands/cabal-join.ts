@@ -30,7 +30,7 @@ import {
 import { tiddlerText, type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
-import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { readVesselEdgeBoard, realmEdgeCharter } from "../edge-board.js";
 import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
 
@@ -169,7 +169,7 @@ export async function runCabalJoin(
     throw new CabalJoinError(`the applicant reads as a 64-hex verifying key, got "${opts.applicant}"`);
   }
 
-  const vesselKey = await loadVesselVerifyingKey();
+  const vesselKey = await loadWornFaceAtomKey();
   if (!vesselKey) {
     throw new CabalJoinError("this vessel surfaces no verifying key — no board to read the lineage from.");
   }

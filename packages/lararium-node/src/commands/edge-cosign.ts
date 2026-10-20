@@ -25,7 +25,7 @@ import {
   edgeActPartial, readEdgeActPartial, judgeEdgeActPartial, cosignEdgeActPartial, edgeIdOfSubject,
   type EdgeActPartial, type EdgeKapaeVerdict, type EdgePartialSubject, type EdgeSigner, type KahuQuorumSeats, type PartialVerdict,
 } from "@lararium/mesh";
-import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { heldSeatSigners as heldSeats } from "../held-quorum.js";
 import { actingRealmNexus, nexusOfEpoch, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 
@@ -47,8 +47,7 @@ async function heldSeatSigners(roster: KahuQuorumSeats, except: ReadonlySet<stri
  * signed, as every act does; a read, and a refused act, note no Nexus.
  */
 async function readRealm(repo: Repo, realm: string, sealHome: string, named?: string) {
-  const vesselKey = await loadVesselVerifyingKey();
-  if (!vesselKey) throw new EdgeCosignError("this vessel surfaces no verifying key — it keeps no ledger to read a board against.");
+  const vesselKey = await loadWornFaceAtomKey().catch((e: unknown) => { throw new EdgeCosignError(e instanceof Error ? e.message : String(e)); });
   const aid = await actingRealmNexus({ repo, vesselKey, realm, sealHome, ...(named !== undefined ? { named } : {}), refuse: (message) => new EdgeCosignError(message) });
   const charter = vesselEdgeCharter(realm, sealHome, aid);
   if (!charter) throw new EdgeCosignError("no seated charter of the Nexus this realm stands under stands on this vessel — the quorum hand has no seats to sign with.");

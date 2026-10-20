@@ -17,6 +17,7 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "../src/commands/edge-seats.js";
 import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -26,6 +27,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
 });
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
@@ -59,7 +61,7 @@ describe("runEdgeSeatFacts", () => {
 
   it("reads selfAside true for its own edge and false for another device", async () => {
     const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
-    const own = (await loadVesselVerifyingKey())!;
+    const own = (await atomKeyOf());
     await direct(runEdgeKapae)({ device: own, raised: true });
     expect((await direct(runEdgeSeatFacts)({ fleetRoot })).fleets[0]!.selfAside).toBe(true);
     // CONTROL: before this vessel has an act, a different device raise leaves selfAside clear.
@@ -93,7 +95,7 @@ describe("runEdgeSeatMarks", () => {
   /** A roll as this vessel's own daemon island hands it over: under a receipt the vessel key signed. */
   const rollOf = async (fleetRoot: string, edgeId: string, cid: string, how: "revoked" | "gone" | "no-authority" = "revoked", by?: Uint8Array) =>
     signSeatRoll({ kind: "seat-roll", scope: fleetRoot.toLowerCase(), edgeId, raiseCids: [cid], how, seat: { group: "0xgroup", member: "0xmember" } },
-      ed25519SignerFromSeed(by ?? await loadVesselSigningSeed()));
+      ed25519SignerFromSeed(by ?? await atomSeedOf()));
 
   it("keeps a roll for a counted raise once, with the roll beside the mark, and refuses a cid the fold does not hold", async () => {
     const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
@@ -104,7 +106,7 @@ describe("runEdgeSeatMarks", () => {
     // The first answer stands: a second mark of the same raise changes nothing the ledger kept.
     await direct(runEdgeSeatMarks)({ fleetRoot, rolls: [await rollOf(fleetRoot, raise.edgeId, raise.actCid, "gone")] });
     await ownedStore(larDataDir(), async (repo) => {
-      const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl((await loadVesselVerifyingKey())!), "ledger:edge");
+      const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl((await atomKeyOf())), "ledger:edge");
       expect(keptSeatRolls(ledger.doc(), fleetRoot.toLowerCase())).toEqual([
         { kind: "seat-roll", scope: fleetRoot.toLowerCase(), edgeId: raise.edgeId, raiseCids: [raise.actCid], how: "revoked", seat: { group: "0xgroup", member: "0xmember" } },
       ]);

@@ -177,26 +177,18 @@ describe("persona-vault core", () => {
 });
 
 /**
- * THE VEIL IS THE FOURTH PIN.
+ * THE MOUNT HOLDS THE FACE'S PUBLIC PINS.
  *
- * A face's founder-veil derives from (vesselSeed × veilTag), and the tag is minted FRESH per founding —
- * so two faces on one vessel stand two different veils, by construction. The tag lives in the daemon doc,
- * which pins the FOUNDING face's, and each face also persists its own into its anchors.
- *
- * A wear-reboot re-pins the switched face's doc ids, signer DID, KEL prefix and device edge from those
- * anchors — and left the veil tag alone, so the worn face's sentinel ops ran under the FOUNDING face's
- * veil. That is the same class of fault the mount-switch exists to close: one face's material standing
- * under another's authority. The tag rides the mount, and ALL-OR-NONE covers four pins now: a face whose
- * anchors carry no tag owes a re-found, because mounting it would leave h0's veil in place.
+ * A wear-reboot pins the switched face's doc ids, signer DID, KEL prefix and device edge from its
+ * anchors. The atom seed rests in local custody at the same handle index and the node opens it at boot.
  */
-describe("the wear-reboot mount-switch carries the veil", () => {
+describe("the wear-reboot mount-switch carries the face pins", () => {
   const FULL = {
     personaGroupId:   "aa".repeat(32),
     meshCabalDocIdHex:      "bb".repeat(32),
     signerDid:              "did:key:zWorn",
     personaKelPrefix:       "EWornPrefix",
     deviceEdge:             { title: "edge", personaRootDid: "did:key:zWorn" } as unknown as IdentityAnchors["deviceEdge"],
-    veilTag:                "worn-face-veil-tag",
   } satisfies IdentityAnchors;
 
   const vaultWearing = async (index: number, anchors: IdentityAnchors): Promise<PersonaVault> => {
@@ -206,18 +198,18 @@ describe("the wear-reboot mount-switch carries the veil", () => {
     return v;
   };
 
-  test("★ the worn face's OWN veil tag rides the mount — the founding face's veil never covers it ★", async () => {
+  test("the worn face's own public pins ride the mount", async () => {
     const mount = await readWornPersonaMount(await vaultWearing(1, FULL));
     expect(mount, "a fully-anchored worn face owes a mount").not.toBeNull();
-    expect(mount?.veilTag).toBe(FULL.veilTag);
+    expect(mount?.deviceEdge).toEqual(FULL.deviceEdge);
   });
 
-  test("ALL-OR-NONE reaches the veil: anchors without a tag mount NOTHING", async () => {
-    const { veilTag: _dropped, ...noTag } = FULL;
-    expect(await readWornPersonaMount(await vaultWearing(1, noTag))).toBeNull();
+  test("ALL-OR-NONE reaches the edge: anchors without it mount nothing", async () => {
+    const { deviceEdge: _dropped, ...noEdge } = FULL;
+    expect(await readWornPersonaMount(await vaultWearing(1, noEdge))).toBeNull();
   });
 
-  test("CONTROL — the founding face still owes no switch, tag or no tag", async () => {
+  test("the founding face owes no switch", async () => {
     expect(await readWornPersonaMount(await vaultWearing(0, FULL))).toBeNull();
   });
 });
@@ -240,7 +232,6 @@ describe("a worn face refused for want of its mount material", () => {
     signerDid:              "did:key:zWorn",
     personaKelPrefix:       "EWornPrefix",
     deviceEdge:             { title: "edge" } as unknown as IdentityAnchors["deviceEdge"],
-    veilTag:                "worn-face-veil-tag",
   } satisfies IdentityAnchors;
 
   const readWearing = async (index: number, anchors: IdentityAnchors | null) => {
@@ -253,12 +244,12 @@ describe("a worn face refused for want of its mount material", () => {
   };
 
   test("★ a half-anchored worn face refuses OUT LOUD, naming the face and what it lacks ★", async () => {
-    const { veilTag: _v, ...noTag } = FULL_M;
-    const { mount, said } = await readWearing(2, noTag);
+    const { deviceEdge: _edge, ...noEdge } = FULL_M;
+    const { mount, said } = await readWearing(2, noEdge);
     expect(mount).toBeNull();
     expect(said.length, "the refusal passed in silence").toBe(1);
     expect(said[0]).toMatch(/h2/);                 // which face
-    expect(said[0]).toMatch(/veilTag/);            // what it lacks
+    expect(said[0]).toMatch(/deviceEdge/);         // what it lacks
   });
 
   test("a worn face with NO anchors at all refuses out loud too — same owed switch, same silence before", async () => {

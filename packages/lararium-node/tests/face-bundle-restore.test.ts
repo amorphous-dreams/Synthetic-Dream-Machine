@@ -42,7 +42,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
+  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, guardianRecoveryRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
   openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -56,6 +56,7 @@ import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, read
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
+import { loadFaceAtom } from "../src/face-atom-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
   listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore,
@@ -116,7 +117,7 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
 
 interface Cut {
   readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody;
-  readonly rootKey: string; readonly prefix: string; readonly group: string; readonly veilTag: string; readonly vesselKey: string;
+  readonly rootKey: string; readonly prefix: string; readonly group: string; readonly atomKey: string; readonly vesselKey: string;
   /** Where the face enrolled guardians before the cut: the bundle cut BEFORE that enrolment, each guardian's own half, and A's board after it. */
   readonly enrolled?: {
     readonly early: { readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array; readonly body: FaceBundleBody };
@@ -169,7 +170,8 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   const cut = await cutHere();
   const out: Cut = {
     ...cut, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
-    veilTag: anchors.veilTag!, vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
+    atomKey: faceAtomKeyFromSeed((await loadFaceAtom(0))!, anchors.personaGroupId).key,
+    vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
   };
   // DESTROY THE SCRATCH HOME: nothing of vessel A survives but the bundle in hand.
   await leave();
@@ -226,15 +228,18 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     const anchors = (await loadIdentityAnchors(1))!;
     expect(anchors.personaKelPrefix).toBe(a.prefix);
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(a.rootKey);
-    // A NEW SEAT: another key group, another veil tag, a veil archive of this vessel's own, an edge for this vessel's key.
+    // A new seat has another group and atom, its own archive, and an edge for its atom.
     expect(anchors.personaGroupId).not.toBe(a.group);
-    expect(anchors.veilTag).not.toBe(a.veilTag);
+    const atomKey = faceAtomKeyFromSeed((await loadFaceAtom(1))!, anchors.personaGroupId).key;
+    expect(atomKey).not.toBe(a.atomKey);
     expect(existsSync(veilArchivePath(1))).toBe(true);
     // The restored face binds THIS hearth: its edge names the seed charter this vessel founded.
     expect(anchors.deviceEdge!.hearthTrueName).toBe((await loadIdentityAnchors(0))!.deviceEdge!.hearthTrueName);
     const here = await loadVesselVerifyingKey();
     expect(here).not.toBe(a.vesselKey);
-    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(here.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(atomKey.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(here.toLowerCase());
+    expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(a.atomKey.toLowerCase());
     expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).not.toContain(a.vesselKey.toLowerCase());
     // The board holds the face's key history.
     expect((await withRepo((repo) => readLocalPersonaKelChain(repo, a.prefix))).map((e) => e.eventCid)).toEqual(a.body.kel.map((e) => e.eventCid));

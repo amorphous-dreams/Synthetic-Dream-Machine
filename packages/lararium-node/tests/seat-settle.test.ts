@@ -45,6 +45,7 @@ import { makeSeatSettler, raisesOwed, type SeatDutiesAnswer, type SeatSettler } 
 import { IslandAskAbandoned, IslandVerbRefused, askIslandVerb } from "../src/island-verb-ask.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
 
@@ -63,9 +64,10 @@ describe("a fold of the fleet's board settles the key side", () => {
     custody = await seatScratchCustody("seat-settle");
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    await seedFaceAtom(0);
     repo = new Repo({});
     fleetRoot = bare((await loadPersonaGroupRootVerifyingKey(0))!);
-    vesselKey = bare((await loadVesselVerifyingKey())!);
+    vesselKey = bare((await atomKeyOf()));
     how = "revoked";
     asked = [];
     logs = [];
@@ -83,7 +85,7 @@ describe("a fold of the fleet's board settles the key side", () => {
       byEdge.set(act.edgeId, [...(byEdge.get(act.edgeId) ?? []), act.actCid]);
     }
     asked.push([...byEdge.values()].flat().sort());
-    const sign = ed25519SignerFromSeed(await loadVesselSigningSeed());
+    const sign = ed25519SignerFromSeed(await atomSeedOf());
     const rolls = [];
     for (const [edgeId, raiseCids] of byEdge) {
       const roll: SeatRoll = { kind: "seat-roll", scope: facts.fleetRoot, edgeId, raiseCids, how };
@@ -107,7 +109,7 @@ describe("a fold of the fleet's board settles the key side", () => {
   const stand = async (wired: boolean) => {
     let settler: SeatSettler | null = null;
     const ring = makeEdgeShadowRing({
-      repo, vesselKey, sealHome: larSealHome(),
+      repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
       fleetRoots: () => [fleetRoot], vesselKeyOfPeer: () => null, realmNymOfPeer: () => null,
       onRefold: () => { settler?.onFold(); report(ring); },
     });

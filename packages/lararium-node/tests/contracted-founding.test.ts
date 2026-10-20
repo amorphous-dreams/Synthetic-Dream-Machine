@@ -13,21 +13,22 @@ import { describe, expect, it } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  buildDeviceDelegation, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
+  buildDeviceDelegationRootHalf, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
   personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
   type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 
 const OPERATOR_SEED = new Uint8Array(32).fill(11);   // the CONTRACTING operator's persona root
-const HERM_SEED     = new Uint8Array(32).fill(22);   // the faceless vessel's own device key
+const HERM_SEED     = new Uint8Array(32).fill(22);   // the face atom the operator delegates to
+const PLACE_SEED    = new Uint8Array(32).fill(44);   // the faceless vessel's own place key
 const HEARTH        = "bafyHermHearth";
 
 const pubOf = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
 /** What the contracting operator hands over: the signed edge, the pinned prefix, and their KEL. */
 async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
-  const edge = await buildDeviceDelegation({
+  const edge = await buildDeviceDelegationRootHalf({
     personaRootSeed:       OPERATOR_SEED,          // the OPERATOR signs, elsewhere
     deviceVerifyingKey,
     hearthTrueName,
@@ -46,15 +47,16 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
   return { edge, personaKelPrefix: inception.prefix, personaKelChain: [inception] as const, groupSecretSeal };
 }
 
-async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], deviceKey: string, repo = new Repo({ sharePolicy: async () => true })) {
-  return runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(HERM_SEED)),
-    repo,
-    vesselSeed: HERM_SEED,
-    vesselVerifyingKey: deviceKey,
+async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], _atomKey: string, repo = new Repo({ sharePolicy: async () => true })) {
+  const placeKey = await pubOf(PLACE_SEED);
+  return runFoundingCeremony({ repo,
+    vesselSeed: PLACE_SEED,
+    vesselVerifyingKey: placeKey,
     vesselDisplayName: "herm",
     binding,
     hearthTrueName: HEARTH,
-    nexusPubkey: deviceKey,
+    nexusPubkey: placeKey,
+    atomSeed: HERM_SEED,
   });
 }
 
@@ -69,6 +71,8 @@ describe("a contracted founding carries its binding instead of signing it", () =
     expect(f.personaKelPrefix).toBe(b.personaKelPrefix);
     expect(f.signerDid).toBe(b.edge.personaRootDid);
     expect(f.signerDid).not.toBe(`0x${deviceKey}`);
+    expect(f.founderEdge.deviceVerifyingKey).toBe(deviceKey);
+    expect(f.founderEdge.deviceVerifyingKey).not.toBe(await pubOf(PLACE_SEED));
   });
 
   // The identifier derives DETERMINISTICALLY from the founding op-key, so one root yields one prefix in

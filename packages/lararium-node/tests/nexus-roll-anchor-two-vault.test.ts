@@ -58,6 +58,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 import { restEvery, restingRepo, type RestingRepo } from "./resting-repo.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
+import { seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -74,7 +75,7 @@ async function vault(label: string): Promise<Vault> {
   const c = await seatScratchCustody(label);
   drops.push(c);
   await generateOrLoadVesselIdentity();
-  await generateOrLoadPersonaGroupRoot(0);
+  await generateOrLoadPersonaGroupRoot(0); await seedFaceAtom(0);
   return { c, repo: restingRepo(larDataDir()) };
 }
 const at = (v: Vault): void => { process.env["LAR_ROOT"] = v.c.root; };
@@ -291,7 +292,7 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     let actCid = "";
     for (const v of vaults) {
       at(v);
-      const vesselKey = await loadVesselVerifyingKey();
+      const vesselKey = await wornAtomKey();
       const genesisEpoch = readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
       const act = await signEdgeKapae({ edgeId: edgeByte.toString(16).padStart(2, "0").repeat(32), raised: true, hand: "quorum", parents: [], epochCid: genesisEpoch }, signers);
       actCid = act.actCid;

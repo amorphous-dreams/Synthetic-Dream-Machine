@@ -70,6 +70,8 @@ export const DEVICE_ATOM_COUNTERSIGN_DOMAIN = mint("device-atom-countersign");
 /** The key and context a ceremony checkpoint seals under: the atom's seed through HKDF, so a re-entered founding or
  *  admit lands the end state it first reached. Apart from every other child of the atom seed. */
 export const FACE_CHECKPOINT_INFO = mint("face-checkpoint");
+/** A face operation record seals issued bytes under the acting atom seed on its PersonaGroup plane. */
+export const FACE_OPERATION_RECORD_INFO = mint("face-operation-record");
 /** A persona's key-event log entry — the inception/rotation chain at persona scale. */
 export const PERSONA_KEL_DOMAIN = frozen("persona-kel");
 /** The announced outward face: a self-certifying HandleCard. */
@@ -86,7 +88,6 @@ export const DYAD_ID_DOMAIN = frozen("dyad-id");
 export const DYAD_BINDING_DOMAIN = frozen("dyad-binding");
 /** The per-handle dyad VEIL derivation off the DEVICE tree: the veil derives from the vessel's
  *  own seed, scoped by PersonaGroup — never from the persona seed (persona-circle#the-vault). */
-export const DYAD_VEIL_INFO = frozen("dyad-veil");
 /** The founder's SELF-RECOVERY leaf off the PERSONA tree: a 1-of-1 recovery key derived from the
  *  persona seed, pre-committed at inception so no prefix ever incepts unarmed — the multitude-of-one,
  *  NAMED, until a real guardian set grafts in (the seal-reserve founding rhyme). */

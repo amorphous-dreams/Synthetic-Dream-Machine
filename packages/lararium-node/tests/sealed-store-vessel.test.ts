@@ -58,11 +58,12 @@ const holds = (files: { bytes: Uint8Array }[], needle: string): boolean => files
 /** Boot the real daemon options over one founded island and one scratch storage root; answer its verbs. */
 async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: string, over: { session?: SessionProof; archive?: Uint8Array; archiveOpens?: boolean; boot?: boolean; outboxKey?: OutboxKey } = {}) {
   const archives: Uint8Array[] = [];
-  const daemonAuth = { ...st.daemonAuth, ...(over.archive ? { archiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}), ...(over.outboxKey ? { outboxKey: over.outboxKey } : {}) };
+  const daemonAuth = { ...st.daemonAuth, ...(over.archive ? { veilArchiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}), ...(over.outboxKey ? { outboxKey: over.outboxKey } : {}) };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
     dyadReading: () => "clear",
     sealedStore: nodeSealedStoreShore(join(root, "daemon")),
-    persistArchive: (bytes) => { archives.push(Uint8Array.from(bytes)); },
+    persistArchive: () => {},
+    persistVeilArchive: (bytes) => { archives.push(Uint8Array.from(bytes)); },
     ...(over.session ? { sessionProof: over.session } : {}),
   });
   let kh: { dispose?: () => Promise<void> } | null = null;

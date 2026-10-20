@@ -19,6 +19,7 @@ import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js"
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
 import { seatOwnCharter, wear } from "./worn-face-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -29,6 +30,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
 });
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
@@ -146,7 +148,7 @@ describe("runEdgeKapae", () => {
   });
 
   it("keeps counted acts in the vessel ledger and restores a deleted raise", async () => {
-    const rootDid = await loadPersonaGroupRootVerifyingKey(0), vessel = await loadVesselVerifyingKey();
+    const rootDid = await loadPersonaGroupRootVerifyingKey(0), vessel = await atomKeyOf();
     const raised = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true });
     const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(rootDid!), "board:edge-kapae");

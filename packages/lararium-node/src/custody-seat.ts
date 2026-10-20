@@ -195,10 +195,6 @@ export async function exclusiveCustody<T>(act: () => Promise<T>): Promise<T> {
   return (await openedCustody()).exclusive(act);
 }
 
-/** The dyad veil for `groupTag`, derived from the custody root the seat holds. */
-export async function custodyVeilKeys(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }> {
-  return (await openedCustody()).veil(groupTag);
-}
 
 /**
  * THE CUSTODY ROOT'S DERIVE DOOR for a sovereign gate's bundle: one child of the sealed custody root this home's

@@ -12,12 +12,12 @@ import { hkdfSync } from "node:crypto";
 import { basename, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  ALL_DOMAINS, DEVICE_DELEGATION_DOMAIN, deriveDyadVeil, groupSecretOpenerFromSeed,
+  ALL_DOMAINS, DEVICE_DELEGATION_DOMAIN, faceAtomKeyFromSeed, mintFaceAtomSeed, groupSecretOpenerFromSeed,
   bindSlot, commitSlotTree, mintVk, writeSealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, custodyDerive, custodyRootCarrier, custodyRootFromBytes, custodyRootPath,
-  custodyVeil, isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,
+  isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,
 } from "../src/custody-root.js";
 import { resolveRelayGateSeed } from "../src/carriage-relay.js";
 import { carrierTable, vkSealedCarriers, vkSlotsPath } from "../src/vault-carriers.js";
@@ -27,7 +27,6 @@ const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
 /** Fixed inputs: bytes 0..31 for the custody root, bytes 32..63 for the floor key. */
 const FIXED_ROOT  = Uint8Array.from({ length: 32 }, (_, i) => i);
 const FIXED_FLOOR = Uint8Array.from({ length: 32 }, (_, i) => 32 + i);
-const TAG = "fixture-group";
 
 /** A founded scratch vessel: a slot tree over a fresh VK, committed at the identity home's tree path. */
 async function founded(): Promise<{ io: ScratchCustodyIo; vk: VesselKey; identity: string; treePath: string; drop: () => void }> {
@@ -157,22 +156,20 @@ describe("custodyDerive — a child derives only from a custody root, only under
   });
 });
 
-describe("the weld vectors — the veil under frozen dyad-veil, and the floor key's derivations", { timeout: 30_000 }, () => {
-  test("WELD — the veil from a fixed custody root equals its pinned vector", async () => {
-    const veil = await custodyVeil(await rootHolding(FIXED_ROOT), TAG);
-    expect(veil.verifyingKey).toBe("858579048e229bcf22e70e56f82af831d8109e4db1760d7481c9d4891a26afde");
+describe("the custody root and atom stay separate", { timeout: 30_000 }, () => {
+  test("a random atom names neither the custody root nor the place key", async () => {
+    const atom = faceAtomKeyFromSeed(mintFaceAtomSeed(), "fixture-group");
+    expect(atom.key).not.toBe(groupSecretOpenerFromSeed(FIXED_ROOT).deviceKey);
+    expect(atom.key).not.toBe(groupSecretOpenerFromSeed(FIXED_FLOOR).deviceKey);
   });
 
-  test("WELD — the veil from a custody root is deriveDyadVeil over the root's bytes: only the INPUT moves", async () => {
-    const fromRoot  = await custodyVeil(await rootHolding(FIXED_ROOT), TAG);
-    const direct    = await deriveDyadVeil(FIXED_ROOT, TAG);
-    expect(fromRoot).toEqual(direct);
+  test("the custody domain registry grants no dyad veil child", () => {
+    expect(ALL_DOMAINS.some((domain) => domain.endsWith("/dyad-veil"))).toBe(false);
   });
 
   test("WELD — the floor key's derivations stand unchanged", async () => {
     expect(hex(await ed.getPublicKeyAsync(FIXED_FLOOR))).toBe("29acbae141bccaf0b22e1a94d34d0bc7361e526d0bfe12c89794bc9322966dd7");
     expect(hex(resolveRelayGateSeed(FIXED_FLOOR))).toBe("505791b3116befe81caf6109602ba6b1a836af328cd887d4c3a97587181c83fa");
     expect(groupSecretOpenerFromSeed(FIXED_FLOOR).deviceKey).toBe("29acbae141bccaf0b22e1a94d34d0bc7361e526d0bfe12c89794bc9322966dd7");
-    expect((await deriveDyadVeil(FIXED_FLOOR, TAG)).verifyingKey).toBe("1073f44806bb9b99be402d4bc4844f989ac14cb7778a72d4fc19c9deea7af413");
   });
 });

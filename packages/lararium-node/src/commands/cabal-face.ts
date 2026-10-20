@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadWornFaceAtomKey } from "../face-atom-store.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { mintWornNexusLeaf, wornNexusLeaf } from "../nexus-leaf.js";
 
@@ -40,7 +40,7 @@ export async function runCabalFace(opts: {
 }): Promise<CabalFaceResult> {
   const realm = opts.realm.trim().toLowerCase();
   if (!HEX64.test(realm)) throw new CabalFaceError(`--realm expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
-  const vesselKey = await loadVesselVerifyingKey().catch(() => "");
+  const vesselKey = await loadWornFaceAtomKey();
   if (!vesselKey) throw new CabalFaceError("this vessel surfaces no verifying key — it keeps no ledger to read the realm's Nexus off.");
   const nexusAid = await actingRealmNexus({
     repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome,

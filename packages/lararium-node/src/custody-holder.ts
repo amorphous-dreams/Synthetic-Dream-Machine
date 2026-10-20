@@ -32,7 +32,7 @@ import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, vkEquals,
   type Credential, type CustodyIo, type ServingKey, type VesselKey,
 } from "@lararium/mesh";
-import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
+import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
@@ -139,7 +139,6 @@ export interface CustodyHolder {
   exclusive<T>(act: () => Promise<T>): Promise<T>;
   derive(domain: string): Uint8Array;
   /** The dyad veil for `groupTag`, derived from the custody root. */
-  veil(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }>;
 }
 
 /** A key handed to `adopt` that the custody root does not open under. */
@@ -362,10 +361,6 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     derive(domain) {
       if (!accepting || root === null) throw new CustodyLocked();
       return custodyDerive(root, domain);
-    },
-    veil(groupTag) {
-      if (!accepting || root === null) return Promise.reject(new CustodyLocked());
-      return custodyVeil(root, groupTag);
     },
   };
 }

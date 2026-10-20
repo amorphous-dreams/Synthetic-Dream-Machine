@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildDeviceDelegation, verifyDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, verifyDeviceDelegation } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity,
   generateOrLoadPersonaGroupRoot,
@@ -80,16 +80,19 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     const personaRoot = await generateOrLoadPersonaGroupRoot();
     const signerSeed  = await loadPersonaGroupRootSeed();
 
+    const atomSeed = mintFaceAtomSeed();
+    const atomKey  = faceAtomKeyFromSeed(atomSeed, "group-true-name").key;
     const edge = await buildDeviceDelegation({
       personaRootSeed:       signerSeed,          // the HUMAN's root signs
-      deviceVerifyingKey: vesselKey,           // the PLACE's key delegates
+      atomSeed,                                   // the face's atom delegates, never the place key
       hearthTrueName:     HEARTH_TRUE_NAME,    // the place this binds TO
       boundEpoch: 0,
     });
 
     // The edge chains to the persona root, delegates the vessel, and names the hearth.
     expect(edge.personaRootDid).toBe(`0x${personaRoot.verifyingKey}`);
-    expect(edge.deviceDid).toBe(`0x${vesselKey}`);
+    expect(edge.deviceDid).toBe(`0x${atomKey}`);
+    expect(edge.deviceDid).not.toBe(`0x${vesselKey}`);
     expect(edge.hearthTrueName).toBe(HEARTH_TRUE_NAME);
     // Never the self-signed floor: signer and delegate stand apart.
     expect(edge.personaRootDid).not.toBe(edge.deviceDid);
@@ -106,7 +109,7 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     const signerSeed = await loadPersonaGroupRootSeed();
 
     const edge = await buildDeviceDelegation({
-      personaRootSeed: signerSeed, deviceVerifyingKey: vesselKey,
+      personaRootSeed: signerSeed, atomSeed: mintFaceAtomSeed(),
       hearthTrueName: HEARTH_TRUE_NAME, boundEpoch: 0,
     });
 

@@ -139,6 +139,8 @@ export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
  * builds it from its own device seed + founding card.
  */
 export interface LeafIdentity {
+  /** The gate arm this identity presents. */
+  arm: "face" | "place";
   /** The cached self-certifying ContactCard JSON. */
   contactCard: string;
   /** The operator verifying-key hex — the leaf's claimed identity. */

@@ -10,7 +10,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed25519 from "@noble/ed25519";
-import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, guardianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
+import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, assembleQuorum, reconstructFromQuorum, decodeShareBytes, guardianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
 import { splitRootAtFounding, reconstructAndReadmit, provisionRecoveryAtFounding, provisionRecoveryCardsAtFounding } from "../src/recovery-keel.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
@@ -28,10 +28,15 @@ function seededRng(seed: number) {
     randomUUID(): string { return "00000000-0000-0000-0000-000000000000"; },
   };
 }
+const deviceSeeds = new Map<string, Uint8Array>();
 const freshDeviceKey = (): string => {
-  const { publicKey } = generateKeyPairSync("ed25519");
-  return Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
+  const seed = mintFaceAtomSeed();
+  const key = faceAtomKeyFromSeed(seed, "recovery").key;
+  deviceSeeds.set(key, seed);
+  return key;
 };
+/** The fresh device completes the root's half with its own countersignature. */
+const complete = (half: DeviceDelegationRootHalf) => countersignDeviceDelegation(half, faceAtomKeyFromSeed(deviceSeeds.get(half.deviceVerifyingKey)!, "recovery").sign);
 // The persona's stable inception prefix over (root op-key + unarmed recovery-commit). In Fork-A reconstruct
 // the op-key does NOT rotate, so the reconstructed root IS the KEL head and this is the identifier the
 // re-admit carries. Computed once (async pubkey derivation) before the suite runs.
@@ -78,7 +83,7 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
     expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
   test("the recorded code ALONE cannot recover — it is one share, below threshold", async () => {
@@ -97,7 +102,7 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const payload = await reconstructAndReadmit([founding.deviceShare, founding.escrowShare], readmitFields(freshDeviceKey()));
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 });
 
@@ -115,7 +120,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     // any live-lease event `effectiveLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
     // founding-genesis floor, never re-read) is what a caller gets if it forgets to thread a live lease read.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });
     expect(verdict.ok).toBe(false);
     expect(verdict.ok === false && verdict.reason).toMatch(/lease stale|boundEpoch/i);
   });
@@ -124,7 +129,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 0 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 0 });
     expect(verdict.ok).toBe(true);
   });
 
@@ -135,7 +140,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     // `leaseEpochPrefix` → `effectiveLeaseEpoch` composition would produce, threaded by hand here since no
     // CLI door exists yet to do the daemon-doc read itself.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 2));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });
     expect(verdict.ok).toBe(true);
   });
 });
@@ -210,7 +215,7 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(await loadPersonaGroupRootSeed())).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
     expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
   test("ONE guardian card alone cannot recover — below threshold (fail closed)", async () => {

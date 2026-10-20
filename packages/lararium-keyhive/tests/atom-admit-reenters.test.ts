@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, vesselDyads, seedDaemonDoc, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
-import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "../src/index.js";
+import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
 
 const rootSeed = new Uint8Array(32).fill(52);
 const vesselSeed = new Uint8Array(32).fill(53);
@@ -16,7 +16,7 @@ describe("atom admit re-entry", () => {
     const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" });
     const face = await foundTheFace({ repo: founderRepo, daemonHandle: place.daemonHandle, vesselSeed,
       vesselVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
-      hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed, deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)) });
+      hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(vesselSeed)), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
     if (!chain) throw new Error("founder KEL chain absent");

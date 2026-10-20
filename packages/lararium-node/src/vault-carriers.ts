@@ -77,6 +77,7 @@ import {
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
+import { FACE_ATOM_FILE } from "./face-atom-store.js";
 import { outboxKeyPath } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
@@ -291,6 +292,9 @@ function buildTable(): readonly CarrierRow[] {
          writer: "identity-anchors" }),
     id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
+    // The face's random atom seed rests under today's vessel key until the K15 step-6 FCK fence.
+    id({ row: "face-atom", match: FACE_ATOM_FILE, custody: "hot", keyClass: "device-minted",
+         writer: "face-atom-store", name: (m) => `face-atom-h${m[1]}`, face: faceOf, bundle: "stays" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),

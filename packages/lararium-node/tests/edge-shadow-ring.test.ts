@@ -39,6 +39,7 @@ import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -52,6 +53,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();
@@ -77,6 +79,7 @@ let seatKey = "";
 let charterDoc: NexusDoc | null = null;
 async function seatOwnCharter(): Promise<void> {
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
   const seat = (await seatChairs([0])).hands[0]!;
   seatKey = seat.signer;
   charterDoc = heldCharter({ keys: [seat.signer], threshold: 1 }).doc({ labels: ["Kahu 0"] });
@@ -99,9 +102,9 @@ async function withRing<T>(
   charterRealm: string | null = REALM,
 ): Promise<T> {
   const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-  const vesselKey = (await loadVesselVerifyingKey())!;
+  const vesselKey = (await wornAtomKey());
   return ownedStore(larDataDir(), async (repo) => run(makeEdgeShadowRing({
-    repo, vesselKey, sealHome: larSealHome(),
+    repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
     fleetRoots: () => [fleetRoot],
     charterRealm: () => charterRealm,
     vesselKeyOfPeer: (peerId) => peers[peerId]?.vessel ?? null,
@@ -147,7 +150,7 @@ describe("device standing names the fleet edge", () => {
     // The lift stands and the raise still owes its roll: the reading says so until this vessel answers it.
     await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("owing"); });
     const receipt = async (how: "revoked" | "no-authority", cid: string, edgeId: string) =>
-      signSeatRoll({ kind: "seat-roll", scope: fleet.toLowerCase(), edgeId, raiseCids: [cid], how }, ed25519SignerFromSeed(await loadVesselSigningSeed()));
+      signSeatRoll({ kind: "seat-roll", scope: fleet.toLowerCase(), edgeId, raiseCids: [cid], how }, ed25519SignerFromSeed(await atomSeedOf()));
     await direct(runEdgeSeatMarks)({ fleetRoot: fleet, rolls: [await receipt("revoked", raised.actCid, raised.edgeId)] });
     await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("returned"); });
     // A raise this vessel answered with NO AUTHORITY left its seat standing under another hand: it reads owing still.
@@ -172,11 +175,11 @@ describe("a fold that fails leaves no reading", () => {
   it("★ after a failed refold every gate answers closed, where the earlier reading would have admitted ★", async () => {
     const phone = await nymOf(54);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await wornAtomKey());
     let fail = false;
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
         fleetRoots: () => { if (fail) throw new Error("the store would not read"); return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => phone,
       });
@@ -198,11 +201,11 @@ describe("the reading goes dark the moment a board moves", () => {
   it("★ a change on a board this ring follows closes every gate until the next fold lands ★", async () => {
     const phone = await nymOf(55);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await wornAtomKey());
     let refolds = 0;
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
       });
       await ring.refold();
@@ -224,14 +227,14 @@ describe("a fold a board's change overtook publishes nothing", () => {
   it("★ a fold that started before a board moved never lands over the fold that followed the move ★", async () => {
     const phone = await nymOf(56);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await wornAtomKey());
     let refolds = 0;
     let calls = 0;
     let release = (): void => undefined;
     const held = new Promise<void>((r) => { release = r; });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
         // The SECOND fold waits inside its first read; every other fold runs straight through.
         fleetRoots: async () => { if (++calls === 2) await held; return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
@@ -372,7 +375,7 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
   });
 
   it("★ a shadow over this vessel's own device edge reads back as selfAside ★", async () => {
-    const own = (await loadVesselVerifyingKey())!;
+    const own = (await wornAtomKey());
     await direct(runEdgeKapae)({ device: own, raised: true });
     await withRing({}, async (ring) => { expect((await ring.refold()).fleets[0]!.selfAside).toBe(true); });
   });
@@ -480,6 +483,7 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
 
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
     const keys = [...(await seatChairs([0, 1, 2])).keys];
     const charter = heldCharter({ keys, threshold: 2 });
     writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));

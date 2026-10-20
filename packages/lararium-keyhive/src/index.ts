@@ -72,15 +72,13 @@ export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from 
 
 export {
   foundThePlace, foundTheFace, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload,
-  replayCapEvents,
+  replayCapEvents, retireFaceCheckpoint, retireApplyCheckpoint, sealCheckpoint, openCheckpoint,
 } from "./ceremony-core.js";
 export type {
   PlaceFoundingInput, PlaceFoundingResult, FaceFoundingInput, FaceFoundingResult,
 } from "./ceremony-core.js";
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
-// The veil's key-class door: the dyad veil derives from a DEVICE-MINTED key and refuses every other class.
-export { mintDeviceMintedKey, isDeviceMintedKey, deriveVeilFromDeviceKey, veilFromDeviceKey, VeilKeyClassRefused } from "./veil-key.js";
-export type { DeviceMintedKey, ClassedKey, KeyClassName, VeilDeriver } from "./veil-key.js";
+export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
   DeviceAdmitEdgeInput,

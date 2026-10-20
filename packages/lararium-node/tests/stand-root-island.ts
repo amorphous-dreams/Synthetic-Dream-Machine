@@ -4,7 +4,7 @@
  * (`runInit`, `runFoundTheFace`) left on disk.
  *
  * Everything the island reads comes off that root: the daemon document its bootstrap names, the worn face's sealed
- * anchors, its veil (derived from the root's own sealed custody root, beside the veil archive that face keeps), the
+ * anchors, its atom seed and the archive that face keeps, the
  * face's key history off the root's own board, and the vessel's own key. The sealed store's shore stands over the
  * root's own storage directory, as a vessel's island stands it (`islandStorageDirOf`).
  *
@@ -16,14 +16,14 @@ import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import type { SessionProof } from "@lararium/keyhive";
 import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, attachMessageChannelSync, ed25519SignerFromSeed, makeIslandRepo, signMemoryAsk, wikiBagUri,
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
   type LarDoc, type MemoryAct, type RecordSigner,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { readFileSync } from "node:fs";
-import { custodyVeilKeys } from "../src/custody-seat.js";
+import { loadFaceAtom } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
@@ -54,14 +54,16 @@ export interface RootIsland {
 export async function standRootIsland(args: { repo: Repo; handleIndex: number; bags: readonly string[]; sessionProof: SessionProof | null; dyad?: () => "clear" | "aside" }): Promise<RootIsland> {
   const { repo } = args;
   const anchors = await loadIdentityAnchors(args.handleIndex);
-  if (!anchors?.signerDid || !anchors.personaKelPrefix || !anchors.veilTag || !anchors.deviceEdge) throw new Error("fixture: the face holds no whole anchors on this root");
+  if (!anchors?.signerDid || !anchors.personaKelPrefix || !anchors.deviceEdge) throw new Error("fixture: the face holds no whole anchors on this root");
   const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text?: string };
   const daemonUrl = (JSON.parse(plugin.text ?? '{"tiddlers":{}}') as { tiddlers?: Record<string, { text?: string }> }).tiddlers?.[DAEMON_BAG_ID]?.text;
   if (!daemonUrl) throw new Error("fixture: the root's bootstrap names no daemon document");
   const seed = await loadVesselSigningSeed();
   const vesselKey = await loadVesselVerifyingKey();
   const kel = await readLocalPersonaKelChain(repo, anchors.personaKelPrefix);
-  const veilKeys = await custodyVeilKeys(anchors.veilTag);
+  const atomSeed = await loadFaceAtom(args.handleIndex);
+  if (!atomSeed) throw new Error("fixture: this face holds no atom");
+  const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
   const veilArchiveBytes = await loadVeilArchive(args.handleIndex);
   const archiveBytes = await loadIdentityArchive();
 
@@ -86,7 +88,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     personaGroupId: anchors.personaGroupId,
     meshCabalDocIdHex: anchors.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID, ...args.bags], signerDid: anchors.signerDid,
     personaKel: { prefix: anchors.personaKelPrefix, chain: kel }, deviceEdge: anchors.deviceEdge,
-    dyadVeil: { tag: anchors.veilTag, signingKey: veilKeys.signingKey },
+    atom: { seed: hex(atomSeed), key: atom.key },
     ...(veilArchiveBytes ? { veilArchiveBytes } : {}), ...(archiveBytes ? { archiveBytes } : {}),
   };
   // The shore stands where a vessel's own island stands it: off the directory of the document the island owns.
@@ -103,10 +105,10 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, ctx);
   let n = 0;
-  const vesselSign = ed25519SignerFromSeed(seed);
+  const vesselSign = atom.sign;
   return {
     async run(verb, verbArgs, ask) {
-      const requestId = `root-island-${vesselKey.slice(0, 8)}-${++n}`;
+      const requestId = `root-island-${atom.key.slice(0, 8)}-${++n}`;
       const signed = ask ? { ask: await signMemoryAsk({ requestId, act: ask.act, facts: ask.facts, sign: vesselSign }) } : {};
       return registry.get(verb)!({ ...verbArgs, ...signed }, { daemon: {} as never, invocation: { requestId } as never, cap: async () => ({ ok: true }) } as never) as Promise<Record<string, unknown>>;
     },
