@@ -127,6 +127,26 @@ export type CarrierFace = number | "vessel";
 export const BUNDLE_TREATMENTS = ["whole", "lines", "stays"] as const;
 export type BundleTreatment = (typeof BUNDLE_TREATMENTS)[number];
 
+/** The K15 custody classes a row sorts into: D dissolves into per-face rows sealed under that face's FCK, F is public by design, S is a named node-only secret. */
+export const CUSTODY_PARTS = ["D", "F", "S"] as const;
+export type CustodyPart = (typeof CUSTODY_PARTS)[number];
+
+/**
+ * Where a row goes under K15 (`docs/pono/k15-custody-step-zero`). `classes` holds the row's one class or the parts of
+ * its named split, in the spec's order. `lead` marks a target whose payload, selector or owner the spec has not
+ * proved, so no bytes move for it. `joint` names the spec's open joint the row waits on, else null. The column
+ * moves no bytes and no reader consults it.
+ */
+export interface CustodyTarget {
+  readonly classes: readonly CustodyPart[];
+  readonly lead:    boolean;
+  readonly joint:   string | null;
+}
+
+const LEAD = true;
+const tgt = (classes: readonly CustodyPart[], lead = false, joint: string | null = null): CustodyTarget =>
+  Object.freeze({ classes: Object.freeze([...classes]), lead, joint });
+
 /** One row of the table. */
 export interface CarrierRow {
   /** The row's own name; unique across the table. */
@@ -164,6 +184,8 @@ export interface CarrierRow {
    * check both derive from this column (`bundleRows`), so no hand picks the rows a bundle carries.
    */
   readonly bundle:   BundleTreatment;
+  /** The K15 target class of this row. Required: a new row cannot land without one. */
+  readonly target:   CustodyTarget;
 }
 
 /** One carrier standing on disk, named by the row it matched. */
@@ -238,166 +260,166 @@ function buildTable(): readonly CarrierRow[] {
   const id = (r: IdentityRowSpec): CarrierRow => row({ home: "identity", under: "", ...r });
   return Object.freeze([
     // ── floor: outside the VK ──────────────────────────────────────────────────────────────────
-    id({ row: "vessel-key", match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
+    id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)",
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
-    id({ row: "vessel-kel", match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
+    id({ row: "vessel-kel", target: tgt(["F"]), match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding)",
          bare: "the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks" }),
-    id({ row: "vk-slots", match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "vk-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
-    id({ row: "sk-slots", match: exact(skSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "sk-slots", target: tgt(["S"], LEAD), match: exact(skSlotsPath()), custody: "floor", keyClass: null,
          writer: "custody-session (founding)",
          bare: "the serving tree wraps the serving key under the vessel key's entry, so the key it wraps cannot seal it, and a raise reads it before any key opens" }),
 
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
-    id({ row: "vessel-card", match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
+    id({ row: "vessel-card", target: tgt(["F"]), match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
          writer: "node-vessel-identity (founding)",
          bare: "a contact card holds public keys alone, and the vessel hands it to every peer it meets" }),
-    row({ row: "charter", home: "seal", under: "", match: file("founding-roster.mem"), custody: "floor-plain",
+    row({ row: "charter", target: tgt(["F"]), home: "seal", under: "", match: file("founding-roster.mem"), custody: "floor-plain",
           keyClass: null, writer: "nexus seal",
           bare: "the floor's gate reads the charter before any key opens, and a charter stands public and signed" }),
-    row({ row: "carried-charter", home: "seal", under: "carried", match: /^carried\/[A-Za-z0-9][A-Za-z0-9._-]*\/founding-roster\.mem$/,
+    row({ row: "carried-charter", target: tgt(["F"]), home: "seal", under: "carried", match: /^carried\/[A-Za-z0-9][A-Za-z0-9._-]*\/founding-roster\.mem$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "the floor's gate reads each carried charter before any key opens, and a charter stands public and signed" }),
-    row({ row: "carriage-consent", home: "seal", under: "nexus", match: /^nexus\/carriage-consent\/[^/]+\.json$/,
+    row({ row: "carriage-consent", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/carriage-consent\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "the floor reads a kept consent to carry a Nexus before any key opens; it names a charter and holds no key" }),
-    row({ row: "nexus-key-line", home: "seal", under: "nexus", match: /^nexus\/key-line\/[^/]+\.json$/,
+    row({ row: "nexus-key-line", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/key-line\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "a key hand-over names two public keys and both their signatures, and it stands public on the Nexus's carriage board" }),
-    row({ row: "carriage-admit", home: "seal", under: "nexus", match: /^nexus\/carriage-admit\/[^/]+\.json$/,
+    row({ row: "carriage-admit", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/carriage-admit\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "admit-bundle",
           bare: "the floor's gate reads the admit pin before any key opens; it holds a reach and a gate's public key" }),
     // The sealed store's rest (`sealed-store-fs`): lockboxes, signed records and index rows, one file per name. Each
     // name ends in a digest of its own bytes and each value reads as its shelf's kind, so a file that fails either
     // reads as a fault.
-    row({ row: "sealed-rest", home: "storage", under: "sealed", match: new RegExp(`^sealed/(?:${REST_CARRIED.join("|")})/${REST_NAME}$`),
+    row({ row: "sealed-rest", target: tgt(["F"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/(?:${REST_CARRIED.join("|")})/${REST_NAME}$`),
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds,
           bare: "a lockbox, a record and an index row hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one" }),
     // The vessel's own notes for its sealed store: an opaque id under an opaque name, where the latest write replaces.
-    row({ row: "sealed-own", home: "storage", under: "sealed", match: new RegExp(`^sealed/own/${REST_NAME}$`),
+    row({ row: "sealed-own", target: tgt(["F"], LEAD), home: "storage", under: "sealed", match: new RegExp(`^sealed/own/${REST_NAME}$`),
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a note holds opaque ids of the sealed store, a one-byte mark or nothing, under an opaque name, and no secret, name or key" }),
     // The Keyhive chunks a provider tracks per bag (`sealed-store-fs`): one ciphertext per content reference.
-    row({ row: "sealed-chunk", home: "storage", under: "sealed", match: /^sealed\/keyhive-chunks\/[0-9a-f]{1,128}\/[0-9a-f]{1,128}$/,
+    row({ row: "sealed-chunk", target: tgt(["F"]), home: "storage", under: "sealed", match: /^sealed\/keyhive-chunks\/[0-9a-f]{1,128}\/[0-9a-f]{1,128}$/,
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a chunk rests as Keyhive ciphertext under an opaque name, and a blind carrier may hold every one" }),
 
     // ── hot: sealed under the VK, opened at unlock ─────────────────────────────────────────────
-    id({ row: "custody-root", match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
+    id({ row: "custody-root", target: tgt(["D"], LEAD), match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
-    id({ row: "keyhive-archive", match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
+    id({ row: "keyhive-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors" }),
-    id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
+    id({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
     // The face's random atom seed rests under today's vessel key until the K15 step-6 FCK fence.
-    id({ row: "face-atom", match: FACE_ATOM_FILE, custody: "hot", keyClass: "device-minted",
+    id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_FILE, custody: "hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-h${m[1]}`, face: faceOf, bundle: "stays" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
-    id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
+    id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
-    id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
+    id({ row: "grant-pending", target: tgt(["D"], LEAD), match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
-    id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
+    id({ row: "admissions", target: tgt(["D"], LEAD), match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
-    id({ row: "anchors", match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    id({ row: "anchors", target: tgt(["D"]), match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    id({ row: "anchor-roster", match: file("anchor-roster.json"), custody: "hot", keyClass: null,
+    id({ row: "anchor-roster", target: tgt(["D", "F"], LEAD), match: file("anchor-roster.json"), custody: "hot", keyClass: null,
          writer: "identity-anchors" }),
-    id({ row: "persona-roster", match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
+    id({ row: "persona-roster", target: tgt(["D", "F"]), match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "active-persona", match: loginKeyed("active-persona"), custody: "hot", keyClass: null,
+    id({ row: "active-persona", target: tgt(["D", "F"], LEAD), match: loginKeyed("active-persona"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity" }),
-    id({ row: "persona-petnames", match: loginKeyed("persona-petnames"), custody: "hot", keyClass: null,
+    id({ row: "persona-petnames", target: tgt(["D"]), match: loginKeyed("persona-petnames"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "persona-declarations", match: loginKeyed("persona-declarations"), custody: "hot", keyClass: null,
+    id({ row: "persona-declarations", target: tgt(["D", "F"], LEAD), match: loginKeyed("persona-declarations"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "public-handles", match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
+    id({ row: "public-handles", target: tgt(["D", "F"], LEAD), match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity" }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
-    id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
+    id({ row: "vessel-face-key", target: tgt(["D"]), match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
     // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
     // vessel by the fleet-join door alone. Its file names a digest of the face's PersonaGroup. No rotation
     // regenerates it, and no bundle body carries it: it stays on its vessels.
-    id({ row: "face-address-secret", match: /^face-address-secret-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "relation",
+    id({ row: "face-address-secret", target: tgt(["D"]), match: /^face-address-secret-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-address-secret-${m[1]}` }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
-    id({ row: "fleet-join-pending", match: file("fleet-join-pending.json"), custody: "hot", keyClass: "relation",
+    id({ row: "fleet-join-pending", target: tgt(["D"]), match: file("fleet-join-pending.json"), custody: "hot", keyClass: "relation",
          writer: "fleet-join-custody" }),
     // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
-    id({ row: "face-join-record", match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
+    id({ row: "face-join-record", target: tgt(["D"]), match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-join-record-${m[1]}` }),
-    id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
+    id({ row: "handle-book", target: tgt(["D", "F"]), match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store", bundle: "lines" }),
     // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
     // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
-    id({ row: "guardian-set", match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    id({ row: "guardian-set", target: tgt(["D"]), match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
          writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
     // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
-    id({ row: "face-provisional", match: /^face-provisional-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    id({ row: "face-provisional", target: tgt(["D"]), match: /^face-provisional-h(\d+)\.json$/, custody: "hot", keyClass: null,
          writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
-    row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
+    row({ row: "hosting-state", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
+    row({ row: "hosting-spent", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-carry", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}carry/.+$`),
+    row({ row: "hosting-carry", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}carry/.+$`),
           custody: "hot", keyClass: null, writer: "hosting-carry" }),
-    row({ row: "walk", home: "storage", under: "walk", match: /^walk\/[^/]+\.json$/,
+    row({ row: "walk", target: tgt(["D", "F"], LEAD), home: "storage", under: "walk", match: /^walk\/[^/]+\.json$/,
           custody: "hot", keyClass: null, writer: "node-walk-store" }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
     // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
-    row({ row: "gate-memory", home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
+    row({ row: "gate-memory", target: tgt(["D", "F"], LEAD), home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
           custody: "hot", keyClass: null, writer: "gate-memory-rows" }),
     // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
-    row({ row: "transition-pending", home: "seal", under: "", match: file("transition-pending.json"),
+    row({ row: "transition-pending", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: file("transition-pending.json"),
           custody: "hot", keyClass: null, writer: "seal-ceremony" }),
-    row({ row: "transitions", home: "seal", under: "", match: file("transitions.json"),
+    row({ row: "transitions", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: file("transitions.json"),
           custody: "hot", keyClass: null, writer: "seal-ceremony" }),
     // One joint founding's record (`cofound-record`): the offer this vessel made or answered, its seat and hearth
     // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
-    row({ row: "cofound", home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
+    row({ row: "cofound", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
           custody: "hot", keyClass: null, writer: "cofound-record" }),
 
     // The vessel's outbox key (`outbox-key`): minted once, at the first unlocked composition, and handed to the daemon
     // island at each unlock. It seals the outbox's parcels and nothing beside them; it stays on its vessel.
-    id({ row: "outbox-key", match: exact(outboxKeyPath()), custody: "hot", keyClass: "device-minted",
+    id({ row: "outbox-key", target: tgt(["D"]), match: exact(outboxKeyPath()), custody: "hot", keyClass: "device-minted",
          writer: "outbox-key" }),
 
     // ── outbox: sealed under the outbox key the VK wraps ───────────────────────────────────────
     // The parcels a vessel wrapped for a reader, until the member lane takes them: each sealed whole, its reader
     // inside the seal, under a random name (`sealed-store-rest`). They stay on their vessel.
-    row({ row: "sealed-outbox", home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
+    row({ row: "sealed-outbox", target: tgt(["D"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
-    id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
+    id({ row: "persona-root", target: tgt(["D"]), match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
-    id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    id({ row: "face-proof-key", target: tgt(["D"]), match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
     // A seat's own key, minted at random and apart from every root and leaf (`seat-key-store`). Its file names the
     // face whose seat claim stood for the chair and a digest of the seat's public key. It stays on its vessel: a
     // bundle carries no key of any seat.
-    id({ row: "seat-key", match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    id({ row: "seat-key", target: tgt(["D"]), match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
-    id({ row: "cadence-key", match: /^cadence-key-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "device-minted",
+    id({ row: "cadence-key", target: tgt(["D", "F"], LEAD), match: /^cadence-key-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "device-minted",
          writer: "cadence-key-store", name: (m) => `cadence-key-${m[1]}` }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
-    id({ row: "restore-pending", match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
+    id({ row: "restore-pending", target: tgt(["D"]), match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
          writer: "face-bundle-restore" }),
-    id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
+    id({ row: "device-share", target: tgt(["D"]), match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
   ]);
 }

@@ -461,11 +461,11 @@ export type { KeyClass } from "@lararium/mesh";
 // The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the VK
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
+  CUSTODY_CLASSES, CUSTODY_PARTS, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
   vkSlotsPath, skSlotsPath, vkSealedCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {
-  CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
+  CustodyClass, CustodyPart, CustodyTarget, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
 } from "./vault-carriers.js";
 // The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
 export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";

@@ -8,6 +8,7 @@ describe("the face atom carrier", () => {
     expect(row).toMatchObject({
       home: "identity", custody: "hot", keyClass: "device-minted",
       writer: "face-atom-store", bundle: "stays",
+      target: { classes: ["D"], lead: false, joint: null },
     });
     const match = row!.match.exec("face-atom-h0.bin");
     expect(match).not.toBeNull();

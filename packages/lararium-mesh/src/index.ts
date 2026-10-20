@@ -68,6 +68,7 @@ export * from "./capability.js";
 export * from "./domains.js";
 export * from "./face-atom.js";
 export * from "./place-signer.js";
+export * from "./custody-carrier-context.js";
 export * from "./crypto.js";
 export * from "./agile-digest.js";
 export * from "./projection-registry.js";
