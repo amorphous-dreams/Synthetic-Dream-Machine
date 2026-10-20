@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { signHolderSessionProof } from "../../lararium-mesh/src/holder-session-proof.js";
 import { makeSharedHolderCore, type HolderIsland, type HolderRepo } from "../src/shared-holder-core.js";
 import { admitPort, faceFixture, fakePort, type Message } from "./holder-session-fixture.js";
+import coreSource from "../src/shared-holder-core.ts?raw";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -32,6 +33,11 @@ function rig(makeRepo?: () => Promise<HolderRepo>) {
 const tick = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
 
 describe("the claimant's admission replies", () => {
+  test("the pre-clear reply allowlist carries no dead custody acknowledgment arm", () => {
+    const replies = /const BOOT_REPLIES[^;]*;/.exec(coreSource)?.[0];
+    expect(replies, "BOOT_REPLIES stands in the holder core").toBeTypeOf("string");
+    expect(replies, "BOOT_REPLIES names no custody:written before clearance").not.toContain("custody:written");
+  });
   test("a correlated cas block crosses once; unknown, duplicate and dyad answers refuse before the gate", async () => {
     const h = rig(); const face = await faceFixture("face:reply");
     const tab = await h.connect(); void admitPort(tab, face);

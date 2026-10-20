@@ -6,9 +6,9 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { seatedCustody, unseatCustody, readCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
-import { pendingFoundingFile, loadPendingFoundingSeed, type FoundingAtomAsk } from "../src/face-atom-store.js";
+import { pendingFoundingFile, loadPendingFoundingSeed, sweepFoundingSeeds, faceAtomGroupFile, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -29,6 +29,20 @@ async function rig() {
 }
 
 describe("the founding seed sweep", () => {
+  test("equal seed bytes in another group's row do not retire an unrelated ask digest", async () => {
+    const { root, genesisDir, ask } = await rig();
+    await withLarRoot(root, async () => {
+      const face = await foundFace({ storageDir: larDataDir(), genesisDir });
+      const groupSeed = await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId));
+      expect(groupSeed, "control: the related group holds its founding seed").toHaveLength(32);
+      const unrelated = { ...ask, handleIndex: 1 };
+      expect(pendingFoundingFile(unrelated)).not.toBe(pendingFoundingFile(ask));
+      await writeCustodyRow("identity", pendingFoundingFile(unrelated), groupSeed!);
+      await sweepFoundingSeeds();
+      expect(await loadPendingFoundingSeed(unrelated), "a matching seed cannot retire an ask with another digest").toEqual(groupSeed);
+      expect(await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId)), "control: the anchored group keeps its seed").toEqual(groupSeed);
+    });
+  }, 180_000);
   test("a planted removal fault exposes two rows; the sweep retires only the matching ask and stays idempotent", async () => {
     const { root, genesisDir, ask } = await rig();
     await withLarRoot(root, async () => {
