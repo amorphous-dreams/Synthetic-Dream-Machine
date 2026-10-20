@@ -22,6 +22,7 @@ const sessionLocks = new WeakMap<MessagePort, Promise<void>>();
 
 /** The tab holds its session lock until its browsing context goes away. */
 function holdSessionLock(sessionId: string): Promise<void> {
+  // A same-origin tab stealing this lock is accepted: api/pono/session-contract.mem #/the-trust-line.
   const locks = (globalThis as unknown as { navigator?: { locks?: { request(name: string, callback: () => Promise<void>): Promise<unknown> } } }).navigator?.locks;
   if (!locks) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
@@ -134,13 +135,15 @@ export interface HolderFaceSession {
 export interface HolderHandleHooks {
   /** The face locked (its house ended or its last session closed): drop this tab's unlock. */
   readonly onLock?: (personaGroup: string) => void;
+  /** Start the dedicated daemon when a greeted holder cannot launch its island. */
+  readonly floor?: () => VesselWorkerHandle;
 }
 
 /**
  * The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. With a
  * `session`, the handle admits the tab's session first: it signs the port's challenge with the face atom and posts
  * `session:open`, so the holder stands this face's house and the island boots behind it. The holder's refusal
- * reaches the daemon core as a fault that names its cause.
+ * reaches the daemon core as a fault that names its cause, except holder-unavailable takes the dedicated floor.
  */
 export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSession, hooks?: HolderHandleHooks): VesselWorkerHandle {
   const held = portEnvelopes.get(port);
@@ -149,11 +152,22 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   // A tab's asks wait for its admission: the holder answers a port only once its session admitted.
   let admitted = session === undefined;
   const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
+  let floorHandle: VesselWorkerHandle | null = null;
+  const listeners = new Set<{ cb: (message: unknown) => void; detach?: () => void }>();
+  const errorListeners = new Set<{ cb: (error: Error) => void; detach?: () => void }>();
+  const takeFloor = (): void => {
+    if (floorHandle || !hooks?.floor) return;
+    floorHandle = hooks.floor();
+    for (const entry of listeners) entry.detach = floorHandle.listen(entry.cb);
+    for (const entry of errorListeners) entry.detach = floorHandle.onError(entry.cb);
+    for (const queued of waiting.splice(0)) floorHandle.post(queued.msg, queued.transfer);
+  };
   const send = (msg: object, transfer: Transferable[]): void => port.postMessage({ ...msg, ...envelope }, transfer);
   if (session) {
     port.addEventListener("message", (e: MessageEvent) => {
-      const d = e.data as { kind?: unknown; sessionId?: unknown; personaGroup?: unknown };
+      const d = e.data as { kind?: unknown; sessionId?: unknown; personaGroup?: unknown; cause?: unknown };
       if (d?.kind === "holder:lock" && d.sessionId === envelope.sessionId) { hooks?.onLock?.(String(d.personaGroup)); return; }
+      if (d?.kind === "holder:refused" && d.sessionId === envelope.sessionId && String(d.cause).startsWith("holder-unavailable")) { takeFloor(); return; }
       if (admitted || d?.kind !== "holder:admitted" || d.sessionId !== envelope.sessionId) return;
       admitted = true;
       for (const queued of waiting.splice(0)) send(queued.msg, queued.transfer);
@@ -169,19 +183,25 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   }
   return {
     post: (msg, transfer) => {
+      if (floorHandle) { floorHandle.post(msg, transfer); return; }
       // The island's boot (the manifest, the answers to its asks) crosses while its gate proves the face; a verb waits.
       if (admitted || !waitsForAdmission(String((msg as { type?: unknown }).type))) send(msg as object, (transfer ?? []) as Transferable[]);
       else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
     },
     listen: (cb) => {
+      const entry: { cb: typeof cb; detach?: () => void } = { cb };
+      listeners.add(entry);
+      if (floorHandle) entry.detach = floorHandle.listen(cb);
       const fn = (e: MessageEvent): void => {
         const d = e.data as { kind?: unknown; cause?: unknown };
+        if (floorHandle) return;
         if (d && (d.kind === "holder:hello" || d.kind === "holder:admitted" || d.kind === "holder:lock")) return;   // the door's words, never the island's
         if (d && d.kind === "holder:house-ended" && session) {
           cb({ type: "fault", wikiUri: "", error: `[shared-holder] the holder ended this house: ${String(d.cause)}` });
           return;
         }
         if (d && d.kind === "holder:refused" && session) {
+          if (String(d.cause).startsWith("holder-unavailable")) return;
           cb({ type: "fault", wikiUri: "", error: `[shared-holder] the holder refused this session: ${String(d.cause)}` });
           return;
         }
@@ -199,14 +219,17 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       };
       port.addEventListener("message", fn);
       port.start();
-      return () => port.removeEventListener("message", fn);
+      return () => { port.removeEventListener("message", fn); entry.detach?.(); listeners.delete(entry); };
     },
     onError: (cb) => {
+      const entry: { cb: typeof cb; detach?: () => void } = { cb };
+      if (floorHandle) entry.detach = floorHandle.onError(cb);
+      errorListeners.add(entry);
       const fn = (): void => cb(new Error("[shared-holder] the holder port faulted (messageerror)"));
       port.addEventListener("messageerror", fn);
-      return () => port.removeEventListener("messageerror", fn);
+      return () => { port.removeEventListener("messageerror", fn); entry.detach?.(); errorListeners.delete(entry); };
     },
     // A tab never terminates the shared island; closing its port is the whole of leaving.
-    terminate: () => { send({ type: "session:close" }, []); port.close(); },
+    terminate: () => { try { send({ type: "session:close" }, []); } finally { port.close(); floorHandle?.terminate(); } },
   };
 }

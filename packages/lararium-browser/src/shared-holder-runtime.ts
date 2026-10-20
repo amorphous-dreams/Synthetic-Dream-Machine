@@ -27,6 +27,7 @@ export function makeHolderRuntime(env: HolderRuntimeEnvironment): {
     lockName: env.lockName,
     locks: env.locks,
     ...(env.locks ? {
+      // A same-origin tab stealing the session lock is accepted: api/pono/session-contract.mem #/the-trust-line.
       watchSession: (sessionId: string, onDead: () => void) => { waitingSessions.set(sessionId, onDead); },
       armSession: (sessionId: string) => {
         const onDead = waitingSessions.get(sessionId);

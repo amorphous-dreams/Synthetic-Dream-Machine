@@ -444,7 +444,16 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       house.edgeDigest = digest;
       house.claimant = port;
       house.owner = port;
-      const island = opts.spawnIsland(group, root, digest);
+      let island: HolderIsland;
+      try { island = opts.spawnIsland(group, root, digest); }
+      catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        refuse(port, `holder-unavailable: the island could not start (${message})`, msg.type);
+        house.ports.splice(house.ports.indexOf(port), 1);
+        state.house = null;
+        closeHouse(house, null);
+        return;
+      }
       house.island = island;
       islandBoots++;
       house.unlisten.push(island.listen(routeFromIsland(house)));

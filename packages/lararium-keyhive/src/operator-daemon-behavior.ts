@@ -199,7 +199,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A faceless island has no binding verdict to wait for.
   if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
   void gateClear.catch(() => undefined);
-  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard ? boardDyadReader(ctx.repo, dyadLedger, restDyadLedger) : dyadReading;
+  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
+    ? async (fleetRootDid, deviceVerifyingKey) => boardDyadReader(
+      ctx.repo, dyadLedger, restDyadLedger,
+      daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey,
+      (await dyadLedger)?.doc(), fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
+    )(fleetRootDid, deviceVerifyingKey)
+    : dyadReading;
   if (!daemonAuth) {
     return {
       ...daemonExtra,

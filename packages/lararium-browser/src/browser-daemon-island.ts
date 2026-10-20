@@ -26,7 +26,7 @@ import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-index
 // never a worker re-manifest (the HA·BA braid: mount-then-flip, fully live, uniform across surfaces). The
 // frames ride onFrame to the boot; the boot's active-surface gate decides whether they paint #projection.
 runBrowserSovereignWorker((manifest) => {
-  // The island alone opens this database. Its claimant's sync channel never reaches these ledger rows.
+  // Same-origin writes are accepted within one custody context: api/pono/session-contract.mem #/the-trust-line.
   const key = manifest.daemonAuth?.atom?.key ?? manifest.daemonAuth?.vesselVerifyingKey;
   const ledgerRepo = key ? new Repo({ storage: new IndexedDBStorageAdapter(`lares:island-edge-ledger:${key}`) }) : null;
   const dyadLedger = key && ledgerRepo ? materializeSharedLarDoc(ledgerRepo, edgeLedgerDocUrl(key), "ledger:edge") : undefined;
