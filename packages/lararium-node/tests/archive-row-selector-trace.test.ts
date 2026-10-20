@@ -22,7 +22,7 @@ const CALL = (name: string): RegExp => new RegExp(`\\b${name}\\(`, "g");
 const SITES: readonly Site[] = [
   { file: join(NODE, "commands/init.ts"), token: CALL("loadIdentityArchive"), count: 1, selector: "none", act: "place founding reads the place's own archive; a place holds no PersonaGroup" },
   { file: join(NODE, "commands/init.ts"), token: CALL("persistIdentityArchive"), count: 1, selector: "none", act: "place founding writes the place's own archive" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "authenticated", act: "admit reads the payload group and persona new reads the prior anchored group" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "admit reads the payload group's archive; a new founding restores no archive, since a fresh group mints a fresh atom" },
   { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 3, selector: "authenticated", act: "admit writes the payload group's archive and persona new writes the founded group's archive" },
   { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "the face presenter reads the face's group archive" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the place archive" },
