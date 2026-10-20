@@ -7,11 +7,12 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { makeEmbedCap, type EmbedCap } from "../src/embed-cap.js";
 import { makeContentPalace, type ContentPalace } from "../src/sensorium.js";
 import { makeSearchCap, _liveSearchHolderCount, type SearchCap } from "../src/search-cap.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 120_000;
 
@@ -20,7 +21,7 @@ beforeAll(() => { process.env["MEMPALACE_EMBEDDING_MODEL"] = "minilm"; });
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map((c) => c())); });
 
-describe("makeSearchCap (consumed hybrid search over the owned palace, live)", () => {
+palaceSuite("makeSearchCap (consumed hybrid search over the owned palace, live)", () => {
   test("finds the semantically+lexically right drawer through the consumed search", async () => {
     const dir = await mkdtemp(join(tmpdir(), "searchcap-"));
     const embed: EmbedCap = makeEmbedCap();

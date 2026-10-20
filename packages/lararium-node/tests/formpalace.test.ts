@@ -20,6 +20,7 @@ import { harvestTurnGradient } from "@lararium/mesh";
 import { emitMoveSkeleton, buildConstructiconBasis } from "@lararium/tw5/form-layer";
 import { afterEach, describe, expect, test } from "vitest";
 
+import { palaceSuite } from "./helpers/palace-holder.js";
 import {
   makeFormPalace, _liveFormHolderCount,
   type FormPalace, type FormHolderSpawn, type SerializedBasis,
@@ -65,7 +66,7 @@ afterEach(async () => {
   await Promise.all(opened.splice(0).map((p) => p.close()));
 });
 
-describe("makeFormPalace — the form-graph wired end-to-end (live python + chroma)", () => {
+palaceSuite("makeFormPalace — the form-graph wired end-to-end (live python + chroma)", () => {
   test("a turn flows skeleton → holder → form-vector → stored, queryable, verbatim_sha-joined", async () => {
     const pal = openPalace(await palaceDir());
     const { skeleton, basis } = buildInputs();

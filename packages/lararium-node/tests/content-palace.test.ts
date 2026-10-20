@@ -6,9 +6,10 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 
 import { makeContentPalace, _liveContentHolderCount, type ContentPalace } from "../src/sensorium.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 60_000;
 
@@ -21,7 +22,7 @@ function openPalace(dir: string): ContentPalace {
 const palaceDir = (): Promise<string> => mkdtemp(join(tmpdir(), "content-"));
 afterEach(async () => { await Promise.all(opened.splice(0).map((p) => p.close())); });
 
-describe("makeContentPalace (non-memory targeted content, driven live)", () => {
+palaceSuite("makeContentPalace (non-memory targeted content, driven live)", () => {
   test("put → get round-trips a content record", async () => {
     const pal = openPalace(await palaceDir());
     await pal.put("c-1", "Call me Ishmael.", [0.1, 0.2, 0.3], { source: "twain", chap: 1 });
