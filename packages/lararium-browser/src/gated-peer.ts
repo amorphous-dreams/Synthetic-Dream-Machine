@@ -3,12 +3,23 @@ export function attachGatedPeer(
   attachRepoSide: (port: MessagePort) => void,
   tab: MessagePort,
   serving: Promise<void>,
+  closed: Promise<void>,
 ): void {
   const relay = new MessageChannel();
   attachRepoSide(relay.port1);
   let open = false;
   let ended = false;
   const held: unknown[] = [];
+  const end = (): void => {
+    if (ended) return;
+    ended = true;
+    held.length = 0;
+    relay.port2.onmessage = null;
+    tab.onmessage = null;
+    relay.port1.close();
+    relay.port2.close();
+    tab.close();
+  };
   relay.port2.onmessage = (event: MessageEvent) => {
     if (ended) return;
     if (open) tab.postMessage(event.data);
@@ -21,12 +32,6 @@ export function attachGatedPeer(
     if (ended) return;
     open = true;
     for (const frame of held.splice(0)) tab.postMessage(frame);
-  }, () => {
-    ended = true;
-    held.length = 0;
-    relay.port2.onmessage = null;
-    tab.onmessage = null;
-    relay.port1.close();
-    relay.port2.close();
-  });
+  }, end);
+  void closed.then(end, end);
 }

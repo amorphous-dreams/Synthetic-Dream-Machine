@@ -10,8 +10,7 @@
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { attachMessageChannelSync } from "@lararium/mesh";
-import { attachGatedPeer } from "./gated-peer.js";
-import { makeSharedHolderCore } from "./shared-holder-core.js";
+import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import { browserWorkerHandle } from "./worker-handle.js";
 
 // The SharedWorker global, read structurally — this package's lib is DOM, so the worker scope types stay out.
@@ -29,25 +28,15 @@ const params    = new URL(sw.location.href).searchParams;
 const islandUrl = params.get("island") ?? "";
 const lockName  = params.get("lock")   ?? "lares:vessel:lares:vessel";
 
-// A face house's Repo rests under a name that carries the digest of its (PersonaGroup, persona root) pair, so the
-// origin's database list names no face and a claim under a foreign root can never open another house's store.
-async function houseStoreName(personaGroup: string, personaRoot: string): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${personaGroup}|${personaRoot}`)));
-  return `${lockName}:house:${Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("")}`;
-}
-
-const core = makeSharedHolderCore({
+const { core } = makeHolderRuntime({
   lockName,
   locks: sw.navigator?.locks ?? null,
   spawnIsland: () => browserWorkerHandle(new Worker(islandUrl, { type: "module" })),
-  makeRepo: async (personaGroup, personaRoot) => {
-    const repo = new Repo({ storage: new IndexedDBStorageAdapter(await houseStoreName(personaGroup, personaRoot)) });
+  openRepo: (storeName) => {
+    const repo = new Repo({ storage: new IndexedDBStorageAdapter(storeName) });
     return {
       shutdown: () => repo.shutdown(),
-      attachPeer: (port, serving) => {
-        if (serving) attachGatedPeer((peer) => attachMessageChannelSync(repo, peer), port, serving);
-        else attachMessageChannelSync(repo, port);
-      },
+      attachSide: (port: MessagePort) => attachMessageChannelSync(repo, port),
     };
   },
 });

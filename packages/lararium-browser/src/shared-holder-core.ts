@@ -14,16 +14,17 @@
  * A house PROVES its face through its own island. The first session's edge reaches the island with the tab's manifest;
  * the island's Binding Gate walks the pinned KEL, folds the lease frontier and reads the dyad shadow, then posts
  * `gate:clear` naming the digest of the edge and the root it verified (or `gate:refused` with a cause). The house
- * admits a session only for the edge the gate named, and every later session must present the byte-equal edge
- * (`session-edge-other` otherwise). Until the gate clears, nothing flows to a tab: the claimant hears its island's
+ * admits a session only for the edge the gate named, and every later session must present the same signed proof
+ * (`session-edge-other` otherwise). The digest covers signed fields and signatures; an unsigned extra property on
+ * the presented object leaves that proof unchanged. Until the gate clears, nothing flows to a tab: the claimant hears its island's
  * boot handshake alone, every other port hears nothing, and the house Repo withholds its frames from the tab.
  *
  * Each house holds its own island, Repo, ports, owner, pending requests and camera leases. An island answer reaches
  * the ports of its own house alone. A sealing ask (`custody:write`) goes to a tab of that house that announced it can
  * seal (`session:sealer`), since the key rests in the tab; with none ready the ask waits, named `seal-awaits-session`,
  * and lands when one announces. A house ends when its last session closes, its gate refuses, or its island faults:
- * the island ends, the Repo shuts down, the surviving ports hear the named end and `holder:lock`, and the face locks
- * (`lockFace`). One terminal state per house, so no port joins a house that has ended.
+ * the island ends, the Repo shuts down, and surviving ports hear the named end and `holder:lock`.
+ * Each tab drops its own custody on that lock. One terminal state per house keeps ended houses closed.
  *
  * Pure: the lock surface, the island and Repo spawns and the ports ride in, so a witness drives it with fakes.
  * The worker entry wires the platform pieces around it and nothing else.
@@ -36,7 +37,7 @@ import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh/holder-session-proof";
 import { HOLDER_ROUTES } from "./holder-routes.js";
-import { TAB_REQUESTS, waitsForAdmission } from "./holder-admission.js";
+import { TAB_REQUESTS } from "./holder-admission.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
 
@@ -57,11 +58,12 @@ export interface HolderIsland {
  * One face house's Repo. The holder holds documents and ciphertext and no key. A Repo that takes sync ports
  * (`attachPeer`) stands as the hub between its house's island and its house's tabs: the holder hands it the tab's
  * end of the manifest channel and gives the island a fresh channel to the same Repo. A tab's port comes with the
- * promise that settles when the house's gate clears: the Repo withholds its frames from that tab until then.
+ * promise that settles when the house's gate clears and a promise that settles when the house ends: the Repo
+ * withholds its frames from that tab until clearance and closes every peer when the house ends.
  */
 export interface HolderRepo {
   shutdown(): Promise<void>;
-  attachPeer?(port: MessagePort, serving?: Promise<void>): void;
+  attachPeer?(port: MessagePort, serving?: Promise<void>, closed?: Promise<void>): void;
 }
 
 /** The greeting every tab receives on connect. */
@@ -120,8 +122,6 @@ export interface SharedHolderCoreOptions {
   readonly spawnIsland: (personaGroup: string, personaRoot: string, edgeDigest: string) => HolderIsland;
   /** Stand the Repo of one face house; the holder shuts it down with the house. */
   readonly makeRepo?:   (personaGroup: string, personaRoot: string) => HolderRepo | Promise<HolderRepo>;
-  /** Lock a face once its house ended and its island and Repo stand down. */
-  readonly lockFace?:   (personaGroup: string, personaRoot: string) => void | Promise<void>;
   /** A sealing ask waits because no ready tab of its face stands. */
   readonly onWait?:     (kind: "seal-awaits-session", personaGroup: string, messageType: string) => void;
   readonly onDrop?: (kind: string, reason: string) => void;
@@ -134,10 +134,12 @@ export interface SharedHolderCore {
   disconnect(port: HolderPort): void;
   readonly islandBoots: number;
   readonly tabs:        number;
+  readonly houses:      number;
 }
 
 /** The island kinds a house's claimant hears while its island proves the face: the boot handshake and the gate's own asks. */
-const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "dyad:ask", "cas:want", "doc:rest"]);
+const PROVING_KINDS = new Set(["ready", "ea", "breath", "fault", "teardown:ack", "cas:want", "doc:rest"]);
+const BOOT_REPLIES: Readonly<Record<string, string>> = { "cas:block": "cas:want", "doc:rested": "doc:rest", "custody:written": "custody:write" };
 
 interface PortState {
   readonly envelope: SessionEnvelope;
@@ -166,6 +168,10 @@ interface House {
   served:         Promise<void>;
   serve:          () => void;
   endServing:     (reason: Error) => void;
+  closed:         Promise<void>;
+  endClosed:      () => void;
+  bootRequests:   Set<string>;
+  manifestSent:   boolean;
   /** The first session, whose manifest boots the island; it hears the boot handshake while the island proves. */
   claimant:       HolderPort | null;
   readonly ports:    HolderPort[];
@@ -228,6 +234,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const closeHouse = (house: House, cause: string | null): void => {
     if (house.state === "ended") return;
     house.state = "ended";
+    house.endClosed();
     if (!house.cleared) house.endServing(new Error(cause ?? "house ended before its gate cleared"));
     if (houses.get(house.key) === house) houses.delete(house.key);
     for (const stop of house.unlisten.splice(0)) stop();
@@ -243,12 +250,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     house.owner = null; house.claimant = null;
     let shut: Promise<void>;
     try { shut = house.repo ? house.repo.shutdown() : Promise.resolve(); } catch (error) { shut = Promise.reject(error); }
-    const lock = (): Promise<void> | void => opts.lockFace?.(house.group, house.root);
-    // The face locks after its Repo stands down, and also when the Repo fails to: a face never stays open on a fault.
-    void shut.then(lock, (error) => {
-      onDrop("repo:shutdown", error instanceof Error ? error.message : String(error));
-      return lock();
-    }).catch((error) => onDrop("face:lock", error instanceof Error ? error.message : String(error)));
+    void shut.catch((error) => onDrop("repo:shutdown", error instanceof Error ? error.message : String(error)));
   };
 
   /** The island proved the face for the edge it names: serve the house, or end it for an edge no session presented. */
@@ -285,7 +287,10 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     if (!house.cleared) {
       // While the island proves the face, the claimant hears the boot handshake and nothing else; a sealing ask waits.
       if (msg.type === "custody:write") { house.queue.push(msg); return; }
-      if (route === "owner" && PROVING_KINDS.has(msg.type) && house.claimant && ports.has(house.claimant)) { deliver(house.claimant, msg); return; }
+      if (route === "owner" && PROVING_KINDS.has(msg.type) && house.claimant && ports.has(house.claimant)) {
+        if ((msg.type === "cas:want" || msg.type === "doc:rest") && typeof msg.requestId === "string") house.bootRequests.add(`${msg.type}:${msg.requestId}`);
+        deliver(house.claimant, msg); return;
+      }
       onDrop(msg.type, "house-uncleared");
       return;
     }
@@ -366,10 +371,13 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     let serve!: () => void;
     let endServing!: (reason: Error) => void;
     const served = new Promise<void>((resolve, reject) => { serve = resolve; endServing = reject; });
+    let endClosed!: () => void;
+    const closed = new Promise<void>((resolve) => { endClosed = resolve; });
     void served.catch(() => undefined);
     const house: House = {
       key, group, root, state: "standing", repo: null, ready: Promise.resolve(), admitting: 0,
-      island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, endServing, claimant: null,
+      island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, endServing, closed, endClosed,
+      bootRequests: new Set(), manifestSent: false, claimant: null,
       ports: [], sealers: new Set(), pending: new Map(), cameras: new Map(), queue: [], owner: null,
     };
     (house as { ready: Promise<void> }).ready = (async () => {
@@ -380,7 +388,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   };
 
   /** A session opened: verify it, join the house of its (group, root), and boot that house's island on the first. */
-  const admit = async (port: HolderPort, state: PortState, msg: WireMessage): Promise<void> => {
+  const admitOnce = async (port: HolderPort, state: PortState, msg: WireMessage): Promise<void> => {
     const group = msg["personaGroup"];
     const edge = msg["edge"] as DeviceDelegationTiddler | undefined;
     const signature = msg["signature"];
@@ -389,12 +397,10 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       refuse(port, "session-open-malformed", msg.type);
       return;
     }
-    state.opening = true;
     const reading = await verifyHolderSessionProof({
       edge, signature,
       fields: { ownerEpoch: state.envelope.ownerEpoch, sessionId: state.envelope.sessionId, nonce: state.nonce, personaGroup: group },
     });
-    state.opening = false;
     if (!reading.ok) { refuse(port, reading.reason, msg.type); return; }
     const root = edge.personaRootDid;
     const digest = deviceEdgeDigest(edge);
@@ -442,11 +448,17 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       deliver(port, { type: "holder:admitted", kind: "holder:admitted", personaGroup: group } as unknown as WireMessage);
     }
   };
+  const admit = async (port: HolderPort, state: PortState, msg: WireMessage): Promise<void> => {
+    state.opening = true;
+    try { await admitOnce(port, state, msg); }
+    finally { state.opening = false; }
+  };
 
   const forwardToIsland = (house: House, port: HolderPort, msg: WireMessage, e: MessageEvent): void => {
     const isl = house.island;
     if (!isl) { onDrop(msg.type, "island-absent"); return; }
     if (msg.type === "manifest") {
+      if (house.manifestSent) { refuse(port, "session-unadmitted", msg.type); return; }
       if (house.owner && house.owner !== port) {
         const refused: HolderRefused = { kind: "holder:refused", storeName: opts.lockName, cause: "island-owned" };
         port.postMessage({ ...refused, ...portStates.get(port)!.envelope });
@@ -454,6 +466,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         return;
       }
       house.owner = port;
+      house.manifestSent = true;
     }
     if ((msg.type === "lar:control-event" || msg.type === "lar:resend") && typeof msg.cameraId === "string") {
       house.cameras.set(msg.cameraId, port);
@@ -471,8 +484,8 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     // own, so the island's documents rest in the holder.
     if (msg.type === "manifest" && house.repo?.attachPeer && transfer.length === 1) {
       const channel = new MessageChannel();
-      house.repo.attachPeer(transfer[0] as MessagePort, house.served);
-      house.repo.attachPeer(channel.port1);
+      house.repo.attachPeer(transfer[0] as MessagePort, house.served, house.closed);
+      house.repo.attachPeer(channel.port1, undefined, house.closed);
       forwarded = { ...(islandMessage as Record<string, unknown>), syncPort: channel.port2 };
       transfer = [channel.port2];
     }
@@ -482,6 +495,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   return {
     get islandBoots() { return islandBoots; },
     get tabs()        { return ports.size; },
+    get houses()      { return houses.size; },
     disconnect(port) {
       ended.add(port);
       ports.delete(port);
@@ -537,7 +551,11 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         const house = state.house;
         // A port that has not joined a house may ask one thing: to open a session.
         if (house === null) {
-          if (msg.type === "session:open" && !state.opening) { void admit(port, state, msg); return; }
+          if (msg.type === "session:open") {
+            if (state.opening) refuse(port, "session-open-malformed", msg.type);
+            else void admit(port, state, msg);
+            return;
+          }
           refuse(port, "session-unadmitted", msg.type);
           return;
         }
@@ -545,8 +563,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         if (!state.admitted) {
           // While its island proves the face, the claimant boots it: the manifest and the answers to the island's asks
           // cross, and no verb or camera lease does. Any other port waits unanswered.
-          const claimantBoot = port === house.claimant && !waitsForAdmission(msg.type);
+          const request = BOOT_REPLIES[msg.type];
+          const key = typeof msg.requestId === "string" ? `${request}:${msg.requestId}` : "";
+          const claimantBoot = port === house.claimant &&
+            (msg.type === "manifest" && !house.manifestSent || Boolean(request && house.bootRequests.has(key)));
           if (!claimantBoot) { refuse(port, "session-unadmitted", msg.type); return; }
+          if (request) house.bootRequests.delete(key);
           forwardToIsland(house, port, msg, e);
           return;
         }

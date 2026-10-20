@@ -34,6 +34,31 @@ export function foundingAskDigest(ask: FoundingAtomAsk): string {
 
 export const pendingFoundingFile = (ask: FoundingAtomAsk): string => `face-atom-ask-${foundingAskDigest(ask)}.bin`;
 
+/** Retire an ask only when a group row already holds its exact seed. */
+export async function sweepFoundingSeeds(): Promise<void> {
+  let names: string[];
+  try { names = readdirSync(larIdentityDir()); }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+    throw error;
+  }
+  const held: Uint8Array[] = [];
+  for (const file of names.filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
+    const seed = await readCustodyRow("identity", file);
+    if (seed) {
+      if (seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
+      held.push(seed);
+    }
+  }
+  for (const file of names.filter((name) => FACE_ATOM_ASK_FILE.test(name))) {
+    const seed = await readCustodyRow("identity", file);
+    if (seed && seed.length !== 32) throw new Error(`pending founding atom ${file} holds no 32-byte seed`);
+    if (!seed || !held.some((groupSeed) => groupSeed.length === seed.length && groupSeed.every((byte, i) => byte === seed[i]))) continue;
+    await removeCustodyRow("identity", file, (standing) =>
+      standing.length === seed.length && standing.every((byte, i) => byte === seed[i]));
+  }
+}
+
 /** Read an ask seed without minting one. */
 export async function loadPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uint8Array | null> {
   const seed = await readCustodyRow("identity", pendingFoundingFile(ask));
@@ -115,7 +140,7 @@ export async function keepAndRetireFoundingSeed(group: string, ask: FoundingAtom
 export async function recoverFoundingSeedFromGroup(
   ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>,
 ): Promise<Uint8Array | null> {
-  const scope = JSON.stringify([ask.hearthTrueName, ask.bindingMode, ask.personaKelPrefix, ask.mount]);
+  const scope = JSON.stringify([ask.hearthTrueName, ask.bindingMode, ask.personaKelPrefix, ask.mount, foundingAskDigest(ask)]);
   const prefix = "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/";
   const bodies = Object.entries(checkpoints).filter(([title]) => title.startsWith(prefix))
     .map(([, record]) => tiddlerText(record as StoredLarRecord))

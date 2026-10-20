@@ -88,7 +88,7 @@ function delegationProofBytes(d: ProofFields): Uint8Array {
   );
 }
 
-/** The digest a gate names an edge by: SHA-256 hex over the root proof, the root signature and the atom countersignature. */
+/** The digest a gate names an edge by: SHA-256 hex over its signed fields and signatures. A house clears and admits for this signed proof; unsigned extras on the presented object leave the edge unchanged. */
 export function deviceEdgeDigest(edge: DeviceDelegationTiddler): string {
   return hex(sha256(new TextEncoder().encode(`${new TextDecoder().decode(deviceAtomProofBytes(edge))}|${edge.atomSignature}`)));
 }

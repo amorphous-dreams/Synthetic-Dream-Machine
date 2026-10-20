@@ -212,3 +212,4 @@ export type CarriedAdmitPayload = DeviceAdmitPayload & {
   /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
   readonly hearthIslandScope?: string;
 };
+export { boardDyadReader } from "./board-dyad-reader.js";

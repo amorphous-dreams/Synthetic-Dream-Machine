@@ -302,6 +302,8 @@ export interface FaceFoundingInput {
   vesselDisplayName:  string;
   /** The random atom seed held for this PersonaGroup. */
   atomSeed?:          Uint8Array;
+  /** Bind a shore's full founding ask to its recoverable checkpoint. */
+  askDigest?:         string;
   binding:            FoundingBinding;
   hearthTrueName:     string;
   nexusPubkey:        string;
@@ -425,7 +427,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === vesselVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
-  const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false]);
+  const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);

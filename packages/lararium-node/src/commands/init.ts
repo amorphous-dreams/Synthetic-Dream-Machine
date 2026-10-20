@@ -38,7 +38,7 @@ import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
-import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, type FoundingAtomAsk } from "../face-atom-store.js";
+import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
@@ -489,6 +489,7 @@ export async function armRecoveryAtFounding(
  * it writes no mount pin, so the mounted face stands byte-unchanged. Wearing it is a later act.
  */
 export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFaceResult> {
+  await sweepFoundingSeeds();
   const defaults    = defaultDirs();
   const genesisDir  = opts.genesisDir ?? defaults.genesisDir;
   const handleIndex = opts.handleIndex ?? 0;
@@ -579,6 +580,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     repo,
     daemonHandle,
     atomSeed,
+    askDigest: foundingAskDigest(foundingAsk),
     vesselVerifyingKey: vesselIdentity.verifyingKey,
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },

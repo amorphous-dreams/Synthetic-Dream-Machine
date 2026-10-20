@@ -38,7 +38,7 @@ import {
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
   climbNexusBoards, carryPersonaKelUpTheGradient,
-  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, edgeStandingOf, raisesSeenThrough, type EdgeReading,
+  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, raisesSeenThrough, type EdgeReading,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex,
   type VesselBootstrap, type VesselCoreAssembly, type GateBundlePin, type DeviceDelegationTiddler,
@@ -121,7 +121,6 @@ import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAns
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
-import { attachBrowserDyadDoor, type BrowserDyadDoor } from "./browser-dyad-door.js";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
@@ -507,20 +506,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // aside (fail closed), and no sibling channel stands that early.
   let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string> } | null = null;
   let fleetBoardFollowed = false;
-  // THE DYAD DOOR (kapae#/reach): the daemon island's gates ask this leaf what one device's edge reads on the
-  // fleet board of the face it wears. The door answers from the leaf's own read of that board, taken before the
-  // island boots; it answers `aside` for any other fleet, and while no read stands.
+  // The leaf's fleet reading guards sibling sync. The daemon island reads its own board for gate asks.
   const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
-  // THE READING GOES DARK THE MOMENT THE BOARD MOVES: the last read may predate the very act that just arrived, so
-  // every consult answers closed until a fresh read lands, and a read the board's next move overtook publishes
-  // nothing. An ask that meets a dark reading waits on the read in flight, never on a clock.
+  // The reading goes dark when the board moves until the new fold lands.
   let fleetRead: Promise<void> | null = null;
   let fleetMoves = 0;
-  const dyadDoor: BrowserDyadDoor = async (fleetRoot, deviceKey) => {
-    if (!fleetShadows && fleetRead) await fleetRead.catch(() => undefined);
-    if (!fleetShadows || bareKey(fleetRoot) !== bareKey(fleetShadows.root)) return "aside";
-    return edgeStandingOf(fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, bareKey(deviceKey))), fleetShadows.rolled);
-  };
   const siblingAside = (peerId: string): boolean => {
     const key = siblings?.provenKeyOf(peerId as PeerId);
     if (!key) return false;                       // no sibling behind this id: the sibling lane never reads it
@@ -1273,9 +1263,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
       }
       const pluginCids = daemonPluginResolution.pluginCids;
-      // THE LEAF READS ITS FLEET'S BOARD BEFORE ITS ISLAND BOOTS, through the read every shore shares, so the
-      // Binding Gate's ask at the dyad door reads a landed fold, and it re-reads the board whenever it changes. A
-      // faceless leaf wears no edge, reads no board and gets asked nothing.
+      // The leaf reads its fleet board for sibling sync; the island reads its own copy for binding.
       const fleetRootOfFace = daemonAuth.deviceEdge?.personaRootDid;
       if (fleetRootOfFace) {
         const scope = bareKey(fleetRootOfFace);
@@ -1310,8 +1298,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(pluginCids.length ? { pluginCids } : {}),
         workerScriptUrl: daemonWorkerUrl,
         // The holder path: the island already stands once per origin; this tab's handle IS its port.
-        // The dyad door rides the DAEMON island's handle alone: this spawn seam stands as the one place that
-        // handle gets made, on either path.
         spawnWorker: (url) => {
           // The holder admits a FACE: this tab presents its edge and signs the holder's challenge with its atom,
           // and the holder stands the face's own house. A vessel with no face edge stands its own island.
@@ -1323,7 +1309,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             handle.post({ type: "session:sealer", ready: true });
             held.stood.push({ what: "sealer announcement", down: onBrowserCustodyLock(idbName, () => handle.post({ type: "session:sealer", ready: false })) });
           }
-          attachBrowserDyadDoor(handle, () => dyadDoor);
           return handle;
         },
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
