@@ -86,6 +86,8 @@ export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
+export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";
+export type { HolderSessionProofFields, HolderSessionProofReading } from "./holder-session-proof.js";
 export * from "./authority-verdict.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";
