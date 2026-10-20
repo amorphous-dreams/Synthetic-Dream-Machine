@@ -295,8 +295,10 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // the edge, so nothing waits on a later ceremony here.
     // THE PIN NAMES THE DIAL: the hearth's sync url + gate key, and the document the admit named, land beside the
     // sentinel ids, so the boot dials the hearth by that pin (hearth-dial-pin.ts). A payload naming no dial pins none.
-    // The archive behind that card rests sealed beside it: the prekey secrets the card names, and the membership
-    // this vessel absorbed. A stand that restores from it presents the same card the hearth admitted.
+    // The joinee's self-certifying ContactCard rests in its identity home as the atom's archive: the card derives
+    // from the archive's prekey secrets beside the membership this vessel absorbed, as a founder's does. The
+    // daemon's nexus-join dial-out reads it from there, and a cardless vessel never speaks at a gate. A stand
+    // that restores from the archive presents the same card the hearth admitted.
     await persistVeilArchive(archive, 0);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
@@ -580,7 +582,11 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // above reads that entry, so a founding that stops anywhere before it runs again whole. An entry never stands
   // over a missing archive or missing anchors.
   //
-  // The checkpoint holds the founding bytes across a stop before this bootstrap entry commits the face.
+  // WHAT AN UNCOMMITTED FOUNDING LEFT BELONGS TO NO FACE. Only the bootstrap entry written here makes a group a
+  // face; a stopped run's group stays in the store named by nothing. The checkpoint holds the founding bytes across
+  // that stop: the run that asks the same ask re-enters the SAME atom seed, re-lands the checkpoint's group, cabal
+  // and archive, and commits them; a run that asks another ask mints its own PersonaGroup and MeshCabal, and its
+  // archive replaces the row.
   await persistVeilArchive(face.veilArchive, handleIndex);
   await persistIdentityAnchors({
     meshCabalDocIdHex:      face.meshCabalDocIdHex,

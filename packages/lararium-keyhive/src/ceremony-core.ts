@@ -386,12 +386,15 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: result.signerDid, kind: "operator-root-did" }, meta: { authority: "lares-init" },
     });
+    // The PINNED identifier — the pin's root of trust (the operator's own sovereign daemon home). The boot
+    // path reads THIS prefix, threads it beside the local KEL chain, and the worker asserts chain[0].prefix === it.
     doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: result.personaKelPrefix, kind: "persona-kel-prefix" }, meta: { authority: "lares-init" },
     });
     doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...result.founderEdge }, meta: { authority: "lares-init" },
     });
+    // The hearth the mounted face binds: its edge's true name, which a place founding wrote before any hearth stood.
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: result.founderEdge.hearthTrueName, kind: "hearth-true-name" }, meta: { authority: "lares-init" },
     });
@@ -437,7 +440,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const store   = await replayCapEvents(daemonHandle);
   const standing = new Set((await store.list()).map((e) => e.hash));
 
-  // The atom creates and holds the PersonaGroup's Keyhive membership.
+  // ── THE GROUP IS BORN UNDER THE ATOM ──────────────────────────────────────────────────────────
+  // The creator's identifier rides every carried event in CLEARTEXT (the host-surface probe), a
+  // creator can never leave its roster, and any access grade IS roster membership — so the place's own
+  // identity must never create or hold the WHO-plane sentinels. The atom creates and holds the
+  // PersonaGroup's Keyhive membership because the place must never stand in its roster. The place keeps
+  // custody and transport; the atom keeps the group.
   const veilKeyhive  = new KeyhiveProvider();
   await veilKeyhive.init({
     seed: atomSeed, eventStore: store,
