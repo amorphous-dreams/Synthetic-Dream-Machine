@@ -33,3 +33,14 @@ export function runFilterCtsCase(engine: TW5Engine, test: Pick<FilterCtsCase, "f
     return { fault: error instanceof Error ? error.message : String(error) };
   }
 }
+
+/**
+ * The form in which a recorded answer and an engine's answer compare. A host-bound case reads the engine's own store
+ * (a plugin title, a system tiddler), so it pins what the frozen world owns: its result list keeps the titles the world
+ * names, and the parse tree compares whole. Any other case compares whole. The Chromium runner reads host-bound cases by
+ * the same rule.
+ */
+export function comparableAnswer(answer: FilterCtsAnswer, hostBound: boolean, worldTitles: ReadonlySet<string>): FilterCtsAnswer {
+  if (!hostBound || !("results" in answer)) return answer;
+  return { parse: answer.parse, results: answer.results.filter((title) => worldTitles.has(title)) };
+}
