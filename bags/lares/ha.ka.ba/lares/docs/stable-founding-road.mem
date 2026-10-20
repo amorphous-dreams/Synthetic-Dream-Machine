@@ -251,7 +251,7 @@ The operator delegated these to the house: each stands as a house ruling the ope
 * ''Sync carries; verification decides'' (operator, 2026-10-20, approving the research at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">> and the controller's leans). A mutable CRDT carries identity claims and never decides them. Each face holds, on each device, a ''sealed identity anchor'' in its own custody (a D row): its PersonaGroup, its persona-KEL prefix, a commitment to its root, its device edge's digest, and a known frontier that never falls. Only founding, admission and the recovery rites (guardian rotation, bundle restore, root cards) write an anchor; sync never writes one. Founding and admission acts, device edges and lease advances travel as signed records in the face's `@persona` plane, a signed-entry log every reader verifies against the anchor and the KEL; two signed acts at one sequence surface as a fork, never a CRDT winner. The face planes hold verified projections. A device reads freely; an act that widens authority (admit, grant, re-key, seal to a reader) checks the sealed frontier and refuses a target that names a newer bound, its receipt naming the frontier it acted under. Transparency and witnesses for equivocation wait for their own row. Wave C carries the build inside `K15` step 6.
 * ''Wave B's forks'' (operator, 2026-10-20, approving the controller's leans). A fresh PersonaGroup mints a fresh atom, never an orphan's seed. A tab reads its face's pins from its custody anchor before it opens its session, so the tab's own Repo retires; and each face holds its own social planes in the browser, keyed by PersonaGroup as on the node. Both ride Wave C with the anchor.
 
-* ''The order of the next waves'' (operator, 2026-10-20, approving the controller's leans). Wave C (`K15` step 6 under the identity anchor) runs next, with `W26`'s slices 3 to 6 beside it on the floor's own ground, their composer hunks passing to the controller as patches; `I1` follows the anchor; the far agent's relay seat takes its own research after `I1`; `G37`'s renames ride `X0`'s bake; the sensorium resumes after `X0`, on the operator's word.
+* ''The order of the next waves'' (operator, 2026-10-20, approving the controller's leans). Wave C (`K15` step 6 under the identity anchor) runs next, with `W26`'s slices 3, 4 and 6 beside it on the floor's own ground, their composer hunks passing to the controller as patches, and slice 5 after it, since its accepted floor rests as a face's sealed row (a D row under the face's own FCK once Wave C lands); `I1` follows the anchor; the far agent's relay seat takes its own research after `I1`; `G37`'s renames ride `X0`'s bake; the sensorium resumes after `X0`, on the operator's word.
 
 !!! The fresh start
 * ''No pave or wipe command'' — such a command carries too much risk. See #/fresh-start.
@@ -819,6 +819,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;omM39vlsIa1--18wveTcNARYrIi3IJ5sFDGwXFU0h50
+<<^ code="&#x0003;">>ni:///sha-256;gRLPlUXv-CEWyQCVVJMGuKzj92yR4byAmHMBMXhryqU
 
 <<^ code="&#x0004;" -> to="?">>
