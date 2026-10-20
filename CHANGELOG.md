@@ -7,6 +7,7 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 ### The working layer and the founded seat
 
 **Added**
+- **A face's intents travel on its own plane** (model landed; build row `I1`). The daemon wiki keeps working memory; `@intents-<tag>`, a fifth face plane, carries a face's intents, outcomes and asks across its fleet, append-only and never mirrored; the daemon bag keeps the vessel's own records. A rubric sorts what earns an entry: a hand's decisions that cross devices, never its motion.
 - **A vessel joins one face's fleet.** `lares fleet join offer|request|answer|land|abandon` runs on node and browser. The root-signed answer carries the device edge, gate pin, canon list, island reach, sealed face address secret, vessel face-key certificates and add-a-face grants.
 - **Bundles carry guardian sets.** A bundle cut after enrolment restores while its enrolled set still heads the face log. A later guardian rotation cuts earlier bundles off.
 - **A restored face stands provisional.** `lares persona provisional|confirm|view` and `lares persona guardian view` show the mark and accept a guardian or chair's agreeing signed view. The marked face refuses guardian enrolment and Nexus key re-issue until confirmation.

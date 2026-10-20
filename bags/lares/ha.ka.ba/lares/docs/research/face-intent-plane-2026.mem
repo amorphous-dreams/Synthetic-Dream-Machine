@@ -1,0 +1,60 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "field research, a two-wave traded Sonnet YIN and YANG pass (2026-10-20), on the channel of intent through one face's fleet of device vessels: what the field splits, who answers a fleet-addressed request, why no claim carries safety, where the log lives, and the far agent"
+status    = "research; read 2026-10-20; the model landed at api/pono/face-intent-plane the same day"
+tags      = ["research", "intent", "fleet", "daemon", "persona-group", "no-global-now", "agents"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/face-intent-plane-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/face-intent-plane-2026"
+```
+
+<<~ ahu #/head>>
+
+! The face intent plane, 2026 ~ what the field says about a channel of intent
+
+The operator un-asked the daemon doc on 2026-10-20 and kept one point: the operator and the AIs need a channel of intent through each face's fleet of device vessels. A Sonnet pair read the field in two traded waves: YIN on multi-device fleets, YANG on intent channels between humans and AI agents. Each claim reads MEASURED (read in a source on 2026-10-20) or LEAD (inference). The model the operator approved rests at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>.
+
+<<~/ahu>>
+
+<<~ ahu #/findings>>
+
+!! Findings
+
+# ''The field splits what the daemon doc fused'' (both waves, MEASURED). The roster (Keyhive: a person as a group of device keys; Keybase's sigchain); shared state; per-device delivery (Matrix to-device, its transaction id scoped to one device and one endpoint); the signed request (a UCAN invocation, its task id a content hash of subject, command, arguments and nonce); the outcome (a receipt whose `cause` names the request; Temporal's recorded results); the authority (a delegation chain whose revocations append and arrive out of order). Two answerers for one summons follows from one mutable entry holding request and answer.
+# ''No source elects an answerer for "any device"'' (both, MEASURED). MCP, A2A, UCAN, Temporal and Restate each assume one executor or one ordering server. WhatsApp encrypts a separate copy for every device in both device lists, and its server holds nothing after delivery. Matrix delivers exactly once per device, with `*` for every known device: exactly-once delivery, never exactly-once action. Syncthing's one deterministic device tie-break reads the wall clock first and the device id only last.
+# ''A lease cannot give mutual exclusion'' (YIN, MEASURED in Kleppmann 2016): a paused holder acts past its lease; the safe fix needs a fencing token at the effect and consensus, which a CRDT fleet lacks. A claim can steer effort and never carry safety; safety lives in idempotent or fenced effects.
+# ''Lowest-id reads, never elects'' (YIN, correcting YANG's first wave). A partitioned device cannot know the other claimants; a winner rule picks the canonical record among acts that already happened, and the loser's record stays visible, as Syncthing keeps a conflict copy.
+# ''Temporal and Restate'' (YANG, MEASURED): one open execution per workflow id, and "Use Existing" hands a second asker the open run; Restate's awakeable is a one-shot id an outside party resolves, the shape of a human approval. Both rest on one ordering server.
+# ''No clockless claim expiry exists in the field'' (both, LEAD): the pair proposes release, takeover and causal voids; staleness stays a device's local suspicion.
+# ''The log belongs to the face'' (both converged, LEAD grounded in the repo's ontology): a vessel-held bag would need a second roster and break one owner per registry; a face plane derived from the tag syncs to every device the face admits.
+# ''The far agent'' (YANG, LEAD shaped by UCAN and XRPC): its own key and a narrow delegation; a relay seat admits its signed invocation and countersigns only the admission; the answering device signs the receipt.
+
+<<~/ahu>>
+
+<<~ ahu #/sources>>
+
+!! Sources (accessed 2026-10-20)
+
+* Matrix send-to-device: https://raw.githubusercontent.com/matrix-org/matrix-spec/main/content/client-server-api/modules/send_to_device.md ; transaction ids: https://spec.matrix.org/latest/client-server-api/
+* WhatsApp multi-device: https://engineering.fb.com/2021/07/14/security/whatsapp-multi-device/
+* Syncthing syncing: https://docs.syncthing.net/users/syncing.html
+* Keyhive notebook: https://www.inkandswitch.com/keyhive/notebook/
+* Kleppmann, distributed locking: https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html
+* UCAN invocation: https://github.com/ucan-wg/invocation
+* Temporal workflow ids: https://docs.temporal.io/workflow-execution/workflowid-runid
+* Restate external events: https://docs.restate.dev/develop/ts/external-events
+* OCapN locators: https://github.com/ocapn/ocapn/blob/main/draft-specifications/Locators.md
+* XRPC: https://atproto.com/specs/xrpc
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;cg3iVCtCetvYhLDJFrfBoc7sVU8TmvtGMDRGlv3vdLw
+
+<<^ code="&#x0004;" -> to="?">>

@@ -205,6 +205,8 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 ''`@daemon` HOLDS THE WORKING-MEMORY STAGE'': the surface an operator and an agent share, belonging to ''no other composed knowledge domain''. Every other wiki concerns something; this one holds the place two minds leave things for each other before either knows where they belong. That explains why an exemption would cost rather than merely look untidy — ''the one place work crosses between hands must land on disk to read, diff or commit''.
 
+''The daemon carries working memory alone'' (operator, 2026-10-20). The face's pins rest in the face's custody and `@persona`; verb summonses and their answers travel on the face's own intent plane, `@intents-<tag>`; the daemon bag beneath keeps only the vessel's own records. The daemon wiki shows the intent plane through a read-only view pane, never as its pipe (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-intent-plane">> #/the-split).
+
 !!! How it stands
 
 The daemon recipe expands the ordinary slots, then `attachDaemonWorking` resolves, registers and attaches `wikis/daemon/working` as its default writable (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:252-284`; `packages/lararium-mesh/src/wiki-recipe.ts:330-343`). A successful attachment establishes the working layer; an attachment failure throws `WorkingLayerAttachRefusal` and stops that boot path. The daemon working layer projects to `wikis/daemon/` (`open-daemon-vm.ts`, `node-daemon-island.ts`); `bags/daemon` remains distinct from that writable layer (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/as-mounted">>). A hand's delete of a canon-landed title writes an ordinary title-only tombstone into the working layer. Without a working layer, `UnroutedSaveRefusal` reaches the alert rail; the title remains owed and the wiki stays as the hand left it (`packages/lararium-tw5/src/island-adaptor.ts` `_tombstoneBag`).
@@ -345,6 +347,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SLQNJmUYgEPx7E0puwk4iyPMEY_J19T-L7yUgPkRI1E
+<<^ code="&#x0003;">>ni:///sha-256;bV0JiHqwfPz0VS4oE5eOGL0dl_baB5ajvYbrfEDOsYY
 
 <<^ code="&#x0004;" -> to="?">>

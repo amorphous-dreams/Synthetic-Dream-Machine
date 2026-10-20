@@ -1,0 +1,155 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/face-intent-plane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem"
+l-space   = "adjacent"
+role      = "the face intent plane: the channel of intent through each face's fleet of device vessels; the daemon's split into working memory, intent and per-vessel records; who answers an intent with no election and no clock; the far agent; and the rubric for what earns a place in a face's log"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/api/pono/face-intent-plane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/face-intent-plane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The face intent plane ~ the channel of intent through a face's fleet
+
+The operator un-asked the daemon doc's whole position on 2026-10-20 and kept one point pinned: //the daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels.// A two-wave research pair read the field (the research rests at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026">>) and the operator approved the model below the same day: //"Approve your leans, land the full models into the architecture now."//
+
+The model in one line: ''the daemon wiki keeps working memory; a face's intents travel on that face's own intent plane; a vessel's own records rest in its daemon bag.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-split>>
+
+!! The split ~ what the daemon doc carried, and where each part goes
+
+|! Part |! Its home |! Why |
+| The face's pins (group, signer, KEL prefix, device edge) | the face's custody and `@persona-<tag>` | identity belongs to the face; the floor reads none of them until the face's atom lights (`K15` step 2c) |
+| The working-memory stage (`wikis/daemon/working`) | ''the daemon wiki, unchanged'' | the slate two minds leave things on before either knows where they belong, per vessel and per hand; it reads pono |
+| Verb summonses and their answers | ''the face's intent plane'' (#/the-plane) | the channel of intent: addressed, answered by receipt, face-owned, clockless |
+| Per-vessel records (boot outcomes, residency, alerts, claims in flight, local verbs' receipts) | the vessel's daemon bag, unmirrored | they belong to one vessel; one owner, the vessel |
+
+The daemon wiki shows the intent plane through a read-only view: the pane where the operator and an agent watch intents and receipts flow. It stops serving as the pipe.
+
+<<~/ahu>>
+
+<<~ ahu #/the-plane>>
+
+!! The plane ~ one face-owned, append-only log
+
+* ''A fifth face plane'', `@intents-<tag>`, beside `@persona`, `@circles`, `@identities` and `@sessions` (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>). It derives from the PersonaGroup's tag like its siblings, so every device that joins the face derives its name and syncs it with no extra provisioning; two faces on one device share no entry; nothing stands above it. The PersonaGroup mints it and delegates append to each device edge; the mint order binds as for every face plane.
+* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>).
+* ''Entries append, never edit'', each signed by the atom of the device that writes it (a far agent's by its own key, #/the-far-agent). Kinds:
+** `intent`: an invocation naming its verb, its arguments, its audience and its causal bound (#/no-clock). Its id is the content hash of issuer, verb, arguments and nonce, so every device derives it offline and a replayed copy carries the same id. An idempotent verb takes the empty nonce.
+** `outcome`: a receipt whose `cause` names the intent's id and whose signer names the device that acted.
+** `asks` and `answer`: an outcome that needs a hand (a human approval, a missing capability) names what answers it; any session wearing the face answers by an entry citing the ask's id.
+** `claim`, `release`, `takeover`: soft steering for a long act (#/who-answers); never safety.
+** `supersede` and `cancel`: an issuer's or the operator's later word on an intent.
+* ''The audience'' names one of four modes, as data: one pinned device (by atom), an ordered preference list of devices, a capability class (any device holding a named capability), or every device. Per-device inboxes stay views of the plane, never storage.
+
+<<~/ahu>>
+
+<<~ ahu #/who-answers>>
+
+!! Who answers ~ stand-down first, idempotent effects as the floor, no election
+
+The field holds no leaderless election for "any device of a fleet", and a lease cannot give mutual exclusion even with a clock: a paused holder still acts. So the plane never rests safety on a claim.
+
+# ''Stand down on an outcome.'' Before acting, a device reads the plane for an outcome in its audience slot; where one stands, it does nothing.
+# ''Safety lives in the effect.'' Every verb sorts into one of three classes, declared with the verb: ''idempotent or convergent'' (two answers harmless; keyed by the intent's id), ''per-device'' (its effect touches one vessel; one owner by construction), ''single-effect fleet-wide'' (two answers harm). The third class MUST NOT address "any device": an issuer pins its executor, or a human `answer` names the executing atom. An intent that breaks this refuses at issue.
+# ''The winner reads, never elects.'' Where two outcomes stand for one slot after a merge, the outcome of the earliest device in the intent's own preference list counts; outside a list, the outcome whose `H(atom ‖ intent id)` reads lowest counts. Every other outcome stays in the log, marked a duplicate: the loser's act already happened, and its record stays visible.
+# ''A claim steers effort'' on a long act: a claimant appends `claim`, then its outcome or `release`. Another device may append `takeover` naming the claim; a fenced effect accepts an act only from the current claim, and an idempotent one converges either way.
+
+<<~/ahu>>
+
+<<~ ahu #/no-clock>>
+
+!! No clock ~ nothing expires by time
+
+* ''A claim never expires.'' It ends by its own outcome, by `release`, or by `takeover`. A device MAY suspect a claim stale by its own local elapsed time and decide to try a takeover; no clock value enters the log or settles anything.
+* ''An intent voids by a causal event'' named in its bound: superseded by a later entry, its issuer's delegation revoked, the face's roster passing a named edge, or the operator's `cancel`. A device that merges the void before acting declines; one that acted before merging leaves a recorded act, never a silent loss.
+* ''The operator's release always wins'': a `release` or `cancel` signed for the face outranks any claim, by authority, never by order.
+* ''An `every` intent reaches a device that joins after it'', unless its bound names a roster edge; the reader evaluates the audience against the roster it holds.
+* ''Compaction folds by the operator's act alone'': an answered intent and its outcomes fold into a summary entry when the operator runs the fold, never on a timer.
+
+<<~/ahu>>
+
+<<~ ahu #/the-far-agent>>
+
+!! The far agent ~ an AI that acts from afar
+
+An agent off every device of the face (a cloud sandbox, another machine) never holds an atom: a shared act never makes a shared secret.
+
+* The agent holds its own key and a narrow delegation from the face: a verb prefix, an argument policy and a causal bound in place of an expiry time.
+* It signs an `intent` and hands it to a ''relay seat'': a vessel of the face with a door off the local socket, opened per face, ring-gated and off by default. The relay verifies the chain and appends the entry carrying the AGENT's signature; it countersigns only its admission.
+* The answering device signs the outcome with its atom, `cause` naming the invocation. A reader verifies agent → delegation → face, invocation → outcome, and atom → device edge → face, and trusts the relay for nothing after admission.
+* A revoked delegation refuses on read, wherever the revocation arrives first; an act admitted before the revocation arrived stays recorded as revoked-after-acting.
+* The relay seat adds a door, so its ring rules and its research land before it builds.
+
+<<~/ahu>>
+
+<<~ ahu #/the-rubric>>
+
+!! The rubric ~ what earns a place in a face's log
+
+The operator's tension, 2026-10-20: //every little action must not end up in each face's log; each keystroke replaces a cached invariant tiddler in memory with another, so a draft mid-edit does not belong.// The plane carries a hand's ''decisions that cross devices'', never its ''motion''. An entry belongs on the plane only when every test below holds:
+
+# ''It crosses a device boundary.'' Its effect or its answerer stands on some device other than the one where the hand acts, or the fleet must read its outcome. An act whose effect and observers rest on one vessel leaves at most a receipt in that vessel's daemon bag.
+# ''It settles.'' A hand committed it: save-and-publish, ask, approve, join, re-key, move a carrier's residency, grant, revoke. A keystroke, a cursor, a selection, a mid-edit draft, a cached invariant tiddler and every `$:/temp`, `$:/state` and `$:/status` title never qualify; they live in working memory and the volatile tiers.
+# ''It acts on content; it never carries content.'' Content travels on its own bag's document and its own sync. The plane names a carrier by its address or CID and says what to do with it; a body never rides an entry.
+# ''It expects an answer.'' An intent addresses someone and awaits an outcome. A broadcast of state that nobody answers belongs on a plane or document of its own, never here.
+# ''Its authority matters later.'' Someone may ask who asked and who acted; the entry exists to answer that.
+
+''Granularity'': one entry per decision, never per change. A session's edits coalesce in working memory, and the hand's commit turns them into one intent at most. ''Progress'': no heartbeats; between an intent and its outcome only `claim`, `asks` and their answers appear; progress detail rests in the acting vessel's own bag. ''Rate'': the plane's entry rate follows the rate of decisions by humans and agents, never the rate of input; a witness counts entries per committed act.
+
+|! An act |! Where it goes |
+| a keystroke in a tiddler | working memory; never written as an entry |
+| a draft mid-edit | `wikis/<slug>/working` or the daemon wiki's working stage |
+| saving a tiddler in the face's own wiki | that wiki's bag and its own sync; no intent |
+| "move this carrier to the crossroads" | an `intent`, its `outcome` on the plane |
+| "admit this new device to the face" | an `intent` pinned to the hearth that holds the root |
+| an agent's request for approval | an `asks`, answered by a session wearing the face |
+| a vessel's boot outcome | the vessel's daemon bag |
+| `lares meme get` on the local socket, touching that vessel alone | no entry; a receipt in that vessel's daemon bag |
+
+''The myth'': the conch blows for decisions, never for breaths. The slate holds the chalk; the conch carries the call, names who should answer, and hears who did.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reds>>
+
+!! The reds ~ what a test must show for the plane to hold
+
+# Two partitioned devices both answer an idempotent intent addressed to a class; after the merge the effect equals one run, one outcome counts and both stand recorded.
+# A device that merges an outcome for its slot before acting performs no effect (a spy on the effect).
+# A pinned intent never runs on another device, though that device holds the capability.
+# A single-effect fleet-wide verb addressed to a class refuses at issue; the same verb pinned, or named by a human `answer`, issues.
+# A zombie claimant acts after a `takeover`: a fenced effect refuses its act, an idempotent one converges, and a clock injected to throw never gets read.
+# A replayed intent keeps its id and draws no second effect; the control, a fresh nonce, draws a new id.
+# An `every` intent draws one outcome per device, never one in all (dedupe stays scoped to the audience slot).
+# Two faces on one vessel share no entry; a device that joins a face derives the plane and syncs it with no provisioning.
+# A far agent's intent, admitted by a relay, verifies on a device that never saw the relay; a revoked delegation refuses on read, the revocation arriving first or after; a relay that alters an argument breaks the signature.
+# A device asleep across a voiding event declines on waking; an intent with no bound gets honored.
+# The plane never reaches the mirror (the tree-clean witness, with a projected wiki as its known positive).
+# The rubric holds: a hundred keystrokes and one save in a face's wiki write no entry; one "move to crossroads" writes one intent and one outcome. A seeded duplicate-answer fixture trips the duplicate counter before a zero gets trusted.
+
+<<~/ahu>>
+
+<<~ ahu #/the-build>>
+
+!! The build ~ roadmap row `I1`
+
+Row `I1` at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat after its own research. The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Ojmgpl0XIzQtku_tme_w08CRifpRdsRrPRJpyOqSVnA
+
+<<^ code="&#x0004;" -> to="?">>
