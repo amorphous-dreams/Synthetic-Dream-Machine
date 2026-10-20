@@ -43,7 +43,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
 import { plainField } from "../../packages/lararium-mesh/src/stored-value.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
-import type { DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
+import { countersignDeviceDelegation, type DeviceDelegationRootHalf, type DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { composeFleetJoinRequest, fleetJoinSealPair, readFleetJoinOffer } from "../../packages/lararium-mesh/src/fleet-join.js";
 import { mintVesselFaceKey } from "../../packages/lararium-mesh/src/face-authority.js";
 import { createPrivateKey, sign as edSign } from "node:crypto";
@@ -180,7 +180,7 @@ beforeAll(async () => {
   if ("refusal" in offer) throw new Error(`the hearth's offer refuses: ${offer.refusal}`);
   const faceKeys = new Map<string, Uint8Array>();
   const request = await composeFleetJoinRequest({
-    offer, vesselKey: joineeKey, sealKey: fleetJoinSealPair().key,
+    offer, atomKey: joineeKey, sealKey: fleetJoinSealPair().key,
     mintFaceKey: async () => { const m = await mintVesselFaceKey(); faceKeys.set(m.publicKey, m.secret); return m.publicKey; },
     custody: { signAsVesselFace: async (_scope, key, image) => signUnder(faceKeys.get(key)!, image) },
     sign: async (image) => Buffer.from(signUnder(seed, image)).toString("hex"),
@@ -189,7 +189,9 @@ beforeAll(async () => {
   writeFileSync(files.request, JSON.stringify(request));
   const answered = await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer]);
   if (answered.code !== 0) throw new Error(`fleet join answer failed (${answered.code})\n${answered.stderr.slice(-800)}`);
-  edge = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationTiddler } }).edge?.deviceEdge ?? null;
+  // The answer carries the root's half; the joinee countersigns it with its own atom, as a landing does.
+  const half = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationRootHalf } }).edge?.deviceEdge ?? null;
+  edge = half ? await countersignDeviceDelegation(half, async (image) => Buffer.from(signUnder(seed, image)).toString("hex")) : null;
 }, 240_000);
 
 afterAll(async () => { await lar?.stop(); if (courier) rmSync(courier, { recursive: true, force: true }); });

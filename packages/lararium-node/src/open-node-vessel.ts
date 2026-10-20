@@ -2166,6 +2166,7 @@ async function prepareNodeBootOn(
         : sovereign.writeVeilArchive(bytes, mountedFace));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
+    const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
@@ -2174,7 +2175,9 @@ async function prepareNodeBootOn(
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.
-      ...(personaGroupId   ? { personaGroupId }   : {}),
+      // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
+      // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
+      ...(faceLit && personaGroupId ? { personaGroupId } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -2188,11 +2191,11 @@ async function prepareNodeBootOn(
         })),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
-      ...(signerDid ? { signerDid } : {}),
-      ...(personaKelPrefix && personaKelChain
+      ...(faceLit && signerDid ? { signerDid } : {}),
+      ...(faceLit && personaKelPrefix && personaKelChain
         ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } }
         : {}),
-      ...(deviceEdge ? { deviceEdge } : {}),
+      ...(faceLit && deviceEdge ? { deviceEdge } : {}),
       ...(archiveBytes ? { archiveBytes } : {}),
       ...(outboxKey ? { outboxKey } : {}),
     };
