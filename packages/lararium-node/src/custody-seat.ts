@@ -149,6 +149,11 @@ export async function removeCustodyRow(home: CustodyHome, file: string, when?: (
   return (await openedCustody()).removeRow(home, file, when);
 }
 
+/** Move a row pair under one holder claim; both rows keep standing if the destination holds other bytes. */
+export async function moveCustodyRow(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void> {
+  return (await openedCustody()).moveRow(home, source, destination, expected);
+}
+
 /**
  * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
  * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where

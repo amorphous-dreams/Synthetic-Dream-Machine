@@ -64,7 +64,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const atomSeed = await loadFaceAtomOfGroup(anchors.personaGroupId);
   if (!atomSeed) throw new Error("fixture: this face holds no atom");
   const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
-  const veilArchiveBytes = await loadVeilArchive(args.handleIndex);
+  const veilArchiveBytes = await loadVeilArchive(anchors.personaGroupId);
   const archiveBytes = await loadIdentityArchive();
 
   const oracle = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: daemonUrl } } } } as unknown as LarDoc);
@@ -98,7 +98,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     // The island's Archives rest where a vessel rests them: sealed rows under this root's own custody. A wrap
     // rests the wrapping identity's Archive first, so an island that stands again opens what it wrapped.
     persistArchive: (bytes: Uint8Array) => persistIdentityArchive(bytes),
-    persistVeilArchive: (bytes: Uint8Array) => persistVeilArchive(bytes, args.handleIndex),
+    persistVeilArchive: (bytes: Uint8Array) => persistVeilArchive(bytes, anchors.personaGroupId),
     ...(args.sessionProof ? { sessionProof: args.sessionProof } : {}),
   });
   const kh = await opts.verifierFactory!(ctx) as { dispose?: () => Promise<void> };

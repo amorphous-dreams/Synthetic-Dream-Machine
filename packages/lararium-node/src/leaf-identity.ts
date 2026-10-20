@@ -38,7 +38,7 @@ export async function loadLeafIdentity(arm: "place" | "face" = "place", face?: {
     if (!face) throw new Error("a face leaf names its worn handle and PersonaGroup");
     const seed = await loadFaceAtomOfGroup(face.personaGroupId);
     if (!seed) throw new Error("this face holds no atom; re-found or re-admit it");
-    const archiveBytes = await loadVeilArchive(face.handleIndex);
+    const archiveBytes = await loadVeilArchive(face.personaGroupId);
     if (!archiveBytes) throw new Error("this face holds no atom archive; re-found or re-admit it");
     const atom = faceAtomKeyFromSeed(seed, face.personaGroupId);
     const provider = new KeyhiveProvider();

@@ -313,7 +313,7 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "keyhive-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors" }),
     id({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
+         writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A group digest owns this local atom row; bundles leave its seed on this vessel.
     id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_GROUP_FILE, custody: "hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),

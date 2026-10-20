@@ -34,7 +34,7 @@ async function rig() {
 async function archiveOfGroup(group: string, inventory: ReadonlyMap<string, { index: number; anchors: IdentityAnchors }>): Promise<Uint8Array | null> {
   const stood = inventory.get(group);
   if (!stood || stood.anchors.personaGroupId !== group) return null;
-  return loadVeilArchive(stood.index);
+  return loadVeilArchive(stood.anchors.personaGroupId);
 }
 
 async function remember(index: number, inventory: Map<string, { index: number; anchors: IdentityAnchors }>) {
@@ -97,7 +97,7 @@ describe("the veil archive follows its group", () => {
       expect(c).not.toBe(a);
       expect(Buffer.from((await archiveOfGroup(a, inventory))!).equals(aBytes)).toBe(true);
       expect((await archiveOfGroup(c, inventory))?.length).toBeGreaterThan(0);
-      expect(readFileSync(veilArchivePath(1)).equals(readFileSync(veilArchivePath(2)))).toBe(false);
+      expect(readFileSync(veilArchivePath(a)).equals(readFileSync(veilArchivePath(c)))).toBe(false);
     });
   }, 180_000);
 });

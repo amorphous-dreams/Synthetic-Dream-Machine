@@ -5,13 +5,14 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 
-const fault = vi.hoisted(() => ({ throwAfterGroup: false }));
+const fault = vi.hoisted(() => ({ throwAfterGroup: false, group: "" }));
 vi.mock("../src/identity-anchors.js", async (importActual) => {
   const actual = await importActual<typeof import("../src/identity-anchors.js")>();
   return {
     ...actual,
     persistVeilArchive: async (...args: Parameters<typeof actual.persistVeilArchive>) => {
       if (fault.throwAfterGroup) {
+        fault.group = args[1];
         fault.throwAfterGroup = false;
         throw new Error("planted after the group row");
       }
@@ -69,8 +70,9 @@ describe("the founding seed moves in one act", () => {
       const groupRows = readdirSync(larIdentityDir()).filter((f) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(f));
       expect(groupRows).toHaveLength(1);
       const askRow = readdirSync(larIdentityDir()).filter((f) => f === pendingFoundingFile(ask));
-      const stoppedSeed = await loadPendingFoundingSeed(ask);
+      const stoppedSeed = await loadFaceAtomOfGroup(fault.group);
       expect(stoppedSeed).toHaveLength(32);
+      expect(await loadPendingFoundingSeed(ask)).toBeNull();
       expect(groupRows.length + askRow.length, "one row holds the seed after the interrupted handoff").toBe(1);
       const resumed = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(resumed.alreadyStood).toBe(false);

@@ -1,9 +1,13 @@
 /** Each face's atom rests in an identity row named by its PersonaGroup digest. */
 import { createHash } from "node:crypto";
-import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, type FaceAtomRows } from "@lararium/mesh";
-import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readdirSync } from "node:fs";
+import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRows, type StoredLarRecord } from "@lararium/mesh";
+import { openCheckpoint } from "@lararium/keyhive";
+import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow } from "./custody-seat.js";
 import { loadActivePersonaIndex } from "./node-vessel-identity.js";
-import { loadIdentityAnchors } from "./identity-anchors.js";
+import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
+import { personaGroupDigest } from "./persona-group-file.js";
+import { larIdentityDir } from "./vessel-paths.js";
 
 export const FACE_ATOM_GROUP_FILE = /^face-atom-g([0-9a-f]{64})\.bin$/;
 export const FACE_ATOM_ASK_FILE = /^face-atom-ask-([0-9a-f]{64})\.bin$/;
@@ -11,7 +15,7 @@ export const FACE_ATOM_ASK_FILE = /^face-atom-ask-([0-9a-f]{64})\.bin$/;
 const digest = (value: string): string => createHash("sha256").update(value).digest("hex");
 export const faceAtomGroupFile = (group: string): string => {
   if (!group) throw new Error("face atom row names no PersonaGroup");
-  return `face-atom-g${digest(group)}.bin`;
+  return `face-atom-g${personaGroupDigest(group)}.bin`;
 };
 
 /** The founding checkpoint's ask, with the compartment included in its custody name. */
@@ -96,6 +100,46 @@ export async function standPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Ui
 /** Clear the ask row after the group row keeps its seed. */
 export async function retirePendingFoundingSeed(ask: FoundingAtomAsk): Promise<void> {
   await removeCustodyRow("identity", pendingFoundingFile(ask));
+}
+
+/** Hand the founding seed from its ask row to its group row under one custody claim. */
+export async function keepAndRetireFoundingSeed(group: string, ask: FoundingAtomAsk, seed: Uint8Array): Promise<void> {
+  if (seed.length !== 32) throw new Error("founding atom holds no 32-byte seed");
+  await moveCustodyRow("identity", pendingFoundingFile(ask), faceAtomGroupFile(group), seed);
+}
+
+/**
+ * An interrupted handoff leaves its seed in a group row before anchors land. Open the founding checkpoint
+ * with each unanchored group seed; its authenticated scope and group id select the one this ask can resume.
+ */
+export async function recoverFoundingSeedFromGroup(
+  ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>,
+): Promise<Uint8Array | null> {
+  const scope = JSON.stringify([ask.hearthTrueName, ask.bindingMode, ask.personaKelPrefix, ask.mount]);
+  const prefix = "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/";
+  const bodies = Object.entries(checkpoints).filter(([title]) => title.startsWith(prefix))
+    .map(([, record]) => tiddlerText(record as StoredLarRecord))
+    .filter((body): body is string => body !== null);
+  if (bodies.length === 0) return null;
+  const anchored = new Set<string>();
+  for (const index of await listAnchoredPersonas()) {
+    const anchors = await loadIdentityAnchors(index);
+    if (anchors) anchored.add(anchors.personaGroupId);
+  }
+  let matched: Uint8Array | null = null;
+  for (const file of readdirSync(larIdentityDir()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
+    const seed = await readCustodyRow("identity", file);
+    if (!seed || seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
+    for (const body of bodies) {
+      let checkpoint: { scope?: unknown; result?: { personaGroupId?: unknown } };
+      try { checkpoint = await openCheckpoint(body, seed); } catch { continue; }
+      const group = checkpoint.result?.personaGroupId;
+      if (checkpoint.scope !== scope || typeof group !== "string" || anchored.has(group) || faceAtomGroupFile(group) !== file) continue;
+      if (matched) throw new Error("founding ask opens more than one unanchored group");
+      matched = seed;
+    }
+  }
+  return matched;
 }
 
 /** The active face's atom key names its local realm and edge ledgers. */

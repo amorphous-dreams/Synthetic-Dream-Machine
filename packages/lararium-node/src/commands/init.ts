@@ -38,7 +38,7 @@ import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
-import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, standPendingFoundingSeed, keepFaceAtom, retirePendingFoundingSeed, type FoundingAtomAsk } from "../face-atom-store.js";
+import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, type FoundingAtomAsk } from "../face-atom-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
@@ -271,7 +271,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
     // An archive already at rest restores into the admit's provider, so the archive written back keeps what it held.
-    const keptArchive = await loadVeilArchive(handleIndex);
+    const keptArchive = await loadVeilArchive(payload.personaGroupId);
     const standingAdmitArchive = keptArchive && await archiveIsOf(admitSeed, keptArchive) ? keptArchive : null;
     const priorDaemonUrl = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text : undefined;
     const admitDaemon = priorDaemonUrl
@@ -307,7 +307,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     await repo.flush();
 
     if (landsBeside) {
-      await persistVeilArchive(archive, handleIndex);
+      await persistVeilArchive(archive, payload.personaGroupId);
       await persistIdentityAnchors({
         personaGroupId: payload.personaGroupId,
         meshCabalDocIdHex: payload.meshCabalDocIdHex,
@@ -332,7 +332,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // from the archive's prekey secrets beside the membership this vessel absorbed, as a founder's does. The
     // daemon's nexus-join dial-out reads it from there, and a cardless vessel never speaks at a gate. A stand
     // that restores from the archive presents the same card the hearth admitted.
-    await persistVeilArchive(archive, 0);
+    await persistVeilArchive(archive, payload.personaGroupId);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
     await persistIdentityAnchors({
@@ -573,8 +573,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
     ?? (priorAnchors && priorAnchors.foundingAskDigest === foundingAskDigest(foundingAsk)
       ? await loadFaceAtomOfGroup(priorAnchors.personaGroupId) : null)
+    ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
-  const priorVeilArchive = await loadVeilArchive(handleIndex);
+  const priorVeilArchive = priorAnchors ? await loadVeilArchive(priorAnchors.personaGroupId) : null;
 
   const face = await foundTheFace({
     repo,
@@ -607,7 +608,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
-  await keepFaceAtom(face.personaGroupId, atomSeed);
+  await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
   await repo.flush();
 
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the
@@ -623,11 +624,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // over a missing archive or missing anchors.
   //
   // WHAT AN UNCOMMITTED FOUNDING LEFT BELONGS TO NO FACE. Only the bootstrap entry written here makes a group a
-  // face; a stopped run's group stays in the store named by nothing. The checkpoint holds the founding bytes across
-  // that stop: the run that asks the same ask re-enters the SAME atom seed, re-lands the checkpoint's group, cabal
-  // and archive, and commits them; a run that asks another ask mints its own PersonaGroup and MeshCabal, and its
-  // archive replaces the row.
-  await persistVeilArchive(face.veilArchive, handleIndex);
+  // face. The checkpoint and group row let the same ask re-enter with its seed, group, cabal, and archive.
+  // Another ask mints its own PersonaGroup and keeps its archive in another group row.
+  await persistVeilArchive(face.veilArchive, face.personaGroupId);
   const founderAnchors: IdentityAnchors = {
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupId:   face.personaGroupId,
@@ -642,7 +641,6 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   };
   await persistIdentityAnchors(founderAnchors, handleIndex);
   writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
-  await retirePendingFoundingSeed(foundingAsk);
   await retireFaceCheckpoint(daemonHandle, atomSeed);
   await repo.flush();
 

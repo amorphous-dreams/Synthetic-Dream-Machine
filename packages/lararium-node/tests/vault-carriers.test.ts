@@ -69,7 +69,7 @@ const SOWN: Record<string, string> = {
   "identity/custody-root.bin":                  "root",
   "identity/outbox-key.bin":                    "x",
   "identity/keyhive-archive.bin":               "x",
-  "identity/veil-archive-h0.bin":               "x",
+  [`identity/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
@@ -187,7 +187,7 @@ describe("the carrier table", () => {
       expect(at("seal", `cofound-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "hot", face: "vessel" });
       expect(at("identity", `cadence-key-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "cold", face: "vessel", keyClass: "device-minted" });
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
-      expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });
+      expect(at("identity", `veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: "vessel", bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");

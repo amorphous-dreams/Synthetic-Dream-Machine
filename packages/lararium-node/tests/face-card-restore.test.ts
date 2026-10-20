@@ -176,7 +176,7 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(anchors.personaGroupId).not.toBe(face.group);
     const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key;
     expect(atomKey).not.toBe(face.atomKey);
-    expect(existsSync(veilArchivePath(1))).toBe(true);
+    expect(existsSync(veilArchivePath(anchors.personaGroupId))).toBe(true);
     const here = await loadVesselVerifyingKey();
     expect(here).not.toBe(a.vesselKey);
     expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(atomKey.toLowerCase());

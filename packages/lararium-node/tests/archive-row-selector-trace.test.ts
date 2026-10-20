@@ -2,10 +2,9 @@
  * K15 step 0, the archive-row-selector joint (`docs/pono/k15-custody-step-zero#/open-joints`).
  *
  * Every node writer and reader of a Keyhive or Veil archive row, traced from source. Each site names the selector
- * it hands the row: `none` (a fixed row), `handle-index` (a local `h<N>` the wear pointer or anchors supply), or
- * `bytes-only` (a callback that carries bytes and no row). No site passes an authenticated PersonaGroup, so the
- * joint stays open and no bytes move. A new site, or a site that changes its count, reads red until this table
- * names it; the day a site authenticates its group, its row flips to `authenticated` in the same commit.
+ * it hands the row: `none` (a fixed row), `authenticated` (a PersonaGroup from payload, anchors, or daemon pins), or
+ * `bytes-only` (a callback that carries bytes and no row). A new site, or a site that changes its count, reads
+ * red until this table names it.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,13 +22,13 @@ const CALL = (name: string): RegExp => new RegExp(`\\b${name}\\(`, "g");
 const SITES: readonly Site[] = [
   { file: join(NODE, "commands/init.ts"), token: CALL("loadIdentityArchive"), count: 1, selector: "none", act: "place founding reads the place's own archive; a place holds no PersonaGroup" },
   { file: join(NODE, "commands/init.ts"), token: CALL("persistIdentityArchive"), count: 1, selector: "none", act: "place founding writes the place's own archive" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "handle-index", act: "admit reads the joined face's atom archive at its handle index and persona new reads the prior face's by h<N>" },
-  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 3, selector: "handle-index", act: "admit writes the joined face's atom archive at h0 on a faceless place and at the next index beside a worn face, and persona new writes the new face's by h<N>, after the atom row and before its anchors commit" },
-  { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "handle-index", act: "the face presenter reads its atom's archive by the worn h<N>" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("loadVeilArchive"), count: 2, selector: "authenticated", act: "admit reads the payload group and persona new reads the prior anchored group" },
+  { file: join(NODE, "commands/init.ts"), token: CALL("persistVeilArchive"), count: 3, selector: "authenticated", act: "admit writes the payload group's archive and persona new writes the founded group's archive" },
+  { file: join(NODE, "leaf-identity.ts"), token: CALL("loadVeilArchive"), count: 1, selector: "authenticated", act: "the face presenter reads the face's group archive" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeArchive\(/g, count: 1, selector: "none", act: "boot's write door for the place archive" },
-  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "handle-index", act: "boot's write door for the mounted face's veil archive, h<N> captured from the wear pointer" },
+  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "authenticated", act: "boot's write door uses the mounted face's group from its mount or daemon pins" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.archive\(/g, count: 1, selector: "none", act: "boot reads the place's archive whatever face is worn" },
-  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.veilArchive\(/g, count: 1, selector: "handle-index", act: "boot reads the mounted face's veil archive by h<N>" },
+  { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.veilArchive\(/g, count: 1, selector: "authenticated", act: "boot reads the mounted face's group archive" },
   { file: join(NODE, "node-daemon-island.ts"), token: /sealOnVessel\("(?:archive|veil)"/g, count: 2, selector: "bytes-only", act: "the worker port carries a carrier label and bytes, no row" },
   { file: join(KEYHIVE, "operator-daemon-behavior.ts"), token: /\bpersistArchiveFloor\(/g, count: 1, selector: "bytes-only", act: "boot's archive floor writes both rows through byte-only callbacks" },
   { file: join(KEYHIVE, "operator-daemon-behavior.ts"), token: /provider === veilKh \? persistVeilArchive : persistArchive/g, count: 1, selector: "bytes-only", act: "a content-key wrap rests the provider's archive: provider identity picks the row" },
@@ -61,9 +60,9 @@ describe("the node archive-row selector trace (K15 step zero joint)", () => {
     expect(stray).toEqual([]);
   });
 
-  it("holds the joint open: no site hands its row an authenticated PersonaGroup", () => {
-    expect(SITES.filter((s) => s.selector === "authenticated")).toEqual([]);
-    expect(new Set(SITES.map((s) => s.selector))).toEqual(new Set(["none", "handle-index", "bytes-only"]));
+  it("names the sites that hand a PersonaGroup to a veil archive row", () => {
+    expect(SITES.filter((s) => s.selector === "authenticated")).toHaveLength(5);
+    expect(new Set(SITES.map((s) => s.selector))).toEqual(new Set(["none", "authenticated", "bytes-only"]));
   });
 
   // CONTROLS: the scan reads a site missing or a stray present.

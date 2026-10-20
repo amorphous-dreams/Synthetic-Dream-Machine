@@ -106,7 +106,7 @@ describe("a node holds A while B lands", () => {
       const groupA = faceA.personaGroupId;
       const anchorsA = await loadIdentityAnchors(0);
       const seedA = await loadFaceAtomOfGroup(groupA);
-      const archiveA = await loadVeilArchive(0);
+      const archiveA = await loadVeilArchive(groupA);
       if (!anchorsA || !seedA || !archiveA) throw new Error("face A did not finish founding");
       const atomA = faceAtomKeyFromSeed(seedA, groupA);
       const before = packedBootstrap();
@@ -129,7 +129,7 @@ describe("a node holds A while B lands", () => {
       // A's anchors, atom, archive, planes and singular mount remain exactly as they stood.
       expect(await loadIdentityAnchors(0)).toEqual(anchorsA);
       expect(await loadFaceAtomOfGroup(groupA)).toEqual(seedA);
-      expect(await loadVeilArchive(0)).toEqual(archiveA);
+      expect(await loadVeilArchive(groupA)).toEqual(archiveA);
       const after = packedBootstrap();
       expect(after[PERSONA_GROUP_ID_TIDDLER]).toEqual(pinA);
       for (const title of planeTitlesA) expect(after[title]).toEqual(planeEntriesA[title]);
@@ -139,7 +139,7 @@ describe("a node holds A while B lands", () => {
       expect((await loadIdentityAnchors(1))?.personaGroupId).toBe(groupB);
       expect(await loadFaceAtomOfGroup(groupB)).toEqual(seedB);
       expect(seedB).not.toEqual(seedA);
-      const archiveB = await loadVeilArchive(1);
+      const archiveB = await loadVeilArchive(groupB);
       expect(archiveB?.length).toBeGreaterThan(0);
       expect(archiveB).not.toEqual(archiveA);
       const planesB = personaScopedBagIds(groupB);
@@ -160,7 +160,7 @@ describe("a node holds A while B lands", () => {
       await keepFaceAtom(payload.personaGroupId, sharedSeedB);
       await land({ storageDir: larDataDir(), genesisDir, force: true, admitPayload: payload, custody: { slots: [] } });
       expect((await loadIdentityAnchors(0))?.personaGroupId).toBe(payload.personaGroupId);
-      expect((await loadVeilArchive(0))?.length).toBeGreaterThan(0);
+      expect((await loadVeilArchive(payload.personaGroupId))?.length).toBeGreaterThan(0);
       const packed = packedBootstrap();
       expect(packed[PERSONA_GROUP_ID_TIDDLER]?.text).toBe(payload.personaGroupId);
       const planes = personaScopedBagIds(payload.personaGroupId);

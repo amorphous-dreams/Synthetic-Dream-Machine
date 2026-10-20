@@ -232,7 +232,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(anchors.personaGroupId).not.toBe(a.group);
     const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key;
     expect(atomKey).not.toBe(a.atomKey);
-    expect(existsSync(veilArchivePath(1))).toBe(true);
+    expect(existsSync(veilArchivePath(anchors.personaGroupId))).toBe(true);
     // The restored face binds THIS hearth: its edge names the seed charter this vessel founded.
     expect(anchors.deviceEdge!.hearthTrueName).toBe((await loadIdentityAnchors(0))!.deviceEdge!.hearthTrueName);
     const here = await loadVesselVerifyingKey();

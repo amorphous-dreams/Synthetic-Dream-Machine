@@ -397,11 +397,11 @@ export interface SovereignReaders {
   /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
-  readonly veilArchive: (handleIndex: number) => Promise<Uint8Array | null>;
+  readonly veilArchive: (personaGroup: string) => Promise<Uint8Array | null>;
   /** Seal the vessel's keyhive archive at rest. */
   readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
   /** Seal one face's veil archive at rest. */
-  readonly writeVeilArchive: (bytes: Uint8Array, handleIndex: number) => Promise<void>;
+  readonly writeVeilArchive: (bytes: Uint8Array, personaGroup: string) => Promise<void>;
   /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
   readonly outboxKey: () => Promise<Uint8Array>;
 }
@@ -2142,7 +2142,7 @@ async function prepareNodeBootOn(
     // receives it derived and holds no root.
     litFace = sovereign && deviceEdge ? mountedFace : null;
     const archiveBytes = sovereign ? await sovereign.archive() : null;
-    const veilArchiveBytes = sovereign && activeAtom ? await sovereign.veilArchive(mountedFace) : null;
+    const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
@@ -2159,7 +2159,7 @@ async function prepareNodeBootOn(
     if (sovereign) {
       setCustodyWriteDoor((carrier, bytes) => carrier === "archive"
         ? sovereign.writeArchive(bytes)
-        : sovereign.writeVeilArchive(bytes, mountedFace));
+        : personaGroupId ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("the mounted face names no PersonaGroup")));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
