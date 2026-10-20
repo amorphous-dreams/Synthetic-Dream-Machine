@@ -9,7 +9,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { buildDeviceDelegation, faceAtomKeyFromSeed, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
-import { InMemoryEventStore, KeyhiveProvider, runFaceJoinOperation } from "../src/index.js";
+import { InMemoryEventStore, KeyhiveProvider, runFaceJoinOperation, verifyFaceGrantRecord } from "../src/index.js";
 import type { FaceJoinContext } from "../src/index.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -54,7 +54,7 @@ async function stand() {
     operationStore: operations.store,
     grantPlane: { store: plane.store, heads: () => [String(plane.records.size)] },
   });
-  return { summons, input, operations, plane };
+  return { summons, input, operations, plane, ctxRoot: ctx.personaRootDid };
 }
 
 const standingGrant = (records: Map<string, LarTiddlerRecord>): { serial: number; text: string } => {
@@ -116,5 +116,23 @@ describe("a face's grant orders by its serial", () => {
     const serials = [...t.plane.records.values()].filter((r) => r.tiddler.title.startsWith("$:/lares/face-grant/")).map((r) => (JSON.parse(r.tiddler.text as string) as { serial: number }).serial);
     expect(serials, "one grant stands at the title").toHaveLength(1);
     expect(serials[0], "the later of two serialised issues carries serial 2").toBe(2);
+  });
+
+  test("S5 — a forged record at the title with a high serial never blocks a real issue, and the joinee's verify takes the real one", { timeout: 120_000 }, async () => {
+    const t = await stand();
+    // A real first grant, then a member's forgery of it: serial 999, the signature no longer covering the bytes.
+    await runFaceJoinOperation(t.input(t.summons(false)));
+    const title = [...t.plane.records.keys()].find((k) => k.startsWith("$:/lares/face-grant/"))!;
+    const real = JSON.parse(t.plane.records.get(title)!.tiddler.text as string) as Record<string, unknown>;
+    t.plane.records.set(title, { ...t.plane.records.get(title)!, tiddler: { ...t.plane.records.get(title)!.tiddler, text: JSON.stringify({ ...real, serial: 999 }) } } as LarTiddlerRecord);
+    const fresh = await runFaceJoinOperation(t.input(t.summons(true)));
+    expect(fresh["admitted"]).toBe(true);
+    const standing = JSON.parse(t.plane.records.get(title)!.tiddler.text as string) as { serial: number } & Record<string, unknown>;
+    expect(standing.serial, "the fresh issue stands over the forgery").toBeLessThan(999);
+    // The joinee's kit reads the record with the same law: the standing record verifies for the joinee.
+    const joineeKey = String(fresh["joineeAgentIdHex"]).replace(/^0x/i, "").slice(-64);
+    const verdict = await verifyFaceGrantRecord(standing, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]) });
+    expect(verdict).toEqual({ ok: true });
+    expect(await verifyFaceGrantRecord({ ...real, serial: 999 }, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]) }), "CONTROL: the forgery does not verify").toMatchObject({ ok: false });
   });
 });
