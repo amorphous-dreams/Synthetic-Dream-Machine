@@ -39,7 +39,7 @@ vi.mock("../src/node-vessel-identity.js", () => ({
   loadPersonaGroupRootVerifyingKey: async () => undefined,
   loadVesselVerifyingKey: async () => "vessel",
 }));
-vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtom: async () => new Uint8Array(32).fill(9) }));
+vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => new Uint8Array(32).fill(9) }));
 vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => ({}) }) }));
 vi.mock("../src/edge-board.js", () => ({ readVesselEdgeBoard: async () => ({ readings: new Map() }) }));
 vi.mock("../src/nexus-standing.js", () => ({

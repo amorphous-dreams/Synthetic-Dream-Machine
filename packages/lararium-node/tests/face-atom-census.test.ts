@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { carrierTable } from "../src/vault-carriers.js";
+import { faceAtomGroupFile } from "../src/face-atom-store.js";
 
 describe("the face atom carrier", () => {
-  it("rests as a hot, local D row owned by one handle", () => {
+  it("rests as a hot, local D row named by a group digest", () => {
     const row = carrierTable().find((candidate) => candidate.row === "face-atom");
     expect(row).toBeDefined();
     expect(row).toMatchObject({
@@ -10,9 +11,13 @@ describe("the face atom carrier", () => {
       writer: "face-atom-store", bundle: "stays",
       target: { classes: ["D"], lead: false, joint: null },
     });
-    const match = row!.match.exec("face-atom-h0.bin");
+    const match = row!.match.exec(`face-atom-g${"a".repeat(64)}.bin`);
     expect(match).not.toBeNull();
-    expect(row!.name(match!)).toBe("face-atom-h0");
-    expect(row!.face(match!)).toBe(0);
+    expect(row!.name(match!)).toBe(`face-atom-g${"a".repeat(64)}`);
+    expect(row!.face(match!)).toBe(`group:${"a".repeat(64)}`);
+    const named = faceAtomGroupFile("clear-persona-group");
+    expect(named).toMatch(/^face-atom-g[0-9a-f]{64}\.bin$/);
+    expect(named).not.toContain("clear-persona-group");
+    expect(row!.match.test(named)).toBe(true);
   });
 });

@@ -6,7 +6,7 @@
  *
  *   F1  a place founding seals the vessel's keyhive archive from its first act.
  *                                           control: before the founding no archive stands
- *   F2  THREE FACES KEEP THREE VEIL ARCHIVES. Each face founding seals its own `veil-archive-h<N>.bin`; each reads
+ *   F2  THREE FACES KEEP THREE VEIL ARCHIVES. Each face founding seals its own group row; each reads
  *       back its own bytes; no two rows hold the same bytes; a later face's founding leaves an earlier face's row
  *       byte-identical.
  *   F3  THE VEIL DERIVES FROM THE SEALED CUSTODY ROOT. The founder dyad's veil DID equals the one the custody
@@ -23,9 +23,9 @@
  *   F7  A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. A re-seed (`force`) over a standing archive restores from it:
  *       the archive at rest afterwards still knows a sentinel only the kept archive held.
  *                                           control: a provider stood from the seed alone knows no such agent
- *   F8  A FACE FOUNDING THAT STOPPED BEFORE ITS COMMIT POINT RUNS AGAIN WHOLE. Anchors and a veil archive with no
- *       bootstrap entry read as an unfinished founding: the act runs, re-derives the SAME veil from the kept tag,
- *       and lands the entry.                control: with the entry standing, the same call answers already-stood
+ *   F8  REMOVING A COMPLETED FACE'S BOOTSTRAP ENTRY STARTS A FRESH FOUNDING. The old group's atom and archive
+ *       stay with it; the new group receives its own atom and archive.
+ *                                           control: with the entry standing, the same call answers already-stood
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -38,7 +38,7 @@ import {
   DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, vesselDyads, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { CustodyLocked } from "../src/custody-holder.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import {
@@ -61,7 +61,7 @@ let archiveAbsentBefore = false;
 const sealedFiles = (): Record<string, Buffer> => {
   const out: Record<string, Buffer> = {};
   for (const f of readdirSync(larIdentityDir())) {
-    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin|veil-archive-h\d+\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin|veil-archive-g[0-9a-f]{64}\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
   }
   return out;
 };
@@ -105,17 +105,18 @@ describe("a founding keeps its archives, sealed per face", () => {
   test("F2 three faces keep three veil archives, each its own, none disturbed by a later founding", async () => {
     const genesisDir = join(root, "genesis");
     const kept: Buffer[] = [];
+    const groups: string[] = [];
     for (const n of [0, 1, 2]) {
-      expect(existsSync(veilArchivePath(n)), `h${n} holds no veil archive before its founding`).toBe(false);
       const face = await foundFace({ genesisDir, handleIndex: n });
       expect(face.alreadyStood).toBe(false);
-      expect(readVkCarrier(readFileSync(veilArchivePath(n)))).toBe("sealed");
-      kept.push(readFileSync(veilArchivePath(n)));
+      groups.push(face.personaGroupId);
+      expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
+      kept.push(readFileSync(veilArchivePath(face.personaGroupId)));
       for (let earlier = 0; earlier < n; earlier++) {
-        expect(readFileSync(veilArchivePath(earlier)).equals(kept[earlier]!), `h${earlier}'s row never moved while h${n} founded`).toBe(true);
+        expect(readFileSync(veilArchivePath(groups[earlier]!)).equals(kept[earlier]!), `h${earlier}'s row never moved while h${n} founded`).toBe(true);
       }
     }
-    const opened = await Promise.all([0, 1, 2].map((n) => loadVeilArchive(n)));
+    const opened = await Promise.all(groups.map((group) => loadVeilArchive(group)));
     for (const o of opened) expect(o && o.length).toBeGreaterThan(0);
     expect(Buffer.from(opened[0]!).equals(Buffer.from(opened[1]!))).toBe(false);
     expect(Buffer.from(opened[1]!).equals(Buffer.from(opened[2]!))).toBe(false);
@@ -124,7 +125,7 @@ describe("a founding keeps its archives, sealed per face", () => {
 
   test("F3 the founder dyad names its sealed atom, never the floor key", async () => {
     const anchors = (await loadIdentityAnchors(0))!;
-    const atomSeed = (await loadFaceAtom(0))!;
+    const atomSeed = (await loadFaceAtomOfGroup(anchors.personaGroupId))!;
     const atom = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId);
     const floorDid = didFromVerifyingKey(hex(await ed.getPublicKeyAsync(await loadVesselSigningSeed())));
     expect(atom.did).not.toBe(floorDid);
@@ -141,9 +142,9 @@ describe("a founding keeps its archives, sealed per face", () => {
 
   test("F4 the creator re-stands from its sealed archive and seats a member", async () => {
     const anchors = (await loadIdentityAnchors(1))!;
-    const atomSeed = (await loadFaceAtom(1))!;
+    const atomSeed = (await loadFaceAtomOfGroup(anchors.personaGroupId))!;
     const restood = standing(new KeyhiveProvider());
-    await restood.init({ seed: atomSeed, eventStore: new InMemoryEventStore(), archiveBytes: (await loadVeilArchive(1))! });
+    await restood.init({ seed: atomSeed, eventStore: new InMemoryEventStore(), archiveBytes: (await loadVeilArchive(anchors.personaGroupId))! });
     const guest = standing(new KeyhiveProvider());
     await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: new InMemoryEventStore() });
     const { id: guestId } = await restood.receiveContactCard(await guest.contactCard());
@@ -163,7 +164,6 @@ describe("a founding keeps its archives, sealed per face", () => {
     const bootstrapBefore = readFileSync(larBootstrapPath(), "utf8");
     await holder.lock();
     await expect(foundFace({ genesisDir, handleIndex: 3 })).rejects.toThrow(CustodyLocked);
-    expect(existsSync(veilArchivePath(3))).toBe(false);
     expect(existsSync(join(larIdentityDir(), "anchors-h3.json"))).toBe(false);
     expect(readFileSync(larBootstrapPath(), "utf8")).toBe(bootstrapBefore);
     const after = sealedFiles();
@@ -174,7 +174,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
     const face = await foundFace({ genesisDir, handleIndex: 3 });
     expect(face.alreadyStood).toBe(false);
-    expect(readVkCarrier(readFileSync(veilArchivePath(3)))).toBe("sealed");
+    expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
     expect(await listAnchoredPersonas()).toEqual([0, 1, 2, 3]);
   });
 
@@ -190,7 +190,6 @@ describe("a founding keeps its archives, sealed per face", () => {
       await holder.lock();
       await expect(seatSeedCharter()).rejects.toThrow(CustodyLocked);
       expect(roots()).toEqual([]);
-      expect(existsSync(veilArchivePath(0))).toBe(false);
       // control
       expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
       await seatSeedCharter();
@@ -236,15 +235,16 @@ describe("a founding keeps its archives, sealed per face", () => {
     }
   });
 
-  test("F8 a face founding that stopped before its bootstrap entry runs again and completes", async () => {
+  test("F8 removing a completed face's bootstrap entry founds a fresh group", async () => {
     const genesisDir = join(root, "genesis");
     const holder = seatedCustody()!;
     if (!holder.isUnlocked()) expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
     const before = (await loadIdentityAnchors(2))!;
-    const atomBefore = (await loadFaceAtom(2))!;
+    const atomBefore = (await loadFaceAtomOfGroup(before.personaGroupId))!;
+    const orphanArchive = readFileSync(veilArchivePath(before.personaGroupId));
     // control: the whole face answers already-stood
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);
-    // The founding as it stands one write short: the anchors and the veil archive rest, the entry never landed.
+    // The completed face loses its plane entry; its group and sealed rows remain an orphan's own.
     const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string };
     const packed = JSON.parse(plugin.text) as { tiddlers: Record<string, { text: string }> };
     const planes = personaScopedBagIds(before.personaGroupId);
@@ -256,7 +256,11 @@ describe("a founding keeps its archives, sealed per face", () => {
     const again = await foundFace({ genesisDir, handleIndex: 2 });
     expect(again.alreadyStood).toBe(false);
     const after = (await loadIdentityAnchors(2))!;
-    expect(hex((await loadFaceAtom(2))!), "the resumed founding keeps the same atom").toBe(hex(atomBefore));
+    expect(after.personaGroupId, "the next founding mints another group").not.toBe(before.personaGroupId);
+    expect(hex((await loadFaceAtomOfGroup(after.personaGroupId))!), "the next group mints another atom").not.toBe(hex(atomBefore));
+    expect(hex((await loadFaceAtomOfGroup(before.personaGroupId))!), "the orphan keeps its atom").toBe(hex(atomBefore));
+    expect(readFileSync(veilArchivePath(before.personaGroupId)).equals(orphanArchive), "the orphan keeps its archive bytes").toBe(true);
+    expect(readFileSync(veilArchivePath(after.personaGroupId)).equals(orphanArchive), "the new group seals its own archive").toBe(false);
     const now = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, unknown> };
     expect(now.tiddlers[personaScopedBagIds(after.personaGroupId).identities], "the entry landed").toBeTruthy();
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);

@@ -15,7 +15,7 @@
  * `CustodyRowUnavailable`. `null` means one thing only: nothing stands at the row's path.
  *
  * ── A VEIL ARCHIVE BELONGS TO ONE FACE ──────────────────────────────────────────────────────────
- * Each face's veil identity keeps its own archive at `veil-archive-h<N>.bin`. The seal binds the row's name, so one
+ * Each face's veil identity keeps its own archive at `veil-archive-g<group digest>.bin`. The seal binds the row's name, so one
  * face's archive carried to another face's path opens for nobody.
  *
  * ── TWO ROWS, ONE COMMIT POINT ──────────────────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@la
 import { identityHomeClosure } from "./identity-home-closure.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, writeCustodyRow } from "./custody-seat.js";
+import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
 // adapter implements the fs shore. Re-exported so existing importers keep their spelling.
@@ -54,8 +55,9 @@ function malformed(file: string): CustodyRowUnavailable {
 }
 
 /** The anchor roster's explicit record (ascending); `[]` when no roster stands. */
-async function readAnchorRoster(): Promise<number[]> {
-  const bytes = await readCustodyRow("identity", ANCHOR_ROSTER_FILE);
+type RowReader = typeof readCustodyRow;
+async function readAnchorRoster(read: RowReader = readCustodyRow): Promise<number[]> {
+  const bytes = await read("identity", ANCHOR_ROSTER_FILE);
   if (bytes === null) return [];
   let raw: { anchors?: unknown };
   try { raw = JSON.parse(text(bytes)) as { anchors?: unknown }; } catch { throw malformed(ANCHOR_ROSTER_FILE); }
@@ -104,9 +106,9 @@ export async function persistIdentityAnchors(anchors: IdentityAnchors, handleInd
 
 /** Read ONE persona's anchor set back, or null when the index holds no persona. `handleIndex` selects which
  *  persona (0 = founding). */
-export async function loadIdentityAnchors(handleIndex = 0): Promise<IdentityAnchors | null> {
+export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = readCustodyRow): Promise<IdentityAnchors | null> {
   const file = anchorsFile(handleIndex);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await read("identity", file);
   if (bytes === null) return null;
   let parsed: Partial<IdentityAnchors>;
   try { parsed = JSON.parse(text(bytes)) as Partial<IdentityAnchors>; } catch { throw malformed(file); }
@@ -117,8 +119,8 @@ export async function loadIdentityAnchors(handleIndex = 0): Promise<IdentityAnch
 
 /** The anchored-persona ROSTER: every handle-index whose veiled-Handle anchors this vessel holds, ascending,
  *  from the explicit written record (never a dir-scan). A one-persona vessel returns `[0]`. */
-export function listAnchoredPersonas(): Promise<number[]> {
-  return readAnchorRoster();
+export function listAnchoredPersonas(read: RowReader = readCustodyRow): Promise<number[]> {
+  return readAnchorRoster(read);
 }
 
 /** The vessel's own keyhive Archive row. */
@@ -129,17 +131,17 @@ export function archivePath(): string {
   return join(larIdentityDir(), ARCHIVE_FILE);
 }
 
-/** The veil archive family's filename law: one row per face, named by its handle-index. */
-export const VEIL_ARCHIVE_FILE = /^veil-archive-h(\d+)\.bin$/;
+/** The veil archive family's filename law: one row per PersonaGroup. */
+export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
 
 /** One face's veil archive filename. */
-export function veilArchiveFile(handleIndex: number): string {
-  return `veil-archive-h${handleIndex}.bin`;
+export function veilArchiveFile(personaGroup: string): string {
+  return `veil-archive-g${personaGroupDigest(personaGroup)}.bin`;
 }
 
 /** One face's veil archive path. */
-export function veilArchivePath(handleIndex: number): string {
-  return join(larIdentityDir(), veilArchiveFile(handleIndex));
+export function veilArchivePath(personaGroup: string): string {
+  return join(larIdentityDir(), veilArchiveFile(personaGroup));
 }
 
 /**
@@ -159,14 +161,14 @@ export function loadIdentityArchive(): Promise<Uint8Array | null> {
 
 /** Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material
  *  keyed to the card that veil presented stops opening and its creator seats nobody. */
-export async function persistVeilArchive(bytes: Uint8Array, handleIndex: number): Promise<void> {
+export async function persistVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await writeCustodyRow("identity", veilArchiveFile(handleIndex), bytes);
+  await writeCustodyRow("identity", veilArchiveFile(personaGroup), bytes);
 }
 
 /** ONE face's veil archive, or null when none stands. */
-export function loadVeilArchive(handleIndex: number): Promise<Uint8Array | null> {
-  return readCustodyRow("identity", veilArchiveFile(handleIndex));
+export function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
+  return readCustodyRow("identity", veilArchiveFile(personaGroup));
 }
 
 /** The node AnchorStore: the shore the PersonaVault carries. `save` records the index into the explicit roster;

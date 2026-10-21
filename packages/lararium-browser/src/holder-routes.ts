@@ -15,6 +15,8 @@ export const HOLDER_ROUTES = {
   "lar:service": "camera",
 
   "ready": "owner",
+  "gate:clear": "owner",
+  "gate:refused": "owner",
   "teardown:ack": "owner",
   "ea": "owner",
   "breath": "owner",

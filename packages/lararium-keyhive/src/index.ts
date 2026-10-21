@@ -80,6 +80,7 @@ export type {
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 export { runFaceJoinOperation } from "./face-join-operation.js";
+export { archiveIsOf } from "./archive-is-of.js";
 export type { GrantPlane, FaceJoinOperationInput } from "./face-join-operation.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
@@ -211,3 +212,4 @@ export type CarriedAdmitPayload = DeviceAdmitPayload & {
   /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
   readonly hearthIslandScope?: string;
 };
+export { boardDyadReader } from "./board-dyad-reader.js";

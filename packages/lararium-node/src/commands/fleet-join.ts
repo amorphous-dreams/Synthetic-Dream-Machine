@@ -42,7 +42,6 @@ import {
   gateBundleDigest,
   type FaceKeyGrant, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
   type VesselFaceCertificate,
-  mintFaceAtomSeed,
   faceAtomKeyFromSeed,
 } from "@lararium/mesh";
 import { takeAdmitBundle, type AdmitBundle } from "../admit-bundle.js";
@@ -63,7 +62,7 @@ import {
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { loadFaceAtom, persistFaceAtom } from "../face-atom-store.js";
+import { standFaceAtom } from "../face-atom-store.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
@@ -283,11 +282,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     if (!isRefusal(kept)) return kept;
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
   }
-  let atomSeed = await loadFaceAtom(0);
-  if (!atomSeed) {
-    atomSeed = mintFaceAtomSeed();
-    await persistFaceAtom(0, atomSeed);
-  }
+  const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
   const seal = fleetJoinSealPair();
   const seed = atomSeed;
@@ -338,14 +333,8 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if ("refusal" in admit) { addressSecret.fill(0); throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
-  // Standing rows under other bytes refuse by name before anything lands, so a refused landing writes nothing.
-  // A vessel stands one joined face: a landing re-founds its bootstrap and its h0 anchors, so a second face's answer
-  // over a vessel that already wears another would overwrite the first face's mount. It refuses instead.
-  const worn = wornJoinedGroup();
-  if (worn !== null && worn !== answer.personaGroup) {
-    addressSecret.fill(0);
-    throw new FleetJoinRefused("face-other", "this vessel already stands another face of a fleet; a second joined face on one vessel stands owed.");
-  }
+  // Read the bootstrap before landing; a torn one cannot carry either face safely.
+  wornJoinedGroup();
   // THE DIAL IT CARRIED, re-read before anything lands: the charter names the hearth's Nexus, the face's admit holds at
   // that charter's quorum, opens over the answer's carriage and commits to its pin. Any miss refuses by name.
   const dial = await readCarriedDial(answer);

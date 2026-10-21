@@ -56,7 +56,7 @@ import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, read
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { SealedActRefused, runSealedAct } from "../src/sealed-acts.js";
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
   listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore,
@@ -170,7 +170,7 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   const cut = await cutHere();
   const out: Cut = {
     ...cut, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
-    atomKey: faceAtomKeyFromSeed((await loadFaceAtom(0))!, anchors.personaGroupId).key,
+    atomKey: faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key,
     vesselKey: await loadVesselVerifyingKey(), ...(enrolled ? { enrolled } : {}),
   };
   // DESTROY THE SCRATCH HOME: nothing of vessel A survives but the bundle in hand.
@@ -230,9 +230,9 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(a.rootKey);
     // A new seat has another group and atom, its own archive, and an edge for its atom.
     expect(anchors.personaGroupId).not.toBe(a.group);
-    const atomKey = faceAtomKeyFromSeed((await loadFaceAtom(1))!, anchors.personaGroupId).key;
+    const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key;
     expect(atomKey).not.toBe(a.atomKey);
-    expect(existsSync(veilArchivePath(1))).toBe(true);
+    expect(existsSync(veilArchivePath(anchors.personaGroupId))).toBe(true);
     // The restored face binds THIS hearth: its edge names the seed charter this vessel founded.
     expect(anchors.deviceEdge!.hearthTrueName).toBe((await loadIdentityAnchors(0))!.deviceEdge!.hearthTrueName);
     const here = await loadVesselVerifyingKey();

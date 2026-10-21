@@ -185,7 +185,10 @@ function coerceDyad(parsed: unknown): DyadRecord | null {
       binding = { signer: x["signer"], epochCid: x["epochCid"], sig: x["sig"] };
     }
   }
-  // The slot's ref names the same atom the edge delegates to. A torn ref grants no dyad.
+  // THE SLOT'S REF IS AUTHORITATIVE FOR THE ATOM: the edge binds root→atom and names no derived face, so the
+  // ref is REQUIRED, fenced to the edge's own atom. A slot without one, or whose ref rides another atom,
+  // reads torn and drops. No fallback reading exists: a doc holding a bare edge re-founds rather than
+  // being re-read as (atom × root).
   const refRaw = p["ref"];
   if (typeof refRaw !== "object" || refRaw === null) return null;
   const r = refRaw as Record<string, unknown>;

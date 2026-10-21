@@ -12,11 +12,15 @@
  */
 import { describe, expect, test } from "vitest";
 import {
+  FaceAtomConflict,
+  FaceAtomMissing,
   groupSecretOpenerFromSeed, sealGroupSecret,
 } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { BrowserCustodyRefused, readKeystoreRow } from "../src/browser-custody.js";
-import { browserFaceAtom, faceAtomRow, readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import {
+  browserFaceAtom, faceAtomRow, keepBrowserFaceAtomSeed, readBrowserFaceAtom, requireBrowserFaceAtomSeed,
+} from "../src/browser-face-atom.js";
 import { generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed } from "../src/browser-vessel-identity.js";
 
 const GROUP_A = "group-a";
@@ -71,5 +75,26 @@ describe("the browser's face atom", () => {
     const idbName = `face-atom-noslot-${crypto.randomUUID()}`;
     await expect(browserFaceAtom(idbName, GROUP_A)).rejects.toBeInstanceOf(BrowserCustodyRefused);
     expect(await readKeystoreRow(idbName, faceAtomRow(GROUP_A)), "the refused call left no row").toBeUndefined();
+  });
+
+  test("A5 — requiring a face seed with no row refuses FaceAtomMissing with the same text", async () => {
+    const idbName = await vessel();
+    await expect(requireBrowserFaceAtomSeed(idbName, GROUP_A)).rejects.toMatchObject({
+      name: "FaceAtomMissing",
+      message: `this face holds no atom; re-found or re-admit it (${GROUP_A})`,
+      personaGroup: GROUP_A,
+    } satisfies Pick<FaceAtomMissing, "name" | "message" | "personaGroup">);
+  });
+
+  test("A6 — keeping another seed refuses FaceAtomConflict", async () => {
+    const idbName = await vessel();
+    const first = new Uint8Array(32).fill(0x31);
+    const other = new Uint8Array(32).fill(0x32);
+    await keepBrowserFaceAtomSeed(idbName, GROUP_A, first);
+    await expect(keepBrowserFaceAtomSeed(idbName, GROUP_A, other)).rejects.toMatchObject({
+      name: "FaceAtomConflict",
+      message: `the atom row for ${GROUP_A} holds another seed`,
+      personaGroup: GROUP_A,
+    } satisfies Pick<FaceAtomConflict, "name" | "message" | "personaGroup">);
   });
 });

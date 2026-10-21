@@ -12,11 +12,11 @@
  */
 import { describe, expect, test, vi } from "vitest";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { archiveIsOf, readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { loadBrowserVeilArchive, saveBrowserVeilArchive } from "../src/browser-keyhive-archive.js";
 
 const seen: Array<{ atomSeed: Uint8Array; archiveBytes: Uint8Array | undefined; group: string }> = [];

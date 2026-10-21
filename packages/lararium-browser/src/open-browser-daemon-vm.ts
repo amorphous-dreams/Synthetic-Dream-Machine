@@ -62,6 +62,8 @@ export interface BrowserDaemonVmOptions {
    *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per origin and
    *  this tab attaches to it; no worker spawns here. */
   spawnWorker?:     (url: URL) => VesselWorkerHandle;
+  /** The holder path installs this factory for a replacement manifest after a late floor swap. */
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) => void;
 }
 
 export { VerbTable };
@@ -85,7 +87,7 @@ export interface BrowserVerbPlacementRequest {
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay } = opts;
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -110,6 +112,7 @@ export async function openBrowserDaemonVm(
     ...(ownedDocument ? { newOwnedSyncChannel: browserNewSyncChannel } : {}),
     spawnWorker:    spawnWorker ?? browserSpawnWorker,
     awaitReady:     true,
+    ...(onManifestReplay ? { onManifestReplay } : {}),
   };
 
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the

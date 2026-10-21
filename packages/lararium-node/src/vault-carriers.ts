@@ -77,7 +77,7 @@ import {
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
-import { FACE_ATOM_FILE } from "./face-atom-store.js";
+import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
 import { outboxKeyPath } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
@@ -117,8 +117,8 @@ export function vesselCustodyHomes(): CustodyHomes {
   return { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
 }
 
-/** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
-export type CarrierFace = number | "vessel";
+/** Whose a carrier is: a handle index, a group digest, or the vessel. */
+export type CarrierFace = number | "vessel" | `group:${string}`;
 
 /**
  * How a face's backup bundle treats a row (custody#/the-table): `whole`, the row rides as it rests; `lines`, the
@@ -175,8 +175,8 @@ export interface CarrierRow {
    */
   readonly holds:    ((file: string, bytes: Uint8Array) => boolean) | null;
   /**
-   * Whose this match is. A file that names one face and holds nothing of another answers that face's
-   * handle-index; every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
+   * Whose this match is. A file that names one face answers its handle index or group digest;
+   * every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
   /**
@@ -313,10 +313,13 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "keyhive-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors" }),
     id({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
-    // The face's random atom seed rests under today's vessel key until the K15 step-6 FCK fence.
-    id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_FILE, custody: "hot", keyClass: "device-minted",
-         writer: "face-atom-store", name: (m) => `face-atom-h${m[1]}`, face: faceOf, bundle: "stays" }),
+         writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // A group digest owns this local atom row; bundles leave its seed on this vessel.
+    id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_GROUP_FILE, custody: "hot", keyClass: "device-minted",
+         writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A founding ask holds a seed until its group row keeps it.
+    id({ row: "face-atom-ask", target: tgt(["D"]), match: FACE_ATOM_ASK_FILE, custody: "hot", keyClass: "device-minted",
+         writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),

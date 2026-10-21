@@ -302,6 +302,8 @@ export interface FaceFoundingInput {
   vesselDisplayName:  string;
   /** The random atom seed held for this PersonaGroup. */
   atomSeed?:          Uint8Array;
+  /** Bind a shore's full founding ask to its recoverable checkpoint. */
+  askDigest?:         string;
   binding:            FoundingBinding;
   hearthTrueName:     string;
   nexusPubkey:        string;
@@ -386,12 +388,15 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: result.signerDid, kind: "operator-root-did" }, meta: { authority: "lares-init" },
     });
+    // The PINNED identifier — the pin's root of trust (the operator's own sovereign daemon home). The boot
+    // path reads THIS prefix, threads it beside the local KEL chain, and the worker asserts chain[0].prefix === it.
     doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: result.personaKelPrefix, kind: "persona-kel-prefix" }, meta: { authority: "lares-init" },
     });
     doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...result.founderEdge }, meta: { authority: "lares-init" },
     });
+    // The hearth the mounted face binds: its edge's true name, which a place founding wrote before any hearth stood.
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: result.founderEdge.hearthTrueName, kind: "hearth-true-name" }, meta: { authority: "lares-init" },
     });
@@ -422,7 +427,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === vesselVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
-  const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false]);
+  const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);
@@ -437,7 +442,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const store   = await replayCapEvents(daemonHandle);
   const standing = new Set((await store.list()).map((e) => e.hash));
 
-  // The atom creates and holds the PersonaGroup's Keyhive membership.
+  // ── THE GROUP IS BORN UNDER THE ATOM ──────────────────────────────────────────────────────────
+  // The creator's identifier rides every carried event in CLEARTEXT (the host-surface probe), a
+  // creator can never leave its roster, and any access grade IS roster membership — so the place's own
+  // identity must never create or hold the WHO-plane sentinels. The atom creates and holds the
+  // PersonaGroup's Keyhive membership because the place must never stand in its roster. The place keeps
+  // custody and transport; the atom keeps the group.
   const veilKeyhive  = new KeyhiveProvider();
   await veilKeyhive.init({
     seed: atomSeed, eventStore: store,
@@ -830,6 +840,8 @@ export interface ApplyAdmitInput {
   nexusPubkey:          string;
   /** The atom's Keyhive archive at rest on this shore. */
   archiveBytes?:        Uint8Array;
+  /** Leave the daemon's singular mount pins with its worn face. */
+  mount?:               boolean;
 }
 
 export interface ApplyAdmitResult {
@@ -887,7 +899,8 @@ export async function runApplyAdmitPayload(
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
-  const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId]);
+  const mount = input.mount !== false;
+  const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId, mount]);
   const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed, applyScope);
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
@@ -992,6 +1005,10 @@ export async function runApplyAdmitPayload(
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
     writeDyad(doc, joineeDyad);
+    if (!mount) {
+      writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
+      return;
+    }
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: payload.signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init-admit" },
@@ -1026,7 +1043,7 @@ export async function runApplyAdmitPayload(
   }
 
   // Write the face's group pin and the cabal's sentinel pin.
-  daemonHandle.change((doc) => {
+  if (mount) daemonHandle.change((doc) => {
     doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_ID_TIDDLER, text: payload.personaGroupId, kind: "persona-group-id" },
       meta: { authority: "lares-init-admit" },

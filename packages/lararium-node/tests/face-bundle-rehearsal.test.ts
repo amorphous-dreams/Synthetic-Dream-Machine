@@ -26,7 +26,7 @@ import {
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
@@ -130,7 +130,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const anchorsA = (await loadIdentityAnchors(0))!;
   const oldSeats = [
     await identityOf(await loadVesselSigningSeed()),
-    await identityOf((await loadFaceAtom(0))!),
+    await identityOf((await loadFaceAtomOfGroup(anchorsA.personaGroupId))!),
   ];
   const vesselKeyA = await loadVesselVerifyingKey();
   const bundleKey = mintBundleKey();
@@ -171,7 +171,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(stood.filter((id) => oldSeats.includes(id))).toEqual([]);
   // No word of the vessel's own seat rides the body: its place key, atom seed, group or device edge.
   const text = JSON.stringify(body).toLowerCase();
-  for (const word of [vesselKeyA, hex((await loadFaceAtom(0))!), anchorsA.personaGroupId, anchorsA.meshCabalDocIdHex]) {
+  for (const word of [vesselKeyA, hex((await loadFaceAtomOfGroup(anchorsA.personaGroupId))!), anchorsA.personaGroupId, anchorsA.meshCabalDocIdHex]) {
     expect(text.includes(word.toLowerCase()), `the body names ${word.slice(0, 16)}…`).toBe(false);
   }
 

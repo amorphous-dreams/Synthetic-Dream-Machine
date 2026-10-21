@@ -1,12 +1,17 @@
 /**
  * shared-holder.worker — the module SharedWorker entry: one holder per origin, the island behind it.
  *
- * The script URL carries `?island=<daemon worker url>&lock=<lock name>`; the first tab to connect boots the
- * daemon island once (a nested dedicated worker), and every tab's port pipes to it (shared-holder-core.ts).
- * The holder takes the store's Web Lock so a tab that asks finds it held by THE HOLDER and attaches.
+ * The script URL carries `?island=<daemon worker url>&lock=<lock name>`; the first admitted session of each face
+ * stands that face's house: its daemon island (a nested dedicated worker) and its own Repo (shared-holder-core.ts).
+ * The holder takes the store's Web Lock so a tab that asks finds it held by THE HOLDER and attaches. It holds
+ * documents and ciphertext and no key: a face's hive lives in its island, and ending the island locks it.
  */
 
-import { makeSharedHolderCore } from "./shared-holder-core.js";
+import { Repo } from "@automerge/automerge-repo";
+import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { attachMessageChannelSync } from "@lararium/mesh";
+import { makeHolderRuntime } from "./shared-holder-runtime.js";
+import { HOLDER_UNAVAILABLE_NO_WORKER } from "./shared-holder-core.js";
 import { browserWorkerHandle } from "./worker-handle.js";
 
 // The SharedWorker global, read structurally — this package's lib is DOM, so the worker scope types stay out.
@@ -16,7 +21,7 @@ const sw = globalThis as unknown as {
   addEventListener(type: "connect", cb: (e: MessageEvent) => void): void;
 };
 interface LockLike {
-  request(name: string, options: { ifAvailable: true }, cb: (lock: { name: string } | null) => unknown): Promise<unknown>;
+  request(name: string, options: { ifAvailable?: true }, cb: (lock: { name: string } | null) => unknown): Promise<unknown>;
   query?(): Promise<{ held?: ReadonlyArray<{ name: string; mode: string; clientId: string }> }>;
 }
 
@@ -24,15 +29,29 @@ const params    = new URL(sw.location.href).searchParams;
 const islandUrl = params.get("island") ?? "";
 const lockName  = params.get("lock")   ?? "lares:vessel:lares:vessel";
 
-const core = makeSharedHolderCore({
+const { core } = makeHolderRuntime({
   lockName,
   locks: sw.navigator?.locks ?? null,
   spawnIsland: () => browserWorkerHandle(new Worker(islandUrl, { type: "module" })),
+  openRepo: (storeName) => {
+    const repo = new Repo({ storage: new IndexedDBStorageAdapter(storeName) });
+    return {
+      shutdown: () => repo.shutdown(),
+      attachSide: (port: MessagePort) => attachMessageChannelSync(repo, port),
+    };
+  },
 });
 
 sw.addEventListener("connect", (e: MessageEvent) => {
   const port = e.ports[0];
   if (port) {
+    // An engine whose SharedWorker scope exposes no Worker cannot start a house's island: the holder refuses before
+    // any admission, by name, and the tab takes its dedicated-worker floor. (Chromium's scope reads so.)
+    if (typeof (globalThis as { Worker?: unknown }).Worker !== "function") {
+      port.postMessage({ kind: "holder:refused", storeName: lockName, cause: HOLDER_UNAVAILABLE_NO_WORKER });
+      port.start();
+      return;
+    }
     // Engines that surface a close event release the port's routes; a failed clone marks it lost too.
     port.addEventListener("close", () => core.disconnect(port));
     port.addEventListener("messageerror", () => core.disconnect(port));

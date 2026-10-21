@@ -17,6 +17,7 @@ import {
   casBlobEntries, type CasBlobLike,
   type GenesisCasManifest,
   sha256HexBytesSync,
+  verifyCidBytes,
 } from "@lararium/mesh";
 
 // ── OPFS content-addressed store (CAS) — engine + plugin bytes by CID ──────────
@@ -106,14 +107,17 @@ export interface CasFileHandleLike {
 /** Read content-addressed bytes by CID from the OPFS CAS. Null if absent/unavailable.
  *  This IS the worker's resolveByCid shore (OPFS origin-shared, no IPC). */
 export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | null> {
+  let bytes: Uint8Array | null;
   try {
     const root  = await navigator.storage.getDirectory();
     const cas   = await root.getDirectoryHandle(OPFS_CAS_DIR);
     const fileH = await cas.getFileHandle(cid);
-    return await readCasFileBytes(fileH as unknown as CasFileHandleLike);
+    bytes = await readCasFileBytes(fileH as unknown as CasFileHandleLike);
   } catch {
     return null;
   }
+  if (bytes && !verifyCidBytes(bytes, cid)) throw new Error(`corrupt-bytes: CID mismatch for ${cid}`);
+  return bytes;
 }
 
 /**

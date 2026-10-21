@@ -35,6 +35,9 @@ export interface IdentityAnchors {
    *  confers nothing a fresh signature-check would not. OPTIONAL: anchors written before this slot existed,
    *  a joinee (no self-minted edge), and h0 (whose live pins already carry them) may hold none. */
   readonly deviceEdge?: DeviceDelegationTiddler;
+  /** The digest of the founding ask that minted this face. A re-seeded founding of the same ask re-enters the
+   *  group's atom through it. PUBLIC (a hash, never a seed). OPTIONAL: a joinee holds none. */
+  readonly foundingAskDigest?: string;
 }
 
 /**
@@ -67,7 +70,8 @@ export function readIdentityAnchors(parsed: Partial<IdentityAnchors> | null | un
     // reads the WHOLE anchor as null, so the re-pin never hands verifyDeviceDelegation a half-grant.
     (parsed.signerDid === undefined || typeof parsed.signerDid === "string") &&
     (parsed.personaKelPrefix === undefined || typeof parsed.personaKelPrefix === "string") &&
-    (parsed.deviceEdge === undefined || (typeof parsed.deviceEdge === "object" && parsed.deviceEdge !== null))
+    (parsed.deviceEdge === undefined || (typeof parsed.deviceEdge === "object" && parsed.deviceEdge !== null)) &&
+    (parsed.foundingAskDigest === undefined || typeof parsed.foundingAskDigest === "string")
   ) {
     return parsed as IdentityAnchors;
   }

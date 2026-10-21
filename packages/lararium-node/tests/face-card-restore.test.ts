@@ -38,7 +38,7 @@ import {
 import { FACE_PROOF_KEY_FILE } from "../src/face-key-custody.js";
 import { RestoreRefused } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
-import { loadFaceAtom } from "../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadNodeHandleBook } from "../src/node-circle-store.js";
 import {
   listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
@@ -112,7 +112,7 @@ async function splitOnDestroyedVessel(label: string): Promise<Faces> {
     keys.set(index, {
       rootKey: (await listPersonaRosterLines()).find((l) => l.handleIndex === index)!.verifyingKey,
       prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
-      atomKey: faceAtomKeyFromSeed((await loadFaceAtom(index))!, anchors.personaGroupId).key,
+      atomKey: faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key,
     });
   }
   const out: Faces = { cards, keys, vesselKey: await loadVesselVerifyingKey() };
@@ -174,9 +174,9 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(anchors.personaKelPrefix).toBe(face.prefix);
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(face.rootKey);
     expect(anchors.personaGroupId).not.toBe(face.group);
-    const atomKey = faceAtomKeyFromSeed((await loadFaceAtom(1))!, anchors.personaGroupId).key;
+    const atomKey = faceAtomKeyFromSeed((await loadFaceAtomOfGroup(anchors.personaGroupId))!, anchors.personaGroupId).key;
     expect(atomKey).not.toBe(face.atomKey);
-    expect(existsSync(veilArchivePath(1))).toBe(true);
+    expect(existsSync(veilArchivePath(anchors.personaGroupId))).toBe(true);
     const here = await loadVesselVerifyingKey();
     expect(here).not.toBe(a.vesselKey);
     expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(atomKey.toLowerCase());

@@ -19,9 +19,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   ScriptedSeatRolls, SealedStore, ed25519SignerFromSeed, hex, memorySealedStoreRest, signSeatRoll, utf8Bytes,
+  makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed,
   type EdgeStanding, type RecordSigner, type RollOutcome, type SealedAddress, type SealedStoreRest, type SeatRoll,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, announceSeatRoll, keyhiveSeatShore, runSeatDuties, seatContentKeys, type ContentKeySeat } from "../src/index.js";
+import { boardDyadReader } from "../src/board-dyad-reader.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, pair, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -47,6 +49,7 @@ interface Device {
   readonly standing: Map<string, EdgeStanding>;
   readonly raises: Set<string>;
   readonly reports: RollOutcome[];
+  standingOf?: (member: string) => Promise<EdgeStanding>;
   signs: boolean;
   seat: ContentKeySeat;
   /** Stand the seat afresh over the same rest. */
@@ -77,7 +80,7 @@ async function fleet(base: number, names: readonly string[]): Promise<{ group: s
           restArchive: async (p) => { d.archives.push(await (p as KeyhiveProvider).exportArchive()); },
           group: { groupId: group, scope: SCOPE },
           bags: () => [BAG],
-          standingOf: (member) => d.standing.get(bare(member)) ?? "clear",
+          standingOf: (member) => d.standingOf ? d.standingOf(member) : d.standing.get(bare(member)) ?? "clear",
           countedRaises: () => d.raises,
           session: { signer: () => (d.signs ? d.signer : null), standing: { holdsWrite: () => true } },
           report: (o) => { d.reports.push(o); },
@@ -120,6 +123,22 @@ const roll = (raiseCids: string[], seat: { group: string; member: string } | und
   ({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-1", ...(seat ? { seat } : {}), raiseCids, how });
 
 describe("a private body seals on real Keyhive identities, end to end", () => {
+  it("a fresh empty fleet board leaves a healthy sibling in the content-key wrap", async () => {
+    const { devices: [f, sibling] } = await fleet(0x08, ["founder", "sibling"]);
+    const root = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(6));
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const read = boardDyadReader(repo, repo.create(emptyLarDoc()), undefined, f!.id);
+      f!.standingOf = (member) => read(root, member);
+      f!.reseat();
+      const result = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("shared across the fresh fleet"), signer: f!.signer });
+      expect("body" in result, "EMPTY BOARD WRAP: the holder mints a body for the healthy fleet").toBe(true);
+      if (!("body" in result)) return;
+      await carry(f!, sibling!);
+      expect(await opens(sibling!, result.body.ref), "EMPTY BOARD WRAP: the sibling remains in the key agreement").toBe("shared across the fresh fleet");
+    } finally { await repo.shutdown(); }
+  });
   it("seal, restart from the kept Archive, unlock, open; every seated device opens; a locked vessel refuses by name and reads nothing", async () => {
     const { devices: [f, b] } = await fleet(0x10, ["f", "b"]);
     const sealed = await seal(f!, "the household's private note");

@@ -46,15 +46,26 @@ export default defineConfig({
     // a change that reads as a tuning knob and lands as a correctness change. Written down, it has
     // to be turned off on purpose.
     isolate: true,
-    browser: {
-      enabled: true,
-      // The provider rides as a FACTORY, never a name: the runner imports the driver it will actually
-      // use, so a missing provider fails at config load with the package that is absent — never mid-run
-      // with a string nothing resolved.
-      provider: playwright(),
-      instances: [{ browser: "chromium" }],
-    },
-    include: ["tests/**/*.test.ts"],
+    // Chromium runs every test; Firefox runs the production holder's lifecycle alone, since only its SharedWorker scope
+    // can spawn the island Worker (the engine where the real peer path stands).
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "chromium",
+          include: ["tests/**/*.test.ts"],
+          browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "firefox",
+          include: ["tests/shared-holder-production.test.ts"],
+          browser: { enabled: true, provider: playwright(), instances: [{ browser: "firefox" }] },
+        },
+      },
+    ],
     testTimeout: 30_000,
   },
 });

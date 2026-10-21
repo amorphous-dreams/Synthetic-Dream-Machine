@@ -885,6 +885,13 @@ export type CustodyWriteCarrier = "archive" | "veil";
  * where the bytes rest.
  */
 export interface IslandMsg_CustodyWrite { type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+/**
+ * Island → vessel: THE BINDING GATE'S VERDICT, posted by a persona-bound daemon island once its gate ran. `gate:clear`
+ * names the edge (by digest) and the persona root the gate verified, so a holder admits a session only for the edge the
+ * island itself cleared. `gate:refused` names why the gate held the boot shut.
+ */
+export interface IslandMsg_GateClear { type: "gate:clear"; edgeDigest: string; personaRoot: string; }
+export interface IslandMsg_GateRefused { type: "gate:refused"; cause: string; }
 /** Vessel → island: the custody write door's answer: the bytes rest sealed, or `why` they do not. */
 export interface IslandMsg_CustodyWritten { type: "custody:written"; requestId: string; written: boolean; why?: string; }
 
@@ -963,6 +970,8 @@ export type IslandToVesselMsg =
   | IslandMsg_Breath
   | IslandMsg_Fault
   | IslandMsg_Ready
+  | IslandMsg_GateClear
+  | IslandMsg_GateRefused
   | WikiMsg_VerbResult
   | DaemonMsg_DelegateVerb
   | DaemonMsg_DeriveSkeletonResult
@@ -1007,7 +1016,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"]>,
   );
 }

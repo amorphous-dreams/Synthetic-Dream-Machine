@@ -108,6 +108,10 @@ export interface CustodyHolder {
    * read and the write. `decide` answers the row's next plaintext, or `null` to leave it as it stands.
    */
   updateRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
+  /** Move one hot row's bytes under one holder claim; a matching destination completes a stopped move. */
+  moveRow(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void>;
+  /** Run a scan and its decisions under the same claim as a founding row move. */
+  withRows<T>(act: (rows: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
   /**
    * Remove one hot row as ONE custody holder; answers whether a row stood. The holder removes only a row its own
    * key opens: a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
@@ -293,6 +297,70 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
           standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
             : standing.reading === "absent" ? { reading: "absent" }
               : { reading: "unavailable", why: standing.reading }),
+      }));
+    },
+    async moveRow(home, source, destination, expected) {
+      if (vk === null || !accepting) throw new CustodyLocked();
+      if (source === destination) throw new Error("custody move names the same row twice");
+      const from = address(home, source, false);
+      const to = address(home, destination, false);
+      const key = vk;
+      return operation(() => a.io.exclusive(async () => {
+        // The outer claim spans both sealed steps; the inner writer receives a claim already held.
+        const io: CustodyIo = {
+          read: (path) => a.io.read(path), write: (path, bytes) => a.io.write(path, bytes),
+          rename: (aPath, bPath) => a.io.rename(aPath, bPath), remove: (path) => a.io.remove(path),
+          list: () => a.io.list(), exclusive: (act) => act(),
+        };
+        const carrier = (row: typeof from) => ({ name: row.name, path: row.path, keyClass: row.row.keyClass });
+        const opened = async (file: string, row: typeof from) => {
+          const reading = await openSealedCarrier({ io, vk: key, carrier: carrier(row) });
+          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRowUnavailable(home, file, reading.reading);
+          return reading;
+        };
+        const standingSource = await opened(source, from);
+        const standingDestination = await opened(destination, to);
+        const equals = (bytes: Uint8Array) => bytes.length === expected.length && bytes.every((byte, i) => byte === expected[i]);
+        if (standingSource.reading === "opens" && !equals(standingSource.plaintext)) throw new Error("custody source row holds other bytes");
+        if (standingDestination.reading === "opens" && !equals(standingDestination.plaintext)) throw new Error("custody destination row holds other bytes");
+        // A source already gone (a re-entered founding recovered its seed from an earlier group row) still keeps the destination.
+        if (standingDestination.reading === "absent") {
+          await writeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(to), plaintext: expected });
+        }
+        // Only these back-to-back steps expose two rows to a crash; re-entry removes the source.
+        if (standingSource.reading === "opens") {
+          await removeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(from) });
+        }
+      }));
+    },
+    withRows(act) {
+      if (vk === null || !accepting) return Promise.reject(new CustodyLocked());
+      const key = vk;
+      return operation(() => a.io.exclusive(async () => {
+        const io: CustodyIo = {
+          read: (path) => a.io.read(path), write: (path, bytes) => a.io.write(path, bytes),
+          rename: (from, to) => a.io.rename(from, to), remove: (path) => a.io.remove(path),
+          list: () => a.io.list(), exclusive: (inside) => inside(),
+        };
+        const carrier = (home: CustodyHome, file: string) => {
+          const found = address(home, file, false);
+          return { name: found.name, path: found.path, keyClass: found.row.keyClass };
+        };
+        return act({
+          async read(home, file) {
+            const reading = await openSealedCarrier({ io, vk: key, carrier: carrier(home, file) });
+            if (reading.reading === "opens") return reading.plaintext;
+            if (reading.reading === "absent") return null;
+            throw new CustodyRowUnavailable(home, file, reading.reading);
+          },
+          async remove(home, file, when) {
+            try { return await removeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(home, file), ...(when ? { when } : {}) }); }
+            catch (error) {
+              if (error instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, error.reading);
+              throw error;
+            }
+          },
+        });
       }));
     },
     async removeRow(home, file, when) {

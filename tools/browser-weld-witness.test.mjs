@@ -188,7 +188,7 @@ async function testC4TraceAnchorsStillStand() {
     ["daemon VM", vessel, /daemon = await openBrowserDaemonVm\(\{/g],
     ["worker spawn", daemon, /const worker = host\.spawnWorker\(workerScriptUrl\);/g],
     ["ready gate", daemon, /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) resolve\(\);/g],
-    ["manifest post", daemon, /worker\.post\(manifestMsg, transfer\);/g],
+    ["manifest post", daemon, /worker\.post\(initialPost\.msg, initialPost\.transfer\);/g],
     ["worker WASM init", worker, /await initKeyhiveWasm\(\);/g],
     ["worker kernel import", worker, /await import\("@lararium\/browser\/browser-daemon-island"\);/g],
     ["worker trace gate", worker, /searchParams\.get\("c4trace"\) !== "1"/g],

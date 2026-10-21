@@ -42,7 +42,7 @@ import {
   listPersonaRoots, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { loadFaceAtom } from "../face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 import { wornNexusLeaf } from "../nexus-leaf.js";
@@ -151,7 +151,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
 
   const faceIndex = realm !== undefined ? (await loadActivePersonaIndex()) ?? 0 : opts.handleIndex ?? (await listPersonaRoots())[0];
   const anchors = faceIndex === undefined ? null : await loadIdentityAnchors(faceIndex);
-  const atomSeed = faceIndex === undefined ? null : await loadFaceAtom(faceIndex);
+  const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
   if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");
   const vesselKey = faceAtomKeyFromSeed(atomSeed!, anchors!.personaGroupId).key;
   if (realm !== undefined && opts.handleIndex !== undefined) {

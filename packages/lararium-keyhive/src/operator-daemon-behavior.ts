@@ -28,9 +28,11 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
+import { boardDyadReader } from "./board-dyad-reader.js";
+import type { DocHandle, LarDoc } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -56,18 +58,22 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
-  restDocuments?: (documentIds: readonly string[]) => Promise<void>;
+  restDocuments?: (documentIds: readonly string[], gateClear?: Promise<void>) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
    *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
   bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
-  /** `dyadReading` — the SAME inversion for the dyad's shadow (kapae#/reach): the vessel folds its fleet's edge
-   *  board, and this island asks it what one device's edge reads before it binds or seats that device. The
-   *  reader answers `aside` until its first fold lands. Absent → the Binding Gate refuses a persona-bound boot
+  /** `dyadReading` — the node vessel's dyad reader (kapae#/reach). The browser island reads its own board
+   *  when `readDyadFromBoard` stands. A reader answers `aside` when its board cannot be read. Absent → the Binding Gate refuses a persona-bound boot
    *  and the join gate refuses a summons, each by name (`requireDyadReader`): a gate that could ask nobody
    *  binds and seats nobody. A faceless island asks nothing and stands without one. */
   dyadReading?: DyadReader;
+  /** Read the fleet board from this island's Repo at each gate ask. */
+  readDyadFromBoard?: boolean;
+  /** A durable ledger held by the island, outside the claimant's synced Repo. */
+  dyadLedger?: DocHandle<LarDoc> | Promise<DocHandle<LarDoc>>;
+  restDyadLedger?: () => Promise<void>;
   /** `sealedStore` — the SAME inversion for the sealed store (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store):
    *  keyhive stays fs-blind, so the shore injects the rest for lockboxes, records and index rows, the sealed
    *  values' own rest, and the cleartext-local tier a staged body reads from and an opened one lands in. Present →
@@ -183,9 +189,33 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // persistArchive rides node-only; keep it OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
   const {
     persistArchive, persistVeilArchive, shore, events, journalAppend,
-    bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra
+    bagTier, restDocuments, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
+  let clearGate!: () => void;
+  let refuseGate!: (reason: Error) => void;
+  let gateCleared = false;
+  const gateClear = new Promise<void>((resolve, reject) => { clearGate = resolve; refuseGate = reject; });
+  // A faceless island has no binding verdict to wait for.
+  if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
+  void gateClear.catch(() => undefined);
+  const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
+    ? async (fleetRootDid, deviceVerifyingKey) => {
+      const ownKey = daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey;
+      let seatLedger: LarDoc | undefined;
+      if (ownKey) {
+        // Read only a ready local roll. A missing roll keeps the lift owing while sync catches up.
+        const url = edgeLedgerDocUrl(ownKey);
+        const handle = (ctx.repo.handles as Record<string, DocHandle<LarDoc> | undefined>)[url.slice("automerge:".length)];
+        seatLedger = handle?.isReady() ? handle.doc() : undefined;
+        if (!seatLedger) void ctx.repo.find<LarDoc>(url).catch(() => undefined);
+      }
+      return boardDyadReader(
+        ctx.repo, dyadLedger, restDyadLedger, ownKey,
+        seatLedger, fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
+      )(fleetRootDid, deviceVerifyingKey);
+    }
+    : dyadReading;
   if (!daemonAuth) {
     return {
       ...daemonExtra,
@@ -287,7 +317,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
     slotDocs = makeSlotDocResolver({
-      repo: restDocuments ? restingMinter(ctx.repo, restDocuments) : ctx.repo, daemonStore: ctx.composite, keyhive: kh,
+      repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
+        gateCleared ? undefined : gateClear)) : ctx.repo,
+      daemonStore: ctx.composite, keyhive: kh,
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
@@ -665,7 +697,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // THE DYAD'S READING, asked of the vessel once for the device this summons names: the gate reads it
             // twice (before and after the card binds) and must read one answer.
             const joineeKey = typeof summons.deviceEdge?.deviceVerifyingKey === "string" ? summons.deviceEdge.deviceVerifyingKey : "";
-            const joineeDyad = await requireDyadReader(dyadReading, "the join gate")(ownEdge.personaRootDid, joineeKey);
+            const joineeDyad = await requireDyadReader(dyadReader(ctx), "the join gate")(ownEdge.personaRootDid, joineeKey);
             if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
             if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
@@ -928,26 +960,43 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
         console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
       }
-      const { keyhive, did } = await bootDaemonKeyhive({
-        seed:                  daemonAuth.seed,
-        eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
-        vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
-        ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
-        // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
-        ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
-        ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
-        registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
-        ledger:                daemonBagDocLedger(ctx.composite),
-        ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
-        ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
-        ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
-        ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
-        // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
-        ...(daemonAuth.deviceEdge
-          ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
-        ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
-        ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
-      });
+      let booted: Awaited<ReturnType<typeof bootDaemonKeyhive>>;
+      try {
+        booted = await bootDaemonKeyhive({
+          seed:                  daemonAuth.seed,
+          eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
+          vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
+          ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
+          // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
+          ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
+          ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
+          registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
+          ledger:                daemonBagDocLedger(ctx.composite),
+          ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
+          ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
+          ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
+          ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
+          // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
+          ...(daemonAuth.deviceEdge
+            ? { dyad: await requireDyadReader(dyadReader(ctx), "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
+          ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
+          ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+        });
+      } catch (error) {
+        const cause = error instanceof Error ? error.message : String(error);
+        // A persona-bound boot that does not complete refuses the face, whichever step refused it.
+        if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+          ctx.post({ type: "gate:refused", cause });
+          refuseGate(new Error(cause));
+        }
+        throw error;
+      }
+      const { keyhive, did } = booted;
+      if (daemonAuth.deviceEdge && daemonAuth.personaGroupId) {
+        ctx.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(daemonAuth.deviceEdge), personaRoot: daemonAuth.deviceEdge.personaRootDid });
+        gateCleared = true;
+        clearGate();
+      }
       kh = keyhive;
       mintedByHex = daemonAuth.atom?.key ?? did;
       if (daemonAuth.atom) {
@@ -1035,8 +1084,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // throws by name, so the seat wraps for nobody and performs no key act. It never reads the absence
           // as `clear`.
           ...(fleetRoot ? {
-            standingOf: async (member: string) => requireDyadReader(dyadReading, "the content-key seat")(fleetRoot, bareId(member)),
-            ownEdgeShadowed: async () => (await requireDyadReader(dyadReading, "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
+            standingOf: async (member: string) => requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, bareId(member)),
+            ownEdgeShadowed: async () => (await requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
           } : {}),
           ...(countedRaises && fleetRoot ? { countedRaises: () => countedRaises(fleetRoot) } : {}),
           ...(sessionProof ? { session: sessionProof } : {}),

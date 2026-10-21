@@ -76,6 +76,10 @@
       "import": "./dist/session-signer.js",
       "types": "./dist/session-signer.d.ts"
     },
+    "./holder-session-proof": {
+      "import": "./dist/holder-session-proof.js",
+      "types": "./dist/holder-session-proof.d.ts"
+    },
     "./session-contract": {
       "import": "./dist/session-contract.js",
       "types": "./dist/session-contract.d.ts"

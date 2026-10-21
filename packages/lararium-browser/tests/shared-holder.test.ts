@@ -15,6 +15,7 @@ import { describe, expect, test } from "vitest";
 import { makeSharedHolderCore, type HolderIsland } from "../src/shared-holder-core.js";
 import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from "../src/shared-holder.js";
 import { holdVesselLock, vesselLockName, type LockHost } from "../src/vessel-lock.js";
+import { faceFixture } from "./holder-session-fixture.js";
 
 /** In-memory Web Locks: one exclusive holder per name; `ifAvailable` answers at once; query names the client. */
 function fakeLocks(clientId: string, shared: Map<string, string>): LockHost {
@@ -36,9 +37,11 @@ function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number }
   let boots = 0;
   return {
     boots: () => boots,
-    spawn: () => {
+    spawn: (_group?: string, personaRoot?: string, edgeDigest?: string) => {
       boots++;
       const listeners = new Set<(raw: unknown) => void>();
+      // The island's Binding Gate clears for the edge the first session presented.
+      queueMicrotask(() => { for (const l of listeners) l({ type: "gate:clear", edgeDigest, personaRoot }); });
       return {
         post:      (msg) => {
           const request = msg as { type?: string; requestId?: string };
@@ -86,8 +89,8 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(a.kind).toBe("attached"); expect(b.kind).toBe("attached");
     if (a.kind !== "attached" || b.kind !== "attached") return;
 
-    expect(island.boots()).toBe(1);                       // ONE island
-    expect(a.hello.islandBoots).toBe(1); expect(b.hello.islandBoots).toBe(1);
+    expect(island.boots()).toBe(0);                       // a port that admitted no session stands no house
+    expect(a.hello.islandBoots).toBe(0); expect(b.hello.islandBoots).toBe(0);
     expect(a.hello).toMatchObject({ ownerEpoch: expect.any(String), sessionId: expect.any(String), generation: 0 });
     expect(b.hello.ownerEpoch).toBe(a.hello.ownerEpoch);
     expect(b.hello.sessionId).not.toBe(a.hello.sessionId);
@@ -104,18 +107,21 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     await expect(holdVesselLock(IDB, fakeLocks("tab-3", lockTable), { attachToHolder: "some-other-holder" })).rejects.toThrow(/already held/);
 
     // The port speaks to the ONE island: its reply returns to the asking tab alone.
-    const ha = holderWorkerHandle(a.port); const hb = holderWorkerHandle(b.port);
+    const face = await faceFixture("face:holder-test");
+    const session = { personaGroup: face.group, edge: face.edge, atom: face.atom };
+    const ha = holderWorkerHandle(a.port, session); const hb = holderWorkerHandle(b.port, session);
     const seenA = new Promise<unknown>((r) => ha.listen((m) => r(m)));
     ha.post({ type: "wiki:place-verb", requestId: "from-a" });
     // The handle stamps the tab's envelope going out and reads it off coming in: the daemon core sees the bare message.
     expect(await seenA).toEqual({ type: "wiki:verb-result", requestId: "from-a", result: { ok: true } });
+    expect(island.boots()).toBe(1);                       // ONE island for the face, however many tabs wear it
     const seenB: unknown[] = [];
     hb.listen((message) => seenB.push(message));
     expect(seenB).toEqual([]);
   });
 
   test("the tab's handle hears only its own session: another session or generation under its owner's epoch drops by name", async () => {
-    const hello = { kind: "holder:hello", islandBoots: 1, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0 };
+    const hello = { kind: "holder:hello", islandBoots: 1, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0, nonce: "00" };
     let holderSide!: MessagePort;
     class GreetingSharedWorker {
       readonly port: MessagePort;
@@ -213,8 +219,8 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const recovered = await attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 });
     expect(recovered.kind).toBe("attached");
     if (recovered.kind !== "attached") return;
-    expect(recovered.hello.islandBoots).toBe(1);
-    expect(island.boots()).toBe(1);
+    expect(recovered.hello.islandBoots).toBe(0);
+    expect(island.boots()).toBe(0);
     recovered.port.close();
   });
 
@@ -230,9 +236,9 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(first.kind).toBe("attached");
     expect(second.kind).toBe("attached");
     if (first.kind !== "attached" || second.kind !== "attached") return;
-    expect(first.hello.islandBoots).toBe(1);
-    expect(second.hello.islandBoots).toBe(1);
     expect(first.port).not.toBe(second.port);
+    const face = await faceFixture("face:live");
+    const session = { personaGroup: face.group, edge: face.edge, atom: face.atom };
 
     // Each tab asks the one island by its own request and hears its own answer; the edit one tab made reads back
     // through another tab's own request, never through an echo of the first tab's traffic.
@@ -245,8 +251,8 @@ describe("the shared holder — one island per origin, a port per tab", () => {
       });
       handle.post({ type: "wiki:place-verb", requestId, verb, args: level ? { level } : {} });
     });
-    const firstHandle = holderWorkerHandle(first.port);
-    const secondHandle = holderWorkerHandle(second.port);
+    const firstHandle = holderWorkerHandle(first.port, session);
+    const secondHandle = holderWorkerHandle(second.port, session);
     expect(await ask(firstHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
     expect(await ask(firstHandle, "change", "3")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
     expect(await ask(secondHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
@@ -256,7 +262,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(reattached.kind).toBe("attached");
     if (reattached.kind !== "attached") return;
     expect(reattached.hello.islandBoots).toBe(1);
-    expect(await ask(holderWorkerHandle(reattached.port), "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(holderWorkerHandle(reattached.port, session), "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     first.port.close();
     reattached.port.close();

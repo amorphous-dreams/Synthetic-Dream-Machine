@@ -19,7 +19,7 @@
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import type { LeafIdentity } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey, loadVesselCard } from "./node-vessel-identity.js";
-import { loadFaceAtom } from "./face-atom-store.js";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadVeilArchive } from "./identity-anchors.js";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
@@ -36,9 +36,9 @@ export type { LeafIdentity } from "@lararium/mesh";
 export async function loadLeafIdentity(arm: "place" | "face" = "place", face?: { handleIndex: number; personaGroupId: string }): Promise<LeafIdentity> {
   if (arm === "face") {
     if (!face) throw new Error("a face leaf names its worn handle and PersonaGroup");
-    const seed = await loadFaceAtom(face.handleIndex);
+    const seed = await loadFaceAtomOfGroup(face.personaGroupId);
     if (!seed) throw new Error("this face holds no atom; re-found or re-admit it");
-    const archiveBytes = await loadVeilArchive(face.handleIndex);
+    const archiveBytes = await loadVeilArchive(face.personaGroupId);
     if (!archiveBytes) throw new Error("this face holds no atom archive; re-found or re-admit it");
     const atom = faceAtomKeyFromSeed(seed, face.personaGroupId);
     const provider = new KeyhiveProvider();

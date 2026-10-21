@@ -34,7 +34,7 @@ async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8A
 
 describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
-    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", "veil-archive-h0.bin": "x",
+    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", [`veil-archive-g${"a".repeat(64)}.bin`]: "x",
     ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x",
     ".vessel-card-joshua.json": "{}",
   };
@@ -45,7 +45,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       const rows = await rowsOf(v.homes, SOWN);
       expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
         "vessel-key": "device-minted floor", "vessel-card": "- floor-plain",
-        "keyhive-archive": "device-minted hot", "veil-archive-h0": "device-minted hot",
+        "keyhive-archive": "device-minted hot", [`veil-archive-g${"a".repeat(64)}`]: "device-minted hot",
         "persona-root-h0": "seed cold", "recovery-device-share-h0": "seed cold",
       });
       for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);

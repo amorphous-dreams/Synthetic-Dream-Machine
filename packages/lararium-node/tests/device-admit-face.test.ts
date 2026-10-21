@@ -12,7 +12,7 @@ vi.mock("../src/node-vessel-identity.js", () => ({
   loadVesselVerifyingKey: async () => "vessel",
 }));
 vi.mock("../src/identity-anchors.js", () => ({ loadIdentityAnchors: async (face = 0) => ({ personaGroupId: `group-${face}` }) }));
-vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtom: async (face = 0) => new Uint8Array(32).fill(face + 1) }));
+vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async (group: string) => new Uint8Array(32).fill(Number(group.split("-").at(-1)) + 1) }));
 vi.mock("../src/edge-board.js", () => ({
   readVesselEdgeBoard: async ({ scope, vesselKey }: { scope: string; vesselKey: string }) => {
     seam.boards.push(scope); seam.ledgerKeys.push(vesselKey);

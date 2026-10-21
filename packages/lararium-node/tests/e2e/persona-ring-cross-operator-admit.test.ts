@@ -84,7 +84,7 @@ const charterDocAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, openTestCustody } from "../found-route.js";
-import { loadFaceAtom } from "../../src/face-atom-store.js";
+import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -200,7 +200,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // `withLarRoot` (`tests/harness/with-lar-root.ts`), or it silently reaches the real, non-isolated
     // `~/.local/share/lares/identity` home instead of this test's isolated vessel.
     // The grant record signs under the key the founder's device edge licenses: the face's atom, not the place.
-    const founderSeed = await withLarRoot(FOUNDER.root, async () => { await openTestCustody(); return loadFaceAtom(0); });
+    const founderSeed = await withLarRoot(FOUNDER.root, async () => { await openTestCustody(); return loadFaceAtomOfGroup(personaGroupId); });
     if (!founderSeed) throw new Error("[persona-ring-cross-operator-admit] the founding face holds no atom");
     const aid = nexusAidOf(seedCharter);
     if (!aid) throw new Error("[persona-ring-cross-operator-admit] the seed charter names no Nexus identifier");

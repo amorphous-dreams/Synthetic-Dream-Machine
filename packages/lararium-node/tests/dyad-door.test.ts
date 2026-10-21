@@ -1,11 +1,14 @@
 /**
- * The dyad door: the daemon asks the vessel's main thread for its live fleet-edge standing.
+ * The node dyad door asks the vessel's main thread for its live fleet-edge standing.
+ * The browser daemon island reads its own fleet board; the tab reads that board for sibling sync.
  *
  *   D1 no door answers aside. control: clear and all four valid standings pass through unchanged.
  *   D2 throws, an unknown standing, and a non-string ask field answer aside. control: a valid ask returns the door's standing.
  *   D3 only a same-request-id answer settles; silence and unknown standings answer aside. control: concurrent asks settle independently.
  *   D4 daemon asks reach the door. control: wiki asks answer aside and log DyadDoorRefused once; session asks draw no answer.
  *   D5 each protocol guard accepts its own dyad message and refuses the opposite direction.
+ *   D6 the node folds its worn fleet and hangs its door before daemon boot.
+ *   D7 the browser tab keeps sibling sync current while the daemon island resolves its own board reader.
  */
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
@@ -140,23 +143,40 @@ describe("the dyad door", () => {
     expect(src).toMatch(/down: \(\) => setDyadDoor\(null\)/);
   });
 
-  test("D7 — the browser leaf reads its fleet's board and hangs the door on the daemon handle before its island boots (a source weld)", () => {
+  test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "open-browser-vessel.ts"), "utf8");
-    expect((src.match(/attachBrowserDyadDoor\(handle, \(\) => dyadDoor\);/g) ?? []).length).toBe(1);
+    const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "browser-daemon-island.ts"), "utf8");
+    const behavior = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
+    const boardReader = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "board-dyad-reader.ts"), "utf8");
+
+    // The tab attaches a worker handle without hanging a dyad door on it.
+    expect(src).not.toMatch(/attachBrowserDyadDoor|dyadDoor/);
     expect((src.match(/daemon = await openBrowserDaemonVm\(/g) ?? []).length).toBe(1);
+    const spawnStart = src.indexOf("spawnWorker: (url) => {");
+    const spawnEnd = src.indexOf("recipe: { wikiSlug: \"daemon\" }", spawnStart);
+    expect(spawnStart).toBeGreaterThan(0);
+    expect(spawnEnd).toBeGreaterThan(spawnStart);
+    const spawn = src.slice(spawnStart, spawnEnd);
+    expect(spawn).toContain("return handle;");
+    expect(spawn).not.toMatch(/attachBrowserDyadDoor|dyadDoor|answerBrowserDyadAsk/);
+
+    // The leaf still folds the fleet board before boot, then keeps its sibling gate current on changes.
     expect((src.match(/^\s*fleetRead = readFleet\(\);\n\s*await fleetRead;$/gm) ?? []).length).toBe(1);
     const read = src.search(/^\s*fleetRead = readFleet\(\);\n\s*await fleetRead;$/m);
-    // the reading goes dark the moment the board moves, and an overtaken read publishes nothing
     expect(src).toMatch(/read\.handle\.on\("change", \(\) => \{\n\s*fleetShadows = null;\n\s*fleetMoves \+= 1;/);
     expect(src).toMatch(/if \(startedAt !== fleetMoves\) return;/);
-    expect(src).toMatch(/if \(!fleetShadows && fleetRead\) await fleetRead\.catch\(\(\) => undefined\);/);
+    expect(src).toMatch(/aside: \(peerId\) => siblingAside\(peerId\)/);
+    expect(src).toMatch(/deviceAside: \(vesselKey\) => !fleetShadows \|\| fleetShadows\.readings\.get\(deviceEdgeId\(fleetShadows\.root, vesselKey\)\)\?\.stands === true/);
     const boot = src.indexOf("daemon = await openBrowserDaemonVm(");
     expect(read).toBeGreaterThan(0);
     expect(read).toBeLessThan(boot);
-    expect(src.indexOf("attachBrowserDyadDoor(handle, () => dyadDoor);")).toBeGreaterThan(boot);   // inside that call's spawn seam
-    // another fleet, and no read yet, each answer aside
-    expect(src).toMatch(/if \(!fleetShadows \|\| bareKey\(fleetRoot\) !== bareKey\(fleetShadows\.root\)\) return "aside";/);
-    const pool = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "browser-vessel-island-pool.ts"), "utf8");
-    expect((pool.match(/refuseBrowserDyadAsks\(handle\);/g) ?? []).length).toBe(1);
+
+    // The daemon island resolves standing through its own Repo and signed fleet board.
+    expect(island).not.toMatch(/browserDyadAsker|vesselDyadAsker|browser-dyad-door/);
+    expect((island.match(/readDyadFromBoard: true/g) ?? []).length).toBe(1);
+    expect(behavior).toMatch(/readDyadFromBoard\s*\?[\s\S]*?boardDyadReader\(\s*ctx\.repo,[\s\S]*?:\s*dyadReading/);
+    expect(boardReader).toMatch(/findOrThrow\(repo, fleetEdgeBoardDocUrl\(fleetRootDid\)/);
+    expect(boardReader).toMatch(/readEdgeBoard\(\{[^}]*board,[^}]*kept[^}]*authorityFor: fleetEdgeAuthority\(fleetRootDid\)[^}]*\}\)/);   // the island counts into its own ledger
+    expect(boardReader).toMatch(/keptFromLedger\(/);
   });
 });

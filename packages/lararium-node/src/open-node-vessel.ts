@@ -44,7 +44,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, personaScopedBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -121,7 +121,7 @@ import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
-import { loadFaceAtom } from "./face-atom-store.js";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
@@ -153,6 +153,7 @@ import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from ".
 import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { custodyHeld } from "./custody-seat.js";
+import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
@@ -397,11 +398,11 @@ export interface SovereignReaders {
   /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
-  readonly veilArchive: (handleIndex: number) => Promise<Uint8Array | null>;
+  readonly veilArchive: (personaGroup: string) => Promise<Uint8Array | null>;
   /** Seal the vessel's keyhive archive at rest. */
   readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
   /** Seal one face's veil archive at rest. */
-  readonly writeVeilArchive: (bytes: Uint8Array, handleIndex: number) => Promise<void>;
+  readonly writeVeilArchive: (bytes: Uint8Array, personaGroup: string) => Promise<void>;
   /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
   readonly outboxKey: () => Promise<Uint8Array>;
 }
@@ -642,6 +643,7 @@ async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
+  if (custodyHeld()) await sweepFoundingSeeds();
   // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
   // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
   // process holds its vessel key, and stands at the floor when it holds none.
@@ -1828,7 +1830,7 @@ async function prepareNodeBootOn(
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
     const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     const mountedFace = wornMount?.handleIndex ?? 0;
-    const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtom(mountedFace) : null;
+    const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtomOfGroup(personaGroupId) : null;
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     activeAtom = atomSeed && personaGroupId ? faceAtomKeyFromSeed(atomSeed, personaGroupId) : null;
     if (activeAtom && deviceEdge && activeAtom.key !== deviceEdge.deviceVerifyingKey) throw new Error("this face's atom differs from its device edge");
@@ -2136,13 +2138,13 @@ async function prepareNodeBootOn(
     // writers, and a gate there would leave every other route into the worker unchecked
     // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
     const opens = sovereign !== null;
-    // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own handle-index; the face this
+    // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own PersonaGroup; the face this
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
     // receives it derived and holds no root.
     litFace = sovereign && deviceEdge ? mountedFace : null;
     const archiveBytes = sovereign ? await sovereign.archive() : null;
-    const veilArchiveBytes = sovereign && activeAtom ? await sovereign.veilArchive(mountedFace) : null;
+    const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
@@ -2159,7 +2161,7 @@ async function prepareNodeBootOn(
     if (sovereign) {
       setCustodyWriteDoor((carrier, bytes) => carrier === "archive"
         ? sovereign.writeArchive(bytes)
-        : sovereign.writeVeilArchive(bytes, mountedFace));
+        : personaGroupId ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("the mounted face names no PersonaGroup")));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
@@ -2179,12 +2181,17 @@ async function prepareNodeBootOn(
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
       // wiki stands in the stack; a Herm carries none, blind by structure rather than by a flag.
       registerBags: deriveRegisterBags({
-        // EVERY compartment registers — a plane absent from the ring stops that compartment's own
-        // devices reconciling. Only ONE mounts; the two verbs part company here.
-        fleets: bootstrap.personaPlanes.map((p) => ({
-          personaGroupId: p.personaGroupId,
-          catalogNamed: p.personaGroupId === personaGroupId ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
-        })),
+        // The mounted face registers its own planes on its own hive, and no hive registers a face it does not
+        // wear: another compartment's planes register when it is worn, under its own atom.
+        // The catalog names every face's plane documents, so the worn face's reading leaves the others' out.
+        fleets: bootstrap.personaPlanes.filter((p) => p.personaGroupId === personaGroupId).map((p) => {
+          const otherFaces = new Set(bootstrap.personaPlanes.filter((o) => o.personaGroupId !== personaGroupId)
+            .flatMap((o) => { const plane = personaScopedBagIds(o.personaGroupId); return [plane.persona, plane.circles, plane.identities, plane.sessions]; }));
+          return {
+            personaGroupId: p.personaGroupId,
+            catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()).filter((bag) => !otherFaces.has(bag)),
+          };
+        }),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),

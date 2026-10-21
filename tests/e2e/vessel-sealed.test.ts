@@ -26,7 +26,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
@@ -65,8 +65,10 @@ const PLAIN: Record<string, string> = {};
 
 const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
 /** The rows this witness watches at rest: the family the founding seals under the vessel key. */
-const SEALED_ROWS = ["keyhive-archive.bin", "veil-archive-h0.bin", "anchors-h0.json", "anchor-roster.json"] as const;
-const rowsAtRest = (): Record<string, Buffer> => Object.fromEntries(SEALED_ROWS.map((f) => [f, readFileSync(identity(f))]));
+const SEALED_ROWS = ["keyhive-archive.bin", "anchors-h0.json", "anchor-roster.json"] as const;
+/** The face's veil archive rests under a name that carries its PersonaGroup's digest, so the witness finds it by its family. */
+const veilArchiveRows = (): string[] => readdirSync(identity("")).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f));
+const rowsAtRest = (): Record<string, Buffer> => Object.fromEntries([...SEALED_ROWS, ...veilArchiveRows()].map((f) => [f, readFileSync(identity(f))]));
 const SHARE = (): string => identity("recovery-device-share-h0.bin");
 
 /** The custody door's own reading of what stands. Looks are COUNTED while no daemon answers; no clock decides. */

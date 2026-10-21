@@ -44,6 +44,7 @@ import {
   type IslandMsg_CustodyWrite,
   type IslandMsg_CustodyWritten,
   type CasTransitTransport,
+  verifyCidBytes,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
 import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
@@ -56,7 +57,7 @@ const CAS_WANT_TIMEOUT_MS = 20_000;
  * vessel does. `discover` names the one holder it can reach (the vessel); `fetchBlock` posts `cas:want` and
  * awaits `cas:block` on the same requestId. No answer inside the window → null (a miss stays a miss).
  */
-function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): CasTransitTransport {
+export function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): CasTransitTransport {
   const pending = new Map<string, (bytes: Uint8Array | null) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CasBlock> | null;
@@ -70,11 +71,15 @@ function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", 
   return {
     async discover() { return ["vessel"]; },
     fetchBlock(cid) {
-      return new Promise<Uint8Array | null>((resolve) => {
+      return new Promise<Uint8Array | null>((resolve, reject) => {
         const requestId = `cas-${process.pid}-${++seq}`;
         const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, CAS_WANT_TIMEOUT_MS);
         timer.unref?.();
-        pending.set(requestId, (bytes) => { clearTimeout(timer); resolve(bytes); });
+        pending.set(requestId, (bytes) => {
+          clearTimeout(timer);
+          if (bytes && !verifyCidBytes(bytes, cid)) reject(new Error(`CID mismatch for ${cid}`));
+          else resolve(bytes);
+        });
         const ask: IslandMsg_CasWant = { type: "cas:want", requestId, cid };
         port.postMessage(ask);
       });
@@ -116,7 +121,7 @@ export function vesselDyadAsker(
  * vessel's Repo saves it. `restOnVessel` posts `doc:rest` and resolves on `doc:rested` with `rested: true`; an
  * unrested answer, or none inside this side's own patience, rejects, so the caller records no pointer.
  */
-export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS): (documentIds: readonly string[]) => Promise<void> {
+export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS, gateClear?: Promise<void>): (documentIds: readonly string[], gateForCall?: Promise<void>) => Promise<void> {
   const pending = new Map<string, (answer: IslandMsg_DocRested | null) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DocRested> | null;
@@ -127,19 +132,33 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
     settle(m as IslandMsg_DocRested);
   });
   let seq = 0;
-  return (documentIds) => new Promise<void>((resolve, reject) => {
-    const requestId = `rest-${process.pid}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
-    timer.unref?.();
-    const settleWith = (answer: IslandMsg_DocRested | null): void => {
-      clearTimeout(timer);
-      if (answer?.rested === true) resolve();
-      else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "unrested" : "no answer"})`));
-    };
-    pending.set(requestId, settleWith);
-    const ask: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds: [...documentIds] };
-    port.postMessage(ask);
-  });
+  const ask = (documentIds: readonly string[]) => {
+    let cancel = () => {};
+    const promise = new Promise<void>((resolve, reject) => {
+      const requestId = `rest-${process.pid}-${++seq}`;
+      const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
+      timer.unref?.();
+      const settleWith = (answer: IslandMsg_DocRested | null): void => {
+        clearTimeout(timer);
+        if (answer?.rested === true) resolve();
+        else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "unrested" : "no answer"})`));
+      };
+      pending.set(requestId, settleWith);
+      cancel = () => { pending.delete(requestId); clearTimeout(timer); };
+      const message: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds: [...documentIds] };
+      port.postMessage(message);
+    });
+    return { promise, cancel };
+  };
+  return async (documentIds, gateForCall) => {
+    const gate = gateForCall ?? gateClear;
+    if (!gate) { await ask(documentIds).promise; return; }
+    // A reply heard during proof remains provisional, including an early refusal.
+    const provisional = ask(documentIds);
+    void provisional.promise.catch(() => undefined);
+    try { await gate; } finally { provisional.cancel(); }
+    await ask(documentIds).promise;
+  };
 }
 
 /**

@@ -96,7 +96,18 @@ export class BrowserCustodyRefused extends Error {
 const unlocked = new Map<string, VesselKey>();
 
 /** Drop this page's unlock of the vessel. The sealed rows stay; every custody read refuses until the next unlock. */
-export function lockBrowserCustody(idbName: string): void { unlocked.delete(idbName); }
+export function lockBrowserCustody(idbName: string): void {
+  unlocked.delete(idbName);
+  for (const listener of [...lockListeners.get(idbName) ?? []]) listener();
+}
+
+const lockListeners = new Map<string, Set<() => void>>();
+/** Hear this page's lock of the vessel: a tab that told the holder it can seal tells it again when it cannot. */
+export function onBrowserCustodyLock(idbName: string, listener: () => void): () => void {
+  const set = lockListeners.get(idbName) ?? new Set<() => void>();
+  set.add(listener); lockListeners.set(idbName, set);
+  return () => { set.delete(listener); };
+}
 
 // ── the IndexedDB port ─────────────────────────────────────────────────────────────────────────────
 
