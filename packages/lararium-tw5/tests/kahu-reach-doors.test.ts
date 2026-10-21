@@ -5,18 +5,22 @@
  *
  *   residency reactor  ADD · COPY · MOVE · CLEAR · DROP · LOAD · INGEST   (into canon; MOVE also out of it)
  *   meme put · meme delete · draft placement · a realm steward's write (the realm grant stands in for no check)
+ *   wiki-mint          a minted wiki's recipe names no system bag as a live library, and a system slug's canon document is
+ *                      named only to a hand the cabal admits
  *
  * Every stranger draws `kahu-reach` and moves no byte. CONTROLS: a Kahu hand (a counted 1-of-1 admission AND a
  * sentinel membership) lands the same act; a copy OUT of canon succeeds for a stranger; a user bag asks no source.
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, type LarTiddlerStore, type Verb } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, plainField, recipeUri, wikiBagUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType, type Verb } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
+import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
+import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 
@@ -186,5 +190,40 @@ describe("draft placement", () => {
       expect(r.heads()).toEqual(before);
       expect(await draft(await kahuHand())).toMatchObject({ status: "drafted", toBag: LARES });
     } finally { await r.repo.shutdown(); }
+  });
+});
+
+describe("wiki-mint", () => {
+  type Tiddlers = Record<string, LarTiddlerRecord>;
+  function catalogOf(tiddlers: Tiddlers) {
+    const handle = { url: "automerge:catalog", doc: () => ({ tiddlers }), change: (fn: (d: { tiddlers: Tiddlers }) => void) => fn({ tiddlers }), whenReady: async () => {} } as unknown as DocHandle<LarDoc>;
+    const accessor: CatalogAccessor = {
+      handle: async () => handle, urlOf: async (k) => (tiddlers[k]?.tiddler["text"] as string | undefined) ?? null,
+      recordOf: async (t) => tiddlers[t] ?? null, find: async () => null, storeOf: async () => null,
+    };
+    return { accessor, tiddlers };
+  }
+  const mintOpts = (catalog: CatalogAccessor, oracle: CatalogAccessor, extra: Record<string, unknown> = {}) => ({
+    repo: { create: () => ({ url: "automerge:minted", whenReady: async () => {} }), find: async (u: string) => ({ url: u, whenReady: async () => {} }) } as unknown as RepoType,
+    catalog, oracle, vesselDid: () => "did:x", rootDir: "", resolveDraftDoc: async () => ({ url: "automerge:draft", reach: "floor" as never }), ...extra,
+  });
+  const ctx = {} as VerbContext;
+
+  test("a minted wiki's recipe names neither system bag as a live library: the floor carries them read-only through @oracle", async () => {
+    const catalog = catalogOf({});
+    const oracle = catalogOf({});
+    await makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor))({ slug: "garden" }, ctx);
+    const stack = String(plainField(catalog.tiddlers[recipeUri("catalog", "garden")], "bag-stack"));
+    expect(stack).not.toContain(LARES);
+    expect(stack).not.toContain(LARARIUM);
+  });
+
+  test("a system slug's canon document goes to a hand holding canon alone; any other hand finds no wiki (CONTROL: the hand with canon is named it)", async () => {
+    const oracle = catalogOf({ [recipeUri("oracle", "lares")]: { tiddler: { title: recipeUri("oracle", "lares"), "bag-stack": `${LARARIUM} ${LARES}` } } as LarTiddlerRecord });
+    const catalog = catalogOf({});
+    const naming = async (bag: string): Promise<string | null> => (bag === wikiBagUri("lares") ? "automerge:lares-live" : null);
+    await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: async () => null }))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
+    await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
+    expect(await makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: naming }))({ slug: "lares" }, ctx)).toMatchObject({ system: true, wikiDocUrl: "automerge:lares-live" });
   });
 });
