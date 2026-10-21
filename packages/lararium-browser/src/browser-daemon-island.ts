@@ -31,7 +31,7 @@ runBrowserSovereignWorker((manifest) => {
   const ledgerRepo = key ? new Repo({ storage: new IndexedDBStorageAdapter(`lares:island-edge-ledger:${key}`) }) : null;
   const dyadLedger = key && ledgerRepo ? materializeSharedLarDoc(ledgerRepo, edgeLedgerDocUrl(key), "ledger:edge") : undefined;
   return makeOperatorDaemonBehavior(manifest, {
-    // The island reads its signed fleet board through its own Repo.
+    // The island reads its signed fleet board through its own Repo; an absent edge reads clear until the signed frontier stands.
     readDyadFromBoard: true,
     ...(dyadLedger ? { dyadLedger } : {}),
     ...(ledgerRepo ? { restDyadLedger: () => ledgerRepo.flush() } : {}),

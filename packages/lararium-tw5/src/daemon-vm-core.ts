@@ -140,6 +140,8 @@ type VesselMessagePort = IslandMsg_Manifest["syncPort"];
 export interface DaemonVmHost {
   spawnWorker(scriptUrl: URL): VesselWorkerHandle;
   newSyncChannel(): { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
+  /** Give a holder handle the daemon's factory for a fresh manifest and sync crossing. */
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] }) => void;
   /** Optional second crossing for the one explicitly worker-owned document. */
   newOwnedSyncChannel?: () => { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Browser workers register their inbound shore before signaling ready; Node omits the handshake. */
@@ -616,13 +618,26 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const daemonAuthWithCrossroads = daemonAuth
     ? { ...daemonAuth, registerBags: [...new Set([...daemonAuth.registerBags, CROSSROADS_DOC_URI])] }
     : daemonAuth;
-  const manifestMsg = mkManifest(DAEMON_BAG_ID, syncPort, daemonRecipe, grants, coreHash, {
-    ...(storage   ? { storage }   : {}),
-    ...(daemonAuthWithCrossroads ? { daemonAuth: daemonAuthWithCrossroads } : {}),
-    ...(pluginCids?.length ? { pluginCids } : {}),
-    ...(diskMirrors?.length ? { diskMirrors } : {}),
-    ...(ownedDocument && ownedChannel ? { ownedDocument: { ...ownedDocument, syncPort: ownedChannel.syncPort } } : {}),
-  });
+  const replayLinks: Array<() => void> = [];
+  const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] } => {
+    const primary = first ? { mainPort, syncPort } : host.newSyncChannel();
+    const owned = first ? ownedChannel : ownedDocument ? host.newOwnedSyncChannel!() : undefined;
+    if (!first) {
+      const detach = attachMessageChannelSync(repo, primary.mainPort);
+      const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
+      replayLinks.push(() => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); });
+    }
+    const msg = mkManifest(DAEMON_BAG_ID, primary.syncPort, daemonRecipe, grants, coreHash, {
+      ...(storage ? { storage } : {}),
+      ...(daemonAuthWithCrossroads ? { daemonAuth: daemonAuthWithCrossroads } : {}),
+      ...(pluginCids?.length ? { pluginCids } : {}),
+      ...(diskMirrors?.length ? { diskMirrors } : {}),
+      ...(ownedDocument && owned ? { ownedDocument: { ...ownedDocument, syncPort: owned.syncPort } } : {}),
+    });
+    return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort] };
+  };
+  const initialPost = makeManifestPost(true);
+  host.onManifestReplay?.(() => makeManifestPost());
   const manifestGate = host.awaitReady
     ? new Promise<void>((resolve) => {
         worker.listen((raw: unknown) => {
@@ -631,8 +646,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       })
     : Promise.resolve();
   void manifestGate.then(() => {
-    const transfer = ownedChannel ? [syncPort, ownedChannel.syncPort] : [syncPort];
-    worker.post(manifestMsg, transfer);
+    worker.post(initialPost.msg, initialPost.transfer);
   });
 
   const mountHostWorkingLayer = async (): Promise<void> => {
@@ -753,6 +767,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       }
       detachOwned?.();
       detachPrimary();
+      for (const close of replayLinks.splice(0)) close();
       worker.terminate();
       return { acked };
     })()),
@@ -763,6 +778,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       _cutDown?.();
       detachOwned?.();
       detachPrimary();
+      for (const close of replayLinks.splice(0)) close();
       worker.terminate();
     },
   };

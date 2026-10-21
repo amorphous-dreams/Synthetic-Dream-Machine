@@ -42,7 +42,7 @@ import {
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex,
   type VesselBootstrap, type VesselCoreAssembly, type GateBundlePin, type DeviceDelegationTiddler,
-  type GenesisSeed,
+  type GenesisSeed, type IslandMsg_Manifest,
   takeInvite, popInvite, hex,
   type WalkRecord, type CarryOutcome,
   readHearthFloorCard,
@@ -1288,6 +1288,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         fleetRead = readFleet();
         await fleetRead;
       }
+      let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) | null = null;
       daemon = await openBrowserDaemonVm({
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
@@ -1303,7 +1304,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // and the holder stands the face's own house. A vessel with no face edge stands its own island.
           const faceSession = holder?.kind === "attached" && wornEdge
             ? { personaGroup: wornGroup, edge: wornEdge, atom: wornAtom } : null;
-          const handle = holder?.kind === "attached" && faceSession ? holderWorkerHandle(holder.port, faceSession, { onLock: () => lockBrowserCustody(idbName), floor: () => browserSpawnWorker(url) }) : browserSpawnWorker(url);
+          const handle = holder?.kind === "attached" && faceSession ? holderWorkerHandle(holder.port, faceSession, {
+            onLock: () => lockBrowserCustody(idbName), floor: () => browserSpawnWorker(url),
+            rePost: () => { if (!replayManifest) throw new Error("[shared-holder] replacement manifest unavailable"); return replayManifest(); },
+          }) : browserSpawnWorker(url);
           if (faceSession) {
             // This tab seals under its own key: it announces it can while its custody stands open, and again when it locks.
             handle.post({ type: "session:sealer", ready: true });
@@ -1311,6 +1315,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           }
           return handle;
         },
+        onManifestReplay: (factory) => { replayManifest = factory; },
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
         grants: {
           islandUrl: assembly.islandHandle.url,

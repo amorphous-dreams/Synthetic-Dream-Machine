@@ -28,7 +28,7 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 import { boardDyadReader } from "./board-dyad-reader.js";
@@ -200,11 +200,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
   void gateClear.catch(() => undefined);
   const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
-    ? async (fleetRootDid, deviceVerifyingKey) => boardDyadReader(
-      ctx.repo, dyadLedger, restDyadLedger,
-      daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey,
-      (await dyadLedger)?.doc(), fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
-    )(fleetRootDid, deviceVerifyingKey)
+    ? async (fleetRootDid, deviceVerifyingKey) => {
+      const ownKey = daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey;
+      let seatLedger: LarDoc | undefined;
+      if (ownKey) {
+        // The vessel's synced roll answers the lift; the island's private ledger keeps counted acts.
+        try { seatLedger = (await findOrThrow(ctx.repo, edgeLedgerDocUrl(ownKey), "the vessel's seat-roll ledger")).doc(); } catch { /* no vessel roll keeps the lift owing */ }
+      }
+      return boardDyadReader(
+        ctx.repo, dyadLedger, restDyadLedger, ownKey,
+        seatLedger, fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
+      )(fleetRootDid, deviceVerifyingKey);
+    }
     : dyadReading;
   if (!daemonAuth) {
     return {

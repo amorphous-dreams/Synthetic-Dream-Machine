@@ -137,6 +137,8 @@ export interface HolderHandleHooks {
   readonly onLock?: (personaGroup: string) => void;
   /** Start the dedicated daemon when a greeted holder cannot launch its island. */
   readonly floor?: () => VesselWorkerHandle;
+  /** Rebuild a manifest with new transferred ports after its first ports crossed to the holder. */
+  readonly rePost?: () => { readonly msg: object; readonly transfer: Transferable[] };
 }
 
 /**
@@ -153,6 +155,7 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   let admitted = session === undefined;
   const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
   let floorHandle: VesselWorkerHandle | null = null;
+  let manifestSent = false;
   const listeners = new Set<{ cb: (message: unknown) => void; detach?: () => void }>();
   const errorListeners = new Set<{ cb: (error: Error) => void; detach?: () => void }>();
   const takeFloor = (): void => {
@@ -160,9 +163,16 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
     floorHandle = hooks.floor();
     for (const entry of listeners) entry.detach = floorHandle.listen(entry.cb);
     for (const entry of errorListeners) entry.detach = floorHandle.onError(entry.cb);
+    if (manifestSent) {
+      const fresh = hooks.rePost?.();
+      if (fresh) floorHandle.post(fresh.msg, fresh.transfer);
+    }
     for (const queued of waiting.splice(0)) floorHandle.post(queued.msg, queued.transfer);
   };
-  const send = (msg: object, transfer: Transferable[]): void => port.postMessage({ ...msg, ...envelope }, transfer);
+  const send = (msg: object, transfer: Transferable[]): void => {
+    port.postMessage({ ...msg, ...envelope }, transfer);
+    if ((msg as { type?: unknown }).type === "manifest") manifestSent = true;
+  };
   if (session) {
     port.addEventListener("message", (e: MessageEvent) => {
       const d = e.data as { kind?: unknown; sessionId?: unknown; personaGroup?: unknown; cause?: unknown };

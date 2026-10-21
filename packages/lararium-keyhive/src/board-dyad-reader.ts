@@ -22,9 +22,10 @@ export function boardDyadReader(repo: Repo, ledger?: DocHandle<LarDoc> | Promise
       }
       const bareDevice = deviceVerifyingKey.trim().toLowerCase().replace(/^0x/, "");
       const own = ownDevice?.trim().toLowerCase().replace(/^0x/, "");
-      // A peer cannot infer clean standing from a fresh local ledger and an empty signed board.
-      if (own && bareDevice !== own && kept.acts.length + kept.anchors.length === 0 && read.counted.acts.length + read.counted.anchors.length === 0) return "aside";
-      return edgeStandingOf(read.readings.get(deviceEdgeId(fleetRootDid, bareDevice)), seatLedger && scope ? raisesSeenThrough(seatLedger, scope) : undefined);
+      const reading = read.readings.get(deviceEdgeId(fleetRootDid, bareDevice));
+      // Own and peer absence read clear for sync and widening alike until the signed edge frontier stands.
+      if (own && bareDevice === own && !reading) return "clear";
+      return edgeStandingOf(reading, seatLedger && scope ? raisesSeenThrough(seatLedger, scope) : undefined);
     } catch { return "aside"; }
   };
 }
