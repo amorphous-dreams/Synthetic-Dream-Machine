@@ -233,7 +233,7 @@ The local socket carries the open, calls, receipt queries, cancel, switch and cl
 
 ''Inside one custody context'', the holder separates PersonaGroups by custody: each face's secrets seal under keys only that face's unlocked session holds. Same-origin code that turns hostile can erase or roll back local stores, take a Web Lock or approach the SharedWorker; it reaches only this context's view of itself, never a sealed face it cannot unlock.
 
-''Local absence never clears.'' A device's own gate enforces its standing best-effort; its peers' gates enforce it, each from its own ledger and the signed standing it holds. A fresh, erased or rolled-back device reads ''unknown'' to every peer until signed standing reconciles, and a missing record never reads as a clean history.
+''A missing record proves no clean history.'' A device's own gate enforces its standing best-effort; its peers' gates enforce it, each from its own ledger and the signed standing it holds. A peer reads a device's absent raise against the board's signed edge frontier (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, the edge frontier): holding a frontier that includes every raise it has seen, it reads absence as clear as of that frontier; lacking one, a widening act waits as unknown. Until the frontier stands built, a peer reads absence as clear for sync and for widening alike, and the gap stays named.
 
 ''Tiers contract outward by signed, narrowed relations.'' One operator's household Nexus, neighbourhood Lararium, tribe and regional Nexus stand as distinct realms, charters and seats over one vessel or several. Carriage carries and reads nothing; a seat, a realm membership, a document read and a promotion each take their own grant, and no tier inherits another's membership or map by transit. Tiers sharing one origin, host or relay can correlate by metadata; where tiers must not learn of each other, they run on separate substrate. The research rests at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/browser-trust-line-2026">>.
 
@@ -326,6 +326,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HPyOu1U-Gj6T3q_8StyV6G93K_G72y5WZGxMguLRLOI
+<<^ code="&#x0003;">>ni:///sha-256;4lweT4f9OMWjeF4IJ1kNnm_0xMyRE8op4AJzbU1v150
 
 <<^ code="&#x0004;" -> to="?">>

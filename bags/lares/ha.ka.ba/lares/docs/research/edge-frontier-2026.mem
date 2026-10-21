@@ -1,0 +1,41 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/edge-frontier-2026">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+l-space   = "lares"
+role      = "code-and-field research, a two-wave traded Copilot and Codex Sol pass (2026-10-20), on telling a device never set aside from a raise erased or withheld: what the code signs today, what mature systems prove about completeness without a clock, who signs a frontier, and the reader's rule"
+status    = "research; read 2026-10-20; the ruling landed at docs/stable-founding-road #/rulings (the edge frontier) and row K17 the same day"
+tags      = ["research", "edge-kapae", "revocation", "frontier", "no-global-now"]
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/edge-frontier-2026.mem"
+title     = "lar:///ha.ka.ba/lares/docs/research/edge-frontier-2026"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/edge-frontier-2026"
+```
+
+<<~ ahu #/head>>
+
+! The edge frontier, 2026 ~ absence needs a signed boundary
+
+A fifth fresh read of `K15` Wave B found that reading an empty edge board's absence as "aside" refused every healthy fleet's joins and key wraps, while reading it as "clear" lets a withheld raise pass. Claims read MEASURED (code or a cited source) or LEAD.
+
+<<~/ahu>>
+
+<<~ ahu #/findings>>
+
+!! Findings
+
+# ''Nothing signed declares a board complete'' (both, MEASURED). Edge acts sign their own bytes (`edge-kapae.ts`); roll anchors commit past quorum heads; seat-roll receipts name known raises (`seat-duties.ts`); leases fold by maximum (`lease-frontier.ts`); `edgeStandingOf(undefined)` reads clear.
+# ''The persona KEL cannot anchor raises today'' (both, MEASURED): its kinds cover rotation, veto and guardian enrolment, and its verifier rejects any other (`persona-kel.ts`). A separate certificate type, the KEL resolving its signer's key, needs no KEL change.
+# ''Raise authority by board'' (Copilot, MEASURED): fleet edges raise by the holder (the fleet root) alone (`dyad.ts`); realm edges by quorum, vouch edges by holder and quorum (`realm-edges.ts`).
+# ''A head proves inclusion, never absence, without an issuance rule'' (both; RFC 9162, KERI, Matrix device lists, UCAN revocation, did:plc). While a raise takes effect as a standalone signed act, no later head can prove a raise absent; a raise must enter the committed stream before it counts toward widening.
+# ''Every useful analogue needs an issuer, a reader checkpoint and a comparison of views''; none supplies a global now. A stale valid head proves only its own boundary.
+# ''Quorum arithmetic'' (Sol, LEAD): with n seats, threshold q and at most f Byzantine seats, conflicting quorums share an honest signer only where 2q − n > f; withheld signatures stall issuance.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;nCP9iBr1cNeCvBSSN7N9CGStiWO9wtxDrr__FEYXcJk
+
+<<^ code="&#x0004;" -> to="?">>
