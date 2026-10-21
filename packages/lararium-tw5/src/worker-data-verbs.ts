@@ -146,7 +146,7 @@ export function makeResolveReactor(composite: CompositeStore): VerbReactor {
 /** `list-wikis` — enumerate the wikis registered in the catalog (oracle tiddlers).
  *  Reads the catalog plane via the accessor (access≠load) — the registry is NOT a loaded
  *  composite layer, so the accessor reads it directly, never through the composite. */
-export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor): VerbReactor {
+export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor, systemCanonUrl?: (bagUri: string) => Promise<string | null>): VerbReactor {
   return async () => {
     const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
     const cat = await catalog.handle();
@@ -165,7 +165,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "system", composition: "default" };
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: (await catalog.urlOf(bagUri)) ?? (await systemCanonUrl?.(bagUri)) ?? null, kind: "system", composition: "default" };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");

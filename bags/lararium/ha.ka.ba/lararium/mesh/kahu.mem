@@ -540,6 +540,16 @@ realm grant stands in for no check. The shore hands the island the charter's ros
 (`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a system bag. A READ and a
 copy OUT of canon ask nothing.
 
+''THE LIVE SYSTEM DOCUMENTS REST IN THE REALM.'' The founding mints one document per system bag and registers each as a
+realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
+`landKahuRealm`; tier `contract`, kept by that one name). A vessel NAMES them at boot only where the board carries a
+counted admission for the Kahu realm's group (`standKahuCanon`): the registrations come off the realm doc folded and
+seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the `bags/lares`
+and `bags/lararium` disk mirrors and the system wikis' document urls follow the same naming. A vessel outside the cabal
+holds no pointer and no layer for either bag, projects nothing under `bags/`, and reads the floor through `@oracle`. No
+catalog row names a system bag. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
+browser Kahu hand rides Wave C's face context.
+
 <<~/ahu>>
 
 <<~ ahu #/floor-release>>
@@ -674,6 +684,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UKtv1tJz4PH5Xb0TrXmehjT2FUoh0ZF_ntPpU-9s4Sg
+<<^ code="&#x0003;">>ni:///sha-256;fJ7T-O6e8iD_HoIexYkqQwyxxYhhpPVgkG_xh4sDqDY
 
 <<^ code="&#x0004;" -> to="?">>

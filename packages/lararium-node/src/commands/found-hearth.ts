@@ -11,7 +11,9 @@
  *      its genesis; its genesis names the hearth's Nexus AID;
  *   4. persona zero's FACE (`runFoundTheFace`), whose device edge, dyad scope and cabal sentinel all bind that AID;
  *   5. the Kahu-cabal ADMISSION: a counted 1-of-1 act at the one seat admits persona zero's group (the group that
- *      holds the hearth's Kahu realm, `kahuRealmGroup`), so `kahuCabalCanonAccess` holds for it from birth.
+ *      holds the hearth's Kahu realm, `kahuRealmGroup`), so `kahuCabalCanonAccess` holds for it from birth;
+ *   6. the Kahu REALM: the live `lares` and `lararium` documents, each registered as a realm bag of the hearth's realm
+ *      under persona zero's per-Nexus key (`landKahuRealm`), so the system documents rest in the realm from birth.
  *
  * ── A RESTORE AS PERSONA ZERO ───────────────────────────────────────────────────────────────────
  * With `restore` (a face's backup bundle, its body still sealed, and its bundle key), step 2 lands THAT face's root
@@ -48,6 +50,7 @@ import {
 import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony.js";
 import { larSealHome } from "../vessel-paths.js";
 import { landFoundingAdmission } from "./nexus-cabal.js";
+import { landKahuRealm } from "../kahu-realm.js";
 import { runFoundTheFace, runInit, type InitOptions, type FoundFaceResult } from "./init.js";
 
 /** One chair's cold next key, held in this process until its card reads back. */
@@ -199,6 +202,7 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   const light = async () => {
     const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0 });
     await landFoundingAdmission({ repo: opts.repo, sealHome: larSealHome(), personaGroupId: face.personaGroupId });
+    await landKahuRealm({ repo: opts.repo, sealHome: larSealHome() });
     return face;
   };
   const pending = await restorePendingRoot();

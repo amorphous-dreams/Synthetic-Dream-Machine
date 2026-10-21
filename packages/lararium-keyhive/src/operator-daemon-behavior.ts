@@ -128,7 +128,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed } from "@lararium/mesh";
+import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
@@ -900,8 +900,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
         // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
+        // A system wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
+        const systemCanonUrl = async (bagUri: string): Promise<string | null> =>
+          (await holdsKahuReach(kahuReach)) ? realmStandingDocUrl((await catalog.handle()).doc(), bagUri) : null;
         const wikiMintOpts = {
           composite:   ctx.composite,
+          systemCanonUrl,
           repo:        ctx.repo,
           catalog,
           ...(sysPlane ? { oracle: sysPlane } : {}),
@@ -917,7 +921,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
-        registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane));
+        registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
         // Whole-wiki residency policy — read the catalog recipe, command main's manager
         // per bag via daemon:residency-op. Pure policy, no live-layer mechanism.
         registry.register("pin-wiki",      makeWikiPinReactor(catalog, ctx.post, sysPlane));

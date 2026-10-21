@@ -42,8 +42,9 @@ verification witness.
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
 ''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
-oracle tiddlers (runtime DocUrls) write after `repo.import()` in `reconcileWellKnownTiddlers`. Neither
-counts as genesis material: the vessel carries the first as content and discovers the second as state.
+the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live system documents in
+the Kahu realm's registrations) never enter the island. Neither counts as genesis material: the vessel carries the first as
+content and discovers the second as state.
 
 <<~/ahu>>
 
@@ -122,6 +123,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ws1XPI2quFyod7gxoUx6gB2gi2i-mjSgjAQTFXcsEvU
+<<^ code="&#x0003;">>ni:///sha-256;Y0q10VcxsOOYpGVXDGoo0yPZIVx4KcrYWMI1lIdZ3RQ
 
 <<^ code="&#x0004;" -> to="?">>

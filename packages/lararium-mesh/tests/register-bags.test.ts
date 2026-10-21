@@ -15,7 +15,7 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { catalogNamedBags, deriveRegisterBags, type FleetMembership } from "../src/register-bags.js";
+import { catalogNamedBags, deriveRegisterBags, isVesselGround, type FleetMembership } from "../src/register-bags.js";
 import { personaBagIdFor } from "../src/persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE } from "../src/lar-uris.js";
 import { personaScopedBagIds, personaTagFromBagId } from "../src/persona-scope.js";
@@ -32,9 +32,18 @@ describe("the ground every vessel stands on", () => {
     // The drift this ends: one opener registered the shared substrate bag and its catalog, the other
     // registered neither, and the second could not satisfy a cap check over its own operator's bags.
     const bags = deriveRegisterBags({ fleets: [] });
-    expect(bags).toEqual(expect.arrayContaining([
-      DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle, BAG_IDS.lares, BAG_IDS.lararium,
-    ]));
+    expect(bags).toEqual(expect.arrayContaining([DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle]));
+  });
+
+  test("★ the live system bags are NOT ground — only a vessel the Kahu cabal admitted registers them (W26 slice 3) ★", () => {
+    // `lares` and `lararium` rest in the Kahu realm: a vessel outside the cabal holds neither document, so it registers
+    // neither bag and its caps over them never form. They stay VESSEL-ground in kind (the daemon's own key holds them).
+    for (const bag of [BAG_IDS.lares, BAG_IDS.lararium]) {
+      expect(deriveRegisterBags({ fleets: [] })).not.toContain(bag);
+      expect(deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: WIKI })).not.toContain(bag);
+      expect(deriveRegisterBags({ fleets: [], systemCanon: true })).toContain(bag);       // CONTROL
+      expect(isVesselGround(bag)).toBe(true);
+    }
   });
 
   test("★ a face's relations are NOT ground — a vessel standing in nothing carries no one's circles ★", () => {
@@ -132,7 +141,7 @@ describe("★ SEVERAL groups on one vessel — a work compartment and a play com
 
   test("two groups naming a bag in common register it once", () => {
     const shared = ["lar:///ha.ka.ba/bags/shared"];
-    const bags = deriveRegisterBags({ fleets: [standingIn("work", shared), standingIn("play", shared)] });
+    const bags = deriveRegisterBags({ fleets: [standingIn("work", shared), standingIn("play", shared)], systemCanon: true });
     expect(bags.filter((b) => b === shared[0])).toHaveLength(1);
     expect(bags.filter((b) => b === BAG_IDS.lararium)).toHaveLength(1);
   });

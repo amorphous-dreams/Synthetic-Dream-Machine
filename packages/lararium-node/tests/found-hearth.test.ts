@@ -18,6 +18,9 @@
  *   H8 · over a place that holds a charter this act did not found, the act refuses by name and founds no face.
  *   H9 · the founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group, once: a second run lands
  *        no second act, and a group the act never named stands absent (W26 slice 3).
+ *  H10 · the founding registers `lares` and `lararium` as realm bags on the hearth's realm: two counted registrations,
+ *        sealed by persona zero's per-Nexus key, each naming a live document of its own; run again it registers nothing
+ *        new, and the catalog carries no pointer row for either bag (W26 slice 3).
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,11 +28,12 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, kahuRealmGroup, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
+  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, kahuRealmGroup, foldRealmBags, realmDocUrl, materializeSharedLarDoc, LARES_DOC_URI, LARARIUM_DOC_URI, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
   type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { runCabalStanding } from "../src/commands/nexus-cabal.js";
+import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -143,6 +147,32 @@ describe("the Stable founding act", () => {
       const group = kahuRealmGroup(packed()[PERSONA_GROUP_ID_TIDDLER]!.text!);
       expect((await direct(runCabalStanding)({ group })).heads).toHaveLength(1);
     });
+  });
+
+  test("H10 — the founding registers lares and lararium as realm bags, sealed by persona zero's key at the Nexus, once (CONTROL: nothing else registered, no catalog pointer row)", async () => {
+    const realm = async () => withLarRoot(a, async () => {
+      const aid = readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
+      const stood = await ownedStore(larDataDir(), async (repo) => {
+        const handle = await materializeSharedLarDoc(repo, realmDocUrl(aid), "realm");
+        const folded = await foldRealmBags(handle.doc(), aid);
+        const docs = new Map<string, boolean>();
+        for (const rec of folded.values()) docs.set(rec.bagUri, ((await repo.find(rec.docUrl as AutomergeUrl)).doc() as LarDoc | undefined) !== undefined);
+        return { folded: [...folded.values()].map((r) => ({ bag: r.bagUri, docUrl: r.docUrl, keptBy: r.keptBy, tier: r.readTier })), docs };
+      });
+      return { aid, ...stood, leaf: (await nexusLeafFor(0, aid))?.verifyingKey ?? null };
+    });
+    const first = await realm();
+    expect(first.folded.map((r) => r.bag).sort()).toEqual([LARARIUM_DOC_URI, LARES_DOC_URI].sort());
+    expect(first.leaf).not.toBeNull();
+    for (const rec of first.folded) { expect(rec.keptBy).toEqual([first.leaf]); expect(first.docs.get(rec.bag)).toBe(true); expect(rec.tier).toBe("contract"); }
+    expect(new Set(first.folded.map((r) => r.docUrl)).size).toBe(2);                       // two documents, never one
+    await foldAgain();
+    async function foldAgain() {
+      const again = await foundAt(a);
+      expect(again.face.alreadyStood).toBe(true);
+      const second = await realm();
+      expect(second.folded).toEqual(first.folded);                                            // CONTROL: a second run registers nothing new
+    }
   });
 
   test("H7 — a re-seat over the hearth's seed charter refuses by name and moves no byte: its AID never moves (CONTROL: H1's arming seated it)", async () => {
