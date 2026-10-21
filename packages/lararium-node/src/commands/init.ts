@@ -25,9 +25,11 @@ import {
   seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
-  mintFaceAnchor, raiseFaceFrontier,
+  mintFaceAnchor, raiseFaceFrontier, signFoundingLog, faceRootCommitment, edgeBodyDigest,
+  faceAtomKeyFromSeed, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyingKeyFromDid,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
+import { appendPersonaActs } from "../persona-act-store.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
@@ -625,6 +627,19 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,
   }));
+  const rootKey = await ed25519VerifyingKeyFromSeed(signerSeed);
+  if (rootKey !== verifyingKeyFromDid(face.signerDid as never)) {
+    throw new Error("[lares persona new] Face proof: root signer differs from founder DID; re-found the face");
+  }
+  const foundingActs = await signFoundingLog({
+    group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
+    rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl,
+      circles: face.circlesUrl, sessions: face.sessionsUrl },
+    deviceKey: faceAtomKeyFromSeed(atomSeed, face.personaGroupId).key,
+    edgeDigest: edgeBodyDigest(face.founderEdge),
+  }, { key: rootKey, sign: ed25519SignerFromSeed(signerSeed) });
+  appendPersonaActs(await repo.find<LarDoc>(face.personaUrl as AutomergeUrl), foundingActs);
   await repo.flush();
 
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the

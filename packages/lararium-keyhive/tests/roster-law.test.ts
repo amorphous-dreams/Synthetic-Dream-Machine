@@ -1,3 +1,4 @@
+import { founderAndJoineeActs } from "./admit-acts.js";
 import { describe, expect, it } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
@@ -67,6 +68,7 @@ describe("THE_ROSTER_LAW", () => {
       syncUrl: null,
       hearthDaemonUrl: founderPlace.daemonUrl,
       personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: founderAtomSeed, joineeKey: key(joineeAtomSeed), chain }),
     });
 
     const joineeRepo = repo();

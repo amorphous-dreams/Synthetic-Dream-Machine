@@ -17,6 +17,7 @@ import {
   groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, seedDaemonDoc, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 
+import { founderAndJoineeActs } from "./admit-acts.js";
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
 const OTHER_SEED   = new Uint8Array(32).fill(13);
@@ -45,6 +46,7 @@ async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey:
     personaGroupId: founder.f.personaGroupId,
     meshCabalDocIdHex: founder.f.meshCabalDocIdHex, syncUrl: null, islandDocUrl: null,
     hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+    personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: founder.chain }),
   });
 }
 

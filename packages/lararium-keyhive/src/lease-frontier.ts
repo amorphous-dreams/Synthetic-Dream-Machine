@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/lease-frontier
  */
-import { DAEMON_BAG_ID, leaseEpochPrefix, effectiveLeaseEpoch, type LarTiddlerStore } from "@lararium/mesh";
+import { DAEMON_BAG_ID, leaseEpochPrefix, signedLeaseEpoch, type LarTiddlerStore } from "@lararium/mesh";
 
 /** What a lease read yields: the current epoch, or a named reason the frontier cannot be read. */
 export type LeaseFrontier =
@@ -35,6 +35,7 @@ export function daemonLayerOf(composite: DaemonLayerHolder | null | undefined): 
 export async function readLeaseFrontier(
   composite: DaemonLayerHolder | null | undefined,
   groupDocIdHex: string | null | undefined,
+  authorize: (writerHex: string) => boolean,
 ): Promise<LeaseFrontier> {
   if (!groupDocIdHex) return { kind: "unavailable", why: "no PersonaGroup pinned" };
   if (!composite) return { kind: "unavailable", why: "no island composite in scope" };
@@ -49,7 +50,7 @@ export async function readLeaseFrontier(
       const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
       if (typeof text === "string") slots.push(text);
     }
-    return { kind: "epoch", n: effectiveLeaseEpoch(slots) };
+    return { kind: "epoch", n: signedLeaseEpoch(groupDocIdHex, slots, authorize) };
   } catch (err) {
     return { kind: "unavailable", why: `the daemon layer read faulted: ${(err as Error)?.message ?? String(err)}` };
   }

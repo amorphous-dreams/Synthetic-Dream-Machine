@@ -50,6 +50,7 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
   if (typeof p["personaKelPrefix"] !== "string" || !p["personaKelPrefix"]) return null;
   if (typeof p["hearthTrueName"] !== "string" || !p["hearthTrueName"]) return null;
   if (!p["deviceEdge"] || typeof p["deviceEdge"] !== "object") return null;
+  if (!Array.isArray(p["personaActs"])) return null;
   return payload as CarriedAdmitPayload;
 }
 

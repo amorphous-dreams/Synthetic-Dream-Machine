@@ -26,7 +26,8 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, effectiveLeaseEpoch,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, projectPersonaLog,
+  signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
@@ -42,6 +43,7 @@ import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
+import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
@@ -345,7 +347,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
   }
-  const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);
+  const lineage = personaLineageFromKel(personaKelChain);
+  if (!lineage) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
+  const boundEpoch = signedLeaseEpoch(personaGroupId, leaseSlotValues,
+    (writer) => lineage.some((epoch) => epoch.signers.includes(writer)));
 
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
   const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
@@ -354,6 +359,25 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
     deviceVerifyingKey: opts.joineeVerifyingKey.toLowerCase(), hearthTrueName, boundEpoch });
+  const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
+  const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
+    extraDocs: [daemonDoc as LarDoc | undefined] });
+  const projection = projectPersonaLog(records, { group: personaGroupId, lineage, authorize: () => true });
+  if (!projection.founded || projection.fork || !projection.head) {
+    throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
+  }
+  const signerKey = await ed25519VerifyingKeyFromSeed(signerSeed);
+  if (!lineage[lineage.length - 1]?.signers.includes(signerKey)) {
+    throw new Error("[lares fleet join answer] Face proof: root signer has no current KEL seat; re-admit the face");
+  }
+  const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
+  const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
+  const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
+    fields: { deviceKey: opts.joineeVerifyingKey.toLowerCase() } }, signer);
+  const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
+    { group: personaGroupId, act: "device-edge", epoch,
+      fields: { deviceKey: opts.joineeVerifyingKey.toLowerCase(), edgeDigest: edgeBodyDigest(signedEdge) } }, signer);
+  const personaActs = [...records, admission, edgeAct];
   const operation = { store: operationStore, atomSeed,
     signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
   const payload = await runDeviceAdmitEdge({
@@ -362,6 +386,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
     personaKelPrefix,
     personaKelChain,
+    personaActs,
     hearthTrueName,
     personaGroupId,
     meshCabalDocIdHex,
@@ -373,6 +398,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
     personaUrl,
   });
+  appendPersonaActs(personaHandle, [admission, edgeAct]);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
   // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's

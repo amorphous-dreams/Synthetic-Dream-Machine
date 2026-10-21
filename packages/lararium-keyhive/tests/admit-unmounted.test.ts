@@ -5,6 +5,7 @@ import {
   SIGNER_DID_TIDDLER, groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc,
   personaKelBoardDocUrl, personaKelChainForPrefix, seedDaemonDoc, vesselDyads,
 } from "@lararium/mesh";
+import { founderAndJoineeActs } from "./admit-acts.js";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 
 const pins = [
@@ -34,6 +35,7 @@ async function admitInput() {
     personaKelChain: chain, hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null,
     hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
+    personaActs: await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: new Uint8Array(32).fill(44), joineeKey: key(atomSeed), chain }),
   });
   const joineeRepo = repo();
   const daemonHandle = seedDaemonDoc(joineeRepo);

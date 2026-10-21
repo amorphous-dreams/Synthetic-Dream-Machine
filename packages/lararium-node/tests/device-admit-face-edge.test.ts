@@ -62,8 +62,13 @@ vi.mock("@lararium/mesh", async (real) => {
     personaKelBoardDocUrl: () => "board",
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
     oracleGenesisDocUrl: () => "oracle",
+    // This suite reads WHICH face's root signs; the signed log's own proofs have their reds elsewhere (persona-act-boot).
+    personaLineageFromKel: () => [{ epoch: 0, signers: { includes: () => true }, threshold: 1, rosterHash: "h" }],
+    projectPersonaLog: () => ({ founded: true, fork: null, head: { seq: 3, cid: "head" } }),
+    signedLeaseEpoch: () => 0,
   };
 });
+vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => [], appendPersonaActs: () => {} }));
 
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
 

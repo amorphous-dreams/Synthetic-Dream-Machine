@@ -20,7 +20,7 @@ describe("a face operation record", () => {
     const input = {
       signerSeed: new Uint8Array(32).fill(72),
       joineeVerifyingKey: groupSecretOpenerFromSeed(new Uint8Array(32).fill(73)).deviceKey,
-      personaKelPrefix: "prefix", personaKelChain: [{}] as never,
+      personaKelPrefix: "prefix", personaKelChain: [{}] as never, personaActs: [],
       hearthTrueName: "hearth", personaGroupId: "group", meshCabalDocIdHex: "cabal",
       syncUrl: null, hearthDaemonUrl: null, personaUrl: "automerge:face",
       operation: { store, atomSeed, signedInput },

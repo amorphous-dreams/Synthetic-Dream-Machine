@@ -121,6 +121,8 @@ export interface DeviceAdmitPayload {
    *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
    *  falling back to a federated-board wait. */
   readonly personaKelChain:       readonly PersonaKelEvent[];
+  /** Signed persona log records, including the joinee's admission. */
+  readonly personaActs:           readonly unknown[];
   /** The root-signed delegation half addressed to the joinee's atom; the joinee countersigns it. */
   readonly deviceEdge:             DeviceDelegationRootHalf;
   /** The PersonaGroup secret the same root sealed to the joinee's device key, beside the edge — the secret its

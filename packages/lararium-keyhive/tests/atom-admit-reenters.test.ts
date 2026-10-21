@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, vesselDyads, seedDaemonDoc, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { founderAndJoineeActs } from "./admit-acts.js";
 import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
 
 const rootSeed = new Uint8Array(32).fill(52);
@@ -22,7 +23,8 @@ describe("atom admit re-entry", () => {
     if (!chain) throw new Error("founder KEL chain absent");
     const payload = await runDeviceAdmitEdge({ signerSeed: rootSeed, joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
-      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl });
+      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtomSeed), chain }) });
     expect(payload.deviceEdge).not.toHaveProperty("atomSignature");
     expect(await verifyDeviceDelegation(payload.deviceEdge as DeviceDelegationTiddler, payload.signerDid)).toMatchObject({ ok: false, reason: "atom countersignature missing" });
     const joineeRepo = repo();
@@ -56,7 +58,8 @@ describe("atom admit re-entry", () => {
     // A checkpoint answers only the payload it was cut for: a different admit to the same atom lands its own edge.
     const other = await runDeviceAdmitEdge({ signerSeed: rootSeed, joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, hearthTrueName: "hearth-two", personaGroupId: face.personaGroupId,
-      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl });
+      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtomSeed), chain }) });
     const third = await runApplyAdmitPayload({ ...input, payload: other });
     expect(third.deviceEdge.hearthTrueName).toBe("hearth-two");
     expect(first.deviceEdge.hearthTrueName).toBe("hearth");

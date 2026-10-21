@@ -1,6 +1,6 @@
 /** The daemon island tells its vessel which countersigned edge cleared its real Binding Gate. */
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
-import { deviceEdgeDigest, makeIslandRepo, mintFaceAnchor, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { deviceEdgeDigest, ed25519SignerFromSeed, makeIslandRepo, mintFaceAnchor, signLeaseAdvance, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
   AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, leaseEpochSlotUri,
   emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
@@ -16,6 +16,7 @@ type Ceremony = Awaited<ReturnType<typeof runFoundingCeremony>>;
 let repo: ReturnType<typeof makeIslandRepo>;
 let ceremony: Ceremony;
 let verifyingKey: string;
+let signedEpoch: (n: number) => string;   // the root-signed lease slots the fixture writes
 let kel: { prefix: string; chain: NonNullable<ReturnType<typeof personaKelChainForPrefix>> };
 let daemonHandle: Awaited<ReturnType<ReturnType<typeof makeIslandRepo>["find"]>>;
 
@@ -34,6 +35,10 @@ beforeAll(async () => {
   if (!chain) throw new Error("the founding seated no persona KEL");
   kel = { prefix: ceremony.personaKelPrefix, chain };
   daemonHandle = await repo.find<LarDoc>(ceremony.daemonUrl as AutomergeUrl);
+  const rootKey = (ceremony.founderEdge.personaRootDid as string).replace(/^0x/, "");
+  const slots = new Map<number, string>();
+  for (const n of [0, 1]) slots.set(n, await signLeaseAdvance({ resource: ceremony.personaGroupId, epoch: n }, { key: rootKey, sign: ed25519SignerFromSeed(seed) }));
+  signedEpoch = (n) => slots.get(n)!;
 });
 
 afterAll(async () => { if (repo) await repo.shutdown(); });
@@ -46,7 +51,7 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   if (options.epoch !== undefined) {
     const title = leaseEpochSlotUri(ceremony.personaGroupId, verifyingKey);
     (daemonHandle as { change: (fn: (doc: LarDoc) => void) => void }).change((doc) => {
-      doc.tiddlers[title] = { tiddler: { title, text: String(options.epoch) } } as never;
+      doc.tiddlers[title] = { tiddler: { title, text: signedEpoch(options.epoch!) } } as never;
     });
   }
   // The working layer already stands; the verifier can finish after the gate without a slot mint.

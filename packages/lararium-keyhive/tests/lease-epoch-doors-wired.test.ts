@@ -66,7 +66,7 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("★ ONE ROAD: every lease read goes through the island's own daemon layer, never the oracle registry ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/readLeaseFrontier\(composite,\s*daemonAuth\.personaGroupId\)/);
+    expect(src).toMatch(/readLeaseFrontier\(composite,\s*daemonAuth\.personaGroupId,/);
     expect(src).not.toMatch(/storeOf\(DAEMON_BAG_ID\)/);
     expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = daemonLayerOf\(ctx\.composite\)/);
   });

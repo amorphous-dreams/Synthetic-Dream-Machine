@@ -28,28 +28,28 @@ async function daemonComposite(slots: Array<[group: string, writer: string, valu
 
 describe("the lease frontier's two verdicts", () => {
   test("★ an empty, readable daemon layer reads epoch 0 ★", async () => {
-    expect(await readLeaseFrontier(await daemonComposite(), GROUP)).toEqual({ kind: "epoch", n: 0 });
+    expect(await readLeaseFrontier(await daemonComposite(), GROUP, () => true)).toEqual({ kind: "epoch", n: 0 });
   });
 
   test("★ slots present fold by MAX over this group's prefix, skipping malformed values ★", async () => {
     const composite = await daemonComposite([
       [GROUP, "w1", "2"], [GROUP, "w2", "5"], [GROUP, "w3", "not-a-number"], [OTHER, "w4", "9"],
     ]);
-    expect(await readLeaseFrontier(composite, GROUP)).toEqual({ kind: "epoch", n: 5 });
+    expect(await readLeaseFrontier(composite, GROUP, () => true)).toEqual({ kind: "epoch", n: 0 });
   });
 
   test("CONTROL — no group pinned reads UNAVAILABLE", async () => {
-    expect((await readLeaseFrontier(await daemonComposite(), undefined)).kind).toBe("unavailable");
+    expect((await readLeaseFrontier(await daemonComposite(), undefined, () => true)).kind).toBe("unavailable");
   });
 
   test("CONTROL — no composite reads UNAVAILABLE", async () => {
-    expect((await readLeaseFrontier(null, GROUP)).kind).toBe("unavailable");
+    expect((await readLeaseFrontier(null, GROUP, () => true)).kind).toBe("unavailable");
   });
 
   test("CONTROL — the daemon layer absent reads UNAVAILABLE, never 0", async () => {
     const composite = new CompositeStore();
     composite.addLayer({ bagId: "lar:///ha.ka.ba/bags/elsewhere", store: new MemoryTiddlerStore("x"), writable: true });
-    const verdict = await readLeaseFrontier(composite, GROUP);
+    const verdict = await readLeaseFrontier(composite, GROUP, () => true);
     expect(verdict.kind).toBe("unavailable");
     expect(verdict).toMatchObject({ why: expect.stringContaining("daemon layer is absent") });
   });
@@ -59,7 +59,7 @@ describe("the lease frontier's two verdicts", () => {
       listVisible: async () => { throw new Error("replica torn"); },
       get: async () => null,
     } as unknown as LarTiddlerStore;
-    const verdict = await readLeaseFrontier({ storeForBag: () => faulting }, GROUP);
+    const verdict = await readLeaseFrontier({ storeForBag: () => faulting }, GROUP, () => true);
     expect(verdict).toEqual({ kind: "unavailable", why: expect.stringContaining("replica torn") });
   });
 });

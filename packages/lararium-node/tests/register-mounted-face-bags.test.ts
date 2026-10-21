@@ -14,6 +14,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { openNodeVessel } from "../src/open-node-vessel.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 
+import { founderAndJoineeActs } from "./admit-acts.js";
 const capture = vi.hoisted(() => ({
   registerBags: [] as string[][],
 }));
@@ -78,7 +79,7 @@ async function founderForSecondFace() {
   if (!chain) throw new Error("second face founder seated no persona KEL chain");
   return {
     groupB: face.personaGroupId,
-    admit: (joineeKey: string) => runDeviceAdmitEdge({
+    admit: async (joineeKey: string) => runDeviceAdmitEdge({
       signerSeed,
       joineeVerifyingKey: joineeKey,
       personaKelPrefix: face.personaKelPrefix,
@@ -90,6 +91,7 @@ async function founderForSecondFace() {
       islandDocUrl: null,
       hearthDaemonUrl: place.daemonUrl,
       personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey, chain }),
     }),
   };
 }

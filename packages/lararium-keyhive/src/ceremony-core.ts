@@ -60,7 +60,7 @@ import {
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
-  type LarTiddlerStore,
+  type LarTiddlerStore, writePersonaAct,
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -740,6 +740,8 @@ export interface DeviceAdmitEdgeInput {
   personaKelPrefix:       string;
   /** The founder's persona-KEL chain snapshot, which seeds the joinee's local board. */
   personaKelChain:       readonly PersonaKelEvent[];
+  /** Signed persona records to carry to the joinee's daemon doc. */
+  personaActs:           readonly unknown[];
   /** The hearth true-name (engine CID) the joinee binds TO. */
   hearthTrueName:         string;
   /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
@@ -810,6 +812,7 @@ export async function runDeviceAdmitEdge(
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
+    personaActs:            input.personaActs,
     deviceEdge,
     groupSecretSeal,
     hearthTrueName:         input.hearthTrueName,
@@ -917,6 +920,9 @@ export async function runApplyAdmitPayload(
   if (typeof payload.personaUrl !== "string" || payload.personaUrl.length === 0) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaUrl — refusing to admit (pre-field payload would seed a fresh, unsynced persona doc).");
   }
+  if (!Array.isArray(payload.personaActs)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaActs; re-admit the face.");
+  }
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }
@@ -1004,6 +1010,7 @@ export async function runApplyAdmitPayload(
   // and the root→joinee edge (mirrors the founding write). The joinee boots through its Binding
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
+    for (const act of payload.personaActs) writePersonaAct(doc, act as Parameters<typeof writePersonaAct>[1]);
     writeDyad(doc, joineeDyad);
     if (!mount) {
       writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");

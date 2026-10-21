@@ -20,6 +20,7 @@ import {
 } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
+import { founderAndJoineeActs } from "./admit-acts.js";
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
@@ -107,6 +108,7 @@ describe("the ceremony mints the dyad", () => {
       personaGroupId:   founder.f.personaGroupId,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });

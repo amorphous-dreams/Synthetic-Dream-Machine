@@ -403,7 +403,7 @@ export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
 // The immune keel's RE-KEY (roll a lease epoch, per-writer-slot max-register) + RE-SHARE (list held sealed bodies
 // to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
-export { rollLeaseEpochOnBoard } from "./lease-rekey.js";
+export { rollLeaseEpochOnBoard, rollSignedLeaseEpochOnBoard } from "./lease-rekey.js";
 export type { LeaseRekeyResult } from "./lease-rekey.js";
 export { listSealedCids } from "./cas-reshare.js";
 // The BULB cap — the genesis seed + the CAS it names, named by the seed's CID and served by cid over the public

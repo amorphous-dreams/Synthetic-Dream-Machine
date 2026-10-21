@@ -27,6 +27,7 @@ import {
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
+import { founderAndJoineeActs } from "./admit-acts.js";
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
@@ -98,6 +99,7 @@ describe("two vessels bind under one Handle", () => {
       personaKelPrefix: cer.personaKelPrefix, personaKelChain: founderKelChain,
       personaGroupId: pg.groupId, meshCabalDocIdHex: cer.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl, hearthDaemonUrl: null,
+      personaActs: await founderAndJoineeActs({ face: cer, signerSeed: FOUNDER_SEED, founderAtomSeed: cer.atomSeed, joineeKey, chain: founderKelChain }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const payload = { ...base, capEvents: bundle.capEvents };
 

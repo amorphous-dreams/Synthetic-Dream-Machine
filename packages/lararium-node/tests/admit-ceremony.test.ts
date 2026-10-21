@@ -22,6 +22,7 @@ import * as ed25519 from "@noble/ed25519";
 import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
 
+import { founderAndJoineeActs } from "./admit-acts.js";
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
  *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
  *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
@@ -84,6 +85,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       islandDocUrl: null,
       hearthDaemonUrl: founder.f.daemonUrl,
       personaUrl:   founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     // ── CARRY. The payload leaves as bytes and arrives as bytes. This IS the channel — a paste, a QR, a
@@ -148,6 +150,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       personaGroupId:   founder.f.personaGroupId,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const capEvents = ["bWVtYmVyc2hpcC1vcC0x", "bWVtYmVyc2hpcC1vcC0y"];   // base64 blobs
     const payload = { ...base, capEvents };
@@ -181,6 +184,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
         personaGroupId:   founder.f.personaGroupId,
         meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
         syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+        personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
       } as Parameters<typeof runDeviceAdmitEdge>[0]);
       return payload;
     };

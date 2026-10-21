@@ -21,6 +21,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import {
   storedLarRecord, tiddlerText,
   leaseEpochPrefix, leaseEpochSlotUri, effectiveLeaseEpoch, rolledLeaseEpoch,
+  signedLeaseEpoch, signLeaseAdvance,
   type LarDoc,
 } from "@lararium/mesh";
 
@@ -39,7 +40,7 @@ export interface LeaseRekeyResult {
 }
 
 /**
- * Roll a resource's lease epoch forward on a live board handle, writing ONLY the caller's own per-writer slot.
+ * Roll a nexus or cabal-realm resource's unsigned lease epoch on a live board handle.
  * Reads every slot under the resource's prefix → the effective (max) epoch → writes effective+1 to this
  * writer's slot. A live board write: the roll rides WS-sync to every replica. The max never decreases — a
  * concurrent roll on another hearth lands in ITS own slot, so both survive the merge and the max climbs.
@@ -63,4 +64,22 @@ export function rollLeaseEpochOnBoard(
     doc.tiddlers[slot] = storedLarRecord(slot, { text: String(rolled) }, "lease-roll");
   });
   return { resource, writer: writerId, effective, rolled, slot };
+}
+
+/** Roll a PersonaGroup lease after checking every signed per-writer slot. */
+export async function rollSignedLeaseEpochOnBoard(
+  handle: DocHandle<LarDoc>, resource: string,
+  signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
+  authorize: (writerHex: string) => boolean,
+): Promise<LeaseRekeyResult> {
+  if (!authorize(signer.key.toLowerCase())) throw new Error("lease-rekey: signer has no PersonaGroup KEL seat");
+  const prefix = leaseEpochPrefix(resource);
+  const slots = Object.entries(handle.doc()?.tiddlers ?? {})
+    .filter(([title]) => title.startsWith(prefix)).map(([, record]) => tiddlerText(record));
+  const effective = signedLeaseEpoch(resource, slots, authorize);
+  const rolled = rolledLeaseEpoch(effective);
+  const slot = leaseEpochSlotUri(resource, signer.key);
+  const signed = await signLeaseAdvance({ resource, epoch: rolled }, signer);
+  handle.change((doc) => { doc.tiddlers[slot] = storedLarRecord(slot, { text: signed }, "lease-roll"); });
+  return { resource, writer: signer.key, effective, rolled, slot };
 }
