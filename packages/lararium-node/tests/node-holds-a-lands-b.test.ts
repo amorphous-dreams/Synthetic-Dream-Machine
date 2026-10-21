@@ -20,7 +20,7 @@ import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
 const foundFace = direct(runFoundTheFace);
 const land = direct(runInit);
@@ -73,7 +73,7 @@ async function founderForB() {
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
   if (!chain) throw new Error("founder B seated no persona KEL chain");
   const admit = async (joineeKey: string) => runDeviceAdmitEdge({
-    signerSeed, joineeVerifyingKey: joineeKey,
+    signerSeed, edgeFrontier: await frontierFromFoundingSeed(signerSeed), joineeVerifyingKey: joineeKey,
     personaKelPrefix: face.personaKelPrefix, personaKelChain: chain,
     hearthTrueName, personaGroupId: face.personaGroupId,
     meshCabalDocIdHex: face.meshCabalDocIdHex,

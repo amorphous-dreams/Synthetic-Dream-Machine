@@ -214,6 +214,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       return boardDyadReader(
         ctx.repo, dyadLedger, restDyadLedger, ownKey,
         seatLedger, fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
+        personaLineageFromKel(daemonAuth?.personaKel?.chain ?? []),
       )(fleetRootDid, deviceVerifyingKey);
     }
     : dyadReading;

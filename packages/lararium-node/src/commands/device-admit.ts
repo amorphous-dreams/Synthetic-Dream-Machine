@@ -28,7 +28,7 @@ import {
   faceAtomKeyFromSeed,
   leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, projectPersonaLog,
   signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
+  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type LarDoc,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
@@ -380,7 +380,12 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const personaActs = [...records, admission, edgeAct];
   const operation = { store: operationStore, atomSeed,
     signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
+  const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
+  const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+  const edgeFrontier = { records: edgeFrontierRecords(fleetBoard.doc(), fleetRoot, FLEET_HAND),
+    snapshots: [...frontierSnapshots(fleetBoard.doc())].map(([cid, raises]) => [cid, [...raises]] as [string, string[]]) };
   const payload = await runDeviceAdmitEdge({
+    edgeFrontier,
     operation,
     signerSeed,
     joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),

@@ -10,6 +10,7 @@ const boot = vi.hoisted(() => ({ dyad: "" }));
 vi.mock("../src/boot-daemon-keyhive.js", () => ({
   bootDaemonKeyhive: async (args: { dyad: string }) => { boot.dyad = args.dyad; throw new Error("dyad-captured"); },
 }));
+import { fleetFixture } from "./fleet-fixture.js";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 
 describe("the island reads the vessel's seat-roll ledger", () => {
@@ -21,16 +22,20 @@ describe("the island reads the vessel's seat-roll ledger", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
       const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const fx = await fleetFixture(rootSeed);
+      await fx.found(board);
       const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
       const edgeId = deviceEdgeId(root, peer);
       const up = await signEdgeKapae({ edgeId, raised: true, hand: "holder", parents: [] }, signer);
       const down = await signEdgeKapae({ edgeId, raised: false, hand: "holder", parents: [up.actCid] }, signer);
       board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
+      await fx.register(board, [up.actCid]);
       const privateLedger = repo.create(emptyLarDoc());
       const daemonAuth = {
         seed: new Uint8Array(32).fill(124), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
+        personaKel: { prefix: fx.prefix, chain: fx.chain },
       };
       const read = () => operatorDaemonOptions({ daemonAuth } as never,
         { readDyadFromBoard: true, dyadLedger: privateLedger }).verifierFactory!({ repo, composite: new CompositeStore(), post: () => {} } as never);
@@ -64,16 +69,20 @@ describe("the island reads the vessel's seat-roll ledger", () => {
     try {
       const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(own), "ledger:edge");
+      const fx = await fleetFixture(rootSeed);
+      await fx.found(board);
       const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
       const up = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: true, hand: "holder", parents: [] }, signer);
       const down = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: false, hand: "holder", parents: [up.actCid] }, signer);
       board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
+      await fx.register(board, [up.actCid]);
       if (rolled) ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" }));
       const islandLedger = privateRepo.create(emptyLarDoc());
       const daemonAuth = {
         seed: new Uint8Array(32).fill(114), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
+        personaKel: { prefix: fx.prefix, chain: fx.chain },
       };
       const ctx = { repo, composite: new CompositeStore(), post: () => {} };
       boot.dyad = "";

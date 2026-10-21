@@ -20,8 +20,8 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, materializeSharedLarDoc,
   fleetEdgeAuthority, deviceEdgeId, realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding,
-  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingOf, raisesSeenThrough,
-  type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult,
+  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingAsOf, raisesSeenThrough, readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
+  type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult, type HandLineage, type WideningRead,
 } from "@lararium/mesh";
 import { readVesselEdgeBoard, realmNexusIn, vesselEdgeCharter } from "./edge-board.js";
 
@@ -35,6 +35,8 @@ export interface EdgeShadowRingDeps {
   readonly sealHome:   string;
   /** The fleet roots this vessel serves: the root of each face it holds. */
   readonly fleetRoots: () => Promise<readonly string[]> | readonly string[];
+  /** The fleet root's roster per epoch (its persona KEL lineage), or null where this vessel holds no verified chain for it. */
+  readonly lineageOfFleet?: (fleetRoot: string) => Promise<HandLineage | null> | HandLineage | null;
   /** The realm of the charter this vessel stands under, when one stands. */
   readonly charterRealm?: () => string | null;
   /** Fired after each fold a board's own change set off — the standing vessel re-reads its share verdicts there. */
@@ -60,6 +62,7 @@ export interface RealmFold {
 export interface FleetFold {
   readonly fleetRoot: string;
   readonly readings:  ReadonlyMap<string, EdgeReading>;
+  readonly frontier: WideningRead;
   /** True when a shadow stands over THIS vessel's own device edge in this fleet. */
   readonly selfAside: boolean;
   /** The raises whose seat this vessel saw leave (revoked here, or gone already), for this fleet's board. */
@@ -82,8 +85,10 @@ export interface EdgeShadowRing extends ShadowConsult {
   fold(): EdgeShadowFold | null;
   /** THE SORTER'S CONSULT: does a standing shadow set this device aside from a fleet this vessel serves? */
   deviceAside(vesselKey: string): boolean;
+  widenBlocked(fleetRoot: string): boolean;
+  frontierOf(fleetRoot: string): WideningRead | null;
   /**
-   * THE BINDING GATE'S CONSULT: what one device's edge reads in one fleet (`edgeStandingOf`), against the raises
+   * THE BINDING GATE'S CONSULT: what one device's edge reads in one fleet (`edgeStandingAsOf`), against the raises
    * this vessel already answered. `aside` until the first fold lands, and for a fleet this vessel reads no board
    * for: a gate that binds or seats a device never reads an unfolded board as clear. A mark in the ledger moves
    * no board, so the reading takes it at the next fold.
@@ -146,10 +151,12 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     },
     fold: () => last,
     deviceAside,
+    widenBlocked: (fleetRoot) => last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot))?.frontier.status !== "known",
+    frontierOf: (fleetRoot) => last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot))?.frontier ?? null,
     deviceStanding(fleetRoot, vesselKey) {
       const at = last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot));
       if (!at) return "aside";                                   // no fold yet, or a fleet this vessel never read
-      return edgeStandingOf(at.readings.get(deviceEdgeId(at.fleetRoot, bare(vesselKey))), at.rolled);
+      return edgeStandingAsOf(at.readings.get(deviceEdgeId(at.fleetRoot, bare(vesselKey))), at.rolled, at.frontier.status === "known");
     },
     aside(peerId: string): boolean {
       const vesselKey = deps.vesselKeyOfPeer(peerId);
@@ -198,8 +205,16 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
           authorityFor: fleetEdgeAuthority(fleetRoot),
         });
         follow(boardUrl, read.handle);
+        const lineage = (await deps.lineageOfFleet?.(fleetRoot)) ?? null;
+        const frontier: WideningRead = lineage ? readFleetFrontier({
+          fleetRoot, board: read.handle.doc(), lineage, seenRaises: fleetRaiseCids(read.counted.acts),
+          pinned: readFrontierPins(read.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null,
+        }) : { status: "unknown", missing: [{ hand: FLEET_HAND, why: "no-frontier" }] };
+        if (frontier.status === "known") {
+          read.ledger.change((draft) => { writeFrontierPin(draft, fleetRoot, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
+        }
         fleets.push({
-          fleetRoot, readings: read.readings,
+          fleetRoot, frontier, readings: read.readings,
           selfAside: read.readings.get(deviceEdgeId(fleetRoot, deps.vesselKey()))?.stands === true,
           rolled: raisesSeenThrough(read.ledger.doc(), fleetRoot),
         });

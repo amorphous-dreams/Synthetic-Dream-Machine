@@ -166,6 +166,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     throw new Error(`[daemon-keyhive] Binding Gate: device-delegation edge failed verification against the persona-KEL head op-key. ${binding.reason ?? ""}`);
   }
   // THE DYAD'S SHADOW (kapae#/reach): no seat, no bind. The operator's own door names the reading.
+  if (input.dyad === "unknown") throw new Error("[daemon-keyhive] Binding Gate: no qualifying signed edge frontier — refusing persona-bound boot");
   if (input.dyad === "aside") {
     throw new Error(
       "[daemon-keyhive] Binding Gate: this device stands SET ASIDE from its fleet — a shadow stands over its own device edge, " +

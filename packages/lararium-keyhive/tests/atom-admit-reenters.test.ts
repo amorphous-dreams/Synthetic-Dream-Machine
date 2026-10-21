@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, vesselDyads, seedDaemonDoc, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
 
 const rootSeed = new Uint8Array(32).fill(52);
@@ -21,7 +21,7 @@ describe("atom admit re-entry", () => {
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(vesselSeed)), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
     if (!chain) throw new Error("founder KEL chain absent");
-    const payload = await runDeviceAdmitEdge({ signerSeed: rootSeed, joineeVerifyingKey: key(joineeAtomSeed),
+    const payload = await runDeviceAdmitEdge({ signerSeed: rootSeed, edgeFrontier: await frontierFromFoundingSeed(rootSeed), joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
       meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl,
       personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtomSeed), chain }) });
@@ -56,7 +56,7 @@ describe("atom admit re-entry", () => {
     expect(Buffer.from(card.Rotate.issuer).toString("hex")).toBe(key(joineeAtomSeed));
 
     // A checkpoint answers only the payload it was cut for: a different admit to the same atom lands its own edge.
-    const other = await runDeviceAdmitEdge({ signerSeed: rootSeed, joineeVerifyingKey: key(joineeAtomSeed),
+    const other = await runDeviceAdmitEdge({ signerSeed: rootSeed, edgeFrontier: await frontierFromFoundingSeed(rootSeed), joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, hearthTrueName: "hearth-two", personaGroupId: face.personaGroupId,
       meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl,
       personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtomSeed), chain }) });

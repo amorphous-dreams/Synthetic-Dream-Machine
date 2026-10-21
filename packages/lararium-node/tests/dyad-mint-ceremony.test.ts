@@ -20,7 +20,7 @@ import {
 } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
@@ -100,7 +100,7 @@ describe("the ceremony mints the dyad", () => {
     const founder = await found();
     const joineeKey = faceAtomKeyFromSeed(JOINEE_ATOM, founder.f.personaGroupId).key;
     const payload = await runDeviceAdmitEdge({
-      signerSeed:             FOUNDER_SEED,
+      signerSeed:             FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED),
       joineeVerifyingKey:     joineeKey,
       personaKelPrefix:       founder.f.personaKelPrefix,
       personaKelChain:        await founderPersonaKelChain(founder),

@@ -272,6 +272,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
       payload: {
         kind: "device-admit/v1",
         personaActs:            [],   // this probe reads the door url alone; the log has its reds in persona-act-boot
+        edgeFrontier:           { records: [], snapshots: [] },
         signerDid:              edge.personaRootDid,
         personaKelPrefix:       "persona-probe",
         // REQUIRED now (early alpha, no back-compat): a minimal inception event for the probe's own prefix —

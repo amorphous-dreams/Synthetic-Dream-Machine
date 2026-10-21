@@ -5,7 +5,7 @@ import {
   SIGNER_DID_TIDDLER, groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc,
   personaKelBoardDocUrl, personaKelChainForPrefix, seedDaemonDoc, vesselDyads,
 } from "@lararium/mesh";
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 
 const pins = [
@@ -31,7 +31,7 @@ async function admitInput() {
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
   if (!chain) throw new Error("founder KEL chain absent");
   const payload = await runDeviceAdmitEdge({
-    signerSeed, joineeVerifyingKey: key(atomSeed), personaKelPrefix: face.personaKelPrefix,
+    signerSeed, edgeFrontier: await frontierFromFoundingSeed(signerSeed), joineeVerifyingKey: key(atomSeed), personaKelPrefix: face.personaKelPrefix,
     personaKelChain: chain, hearthTrueName: "hearth", personaGroupId: face.personaGroupId,
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null,
     hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,

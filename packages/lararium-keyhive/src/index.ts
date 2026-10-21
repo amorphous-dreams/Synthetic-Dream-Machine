@@ -123,6 +123,7 @@ export interface DeviceAdmitPayload {
   readonly personaKelChain:       readonly PersonaKelEvent[];
   /** Signed persona log records, including the joinee's admission. */
   readonly personaActs:           readonly unknown[];
+  readonly edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
   /** The root-signed delegation half addressed to the joinee's atom; the joinee countersigns it. */
   readonly deviceEdge:             DeviceDelegationRootHalf;
   /** The PersonaGroup secret the same root sealed to the joinee's device key, beside the edge — the secret its

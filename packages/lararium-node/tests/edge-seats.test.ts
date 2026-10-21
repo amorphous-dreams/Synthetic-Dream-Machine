@@ -18,6 +18,7 @@ import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "../src/comman
 import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -28,6 +29,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
 });
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.

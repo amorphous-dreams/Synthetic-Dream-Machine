@@ -225,6 +225,7 @@ export async function runFaceJoin(
   // the re-seal that would carry the standing chunks across stays out, since those chunks hold the span the
   // device missed.
   const dyad = ctx.dyad(summons.deviceEdge.deviceVerifyingKey);
+  if (dyad === "unknown") return { ok: false, reason: "no qualifying signed edge frontier" };
   const returned = dyad === "returned" || dyad === "owing";
   // THE EARLIER SEAT LEAVES FIRST. A device that returns while a raise still owes its roll may hold the very seat
   // the raise names, and its earlier key epoch with it. So the join rolls the seat before it seats: revoke, then add.

@@ -5,7 +5,7 @@
  */
 import {
   signFoundingLog, signPersonaAct, projectPersonaLog, personaLineageFromKel, actCid, edgeBodyDigest, faceRootCommitment,
-  faceAtomKeyFromSeed, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type PersonaKelEvent,
+  faceAtomKeyFromSeed, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, landFleetGenesis, makeHandLineage, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type PersonaKelEvent,
 } from "@lararium/mesh";
 
 export async function founderAndJoineeActs(input: {
@@ -33,4 +33,14 @@ export async function founderAndJoineeActs(input: {
     { group: face.personaGroupId, act: "device-edge", epoch,
       fields: { deviceKey: input.joineeKey, edgeDigest: edgeBodyDigest({ personaRootDid: face.founderEdge.personaRootDid, deviceVerifyingKey: input.joineeKey, hearthTrueName: face.founderEdge.hearthTrueName, boundEpoch: 0 }) } }, signer);
   return [...founding, admission, edge];
+}
+
+/** Found the fleet board with the face's root signer, then carry its signed records as admit does. */
+export async function frontierFromFoundingSeed(signerSeed: Uint8Array) {
+  const root = await ed25519VerifyingKeyFromSeed(signerSeed);
+  const board = emptyLarDoc();
+  await landFleetGenesis(board, root, makeHandLineage([{ epoch: 0, signers: [root], threshold: 1 }])!,
+    { key: root, sign: ed25519SignerFromSeed(signerSeed) });
+  return { records: edgeFrontierRecords(board, root, FLEET_HAND),
+    snapshots: [...frontierSnapshots(board)].map(([cid, raises]) => [cid, [...raises]] as [string, string[]]) };
 }

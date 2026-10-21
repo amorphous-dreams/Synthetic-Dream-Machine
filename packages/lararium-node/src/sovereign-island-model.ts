@@ -103,7 +103,7 @@ export function vesselDyadAsker(
     if (!settle) return;
     pending.delete(m.requestId);
     const standing = m.standing;
-    settle(standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" ? standing : "aside");
+    settle(standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" || standing === "unknown" ? standing : "aside");
   });
   let seq = 0;
   return (fleetRoot, deviceKey) => new Promise<EdgeStanding>((resolve) => {

@@ -17,7 +17,7 @@ import {
   groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, seedDaemonDoc, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
 const OTHER_SEED   = new Uint8Array(32).fill(13);
@@ -41,7 +41,7 @@ async function founded() {
 
 async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey: string) {
   return runDeviceAdmitEdge({
-    signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey,
+    signerSeed: FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED), joineeVerifyingKey: joineeKey,
     personaKelPrefix: founder.f.personaKelPrefix, personaKelChain: founder.chain, hearthTrueName: "bafyHearth",
     personaGroupId: founder.f.personaGroupId,
     meshCabalDocIdHex: founder.f.meshCabalDocIdHex, syncUrl: null, islandDocUrl: null,

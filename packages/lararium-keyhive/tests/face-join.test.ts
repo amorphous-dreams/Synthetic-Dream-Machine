@@ -10,6 +10,7 @@ import { describe, test, expect } from "vitest";
 import { buildDeviceDelegation, hexToBytes, makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
+import { fleetFixture } from "./fleet-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
@@ -59,14 +60,16 @@ const summons = (deviceEdge: Awaited<ReturnType<typeof edgeFor>>, force?: boolea
   ({ kind: "face-join/v1" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
 
 describe("the gate — a signature, never a list", () => {
-  test("a healthy second device joins through the readable empty fleet board", async () => {
+  test("a healthy second device joins through the founded fleet board", async () => {
     const edge = await edgeFor();
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
-      await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const fx = await fleetFixture(FOUNDER_SEED);
+      await fx.found(board);
       const ledger = repo.create(emptyLarDoc());
       const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(8));
-      const read = boardDyadReader(repo, ledger, undefined, own);
+      const read = boardDyadReader(repo, ledger, undefined, own, undefined, undefined, fx.lineage);
       const joineeDyad = await read(edge.personaRootDid, edge.deviceVerifyingKey);
       const ctx = { ...(await ctxFor()), dyad: () => joineeDyad };
       const provider = fakeProvider();

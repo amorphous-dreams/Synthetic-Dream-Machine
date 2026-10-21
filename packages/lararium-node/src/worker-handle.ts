@@ -77,7 +77,7 @@ export async function answerDyadAsk(ask: Pick<IslandMsg_DyadAsk, "requestId" | "
   if (!door) return { ...base, standing: "aside" };
   try {
     const standing = await door(ask.fleetRoot, ask.deviceKey);
-    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" ? standing : "aside" };
+    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" || standing === "unknown" ? standing : "aside" };
   } catch { return { ...base, standing: "aside" }; }
 }
 

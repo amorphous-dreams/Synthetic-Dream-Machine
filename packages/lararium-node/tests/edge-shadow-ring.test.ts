@@ -40,6 +40,9 @@ import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
+import { fleetLineageOf } from "../src/fleet-lineage.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -54,6 +57,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();
@@ -103,9 +107,11 @@ async function withRing<T>(
 ): Promise<T> {
   const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
   const vesselKey = (await wornAtomKey());
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
   return ownedStore(larDataDir(), async (repo) => run(makeEdgeShadowRing({
     repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
     fleetRoots: () => [fleetRoot],
+    lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
     charterRealm: () => charterRealm,
     vesselKeyOfPeer: (peerId) => peers[peerId]?.vessel ?? null,
     realmNymOfPeer: (peerId) => peers[peerId]?.nym ?? null,

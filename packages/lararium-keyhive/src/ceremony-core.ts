@@ -53,7 +53,7 @@ import {
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
   personaScopedBagIds,
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
-  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
+  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
   type PersonaKelEvent,
   dyadId, signDyadBindingWithSeed, writeDyad,
   mintFaceAtomSeed, faceAtomKeyFromSeed, FACE_CHECKPOINT_INFO,
@@ -742,6 +742,7 @@ export interface DeviceAdmitEdgeInput {
   personaKelChain:       readonly PersonaKelEvent[];
   /** Signed persona records to carry to the joinee's daemon doc. */
   personaActs:           readonly unknown[];
+  edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
   /** The hearth true-name (engine CID) the joinee binds TO. */
   hearthTrueName:         string;
   /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
@@ -788,6 +789,9 @@ export async function runDeviceAdmitEdge(
   if (!input.personaKelChain || input.personaKelChain.length === 0) {
     throw new Error("[ceremony] runDeviceAdmitEdge: personaKelChain required — the joinee seeds its local KEL board from it");
   }
+  if (!input.edgeFrontier || !Array.isArray(input.edgeFrontier.records) || !Array.isArray(input.edgeFrontier.snapshots)) {
+    throw new Error("[ceremony] runDeviceAdmitEdge: edgeFrontier required");
+  }
   if (typeof input.personaUrl !== "string" || input.personaUrl.length === 0) {
     throw new Error("[ceremony] runDeviceAdmitEdge: personaUrl required — the joinee syncs the founder's shared persona doc from it");
   }
@@ -813,6 +817,7 @@ export async function runDeviceAdmitEdge(
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
     personaActs:            input.personaActs,
+    edgeFrontier:           input.edgeFrontier,
     deviceEdge,
     groupSecretSeal,
     hearthTrueName:         input.hearthTrueName,
@@ -919,6 +924,9 @@ export async function runApplyAdmitPayload(
   }
   if (typeof payload.personaUrl !== "string" || payload.personaUrl.length === 0) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaUrl — refusing to admit (pre-field payload would seed a fresh, unsynced persona doc).");
+  }
+  if (!payload.edgeFrontier || !Array.isArray(payload.edgeFrontier.records) || !Array.isArray(payload.edgeFrontier.snapshots)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks edgeFrontier; re-admit the face.");
   }
   if (!Array.isArray(payload.personaActs)) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaActs; re-admit the face.");
@@ -1046,6 +1054,21 @@ export async function runApplyAdmitPayload(
     const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
     kelBoard.change((draft) => {
       for (const event of payload.personaKelChain) writePersonaKelEvent(draft, event);
+    });
+  }
+
+  // Carry the founder's signed fleet frontier into the joinee's local replica for offline reads.
+  {
+    const root = verifyingKeyFromDid(payload.signerDid as never);
+    const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+    board.change((draft) => {
+      for (const [cid, raises] of payload.edgeFrontier.snapshots) {
+        if (frontierSnapshotCid(raises) === cid) writeFrontierSnapshot(draft, raises);
+      }
+      for (const raw of payload.edgeFrontier.records) {
+        const record = raw as EdgeFrontier;
+        if (record?.body && Array.isArray(record.signatures)) writeEdgeFrontier(draft, record);
+      }
     });
   }
 

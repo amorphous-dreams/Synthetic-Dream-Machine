@@ -248,7 +248,7 @@ describe("the persona ring's face-grant seat reads the shadow through the device
     // A face-join grant names the joinee's FACE key (persona-ring-cross-operator-admit), so the proof stays the face key.
     expect(CODE).toMatch(/provenKeyOf:\s*\(peerId\)\s*=>\s*peerIdentifierMap\.get\(peerId\)\s*\?\?\s*null,/);
     // The shadow resolves that face key to every device a gate-seated session under it was certified to (D4).
-    expect(CODE).toMatch(/deviceAside:\s*\(key\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.deviceAside\(key\)\s*\|\|\s*seatedDevicesOfFace\(key\)\.some\(/); // RED
+    expect(CODE).toMatch(/deviceAside:\s*\(key\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.widenBlocked\(deviceEdge\.personaRootDid\)\s*\|\|\s*edgeShadows\.deviceAside\(key\)\s*\|\|\s*seatedDevicesOfFace\(key\)\.some\(/); // RED
     expect(CODE).toMatch(/const seatedDevicesOfFace = \(key: string\): string\[\] =>/);
   });
 });

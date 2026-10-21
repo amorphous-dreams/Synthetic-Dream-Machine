@@ -14,7 +14,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { openNodeVessel } from "../src/open-node-vessel.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const capture = vi.hoisted(() => ({
   registerBags: [] as string[][],
 }));
@@ -80,7 +80,7 @@ async function founderForSecondFace() {
   return {
     groupB: face.personaGroupId,
     admit: async (joineeKey: string) => runDeviceAdmitEdge({
-      signerSeed,
+      signerSeed, edgeFrontier: await frontierFromFoundingSeed(signerSeed),
       joineeVerifyingKey: joineeKey,
       personaKelPrefix: face.personaKelPrefix,
       personaKelChain: chain,

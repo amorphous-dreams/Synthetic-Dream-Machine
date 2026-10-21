@@ -27,7 +27,7 @@ import {
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
-import { founderAndJoineeActs } from "./admit-acts.js";
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
@@ -95,7 +95,7 @@ describe("two vessels bind under one Handle", () => {
 
     // Admit payload: the signed edge + the membership capEvents.
     const base = await runDeviceAdmitEdge({
-      signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
+      signerSeed: FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED), joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
       personaKelPrefix: cer.personaKelPrefix, personaKelChain: founderKelChain,
       personaGroupId: pg.groupId, meshCabalDocIdHex: cer.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl, hearthDaemonUrl: null,
