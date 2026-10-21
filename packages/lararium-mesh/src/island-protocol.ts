@@ -901,7 +901,7 @@ export interface IslandMsg_CustodyWritten { type: "custody:written"; requestId: 
 export interface IslandMsg_DyadRead {
   type: "dyad:read";
   requestId: string;
-  standing: "clear" | "aside" | "owing" | "returned";
+  standing: "clear" | "aside" | "owing" | "returned" | "unknown";
 }
 
 /** Island → vessel: ask the vessel's live fleet board for this device's standing. */

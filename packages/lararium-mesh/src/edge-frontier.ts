@@ -80,7 +80,7 @@ export interface RaisingHand {
 }
 
 export type FrontierMissing =
-  | { readonly hand: string; readonly why: "no-frontier" | "below-threshold" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "wrong-epoch" | "does-not-extend-pin" | "stale-lineage" };
+  | { readonly hand: string; readonly why: "no-frontier" | "below-threshold" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "counts-unseen-raise" | "does-not-extend-pin" | "stale-lineage" };
 
 export type WideningRead =
   | { readonly status: "known"; readonly asOf: Readonly<Record<string, { seq: number; cid: string }>>; readonly counted: Readonly<Record<string, readonly string[]>> }
@@ -122,6 +122,10 @@ export function readWideningFrontier(board: string, hands: readonly RaisingHand[
     if (!snap || frontierSnapshotCid(snap) !== body.snapshot) { missing.push({ hand: h.hand, why: "missing-snapshot" }); continue; }
     const have = new Set(snap);
     if (r.seenRaises.some((c) => !have.has(c))) { missing.push({ hand: h.hand, why: "withholds-seen-raise" }); continue; }
+    // The frontier counts a raise this reader lacks: its shadow cannot read here yet, so the board waits as unknown
+    // until the act itself arrives (sync always carries acts).
+    const seen = new Set(r.seenRaises);
+    if (snap.some((c) => !seen.has(c))) { missing.push({ hand: h.hand, why: "counts-unseen-raise" }); continue; }
     asOf[h.hand] = { seq: body.seq, cid: head.cid };
     counted[h.hand] = [...have].sort();
   }

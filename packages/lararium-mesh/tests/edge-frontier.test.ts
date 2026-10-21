@@ -49,6 +49,13 @@ describe("edge-frontier", () => {
     expect(readWideningFrontier(B, [hand], reading([g], snaps([]), ["seenRaise"]))).toEqual({ status: "unknown", missing: [{ hand: "fleet", why: "withholds-seen-raise" }] });
   });
 
+  test("RED: a frontier that counts a raise this reader never received reads unknown until the act arrives", async () => {
+    const { s, hand, g, lng, snaps, reading } = await setup();
+    const f1 = await signNextFrontier(g, ["raiseA"], lng, [s]);
+    expect(readWideningFrontier(B, [hand], reading([g, f1], snaps([], ["raiseA"]), []))).toEqual({ status: "unknown", missing: [{ hand: "fleet", why: "counts-unseen-raise" }] });
+    expect(readWideningFrontier(B, [hand], reading([g, f1], snaps([], ["raiseA"]), ["raiseA"])).status).toBe("known");
+  });
+
   test("RED: a deleted local raise cannot rewind the reader: a frontier that does not extend its pin is refused", async () => {
     const { s, hand, g, lng, snaps, reading } = await setup();
     const f1 = await signNextFrontier(g, ["raiseA"], lng, [s]);
