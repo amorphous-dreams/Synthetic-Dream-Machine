@@ -92,7 +92,8 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog,
+  type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
@@ -123,6 +124,7 @@ import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup } from "./face-anchor-store.js";
+import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked } from "./custody-holder.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
@@ -1917,6 +1919,16 @@ async function prepareNodeBootOn(
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
       }
+      if (faceAnchor && activeAtom && personaGroupId && bootstrap.personaUrl) {
+        const records = await readFacePersonaRecords(repo, {
+          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc],
+        });
+        const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
+          anchor: faceAnchor, deviceKey: activeAtom.key,
+          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl,
+            circles: bootstrap.circlesUrl, sessions: bootstrap.sessionsUrl } });
+        if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+      }
     }
     // ── THE REST OF THE CLIMB — the boards the KEL carry leaves behind ───────────────────────────────
     // The ANTIGEN fails OPEN when it mints blank: "an empty antigen bans nobody" means a Kapae'd presenter
@@ -2325,7 +2337,8 @@ async function prepareNodeBootOn(
             return activeAtom.sign(image);
           },
           enrolment: { edge: deviceEdge, seal }, open: activeAtom.opener,
-          expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+          expectedEpoch: signedLeaseEpoch(personaGroupId, leaseSlots, (writer) =>
+            (personaLineageFromKel(personaKelChain ?? []) ?? []).some((epoch) => epoch.signers.includes(writer))),
           onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
       }
