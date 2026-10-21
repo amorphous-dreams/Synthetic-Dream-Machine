@@ -16,6 +16,8 @@
  *   nexus-cabal-act · nexus-cabal-cosign · nexus-cabal-standing
  *                                                the seat quorum's admission into the Kahu cabal, on the
  *                                                carriage board under its own prefix (`commands/nexus-cabal`)
+ *   nexus-release                                the steward's seal of a floor release, with the cabal's approval of the
+ *                                                manifest's exact bytes, landed on the crossroads board (`commands/nexus-release`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -64,6 +66,7 @@ import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
+import { runFloorRelease } from "./commands/nexus-release.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
@@ -147,7 +150,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
@@ -295,6 +298,13 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     "nexus-cabal-standing": (args) => answer("nexus-cabal-standing", async () => ({
       ...(await runCabalStanding({ repo, sealHome, group: need("nexus-cabal-standing", args, "group"), ...opt("aid", str(args["aid"])) })),
+    })),
+
+    // THE FLOOR RELEASE (w26-floor-lane#/the-slices): one porch body per Nexus, sealed by a seat held here, the approval attached.
+    "nexus-release": (args) => answer("nexus-release", async () => ({
+      ...(await runFloorRelease({
+        repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], ...opt("aid", str(args["aid"])),
+      })),
     })),
 
     "nexus-posture": (args) => answer("nexus-posture", async () => {

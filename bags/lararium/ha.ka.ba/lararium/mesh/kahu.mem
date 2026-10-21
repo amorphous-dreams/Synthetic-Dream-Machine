@@ -485,7 +485,7 @@ the charter's threshold, the table derives (`charteredClassTable`, `packages/lar
   and a strict majority, capped at n; ''emergency'' takes two and leaves a review owed.
 
 A ''revocation'' takes the threshold of the act it revokes. The high-impact surfaces stand `charter`,
-`admission` and `trust-root`, read through one fold (trim, lower case, a run of space or underscore reads as a
+`admission`, `trust-root` and `floor-release` (`HIGH_IMPACT_SURFACES`, the one list), read through one fold (trim, lower case, a run of space or underscore reads as a
 hyphen), so `Charter` and `TRUST_ROOT` never fall to the ordinary class.
 
 ''A PROMOTION APPROVES EXACT BYTES, NEVER A NAME.'' The approval (`promotion-approval.ts`, domain
@@ -539,6 +539,30 @@ realm grant stands in for no check. The shore hands the island the charter's ros
 (`readKahuCabalBoard`); the island adds the sentinel read and the group at ACCESS, never at boot
 (`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a system bag. A READ and a
 copy OUT of canon ask nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/floor-release>>
+
+!! The floor release ~ the Nexus's one public answer
+
+''ONE PORCH BODY PER NEXUS.'' The Kahu cabal releases a floor by one body, `{kind, nexus, epoch, prior, manifest}`: the
+`floor-release` signing domain as `kind`, the Nexus AID, the charter epoch whose seats sign, the CID of the release
+before it (null opens a Nexus's first) and the floor manifest's CID (`floor-release.ts`). Its canonical bytes name its
+CID, which keys its row on the crossroads board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
+body and refuses on a mismatch before it trusts anything else.
+
+''TWO HANDS, KEPT APART.'' A seated Kahu key seals the body's bytes as the steward (the publisher, face-free). The
+cabal's authority rides attached: a promotion approval over the manifest's EXACT BYTES under the surface
+`floor-release`, which the chartered classes hold at the high-impact bar. A reader verifies the shape, the CID, the
+Nexus, the epoch, the steward's seat and seal, the manifest bytes against their CID, then the approval at the
+roster's threshold. A seal over any other shape (a cabal act, a pointer body) verifies as nothing here.
+
+''THE CHAIN.'' A release counts when it verifies and either opens the chain (`prior` null) or links to a release that
+counts. The head stands as the counted release no other counted release names; two heads read `unsettled`, and a face
+accepts neither until the cabal settles the fork. `lares nexus release <manifest-file> --approval <file>` seals and
+lands a release (`nexus-release.ts`); `lares nexus promote open|sign` carries the approval between vaults. A herm carries
+the answer and signs nothing; a face accepts a release by a person's own act (`stable-founding-road` W26 slice 5).
 
 <<~/ahu>>
 
@@ -650,6 +674,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9w4Bgv-CC7G0_UY47F4F5CHid1uUhY8dVSUkR2empqQ
+<<^ code="&#x0003;">>ni:///sha-256;UKtv1tJz4PH5Xb0TrXmehjT2FUoh0ZF_ntPpU-9s4Sg
 
 <<^ code="&#x0004;" -> to="?">>

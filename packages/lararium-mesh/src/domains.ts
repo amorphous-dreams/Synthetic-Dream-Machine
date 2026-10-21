@@ -513,6 +513,10 @@ export const PROMOTION_APPROVAL_DOMAIN = mint("promotion-approval");
 /** The seat quorum's admission of a PersonaGroup into a Nexus's Kahu cabal: its own authority act, never a
  *  vouch (`lararium/mesh/kahu#/cabal-admission`). */
 export const KAHU_CABAL_ADMIT_DOMAIN = mint("kahu-cabal-admit");
+/** The steward's seal on a Nexus's floor release: the one porch body that names the floor manifest CID, the charter
+ *  epoch, the release before it and the Nexus AID. Its own name, so no seal over another shape (an oracle pointer, a
+ *  cabal act, a promotion approval) verifies as a release (`lares/docs/pono/w26-floor-lane#/the-slices`). */
+export const FLOOR_RELEASE_DOMAIN = mint("floor-release");
 
 // ── CUSTODY CARRIER CONTEXT ─────────────────────────────────────────────────────────────────────
 /** A D row's seal context: confidential material one PersonaGroup owns, sealed under that group's face custody key. */

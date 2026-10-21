@@ -49,6 +49,14 @@ describe("the domain registry", () => {
     expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
   });
 
+  test("the floor release mints bare under its own name, apart from the pointer and the acts a seat also signs (W26 slice 4)", () => {
+    expect(domains.FLOOR_RELEASE_DOMAIN).toBe(`${DOMAIN_ROOT}/floor-release`);
+    expect(domains.ALL_DOMAINS).toContain(domains.FLOOR_RELEASE_DOMAIN);
+    for (const other of [domains.ORACLE_POINTER_DOMAIN, domains.KAHU_CABAL_ADMIT_DOMAIN, domains.PROMOTION_APPROVAL_DOMAIN, domains.REALM_BAG_DOMAIN]) {
+      expect(domains.FLOOR_RELEASE_DOMAIN).not.toBe(other);
+    }
+  });
+
   test("a NEW domain mints bare — the gate's verdict carries no version suffix", () => {
     expect(domains.GATE_VERDICT_DOMAIN).toBe(`${DOMAIN_ROOT}/gate-verdict`);
     expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);

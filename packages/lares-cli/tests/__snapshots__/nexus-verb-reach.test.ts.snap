@@ -16,7 +16,7 @@ usage: lares nexus kahuli <engine | grammar>
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
 "lares nexus: unknown verb "definitely-not-a-verb"
-usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
@@ -80,6 +80,9 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
                                             the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it
   cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts
   cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync
+  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the
+                                            manifest, the seats' approval of its exact bytes (\`promote open --surface floor-release\`) rides
+                                            attached, and it lands on the crossroads board once it counts
 
 Examples:
   lares nexus rite quorum
