@@ -7,6 +7,10 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 ### The working layer and the founded seat
 
 **Added**
+- **Many joined faces share one browser house without touching each other.** A browser house keys by its face's PersonaGroup and persona root; the island proves each face before it answers, and the holder keeps no key. A port the holder never admitted asks for a sealed body and is refused by name, a sealed write goes back to the session that caused it, and the last tab of a face to close locks that face.
+- **The island reads the fleet board itself.** A face's gate reads the device edge off the board rather than trusting a supplied answer, and a raise the vessel lifted stays owing until its seat roll lands, read at once with no timer.
+- **Chromium boots on a dedicated worker floor.** Chromium offers no Worker inside a SharedWorker, so a house that half-started hands the tab to a dedicated worker: the swap waits for that worker's `ready`, replays the manifest, and retires the sync crossing it replaced.
+- **Each face's atom and archive rest under its own group.** On the node, `face-atom-g<digest>.bin` and `veil-archive-g<digest>.bin` key by PersonaGroup; a fresh group mints a fresh atom, and a founding seed keys by its ask digest so a crashed founding sweeps clean.
 - **A face's intents travel on its own plane** (model landed; build row `I1`). The daemon wiki keeps working memory; `@intents-<tag>`, a fifth face plane, carries a face's intents, outcomes and asks across its fleet, append-only and never mirrored; the daemon bag keeps the vessel's own records. A rubric sorts what earns an entry: a hand's decisions that cross devices, never its motion.
 - **A vessel joins one face's fleet.** `lares fleet join offer|request|answer|land|abandon` runs on node and browser. The root-signed answer carries the device edge, gate pin, canon list, island reach, sealed face address secret, vessel face-key certificates and add-a-face grants.
 - **Bundles carry guardian sets.** A bundle cut after enrolment restores while its enrolled set still heads the face log. A later guardian rotation cuts earlier bundles off.

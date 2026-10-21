@@ -51,7 +51,7 @@ Three keys stand in the model, and none derives from another:
 
 * ''The place key'' — the device's own substrate identity, minted on that device, its private half never leaving. It keeps the floor's duties alone (the carriage seal, the floor pin, the served pointer, the raise challenge, its finish at another place's gate) and ''stands in no face relation'': it signs no face act, seals to no face, and sits on no face's roster. A thief holding it derives no face's key and opens no group's secret.
 * ''The persona root'' — the face's own operator key, its op-key under the face's persona KEL. It signs the root half of each device delegation and nothing on a device's behalf; recovery rotates it beneath the same KEL prefix through the face's guardians, so continuity rides the log, never a frozen key.
-* ''The face atom'' — the key ONE device meets ONE face through. It mints at random when that device founds or joins the face, derives from no other seed (not the place key, not the persona root, not a sibling face's atom), and rests as a D row in that face's own custody on that device. It signs every act the device makes on the face's behalf (dial, join, enrolment, sibling channel, proof), the face's group secret seals to it, and it countersigns its own half of its delegation. It rides no bundle and no wire as a secret, and it ''never resurrects'': a lost device dies alone, and re-admission mints a fresh atom.
+* ''The face atom'' — the key ONE device meets ONE face through. It mints at random when that device founds or joins the face, derives from no other seed (not the place key, not the persona root, not a sibling face's atom), and rests as a D row in that face's own custody on that device, keyed by its PersonaGroup (`face-atom-g<group digest>.bin` on the node, `face-atom/<group>` in the browser), never by handle index. It signs every act the device makes on the face's behalf (dial, join, enrolment, sibling channel, proof), the face's group secret seals to it, and it countersigns its own half of its delegation. It rides no bundle and no wire as a secret, and it ''never resurrects'': a lost device dies alone, and re-admission mints a fresh atom.
 
 This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-KEM cut (`lararium-identity#/four-port-swap`); it does not restate it.
 
@@ -221,6 +221,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;QQ_-sX33Pc_umjKNKb9rueB_qwtFLfqc0Gb5fA0Rj4Y
+<<^ code="&#x0003;">>ni:///sha-256;7WgWY5IVppCa_NGgXRRwHsm6S0cjxlxqBazSZLS3WfU
 
 <<^ code="&#x0004;" -> to="?">>
