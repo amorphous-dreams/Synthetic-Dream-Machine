@@ -400,11 +400,21 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     const firstSync = new MessageChannel();
     const freshSync = new MessageChannel();
     const floorPosts: Array<{ msg: Message; transfer: readonly Transferable[] }> = [];
+    const premature: Message[] = [];
+    const floorListeners = new Set<(m: unknown) => void>();
+    let ready = false;
     let rePosts = 0, floors = 0;
+    let floorStood!: () => void;
+    const stood = new Promise<void>((resolve) => { floorStood = resolve; });
     const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, {
-      floor: () => { floors++; return {
-        post: (msg: unknown, transfer?: readonly Transferable[]) => { floorPosts.push({ msg: msg as Message, transfer: transfer ?? [] }); },
-        listen: () => () => {}, onError: () => () => {}, terminate: () => {},
+      floor: () => { floors++; floorStood(); return {
+        // The browser worker has no inbound listener until it announces ready. Earlier posts vanish.
+        post: (msg: unknown, transfer?: readonly Transferable[]) => {
+          if (ready) floorPosts.push({ msg: msg as Message, transfer: transfer ?? [] });
+          else premature.push(msg as Message);
+        },
+        listen: (cb: (m: unknown) => void) => { floorListeners.add(cb); return () => floorListeners.delete(cb); },
+        onError: () => () => {}, terminate: () => {},
       }; },
       // The pool owns the synced Repo and can mint the replacement manifest and transfer port.
       rePost: () => { rePosts++; return { msg: { type: "manifest", wikiUri: "daemon" }, transfer: [freshSync.port1] }; },
@@ -412,12 +422,21 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     handle.post({ type: "manifest", wikiUri: "daemon" }, [firstSync.port1]);
     handle.post({ type: "wiki:place-verb", requestId: "held", verb: "read" });
     channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: nested island launch failed" });
-    await expect.poll(() => floors).toBe(1);
-    expect(rePosts, "the pool supplies one fresh manifest after the transferred one has left").toBe(1);
-    expect(floorPosts.map(({ msg }) => msg.type), "the floor boots before held asks replay").toEqual(["manifest", "wiki:place-verb"]);
-    expect(floorPosts[0]!.transfer[0], "the floor receives the newly minted sync port").toBe(freshSync.port1);
-    expect(floorPosts[0]!.transfer[0]).not.toBe(firstSync.port1);
-    firstSync.port2.close(); freshSync.port1.close(); freshSync.port2.close(); channel.port2.close(); handle.terminate();
+    try {
+      await stood;
+      expect(floors).toBe(1);
+      expect(floorPosts, "the worker drops everything posted before ready").toEqual([]);
+      ready = true;
+      for (const cb of floorListeners) cb({ type: "ready" });
+      for (let i = 0; i < 12; i++) await Promise.resolve();
+      expect(premature, "the replay waits for the worker's registered inbound listener").toEqual([]);
+      expect(rePosts, "the pool supplies one fresh manifest after the transferred one has left").toBe(1);
+      expect(floorPosts.map(({ msg }) => msg.type), "the floor boots before held asks replay").toEqual(["manifest", "wiki:place-verb"]);
+      expect(floorPosts[0]!.transfer[0], "the floor receives the newly minted sync port").toBe(freshSync.port1);
+      expect(floorPosts[0]!.transfer[0]).not.toBe(firstSync.port1);
+    } finally {
+      firstSync.port2.close(); freshSync.port1.close(); freshSync.port2.close(); channel.port2.close(); handle.terminate();
+    }
   });
 
   test("CONTROL: refusal before a manifest still lets the floor receive its first manifest", async () => {
@@ -430,11 +449,14 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     if (attached.kind !== "attached") return;
     const posts: Message[] = [];
     let floors = 0;
+    let floorStood!: () => void;
+    const stood = new Promise<void>((resolve) => { floorStood = resolve; });
     const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, {
-      floor: () => { floors++; return { post: (msg: unknown) => { posts.push(msg as Message); }, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }; },
+      floor: () => { floors++; floorStood(); return { post: (msg: unknown) => { posts.push(msg as Message); }, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }; },
     } as never);
     channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: early refusal" });
-    await expect.poll(() => floors).toBe(1);
+    await stood;
+    expect(floors).toBe(1);
     expect(posts, "no manifest crossed before the refusal").toEqual([]);
     handle.post({ type: "manifest", wikiUri: "daemon" });
     expect(posts.map((msg) => msg.type), "the first floor manifest boots normally").toEqual(["manifest"]);

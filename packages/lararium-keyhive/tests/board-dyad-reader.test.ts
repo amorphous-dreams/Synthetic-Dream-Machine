@@ -86,6 +86,8 @@ describe("the island's fleet board dyad reader", () => {
       // The reader needs the local seat-roll ledger and its scope in addition to the fleet ledger.
       const makeRead = await reader() as unknown as (r: unknown, l: unknown, rest: unknown, own: string, rolls: unknown, scope: string) => (r: string, d: string) => Promise<string>;
       const read = makeRead(repo, ledger, undefined, own, seatLedger, scope);
+      expect(await makeRead(repo, ledger, undefined, own, undefined, scope)(root, peer),
+        "a named vessel scope with no available seat ledger treats its rolled set as empty").toBe("owing");
       expect(await read(root, peer), "the lift does not return a seat whose raise still lacks a roll").toBe("owing");
       markRaiseRolled(seatLedger, scope, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" });
       expect(await read(root, peer), "CONTROL: a rolled lift returns the peer").toBe("returned");
