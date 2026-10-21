@@ -113,6 +113,7 @@ import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
+import { mountFloorPorch, releasedFloorCids } from "./floor-porch.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
@@ -124,7 +125,7 @@ import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtom } from "./face-atom-store.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
-import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
+import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
@@ -188,7 +189,7 @@ import { custodyGateDoor }                       from "./custody-seat.js";
 import { vesselFloorKeyDoor }                    from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
-import type { OracleGateArgs, OracleFloorGate }  from "./oracle-read-face.js";
+import type { OracleGateArgs, OracleFloorGate }  from "./flow-read-face.js";
 import {
   deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
   SOVEREIGN_SYNC_ROUTE, ORACLE_SOCKET_ROUTE,
@@ -578,7 +579,7 @@ interface NodeBootPrep {
   floorGates:       OracleGateArgs["gates"];
   /** THE GATE-NATIVE CARRIAGE PULL (the routes ruling, stable-founding-road: carriage peering flips on a proven gate-native
    *  caller): one floor dial per (peer, Nexus) at the pin this vessel's boards carried, presenting what it stands as there. */
-  carriagePull:     (peer: string, publisherKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
+  carriagePull:     (peer: string, publisherKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   residency:        BagStowage;
   /** The STOOD herm relay port — present ONLY when a relay port was configured; else null (inert). It keeps the
    *  persona-KEL drops siblings leave over plain HTTP. The two vessel entry-points fold its `close()` into their
@@ -1326,7 +1327,7 @@ async function prepareNodeBootOn(
     return [...new Set([...(own ? [own] : []), ...gateReadings.map((r) => r.aid)])];
   };
   /**
-   * The oracle's floor gates, one per Nexus, each seating through the face's own table (`oracle-read-face`). The set
+   * The oracle's floor gates, one per Nexus, each seating through the face's own table (`flow-read-face`). The set
    * moves as the sync gates' does: every membership refold tells each face that follows it (`floorGatesMoved`), and the
    * face asks again, so a carry taken on a running herm stands its floor gate and an uncarry stands it down.
    */
@@ -3243,6 +3244,16 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     },
   }));
   const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
+  // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
+  // and `/cas/<cid>` the blobs the head release names. A hearth without an HTTP server answers no porch.
+  if (opts.httpServer) {
+    const porch = mountFloorPorch({
+      httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
+      nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: true,
+      onLog: (line) => console.log(`[lararium] ${line}`),
+    });
+    roleCaps.push(() => porch.dispose());
+  }
 
   return {
     activeWikiId: p.slotActiveWikiId(),
@@ -3349,6 +3360,7 @@ async function composeNodeHermOn(
       // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
       // body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.
+      releasedFloor: () => releasedFloorCids({ board: hermCrossroads.doc(), nexus: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir) }),
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
@@ -3358,10 +3370,18 @@ async function composeNodeHermOn(
     }),
     onLog:       (line) => console.log(`[herm] ${line}`),
   });
+  // A HERM CARRIES THE ANSWER AND SIGNS NOTHING: the same `/floor/<AID>` the hearth answers, from the board it replicates; its bulb
+  // face already carries `/cas`, and the released-floor lane above lends it the head's blobs.
+  const porch = mountFloorPorch({
+    httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
+    nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: false,
+    onLog: (line) => console.log(`[herm] ${line}`),
+  });
   p.emit("vessel-ready");
   p.emit("live");
 
   const dispose = async (): Promise<void> => {
+    porch.dispose();
     setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
     await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
     p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood

@@ -5,17 +5,20 @@
  * Browser devices stand at the floor (operator ruling, 2026-10-16): each begins as an anonymous capability stack, and
  * the person decides which faces to join to it. So:
  *
- *   F1 — the banner hands a URL with no gate key: the relay, and the hearth's oracle floor card in the fragment
+ *   F1 — the banner hands a URL with no gate key: the relay, and the hearth's floor card in the fragment
  *   F2 — a fresh device boots faceless and names it: at the floor, no face joined, no sovereign session
- *   F3 — CONTROL: at a PRIVATE Nexus the floor answers a faceless device with silence, and the page names it
- *   F4 — at an OPEN Nexus a fresh faceless device reads the oracle snapshot across the floor gate
+ *   F3 — CONTROL: before the cabal releases a floor, the porch answers the faceless device with no release, and the page
+ *        names it (the floor is a name the reader brings, so a private Nexus is no different from an open one)
+ *   F4 — once the hearth's cabal releases its floor (promote open, then release, over the genesis floor manifest), a fresh
+ *        faceless device reads the floor off the porch and VERIFIES it whole: the lineage re-derives the AID, the head
+ *        release seals as a seat of its epoch, and every blob hashes to its CID
  *   F5 — once the person joins a face (the fleet-join door, the full pin inside the root's signature), the device
  *        crosses the hearth's sovereign gate under that face's scoped key, and the gate it proved is the pinned one
- *   F6 — the joined face reads the oracle at a PRIVATE Nexus, where the faceless device met silence
+ *   F6 — the joined face reads and verifies the same floor
  *
  * The node's own read decides each step through the page's DOM state; a timeout only bounds a wait.
  */
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
@@ -63,14 +66,27 @@ async function awaitLive(page: Page): Promise<void> {
   expect(row, `phases: ${phases.replace(/\n/g, " · ")}\n${tail(page)}\n--- hearth ---\n${hearth?.bootLog().slice(-3000)}`).toMatch(/^live/);
 }
 
-/** The oracle read's outcome as the page paints it: verified, or the named reason it is not. */
-async function oracleOutcome(page: Page): Promise<string> {
+/** The floor read's outcome as the page paints it: verified, or the named reason it is not. */
+async function floorOutcome(page: Page): Promise<string> {
   return page.waitForFunction(() => {
-    const panel = document.querySelector("#oracle")?.textContent ?? "";
-    if (panel.includes("verified + loaded")) return "verified";
-    const status = document.querySelector("#oracle-status")?.textContent ?? "";
-    return status.startsWith("✗") || status.startsWith("no ") ? status : false;
+    const panel = document.querySelector("#floor")?.textContent ?? "";
+    if (panel.includes("verified floor")) return "verified";
+    const status = document.querySelector("#floor-status")?.textContent ?? "";
+    return status.startsWith("✗") ? status : false;
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<string>).catch(() => "no outcome");
+}
+
+/** The hearth's cabal releases the genesis floor: the seat signs the manifest's exact bytes, then seals the release. */
+async function releaseGenesisFloor(): Promise<void> {
+  const seed = JSON.parse(readFileSync(join(REPO, "genesis/seed.json"), "utf8")) as { tiddlers: Record<string, { tiddler: { cid?: string } }> };
+  const manifestCid = seed.tiddlers["lar:///ha.ka.ba/bags/oracle/genesis-cid-floor"]?.tiddler.cid;
+  expect(manifestCid, "the genesis seed names no floor manifest").toMatch(/^[0-9a-f]{64}$/);
+  const manifestFile = join(scratch, "floor-manifest.json"), approvalFile = join(scratch, "floor-approval.json");
+  copyFileSync(join(REPO, "genesis/cas", manifestCid!), manifestFile);
+  const opened = await hearth!.cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
+  expect(opened.code, opened.stderr).toBe(0);
+  const released = await hearth!.cli(["nexus", "release", manifestFile, "--approval", approvalFile]);
+  expect(released.code, `${released.stderr}\n${released.stdout}`).toBe(0);
 }
 
 /** The crossing row's standing (`data-standing`) and the gate key a verified crossing proved (`data-gate-key`). */
@@ -117,7 +133,7 @@ afterAll(async () => {
 });
 
 describe("a browser device at the floor, then under a joined face", () => {
-  test("F1 — the banner hands a URL with no gate key: the relay, and the oracle floor card in the fragment", () => {
+  test("F1 — the banner hands a URL with no gate key: the relay, and the floor card in the fragment", () => {
     expect(bannerUrl, hearth?.bootLog().slice(-2000)).not.toBe("");
     const url = new URL(bannerUrl);
     expect(url.searchParams.get("relay")).toMatch(/^wss?:\/\/.+\/ws$/);
@@ -138,23 +154,20 @@ describe("a browser device at the floor, then under a joined face", () => {
     expect(at.gateKey).toBeNull();
   });
 
-  test("F3 — CONTROL: a private Nexus answers the faceless device's floor read with silence, named", async () => {
-    const read = await oracleOutcome(faceless!);
+  test("F3 — CONTROL: before any release the porch answers the faceless device with no release, and the page names it", async () => {
+    const read = await floorOutcome(faceless!);
     expect(read, tail(faceless!)).not.toBe("verified");
-    expect(read).toMatch(/answers no stranger|silence/);
+    expect(read).toMatch(/no-release/);
   });
 
-  test("F4 — an open Nexus answers a fresh faceless device the oracle snapshot across its floor gate", async () => {
-    const flipped = await hearth!.cli(["nexus", "posture", "open"]);
-    expect(flipped.code, flipped.stderr).toBe(0);
+  test("F4 — after the cabal releases the floor, a fresh faceless device reads it off the porch and verifies it whole, at a private Nexus", async () => {
+    await releaseGenesisFloor();
     const device = await freshDevice();
     await device.goto(bannerUrl);
     await awaitLive(device);
-    expect(await oracleOutcome(device), tail(device)).toBe("verified");
+    expect(await floorOutcome(device), tail(device)).toBe("verified");
     // The floor reaches no face's documents: no sovereign session stands for a faceless device.
     expect((await crossing(device)).standing).toBe("floor");
-    const back = await hearth!.cli(["nexus", "posture", "private"]);
-    expect(back.code, back.stderr).toBe(0);
   });
 
   let pinnedGate = "";
@@ -191,7 +204,7 @@ describe("a browser device at the floor, then under a joined face", () => {
     expect(at.gateKey).toBe(pinnedGate);
   });
 
-  test("F6 — the joined face reads the oracle at a private Nexus, where the faceless device met silence", async () => {
-    expect(await oracleOutcome(faceless!), tail(faceless!)).toBe("verified");
+  test("F6 — the joined face reads and verifies the same floor", async () => {
+    expect(await floorOutcome(faceless!), tail(faceless!)).toBe("verified");
   });
 });

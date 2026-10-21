@@ -3,11 +3,9 @@
  * but the floor.
  *
  * THE FLOOR FIRST (operator ruling 2026-10-16: browser devices stand at the floor). A browser device begins as an anon
- * capability stack, and the person decides which faces to join to it. So a dial that holds no joined face presents
- * FACELESS (`facelessFloorPresentation`): a place presentation under a key minted for that one dial, with no arm. The
- * floor gate sorts it a stranger, which an OPEN Nexus answers and a PRIVATE one meets with silence (`socket-sorter`).
- * The faceless key lives one dial and rests nowhere, so two floor reads by one device never link on the wire; the
- * device key stays home, because a stranger's key proves nothing at a gate.
+ * capability stack, and the person decides which faces to join to it. A device holding no joined face presents nothing at a
+ * gate: it reads the Nexus's floor off the hearth's porch (`browser-floor-read`), which answers by a name the reader brings
+ * and needs no proof, so no faceless key mints and no pointer is signed over a floor.
  *
  * A JOINED FACE. `composeBrowserFacePresentation` reads what the fleet-join door left in this browser's store, the
  * way the node's joinee does (`lararium-node` `dial-presentation`, the joinee branch): the face's record (the root
@@ -29,7 +27,7 @@ import {
   admittedKeyOf, checkVesselChain, faceKeyGrantRevision, foldWithdrawals, heldNexusRoot, hex,
   makeMultiSigQuorumVerifier, nexusAidOf, nexusAidOfPin, openJoinedFaceSession, parseNexusDoc, presentedAdmitReader, readFaceKeyGrant,
   sessionBinding, SessionTable,
-  type FacePresentation, type FaceScope, type GateBundlePin, type PlaceOraclePresentation, type SessionBinding,
+  type FacePresentation, type FaceScope, type GateBundlePin, type SessionBinding,
 } from "@lararium/mesh";
 import { browserVesselFaceKeyCustody, dialRow, type KeptFleetJoinDial } from "./browser-fleet-join.js";
 import { FLEET_JOIN_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";
@@ -125,14 +123,4 @@ export async function composeBrowserFacePresentation(args: {
   const chain = checkVesselChain({ admitted: scope, certificate, memory: fold.memory });
   if (chain.verdict !== "verified") return { refusal: "chain-refused", detail: chain.verdict };
   return { presentation: { certificate: chain.chain.certificate, signer: opened.signer, arm, history: fold.memory } };
-}
-
-/**
- * The faceless floor presentation: a place key minted for this one dial, its signing door, and no arm. The seed
- * lives in this closure alone and rests nowhere.
- */
-export async function facelessFloorPresentation(): Promise<PlaceOraclePresentation> {
-  const seed = crypto.getRandomValues(new Uint8Array(32));
-  const placeKey = hex(await ed25519.getPublicKeyAsync(seed));
-  return { kind: "place", placeKey, sign: (image) => ed25519.signAsync(image, seed), arm: null };
 }
