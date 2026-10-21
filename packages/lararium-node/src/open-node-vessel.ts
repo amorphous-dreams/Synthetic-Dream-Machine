@@ -81,10 +81,10 @@ import type {
 } from "@lararium/tw5";
 import {
   loadOrMaterializeOracle,
-  reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
+import { standKahuCanon, type KahuCanonDocs }          from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -727,6 +727,8 @@ async function prepareNodeBootOn(
   // D3: the bootstrap's tiddlers once the boot reads them, and one scoped view per same-operator session over the
   // planes of the face its gate proved (`face-fleet-view`). The share verdict reads a same-operator peer through it.
   let faceBootTiddlers: Record<string, { text?: string }> | null = null;
+  // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
+  let kahuCanon: KahuCanonDocs = {};
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   const faceViews = faceFleetViews(() => faceBootTiddlers, () => wornMount?.personaGroupId ?? null);
   stood.push({ what: "the face views", down: () => faceViews.close() });
@@ -1654,12 +1656,8 @@ async function prepareNodeBootOn(
       // serves as an advisory back-reference, not the identity mechanism.
       const islandHandle = await loadOrMaterializeOracle(repo, genesisDir);
 
-      // lares + lararium system-bag mint — operator(admin) office, node home
-      // only. Both pointers ride this vessel's catalog;
-      // oracle island, lararium bag and lares bag stand as three separate docs. The corpus doc
-      // starts empty; LOAD/ingest fills it.
-      mintLaresIfAbsent(repo, catalogHandle);
-      mintLarariumIfAbsent(repo, catalogHandle);
+      // The live lares and lararium documents mint at the FOUNDING, in the Kahu realm (`kahu-realm`); no genesis office
+      // mints them and no catalog row names them. The keel mounts what `systemCanon` names below.
 
       const coreBlobEntry = (islandHandle.doc()?.blobs ?? {})[ENGINE_CORE_ID];
       if (!coreBlobEntry) {
@@ -1774,6 +1772,16 @@ async function prepareNodeBootOn(
         `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
         ` → ${moved ?? "already gone"}; the plane mounts read-only until a known-good document is restored`,
       );
+    },
+
+    // THE KAHU REALM'S LIVE CANON: the documents the cabal's registrations name, held only where the board carries a
+    // counted admission for this vessel's group. A vessel outside the cabal names none and reads the floor.
+    systemCanon: async () => {
+      kahuCanon = await standKahuCanon({
+        repo, sealHome, vesselKey: vesselIdentity.verifyingKey,
+        personaGroupId: faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null,
+      });
+      return kahuCanon;
     },
 
     // Corpus capability piece — one top-level bag per catalog corpus entry (shared loader).
@@ -2186,6 +2194,7 @@ async function prepareNodeBootOn(
           catalogNamed: p.personaGroupId === personaGroupId ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
         })),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
+        ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),
       ...(faceLit && personaKelPrefix && personaKelChain
@@ -2916,9 +2925,6 @@ async function prepareNodeBootOn(
     // A raise this vessel counted before it last stopped still owes its roll: once the island answers verbs, the
     // settler reads the fold that landed at boot.
     if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined);
-
-    // Keep the catalog's lares pointer current.
-    reconcileWellKnownTiddlers(assembly.catalogHandle, assembly.laresHandle?.url);
   };
 
   const subscribeWorkerEventsToDaemon = (): void => {
@@ -2963,8 +2969,10 @@ async function prepareNodeBootOn(
 
     const workerRootDir = corpusRoot;
     const diskMirrorGrant: DiskMirrorGrant = [
-      { bagId: LARES_DOC_URI,    mirrorRoot: join(workerRootDir, "bags/lares"),    scope: "lares" },
-      { bagId: LARARIUM_DOC_URI, mirrorRoot: join(workerRootDir, "bags/lararium"), scope: "lararium" },
+      // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
+      // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
+      ...(kahuCanon.lares    ? [{ bagId: LARES_DOC_URI,    mirrorRoot: join(workerRootDir, "bags/lares"),    scope: "lares" }] : []),
+      ...(kahuCanon.lararium ? [{ bagId: LARARIUM_DOC_URI, mirrorRoot: join(workerRootDir, "bags/lararium"), scope: "lararium" }] : []),
       // crossroads = the PUBLIC plane's seed/canon bag — it holds the moved public-domain
       // library (raw .txt books + .mem memes with large source ahus). It projects to
       // bags/crossroads like the other seed bags. Safe to project ONLY with the skinny-handle

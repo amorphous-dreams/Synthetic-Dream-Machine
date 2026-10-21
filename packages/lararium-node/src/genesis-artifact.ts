@@ -5,8 +5,9 @@
  * @lararium/mesh `genesis-intake`; this file
  * keeps only what genuinely belongs to node:
  *   - the fs byte source (genesis/seed.json + cas/)
- *   - mintLaresIfAbsent — the operator's node genesis office (gate by placement)
- *   - reconcileWellKnownTiddlers — runtime catalog pointer writer (the lares url alone)
+ *
+ * The live `lares` and `lararium` documents mint in the Kahu realm at the founding (`kahu-realm`), never here: no
+ * genesis office mints a system document, and no catalog row names one.
  */
 
 import { daemonGenesisDir } from "./lares-config.js";
@@ -15,11 +16,6 @@ import { join }                      from "path";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
 import type { LarDoc }               from "@lararium/mesh";
 import {
-  LARES_DOC_URI,
-  LARARIUM_DOC_URI,
-  storedLarRecord,
-  tiddlerText,
-  emptyLarDoc,
   materializeGenesisIsland,
   genesisCasManifestFromSeed,
   GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
@@ -182,61 +178,4 @@ export function hearthTrueName(genesisDir?: string): string | undefined {
 export async function loadOrMaterializeOracle(repo: Repo, genesisDir?: string): Promise<DocHandle<LarDoc>> {
   const seed = readGenesisSeed(genesisDir);
   return materializeGenesisIsland(repo, seed ?? undefined, "genesis-artifact");
-}
-
-// ---------------------------------------------------------------------------
-// mintLaresIfAbsent — operator(admin) mint of the lares protocol-invariant bag
-// ---------------------------------------------------------------------------
-
-/**
- * Gate: the most-restricted grant — operator(admin), timed. Only the node home
- * (the base lararium node) mints protocol invariants; wild vessels receive
- * the plane by federating the lararium doc, and the keel (assembleVessel)
- * only READS the oracle. Grant-proof enforcement arrives with keyhive;
- * placement enforces the gate today — this code runs solely in the operator's
- * node genesis office.
- */
-export function mintLaresIfAbsent(repo: Repo, registry: DocHandle<LarDoc>): string {
-  const existing = tiddlerText(registry.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
-  if (existing) return existing;
-  const minted = repo.create<LarDoc>(emptyLarDoc());
-  registry.change((d) => {
-    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
-  });
-  // A concurrent local mint may settle on another pointer; re-read the catalog
-  // and adopt its winner (an orphaned empty mint costs nothing).
-  return tiddlerText(registry.doc()?.tiddlers?.[LARES_DOC_URI]) ?? minted.url;
-}
-
-/**
- * mintLarariumIfAbsent — the lararium memetic corpus as its OWN doc (the oracle,
- * lararium and lares docs stand separate). Mirror
- * of mintLaresIfAbsent: the corpus pointer rides this vessel's catalog registry. The minted doc starts empty; corpus content fills
- * it by LOAD/ingest (`lares act LOAD … --to lar:///ha.ka.ba/bags/lararium`) and the
- * disk mirror carries it back to `bags/lararium`. Node genesis office only.
- */
-export function mintLarariumIfAbsent(repo: Repo, registry: DocHandle<LarDoc>): string {
-  const existing = tiddlerText(registry.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
-  if (existing) return existing;
-  const minted = repo.create<LarDoc>(emptyLarDoc());
-  registry.change((d) => {
-    d.tiddlers[LARARIUM_DOC_URI] = storedLarRecord(LARARIUM_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
-  });
-  return tiddlerText(registry.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? minted.url;
-}
-
-// ---------------------------------------------------------------------------
-// reconcileWellKnownTiddlers — runtime catalog pointer writer
-// ---------------------------------------------------------------------------
-
-export function reconcileWellKnownTiddlers(
-  registry: DocHandle<LarDoc>,
-  laresUrl?: string,
-): void {
-  const tiddlers = registry.doc()?.tiddlers ?? {};
-  if (!laresUrl || tiddlerText(tiddlers[LARES_DOC_URI]) === laresUrl) return;
-  registry.change((d) => {
-    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
-  });
-  console.log("[genesis-artifact] catalog pointers  lares=patched");
 }
