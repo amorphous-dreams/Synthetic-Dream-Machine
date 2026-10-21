@@ -236,6 +236,9 @@ export const FACE_ANCHOR_EDGE_DOMAIN = mint("face-anchor-edge");
 /** One signed EDGE FRONTIER on a board: the hand's own stream commitment (snapshot, parent, roster and epoch
  *  lineage). Apart from the act it counts. */
 export const EDGE_FRONTIER_DOMAIN = mint("edge-frontier");
+/** One signed LEASE ADVANCE in a PersonaGroup's per-writer slot: the writer signs the resource, its own key and
+ *  the epoch it lifts the max-register to. An unsigned slot, or one signed by a key outside the face's roster, raises nothing. */
+export const LEASE_ADVANCE_DOMAIN = mint("lease-advance");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
  *  key-set, and the heads of the quorum acts that counted there, so a shadow carries across the roll. */
 export const EDGE_ROLL_ANCHOR_DOMAIN = mint("edge-roll-anchor");

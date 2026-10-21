@@ -13,6 +13,7 @@
 
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { FACE_ANCHOR_EDGE_DOMAIN, FACE_ANCHOR_ROOT_DOMAIN } from "./domains.js";
+import { headOpKey, type PersonaKelEvent } from "./persona-kel.js";
 
 /** What a device knows of a face's moving edge: it only rises. */
 export interface FaceFrontier {
@@ -120,4 +121,34 @@ export function leaseEpochUnderAnchor(anchor: FaceAnchor, observed: number): { r
   return observed < anchor.frontier.leaseEpoch
     ? { epoch: anchor.frontier.leaseEpoch, refusal: "frontier-falls" }
     : { epoch: observed, refusal: null };
+}
+
+/** The digest the `@persona` log's device-edge act commits: the edge's body, never its signatures, so the founder (who
+ *  holds the root half alone) and the joinee (who countersigns) name one edge alike. */
+export function edgeBodyDigest(edge: { readonly personaRootDid: string; readonly deviceVerifyingKey: string; readonly hearthTrueName: string; readonly boundEpoch: string | number }): string {
+  return faceEdgeDigest({
+    personaRootDid: edge.personaRootDid, deviceVerifyingKey: edge.deviceVerifyingKey,
+    hearthTrueName: edge.hearthTrueName, boundEpoch: String(edge.boundEpoch),
+  });
+}
+
+export type ReanchorRefusal = "prefix" | "unverified-chain" | "not-head" | "no-rotation";
+
+/**
+ * The recovery rite that ROTATES the persona root beneath the same KEL prefix rewrites the anchor: the root
+ * commitment and the edge digest move, the PersonaGroup, the prefix and the known frontier stay. The new root must be
+ * the verified head of the KEL beneath the anchor's own prefix, so a document that names a new root with no KEL
+ * rotation behind it moves nothing. A guardian-set rotation leaves root and edge unchanged and writes no anchor.
+ */
+export async function reanchorAfterRotation(
+  anchor: FaceAnchor,
+  input: { readonly chain: readonly PersonaKelEvent[]; readonly personaRootDid: string; readonly edge: unknown },
+): Promise<{ readonly ok: true; readonly anchor: FaceAnchor } | { readonly ok: false; readonly refusal: ReanchorRefusal }> {
+  if (input.chain.length === 0 || input.chain[0]!.prefix !== anchor.personaKelPrefix) return { ok: false, refusal: "prefix" };
+  const head = await headOpKey(input.chain, { verifyQuorums: true });
+  if (head === null) return { ok: false, refusal: "unverified-chain" };
+  if (norm(head) !== norm(input.personaRootDid)) return { ok: false, refusal: "not-head" };
+  const rootCommitment = faceRootCommitment(input.personaRootDid);
+  if (rootCommitment === anchor.rootCommitment) return { ok: false, refusal: "no-rotation" };
+  return { ok: true, anchor: { ...anchor, rootCommitment, edgeDigest: faceEdgeDigest(input.edge) } };
 }
