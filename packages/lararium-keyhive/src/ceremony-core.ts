@@ -61,6 +61,8 @@ import {
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
   type LarTiddlerStore, writePersonaAct,
+  signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc,
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -415,6 +417,36 @@ function writeGroupSecretSeal(
 }
 
 /**
+ * The founding's SIGNED RECORDS, landed by the one path both shores take: the persona root signs the face's genesis log
+ * onto its `@persona` plane (the founding, one `plane` act per plane, the founder device's admission and its edge) and the
+ * fleet's empty genesis frontier onto its fleet board. Signatures are deterministic, so a founding that re-enters from its
+ * checkpoint lands the same bytes and nothing doubles. A contracted founding holds no root seed and signs none: the
+ * contracting operator's records arrive with its edge.
+ */
+async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
+  if (input.binding.mode !== "self-stood") return;
+  const { face } = input;
+  const seed = input.binding.signerSeed;
+  const rootKey = await ed25519VerifyingKeyFromSeed(seed);
+  if (rootKey !== verifyingKeyFromDid(face.signerDid as never)) throw new Error("[founding] the root that signs the face's records differs from the founder's DID");
+  const signer = { key: rootKey, sign: ed25519SignerFromSeed(seed) };
+  const acts = await signFoundingLog({
+    group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
+    rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl },
+    deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
+    edgeDigest: edgeBodyDigest(face.founderEdge),
+  }, signer);
+  const plane = await input.repo.find<LarDoc>(face.personaUrl as never);
+  plane.change((draft) => { for (const act of acts) writePersonaAct(draft, act); });
+  const lineage = makeHandLineage([{ epoch: 0, signers: [rootKey], threshold: 1 }])!;
+  const board = await materializeSharedLarDoc(input.repo, fleetEdgeBoardDocUrl(rootKey), "board:edge-kapae");
+  const draft = { tiddlers: {} } as unknown as LarDoc;
+  await landFleetGenesis(draft, rootKey, lineage, signer);
+  board.change((d) => { Object.assign(d.tiddlers, draft.tiddlers); });
+}
+
+/**
  * Found the FACE — the persona group, its private plane, the social planes, the binding edge and the
  * persona-KEL inception — onto a place that already stands.
  *
@@ -431,7 +463,9 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);
-    return { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
+    const resumed = { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
+    await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: resumed });
+    return resumed;
   }
   // WHETHER THIS FACE MOUNTS. The founding face (h0) writes the singular daemon-doc pins below; an
   // additional compartment mints its own individual, is returned, and writes none of them (a register-many
@@ -625,6 +659,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   };
   const events = (await store.list()).filter((e) => !standing.has(e.hash)).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
   const { atomSeed: _heldSeed, ...publicResult } = result;
+  await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: result });
   const checkpoint: FaceCheckpoint = { scope: foundingScope, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;

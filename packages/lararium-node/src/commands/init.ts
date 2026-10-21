@@ -25,11 +25,9 @@ import {
   seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
-  mintFaceAnchor, raiseFaceFrontier, signFoundingLog, faceRootCommitment, edgeBodyDigest,
-  faceAtomKeyFromSeed, makeHandLineage, emptyLarDoc, landFleetGenesis, writeEdgeFrontier, writeFrontierSnapshot, materializeSharedLarDoc, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyingKeyFromDid,
+  mintFaceAnchor, raiseFaceFrontier,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
-import { appendPersonaActs } from "../persona-act-store.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
@@ -627,25 +625,6 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,
   }));
-  const rootKey = await ed25519VerifyingKeyFromSeed(signerSeed);
-  if (rootKey !== verifyingKeyFromDid(face.signerDid as never)) {
-    throw new Error("[lares persona new] Face proof: root signer differs from founder DID; re-found the face");
-  }
-  const foundingActs = await signFoundingLog({
-    group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
-    rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
-    planes: { persona: face.personaUrl, identities: face.identitiesUrl,
-      circles: face.circlesUrl, sessions: face.sessionsUrl },
-    deviceKey: faceAtomKeyFromSeed(atomSeed, face.personaGroupId).key,
-    edgeDigest: edgeBodyDigest(face.founderEdge),
-  }, { key: rootKey, sign: ed25519SignerFromSeed(signerSeed) });
-  appendPersonaActs(await repo.find<LarDoc>(face.personaUrl as AutomergeUrl), foundingActs);
-  const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(rootKey), "board:edge-kapae");
-  const staged = emptyLarDoc();
-  const genesis = await landFleetGenesis(staged, rootKey,
-    makeHandLineage([{ epoch: 0, signers: [rootKey], threshold: 1 }])!,
-    { key: rootKey, sign: ed25519SignerFromSeed(signerSeed) });
-  fleetBoard.change((draft) => { writeFrontierSnapshot(draft, []); writeEdgeFrontier(draft, genesis); });
   await repo.flush();
 
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the
