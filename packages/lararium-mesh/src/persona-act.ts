@@ -12,6 +12,7 @@
  */
 
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
+import { rosterAt, type HandLineage } from "./hand-lineage.js";
 import { foldActs, type ActBody, type ActFold, type SignedAct } from "./signed-act.js";
 
 export type PersonaActKind = "founding" | "admission" | "device-edge" | "lease-advance" | "plane";
@@ -20,6 +21,8 @@ export type PersonaActKind = "founding" | "admission" | "device-edge" | "lease-a
 export interface PersonaActBody extends ActBody {
   readonly kind: typeof PERSONA_ACT_DOMAIN;
   readonly act: PersonaActKind;
+  /** The root-key epoch this act signs under; a chain's epochs only rise. */
+  readonly epoch: number;
 }
 
 export interface PersonaProjection {
@@ -42,17 +45,22 @@ export interface PersonaProjection {
   readonly head: { readonly seq: number; readonly cid: string } | null;
 }
 
+/** The act-specific word on who may sign it (an admission by the root or by an admitted atom, say). The signer's
+ *  place in the root's roster at the act's OWN epoch is checked by the projection itself. */
 export type PersonaAuthorize = (signer: string, body: PersonaActBody) => boolean;
 
 /** Fold a carried set of `@persona` records into the verified projection. */
-export function projectPersonaLog(records: readonly unknown[], opts: { readonly group: string; readonly authorize: PersonaAuthorize }): PersonaProjection {
+export function projectPersonaLog(records: readonly unknown[], opts: { readonly group: string; readonly lineage: HandLineage; readonly authorize: PersonaAuthorize }): PersonaProjection {
   const fold = foldActs(records, {
     domain: PERSONA_ACT_DOMAIN, group: opts.group,
     authorize: (signer, body) => {
       const b = body as PersonaActBody;
       if ((body.seq === 0) !== (b.act === "founding")) return false;   // the founding stands at seq 0 and nowhere else
+      const roster = rosterAt(opts.lineage, b.epoch);
+      if (!roster || !roster.signers.includes(signer)) return false;   // a link verifies under its own epoch's keys
       return opts.authorize(signer, b);
     },
+    link: (body, prior) => prior === null || (body as PersonaActBody).epoch >= (prior as PersonaActBody).epoch,
   });
   let personaKelPrefix: string | null = null, rootCommitment: string | null = null, leaseEpoch = 0;
   const planes: Record<string, string> = {}, edges: Record<string, string> = {};
@@ -66,7 +74,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: { readonly 
         break;
       case "admission": if (typeof b["deviceKey"] === "string") devices.add(b["deviceKey"]); break;
       case "device-edge": if (typeof b["deviceKey"] === "string" && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
-      case "lease-advance": if (Number.isSafeInteger(b["epoch"])) leaseEpoch = Math.max(leaseEpoch, b["epoch"] as number); break;
+      case "lease-advance": if (Number.isSafeInteger(b["leaseEpoch"])) leaseEpoch = Math.max(leaseEpoch, b["leaseEpoch"] as number); break;
       case "plane": if (typeof b["plane"] === "string" && typeof b["url"] === "string") planes[b["plane"]] = b["url"]; break;
     }
   }

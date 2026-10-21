@@ -17,7 +17,8 @@
 
 import { sha256HexBytesSync, canonicalJsonBytes } from "./crypto.js";
 import { EDGE_FRONTIER_DOMAIN } from "./domains.js";
-import { actCid, foldActs, signAct, type ActBody, type SignedAct } from "./signed-act.js";
+import { currentRoster, rosterAt, type HandLineage } from "./hand-lineage.js";
+import { actCid, foldLinked, readQuorumAct, signQuorumAct, type ActBody, type QuorumAct } from "./signed-act.js";
 
 export interface EdgeFrontierBody extends ActBody {
   readonly kind: typeof EDGE_FRONTIER_DOMAIN;
@@ -30,7 +31,8 @@ export interface EdgeFrontierBody extends ActBody {
   readonly rosterHash: string;
 }
 
-export type EdgeFrontier = SignedAct<EdgeFrontierBody>;
+/** A frontier signs at its hand's quorum: a fleet root at k = 1, a realm's charter at its threshold of seats. */
+export type EdgeFrontier = QuorumAct<EdgeFrontierBody>;
 
 /** The content address of a counted-raise set: sorted, de-duplicated, hashed under the frontier domain. */
 export function frontierSnapshotCid(raiseCids: readonly string[]): string {
@@ -38,23 +40,24 @@ export function frontierSnapshotCid(raiseCids: readonly string[]): string {
 }
 
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
+type Signers = readonly Signer[];
 
 /** The signed EMPTY genesis frontier every fleet and realm founds with. */
-export function signGenesisFrontier(parts: { board: string; hand: string; epoch: number; rosterHash: string }, signer: Signer): Promise<EdgeFrontier> {
-  return signAct<EdgeFrontierBody>({
+export function signGenesisFrontier(parts: { board: string; hand: string; epoch: number; rosterHash: string }, signers: Signers): Promise<EdgeFrontier> {
+  return signQuorumAct<EdgeFrontierBody>({
     kind: EDGE_FRONTIER_DOMAIN, group: parts.board, seq: 0, prior: null,
     hand: parts.hand, snapshot: frontierSnapshotCid([]), epoch: parts.epoch, rosterHash: parts.rosterHash,
-  }, signer);
+  }, signers);
 }
 
 /** Register raises into the hand's NEXT frontier: the successor commits `counted` (every raise through its boundary). */
 export function signNextFrontier(
-  prev: EdgeFrontier, counted: readonly string[], lineage: { epoch: number; rosterHash: string }, signer: Signer,
+  prev: EdgeFrontier, counted: readonly string[], lineage: { epoch: number; rosterHash: string }, signers: Signers,
 ): Promise<EdgeFrontier> {
-  return signAct<EdgeFrontierBody>({
+  return signQuorumAct<EdgeFrontierBody>({
     kind: EDGE_FRONTIER_DOMAIN, group: prev.body.group, seq: prev.body.seq + 1, prior: actCid(prev.body),
     hand: prev.body.hand, snapshot: frontierSnapshotCid(counted), epoch: lineage.epoch, rosterHash: lineage.rosterHash,
-  }, signer);
+  }, signers);
 }
 
 /** What a reader holds of one hand's stream. */
@@ -71,14 +74,13 @@ export interface HandReading {
 
 export interface RaisingHand {
   readonly hand: string;
-  /** Verifying keys that may sign this hand's frontier at the roster's current epoch. */
-  readonly signers: readonly string[];
-  readonly epoch: number;
-  readonly rosterHash: string;
+  /** The hand's roster at each epoch it has stood (`makeHandLineage`): a link verifies under its OWN epoch's roster,
+   *  and only the head must stand at the lineage's current epoch. */
+  readonly lineage: HandLineage;
 }
 
 export type FrontierMissing =
-  | { readonly hand: string; readonly why: "no-frontier" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "wrong-epoch" | "does-not-extend-pin" | "stale-lineage" };
+  | { readonly hand: string; readonly why: "no-frontier" | "below-threshold" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "wrong-epoch" | "does-not-extend-pin" | "stale-lineage" };
 
 export type WideningRead =
   | { readonly status: "known"; readonly asOf: Readonly<Record<string, { seq: number; cid: string }>>; readonly counted: Readonly<Record<string, readonly string[]>> }
@@ -91,17 +93,23 @@ export function readWideningFrontier(board: string, hands: readonly RaisingHand[
   const counted: Record<string, readonly string[]> = {};
   for (const h of hands) {
     const r = readings.get(h.hand);
-    const fold = foldActs(r?.frontiers ?? [], {
-      domain: EDGE_FRONTIER_DOMAIN, group: board,
-      authorize: (signer, body) => (body as EdgeFrontierBody).hand === h.hand && h.signers.includes(signer),
-    });
+    const fold = foldLinked<EdgeFrontier>(r?.frontiers ?? [], (raw) => {
+      const read = readQuorumAct(raw, {
+        domain: EDGE_FRONTIER_DOMAIN, group: board,
+        seatsFor: (body) => {
+          const fb = body as EdgeFrontierBody;
+          const roster = rosterAt(h.lineage, fb.epoch);
+          return fb.hand === h.hand && roster && roster.rosterHash === fb.rosterHash ? roster : null;
+        },
+      });
+      return read.ok ? { ok: true as const, act: read.act as EdgeFrontier, cid: read.cid } : read;
+    }, (body, prior) => prior === null || (body as EdgeFrontierBody).epoch >= (prior as EdgeFrontierBody).epoch);   // a closed epoch's keys sign nothing after it
     if (fold.fork) { missing.push({ hand: h.hand, why: "fork" }); continue; }
     const head = fold.chain[fold.chain.length - 1];
-    if (!r || !head) { missing.push({ hand: h.hand, why: "no-frontier" }); continue; }
-    const body = head.act.body as EdgeFrontierBody;
-    if (body.epoch !== h.epoch || body.rosterHash !== h.rosterHash) {
-      missing.push({ hand: h.hand, why: body.epoch < h.epoch ? "stale-lineage" : "wrong-epoch" }); continue;
-    }
+    if (!r || !head) { missing.push({ hand: h.hand, why: fold.refused.some((x) => x.refusal === "below-threshold") ? "below-threshold" : "no-frontier" }); continue; }
+    const body = head.act.body;
+    // Only the HEAD must stand at the current epoch; the links behind it verified under their own.
+    if (body.epoch !== currentRoster(h.lineage).epoch) { missing.push({ hand: h.hand, why: "stale-lineage" }); continue; }
     if (r.pinned && !fold.chain.some((e) => e.cid === r.pinned!.cid && e.act.body.seq === r.pinned!.seq)) {
       missing.push({ hand: h.hand, why: "does-not-extend-pin" }); continue;
     }
