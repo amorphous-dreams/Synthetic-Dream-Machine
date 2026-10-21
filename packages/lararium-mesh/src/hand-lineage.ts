@@ -3,8 +3,8 @@
  * own epoch and only the head must stand at the current one.
  *
  * A hand rotates (a fleet root re-keys beneath its KEL prefix; a realm's charter rolls its seal epoch). A chain of
- * signed acts or frontiers spans that rotation: its early links hold the OLD keys' signatures, its later links the
- * new. A reader that authorizes every link against the CURRENT roster would refuse the early links forever. The
+ * signed acts or frontiers spans that rotation: its early links hold the first roster's signatures, its later links the next roster's.
+ * A reader that authorizes every link against the CURRENT roster would refuse the early links forever. The
  * lineage names the roster per epoch; a link's `epoch` field selects which roster reads it; and a chain's epochs
  * only rise, so a retired key signs nothing after its epoch closed.
  *

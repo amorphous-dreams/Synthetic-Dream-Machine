@@ -1,6 +1,6 @@
 /** The daemon island tells its vessel which countersigned edge cleared its real Binding Gate. */
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
-import { deviceEdgeDigest, makeIslandRepo, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { deviceEdgeDigest, makeIslandRepo, mintFaceAnchor, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
   AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, leaseEpochSlotUri,
   emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
@@ -60,6 +60,8 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
     ...(options.floor ? {} : {
       personaGroupId: ceremony.personaGroupId, meshCabalDocIdHex: ceremony.meshCabalDocIdHex,
       signerDid: ceremony.signerDid, personaKel: kel, deviceEdge: ceremony.founderEdge,
+      faceAnchor: mintFaceAnchor({ personaGroup: ceremony.personaGroupId, personaKelPrefix: ceremony.personaKelPrefix,
+        personaRootDid: ceremony.founderEdge.personaRootDid, edge: ceremony.founderEdge, leaseEpoch: 0 }),
       atom: { seed: Buffer.from(ceremony.atomSeed).toString("hex"), key: ceremony.founderEdge.deviceVerifyingKey },
       veilArchiveBytes: ceremony.veilArchive,
     }),

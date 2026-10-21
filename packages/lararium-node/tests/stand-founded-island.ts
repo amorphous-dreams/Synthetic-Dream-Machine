@@ -10,6 +10,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
+  mintFaceAnchor,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
@@ -69,6 +70,8 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
+    faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+      personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
   return { ctx, daemonAuth, daemonHandle, vesselRepo, veil };
 }

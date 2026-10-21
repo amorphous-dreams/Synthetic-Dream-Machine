@@ -18,6 +18,7 @@ import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
   materializeSharedLarDoc, personaKelBoardDocUrl, writePersonaKelEvent, enrolmentDigestOf, personaEventCidOf,
   verifyEdgeAgainstPersonaKel, attestAndRotate, rollEnrolments, sha256HexSync,
+  mintFaceAnchor,
 } from "@lararium/mesh";
 import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony } from "@lararium/keyhive";
 import { makePersonaKelRingHolder, type PersonaKelRingHolder } from "../src/persona-kel-ring.js";
@@ -99,6 +100,8 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
       args: {
         seed: SEED, eventStore: new DaemonEventStore({ daemon: composite }), vesselVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
+        faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+          personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
         meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
         personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, faceVerifyingKey: cer.founderEdge.deviceVerifyingKey, expectedEpoch: 0,
       },

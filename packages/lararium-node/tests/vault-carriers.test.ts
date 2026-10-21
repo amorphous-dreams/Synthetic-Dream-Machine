@@ -71,6 +71,7 @@ const SOWN: Record<string, string> = {
   "identity/keyhive-archive.bin":               "x",
   [`identity/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/face-atom-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/face-anchor-g${"a".repeat(64)}.json`]: "x",
   [`identity/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
@@ -124,7 +125,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which the VK wraps in its own hot row (custody#/the-table, the outbox).
   "sealed-outbox": "outbox", "outbox-key": "hot",
-  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot", "face-atom": "hot", "face-atom-ask": "hot",
+  "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot", "face-anchor": "hot", "face-atom": "hot", "face-atom-ask": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot",

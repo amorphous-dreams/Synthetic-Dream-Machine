@@ -59,6 +59,7 @@
  */
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
+import type { FaceAnchor } from "./face-anchor.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -258,6 +259,7 @@ export interface IslandMsg_Manifest {
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
      *  never a softened gate. */
     personaGroupId?:   string;
+    faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
     registerBags:          readonly string[];

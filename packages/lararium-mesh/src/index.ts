@@ -68,6 +68,7 @@ export * from "./capability.js";
 export * from "./domains.js";
 export * from "./face-atom.js";
 export * from "./face-anchor.js";
+export * from "./face-anchor-custody.js";
 export * from "./signed-act.js";
 export * from "./hand-lineage.js";
 export * from "./persona-act.js";

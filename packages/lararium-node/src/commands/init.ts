@@ -25,6 +25,7 @@ import {
   seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
+  mintFaceAnchor, raiseFaceFrontier,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
@@ -39,6 +40,7 @@ import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
+import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
@@ -306,6 +308,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     });
     await repo.flush();
 
+    const priorAnchor = await loadFaceAnchorOfGroup(payload.personaGroupId);
+    const admittedAnchor = mintFaceAnchor({
+      personaGroup: payload.personaGroupId, personaKelPrefix: payload.personaKelPrefix,
+      personaRootDid: deviceEdge.personaRootDid, edge: deviceEdge, leaseEpoch: Number(deviceEdge.boundEpoch),
+    });
+    await keepFaceAnchorOfGroup(priorAnchor
+      ? raiseFaceFrontier(admittedAnchor, priorAnchor.frontier) : admittedAnchor);
+
     if (landsBeside) {
       await persistVeilArchive(archive, payload.personaGroupId);
       await persistIdentityAnchors({
@@ -338,6 +348,9 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     await persistIdentityAnchors({
       personaGroupId:          payload.personaGroupId,
       meshCabalDocIdHex:       payload.meshCabalDocIdHex,
+      signerDid:               payload.signerDid,
+      personaKelPrefix:        payload.personaKelPrefix,
+      deviceEdge,
     });
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
@@ -608,6 +621,10 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     ...(mounts ? {} : { mount: false }),
   });
   await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+  await keepFaceAnchorOfGroup(mintFaceAnchor({
+    personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
+    personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,
+  }));
   await repo.flush();
 
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the

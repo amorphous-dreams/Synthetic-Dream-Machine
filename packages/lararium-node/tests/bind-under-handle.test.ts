@@ -23,6 +23,7 @@ import { seedDaemonDoc } from "@lararium/mesh";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
+  mintFaceAnchor,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
@@ -55,6 +56,8 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
     personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
     registerBags: [DAEMON_BAG_ID], signerDid, personaKel: { prefix: personaKelPrefix, chain },
     deviceEdge: deviceEdge as never, expectedEpoch: lease.n,
+    faceAnchor: mintFaceAnchor({ personaGroup: pg.groupId, personaKelPrefix,
+      personaRootDid: (deviceEdge as { personaRootDid: string }).personaRootDid, edge: deviceEdge, leaseEpoch: lease.n }),
     ...(archiveBytes ? { archiveBytes } : {}),
   });
 }
