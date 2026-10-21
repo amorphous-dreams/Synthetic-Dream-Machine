@@ -42,7 +42,7 @@ import {
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
+  DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, personaScopedBagIds,
   coupleMesh, crystallize, guardHitl,
@@ -122,6 +122,8 @@ import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
+import { loadFaceAnchorOfGroup } from "./face-anchor-store.js";
+import { CustodyLocked } from "./custody-holder.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
@@ -1809,10 +1811,16 @@ async function prepareNodeBootOn(
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
     const daemonDoc = (await readDaemonDoc()).doc();
-    // Each pin defaults to the WORN face's own anchors; absent a switch these read the daemon doc exactly
-    // as before (byte-identical for a single-face vessel, which is every vessel until one wears a second).
-    const personaGroupId   = wornMount?.personaGroupId   ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])   ?? undefined;
-    const meshCabalDocIdHex     = wornMount?.meshCabalDocIdHex      ?? tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
+    // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
+    let atFloor = false;
+    const orFloor = async <T,>(read: () => Promise<T | null>): Promise<T | null> => {
+      try { return await read(); } catch (e) { if (e instanceof CustodyLocked) { atFloor = true; return null; } throw e; }
+    };
+    const foundingAnchors = wornMount ? null : await orFloor(() => loadIdentityAnchors(0));
+    const bootMount = wornMount ?? foundingAnchors;
+    // Custody selects the worn face. The daemon document may project its pins but never selects one.
+    const personaGroupId = bootMount?.personaGroupId ?? undefined;
+    const meshCabalDocIdHex = bootMount?.meshCabalDocIdHex ?? undefined;
     // The cabal rides with the FACE — its members read as PersonaGroups, so a faceless place names none.
     // ── THE FACE, IF ONE STANDS ────────────────────────────────────────────────────────────────
     // The signer pin + edge carry the Binding Gate's authority. Their ABSENCE names a place at the
@@ -1823,12 +1831,17 @@ async function prepareNodeBootOn(
     // THE GATE STILL NEVER SOFTENS. Downstream, `bootDaemonKeyhive` runs the Binding Gate in FULL or
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
-    const signerDid  = wornMount?.signerDid ?? tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
+    const signerDid = bootMount?.signerDid ?? undefined;
+    const faceAnchor = personaGroupId ? await orFloor(() => loadFaceAnchorOfGroup(personaGroupId)) : null;
+    if (personaGroupId && !faceAnchor && !atFloor) throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
+    if (!personaGroupId && !atFloor && tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])) {
+      throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
+    }
     // The worn handle selects the atom seed in local custody for this face's live signer and Keyhive Individual.
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
-    const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+    const deviceEdge = bootMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     const mountedFace = wornMount?.handleIndex ?? 0;
     const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtomOfGroup(personaGroupId) : null;
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
@@ -1881,7 +1894,7 @@ async function prepareNodeBootOn(
     // that pins NO identifier holds no face and stands at the floor. A vessel that pins one whose chain its
     // local replica cannot reach has a face it cannot prove — that HALTS, fail-closed, exactly as before
     // (never a global lookup; a not-yet-synced replica simply denies).
-    const personaKelPrefix = wornMount?.personaKelPrefix ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
+    const personaKelPrefix = bootMount?.personaKelPrefix ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
@@ -2176,6 +2189,7 @@ async function prepareNodeBootOn(
       // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
+      ...(faceLit && faceAnchor ? { faceAnchor } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -2244,6 +2258,9 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
+    // The sealed frontier rises only on a VERIFIED observation: a signed `lease-advance` act in the face's `@persona`
+    // log (persona-act). An unsigned lease slot on the mirrored daemon doc raises nothing, so a forged high slot cannot
+    // ratchet local custody. Until the log's writers land, the anchor's frontier holds at its founding or admission value.
 
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
