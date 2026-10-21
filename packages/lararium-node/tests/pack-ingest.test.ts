@@ -17,9 +17,13 @@ import type { VerbContext, Verb, CapabilityAccess, CapabilityVerifyResult } from
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const CORE = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 /**
@@ -59,7 +63,7 @@ function jsonArgs(members: Array<Record<string, string>>): Record<string, unknow
 }
 async function runIngest(composite: CompositeStore, engine: TW5Engine, a: Record<string, unknown>) {
   const table = new VerbTable();
-  registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+  registerActionReactors(table, { kahuReach: KAHU, composite, tw5: makeTw5Deserializer(engine) });
   const result = await table.get("INGEST")!(a, ctx(composite, a)) as Record<string, unknown>;
   return (result["carriers"] as Array<Record<string, unknown>>)[0]!;
 }
@@ -121,7 +125,7 @@ describe.skipIf(coreBlobSkip)(
     await runIngest(composite, engine, args);
 
     const table = new VerbTable();
-    registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+    registerActionReactors(table, { kahuReach: KAHU, composite, tw5: makeTw5Deserializer(engine) });
     const rargs = { bag: BAG, "pack-path": MULTIDS_PACK };
     const result = await table.get("REPACK")!(rargs, ctx(composite, rargs)) as Record<string, unknown>;
     expect(result["count"]).toBe(2);
@@ -143,7 +147,7 @@ describe.skipIf(coreBlobSkip)(
     ]));
     // REPACK — the query verb: collect by provenance, serialize via TW5's own field serializer
     const table = new VerbTable();
-    registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+    registerActionReactors(table, { kahuReach: KAHU, composite, tw5: makeTw5Deserializer(engine) });
     const args = { bag: BAG, "pack-path": PACK };
     const result = await table.get("REPACK")!(args, ctx(composite, args)) as Record<string, unknown>;
     expect(result["count"]).toBe(2);

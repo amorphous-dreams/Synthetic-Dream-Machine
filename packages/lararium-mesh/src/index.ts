@@ -388,6 +388,7 @@ export * from "./realm-steward-map.js";
 export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
+export * from "./kahu-canon-reach.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";

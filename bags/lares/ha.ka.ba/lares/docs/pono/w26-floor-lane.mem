@@ -84,6 +84,19 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
+<<~ ahu #/the-seam-owed-to-wave-c>>
+
+!! The seam owed to Wave C ~ one accessor names the Kahu realm's group
+
+`kahuRealmGroup` (`packages/lararium-mesh/src/kahu-canon-reach.ts`) names the PersonaGroup that holds a Nexus's Kahu
+realm. Persona zero's group holds it today. Wave C (`K15` step 6) swaps the Kahu face's own group in at that function
+alone: the cabal's acts key on the group the accessor returns, and the realm's storage (the registrations on the
+Nexus's realm doc) never keys on it, so the swap moves no data. Every consumer reads the group through the accessor,
+never through a literal or a persona-zero lookup: the founding's admission (`landFoundingAdmission`), the daemon
+island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahuReach`).
+
+<<~/ahu>>
+
 <<~ ahu #/what-retires>>
 
 !! What retires, slice by slice (the o-takiage census)
@@ -127,6 +140,6 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1KfEkh0Sw5TquRSYqReglE-BNVBtcWHk14z8fArBLPM
+<<^ code="&#x0003;">>ni:///sha-256;OR3l5B-SyTUdu8MdarvnCw0c4aJ2XqqcbriwZfFif9M
 
 <<^ code="&#x0004;" -> to="?">>

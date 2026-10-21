@@ -43,7 +43,8 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { plainRecordOrNull } from "@lararium/mesh";
+import { plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
+import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
   parseResidencyAction, withEffectRecord, sha256HexBytesSync, carrierHash, digestsEqual,
@@ -249,6 +250,12 @@ export interface ActionHandlerOptions {
    * land; a `textCid` carrier faults loud.
    */
   readonly resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
+  /**
+   * The vessel's source of the facts the Kahu predicate reads (`kahuCabalCanonAccess`). Every verb that lands a
+   * byte in a system canon bag asks it BEFORE any other check, a MOVE out of canon included (it tombstones the
+   * source). Absent → a stranger: a system bag refuses (fail closed). A copy OUT of canon asks nothing.
+   */
+  readonly kahuReach?: KahuReachSource;
 }
 
 /**
@@ -427,6 +434,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
   return async (args, ctx) => {
     const action = residencyFromContext(verb, args, ctx.invocation);
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+
+    // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in system canon.
+    await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
+    if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
 
     if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag) && args["seed-door"] !== "founding") {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);

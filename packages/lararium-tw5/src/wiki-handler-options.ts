@@ -6,7 +6,7 @@
  * the re-export hub it grew from collapsed (YIN).
  */
 
-import type { Repo, CompositeStore, SlotReach } from "@lararium/mesh";
+import type { Repo, CompositeStore, KahuReachSource, SlotReach } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 
@@ -68,4 +68,6 @@ export interface WikiComposeOptions {
 
 export interface DraftHandlerOptions {
   readonly composite: CompositeStore;
+  /** The vessel's source of the Kahu predicate's facts; a draft into a system canon bag asks it first. Absent → a stranger. */
+  readonly kahuReach?: KahuReachSource;
 }

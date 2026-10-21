@@ -21,8 +21,8 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   carriageDocUrl, materializeSharedLarDoc, foundingRoster, nexusAidOf,
   openKahuCabalAct, signKahuCabalAct, kahuCabalActCounts, kahuCabalActCid, kahuCabalStanding,
-  kahuCabalActsFromBoard, writeKahuCabalAct, readKahuCabalAct,
-  type KahuCabalAct, type KahuCabalAction, type KahuCabalStanding, type KahuQuorumSeats,
+  kahuCabalActsFromBoard, writeKahuCabalAct, readKahuCabalAct, kahuRealmGroup,
+  type KahuCabalAct, type KahuCabalAction, type KahuCabalBoard, type KahuCabalStanding, type KahuQuorumSeats,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -47,14 +47,14 @@ export interface NexusCabalActResult {
   readonly signedHere: readonly string[];
 }
 
-interface CabalCore {
+export interface CabalCore {
   readonly home:   string;
   readonly nexus:  string;
   readonly roster: KahuQuorumSeats;
   readonly handle: Awaited<ReturnType<typeof materializeSharedLarDoc>>;
 }
 
-async function cabalCore(repo: Repo, sealHome: string, aid: string | undefined): Promise<CabalCore> {
+export async function cabalCore(repo: Repo, sealHome: string, aid: string | undefined, vesselKey?: string): Promise<CabalCore> {
   let home = sealHome;
   if (aid !== undefined) {
     const held = charterHomeFor(sealHome, aid.trim().toLowerCase());
@@ -67,7 +67,7 @@ async function cabalCore(repo: Repo, sealHome: string, aid: string | undefined):
   if (roster.sealEpochCid.length === 0 || nexus === null) {
     throw new NexusCabalError("no seated charter stands here — a cabal admission takes the charter's seat quorum.");
   }
-  const ownVesselKey = await loadVesselVerifyingKey();
+  const ownVesselKey = vesselKey ?? await loadVesselVerifyingKey();
   const boardUrl = carriageDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: home }));
   const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
   return { home, nexus, roster, handle };
@@ -142,4 +142,35 @@ export async function runCabalStanding(opts: {
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid);
   const { standing, heads } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus);
   return { nexus: core.nexus, group, standing, heads };
+}
+
+/**
+ * THE FOUNDING'S ADMISSION. A one-seat founding lands a counted 1-of-1 admission for the group that holds the
+ * hearth's Kahu realm (`kahuRealmGroup`: persona zero's group today). The charter's one seat is held here, so the
+ * act counts at once and rests on the carriage board. A group already admitted lands no second act, so a founding
+ * run again moves nothing. Returns the act's result, or null where the group already stood admitted.
+ */
+export async function landFoundingAdmission(opts: {
+  readonly repo: Repo; readonly sealHome: string; readonly personaGroupId: string;
+}): Promise<NexusCabalActResult | null> {
+  const group = kahuRealmGroup(opts.personaGroupId);
+  const core = await cabalCore(opts.repo, opts.sealHome, undefined);
+  const { standing } = kahuCabalStanding(kahuCabalActsFromBoard(core.handle.doc()), group, core.roster, core.nexus);
+  if (standing === "admitted") return null;
+  const result = await runCabalAct({ repo: opts.repo, sealHome: opts.sealHome, group, action: "admit" });
+  if (!result.landed) throw new NexusCabalError(`the founding's admission counted short: ${result.seated} of ${result.threshold} seats`);
+  return result;
+}
+
+/**
+ * THE SHORE'S READER OF THE CABAL BOARD, for the daemon island's Kahu predicate: this vessel's charter (its Nexus and
+ * seated roster) and the admission acts its carriage board carries, as of its last sync. Null where no seated charter
+ * stands here, so the island reads a stranger and refuses system canon. Read at ACCESS, never at boot. The daemon island
+ * passes the vessel key its manifest names, since a worker holds no custody to load it.
+ */
+export async function readKahuCabalBoard(repo: Repo, sealHome: string, vesselKey?: string): Promise<KahuCabalBoard | null> {
+  let core: CabalCore;
+  try { core = await cabalCore(repo, sealHome, undefined, vesselKey); }
+  catch (err) { if (err instanceof NexusCabalError) return null; throw err; }
+  return { nexus: core.nexus, roster: core.roster, acts: kahuCabalActsFromBoard(core.handle.doc()) };
 }

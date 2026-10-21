@@ -527,6 +527,19 @@ seats admitted AND the sentinel holds. Admitted alone, or joined alone, refuses.
 vessels: one opens and signs a partial, the other confirms its CID, adds its seat and lands it
 (`lares nexus cabal admit|remove|cosign|standing`).
 
+''THE FOUNDING LANDS THE FIRST ADMISSION.'' A one-seat founding signs a counted 1-of-1 act at its one seat that admits
+the group holding the hearth's Kahu realm (`found-hearth.ts`, `landFoundingAdmission`); a founding run again lands no
+second act. `kahuRealmGroup` (`kahu-canon-reach.ts`) names that group through ONE accessor: persona zero's group
+today, and Wave C's Kahu-face group swaps in at that function alone, since the realm's storage never keys on the group.
+
+''ONE PREDICATE GUARDS EVERY WRITE DOOR.'' `requireKahuReach` (`kahu-canon-reach.ts`) calls `kahuCabalCanonAccess` for
+the hand at the door, before any write: the residency reactor with every verb it carries (a MOVE out of canon too,
+since it tombstones the source), `meme put` and `meme delete`, draft placement, and a realm steward's write, whose
+realm grant stands in for no check. The shore hands the island the charter's roster and the board's acts
+(`readKahuCabalBoard`); the island adds the sentinel read and the group at ACCESS, never at boot
+(`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a system bag. A READ and a
+copy OUT of canon ask nothing.
+
 <<~/ahu>>
 
 <<~ ahu #/distinction>>
@@ -611,7 +624,7 @@ The Keyhive gates prove vessel identity and cabal affiliation; neither encodes k
   delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
 * Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
   belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
-  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': for the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and no shared-canon read calls it yet.
+  cabal's shared canon (`boot-daemon-keyhive.ts`). For the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and every write door into system canon calls it.
 
 Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
@@ -637,6 +650,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SRCCIWN1cdVEGbAhPooiRzzpYa1akTlippqXh3Uj0-Y
+<<^ code="&#x0003;">>ni:///sha-256;9w4Bgv-CC7G0_UY47F4F5CHid1uUhY8dVSUkR2empqQ
 
 <<^ code="&#x0004;" -> to="?">>

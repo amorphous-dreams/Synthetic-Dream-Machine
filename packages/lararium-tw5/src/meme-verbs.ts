@@ -59,9 +59,9 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
-  type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
+  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
@@ -93,6 +93,9 @@ export interface MemeVerbOptions {
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
   readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
+  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a system canon bag asks it
+   *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
+  readonly kahuReach?: KahuReachSource;
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
@@ -325,6 +328,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
+    await requireKahuReach(bag, opts.kahuReach, "meme put");
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await placeMeme({ uri: target.uri, text, baseHash: base }, sink);
@@ -467,6 +471,7 @@ async function deleteThroughRecipe(
   if (!stack.includes(designated)) {
     throw new VerbRefusal("recipe-unshadowed", `recipe-unshadowed: recipe "${slug}" designates bag "${designated}", which its own stack never reads; a tombstone there shadows nothing the wiki reads, so meme-delete removes nothing.`);
   }
+  await requireKahuReach(designated, opts.kahuReach, "meme delete");
   const answered = await reachRecipeBag(opts, slug, "get", uri);
   const readProof = await cap("read", answered.bag);
   if (!readProof.ok) throw new Error(`cap-denied: read on ${answered.bag} required (${readProof.reason ?? "no reason"})`);
@@ -542,6 +547,7 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
+    await requireKahuReach(bag, opts.kahuReach, "meme delete");
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);

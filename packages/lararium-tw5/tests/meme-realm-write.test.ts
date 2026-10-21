@@ -19,6 +19,10 @@ import { CompositeStore, bagUri, type LarTiddlerStore } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
+
+/** `lares` is system canon: a steward's realm grant AND the Kahu cabal's reach both stand before a put lands. */
+const KAHU = await kahuHand();
 
 const URI = "lar:///t/ford";
 const LARES = bagUri("lares");
@@ -44,6 +48,7 @@ function rig(keptBy: readonly string[], caller: string | null) {
   composite.addLayer({ bagId: bagUri("daemon"), store: new MemoryTiddlerStore(bagUri("daemon")), writable: true });
   const opts: MemeVerbOptions = {
     composite,
+    kahuReach: KAHU,
     tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
     reach: async (key, _bag, realm): Promise<LarTiddlerStore | null> =>
       key === LARES ? realmDocs.get(realm ?? DEFAULT_REALM) ?? null : null,

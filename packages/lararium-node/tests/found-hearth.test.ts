@@ -16,6 +16,8 @@
  *   H7 · a re-seat over the hearth's seed charter refuses by name, and moves no byte: the hearth's AID never moves —
  *        with the bootstrap's face pin gone too, since the faces' own anchors answer.
  *   H8 · over a place that holds a charter this act did not found, the act refuses by name and founds no face.
+ *   H9 · the founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group, once: a second run lands
+ *        no second act, and a group the act never named stands absent (W26 slice 3).
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -23,10 +25,11 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
+  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, kahuRealmGroup, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
   type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
+import { runCabalStanding } from "../src/commands/nexus-cabal.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -123,6 +126,22 @@ describe("the Stable founding act", () => {
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), aid)).toHaveLength(dyads.length);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), `nexus-${"0".repeat(64)}`)).toHaveLength(0);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid)).toHaveLength(dyads.length);    // CONTROL: no scope asked
+    });
+  });
+
+  test("H9 — the founding lands one counted 1-of-1 Kahu-cabal admission for persona zero's group (CONTROL: a group it never named stands absent; a second run lands no second act)", async () => {
+    await withLarRoot(a, async () => {
+      const group = kahuRealmGroup(packed()[PERSONA_GROUP_ID_TIDDLER]!.text!);
+      const stood = await direct(runCabalStanding)({ group });
+      expect(stood.standing).toBe("admitted");
+      expect(stood.heads).toHaveLength(1);
+      expect((await direct(runCabalStanding)({ group: "ab".repeat(32) })).standing).toBe("absent");   // CONTROL
+    });
+    const again = await foundAt(a);
+    expect(again.face.alreadyStood).toBe(true);
+    await withLarRoot(a, async () => {
+      const group = kahuRealmGroup(packed()[PERSONA_GROUP_ID_TIDDLER]!.text!);
+      expect((await direct(runCabalStanding)({ group })).heads).toHaveLength(1);
     });
   });
 
