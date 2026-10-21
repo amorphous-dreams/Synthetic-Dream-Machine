@@ -25,7 +25,8 @@ export function boardDyadReader(repo: Repo, ledger?: DocHandle<LarDoc> | Promise
       const reading = read.readings.get(deviceEdgeId(fleetRootDid, bareDevice));
       // Own and peer absence read clear for sync and widening alike until the signed edge frontier stands.
       if (own && bareDevice === own && !reading) return "clear";
-      return edgeStandingOf(reading, seatLedger && scope ? raisesSeenThrough(seatLedger, scope) : undefined);
+      // A named vessel scope with no synced roll ledger has seen no raises through yet.
+      return edgeStandingOf(reading, scope ? raisesSeenThrough(seatLedger, scope) : undefined);
     } catch { return "aside"; }
   };
 }

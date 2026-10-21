@@ -155,19 +155,35 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   let admitted = session === undefined;
   const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
   let floorHandle: VesselWorkerHandle | null = null;
+  let floorReady = true;
+  let detachFloorReady: (() => void) | undefined;
   let manifestSent = false;
   const listeners = new Set<{ cb: (message: unknown) => void; detach?: () => void }>();
   const errorListeners = new Set<{ cb: (error: Error) => void; detach?: () => void }>();
   const takeFloor = (): void => {
     if (floorHandle || !hooks?.floor) return;
-    floorHandle = hooks.floor();
-    for (const entry of listeners) entry.detach = floorHandle.listen(entry.cb);
-    for (const entry of errorListeners) entry.detach = floorHandle.onError(entry.cb);
+    const floor = hooks.floor();
+    floorHandle = floor;
+    for (const entry of listeners) entry.detach = floor.listen(entry.cb);
+    for (const entry of errorListeners) entry.detach = floor.onError(entry.cb);
     if (manifestSent) {
-      const fresh = hooks.rePost?.();
-      if (fresh) floorHandle.post(fresh.msg, fresh.transfer);
+      // The replacement worker announces ready only after its inbound listener stands.
+      floorReady = false;
+      let readySeen = false;
+      detachFloorReady = floor.listen((message) => {
+        if ((message as { type?: unknown })?.type !== "ready" || readySeen) return;
+        readySeen = true;
+        detachFloorReady?.();
+        detachFloorReady = undefined;
+        const fresh = hooks.rePost?.();
+        if (fresh) floor.post(fresh.msg, fresh.transfer);
+        floorReady = true;
+        for (const queued of waiting.splice(0)) floor.post(queued.msg, queued.transfer);
+      });
+      if (readySeen) { detachFloorReady?.(); detachFloorReady = undefined; }
+      return;
     }
-    for (const queued of waiting.splice(0)) floorHandle.post(queued.msg, queued.transfer);
+    for (const queued of waiting.splice(0)) floor.post(queued.msg, queued.transfer);
   };
   const send = (msg: object, transfer: Transferable[]): void => {
     port.postMessage({ ...msg, ...envelope }, transfer);
@@ -178,6 +194,7 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       const d = e.data as { kind?: unknown; sessionId?: unknown; personaGroup?: unknown; cause?: unknown };
       if (d?.kind === "holder:lock" && d.sessionId === envelope.sessionId) { hooks?.onLock?.(String(d.personaGroup)); return; }
       if (d?.kind === "holder:refused" && d.sessionId === envelope.sessionId && String(d.cause).startsWith("holder-unavailable")) { takeFloor(); return; }
+      if (floorHandle) return;
       if (admitted || d?.kind !== "holder:admitted" || d.sessionId !== envelope.sessionId) return;
       admitted = true;
       for (const queued of waiting.splice(0)) send(queued.msg, queued.transfer);
@@ -193,7 +210,11 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   }
   return {
     post: (msg, transfer) => {
-      if (floorHandle) { floorHandle.post(msg, transfer); return; }
+      if (floorHandle) {
+        if (floorReady) floorHandle.post(msg, transfer);
+        else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
+        return;
+      }
       // The island's boot (the manifest, the answers to its asks) crosses while its gate proves the face; a verb waits.
       if (admitted || !waitsForAdmission(String((msg as { type?: unknown }).type))) send(msg as object, (transfer ?? []) as Transferable[]);
       else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
@@ -240,6 +261,6 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       return () => { port.removeEventListener("messageerror", fn); entry.detach?.(); errorListeners.delete(entry); };
     },
     // A tab never terminates the shared island; closing its port is the whole of leaving.
-    terminate: () => { try { send({ type: "session:close" }, []); } finally { port.close(); floorHandle?.terminate(); } },
+    terminate: () => { try { send({ type: "session:close" }, []); } finally { detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
   };
 }

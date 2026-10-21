@@ -204,8 +204,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const ownKey = daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey;
       let seatLedger: LarDoc | undefined;
       if (ownKey) {
-        // The vessel's synced roll answers the lift; the island's private ledger keeps counted acts.
-        try { seatLedger = (await findOrThrow(ctx.repo, edgeLedgerDocUrl(ownKey), "the vessel's seat-roll ledger")).doc(); } catch { /* no vessel roll keeps the lift owing */ }
+        // Read only a ready local roll. A missing roll keeps the lift owing while sync catches up.
+        const url = edgeLedgerDocUrl(ownKey);
+        const handle = (ctx.repo.handles as Record<string, DocHandle<LarDoc> | undefined>)[url.slice("automerge:".length)];
+        seatLedger = handle?.isReady() ? handle.doc() : undefined;
+        if (!seatLedger) void ctx.repo.find<LarDoc>(url).catch(() => undefined);
       }
       return boardDyadReader(
         ctx.repo, dyadLedger, restDyadLedger, ownKey,

@@ -618,14 +618,25 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const daemonAuthWithCrossroads = daemonAuth
     ? { ...daemonAuth, registerBags: [...new Set([...daemonAuth.registerBags, CROSSROADS_DOC_URI])] }
     : daemonAuth;
-  const replayLinks: Array<() => void> = [];
+  let firstCrossingRetired = false;
+  const retireFirstCrossing = (closePorts: boolean): void => {
+    if (firstCrossingRetired) return;
+    firstCrossingRetired = true;
+    detachOwned?.();
+    detachPrimary();
+    if (closePorts) { mainPort.close(); ownedChannel?.mainPort.close(); }
+  };
+  let retireReplayCrossing: (() => void) | undefined;
   const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] } => {
     const primary = first ? { mainPort, syncPort } : host.newSyncChannel();
     const owned = first ? ownedChannel : ownedDocument ? host.newOwnedSyncChannel!() : undefined;
     if (!first) {
       const detach = attachMessageChannelSync(repo, primary.mainPort);
       const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
-      replayLinks.push(() => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); });
+      // A fresh manifest takes the floor with one live crossing, retiring the ports it replaces.
+      retireFirstCrossing(true);
+      retireReplayCrossing?.();
+      retireReplayCrossing = () => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); };
     }
     const msg = mkManifest(DAEMON_BAG_ID, primary.syncPort, daemonRecipe, grants, coreHash, {
       ...(storage ? { storage } : {}),
@@ -765,9 +776,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         acked = false;
         if (!(err instanceof DisposedMidHandshake)) console.warn(`[daemon-vm] graceful shutdown ack failed — ${String(err)}; terminating anyway`);
       }
-      detachOwned?.();
-      detachPrimary();
-      for (const close of replayLinks.splice(0)) close();
+      retireFirstCrossing(false);
+      retireReplayCrossing?.();
+      retireReplayCrossing = undefined;
       worker.terminate();
       return { acked };
     })()),
@@ -776,9 +787,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // that stands waiting ends now, unacked.
       _down ??= Promise.resolve({ acked: false });
       _cutDown?.();
-      detachOwned?.();
-      detachPrimary();
-      for (const close of replayLinks.splice(0)) close();
+      retireFirstCrossing(false);
+      retireReplayCrossing?.();
+      retireReplayCrossing = undefined;
       worker.terminate();
     },
   };
