@@ -574,6 +574,12 @@ accepts neither until the cabal settles the fork. `lares nexus release <manifest
 lands a release (`nexus-release.ts`); `lares nexus promote open|sign` carries the approval between vaults. A herm carries
 the answer and signs nothing; a face accepts a release by a person's own act (`stable-founding-road` W26 slice 5).
 
+''THE LINEAGE RIDES THE RECORD.'' The record the porch serves is `{body, cid, seal, approval, lineage}`. The lineage is the
+charter's public epoch lineage from genesis through the release's epoch: the genesis epoch re-derives the Nexus AID,
+each step verifies, and the last epoch's seats form the roster. A herm and a browser therefore verify a release with
+no charter in hand (`floor-answer.ts`, `lararium-browser` `browser-floor-read.ts`). The flow map keeps its own pointer
+under the `flow-pointer` domain.
+
 <<~/ahu>>
 
 <<~ ahu #/distinction>>
@@ -684,6 +690,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fJ7T-O6e8iD_HoIexYkqQwyxxYhhpPVgkG_xh4sDqDY
+<<^ code="&#x0003;">>ni:///sha-256;hZ3JdcUlzrIxPUHR1kn28lc9uTdzft8UturX1Wk1hZc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,5 +1,5 @@
 // herm-mesh-witness — the decoding witness for docker-compose.mesh.yml. It pulls each hop's FLOW-map
-// through the SAME gate-native pull a herm's carriage holds (vesselCarriagePull → pullAndVerifyOracle: presents
+// through the SAME gate-native pull a herm's carriage holds (vesselCarriagePull → pullAndVerifyFlow: presents
 // the reader's place arm at the hop's floor gate, at the pin the reader's own board replica filed,
 // verifies the pointer signature, matches the content hash, then Automerge.loads the snapshot), enumerates
 // the dials the decoded map carries, and proves the source's announced dial crossed the relay chain to the

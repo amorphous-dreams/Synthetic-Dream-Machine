@@ -21,9 +21,11 @@ import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   FLOOR_RELEASE_SURFACE, assembleFloorRelease, crossroadsDocUrl, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc,
-  openFloorReleaseBody, readPromotionApproval, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  openFloorReleaseBody, readPromotionApproval, resolveFloor, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
 } from "@lararium/mesh";
+import { readNexusDoc } from "../nexus-doc.js";
+import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldSeatSigners } from "../held-quorum.js";
@@ -50,7 +52,7 @@ export async function runFloorReleaseStanding(opts: {
 }): Promise<FloorReleaseStanding & { readonly nexus: string }> {
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey);
   const board = await crossroadsBoard(opts.repo, core, opts.vesselKey);
-  const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: core.nexus, roster: core.roster, manifestBytesOf: opts.manifestBytesOf });
+  const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: core.nexus, manifestBytesOf: opts.manifestBytesOf });
   return { ...standing, nexus: core.nexus };
 }
 
@@ -62,6 +64,9 @@ export async function runFloorReleaseStanding(opts: {
 export async function runFloorRelease(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly manifestFile: string; readonly approval: unknown;
   readonly aid?: string; readonly vesselKey?: string;
+  /** This hearth's CAS dir. Present: the manifest is staged there, and the floor it names must stand WHOLE in it (the
+   *  manifest and both snapshots, each re-hashed) before a release names it, since the porch serves what this CAS holds. */
+  readonly casDir?: string;
 }): Promise<NexusReleaseResult> {
   let manifestBytes: Uint8Array;
   try { manifestBytes = new Uint8Array(readFileSync(opts.manifestFile)); }
@@ -72,11 +77,18 @@ export async function runFloorRelease(opts: {
     throw new NexusCabalError(`the approval names the surface "${approval.surface}"; a floor release takes an approval over the surface "${FLOOR_RELEASE_SURFACE}".`);
   }
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey);
+  const lineage = readNexusDoc(core.home)?.sealLineage;
+  if (!lineage || lineage.length === 0) throw new NexusCabalError("this vessel's charter carries no epoch lineage, so a release has none to carry.");
   const [steward] = heldSeatSigners(core.roster);
   if (steward === undefined) throw new NexusCabalError("this vessel holds no seat of the charter, so it seals no release.");
   const board = await crossroadsBoard(opts.repo, core, opts.vesselKey);
 
   const manifest = sha256HexBytesSync(manifestBytes);
+  if (opts.casDir !== undefined) {
+    writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
+    const whole = await resolveFloor(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!));
+    if ("refusal" in whole) throw new NexusCabalError(`the floor this manifest names does not stand whole in this hearth's CAS, so no release names it: ${whole.refusal} (${whole.reason}).`);
+  }
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
   // door cannot verify an older release (it holds this manifest's bytes alone), so it reads the structure; every
   // reader re-verifies every row before it counts one.
@@ -90,12 +102,12 @@ export async function runFloorRelease(opts: {
   if (head !== undefined && head.body?.manifest === manifest) throw new NexusCabalError("this manifest already stands as the chain's head release.");
   const prior = (head?.cid as string | undefined) ?? null;
 
-  const body = openFloorReleaseBody({ nexus: core.nexus, roster: core.roster, prior, manifest });
+  const body = openFloorReleaseBody({ nexus: core.nexus, epoch: core.roster.sealEpochCid, prior, manifest });
   const release = await assembleFloorRelease({
-    body, roster: core.roster, manifestBytes, approvers: [], approval,
+    body, lineage, manifestBytes, approvers: [], approval,
     steward: { signer: steward.verifyingKey, sign: steward.sign },
   });
-  const verdict = verifyFloorRelease({ record: release, nexus: core.nexus, roster: core.roster, manifestBytes });
+  const verdict = verifyFloorRelease({ record: release, nexus: core.nexus, manifestBytes });
   if (!verdict.ok) {
     throw new NexusCabalError(`the release counts nothing here: ${describe(verdict.reason)}`);
   }
@@ -108,7 +120,7 @@ function describe(reason: FloorReleaseRefusal): string {
     case "approval-below-class-threshold": return "the approval is short of the seats the high-impact bar takes; carry it to the next vault (`lares nexus promote sign`).";
     case "approval-bytes-differ":          return "the approval covers other bytes than this manifest file.";
     case "approval-class-below-surface":   return "the approval stands below the high-impact bar a release takes (the chartered classes hold the surface there).";
-    case "wrong-charter-epoch":            return "the approval or the charter stands at another epoch than this vessel's head.";
+    case "approval-wrong-charter-epoch":   return "the approval was signed at another charter epoch than this vessel's head; open a fresh one.";
     default:                               return reason;
   }
 }

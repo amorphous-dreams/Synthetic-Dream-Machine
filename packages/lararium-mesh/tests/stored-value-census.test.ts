@@ -38,7 +38,6 @@ const DOORS: Readonly<Record<string, string>> = {
 const EXEMPT: Readonly<Record<string, { readonly count: number; readonly reason: string }>> = {
   "packages/lararium-mesh/src/parallel-drafts.ts": { count: 1, reason: "reads the conflict operations beside the live record; every value it answers passes its own `plain`, which unwraps through the read door" },
   "packages/lararium-mesh/src/genesis-doc.ts": { count: 13, reason: "builds and reads the genesis SEED, which stands as plain data; the document it materializes wraps every record through `storedRecord`" },
-  "packages/lararium-web/src/main.ts": { count: 1, reason: "counts the titles of a pulled read-face and reads no record" },
   "tools/daemon-dvr-node-receipt.mjs": { count: 1, reason: "a recovery witness that plants one marker and asks only whether the title stands" },
 };
 

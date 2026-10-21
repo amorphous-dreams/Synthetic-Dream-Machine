@@ -14,8 +14,9 @@ import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   crossroadsDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
-  assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE,
+  assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
 } from "@lararium/mesh";
+import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -65,6 +66,26 @@ const release = (index: number, file: string, approval: unknown) =>
   withRoot(index, (repo) => runFloorRelease({ repo, sealHome: larSealHome(), manifestFile: file, approval }));
 const standing = (index: number, known: Map<string, Uint8Array>) =>
   withRoot(index, (repo) => runFloorReleaseStanding({ repo, sealHome: larSealHome(), manifestBytesOf: (cid) => known.get(cid) ?? null }));
+
+describe("a release names a floor this hearth holds whole", () => {
+  it("with a CAS dir, the manifest stages there and a floor missing a snapshot refuses before any row lands; the whole floor lands (CONTROL)", async () => {
+    process.env["LAR_ROOT"] = roots[0]!;
+    const cas = join(work, "cas");
+    const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "l" } } });
+    const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "r" } } });
+    const manifestBytes = floorManifestBytes({ format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid });
+    const file = join(work, "floor-manifest.json"); writeFileSync(file, manifestBytes);
+    const approval = await approve(file);
+    const go = () => withRoot(0, (repo) => runFloorRelease({ repo, sealHome: larSealHome(), manifestFile: file, approval, casDir: cas }));
+    writeCasEntriesFs([{ cid: lares.cid, bytes: lares.bytes }], cas);                                     // one snapshot alone
+    await expect(go()).rejects.toThrow(/does not stand whole in this hearth's CAS/);
+    expect(await standing(0, new Map([[sha256HexBytesSync(manifestBytes), manifestBytes]]))).toMatchObject({ standing: "absent" });
+    writeCasEntriesFs([{ cid: lararium.cid, bytes: lararium.bytes }], cas);                               // the whole floor
+    const landed = await go();
+    expect(landed.release.body.manifest).toBe(sha256HexBytesSync(manifestBytes));
+    expect(readCasBlobFromFs(landed.release.body.manifest, cas)).not.toBeNull();                          // the manifest stands in the CAS the porch serves
+  });
+});
 
 describe("a one-seat hearth publishes its floor release", () => {
   it("lands a release a reader folds as the chain's head; a second links to the first by prior", async () => {
@@ -119,14 +140,15 @@ describe("a one-seat hearth publishes its floor release", () => {
     await withRoot(0, async (repo) => {
       const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() })), "board:crossroads");
       const roster = foundingRoster(readNexusDoc(larSealHome()));
+      const lineage = readNexusDoc(larSealHome())!.sealLineage!;
       const chair = (await seatChairs([0])).hands[0]!;
       for (const m of [left, right]) {
         const approval = readPromotionApproval(await approve(m.file))!;
         const made = await assembleFloorRelease({
-          body: openFloorReleaseBody({ nexus: first.nexus, roster, prior: first.release.cid, manifest: m.cid }), roster, manifestBytes: m.bytes,
+          body: openFloorReleaseBody({ nexus: first.nexus, epoch: roster.sealEpochCid, prior: first.release.cid, manifest: m.cid }), lineage, manifestBytes: m.bytes,
           steward: chair, approvers: [], approval,
         });
-        expect(verifyFloorRelease({ record: made, nexus: first.nexus, roster, manifestBytes: m.bytes }).ok).toBe(true);
+        expect(verifyFloorRelease({ record: made, nexus: first.nexus, manifestBytes: m.bytes }).ok).toBe(true);
         board.change((d) => writeFloorRelease(d, made));
       }
     });

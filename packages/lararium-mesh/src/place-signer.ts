@@ -6,7 +6,7 @@
  * claims. The place KEL's own events are excepted: the founding card's key signs those.
  *
  * Each domain here already signs a floor record: the place's "I carry for this Nexus" seal, its floor pin at one
- * Nexus, the served oracle pointer, the raise challenge at the waking floor, and the finish a place signs when it
+ * Nexus, the served flow pointer, the raise challenge at the waking floor, and the finish a place signs when it
  * dials another place's gate (a herm pulling the carriage presents as a place, never as a face). A face presentation, a device
  * edge, a join, a sibling proof or a seat receipt names none of them, so a place signature cannot stand for one.
  *
@@ -16,12 +16,12 @@
 import * as ed25519 from "@noble/ed25519";
 import { ed25519 as edCurve } from "@noble/curves/ed25519.js";
 import { hex, utf8Bytes } from "./crypto.js";
-import { CARRIAGE_CARRIER_DOMAIN, GATE_PLACE_FINISH_DOMAIN, ORACLE_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN } from "./domains.js";
+import { CARRIAGE_CARRIER_DOMAIN, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN } from "./domains.js";
 
 const escapeRegex = (text: string): string => text.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&");
 const latin1 = (bytes: Uint8Array): string => Array.from(bytes, (b) => String.fromCharCode(b)).join("");
 
-/** `^D|`: the oracle pointer's joined string leads with its domain. */
+/** `^D|`: the flow pointer's joined string leads with its domain. */
 const joinedHead = (domain: string) => (image: Uint8Array): boolean => new RegExp(`^${escapeRegex(domain)}\\|`).test(latin1(image.subarray(0, domain.length + 1)));
 /** `<u32 len(D)>D`: the gate field encoding leads with the length-prefixed name. */
 const framedHead = (domain: string) => (image: Uint8Array): boolean => {
@@ -48,7 +48,7 @@ const jsonHead = (domain: string, lead: string) => (image: Uint8Array): boolean 
 const FLOOR_HEADS: ReadonlyArray<readonly [string, (image: Uint8Array) => boolean]> = Object.freeze([
   [CARRIAGE_CARRIER_DOMAIN, jsonHead(CARRIAGE_CARRIER_DOMAIN, "")],
   [PLACE_FLOOR_PIN_DOMAIN, jsonHead(PLACE_FLOOR_PIN_DOMAIN, '"digest":"[0-9a-f]{64}",')],
-  [ORACLE_POINTER_DOMAIN, joinedHead(ORACLE_POINTER_DOMAIN)],
+  [FLOW_POINTER_DOMAIN, joinedHead(FLOW_POINTER_DOMAIN)],
   [RAISE_CHALLENGE_DOMAIN, jsonHead(RAISE_CHALLENGE_DOMAIN, '"epoch":(?:0|[1-9][0-9]*),')],
   [GATE_PLACE_FINISH_DOMAIN, framedHead(GATE_PLACE_FINISH_DOMAIN)],
 ]);

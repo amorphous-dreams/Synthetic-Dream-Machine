@@ -101,14 +101,26 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 
 !! What retires, slice by slice (the o-takiage census)
 
-* `lares` and `lararium` in every vessel's `OWN_GROUND` (`register-bags.ts`), and `mintLaresIfAbsent` / `mintLarariumIfAbsent` on a vessel outside the cabal (`genesis-artifact.ts`): slices 2 and 3.
+* RETIRED at slice 3: `lares` and `lararium` in every vessel's ground (`register-bags.ts` registers them only where the keel named canon), `mintLaresIfAbsent` / `mintLarariumIfAbsent` and `reconcileWellKnownTiddlers` (`genesis-artifact.ts`), and every catalog row for either bag. The founding mints and registers them in the Kahu realm (`kahu-realm.ts`).
 * The shared document's per-vessel rows: the system pointers, `registerCrossroadsInOracle`, `realm-plane.ts`'s realm pointer and steward nym: slice 2.
 * recipe-watch's oracle loop over the system slots (`recipe-watch.ts`): slice 2, which leaves it nothing to follow.
 * `W21`'s lares-pointer patch at reconcile and the oracle crossing of `device-admit.ts` `admitCanonDocs`: slice 2.
-* `OraclePointer` and `ORACLE_POINTER_DOMAIN`: slice 4.
-* Canon lines that name "the shared floor CID" (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`) and the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki": the slice whose code makes each line true.
+* RETIRED at slice 4: `OraclePointer`, `ORACLE_POINTER_DOMAIN`, `snapshotPublicOracle` and the node's oracle floor serve. The floor answers by the release at the porch; the flow map keeps its own pointer under `FLOW_POINTER_DOMAIN` (`flow-pointer`), and `oracle-substrate`, `oracle-read-client` and `oracle-read-face` live on as `flow-substrate`, `flow-read-client` and `flow-read-face`. Left for an o-takiage pass: the route and gate names that still say "oracle" (`ORACLE_SOCKET_ROUTE`, `OracleFloorGate`, `OracleGateArgs`), which name the flow map's socket and not a pointer.
+* Canon lines that named "the shared floor CID" now describe the release (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`, `genesis-doc#/the-oracle-pointer`, `disk-projection`, `dreamnet-architecture`); the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki" follow the slice whose code makes each line true.
 
 ''The interim cure stays out.'' The lane's recipe-watch hold (`--w26-own-canon`, commit `d1983aa75`) keeps a system wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that row's measurement.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed beside the slices
+
+* ''A browser Kahu hand.'' The browser composes no board reader and reads as a stranger, so it fails closed on every system bag. A browser vessel holding the Kahu face rides Wave C's face context (`K15` step 6), which carries the charter and the board to it.
+* ''A sibling device of a seat-holding face'' reads the floor until that same context carries the charter and the board to it; `device-admit.ts` states the law.
+* ''The carriage's canon names'' (`device-admit.ts` `admitCanonDocs`, the browser's `hearth-canon`) read catalog rows nothing writes now; they retire with `W21`'s rest.
+* ''The floor card's freshness.'' The browser verifies the lineage, the head release and the floor bytes from the Nexus AID alone (`browser-floor-read`). The AID rides the same-origin trust line, and the signed card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
+* ''The accept act'' (slice 5) records no acceptance until a face's D row stands (Wave C's FCK fence); the browser's read records none.
 
 <<~/ahu>>
 
@@ -140,6 +152,6 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y0Xrz-Evr9TMDoT6j0s8ALicjNKCJce_0E45IDAteY4
+<<^ code="&#x0003;">>ni:///sha-256;gOcQ2MU9-bk9a_fcLv8QTZa4_SXhsoEEhdj9FSBFA9E
 
 <<^ code="&#x0004;" -> to="?">>

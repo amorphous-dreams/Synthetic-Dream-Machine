@@ -11,8 +11,8 @@ import * as A from "@automerge/automerge";
 import * as ed25519 from "@noble/ed25519";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import { channelSessionTable, type GateSessionChannel } from "../src/gate-session-channel.js";
-import { buildOraclePointer, exportOracleSnapshot } from "../src/oracle-substrate.js";
-import { ORACLE_POINTER_FRAME, ORACLE_SOCKET_ROUTE, pullAndVerifyOracle, type PlaceOraclePresentation } from "../src/oracle-read-client.js";
+import { buildFlowPointer, exportFlowSnapshot } from "../src/flow-substrate.js";
+import { FLOW_POINTER_FRAME, ORACLE_SOCKET_ROUTE, pullAndVerifyFlow, type PlaceOraclePresentation } from "../src/flow-read-client.js";
 import {
   filePlaceFloorPins, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard, readPlaceFloorPin, signPlaceFloorPin, writePlaceFloorPin,
 } from "../src/place-floor-pin.js";
@@ -28,13 +28,13 @@ const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 /** The herm: a floor gate at `w`'s Nexus serving one FLOW map signed by its vessel key, as the node face serves it. */
 async function herm(w: World, serve: (send: () => void) => void = (send) => send()) {
-  const snap = await exportOracleSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@oracle/node/alpha" } } }));
-  const ptr = await buildOraclePointer({ snapshot: snap, parents: [], signerSeed: HERM_SEED });
+  const snap = await exportFlowSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@oracle/node/alpha" } } }));
+  const ptr = await buildFlowPointer({ snapshot: snap, parents: [], signerSeed: HERM_SEED });
   const served = { count: 0 };
   const gate = gateOver(w, channelSessionTable((channel: GateSessionChannel) => {
     served.count++;
     serve(() => {
-      channel.send("session", enc(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: ptr })));
+      channel.send("session", enc(JSON.stringify({ type: FLOW_POINTER_FRAME, pointer: ptr })));
       channel.send("session", snap.bytes);
     });
   }));
@@ -55,7 +55,7 @@ async function pull(w: World, h: Awaited<ReturnType<typeof herm>>, presentation:
   const urls: string[] = [];
   const { dial, accepted } = wire();
   const accepting = accepted.then((socket) => h.gate.accept(socket));
-  const pulling = pullAndVerifyOracle("http://herm.test", {
+  const pulling = pullAndVerifyFlow("http://herm.test", {
     pins, hearth: h.key, nexus: w.pin.nexus, presentation, audience: AUDIENCE, deadlines, verifyingKey: h.key,
     dialSocket: (url) => { urls.push(url); return dial; },
   });

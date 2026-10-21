@@ -13,10 +13,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportOracleSnapshot, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
+import { exportFlowSnapshot, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
-import { mountOracleReadFace } from "../src/oracle-read-face.js";
+import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
 import { floorGates, presenter, pullFloor } from "./oracle-floor-rig.js";
@@ -79,8 +79,8 @@ describe("the oracle face keeps silence", () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
-    const face = await mountOracleReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never),
+    const face = await mountFlowReadFace({
+      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
     });
     const origin = await listen(server);
     const w = rig.worlds[0]!;
@@ -129,7 +129,7 @@ describe("the oracle face keeps silence", () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"]);            // a PRIVATE Nexus: the world's default posture
-    const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
+    const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
     const origin = await listen(server);
     const w = rig.worlds[0]!;
     const p = await presenter(w, "reader");

@@ -67,6 +67,7 @@ import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
+import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
@@ -303,7 +304,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // THE FLOOR RELEASE (w26-floor-lane#/the-slices): one porch body per Nexus, sealed by a seat held here, the approval attached.
     "nexus-release": (args) => answer("nexus-release", async () => ({
       ...(await runFloorRelease({
-        repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], ...opt("aid", str(args["aid"])),
+        repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], casDir: casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
       })),
     })),
 

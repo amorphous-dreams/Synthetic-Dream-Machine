@@ -18,7 +18,7 @@ import * as ed from "@noble/ed25519";
 import { ed25519 as curveEd } from "@noble/curves/ed25519.js";
 import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider } from "../src/crypto.js";
 import { acceptEd25519Key, readEd25519 } from "../src/ed25519-door.js";
-import { DEVICE_DELEGATION_DOMAIN, DYAD_ID_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, ORACLE_POINTER_DOMAIN, RE_ANCHORING_DOMAIN } from "../src/domains.js";
+import { DEVICE_DELEGATION_DOMAIN, DYAD_ID_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, FLOW_POINTER_DOMAIN, RE_ANCHORING_DOMAIN } from "../src/domains.js";
 import { realmBagRegistrationCounts, signRealmBagRegistration } from "../src/realm-bag.js";
 import {
   carriageEntryCounts, signCarriageContract, signCarriageQuorum, signCarrierContract, verifyCarriageConsent, verifyCarrierContract,
@@ -30,7 +30,7 @@ import { computePluginsCid } from "../src/genesis-doc.js";
 import { signPluginOffering, verifyPluginOffering, type OfferedBlob } from "../src/plugin-offering.js";
 import { signRealmFeed, verifyRealmFeedSlot } from "../src/cabal-realm-clock.js";
 import { signWitness, verifyWitnessSig } from "../src/persistence-keel.js";
-import { buildOraclePointer, exportOracleSnapshot, verifyOraclePointer } from "../src/oracle-substrate.js";
+import { buildFlowPointer, exportFlowSnapshot, verifyFlowPointer } from "../src/flow-substrate.js";
 import { mintPersonaInception, mintPersonaRotation, verifyPersonaKelFull, personaPrefixOf, personaEventCidOf, type PersonaKelEvent } from "../src/persona-kel.js";
 import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
@@ -142,15 +142,15 @@ bothHands("realm feed slot (verifyRealmFeedSlot)", async (hand) => {
 bothHands("witness edge (verifyWitnessSig)", async (hand) =>
   verifyWitnessSig("claim-cid", await signWitness({ claimCid: "claim-cid", signer: hand.key, frontier: "f", polarity: 1, sign: hand.sign })));
 
-describe("oracle pointer (verifyOraclePointer)", () => {
+describe("flow pointer (verifyFlowPointer)", () => {
   // The builder derives its key from a seed, so the forgery re-derives the act cid over the identity key by hand.
-  const pointer = async () => buildOraclePointer({ snapshot: await exportOracleSnapshot(A.from({ tiddlers: {} })), parents: [], signerSeed: seed(1) });
-  test("CONTROL: a built pointer verifies", async () => { expect(await verifyOraclePointer(await pointer())).toEqual({ ok: true }); });
+  const pointer = async () => buildFlowPointer({ snapshot: await exportFlowSnapshot(A.from({ tiddlers: {} })), parents: [], signerSeed: seed(1) });
+  test("CONTROL: a built pointer verifies", async () => { expect(await verifyFlowPointer(await pointer())).toEqual({ ok: true }); });
   test("nobody signs for a small-order publisher", async () => {
     const p = await pointer();
-    const actCid = await sha256Hex(utf8Bytes([ORACLE_POINTER_DOMAIN, p.cid, p.heads.join(","), "", "", IDENTITY_KEY].join("|")), defaultCryptoProvider);
+    const actCid = await sha256Hex(utf8Bytes([FLOW_POINTER_DOMAIN, p.cid, p.heads.join(","), "", "", IDENTITY_KEY].join("|")), defaultCryptoProvider);
     const forged = { ...p, pub: IDENTITY_KEY, actCid, sig: NOBODYS_SIGNATURE };
-    expect(await verifyOraclePointer(forged)).toEqual({ ok: false, reason: "signature verify failed" });
+    expect(await verifyFlowPointer(forged)).toEqual({ ok: false, reason: "signature verify failed" });
   });
 });
 

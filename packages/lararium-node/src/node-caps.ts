@@ -45,13 +45,13 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type LeafIdentity, type MeshPalaceDoc, type OraclePullResult,
+  type LeafIdentity, type MeshPalaceDoc, type FlowPullResult,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
   type DaemonCapDeps, type VesselDaemonVm,
 } from "@lararium/tw5";
-import { mountFlowMapReadFace, type OracleReadFace, type OracleGateArgs } from "./oracle-read-face.js";
+import { mountFlowMapReadFace, type FlowReadFace, type OracleGateArgs } from "./flow-read-face.js";
 import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { BulbArtifact } from "./bulb.js";
@@ -106,7 +106,7 @@ export function flowMapReadFaceCap(deps: {
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
     },
-    dispose: (face) => (face as OracleReadFace).dispose(),
+    dispose: (face) => (face as FlowReadFace).dispose(),
   };
 }
 
@@ -128,7 +128,7 @@ export function bulbCap(deps: {
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
       ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
     }),
-    dispose: (face) => (face as OracleReadFace).dispose(),
+    dispose: (face) => (face as FlowReadFace).dispose(),
   };
 }
 
@@ -158,7 +158,7 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly identity?:      LeafIdentity;
   /** The gate-native pull of a peer's public FLOW-map (`gateNativeCarriagePull`): one floor dial per (peer, Nexus) at the pin
    *  this Herm's boards carried, presenting its own carriage contract. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
-  readonly pullOracle?:    (peer: string, publisherKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
+  readonly pullOracle?:    (peer: string, publisherKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   readonly pullIntervalMs?: number;
   /** The HELD bulb this Herm serves by cid over the public floor. Absent → no `/bulb/*` face (a Herm with no
    *  genesis to hand). Present → a stranger pulls it + kindles their OWN sovereign hearth (serve fire, never key). */

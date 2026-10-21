@@ -16,7 +16,7 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "../src/base-doc.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
-import { verifyOracleSnapshotBytes } from "../src/oracle-substrate.js";
+import { verifyFlowSnapshotBytes } from "../src/flow-substrate.js";
 import {
   CARRIAGE_CAPS, VESSEL_CAPS, isCap, isCarriageCap, isVesselCap,
   dialEntryToRecord, recordToDialEntry,
@@ -149,9 +149,9 @@ describe("the public read-face (Two-Faced Substrate)", () => {
       dialEntryToRecord({ bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "d".repeat(64), endpoint: "ws://relay/x", scale: "nexus" }, AUTH),
     ]);
     const snap = await snapshotPublicFlowMap(full);
-    expect(await verifyOracleSnapshotBytes(snap.bytes, snap.cid)).toBe(true);
+    expect(await verifyFlowSnapshotBytes(snap.bytes, snap.cid)).toBe(true);
     const tampered = new Uint8Array(snap.bytes); tampered[tampered.length - 1] ^= 0xff;
-    expect(await verifyOracleSnapshotBytes(tampered, snap.cid)).toBe(false);
+    expect(await verifyFlowSnapshotBytes(tampered, snap.cid)).toBe(false);
   });
 });
 
@@ -175,7 +175,7 @@ describe("the live MeshPalace surface", () => {
     expect(Object.keys(palace.publicProjection().tiddlers)).toHaveLength(2);
 
     const snap = await palace.exportPublicSnapshot();
-    expect(await verifyOracleSnapshotBytes(snap.bytes, snap.cid)).toBe(true);
+    expect(await verifyFlowSnapshotBytes(snap.bytes, snap.cid)).toBe(true);
   });
 });
 

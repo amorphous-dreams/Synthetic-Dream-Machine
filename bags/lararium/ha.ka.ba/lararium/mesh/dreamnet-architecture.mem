@@ -348,7 +348,7 @@ their own CID, with byte identity fixed by the digest (the ''true-name'' registe
 * ''plugin-blobs'' — the engine's extensions, content-addressed, composed atop the engine by CID.
 * ''byte-blobs'' — arbitrary sovereign payloads (attachments, media, sealed artifacts), each named by content.
 
-''Served by content address.'' The bulb serves the exact genesis seed bytes at `/bulb/<cid>.bin`; its CID names those bytes. The oracle read-face projects only the seed-named system rows and blob descriptors as a history-free content-addressed snapshot, with the seed CID beside the snapshot CID. LAW THE BUILD OWES: one porch answer per Nexus names that floor CID; the Nexus's Kahu steward signs it, and a herm carries and presents it without signing. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
+''Served by content address.'' The bulb serves the exact genesis seed bytes at `/bulb/<cid>.bin`; its CID names those bytes. The floor of system canon answers by the Nexus's release at the porch (`/floor/<Nexus AID>`, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/floor-release): a seated Kahu key seals one body that names the floor manifest CID, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing. The head release's manifest and its two snapshots serve by CID at `/cas/<cid>`, and a reader re-hashes each. No tender name reaches a stranger; the seal and the approval carry the authority.
 
 Two tiers cross the read/sealed cut:
 
@@ -637,6 +637,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iZlGnVbPhJ2YwwBOabeBoatkYZwy_9HI6PWyEEAY4aM
+<<^ code="&#x0003;">>ni:///sha-256;tEzQiJC1d1WFZn_U8dbfoF3BKntWqaJXdpD0ptZPHlc
 
 <<^ code="&#x0004;" -> to="?">>

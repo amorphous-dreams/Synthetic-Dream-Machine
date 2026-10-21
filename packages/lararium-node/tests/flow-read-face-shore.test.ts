@@ -1,7 +1,8 @@
 /**
- * oracle-read-face-shore — the oracle read-face serves the genesis-named FLOOR and nothing else: the
- * titles and blob rows the seed names, at their live values, as ONE change with no history. A vessel's
- * private keys and the values they superseded never reach a proven dialer.
+ * flow-read-face-shore — the read-face serves what its export shore projects and nothing else: the rows the
+ * projection names, at their live values, as ONE change with no history. A vessel's private keys and the values they
+ * superseded never reach a proven dialer, and a mount holding no export shore refuses (no raw document serves by
+ * omission). The floor of system canon no longer rides this face: the Nexus's release names it by CID.
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  */
 import { afterEach, describe, expect, test } from "vitest";
@@ -12,14 +13,13 @@ import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
 import {
-  materializeGenesisDoc, snapshotPublicOracle,
+  materializeGenesisDoc, exportFlowSnapshot, pinnedDoc, plainRecord,
   type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
-import { mountOracleReadFace } from "../src/oracle-read-face.js";
+import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { floorGates, presenter, pullFloor as pullFromFloor } from "./oracle-floor-rig.js";
 
 const SEED   = new Uint8Array(32).fill(7);
-const SEED_CID = "5".repeat(64);
 
 const GENESIS = {
   format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16),
@@ -53,7 +53,7 @@ function liveOracle(repo: Repo): DocHandle<LarDoc> {
   return handle;
 }
 
-async function pullFloor(mount: (args: Parameters<typeof mountOracleReadFace>[0]) => Promise<{ dispose: () => void }>) {
+async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) => Promise<{ dispose: () => void }>) {
   const repo = new Repo({ sharePolicy: async () => true });
   const handle = liveOracle(repo);
   const server = createServer();
@@ -74,11 +74,15 @@ async function pullFloor(mount: (args: Parameters<typeof mountOracleReadFace>[0]
   return { pulled, logs };
 }
 
-/** What main.ts mounts: the seed's floor, exported through the shore. */
-const mountAsMain: Parameters<typeof pullFloor>[0] = (a) =>
-  mountOracleReadFace({ ...a, exportSnapshot: (doc) => snapshotPublicOracle(doc as LarDoc, GENESIS, SEED_CID) });
+/** A shore that projects the seeded rows alone, each at its live value, as one pinned change. */
+const projectSeeded = async (doc: LarDoc) => {
+  const tiddlers: Record<string, unknown> = {};
+  for (const title of Object.keys(GENESIS.tiddlers).sort()) if (doc.tiddlers?.[title] !== undefined) tiddlers[title] = plainRecord(doc.tiddlers[title]!);
+  return exportFlowSnapshot(pinnedDoc({ schemaVersion: doc.schemaVersion, blobs: {}, tiddlers } as unknown as Record<string, unknown>));
+};
+const mountAsMain: Parameters<typeof pullFloor>[0] = (a) => mountFlowReadFace({ ...a, exportSnapshot: (doc) => projectSeeded(doc as LarDoc) });
 
-describe("the oracle read-face serves the genesis floor alone", () => {
+describe("the read-face serves its export shore alone", () => {
   test("the pulled doc holds exactly the seed's keys, one change, and no superseded bytes", async () => {
     const { pulled } = await pullFloor(mountAsMain);
     expect(pulled.ok, pulled.reason).toBe(true);
@@ -90,12 +94,7 @@ describe("the oracle read-face serves the genesis floor alone", () => {
     expect(wire).not.toContain("private-daemon-url");
   });
 
-  test("the mount logs the seed cid beside the snapshot cid", async () => {
-    const { logs } = await pullFloor(mountAsMain);
-    expect(logs.some((l) => l.includes(`seed=${SEED_CID.slice(0, 12)}`) && l.includes("cid="))).toBe(true);
-  });
-
   test("a mount holding no exportSnapshot refuses; no raw document serves by omission", async () => {
-    await expect(pullFloor((a) => mountOracleReadFace({ ...a, exportSnapshot: undefined as never }))).rejects.toThrow(/exportSnapshot/);
+    await expect(pullFloor((a) => mountFlowReadFace({ ...a, exportSnapshot: undefined as never }))).rejects.toThrow(/exportSnapshot/);
   });
 });

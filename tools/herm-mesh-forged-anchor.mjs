@@ -55,7 +55,7 @@ try {
     mesh.filePlaceFloorPins(index, mesh.placeFloorPinsFromBoard(board), {
       nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.ORACLE_SOCKET_ROUTE, carriers,
     });
-    const present = (arm) => mesh.pullAndVerifyOracle(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
+    const present = (arm) => mesh.pullAndVerifyFlow(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
       pins: index, hearth: publisher, nexus: Buffer.from(bundle.aid, "utf8").toString("hex"),
       presentation: { kind: "place", placeKey: own, sign: async (bytes) => mesh.hexToBytes(await signOwn(bytes)), arm },
       audience: mesh.DAEMON_BAG_ID, deadlines: pins.dialDeadlines(), verifyingKey: publisher,

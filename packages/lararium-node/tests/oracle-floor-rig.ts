@@ -1,7 +1,7 @@
 /**
  * oracle-floor-rig — the two ends of "peers prove first" for suites that stand a real oracle face on its floor
  * gates: the gates the face is handed (one world per Nexus, a session table of the face's own) and a reader that
- * dials one of them through the house's one dialer (`pullAndVerifyOracle`).
+ * dials one of them through the house's one dialer (`pullAndVerifyFlow`).
  *
  * It names no frame of any handshake. A suite holds a world (its pin and its posture), a presenter (a face's
  * certificate, signer and arm) and a verdict.
@@ -10,7 +10,7 @@
  */
 import WsSocket from "ws";
 import {
-  pullAndVerifyOracle, ed25519VerifyingKeyFromSeed, ORACLE_SOCKET_ROUTE, type FederationPosture, type GateSessionTable,
+  pullAndVerifyFlow, ed25519VerifyingKeyFromSeed, ORACLE_SOCKET_ROUTE, type FederationPosture, type GateSessionTable,
 } from "@lararium/mesh";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { world, presenter, place, AUDIENCE, type World, type Presenter, type Place } from "../../lararium-mesh/tests/face-gate-fixture.js";
@@ -49,7 +49,7 @@ export async function pullFloor<T = unknown>(
   base: string, w: World, p: Presenter,
   over: { arm?: Presenter["arm"] | null; publisherSeed: Uint8Array; deadlineMs?: number },
 ) {
-  return pullAndVerifyOracle<T>(base, {
+  return pullAndVerifyFlow<T>(base, {
     pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { certificate: p.certificate, signer: p.signer, arm: over.arm === undefined ? p.arm : over.arm, history: p.history },
@@ -60,7 +60,7 @@ export async function pullFloor<T = unknown>(
 /** A gate-native pull of a peer's oracle, in the shape a carriage is handed (`pullOracle`): the peer's endpoint and
  *  its publisher key in, the verified pull out. Every peer is dialed at `w`'s floor pin as presenter `p`. */
 export function oraclePuller<T = unknown>(w: World, p: Presenter, over: { arm?: Presenter["arm"] | null } = {}) {
-  return (peer: string, publisherKey: string) => pullAndVerifyOracle<T>(peer, {
+  return (peer: string, publisherKey: string) => pullAndVerifyFlow<T>(peer, {
     pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { certificate: p.certificate, signer: p.signer, arm: over.arm === undefined ? p.arm : over.arm, history: p.history },
@@ -74,7 +74,7 @@ export async function pullFloorAsPlace<T = unknown>(
   base: string, w: World, pl: Place,
   over: { arm?: Place["arm"] | null; publisherSeed: Uint8Array; deadlineMs?: number },
 ) {
-  return pullAndVerifyOracle<T>(base, {
+  return pullAndVerifyFlow<T>(base, {
     pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { kind: "place", placeKey: pl.key, sign: pl.sign, arm: over.arm === undefined ? pl.arm : over.arm },

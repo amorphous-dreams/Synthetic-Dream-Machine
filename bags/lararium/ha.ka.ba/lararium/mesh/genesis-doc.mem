@@ -47,11 +47,9 @@ The shipped genesis ''never'' takes the form of an Automerge binary carrying byt
 
 !! The `@oracle` — the shared floor named by its seed
 
-The genesis seed names the shared system floor and its exact rows. The public read-face projects those rows and blob descriptors alone as a history-free content-addressed snapshot; the snapshot carries the seed CID beside its own CID. The floor carries no document history across the read-face.
+The genesis seed names the shared system floor: a manifest CID that names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs (`genesis-cid-floor`). `@oracle` mounts that floor read-only under every recipe, and no pointer signs it. Engine or grammar changes take a new seed and a new floor as one bake.
 
-The Kahu Plane road owes a frozen floor address derived from the seed CID and a no-writer rule. Engine or grammar changes take a new seed and a new floor as one bake.
-
-LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage.
+Each later floor reaches a Nexus's vessels by that Nexus's release: one porch answer per Nexus names the Nexus AID, the charter epoch, the release before it and the floor manifest CID, a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/floor-release). No tender name reaches a stranger; the seal and the approval carry the authority.
 
 <<~/ahu>>
 
@@ -59,11 +57,11 @@ LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived W
 
 !! Seed address — the floor derives from its genesis CID
 
-The Kahu Plane road owes a frozen floor address derived from the genesis seed CID and a no-writer rule. The seed names its exact rows and CAS inventory; the public read-face projects those rows alone without Automerge history.
+The seed names its exact rows and CAS inventory, and the floor manifest names the snapshots by CID, so the floor stays a pure function of its content with no Automerge history.
 
-The WHO board address derives from the Nexus key. LAW THE BUILD OWES: one porch answer names that address and the floor CID per Nexus; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the signer shape, and R-WIRE owes answer carriage.
+The WHO board address derives from the Nexus key, and the porch answer (`/floor/<Nexus AID>`) rides the Nexus's crossroads board.
 
-Per-vessel daemon and face addresses resolve from that vessel's bootstrap. Per-vessel `lares` and `lararium` document pointers still ride `@oracle`; bootstrap/catalog relocation remains owed.
+Per-vessel daemon and face addresses resolve from that vessel's bootstrap. The live `lares` and `lararium` documents rest in the Kahu realm as realm bags, held only by a vessel the Kahu cabal admitted, and no `@oracle` or catalog row names either.
 
 <<~/ahu>>
 
@@ -203,6 +201,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eVRRb_N8O6kuVzsMqYGsH4fDbrjJ1Gsr2j4h2KpVZsc
+<<^ code="&#x0003;">>ni:///sha-256;ZZwLmEz59UtH5RYdUGkujgAvdRfbG15VEoTLWwtx5X4
 
 <<^ code="&#x0004;" -> to="?">>
