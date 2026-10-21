@@ -31,4 +31,10 @@ export interface CapabilityVerifyResult {
 
 export interface CapabilityVerifier {
   verify(args: CapabilityVerifyArgs): Promise<CapabilityVerifyResult>;
+  /**
+   * A verifier that carries the Kahu predicate also answers it for a bag a routed verb names INSIDE its args (the
+   * `wiki-act` envelope carries the real destination and source in `args.args`, where `verify`'s bag derivation
+   * never looks). Throws a `kahu-reach` refusal for a system canon bag the hand's cabal does not reach.
+   */
+  kahuReach?(bagUrl: string, act: string): Promise<void>;
 }

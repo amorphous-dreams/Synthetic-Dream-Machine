@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
+import { isSystemCanonBag, plainRecordOrNull, requireKahuReach } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -222,6 +222,9 @@ export interface ActionHandlerOptions {
      *  resolver — the door a promotion MOVE out of `wikis/<slug>/working` rides. Absent = the
      *  registry planes alone. */
     slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
+    /** A system canon bag's LIVE document, which rests in the Kahu realm (no registry plane names it). Reading it asks
+     *  nothing; every write already cleared `requireKahuReach` before access resolves. */
+    systemCanonUrl?: (bag: string) => Promise<string | null>;
   };
   /**
    * Register a freshly-minted bag's Keyhive Document + delegate admin to the
@@ -256,6 +259,12 @@ export interface ActionHandlerOptions {
    * source). Absent → a stranger: a system bag refuses (fail closed). A copy OUT of canon asks nothing.
    */
   readonly kahuReach?: KahuReachSource;
+  /**
+   * True where the keyholder island's verify-then-delegate gate has ALREADY asked the Kahu predicate for every system
+   * bag this verb names (`wiki-act` into a wiki island: `routedInnerBags`). The wiki island holds no board and no
+   * sentinel, so it trusts that gate and asks nothing; any other composition leaves this unset and asks itself.
+   */
+  readonly kahuReachClearedAtGate?: boolean;
 }
 
 /**
@@ -304,6 +313,15 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
           }
         }
         if (!store && held.length > 0) causes.set(bag, held);
+      }
+      // A system canon bag (`lares`, `lararium`): its live document rests in the Kahu realm, named by the realm's bag row.
+      if (!store && reach.systemCanonUrl && isSystemCanonBag(bag)) {
+        const url = await reach.systemCanonUrl(bag).catch(() => null);
+        const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
+          causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
+          return null;
+        }) : null;
+        store = handle ? new AutomergeDocStore(handle, bag) : null;
       }
       // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
       // doc its island mounts; reached by access, never mounted here.
@@ -436,8 +454,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
 
     // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in system canon.
-    await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
-    if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
+    if (opts.kahuReachClearedAtGate !== true) {
+      await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
+      if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
+    }
 
     if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag) && args["seed-door"] !== "founding") {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);

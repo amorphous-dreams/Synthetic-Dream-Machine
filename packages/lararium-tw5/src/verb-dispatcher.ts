@@ -57,7 +57,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, deriveRoutedCap } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -261,12 +261,8 @@ export class VerbDispatcher {
       // real verifier exists; a pre-sovereign/test island (no verifier)
       // routes as before.
       if (this.opts.verifier) {
-        const { access, bagUrl } = deriveRoutedCap(invocation);
-        const proof = await this.opts.verifier.verify({ presenter: this.opts.presenterOf?.(invocation) ?? invocation.requestedBy, bagUrl, access,
-          ...(this.opts.localOf?.(invocation) ? { channel: "local" as const } : {}) });
-        if (!proof.ok) {
-          throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
-        }
+        await gateRoutedVerb(invocation, this.opts.verifier, this.opts.presenterOf?.(invocation) ?? invocation.requestedBy,
+          this.opts.localOf?.(invocation) === true);
       }
       return this.opts.routeFn(invocation);
     }

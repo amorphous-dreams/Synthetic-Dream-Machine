@@ -95,6 +95,16 @@ Nexus's realm doc) never keys on it, so the swap moves no data. Every consumer r
 never through a literal or a persona-zero lookup: the founding's admission (`landFoundingAdmission`), the daemon
 island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahuReach`).
 
+''THE LINEAGE RIDES THE RECORD, NEVER THE CARD.'' The release record and the porch answer carry the charter's epoch lineage, so a herm and a browser verify a release holding the Nexus AID alone. A card holds 4096 characters and the lineage self-certifies against the AID, so the card stays small. The carrier changes nothing about trust: the AID that anchors the lineage comes from the card or the genesis CID the reader already pins, never from the same answer, and an answer self-consistent for another AID refuses (`foreign-nexus`).
+
+''THE WIKI ISLAND TRUSTS THE GATE.'' A verb routed into a wiki island (`lares act --in-wiki`, `wiki-act`) carries its real
+destination and source inside `args.args`, where the gate's cap derivation never looked. The keyholder island's
+verify-then-delegate gate now asks the Kahu predicate for each system bag the envelope names (`routedInnerBags`,
+`CapabilityVerifier.kahuReach`), before it routes. The wiki island holds no board and no sentinel, so its action reactors
+run with `kahuReachClearedAtGate` and ask nothing again. The flag is a composition option set in code at the island's behavior, never a field of the envelope, so nothing a caller sends lifts it; every other composition leaves it unset and asks itself (`gateRoutedVerb`, `kahu-reach-gate-envelope.test`).
+The live canon documents reach every reader through the realm's standing registration (`realmStandingDocUrl`): the
+action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library bag by `libraryDocUrl`.
+
 <<~/ahu>>
 
 <<~ ahu #/what-retires>>
@@ -117,7 +127,7 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 !! Owed beside the slices
 
 * ''A browser Kahu hand.'' The browser composes no board reader and reads as a stranger, so it fails closed on every system bag. A browser vessel holding the Kahu face rides Wave C's face context (`K15` step 6), which carries the charter and the board to it.
-* ''A sibling device of a seat-holding face'' reads the floor until that same context carries the charter and the board to it; `device-admit.ts` states the law.
+* ''A sibling device of a seat-holding face'' (the row beside the browser Kahu hand). A joined device is a sibling of the Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on it. Today it composes no board source, reads as a stranger and draws `kahu-reach` on a system bag: a missing source, not the law. `e2e/meme-two-vessel-bag` step eight keeps the law's expectation (B promotes into its own lares book) as a `test.fails` named for this row, so it turns red the day the row lands and the lander flips it; `device-admit.ts` states the law.
 * ''The carriage's canon names'' (`device-admit.ts` `admitCanonDocs`, the browser's `hearth-canon`) read catalog rows nothing writes now; they retire with `W21`'s rest.
 * ''The floor card's freshness.'' The browser verifies the lineage, the head release and the floor bytes from the Nexus AID alone (`browser-floor-read`). The AID rides the same-origin trust line, and the signed card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
 * ''The accept act'' (slice 5) records no acceptance until a face's D row stands (Wave C's FCK fence); the browser's read records none.
@@ -152,6 +162,6 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gOcQ2MU9-bk9a_fcLv8QTZa4_SXhsoEEhdj9FSBFA9E
+<<^ code="&#x0003;">>ni:///sha-256;YN_C6z5tWdHjEgzgELnQhlPBaEIfWzJD10lFegUUNnI
 
 <<^ code="&#x0004;" -> to="?">>

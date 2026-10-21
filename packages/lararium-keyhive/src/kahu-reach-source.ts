@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
 import {
-  isSystemCanonBag, kahuReachAccess, kahuRealmGroup, KAHU_REACH_REASON,
+  isSystemCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach, KAHU_REACH_REASON,
   type CapabilityVerifier, type KahuCabalBoardReader, type KahuReachSource,
 } from "@lararium/mesh";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
@@ -46,6 +46,7 @@ export function kahuReachSourceOf(input: {
  */
 export function withKahuReach(inner: CapabilityVerifier, source: KahuReachSource | undefined): CapabilityVerifier {
   return {
+    kahuReach: (bagUrl, act) => requireKahuReach(bagUrl, source, act),
     async verify(args) {
       if (args.access === "admin" && isSystemCanonBag(args.bagUrl)) {
         const access = await kahuReachAccess(source);

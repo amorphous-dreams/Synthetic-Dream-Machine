@@ -224,6 +224,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     sentinelProvider: () => veilKh ?? kh,
   });
 
+  // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
+  // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
+  const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
+    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).handle()).doc(), bagUri) : null;
+
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
   // `meme put --recipe`, the daemon's own working layer). Built once the keyhive stands, over the
@@ -398,6 +403,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("where",      makeWhereReactor(ctx.composite, {
         repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
         slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+        systemCanonUrl: realmCanonUrlOf(ctx),
       }));
       registry.register("resolve",    makeResolveReactor(ctx.composite));
       registry.register("unbound-docs", async () => ({ verb: "unbound-docs", unbound: await unboundMints(ctx.composite) }));
@@ -438,6 +444,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           reach: {
             repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
             slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+            systemCanonUrl: realmCanonUrlOf(ctx),
           },
           registerBag: registerBagCap,
           // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
@@ -465,7 +472,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
       // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
-      const memeOpts = { ...memeVerbOptions(ctx, async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null), ...(kahuReach ? { kahuReach } : {}) };
+      const memeOpts = { ...memeVerbOptions(ctx, async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null, realmCanonUrlOf(ctx)), ...(kahuReach ? { kahuReach } : {}) };
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", makeMemeListReactor(memeOpts), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });

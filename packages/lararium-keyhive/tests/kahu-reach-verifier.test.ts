@@ -29,3 +29,13 @@ describe("the cap verifier carries the Kahu predicate", () => {
     expect(await ask(closed, bagUri("garden"), "admin")).toEqual({ ok: true, reason: "inner" });
   });
 });
+
+describe("the verifier answers the Kahu predicate for a bag inside a routed envelope", () => {
+  test("a stranger and a missing source refuse a system bag by kahu-reach; a Kahu hand and a user bag pass", async () => {
+    const stranger = withKahuReach(inner, await strangerHand("admitted-not-joined"));
+    await expect(stranger.kahuReach!(BAG_IDS.lares, "wiki-act")).rejects.toMatchObject({ reason: "kahu-reach" });
+    await expect(withKahuReach(inner, undefined).kahuReach!(BAG_IDS.lararium, "wiki-act")).rejects.toMatchObject({ reason: "kahu-reach" });
+    await expect(withKahuReach(inner, await kahuHand()).kahuReach!(BAG_IDS.lares, "wiki-act")).resolves.toBeUndefined();
+    await expect(stranger.kahuReach!(bagUri("garden"), "wiki-act")).resolves.toBeUndefined();
+  });
+});

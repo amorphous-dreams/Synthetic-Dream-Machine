@@ -22,7 +22,7 @@ import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused } from "
 import { resolveFloor, type FloorManifest } from "./floor-manifest.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 
-export const FLOOR_ANSWER_FORMAT = "lararium-floor-answer/v1" as const;
+export const FLOOR_ANSWER_FORMAT = "lararium-floor-answer" as const;
 
 /** The porch's answer: the Nexus and the release rows its board carries (each row's record carries its own lineage). */
 export interface FloorAnswer {

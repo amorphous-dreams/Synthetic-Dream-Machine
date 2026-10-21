@@ -15,7 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
-import { plainEntries, storedDeleted } from "@lararium/mesh";
+import { plainEntries, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -41,6 +41,8 @@ export interface RegistryReach {
   /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
    *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
   slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
+  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). */
+  systemCanonUrl?: (bag: string) => Promise<string | null>;
 }
 
 /** Titles in a registry doc that point at a resolvable doc (an `automerge:` URL) —
@@ -119,6 +121,27 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
           const sr  = sh?.doc()?.tiddlers?.[tiddler];
           if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
         }
+      }
+    }
+    // The system canon bags rest in the Kahu realm: no registry plane lists them, so each is reached by its realm row.
+    // Its live wiki slots answer first (the layer a write lands in), then the canon document itself.
+    if (reach?.repo && reach.systemCanonUrl) {
+      for (const bagUri of SYSTEM_CANON_BAGS) {
+        const slug = wikiSlugOfBagUri(bagUri);
+        if (slug && reach.slotDocUrl) {
+          for (const kind of ["draft", "working", "personal"] as const) {
+            const slotUrl = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
+            if (!slotUrl) continue;
+            const sh  = await findOrThrow(reach.repo, slotUrl, `${wikiSlotUri(slug, kind)}`).catch(() => null);
+            const sr  = sh?.doc()?.tiddlers?.[tiddler];
+            if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
+          }
+        }
+        if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;
+        const url = await reach.systemCanonUrl(bagUri).catch(() => null);
+        const h   = url ? await findOrThrow(reach.repo, url, bagUri).catch(() => null) : null;
+        const rec = h?.doc()?.tiddlers?.[tiddler];
+        if (rec && !storedDeleted(rec)) holding.add(bagUri);
       }
     }
     const bags = [...holding];

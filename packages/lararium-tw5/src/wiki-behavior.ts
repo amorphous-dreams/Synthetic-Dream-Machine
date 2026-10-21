@@ -121,6 +121,8 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
         composite: ctx.composite,
         tw5: makeTw5Deserializer(ctx.tw5),
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
+        // The keyholder island's gate asked the Kahu predicate for every system bag the routed verb names.
+        kahuReachClearedAtGate: true,
       });
       // system-alert — the daemon worker (via main → pool.placeWikiVerb) delivers a
       // reboot-pending notice; the island writes it into its OWN temp (volatile,

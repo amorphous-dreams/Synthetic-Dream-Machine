@@ -94,6 +94,24 @@ describe("a vessel with no charter reads the floor off the porch's answer", () =
     expect(await readFloorAnswer({ nexus: stranger.aid, answer: floorAnswerOf(c0.aid, []), fetchCas: fetchFrom(f.cas) })).toMatchObject({ ok: false, reason: "foreign-nexus" });
   });
 
+  test("RED: a self-consistent answer for a DIFFERENT AID refuses, whatever Nexus the answer claims; CONTROL: the honest answer verifies", async () => {
+    // The carrier is no root of trust: the AID the reader pins comes from the card or the genesis CID, never from the answer.
+    const honest = await seatedCharter({ seats: 3, threshold: 2 });
+    const other = await seatedCharter({ seats: 3, threshold: 2, seed: 7 });
+    const f = floor("aid");
+    const theirs = await released(other, f);
+    const theirAnswer = floorAnswerOf(other.aid, [rowOf(theirs)]);
+    // the whole answer is lawful for ITS Nexus: it verifies against its own AID ...
+    expect((await readFloorAnswer({ nexus: other.aid, answer: theirAnswer, fetchCas: fetchFrom(f.cas) })).ok).toBe(true);
+    // ... and refuses for the reader who pins another: as sent, and with the outer Nexus rewritten to the reader's own
+    expect(await readFloorAnswer({ nexus: honest.aid, answer: theirAnswer, fetchCas: fetchFrom(f.cas) })).toMatchObject({ ok: false, reason: "foreign-nexus" });
+    const relabelled = { ...theirAnswer, nexus: honest.aid };
+    const read = await readFloorAnswer({ nexus: honest.aid, answer: relabelled, fetchCas: fetchFrom(f.cas) });
+    expect(read.ok).toBe(false);
+    // CONTROL: the honest answer, under the honest pin, reads whole
+    const mine = await released(honest, f);
+    expect((await readFloorAnswer({ nexus: honest.aid, answer: floorAnswerOf(honest.aid, [rowOf(mine)]), fetchCas: fetchFrom(f.cas) })).ok).toBe(true);
+  });
   test("RED: a release sealed by a key outside its epoch's roster refuses (the key an earlier epoch seated)", async () => {
     const c0 = await seatedCharter({ seats: 3, threshold: 2 });
     const c1 = await c0.roll();
@@ -130,7 +148,7 @@ describe("a vessel with no charter reads the floor off the porch's answer", () =
     expect(await readFloorAnswer({ nexus: c.aid, answer: floorAnswerOf(c.aid, [rowOf(first)]), fetchCas: fetchFrom(gone) })).toMatchObject({ ok: false, reason: "floor-absent" });
     expect(await readFloorAnswer({ nexus: c.aid, answer: floorAnswerOf(c.aid, []), fetchCas: fetchFrom(f.cas) })).toMatchObject({ ok: false, reason: "no-release" });
     expect(await readFloorAnswer({ nexus: c.aid, answer: floorAnswerOf(c.aid, [rowOf(first), rowOf(left), rowOf(right)]), fetchCas: fetchFrom(all) })).toMatchObject({ ok: false, reason: "release-unsettled" });
-    for (const junk of [null, "x", {}, { format: "lararium-floor-answer/v1", nexus: c.aid, releases: [null] }]) {
+    for (const junk of [null, "x", {}, { format: "lararium-floor-answer", nexus: c.aid, releases: [null] }]) {
       expect(await readFloorAnswer({ nexus: c.aid, answer: junk, fetchCas: fetchFrom(f.cas) })).toMatchObject({ ok: false, reason: "answer-malformed" });
     }
   });

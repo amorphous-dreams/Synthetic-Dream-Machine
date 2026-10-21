@@ -32,7 +32,7 @@ import {
   type LarTiddlerRecord,
   type LarTiddlerStore,
 } from "@lararium/mesh";
-import { plainRecordOrNull } from "@lararium/mesh";
+import { isSystemCanonBag, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached. */
@@ -100,4 +100,15 @@ export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAcce
   };
 
   return { handle, urlOf, recordOf, find, storeOf };
+}
+
+/**
+ * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a system canon bag (`lares`,
+ * `lararium`), which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
+ * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
+ */
+export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  const row = await catalog.urlOf(bagUri);
+  if (row !== null || !isSystemCanonBag(bagUri)) return row;
+  return realmStandingDocUrl((await catalog.handle()).doc(), bagUri);
 }

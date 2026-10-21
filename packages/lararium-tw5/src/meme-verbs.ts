@@ -59,7 +59,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isSystemCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -103,6 +103,8 @@ export function memeVerbOptions(
   ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "oracleUrl">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
+  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
+  systemCanonUrl?: (bag: string) => Promise<string | null>,
 ): MemeVerbOptions {
   const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
@@ -128,6 +130,11 @@ export function memeVerbOptions(
       if (namedRealm) return null;
       for (const accessor of planes) {
         const handle = await accessor.find(key).catch(() => null);
+        if (handle) return new AutomergeDocStore(handle, bag);
+      }
+      if (systemCanonUrl && isSystemCanonBag(bag)) {
+        const url = await systemCanonUrl(bag).catch(() => null);
+        const handle = url ? await findOrThrow(ctx.repo, url, bag).catch(() => null) : null;
         if (handle) return new AutomergeDocStore(handle, bag);
       }
       return null;
