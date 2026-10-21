@@ -86,6 +86,21 @@ export type WideningRead =
   | { readonly status: "known"; readonly asOf: Readonly<Record<string, { seq: number; cid: string }>>; readonly counted: Readonly<Record<string, readonly string[]>> }
   | { readonly status: "unknown"; readonly missing: readonly FrontierMissing[] };
 
+/** Fold one hand's carried frontier records into its verified chain, each link read under its OWN epoch's roster. */
+export function foldHandFrontiers(board: string, h: RaisingHand, records: readonly unknown[]) {
+  return foldLinked<EdgeFrontier>(records, (raw) => {
+    const read = readQuorumAct(raw, {
+      domain: EDGE_FRONTIER_DOMAIN, group: board,
+      seatsFor: (body) => {
+        const fb = body as EdgeFrontierBody;
+        const roster = rosterAt(h.lineage, fb.epoch);
+        return fb.hand === h.hand && roster && roster.rosterHash === fb.rosterHash ? roster : null;
+      },
+    });
+    return read.ok ? { ok: true as const, act: read.act as EdgeFrontier, cid: read.cid } : read;
+  }, (body, prior) => prior === null || (body as EdgeFrontierBody).epoch >= (prior as EdgeFrontierBody).epoch);   // a closed epoch's keys sign nothing after it
+}
+
 /** Read one board's frontier for a widening act, over every raising hand. */
 export function readWideningFrontier(board: string, hands: readonly RaisingHand[], readings: ReadonlyMap<string, HandReading>): WideningRead {
   const missing: FrontierMissing[] = [];
@@ -93,17 +108,7 @@ export function readWideningFrontier(board: string, hands: readonly RaisingHand[
   const counted: Record<string, readonly string[]> = {};
   for (const h of hands) {
     const r = readings.get(h.hand);
-    const fold = foldLinked<EdgeFrontier>(r?.frontiers ?? [], (raw) => {
-      const read = readQuorumAct(raw, {
-        domain: EDGE_FRONTIER_DOMAIN, group: board,
-        seatsFor: (body) => {
-          const fb = body as EdgeFrontierBody;
-          const roster = rosterAt(h.lineage, fb.epoch);
-          return fb.hand === h.hand && roster && roster.rosterHash === fb.rosterHash ? roster : null;
-        },
-      });
-      return read.ok ? { ok: true as const, act: read.act as EdgeFrontier, cid: read.cid } : read;
-    }, (body, prior) => prior === null || (body as EdgeFrontierBody).epoch >= (prior as EdgeFrontierBody).epoch);   // a closed epoch's keys sign nothing after it
+    const fold = foldHandFrontiers(board, h, r?.frontiers ?? []);
     if (fold.fork) { missing.push({ hand: h.hand, why: "fork" }); continue; }
     const head = fold.chain[fold.chain.length - 1];
     if (!r || !head) { missing.push({ hand: h.hand, why: fold.refused.some((x) => x.refusal === "below-threshold") ? "below-threshold" : "no-frontier" }); continue; }
