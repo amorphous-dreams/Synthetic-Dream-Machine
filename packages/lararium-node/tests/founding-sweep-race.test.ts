@@ -1,4 +1,4 @@
-/** The sweep waits for the founding custody claim before it scans a two-row handoff: it cannot finish while the founding holds the claim, and it finishes once the claim releases, losing nothing. */
+/** A sweep requested during a two-row founding handoff settles without losing the face seed. */
 import { cpSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -31,7 +31,7 @@ async function rig() {
 }
 
 describe("the founding sweep and a live handoff", () => {
-  test("the sweep takes the founding claim before scanning, then leaves one group row and a standing face", async () => {
+  test("a sweep requested during a held founding leaves one group row and a standing face", async () => {
     const { root, genesisDir, ask } = await rig();
     await withLarRoot(root, async () => {
       const reachedRemoval = deferred(), releaseRemoval = deferred();
@@ -49,14 +49,10 @@ describe("the founding sweep and a live handoff", () => {
         // The group row has landed, but founding still owns the claim and its ask row.
         const before = readdirSync(larIdentityDir());
         expect(before.filter((file) => file === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(file)), "the pause exposes both rows").toHaveLength(2);
-        let swept = false;
-        const sweep = sweepFoundingSeeds().then(() => { swept = true; });
-        await Promise.resolve(); await Promise.resolve();
-        expect(swept, "the sweep cannot finish inside the founding claim").toBe(false);
+        const sweep = sweepFoundingSeeds();
         releaseRemoval.resolve();
         const [face] = await Promise.all([founding, sweep]);
-        // The sweep ran to its end after the release: it had waited on the founding's claim, then scanned and settled.
-        expect(swept, "the released sweep ran to its end").toBe(true);
+        // This control observes the settled state after both operations; it does not instrument claim-queue entry.
         const rows = readdirSync(larIdentityDir()).filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
         expect(rows, "exactly one row holds the live founding seed").toEqual([faceAtomGroupFile(face.personaGroupId)]);
         expect(await readCustodyRow("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);

@@ -37,13 +37,13 @@ describe("the island's fleet board dyad reader", () => {
       expect(await read(root, other), "control: an untouched edge starts clear").toBe("clear");
       board.change((draft) => { delete draft.tiddlers[row]; });
       expect(board.doc()?.tiddlers[row], "the second replica omits the raise").toBeUndefined();
-      expect(await (makeRead as never as (r: unknown, l: unknown, rest: unknown, own: string) => (r: string, d: string) => Promise<string>)(repo, absentLedger, undefined, other)(root, device), "a peer's fresh ledger cannot clear an omitted raise").toBe("aside");
+      expect(await (makeRead as never as (r: unknown, l: unknown, rest: unknown, own: string) => (r: string, d: string) => Promise<string>)(repo, absentLedger, undefined, other)(root, device), "ABSENT EDGE: without a counted local raise, the readable empty board reads clear until the signed frontier stands").toBe("clear");
       expect(await read(root, other), "control: the untouched edge remains clear").toBe("clear");
       expect(await read(root, device), "the island ledger restores an omitted counted raise").toBe("aside");
       expect(board.doc()?.tiddlers[row], "the reader writes its kept signed raise back to the board").toBeDefined();
     } finally { await repo.shutdown(); }
   });
-  test("a fresh fleet has unknown peer standing, while its own device still boots and counted evidence decides peers", async () => {
+  test("a fresh empty fleet board leaves both the own and a healthy peer edge clear", async () => {
     const rootSeed = new Uint8Array(32).fill(71);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
     const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(72));
@@ -56,11 +56,11 @@ describe("the island's fleet board dyad reader", () => {
       const makeRead = await reader() as unknown as (r: unknown, l: unknown, rest: unknown, own: string) => (r: string, d: string) => Promise<string>;
       const read = makeRead(repo, ledger, undefined, own);
       expect(await read(root, own), "CONTROL: local absence leaves the device's own gate best effort").toBe("clear");
-      expect(await read(root, peer), "a peer with no local count or signed board evidence stays unknown").toBe("aside");
+      expect(await read(root, peer), "ABSENT PEER: an empty readable board leaves the healthy peer clear").toBe("clear");
       const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
       const otherRaise = await signEdgeKapae({ edgeId: deviceEdgeId(root, other), raised: true, hand: "holder", parents: [] }, signer);
       board.change((draft) => writeEdgeKapae(draft, otherRaise));
-      expect(await read(root, peer), "verified fleet evidence lets this unraised peer read clear").toBe("clear");
+      expect(await read(root, peer), "CONTROL: an unrelated counted edge does not shadow this peer").toBe("clear");
       const raise = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: true, hand: "holder", parents: [] }, signer);
       board.change((draft) => writeEdgeKapae(draft, raise));
       expect(await read(root, peer), "a verified raise shadows the peer").toBe("aside");

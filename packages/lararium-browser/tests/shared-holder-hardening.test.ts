@@ -389,6 +389,58 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     channel.port2.close();
   });
 
+  test("a late refusal re-posts a manifest with a fresh sync port before replaying asks", async () => {
+    const face = await faceFixture("face:manifest-floor", 97, 98);
+    const channel = new MessageChannel();
+    const hello = { kind: "holder:hello", ownerEpoch: "manifest-epoch", sessionId: "manifest-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
+    class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    expect(attached.kind).toBe("attached");
+    if (attached.kind !== "attached") return;
+    const firstSync = new MessageChannel();
+    const freshSync = new MessageChannel();
+    const floorPosts: Array<{ msg: Message; transfer: readonly Transferable[] }> = [];
+    let rePosts = 0, floors = 0;
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, {
+      floor: () => { floors++; return {
+        post: (msg: unknown, transfer?: readonly Transferable[]) => { floorPosts.push({ msg: msg as Message, transfer: transfer ?? [] }); },
+        listen: () => () => {}, onError: () => () => {}, terminate: () => {},
+      }; },
+      // The pool owns the synced Repo and can mint the replacement manifest and transfer port.
+      rePost: () => { rePosts++; return { msg: { type: "manifest", wikiUri: "daemon" }, transfer: [freshSync.port1] }; },
+    } as never);
+    handle.post({ type: "manifest", wikiUri: "daemon" }, [firstSync.port1]);
+    handle.post({ type: "wiki:place-verb", requestId: "held", verb: "read" });
+    channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: nested island launch failed" });
+    await expect.poll(() => floors).toBe(1);
+    expect(rePosts, "the pool supplies one fresh manifest after the transferred one has left").toBe(1);
+    expect(floorPosts.map(({ msg }) => msg.type), "the floor boots before held asks replay").toEqual(["manifest", "wiki:place-verb"]);
+    expect(floorPosts[0]!.transfer[0], "the floor receives the newly minted sync port").toBe(freshSync.port1);
+    expect(floorPosts[0]!.transfer[0]).not.toBe(firstSync.port1);
+    firstSync.port2.close(); freshSync.port1.close(); freshSync.port2.close(); channel.port2.close(); handle.terminate();
+  });
+
+  test("CONTROL: refusal before a manifest still lets the floor receive its first manifest", async () => {
+    const face = await faceFixture("face:early-floor", 99, 100);
+    const channel = new MessageChannel();
+    const hello = { kind: "holder:hello", ownerEpoch: "early-epoch", sessionId: "early-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
+    class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    expect(attached.kind).toBe("attached");
+    if (attached.kind !== "attached") return;
+    const posts: Message[] = [];
+    let floors = 0;
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, {
+      floor: () => { floors++; return { post: (msg: unknown) => { posts.push(msg as Message); }, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }; },
+    } as never);
+    channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: early refusal" });
+    await expect.poll(() => floors).toBe(1);
+    expect(posts, "no manifest crossed before the refusal").toEqual([]);
+    handle.post({ type: "manifest", wikiUri: "daemon" });
+    expect(posts.map((msg) => msg.type), "the first floor manifest boots normally").toEqual(["manifest"]);
+    channel.port2.close(); handle.terminate();
+  });
+
   test("CONTROL: a normal island admission never invokes the floor hook", async () => {
     const face = await faceFixture("face:normal", 95, 96);
     const core = makeSharedHolderCore({

@@ -7,8 +7,9 @@
  * CGKA behaviour to keyhive's tests.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation, hexToBytes } from "@lararium/mesh";
+import { buildDeviceDelegation, hexToBytes, makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
+import { boardDyadReader } from "../src/board-dyad-reader.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
@@ -58,6 +59,22 @@ const summons = (deviceEdge: Awaited<ReturnType<typeof edgeFor>>, force?: boolea
   ({ kind: "face-join/v1" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
 
 describe("the gate — a signature, never a list", () => {
+  test("a healthy second device joins through the readable empty fleet board", async () => {
+    const edge = await edgeFor();
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const ledger = repo.create(emptyLarDoc());
+      const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(8));
+      const read = boardDyadReader(repo, ledger, undefined, own);
+      const joineeDyad = await read(edge.personaRootDid, edge.deviceVerifyingKey);
+      const ctx = { ...(await ctxFor()), dyad: () => joineeDyad };
+      const provider = fakeProvider();
+      const out = await runFaceJoin(provider, summons(edge), ctx);
+      expect(out.ok, "EMPTY BOARD JOIN: a signed healthy peer reaches the hearth seat").toBe(true);
+      expect(provider.calls.added, "the admitted peer joins the group").toHaveLength(1);
+    } finally { await repo.shutdown(); }
+  });
   test("an edge this root signed, for this hearth, naming this card → admitted", async () => {
     const ctx = await ctxFor();
     const out = await runFaceJoin(fakeProvider(), summons(await edgeFor()), ctx);
