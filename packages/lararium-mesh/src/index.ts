@@ -74,6 +74,7 @@ export * from "./hand-lineage.js";
 export * from "./persona-act.js";
 export * from "./persona-act-board.js";
 export * from "./lease-advance.js";
+export * from "./face-boot-proof.js";
 export * from "./edge-frontier.js";
 export * from "./face-atom-custody.js";
 export * from "./place-signer.js";
