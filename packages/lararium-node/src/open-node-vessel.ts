@@ -126,6 +126,7 @@ import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked } from "./custody-holder.js";
+import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type OraclePullResult } from "@lararium/mesh";
@@ -1205,6 +1206,10 @@ async function prepareNodeBootOn(
       }
       return [...roots];
     },
+    // THE FLEET ROOT'S ROSTER PER EPOCH: its persona KEL, read off the anchors this vessel holds in custody and the
+    // verified chain on the island's board (or an island below it, before the boot's carry has run). At the floor
+    // custody is locked and no chain reads: the frontier stands unknown and widens nothing.
+    lineageOfFleet: (fleetRoot) => fleetLineageOf(repo, fleetRoot, [nexusPubkey, ...nexusIslandsBelow(nexusStandsAt)]),
     charterRealm:    () => nexusAidOf(readNexusDoc(sealHome)),
     // The DEVICE behind the peer (D4), never the face key its gate proved: a device set aside draws Mu on every lane.
     vesselKeyOfPeer: deviceOfPeer,
@@ -2299,7 +2304,11 @@ async function prepareNodeBootOn(
         // set aside holds no seat here, whatever record or session it proves. No ring yet reads as aside. The
         // grant path proves a FACE key (a face-join grant names it), so the shadow also reads the DEVICE each
         // gate-seated session under that face key was certified to (D4): an aside device's face holds no seat.
-        deviceAside: (key) => edgeShadows ? edgeShadows.deviceAside(key) || seatedDevicesOfFace(key).some((d) => edgeShadows!.deviceAside(d)) : true,
+        // WIDENING WAITS ON THE FLEET'S SIGNED FRONTIER (K17): a face whose fleet board carries no qualifying frontier
+        // seats and shares with nobody; a shadow still narrows at once.
+        deviceAside: (key) => edgeShadows
+          ? edgeShadows.widenBlocked(deviceEdge.personaRootDid) || edgeShadows.deviceAside(key) || seatedDevicesOfFace(key).some((d) => edgeShadows!.deviceAside(d))
+          : true,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
       // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.
@@ -3134,7 +3143,8 @@ async function prepareNodeBootOn(
         for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
           try { await shadowRing.refold(); } catch { return true; }
         }
-        return shadowRing.deviceStanding(wornFleetRoot, activeAtom?.key ?? "") === "aside";
+        const standing = shadowRing.deviceStanding(wornFleetRoot, activeAtom?.key ?? "");
+        return standing === "aside" || standing === "unknown";
       },
       // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
       get cutMemory() {
