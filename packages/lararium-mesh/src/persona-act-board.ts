@@ -9,6 +9,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026
  */
 
+import { parseAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
@@ -85,4 +86,14 @@ export async function signFoundingLog(parts: {
   await next("admission", { deviceKey: parts.deviceKey });
   await next("device-edge", { deviceKey: parts.deviceKey, edgeDigest: parts.edgeDigest });
   return out;
+}
+
+/**
+ * A plane doc this replica already holds, or undefined: a boot never waits on a doc a peer has yet to send. The carried
+ * records reach a joinee in its admit bundle (its daemon doc), so a plane still unsynced proves from the bundle alone,
+ * and the plane's later acts join the fold on the boot after they arrive.
+ */
+export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
+  const handle = repo.handles[parseAutomergeUrl(url as AutomergeUrl).documentId];
+  return handle?.isReady() ? (handle.doc() as LarDoc | undefined) : undefined;
 }
