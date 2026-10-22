@@ -978,8 +978,23 @@ export async function runApplyAdmitPayload(
   // so the two devices name one set identically or they sync nothing. the daemon bag stays sovereign-per-vessel
   // and is seeded fresh above; the face's planes are shared ground reached by one derivation.
   const planes = personaScopedBagIds(payload.personaGroupId);
-  const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> = checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
-  const circlesHandle: ReturnType<typeof seedCirclesDoc> = checkpoint ? await repo.find(checkpoint.result.circlesUrl as never) : seedCirclesDoc(repo, planes.circles);
+  // A FACE'S CIRCLES AND IDENTITIES ARE THE FACE'S, NOT THE DEVICE'S: the founder minted them once and a signed `plane` act in
+  // the bundle names each, so this device adopts those documents by url and syncs them; a bundle that names none seeds
+  // this device's own (a bare probe). The boot proves the urls it mounts against the verified acts, so an act this apply
+  // reads unverified moves nothing there. SESSIONS stay per vessel: a session is motion (which device wears the face now),
+  // and decisions cross devices, never motion.
+  const planeUrlOf = (name: string): string | undefined => {
+    for (const a of payload.personaActs) {
+      const b = (a as { body?: { act?: unknown; plane?: unknown; url?: unknown } } | null)?.body;
+      if (b?.act === "plane" && b.plane === name && typeof b.url === "string") return b.url;
+    }
+    return undefined;
+  };
+  const sharedIdentitiesUrl = planeUrlOf("identities"), sharedCirclesUrl = planeUrlOf("circles");
+  const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> | null = sharedIdentitiesUrl ? null
+    : checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
+  const circlesHandle: ReturnType<typeof seedCirclesDoc> | null = sharedCirclesUrl ? null
+    : checkpoint ? await repo.find(checkpoint.result.circlesUrl as never) : seedCirclesDoc(repo, planes.circles);
   const sessionsHandle: ReturnType<typeof seedSessionsDoc> = checkpoint ? await repo.find(checkpoint.result.sessionsUrl as never) : seedSessionsDoc(repo, planes.sessions);
   // The persona doc: the joinee RECEIVES the founder's shared veiled-identity doc to SYNC it
   // (the membership-sync foundation) — REQUIRED now (guarded above), never a fresh local seed.
@@ -988,14 +1003,15 @@ export async function runApplyAdmitPayload(
 
   const ceremonyTiddlers = buildCeremonyTiddlers(atom.key, vesselDisplayName);
   for (const t of ceremonyTiddlers) {
+    // A shared document is not held yet on a fresh device; the founder seeded it, and this device's own entry joins it on a boot that holds it.
     if (t.bag === IDENTITIES_NAMESPACE) {
-      identitiesHandle.change((doc) => {
+      identitiesHandle?.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });
     } else {
-      circlesHandle.change((doc) => {
+      circlesHandle?.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
@@ -1028,8 +1044,8 @@ export async function runApplyAdmitPayload(
     await keyhive.dispose();
     result = {
       contactCardJson, archive,
-      identitiesUrl: identitiesHandle.url as string,
-      circlesUrl: circlesHandle.url as string,
+      identitiesUrl: sharedIdentitiesUrl ?? identitiesHandle!.url as string,
+      circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
