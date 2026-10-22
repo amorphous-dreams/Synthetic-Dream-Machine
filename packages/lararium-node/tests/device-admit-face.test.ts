@@ -4,7 +4,7 @@
  */
 import { describe, expect, test, vi } from "vitest";
 
-const seam = vi.hoisted(() => ({ rootsAsked: [] as number[], boards: [] as string[], ledgerKeys: [] as string[], asideOn: "" }));
+const seam = vi.hoisted(() => ({ rootsAsked: [] as number[], boards: [] as string[], ledgerKeys: [] as string[], asideOn: "", frontier: "known" as "known" | "unknown" }));
 
 vi.mock("../src/node-vessel-identity.js", () => ({
   loadPersonaGroupRootVerifyingKey: async (face = 0) => { seam.rootsAsked.push(face); return `root-${face}`; },
@@ -16,15 +16,22 @@ vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async (group:
 vi.mock("../src/edge-board.js", () => ({
   readVesselEdgeBoard: async ({ scope, vesselKey }: { scope: string; vesselKey: string }) => {
     seam.boards.push(scope); seam.ledgerKeys.push(vesselKey);
-    return { readings: new Map([[`edge:${scope}:device`, { stands: scope === seam.asideOn, verdict: "raised" }]]) };
+    return { handle: { doc: () => ({}) }, counted: { acts: [] }, ledger: { doc: () => ({}) }, readings: new Map([[`edge:${scope}:device`, { stands: scope === seam.asideOn, verdict: "raised" }]]) };
   },
 }));
 vi.mock("@lararium/mesh", async (real) => ({
   ...(await real<object>()),
   fleetEdgeBoardDocUrl: (root: string) => `board:${root}`,
   fleetEdgeAuthority: () => ({}),
+  readFleetFrontier: () => seam.frontier === "known"
+    ? { status: "known", asOf: {} }
+    : { status: "unknown", missing: [{ hand: "fleet", why: "no-frontier" }] },
+  fleetRaiseCids: () => [],
+  readFrontierPins: () => ({}),
   deviceEdgeId: (root: string, device: string) => `edge:${root}:${device}`,
 }));
+
+vi.mock("../src/fleet-lineage.js", () => ({ fleetLineageForVessel: async () => ({}) }));
 
 import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
@@ -50,5 +57,12 @@ describe("the dyad consult reads the signing face's fleet", () => {
     seam.rootsAsked = []; seam.boards = []; seam.ledgerKeys = []; seam.asideOn = "root-0";
     await expect(assertDyadBinds({} as never, "device", 2)).resolves.toBeUndefined();
     expect(seam.boards).toEqual(["root-2"]);
+  });
+
+  test("an UNKNOWN fleet frontier refuses the bind by name; a known one binds (control)", async () => {
+    seam.boards = []; seam.asideOn = ""; seam.frontier = "unknown";
+    await expect(assertDyadBinds({} as never, "device")).rejects.toMatchObject({ name: "DeviceFrontierUnknown" });
+    seam.frontier = "known";
+    await expect(assertDyadBinds({} as never, "device")).resolves.toBeUndefined();
   });
 });

@@ -35,13 +35,14 @@ import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
+import { fleetLineageForVessel } from "../fleet-lineage.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
@@ -146,6 +147,16 @@ export class DeviceSetAside extends Error {
   }
 }
 
+export class DeviceFrontierUnknown extends Error {
+  constructor(why: string) {
+    super(
+      "[lares fleet join answer] REFUSED: this fleet's signed frontier reads unknown here (" + why + "). " +
+      "A delegation binds only against a frontier this vessel can verify; sync the fleet board and the root's persona KEL, then retry.",
+    );
+    this.name = "DeviceFrontierUnknown";
+  }
+}
+
 /**
  * THE BIND SITE'S CONSULT. The root signs no delegation for a device its own fleet board shows set aside, so a
  * fresh admit and a lease roll both skip that dyad. The read runs through this vessel's ledger: a raise a hand
@@ -164,6 +175,14 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
     repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey: ownKey, authorityFor: fleetEdgeAuthority(fleetRoot),
   });
+  // ABSENCE IS NOT CLEAR: the board binds only against its signed frontier. Where no qualifying frontier covers the fleet the
+  // standing reads `unknown`, and a bind refuses by name rather than reading the missing raise as a clear dyad.
+  const lineage = await fleetLineageForVessel(repo, fleetRoot);
+  const frontier = lineage ? readFleetFrontier({
+    fleetRoot, board: fleet.handle.doc(), lineage, seenRaises: fleetRaiseCids(fleet.counted.acts),
+    pinned: readFrontierPins(fleet.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null,
+  }) : null;
+  if (!frontier || frontier.status !== "known") throw new DeviceFrontierUnknown(frontier ? frontier.missing.map((m) => `${m.hand}:${m.why}`).join(", ") : "no-lineage");
   const dyad = fleet.readings.get(deviceEdgeId(fleetRoot, joineeVerifyingKey.trim().toLowerCase().replace(/^0x/, "")));
   if (dyad?.stands === true) throw new DeviceSetAside(dyad.verdict);
 }
