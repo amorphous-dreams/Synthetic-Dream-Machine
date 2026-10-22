@@ -28,6 +28,8 @@ vi.mock("../src/hearth-sovereign-pin.js", async () => {
     },
   };
 });
+// Which face an unnamed run resolves has its reds in face-selector.test.ts; this suite reads which root signs.
+vi.mock("../src/face-selector.js", () => ({ resolveFace: async (named?: number) => named ?? 0, FaceNotNamed: class extends Error {} }));
 vi.mock("../src/identity-anchors.js", () => ({
   loadIdentityAnchors: async (face: number) => {
     seam.anchorsAsked.push(face);

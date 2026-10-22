@@ -58,7 +58,7 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|fleet-join-secret\/.+|fleet-join-pending|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-g.+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|face-anchor\/.+|fleet-join-secret\/.+|fleet-join-pending\/.+|walk\/.+)$/;
 
 /** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -342,7 +342,7 @@ const codecOf = (row: string): RowCodec =>
     : row === "persona-root-roster" ? personaRosterCodec
     : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") ? key32Codec
     : row.startsWith("face-anchor/") ? archiveCodec
-    : row === "fleet-join-pending" ? pendingCodec
+    : row.startsWith("fleet-join-pending/") ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;
 
 // ── the row door: every custody reader and writer rides it ───────────────────────────────────────

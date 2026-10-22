@@ -45,6 +45,7 @@ import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
+import { resolveFace } from "../face-selector.js";
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /**
@@ -223,7 +224,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     tiddlers?: Record<string, { text?: string }>;
   }).tiddlers ?? {};
 
-  const face = opts.face ?? 0;
+  const face = await resolveFace(opts.face);
   // A face an operator added stands on its OWN anchors: the bootstrap and the daemon doc pin the founding face.
   const faceAnchors = face === 0 ? null : await loadIdentityAnchors(face);
   if (face !== 0 && faceAnchors === null) {

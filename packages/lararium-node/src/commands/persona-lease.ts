@@ -14,13 +14,14 @@ import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc } from "@lararium/mesh";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
 import { readFileSync } from "node:fs";
-import { loadIdentityAnchors, listAnchoredPersonas } from "../identity-anchors.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
 import { rollSignedLeaseEpochOnBoard } from "../lease-rekey.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 
+import { resolveFace } from "../face-selector.js";
 export class PersonaLeaseError extends Error {}
 
 export interface PersonaLeaseOptions {
@@ -50,8 +51,7 @@ function daemonUrlOfBootstrap(): string {
 }
 
 export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<PersonaLeaseResult> {
-  const handleIndex = opts.handleIndex ?? (await listAnchoredPersonas())[0];
-  if (handleIndex === undefined) throw new PersonaLeaseError("this vessel holds no face: found one with `lares persona new`");
+  const handleIndex = await resolveFace(opts.handleIndex);
   const anchors = await loadIdentityAnchors(handleIndex);
   if (!anchors) throw new PersonaLeaseError(`this vessel holds no face at index ${handleIndex}`);
   const anchor = await loadFaceAnchorOfGroup(anchors.personaGroupId);

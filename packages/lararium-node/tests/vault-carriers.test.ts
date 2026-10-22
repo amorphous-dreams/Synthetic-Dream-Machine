@@ -81,7 +81,7 @@ const SOWN: Record<string, string> = {
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
   [`identity/face-address-secret-${"5e".repeat(16)}.bin`]: "x",
-  "identity/fleet-join-pending.json":           "{}",
+  [`identity/fleet-join-pending-${"6e".repeat(16)}.json`]: "{}",
   [`identity/face-join-record-${"6f".repeat(16)}.json`]: "{}",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",

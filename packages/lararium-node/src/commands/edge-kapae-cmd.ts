@@ -39,7 +39,7 @@ import {
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
-  listPersonaRoots, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
+  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
@@ -48,6 +48,7 @@ import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeChart
 import { wornNexusLeaf } from "../nexus-leaf.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
 
+import { resolveFace } from "../face-selector.js";
 export class EdgeKapaeError extends Error {}
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -150,7 +151,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     throw new EdgeKapaeError("the quorum hand acts on a realm's edge board — name the realm. A fleet's edge answers to its root alone.");
   }
 
-  const faceIndex = realm !== undefined ? (await loadActivePersonaIndex()) ?? 0 : opts.handleIndex ?? (await listPersonaRoots())[0];
+  const faceIndex = realm !== undefined ? await resolveFace() : await resolveFace(opts.handleIndex);
   const anchors = faceIndex === undefined ? null : await loadIdentityAnchors(faceIndex);
   const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
   if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");

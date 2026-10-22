@@ -206,7 +206,7 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
       ["nexus-key/h0/nexus.synthetic", randomBytes(32)],
       ["vessel-face-key/nexus.synthetic|" + "ab".repeat(32), randomBytes(32)],
       ["fleet-join-secret/group", randomBytes(32)],
-      ["fleet-join-pending", pending],
+      ["fleet-join-pending/group", pending],
       ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }],
     ];
     for (const [row, value] of values) {

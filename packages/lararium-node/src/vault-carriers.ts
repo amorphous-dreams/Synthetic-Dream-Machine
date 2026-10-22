@@ -355,8 +355,8 @@ function buildTable(): readonly CarrierRow[] {
          writer: "fleet-join-custody", name: (m) => `face-address-secret-${m[1]}` }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
-    id({ row: "fleet-join-pending", target: tgt(["D"]), match: file("fleet-join-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "fleet-join-custody" }),
+    id({ row: "fleet-join-pending", target: tgt(["D"]), match: /^fleet-join-pending-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `fleet-join-pending-${m[1]}` }),
     // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
     id({ row: "face-join-record", target: tgt(["D"]), match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",

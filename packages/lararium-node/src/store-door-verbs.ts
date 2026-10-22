@@ -73,6 +73,7 @@ import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaeParti
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
+import { FaceNotNamed } from "./face-selector.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
@@ -166,7 +167,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  NexusKapaeError, NexusContractError, EdgeKapaeError, PersonaLeaseError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
+  NexusKapaeError, NexusContractError, EdgeKapaeError, PersonaLeaseError, FaceNotNamed, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
 ] as const;

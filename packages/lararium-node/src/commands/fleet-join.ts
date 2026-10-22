@@ -57,7 +57,7 @@ import { standingFaceScopes } from "../face-root-holdings.js";
 import { FaceProvisional, refuseWhileProvisional } from "../face-provisional.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
-  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
+  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, listPendingFleetJoinGroups, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
   readFaceJoinRecord, readPendingFleetJoin,
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -276,11 +276,11 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
 export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Promise<FleetJoinRequest> {
   const offer = readFleetJoinOffer(opts.offer);
   if (isRefusal(offer)) throw new FleetJoinRefused(offer.refusal, "the offer does not read.");
-  const pending = await readPendingFleetJoin();
+  const pending = await readPendingFleetJoin(offer.personaGroup);
   if (pending !== null) {
     const kept = readFleetJoinRequest(pending.request, offer);
     if (!isRefusal(kept)) return kept;
-    throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
+    throw new FleetJoinRefused("join-pending", "another fleet join stands pending for this face; land its answer, or abandon it (`lares fleet join abandon`).");
   }
   const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
@@ -300,16 +300,26 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
       sign: (image) => signHex(image, seed),
     });
     if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
-    await keepPendingFleetJoin({ request, offer, sealSecret: hex(seal.secret) });
+    await keepPendingFleetJoin(offer.personaGroup, { request, offer, sealSecret: hex(seal.secret) });
     return request;
   } finally { seed.fill(0); seal.secret.fill(0); }
 }
 
-/** Abandon the join pending here; answers whether one stood. Its face-scoped keys stay at rest. */
-export async function runFleetJoinAbandon(): Promise<boolean> {
-  const pending = await readPendingFleetJoin();
+/**
+ * Abandon the join pending for one face; answers whether one stood. Its face-scoped keys stay at rest. With no face
+ * named the vessel's one pending join goes; with several pending it refuses `face-not-named`, never the first one.
+ */
+export async function runFleetJoinAbandon(opts: { readonly personaGroup?: string } = {}): Promise<boolean> {
+  let group = opts.personaGroup;
+  if (group === undefined) {
+    const pendingGroups = await listPendingFleetJoinGroups();
+    if (pendingGroups.length > 1) throw new FleetJoinRefused("face-not-named", "joins stand pending for several faces; name the face to abandon.");
+    group = pendingGroups[0];
+    if (group === undefined) return false;
+  }
+  const pending = await readPendingFleetJoin(group);
   const nonce = (pending?.request as { nonce?: unknown } | undefined)?.nonce;
-  return typeof nonce === "string" ? clearPendingFleetJoin(nonce) : false;
+  return typeof nonce === "string" ? clearPendingFleetJoin(group, nonce) : false;
 }
 
 /**
@@ -318,7 +328,9 @@ export async function runFleetJoinAbandon(): Promise<boolean> {
  * answer again changes nothing it already landed.
  */
 export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly answer: unknown }): Promise<FleetJoinAnswer> {
-  const pending = await readPendingFleetJoin();
+  // The answer names its face; the kept offer for THAT face is read, and the answer verifies against it below.
+  const answeredGroup = (opts.answer as { personaGroup?: unknown } | null)?.personaGroup;
+  const pending = typeof answeredGroup === "string" ? await readPendingFleetJoin(answeredGroup) : null;
   if (pending === null) throw new FleetJoinRefused("join-absent", "no fleet join stands pending here; request one first (`lares fleet join request`).");
   const offer = readFleetJoinOffer(pending.offer);
   if (isRefusal(offer)) throw new FleetJoinRefused(offer.refusal, "the kept offer does not read.");
@@ -381,7 +393,7 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });
-  await clearPendingFleetJoin(request.nonce);
+  await clearPendingFleetJoin(offer.personaGroup, request.nonce);
   return answer;
 }
 

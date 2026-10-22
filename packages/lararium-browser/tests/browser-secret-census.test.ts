@@ -106,7 +106,7 @@ describe("browser secret census", () => {
     const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: "c3".repeat(32), scopes: [face.scope] });
     const request = await browserFleetJoinRequest({ offer, idbName });
     const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
-    const pending = await secretAt(idbName, ["fleet-join", "pending"], "fleet-join-pending") as { sealSecret: string };
+    const pending = await secretAt(idbName, ["fleet-join", "pending"], `fleet-join-pending/${GROUP}`) as { sealSecret: string };
     const sealSecret = fromHex(pending.sealSecret);
     await browserFleetJoinLand({ answer: await answerTo(root, face, request), idbName });
 
