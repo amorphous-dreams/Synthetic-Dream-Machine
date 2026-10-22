@@ -1,10 +1,7 @@
 /**
  * AN ADMIT INTO GROUP B NEVER RESTORES FROM GROUP A'S ATOM ARCHIVE.
  *
- * The veil-archive rows rest by handle index (`veil-archive-h<N>`), where the atom row rests by PersonaGroup. A browser
- * that founded solo as face A keeps A's atom archive at h0; an admit into group B arrives at the same row. The
- * joinee's hive stands from B's atom seed, and it restores only from an Archive that belongs to that seed: the kept
- * row is offered to the ceremony when it names B's atom and to nothing else.
+ * The veil-archive rows rest by PersonaGroup. An admit into B reads only B's row, while A's Archive stays under A.
  *
  *   G1  RED: founded solo as A, then admitted into B, the ceremony meets B's own atom (not A's) and no Archive bytes
  *   G2  `archiveIsOf` reads a seed's own Archive as its own and another seed's as another's
@@ -16,6 +13,7 @@ import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyh
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
+import { openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { loadBrowserVeilArchive, saveBrowserVeilArchive } from "../src/browser-keyhive-archive.js";
 
@@ -31,6 +29,12 @@ vi.mock("@lararium/keyhive", async (orig) => {
   };
 });
 
+async function foundedGroup(idbName: string): Promise<string> {
+  const db = await openVesselIdb(idbName);
+  try { return (await idbGet<{ personaGroupId: string }>(db, "bootstrap", "social-bootstrap"))!.personaGroupId; }
+  finally { db.close(); }
+}
+
 const halted = (extra: Partial<BrowserVesselOptions>): BrowserVesselOptions =>
   ({ onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); }, ...extra }) as BrowserVesselOptions;
 
@@ -42,13 +46,13 @@ async function archiveOf(seed: Uint8Array): Promise<Uint8Array> {
   return bytes;
 }
 
-describe("an admit and the archive row by handle index", () => {
+describe("an admit and the archive row by PersonaGroup", () => {
   test("G1 — founded solo as A, then admitted into B: the ceremony meets B's own atom and no byte of A's Archive", { timeout: 120_000 }, async () => {
     const idbName = `admit-guard-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     await expect(openBrowserVessel(halted({ idbName }))).rejects.toBeInstanceOf(BootHalted);   // the solo founding: face A
-    const keptA = await loadBrowserVeilArchive(idbName, 0);
-    expect(keptA, "face A's atom Archive rests at h0").toBeDefined();
+    const keptA = await loadBrowserVeilArchive(idbName, await foundedGroup(idbName));
+    expect(keptA, "face A's atom Archive rests under A").toBeDefined();
 
     seen.length = 0;
     const admit = admitNaming("cd".repeat(32), {});
@@ -75,7 +79,7 @@ describe("an admit and the archive row by handle index", () => {
     await expect(openBrowserVessel(halted({ idbName, admit }))).rejects.toBeInstanceOf(BootHalted);   // first attempt mints B's atom
     const bSeed = seen[0]!.atomSeed;
     const own = await archiveOf(bSeed);
-    await saveBrowserVeilArchive(idbName, 0, own);   // a crash left B's Archive at h0 before the bootstrap landed
+    await saveBrowserVeilArchive(idbName, admit.personaGroupId, own);   // a crash left B's Archive before the bootstrap landed
     seen.length = 0;
     await expect(openBrowserVessel(halted({ idbName, admit }))).rejects.toBeInstanceOf(BootHalted);
     expect(seen[0]!.archiveBytes, "B's own Archive is offered back").toEqual(own);
