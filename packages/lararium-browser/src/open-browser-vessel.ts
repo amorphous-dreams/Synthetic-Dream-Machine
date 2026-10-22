@@ -27,7 +27,7 @@ import {
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter, type LeafIdentity,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
@@ -73,10 +73,15 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import {
+  faceAtomKeyFromSeed, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
+  readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
+  type WideningRead, type LarDoc as MeshLarDoc,
+} from "@lararium/mesh";
+import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
-  loadBrowserKeyhiveArchive, loadBrowserVeilArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
+  loadBrowserKeyhiveArchive, loadBrowserVeilArchive, oldShapeVeilRow, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
@@ -504,7 +509,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // socket to stand empty in.
   // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
   // aside (fail closed), and no sibling channel stands that early.
-  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string> } | null = null;
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string>; readonly frontier: WideningRead } | null = null;
   let fleetBoardFollowed = false;
   // The leaf's fleet reading guards sibling sync. The daemon island reads its own board for gate asks.
   const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
@@ -514,7 +519,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const siblingAside = (peerId: string): boolean => {
     const key = siblings?.provenKeyOf(peerId as PeerId);
     if (!key) return false;                       // no sibling behind this id: the sibling lane never reads it
-    if (!fleetShadows) return true;
+    if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
   const repo = new Repo({
@@ -630,6 +635,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
   });
 
+  // A STORE AT THE OLD FACE-ARCHIVE SHAPE (a veil row keyed by handle index) refuses by name before any face restores:
+  // no migration stands, and the operator re-founds.
+  await oldShapeVeilRow(idbName);
   const bootKeys = await readBootKeys(idbName);
   const bootKeyWrites: BootKeyWrites = {};
   let bootstrap = bootKeys.bootstrap;
@@ -661,7 +669,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The veil-archive row rests by handle index and the atom by PersonaGroup, so the row at h0 may hold another face's
       // Archive (a browser that founded solo as A, now admitted into B). B's hive restores only from an Archive that
       // belongs to B's atom; any other offers it nothing.
-      const rowAtomArchive = await loadBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX);
+      const rowAtomArchive = await loadBrowserVeilArchive(idbName, admit.personaGroupId);
       const keptAtomArchive = rowAtomArchive && await archiveIsOf(atomSeed, rowAtomArchive) ? rowAtomArchive : undefined;
       const place = await foundThePlace({
         repo, vesselSeed, hearthTrueName: admit.hearthTrueName,
@@ -685,7 +693,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // The Archives rest before the bootstrap that names this admit: a boot that finds the bootstrap finds them. The
     // place's rests in the vessel row and the atom's in the face's veil row.
     await saveBrowserKeyhiveArchive(idbName, placeArchive);
-    await saveBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX, a.archive);
+    await saveBrowserVeilArchive(idbName, admit.personaGroupId, a.archive);
+    // THE SEALED ANCHOR: admission writes it (sync never does), keeping the frontier this device already knew.
+    {
+      const priorAnchor = await loadBrowserFaceAnchor(idbName, admit.personaGroupId);
+      const admitted = mintFaceAnchor({
+        personaGroup: admit.personaGroupId, personaKelPrefix: admit.personaKelPrefix,
+        personaRootDid: a.deviceEdge.personaRootDid, edge: a.deviceEdge, leaseEpoch: Number(a.deviceEdge.boundEpoch),
+      });
+      await keepBrowserFaceAnchor(idbName, priorAnchor ? raiseFaceFrontier(admitted, priorAnchor.frontier) : admitted);
+    }
     bootstrap = {
       identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
       daemonUrl: a.daemonUrl, personaUrl: a.personaUrl, personaBagId: a.personaBagId,
@@ -742,7 +759,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // agreement state of what they created lives in these bytes alone. Veil first, then the vessel's own, then
     // (later, with the boot keys) the bootstrap that commits the founding: a founding that stops before its
     // bootstrap runs again whole and replaces both rows.
-    await saveBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX, f.veilArchive);
+    await saveBrowserVeilArchive(idbName, f.personaGroupId, f.veilArchive);
+    // THE SEALED ANCHOR: founding writes it (sync never does).
+    await keepBrowserFaceAnchor(idbName, mintFaceAnchor({
+      personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix,
+      personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0,
+    }));
     await saveBrowserKeyhiveArchive(idbName, f.archive);
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
@@ -1183,7 +1205,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         wornAtomSeed.fill(0);
         throw new Error("this face's atom differs from its device edge; re-found or re-admit it");
       }
-      const wornAtomArchive = await loadBrowserVeilArchive(idbName, wornMount?.handleIndex ?? FOUNDING_PERSONA_INDEX);
+      const wornAtomArchive = await loadBrowserVeilArchive(idbName, wornGroup);
+      const faceAnchor = await requireBrowserFaceAnchor(idbName, wornGroup);
       const personaKelPrefix = wornMount?.personaKelPrefix ?? social.personaKelPrefix;
       // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier's
       // seq-sorted key-event-log from the per-Nexus KEL board of the ISLAND this vessel stands in,
@@ -1210,6 +1233,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium-browser] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
       }
+      // THE FACE PROVES ITSELF FROM ITS SIGNED RECORDS (node parity): the founding under the anchored prefix, every plane
+      // this boot mounts named by a signed act, and this device seated by a signed admission. The persona plane and the
+      // daemon doc (where an admit bundle's acts rest) both carry records; the fold judges them.
+      if (social.personaUrl) {
+        const planeDoc = (await repo.find<MeshLarDoc>(social.personaUrl as never)).doc();
+        const daemonDoc = (await repo.find<MeshLarDoc>(social.daemonUrl as never)).doc();
+        const proof = proveFaceFromLog({
+          records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
+          chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key,
+          planes: { persona: social.personaUrl, identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl },
+        });
+        if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+      }
       const standingArchive = await requireBrowserKeyhiveArchive(idbName);
       const daemonAuth = {
         seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
@@ -1229,6 +1265,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         atom: { seed: hex(wornAtomSeed), key: wornAtom.key },
         ...(wornAtomArchive ? { veilArchiveBytes: wornAtomArchive } : {}),
         personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
+        faceAnchor,
         meshCabalDocIdHex: wornMount?.meshCabalDocIdHex      ?? social.meshCabalDocIdHex,
         // Derived, never enumerated — the same derivation the node vessel runs, so neither can drift on
         // which bags a cap check can resolve. This vessel had been carrying neither the shared substrate
@@ -1283,7 +1320,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             });
           }
           if (startedAt !== fleetMoves) return;                  // overtaken: the read the move set off lands instead
-          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope) };
+          const lineage = personaLineageFromKel(daemonAuth.personaKel?.chain ?? []);
+          const frontier: WideningRead = lineage ? readFleetFrontier({
+            fleetRoot: scope, board: read.handle.doc(), lineage, seenRaises: fleetRaiseCids(read.counted.acts),
+            pinned: readFrontierPins(read.ledger.doc(), scope)[FLEET_HAND] ?? null,
+          }) : { status: "unknown", missing: [{ hand: FLEET_HAND, why: "no-frontier" }] };
+          if (frontier.status === "known") read.ledger.change((draft) => { writeFrontierPin(draft, scope, FLEET_HAND, frontier.asOf[FLEET_HAND]!); });
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope), frontier };
         };
         fleetRead = readFleet();
         await fleetRead;
@@ -1351,7 +1394,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
           // THE DYAD'S SHADOW at the face-grant seat and the sibling lane (kapae#/reach): a device the fleet root
           // set aside holds no seat here. Until this leaf's first read of the fleet board lands, every key reads aside.
-          deviceAside: (vesselKey) => !fleetShadows || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
+          deviceAside: (vesselKey) => !fleetShadows || fleetShadows.frontier.status !== "known" || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
         // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
@@ -1385,7 +1428,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
-            expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+            expectedEpoch: signedLeaseEpoch(group, leaseSlots, (writer) =>
+              (personaLineageFromKel(daemonAuth.personaKel.chain) ?? []).some((epoch) => epoch.signers.includes(writer))),
             onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }
