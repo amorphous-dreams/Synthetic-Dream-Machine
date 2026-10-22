@@ -132,7 +132,9 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 * ''A refused command stops that step'' for every lineage alike: never retried, reshaped, split, moved to another tool, or handed to another seat (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/controller-handoff">> #/the-lane-law).
 * ''Every brief carries the git lines'': no `git stash` in any form, no `--no-verify`, no `.git/config`, no git write from a seat; `git config core.bare` reads `false` before and after.
 * ''A build reads its own tree'': a provisioned checkout whose links resolve inside it.
-* ''A process stops by its own pid'' or through the harness's task stop, never by a command-line pattern that matches the shell running it.
+* ''A process stops by its own pid'' or through the harness's task stop, never by a command-line pattern that matches the shell running it. Watchers too: a watcher reads a file by its modification time, never `pgrep -f`.
+* ''The disk carries; the seat re-reads.'' A spirit runs outside its overseer's budget, so an outage (a rate limit, a crash, a compaction) stops the watcher and never the work: the spirit finishes its brief and its handback lands on disk unread, its build dirty in the worktree. The Episkopos writes its resume sheet at each commit and before each spirit launch, naming the spirit's directory and `out.md`, so a re-awakened seat reads what the spirit left and never mistakes it for stray work.
+* ''A shard run reads the head it names.'' `node tools/e2e-shards.mjs push <lane>` pushes the HEAD of the checkout it runs from, so it runs from the lane's own worktree, and the run's `headSha` reads before its colour.
 
 <<~/ahu>>
 
@@ -175,6 +177,6 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_AQrFVWHvNMWmw0dwNiR2EwC0T0w_nHk_FXYm0R2zoU
+<<^ code="&#x0003;">>ni:///sha-256;FNXp1ZhfIm4aIRGMWTC8B55jw1e4KQIidSeahDvew5k
 
 <<^ code="&#x0004;" -> to="?">>
