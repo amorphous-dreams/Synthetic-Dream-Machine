@@ -581,7 +581,8 @@ describe("browser custody seals the keystore's device seed and Keyhive Archives"
 
     const after = await census(idbName);
     expect(Object.keys(after).filter((k) => k === "vessel-key" || k === "keyhive-archive" || /^veil-archive-g.+$/.test(k)), "no clear custody row came back").toEqual([]);
-    for (const row of CUSTODY_ROWS) expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`)), `sealed/${row}`).toBe(true);
+    const founded = await foundedGroup(idbName);
+    for (const row of ["keyhive-archive", `veil-archive-g${founded}`, "vessel-key"]) expect(startsWithMagic(await rowOf(idbName, `sealed/${row}`)), `sealed/${row}`).toBe(true);
     expect(hex(await loadBrowserSigningSeed(idbName)), "the same identity stood").toBe(hex(seed));
   }, SLOW);
 

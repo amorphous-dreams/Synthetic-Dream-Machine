@@ -1242,7 +1242,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const proof = proveFaceFromLog({
           records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key,
-          planes: { persona: social.personaUrl, identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl },
+          planes: { persona: social.personaUrl },   // the shared plane; identities, circles and sessions are this device's own docs
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
       }
