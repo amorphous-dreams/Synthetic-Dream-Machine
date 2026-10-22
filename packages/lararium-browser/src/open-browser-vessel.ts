@@ -74,9 +74,9 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
+  faceAtomKeyFromSeed, heldDocOf, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
-  type WideningRead, type LarDoc as MeshLarDoc,
+  type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { keepBrowserFaceAtomSeed, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
@@ -1237,8 +1237,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // this boot mounts named by a signed act, and this device seated by a signed admission. The persona plane and the
       // daemon doc (where an admit bundle's acts rest) both carry records; the fold judges them.
       if (social.personaUrl) {
-        const planeDoc = (await repo.find<MeshLarDoc>(social.personaUrl as never)).doc();
-        const daemonDoc = (await repo.find<MeshLarDoc>(social.daemonUrl as never)).doc();
+        const planeDoc = heldDocOf(repo, social.personaUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
+        const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
           records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key,

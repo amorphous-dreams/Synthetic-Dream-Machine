@@ -1926,7 +1926,7 @@ async function prepareNodeBootOn(
       }
       if (faceAnchor && activeAtom && personaGroupId && bootstrap.personaUrl) {
         const records = await readFacePersonaRecords(repo, {
-          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc],
+          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc], heldOnly: true,
         });
         const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
           anchor: faceAnchor, deviceKey: activeAtom.key,
