@@ -67,4 +67,18 @@ describe("face-boot-proof", () => {
     const r = proveFaceFromLog({ records: docRecords([...f.log, x, y]), chain: f.chain, group: G, anchor: f.anchor, deviceKey: "dev1", planes: f.planes });
     expect(r).toEqual({ ok: false, refusal: { why: "fork", seq: head.seq + 1 } });
   });
+
+  // A JOINEE PROVES FROM ITS ADMIT BUNDLE, AND A LATER REPLICA OF THE PLANE MAY DISAGREE: the same checks judge both, and
+  // when the bundle's act and the replica's act contest one sequence the boot names the fork and refuses; it trusts neither.
+  test("RED: a bundle's act and a later replica's act at one sequence refuse as a fork; CONTROL: a replica that extends the bundle proves", async () => {
+    const f = await founded();
+    const head = { seq: f.log[f.log.length - 1]!.body.seq, cid: actCid(f.log[f.log.length - 1]!.body) };
+    const inBundle = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devBundle" } }, f.root);
+    const inReplica = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devReplica" } }, f.root);
+    const bundle = [...f.log, inBundle], replica = [...f.log, inReplica];
+    const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: f.chain, group: G, anchor: f.anchor, deviceKey: "dev1", planes: f.planes });
+    expect(proof(docRecords([...bundle, ...replica]))).toEqual({ ok: false, refusal: { why: "fork", seq: head.seq + 1 } });
+    const extension = await signPersonaAct({ seq: inBundle.body.seq, cid: actCid(inBundle.body) }, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "devLater" } }, f.root);
+    expect(proof(docRecords([...bundle, extension])).ok).toBe(true);
+  });
 });

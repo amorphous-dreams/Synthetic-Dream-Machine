@@ -15,7 +15,8 @@ import * as ed from "@noble/ed25519";
 import {
   buildDeviceDelegationRootHalf, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
   personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
-  type PersonaKelEvent, type LarDoc,
+  mintFaceAnchor, personaActRecordsOfGroup, proveFaceFromLog, signFoundingLog, faceRootCommitment, edgeBodyDigest, writePersonaAct,
+  ed25519SignerFromSeed, type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundingCeremony } from "@lararium/keyhive";
 
@@ -144,5 +145,25 @@ describe("a contracted founding carries its binding instead of signing it", () =
     // for a head it can never find — refuse at founding, where it still costs nothing.
     await expect(found({ mode: "contracted", ...b, personaKelPrefix: "prefix-nobody-carries" }, deviceKey))
       .rejects.toThrow(/other than the pinned one/);
+  });
+
+  // A CONTRACTED FACE PROVES NOTHING UNTIL ITS OPERATOR'S RECORDS ARRIVE. This vessel holds no root seed, so its founding
+  // signs no `@persona` acts; the boot's proof refuses by name (never by stall) and accepts the operator's own signed log.
+  it("RED: the founded face's boot proof refuses `no-founding` by name; CONTROL: the operator's signed records, arriving with the edge, prove it", async () => {
+    const deviceKey = await pubOf(HERM_SEED);
+    const b = await bundleFor(deviceKey);
+    const repo = new Repo({ sharePolicy: async () => true });
+    const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
+    const anchor = mintFaceAnchor({ personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0 });
+    const plane = await repo.find<LarDoc>(f.personaUrl as never);
+    const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: b.personaKelChain, group: f.personaGroupId, anchor, deviceKey, planes: { persona: f.personaUrl } });
+    expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId))).toEqual({ ok: false, refusal: { why: "no-founding" } });
+    const operatorKey = f.founderEdge.personaRootDid.replace(/^0x/, "");
+    const log = await signFoundingLog({
+      group: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, rootCommitment: faceRootCommitment(f.founderEdge.personaRootDid), epoch: 0,
+      planes: { persona: f.personaUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge),
+    }, { key: operatorKey, sign: ed25519SignerFromSeed(OPERATOR_SEED) });
+    plane.change((d) => { for (const a of log) writePersonaAct(d, a); });
+    expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId)).ok).toBe(true);
   });
 });
