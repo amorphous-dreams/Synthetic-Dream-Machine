@@ -41,6 +41,8 @@ export interface PersonaProjection {
   readonly fork: ActFold["fork"];
   /** the verified head, for the anchor's frontier. */
   readonly head: { readonly seq: number; readonly cid: string } | null;
+  /** the verified lineage's cids, by seq: what a pinned frontier is checked against. */
+  readonly cids: readonly string[];
 }
 
 /** The act-specific word on who may sign it (an admission by the root or by an admitted atom, say). The signer's
@@ -78,7 +80,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: { readonly 
   const last = fold.chain[fold.chain.length - 1];
   return {
     founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, devices: [...devices].sort(), edges,
-    fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null,
+    fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }
 
