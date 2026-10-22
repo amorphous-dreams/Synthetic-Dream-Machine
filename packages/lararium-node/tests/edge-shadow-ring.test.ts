@@ -490,6 +490,7 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
+    await wearPersona(0);   // three faces held: the vessel wears the one these vectors act as
     const keys = [...(await seatChairs([0, 1, 2])).keys];
     const charter = heldCharter({ keys, threshold: 2 });
     writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
