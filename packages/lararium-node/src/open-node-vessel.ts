@@ -92,7 +92,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocuments,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocuments, raiseFaceFrontier,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -1934,16 +1934,24 @@ async function prepareNodeBootOn(
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
       }
-      if (faceAnchor && activeAtom && personaGroupId && bootstrap.personaUrl) {
+      if (faceAnchor && activeAtom && personaGroupId) {
+        // A FACED BOOT PROVES ITS FACE: a bootstrap that omits the persona plane cannot skip the proof, it refuses by name.
+        if (!bootstrap.personaUrl) throw new Error("[lararium] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
         const records = await readFacePersonaRecords(repo, {
           personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc], heldOnly: true,
         });
         const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
-          anchor: faceAnchor, deviceKey: activeAtom.key,
+          anchor: faceAnchor, deviceKey: activeAtom.key, ...(deviceEdge ? { edge: deviceEdge } : {}),
           // The face's SHARED documents: its persona plane, its circles and its identities, each named by a signed act. Sessions
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
+        const head = proof.projection.head;
+        if (head) {
+          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
+          if (pinned !== faceAnchor) await keepFaceAnchorOfGroup(pinned);
+        }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
         if (bootstrap.identitiesUrl && bootstrap.circlesUrl) joinFaceDocuments(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
       }

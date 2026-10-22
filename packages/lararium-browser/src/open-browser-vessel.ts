@@ -1260,15 +1260,23 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE FACE PROVES ITSELF FROM ITS SIGNED RECORDS (node parity): the founding under the anchored prefix, every plane
       // this boot mounts named by a signed act, and this device seated by a signed admission. The persona plane and the
       // daemon doc (where an admit bundle's acts rest) both carry records; the fold judges them.
-      if (social.personaUrl) {
+      {
+        // A FACED BOOT PROVES ITS FACE: a social record that omits the persona plane cannot skip the proof.
+        if (!social.personaUrl) throw new Error("[lararium-browser] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
         const planeDoc = heldDocOf(repo, social.personaUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
           records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
-          chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key,
+          chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
           planes: { persona: social.personaUrl, identities: social.identitiesUrl, circles: social.circlesUrl },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
+        const head = proof.projection.head;
+        if (head) {
+          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
+          if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
+        }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
         if (social.identitiesUrl && social.circlesUrl) joinFaceDocuments(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
       }
