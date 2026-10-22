@@ -20,6 +20,8 @@ uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-d-lane"
 
 ! Wave D ~ each face keeps its own key
 
+Order (controller, 2026-10-22): Wave D runs BEFORE K17-R. Circles and identities now travel to every device of a face, which raises the stakes of the omnibus node key.
+
 Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">> specifies (#/key-classes-and-routes, #/carrier-binding-and-overwrite, #/reds-executable-acceptance-statements). It lands as ONE lane, whole: a slice that moves one carrier family under the fence while the others rest under the omnibus vessel key would read green for the rows it moved and lie about every other row of the same face.
 
 <<~/ahu>>
@@ -44,6 +46,6 @@ Found A and B with independently random FCKs and trees, occupied D carriers for 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1QcqlVIiVLhO0Wf-MT1ur9z-HlBWWsoPhGULfzjbbcc
+<<^ code="&#x0003;">>ni:///sha-256;VDC625VUclmbdfcq_v1rGkKI4eO_cxISG1e16Ey7E1o
 
 <<^ code="&#x0004;" -> to="?">>

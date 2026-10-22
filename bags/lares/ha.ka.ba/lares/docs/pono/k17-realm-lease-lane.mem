@@ -20,6 +20,8 @@ uri-path  = "ha.ka.ba/lares/docs/pono/k17-realm-lease-lane"
 
 ! K17-R ~ one lease law on the realm boards
 
+Order (controller, 2026-10-22): Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>) runs BEFORE this lane. Circles and identities now travel to every device of a face, which raises the stakes of the omnibus node key.
+
 Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-advance`, `lares persona lease`) and built the fleet board's signed frontier. K17-R extends both laws to the Nexus and cabal-realm boards, as its own lane cut after Wave C lands (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane">>). It shares only the readers Wave C built: `hand-lineage`, the quorum act and `readWideningFrontier`.
 
 <<~/ahu>>
@@ -48,6 +50,6 @@ Red: an unsigned `rollLeaseEpochOnBoard` advance on a realm raises nothing, a su
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pFgZwUEBT1i2gNSv_sX-UzJtARgyxS7aEAYy7pmUd0Y
+<<^ code="&#x0003;">>ni:///sha-256;w81RZq2mZ3XmelSrJ66mQB4HjNCLlpSfxE1i4V0h-o0
 
 <<^ code="&#x0004;" -> to="?">>

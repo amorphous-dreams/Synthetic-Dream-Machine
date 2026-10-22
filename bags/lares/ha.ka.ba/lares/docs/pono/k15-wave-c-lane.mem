@@ -53,7 +53,7 @@ Wave C builds `K15` step 6, the fence, under one identity model the operator app
 # ''One SharedWorker per house.'' A tab knows its face from its custody anchor before it connects, then opens the SharedWorker whose `name` digests that house's (PersonaGroup, persona root); the house's island runs in that worker's own thread and realm, with no nested Worker (Chromium exposes none inside a SharedWorker), so each face keeps its own realm, one island per house, and a house outlives any one of its tabs. Red, in a real browser on every engine: two faces' tabs reach two worker instances, a second tab of one face reaches the same one, and the last tab's close ends the house.
 # ''The house holder answers, never stalls'' (Wave B's seventh fresh read, carried). A floor or house worker that never announces `ready` refuses its held asks by name and is never left waiting; a replay posts its replacement manifest before it retires the crossing it replaces; a missing seat-roll ledger keeps one pending find per document, never one per gate read; the C4 boot trace's manifest marker fires on the real source, proven by a control that runs `instrumentBootSource` over the daemon and counts one `host:manifest-post`; the pre-clear `doc:rested` carries a storage proof from the house's own rest shore. Red: each of these, every one through an event or causal read, never a timer that decides.
 # ''The tab reads its pins from custody'' and the tab's own Repo retires; ''each face holds its own social planes in the browser'', keyed by PersonaGroup.
-# ''The place card.'' Every node joinee holds a place card from its own place founding; a joinee path that reaches a place-arm presentation without one reds, cured at the place founding.
+# ''The place card.'' Every node joinee holds a place card from its own place founding; a joinee path that reaches a place-arm presentation without one reds, cured at the place founding. A joinee whose place slot holds the FACE's card (or the founder's) refuses by name, and the cure never writes a face's card into the place slot.
 
 <<~/ahu>>
 
@@ -81,6 +81,8 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 * ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
 * ''A face's circles and identities follow the face'' (operator ruling, 2026-10-22): minted once at founding, named by a signed `plane` act, carried in the admit bundle, adopted by every admitted device, and named in the face proof beside the persona plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-atom). Sessions stay per vessel, as motion.
 * ''A device's own entry joins the face's shared documents on the first boot that holds them'': a fresh device holds neither document at its admit, so `joinFaceDocuments` writes its identity entry and ceremony circles at the first boot whose replica holds the document, once, and never waits on a peer.
+* ''The retired-key window'': an act or lease signed by a device key after its KEL rotation retired the key still folds under the roster of its own epoch. The roster per epoch bounds it; a gate that must refuse a retired key reads the head epoch, and that read is owed with the recovery door.
+* ''The shared holder's greeting wait'' keeps one five-second timer for Firefox, where a SharedWorker port gives no earlier signal. Every other wait in the holder rides an event or a causal read.
 * ''The realm leg'' is its own lane, K17-R (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane">>): one lease law on the realm boards, landed after Wave C.
 
 <<~/ahu>>
@@ -96,6 +98,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1bwv-67iMW0JNAc00EUJ8VpHFdH8a9B8r8fba7He5PY
+<<^ code="&#x0003;">>ni:///sha-256;mUjrinIF55Tpqsrifhpw8ucHXparj4eubELDzVe-Qkc
 
 <<^ code="&#x0004;" -> to="?">>

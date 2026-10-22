@@ -43,6 +43,18 @@ describe("the place card", () => {
     });
   }, 120_000);
 
+  test("RED: a place slot holding the FACE's card refuses `not-own-seed`; the cure lives at the place founding, so the slot is never overwritten with it", async () => {
+    const { loadVesselCard } = await import("../src/node-vessel-identity.js");
+    const faceAtomSeed = new Uint8Array(32).fill(91);   // a face's atom is not the vessel's seed
+    const faceCard = await mintPlaceCard({ vesselSeed: faceAtomSeed });
+    await withLarRoot(root, async () => {
+      await persistVesselCard(faceCard.contactCardJson);
+      await expect(requirePlaceCardOfOwnSeed()).rejects.toMatchObject({ why: "not-own-seed" });
+      await expect(ensurePlaceCard()).rejects.toMatchObject({ why: "not-own-seed" });
+      expect(await loadVesselCard(), "the refusal leaves the slot as it stood").toBe(faceCard.contactCardJson);
+    });
+  }, 120_000);
+
   test("CONTROL: the admit branch of runInit mints the card before it lands the binding", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "commands", "init.ts"), "utf8");
     const admit = src.indexOf("const payload = opts.admitPayload;");
