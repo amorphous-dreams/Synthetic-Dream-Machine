@@ -635,7 +635,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
   });
 
-  // A STORE AT THE OLD FACE-ARCHIVE SHAPE (a veil row keyed by handle index) refuses by name before any face restores:
+  // A STORE THAT KEYS A VEIL ROW BY HANDLE INDEX refuses by name before any face restores:
   // no migration stands, and the operator re-founds.
   await oldShapeVeilRow(idbName);
   const bootKeys = await readBootKeys(idbName);
