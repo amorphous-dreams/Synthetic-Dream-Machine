@@ -17,7 +17,7 @@ export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } fr
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
-export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle } from "./shared-holder.js";
+export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle, houseName } from "./shared-holder.js";
 export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";
 export { makeSharedHolderCore } from "./shared-holder-core.js";
 export type { SharedHolderCore, SharedHolderCoreOptions, HolderHello, HolderIsland, HolderPort } from "./shared-holder-core.js";

@@ -1,5 +1,5 @@
 /**
- * shared-holder.test — ONE DAEMON ISLAND PER ORIGIN, TABS GET A MessagePort (device-capabilities-2026 #/moves 5:
+ * shared-holder.test — ONE DAEMON ISLAND PER HOUSE, TABS GET A MessagePort (device-capabilities-2026 #/moves 5:
  * "the daemon island could stand ONCE per origin and hand each tab a MessagePort — move 2's lock becomes the door,
  * this becomes the house behind it").
  *
@@ -57,7 +57,7 @@ function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number }
   };
 }
 
-/** A fake SharedWorker: one core per URL (the platform's one-per-origin-per-URL), a fresh port pair per tab. */
+/** A fake SharedWorker: one core per URL (the platform's one-per-name-and-URL), a fresh port pair per tab. */
 function fakeSharedWorkerHost(coreFor: (url: string) => ReturnType<typeof makeSharedHolderCore>): SharedWorkerHost {
   class FakeSharedWorker {
     readonly port: MessagePort;
@@ -84,8 +84,8 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     };
     const host = fakeSharedWorkerHost(coreFor);
 
-    const a = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
-    const b = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
+    const a = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
+    const b = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
     expect(a.kind).toBe("attached"); expect(b.kind).toBe("attached");
     if (a.kind !== "attached" || b.kind !== "attached") return;
 
@@ -131,7 +131,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
         port2.postMessage(hello);
       }
     }
-    const attached = await attachSharedHolder({
+    const attached = await attachSharedHolder({ houseName: "lares:house:test", 
       holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
       host: { SharedWorker: GreetingSharedWorker as unknown as SharedWorkerHost["SharedWorker"] },
     });
@@ -157,7 +157,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
   });
 
   test("CONTROL — no SharedWorker on the host: the floor, named; the lock refuses as today with no holder to attach to", async () => {
-    const r = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: {} });
+    const r = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: {} });
     expect(r.kind).toBe("floor");
     if (r.kind === "floor") expect(r.why).toMatch(/SharedWorker/);
     const lockTable = new Map<string, string>([[vesselLockName(IDB), "tab-1"]]);
@@ -192,7 +192,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
       spawnIsland: () => { throw new Error("a refused holder must not boot an island"); },
     }));
 
-    await expect(attachSharedHolder({
+    await expect(attachSharedHolder({ houseName: "lares:house:test", 
       holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
       host,
       helloTimeoutMs: 5_000,
@@ -211,12 +211,12 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const host = fakeSharedWorkerHost(() => core);
     const holderUrl = new URL("https://vessel.test/shared-holder.worker.js");
 
-    await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+    await expect(attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host, helloTimeoutMs: 5_000 }))
       .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
     expect(island.boots()).toBe(0);
 
     lockTable.delete(lockName);
-    const recovered = await attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 });
+    const recovered = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host, helloTimeoutMs: 5_000 });
     expect(recovered.kind).toBe("attached");
     if (recovered.kind !== "attached") return;
     expect(recovered.hello.islandBoots).toBe(0);
@@ -231,8 +231,8 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const host: SharedWorkerHost = {
       SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
     };
-    const first = await attachSharedHolder({ holderUrl, host });
-    const second = await attachSharedHolder({ holderUrl, host });
+    const first = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
+    const second = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
     expect(first.kind).toBe("attached");
     expect(second.kind).toBe("attached");
     if (first.kind !== "attached" || second.kind !== "attached") return;
@@ -258,7 +258,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     expect(await ask(secondHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     second.port.close();
-    const reattached = await attachSharedHolder({ holderUrl, host });
+    const reattached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
     expect(reattached.kind).toBe("attached");
     if (reattached.kind !== "attached") return;
     expect(reattached.hello.islandBoots).toBe(1);
@@ -285,7 +285,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
       SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
     };
     try {
-      await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+      await expect(attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host, helloTimeoutMs: 5_000 }))
         .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
     } finally {
       releaseLock?.();
@@ -299,7 +299,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
         readonly port = new MessageChannel().port1;
       } as unknown as SharedWorkerHost["SharedWorker"],
     };
-    const attached = await attachSharedHolder({
+    const attached = await attachSharedHolder({ houseName: "lares:house:test", 
       holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
       host: noGreeting,
       helloTimeoutMs: 1,

@@ -78,9 +78,11 @@ export async function holdVesselLock(
     /** The shared holder's lock client id (shared-holder.ts `hello.lockClientId`). A refusal by THAT client reads as
      *  ATTACH — the house behind the lock — rather than as the collision; any other client still refuses loud. */
     readonly attachToHolder?: string | null;
+    /** The house a shared holder serves this tab: its lock is the vessel lock scoped by the house name (one holder per house). */
+    readonly houseName?: string;
   } = {},
 ): Promise<VesselLockHold> {
-  const name = vesselLockName(idbName);
+  const name = opts.houseName ? `${vesselLockName(idbName)}:${opts.houseName}` : vesselLockName(idbName);
   if (!host || typeof host.request !== "function") {
     throw new Error(
       `[vessel] cannot open store "${idbName}": this engine offers no Web Locks; one holder per store cannot be enforced.`,

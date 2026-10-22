@@ -1,5 +1,5 @@
-// Local SharedWorker shim — runs @lararium/browser's shared-holder body: one daemon island per origin, a port per
-// tab. The holder spawns the daemon island (a nested dedicated worker) from the `?island=` URL its own URL carries.
+// Local SharedWorker shim — runs @lararium/browser's shared-holder body: one daemon island per house, a port per
+// tab. The holder starts the daemon island in this realm over a local MessageChannel.
 import { registerWorkerErrorRelay } from "./worker-boot.js";
 
 registerWorkerErrorRelay("shared-holder");

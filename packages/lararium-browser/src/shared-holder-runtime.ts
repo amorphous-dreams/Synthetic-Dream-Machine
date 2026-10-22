@@ -5,6 +5,8 @@ import type { LockHost } from "./vessel-lock.js";
 
 export interface HolderRuntimeEnvironment {
   readonly lockName: string;
+  readonly holderLockName?: string;
+  readonly expectedHouseName?: string;
   readonly locks: LockHost | null;
   readonly spawnIsland: (personaGroup: string, personaRoot: string, edgeDigest: string) => HolderIsland;
   readonly openRepo: (storeName: string) => {
@@ -24,7 +26,8 @@ export function makeHolderRuntime(env: HolderRuntimeEnvironment): {
     return `${env.lockName}:house:${Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
   };
   const core = makeSharedHolderCore({
-    lockName: env.lockName,
+    lockName: env.holderLockName ?? env.lockName,
+    ...(env.expectedHouseName ? { expectedHouseName: env.expectedHouseName } : {}),
     locks: env.locks,
     ...(env.locks ? {
       // A same-origin tab stealing the session lock is accepted: api/pono/session-contract.mem #/the-trust-line.

@@ -1,5 +1,5 @@
 /**
- * shared-holder — the TAB'S door onto the one-per-origin holder (shared-holder-core.ts).
+ * shared-holder — the TAB'S door onto the one-per-house holder (shared-holder-core.ts).
  *
  * When the engine offers `SharedWorker`, the vessel open connects to the holder script, waits for its greeting,
  * and holds the port: the daemon VM then spawns NO worker of its own — `holderWorkerHandle(port)` wraps the
@@ -14,7 +14,7 @@
 import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
 import { signHolderSessionProof } from "@lararium/mesh/holder-session-proof";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
-import { HOLDER_UNAVAILABLE_NO_WORKER, type HolderHello, type HolderRefused } from "./shared-holder-core.js";
+import { type HolderHello, type HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
@@ -64,6 +64,7 @@ export class SharedHolderRefusal extends Error {
 /** Connect to the holder and wait for its greeting; the floor where the engine offers no SharedWorker. */
 export async function attachSharedHolder(args: {
   readonly holderUrl: URL;
+  readonly houseName: string;
   readonly host?:     SharedWorkerHost;
   /** How long to wait for the greeting before reading the holder as absent (a script that never answers). */
   readonly helloTimeoutMs?: number;
@@ -74,7 +75,7 @@ export async function attachSharedHolder(args: {
   }
   let port: MessagePort;
   try {
-    port = new host.SharedWorker(args.holderUrl, { type: "module", name: "lares:shared-holder" }).port;
+    port = new host.SharedWorker(args.holderUrl, { type: "module", name: args.houseName }).port;
   } catch (e) {
     return { kind: "floor", why: `SharedWorker refused to start (${e instanceof Error ? e.message : String(e)}); the daemon island rides a dedicated worker` };
   }
@@ -97,11 +98,6 @@ export async function attachSharedHolder(args: {
     }, args.helloTimeoutMs ?? 5_000);
   });
   if (!greeting) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
-  // A holder whose engine cannot start an island refuses before any admission; the tab takes the dedicated-worker floor.
-  if (greeting.kind === "holder:refused" && greeting.cause === HOLDER_UNAVAILABLE_NO_WORKER) {
-    port.close();
-    return { kind: "floor", why: `${greeting.cause}; the daemon island rides a dedicated worker` };
-  }
   if (greeting.kind === "holder:refused") {
     port.close();
     throw new SharedHolderRefusal(greeting);
@@ -280,4 +276,11 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
     // A tab never terminates the shared island; closing its port is the whole of leaving.
     terminate: () => { try { send({ type: "session:close" }, []); } finally { waiting.splice(0); detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
   };
+}
+
+/** Stable SharedWorker name for one face's house. */
+export async function houseName(group: string, root: string): Promise<string> {
+  const bytes = new TextEncoder().encode(`${group}|${root}`);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return `lares:house:${Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
 }

@@ -281,7 +281,7 @@ describe("the tab's handle delivers the holder's lock and its named end", () => 
     const channel = new MessageChannel();
     const hello = { kind: "holder:hello", ownerEpoch: "e1", sessionId: "s1", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
     class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
     if (attached.kind !== "attached") throw new Error("not attached");
     const locked: string[] = [];
     const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, { onLock: (g: string) => locked.push(g) } as never);
@@ -325,7 +325,7 @@ describe("a tab boots its island through the gate that waits for the boot", () =
       },
     });
     class Pair { readonly port: MessagePort; constructor() { const c = new MessageChannel(); this.port = c.port1; void core.connect(c.port2 as unknown as HolderPort); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
     if (attached.kind !== "attached") throw new Error("not attached");
     const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom });
     const heard: Array<Record<string, unknown>> = [];
@@ -362,7 +362,7 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     const channel = new MessageChannel();
     const hello = { kind: "holder:hello", ownerEpoch: "floor-epoch", sessionId: "floor-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
     class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
     expect(attached.kind).toBe("attached");
     if (attached.kind !== "attached") return;
     const posts: Message[] = [];
@@ -394,7 +394,7 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     const channel = new MessageChannel();
     const hello = { kind: "holder:hello", ownerEpoch: "manifest-epoch", sessionId: "manifest-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
     class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
     expect(attached.kind).toBe("attached");
     if (attached.kind !== "attached") return;
     const firstSync = new MessageChannel();
@@ -444,7 +444,7 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     const channel = new MessageChannel();
     const hello = { kind: "holder:hello", ownerEpoch: "failed-epoch", sessionId: "failed-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
     class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
     expect(attached.kind).toBe("attached");
     if (attached.kind !== "attached") return;
     const floorPosts: unknown[] = [];
@@ -482,7 +482,7 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     const channel = new MessageChannel();
     const hello = { kind: "holder:hello", ownerEpoch: "early-epoch", sessionId: "early-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
     class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
     expect(attached.kind).toBe("attached");
     if (attached.kind !== "attached") return;
     const posts: Message[] = [];
@@ -513,7 +513,7 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
       },
     });
     class Pair { readonly port: MessagePort; constructor() { const c = new MessageChannel(); this.port = c.port1; void core.connect(c.port2 as unknown as HolderPort); } }
-    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
+    const attached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Pair as unknown as SharedWorkerHost["SharedWorker"] } });
     expect(attached.kind).toBe("attached");
     if (attached.kind !== "attached") return;
     let floors = 0;

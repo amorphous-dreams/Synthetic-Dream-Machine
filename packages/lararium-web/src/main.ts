@@ -48,14 +48,13 @@ const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
 if (new URL(location.href).searchParams.get("c4trace") === "1") {
   daemonWorkerUrl.searchParams.set("c4trace", "1");
 }
-// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per origin inside a SharedWorker, a port per
-// tab. The holder's own URL carries the island script and the store's lock name. Absent the flag the vessel
+// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per house inside a SharedWorker, a port per
+// tab. The holder uses the daemon start module and the store's lock name. Absent the flag the vessel
 // boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not
 // assumed, before it becomes the default.
 const sharedHolderUrl = (() => {
   if (!new URL(location.href).searchParams.has("holder")) return undefined;
   const u = new URL(sharedHolderUrlStr, import.meta.url);
-  u.searchParams.set("island", daemonWorkerUrl.href);
   u.searchParams.set("lock", vesselLockName("lares:vessel"));
   return u;
 })();

@@ -1,10 +1,6 @@
-/**
- * The production holder's house lifetime, measured in each engine's real workers and IndexedDB. Chromium's SharedWorker
- * scope exposes no Worker, so there the holder refuses by name and the tab takes its floor (one named expectation);
- * Firefox, whose SharedWorker can spawn a Worker, runs the real cases (the browser package's firefox project).
- */
+/** Real SharedWorker house lifecycle in Chromium and other supported engines. */
 import { describe, expect, test } from "vitest";
-import { attachSharedHolder, holderWorkerHandle } from "../src/shared-holder.js";
+import { attachSharedHolder, holderWorkerHandle, houseName } from "../src/shared-holder.js";
 import { faceFixture } from "./holder-session-fixture.js";
 
 async function lockHeld(name: string): Promise<boolean> {
@@ -28,28 +24,28 @@ function urls(id: string) {
   const islandUrl = new URL("./fixtures/stub-island.worker.ts", import.meta.url);
   islandUrl.searchParams.set("id", id);
   const holderUrl = new URL("../src/shared-holder.worker.ts", import.meta.url);
-  holderUrl.searchParams.set("island", islandUrl.href);
+  holderUrl.searchParams.set("island-module", islandUrl.href);
   holderUrl.searchParams.set("lock", lockName);
-  return { lockName, islandLock: `island:${id}`, holderUrl };
+  return { lockName, holderUrl };
 }
 
 // Attachment itself answers which engine can run the real peer path; no expected failure can pass before that path.
-const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl });
+const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl, houseName: await houseName("probe", crypto.randomUUID()) });
 const canAttach = probe.kind === "attached";
 if (probe.kind === "attached") probe.port.close();
 
-async function rig() {
-  const id = crypto.randomUUID();
+async function rig(id = crypto.randomUUID(), faceTag = id) {
   const paths = urls(id);
-  const face = await faceFixture(`face:web-production:${id}`);
-  const attach = async () => {
-    const opened = await attachSharedHolder({ holderUrl: paths.holderUrl });
+  const face = await faceFixture(`face:web-production:${faceTag}`);
+  const namedHouse = await houseName(face.group, face.edge.personaRootDid);
+  const attach = async (name = namedHouse) => {
+    const opened = await attachSharedHolder({ holderUrl: paths.holderUrl, houseName: name });
     expect(opened.kind, "this engine reached a production holder session").toBe("attached");
     if (opened.kind !== "attached") throw new Error(`holder attachment refused: ${opened.why}`);
     const handle = holderWorkerHandle(opened.port, { personaGroup: face.group, edge: face.edge, atom: face.atom });
     return { opened, handle };
   };
-  return { ...paths, face, attach };
+  return { ...paths, face, attach, namedHouse, islandLock: `island:${id}:${namedHouse}` };
 }
 async function admitFirst(r: Awaited<ReturnType<typeof rig>>) {
   const tab = await r.attach();
@@ -69,17 +65,13 @@ async function admitFirst(r: Awaited<ReturnType<typeof rig>>) {
 }
 
 describe("production shared holder lifecycle", () => {
-  // MEASURED (2026-10-20): Chromium's SharedWorker scope has no Worker, so the holder refuses by name ("holder-unavailable:
-  // no nested Worker in this engine"); Firefox's production worker does not boot under this harness at all (its module
-  // graph carries the automerge wasm, and the worker never greets, while the core-only fixture greets), so its attach reads
-  // "never greeted" and the tab takes the floor. Either way no peer path stands to measure here, so the lifecycle cases
-  // below skip by name; the day an engine attaches, they run for real.
-  test.skipIf(canAttach)("floor engines name why the holder is unavailable before a peer session", () => {
+  // A module graph that cannot greet reports its engine and cause through the floor witness.
+  test.skipIf(canAttach)("Firefox module graph: floor engine names why the holder is unavailable before a peer session", () => {
     expect(probe.kind).toBe("floor");
-    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^holder-unavailable:|^the shared holder never greeted/);
+    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^the shared holder never greeted|^SharedWorker refused/);
   });
 
-  test.skipIf(!canAttach)("closing the last tab port releases the island lock and house database", async () => {
+  test.skipIf(!canAttach)("Firefox module graph: closing the last tab port releases the island lock and house database", async () => {
     const r = await rig(); const tab = await admitFirst(r);
     const store = await houseStore(r.lockName, r.face.group, r.face.edge.personaRootDid);
     tab.handle.terminate(); tab.channel.port1.close();
@@ -87,7 +79,7 @@ describe("production shared holder lifecycle", () => {
     await expect(deleteOutcome(store), "the Repo closes with the last session").resolves.toBe("deleted");
   }, 30_000);
 
-  test.skipIf(!canAttach)("pagehide's session:close releases the island lock and house database", async () => {
+  test.skipIf(!canAttach)("Firefox module graph: pagehide's session:close releases the island lock and house database", async () => {
     const r = await rig(); const tab = await admitFirst(r);
     const store = await houseStore(r.lockName, r.face.group, r.face.edge.personaRootDid);
     // The attached tab's pagehide listener emits its port-bound session:close envelope.
@@ -97,9 +89,10 @@ describe("production shared holder lifecycle", () => {
     tab.opened.port.close(); tab.channel.port1.close();
   }, 30_000);
 
-  test.skipIf(!canAttach)("CONTROL: a second admitted session keeps the island and Repo after the first closes", async () => {
+  test.skipIf(!canAttach)("Firefox module graph: CONTROL: a second admitted session keeps the island and Repo after the first closes", async () => {
     const r = await rig(); const first = await admitFirst(r);
     const second = await r.attach();
+    expect(second.opened.hello.ownerEpoch).toBe(first.opened.hello.ownerEpoch);
     const admitted = new Promise<void>((resolve) => {
       const onMessage = (event: MessageEvent) => {
         if ((event.data as { kind?: string }).kind !== "holder:admitted") return;
@@ -114,5 +107,28 @@ describe("production shared holder lifecycle", () => {
     expect(await deleteOutcome(store), "the second session keeps the Repo database open").toBe("blocked");
     second.handle.terminate();
     await expect.poll(() => lockHeld(r.islandLock), { timeout: 10_000 }).toBe(false);
+  }, 30_000);
+  test.skipIf(!canAttach)("Firefox module graph: separate faces reach separate house workers", async () => {
+    const id = crypto.randomUUID();
+    const a = await rig(id, "a");
+    const b = await rig(id, "b");
+    const first = await admitFirst(a);
+    const second = await admitFirst(b);
+    expect(first.opened.hello.ownerEpoch).not.toBe(second.opened.hello.ownerEpoch);
+    expect(await lockHeld(a.islandLock)).toBe(true);
+    expect(await lockHeld(b.islandLock)).toBe(true);
+    first.handle.terminate(); second.handle.terminate();
+    first.channel.port1.close(); second.channel.port1.close();
+  }, 30_000);
+
+  test.skipIf(!canAttach)("Firefox module graph: wrong house name refuses before island boot", async () => {
+    const r = await rig();
+    const wrong = await r.attach(await houseName("other-face", r.face.edge.personaRootDid));
+    const refusal = new Promise<string>((resolve) => wrong.opened.port.addEventListener("message", (event) => {
+      const msg = event.data as { kind?: string; cause?: string };
+      if (msg.kind === "holder:refused") resolve(msg.cause ?? "");
+    }, { once: true }));
+    expect(await refusal).toBe("wrong-house");
+    wrong.handle.terminate();
   }, 30_000);
 });
