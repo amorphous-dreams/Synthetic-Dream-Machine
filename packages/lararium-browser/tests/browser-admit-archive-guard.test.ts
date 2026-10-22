@@ -13,7 +13,7 @@ import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyh
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
+import { openVesselIdb, idbKeys } from "../src/browser-vessel-identity.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { loadBrowserVeilArchive, saveBrowserVeilArchive } from "../src/browser-keyhive-archive.js";
 
@@ -31,7 +31,11 @@ vi.mock("@lararium/keyhive", async (orig) => {
 
 async function foundedGroup(idbName: string): Promise<string> {
   const db = await openVesselIdb(idbName);
-  try { return (await idbGet<{ personaGroupId: string }>(db, "bootstrap", "social-bootstrap"))!.personaGroupId; }
+  try { return (await (async () => {
+    const keys = await idbKeys(db, "keystore");
+    const row = keys.find((k) => /^(?:sealed\/)?face-atom\//.test(k));
+    return row!.replace(/^(?:sealed\/)?face-atom\//, "");
+  })()); }
   finally { db.close(); }
 }
 

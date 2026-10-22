@@ -22,6 +22,8 @@ const PAYLOAD = {
   syncUrl: null,
   personaUrl: "automerge:persona",
   islandDocUrl: "automerge:island",
+  personaActs: [],
+  edgeFrontier: { records: [], snapshots: [] },
 } as unknown as DeviceAdmitPayload;
 
 describe("the carried admission", () => {

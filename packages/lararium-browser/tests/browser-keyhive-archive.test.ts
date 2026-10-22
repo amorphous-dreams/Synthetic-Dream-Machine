@@ -22,7 +22,7 @@ import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@l
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { loadBrowserSigningSeed, openVesselIdb, idbGet, idbPut } from "../src/browser-vessel-identity.js";
+import { loadBrowserSigningSeed, openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
 import {
   BrowserArchiveRowMissing, BrowserArchiveRowUnreadable, browserVeilArchiveRow,
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, saveBrowserKeyhiveArchive,
@@ -32,8 +32,8 @@ const BAG = "lar:///browser.reload.bag";
 async function foundedGroup(idbName: string): Promise<string> {
   const db = await openVesselIdb(idbName);
   try {
-    const social = await idbGet<{ personaGroupId: string }>(db, "bootstrap", "social-bootstrap");
-    return social!.personaGroupId;
+    const row = (await idbKeys(db, "keystore")).find((k) => /^(?:sealed\/)?face-atom\//.test(k));
+    return row!.replace(/^(?:sealed\/)?face-atom\//, "");   // the founding rests the atom before the bootstrap commits
   } finally { db.close(); }
 }
 

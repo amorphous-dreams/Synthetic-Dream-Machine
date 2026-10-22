@@ -147,7 +147,11 @@ async function plantedVessel(tag: string) {
 
 async function foundedGroup(idbName: string): Promise<string> {
   const db = await openVesselIdb(idbName);
-  try { return (await idbGet<{ personaGroupId: string }>(db, "bootstrap", "social-bootstrap"))!.personaGroupId; }
+  try { return (await (async () => {
+    const keys = await idbKeys(db, "keystore");
+    const row = keys.find((k) => /^(?:sealed\/)?face-atom\//.test(k));
+    return row!.replace(/^(?:sealed\/)?face-atom\//, "");
+  })()); }
   finally { db.close(); }
 }
 
