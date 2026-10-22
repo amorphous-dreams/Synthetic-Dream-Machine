@@ -32,7 +32,9 @@ const foundFace = direct(runFoundTheFace);
 const land = direct(runInit);
 const roots: string[] = [];
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
-const GROUND = [DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle, BAG_IDS.lares, BAG_IDS.lararium] as const;
+// The vessel's own ground. The live lares and lararium documents rest in the Kahu realm and register only on a
+// vessel the realm names (W26); the smoke e2e reads that registration, and this file reads face scoping alone.
+const GROUND = [DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle] as const;
 
 function scratchRoot(): { root: string; genesisDir: string } {
   const root = mkdtempSync(join(tmpdir(), "register-mounted-face-bags-"));

@@ -34,13 +34,13 @@
  * leaks version / activity / membership-change timing — Pfitzmann-Hansen) and at the
  * members-only STORE (its own sync + access patterns), never inside the projector.
  *
- * Platform-blind: rides @lararium/mesh's cabal-realm + oracle-substrate + pinned-doc only. NO
+ * Platform-blind: rides @lararium/mesh's cabal-realm + flow-substrate + pinned-doc only. NO
  * node: imports.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { pinnedDoc, exportOracleSnapshot, type OracleSnapshot, type CabalRealm } from "@lararium/mesh";
+import { pinnedDoc, exportFlowSnapshot, type FlowSnapshot, type CabalRealm } from "@lararium/mesh";
 
 /**
  * A cabal-realm's CHARTER — its PUBLIC face, the only projection that ever crosses
@@ -158,23 +158,23 @@ export function projectRealmGlamour(state: CabalRealmPublishState): RealmGlamour
 
 /**
  * Serialize a charter into a content-addressed snapshot (the read-face artifact),
- * reusing the EXACT oracle read-face mechanism (`exportOracleSnapshot`) the FLOW-map serve
+ * reusing the EXACT flow read-face mechanism (`exportFlowSnapshot`) the FLOW-map serve
  * uses — load the plain charter into an ambient-free Automerge doc (`pinnedDoc` pins
  * the actor AND the clock, both of which otherwise land in the saved bytes), export by
  * content hash. Deterministic: the same charter yields the same cid, stable until the
  * realm's published meta changes — exactly what a content-addressed read-face wants.
  */
-export function realmGlamourSnapshot(charter: RealmGlamour): Promise<OracleSnapshot> {
+export function realmGlamourSnapshot(charter: RealmGlamour): Promise<FlowSnapshot> {
   // Automerge rejects `undefined` values + the readonly interface; the charter
   // already omits unset keys (projectRealmGlamour), so this clone runs total.
-  return exportOracleSnapshot(pinnedDoc({ ...charter } as unknown as Record<string, unknown>));
+  return exportFlowSnapshot(pinnedDoc({ ...charter } as unknown as Record<string, unknown>));
 }
 
 /**
  * The read-face wiring helper — produce the `exportSnapshot` shore variant that
  * serves ONLY a realm's charter. Hand it straight to the node-side read-face:
  *
- *   mountOracleReadFace({ …, exportSnapshot: realmGlamourExporter(state) })
+ *   mountFlowReadFace({ …, exportSnapshot: realmGlamourExporter(state) })
  *
  * The read-face calls it on each change with the live doc; the charter stands STATIC
  * public meta, so the exporter ignores that arg and re-snapshots the charter (the
@@ -184,7 +184,7 @@ export function realmGlamourSnapshot(charter: RealmGlamour): Promise<OracleSnaps
  */
 export function realmGlamourExporter(
   state: CabalRealmPublishState,
-): (doc?: unknown) => Promise<OracleSnapshot> {
+): (doc?: unknown) => Promise<FlowSnapshot> {
   const charter = projectRealmGlamour(state);
   return (_doc?: unknown) => realmGlamourSnapshot(charter);
 }

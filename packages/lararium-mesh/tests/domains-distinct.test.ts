@@ -15,8 +15,9 @@ const ROOT = `${DOMAIN_ROOT}/`;
 
 /** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
  *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 34;
-const FROZEN_WELD = "e30193af53f1aabc6dd768b0594df4d70bcbb0b7d9cf1c653501dc393867d645";
+const FROZEN_COUNT = 33;
+// W26 slice 4 retired `oracle-pointer` (34 → 33): the weld below is the 34-row hash (e30193af…) minus that one row, re-measured.
+const FROZEN_WELD = "0252fa0a96374c652601129b29af2ba0817a8eda761bd173eb5be7f2ec93befc";
 
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
@@ -47,6 +48,20 @@ describe("the domain registry", () => {
     // Every frozen string signs or derives live material, so the set may only shrink. A new domain that
     // grew a tail would raise this count; a new domain mints bare.
     expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
+  });
+
+  test("the floor release mints bare under its own name, apart from the pointer and the acts a seat also signs (W26 slice 4)", () => {
+    expect(domains.FLOOR_RELEASE_DOMAIN).toBe(`${DOMAIN_ROOT}/floor-release`);
+    expect(domains.ALL_DOMAINS).toContain(domains.FLOOR_RELEASE_DOMAIN);
+    for (const other of [domains.FLOW_POINTER_DOMAIN, domains.KAHU_CABAL_ADMIT_DOMAIN, domains.PROMOTION_APPROVAL_DOMAIN, domains.REALM_BAG_DOMAIN]) {
+      expect(domains.FLOOR_RELEASE_DOMAIN).not.toBe(other);
+    }
+  });
+
+  test("the flow pointer mints bare under its own name and the frozen oracle-pointer name leaves the registry (W26 slice 4)", () => {
+    expect(domains.FLOW_POINTER_DOMAIN).toBe(`${DOMAIN_ROOT}/flow-pointer`);
+    expect(domains.ALL_DOMAINS.some((d) => d.includes("oracle-pointer"))).toBe(false);
+    expect(domains.FLOW_POINTER_DOMAIN).not.toBe(domains.FLOOR_RELEASE_DOMAIN);
   });
 
   test("a NEW domain mints bare — the gate's verdict carries no version suffix", () => {

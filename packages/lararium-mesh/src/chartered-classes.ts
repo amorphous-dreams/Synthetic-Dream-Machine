@@ -43,8 +43,9 @@ export interface CharteredClassTable {
   readonly emergency:    ClassRule;
 }
 
-/** The surfaces whose change takes the high-impact bar: the charter, an admission, the trust root. */
-export const HIGH_IMPACT_SURFACES = Object.freeze(["charter", "admission", "trust-root"] as const);
+/** The surfaces whose change takes the high-impact bar: the charter, an admission, the trust root, and a floor release
+ *  (it moves the floor of every vessel in the Nexus). The ONE list: no module keeps a second. */
+export const HIGH_IMPACT_SURFACES = Object.freeze(["charter", "admission", "trust-root", "floor-release"] as const);
 
 const SEAT_KEY = /^[0-9a-f]{64}$/;
 

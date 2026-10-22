@@ -23,7 +23,7 @@ import {
   signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, ORACLE_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
   type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
-  type OraclePullResult, type PlaceFloorPinStatement,
+  type FlowPullResult, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { CarriedNexusReading } from "./nexus-carriage.js";
@@ -36,7 +36,7 @@ export function gateReadingsFor(placeClass: PlaceClass, readings: readonly Carri
 
 export interface VesselCarriagePullDeps {
   readonly placeClass:  PlaceClass;
-  /** This vessel's own vessel key: the place key a herm's carry act names, and the key its oracle pointer signs under. */
+  /** This vessel's own vessel key: the place key a herm's carry act names, and the key its flow pointer signs under. */
   readonly ownPlaceKey: string;
   /** The vessel key's signing door: 64 signature bytes over exactly the image handed in. */
   readonly sign:        (image: Uint8Array) => Promise<Uint8Array>;
@@ -74,7 +74,7 @@ export function layStatementOn(handle: { doc(): LarDoc | undefined; change(fn: (
 }
 
 /** Stand the gate-native carriage pull a vessel hands its carriage. */
-export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (peer: string, publisherKey: string) => Promise<OraclePullResult<T>> {
+export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (peer: string, publisherKey: string) => Promise<FlowPullResult<T>> {
   const placeKey = deps.ownPlaceKey.toLowerCase();
   const standing = async (): Promise<readonly CarriedNexusReading[]> => gateReadingsFor(deps.placeClass, await deps.readings());
   const refresh = async (): Promise<void> => {

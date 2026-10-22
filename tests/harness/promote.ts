@@ -46,3 +46,15 @@ export async function promoteLoadedTitles(
     }
   }
 }
+
+/** Seed a user bag: load the carrier into the lares wiki's working layer, then COPY its root family into `bag`. A COPY from a slot rides the daemon's reach (a MOVE out of a slot would route into the wiki island, which reaches no deep bag). */
+export async function seedUserBag(lar: { cli: (a: readonly string[]) => Promise<{ json: Record<string, unknown> | null; stdout: string; stderr: string }> }, file: string, bag: string): Promise<void> {
+  const ld = await lar.cli(["act", "LOAD", "--source-uri", file, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
+  if (ld.json?.["ok"] !== true) throw new Error(`seed LOAD refused: ${JSON.stringify(ld.json)}`);
+  const titles = (((ld.json["data"] as { titles?: string[] } | undefined)?.titles) ?? []);
+  const roots = titles.filter((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`))));
+  for (const title of roots) {
+    const mv = await lar.cli(["act", "COPY", "--title", title, "--from", "lar:///ha.ka.ba/wikis/lares/working", "--to", bag, "--yes", "--json"]);
+    if (mv.json?.["ok"] !== true) throw new Error(`seed COPY refused ${title}: ${JSON.stringify(mv.json)}`);
+  }
+}

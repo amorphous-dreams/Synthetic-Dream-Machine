@@ -107,7 +107,7 @@ describe("classThreshold", () => {
 
 describe("surfaces and coverage", () => {
   test("charter, admission and trust-root need high-impact; anything else ordinary", () => {
-    expect([...HIGH_IMPACT_SURFACES]).toEqual(["charter", "admission", "trust-root"]);
+    expect([...HIGH_IMPACT_SURFACES]).toEqual(["charter", "admission", "trust-root", "floor-release"]);
     for (const s of HIGH_IMPACT_SURFACES) expect(requiredClassFor(s)).toBe("high-impact");
     expect(requiredClassFor("crossroads")).toBe("ordinary");
     // A spelling that folds onto a high-impact surface (case, edge space, `_` or a space for `-`) takes the

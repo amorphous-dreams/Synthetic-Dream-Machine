@@ -75,7 +75,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 # ''The floor.'' A manifest CID names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs; `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`) turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
-# ''The live system documents rest in the Kahu realm'', under the Kahu face's own group once `K15`'s face context stands, so this slice waits on that step (#/rulings, 2026-10-18). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` gains its production caller; `bags/` projects on the Kahu's vessel alone. The first red stands before any document moves, since no production path calls `kahuCabalCanonAccess` today (`kahu-cabal-admission.ts`): a one-seat founding reads system canon through it over a founded island. Then the red: a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document.
+# ''The live system documents rest in the Kahu realm'', under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` gains its production caller; `bags/` projects on the Kahu's vessel alone. The first red stands before any document moves, since no production path calls `kahuCabalCanonAccess` today (`kahu-cabal-admission.ts`): a one-seat founding reads system canon through it over a founded island. Then the red: a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document.
 # ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the crossroads board carries it; `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
 # ''The accept act.'' A person's act moves a sealed hot row per (face, Nexus) to a newer release that verifies against that Nexus's charter at its epoch and links to the pinned release; no clock and no automatic accept. With no Nexus speaking, a face stands on its last accepted floor, or genesis.
 # ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
@@ -84,18 +84,53 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
+<<~ ahu #/the-seam-owed-to-wave-c>>
+
+!! The seam owed to Wave C ~ one accessor names the Kahu realm's group
+
+`kahuRealmGroup` (`packages/lararium-mesh/src/kahu-canon-reach.ts`) names the PersonaGroup that holds a Nexus's Kahu
+realm. Persona zero's group holds it today. Wave C (`K15` step 6) swaps the Kahu face's own group in at that function
+alone: the cabal's acts key on the group the accessor returns, and the realm's storage (the registrations on the
+Nexus's realm doc) never keys on it, so the swap moves no data. Every consumer reads the group through the accessor,
+never through a literal or a persona-zero lookup: the founding's admission (`landFoundingAdmission`), the daemon
+island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahuReach`).
+
+''THE LINEAGE RIDES THE RECORD, NEVER THE CARD.'' The release record and the porch answer carry the charter's epoch lineage, so a herm and a browser verify a release holding the Nexus AID alone. A card holds 4096 characters and the lineage self-certifies against the AID, so the card stays small. The carrier changes nothing about trust: the AID that anchors the lineage comes from the card or the genesis CID the reader already pins, never from the same answer, and an answer self-consistent for another AID refuses (`foreign-nexus`).
+
+''THE WIKI ISLAND TRUSTS THE GATE.'' A verb routed into a wiki island (`lares act --in-wiki`, `wiki-act`) carries its real
+destination and source inside `args.args`, where the gate's cap derivation never looked. The keyholder island's
+verify-then-delegate gate now asks the Kahu predicate for each system bag the envelope names (`routedInnerBags`,
+`CapabilityVerifier.kahuReach`), before it routes. The wiki island holds no board and no sentinel, so its action reactors
+run with `kahuReachClearedAtGate` and ask nothing again. The flag is a composition option set in code at the island's behavior, never a field of the envelope, so nothing a caller sends lifts it; every other composition leaves it unset and asks itself (`gateRoutedVerb`, `kahu-reach-gate-envelope.test`).
+The live canon documents reach every reader through the realm's standing registration (`realmStandingDocUrl`): the
+action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library bag by `libraryDocUrl`.
+
+<<~/ahu>>
+
 <<~ ahu #/what-retires>>
 
 !! What retires, slice by slice (the o-takiage census)
 
-* `lares` and `lararium` in every vessel's `OWN_GROUND` (`register-bags.ts`), and `mintLaresIfAbsent` / `mintLarariumIfAbsent` on a vessel outside the cabal (`genesis-artifact.ts`): slices 2 and 3.
+* RETIRED at slice 3: `lares` and `lararium` in every vessel's ground (`register-bags.ts` registers them only where the keel named canon), `mintLaresIfAbsent` / `mintLarariumIfAbsent` and `reconcileWellKnownTiddlers` (`genesis-artifact.ts`), and every catalog row for either bag. The founding mints and registers them in the Kahu realm (`kahu-realm.ts`).
 * The shared document's per-vessel rows: the system pointers, `registerCrossroadsInOracle`, `realm-plane.ts`'s realm pointer and steward nym: slice 2.
 * recipe-watch's oracle loop over the system slots (`recipe-watch.ts`): slice 2, which leaves it nothing to follow.
 * `W21`'s lares-pointer patch at reconcile and the oracle crossing of `device-admit.ts` `admitCanonDocs`: slice 2.
-* `OraclePointer` and `ORACLE_POINTER_DOMAIN`: slice 4.
-* Canon lines that name "the shared floor CID" (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`) and the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki": the slice whose code makes each line true.
+* RETIRED at slice 4: `OraclePointer`, `ORACLE_POINTER_DOMAIN`, `snapshotPublicOracle` and the node's oracle floor serve. The floor answers by the release at the porch; the flow map keeps its own pointer under `FLOW_POINTER_DOMAIN` (`flow-pointer`), and `oracle-substrate`, `oracle-read-client` and `oracle-read-face` live on as `flow-substrate`, `flow-read-client` and `flow-read-face`. Left for an o-takiage pass: the route and gate names that still say "oracle" (`ORACLE_SOCKET_ROUTE`, `OracleFloorGate`, `OracleGateArgs`), which name the flow map's socket and not a pointer.
+* Canon lines that named "the shared floor CID" now describe the release (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`, `genesis-doc#/the-oracle-pointer`, `disk-projection`, `dreamnet-architecture`); the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki" follow the slice whose code makes each line true.
 
 ''The interim cure stays out.'' The lane's recipe-watch hold (`--w26-own-canon`, commit `d1983aa75`) keeps a system wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that row's measurement.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed beside the slices
+
+* ''A browser Kahu hand.'' The browser composes no board reader and reads as a stranger, so it fails closed on every system bag. A browser vessel holding the Kahu face rides Wave C's face context (`K15` step 6), which carries the charter and the board to it.
+* ''A sibling device of a seat-holding face'' (the row beside the browser Kahu hand). A joined device is a sibling of the Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on it. Today it composes no board source, reads as a stranger and draws `kahu-reach` on a system bag: a missing source, not the law. `e2e/meme-two-vessel-bag` step eight keeps the law's expectation (B promotes into its own lares book) as a `test.fails` named for this row, so it turns red the day the row lands and the lander flips it; `device-admit.ts` states the law.
+* ''The carriage's canon names'' (`device-admit.ts` `admitCanonDocs`, the browser's `hearth-canon`) read catalog rows nothing writes now; they retire with `W21`'s rest.
+* ''The floor card's freshness.'' The browser verifies the lineage, the head release and the floor bytes from the Nexus AID alone (`browser-floor-read`). The AID rides the same-origin trust line, and the signed card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
+* ''The accept act'' (slice 5) records no acceptance until a face's D row stands (Wave C's FCK fence); the browser's read records none.
 
 <<~/ahu>>
 
@@ -127,6 +162,6 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1KfEkh0Sw5TquRSYqReglE-BNVBtcWHk14z8fArBLPM
+<<^ code="&#x0003;">>ni:///sha-256;YN_C6z5tWdHjEgzgELnQhlPBaEIfWzJD10lFegUUNnI
 
 <<^ code="&#x0004;" -> to="?">>

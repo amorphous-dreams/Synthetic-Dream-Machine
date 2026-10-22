@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { getHeads } from "@automerge/automerge";
 import { composeVessel, dialEntryToRecord, routingSlotToRecord, radialCoordinate, type MeshPalaceDoc, type CapModule } from "@lararium/mesh";
-import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
+import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, incommensurablePullMs, discoverPeers, dampedRadius, type MeshPalaceComponent } from "../src/node-caps.js";
 import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { floorGates, oraclePuller, presenter } from "./oracle-floor-rig.js";

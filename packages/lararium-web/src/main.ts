@@ -11,9 +11,9 @@
  * @lararium/web — DOM, Vite, and projection capability atoms for the Web-surface assembly.
  *
  * A sovereign causal island boots in the browser (its own key, IndexedDB, genesis
- * bytes) and — when a read-face is reachable — reads the public oracle read-face (the node-less
+ * bytes) and — when a hearth's porch is reachable — reads the Nexus's floor off it (the node-less
  * path: an anon browser vessel consuming the read-only substrate, the elyncia.app
- * story). Location-agnostic: served from localhost / LAN / elyncia.app, the vessel
+ * story), verifying every step here. Location-agnostic: served from localhost / LAN / elyncia.app, the vessel
  * always runs here; the origin is a static host, never an authority.
  */
 import { createLoafBuffer } from "./loaf-buffer.js";
@@ -22,11 +22,11 @@ import {
   parseAdmitCarriage, toAdmitCarriage,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
-  standBrowserCustody, readBrowserCustody, type CustodyAsk, type CustodyAnswer,
+  standBrowserCustody, readBrowserCustody, type CustodyAsk, type CustodyAnswer, type HearthFloorRead,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
 import { defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
@@ -160,34 +160,33 @@ function set(id: string, text: string, cls = ""): void {
   const el = $(id); el.textContent = text; el.className = "v " + cls;
 }
 
-// The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
-// dials the peer's floor gate under the pin it holds and proves there before any map crosses: a joined face as itself,
-// a device at the floor faceless. The read waits on the vessel standing. The read face is the node that served this page
-// (?oracle=… names another), and the snapshot verifies under the publisher key the URL's floor card carries. With no
-// publisher key the page reads nothing: nothing would verify the snapshot.
-type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
-async function readOracle(read: OracleReader): Promise<void> {
+// The floor — the Nexus's one public answer. The page reads it only through its own vessel, which fetches the hearth's porch
+// (`/floor/<Nexus AID>`) and the head release's blobs by CID, and verifies every step here: the epoch lineage re-derives the
+// AID the floor card (or the admit) carries, the head release seals as a seat of its epoch under the cabal's approval of the
+// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page (?oracle=… names
+// another). The read records no acceptance: the page's running floor stays the genesis floor it booted on.
+type FloorReader = (baseUrl: string) => Promise<HearthFloorRead>;
+async function readFloor(read: FloorReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const pin = floorCardOf(location.hash, readHearthFloorCard)?.card?.publisher ?? null;
   const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(params));
-  const say = (text: string, cls = ""): void => set("oracle-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
-  if (!pin) { say("no floor card names this hearth's oracle publisher (#floor=… from the hearth's banner) — nothing to read", "warn"); return; }
-  say(`proving at ${readFace} …`);
+  const say = (text: string, cls = ""): void => set("floor-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
+  say(`reading the porch at ${readFace} …`);
   try {
-    const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
-    if (r.ok && r.pointer) {
-      const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
-      const oracleEl = $("oracle"); oracleEl.replaceChildren();
-      row(oracleEl, "status", "✓ verified + loaded", "ok");
-      if (elsewhere) row(oracleEl, "note", elsewhere, "warn");
-      row(oracleEl, "act", r.pointer.actCid.slice(0, 16) + "…");
-      row(oracleEl, "parents", String(r.pointer.parents.length));
-      row(oracleEl, "tiddlers", String(n));
-      row(oracleEl, "cid", r.cid ?? "—");
-      row(oracleEl, "publisher", r.pointer.pub.slice(0, 16) + "…");
+    const r = await read(readFace);
+    if (r.ok) {
+      const floorEl = $("floor"); floorEl.replaceChildren();
+      row(floorEl, "status", "✓ verified floor", "ok");
+      if (elsewhere) row(floorEl, "note", elsewhere, "warn");
+      row(floorEl, "release", r.head.cid.slice(0, 16) + "…");
+      row(floorEl, "epoch", r.head.body.epoch.slice(0, 22) + "…");
+      row(floorEl, "prior", r.head.body.prior ? r.head.body.prior.slice(0, 16) + "…" : "(the Nexus's first release)");
+      row(floorEl, "manifest", r.head.body.manifest);
+      row(floorEl, "lares rows", String(Object.keys(r.lares).length));
+      row(floorEl, "lararium rows", String(Object.keys(r.lararium).length));
+      for (const refused of r.refused) row(floorEl, "set aside", `${refused.keyCid.slice(0, 16)}… ${refused.reason}${refused.detail ? ` (${refused.detail})` : ""}`, "warn");
     } else {
-      say(`✗ ${r.reason ?? "unavailable"}`, "warn");
+      say(`✗ ${r.reason}${r.detail ? ` — ${r.detail}` : ""}`, "warn");
     }
   } catch (e) {
     say(`✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
@@ -410,7 +409,7 @@ async function bootVessel(): Promise<void> {
       console.log(`[vessel] this leaf's key: ${did}`);
       console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
     }
-    void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
+    void readFloor(result.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
     projectionSink.arm({ sendControlEvent: result.sendControlEvent });
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY

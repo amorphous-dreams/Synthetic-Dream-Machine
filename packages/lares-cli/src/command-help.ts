@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
@@ -104,6 +104,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it",
       "  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts",
       "  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync",
+      "  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the",
+      "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
+      "                                            attached, and it lands on the crossroads board once it counts",
     ],
     examples: [
       "lares nexus rite quorum",

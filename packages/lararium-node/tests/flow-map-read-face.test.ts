@@ -12,8 +12,8 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportOracleSnapshot, type MeshPalaceDoc } from "@lararium/mesh";
-import { mountOracleReadFace } from "../src/oracle-read-face.js";
+import { exportFlowSnapshot, type MeshPalaceDoc } from "@lararium/mesh";
+import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { floorGates, presenter, pullFloor } from "./oracle-floor-rig.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
@@ -30,8 +30,8 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     const base = `http://127.0.0.1:${port}`;
     // The gates survive the restart: a Herm's floor pin is its bundle's, not the process's.
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
-    const mount = () => mountOracleReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, exportSnapshot: (doc) => exportOracleSnapshot(doc as never),
+    const mount = () => mountFlowReadFace({
+      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
       ...(onLog ? { onLog } : {}),
     });
     let onLog: ((line: string) => void) | null = null;
@@ -47,12 +47,12 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     first.dispose();
     // The face's own line for "a new act stands" carries the wait: it says it after the pointer moved and rests.
     let reissued: Arrival<void> | null = null;
-    onLog = (line) => { if (/^oracle read-face: act=/.test(line)) reissued?.arrive(); };
+    onLog = (line) => { if (/^flow read-face: act=/.test(line)) reissued?.arrive(); };
     const second = await mount();
     const p1Restart = await pointerAt();
     expect(p1Restart).toEqual(p1);
 
-    reissued = arrival<void>("the read face saying a new act stands (its \"oracle read-face: act=\" line)");
+    reissued = arrival<void>("the read face saying a new act stands (its \"flow read-face: act=\" line)");
     handle.change((d) => { d.tiddlers["new"] = { public: true } as never; });
     await reissued.arrived;
     const p2 = await pointerAt();

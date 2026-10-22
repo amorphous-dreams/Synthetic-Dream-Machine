@@ -92,6 +92,19 @@ export function readRealmStanding(text: string | null | undefined): ReadonlyMap<
   return out;
 }
 
+/**
+ * The doc url a realm's STANDING registration names for `bagUri`, read off a vessel's OWN catalog: the realm id the
+ * vessel stands in, its pinned realm-doc pointer (a realm the vessel left reads none), and the standing verdict the
+ * vessel's own plane folded. Null where the vessel stands in no realm, holds no verdict, or no registration stands for
+ * the bag. A reader that wants the live system documents asks the Kahu predicate first: this names a url, never a reach.
+ */
+export function realmStandingDocUrl(catalog: LarDoc | undefined | null, bagUri: string): string | null {
+  const realmId = tiddlerText(catalog?.tiddlers?.[REALM_ID_TIDDLER]);
+  if (!realmId) return null;
+  if (tiddlerText(catalog?.tiddlers?.[realmDocPointer(realmId)]) !== realmDocUrl(realmId)) return null;
+  return readRealmStanding(tiddlerText(catalog?.tiddlers?.[realmStandingPointer(realmId)])).get(bagUri)?.docUrl ?? null;
+}
+
 /** The signing / content domain of a realm-bag registration — minted in the registry (`domains.ts`). */
 export { REALM_BAG_DOMAIN };
 

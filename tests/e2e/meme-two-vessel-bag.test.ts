@@ -14,7 +14,7 @@
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
  *   ⑥ B stands dialing A                                  the pin `fleet join land` wrote (sync url · gate pin)
  *   ⑦ A promotes in its own lares book; B measures no live record from A (W24/W27 BOOK crossing)
- *   ⑧ B promotes in its own lares book; A keeps A’s local record
+ *   ⑧ B promotes in its own lares book (OWED: a sibling device's reach follows the face's counted admission, `test.fails` until then); A keeps A’s record
  *   ⑨ the later grant lands as a RECORD on the PersonaGroup plane; B's kit takes the seat by its own act
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
@@ -209,7 +209,26 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
   });
 
-  test("⑧ MEASURE: B promotes its own local edit; A's lares book keeps A's record", async () => {
+  test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {
+    const f = join(B!.root, "npc-b-gate.mem");
+    writeFileSync(f, meme(["a", "b"]));
+    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
+    expect(ld.json?.["ok"], said(ld)).toBe(true);
+    const titles = ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []);
+    const root = titles.find((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`)))) ?? titles[0]!;
+    const mv = await B!.cli(["act", "MOVE", "--title", root, "--from", WORKING_LARES, "--to", LARES_BAG, "--yes", "--json"]);
+    expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
+    const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
+    const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    expect(aText).toContain("<<~ ahu #/a>>");
+    expect(aText).not.toContain("<<~ ahu #/b>>");
+  });
+
+  // OWED ROW (`w26-floor-lane` #/owed, "a sibling device of a seat-holding face"): B is a joined sibling device of the
+  // Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on B. Today B
+  // composes no board source and reads as a stranger, so the gate draws `kahu-reach` and this expectation fails. It turns
+  // RED the day the row lands: whoever lands it flips `test.fails` to `test`.
+  test.fails("⑧ OWED sibling-device row: B promotes its own local edit into lares; A's lares book keeps A's record", async () => {
     // W24/W27 owns the same-face BOOK crossing. A and B each promote within their own live system document.
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));

@@ -28,7 +28,6 @@ import {
   LarWSClientAdapter, type LeafIdentity,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
-  pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -48,7 +47,8 @@ import {
   readHearthFloorCard,
 }                                            from "@lararium/mesh";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCardPin, fileOwnHearthPins, hearthNameOf, oracleNexusFor } from "./browser-gate-pins.js";
-import { composeBrowserFacePresentation, facelessFloorPresentation } from "./browser-face-presentation.js";
+import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
+import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
@@ -350,9 +350,11 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   carryAtHearth: (plaintext: Uint8Array, withinMs: number) => Promise<CarryOutcome>;
   /** Fetch a carried document back by its cid and open it; null when the hearth answers nothing in `withinMs`. */
   fetchFromHearth: (cid: string, withinMs: number) => Promise<Uint8Array | null>;
-  /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
-   *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
-  readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
+  /** Read the Nexus's floor off the hearth's porch at `baseUrl` and verify every step here: the genesis epoch re-derives the
+   *  Nexus AID, each epoch step verifies, the head release seals as a seat of its epoch under the cabal's approval of the
+   *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance (a face accepts a release by
+   *  a person's own act, W26 slice 5); the running floor stays the genesis floor this vessel booted on. */
+  readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
@@ -1835,26 +1837,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // Shut by name (`walker-route-shut`): no walk is presented at the sealed gate, so nothing is carried or fetched.
     carryAtHearth: () => Promise.resolve(null),
     fetchFromHearth: () => Promise.resolve(null),
-    // The oracle CONVERTS: the reader dials the peer's FLOOR gate under the pin this vessel holds for it, and reads
-    // the pointer and the snapshot as sealed messages. `gatePubKey` is the publisher's key, never the gate's. A joined
-    // face presents as itself; a device with no face joined presents FACELESS, under a place key minted for that one
-    // read (`facelessFloorPresentation`), which a Nexus answering strangers serves and any other meets with silence.
-    readOracle: async <T>(baseUrl: string, gatePubKey: string): Promise<OraclePullResult<T>> => {
-      const presentation = facePresentation ?? await facelessFloorPresentation();
-      // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere. A device
-      // at the floor knows its hearth's Nexus by the floor card the URL carried.
-      const nexus = oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null });
-      if (nexus === null || !relayUrl) return { ok: false, reason: "no Nexus is known for this hearth: the URL carries no floor card, and no face joined here names one (nexus-absent)" };
-      // The pair index files the hearth under its relay's name, so the read asks under that same name.
-      const read = await pullAndVerifyOracle<T>(baseUrl, {
-        pins: gatePins, hearth: hearthNameOf(relayUrl), nexus, presentation, audience: DAEMON_BAG_ID,
-        deadlines: dialDeadlines(), verifyingKey: gatePubKey,
-      });
-      if (!read.ok && facePresentation === null && /said nothing/.test(read.reason ?? "")) {
-        return { ...read, reason: "silence at the floor: this hearth's Nexus answers no stranger, or the hearth stands out of reach. A face joined to this device reads what the floor holds for it" };
-      }
-      return read;
-    },
+    // The floor reads off the hearth's PORCH, and this vessel verifies it whole (`browser-floor-read`): the Nexus AID is the one
+    // trust line the floor card (or the admit) carries, the epoch lineage re-derives from it, and no pin or presentation rides.
+    // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere.
+    readFloor: (baseUrl: string): Promise<HearthFloorRead> => readHearthFloor({
+      baseUrl, nexusPin: oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
+    }),
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
     sendControlEvent: returnLeg.sendControlEvent,

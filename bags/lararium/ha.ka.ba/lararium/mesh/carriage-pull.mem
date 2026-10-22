@@ -52,7 +52,7 @@ skipped by name (`presentation-absent`), never dialed bare. Nothing is composed 
 
 !! Feed or fade
 
-The first verified pull wins (`pullAndVerifyOracle`, the pointer bound to the publisher's key); every Nexus
+The first verified pull wins (`pullAndVerifyFlow`, the flow pointer bound to the publisher's key); every Nexus
 is tried at most once per pull; nothing throws. The last refusal names itself when none answered.
 
 <<~/ahu>>
@@ -60,7 +60,7 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ ahu #/edges>>
 
 <<~ pranala #source from="?" -> to="packages/lararium-mesh/src/carriage-pull.ts" family="code" role="has">>
-<<~ pranala #dial from="?" -> to="packages/lararium-mesh/src/oracle-read-client.ts" family="code" role="dials-through">>
+<<~ pranala #dial from="?" -> to="packages/lararium-mesh/src/flow-read-client.ts" family="code" role="dials-through">>
 <<~ pranala #caller from="?" -> to="packages/lararium-node/src/herm-carriage.ts" family="code" role="stood-by">>
 
 <<~/ahu>>
@@ -69,6 +69,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 
-<<^ code="&#x0003;">>ni:///sha-256;vZIpBkldk4CyZ9l032IKTbvc7-JDEn6lzl6m7qXOvgs
+<<^ code="&#x0003;">>ni:///sha-256;oolY5ZMkU6UbPa4ZAXHvYqCWDN4gAUCIXebAoHpexE4
 
 <<^ code="&#x0004;" -> to="?">>

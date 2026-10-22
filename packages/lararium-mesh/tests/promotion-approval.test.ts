@@ -55,7 +55,7 @@ describe("open and sign", () => {
 
   test("open throws class-below-surface when an ordinary act names a high-impact surface", async () => {
     const roster = await rosterOf(5, 3);
-    for (const surface of ["charter", "admission", "trust-root"]) {
+    for (const surface of ["charter", "admission", "trust-root", "floor-release"]) {
       expect(() => openPromotionApproval({ bytes: BYTES, purpose: "p", surface, actClass: "ordinary", roster })).toThrow(/class-below-surface/);
       expect(() => openPromotionApproval({ bytes: BYTES, purpose: "p", surface, actClass: "emergency", roster })).toThrow(/class-below-surface/);
     }

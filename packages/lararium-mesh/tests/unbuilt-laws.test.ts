@@ -32,6 +32,7 @@ import { crossingDirection } from "../src/crossing-direction.js";
 import { resolveDiskMirrors } from "../src/vessel-island-pool-core.js";
 // `../tests/` so the witness's stripped copy under `.unbuilt-laws/` resolves the fixture too.
 import { seatedCharter } from "../tests/charter-fixture.js";
+import { kahuHand, strangerHand } from "../tests/kahu-reach-fixture.js";
 import * as ed25519 from "@noble/ed25519";
 import { mintDelegatedHostingAct, signHostingDelegation, verifyDelegatedHostingAct } from "../src/hosting-delegation.js";
 import { grantPublicHalf, issueWalkerGrant, verifyWalkerGrant } from "../src/walker-grant.js";
@@ -88,8 +89,14 @@ describe("④ promotion into canon", () => {
     expect(Object.keys(mesh)).toContain("promotionReceipt");
   });
 
-  test.skip("A NON-KAHU MOVE INTO A CANON BAG REFUSES — DEFERRED: expressible only against a live cap provider, so it belongs in an e2e rather than here. cap('admin', destBag) already holds this line; nothing walks it against a principal who genuinely lacks the grant", () => {
-    expect(Object.keys(mesh)).toContain("promotionReceipt");
+  test("A NON-KAHU MOVE INTO A CANON BAG REFUSES — BUILT (W26 slice 6): every door into `bags/lares` and `bags/lararium` calls the ONE predicate, `requireKahuReach` over `kahuCabalCanonAccess`, before it writes. This floor pins the predicate against each stranger the cabal names; `packages/lararium-tw5/tests/kahu-reach-doors.test.ts` walks every door by name", async () => {
+    for (const bag of mesh.SYSTEM_CANON_BAGS) {
+      for (const kind of ["joined-without-admission", "admitted-not-joined", "removed", "no-cabal"] as const) {
+        await expect(mesh.requireKahuReach(bag, await strangerHand(kind), "MOVE")).rejects.toMatchObject({ reason: "kahu-reach" });
+      }
+      await expect(mesh.requireKahuReach(bag, undefined, "MOVE")).rejects.toMatchObject({ reason: "kahu-reach" });   // fail closed
+      await expect(mesh.requireKahuReach(bag, await kahuHand(), "MOVE")).resolves.toBeUndefined();                  // CONTROL: the Kahu hand
+    }
   });
 
   test.skip("A NON-KAHU COPY OUT OF CANON SUCCEEDS — DEFERRED: the shadow copy must stay cheap (operator ruling), and canon's read-only mount carries it by copy-up on the overlay path. The RESIDENCY path reaches a bag's own doc and mounts nothing, so no test proves the cheap direction stays cheap there", () => {

@@ -330,7 +330,7 @@ contract_ab() {
 # off a board that counts it. The relay that would carry the act to the herm ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings), so the join walks three doors by file: the place signs its carrier seal and its floor pin (`nexus
 # carry-for`), A's quorum carries it with the pin beside the act (`nexus carry --floor-pin`), and the place takes the
 # carry bundle onto its own replica (`nexus carry-take`). A running place refolds on the take and its floor gate stands
-# at once (`oracle-read-face` follows the gate set at every refold). $1 = the herm joining; A's charter travels to it first.
+# at once (`flow-read-face` follows the gate set at every refold). $1 = the herm joining; A's charter travels to it first.
 await_a_boot() {
   # This bound serves the witness's own liveness and decides nothing about the product.
   if ! (set +o pipefail; timeout "${BOOT_WAIT_SECONDS}s" $COMPOSE logs --follow --no-color lararium-a 2>&1 | grep -m 1 -F '[boot] serving…' >/dev/null); then

@@ -123,7 +123,7 @@ stranger distinguishably reads as an oracle, so the client proves first.
 SILENT    herm (default)   hands over the bulb BY NAME: /bulb/<cid>.bin, /cas/<cid>; describes nothing
 WAYMARK   herm (opt-in)    + one UNSIGNED descriptor at /.well-known/lar: format, route shapes, bulb CID
 TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival descriptor (#/the-first-arrival)
-ORACLE    every vessel     NO rung: the floor carries seed-named rows; the porch answer names its CID per Nexus
+FLOOR     every vessel     NO rung of its own: the porch answers /floor/<Nexus AID> to the name the reader brings
 ```
 
 ''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
@@ -145,9 +145,7 @@ descriptor hold one dispatcher key, so one vessel can never answer the well-know
 the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
 alone; on a herm that path draws the closed door, since a readiness answer describes the self.
 
-''THE ORACLE STANDS ON NO RUNG.'' The floor carries the shared system rows named by its genesis seed. Its read-face projects those rows alone as a history-free content-addressed snapshot. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road.
-
-LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The vessel's own gate still admits only proven peers to its oracle socket.
+''THE FLOOR STANDS ON NO RUNG.'' The floor carries the shared system rows its manifest names, as history-free content-addressed snapshots. It answers by the Nexus's release at the porch, to the name a reader brings: `GET /floor/<Nexus AID>` hands over the release rows the Nexus's crossroads board carries (each with the charter's epoch lineage), and `GET /cas/<cid>` the blobs the head release names. Every other name, an AID this vessel does not answer for and a wrong method draw the one closed door. A seated Kahu key seals the release as the steward, the cabal's approval of the manifest's exact bytes rides attached, and a herm carries and presents it without signing it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/floor-release); a reader verifies the lineage, the seal, the approval and every blob's CID itself, and no tender name reaches a stranger. The vessel's own gate still admits only proven peers to its flow-map socket.
 
 ''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
@@ -408,6 +406,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F-pmgdPZq_gtz-AQFIlqrhdkePxYpGUkQ-svFnZUmNk
+<<^ code="&#x0003;">>ni:///sha-256;-J0yJBS_4yVAnVtslKOyskJsRrfkuxktit5de771rY0
 
 <<^ code="&#x0004;" -> to="?">>

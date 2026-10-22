@@ -88,6 +88,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  fold. Absent → a raise counts where this island's own count answered it (each roll its seat took, each
    *  kept roll handed back under the vessel's receipt). */
   countedRaises?: (fleetRootDid: string) => ReadonlySet<string> | Promise<ReadonlySet<string>>;
+  /** `kahuCabal` — the shore's reader of the Kahu cabal board: the charter's Nexus and seated roster, and the
+   *  admission acts its carriage board carries. This island adds the sentinel read and the group, and hands every
+   *  write door the composed source. Absent → every door reads a stranger and refuses a system canon bag (fail closed). */
+  kahuCabal?: (ctx: IslandContext) => import("@lararium/mesh").KahuCabalBoardReader;
 };
 
 /** What a shore injects so the content-key holder can stand in the daemon island. */
@@ -130,7 +134,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed } from "@lararium/mesh";
+import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { personaLineageFromKel } from "@lararium/mesh";
@@ -148,6 +152,7 @@ import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
 import { unboundMints, restingMinter } from "./resolve-binding.js";
+import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
 
 /** A daemon boot cannot stand without the daemon wiki's working layer. */
 export class WorkingLayerAttachRefusal extends Error {
@@ -190,7 +195,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // persistArchive rides node-only; keep it OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
   const {
     persistArchive, persistVeilArchive, shore, events, journalAppend,
-    bagTier, restDocuments, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, ...daemonExtra
+    bagTier, restDocuments, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, kahuCabal, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
   let clearGate!: () => void;
@@ -245,6 +250,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return atom;
   };
   let mintedByHex = daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey;
+  // THE KAHU PREDICATE'S SOURCE: the shore's board plus this island's sentinel read, asked at access.
+  const kahuReachOf = (ctx: IslandContext) => kahuReachSourceOf({
+    board: kahuCabal?.(ctx), personaGroupId: daemonAuth.personaGroupId, meshCabalDocIdHex: daemonAuth.meshCabalDocIdHex,
+    sentinelProvider: () => veilKh ?? kh,
+  });
+
+  // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
+  // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
+  const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
+    ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).handle()).doc(), bagUri) : null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -416,12 +431,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // IslandContext composite (verify-then-delegate gate inherited); the residency
     // ACTION reactors register alongside them below.
     wireWorkerVerbs: (registry, ctx: IslandContext) => {
+      const kahuReach = kahuReachOf(ctx);
       // `where` reaches every registered bag across both oracle planes by ACCESS
       // (access≠load) — the daemon queries all bags, mounts none. resolve stays
       // cascade-scoped.
       registry.register("where",      makeWhereReactor(ctx.composite, {
         repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
         slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+        systemCanonUrl: realmCanonUrlOf(ctx),
       }));
       registry.register("resolve",    makeResolveReactor(ctx.composite));
       registry.register("unbound-docs", async () => ({ verb: "unbound-docs", unbound: await unboundMints(ctx.composite) }));
@@ -462,6 +479,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           reach: {
             repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
             slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+            systemCanonUrl: realmCanonUrlOf(ctx),
           },
           registerBag: registerBagCap,
           // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
@@ -472,6 +490,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
           // The crossing gate's tier reader — node's disk, injected here so the gate can price direction.
           ...(bagTier ? { bagTier } : {}),
+          ...(kahuReach ? { kahuReach } : {}),
         });
       } else {
         for (const v of [...ACTION_VERBS, "REPACK"]) registry.register(v, lightAFace(v));
@@ -484,11 +503,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("register-cold", makeRegisterColdReactor(ctx.post));
 
       // draft needs no catalog — register it regardless of slot.
-      registry.register("draft", makeDraftReactor({ composite: ctx.composite }));
+      registry.register("draft", makeDraftReactor({ composite: ctx.composite, ...(kahuReach ? { kahuReach } : {}) }));
 
       // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
       // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
-      const memeOpts = memeVerbOptions(ctx, async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null);
+      const memeOpts = { ...memeVerbOptions(ctx, async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null, realmCanonUrlOf(ctx)), ...(kahuReach ? { kahuReach } : {}) };
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", makeMemeListReactor(memeOpts), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
@@ -923,8 +942,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
         // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
+        // A system wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
+        const systemCanonUrl = async (bagUri: string): Promise<string | null> =>
+          (await holdsKahuReach(kahuReach)) ? realmStandingDocUrl((await catalog.handle()).doc(), bagUri) : null;
         const wikiMintOpts = {
           composite:   ctx.composite,
+          systemCanonUrl,
           repo:        ctx.repo,
           catalog,
           ...(sysPlane ? { oracle: sysPlane } : {}),
@@ -940,7 +963,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
-        registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane));
+        registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
         // Whole-wiki residency policy — read the catalog recipe, command main's manager
         // per bag via daemon:residency-op. Pure policy, no live-layer mechanism.
         registry.register("pin-wiki",      makeWikiPinReactor(catalog, ctx.post, sysPlane));
@@ -1125,7 +1148,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
-      return faceOwnerVerifier({ vessel: keyhive, face: veilKh, ...(daemonAuth.atom ? { mount: { atomKey: daemonAuth.atom.key, placeKey: daemonAuth.vesselVerifyingKey } } : {}) });
+      // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
+      return withKahuReach(
+        faceOwnerVerifier({ vessel: keyhive, face: veilKh, ...(daemonAuth.atom ? { mount: { atomKey: daemonAuth.atom.key, placeKey: daemonAuth.vesselVerifyingKey } } : {}) }),
+        kahuReachOf(ctx),
+      );
     },
 
     // NO PEER ADMISSION HERE. A sealed gate (`face-gate`) proves the face key in its Noise finish and sorts the socket

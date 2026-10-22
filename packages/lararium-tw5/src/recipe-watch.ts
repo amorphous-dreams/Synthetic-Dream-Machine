@@ -33,7 +33,7 @@ import {
   type ChangeOrigin,
   type LarTiddlerRecord,
 } from "@lararium/mesh";
-import { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
+import { makeCatalogAccessor, findOrThrow, libraryDocUrl } from "./catalog-accessor.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 import { REBOOT_ALERT_TITLE } from "./wiki-behavior.js";
 import type { IslandContext } from "./island-context.js";
@@ -60,7 +60,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
 
   // Every bag document pointer resolves from the vessel catalog.
   const urlOfBag = async (bagId: string): Promise<string | null> =>
-    catalog ? catalog.urlOf(bagId) : null;
+    catalog ? libraryDocUrl(catalog, bagId) : null;
 
   // The island's own recipe record, through the one reader every site shares: the vessel's own
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.

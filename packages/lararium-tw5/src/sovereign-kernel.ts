@@ -70,7 +70,7 @@ import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { preloadsFromCasBlob } from "./cas-preloads.js";
-import { makeCatalogAccessor } from "./catalog-accessor.js";
+import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
@@ -339,7 +339,7 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
-      return catalog ? await catalog.urlOf(slot) : null;
+      return catalog ? await libraryDocUrl(catalog, slot) : null;
     };
 
     const slots = expandRecipe(msg.recipe);

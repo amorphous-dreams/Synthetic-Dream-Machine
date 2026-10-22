@@ -1,7 +1,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { describe, expect, it } from "vitest";
 import {
-  CARRIAGE_CARRIER_DOMAIN, DEVICE_DELEGATION_DOMAIN, GATE_PLACE_FINISH_DOMAIN, carriageFloorDutyOf, DYAD_BINDING_DOMAIN, FLEET_PROOF_DOMAIN, ORACLE_POINTER_DOMAIN,
+  CARRIAGE_CARRIER_DOMAIN, DEVICE_DELEGATION_DOMAIN, GATE_PLACE_FINISH_DOMAIN, carriageFloorDutyOf, DYAD_BINDING_DOMAIN, FLEET_PROOF_DOMAIN, FLOW_POINTER_DOMAIN,
   PLACE_FLOOR_PIN_DOMAIN, PLACE_SIGNER_DOMAINS, RAISE_CHALLENGE_DOMAIN, hexToBytes, placeFloorPinImage, placeSignerFromSeed, raiseChallengeBytes, carrierContractBytes, utf8Bytes,
 } from "../src/index.js";
 import { gatePlaceFinishImage } from "../src/gate-exchange.js";
@@ -13,7 +13,7 @@ const pin = { tier: "floor", nexus: "6e", route: "/oracle", transportKey: "11".r
 const realImage: Record<string, Uint8Array> = {
   [CARRIAGE_CARRIER_DOMAIN]: carrierContractBytes({ nym: "ab".repeat(32), sealEpochCid: "epoch-" + "cd".repeat(32) }),
   [PLACE_FLOOR_PIN_DOMAIN]: placeFloorPinImage("33".repeat(32), pin),
-  [ORACLE_POINTER_DOMAIN]: utf8Bytes([ORACLE_POINTER_DOMAIN, "cid", "h1,h2", "act", "p1", "44".repeat(32)].join("|")),
+  [FLOW_POINTER_DOMAIN]: utf8Bytes([FLOW_POINTER_DOMAIN, "cid", "h1,h2", "act", "p1", "44".repeat(32)].join("|")),
   [RAISE_CHALLENGE_DOMAIN]: raiseChallengeBytes({ vesselId: "v", nexus: "n", epoch: 7, nonce: "x" }),
   [GATE_PLACE_FINISH_DOMAIN]: gatePlaceFinishImage({ handshakeHash: new Uint8Array(32), bundleDigest: "00".repeat(32), presentationDigest: "11".repeat(32), audience: "aud", placeKey: "55".repeat(32) }),
 };
@@ -34,7 +34,7 @@ describe("the place signer", () => {
   });
 
   it("refuses a preimage that does not carry the domain it claims", async () => {
-    await expect(signer.signFloor(PLACE_FLOOR_PIN_DOMAIN, image(ORACLE_POINTER_DOMAIN))).rejects.toThrow(/does not carry the domain/);
+    await expect(signer.signFloor(PLACE_FLOOR_PIN_DOMAIN, image(FLOW_POINTER_DOMAIN))).rejects.toThrow(/does not carry the domain/);
   });
 
   it("RED: a floor domain embedded mid-body under a non-floor head refuses, whatever duty it names", async () => {
@@ -62,7 +62,7 @@ describe("the place signer", () => {
   });
 
   it("holds a closed allowlist of exactly the five floor duties", () => {
-    expect([...PLACE_SIGNER_DOMAINS].sort()).toEqual([CARRIAGE_CARRIER_DOMAIN, GATE_PLACE_FINISH_DOMAIN, ORACLE_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN].sort());
+    expect([...PLACE_SIGNER_DOMAINS].sort()).toEqual([CARRIAGE_CARRIER_DOMAIN, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN].sort());
     expect(Object.isFrozen(PLACE_SIGNER_DOMAINS)).toBe(true);
   });
 

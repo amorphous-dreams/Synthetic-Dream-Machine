@@ -1,6 +1,6 @@
 /**
  * oracle-floor-resweep — the oracle face's floor gates follow the Nexuses this vessel stands in, at every refold, as the
- * sync gates do (`mountOracleReadFace`'s `gates.onMoved`).
+ * sync gates do (`mountFlowReadFace`'s `gates.onMoved`).
  *
  * A carry-take on a running herm lands a carrier seal the gate sweep then reads: the floor gate for that Nexus must
  * stand without a restart, and an uncarry must stand it down. The face once called its gates once, at mount.
@@ -20,7 +20,7 @@ import { join } from "node:path";
 import type { Duplex } from "node:stream";
 import { Repo } from "@automerge/automerge-repo";
 import { ORACLE_SOCKET_ROUTE, type GateSessionTable, type MeshPalaceDoc } from "@lararium/mesh";
-import { mountFlowMapReadFace, type OracleFloorFace, type OracleFloorGate } from "../src/oracle-read-face.js";
+import { mountFlowMapReadFace, type FlowFloorFace, type OracleFloorGate } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import type { HttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { world, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
@@ -28,7 +28,7 @@ import { world, type World } from "../../lararium-mesh/tests/face-gate-fixture.j
 const SEED = new Uint8Array(32).fill(7);
 const SRC = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
 
-const opened: Array<{ server: Server; face: OracleFloorFace | null; dir: string }> = [];
+const opened: Array<{ server: Server; face: FlowFloorFace | null; dir: string }> = [];
 afterEach(async () => {
   for (const o of opened.splice(0)) {
     o.face?.dispose();
@@ -56,7 +56,7 @@ async function stand(initial: readonly string[]) {
   const dir = mkdtempSync(join(tmpdir(), "oracle-resweep-"));
   const repo = new Repo({ sharePolicy: async () => true });
   const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
-  const entry: { server: Server; face: OracleFloorFace | null; dir: string } = { server, face: null, dir };
+  const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
   opened.push(entry);
   let nexuses = [...initial];
   const worlds = new Map<string, World>();

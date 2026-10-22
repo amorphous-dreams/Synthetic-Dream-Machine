@@ -26,7 +26,7 @@
 
 import { attachMessageChannelSync } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
-import { wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
   isIslandToVesselMsg,
@@ -201,7 +201,8 @@ export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scop
  *    `bags/{slug}` bag → disk `bags/{slug}`), yielding only when the recipe
  *    designates that canon AND no literal grant already covers it — so system
  *    wikis (lares/lararium, literal grants) keep their static roots and never
- *    double-project.
+ *    double-project; a system wiki's canon never projects by self-canon at all
+ *    (`bags/` projects on the Kahu's vessel alone, W26 slice 3).
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -218,8 +219,10 @@ export function resolveDiskMirrors(
   return grant
     .filter((g) => {
       const bag = perWikiBag(g);
+      // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
+      // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon
-        ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag)
+        ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag) && !SYSTEM_BAGS.has(bag)
         : Boolean(mirrorBags?.includes(bag));
     })
     .map((g) =>

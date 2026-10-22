@@ -244,7 +244,8 @@ export { readVesselEdgeBoard, vesselEdgeCharter, type VesselEdgeBoardRead } from
 export { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type EdgeSeatFacts } from "./commands/edge-seats.js";
 export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult, type EdgeCosignResult } from "./commands/edge-cosign.js";
 export { runPromoteOpen, runPromoteSign, runPromoteCheck, runPromoteCheckBytes, promotionStatementDigest, PromoteError, type PromoteOpenResult, type PromoteSignResult } from "./commands/nexus-promote.js";
-export { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
+export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, landFoundingAdmission, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
+export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";

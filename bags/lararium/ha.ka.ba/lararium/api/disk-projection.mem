@@ -82,7 +82,7 @@ The public read-face projects only seed-named rows and blob descriptors, without
 
 The floor does not carry per-vessel registry pointers. A registry names documents at one scope, and that scope's owner writes it. `lares` and `lararium` remain system bag names and recipe members; their per-vessel document pointers still ride `@oracle`; bootstrap/catalog relocation remains owed. The read-face carries no oracle document itself.
 
-The bulb carries the exact seed bytes by seed CID at `/bulb/<cid>.bin`; the public oracle read-face projects the seed-named floor rows. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage.
+The bulb carries the exact seed bytes by seed CID at `/bulb/<cid>.bin`; the floor of system canon answers by the Nexus's release: one porch body per Nexus (`GET /floor/<Nexus AID>`) names the Nexus AID, the charter epoch, the release before it and the floor manifest CID. A seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">> #/floor-release). A reader holding the AID verifies the lineage, the seal, the approval and each blob's CID itself, and no tender name reaches a stranger.
 
 ''Why `@oracle` carries no disk mirror.'' The public snapshot selects its row names from the genesis seed and reads their values from the live oracle doc; the frozen seed-derived floor and its no-writer rule stay owed. Compiled engine blobs derive from the build and ride the content-addressed store. The CAS carries bytes by CID, while the read-face carries only the seed-named rows and descriptors.
 
@@ -225,6 +225,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nSVZY2FDouxKu7aESCemr-7mQtAU7s7hKE8HDJtpDgo
+<<^ code="&#x0003;">>ni:///sha-256;PSfg5yfxuGxNc97TUaO-fbKv6vztx2drrFhxOdzOX_g
 
 <<^ code="&#x0004;" -> to="?">>

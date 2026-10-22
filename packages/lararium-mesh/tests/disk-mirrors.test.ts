@@ -63,6 +63,18 @@ describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expan
       expect(out.find((m) => m.bagId === wikiSlotUri(slug, "working"))?.mirrorRoot).toBe("/root/wikis/my-world");
     });
 
+    test("★ bags/ projects on the Kahu's vessel alone: with no literal grant, a system wiki's canon never reaches disk by self-canon ★", () => {
+      // A vessel the Kahu cabal did not admit grants neither literal mirror (the node vessel's grant omits them), so the
+      // lares wiki's designated canon finds only the self-canon entry, which refuses system canon.
+      for (const slug of ["lares", "lararium"]) {
+        const out = resolveDiskMirrors(canonGrant.filter((g) => g.bagId !== LARES), [wikiBagUri(slug), wikiSlotUri(slug, "working")], slug);
+        expect(out.some((m) => m.bagId === wikiBagUri(slug))).toBe(false);
+        expect(out.find((m) => m.bagId === wikiSlotUri(slug, "working"))?.mirrorRoot).toBe(`/root/wikis/${slug}`);      // its working layer still projects
+      }
+      // CONTROL: a user wiki of the same shape projects its canon.
+      expect(resolveDiskMirrors(canonGrant.filter((g) => g.bagId !== LARES), [wikiBagUri("garden")], "garden").some((m) => m.bagId === wikiBagUri("garden"))).toBe(true);
+    });
+
     test("a system wiki (literal grant covers its slug) never double-projects", () => {
       // the lares wiki designates its own canon (lares) but a literal grant
       // already covers it → self-canon yields nothing, only the literal root.

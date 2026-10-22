@@ -28,6 +28,7 @@ import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { exportCarrierFile } from "../../lararium-tw5/src/meme-write.js";
 import { canonicalizeCarrierText } from "../../lararium-tw5/src/carrier-canonical.js";
@@ -40,6 +41,9 @@ import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
 import { boundOutcomeOutput } from "../../lararium-tw5/src/verb-vm.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 const CORE = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -171,7 +175,7 @@ describe.skipIf(coreBlobSkip)(
       composite.addLayer({ bagId: bagUri(bag), store, writable: true, defaultWritable: false });
     }
     const table = new VerbTable();
-    registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+    registerActionReactors(table, { kahuReach: KAHU, composite, tw5: makeTw5Deserializer(engine) });
     for (const bag of HOUSE_BAGS) {
       const scan = scanSource(scratch, path.join(scratch, "bags", bag), bagUri(bag), tree)!;
       const candidates = candidatesOf(scan.rows);

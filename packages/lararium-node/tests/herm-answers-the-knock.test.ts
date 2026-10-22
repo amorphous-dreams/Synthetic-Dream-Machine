@@ -20,9 +20,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { ORACLE_SOCKET_ROUTE, emptyFoundingCharterDoc, exportOracleSnapshot, type NexusDoc } from "@lararium/mesh";
+import { ORACLE_SOCKET_ROUTE, emptyFoundingCharterDoc, exportFlowSnapshot, type NexusDoc } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
-import { mountOracleReadFace, type OracleFloorFace } from "../src/oracle-read-face.js";
+import { mountFlowReadFace, type FlowFloorFace } from "../src/flow-read-face.js";
 import { makeGateSorter, ownPlacePosture, type PlaceClass } from "../src/socket-sorter.js";
 import { floorGates, place, presenter, pullFloor, pullFloorAsPlace, type World } from "./oracle-floor-rig.js";
 
@@ -32,7 +32,7 @@ const PRIVATE_CHARTER: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, 
 const servers: Server[] = [];
 const dirs: string[] = [];
 const repos: Repo[] = [];
-const faces: OracleFloorFace[] = [];
+const faces: FlowFloorFace[] = [];
 afterEach(async () => {
   for (const f of faces.splice(0)) f.dispose();
   for (const s of servers.splice(0)) await new Promise<void>((r) => s.close(() => r()));
@@ -49,7 +49,7 @@ async function stand(placeClass: PlaceClass, charter: NexusDoc | null, nexus = "
   const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
   const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { dial: { text: "node/alpha" } } });
   const rig = floorGates([nexus]);
-  const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
+  const face = await mountFlowReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never) });
   faces.push(face);
   // The vessel's real sorter over the vessel's one posture reader.
   const sorter = makeGateSorter({ posture: () => ownPlacePosture(placeClass, charter) });

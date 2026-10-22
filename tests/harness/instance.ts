@@ -259,6 +259,8 @@ const UNLOCK_LOOKS = 240;
  * Test roots alone: a live card never rests anywhere but on its paper.
  */
 const hearthCards = new Map<string, string>();
+/** Persona zero's PersonaGroup id by staged root: the group the founding admitted to the Kahu cabal. */
+const hearthGroups = new Map<string, string>();
 
 /**
  * THE STABLE FOUNDING ACT on a staged root: the place, persona zero under `name`, its one-seat seed charter and the
@@ -271,6 +273,8 @@ export async function foundStagedHearth(cli: (args: readonly string[]) => Promis
   const code = data.cards?.[0]?.code ?? "";
   if (!code) throw new Error(`staged hearth founding printed no card code (the read-back stand-in answers it on a staged root):\n${found.stdout.slice(-600)}`);
   hearthCards.set(root, code);
+  const group = ((found.json?.["data"] ?? {}) as { personaGroupId?: string }).personaGroupId;
+  if (group) hearthGroups.set(root, group);
   return code;
 }
 
@@ -293,6 +297,13 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
   if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
   const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
   hearthCards.set(root, next.join(","));
+  // A counted Kahu admission binds the charter epoch that signed it, so the roll leaves persona zero's group unadmitted
+  // under the new roster. The chairs stand on this vessel: they re-admit the group, as any rolled quorum must.
+  const group = hearthGroups.get(root);
+  if (group) {
+    const admit = await cli(["nexus", "cabal", "admit", group.replace(/^0x/, ""), "--json"]);
+    if (admit.code !== 0) throw new Error(`the rolled quorum could not re-admit persona zero's group (${admit.code})\n${admit.stdout.slice(-400)}\n${admit.stderr.slice(-600)}`);
+  }
 }
 
 /** The default rite: the Stable founding act. */

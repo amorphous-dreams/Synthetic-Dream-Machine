@@ -2,7 +2,7 @@
  * charter-funnel — every test that builds a charter goes through ONE helper.
  *
  * A charter epoch's shape changes once, in one commit. This witness keeps that commit's edit to the helper
- * (`charter-fixture.ts` here, and the CLI's half `seal-rite-fixture.ts`): it reads every test, probe and
+ * (`charter-fixture.ts` here, the CLI's half `seal-rite-fixture.ts`, and the browser's noble-only half `browser-charter.ts`): it reads every test, probe and
  * script source of every package, the root `tests/` tree and `tools/` (TypeScript, JavaScript, shell and
  * Python), strips comments, and refuses any file that builds a charter by hand outside the helper.
  *
@@ -36,6 +36,9 @@ const REPO = path.resolve(new URL(".", import.meta.url).pathname, "../../..");
 const HELPERS = [
   "packages/lararium-mesh/tests/charter-fixture.ts",
   "packages/lares-cli/tests/seal-rite-fixture.ts",
+  // The browser runner stubs `node:crypto`, which the shared helper signs a genesis through, so a browser test builds its
+  // one-seat charter here, with noble alone (`browser-floor-read.test` reads a lineage a browser must verify).
+  "packages/lararium-browser/tests/browser-charter.ts",
 ] as const;
 
 type Outside = "roll-law" | "rite-law" | "doc-law" | "signed-bytes";

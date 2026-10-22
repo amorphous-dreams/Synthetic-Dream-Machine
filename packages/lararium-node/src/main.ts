@@ -8,7 +8,7 @@
  * Three surfaces mount here, not one:
  *   ws://localhost:{port}/ws     → Automerge sync protocol (browser + remote mesh peers)
  *   /tmp/lares-<uid>/<digest>.sock → UDS verb channel (the rendezvous; co-located CLI fast path)
- *   http://localhost:{port}/…    → oracle read-face; federation pulls + verifies through it
+ *   http://localhost:{port}/…    → the porch (bulb, cas, floor release); the herm's flow-map read-face rides the gated socket
  *
  * Usage:
  *   node dist/main.js [--port 8080] [--wiki lares] [--root /alt/root]
@@ -53,7 +53,7 @@ import { materializeSharedLarDoc } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
-import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
+import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
 import type { Socket } from "node:net";
@@ -67,12 +67,10 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { mountOracleReadFace }          from "./oracle-read-face.js";
-import { loadVesselSigningSeed, loadVesselIdentity, vesselFloorKeyDoor } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor } from "./node-vessel-identity.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
-import type { AutomergeUrl }            from "@automerge/automerge-repo";
 import { join } from "path";
 import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
@@ -82,7 +80,7 @@ import { composePronaosFromEnv } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
-import { genesisSeedCid, readGenesisSeedBytes, parseGenesisSeed } from "./genesis-artifact.js";
+import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
@@ -683,7 +681,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
 }
 
-/** The hearth: the floor's caps with the wiki, the pool and the oracle read-face lit over them. */
+/** The hearth: the floor's caps with the wiki, the pool and the porch lit over them. */
 async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
@@ -747,35 +745,6 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
 
   // The CLIENT dial-out (Socket A) is read inside the vessel, from the hearth pin its admit carries and the pair index
   // of gate pins, never from the env; the vessel logs it as `[nexus-join]`.
-
-  // The oracle doc's read-only substrate (the Two-Faced Substrate's content-addressed floor) — served to
-  // PROVEN PEERS over THIS http server's gated oracle socket; an HTTP request for it meets the closed door.
-  // Write-refusing by construction (send-only, hash-named, no sync). Best-effort: a
-  // read-face failure logs and never crashes boot. lar:///…/lararium-identity#/the-oracle-plane.
-  // The face serves the genesis-named FLOOR alone (`snapshotPublicOracle`): the allow-set derives from the
-  // seed this vessel holds, so a vessel holding NO seed mounts no oracle read-face and never falls to the raw doc.
-  let oracleReadFace: { dispose: () => void } | null = null;
-  const floorSeedBytes = readGenesisSeedBytes(genesisDir);
-  const floorSeed      = floorSeedBytes ? parseGenesisSeed(floorSeedBytes) : null;
-  if (result.oracleDocUrl && (!floorSeedBytes || !floorSeed)) {
-    console.log(`[lararium] oracle read-face skipped: no genesis seed at ${genesisDir} — the floor derives from the seed, so none is served`);
-  } else if (result.oracleDocUrl && floorSeedBytes && floorSeed) {
-    try {
-      const oracleHandle = await result.repo.find(result.oracleDocUrl as AutomergeUrl);
-      const signerSeed   = await loadVesselSigningSeed();
-      const floorSeedCid = genesisSeedCid(floorSeedBytes);
-      oracleReadFace = await mountOracleReadFace({
-        httpServer, oracleHandle, signerSeed, storageDir,
-        gates:     result.floorGates,
-        dispatcher,
-        onLog: (line) => console.log(`[lararium] ${line}`),
-        exportSnapshot: (doc) => snapshotPublicOracle(doc as LarDoc, floorSeed, floorSeedCid),
-      });
-      console.log(`[lararium] oracle read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
-    } catch (e) {
-      console.log(`[lararium] oracle read-face skipped: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
 
   // Co-located fast path: a Unix-domain verb-channel for the local `lares` CLI —
   // no per-command leaf replica / WS handshake. The WS relay above stays the path
@@ -905,7 +874,6 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     try {
       readinessFace.dispose();
       pronaos?.dispose();
-      oracleReadFace?.dispose();
       dispatcher.dispose();
       front.close();
       lanSocket()?.close();
@@ -950,7 +918,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   return {
     standing: "hearth",
     onSignal: (sig) => void shutdown(sig),
-    teardown: async () => { await front.detach(); oracleReadFace?.dispose(); await result.teardown(); },
+    teardown: async () => { await front.detach(); await result.teardown(); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,

@@ -22,7 +22,7 @@ import {
   dialEntryToRecord, dialEntries, type DialEntry,
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
-import type { OraclePullResult } from "./oracle-read-client.js";
+import type { FlowPullResult } from "./flow-read-client.js";
 import type { LeafIdentity } from "./leaf-presentation.js";
 import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
@@ -262,7 +262,7 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
   return dial ? [dial] : [];
 }
 
-/** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyOracle) and merge it into
+/** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyFlow) and merge it into
  *  this vessel's meshpalace doc, re-served by the read-face (carry-by-aggregate-reserve). Peers are
  *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
  *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
@@ -274,7 +274,7 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  its own map. Nothing here reads `identity`; the type keeps it for the composer that passes it. */
 export function carriageCap(deps: {
   peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
-  pullOracle?: (peer: string, gatePubKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
+  pullOracle?: (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
@@ -404,7 +404,7 @@ export function carriageStack(deps: {
   /** Read no more (the old pull is shut); kept so existing call sites compile. */
   identity?:       LeafIdentity;
   /** A gate-native pull of a peer's public FLOW-map. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
-  pullOracle?:     (peer: string, gatePubKey: string) => Promise<OraclePullResult<MeshPalaceDoc>>;
+  pullOracle?:     (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   pullIntervalMs?: number;
   onLog?:          (line: string) => void;
 }): readonly CapModule[] {
