@@ -17,9 +17,13 @@ import type { ChangeOrigin, LarTiddlerRecord, VerbContext, Verb, CapabilityAcces
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const CORE = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 /**
@@ -68,7 +72,7 @@ function args(text: string, syncedHash: string | null, meta?: string): Record<st
 }
 async function runIngest(composite: CompositeStore, engine: TW5Engine, a: Record<string, unknown>) {
   const table = new VerbTable();
-  registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+  registerActionReactors(table, { kahuReach: KAHU, composite, tw5: makeTw5Deserializer(engine) });
   const result = await table.get("INGEST")!(a, ctx(composite, a)) as Record<string, unknown>;
   return (result["carriers"] as Array<Record<string, unknown>>)[0]!;
 }

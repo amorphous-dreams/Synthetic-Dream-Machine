@@ -13,6 +13,7 @@ export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
 export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-pool.js";
 
 export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.

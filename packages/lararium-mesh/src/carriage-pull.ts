@@ -21,9 +21,9 @@ import type { DialSocket } from "./face-dial.js";
 import type { GateBundlePin } from "./gate-bundle.js";
 import type { FacePresentation } from "./lar-ws-client-adapter.js";
 import {
-  ORACLE_SOCKET_ROUTE, pullAndVerifyOracle,
-  type OraclePullResult, type PlaceOraclePresentation,
-} from "./oracle-read-client.js";
+  ORACLE_SOCKET_ROUTE, pullAndVerifyFlow,
+  type FlowPullResult, type PlaceOraclePresentation,
+} from "./flow-read-client.js";
 
 export interface GateNativeCarriagePullDeps {
   /** The vessel's pair index. */
@@ -44,11 +44,11 @@ export interface GateNativeCarriagePullDeps {
 export const CARRIAGE_PIN_ABSENT = "pin-absent: this vessel holds no floor pin for the peer at any Nexus it stands in, so it knocks nowhere";
 
 /** Stand the pull. */
-export function gateNativeCarriagePull<T = unknown>(deps: GateNativeCarriagePullDeps): (peer: string, publisherKey: string) => Promise<OraclePullResult<T>> {
+export function gateNativeCarriagePull<T = unknown>(deps: GateNativeCarriagePullDeps): (peer: string, publisherKey: string) => Promise<FlowPullResult<T>> {
   return async (peer, publisherKey) => {
     try { await deps.refresh?.(); } catch { /* a refresh that fails files nothing new; the held pins still answer */ }
     const hearth = publisherKey.toLowerCase();
-    let last: OraclePullResult<T> | null = null;
+    let last: FlowPullResult<T> | null = null;
     let nexuses: readonly string[];
     try { nexuses = await deps.nexuses(); } catch { nexuses = []; }
     for (const nexus of new Set(nexuses)) {
@@ -63,7 +63,7 @@ export function gateNativeCarriagePull<T = unknown>(deps: GateNativeCarriagePull
         last = { ok: false, reason: "presentation-absent: this vessel presents nothing at that Nexus" };
         continue;
       }
-      const read = await pullAndVerifyOracle<T>(peer, {
+      const read = await pullAndVerifyFlow<T>(peer, {
         pins: deps.pins, hearth, nexus: nexusHex, presentation, audience: deps.audience, deadlines: deps.deadlines,
         verifyingKey: hearth, ...(deps.dialSocket ? { dialSocket: deps.dialSocket } : {}),
       });

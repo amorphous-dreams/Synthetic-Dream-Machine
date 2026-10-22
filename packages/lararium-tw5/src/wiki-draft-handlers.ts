@@ -1,5 +1,5 @@
 import type { AutomergeUrl } from "@lararium/mesh";
-import { plainEntries } from "@lararium/mesh";
+import { plainEntries, requireKahuReach } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import { type LarDoc, wikiSlotUri } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -20,6 +20,7 @@ export function makeDraftReactor(opts: DraftHandlerOptions): VerbReactor {
       toBag = fallback;
     }
 
+    await requireKahuReach(toBag, opts.kahuReach, "draft");
     const proof = await ctx.cap("admin", toBag);
     if (!proof.ok) {
       throw new Error(`cap-denied: admin on ${toBag} required (${proof.reason ?? "no reason"})`);

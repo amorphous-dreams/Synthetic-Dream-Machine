@@ -496,8 +496,9 @@ export const PERSONA_SCOPE_INFO = frozen("persona-scope");
 export const CIRCLE_SCOPE_INFO = frozen("circle-scope");
 
 // ── ARTEFACTS + BOARDS ──────────────────────────────────────────────────────────────────────────
-/** The served `oracle` pointer doc. */
-export const ORACLE_POINTER_DOMAIN = frozen("oracle-pointer");
+/** The signed causal pointer to a served FLOW-map snapshot (the herm's relay face). Its own name: the floor's answer is the
+ *  release (`floor-release`), so no pointer signs a floor, and a flow pointer verifies as nothing else. */
+export const FLOW_POINTER_DOMAIN = mint("flow-pointer");
 /** The deterministic plugin build's provenance. */
 export const PLUGIN_ATTESTATION_DOMAIN = frozen("plugin-attestation");
 /** The Mu void marker — an immune-set refusal carrying no subject. */
@@ -515,6 +516,10 @@ export const PROMOTION_APPROVAL_DOMAIN = mint("promotion-approval");
 /** The seat quorum's admission of a PersonaGroup into a Nexus's Kahu cabal: its own authority act, never a
  *  vouch (`lararium/mesh/kahu#/cabal-admission`). */
 export const KAHU_CABAL_ADMIT_DOMAIN = mint("kahu-cabal-admit");
+/** The steward's seal on a Nexus's floor release: the one porch body that names the floor manifest CID, the charter
+ *  epoch, the release before it and the Nexus AID. Its own name, so no seal over another shape (a flow pointer, a
+ *  cabal act, a promotion approval) verifies as a release (`lares/docs/pono/w26-floor-lane#/the-slices`). */
+export const FLOOR_RELEASE_DOMAIN = mint("floor-release");
 
 // ── CUSTODY CARRIER CONTEXT ─────────────────────────────────────────────────────────────────────
 /** A D row's seal context: confidential material one PersonaGroup owns, sealed under that group's face custody key. */

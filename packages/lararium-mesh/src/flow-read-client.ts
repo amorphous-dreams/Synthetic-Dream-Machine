@@ -1,11 +1,12 @@
 /**
- * oracle-read-client — the CONSUMER side of the Two-Faced Substrate: pull a peer's oracle read-face over
+ * flow-read-client — the CONSUMER side of the Two-Faced Substrate: pull a peer's FLOW-map read-face over
  * the SEALED channel, run the reader rule, and load it as a CRDT.
  *
  * PEERS PROVE FIRST. The read-face answers no stranger: the pointer and its snapshot cross only a channel whose dialer
  * passed the floor gate's exchange (`dialFaceGate` at the floor tier: a Noise IK flight to the pinned floor key, the
  * face's sealed presentation, a signed finish, and the gate's signed verdict). A dialer that cannot present reads
- * nothing, and an HTTP request for the oracle meets the vessel's closed door.
+ * nothing, and an HTTP request for it meets the vessel's closed door. (The floor of system canon rides no pointer: the Nexus's release
+ * names it by CID, and a reader verifies it off the porch, `floor-answer`.)
  *
  * EVERY DIALER PINS TWICE. The gate's pin comes from the pair index the caller injects (hearth, Nexus, "/oracle",
  * "floor"), never from the wire; the publisher's key (`verifyingKey`) is named out of band and is NOT the gate's key
@@ -15,18 +16,18 @@
  * heads == signed frontier). Isomorphic: the global `WebSocket` + `Automerge.load`; a browser vessel reads exactly so.
  *
  * THE VERBS. After the verdict the face sends ONE "session" message whose body is the signed pointer frame
- * (`ORACLE_POINTER_FRAME`, JSON as it always spoke), then ONE message carrying the snapshot bytes that pointer names
+ * (`FLOW_POINTER_FRAME`, JSON as it always spoke), then ONE message carrying the snapshot bytes that pointer names
  * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The face sends no
  * challenge and reads no proof frame: the gate proves the peer before any message.
  *
  * Callers: the browser vessel's oracle read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
- * the node's server half is `oracle-read-face`.
+ * the node's server half is `flow-read-face`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  */
 
 import { load as automergeLoad, getHeads, type Doc } from "@automerge/automerge";
-import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
+import { verifyFlowPointer, verifyFlowSnapshotBytes, type FlowPointer } from "./flow-substrate.js";
 import type { DialPinKey } from "./admit-gate-pin.js";
 import type { DialSocket } from "./face-dial.js";
 import { dialFaceGate, dialPlaceGate } from "./face-dial.js";
@@ -44,22 +45,22 @@ import { wsDialSocket } from "./ws-dial-socket.js";
  * and a Herm built from different commits would simply miss each other, which reads as a peer being down rather
  * than as a rename. Mesh holds them because node imports mesh and never the reverse.
  *
- * After the gate's verdict the face sends ONE "session" message (`ORACLE_POINTER_FRAME`, the signed pointer, JSON),
+ * After the gate's verdict the face sends ONE "session" message (`FLOW_POINTER_FRAME`, the signed pointer, JSON),
  * then ONE message (the snapshot bytes that pointer names), then closes. A face with no pointer yet closes
  * without a message.
  */
 export const ORACLE_SOCKET_ROUTE  = "/oracle";
-export const ORACLE_POINTER_FRAME = "lar:oracle-pointer";
+export const FLOW_POINTER_FRAME = "lar:flow-pointer";
 
-export interface OraclePointerFrame {
-  readonly type:    typeof ORACLE_POINTER_FRAME;
-  readonly pointer: OraclePointer;
+export interface FlowPointerFrame {
+  readonly type:    typeof FLOW_POINTER_FRAME;
+  readonly pointer: FlowPointer;
 }
 
-export interface OraclePullResult<T = unknown> {
+export interface FlowPullResult<T = unknown> {
   readonly ok:       boolean;
   readonly reason?:  string;
-  readonly pointer?: OraclePointer;
+  readonly pointer?: FlowPointer;
   readonly doc?:     Doc<T>;
   readonly cid?:     string;
 }
@@ -76,7 +77,7 @@ export interface PlaceOraclePresentation {
   readonly arm:      PlaceArm | null;
 }
 
-export interface OraclePullOpts {
+export interface FlowPullOpts {
   /** The pair index the floor pin is read from, injected: the reader keeps no global. */
   readonly pins:              { get(key: DialPinKey): GateBundlePin | null };
   /** The hearth the reader reaches, by its true name, and the Nexus it stands at (hex of the AID's bytes). */
@@ -109,14 +110,14 @@ function parseFrame(bytes: Uint8Array): unknown {
   try { return JSON.parse(new TextDecoder().decode(bytes)) as unknown; } catch { return undefined; }
 }
 
-function isOraclePointerFrame(v: unknown): v is OraclePointerFrame {
+function isOraclePointerFrame(v: unknown): v is FlowPointerFrame {
   return typeof v === "object" && v !== null
-    && (v as { type?: unknown }).type === ORACLE_POINTER_FRAME
+    && (v as { type?: unknown }).type === FLOW_POINTER_FRAME
     && typeof (v as { pointer?: unknown }).pointer === "object";
 }
 
 /** The next message, or null when the channel ends or the deadline lapses first (the channel is then closed). */
-async function nextWithin(channel: GateSessionChannel, deadlines: OraclePullOpts["deadlines"]): Promise<{ kind: string; bytes: Uint8Array } | null> {
+async function nextWithin(channel: GateSessionChannel, deadlines: FlowPullOpts["deadlines"]): Promise<{ kind: string; bytes: Uint8Array } | null> {
   let draw: { cancel(): void } | undefined;
   const lapsed = new Promise<null>((resolve) => { draw = deadlines.draw(() => { channel.close(); resolve(null); }); });
   try { return await Promise.race([channel.recv(), lapsed]); } finally { draw?.cancel(); }
@@ -128,10 +129,10 @@ async function nextWithin(channel: GateSessionChannel, deadlines: OraclePullOpts
  * (and the pointer, when it got that far).
  * Order: dial → prove → pointer frame → verify → snapshot frame → rehash → load → heads.
  */
-export async function pullAndVerifyOracle<T = unknown>(
+export async function pullAndVerifyFlow<T = unknown>(
   baseUrl: string,
-  opts: OraclePullOpts,
-): Promise<OraclePullResult<T>> {
+  opts: FlowPullOpts,
+): Promise<FlowPullResult<T>> {
   const tier = "floor" as const;
   // NEVER THROWS: an index that cannot read the key, a URL that does not parse and a dial that throws each answer by name.
   let pin: GateBundlePin | null;
@@ -172,14 +173,14 @@ export async function pullAndVerifyOracle<T = unknown>(
   }
 }
 
-async function pullOverChannel<T>(channel: GateSessionChannel, opts: OraclePullOpts): Promise<OraclePullResult<T>> {
+async function pullOverChannel<T>(channel: GateSessionChannel, opts: FlowPullOpts): Promise<FlowPullResult<T>> {
   // 1. the signed pointer — verify BEFORE trusting, bound to the publisher this reader pinned.
   const first = await nextWithin(channel, opts.deadlines);
   if (first === null || first.kind !== "session") return { ok: false, reason: "peer published no pointer" };
   const frame = parseFrame(first.bytes);
   if (!isOraclePointerFrame(frame)) return { ok: false, reason: "peer published no pointer" };
   const pointer = frame.pointer;
-  const pointerVerdict = await verifyOraclePointer(pointer, {
+  const pointerVerdict = await verifyFlowPointer(pointer, {
     verifyingKey: opts.verifyingKey,
     ...(opts.knownPointerIds !== undefined ? { knownPointerIds: opts.knownPointerIds } : {}),
   });
@@ -189,7 +190,7 @@ async function pullOverChannel<T>(channel: GateSessionChannel, opts: OraclePullO
   const second = await nextWithin(channel, opts.deadlines);
   if (second === null || (second.kind !== "session" && second.kind !== "sync")) return { ok: false, reason: "peer sent no snapshot", pointer };
   const bytes = second.bytes;
-  if (!(await verifyOracleSnapshotBytes(bytes, pointer.cid)))
+  if (!(await verifyFlowSnapshotBytes(bytes, pointer.cid)))
     return { ok: false, reason: "snapshot hash mismatch (cid does not match bytes)", pointer };
 
   // 3. load read-only.

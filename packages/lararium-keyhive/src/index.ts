@@ -213,3 +213,4 @@ export type CarriedAdmitPayload = DeviceAdmitPayload & {
   readonly hearthIslandScope?: string;
 };
 export { boardDyadReader } from "./board-dyad-reader.js";
+export { kahuReachSourceOf } from "./kahu-reach-source.js";

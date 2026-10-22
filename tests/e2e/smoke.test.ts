@@ -25,7 +25,7 @@ import { join } from "node:path";
 import { readFileSync } from "node:fs";
 import { targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { memeticWikitextDeserializer } from "../../packages/lararium-tw5/src/deserializer.js";
-import { plainRecord } from "../../packages/lararium-mesh/src/stored-value.js";
+import { realmStandingDocUrl } from "../../packages/lararium-mesh/src/realm-bag.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -62,21 +62,22 @@ async function untilLogLine(instance: LarInstance, line: RegExp, ceilingMs = WAI
 type OracleRecord = { tiddler?: { text?: string }; meta?: { authority?: string } };
 
 /**
- * Wait until the catalog doc's STORED history holds the record at `title`, read off the vessel's own storage through
- * a throwaway repo per read (one repo loads a doc's storage once). The wait ends on the record; the ceiling bounds a
- * hang, and a miss names the record and the doc it never reached.
+ * Wait until the catalog doc's STORED history names the Kahu realm's standing registration for `bag` (the live system
+ * documents rest in the realm, never in a catalog row), and answer the document url it names plus whether a catalog row
+ * ALSO names the bag. Read off the vessel's own storage through a throwaway repo per read.
  */
-async function untilCatalogHolds(instance: LarInstance, catalogUrl: string, title: string, ceilingMs = WAIT_CEILING_MS): Promise<OracleRecord> {
+async function untilRealmNames(instance: LarInstance, catalogUrl: string, bag: string, ceilingMs = WAIT_CEILING_MS): Promise<{ docUrl: string; catalogRow: boolean }> {
   const deadline = Date.now() + ceilingMs;
   for (;;) {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(instance)) });
     try {
       const isle = await repo.find(catalogUrl as never);
-      const rec = (isle.doc() as { tiddlers?: Record<string, OracleRecord> })?.tiddlers?.[title];
-      if (rec) return plainRecord(rec as never) as OracleRecord;
-    } catch { /* the stored doc is not yet loadable — the next read sees what has landed since */ }
+      const doc = isle.doc() as { tiddlers?: Record<string, OracleRecord> };
+      const docUrl = realmStandingDocUrl(doc as never, bag);
+      if (docUrl) return { docUrl, catalogRow: doc?.tiddlers?.[bag] !== undefined };
+    } catch { /* the stored doc is not yet loadable: the next read sees what has landed since */ }
     finally { await repo.shutdown().catch(() => {}); }
-    if (Date.now() > deadline) throw new Error(`the stored catalog doc ${catalogUrl} never held ${title} within ${ceilingMs}ms`);
+    if (Date.now() > deadline) throw new Error(`the stored catalog doc ${catalogUrl} never named a realm registration for ${bag} within ${ceilingMs}ms`);
     await new Promise((r) => setTimeout(r, READ_PACE_MS * 5));
   }
 }
@@ -88,15 +89,15 @@ describe("smoke — the vessel stands", () => {
     expect(await untilLogLine(lar, /live — wiki: lares/)).toMatch(/live — wiki: lares/);
   }, TEST_BUDGET_MS);
 
-  test("the vessel catalog carries the operator-minted lares-bag pointer", async () => {
+  test("the Kahu realm names the live lares document, and no catalog row does", async () => {
     if (lar.mode !== "staged") return;   // raw-storage read assumes an owned root
-    // The vessel catalog names its own lares document.
     await untilLogLine(lar, /catalog:\s+automerge:[A-Za-z0-9]+/);
     const catalogUrl = bootDocUrl(lar, "catalog");
     expect(catalogUrl).toBeTruthy();
-    const rec = await untilCatalogHolds(lar, catalogUrl!, LARES_URI);
-    expect(rec.tiddler?.text).toMatch(/^automerge:/);
-    expect(rec.meta?.authority).toBe("operator-mint");
+    const named = await untilRealmNames(lar, catalogUrl!, LARES_URI);
+    expect(named.docUrl).toMatch(/^automerge:/);
+    // CONTROL: the catalog row that once named it retired with slice 3
+    expect(named.catalogRow).toBe(false);
   }, TEST_BUDGET_MS);
 
   test("CONTROL: a wait on a line the vessel never prints fails, naming the line", async () => {

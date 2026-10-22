@@ -485,7 +485,7 @@ the charter's threshold, the table derives (`charteredClassTable`, `packages/lar
   and a strict majority, capped at n; ''emergency'' takes two and leaves a review owed.
 
 A ''revocation'' takes the threshold of the act it revokes. The high-impact surfaces stand `charter`,
-`admission` and `trust-root`, read through one fold (trim, lower case, a run of space or underscore reads as a
+`admission`, `trust-root` and `floor-release` (`HIGH_IMPACT_SURFACES`, the one list), read through one fold (trim, lower case, a run of space or underscore reads as a
 hyphen), so `Charter` and `TRUST_ROOT` never fall to the ordinary class.
 
 ''A PROMOTION APPROVES EXACT BYTES, NEVER A NAME.'' The approval (`promotion-approval.ts`, domain
@@ -526,6 +526,59 @@ admit (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>).
 seats admitted AND the sentinel holds. Admitted alone, or joined alone, refuses. The seats may rest on two
 vessels: one opens and signs a partial, the other confirms its CID, adds its seat and lands it
 (`lares nexus cabal admit|remove|cosign|standing`).
+
+''THE FOUNDING LANDS THE FIRST ADMISSION.'' A one-seat founding signs a counted 1-of-1 act at its one seat that admits
+the group holding the hearth's Kahu realm (`found-hearth.ts`, `landFoundingAdmission`); a founding run again lands no
+second act. `kahuRealmGroup` (`kahu-canon-reach.ts`) names that group through ONE accessor: persona zero's group
+today, and Wave C's Kahu-face group swaps in at that function alone, since the realm's storage never keys on the group.
+
+''ONE PREDICATE GUARDS EVERY WRITE DOOR.'' `requireKahuReach` (`kahu-canon-reach.ts`) calls `kahuCabalCanonAccess` for
+the hand at the door, before any write: the residency reactor with every verb it carries (a MOVE out of canon too,
+since it tombstones the source), `meme put` and `meme delete`, draft placement, and a realm steward's write, whose
+realm grant stands in for no check. The shore hands the island the charter's roster and the board's acts
+(`readKahuCabalBoard`); the island adds the sentinel read and the group at ACCESS, never at boot
+(`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a system bag. A READ and a
+copy OUT of canon ask nothing.
+
+''THE LIVE SYSTEM DOCUMENTS REST IN THE REALM.'' The founding mints one document per system bag and registers each as a
+realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
+`landKahuRealm`; tier `contract`, kept by that one name). A vessel NAMES them at boot only where the board carries a
+counted admission for the Kahu realm's group (`standKahuCanon`): the registrations come off the realm doc folded and
+seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the `bags/lares`
+and `bags/lararium` disk mirrors and the system wikis' document urls follow the same naming. A vessel outside the cabal
+holds no pointer and no layer for either bag, projects nothing under `bags/`, and reads the floor through `@oracle`. No
+catalog row names a system bag. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
+browser Kahu hand rides Wave C's face context.
+
+<<~/ahu>>
+
+<<~ ahu #/floor-release>>
+
+!! The floor release ~ the Nexus's one public answer
+
+''ONE PORCH BODY PER NEXUS.'' The Kahu cabal releases a floor by one body, `{kind, nexus, epoch, prior, manifest}`: the
+`floor-release` signing domain as `kind`, the Nexus AID, the charter epoch whose seats sign, the CID of the release
+before it (null opens a Nexus's first) and the floor manifest's CID (`floor-release.ts`). Its canonical bytes name its
+CID, which keys its row on the crossroads board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
+body and refuses on a mismatch before it trusts anything else.
+
+''TWO HANDS, KEPT APART.'' A seated Kahu key seals the body's bytes as the steward (the publisher, face-free). The
+cabal's authority rides attached: a promotion approval over the manifest's EXACT BYTES under the surface
+`floor-release`, which the chartered classes hold at the high-impact bar. A reader verifies the shape, the CID, the
+Nexus, the epoch, the steward's seat and seal, the manifest bytes against their CID, then the approval at the
+roster's threshold. A seal over any other shape (a cabal act, a pointer body) verifies as nothing here.
+
+''THE CHAIN.'' A release counts when it verifies and either opens the chain (`prior` null) or links to a release that
+counts. The head stands as the counted release no other counted release names; two heads read `unsettled`, and a face
+accepts neither until the cabal settles the fork. `lares nexus release <manifest-file> --approval <file>` seals and
+lands a release (`nexus-release.ts`); `lares nexus promote open|sign` carries the approval between vaults. A herm carries
+the answer and signs nothing; a face accepts a release by a person's own act (`stable-founding-road` W26 slice 5).
+
+''THE LINEAGE RIDES THE RECORD.'' The record the porch serves is `{body, cid, seal, approval, lineage}`. The lineage is the
+charter's public epoch lineage from genesis through the release's epoch: the genesis epoch re-derives the Nexus AID,
+each step verifies, and the last epoch's seats form the roster. A herm and a browser therefore verify a release with
+no charter in hand (`floor-answer.ts`, `lararium-browser` `browser-floor-read.ts`). The flow map keeps its own pointer
+under the `flow-pointer` domain.
 
 <<~/ahu>>
 
@@ -611,7 +664,7 @@ The Keyhive gates prove vessel identity and cabal affiliation; neither encodes k
   delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
 * Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
   belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
-  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': for the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and no shared-canon read calls it yet.
+  cabal's shared canon (`boot-daemon-keyhive.ts`). For the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and every write door into system canon calls it.
 
 Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
@@ -637,6 +690,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SRCCIWN1cdVEGbAhPooiRzzpYa1akTlippqXh3Uj0-Y
+<<^ code="&#x0003;">>ni:///sha-256;hZ3JdcUlzrIxPUHR1kn28lc9uTdzft8UturX1Wk1hZc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -25,7 +25,7 @@ import { AutomergeDocStore } from "./automerge-doc-store.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
-import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI } from "./lar-uris.js";
+import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
 import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
@@ -102,6 +102,14 @@ export interface VesselKeel {
    *  Absent = no recovery; every condemn falls straight to quarantine, as before. */
   recoverCleanTail?: (result: ProbeResult) => Promise<ProbeResult | null>;
 
+  /**
+   * THE SYSTEM CANON THE SHORE NAMES: the live `lares` and `lararium` document urls this vessel holds, from the Kahu
+   * realm's standing registrations (W26 slice 3). A bag the shore does not name mounts no layer, so a vessel outside the
+   * Kahu cabal holds neither document and reads the floor through `@oracle`. The keel reads no catalog row for either bag.
+   * Absent = the shore names none.
+   */
+  systemCanon?:  () => Promise<{ readonly lares?: string; readonly lararium?: string }>;
+
   // ── opts ──
   onPhase?:      (p: LarOpenPhase) => void;
 }
@@ -134,11 +142,10 @@ export interface VesselCoreAssembly {
   composite:     CompositeStore;
   catalogHandle: DocHandle<LarDoc>;
   islandHandle:  DocHandle<LarDoc>;
-  /** Null until the invariant plane reaches this vessel (node home mints;
-   *  wild vessels federate it in). The keel never mints. */
+  /** The live lares canon: null on a vessel outside the Kahu cabal, which reads the floor through `@oracle`.
+   *  The keel never mints; the Kahu realm's registrations name the document (`keel.systemCanon`). */
   laresHandle:   DocHandle<LarDoc> | null;
-  /** The lararium memetic corpus — its own doc, separate from oracle and lares.
-   *  Its pointer rides this vessel's catalog; null until federated or minted. */
+  /** The live lararium memetic corpus — its own doc, separate from oracle and lares. Null outside the Kahu cabal. */
   larariumHandle: DocHandle<LarDoc> | null;
   coreHash:      string;
   /** L2: which social planes mounted live vs degraded (read-only after a condemn). */
@@ -176,37 +183,25 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // ── genesis island (REQUIRED — coreless boot deleted) + the bootstrap it carries ──
   const { islandHandle, coreHash, bootstrap } = await loadGenesis();
   addSubstrateLayer(composite, BAG_IDS.oracle, islandHandle);
-  // The lares bag — the keel reads the vessel catalog for its protocol-invariant pointer. Minting rides
-  // the most-restricted grant: operator(admin), timed — held by the node home
-  // (genesis office, mintLaresIfAbsent). Wild vessels receive the invariant
-  // plane by federating the lararium doc; absent here reads not-yet-federated,
-  // never mint-it-yourself.
+  // The lares and lararium bags — the LIVE system documents, mounted only from what the shore names (`keel.systemCanon`):
+  // the Kahu realm's standing registrations on a vessel whose cabal admitted its group. No catalog row names either bag.
+  // The named documents resolve through the tideline resolver, never the blank-mint fallback: a document that has not
+  // reached this vessel yet surfaces a typed StillJoining and the layer is skipped, never a ghost minted over it.
+  const named = (await keel.systemCanon?.()) ?? {};
   let laresHandle: DocHandle<LarDoc> | null = null;
-  const laresUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
-  if (laresUrl) {
-    // The lares bag stands as EXPECTED base canon (the operator's "fail gracefully but expect them"):
-    // resolve via the tideline resolver, NOT the blank-mint fallback the comment above
-    // forbids. On the node the disk-fed doc resolves READY at once; on a wild vessel whose
-    // lares bag has not yet federated, a typed StillJoining surfaces — skip the layer, never
-    // mint a ghost (it reconciles in the background once a peer at dreamnet-scale delivers it).
-    const resolved = await resolveBootDoc<LarDoc>(repo, laresUrl as AutomergeUrl, {
-      tideline: "mesh-shared", scale: "dreamnet", label: "@lares (expected base canon)",
+  if (named.lares) {
+    const resolved = await resolveBootDoc<LarDoc>(repo, named.lares as AutomergeUrl, {
+      tideline: "mesh-shared", scale: "dreamnet", label: "@lares (the Kahu realm's live canon)",
     });
     if (!isStillJoining(resolved)) {
       laresHandle = resolved;
       addSubstrateLayer(composite, BAG_IDS.lares, laresHandle);
     }
   }
-  // The lararium bag — the memetic corpus as its OWN doc (three separate docs).
-  // Its pointer rides the vessel catalog, resolved the same way as the lares bag — never the conflated island URL. The
-  // wiki-cascade composition (corpus as a library in a recipe) rides the island
-  // composite via recipe-watch; this keel layer carries vessel-level access.
   let larariumHandle: DocHandle<LarDoc> | null = null;
-  const larariumUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
-  if (larariumUrl) {
-    // The lararium base canon — same expected-but-graceful resolution as the lares bag (never mint).
-    const resolved = await resolveBootDoc<LarDoc>(repo, larariumUrl as AutomergeUrl, {
-      tideline: "mesh-shared", scale: "dreamnet", label: "@lararium (expected base canon)",
+  if (named.lararium) {
+    const resolved = await resolveBootDoc<LarDoc>(repo, named.lararium as AutomergeUrl, {
+      tideline: "mesh-shared", scale: "dreamnet", label: "@lararium (the Kahu realm's live canon)",
     });
     if (!isStillJoining(resolved)) {
       larariumHandle = resolved;
@@ -219,11 +214,9 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
       doc.tiddlers[ORACLE_DOC_URI] = storedLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");
     });
   }
-  // The lares bag does NOT register in the catalog registry: it rides the protocol-invariant
-  // plane with the lararium bag (DreamNet federation floor). Islands resolve it from
-  // the lararium doc's well-known tiddlers — the substrate they already hold.
-  // The catalog registry serves USER bag oracles (ocap grants); the crossroads plane (future) serves
-  // public/infrastructure oracles. Three planes, three authorities.
+  // The live system canon rests in the Kahu realm, never in the catalog registry. The catalog registry serves USER bag
+  // oracles (ocap grants); the realm's registrations serve the cabal's live documents; the crossroads plane serves
+  // public/infrastructure answers. Each registry has its one owner.
   emit("island-ready");
 
   // ── social plane (resolveHandle encodes the seed policy) + daemon doc ──

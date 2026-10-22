@@ -1,10 +1,11 @@
 /**
- * oracle-substrate — the read-only PUBLIC substrate: a content-addressed snapshot
- * (the floor) + a signed causal pointer (the ratchet face).
+ * flow-substrate — the read-only PUBLIC substrate of the FLOW map: a content-addressed snapshot
+ * + a signed causal pointer (the ratchet face).
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
- * (the Two-Faced Substrate). The read face serves the oracle doc as
- * an IMMUTABLE blob — `Automerge.save(doc)` bytes named by their content hash — so
+ * The floor of system canon answers by a different road: the Nexus's release names a floor manifest by CID
+ * (`floor-release`), and no pointer signs a floor. This substrate carries what a herm relays (the public flow map) and
+ * nothing more. Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the Two-Faced Substrate).
+ * The read face serves the flow doc as an IMMUTABLE blob — `Automerge.save(doc)` bytes named by their content hash — so
  * write-refusal needs no check: a hash-named blob holds no mutable surface, no sync
  * session, no inbound frame to refuse. The thin signed pointer carries currency:
  * a reader verifies semantic act identity and causal ancestry locally (no global now).
@@ -13,23 +14,18 @@
  *
  * This module is the PURE core (isomorphic, no I/O): export a snapshot, build/sign a
  * pointer, and run the reader rule. Hardened like device-delegation — it NEVER throws
- * on untrusted input; `verifyOraclePointer` returns a verdict, never an exception.
+ * on untrusted input; `verifyFlowPointer` returns a verdict, never an exception.
  * Wiring (serve the blob over the node's HTTP server, publish the pointer on the
  * existing channel) rides a separate, node-side module.
  */
 
-import { ORACLE_POINTER_DOMAIN } from "./domains.js";
+import { FLOW_POINTER_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { save, getHeads, type Doc } from "@automerge/automerge";
-import { pinnedDoc } from "./pinned-doc.js";
-import type { GenesisSeed } from "./genesis-doc.js";
-import type { LarDoc } from "./base-doc.js";
-import { plainRecord, type StoredLarRecord } from "./stored-value.js";
 import { hex, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
-import { storedRecord } from "./stored-record.js";
 
-export { ORACLE_POINTER_DOMAIN } from "./domains.js";
+export { FLOW_POINTER_DOMAIN } from "./domains.js";
 const HEX64_RE = /^[0-9a-f]{64}$/;   // sha256 hex / ed25519 verifying-key hex / automerge head
 const SIG_RE   = /^[0-9a-f]{128}$/;  // 64-byte ed25519 signature hex
 
@@ -37,8 +33,8 @@ function canonicalHeads(heads: readonly string[]): string[] {
   return [...new Set(heads)].sort();
 }
 
-/** A point-in-time export of the oracle doc — the immutable read-face artifact. */
-export interface OracleSnapshot {
+/** A point-in-time export of a served doc — the immutable read-face artifact. */
+export interface FlowSnapshot {
   /** sha256(bytes) hex — THE content address; the reader rehashes to verify. */
   readonly cid:   string;
   /** Automerge heads of the doc at export — the local document frontier. */
@@ -48,7 +44,7 @@ export interface OracleSnapshot {
 }
 
 /** The signed causal pointer to a snapshot. */
-export interface OraclePointer {
+export interface FlowPointer {
   readonly cid:     string;             // content address of the current snapshot
   readonly heads:   readonly string[];  // its automerge heads
   readonly actCid:  string;             // semantic identity, excluding signature
@@ -57,64 +53,19 @@ export interface OraclePointer {
   readonly sig:     string;             // ed25519 sig over the canonical signing string
 }
 
-/** Export the oracle doc as a content-addressed snapshot (the read-face artifact). */
-export async function exportOracleSnapshot<T>(
+/** Export a doc as a content-addressed snapshot (the read-face artifact). */
+export async function exportFlowSnapshot<T>(
   doc: Doc<T>,
   provider: DigestProvider = defaultCryptoProvider,
-): Promise<OracleSnapshot> {
+): Promise<FlowSnapshot> {
   const bytes = save(doc);
   const cid   = await sha256Hex(bytes, provider);
   const heads = canonicalHeads(getHeads(doc) as string[]);
   return { cid, heads, bytes };
 }
 
-function plainCopy(v: unknown): unknown {
-  if (v instanceof Uint8Array) return v.slice();
-  if (Array.isArray(v)) return v.map(plainCopy);
-  if (v && typeof v === "object") {
-    const out: Record<string, unknown> = {};
-    for (const [k, x] of Object.entries(v as Record<string, unknown>)) out[k] = plainCopy(x);
-    return out;
-  }
-  return v;
-}
-
-/** The oracle doc's public floor: the titles and blob rows the genesis seed names, at the values the live
- *  doc holds for them. Every other key stays home. A blob row crosses as its descriptor fields; a `blob`
- *  bytes field never crosses (the bytes ride the content-addressed store). */
-export function publicOracleFloor(doc: LarDoc, seed: GenesisSeed): LarDoc {
-  const live = doc as unknown as { blobs?: Record<string, Record<string, unknown>> };
-  const tiddlers: Record<string, StoredLarRecord> = {};
-  for (const title of Object.keys(seed.tiddlers).sort()) {
-    const rec = doc.tiddlers?.[title];
-    // The floor carries each record as a document rests it: unwrapped, then wrapped anew for the snapshot.
-    if (rec !== undefined) tiddlers[title] = storedRecord(plainRecord(rec));
-  }
-  const blobs: Record<string, unknown> = {};
-  for (const key of Object.keys(seed.blobs).sort()) {
-    const row = live.blobs?.[key];
-    if (row === undefined) continue;
-    const { blob: _bytes, ...descriptor } = row;
-    blobs[key] = plainCopy(descriptor);
-  }
-  const floor: LarDoc = { schemaVersion: doc.schemaVersion, blobs: blobs as NonNullable<LarDoc["blobs"]>, tiddlers };
-  return floor;
-}
-
-/** The floor as a content-addressed snapshot: a pure function of the floor's content, carrying no history.
- *  `seedCid` names the genesis seed (sha256 over its published bytes) the floor derives from; the caller
- *  holds those bytes and passes the cid through, so the one seed carries one name. */
-export async function snapshotPublicOracle(
-  doc: LarDoc,
-  seed: GenesisSeed,
-  seedCid: string,
-): Promise<OracleSnapshot & { readonly seedCid: string }> {
-  const snap = await exportOracleSnapshot(pinnedDoc(publicOracleFloor(doc, seed) as unknown as Record<string, unknown>));
-  return { ...snap, seedCid };
-}
-
 /** A downloaded blob is the named snapshot iff its hash matches the cid. */
-export async function verifyOracleSnapshotBytes(
+export async function verifyFlowSnapshotBytes(
   bytes: Uint8Array,
   cid: string,
   provider: DigestProvider = defaultCryptoProvider,
@@ -128,9 +79,9 @@ export async function verifyOracleSnapshotBytes(
  * signature. Domain+schema tagged, `|`-delimited, every
  * field strict-charset so no separator can shift a boundary (device-delegation pattern).
  */
-function pointerIdentityString(p: Pick<OraclePointer, "cid" | "heads" | "actCid" | "parents" | "pub">): string {
+function pointerIdentityString(p: Pick<FlowPointer, "cid" | "heads" | "actCid" | "parents" | "pub">): string {
   return [
-    ORACLE_POINTER_DOMAIN,
+    FLOW_POINTER_DOMAIN,
     p.cid,
     p.heads.join(","),
     p.actCid,
@@ -143,15 +94,15 @@ function pointerIdentityString(p: Pick<OraclePointer, "cid" | "heads" | "actCid"
  * The SIGNED string — the identity itself; the signature covers every pointer field
  * except the signature.
  */
-function pointerSigningString(p: Omit<OraclePointer, "sig">): string {
+function pointerSigningString(p: Omit<FlowPointer, "sig">): string {
   return pointerIdentityString(p);
 }
 
 /**
  * The pointer's stable semantic id. A changed content or causal field changes it.
  */
-export async function oraclePointerId(
-  p: OraclePointer,
+export async function flowPointerId(
+  p: FlowPointer,
   provider: DigestProvider = defaultCryptoProvider,
 ): Promise<string> {
   void provider;
@@ -159,12 +110,12 @@ export async function oraclePointerId(
 }
 
 /** Build + sign a pointer. Parent sets are canonicalized; no scalar sequence is minted. */
-export async function buildOraclePointer(args: {
-  readonly snapshot: OracleSnapshot;
+export async function buildFlowPointer(args: {
+  readonly snapshot: FlowSnapshot;
   readonly parents:  readonly string[];
   /** 32-byte ed25519 seed (the publisher's signing key — operator/node). */
   readonly signerSeed: Uint8Array;
-}): Promise<OraclePointer> {
+}): Promise<FlowPointer> {
   const pub    = hex(await ed25519.getPublicKeyAsync(args.signerSeed));
   const base = {
     cid:     args.snapshot.cid,
@@ -173,7 +124,7 @@ export async function buildOraclePointer(args: {
     pub,
   };
   const actCid = await sha256Hex(utf8Bytes(pointerIdentityString({ ...base, actCid: "" })), defaultCryptoProvider);
-  const fields: Omit<OraclePointer, "sig"> = { ...base, actCid };
+  const fields: Omit<FlowPointer, "sig"> = { ...base, actCid };
   const sig = hex(await ed25519.signAsync(utf8Bytes(pointerSigningString(fields)), args.signerSeed));
   return { ...fields, sig };
 }
@@ -187,11 +138,11 @@ export interface PointerVerdict {
  * The reader rule — never throws. Pass what the reader remembers:
  *   - `verifyingKey`: pin the publisher; reject a pointer signed by anyone else.
  *   - `knownPointerIds`: locally held causal ancestors; missing parents are unavailable.
- *   - concurrent heads are surfaced by `foldOraclePointerVerdict`, never ordered by arrival.
+ *   - concurrent heads are surfaced by `foldFlowPointerVerdict`, never ordered by arrival.
  *     local observation/liveness policy stays outside this safety verdict.
  */
-export async function verifyOraclePointer(
-  p: OraclePointer,
+export async function verifyFlowPointer(
+  p: FlowPointer,
   opts: {
     readonly verifyingKey?:     string;
     readonly knownPointerIds?: readonly string[];
@@ -233,18 +184,18 @@ export async function verifyOraclePointer(
   return { ok: true };
 }
 
-export type OraclePointerVerdict = "held" | "unsettled" | "unavailable" | "rejected";
+export type FlowPointerVerdict = "held" | "unsettled" | "unavailable" | "rejected";
 
 /** Fold locally verified pointers; concurrent heads never choose by arrival order. */
-export async function foldOraclePointerVerdict(
-  pointers: readonly OraclePointer[], opts: { readonly verifyingKey?: string } = {},
-): Promise<OraclePointerVerdict> {
+export async function foldFlowPointerVerdict(
+  pointers: readonly FlowPointer[], opts: { readonly verifyingKey?: string } = {},
+): Promise<FlowPointerVerdict> {
   const ids = new Set(pointers.map((p) => p.actCid));
-  let admissible: OraclePointer[] = [];
+  let admissible: FlowPointer[] = [];
   let rejected = false;
   let unavailable = false;
   for (const p of pointers) {
-    const v = await verifyOraclePointer(p, { ...(opts.verifyingKey ? { verifyingKey: opts.verifyingKey } : {}), knownPointerIds: [...ids] });
+    const v = await verifyFlowPointer(p, { ...(opts.verifyingKey ? { verifyingKey: opts.verifyingKey } : {}), knownPointerIds: [...ids] });
     if (!v.ok) {
       if (v.reason?.includes("unavailable")) unavailable = true;
       else rejected = true;

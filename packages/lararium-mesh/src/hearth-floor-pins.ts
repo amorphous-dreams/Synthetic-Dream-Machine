@@ -14,6 +14,12 @@
  * One reader serves both: each pin reads whole, stands at floor tier and at the expected Nexus, and names a route no other
  * pin in the set names. A set that fails any of these reads as none: nothing of it files.
  *
+ * THE FLOOR READ RIDES THE PORCH, NOT A PIN. The floor of system canon answers by the Nexus's release (`floor-release`, served at
+ * `GET /floor/<Nexus AID>`): a reader holding the Nexus AID verifies the charter's epoch lineage (the genesis epoch re-derives the
+ * AID, each step verifies under the prior roster's threshold), the head release and the floor bytes itself (`floor-answer`), so a
+ * card's AID anchors a full verification and no signed pointer carries a floor. The AID still rides this house's same-origin
+ * trust line; the signed card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
+ *
  * A third carrier stands for the oracle's floor pin alone, THE FLOOR CARD (below): the hearth's own banner prints it and the
  * person carries it by hand. A browser that holds no relation with a hearth and carries neither a signed set nor a card for
  * it reads `pin-absent` at that hearth's floor.

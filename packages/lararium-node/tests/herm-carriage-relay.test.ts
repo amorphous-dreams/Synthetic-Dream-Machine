@@ -25,10 +25,10 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
   composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, memoryBackedWithdrawals,
-  ORACLE_SOCKET_ROUTE, pullAndVerifyOracle, CARRIAGE_PIN_ABSENT,
+  ORACLE_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
   type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
 } from "@lararium/mesh";
-import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
+import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, type MeshPalaceComponent } from "../src/node-caps.js";
 import { vesselGate } from "../src/vessel-gates.js";
 import { gateReadingsFor, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
@@ -158,7 +158,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
 
   test("RED: with the origin DARK, relay two catches up from relay one and never touches the origin", async () => {
     await O.close();
-    const dark = await pullAndVerifyOracle(O.origin, {
+    const dark = await pullAndVerifyFlow(O.origin, {
       pins: H2.pins, hearth: origin.key, nexus: w.pin.nexus, presentation: { kind: "place", placeKey: relayTwo.key, sign: relayTwo.sign, arm: null },
       audience: AUDIENCE, deadlines: realDeadlines(1_000), verifyingKey: origin.key, dialSocket: dialer,
     });
@@ -180,7 +180,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(read.pointer?.pub).toBe(relayTwo.key);
     expect(Object.keys(read.doc?.tiddlers ?? {})).toContain(dial.tiddler.title);
     // CONTROL beside it: the same map named under the origin's key does not verify — the pointer binds its publisher.
-    const misnamed = await pullAndVerifyOracle(H2.origin, {
+    const misnamed = await pullAndVerifyFlow(H2.origin, {
       pins: { get: (k) => reader.pins.get({ ...k, hearth: relayTwo.key }) }, hearth: relayTwo.key, nexus: w.pin.nexus,
       presentation: { kind: "place", placeKey: lastHop.key, sign: lastHop.sign, arm: { kind: "place", contract: lastHop.carry!, lineage: [], sealLineage: [] } },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: origin.key, dialSocket: dialer,
@@ -198,7 +198,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(reader.urls).toEqual([]);
     // Handed the pin, the stranger KNOCKS: the path derives from the gate key it now holds, its own key proves, and a herm
     // answers any proven peer that knocked (operator ruling "A herm answers the knock"). The map it reads is the public one.
-    const handed = await pullAndVerifyOracle(H2.origin, {
+    const handed = await pullAndVerifyFlow(H2.origin, {
       pins: { get: (k) => reader.pins.get(k) ?? lastHopPin() }, hearth: relayTwo.key, nexus: w.pin.nexus,
       presentation: { kind: "place", placeKey: stranger.key, sign: stranger.sign, arm: null },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: relayTwo.key, dialSocket: dialer,
@@ -216,7 +216,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     expect(read).toEqual({ ok: false, reason: CARRIAGE_PIN_ABSENT });
     expect(reader.urls).toEqual([]);
     // Handed relay two's pin out of band, it presents its own Nexus's contract at this Nexus's gate, which reads it unheld.
-    const forced = await pullAndVerifyOracle(H2.origin, {
+    const forced = await pullAndVerifyFlow(H2.origin, {
       pins: { get: (k) => H2.pins.get(k) ?? reader.pins.get(k) ?? lastHopPin() }, hearth: relayTwo.key, nexus: w.pin.nexus,
       presentation: { kind: "place", placeKey: foreign.key, sign: foreign.sign, arm: { kind: "place", contract: foreign.carry!, lineage: [], sealLineage: [] } },
       audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: relayTwo.key, dialSocket: dialer,

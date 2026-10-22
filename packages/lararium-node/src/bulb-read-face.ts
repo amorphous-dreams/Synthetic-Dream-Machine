@@ -1,5 +1,5 @@
 /**
- * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the oracle-substrate floor).
+ * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the flow-substrate floor).
  *
  * Routes (GET/HEAD-only, on the SAME HTTP server the FLOW-map read-face uses, under a distinct `/bulb/` prefix):
  *   GET /bulb/<cid>.bin   → the genesis seed (under the bulb CID) or one seed-named engine/plugin CAS blob
@@ -40,7 +40,7 @@ import { plainRecord } from "@lararium/mesh";
 import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact } from "./bulb.js";
 import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";
-import type { OracleReadFace } from "./oracle-read-face.js";
+import type { FlowReadFace } from "./flow-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 /** The public-CAS shore the read-face re-shares from: the bytes a cid names, and whether a PUBLIC pointer names it. */
@@ -151,11 +151,15 @@ export function publicCasShore(opts: {
   readonly bagTier:    (bagUrl: string) => CapTier | null;
   /** The realm lane — absent, the shore answers exactly as its own planes answer. */
   readonly realmReferences?: () => Promise<Iterable<RealmShoreBook>> | Iterable<RealmShoreBook>;
+  /** THE RELEASED-FLOOR LANE: the cids the Nexus's HEAD release names (`floor-porch` `releasedFloorCids`, derived from the
+   *  verified chain at each ask). A herm carries the floor it presents; absent, the shore answers as before. */
+  readonly releasedFloor?: () => Promise<ReadonlySet<string>> | ReadonlySet<string>;
 }): PublicCasShore {
   return {
     // Bytes altered at rest never leave: a blob that fails its own address reads as a blob this shore lacks.
     read: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     isPublic: async (cid) => {
+      if (opts.releasedFloor && (await opts.releasedFloor()).has(cid)) return true;
       const own   = [...(await opts.references())];
       const books = opts.realmReferences ? [...(await opts.realmReferences())] : [];
       const realm = books.flatMap((b) => [...b.entries].map((e) => ({ book: b, entry: e })));
@@ -185,7 +189,7 @@ export async function mountBulbReadFace(args: {
   readonly dispatcher?: HttpFaceDispatcher;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the closed door for every cid. */
   readonly publicCas?: PublicCasShore;
-}): Promise<OracleReadFace> {
+}): Promise<FlowReadFace> {
   const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
   const { cid, blobs } = buildBulb(bulb);
   const blobByCid = new Map<string, Uint8Array>(blobs.map((b) => [b.cid, b.bytes]));
@@ -265,7 +269,7 @@ export function mountHermWaymark(args: {
   readonly httpServer:  Server;
   readonly bulbCid:     string;
   readonly dispatcher?: HttpFaceDispatcher;
-}): OracleReadFace {
+}): FlowReadFace {
   const bytes = hermWaymarkBytes(args.bulbCid);
   const owns = (req: IncomingMessage): boolean => new URL(req.url ?? "/", "http://localhost").pathname === ARRIVAL_WELL_KNOWN_ROUTE;
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {

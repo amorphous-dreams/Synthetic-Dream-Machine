@@ -23,7 +23,7 @@ export function oracleWriters(path: string, source: string): string[] {
     .replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
   const lines = code.split("\n");
   const oracleNames = new Set(["islandHandle", "oracleHandle", "laraiumHandle", "oracle"]);
-  const writerNames = /\b(?:mintLaresIfAbsent|mintLarariumIfAbsent|reconcileWellKnownTiddlers|registerCrossroadsInOracle|registerCrossroadsPointer|writeRealmStanding|writeRealmBagRegistration)\s*\(/;
+  const writerNames = /\b(?:registerCrossroadsInOracle|registerCrossroadsPointer|writeRealmStanding|writeRealmBagRegistration)\s*\(/;
   lines.forEach((line) => {
     const bindsOracleUrl = /oracleGenesisDocUrl\s*\(/.test(line);
     const bindsIsland = /\b(?:islandHandle|oracleHandle|laraiumHandle)\b/.test(line)

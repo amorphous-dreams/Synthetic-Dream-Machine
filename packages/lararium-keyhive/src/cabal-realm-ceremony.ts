@@ -132,7 +132,7 @@ export interface FoundedCabalRealm {
  * runtime clock (the ceremony stays a deterministic, clock-free function — a test
  * passes a fixed value, a live founding passes Date.now()). The returned charter stands
  * publish-ready: hand it to mesh/realmGlamourExporter to serve it through the
- * existing oracle read-face. This founds the charter; SERVING it (mounting the
+ * existing flow read-face. This founds the charter; SERVING it (mounting the
  * read-face) stays the caller's separate act.
  */
 export async function foundCabalRealmWithGlamour(

@@ -16,7 +16,7 @@
  * CAUSAL, LEASED, SELF-CERTIFYING — a card carries a semantic act CID and canonical parent set. A local
  * recogniser folds those acts without a scalar currentness guess or wall-clock authority.
  *
- * Pure and isomorphic, like oracle-substrate: this module holds no I/O and no key. The vessel supplies the
+ * Pure and isomorphic, like flow-substrate: this module holds no I/O and no key. The vessel supplies the
  * signer; the caller carries the bytes; the read-open oracle plane serves the published blob.
  *
  * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (publication model).
@@ -271,7 +271,7 @@ export async function recognizeHandle(
  *
  * `verifyHandleCard` certifies ONE card in isolation. Recognising a handle OVER TIME needs more: announced
  * acts form a causal closure, and a recogniser must retain every verified ancestor while refusing a detached
- * copy or a forked lineage that equivocates. This rule carries the SAME discipline `oracle-substrate` proves
+ * copy or a forked lineage that equivocates. This rule carries the SAME discipline `flow-substrate` proves
  * for its pointer, applied to the card's own causal fields.
  *
  * Pass what the recogniser remembers of this Handle:

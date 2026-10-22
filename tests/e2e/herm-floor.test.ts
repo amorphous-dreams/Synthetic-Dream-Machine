@@ -225,7 +225,7 @@ async function hermCharterAid(r: string): Promise<string | null> {
 async function hermFloorReader(r: string, nexusAid: string) {
   const mesh = await import("../../packages/lararium-mesh/src/index.js");
   const node = await import("../../packages/lararium-node/src/index.js");
-  const { ORACLE_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
+  const { ORACLE_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/flow-read-client.js");
   const fx = await import("../../packages/lararium-mesh/tests/face-gate-fixture.js");
   const prior = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = r;
@@ -296,7 +296,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
   }, 200_000);
 
   test("R2 — a herm's floor gate stands at its explicit Nexus and only there, and there it answers the knock", async () => {
-    const { pullAndVerifyOracle } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
+    const { pullAndVerifyFlow } = await import("../../packages/lararium-mesh/src/flow-read-client.js");
     const { CLOSED_DOOR } = await import("../../packages/lararium-node/src/bulb-routes.js");
     const origin = `http://127.0.0.1:${PORT}`;
     // A STRANGER asks for the pointer over HTTP and draws the one closed door — the vessel answers, and says
@@ -323,7 +323,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(aid, "the herm holds no charter: the import landed nothing").toMatch(/^nexus-[0-9a-f]{64}$/);
     const before = await hermFloorReader(root, aid!);
     expect(before.nexusHeld).toBe(aid);
-    const unjoined = await pullAndVerifyOracle(origin, before);
+    const unjoined = await pullAndVerifyFlow(origin, before);
     expect(unjoined.ok, "a herm that only holds a charter served its map at a floor gate it never stood").toBe(false);
     expect(unjoined.pointer).toBeUndefined();
 
@@ -346,7 +346,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
 
     // A HERM ANSWERS THE KNOCK (operator ruling, stable-founding-road#/rulings; siege-resilience). The same proven stranger,
     // no member of any Nexus, no arm, knocks at the gate the join stood and reads the map, verified under the herm's key.
-    const joined = await pullAndVerifyOracle(origin, before);
+    const joined = await pullAndVerifyFlow(origin, before);
     expect(joined.ok, `the carried herm answered no knock: ${joined.reason ?? "(no reason)"}\n${standLogTail(root)}`).toBe(true);
     expect(joined.pointer?.pub).toBe(before.verifyingKey);
     rmSync(courier, { recursive: true, force: true });

@@ -55,6 +55,7 @@ import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
 import { cmdPromote } from "./nexus-promote.js";
 import { cmdNexusCabal } from "./nexus-cabal.js";
+import { cmdNexusRelease } from "./nexus-release.js";
 import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 import { cmdSeal, runQuorumRite } from "./nexus-seal.js";
@@ -82,6 +83,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "offering":        return await cmdOffering(args);
     case "promote":         return await cmdPromote(args);
     case "cabal":           return await cmdNexusCabal(args);
+    case "release":         return await cmdNexusRelease(args);
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
     default:

@@ -13,7 +13,7 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 const CATALOG_URL = "automerge:catalog-doc";
 const ORACLE_URL = "automerge:oracle-doc";
 const FROM = "lar:///ha.ka.ba/bags/from";
-const TO = "lar:///ha.ka.ba/bags/lares";
+const TO = "lar:///ha.ka.ba/bags/garden";
 
 function repoOf(present: readonly string[]): Repo {
   const doc = { tiddlers: {} } as unknown as LarDoc;

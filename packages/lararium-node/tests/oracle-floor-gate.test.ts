@@ -1,7 +1,7 @@
 /**
  * oracle-floor-gate — the oracle read face's server half on the floor gate (the oracle converts where browser boot
  * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/oracle",
- * "floor") through the house's one dialer (`pullAndVerifyOracle`), and the face answers over the sealed channel:
+ * "floor") through the house's one dialer (`pullAndVerifyFlow`), and the face answers over the sealed channel:
  * one "session" message carrying the signed pointer frame, then the snapshot bytes, and no auth verb of its own.
  *
  * Proven, each with its control:
@@ -22,18 +22,18 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import WsSocket from "ws";
 import {
-  pullAndVerifyOracle, dialEntryToRecord, ed25519VerifyingKeyFromSeed, dialFaceGate, dialedChannel, ORACLE_SOCKET_ROUTE,
+  pullAndVerifyFlow, dialEntryToRecord, ed25519VerifyingKeyFromSeed, dialFaceGate, dialedChannel, ORACLE_SOCKET_ROUTE,
   type MeshPalaceDoc,
 } from "@lararium/mesh";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
-import { mountFlowMapReadFace, type OracleFloorFace } from "../src/oracle-read-face.js";
+import { mountFlowMapReadFace, type FlowFloorFace } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import { world, presenter, handDeadlines, AUDIENCE, type World, type Presenter } from "../../lararium-mesh/tests/face-gate-fixture.js";
 
 const SEED = new Uint8Array(32).fill(7);
 const OTHER = new Uint8Array(32).fill(8);
 
-const opened: Array<{ server: Server; face: OracleFloorFace | null; dir: string }> = [];
+const opened: Array<{ server: Server; face: FlowFloorFace | null; dir: string }> = [];
 afterEach(async () => {
   for (const o of opened.splice(0)) {
     o.face?.dispose();
@@ -58,7 +58,7 @@ async function stand(nexuses: readonly string[], opts: { lingerMs?: number } = {
   const dir = mkdtempSync(join(tmpdir(), "oracle-floor-"));
   const { handle, pub, loc } = palace();
   const worlds: World[] = [];
-  const entry: { server: Server; face: OracleFloorFace | null; dir: string } = { server, face: null, dir };
+  const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
   opened.push(entry);
   const face = await mountFlowMapReadFace({
     httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir: dir,
@@ -75,7 +75,7 @@ async function stand(nexuses: readonly string[], opts: { lingerMs?: number } = {
 const dialer = (url: string) => wsDialSocket(url, (u, protocols) => new WsSocket(u, protocols, { perMessageDeflate: false }) as unknown as WsLike);
 
 async function pull(base: string, w: World, p: Presenter, over: { arm?: Presenter["arm"] | null; seed?: Uint8Array } = {}) {
-  return pullAndVerifyOracle<MeshPalaceDoc>(base, {
+  return pullAndVerifyFlow<MeshPalaceDoc>(base, {
     pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { certificate: p.certificate, signer: p.signer, arm: over.arm === undefined ? p.arm : over.arm, history: p.history },

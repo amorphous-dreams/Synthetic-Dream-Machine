@@ -6,7 +6,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildOraclePointer } from "../packages/lararium-mesh/dist/oracle-substrate.js";
+import { buildFlowPointer } from "../packages/lararium-mesh/dist/flow-substrate.js";
 import { mkdtempSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -20,7 +20,7 @@ const SEED = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 /** A pointer from the real builder over a content address standing for one published state. */
 async function publish(text, parents = []) {
   const cid = Buffer.from(text.padEnd(32, ".")).toString("hex").slice(0, 64);
-  return buildOraclePointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signerSeed: SEED });
+  return buildFlowPointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signerSeed: SEED });
 }
 
 test("a re-published act reads as advanced (the known positive)", async () => {

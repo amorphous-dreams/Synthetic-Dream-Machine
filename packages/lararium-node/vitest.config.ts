@@ -92,7 +92,8 @@ export const heavy = [
   "tests/readiness-face.test.ts",
   "tests/oracle-closed-door.test.ts",
   "tests/herm-answers-the-knock.test.ts",
-  "tests/oracle-read-face-shore.test.ts",
+  "tests/flow-read-face-shore.test.ts",
+  "tests/floor-porch.test.ts",
   "tests/wire-daemon-bootstrap.test.ts",
   // A real HTTP listener and a sealed-gate crossing (the joinee dials its hearth through the production mount).
   "tests/dial-presentation-joinee.test.ts",

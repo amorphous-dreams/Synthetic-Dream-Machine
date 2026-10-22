@@ -11,6 +11,7 @@
 
 import {
   DAEMON_BAG_ID,
+  isSystemCanonBag,
   type CapabilityAccess,
   type CapabilityVerifyResult,
   type CapabilityVerifier,
@@ -56,6 +57,41 @@ export function deriveRoutedCap(invocation: Verb): { access: CapabilityAccess; b
   if (invocation.action === "realm-bag" && a["join"] === true) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   const bagUrl = pick("bagUrl") ?? pick("toBag") ?? pick("dest") ?? pick("bag") ?? pick("targetBag") ?? DAEMON_BAG_ID;
   return { access: "admin", bagUrl };
+}
+
+/**
+ * The bags a routed verb names INSIDE its envelope (`wiki-act` carries its real destination and source in `args.args`):
+ * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each system canon one.
+ */
+export function routedInnerBags(invocation: Verb): string[] {
+  const outer = invocation.args as Record<string, unknown>;
+  const inner = outer["args"];
+  if (inner === null || typeof inner !== "object" || Array.isArray(inner)) return [];
+  const a = inner as Record<string, unknown>;
+  const bags: string[] = [];
+  for (const k of ["to-bag", "from-bag", "bag", "toBag", "fromBag"]) {
+    const v = a[k];
+    if (typeof v === "string" && isSystemCanonBag(v) && !bags.includes(v)) bags.push(v);
+  }
+  return bags;
+}
+
+/**
+ * THE ROUTED VERB'S GATE, the one place the keyholder island clears a verb before main (and a wiki island behind it)
+ * trusts it: the cap `deriveRoutedCap` names, then — for a verifier that carries the Kahu predicate — the predicate for
+ * every system canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
+ * island's own clearance (`kahuReachClearedAtGate`) is a composition option set in code at the island's behavior, never a
+ * field the envelope can carry, so nothing a caller sends lifts it.
+ */
+export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerifier, presenter: string, local: boolean): Promise<void> {
+  const { access, bagUrl } = deriveRoutedCap(invocation);
+  const proof = await verifier.verify({ presenter, bagUrl, access, ...(local ? { channel: "local" as const } : {}) });
+  if (!proof.ok) {
+    throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
+  }
+  if (verifier.kahuReach) {
+    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action);
+  }
 }
 
 export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions): Promise<Record<string, unknown>> {
