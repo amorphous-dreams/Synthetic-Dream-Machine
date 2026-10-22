@@ -46,7 +46,7 @@ Wave C builds `K15` step 6, the fence, under one identity model the operator app
 
 # ''The sealed anchor.'' Each face holds, on each device, a D row: its PersonaGroup, persona-KEL prefix, a commitment to its root, its edge's digest, and a known frontier that never falls. Founding, admission and the recovery rites write it; sync never does. Red: a forged selector row in the daemon doc, then a coherent valid foreign bundle, switch no pinned face; a missing anchor refuses face boot by name.
 # ''The signed `@persona` log.'' Founding and admission acts, device edges and lease advances travel as signed entries in the face's `@persona` plane, verified against the anchor and the KEL; the reader folds them as the KEL board does. Red: two signed acts at one sequence surface as a fork, never a CRDT winner.
-# ''The monotone frontier.'' Lease advances carry signatures in the per-writer shape; the sealed local frontier never falls. Red: a deleted, replayed or unsigned high slot lowers nothing and raises nothing. An act that widens authority (admit, grant, re-key, seal to a reader) refuses a target naming a newer bound than the frontier holds, its receipt naming the frontier it acted under.
+# ''The monotone frontier.'' Lease advances carry signatures in the per-writer shape (`lease-advance`: each writer signs `{resource, writer, epoch}` into its own slot); the sealed local frontier never falls. A lease advance rides a per-writer signed slot and never the `@persona` log, since two writers advancing at once would fork a hash-linked log, and the house names forks and never resolves them; per-writer slots let concurrent writers both land while the max climbs. A face's advance is `lares persona lease`, and the boot raises the anchor only from slots that verify (`lease-observation`). Red: a deleted, replayed or unsigned high slot lowers nothing and raises nothing. An act that widens authority (admit, grant, re-key, seal to a reader) refuses a target naming a newer bound than the frontier holds, its receipt naming the frontier it acted under.
 # ''Verified projections.'' The face planes and the daemon doc's identity tiddlers read as projections of verified records, disposable and rebuilt. Red: a plane URL with no signed founding or admission act behind it never registers.
 # ''The FCK fence.'' Each face's D rows (atom, archive, anchor, custody root, proof keys) seal under that face's own random FCK and key by its PersonaGroup on both hosts; the vessel key opens none of them. Red: K15's isolation red at the key-class level, where Wave B's `test.fails` rows turn green: unlock A alone, and every key A holds, the vessel key included, opens no B row.
 # ''The daemon's last unions'' (Wave B's census, node items 4 to 6): one keyhive, face ledger, content-key seat and seat-roll set per face, never one per daemon; face-join and seat duties reseal the asking face's bags alone; CLI selectors name their face and never default to `h0`; `fleet-join-pending` keys by face; a joined face's hearth dial pin stands per face.
@@ -73,6 +73,16 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
+<<~ ahu #/owed>>
+
+!! Owed beyond Wave C
+
+* ''The recovery door: guardian-quorum rotation, then `reanchorAfterRotation`, then a re-admit carrying the log and frontier.'' No production door rotates a persona root beneath its KEL prefix: `reanchorAfterRotation` stands proven as a library function with its red and control (a face recovered to a new root boots against the rewritten anchor; a document naming the new root with no KEL rotation behind it refuses), and `runReadmitEdge` has no production caller. Building the door means the guardian-quorum ceremony, whose guardian count is an open operator gate (`kahu#/seed-and-nexus`). The re-admit then carries the current `@persona` log and the signed frontier as a first admit does.
+* ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
+* ''Identities, circles and sessions stay per vessel'', under the vessel's own atom; the face proof names the shared persona plane alone (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-atom).
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges ~ held outside Wave C
@@ -84,6 +94,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5xjeu9AuIY_RuhMY08BgC4vpux4CUqZ3F1YmM8INRF0
+<<^ code="&#x0003;">>ni:///sha-256;2IKG6CSRuUp_T76u37eb5y8ExEHgE_Cj23yfHXC2FBs
 
 <<^ code="&#x0004;" -> to="?">>

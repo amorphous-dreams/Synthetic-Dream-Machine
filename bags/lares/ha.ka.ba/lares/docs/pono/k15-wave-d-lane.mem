@@ -1,0 +1,49 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-d-lane.mem"
+l-space   = "adjacent"
+role      = "the Wave D lane's kit: K15 step 6's fence, whole: each face's custody rows seal under its own face custody key (FCK), wrapped in the face's own slot tree, and the vessel key opens none of them"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k15-wave-d-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! Wave D ~ each face keeps its own key
+
+Wave D builds the FCK fence the custody contract of <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-custody-step-zero">> specifies (#/key-classes-and-routes, #/carrier-binding-and-overwrite, #/reds-executable-acceptance-statements). It lands as ONE lane, whole: a slice that moves one carrier family under the fence while the others rest under the omnibus vessel key would read green for the rows it moved and lie about every other row of the same face.
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The five slices, one lane
+
+# ''The tree, the key and the context.'' Each face holds a fresh random FCK, wrapped only in that face's independent slot and recovery tree; the sealed writer generalizes from `(vk, VK tree, carrier)` to an explicit `(row class, owner, key, matching tree, bound carrier context)`, and each D seal authenticates one canonical context of format, store namespace, immutable PersonaGroup, row name, row kind and the logical row reference. The face atom and the sealed anchor are the first rows to move; the two key-class rows in `face-isolation-routes.test.ts` turn green here and come off `test.fails`.
+# ''Every other node D carrier'' moves under its face's FCK in the same lane: the custody root, the Keyhive and veil archives, the proof keys, the face join rows, the roster, book and outbox partitions.
+# ''Per-face unlock'' in node boot, the daemon, the CLI and the vault verbs: a node that wears several faces unlocks each separately, and the node holds no omnibus VK for D rows.
+# ''The browser mirror'': each tab asks for its own face unlock, the last tab's close drops the bare face keys, and the browser holds no VK.
+# ''The one-face bundle and restore'': a bundle carries only that face's rows and a wrapped recovery route, never a bare FCK, and a restore opens no sibling.
+
+<<~/ahu>>
+
+<<~ ahu #/the-red>>
+
+!! The red
+
+Found A and B with independently random FCKs and trees, occupied D carriers for both, and the floor values. Unlock A alone. Bypass every router, session and store adapter and try direct authenticated open, occupied-row replacement, delete, rotation, backup and restore on each B carrier with every A key, every floor value and the vessel key; every B operation refuses cryptographically and leaves B's occupied ciphertext byte-for-byte unchanged (custody-step-zero #/reds-executable-acceptance-statements, the isolation red, every row).
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;1QcqlVIiVLhO0Wf-MT1ur9z-HlBWWsoPhGULfzjbbcc
+
+<<^ code="&#x0004;" -> to="?">>

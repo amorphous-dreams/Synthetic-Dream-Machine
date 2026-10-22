@@ -63,6 +63,8 @@ This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-K
 
 ''INTERNAL ⊥ EXTERNAL — the hard law.'' The fleet's ''internal'' identity — the pet-name declaring //these atoms form one hand// — ''NEVER equals'' the ''external'' identity the operator publishes as a Handle. The collector stays inside; the face goes out; ''no act may collapse them to one value''. That reads #the-vault's single bit at the fleet scale: publish the face, never the fleet.
 
+''THE PLANES THAT STAY PER VESSEL.'' A face's shared plane is its persona plane alone: the signed `@persona` log names it, and the face proof (`proveFaceFromLog`) checks it. Its identities, circles and sessions planes stay per vessel, minted by each device under its own atom, so no founder's signed act can name them and none is owed one. This stands as the law of the planes, never a gap in the proof.
+
 ''THE ROSTER LAW.'' The atom creates its face's group and sentinel, so the creator the group's key tree seats by construction, and the identifier every carried event names in cleartext, stands the face's own random key. The place's identity sits on no face's roster, and no roster carries a key that appears on another (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond).
 
 <<~/ahu>>
@@ -221,6 +223,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7WgWY5IVppCa_NGgXRRwHsm6S0cjxlxqBazSZLS3WfU
+<<^ code="&#x0003;">>ni:///sha-256;cvmK3CND56la25QEiPOQqVTnuLIyMupqFn0k2CeW_m0
 
 <<^ code="&#x0004;" -> to="?">>
