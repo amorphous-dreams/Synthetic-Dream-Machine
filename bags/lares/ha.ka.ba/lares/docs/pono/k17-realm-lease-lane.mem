@@ -1,0 +1,53 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/k17-realm-lease-lane.mem"
+l-space   = "adjacent"
+role      = "the K17-R lane's kit: one lease law on the realm boards: every lease epoch rises only on a signed advance, a realm's advance signs as a quorum under each epoch's roster, and the realm boards' frontiers widen K17 as the fleet board's do"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/k17-realm-lease-lane"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! K17-R ~ one lease law on the realm boards
+
+Wave C made a PersonaGroup's lease epoch rise only on a signed advance (`lease-advance`, `lares persona lease`) and built the fleet board's signed frontier. K17-R extends both laws to the Nexus and cabal-realm boards, as its own lane cut after Wave C lands (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-c-lane">>). It shares only the readers Wave C built: `hand-lineage`, the quorum act and `readWideningFrontier`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-mandate>>
+
+!! The mandate (operator rulings on forks 3 and 4, 2026-10-22)
+
+* ''One lease law.'' Every lease epoch rises only on a signed advance. A face advances by a per-writer signed slot under its KEL lineage. A Nexus or cabal-realm advance signs as a `QuorumAct` at the roster's threshold under its own epoch's lineage.
+* ''The unsigned max-register retires entirely'' (`effectiveLeaseEpoch`, `rollLeaseEpochOnBoard`, with their fixtures); the signed path stands alone.
+* ''The realm boards' frontiers widen K17 the same way the fleet board's do.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-slices>>
+
+!! The five slices, one lane landed whole
+
+# ''R1 ~ the mesh format.'' A quorum-lease slot, its writer and its reader under a charter lineage (`makeHandLineage` bound to the seal-epoch chain; an older epoch's keys come from the seal-roll chain).
+# ''R2 ~ the writer on held seats.'' The `nexus-rekey` writer moves from the vessel's atom to a store-door row that signs at held seats, as `lares edge kapae --quorum` does.
+# ''R3 ~ the readers.'' The herm's raise door (`effectiveLeaseEpochOnBoard`), `cabal-join`, the vessel standing and the realm clock read signed advances only.
+# ''R4 ~ the retirement.'' The unsigned max-register leaves, and its fixtures migrate to signed fixtures through the real founding path.
+# ''R5 ~ the realm boards' frontiers.'' The charter quorum hand signs its stream's frontier; the realm boards' readers (`memberAside`, `standsInRealm`, the vouch edges) widen only as of a qualifying frontier.
+
+Red: an unsigned `rollLeaseEpochOnBoard` advance on a realm raises nothing, a sub-threshold hand raises nothing, and a threshold hand raises it.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;pFgZwUEBT1i2gNSv_sX-UzJtARgyxS7aEAYy7pmUd0Y
+
+<<^ code="&#x0004;" -> to="?">>
