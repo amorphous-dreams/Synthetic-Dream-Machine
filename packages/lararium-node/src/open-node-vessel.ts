@@ -92,7 +92,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocuments,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -1944,6 +1944,8 @@ async function prepareNodeBootOn(
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
+        if (bootstrap.identitiesUrl && bootstrap.circlesUrl) joinFaceDocuments(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
       }
     }
     // ── THE REST OF THE CLIMB — the boards the KEL carry leaves behind ───────────────────────────────

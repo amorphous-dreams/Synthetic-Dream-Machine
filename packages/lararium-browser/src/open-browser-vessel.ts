@@ -74,7 +74,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, heldDocOf, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
+  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, joinFaceDocuments, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
   type WideningRead,
 } from "@lararium/mesh";
@@ -124,7 +124,7 @@ import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody } from "./browser-custody.js";
 import { clearCustodyVerb, standBrowserCustody, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { guardedBoot, type BootHold } from "./guarded-boot.js";
-import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
+import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
@@ -454,6 +454,23 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   return guardedBoot(held, () => bootUnderLock(opts, held), opts.teardownBudgetMs);
 }
 
+/**
+ * The house this boot belongs to, or null where it stands at the floor: the bootstrap's PersonaGroup and persona root, with
+ * the root checked against the sealed anchor's commitment. Nothing here waits or writes.
+ */
+async function houseOfBoot(idbName: string, admitting: boolean): Promise<string | null> {
+  if (admitting) return null;
+  try {
+    const { bootstrap } = await readBootKeys(idbName);
+    const group = bootstrap?.personaGroupId, root = bootstrap?.deviceEdge?.personaRootDid;
+    if (!group || !root) return null;
+    if ((await listBrowserPersonaRoots(idbName)).length > 1) return null;
+    const anchor = await loadBrowserFaceAnchor(idbName, group);
+    if (!anchor || faceRootCommitment(root) !== anchor.rootCommitment) return null;
+    return await houseName(group, root);
+  } catch { return null; }
+}
+
 async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promise<BrowserVesselResult> {
   const {
     wikiId,
@@ -476,11 +493,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE HOUSE BEHIND THE LOCK (opt-in): with a shared holder configured and `SharedWorker` on the engine, the
   // holder owns the one daemon island and the lock; this tab attaches. The one refusal that opens is a lock
   // held by THAT holder — any other client still refuses loud.
-  const holder = (sharedHolderUrl && daemonWorkerUrl)
-    ? await attachSharedHolder({ holderUrl: sharedHolderUrl })
+  // ONE SHAREDWORKER PER HOUSE (shape E): the tab reads its face's pins BEFORE it connects, and opens the SharedWorker named
+  // by the digest of the house's (PersonaGroup, persona root). The pins come from the bootstrap and are checked against the
+  // sealed anchor's root commitment; a boot with no standing anchor (a first founding, a first admit, a locked keystore,
+  // several faces held) takes the dedicated-worker floor, and the house stands from the next boot.
+  const house = (sharedHolderUrl && daemonWorkerUrl) ? await houseOfBoot(idbName, admit !== undefined) : null;
+  const holder = (sharedHolderUrl && daemonWorkerUrl && house)
+    ? await attachSharedHolder({ holderUrl: sharedHolderUrl, houseName: house })
     : null;
   if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
-  const lockHold = await holdVesselLock(idbName, opts.locks === undefined ? ambientLocks() : opts.locks, { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null });
+  const lockHold = await holdVesselLock(idbName, opts.locks === undefined ? ambientLocks() : opts.locks, { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null, ...(holder?.kind === "attached" && house ? { houseName: house } : {}) });
   held.lock = lockHold;
   if (holder?.kind === "attached") held.stood.push({ what: "shared holder port", down: () => holder.port.close() });
   if (lockHold.attached) console.log(`[vessel] attached to the shared holder (${lockHold.holder}); island boots ${holder?.kind === "attached" ? holder.hello.islandBoots : "?"}, tabs ${holder?.kind === "attached" ? holder.hello.tabs : "?"}`);
@@ -1247,6 +1269,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           planes: { persona: social.personaUrl, identities: social.identitiesUrl, circles: social.circlesUrl },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
+        if (social.identitiesUrl && social.circlesUrl) joinFaceDocuments(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
       }
       const standingArchive = await requireBrowserKeyhiveArchive(idbName);
       const daemonAuth = {
