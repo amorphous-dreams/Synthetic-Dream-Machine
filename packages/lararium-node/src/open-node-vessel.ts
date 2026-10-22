@@ -123,7 +123,8 @@ import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
-import { loadFaceAnchorOfGroup } from "./face-anchor-store.js";
+import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
+import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked } from "./custody-holder.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
@@ -2276,9 +2277,14 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
-    // The sealed frontier rises only on a VERIFIED observation: a signed `lease-advance` act in the face's `@persona`
-    // log (persona-act). An unsigned lease slot on the mirrored daemon doc raises nothing, so a forged high slot cannot
-    // ratchet local custody. Until the log's writers land, the anchor's frontier holds at its founding or admission value.
+    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
+    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    if (faceAnchor && personaGroupId && personaKelChain) {
+      const prefix = leaseEpochPrefix(personaGroupId);
+      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const raised = raiseAnchorFromSlots(faceAnchor, slots, personaKelChain);
+      if (raised !== faceAnchor) await keepFaceAnchorOfGroup(raised);
+    }
 
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
