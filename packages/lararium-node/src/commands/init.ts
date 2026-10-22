@@ -39,6 +39,7 @@ import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
+import { ensurePlaceCard } from "../place-card.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
@@ -252,6 +253,9 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // the root→joinee edge (the founder's PersonaGroup root signed it). The joinee writes that
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
     const payload = opts.admitPayload;
+    // A JOINEE FOUNDS NO PLACE, so its admit supplies the BINDING and this supplies the SELF: the place card, minted from this
+    // vessel's own seed, so no landing path reaches a place-arm presentation cardless or on another seed's card.
+    await ensurePlaceCard();
     if (payload.kind !== "device-admit/v1") {
       throw new Error(`[lares fleet join land] unexpected payload kind: ${payload.kind}`);
     }

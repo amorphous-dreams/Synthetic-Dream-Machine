@@ -287,6 +287,34 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
 }
 
 /**
+ * The vessel's own self-certifying Keyhive ContactCard, minted from THE VESSEL'S OWN SEED and nothing else: the place card.
+ * `foundThePlace` mints it at a place founding; a joinee node, which founds no place, mints it here so it never reaches a
+ * place-arm presentation cardless. The archive leaves with the card (it holds the prekey secrets the card names).
+ */
+export async function mintPlaceCard(input: { readonly vesselSeed: Uint8Array; readonly archiveBytes?: Uint8Array }): Promise<{ readonly contactCardJson: string; readonly archive: Uint8Array; readonly vesselIdentifierHex: string }> {
+  const keyhive = new KeyhiveProvider();
+  await keyhive.init({ seed: input.vesselSeed, eventStore: new InMemoryEventStore(), ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
+  try {
+    return {
+      vesselIdentifierHex: await keyhive.vesselIdentifierHex(),
+      contactCardJson: new TextDecoder().decode(await keyhive.contactCard()),
+      archive: await keyhive.exportArchive(),
+    };
+  } finally { await keyhive.dispose(); }
+}
+
+/** Does this card name the individual whose verifying key is `vesselKeyHex`? Read through a throwaway provider, never trusted from the JSON. */
+export async function placeCardIsOf(contactCardJson: string, vesselKeyHex: string): Promise<boolean> {
+  const reader = new KeyhiveProvider();
+  await reader.init({ seed: new Uint8Array(32).fill(1), eventStore: new InMemoryEventStore() });
+  try {
+    const { id } = await reader.receiveContactCard(new TextEncoder().encode(contactCardJson));
+    return String(id).toLowerCase().replace(/^0x/, "").endsWith(vesselKeyHex.toLowerCase().replace(/^0x/, ""));
+  } catch { return false; }
+  finally { await reader.dispose(); }
+}
+
+/**
  * The cabal sentinel's seed for a face founded at one hearth: the sentinel URI under the hearth's Nexus AID, so two
  * hearths' cabals seed apart. A face founded at no hearth (a hearth-agnostic leaf) seeds from the bare URI.
  */

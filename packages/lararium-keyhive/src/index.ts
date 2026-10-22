@@ -71,7 +71,7 @@ export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from 
 // import it.
 
 export {
-  foundThePlace, foundTheFace, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload,
+  foundThePlace, mintPlaceCard, placeCardIsOf, foundTheFace, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload,
   replayCapEvents, retireFaceCheckpoint, retireApplyCheckpoint, sealCheckpoint, openCheckpoint,
 } from "./ceremony-core.js";
 export type {
