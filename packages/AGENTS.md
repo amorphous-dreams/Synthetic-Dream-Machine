@@ -55,7 +55,7 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/tw5` carries TiddlyWiki runtime integration: the TW5 VM surface, the island layer, the memetic-wikitext machinery, the verb pipeline, TW5-side stores, and the TW5 wikirules/macros/modules/filters. Holds zero `@automerge` dependencies. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No truth lives on the main thread: every authoritative engine and store runs in a worker, and a main-thread glass engine (DreamDOM D3, behind a flag) renders as a camera over them, never as truth.
+`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the flow read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No truth lives on the main thread: every authoritative engine and store runs in a worker, and a main-thread glass engine (DreamDOM D3, behind a flag) renders as a camera over them, never as truth.
 
 ### Pronaos arrival/bootstrap projection (P0 inventory)
 
@@ -80,7 +80,7 @@ bounded, read-only material under their own route owners:
 |---|---|---|
 | `/bulb/manifest`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb; `/bulb/pointer` is retired |
 | `/cas/<cid>` | Bytes named by a `public`-tier pointer in the Herm's own or declared realm books | Private/contract/undeclared pointers, missing bytes, guesses |
-| FLOW/oracle read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
+| FLOW/flow read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
 
 The future Librarium's public books, images, media, and deliberately offered editions remain a separate projection
 concern. None of these Herm read faces turns a house-held `library:` collection into a public shelf by implication.
@@ -100,7 +100,7 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 `@lararium/browser` carries browser-native capability atoms that parallel the shared keel through WebSocket egress, IndexedDB, WebCrypto, Workers, and `__stubs__` for browser-incompatible dependencies. It cooperates with `@lararium/web` inside one Web-surface device/context assembly. That assembly remains a DreamNet peer across a real island boundary; browser inability to accept inbound sockets names a substrate constraint, not reduced authority. No React, no canvas.
 
-`@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@oracle` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
+`@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@flow` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
 
 `@lararium/keyhive` carries the capability layer — a pre-alpha integration of `@keyhive/keyhive` WASM bindings. One Keyhive Doc = one bag (1:1). Keyhive's four native grades read `relay` < `read` < `edit` < `admin`; the provider's gate stays binary (`read` or `admin`), and the wider access axis lives as a model at `lar:///ha.ka.ba/lares/api/pono/causal-islands`. Cap-event home and γ-with-operator-α-mirror sync stay in design flux — touch with care.
 

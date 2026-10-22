@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, writeCarriageEntry, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, ORACLE_SOCKET_ROUTE, type LarDoc, type PlaceFloorPinStatement,
+  placeFloorPinsFromBoard, FLOW_SOCKET_ROUTE, type LarDoc, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -81,7 +81,7 @@ async function readOwn(): Promise<{ carried: string[]; filed: readonly string[] 
       const index = hearthPinIndex();
       const doc = await open(carriageDocUrl(r.island), "board:carriage-contracts");
       const carriers = await foldCarrierSet(carriageEntriesFromBoard(doc), r.roster);
-      const read = filePlaceFloorPins(index, placeFloorPinsFromBoard(doc), { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, carriers });
+      const read = filePlaceFloorPins(index, placeFloorPinsFromBoard(doc), { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers });
       filed.push(...read.filed);
     }
     return { carried: readings.filter((r) => r.via === "carrier-seal").map((r) => r.aid), filed };
@@ -106,7 +106,7 @@ describe("a herm's explicit join: carry-for → carry --floor-pin → carry-take
       const doc = (await materializeSharedLarDoc(repo, carry.boardUrl as never, "board:carriage-contracts")).doc();
       const roster = foundingRoster(readNexusDoc(larSealHome()));
       return filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc), {
-        nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, carriers: await foldCarrierSet(carriageEntriesFromBoard(doc), roster),
+        nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers: await foldCarrierSet(carriageEntriesFromBoard(doc), roster),
       });
     })).filed).toEqual([seal.nym]);
 

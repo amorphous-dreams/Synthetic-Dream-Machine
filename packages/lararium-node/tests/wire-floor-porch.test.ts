@@ -4,7 +4,7 @@
  * `floor-answer.test` (the reader). This pin bites a weakening: a boot that serves the floor by a signed pointer again, or a
  * composition that forgets the porch.
  *
- *   · `main.ts` mounts no oracle floor read-face: the floor of system canon answers by the Nexus's release, at the porch,
+ *   · `main.ts` mounts no flow floor read-face: the floor of system canon answers by the Nexus's release, at the porch,
  *   · the hearth composition and the herm composition each mount the porch, the hearth with `/cas` and the herm without,
  *   · the herm lends the head's blobs to its bulb face through the released-floor lane.
  */
@@ -17,8 +17,8 @@ const main = strip(readFileSync(join(__dirname, "..", "src", "main.ts"), "utf8")
 const boot = strip(readFileSync(join(__dirname, "..", "src", "open-node-vessel.ts"), "utf8"));
 
 describe("the node's floor wire", () => {
-  test("main.ts serves no oracle floor read-face and signs no pointer over the floor", () => {
-    expect(main).not.toMatch(/snapshotPublicOracle|mountFlowReadFace|mountOracleReadFace|oracleReadFace/);
+  test("main.ts serves no flow floor read-face and signs no pointer over the floor", () => {
+    expect(main).not.toMatch(/snapshotPublicFlow|mountFlowReadFace|mountFlowReadFace|oracleReadFace/);
   });
   test("the hearth mounts the porch with /cas; the herm mounts it without, and lends the head's blobs to its bulb face", () => {
     const calls = [...boot.matchAll(/mountFloorPorch\(\{[\s\S]*?serveCas:\s*(true|false)/g)].map((m) => m[1]);

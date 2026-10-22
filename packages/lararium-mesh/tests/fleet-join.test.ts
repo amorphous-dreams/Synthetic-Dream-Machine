@@ -35,7 +35,7 @@ const faceAdmitOver = (carriage: FleetJoinAnswer["carriage"], nym: string, salt 
   admit: { nym, action: "admit", parents: [], sealEpochCid: "epoch-synthetic", carriageCommit: admitCarriageCommit({ carriage, salt }), signatures: [] } as unknown as CarriageEntry,
   lineage: [], salt,
 });
-const floorPinAt = (nexus: string, route = "/oracle", tag = 8): GateBundlePin => {
+const floorPinAt = (nexus: string, route = "/flow", tag = 8): GateBundlePin => {
   const bundle = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(tag) })), utf8Bytes(nexus), floorRoute(route));
   try { return bundle.pin; } finally { bundle.drop(); }
 };
@@ -380,7 +380,7 @@ describe("the answer carries the dial: the charter, the face's admit and the flo
     expect(read(w, { ...w.answer, charter: "another charter" })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, admit: { ...w.answer.admit, admit: { ...w.answer.admit.admit, parents: ["moved"] } } })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, admit: { ...w.answer.admit, lineage: [w.answer.admit.admit] } })).toEqual({ refusal: "answer-unsigned" });
-    expect(read(w, { ...w.answer, floorPins: [floorPinAt(HEARTH_NEXUS, "/oracle", 9)] })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, floorPins: [floorPinAt(HEARTH_NEXUS, "/flow", 9)] })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, floorPins: [] })).toEqual({ refusal: "answer-unsigned" });
   });
 
@@ -396,7 +396,7 @@ describe("the answer carries the dial: the charter, the face's admit and the flo
     const w = await world();
     expect(read(w, await resign(w, { floorPins: [PIN] }))).toEqual({ refusal: "answer-floor-pin-refused" });
     expect(read(w, await resign(w, { floorPins: [floorPinAt("nexus-elsewhere.synthetic")] }))).toEqual({ refusal: "answer-floor-pin-refused" });
-    expect(read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/oracle", 9)] }))).toEqual({ refusal: "answer-floor-pin-refused" });
+    expect(read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/flow", 9)] }))).toEqual({ refusal: "answer-floor-pin-refused" });
     // CONTROL: two routes read.
     expect("answer" in read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/shelf")] }))).toBe(true);
   });

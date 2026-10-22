@@ -48,7 +48,7 @@ describe("the knock — the upgrade segment derives from the pinned key", () => 
   test("RED: the segment is 32 hex characters, and differs per key and per route", () => {
     expect(knockSegment(K1, "/ws")).toMatch(/^[0-9a-f]{32}$/);
     expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K2, "/ws"));
-    expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K1, "/oracle"));
+    expect(knockSegment(K1, "/ws")).not.toBe(knockSegment(K1, "/flow"));
     expect(knockSegment(K1, "/ws/")).toBe(knockSegment(K1, "/ws"));
     expect(() => knockSegment("not-a-key", "/ws")).toThrow();
   });

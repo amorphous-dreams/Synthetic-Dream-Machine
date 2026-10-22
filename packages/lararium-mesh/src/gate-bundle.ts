@@ -189,7 +189,7 @@ export function gateBundleDigest(pin: GateBundlePin): string {
 }
 
 /**
- * The knock segment for a 32-byte key on `route` (`/ws`, `/oracle`, …): 32 hex characters of
+ * The knock segment for a 32-byte key on `route` (`/ws`, `/flow`, …): 32 hex characters of
  * HMAC-SHA256(key = SHA-256(GATE_KNOCK_DOMAIN ‖ key), route), the route read without a trailing slash. A gate
  * answers an upgrade only on `<route>/<knock>`, so a dialer that holds no pin computes no path, and the vessel's
  * dispatcher destroys an upgrade on a path no face claims before any HTTP 101

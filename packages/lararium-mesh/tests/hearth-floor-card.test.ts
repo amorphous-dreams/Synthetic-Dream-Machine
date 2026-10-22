@@ -1,8 +1,8 @@
 /**
- * hearth-floor-pins, THE FLOOR CARD (carrier (c)): the oracle's floor pin and the snapshot's publisher key, carried by
+ * hearth-floor-pins, THE FLOOR CARD (carrier (c)): the flow's floor pin and the snapshot's publisher key, carried by
  * the person's own hand in a device's arrival URL.
  *
- *   C1  CONTROL: a card reads back whole: the floor pin on the oracle route and the publisher key
+ *   C1  CONTROL: a card reads back whole: the floor pin on the flow route and the publisher key
  *   C2  a sovereign pin, a floor pin on another route, or a torn pin reads no card
  *   C3  a publisher that is no Ed25519 key, a stray field or a torn carriage reads no card
  */
@@ -13,7 +13,7 @@ import { custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRo
 import { hearthFloorCardText, readHearthFloorCard } from "../src/hearth-floor-pins.js";
 
 const NEXUS = "nexus-floor-card";
-const floorPin = (route = "/oracle"): GateBundlePin => {
+const floorPin = (route = "/flow"): GateBundlePin => {
   const b = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(5) })), utf8Bytes(NEXUS), floorRoute(route));
   try { return b.pin; } finally { b.drop(); }
 };

@@ -9,7 +9,7 @@ file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/base-doc.mem"
 l-space     = "lararium"
 mana        = 9
 manao       = 9
-role        = "the LarDoc record/blob shapes + the bag→doc oracle resolve-and-write-back primitive (resolveOracleDoc) + blob descriptor addressing"
+role        = "the LarDoc record/blob shapes + the catalog-row resolve-and-write-back primitive (`catalog-row.ts`) (resolveCatalogRow) + blob descriptor addressing"
 source-file = "packages/lararium-mesh/src/base-doc.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/base-doc"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -33,10 +33,10 @@ turns a bag-URI into a live doc handle:
   Blobs live in the ''`@oracle`'' runtime system island beside the engine
   bytes — never in the `lararium` corpus seed (the 2026-06-16 carve; see
   `disk-projection#oracle-split`).
-* ''`resolveOracleDoc(registryHandle, oracleKey, resolve, provenance)`'' — the
+* ''`resolveCatalogRow(registryHandle, rowKey, resolve, provenance)`'' — the
   read → resolve → write-back-on-first-mint shape for a bag→doc pointer.
   Reads the pointer (`text` field) from the registry doc; hands the URL (or
-  null) to the platform `resolve` strategy; writes the oracle tiddler back
+  null) to the platform `resolve` strategy; writes the row back
   only on first mint. Platform divergence rides the two arguments (`resolve`
   = repo strategy, `provenance` = authority stamp), never the protocol.
 
@@ -44,22 +44,16 @@ turns a bag-URI into a live doc handle:
 
 <<~ ahu #/two-plane>>
 
-!! Two-Plane Oracle (operator ruling, 2026-06-16)
+!! One owner per registry (W26 slice 2, 2026-10-18)
 
-`resolveOracleDoc` takes the ''registry handle'' as an argument, so the same
-primitive serves both pointer planes (`wiki-layer-ontology#oracle-planes`):
-
-* ''system bags'' (`@oracle`, `lararium`, `lares`) resolve and write their
-  pointer in the ''`@oracle`'' system-island doc the vessel already holds.
-* ''user bags'' resolve and write in ''`@catalog`''.
-
-The caller (`open-vessel-core`) picks the plane per bag tier; `base-doc` stays
-plane-blind — it writes wherever the handed registry handle points. //(Caller//
-//plane-routing: ruled, enactment tracked at the live handoff torch; today the//
-//callers hand `@catalog` for every bag.)//
+`resolveCatalogRow` takes the ''registry handle'' as an argument and stays plane-blind: it writes wherever the handed
+handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc rows
+rest in its own registry and no shared `@oracle` registry carries a pointer. The system bags `lares` and `lararium` carry
+no catalog row at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
+island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iLuQbupnASu2kXyF_bjPCQbY9d2wNMeeD_fOyRj5P2c
+<<^ code="&#x0003;">>ni:///sha-256;RFTHZ5hRVcsK1vcJs_Lfr7rDmrI74-HqBvFVc7zWE-w
 
 <<^ code="&#x0004;" -> to="?">>

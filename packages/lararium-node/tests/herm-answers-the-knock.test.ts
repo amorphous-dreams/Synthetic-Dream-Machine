@@ -5,7 +5,7 @@
  * route draws no upgrade; that silence is the knock. WHERE a herm stands a gate stays the other half of the lane ("an
  * explicit Nexus opens the herm relay"): only at a Nexus whose quorum counted its `carry`.
  *
- * Proven over a real oracle face on its floor gate, sorting with the vessel's real sorter at the posture a herm reads:
+ * Proven over a real flow face on its floor gate, sorting with the vessel's real sorter at the posture a herm reads:
  *   · THE RULING: a proven NON-MEMBER stranger who knocked (a face no Nexus admits, no arm) reads the map, verified;
  *   · a carried next hop presenting its own carriage contract (the place arm) reads the map too;
  *   · a proven PLACE with no arm (a crossroads no quorum carried) reads it: proven is the whole test;
@@ -20,11 +20,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { ORACLE_SOCKET_ROUTE, emptyFoundingCharterDoc, exportFlowSnapshot, type NexusDoc } from "@lararium/mesh";
+import { FLOW_SOCKET_ROUTE, emptyFoundingCharterDoc, exportFlowSnapshot, type NexusDoc } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFlowReadFace, type FlowFloorFace } from "../src/flow-read-face.js";
 import { makeGateSorter, ownPlacePosture, type PlaceClass } from "../src/socket-sorter.js";
-import { floorGates, place, presenter, pullFloor, pullFloorAsPlace, type World } from "./oracle-floor-rig.js";
+import { floorGates, place, presenter, pullFloor, pullFloorAsPlace, type World } from "./flow-floor-rig.js";
 
 const SEED = new Uint8Array(32).fill(17);
 const PRIVATE_CHARTER: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `nexus-${"a".repeat(64)}`, federationPosture: "private" };
@@ -40,7 +40,7 @@ afterEach(async () => {
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 
-/** Stand an oracle face whose floor gate sorts with the vessel's real sorter, at the posture `placeClass` reads over `charter`. */
+/** Stand an flow face whose floor gate sorts with the vessel's real sorter, at the posture `placeClass` reads over `charter`. */
 async function stand(placeClass: PlaceClass, charter: NexusDoc | null, nexus = "nexus-a.synthetic"): Promise<{ origin: string; world: World }> {
   const server = createServer();
   servers.push(server);
@@ -81,7 +81,7 @@ describe("a herm answers the knock", () => {
 
   test("RED: a stranger without the knock path reaches no socket: the bare route draws no upgrade", async () => {
     const herm = await stand("herm", null);
-    const bare = new WebSocket(`${herm.origin.replace("http", "ws")}${ORACLE_SOCKET_ROUTE}`);
+    const bare = new WebSocket(`${herm.origin.replace("http", "ws")}${FLOW_SOCKET_ROUTE}`);
     const frames: string[] = [];
     bare.onmessage = (e) => frames.push(String(e.data));
     const closed = await new Promise<boolean>((resolve) => {

@@ -9,7 +9,7 @@
  *     crossing is the authenticated relation (the dialer pinned that gate's keys), so the dialer files the set in its pair
  *     index under the hearth it dialed, at floor tier, one per route (`LarWSClientAdapter`).
  *   · THE FLEET-JOIN ANSWER. The answer carries the same set inside the PersonaGroup root's signature (`fleet-join`), so a
- *     joinee holds the oracle's pin before its first crossing.
+ *     joinee holds the flow's pin before its first crossing.
  *
  * One reader serves both: each pin reads whole, stands at floor tier and at the expected Nexus, and names a route no other
  * pin in the set names. A set that fails any of these reads as none: nothing of it files.
@@ -20,7 +20,7 @@
  * card's AID anchors a full verification and no signed pointer carries a floor. The AID still rides this house's same-origin
  * trust line; the signed card (`W14`), the pin's causal position (`W15`) and the carry-floor convergence (`W16`) stay owed.
  *
- * A third carrier stands for the oracle's floor pin alone, THE FLOOR CARD (below): the hearth's own banner prints it and the
+ * A third carrier stands for the flow's floor pin alone, THE FLOOR CARD (below): the hearth's own banner prints it and the
  * person carries it by hand. A browser that holds no relation with a hearth and carries neither a signed set nor a card for
  * it reads `pin-absent` at that hearth's floor.
  *
@@ -65,32 +65,32 @@ export function readHearthFloorPinsBody(body: unknown, nexusHex: string): readon
   return readHearthFloorPins((body as { pins: unknown }).pins, nexusHex);
 }
 
-// ── The floor card: the oracle floor pin a person carries by hand ──────────────────────────────────
+// ── The floor card: the flow floor pin a person carries by hand ──────────────────────────────────
 
 /**
- * THE FLOOR CARD (carrier (c), by the person's own hand): the hearth's own banner prints its oracle floor pin beside the
- * key its oracle snapshot is signed under, and a device's arrival URL carries the two in its fragment, which never
+ * THE FLOOR CARD (carrier (c), by the person's own hand): the hearth's own banner prints its flow floor pin beside the
+ * key its flow snapshot is signed under, and a device's arrival URL carries the two in its fragment, which never
  * reaches a server. The first arrival trusts the lararium's own origin (`pronaos#/the-first-arrival`); a card carried
  * off the hearth's own console rides that same trust, as a fleet-join offer does. A card reaches the FLOOR tier on the
- * oracle route alone: it seats no face and opens no sovereign gate, and a Nexus that answers no stranger meets a
+ * flow route alone: it seats no face and opens no sovereign gate, and a Nexus that answers no stranger meets a
  * faceless reader with silence all the same.
  */
 export interface HearthFloorCard {
-  /** The oracle's floor pin at the hearth's Nexus. */
+  /** The flow's floor pin at the hearth's Nexus. */
   readonly pin:       GateBundlePin;
-  /** The Ed25519 key the oracle's pointer is signed under: the publisher, never the gate. */
+  /** The Ed25519 key the flow's pointer is signed under: the publisher, never the gate. */
   readonly publisher: string;
 }
 
-/** The route a floor card names: the oracle's. */
-export const HEARTH_FLOOR_CARD_ROUTE = "/oracle";
+/** The route a floor card names: the flow's. */
+export const HEARTH_FLOOR_CARD_ROUTE = "/flow";
 
 /** A floor card's carried text: base64url of its JSON, no padding. */
 export function hearthFloorCardText(card: HearthFloorCard): string {
   return base64UrlEncode(utf8Bytes(JSON.stringify({ pin: card.pin, publisher: card.publisher })));
 }
 
-/** Read a carried floor card: a whole floor pin on the oracle route, and a publisher key the one door accepts; else null. */
+/** Read a carried floor card: a whole floor pin on the flow route, and a publisher key the one door accepts; else null. */
 export function readHearthFloorCard(text: unknown): HearthFloorCard | null {
   try {
     if (typeof text !== "string" || text.length === 0 || text.length > 4096 || !/^[A-Za-z0-9_-]+$/.test(text)) return null;

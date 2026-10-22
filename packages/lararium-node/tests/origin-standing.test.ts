@@ -1,7 +1,7 @@
 /**
  * origin-standing — the vessel's standing is an input to its origin composition.
  *
- * A lararium composes relay + read (oracle) + Web. A herm is a waystone: it composes relay + read, and its
+ * A lararium composes relay + read (flow) + Web. A herm is a waystone: it composes relay + read, and its
  * Web origin is absent by law — typed absent, never a refused value the boot must route around. The read
  * origin stays explicit for both standings: declared, or covered by `sameOrigin`. `sameOrigin` reads "every
  * surface this standing has shares the relay face's origin", so it spans relay = read for a herm and all
@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  originCompositionForFace, oracleOriginForFace, crossingBannerLines, assertWaystoneCustody,
+  originCompositionForFace, flowOriginForFace, crossingBannerLines, assertWaystoneCustody,
   OriginCustodyRefusal, type ReachFace,
 } from "../src/lan-address.js";
 
@@ -22,25 +22,25 @@ const WAYSTONE = /a waystone serves no arrival page; light a Pronaos on a larari
 
 describe("herm (waystone) origin composition", () => {
   test("a herm with no Web declaration resolves to relay + read and no Web origin", () => {
-    const composition = originCompositionForFace(FACE, { oracleOrigin: "http://oracle.local:8081" }, "herm");
-    expect(composition).toEqual({ relayOrigin: "http://192.168.1.42:8080", oracleOrigin: "http://oracle.local:8081" });
+    const composition = originCompositionForFace(FACE, { flowOrigin: "http://flow.local:8081" }, "herm");
+    expect(composition).toEqual({ relayOrigin: "http://192.168.1.42:8080", flowOrigin: "http://flow.local:8081" });
     expect("webOrigin" in composition).toBe(false);
-    expect(oracleOriginForFace(FACE, { oracleOrigin: "http://oracle.local:8081" }, "herm")).toBe("http://oracle.local:8081");
+    expect(flowOriginForFace(FACE, { flowOrigin: "http://flow.local:8081" }, "herm")).toBe("http://flow.local:8081");
   });
 
   test("a herm with sameOrigin reads relay = read, and still no Web origin", () => {
     const composition = originCompositionForFace(DECLARED, { sameOrigin: true }, "herm");
-    expect(composition).toEqual({ relayOrigin: "https://waystone.example", oracleOrigin: "https://waystone.example" });
+    expect(composition).toEqual({ relayOrigin: "https://waystone.example", flowOrigin: "https://waystone.example" });
     expect("webOrigin" in composition).toBe(false);
   });
 
   test("a herm's read origin stays explicit — neither the relay face nor a port stands in for it", () => {
-    expect(() => originCompositionForFace(FACE, {}, "herm")).toThrow(/oracle origin must be declared/);
-    expect(() => originCompositionForFace(FACE, { sameOrigin: false }, "herm")).toThrow(/oracle origin must be declared/);
+    expect(() => originCompositionForFace(FACE, {}, "herm")).toThrow(/flow origin must be declared/);
+    expect(() => originCompositionForFace(FACE, { sameOrigin: false }, "herm")).toThrow(/flow origin must be declared/);
   });
 
   test("a herm handed a Web origin refuses with the waystone message", () => {
-    expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", oracleOrigin: "http://oracle.local" }, "herm"))
+    expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", flowOrigin: "http://flow.local" }, "herm"))
       .toThrow(WAYSTONE);
     expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", sameOrigin: true }, "herm")).toThrow(WAYSTONE);
     expect(() => assertWaystoneCustody("herm", { webOrigin: "http://web.local" }, {})).toThrow(OriginCustodyRefusal);
@@ -55,20 +55,20 @@ describe("herm (waystone) origin composition", () => {
 
   test("a herm with only relay/read declarations, and no Pronaos input, passes custody", () => {
     expect(() => assertWaystoneCustody("herm", {}, {})).not.toThrow();
-    expect(() => assertWaystoneCustody("herm", { sameOrigin: true, oracleOrigin: undefined }, { LAR_PUBLIC_URL: "https://w.example" })).not.toThrow();
-    expect(() => assertWaystoneCustody("herm", { oracleOrigin: "http://oracle.local" }, { LAR_PRONAOS_WEB_ROOT: undefined })).not.toThrow();
+    expect(() => assertWaystoneCustody("herm", { sameOrigin: true, flowOrigin: undefined }, { LAR_PUBLIC_URL: "https://w.example" })).not.toThrow();
+    expect(() => assertWaystoneCustody("herm", { flowOrigin: "http://flow.local" }, { LAR_PRONAOS_WEB_ROOT: undefined })).not.toThrow();
   });
 });
 
 describe("lararium controls — the composition stays as it stood", () => {
   test("CONTROL: a lararium with no Web declaration still refuses", () => {
-    expect(() => originCompositionForFace(FACE, { oracleOrigin: "http://oracle.local" }, "lararium")).toThrow(/Web origin must be declared/);
+    expect(() => originCompositionForFace(FACE, { flowOrigin: "http://flow.local" }, "lararium")).toThrow(/Web origin must be declared/);
     expect(() => originCompositionForFace(FACE, {}, "lararium")).toThrow(/Web origin/);
   });
 
   test("CONTROL: a lararium with sameOrigin gets all three surfaces on the relay face", () => {
     expect(originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium")).toEqual({
-      webOrigin: "https://waystone.example", relayOrigin: "https://waystone.example", oracleOrigin: "https://waystone.example",
+      webOrigin: "https://waystone.example", relayOrigin: "https://waystone.example", flowOrigin: "https://waystone.example",
     });
   });
 
@@ -85,10 +85,10 @@ describe("lararium controls — the composition stays as it stood", () => {
       expect(() => originCompositionForFace(portOnly, {}, standing)).toThrow();
       expect(() => assertWaystoneCustody(standing, {}, env)).not.toThrow();
     }
-    const herm = originCompositionForFace(portOnly, { oracleOrigin: "http://oracle.local" }, "herm");
+    const herm = originCompositionForFace(portOnly, { flowOrigin: "http://flow.local" }, "herm");
     expect(Object.values(herm)).not.toContain("https://public.example");
     expect(herm.relayOrigin).toBe("http://localhost:5173");
-    expect(herm.oracleOrigin).toBe("http://oracle.local");
+    expect(herm.flowOrigin).toBe("http://flow.local");
   });
 });
 

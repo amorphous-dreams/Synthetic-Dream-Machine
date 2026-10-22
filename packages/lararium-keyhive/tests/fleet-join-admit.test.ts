@@ -9,7 +9,7 @@ const pinAt = (nexus: string): GateBundlePin => {
 };
 const PIN = pinAt("epoch-0");
 const FLOOR = (() => {
-  const bundle = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(8) })), new TextEncoder().encode("epoch-0"), floorRoute("/oracle"));
+  const bundle = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(8) })), new TextEncoder().encode("epoch-0"), floorRoute("/flow"));
   try { return bundle.pin; } finally { bundle.drop(); }
 })();
 const GROUP = "0xc0ffee00d15ea5e5";

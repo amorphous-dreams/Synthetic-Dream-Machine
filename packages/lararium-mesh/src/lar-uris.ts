@@ -452,7 +452,7 @@ export function nexusRegistryUri(nexusPubkey: string): string {
  * onto another Nexus's handles-face under a stable key. Federates read-open within the island; never global.
  *
  * This URI doubles as the WHO face's ORACLE-KEY on the PUBLIC plane: a crossroads-plane tiddler at this key holds
- * the face doc's automerge: URL (resolveOracleDoc), so a stranger resolves the per-Nexus WHO board through
+ * the face doc's automerge: URL (resolveCatalogRow), so a stranger resolves the per-Nexus WHO board through
  * the crossroads plane without standing in any operator's grant graph (canon: lararium/docs/crossroads).
  */
 export function nexusHandlesUri(nexusPubkey: string): string {

@@ -84,7 +84,7 @@ describe("Pronaos Node composition", () => {
     expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env })).toThrow(/artifact receipt/);
   });
 
-  test("mounts only exact Pronaos routes and leaves the Oracle face reachable", async () => {
+  test("mounts only exact Pronaos routes and leaves the Flow face reachable", async () => {
     const f = fixture();
     const server = createServer(); servers.push(server);
     const composition = composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env: envFor(f) });
@@ -92,7 +92,7 @@ describe("Pronaos Node composition", () => {
       "/", "/manifest.webmanifest", "/genesis/seed.json", "/assets/wiki.worker-def.js", `/genesis/cas/${f.cid}`,
     ]);
     server.on("request", (req, res) => {
-      if (req.url === "/oracle/pointer") { res.writeHead(200, { "content-type": "application/json" }); res.end('{"face":"oracle"}'); return; }
+      if (req.url === "/flow/pointer") { res.writeHead(200, { "content-type": "application/json" }); res.end('{"face":"flow"}'); return; }
       if (!res.writableEnded) { res.writeHead(404); res.end("fallback"); }
     });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -110,9 +110,9 @@ describe("Pronaos Node composition", () => {
       expect(response.status, path).toBe(200);
       expect(response.headers.get("cache-control"), path).toBe(cache);
     }
-    const oracle = await fetch(`${origin}/oracle/pointer`);
-    expect(oracle.status).toBe(200);
-    expect(await oracle.text()).toBe('{"face":"oracle"}');
+    const flow = await fetch(`${origin}/flow/pointer`);
+    expect(flow.status).toBe(200);
+    expect(await flow.text()).toBe('{"face":"flow"}');
     const privatePath = await fetch(`${origin}/private/document.json`);
     expect(privatePath.status).toBe(404);
     expect(await privatePath.text()).toBe("fallback");

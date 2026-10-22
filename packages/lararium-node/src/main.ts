@@ -20,9 +20,9 @@
  *   LAR_ROOT     — alternate repo root for all mirror paths (default: monorepo root).
  *                  Set to an isolated test dir so promote/sync writes never touch
  *                  canonical packages/ or wikis/ paths.
- *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/oracle.
+ *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/flow.
  *   LAR_WEB_ORIGIN   — explicit Web-surface origin (or set origins.web in config.json); a lararium's alone.
- *   LAR_ORACLE_ORIGIN — explicit oracle/read-face origin (or set origins.oracle in config.json).
+ *   LAR_FLOW_ORIGIN — explicit flow/read-face origin (or set origins.flow in config.json).
  *   LAR_SAME_ORIGIN  — true/false explicit declaration that every surface the standing has shares the
  *                      relay face's origin: relay = read for a herm, relay = read = Web for a lararium.
  *   LAR_LAN_DISCOVERY — `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port
@@ -42,7 +42,7 @@ import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositio
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs, ORACLE_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
+import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
   standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
@@ -241,7 +241,7 @@ async function main(): Promise<void> {
 
   // The reach-faces this vessel answers on. The listen below binds 0.0.0.0, so the vessel answers on
   // every interface the host holds; the banner names them all. A phone on the house network reads a
-  // LAN line and types it; `localhost` on that phone names the phone. Web/oracle reach are explicit
+  // LAN line and types it; `localhost` on that phone names the phone. Web/flow reach are explicit
   // composition inputs; the relay declaration never promotes itself to either surface.
   const reachFaces = deriveReachFaces({
     port,
@@ -550,7 +550,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
   console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
   console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
-  console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
+  console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${FLOW_SOCKET_ROUTE} socket`);
   logPendingPlanes("[herm]", herm.mountManifest);
 
   // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
@@ -721,7 +721,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
   // THE CROSSING, spoken aloud. Each line names a URL a fresh device opens and stands at the floor with: the relay, and
-  // the hearth's oracle floor card in the fragment (the oracle's floor pin beside the key its snapshot is signed under,
+  // the hearth's flow floor card in the fragment (the flow's floor pin beside the key its snapshot is signed under,
   // carried by the person's own hand: `hearthFloorCardText`). No line names a gate key. A face crosses the sovereign gate
   // only under the full pin its fleet join carries inside the root's signature (house ruling "The admit's gate pin"), so
   // the banner names the fleet-join door beside the URLs. The `gate key:` line names this vessel's verifying key, so a

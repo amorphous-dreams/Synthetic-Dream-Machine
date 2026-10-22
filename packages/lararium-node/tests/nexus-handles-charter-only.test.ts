@@ -2,7 +2,7 @@
  * THE CHARTER-ONLY MIRROR GUARD — a per-Nexus WHO-face pointer (`bags/nexus/<pubkey>/handles`)
  * must never disk-mirror to the crossroads bag unless the RESOLVED `nexusIdentity().kind` is
  * `"charter"`. A private-nexus-of-one (`kind:"own"`) or a dialed anchor (`kind:"anchor"`) still
- * mints this pointer into the crossroads CRDT doc on first boot (who-face.ts `resolveOracleDoc`)
+ * mints this pointer into the crossroads CRDT doc on first boot (who-face.ts `resolveCatalogRow`)
  * — that write is fine, it is a real fact about that boot's private board — but the DISK MIRROR
  * of it into `bags/crossroads/` is the leak: four such pointers from throwaway dev vessels landed
  * untracked in the tracked, public-cap-tier crossroads bag (2026-09-20).

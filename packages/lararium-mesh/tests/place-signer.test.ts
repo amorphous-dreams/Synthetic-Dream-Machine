@@ -8,7 +8,7 @@ import { gatePlaceFinishImage } from "../src/gate-exchange.js";
 
 const signer = placeSignerFromSeed(new Uint8Array(32).fill(0x33));
 const image = (domain: string): Uint8Array => utf8Bytes(JSON.stringify({ kind: domain, subject: "a floor record" }));
-const pin = { tier: "floor", nexus: "6e", route: "/oracle", transportKey: "11".repeat(32), signingKey: "22".repeat(32) } as never;
+const pin = { tier: "floor", nexus: "6e", route: "/flow", transportKey: "11".repeat(32), signingKey: "22".repeat(32) } as never;
 /** Each duty's REAL image, built by the code that builds it in production. */
 const realImage: Record<string, Uint8Array> = {
   [CARRIAGE_CARRIER_DOMAIN]: carrierContractBytes({ nym: "ab".repeat(32), sealEpochCid: "epoch-" + "cd".repeat(32) }),

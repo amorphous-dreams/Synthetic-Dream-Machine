@@ -17,7 +17,7 @@ import {
   type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
-import { floorGates, presenter, pullFloor as pullFromFloor } from "./oracle-floor-rig.js";
+import { floorGates, presenter, pullFloor as pullFromFloor } from "./flow-floor-rig.js";
 
 const SEED   = new Uint8Array(32).fill(7);
 
@@ -38,7 +38,7 @@ afterEach(async () => {
 });
 
 /** The vessel's oracle doc: the materialized seed, then the vessel's own private writes over it. */
-function liveOracle(repo: Repo): DocHandle<LarDoc> {
+function liveFlow(repo: Repo): DocHandle<LarDoc> {
   const handle = repo.import<LarDoc>(materializeGenesisDoc(GENESIS));
   handle.change((d) => {
     const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
@@ -55,12 +55,12 @@ function liveOracle(repo: Repo): DocHandle<LarDoc> {
 
 async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) => Promise<{ dispose: () => void }>) {
   const repo = new Repo({ sharePolicy: async () => true });
-  const handle = liveOracle(repo);
+  const handle = liveFlow(repo);
   const server = createServer();
   servers.push(server);
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  const storageDir = mkdtempSync(join(tmpdir(), "oracle-shore-")); dirs.push(storageDir);
+  const storageDir = mkdtempSync(join(tmpdir(), "flow-shore-")); dirs.push(storageDir);
   const logs: string[] = [];
   const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
   const face = await mount({
