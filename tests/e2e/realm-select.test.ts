@@ -19,7 +19,7 @@
  * answers for a peer, which waits on the wire train (`cabal-realm#/many-realms`, OWED).
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
