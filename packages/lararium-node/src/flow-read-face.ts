@@ -98,7 +98,7 @@ export interface FlowGateArgs {
 }
 
 /**
- * Mount the read-face on a running HTTP server's upgrade path, exporting from the flow handle and
+ * Mount the read-face on a running HTTP server's upgrade path, exporting from the oracle handle and
  * signing pointers with the vessel's seed. Idempotent in effect — re-exports only when the served doc's
  * content hash actually changes.
  */

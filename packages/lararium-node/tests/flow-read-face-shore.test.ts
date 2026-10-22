@@ -38,7 +38,7 @@ afterEach(async () => {
 });
 
 /** The vessel's oracle doc: the materialized seed, then the vessel's own private writes over it. */
-function liveFlow(repo: Repo): DocHandle<LarDoc> {
+function liveIslandDoc(repo: Repo): DocHandle<LarDoc> {
   const handle = repo.import<LarDoc>(materializeGenesisDoc(GENESIS));
   handle.change((d) => {
     const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
@@ -55,7 +55,7 @@ function liveFlow(repo: Repo): DocHandle<LarDoc> {
 
 async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) => Promise<{ dispose: () => void }>) {
   const repo = new Repo({ sharePolicy: async () => true });
-  const handle = liveFlow(repo);
+  const handle = liveIslandDoc(repo);
   const server = createServer();
   servers.push(server);
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));

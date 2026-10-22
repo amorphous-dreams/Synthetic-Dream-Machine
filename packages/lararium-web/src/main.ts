@@ -30,7 +30,7 @@ import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHear
 import { createProjectionSink } from "./projection-sink.js";
 import { defaultReadFace, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
-// The vessel materializes the flow CRDT fresh from it under the deterministic doc id
+// The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
 import genesisSeed from "../../../genesis/seed.json";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
