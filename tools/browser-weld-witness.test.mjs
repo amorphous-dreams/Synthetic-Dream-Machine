@@ -198,6 +198,13 @@ async function testC4TraceAnchorsStillStand() {
   }
 }
 
+async function testC4TraceMarksRealManifestPost() {
+  const source = await readFile(DAEMON_CORE, "utf8");
+  const traced = instrumentBootSource(source);
+  assert.equal(traced.match(/\[C4 boot\] host:manifest-post/g)?.length ?? 0, 1,
+    "the real daemon boot post carries exactly one manifest trace marker");
+}
+
 async function testC4TraceInstrumentsCompiledAwaitIslandMsg() {
   const source = `export function awaitIslandMsg(opts) {
   return new Promise((resolve) => {
@@ -418,6 +425,7 @@ async function testObservationRouteSurvivesADisposedResponse() {
 await testObservationRouteSurvivesADisposedResponse();
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
+await testC4TraceMarksRealManifestPost();
 await testC4TraceInstrumentsCompiledAwaitIslandMsg();
 await testC4TraceInstrumentsManifestHandleDispatch();
 await testC4TraceInstrumentsWorkerShoreInbound();

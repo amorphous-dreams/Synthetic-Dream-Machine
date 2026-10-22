@@ -875,6 +875,8 @@ export interface IslandMsg_DocRested {
   type: "doc:rested";
   requestId: string;
   rested: boolean;
+  /** The vessel names the documents its rest door finished flushing before this acknowledgment. */
+  proof?: { documentIds: string[] };
   why?: string;
 }
 

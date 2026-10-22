@@ -60,8 +60,19 @@ describe("the sovereign island's reply integrity", () => {
     const second = w.posted.at(-1)!;
     expect(second.requestId, "the post-clear rest ask carries a fresh request ID").not.toBe(first.requestId);
     expect(second.documentIds).toEqual(["doc-a"]);
-    w.reply({ type: "doc:rested", requestId: second.requestId, rested: true });
+    w.reply({ type: "doc:rested", requestId: second.requestId, rested: true, proof: { documentIds: ["doc-a"] } });
     await pending;
     expect(durable, "control: the post-clear answer counts the document durable").toBe(true);
+  });
+
+  test("a rested reply without the document named in its storage proof refuses", async () => {
+    const { vesselRestAsker } = await islandDoors();
+    const w = wire();
+    const rest = vesselRestAsker!(w.port, 1_000, Promise.resolve());
+    const pending = rest(["doc-a"]);
+    await expect.poll(() => w.posted.filter((message) => message.type === "doc:rest").length).toBe(2);
+    const second = w.posted.at(-1)!;
+    w.reply({ type: "doc:rested", requestId: second.requestId, rested: true, proof: { documentIds: ["other-doc"] } });
+    await expect(pending).rejects.toThrow(/missing storage proof/);
   });
 });

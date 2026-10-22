@@ -439,6 +439,44 @@ describe("a half-started house yields to the dedicated-worker floor", () => {
     }
   });
 
+  test("a floor that errors before ready refuses every held ask by request name and receives none", async () => {
+    const face = await faceFixture("face:failed-floor", 101, 102);
+    const channel = new MessageChannel();
+    const hello = { kind: "holder:hello", ownerEpoch: "failed-epoch", sessionId: "failed-session", generation: 0, nonce: "00", islandBoots: 0, tabs: 1, lockClientId: null };
+    class Greeter { readonly port = channel.port1; constructor() { channel.port2.postMessage(hello); } }
+    const attached = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/h.js"), host: { SharedWorker: Greeter as unknown as SharedWorkerHost["SharedWorker"] } });
+    expect(attached.kind).toBe("attached");
+    if (attached.kind !== "attached") return;
+    const floorPosts: unknown[] = [];
+    const floorListeners = new Set<(m: unknown) => void>();
+    const floorErrors = new Set<(e: Error) => void>();
+    const heard: Message[] = [];
+    let floorStood!: () => void;
+    const stood = new Promise<void>((resolve) => { floorStood = resolve; });
+    const handle = holderWorkerHandle(attached.port, { personaGroup: face.group, edge: face.edge, atom: face.atom }, {
+      floor: () => { floorStood(); return {
+        post: (msg: unknown) => { floorPosts.push(msg); },
+        listen: (cb: (m: unknown) => void) => { floorListeners.add(cb); return () => floorListeners.delete(cb); },
+        onError: (cb: (e: Error) => void) => { floorErrors.add(cb); return () => floorErrors.delete(cb); },
+        terminate: () => {},
+      }; },
+      rePost: () => ({ msg: { type: "manifest" }, transfer: [] }),
+    } as never);
+    handle.listen((m) => heard.push(m as Message));
+    handle.post({ type: "manifest" });
+    handle.post({ type: "wiki:place-verb", requestId: "ask-1" });
+    handle.post({ type: "wiki:place-verb", requestId: "ask-2" });
+    channel.port2.postMessage({ ...hello, kind: "holder:refused", cause: "holder-unavailable: launch failed" });
+    try {
+      await stood;
+      for (const cb of floorErrors) cb(new Error("worker exited"));
+      for (const cb of floorListeners) cb({ type: "ready" });
+      expect(floorPosts).toEqual([]);
+      expect(heard.filter((m) => m.type === "wiki:verb-result").map((m) => [m.requestId, m.error]))
+        .toEqual([["ask-1", expect.stringContaining("worker exited")], ["ask-2", expect.stringContaining("worker exited")]]);
+    } finally { channel.port2.close(); handle.terminate(); }
+  });
+
   test("CONTROL: refusal before a manifest still lets the floor receive its first manifest", async () => {
     const face = await faceFixture("face:early-floor", 99, 100);
     const channel = new MessageChannel();

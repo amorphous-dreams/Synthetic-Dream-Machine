@@ -55,7 +55,7 @@ export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "
   const base = { type: "doc:rested" as const, requestId: ask.requestId };
   const door = restDoor;
   if (!door) return { ...base, rested: false, why: "no rest door stands on this vessel" };
-  try { await door(ask.documentIds); return { ...base, rested: true }; }
+  try { await door(ask.documentIds); return { ...base, rested: true, proof: { documentIds: [...ask.documentIds] } }; }
   catch (e) { return { ...base, rested: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 

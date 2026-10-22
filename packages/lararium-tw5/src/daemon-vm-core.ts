@@ -141,7 +141,7 @@ export interface DaemonVmHost {
   spawnWorker(scriptUrl: URL): VesselWorkerHandle;
   newSyncChannel(): { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Give a holder handle the daemon's factory for a fresh manifest and sync crossing. */
-  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] }) => void;
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: VesselMessagePort[]; afterPost?: () => void }) => void;
   /** Optional second crossing for the one explicitly worker-owned document. */
   newOwnedSyncChannel?: () => { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Browser workers register their inbound shore before signaling ready; Node omits the handshake. */
@@ -627,16 +627,22 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (closePorts) { mainPort.close(); ownedChannel?.mainPort.close(); }
   };
   let retireReplayCrossing: (() => void) | undefined;
-  const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] } => {
+  const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[]; afterPost?: () => void } => {
     const primary = first ? { mainPort, syncPort } : host.newSyncChannel();
     const owned = first ? ownedChannel : ownedDocument ? host.newOwnedSyncChannel!() : undefined;
+    let afterPost: (() => void) | undefined;
     if (!first) {
       const detach = attachMessageChannelSync(repo, primary.mainPort);
       const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
-      // A fresh manifest takes the floor with one live crossing, retiring the ports it replaces.
-      retireFirstCrossing(true);
-      retireReplayCrossing?.();
-      retireReplayCrossing = () => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); };
+      const retirePrevious = retireReplayCrossing ?? (() => retireFirstCrossing(true));
+      let posted = false;
+      const retireThis = () => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); };
+      afterPost = () => {
+        if (posted) return;
+        posted = true;
+        retirePrevious();
+        retireReplayCrossing = retireThis;
+      };
     }
     const msg = mkManifest(DAEMON_BAG_ID, primary.syncPort, daemonRecipe, grants, coreHash, {
       ...(storage ? { storage } : {}),
@@ -645,7 +651,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       ...(diskMirrors?.length ? { diskMirrors } : {}),
       ...(ownedDocument && owned ? { ownedDocument: { ...ownedDocument, syncPort: owned.syncPort } } : {}),
     });
-    return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort] };
+    return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort], ...(afterPost ? { afterPost } : {}) };
   };
   const initialPost = makeManifestPost(true);
   host.onManifestReplay?.(() => makeManifestPost());

@@ -205,6 +205,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A faceless island has no binding verdict to wait for.
   if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
   void gateClear.catch(() => undefined);
+  const pendingSeatLedgerFinds = new Map<string, Promise<unknown>>();
   const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
     ? async (fleetRootDid, deviceVerifyingKey) => {
       const ownKey = daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey;
@@ -214,7 +215,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const url = edgeLedgerDocUrl(ownKey);
         const handle = (ctx.repo.handles as Record<string, DocHandle<LarDoc> | undefined>)[url.slice("automerge:".length)];
         seatLedger = handle?.isReady() ? handle.doc() : undefined;
-        if (!seatLedger) void ctx.repo.find<LarDoc>(url).catch(() => undefined);
+        if (!seatLedger && !pendingSeatLedgerFinds.has(url)) {
+          pendingSeatLedgerFinds.set(url, ctx.repo.find<LarDoc>(url).catch(() => undefined));
+        }
       }
       return boardDyadReader(
         ctx.repo, dyadLedger, restDyadLedger, ownKey,

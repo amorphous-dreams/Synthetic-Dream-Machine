@@ -37,8 +37,10 @@ describe("the island reads the vessel's seat-roll ledger", () => {
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
         personaKel: { prefix: fx.prefix, chain: fx.chain },
       };
-      const read = () => operatorDaemonOptions({ daemonAuth } as never,
-        { readDyadFromBoard: true, dyadLedger: privateLedger }).verifierFactory!({ repo, composite: new CompositeStore(), post: () => {} } as never);
+      const options = operatorDaemonOptions({ daemonAuth } as never,
+        { readDyadFromBoard: true, dyadLedger: privateLedger });
+      const find = vi.spyOn(repo, "find");
+      const read = () => options.verifierFactory!({ repo, composite: new CompositeStore(), post: () => {} } as never);
       // No clock can deliver the missing document. A local read must settle from documents already in this Repo.
       vi.useFakeTimers();
       let settled = false;
@@ -50,6 +52,11 @@ describe("the island reads the vessel's seat-roll ledger", () => {
       expect(settled, "the absent roll ledger cannot hold the reading for the find timeout").toBe(true);
       await first;
       expect(boot.dyad, "an unrolled lift still owes its seat when the ledger is absent").toBe("owing");
+      await Promise.all([read(), read(), read()].map((result) => result.catch((error: unknown) => {
+        if (!(error instanceof Error) || error.message !== "dyad-captured") throw error;
+      })));
+      expect(find.mock.calls.filter(([url]) => url === edgeLedgerDocUrl(own)),
+        "N missing-ledger gate reads share one pending find").toHaveLength(1);
       vi.useRealTimers();
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(own), "ledger:edge");
       ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId, how: "gone" }));

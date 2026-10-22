@@ -63,7 +63,7 @@ export interface BrowserDaemonVmOptions {
    *  this tab attaches to it; no worker spawns here. */
   spawnWorker?:     (url: URL) => VesselWorkerHandle;
   /** The holder path installs this factory for a replacement manifest after a late floor swap. */
-  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) => void;
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[]; afterPost?: () => void }) => void;
 }
 
 export { VerbTable };

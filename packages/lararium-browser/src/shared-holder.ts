@@ -138,7 +138,7 @@ export interface HolderHandleHooks {
   /** Start the dedicated daemon when a greeted holder cannot launch its island. */
   readonly floor?: () => VesselWorkerHandle;
   /** Rebuild a manifest with new transferred ports after its first ports crossed to the holder. */
-  readonly rePost?: () => { readonly msg: object; readonly transfer: Transferable[] };
+  readonly rePost?: () => { readonly msg: object; readonly transfer: Transferable[]; readonly afterPost?: () => void };
 }
 
 /**
@@ -156,27 +156,43 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
   let floorHandle: VesselWorkerHandle | null = null;
   let floorReady = true;
+  let floorFailure: string | undefined;
   let detachFloorReady: (() => void) | undefined;
   let manifestSent = false;
   const listeners = new Set<{ cb: (message: unknown) => void; detach?: () => void }>();
   const errorListeners = new Set<{ cb: (error: Error) => void; detach?: () => void }>();
+  const refuse = (msg: object, why: string): void => {
+    const ask = msg as { type?: unknown; requestId?: unknown };
+    const requestId = typeof ask.requestId === "string" ? ask.requestId : undefined;
+    const error = `[shared-holder] ${why}${requestId ? ` (${requestId})` : ""}`;
+    const replyType = ask.type === "wiki:place-verb" ? "wiki:verb-result"
+      : ask.type === "daemon:delegate-verb" ? "daemon:verb-result" : "fault";
+    for (const entry of listeners) entry.cb({ type: replyType, ...(requestId ? { requestId } : {}),
+      ...(replyType === "fault" ? { wikiUri: "" } : {}), error });
+  };
   const takeFloor = (): void => {
     if (floorHandle || !hooks?.floor) return;
     const floor = hooks.floor();
     floorHandle = floor;
     for (const entry of listeners) entry.detach = floor.listen(entry.cb);
     for (const entry of errorListeners) entry.detach = floor.onError(entry.cb);
+    floor.onError((error) => {
+      if (floorFailure) return;
+      floorFailure = `replacement floor failed before ready: ${error.message}`;
+      detachFloorReady?.(); detachFloorReady = undefined;
+      for (const queued of waiting.splice(0)) refuse(queued.msg, floorFailure);
+    });
     if (manifestSent) {
       // The replacement worker announces ready only after its inbound listener stands.
       floorReady = false;
       let readySeen = false;
       detachFloorReady = floor.listen((message) => {
-        if ((message as { type?: unknown })?.type !== "ready" || readySeen) return;
+        if ((message as { type?: unknown })?.type !== "ready" || readySeen || floorFailure) return;
         readySeen = true;
         detachFloorReady?.();
         detachFloorReady = undefined;
         const fresh = hooks.rePost?.();
-        if (fresh) floor.post(fresh.msg, fresh.transfer);
+        if (fresh) { floor.post(fresh.msg, fresh.transfer); fresh.afterPost?.(); }
         floorReady = true;
         for (const queued of waiting.splice(0)) floor.post(queued.msg, queued.transfer);
       });
@@ -210,6 +226,7 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   }
   return {
     post: (msg, transfer) => {
+      if (floorFailure) { refuse(msg as object, floorFailure); return; }
       if (floorHandle) {
         if (floorReady) floorHandle.post(msg, transfer);
         else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
@@ -261,6 +278,6 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       return () => { port.removeEventListener("messageerror", fn); entry.detach?.(); errorListeners.delete(entry); };
     },
     // A tab never terminates the shared island; closing its port is the whole of leaving.
-    terminate: () => { try { send({ type: "session:close" }, []); } finally { detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
+    terminate: () => { try { send({ type: "session:close" }, []); } finally { waiting.splice(0); detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
   };
 }

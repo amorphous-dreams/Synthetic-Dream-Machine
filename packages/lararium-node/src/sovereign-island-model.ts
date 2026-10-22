@@ -140,8 +140,10 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
       timer.unref?.();
       const settleWith = (answer: IslandMsg_DocRested | null): void => {
         clearTimeout(timer);
-        if (answer?.rested === true) resolve();
-        else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "unrested" : "no answer"})`));
+        const proof = answer?.proof?.documentIds;
+        if (answer?.rested === true && Array.isArray(proof) && proof.length === documentIds.length
+          && documentIds.every((id, index) => proof[index] === id)) resolve();
+        else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "missing storage proof" : "no answer"})`));
       };
       pending.set(requestId, settleWith);
       cancel = () => { pending.delete(requestId); clearTimeout(timer); };
