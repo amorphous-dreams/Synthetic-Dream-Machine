@@ -1940,9 +1940,9 @@ async function prepareNodeBootOn(
         });
         const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
           anchor: faceAnchor, deviceKey: activeAtom.key,
-          // The persona plane is the face's SHARED doc, so a signed act names it; identities, circles and sessions are this
-          // device's own sovereign social docs, minted per vessel, and no founder's act can name them.
-          planes: { persona: bootstrap.personaUrl } });
+          // The face's SHARED documents: its persona plane, its circles and its identities, each named by a signed act. Sessions
+          // stay per vessel (motion, never a decision that crosses devices), so no act names them.
+          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
       }
     }
