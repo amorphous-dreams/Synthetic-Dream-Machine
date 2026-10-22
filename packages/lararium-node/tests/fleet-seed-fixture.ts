@@ -7,11 +7,12 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   buildDeviceDelegation, guardianRecoveryRegistrationCard, landFleetGenesis, fleetEdgeBoardDocUrl, materializeSharedLarDoc,
-  personaKelBoardDocUrl, personaLineageFromKel, provisionThresholdRecoveryAtFounding, writePersonaKelEvent,
+  mintFaceAnchor, personaKelBoardDocUrl, personaLineageFromKel, provisionThresholdRecoveryAtFounding, writePersonaKelEvent,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type HandLineage, type LarDoc,
 } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anchors.js";
+import { keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { restingRepo } from "./resting-repo.js";
@@ -33,6 +34,8 @@ export async function seedFleet(handleIndex = 0, opts: { genesis?: boolean; repo
   const deviceEdge = await buildDeviceDelegation({ personaRootSeed: rootSeed, atomSeed: await atomSeedOf(handleIndex),
     hearthTrueName: "fixture-hearth", boundEpoch: 0 });
   await persistIdentityAnchors({ ...prior, signerDid: deviceEdge.personaRootDid, personaKelPrefix: prov.inception.prefix, deviceEdge }, handleIndex);
+  await keepFaceAnchorOfGroup(mintFaceAnchor({ personaGroup: prior.personaGroupId, personaKelPrefix: prov.inception.prefix,
+    personaRootDid: deviceEdge.personaRootDid, edge: deviceEdge, leaseEpoch: 0 }));
   const repo = opts.repo ?? restingRepo(larDataDir());
   try {
     const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(island), "board:persona-kel");
