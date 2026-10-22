@@ -145,7 +145,7 @@ describe("the dyad door", () => {
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "open-browser-vessel.ts"), "utf8");
-    const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "browser-daemon-island.ts"), "utf8");
+    const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "daemon-island-start.ts"), "utf8");
     const behavior = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const boardReader = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "board-dyad-reader.ts"), "utf8");
 

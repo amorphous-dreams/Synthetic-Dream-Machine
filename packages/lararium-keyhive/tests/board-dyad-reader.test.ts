@@ -132,7 +132,7 @@ describe("the island's fleet board dyad reader", () => {
     const device = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(42));
     const unavailable = { find: async () => { throw new Error("board unavailable"); } };
     expect(await (await reader())(unavailable)(root, device), "an unreadable board fails closed").toBe("aside");
-    const island = readFileSync(join(import.meta.dirname, "..", "..", "lararium-browser", "src", "browser-daemon-island.ts"), "utf8");
+    const island = readFileSync(join(import.meta.dirname, "..", "..", "lararium-browser", "src", "daemon-island-start.ts"), "utf8");
     expect(island, "the island no longer delegates dyad reading to a tab").not.toMatch(/import\s*\{[^}]*browserDyadAsker/);
   });
 });
