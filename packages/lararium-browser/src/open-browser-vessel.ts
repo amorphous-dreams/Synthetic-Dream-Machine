@@ -74,7 +74,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, joinFaceDocuments, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
+  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
   type WideningRead,
 } from "@lararium/mesh";
@@ -1277,8 +1277,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
           if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
         }
-        // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
-        if (social.identitiesUrl && social.circlesUrl) joinFaceDocuments(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
+        // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
+        if (social.identitiesUrl && social.circlesUrl) {
+          const joining = joinFaceDocumentsOnArrival(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
+          held.stood.push({ what: "the face documents join", down: () => joining.stop() });
+        }
       }
       const standingArchive = await requireBrowserKeyhiveArchive(idbName);
       const daemonAuth = {

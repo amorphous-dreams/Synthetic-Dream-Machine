@@ -92,7 +92,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocuments, raiseFaceFrontier,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -1952,8 +1952,11 @@ async function prepareNodeBootOn(
           const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
           if (pinned !== faceAnchor) await keepFaceAnchorOfGroup(pinned);
         }
-        // THIS DEVICE'S OWN ENTRY joins the face's shared documents on the first boot that holds them.
-        if (bootstrap.identitiesUrl && bootstrap.circlesUrl) joinFaceDocuments(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
+        // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
+        if (bootstrap.identitiesUrl && bootstrap.circlesUrl) {
+          const joining = joinFaceDocumentsOnArrival(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
+          stood.push({ what: "the face documents join", down: () => joining.stop() });
+        }
       }
     }
     // ── THE REST OF THE CLIMB — the boards the KEL carry leaves behind ───────────────────────────────
