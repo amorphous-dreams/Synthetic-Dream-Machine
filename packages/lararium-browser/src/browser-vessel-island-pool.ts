@@ -76,6 +76,8 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       // The vessel's content store, as a session island's scoped view reads it: the origin's OPFS plane.
       readContent: (cid) => readCasBlobFromOpfs(cid),
       ...(opts.onWorkerEvent ? { onWorkerEvent: opts.onWorkerEvent } : {}),
+      // The page shows what the vessel read of its rest asks, so a person's tooling waits on the vessel's own word.
+      onRest: (state) => { if (typeof document !== "undefined") document.documentElement.dataset["larRest"] = `${state.asked}/${state.rested}/${state.stalled}`; },
     });
   }
 }

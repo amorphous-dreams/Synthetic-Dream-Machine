@@ -235,6 +235,9 @@ export function resolveDiskMirrors(
     );
 }
 
+/** What the vessel itself read of its rest asks: asked, answered rested (its Repo held the heads and flushed), answered stalled. */
+export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
+
 export interface VesselIslandPoolCoreOptions {
   host: VesselIslandHost;
   /** Vessel main Repo — each island's mainPort wires to it for CRDT sync. */
@@ -244,6 +247,8 @@ export interface VesselIslandPoolCoreOptions {
   /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
    *  result or a host-door ask. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
+  /** Called each time the vessel's rest ledger moves: a wiki island's rest ask arrives, or the vessel answers it. */
+  onRest?: (state: VesselRestState) => void;
   /**
    * Called when a SESSION's island emits a verse-event reaction, a camera frame, a control result or a
    * host-door ask, with the key parts that island stands under. A session island's event never reaches `onWorkerEvent`: that door's callers place vessel verbs
@@ -320,6 +325,8 @@ export class VesselIslandPoolCore {
   private readonly _mainRepo:       Repo | null;
   /** The sync peer each wiki island's channel carries, so a rest ask reads a closed channel as a fact. */
   private readonly _islandPeerOf = new Map<string, string>();
+  private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
+  private readonly _onRest: ((state: VesselRestState) => void) | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
@@ -361,6 +368,7 @@ export class VesselIslandPoolCore {
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
+    this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
     this._resolvePluginCids = opts.resolvePluginCids;
     this._onEa            = opts.onEa ?? null;
@@ -549,6 +557,14 @@ export class VesselIslandPoolCore {
 
   /** The scoped view an island's peer ID stands under, or null. The share verdict's caller reads it to keep
    *  a session island's announcements inside its facets before any message forms. */
+  /** The vessel's own reading of its rest asks, for a page to show and a test to wait on. */
+  restState(): VesselRestState { return this._restState; }
+
+  private _moveRest(change: Partial<{ -readonly [K in keyof VesselRestState]: VesselRestState[K] }>): void {
+    this._restState = { ...this._restState, ...change };
+    try { this._onRest?.(this._restState); } catch { /* a sink never breaks the rest door */ }
+  }
+
   viewOfPeer(peerId: string): SessionDocumentView | null {
     for (const slot of this._slots.values()) {
       if (slot.temperature === "wela" && slot.surface?.view.peerId === peerId) return slot.surface.view;
@@ -1060,7 +1076,9 @@ export class VesselIslandPoolCore {
       if (raw.type === "doc:rest" && !view && (raw as IslandMsg_DocRest).heads !== undefined) {
         const ask = raw as IslandMsg_DocRest;
         if (typeof ask.requestId !== "string") return;
+        this._moveRest({ asked: this._restState.asked + 1 });
         void answerRestWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
+          this._moveRest(answer.rested ? { rested: this._restState.rested + 1 } : answer.stalled ? { stalled: this._restState.stalled + 1 } : {});
           try { worker.post({ type: "doc:rested", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
         });

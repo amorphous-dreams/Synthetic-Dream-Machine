@@ -5,13 +5,14 @@
  * commit queue of the vessel's Repo, ~3.7 s behind the confirm on a staged hearth in headless Chromium), and a page
  * that unloads inside that window loses it for good.
  *
- *   R1 — RED: make a tiddler through the page editor and wait for its body to rest in storage, edit it, confirm, then
+ *   R1 — RED: make a tiddler through the page editor and wait for the vessel to rest it, edit it, confirm, then
  *        ask for a reload at once: the page HOLDS the leave while the confirmed act waits for its result (the
  *        `beforeunload` prompt fires and the person stays), and once the vessel rests the edit the reload goes through
  *        and the page reads the EDITED body. A confirmed edit survives an immediate reload.
- *   R2 — CONTROL: the same steps, but the reload waits until the edited body is seen at rest in storage (a causal read
- *        of the page's own IndexedDB, no sleep): the edit survives. The control proves the instrument reads a rested
- *        edit as one, so R1's failure names the window and nothing else.
+ *   R2 — CONTROL: the same steps, but the reload waits until the vessel itself answers the edit's rest ask (its Repo
+ *        held the island's heads and flushed them: `data-lar-rest` on the document root, the vessel's own word, no
+ *        byte search and no sleep): the edit survives. The control proves a rested edit reads back, so R1's failure
+ *        names the window and nothing else.
  *
  * Each read is the page's own reading; a timeout only bounds a wait.
  */
@@ -88,33 +89,21 @@ async function openByTitle(p: Page, title: string): Promise<boolean> {
   return await paintedBody(p, title) !== null;
 }
 
-/** Whether any record in the page's own IndexedDB stores carries these bytes: the causal read of "this body rests". */
-async function restsInStorage(p: Page, needle: string): Promise<boolean> {
-  return p.evaluate(async (n) => {
-    const enc = new TextEncoder().encode(n);
-    const has = (u: Uint8Array): boolean => { outer: for (let i = 0; i + enc.length <= u.length; i++) { for (let j = 0; j < enc.length; j++) if (u[i + j] !== enc[j]) continue outer; return true; } return false; };
-    for (const info of await indexedDB.databases()) {
-      if (!info.name) continue;
-      const db = await new Promise<IDBDatabase>((res, rej) => { const r = indexedDB.open(info.name!); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
-      try {
-        for (const name of [...db.objectStoreNames]) {
-          const rows: unknown[] = await new Promise((res) => { const q = db.transaction(name).objectStore(name).getAll(); q.onsuccess = () => res(q.result as unknown[]); q.onerror = () => res([]); });
-          for (const row of rows) {
-            const bin = (row as { binary?: Uint8Array })?.binary ?? (row instanceof Uint8Array ? row : undefined);
-            if (bin && has(bin)) return true;
-          }
-        }
-      } finally { db.close(); }
-    }
-    return false;
-  }, needle);
+/** What the vessel read of its own rest asks (`asked/rested/stalled`, shown on the document root): its Repo held the island's heads and flushed them. */
+async function restState(p: Page): Promise<{ asked: number; rested: number; stalled: number }> {
+  const raw = await p.evaluate(() => document.documentElement.dataset["larRest"] ?? "0/0/0");
+  const [asked, rested, stalled] = raw.split("/").map(Number);
+  return { asked: asked ?? 0, rested: rested ?? 0, stalled: stalled ?? 0 };
 }
 
-/** Poll the causal read until the bytes rest; a timeout only bounds the wait. */
-async function awaitRest(p: Page, needle: string): Promise<void> {
+/** Wait on the vessel's own word: more rests answered than `before`, and no ask still unanswered. A stall fails the wait by name. */
+async function awaitRested(p: Page, before: number): Promise<void> {
   const deadline = Date.now() + WAIT;
-  while (!(await restsInStorage(p, needle))) {
-    if (Date.now() > deadline) throw new Error(`"${needle}" never rested in the page's storage`);
+  for (;;) {
+    const state = await restState(p);
+    if (state.stalled > 0) throw new Error(`the vessel named a stalled rest: ${JSON.stringify(state)}`);
+    if (state.rested > before && state.asked === state.rested) return;
+    if (Date.now() > deadline) throw new Error(`the vessel never answered the rest ask: ${JSON.stringify(state)}`);
     await new Promise((r) => setImmediate(r));
   }
 }
@@ -122,12 +111,13 @@ async function awaitRest(p: Page, needle: string): Promise<void> {
 /** Make a tiddler through the page editor, confirm it and let its first body rest; returns the page and the title. */
 async function madeAndRested(context: BrowserContext, tag: string): Promise<{ page: Page; title: string }> {
   const page = await openPage(context);
+  const before = (await restState(page)).rested;
   const title = `Rest ${tag} ${Date.now()}`;
   await wiki(page).evaluate((h) => (h.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
   await wiki(page).locator("input.tc-titlebar").fill(title);
   await wiki(page).locator("textarea.tc-edit-texteditor-body").pressSequentially(FIRST, { delay: 5 });
   await confirmSettled(page, title);
-  await awaitRest(page, FIRST);
+  await awaitRested(page, before);
   return { page, title };
 }
 
@@ -214,8 +204,9 @@ describe("a confirmed edit survives a reload that follows at once", () => {
     const context = await browser!.newContext();
     await armTestCustody(context, "rest-before-reload-r2");
     const { page, title } = await madeAndRested(context, "R2");
+    const before = (await restState(page)).rested;
     await editAndConfirm(page, title);
-    await awaitRest(page, SECOND);
+    await awaitRested(page, before);
     const held = { holds: 0 };
     const body = await bodyAfterReload(page, title, held);
     expect(body, "the reloaded page reads the title back").not.toBeNull();
