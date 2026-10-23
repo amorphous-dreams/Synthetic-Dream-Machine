@@ -416,7 +416,7 @@ export interface SovereignReaders {
 
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
-  return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
+  return { wornMount: (dir: string) => readWornPersonaMount(dir, { refuse: "throw" }), personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
     archive: loadIdentityArchive, veilArchive: loadVeilArchive,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
 }
@@ -1850,6 +1850,9 @@ async function prepareNodeBootOn(
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
     const signerDid = bootMount?.signerDid ?? undefined;
     const faceAnchor = personaGroupId ? await orFloor(() => loadFaceAnchorOfGroup(personaGroupId)) : null;
+    // THE ANCHOR THIS BOOT STANDS ON: every later raise (the verified act head, a verified lease) starts from the latest one this boot
+    // wrote, so a second write never builds from the copy read before the first and erases the first's pin.
+    let standingAnchor = faceAnchor;
     if (personaGroupId && !faceAnchor && !atFloor) throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
     if (!personaGroupId && !atFloor && tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])) {
       throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
@@ -1955,7 +1958,7 @@ async function prepareNodeBootOn(
         const head = proof.projection.head;
         if (head) {
           const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
-          if (pinned !== faceAnchor) await keepFaceAnchorOfGroup(pinned);
+          if (pinned !== faceAnchor) { await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }
         }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
         if (bootstrap.identitiesUrl && bootstrap.circlesUrl) {
@@ -2178,7 +2181,7 @@ async function prepareNodeBootOn(
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) continue;
-        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, heldOnly: true });
+        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
         if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
     }
@@ -2250,7 +2253,7 @@ async function prepareNodeBootOn(
       // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
-      ...(faceLit && faceAnchor ? { faceAnchor } : {}),
+      ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -2327,8 +2330,8 @@ async function prepareNodeBootOn(
     if (faceAnchor && personaGroupId && personaKelChain) {
       const prefix = leaseEpochPrefix(personaGroupId);
       const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
-      const raised = raiseAnchorFromSlots(faceAnchor, slots, personaKelChain);
-      if (raised !== faceAnchor) await keepFaceAnchorOfGroup(raised);
+      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
+      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
 
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────

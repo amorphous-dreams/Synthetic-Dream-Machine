@@ -209,6 +209,13 @@ describe("the wear-reboot mount-switch carries the face pins", () => {
     expect(await readWornPersonaMount(await vaultWearing(1, noEdge))).toBeNull();
   });
 
+  test("RED: a boot that refuses a lost worn mount throws by name, never booting the founding face; CONTROL: the founding face and a full mount stay silent", async () => {
+    const { deviceEdge: _dropped, ...noEdge } = FULL;
+    await expect(readWornPersonaMount(await vaultWearing(1, noEdge), undefined, { refuse: "throw" })).rejects.toMatchObject({ name: "WornFaceRefused", handleIndex: 1 });
+    await expect(readWornPersonaMount(await vaultWearing(1, FULL), undefined, { refuse: "throw" })).resolves.not.toBeNull();
+    await expect(readWornPersonaMount(await vaultWearing(0, FULL), undefined, { refuse: "throw" })).resolves.toBeNull();
+  });
+
   test("the founding face owes no switch", async () => {
     expect(await readWornPersonaMount(await vaultWearing(0, FULL))).toBeNull();
   });

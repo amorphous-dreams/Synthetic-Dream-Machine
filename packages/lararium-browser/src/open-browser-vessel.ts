@@ -1202,6 +1202,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const wornMount = await readWornPersonaMount(
         await makeBrowserIdbPersonaVault(idbName),
         (why) => console.warn(`[lararium-browser] ${why}`),
+        { refuse: "throw" },   // a worn face whose mount material is lost refuses; it never comes up as the founding face
       );
       if (wornMount) {
         console.log(`[lararium-browser] worn h${wornMount.handleIndex} — the binding re-pins from its OWN anchors`);
@@ -1269,11 +1270,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
+        // The LEASE rises with it, from a VERIFIED observation alone (a signed advance by the KEL's current roster), so a later
+        // missing or replayed older slot never lowers the epoch this device already accepted.
         const head = proof.projection.head;
-        if (head) {
-          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
-          if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
-        }
+        const leasePrefix = leaseEpochPrefix(wornGroup);
+        const leaseSlots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
+        const observedLease = signedLeaseEpoch(wornGroup, leaseSlots, currentSignerOf(personaLineageFromKel(personaKelChain)));
+        const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
+        if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
         // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
         // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.

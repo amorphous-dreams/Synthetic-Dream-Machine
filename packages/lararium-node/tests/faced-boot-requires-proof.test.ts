@@ -42,4 +42,11 @@ describe("a faced boot proves its face", () => {
       expect(registerAt, "the registration follows the worn face's proof").toBeGreaterThan(proofAt);
     });
   }
+
+  test("RED: the node boot's two anchor writes chain through the standing anchor, so a lease raise never erases the act pin", () => {
+    const src = read("lararium-node/src/open-node-vessel.ts");
+    expect(src).toContain("raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain)");
+    expect(src).not.toMatch(/raiseAnchorFromSlots\(faceAnchor,/);
+    expect(src).toContain("{ await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }");
+  });
 });
