@@ -57,8 +57,8 @@ def main(argv=None):
         for i in range(args.passes):
             feedback=None
             if i:
-                mesh=project.grow(current).tessellate(linear=.40)
-                feedback={n:silhouette(mesh,cam,evolution.size)>96 for n,cam in project.cameras.items() if n!='oblique'}
+                mesh=project.grow(current).tessellate(linear=.40,union=True)
+                feedback={n:silhouette(mesh,evolution.fitness_cameras[n],evolution.size)>96 for n in project.cameras if n!=project.reference_view}
             results=evolution.evolve(current,burst=args.burst,survivors=args.survivors,offspring=args.offspring,feedback=feedback)
             if results:
                 best=results[0]

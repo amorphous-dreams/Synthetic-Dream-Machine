@@ -5,7 +5,7 @@ import pytest
 from projection_loom import SolidAssembly, box, beam, faceted_loft
 from projection_loom.pipeline import Project
 
-PROJECT=Path(__file__).parents[1]/'examples'/'necrospire'/'project.json'
+PROJECT=Path(__file__).parents[1]/'examples'/'observatory.json'
 
 
 def test_disconnected_solid_rejected():
@@ -61,18 +61,18 @@ def test_architectural_specimen_is_fused_solid():
     p=Project.load(PROJECT)
     a=p.grow()
     audit=a.audit(join=True)
-    assert audit['valid'] and audit['parts']>=25 and audit['joints']>=audit['parts']-1
+    assert audit['valid'] and audit['parts']==len(a.parts) and audit['joints']>=audit['parts']-1
     assert a.fuse().isValid()
 
 
-def test_old_project_schema_retired(tmp_path):
-    f=tmp_path/'old.json'
-    f.write_text(json.dumps({'schema':'projection-loom/project/v1'}))
-    with pytest.raises(ValueError,match='older mesh models remain archival'):
+def test_project_without_current_schema_is_rejected(tmp_path):
+    f=tmp_path/'invalid.json'
+    f.write_text(json.dumps({'schema':'invalid-schema'}))
+    with pytest.raises(ValueError,match='requires the project schema'):
         Project.load(f)
 
 
-def test_old_mesh_seed_not_accepted(tmp_path):
+def test_unknown_genome_parameter_is_rejected(tmp_path):
     p=Project.load(PROJECT)
     with pytest.raises(ValueError,match='Unknown genome locus'):
         p.grow({'scale_x':1.0})
@@ -86,5 +86,4 @@ def test_unknown_parent_rejected():
 def test_render_transport_keeps_named_roles():
     mesh=Project.load(PROJECT).grow().tessellate()
     names={p['name'] for p in mesh.parts}
-    assert 'obsidian needle' in names and 'front lower terrace' in names
-    assert 'central keep' in names
+    assert {'pedestal','upper tower','terrace','terrace diagonal'}.issubset(names)

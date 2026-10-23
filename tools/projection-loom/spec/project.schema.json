@@ -1,19 +1,145 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "projection-loom/solid-project/v2",
-  "title": "Projection Loom constructive-solid project",
+  "title": "Projection Loom constructive CAD project",
   "type": "object",
-  "required": ["schema","builder","cameras","initial","bounds"],
+  "required": [
+    "schema",
+    "builder",
+    "cameras",
+    "initial",
+    "bounds"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schema": {"const":"projection-loom/solid-project/v2"},
-    "builder": {"type":"string","pattern":"^[^:]+:[A-Za-z_][A-Za-z0-9_]*$"},
-    "cameras": {"type":"object","minProperties":1,"additionalProperties":{"type":"object","properties":{"azimuth":{"type":"number"},"elevation":{"type":"number"},"fit":{"enum":["height","bounds"]},"margin":{"type":"number","minimum":0,"maximum":0.45}}}},
-    "initial": {"type":"object","minProperties":1,"additionalProperties":{"type":"number"}},
-    "bounds": {"type":"object","minProperties":1,"additionalProperties":{"type":"array","items":{"type":"number"},"minItems":2,"maxItems":2}},
-    "reference": {"type":"string"},
-    "reference_view": {"type":"string"},
-    "light_angles": {"type":"array","items":{"type":"number"},"minItems":2,"maxItems":2},
-    "render": {"type":"object"}
+    "schema": {
+      "const": "projection-loom/solid-project/v2"
+    },
+    "builder": {
+      "type": "string",
+      "pattern": "^[^:]+:[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "cameras": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "fit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "azimuth": {
+            "type": "number"
+          },
+          "elevation": {
+            "type": "number"
+          },
+          "roll": {
+            "type": "number"
+          },
+          "fit": {
+            "enum": [
+              "height",
+              "bounds",
+              "fixed"
+            ]
+          },
+          "margin": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.45
+          },
+          "pixel_scale": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "pixel_center": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "world_anchor": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "reference_size": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "fit": {
+                  "const": "fixed"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "pixel_scale",
+                "reference_size"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "initial": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "reference": {
+      "type": "string"
+    },
+    "reference_view": {
+      "type": "string"
+    },
+    "light_angles": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "render": {
+      "type": "object"
+    }
   }
 }

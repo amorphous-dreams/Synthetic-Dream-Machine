@@ -24,12 +24,11 @@ Line lengths are screened at the intended displayed width (not just native expor
 
 ## Controls
 
-Set `settings.render.linework_mode` to `semantic` to enable it in the four standard outputs (`silhouette`, `structure`, `lit`, `lit_structure`). Omit or set `legacy` to reproduce the earlier uniform-edge renderer. Examples:
+Production drawings use semantic linework in all four standard outputs (`silhouette`, `structure`, `lit`, `lit_structure`). Configure the `render` settings in the project file. Example:
 
 ```json
 {
-  "settings": {
-    "render": {
+  "render": {
       "linework_mode": "semantic",
       "line_supersample": 2,
       "crease_angle": 33,
@@ -41,14 +40,13 @@ Set `settings.render.linework_mode` to `semantic` to enable it in the four stand
         "secondary-pier": "secondary",
         "surface-decoration": "detail"
       }
-    }
   }
 }
 ```
 
 Four neutral part-role values are available: `primary`, `secondary`, `detail`, `suppress`. The role affects interior stroke emphasis only; suppressing interior edges never removes the part from the global silhouette. Roles may alternatively be carried as `line_role` entries on `mesh.parts`.
 
-The library function `render_line_hierarchy(mesh, camera, size, style=...)` returns independently compositable RGBA images for `outline`, `occlusion`, `crease`, `material`, `detail`, and `structure`, plus numerical diagnostics. A project may export these directly without altering the four-pass CLI contract.
+The production material is the validated Boolean body after all authored void cuts. Component roles remain in the construction genome; a fused, carved control cannot automatically recover original part materials. The library function `render_line_hierarchy(mesh, camera, size, style=...)` returns independently compositable RGBA images for `outline`, `occlusion`, `crease`, `material`, `detail`, and `structure`, plus numerical diagnostics. A project may export these directly without altering the four-pass CLI contract.
 
 ## Suggested QA
 

@@ -51,6 +51,18 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
+<<~ ahu #/negative-spaces-and-witnesses>>
+
+!! Carved Material and Fixed Evidence
+
+* ''Positive and negative grow together.'' Rooms, gates, shafts, and recesses enter as named CAD voids. Their declared route graph must connect reachable spaces to exterior cuts, and carving must leave one valid material solid.
+* ''One material witness.'' STEP, OBJ, raster masks, light, and structure lines all derive from the same carved BRep. A per-part uncut mesh cannot substitute for the production body.
+* ''The camera cannot move for fitness.'' Presentation may auto-fit. External image evidence requires a fixed viewport, and a non-reference fitness target locks to the initial construction before mutation. Fixed does not imply independently registered to art.
+* ''Validity precedes selection.'' All candidates must pass the full fused-solid and void tests before any visual agreement score enters evolution.
+* ''Evergreen implementation.'' Active tests use the current subject-neutral construction grammar and independent synthetic calibration controls, never stale source models.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence

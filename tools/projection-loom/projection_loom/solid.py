@@ -81,7 +81,8 @@ class SolidAssembly:
         self.parts={}
         self.overlap_ratio=float(overlap_ratio)
         self.thickness_ratio=float(thickness_ratio)
-        self._joint_records=[]
+        self.voids=None
+        self._verified_material=None
 
     def add(self,name,solid,*,parents=(),role='primary',material=0,min_overlap=None):
         name=str(name)
@@ -96,6 +97,7 @@ class SolidAssembly:
         if any(p not in self.parts for p in parents):raise ValueError(f'Missing parent of {name}: {parents}')
         part=Part(name,solid,parents,role,int(material),float(self.overlap_ratio if min_overlap is None else min_overlap))
         self.parts[name]=part
+        self._verified_material=None
         return self
 
     def add_box(self,name,center,size,*,parents,role='primary',material=0,taper=0,min_overlap=None):
@@ -135,15 +137,38 @@ class SolidAssembly:
                 'weakest_volume_ratio':min((j['volume_ratio'] for j in joints),default=1.),
                 'min_intersection_extent':min((j['minimum_intersection_extent'] for j in joints),default=0.),
                 'contacts':joints}
-        if join and valid:
-            fused=self.fuse()
-            solids=fused.Solids()
-            result.update({'union_solids':len(solids),'union_valid':bool(fused.isValid()),
-                           'union_volume':float(fused.Volume())})
-            result['valid']=bool(fused.isValid() and len(solids)==1)
+        result['valid']=valid
+        if not join or not valid:
+            return result
+        fused=self.fuse()
+        solids=fused.Solids()
+        result.update({'union_solids':len(solids),'union_valid':bool(fused.isValid()),
+                       'union_volume':float(fused.Volume())})
+        result['valid']=bool(fused.isValid() and len(solids)==1)
+        if not result['valid']:
+            return result
+        if self.voids is None:
+            self._verified_material=fused
         else:
-            result['valid']=valid
+            void_report=self.voids.audit(shell=fused)
+            result['voids']={k:v for k,v in void_report.items() if k!='carved'}
+            result['valid']=bool(void_report['valid'])
+            self._verified_material=void_report['carved'] if result['valid'] else None
         return result
+
+    def add_void(self,name,solid,*,kind='room',connects=(),exterior=False):
+        from .voids import VoidAssembly
+        if self.voids is None:self.voids=VoidAssembly(self)
+        self._verified_material=None
+        self.voids.add(name,solid,kind=kind,connects=connects,exterior=exterior)
+        return self
+
+    def material_solid(self):
+        if self._verified_material is None:
+            audit=self.audit(join=True)
+            if not audit['valid']:
+                raise ValueError('Material solid has not passed structural and void checks')
+        return self._verified_material
 
     def fuse(self):
         if not self.parts:raise ValueError('Empty assembly')
@@ -159,7 +184,7 @@ class SolidAssembly:
     def tessellate(self,linear=0.16,angular=0.2,*,union=False):
         """Render transport mesh; never feeds mutations or construction."""
         from .geometry import Mesh
-        selected=[('fused',self.fuse(),0,'foundation')] if union else [
+        selected=[('fused',self.material_solid(),0,'foundation')] if union else [
             (p.name,p.solid,p.material,p.role) for p in self.parts.values()]
         vertices=[];faces=[];materials=[];parts=[];edges=[]
         for name,solid,mat,role in selected:

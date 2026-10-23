@@ -20,10 +20,21 @@ class Evolution:
         self.low=np.array([project.bounds[k][0] for k in self.keys])
         self.high=np.array([project.bounds[k][1] for k in self.keys])
         self.spread=self.high-self.low
+        from .calibration import ensure_fixed_evidence_camera, freeze_display_camera
+        initial=project.grow().tessellate(linear=.32,union=True)
+        self.fitness_cameras={}
+        for name,cam in project.cameras.items():
+            if cam.fit=='fixed':
+                self.fitness_cameras[name]=cam
+            else:
+                self.fitness_cameras[name]=freeze_display_camera(cam,initial.vertices,size)
+        self.reference_camera=self.fitness_cameras[project.reference_view]
+        ensure_fixed_evidence_camera(self.reference_camera)
+        if project.reference is not None:
+            ensure_fixed_evidence_camera(project.cameras[project.reference_view])
         self.source=project.source_mask(size)
         if self.source is None:
-            initial=project.grow().tessellate(linear=.32)
-            self.source=project.anchor_mask(initial,size)
+            self.source=silhouette(initial,self.reference_camera,size)>96
         self.records=[]
         self.eval_count=0
 
@@ -35,13 +46,13 @@ class Evolution:
         genome=self.as_genome(vec)
         try:
             assembly=self.project.grow(genome)
-            audit=assembly.audit(join=False)
+            audit=assembly.audit(join=True)
             if not audit['valid']:
                 loss=2.0+0.3*len(audit['failed'])
                 self.records.append({'valid':False,'loss':loss,'genome':genome,'failed':len(audit['failed'])})
                 return loss
-            mesh=assembly.tessellate(linear=.35,angular=.30)
-            mask=self.project.anchor_mask(mesh,self.size)
+            mesh=assembly.tessellate(linear=.35,angular=.30,union=True)
+            mask=silhouette(mesh,self.reference_camera,self.size)>96
             shape_loss=1-iou(self.source,mask)
             # A weak, scale-free prior resists trivial fortress shrinkage.
             prior=np.mean(((np.asarray(vec)-self.as_vector(self.project.initial))/self.spread)**2)
@@ -50,12 +61,12 @@ class Evolution:
                 similarity=[]
                 for name,reference in view_feedback.items():
                     if name in self.project.cameras:
-                        now=silhouette(mesh,self.project.cameras[name],self.size)>96
+                        now=silhouette(mesh,self.fitness_cameras[name],self.size)>96
                         similarity.append(iou(reference,now))
                 if similarity:loss+=.035*(1-np.mean(similarity))
             if lit and self.project.reference and self.project.reference.suffix.lower()=='.png':
                 # Lighting stays secondary to solid-contact validity and silhouette.
-                buf=buffers(mesh,self.project.cameras[self.project.reference_view],self.size)
+                buf=buffers(mesh,self.reference_camera,self.size)
                 li=light_vector(*self.project.light_angles)
                 predicted=(buf['normal']@li).clip(0,1)
                 import cv2

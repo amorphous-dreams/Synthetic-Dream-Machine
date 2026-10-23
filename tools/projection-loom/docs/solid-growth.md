@@ -17,13 +17,19 @@ All parts follow a rooted DAG. A full model must Boolean-fuse into a **single, v
 - `SolidAssembly.audit(join=True)`: measures every authored joint and validates the final BRep union.
 - `SolidAssembly.tessellate`: generates a transient rendering mesh and named line roles; this output cannot enter the growth genome.
 
+## Negative volumes and route relations
+
+`SolidAssembly.add_void` grows negative BRep cutters from the same project genome. The void audit verifies intersection with material, declared overlaps between connected spaces, exterior access, reachability, and one valid remaining material solid. These checks establish modeled connections, not agent-scale walkability or strength.
+
+After validation, `material_solid()` supplies the carved body for STEP, OBJ and all four image-control passes. Uncarved per-part meshes may serve diagnostics but never production controls.
+
 ## Evolution
 
-The genome controls authored construction dimensions and relationships. Search candidates regenerate all participating volumes and are rejected if an authored parent-child overlap fails. Diversity is held through selected lineages. Reference silhouettes direct broad proportions; fitted lighting carries secondary weight. Epochs can re-enter `genome.json` with unchanged underlying growth rules, while external art remains evidence rather than geometry.
+The genome controls authored construction dimensions and relationships. Search candidates regenerate all participating volumes and are rejected unless every authored contact, final Boolean union, and void-connectivity audit passes. Diversity is held through selected lineages. Reference silhouettes direct broad proportions; fitted lighting carries secondary weight. Epochs can re-enter `genome.json` with unchanged underlying growth rules, while external art remains evidence rather than geometry.
 
 ## Rendering
 
-Five-view arrays share a single object coordinate frame. The solid graph assigns semantic roles to production linework, with optional independent silhouette, occlusion, crease, material, and detail layers. The renderer is downstream of physical construction: raster filtering changes marks, never joints.
+Every named camera view shares a single object coordinate frame. Evidence scoring freezes its camera and pixel frame before mutation. The solid graph assigns semantic roles to production linework, with optional independent silhouette, occlusion, crease, material, and detail layers. The renderer is downstream of physical construction: raster filtering changes marks, never joints.
 
 ## Boundary
 

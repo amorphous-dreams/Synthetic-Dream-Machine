@@ -28,7 +28,7 @@ class Project:
         f=Path(path).resolve()
         conf=json.loads(f.read_text())
         if conf.get('schema')!=SCHEMA:
-            raise ValueError(f'Active Projection Loom requires {SCHEMA}; older mesh models remain archival only')
+            raise ValueError(f'Projection Loom requires the project schema {SCHEMA}')
         src,fn=conf['builder'].split(':',1)
         builder_path=(f.parent/src).resolve()
         module_spec=importlib.util.spec_from_file_location('projection_loom_solid_rig',builder_path)
@@ -43,11 +43,19 @@ class Project:
             raise ValueError('Invalid construction parameter bounds')
         ref=conf.get('reference')
         ref_path=(f.parent/ref).resolve() if ref else None
+        reference_view=conf.get('reference_view','oblique')
+        if ref_path is not None:
+            if reference_view not in cameras:
+                raise ValueError('Reference camera must be declared in cameras')
+            from .calibration import ensure_fixed_evidence_camera
+            ensure_fixed_evidence_camera(cameras[reference_view])
         settings=conf.get('render',{})
+        if settings.get('linework_mode','semantic') != 'semantic':
+            raise ValueError('Only semantic linework is supported')
         settings={'linework_mode':'semantic','line_supersample':1,'presentation_width':540,
                   'supersample':1,'work_width':300,'material_gray':{0:.17,1:.70,2:.55},**settings}
         return cls(f,builder_path,builder,cameras,initial,bounds,ref_path,
-                   conf.get('reference_view','oblique'),tuple(conf.get('light_angles',[-80,35])),settings)
+                   reference_view,tuple(conf.get('light_angles',[-80,35])),settings)
 
     def grow(self,genome=None):
         pars=dict(self.initial)
@@ -83,24 +91,27 @@ class Project:
         if name not in self.cameras:raise ValueError(f'Missing reference camera: {name}')
         return silhouette(mesh,self.cameras[name],size,supersample=1)>96
 
-    def export(self,assembly,out,genome,size=(1024,1536),*,fuse=True):
+    def export(self,assembly,out,genome,size=(1024,1536)):
         out=Path(out);out.mkdir(parents=True,exist_ok=True)
-        audit=assembly.audit(join=fuse)
+        audit=assembly.audit(join=True)
         if not audit['valid']:
-            raise ValueError('Cannot export geometry without valid volumes: '+repr(audit['failed'][:4]))
-        if fuse:
-            shape=assembly.fuse()
-            shape.exportStep(str(out/'solid.step'))
-            assembly.tessellate(linear=.12,angular=.19,union=True).export_obj(out/'fused.obj')
-        mesh=assembly.tessellate(linear=.15,angular=.2)
+            raise ValueError('Cannot export an invalid CAD construction')
+        shape=assembly.material_solid()
+        shape.exportStep(str(out/'solid.step'))
+        assembly.tessellate(linear=.12,angular=.19,union=True).export_obj(out/'fused.obj')
+        # Every production pass projects the same carved material as solid.step.
+        # Per-part uncarved meshes are diagnostic only: they may fill doorways.
+        mesh=assembly.tessellate(linear=.15,angular=.2,union=True)
         mesh.save(out/'render_mesh.npz')
         renders=export_controls(mesh,self.cameras,out/'controls',size=size,
                     light=light_vector(*self.light_angles),style=self.render_style)
         summary={'schema':'projection-loom/solid-model/v2',
                  'project':str(self.file),'genome':{k:float(v) for k,v in genome.items()},
-                 'geometry':'solid.step' if fuse else None,'contacts':audit,
+                 'geometry':'solid.step','contacts':audit,
                  'render_mesh':'render_mesh.npz','controls':renders,
                  'linework':'semantic','reference_evidence':str(self.reference) if self.reference else None,
+                 'reference_camera':self.cameras[self.reference_view].to_dict() if self.reference else None,
+                 'reference_registration':'provisional-unverified' if self.reference else None,
                  'authority':'BRep solid union; triangle mesh is export-only and cannot seed growth'}
         (out/'manifest.json').write_text(json.dumps(summary,indent=2))
         (out/'genome.json').write_text(json.dumps({'schema':'projection-loom/genome/v2','genome':summary['genome']},indent=2))
