@@ -54,4 +54,17 @@ describe("persona-act-board", () => {
     expect(pr.devices).toEqual(["d", "d2"]);
     void PERSONA_ACT_DOMAIN;
   });
+
+  test("RED: a retired key's linked act right after the old head, with the KEL rotated and the frontier pinned, projects nothing; it bites only with the pin", async () => {
+    const oldK = await who(1), newK = await who(2);
+    const log = await signFoundingLog({ group: G, personaKelPrefix: "kel1", rootCommitment: "rc", epoch: 0, planes: {}, deviceKey: "d", edgeDigest: "e" }, oldK);
+    const headAct = log[log.length - 1]!;
+    const head = { seq: headAct.body.seq, cid: actCid(headAct.body) };
+    const stale = await signPersonaAct(head, { group: G, act: "admission", epoch: 0, fields: { deviceKey: "dEvil" } }, oldK);
+    const lineage = personaLineageFromKel(kel(oldK.key, newK.key))!;
+    const unpinned = projectPersonaLog([...log, stale], { group: G, lineage, authorize: () => true });
+    expect(unpinned.devices, "without a pinned frontier every epoch keeps its own roster").toEqual(["d", "dEvil"]);
+    const pinned = projectPersonaLog([...log, stale], { group: G, lineage, authorize: () => true, acceptedThrough: head.seq });
+    expect(pinned.devices).toEqual(["d"]);
+  });
 });

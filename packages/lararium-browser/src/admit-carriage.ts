@@ -22,6 +22,14 @@ function fromBase64Url(b64url: string): string {
   return new TextDecoder().decode(bytes);
 }
 
+/** An admit whose binding stands but whose signed-record fields are missing: re-admit the face, named. */
+export class StaleAdmitCarriage extends Error {
+  constructor(readonly missing: string) {
+    super(`[admit] this carriage lacks ${missing}; re-admit the face (an older carriage cannot join a signed-log face)`);
+    this.name = "StaleAdmitCarriage";
+  }
+}
+
 /**
  * Decode `#admit=<base64url>` from a carriage string.
  *
@@ -50,11 +58,13 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
   if (typeof p["personaKelPrefix"] !== "string" || !p["personaKelPrefix"]) return null;
   if (typeof p["hearthTrueName"] !== "string" || !p["hearthTrueName"]) return null;
   if (!p["deviceEdge"] || typeof p["deviceEdge"] !== "object") return null;
-  if (!Array.isArray(p["personaActs"])) return null;
+  // A well-formed admit that lacks the signed-record fields is a STALE carriage, not a garbled one: it names the re-admit
+  // instead of vanishing into the founding flow.
   const frontier = p["edgeFrontier"] as Record<string, unknown> | undefined;
-  if (!frontier || !Array.isArray(frontier["records"]) || !Array.isArray(frontier["snapshots"])) return null;
+  if (!Array.isArray(p["personaActs"])) throw new StaleAdmitCarriage("personaActs");
+  if (!frontier || !Array.isArray(frontier["records"]) || !Array.isArray(frontier["snapshots"])) throw new StaleAdmitCarriage("edgeFrontier");
   if (!frontier["snapshots"].every((row: unknown) => Array.isArray(row) && row.length === 2
-    && typeof row[0] === "string" && Array.isArray(row[1]) && row[1].every((cid: unknown) => typeof cid === "string"))) return null;
+    && typeof row[0] === "string" && Array.isArray(row[1]) && row[1].every((cid: unknown) => typeof cid === "string"))) throw new StaleAdmitCarriage("edgeFrontier");
   return payload as CarriedAdmitPayload;
 }
 

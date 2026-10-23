@@ -72,6 +72,8 @@ export async function attachSharedHolder(args: {
   readonly holderUrl: URL;
   readonly houseName: string;
   readonly host?:     SharedWorkerHost;
+  /** The CALLER's cancellation (a harness that will not wait on a worker that neither greets nor errors); the door itself sets no deadline. */
+  readonly signal?:   AbortSignal;
 }): Promise<SharedHolderAttach> {
   const host = args.host ?? ambientSharedWorkerHost();
   if (typeof host.SharedWorker !== "function") {
@@ -97,14 +99,26 @@ export async function attachSharedHolder(args: {
       }
     };
     port.addEventListener("message", onMsg);
-    worker.addEventListener?.("error", () => {
+    const floor = (): void => {
       port.removeEventListener("message", onMsg);
       try { port.close(); } catch { /* a closed port is already closed */ }
       resolve(null);
+    };
+    worker.addEventListener?.("error", floor);
+    args.signal?.addEventListener("abort", floor, { once: true });
+    if (args.signal?.aborted) floor();
+    // A re-check, never a choice: a worker that is slow to greet is NAMED in the console while the house keeps waiting for it.
+    const recheck = setTimeout(() => console.warn(`[shared-holder] the holder for house "${args.houseName}" has not greeted yet; still waiting on its own greeting or error`), 5_000);
+    const clear = (): void => clearTimeout(recheck);
+    port.addEventListener("message", function once(e: MessageEvent) {
+      const d = e.data as { kind?: unknown };
+      if (d && (d.kind === "holder:hello" || d.kind === "holder:refused")) { clear(); port.removeEventListener("message", once); }
     });
+    args.signal?.addEventListener("abort", clear, { once: true });
+    worker.addEventListener?.("error", clear);
     port.start();
   });
-  if (!greeting) return { kind: "floor", why: "the shared holder worker raised an error before it greeted; the daemon island rides a dedicated worker" };
+  if (!greeting) return { kind: "floor", why: "the shared holder worker raised an error or was cancelled before it greeted; the daemon island rides a dedicated worker" };
   if (greeting.kind === "holder:refused") {
     port.close();
     throw new SharedHolderRefusal(greeting);

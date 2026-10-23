@@ -319,6 +319,18 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     if (attached.kind === "attached") attached.port.close();
   });
 
+  test("a worker that neither greets nor errors waits on its own events; only the CALLER's cancellation floors it", async () => {
+    const silent: SharedWorkerHost = { SharedWorker: class { readonly port = new MessageChannel().port1; } as unknown as SharedWorkerHost["SharedWorker"] };
+    const cancel = new AbortController();
+    const settled: string[] = [];
+    const attaching = attachSharedHolder({ houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: silent, signal: cancel.signal })
+      .then((r) => { settled.push(r.kind); return r; });
+    await new Promise((r) => setTimeout(r, 25));
+    expect(settled, "the door sets no deadline of its own").toEqual([]);
+    cancel.abort();
+    expect(await attaching).toMatchObject({ kind: "floor" });
+  });
+
   test("a worker whose own error event fires falls to the floor at once; CONTROL: a construct-time refusal floors by name", async () => {
     const listeners: Array<(e: unknown) => void> = [];
     const erroring: SharedWorkerHost = {
@@ -331,7 +343,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     await Promise.resolve();
     for (const fn of listeners) fn(new Error("script failed to load"));
     const floor = await attaching;
-    expect(floor).toMatchObject({ kind: "floor", why: expect.stringMatching(/raised an error before it greeted/) });
+    expect(floor).toMatchObject({ kind: "floor", why: expect.stringMatching(/raised an error or was cancelled before it greeted/) });
     await expect(holdVesselLock(IDB, null)).rejects.toThrow(/Web Locks/);
 
     const refusing: SharedWorkerHost = {

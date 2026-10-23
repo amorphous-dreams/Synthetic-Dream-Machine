@@ -375,6 +375,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
   const issuerAnchor = await loadFaceAnchorOfGroup(personaGroupId);
   if (!issuerAnchor) throw new Error("[lares fleet join answer] Face proof: this face holds no sealed anchor; re-found or re-admit the face");
+  if (issuerAnchor.personaKelPrefix !== personaKelPrefix) throw new Error("[lares fleet join answer] Face proof: prefix; the bootstrap and daemon doc name a KEL prefix this face's sealed anchor does not; re-found or re-admit the face");
   const boundEpoch = leaseEpochUnderAnchor(issuerAnchor, signedLeaseEpoch(personaGroupId, leaseSlotValues, currentSignerOf(lineage))).epoch;
 
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");

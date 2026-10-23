@@ -7,7 +7,7 @@
  * tested this way — it would need a server, a reachable issuer, and a moment at which both were true.
  */
 import { describe, test, expect } from "vitest";
-import { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND } from "../src/admit-carriage.js";
+import { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } from "../src/admit-carriage.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /** A payload shaped like the founder's root signs — fixed bytes, so the test is a constant. */
@@ -68,6 +68,15 @@ describe("the carried admission", () => {
       const carriage = toAdmitCarriage(partial as unknown as DeviceAdmitPayload);
       expect(parseAdmitCarriage(carriage), `a payload without ${missing} must not admit`).toBeNull();
     }
+  });
+
+  test("RED: a well-formed admit missing the signed-record fields throws the named stale-carriage refusal, never vanishing into the founding flow; CONTROL: the whole payload parses", () => {
+    for (const missing of ["personaActs", "edgeFrontier"] as const) {
+      const partial = { ...PAYLOAD } as Record<string, unknown>;
+      delete partial[missing];
+      expect(() => parseAdmitCarriage(toAdmitCarriage(partial as unknown as DeviceAdmitPayload))).toThrow(StaleAdmitCarriage);
+    }
+    expect(parseAdmitCarriage(toAdmitCarriage(PAYLOAD))).toEqual(PAYLOAD);
   });
 
   test("an EMPTY binding field refuses as hard as a missing one", () => {

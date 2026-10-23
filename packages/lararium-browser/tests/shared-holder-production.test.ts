@@ -30,7 +30,7 @@ function urls(id: string) {
 }
 
 // Attachment itself answers which engine can run the real peer path; no expected failure can pass before that path.
-const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl, houseName: await houseName("probe", crypto.randomUUID()) });
+const probe = await attachSharedHolder({ holderUrl: urls(crypto.randomUUID()).holderUrl, houseName: await houseName("probe", crypto.randomUUID()), signal: AbortSignal.timeout(5_000) });
 const canAttach = probe.kind === "attached";
 if (probe.kind === "attached") probe.port.close();
 
@@ -68,7 +68,7 @@ describe("production shared holder lifecycle", () => {
   // A module graph that cannot greet reports its engine and cause through the floor witness.
   test.skipIf(canAttach)("Firefox module graph: floor engine names why the holder is unavailable before a peer session", () => {
     expect(probe.kind).toBe("floor");
-    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^the shared holder never greeted|^SharedWorker refused/);
+    if (probe.kind === "floor") expect(probe.why, "the floor names its cause").toMatch(/^the shared holder worker raised an error or was cancelled before it greeted|^SharedWorker refused/);
   });
 
   test.skipIf(!canAttach)("Firefox module graph: closing the last tab port releases the island lock and house database", async () => {
