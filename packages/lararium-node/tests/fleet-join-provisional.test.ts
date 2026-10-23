@@ -12,6 +12,8 @@ const seam = vi.hoisted(() => ({
 }));
 
 const HOUSEHOLD = vi.hoisted(() => ({ aid: "nexus-a", admit: { nym: "d" }, lineage: [], opening: { carriage: { gatePin: "pin", canon: {} }, salt: "s" } }));
+// Which face an unnamed run resolves has its reds in face-selector.test.ts; this suite reads the provisional guard.
+vi.mock("../src/face-selector.js", () => ({ resolveFace: async (named?: number) => named ?? 0, FaceNotNamed: class extends Error {} }));
 vi.mock("../src/face-household-admit.js", () => {
   class FaceHouseholdAdmitRefused extends Error {
     constructor(readonly refusal: string, detail: string) { super(`[face household admit] ${refusal}: ${detail}`); }

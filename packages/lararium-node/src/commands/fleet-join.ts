@@ -66,15 +66,15 @@ import { standFaceAtom } from "../face-atom-store.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
+import { resolveFace, FaceNotNamed } from "../face-selector.js";
 
-/** The face a join names where its caller names none: the founding face. */
-export const FLEET_JOIN_DEFAULT_FACE = 0;
-
-/** The face index a caller named, read whole: a non-negative integer, or a refusal by name. */
-function faceIndex(face: number | undefined): number {
-  const index = face ?? FLEET_JOIN_DEFAULT_FACE;
-  if (!Number.isSafeInteger(index) || index < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
-  return index;
+/** The face index a caller named, read whole (a non-negative integer, or a refusal by name); an unnamed face resolves as every command's does: the worn face, else the sole face, else a refusal that lists them. Never a silent `h0`. */
+async function faceIndex(face: number | undefined): Promise<number> {
+  if (face === undefined) {
+    try { return await resolveFace(); } catch (e) { if (e instanceof FaceNotNamed) throw new FleetJoinRefused("face-malformed", e.message); throw e; }
+  }
+  if (!Number.isSafeInteger(face) || face < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
+  return face;
 }
 
 /** A fleet join refused by name: the mesh readers' refusal, or this door's own. */
@@ -166,11 +166,11 @@ async function householdNamed<T>(work: () => Promise<T>): Promise<T> {
 
 /**
  * The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. `face` names
- * the persona index the join serves (`--face`, default the founding face); the index stays local to this vessel and
+ * the persona index the join serves (`--face`; unnamed, the worn face, else the sole face); the index stays local to this vessel and
  * never rides the offer, which names the face by its PersonaGroup and root key.
  */
 export async function runFleetJoinOffer(opts: { readonly sealHome: string; readonly face?: number }): Promise<FleetJoinOffer> {
-  const face = faceIndex(opts.face);
+  const face = await faceIndex(opts.face);
   const personaGroup = await facePersonaGroup(face);
   const rootKey = await heldRootKey(face);
   // A restored root may read and serve this face, but cannot add a vessel to its authority: refuse before the offer mints
@@ -200,7 +200,7 @@ export interface FleetJoinAnswerOptions {
 
 /** The root holder's answer to ONE request, read against the offer rebuilt over today's scopes. */
 export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<FleetJoinAnswer> {
-  const face = faceIndex(opts.face);
+  const face = await faceIndex(opts.face);
   const personaGroup = await facePersonaGroup(face);
   const rootKey = await heldRootKey(face);
   const nonce = typeof opts.request === "object" && opts.request !== null ? (opts.request as { nonce?: unknown }).nonce : undefined;

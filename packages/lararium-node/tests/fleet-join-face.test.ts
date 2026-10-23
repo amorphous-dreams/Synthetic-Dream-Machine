@@ -17,6 +17,7 @@ const seam = vi.hoisted(() => ({
   asked: [] as Array<[string, unknown]>,
   anchors: new Map<number, { personaGroupId: string; meshCabalDocIdHex: string }>(),
   roots: new Set<number>(),
+  unnamed: 0 as number | "ambiguous",
 }));
 
 const HOUSEHOLD = vi.hoisted(() => ({ aid: "nexus-a", admit: { nym: "d" }, lineage: [], opening: { carriage: { gatePin: "pin", canon: {} }, salt: "s" } }));
@@ -27,6 +28,15 @@ vi.mock("../src/nexus-doc.js", () => ({ nexusCharterDocPath: () => seam.bootstra
 vi.mock("../src/fs-atomic.js", () => ({ atomicWriteFileSync: () => {  } }));
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => `${seam.bootstrapPath}.seal` }));
 vi.mock("../src/carried-set.js", () => ({ importCarriedCharter: () => {  }, readCarriedCharters: () => new Map(), primaryNexusAid: () => "nexus-a" }));
+// Which face an unnamed run resolves has its reds in face-selector.test.ts; this suite reads what the join does with the answer.
+vi.mock("../src/face-selector.js", () => {
+  class FaceNotNamed extends Error {}
+  return { FaceNotNamed, resolveFace: async (named?: number) => {
+    if (named !== undefined) return named;
+    if (seam.unnamed === "ambiguous") throw new FaceNotNamed("this vessel holds faces h0, h1 and wears none: name one");
+    return seam.unnamed;
+  } };
+});
 vi.mock("../src/identity-anchors.js", () => ({
   loadIdentityAnchors: async (face: number) => { seam.asked.push(["anchors", face]); return seam.anchors.get(face) ?? null; },
 }));
@@ -86,7 +96,7 @@ const askedFor = (what: string) => seam.asked.filter(([name]) => name === what).
 
 describe("fleet join names its face", () => {
   beforeEach(() => {
-    seam.asked = [];
+    seam.asked = []; seam.unnamed = 0;
     seam.anchors = new Map([[2, { personaGroupId: SECOND_GROUP, meshCabalDocIdHex: "cabal-two" }]]);
     seam.roots = new Set([0, 2]);
     seam.bootstrapPath = join(tmpdir(), `lar-fleet-join-face-${process.pid}.json`);
@@ -164,5 +174,14 @@ describe("fleet join names its face", () => {
       await expect(answerAt(face)).rejects.toMatchObject({ refusal: "face-malformed" });
     }
     expect(seam.asked).toEqual([]);
+  });
+
+  test("RED: an unnamed offer and answer on a vessel with several faces and none worn refuse by name; CONTROL: a sole or worn face resolves", async () => {
+    seam.unnamed = "ambiguous";
+    await expect(runFleetJoinOffer({ sealHome: "/test/seal" })).rejects.toBeInstanceOf(FleetJoinRefused);
+    await expect(answerAt(undefined)).rejects.toBeInstanceOf(FleetJoinRefused);
+    expect(askedFor("root-seed")).toEqual([]);
+    seam.unnamed = 0;
+    await expect(runFleetJoinOffer({ sealHome: "/test/seal" })).resolves.toBeDefined();
   });
 });
