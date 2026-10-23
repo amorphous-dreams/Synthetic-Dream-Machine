@@ -204,14 +204,32 @@ describe("record port handler", () => {
     const ask = askMsg("verb", { subject: "CLEAR", args: { bag: "working" } });
     const denied = await rig({ faceOf: () => face, authority: () => ({ allowed: true }) });
     await denied.send(openMsg()); await sendAwait(denied, ask);
-    expect(ofType(denied.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cap-denied",
-      result: { message: expect.stringContaining("no-verb-cap") } });
+    expect(ofType(denied.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cap-denied" });
+    expect(ofType(denied.messages, "port:answer").at(-1)).not.toHaveProperty("result");
     await denied.close();
     const allowed = await rig({ faceOf: () => face, authority: () => ({ allowed: true }),
       verbCap: () => async () => ({ ok: true }) });
     await allowed.send(openMsg()); await sendAwait(allowed, ask);
     expect(ofType(allowed.messages, "port:answer").at(-1)?.status).toBe("answered");
     await allowed.close();
+  });
+
+  test("port-verb-refusal-keeps-verifier-diagnostic-private; CONTROL: lent grant answers CLEAR", async () => {
+    const face = { id: "verified" };
+    const privateReason = "grant document <private-id> not found";
+    let grant = false;
+    const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }),
+      verbCap: () => async () => grant ? { ok: true } : { ok: false, reason: privateReason } });
+    await r.send(openMsg());
+    await sendAwait(r, askMsg("verb", { askId: "private-refusal", subject: "CLEAR", args: { bag: "working" } }));
+    const denied = ofType(r.messages, "port:answer").at(-1);
+    expect(denied).toMatchObject({ status: "refused", reason: "cap-denied" });
+    expect(denied).not.toHaveProperty("result");
+    expect(JSON.stringify(denied)).not.toContain("private-id");
+    grant = true;
+    await sendAwait(r, askMsg("verb", { askId: "granted", subject: "CLEAR", args: { bag: "working" } }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.status).toBe("answered");
+    await r.close();
   });
 
   test("port-cas-tier-refusals read no bytes; CONTROL: public matching bytes answer", async () => {
@@ -701,6 +719,37 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-committed-family-survives-supersession-retry; CONTROL: live family records and answers", async () => {
+    const r = await rig({ actorOf: portId => portId === "p" || portId === "successor" ? "bound-writer" : undefined });
+    r.composite.addLayer({ bagId: "other", store: new MemoryTiddlerStore("other"), writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    let firstChanges = 0;
+    r.store.subscribe(change => { if (change.title === "First") firstChanges++; });
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const original = r.composite.writeFamily.bind(r.composite);
+    r.composite.writeFamily = async (...args) => {
+      await original(...args);
+      if (args[0].some(record => record.tiddler.title === "First")) await held;
+    };
+    const tx: PortMsg_Write = { type: "port:write", portId: "p", txId: "committed-before-close", records: [
+      { title: "First", fields: { text: "one" } },
+      { title: "Second", fields: { text: "two" }, bag: "other" },
+    ] };
+    await r.send(tx);
+    expect(firstChanges).toBe(1);
+    await r.send(openMsg("successor"));
+    release(); await settle();
+    expect(ofType(r.messages, "port:written")).toHaveLength(0);
+    await r.send({ ...tx, portId: "successor" });
+    expect(firstChanges).toBe(1);
+    expect(await r.composite.get("Second")).not.toBeNull();
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ portId: "successor", status: "applied", applied: ["(default)", "other"] });
+    await r.send({ ...writeMsg("live-control", "Live"), portId: "successor" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ portId: "successor", status: "applied", applied: ["(default)"] });
+    await r.close();
+  });
+
   test("late invalid family refuses whole transaction; CONTROL: two valid families land", async () => {
     const r = await rig();
     r.composite.addLayer({ bagId: "other", store: new MemoryTiddlerStore("other"), writable: true, defaultWritable: false });
@@ -805,6 +854,22 @@ describe("record port handler", () => {
     await r.send(openMsg("unlent", { actor: "claimed-label" }));
     await r.send({ type: "port:presence", portId: "unlent", actorKey: "claimed-label", beat: 1, state: {} });
     expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "peer", actorKey: "claimed-label" });
+    await r.close();
+  });
+
+  test("port-presence-reused-id-publishes-after-reopen; CONTROL: superseded id stays silent until reopen", async () => {
+    const r = await rig({ actorOf: portId => portId === "p1" || portId === "p2" ? "actor-a" : undefined });
+    await r.send(openMsg("peer"));
+    await r.send(openMsg("p1"));
+    await r.send({ type: "port:presence", portId: "p1", actorKey: "actor-a", beat: 1, state: "first" });
+    await r.send(openMsg("p2"));
+    const beforeStale = ofType(r.messages, "port:presence").length;
+    await r.send({ type: "port:presence", portId: "p1", actorKey: "actor-a", beat: 2, state: "stale" });
+    expect(ofType(r.messages, "port:presence")).toHaveLength(beforeStale);
+    await r.send({ type: "port:close", portId: "p2" });
+    await r.send(openMsg("p1"));
+    await r.send({ type: "port:presence", portId: "p1", actorKey: "actor-a", beat: 3, state: "reopened" });
+    expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "peer", actorKey: "actor-a", beat: 3, state: "reopened" });
     await r.close();
   });
 

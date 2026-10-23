@@ -293,8 +293,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           await ctx.composite.writeFamily(puts, tombstones,
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
-          if (port.closed) return;
           port.ledger.recordApplied(msg.txId, family);
+          if (port.closed) return;
         } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         finally {
           const changes = familyChanges.get(token) ?? [];
@@ -406,8 +406,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         answered(await handler(args, { daemon: ctx.composite, invocation, cap }));
       } catch (error) {
         if (isVerbRefusal(error)) {
-          if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId,
-            status: "refused", reason: error.reason, result: { message: error.message } }));
+          refused(error.reason);
         } else refused("verb-unavailable");
       }
     } else if (msg.kind === "cas") {
@@ -472,6 +471,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           else presence.supersede(prior.presenceActor, msg.portId);
           drop(id);
         }
+        presence.open(msg.portId);
         const shape: PortShape = { width: msg.width,
           ...(msg.localFilter ? { localFilter: msg.localFilter } : {}),
           ...(msg.fields ? { fields: msg.fields } : {}) };

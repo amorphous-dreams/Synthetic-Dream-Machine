@@ -35,6 +35,8 @@ export class PresenceTracker {
     for (const [actorKey, entry] of this.held) if (entry.portId === portId) this.remove(actorKey);
   }
   transportGone(portId: string): void { this.close(portId); }
+  /** A fresh open starts a new generation of a reusable transport id. */
+  open(portId: string): void { this.retiredPorts.delete(portId); }
   /** A newer open of the same actor supersedes the port; the newcomer sends its state afresh. */
   supersede(actorKey: string, _newPortId: string): void {
     const old = this.held.get(actorKey);

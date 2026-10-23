@@ -25,6 +25,16 @@ describe("clockless presence", () => {
     expect(t.update("new", { ...a, beat: 1 })).toBe(true);
     expect(t.update("old", { ...a, beat: 2 })).toBe(false);
   });
+  it("port-presence-retired-id-reopens; CONTROL: retirement rejects stale presence until open", () => {
+    const t = new PresenceTracker();
+    t.update("old", a);
+    t.supersede("a", "new");
+    expect(t.update("old", { ...a, beat: 2 })).toBe(false);
+    t.close("new");
+    t.open("old");
+    expect(t.update("old", { ...a, beat: 3 })).toBe(true);
+    expect(t.snapshotFor("peer")).toEqual([{ ...a, beat: 3 }]);
+  });
   it("port-presence-reconnect-full-set", () => {
     const t = new PresenceTracker(); t.update("a-port", a); t.update("b-port", b);
     expect(t.snapshotFor("new")).toEqual([a, b]);
