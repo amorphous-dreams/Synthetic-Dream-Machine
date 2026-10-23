@@ -96,4 +96,12 @@ describe("face-boot-proof", () => {
     expect(proveFaceFromLog({ ...base, records: docRecords(f.log), anchor: wrongPin })).toEqual({ ok: false, refusal: { why: "frontier-falls" } });
     expect(proveFaceFromLog({ ...base, records: docRecords(f.log), anchor: f.anchor, edge: { ...f.edge, boundEpoch: 9 } })).toEqual({ ok: false, refusal: { why: "edge" } });
   });
+
+  test("RED: a registration proof (no device seat) of another face refuses a forged extra persona selector; CONTROL: its genuine plane url proves", async () => {
+    const f = await founded();
+    const records = docRecords(f.log);
+    const forged = proveFaceFromLog({ records, chain: f.chain, group: G, anchor: f.anchor, planes: { persona: "automerge:forged" } });
+    expect(forged).toMatchObject({ ok: false, refusal: { why: "plane", plane: "persona" } });
+    expect(proveFaceFromLog({ records, chain: f.chain, group: G, anchor: f.anchor, planes: { persona: f.planes.persona } }).ok).toBe(true);
+  });
 });

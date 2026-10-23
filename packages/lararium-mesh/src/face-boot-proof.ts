@@ -35,8 +35,8 @@ export function proveFaceFromLog(input: {
   readonly chain: readonly PersonaKelEvent[];
   readonly group: string;
   readonly anchor: FaceAnchor;
-  /** This device's atom verifying key (hex). */
-  readonly deviceKey: string;
+  /** This device's atom verifying key (hex). Absent: a registration proof of a face this boot does not wear (no device seat to prove). */
+  readonly deviceKey?: string;
   /** This device's edge: the log's device-edge act for this device must commit to it. */
   readonly edge?: { readonly personaRootDid: string; readonly deviceVerifyingKey: string; readonly hearthTrueName: string; readonly boundEpoch: string | number };
   /** The plane URLs the boot is about to register, by plane name. */
@@ -53,11 +53,11 @@ export function proveFaceFromLog(input: {
   for (const [plane, url] of Object.entries(input.planes)) {
     if (url && projection.planes[plane] !== url) return { ok: false, refusal: { why: "plane", plane } };
   }
-  if (!projection.devices.includes(input.deviceKey.toLowerCase())) return { ok: false, refusal: { why: "device-unseated" } };
+  if (input.deviceKey !== undefined && !projection.devices.includes(input.deviceKey.toLowerCase())) return { ok: false, refusal: { why: "device-unseated" } };
   // THE LOG NEVER FALLS BEHIND WHAT THIS DEVICE ACCEPTED: the anchor's pinned head must stand in the verified lineage at its
   // seq, so deleting later signed acts, or replaying an older valid log, names `frontier-falls` rather than reading as current.
   const pinned = input.anchor.frontier;
   if (pinned.actSeq >= 0 && projection.cids[pinned.actSeq] !== pinned.actCid) return { ok: false, refusal: { why: "frontier-falls" } };
-  if (input.edge && projection.edges[input.deviceKey.toLowerCase()] !== edgeBodyDigest(input.edge)) return { ok: false, refusal: { why: "edge" } };
+  if (input.edge && input.deviceKey !== undefined && projection.edges[input.deviceKey.toLowerCase()] !== edgeBodyDigest(input.edge)) return { ok: false, refusal: { why: "edge" } };
   return { ok: true, projection };
 }

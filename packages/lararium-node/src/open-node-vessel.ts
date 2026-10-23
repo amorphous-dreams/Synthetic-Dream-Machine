@@ -92,7 +92,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, currentSignerOf,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, currentSignerOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -1913,6 +1913,9 @@ async function prepareNodeBootOn(
     // (never a global lookup; a not-yet-synced replica simply denies).
     const personaKelPrefix = bootMount?.personaKelPrefix ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
+    // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for. The worn face adds its own after its proof passes.
+    const provenPlanes = new Map<string, string>();
+    let wornFaceProved = false;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
       // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
@@ -1946,6 +1949,8 @@ async function prepareNodeBootOn(
           // stay per vessel (motion, never a decision that crosses devices), so no act names them.
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        wornFaceProved = true;
+        provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
         const head = proof.projection.head;
         if (head) {
@@ -2162,11 +2167,26 @@ async function prepareNodeBootOn(
         doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
       });
     };
+    // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
+    // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
+    // a bootstrap entry no proof backs registers nothing.
     for (const plane of bootstrap.personaPlanes) {
-      registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+      if (plane.personaGroupId === personaGroupId) continue;
+      try {
+        const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
+        if (!other) continue;
+        const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+        const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
+        if (!chain || chain.length === 0) continue;
+        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, heldOnly: true });
+        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
+      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
     }
-    // The worn face's siblings ride the bootstrap under their own derived names; register them beside it.
-    const wornFace = bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
+    for (const plane of bootstrap.personaPlanes) {
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+    }
+    // The worn face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN worn face.
+    const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
     if (wornFace) {
       registerInCatalog(wornFace.circles,    bootstrap.circlesUrl);
       registerInCatalog(wornFace.identities, bootstrap.identitiesUrl);

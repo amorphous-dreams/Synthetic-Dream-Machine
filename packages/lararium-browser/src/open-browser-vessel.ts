@@ -1185,14 +1185,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!url || tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[bagId]) === url) return;
         assembly.catalogHandle.change((doc) => { doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot"); });
       };
-      for (const plane of social.personaPlanes) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
-      const wornSiblings = social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
-      if (wornSiblings) {
-        const wornFace = wornSiblings;
-        registerInCatalog(wornFace.circles, social.circlesUrl);
-        registerInCatalog(wornFace.identities, social.identitiesUrl);
-        registerInCatalog(wornFace.sessions, social.sessionsUrl);
-      }
+      // The planes register AFTER the face proof below, and only the ones a proof vouched for.
       // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
       // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
@@ -1262,13 +1255,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // daemon doc (where an admit bundle's acts rest) both carry records; the fold judges them.
       {
         // A FACED BOOT PROVES ITS FACE: a social record that omits the persona plane cannot skip the proof.
-        if (!social.personaUrl) throw new Error("[lararium-browser] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
-        const planeDoc = heldDocOf(repo, social.personaUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
+        // The founding bootstrap names ONE face's shared documents: the worn face's persona plane reads off its own plane entry,
+        // and the identities/circles planes ride the proof only where the worn face IS the founding face that names them.
+        const foundingFace = wornGroup === social.personaGroupId;
+        const wornPlaneUrl = foundingFace ? social.personaUrl : (social.personaPlanes.find((p) => p.personaGroupId === wornGroup)?.url ?? null);
+        if (!wornPlaneUrl) throw new Error("[lararium-browser] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
+        const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
           records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
-          planes: { persona: social.personaUrl, identities: social.identitiesUrl, circles: social.circlesUrl },   // the face's shared documents; sessions stay per vessel
+          planes: { persona: wornPlaneUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
@@ -1277,8 +1274,33 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
           if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
         }
+        // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
+        // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
+        // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
+        const provenPlanes = new Map<string, string>([[wornGroup, wornPlaneUrl]]);
+        for (const plane of social.personaPlanes) {
+          if (plane.personaGroupId === wornGroup) continue;
+          const other = await loadBrowserFaceAnchor(idbName, plane.personaGroupId);
+          if (!other) continue;
+          const chain = personaKelChainForPrefix(kelBoard.doc(), other.personaKelPrefix);
+          if (!chain || chain.length === 0) continue;
+          const otherDoc = heldDocOf(repo, plane.url);
+          if (proveFaceFromLog({
+            records: [...personaActRecordsOfGroup(otherDoc, plane.personaGroupId), ...personaActRecordsOfGroup(daemonDoc, plane.personaGroupId)],
+            chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url },
+          }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
+        }
+        for (const plane of social.personaPlanes) {
+          if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+        }
+        const wornFace = foundingFace && social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
+        if (wornFace) {
+          registerInCatalog(wornFace.circles, social.circlesUrl);
+          registerInCatalog(wornFace.identities, social.identitiesUrl);
+          registerInCatalog(wornFace.sessions, social.sessionsUrl);
+        }
         // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
-        if (social.identitiesUrl && social.circlesUrl) {
+        if (foundingFace && social.identitiesUrl && social.circlesUrl) {
           const joining = joinFaceDocumentsOnArrival(repo, { identities: social.identitiesUrl, circles: social.circlesUrl }, wornAtom.key, displayName);
           held.stood.push({ what: "the face documents join", down: () => joining.stop() });
         }

@@ -13,7 +13,7 @@ const read = (rel: string): string => readFileSync(join(import.meta.dirname, "..
 describe("a faced boot proves its face", () => {
   for (const [name, rel, plane, pin] of [
     ["node composer", "lararium-node/src/open-node-vessel.ts", "bootstrap.personaUrl", "keepFaceAnchorOfGroup(pinned)"],
-    ["browser composer", "lararium-browser/src/open-browser-vessel.ts", "social.personaUrl", "keepBrowserFaceAnchor(idbName, pinned)"],
+    ["browser composer", "lararium-browser/src/open-browser-vessel.ts", "wornPlaneUrl", "keepBrowserFaceAnchor(idbName, pinned)"],
   ] as const) {
     test(`RED: ${name} refuses a sealed anchor with no persona plane named, and pins the verified head`, () => {
       const src = read(rel);
@@ -25,6 +25,21 @@ describe("a faced boot proves its face", () => {
       const block = src.slice(proofAt, proofAt + 2200);
       expect(block).toMatch(/edge: (deviceEdge|wornEdge)/);
       expect(block).toContain(pin);
+    });
+  }
+
+  for (const [name, rel] of [
+    ["node composer", "lararium-node/src/open-node-vessel.ts"],
+    ["browser composer", "lararium-browser/src/open-browser-vessel.ts"],
+  ] as const) {
+    test(`RED: ${name} registers a persona plane only where a face proof vouched for its url`, () => {
+      const src = read(rel);
+      expect(src, "no registration reads every bootstrap plane ungated").not.toMatch(/for \(const plane of (bootstrap|social)\.personaPlanes\)\s*\{?\s*registerInCatalog\(/);
+      expect(src).toMatch(/provenPlanes\.get\(plane\.personaGroupId\) === plane\.url\) registerInCatalog\(/);
+      const proofAt = src.indexOf("proveFaceFromLog({");
+      const registerAt = src.indexOf("provenPlanes.get(plane.personaGroupId) === plane.url");
+      expect(proofAt, "CONTROL: the worn proof stands").toBeGreaterThan(0);
+      expect(registerAt, "the registration follows the worn face's proof").toBeGreaterThan(proofAt);
     });
   }
 });
