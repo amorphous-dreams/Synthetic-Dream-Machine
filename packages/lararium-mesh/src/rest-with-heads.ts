@@ -1,0 +1,43 @@
+/**
+ * rest-with-heads — the vessel's answer to a wiki island's rest ask that names its heads.
+ *
+ * The island lays an edit in its own Repo; the vessel's Repo holds a copy that reaches storage. The ask names the
+ * heads the island holds of each document, and the vessel answers only once its own copy holds every one of them and
+ * has flushed the documents. The wait rides the handle's `heads-changed` event and carries no timer. A document the
+ * vessel holds no handle for, and a malformed ask, answer unrested.
+ *
+ * Canon: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/what-a-sink-keeps
+ */
+import { hasHeads } from "@automerge/automerge";
+import type { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
+import type { IslandMsg_DocRest } from "./island-protocol.js";
+
+const MAX_HEADS = 1024;
+const MAX_DOCUMENTS = 64;
+const HEAD_HASH = /^[0-9a-f]{64}$/;
+
+export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocRest): Promise<{ rested: boolean; why?: string }> {
+  if (!repo) return { rested: false, why: "no vessel Repo stands" };
+  const heads = ask.heads;
+  if (typeof heads !== "object" || heads === null || !Array.isArray(ask.documentIds) || ask.documentIds.length > MAX_DOCUMENTS) return { rested: false, why: "malformed rest ask" };
+  const written: DocumentId[] = [];
+  for (const id of ask.documentIds) {
+    if (typeof id !== "string") return { rested: false, why: "malformed rest ask" };
+    const named = Object.hasOwn(heads, id) ? heads[id] : undefined;
+    if (!Array.isArray(named) || named.length > MAX_HEADS || !named.every((h) => typeof h === "string" && HEAD_HASH.test(h))) return { rested: false, why: "malformed rest ask" };
+    const handle = repo.handles[id as DocumentId] as DocHandle<unknown> | undefined;
+    if (!handle) return { rested: false, why: "the vessel holds no copy of the document" };
+    if (named.length > 0) {
+      const holds = (): boolean => { try { return hasHeads(handle.doc() as Parameters<typeof hasHeads>[0], named); } catch { return false; } };
+      if (!holds()) {
+        await new Promise<void>((resolve) => {
+          const onChange = (): void => { if (holds()) { handle.off("heads-changed", onChange); resolve(); } };
+          handle.on("heads-changed", onChange);
+        });
+      }
+    }
+    written.push(handle.documentId);
+  }
+  try { if (written.length > 0) await repo.flush(written); } catch (error) { return { rested: false, why: error instanceof Error ? error.message : String(error) }; }
+  return { rested: true };
+}

@@ -870,6 +870,11 @@ export interface IslandMsg_DocRest {
   type: "doc:rest";
   requestId: string;
   documentIds: string[];
+  /**
+   * The heads the island holds of each named document, keyed by document id. A wiki island that lays its own bag
+   * documents asks with them: the vessel answers only once its own Repo holds every head, then flushes.
+   */
+  heads?: Record<string, string[]>;
 }
 
 /** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */

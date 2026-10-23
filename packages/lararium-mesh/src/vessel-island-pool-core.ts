@@ -58,7 +58,8 @@ import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
-import type { IslandGrants, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
+import { answerRestWithHeads } from "./rest-with-heads.js";
+import type { IslandGrants, IslandMsg_DocRest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
 
@@ -1052,6 +1053,15 @@ export class VesselIslandPoolCore {
           answer(settled);
         };
         void this._answerSettle(ask, view).then(land, () => land(false));
+        return;
+      }
+      if (raw.type === "doc:rest" && !view && (raw as IslandMsg_DocRest).heads !== undefined) {
+        const ask = raw as IslandMsg_DocRest;
+        if (typeof ask.requestId !== "string") return;
+        void answerRestWithHeads(this._mainRepo, ask).then((answer) => {
+          try { worker.post({ type: "doc:rested", requestId: ask.requestId, ...answer }); }
+          catch { /* the island went away: nothing to answer */ }
+        });
         return;
       }
       if (raw.type === "view:content") {
