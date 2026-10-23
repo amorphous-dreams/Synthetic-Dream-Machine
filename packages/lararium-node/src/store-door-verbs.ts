@@ -32,6 +32,7 @@
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
  *   persona-new                                  a face onto a standing place (`commands/init`)
+ *   persona-lease                                a signed lease advance for a face (`commands/persona-lease`)
  *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
  *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
  *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
@@ -71,6 +72,8 @@ import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
+import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
+import { FaceNotNamed } from "./face-selector.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
@@ -155,7 +158,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
-  "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
+  "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-lease", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
@@ -164,7 +167,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
+  NexusKapaeError, NexusContractError, EdgeKapaeError, PersonaLeaseError, FaceNotNamed, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused, NexusCabalError,
   CarryBundleError,
 ] as const;
@@ -446,6 +449,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     "handle-attest": (args) => answer("handle-attest", async () => ({
       statement: await runHandleAttest({ claim: args["claim"] as HandleClaim, repo, ...opt("handleIndex", int(args["handleIndex"])) }),
+    })),
+    // A SIGNED LEASE ADVANCE for a face (`lares persona lease`): the root signs effective + 1 into its own slot and the
+    // sealed anchor's frontier rises to what verified.
+    "persona-lease": (args) => answer("persona-lease", async () => ({
+      ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
     "persona-new": (args) => answer("persona-new", async () => ({
       ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),

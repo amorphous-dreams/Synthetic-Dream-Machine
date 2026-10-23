@@ -176,3 +176,19 @@ export function personaSiblingBagIds(personaBagId: string): PersonaScopedBags | 
   const tag = personaTagFromBagId(personaBagId);
   return tag === null ? null : personaScopedBagIdsForTag(tag);
 }
+
+/**
+ * Whether a bag id names ANY face's plane or one of its siblings (persona, circles, identities or sessions), by the derived shape alone.
+ * A reader that must keep one face's reading apart from every other asks THIS, not a list of the other faces a mutable document names.
+ */
+export function isFaceScopedBag(bagId: string): boolean {
+  const slug = identitySlug(bagId) ?? bagId;
+  return new RegExp(`^(persona|circles|identities|sessions)-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`).test(slug);
+}
+
+/** The tag a face-scoped bag id of ANY of the four families carries, or null. */
+export function faceTagOfBag(bagId: string): string | null {
+  const slug = identitySlug(bagId) ?? bagId;
+  const m = new RegExp(`^(?:persona|circles|identities|sessions)-([0-9a-f]{${PERSONA_SCOPE_TAG_HEX}})$`).exec(slug);
+  return m ? m[1]! : null;
+}

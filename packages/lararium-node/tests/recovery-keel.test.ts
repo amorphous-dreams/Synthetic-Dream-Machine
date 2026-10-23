@@ -65,6 +65,8 @@ const readmitFields = (joineeVerifyingKey: string, boundEpoch = 0) => ({
   personaGroupId: "aa".repeat(32),
   meshCabalDocIdHex: "cc".repeat(32), syncUrl: null, boundEpoch,
   hearthDaemonUrl: null, personaUrl: "automerge:2fakeRecoveryPersonaDocUrl0000",
+  // This vector mints the edge alone; the log and frontier a re-admit carries have their reds in persona-act-boot and fleet-frontier-wiring.
+  personaActs: [], edgeFrontier: { records: [], snapshots: [] },
 });
 
 describe("recovery-keel — found → device drowns → recover → re-admit", () => {

@@ -23,9 +23,11 @@ import { seedDaemonDoc } from "@lararium/mesh";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
+  mintFaceAnchor,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
@@ -55,6 +57,8 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
     personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
     registerBags: [DAEMON_BAG_ID], signerDid, personaKel: { prefix: personaKelPrefix, chain },
     deviceEdge: deviceEdge as never, expectedEpoch: lease.n,
+    faceAnchor: mintFaceAnchor({ personaGroup: pg.groupId, personaKelPrefix,
+      personaRootDid: (deviceEdge as { personaRootDid: string }).personaRootDid, edge: deviceEdge, leaseEpoch: lease.n }),
     ...(archiveBytes ? { archiveBytes } : {}),
   });
 }
@@ -91,10 +95,11 @@ describe("two vessels bind under one Handle", () => {
 
     // Admit payload: the signed edge + the membership capEvents.
     const base = await runDeviceAdmitEdge({
-      signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
+      signerSeed: FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED), joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
       personaKelPrefix: cer.personaKelPrefix, personaKelChain: founderKelChain,
       personaGroupId: pg.groupId, meshCabalDocIdHex: cer.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl, hearthDaemonUrl: null,
+      personaActs: await founderAndJoineeActs({ face: cer, signerSeed: FOUNDER_SEED, founderAtomSeed: cer.atomSeed, joineeKey, chain: founderKelChain }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const payload = { ...base, capEvents: bundle.capEvents };
 

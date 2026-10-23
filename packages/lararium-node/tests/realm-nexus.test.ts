@@ -52,6 +52,7 @@ import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -69,6 +70,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
   await generateOrLoadPersonaGroupRoot(1);
   await seedFaceAtom(1);
   const seated = await seatChairs([0]);
@@ -118,6 +120,7 @@ async function primaryQuorumSetsAside(realm: string): Promise<void> {
 
 describe("a realm stands under one Nexus", () => {
   it("N1 RED: the primary's quorum counts on no realm standing under another Nexus / CONTROL: it counts under the primary", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     await noteUnder(REALM, carried.aid);
     await primaryQuorumSetsAside(REALM);
     const under = await direct(runCabalJoin)({ realm: REALM, applicant: MEMBER });
@@ -130,12 +133,14 @@ describe("a realm stands under one Nexus", () => {
   });
 
   it("N1b RED: a realm noted under NO Nexus reads no quorum hand", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     await primaryQuorumSetsAside(REALM);
     const read = await direct(runCabalJoin)({ realm: REALM, applicant: MEMBER });
     expect(read.memberSetAside).toBeUndefined();
   });
 
   it("N2 RED: the quorum hand on a realm under another Nexus refuses and writes nothing / CONTROL: under the primary it lands", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     await noteUnder(REALM, carried.aid);
     await expect(direct(runEdgeKapae)({ member: MEMBER, realm: REALM, hand: "quorum", raised: true })).rejects.toThrow(EdgeKapaeError);
     expect(await boardActs(REALM)).toEqual([]);
@@ -185,7 +190,8 @@ describe("a realm stands under one Nexus", () => {
   });
 
   it("N6 RED: a vessel that wears no face vouches nothing / wearing one, it vouches", async () => {
-    await expect(direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 })).rejects.toThrow(CabalVouchError);
+    // Two faces held and none worn: the vouch refuses by name rather than act as whichever stands first.
+    await expect(direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 })).rejects.toThrow(/wears none: name one/);
     await wearPersona(0);
     const vouch = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
     expect(vouch.voucherDid).toMatch(/^[0-9a-f]{64}$/);
@@ -204,6 +210,7 @@ describe("a realm stands under one Nexus", () => {
   });
 
   it("N8 RED: a roll anchors only the realms standing under the Nexus that rolls / a realm under it takes the anchor", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     // Two realms, each with a counted quorum act kept in the ledger: one under the primary, one under the carried.
     await noteUnder(OTHER_REALM, primary.aid);
     await direct(runEdgeKapae)({ member: MEMBER, realm: OTHER_REALM, hand: "quorum", raised: true });
@@ -244,6 +251,7 @@ describe("a realm stands under one Nexus", () => {
   });
 
   it("N10 a partial's --nexus names the Nexus at the first act / under the primary it signs", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     // Two seats at threshold two, one held here: a partial, not a whole quorum.
     const doc = heldCharter({ keys: [primary.seat.signer, await chairKey(8, 0, "elsewhere")], threshold: 2 }).doc();
     writeNexusDoc(larSealHome(), doc);
@@ -256,6 +264,7 @@ describe("a realm stands under one Nexus", () => {
   });
 
   it("N11 an act refused before its write pins nothing / the act that lands pins its Nexus", async () => {
+    await wearPersona(0);   // two faces held: these vectors act as h0
     await expect(direct(runEdgeKapae)({ member: MEMBER, realm: REALM, hand: "quorum", raised: true, nexusAid: primary.aid, parents: ["e".repeat(64)] }))
       .rejects.toThrow(EdgeKapaeError);
     expect(await notedNexus(REALM)).toBeNull();

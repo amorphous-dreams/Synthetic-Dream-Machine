@@ -41,16 +41,24 @@ export function browserIslandStorage(msg: IslandMsg_Manifest) {
   return new IndexedDBStorageAdapter(msg.wikiUri);
 }
 
+export interface BrowserIslandScope {
+  post(msg: IslandToVesselMsg): void;
+  listen(cb: (msg: unknown) => void): void;
+  ready(): void;
+  onStop?(cb: () => void): void;
+}
+
 // ── runBrowserSovereignWorker — browser host shore over the shared kernel ────
 
 export function runBrowserSovereignWorker(
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
+  scope?: BrowserIslandScope,
 ): void {
   const host: IslandHostShore = {
-    post:    (msg: IslandToVesselMsg) => self.postMessage(msg),
-    listen:  (onMessage) => self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
+    post:    (msg: IslandToVesselMsg) => scope ? scope.post(msg) : self.postMessage(msg),
+    listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
     storage: browserIslandStorage,
-    ready:   () => self.postMessage(mkReady()),
+    ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
     // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
     // populated on genesis-load — never CRDT-synced over the port.
     resolveByCid: (cid) => readCasBlobFromOpfs(cid),

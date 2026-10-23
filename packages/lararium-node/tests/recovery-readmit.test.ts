@@ -68,6 +68,8 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
       syncUrl: null,
       hearthDaemonUrl: null,
       personaUrl: "automerge:2fakeReadmitPersonaDocUrl00000",
+      // This vector mints the edge alone; the log and frontier a re-admit carries have their reds elsewhere.
+      personaActs: [], edgeFrontier: { records: [], snapshots: [] },
     });
 
     // The re-admit edge verifies against the ORIGINAL root's DID (independently derived) — the Handle's

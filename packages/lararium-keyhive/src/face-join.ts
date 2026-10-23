@@ -163,8 +163,13 @@ export async function gateFaceJoin(args: {
   }
   // THE BINDING GATE READS THE DYAD'S SHADOW. A device the fleet root set aside binds nothing here, whatever its
   // edge proves. It draws Mu: the words an edge with no relation behind it draws, and no cause.
-  if (ctx.dyad(edge.deviceVerifyingKey) === "aside") {
+  const standing = ctx.dyad(edge.deviceVerifyingKey);
+  if (standing === "aside") {
     return { ok: false, reason: "edge refused: signature mismatch" };
+  }
+  // ABSENCE IS NOT CLEAR: a fleet whose signed frontier reads unknown vouches for no device, so the gate binds nobody until it does.
+  if (standing === "unknown") {
+    return { ok: false, reason: "edge refused: no qualifying signed edge frontier" };
   }
   // The binding IS (vessel × hearth) — an edge minted for another place carries no seat at this one.
   if (edge.hearthTrueName !== ctx.hearthTrueName) {
@@ -225,6 +230,7 @@ export async function runFaceJoin(
   // the re-seal that would carry the standing chunks across stays out, since those chunks hold the span the
   // device missed.
   const dyad = ctx.dyad(summons.deviceEdge.deviceVerifyingKey);
+  if (dyad === "unknown") return { ok: false, reason: "no qualifying signed edge frontier" };
   const returned = dyad === "returned" || dyad === "owing";
   // THE EARLIER SEAT LEAVES FIRST. A device that returns while a raise still owes its roll may hold the very seat
   // the raise names, and its earlier key epoch with it. So the join rolls the seat before it seats: revoke, then add.

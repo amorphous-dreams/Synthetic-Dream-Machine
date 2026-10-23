@@ -11,7 +11,7 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["vessel-card", ["F"], false], ["charter", ["F"], false], ["carried-charter", ["F"], false],
   ["carriage-consent", ["F"], false], ["nexus-key-line", ["F"], false], ["carriage-admit", ["F"], false],
   ["sealed-rest", ["F"], false], ["sealed-own", ["F"], true], ["sealed-chunk", ["F"], false],
-  ["custody-root", ["D"], true], ["keyhive-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-atom-ask", ["D"], false],
+  ["custody-root", ["D"], true], ["keyhive-archive", ["D"], true], ["veil-archive", ["D"], true], ["face-atom", ["D"], false], ["face-anchor", ["D"], false], ["face-atom-ask", ["D"], false],
   ["enroll-pending", ["D"], true], ["grant-pending", ["D"], true], ["admissions", ["D"], true],
   ["anchors", ["D"], false], ["anchor-roster", ["D", "F"], true], ["persona-roster", ["D", "F"], false],
   ["active-persona", ["D", "F"], true], ["persona-petnames", ["D"], false], ["persona-declarations", ["D", "F"], true],

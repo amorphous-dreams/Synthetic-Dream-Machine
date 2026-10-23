@@ -9,7 +9,7 @@ import {
   DAEMON_BAG_ID, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs, hex,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -36,6 +36,7 @@ async function stand(index: number, seatIndex: number, keys: string[]) {
   await generateOrLoadPersonaGroupRoot(seatIndex); await seedFaceAtom(seatIndex);
   await seatChairs([seatIndex]);
   await generateOrLoadPersonaGroupRoot(8); await seedFaceAtom(8);
+  await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);   // three faces held: the vessel wears the one these vectors act as
   writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));

@@ -21,7 +21,7 @@
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
-import { verifyEdgeAgainstPersonaKel, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
+import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
 export interface BootDaemonKeyhiveInput {
   /** 32-byte operator signing seed (delivered to the worker via the manifest). */
@@ -35,6 +35,7 @@ export interface BootDaemonKeyhiveInput {
   /** The face's PersonaGroup id (a Keyhive group's), the affiliation layer's membership subject. ABSENT names a
    *  vessel at the WAKING FLOOR — see `face` below. */
   readonly personaGroupId?: string;
+  readonly faceAnchor?: FaceAnchor | null;
   /** MeshCabal sentinel Document id hex — the affiliation layer's membership target, face-side. */
   readonly meshCabalDocIdHex?: string;
   /** Writable bag URIs to register so `verify`/`delegate` resolve (lar: URIs). */
@@ -122,6 +123,9 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // has a torn founding, and guessing which half to trust is exactly the deputy confusion.
   const facePins = [input.personaGroupId, input.signerDid, input.personaKel, input.deviceEdge];
   const facesHeld = facePins.filter((p) => p !== undefined).length;
+  if (facesHeld > 0 && !input.faceAnchor) {
+    throw new Error("[daemon-keyhive] Face anchor: anchor-missing; re-found the face");
+  }
   if (facesHeld > 0 && facesHeld < facePins.length) {
     throw new Error("[daemon-keyhive] the face this vessel pins reads TORN — some persona pins stand and others do not. Re-found the face (`lares persona new 0`) rather than booting on half of one.");
   }
@@ -151,7 +155,8 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   if (input.expectedEpoch === undefined) {
     throw new Error("[daemon-keyhive] Binding Gate: current lease frontier unavailable — refusing persona-bound boot");
   }
-  const binding = await verifyEdgeAgainstPersonaKel(input.deviceEdge!, chain, { expectedEpoch: input.expectedEpoch });
+  const anchorEpoch = leaseEpochUnderAnchor(input.faceAnchor!, input.expectedEpoch);
+  const binding = await verifyEdgeAgainstPersonaKel(input.deviceEdge!, chain, { expectedEpoch: anchorEpoch.epoch });
   // Events that do not verify move nothing at the gate; the boot says so rather than set them aside in silence.
   if (binding.unreadable) {
     unreadable = binding.unreadable;
@@ -161,6 +166,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     throw new Error(`[daemon-keyhive] Binding Gate: device-delegation edge failed verification against the persona-KEL head op-key. ${binding.reason ?? ""}`);
   }
   // THE DYAD'S SHADOW (kapae#/reach): no seat, no bind. The operator's own door names the reading.
+  if (input.dyad === "unknown") throw new Error("[daemon-keyhive] Binding Gate: no qualifying signed edge frontier — refusing persona-bound boot");
   if (input.dyad === "aside") {
     throw new Error(
       "[daemon-keyhive] Binding Gate: this device stands SET ASIDE from its fleet — a shadow stands over its own device edge, " +
@@ -175,6 +181,16 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
       `not this face ${(input.faceVerifyingKey ?? "absent").slice(0, 16)}…`,
     );
   }
+  // THE SEALED ANCHOR decides which face this is. The gate above proved the pins cohere; the anchor, written only by
+  // founding, admission and recovery, proves they are THIS device's face. A coherent bundle of another face's pins
+  // passes the chain's own checks and stops here, by name.
+  const pins = checkFacePins(input.faceAnchor!, {
+    personaGroup: input.personaGroupId,
+    personaKelPrefix: input.personaKel?.prefix,
+    personaRootDid: input.deviceEdge?.personaRootDid,
+    edge: input.deviceEdge,
+  });
+  if (!pins.ok) throw new Error(`[daemon-keyhive] Face anchor: ${pins.refusal}; re-found the face`);
   }
 
   // Cabal/Nexus membership (the former "Gate C") has LEFT the boot path — it is AFFILIATION,

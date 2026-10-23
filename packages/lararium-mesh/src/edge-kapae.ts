@@ -719,8 +719,12 @@ export function edgeLineHeads(counted: readonly EdgeKapae[], edgeId: string, han
  *                  seat leave for every raise: an earlier seat still owes its roll;
  *   · `returned` — the lift stands and every raise got answered. Standing holds again, and the seat that
  *                  follows stands FRESH: no key and no content of the span it missed returns with it.
+ *   · `unknown`  — no signed frontier of the board's raising hands qualifies (`readWideningFrontier`): absence
+ *                  proves no clean history, so a widening act waits and the door seats nobody.
  */
-export type EdgeStanding = "clear" | "aside" | "owing" | "returned";
+export type EdgeStanding = "clear" | "aside" | "owing" | "returned" | "unknown";
+
+/** `unknown` is the reading of a relation no qualifying signed frontier covers: it widens nothing and waits. */
 
 /**
  * Read one edge's standing off its fold. An edge no counted act names reads `clear`: absent never shadows.
@@ -733,4 +737,10 @@ export function edgeStandingOf(reading: EdgeReading | undefined, rolled?: Readon
   if (reading.stands) return "aside";
   if (reading.raiseCids.length === 0) return "clear";
   return rolled !== undefined && reading.raiseCids.some((cid) => !rolled.has(cid)) ? "owing" : "returned";
+}
+
+/** The standing as of the board's signed frontier: where none qualifies the relation reads `unknown`, never `clear`. */
+export function edgeStandingAsOf(reading: EdgeReading | undefined, rolled: ReadonlySet<string> | undefined, frontierKnown: boolean): EdgeStanding {
+  if (reading?.stands) return "aside";                       // a shadow narrows at once, frontier or none
+  return frontierKnown ? edgeStandingOf(reading, rolled) : "unknown";
 }

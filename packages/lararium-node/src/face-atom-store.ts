@@ -4,11 +4,11 @@ import { readdirSync } from "node:fs";
 import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRows, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow, withCustodyRows } from "./custody-seat.js";
-import { loadActivePersonaIndex } from "./node-vessel-identity.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
+import { resolveFace } from "./face-selector.js";
 export const FACE_ATOM_GROUP_FILE = /^face-atom-g([0-9a-f]{64})\.bin$/;
 export const FACE_ATOM_ASK_FILE = /^face-atom-ask-([0-9a-f]{64})\.bin$/;
 
@@ -183,7 +183,7 @@ export async function recoverFoundingSeedFromGroup(
 
 /** The active face's atom key names its local realm and edge ledgers. */
 export async function loadWornFaceAtomKey(): Promise<string> {
-  const index = (await loadActivePersonaIndex()) ?? 0;
+  const index = await resolveFace();
   const anchors = await loadIdentityAnchors(index);
   if (!anchors) throw new Error("this face holds no atom; re-found or re-admit it");
   const atom = await readFaceAtom(nodeFaceAtomRows, anchors.personaGroupId);

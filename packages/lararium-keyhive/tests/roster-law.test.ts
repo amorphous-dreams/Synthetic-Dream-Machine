@@ -1,3 +1,4 @@
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { describe, expect, it } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
@@ -57,7 +58,7 @@ describe("THE_ROSTER_LAW", () => {
     const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
     if (!chain) throw new Error("founder KEL chain absent");
     const payload = await runDeviceAdmitEdge({
-      signerSeed: rootSeed,
+      signerSeed: rootSeed, edgeFrontier: await frontierFromFoundingSeed(rootSeed),
       joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix,
       personaKelChain: chain,
@@ -67,6 +68,7 @@ describe("THE_ROSTER_LAW", () => {
       syncUrl: null,
       hearthDaemonUrl: founderPlace.daemonUrl,
       personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: founderAtomSeed, joineeKey: key(joineeAtomSeed), chain }),
     });
 
     const joineeRepo = repo();

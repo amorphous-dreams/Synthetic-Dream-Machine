@@ -5,8 +5,8 @@
  * What stands now MEASURES ROUTING: the face-atom door refuses a different seed over B's row, leaves B's bytes
  * unchanged, and every accessor A wears resolves A's atom and never B's. What it CANNOT measure yet is the key
  * class: today every hot row seals under the one vessel key, so the key that unlocks A opens B's row. Those two
- * readings stand as expected failures that name their cure, `K15` step 6 (each face's custody rows seal under its own
- * face custody key). The day step 6 lands they turn green and the `test.fails` marks come off.
+ * readings stand as expected failures that name their cure, Wave D (k15-wave-d-lane: each face's custody rows seal under its
+ * own face custody key, landed whole). The day Wave D lands they turn green and the `test.fails` marks come off.
  */
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -56,13 +56,13 @@ describe("face isolation at the node's routes", () => {
     });
   });
 
-  test.fails("K15.6 owes: the key that unlocks A refuses to open B's atom row (every hot row seals under one vessel key today)", async () => {
+  test.fails("Wave D owes: the key that unlocks A refuses to open B's atom row (every hot row seals under one vessel key today)", async () => {
     await twoFaces(async () => {
       await expect(readCustodyRow("identity", faceAtomGroupFile(GROUP_B))).rejects.toBeDefined();
     });
   });
 
-  test.fails("K15.6 owes: the key that unlocks A refuses to replace B's atom row around the face-atom door", async () => {
+  test.fails("Wave D owes: the key that unlocks A refuses to replace B's atom row around the face-atom door", async () => {
     await twoFaces(async ({ rowB, bytesB }) => {
       await expect(writeCustodyRow("identity", faceAtomGroupFile(GROUP_B), mintFaceAtomSeed())).rejects.toBeDefined();
       expect(readFileSync(rowB)).toEqual(bytesB);

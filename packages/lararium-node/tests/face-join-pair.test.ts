@@ -253,46 +253,33 @@ describe("face-join — the granting half, proven end to end", () => {
 
 describe("the hearth's door — kept where a joinee always reads it", () => {
   test("an applied admit lands the door on the joinee's OWN daemon doc, and returns it", async () => {
+    // The REAL path (no hand-shaped inception): a founder founds the place and the face, issues the admit through `runDeviceAdmitEdge`,
+    // and the joinee applies it. The apply refuses a bundle whose KEL carries no verified lineage or whose log is unfounded.
     const { Repo } = await import("@automerge/automerge-repo");
-    const { runApplyAdmitPayload } = await import("@lararium/keyhive");
-    const { HEARTH_DAEMON_URL_TIDDLER, sealGroupSecret, seedDaemonDoc } = await import("@lararium/mesh");
+    const { foundThePlace, foundTheFace, runApplyAdmitPayload, runDeviceAdmitEdge } = await import("@lararium/keyhive");
+    const { HEARTH_DAEMON_URL_TIDDLER, seedDaemonDoc, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, groupSecretOpenerFromSeed } = await import("@lararium/mesh");
+    const { founderAndJoineeActs, frontierFromFoundingSeed } = await import("./admit-acts.js");
 
     const HEARTH_DOOR = "automerge:2fakeHearthDoorUrl000000000";
-    const joinee = await makeVessel(72);
-    const edge = await buildDeviceDelegation({
-      personaRootSeed: ROOT_SEED, atomSeed: seedOf(72), hearthTrueName: HEARTH,
-      boundEpoch: 0,
+    const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
+    const founderRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
+    const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(72);
+    const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH });
+    const face = await foundTheFace({
+      repo: founderRepo, daemonHandle: founder.daemonHandle, vesselVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+      binding: { mode: "self-stood", signerSeed }, hearthTrueName: HEARTH, nexusPubkey: key(founderSeed), atomSeed,
+    });
+    const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
+    const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix)!;
+    const personaActs = await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey: key(joineeAtom), chain });
+    const payload = await runDeviceAdmitEdge({
+      signerSeed, joineeVerifyingKey: key(joineeAtom), personaKelPrefix: face.personaKelPrefix, personaKelChain: chain, personaActs,
+      edgeFrontier: await frontierFromFoundingSeed(signerSeed), hearthTrueName: HEARTH, personaGroupId: face.personaGroupId,
+      meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: HEARTH_DOOR, personaUrl: face.personaUrl,
     });
     const repo = new Repo({});
-    const applied = await runApplyAdmitPayload({ repo,
-      atomSeed:           new Uint8Array(32).fill(72),
-      daemonHandle:       seedDaemonDoc(repo),
-      vesselDisplayName:  "a joining leaf",
-      nexusPubkey:        "8".repeat(64),
-      payload: {
-        kind: "device-admit/v1",
-        signerDid:              edge.personaRootDid,
-        personaKelPrefix:       "persona-probe",
-        // REQUIRED now (early alpha, no back-compat): a minimal inception event for the probe's own prefix —
-        // `runApplyAdmitPayload` only WRITES this to the joinee's local KEL board, it never re-verifies the
-        // chain cryptographically at apply time, so a hand-shaped inception is sufficient here.
-        personaKelChain: [{
-          seq: 0, eventCid: "probe-cid-0", prefix: "persona-probe", opKeyDid: edge.personaRootDid,
-          recoverySetHash: "probe-recovery-hash", nextRecoverySetHash: "probe-recovery-hash",
-          recoveryRoster: [], recoveryThreshold: 0, prevEventCid: null, provisional: false,
-          vetoOfCid: null, rotationSigs: [],
-        }],
-        deviceEdge:             edge,
-        // The secret the same root sealed beside the edge — REQUIRED: an enrolment without it meets no sibling.
-        groupSecretSeal:        await sealGroupSecret({ opSeed: ROOT_SEED, prefix: "persona-probe", deviceVerifyingKey: await rawKeyOf(joinee) }),
-        hearthTrueName:         HEARTH,
-        personaGroupId:   "ab".repeat(16),
-        meshCabalDocIdHex:      "ef".repeat(16),
-        syncUrl:                null,
-        hearthDaemonUrl:        HEARTH_DOOR,
-        personaUrl:             "automerge:2fakePersonaDocUrl00000000000",
-      },
-    });
+    const applied = await runApplyAdmitPayload({ repo, atomSeed: joineeAtom, daemonHandle: seedDaemonDoc(repo), vesselDisplayName: "a joining leaf", nexusPubkey: key(founderSeed), payload });
 
     // The RESULT carries it into this boot's bootstrap …
     expect(applied.hearthDaemonUrl).toBe(HEARTH_DOOR);

@@ -62,25 +62,25 @@ describe("a landing keeps the face a joined vessel wears", () => {
 
   test("CONTROL: a bare place lands the face", async () => {
     bootstrapNaming(null);
-    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
     expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "init", "clear"]);
   });
 
   test("CONTROL: the same face lands again", async () => {
     bootstrapNaming("group-two");
-    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
     expect(seam.writes).toContain("init");
   });
 
   test("LAND_KEEPS_THE_WORN_FACE: another face's answer lands beside the worn face", async () => {
     bootstrapNaming("group-zero");
-    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
     expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "init", "clear"]);
   });
 
   test("a torn bootstrap refuses bootstrap-torn and writes nothing", async () => {
     writeFileSync(seam.bootstrapPath, "{not json");
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "bootstrap-torn" });
+    await expect(runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } })).rejects.toMatchObject({ refusal: "bootstrap-torn" });
     expect(seam.writes).toEqual([]);
   });
 });

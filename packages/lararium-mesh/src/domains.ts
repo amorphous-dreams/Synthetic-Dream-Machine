@@ -225,6 +225,20 @@ export const PLACE_FLOOR_PIN_DOMAIN = mint("place-floor-pin");
 export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
+/** One signed ACT in a face's `@persona` log (founding, admission, device edge, lease advance): the canonical
+ *  body's `kind` names this domain, so no act verifies as another record and no record as an act. */
+export const PERSONA_ACT_DOMAIN = mint("persona-act");
+/** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
+ *  the anchor names the root without carrying it. */
+export const FACE_ANCHOR_ROOT_DOMAIN = mint("face-anchor-root");
+/** The DIGEST a sealed face anchor keeps of its device edge. */
+export const FACE_ANCHOR_EDGE_DOMAIN = mint("face-anchor-edge");
+/** One signed EDGE FRONTIER on a board: the hand's own stream commitment (snapshot, parent, roster and epoch
+ *  lineage). Apart from the act it counts. */
+export const EDGE_FRONTIER_DOMAIN = mint("edge-frontier");
+/** One signed LEASE ADVANCE in a PersonaGroup's per-writer slot: the writer signs the resource, its own key and
+ *  the epoch it lifts the max-register to. An unsigned slot, or one signed by a key outside the face's roster, raises nothing. */
+export const LEASE_ADVANCE_DOMAIN = mint("lease-advance");
 /** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
  *  key-set, and the heads of the quorum acts that counted there, so a shadow carries across the roll. */
 export const EDGE_ROLL_ANCHOR_DOMAIN = mint("edge-roll-anchor");

@@ -42,9 +42,9 @@ import {
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
+  DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, personaScopedBagIds,
+  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -84,7 +84,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, type KahuCanonDocs }          from "./kahu-realm.js";
+import { standKahuCanon, canonHeldUntilProof, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -92,7 +92,8 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
+  leaseEpochPrefix, readFace, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
@@ -123,6 +124,11 @@ import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
+import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
+import { raiseAnchorFromSlots } from "./lease-observation.js";
+import { readFacePersonaRecords } from "./persona-act-store.js";
+import { CustodyLocked } from "./custody-holder.js";
+import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
@@ -181,7 +187,7 @@ import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
 import { vesselAdmitReader, vesselGate, type VesselGateDeps } from "./vessel-gates.js";
 import { gateShadowRing, type FaceDeviceReading } from "./gate-shadow-ring.js";
 import { faceDeviceBook }                        from "./face-device-book.js";
-import { faceFleetViews }                        from "./face-fleet-view.js";
+import { faceFleetViews, foreignFaceDocs }          from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
@@ -410,7 +416,7 @@ export interface SovereignReaders {
 
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
-  return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
+  return { wornMount: (dir: string) => readWornPersonaMount(dir, { refuse: "throw" }), personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
     archive: loadIdentityArchive, veilArchive: loadVeilArchive,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
 }
@@ -661,6 +667,10 @@ async function prepareNodeBootOn(
   // mask was on. A worn non-founding face carries its own mount material in its anchors — the pins below
   // default to it. Null means no switch is owed (h0, nothing worn, or anchors without the material).
   const wornMount = sovereign ? await sovereign.wornMount(storageDir) : null;
+  // THE FACE THIS VESSEL WEARS, READ FROM SEALED CUSTODY ALONE: the worn mount's group, else the founding face's anchors. The mutable
+  // bootstrap never names the face (it carries planes; the proof checks them against this one). A locked or faceless place names none.
+  const custodyGroup: string | null = wornMount?.personaGroupId
+    ?? (sovereign ? ((await loadIdentityAnchors(0).catch((e: unknown) => { if (e instanceof CustodyLocked) return null; throw e; }))?.personaGroupId ?? null) : null);
   // THE ROSTER READS WHOLE BEFORE ANYTHING STANDS ON IT. Every reading of what this vessel carries by persona (a
   // seated chair, a kept consent, the worn leaf) answers off the persona roster, and those readings answer empty
   // when they cannot read. So a sovereign composition reads the roster here, once, with no catch: a roster that
@@ -730,10 +740,18 @@ async function prepareNodeBootOn(
   // D3: the bootstrap's tiddlers once the boot reads them, and one scoped view per same-operator session over the
   // planes of the face its gate proved (`face-fleet-view`). The share verdict reads a same-operator peer through it.
   let faceBootTiddlers: Record<string, { text?: string }> | null = null;
+  // The worn face's persona/identities/circles planes passed the face proof (set once in the daemon open): the gates, the same-operator
+  // views and every other reader of the worn face's planes read nothing until it is true.
+  let wornFaceProven = false;
+  // The persona planes a face proof vouched for, by group: the worn face's own, and each anchored face's whose held log names its url.
+  // Registration and every reader of a face's plane (the selves plane, the bag list) read THIS, never the bootstrap's list.
+  const provenPlanes = new Map<string, string>();
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
-  const faceViews = faceFleetViews(() => faceBootTiddlers, () => wornMount?.personaGroupId ?? null);
+  let catalogForViews: (() => LarDoc | undefined) | null = null;
+  const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
+    () => (custodyGroup && catalogForViews ? foreignFaceDocs(catalogForViews(), custodyGroup) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -862,6 +880,8 @@ async function prepareNodeBootOn(
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
+      // THE KAHU CANON WAITS FOR THE FACE PROOF: a wire peer reads none of it until the worn face has proved (`canonHeldUntilProof`).
+      if (wsSocket && canonHeldUntilProof({ canon: kahuCanon, owesFaceProof: custodyGroup !== null, faceProven: wornFaceProven, documentId: documentId as string | undefined })) return false;
       // THE SELF-SLOT SPLIT — federatable-own vs private-own, keyed on the class the keyholder vouched
       // (selfSlotShareDecision holds the whole law + fail-closed default). A same-operator WS peer and
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
@@ -1204,6 +1224,10 @@ async function prepareNodeBootOn(
       }
       return [...roots];
     },
+    // THE FLEET ROOT'S ROSTER PER EPOCH: its persona KEL, read off the anchors this vessel holds in custody and the
+    // verified chain on the island's board (or an island below it, before the boot's carry has run). At the floor
+    // custody is locked and no chain reads: the frontier stands unknown and widens nothing.
+    lineageOfFleet: (fleetRoot) => fleetLineageOf(repo, fleetRoot, [nexusPubkey, ...nexusIslandsBelow(nexusStandsAt)]),
     charterRealm:    () => nexusAidOf(readNexusDoc(sealHome)),
     // The DEVICE behind the peer (D4), never the face key its gate proved: a device set aside draws Mu on every lane.
     vesselKeyOfPeer: deviceOfPeer,
@@ -1266,8 +1290,8 @@ async function prepareNodeBootOn(
   // withdrawal memory a sovereign gate keeps across a restart.
   // THE WORN FACE the gates' rings read: the mount's own, or the founding face the bootstrap pins.
   const wornGateFace = (): { readonly face: number; readonly personaGroup: string } | null => {
-    const personaGroup = wornMount?.personaGroupId ?? faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
-    return personaGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup } : null;
+    // The sealed custody group, and only once the face proof passed: the bootstrap's group text decides nothing here.
+    return wornFaceProven && custodyGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup: custodyGroup } : null;
   };
   const wornFaceRecords = async () => {
     const worn = wornGateFace();
@@ -1782,7 +1806,7 @@ async function prepareNodeBootOn(
     systemCanon: async () => {
       kahuCanon = await standKahuCanon({
         repo, sealHome, vesselKey: vesselIdentity.verifyingKey,
-        personaGroupId: faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null,
+        personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
       return kahuCanon;
     },
@@ -1817,11 +1841,18 @@ async function prepareNodeBootOn(
   // Daemon VM — sovereign daemon island + the operator's authn/z home. `slot` ABSENT (herm) →
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
+    catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
-    // Each pin defaults to the WORN face's own anchors; absent a switch these read the daemon doc exactly
-    // as before (byte-identical for a single-face vessel, which is every vessel until one wears a second).
-    const personaGroupId   = wornMount?.personaGroupId   ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])   ?? undefined;
-    const meshCabalDocIdHex     = wornMount?.meshCabalDocIdHex      ?? tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
+    // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
+    let atFloor = false;
+    const orFloor = async <T,>(read: () => Promise<T | null>): Promise<T | null> => {
+      try { return await read(); } catch (e) { if (e instanceof CustodyLocked) { atFloor = true; return null; } throw e; }
+    };
+    const foundingAnchors = wornMount ? null : await orFloor(() => loadIdentityAnchors(0));
+    const bootMount = wornMount ?? foundingAnchors;
+    // Custody selects the worn face. The daemon document may project its pins but never selects one.
+    const personaGroupId = bootMount?.personaGroupId ?? undefined;
+    const meshCabalDocIdHex = bootMount?.meshCabalDocIdHex ?? undefined;
     // The cabal rides with the FACE — its members read as PersonaGroups, so a faceless place names none.
     // ── THE FACE, IF ONE STANDS ────────────────────────────────────────────────────────────────
     // The signer pin + edge carry the Binding Gate's authority. Their ABSENCE names a place at the
@@ -1832,12 +1863,20 @@ async function prepareNodeBootOn(
     // THE GATE STILL NEVER SOFTENS. Downstream, `bootDaemonKeyhive` runs the Binding Gate in FULL or
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
-    const signerDid  = wornMount?.signerDid ?? tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
+    const signerDid = bootMount?.signerDid ?? undefined;
+    const faceAnchor = personaGroupId ? await orFloor(() => loadFaceAnchorOfGroup(personaGroupId)) : null;
+    // THE ANCHOR THIS BOOT STANDS ON: every later raise (the verified act head, a verified lease) starts from the latest one this boot
+    // wrote, so a second write never builds from the copy read before the first and erases the first's pin.
+    let standingAnchor = faceAnchor;
+    if (personaGroupId && !faceAnchor && !atFloor) throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
+    if (!personaGroupId && !atFloor && tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])) {
+      throw new Error("[openNodeVessel] Face anchor: anchor-missing; re-found the face");
+    }
     // The worn handle selects the atom seed in local custody for this face's live signer and Keyhive Individual.
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
-    const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+    const deviceEdge = bootMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     const mountedFace = wornMount?.handleIndex ?? 0;
     const atomSeed = sovereign && deviceEdge && personaGroupId ? await loadFaceAtomOfGroup(personaGroupId) : null;
     if (sovereign && deviceEdge && !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
@@ -1890,8 +1929,10 @@ async function prepareNodeBootOn(
     // that pins NO identifier holds no face and stands at the floor. A vessel that pins one whose chain its
     // local replica cannot reach has a face it cannot prove — that HALTS, fail-closed, exactly as before
     // (never a global lookup; a not-yet-synced replica simply denies).
-    const personaKelPrefix = wornMount?.personaKelPrefix ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
+    const personaKelPrefix = bootMount?.personaKelPrefix ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
+    // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for (`provenPlanes`, declared with the boot's state above).
+    let wornFaceProved = false;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
       // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
@@ -1912,6 +1953,33 @@ async function prepareNodeBootOn(
       personaKelChain = kelHolder.chainForPrefix(personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
+      }
+      if (faceAnchor && activeAtom && personaGroupId) {
+        // A FACED BOOT PROVES ITS FACE: a bootstrap that omits the persona plane cannot skip the proof, it refuses by name.
+        if (!bootstrap.personaUrl) throw new Error("[lararium] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
+        const records = await readFacePersonaRecords(repo, {
+          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc], heldOnly: true,
+        });
+        const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
+          anchor: faceAnchor, deviceKey: activeAtom.key, ...(deviceEdge ? { edge: deviceEdge } : {}),
+          // The face's SHARED documents: its persona plane, its circles and its identities, each named by a signed act. Sessions
+          // stay per vessel (motion, never a decision that crosses devices), so no act names them.
+          planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
+        if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        wornFaceProved = true;
+        wornFaceProven = true;
+        provenPlanes.set(personaGroupId, bootstrap.personaUrl);
+        // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
+        const head = proof.projection.head;
+        if (head) {
+          const pinned = raiseFaceFrontier(faceAnchor, { actSeq: head.seq, actCid: head.cid });
+          if (pinned !== faceAnchor) { await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }
+        }
+        // THIS DEVICE'S OWN ENTRY joins the face's shared documents the moment its replica holds them (a causal read, never a timer or the next boot).
+        if (bootstrap.identitiesUrl && bootstrap.circlesUrl) {
+          const joining = joinFaceDocumentsOnArrival(repo, { identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl }, activeAtom.key);
+          stood.push({ what: "the face documents join", down: () => joining.stop() });
+        }
       }
     }
     // ── THE REST OF THE CLIMB — the boards the KEL carry leaves behind ───────────────────────────────
@@ -2117,11 +2185,26 @@ async function prepareNodeBootOn(
         doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
       });
     };
+    // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
+    // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
+    // a bootstrap entry no proof backs registers nothing.
     for (const plane of bootstrap.personaPlanes) {
-      registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+      if (plane.personaGroupId === personaGroupId) continue;
+      try {
+        const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
+        if (!other) continue;
+        const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+        const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
+        if (!chain || chain.length === 0) continue;
+        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
+        if (proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url } }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
+      } catch (e) { if (!(e instanceof CustodyLocked)) throw e; }
     }
-    // The worn face's siblings ride the bootstrap under their own derived names; register them beside it.
-    const wornFace = bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
+    for (const plane of bootstrap.personaPlanes) {
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+    }
+    // The worn face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN worn face.
+    const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
     if (wornFace) {
       registerInCatalog(wornFace.circles,    bootstrap.circlesUrl);
       registerInCatalog(wornFace.identities, bootstrap.identitiesUrl);
@@ -2185,6 +2268,7 @@ async function prepareNodeBootOn(
       // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
+      ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -2192,15 +2276,12 @@ async function prepareNodeBootOn(
       registerBags: deriveRegisterBags({
         // The mounted face registers its own planes on its own hive, and no hive registers a face it does not
         // wear: another compartment's planes register when it is worn, under its own atom.
-        // The catalog names every face's plane documents, so the worn face's reading leaves the others' out.
-        fleets: bootstrap.personaPlanes.filter((p) => p.personaGroupId === personaGroupId).map((p) => {
-          const otherFaces = new Set(bootstrap.personaPlanes.filter((o) => o.personaGroupId !== personaGroupId)
-            .flatMap((o) => { const plane = personaScopedBagIds(o.personaGroupId); return [plane.persona, plane.circles, plane.identities, plane.sessions]; }));
-          return {
-            personaGroupId: p.personaGroupId,
-            catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()).filter((bag) => !otherFaces.has(bag)),
-          };
-        }),
+        // The catalog names every face's plane documents; `deriveRegisterBags` leaves every face-scoped bag but the worn group's own four
+        // out by their derived shape, so no list of the other faces (a mutable bootstrap's) decides it.
+        fleets: personaGroupId && wornFaceProved ? [{
+          personaGroupId,
+          catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()),
+        }] : [],
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }),
@@ -2235,7 +2316,9 @@ async function prepareNodeBootOn(
       ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
       // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
       // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
-      ...(sovereign === null && joinSyncUrl ? { personaLate: true } : {}),
+      // An admitted device whose replica does not yet hold the plane (it syncs from the fleet) resolves it as a mesh-shared
+      // document, which waits for the sync, rather than reading the hearth-private "no reachable copy" under load.
+      ...((sovereign === null && joinSyncUrl) || (bootstrap.personaUrl && !heldDocOf(repo, bootstrap.personaUrl)) ? { personaLate: true } : {}),
       coreHash: assembly.coreHash,
       ...(pluginCids.length ? { pluginCids } : {}),
       grants: {
@@ -2254,6 +2337,14 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
+    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
+    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    if (faceAnchor && personaGroupId && personaKelChain) {
+      const prefix = leaseEpochPrefix(personaGroupId);
+      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
+      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
+    }
 
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
@@ -2280,7 +2371,11 @@ async function prepareNodeBootOn(
         // set aside holds no seat here, whatever record or session it proves. No ring yet reads as aside. The
         // grant path proves a FACE key (a face-join grant names it), so the shadow also reads the DEVICE each
         // gate-seated session under that face key was certified to (D4): an aside device's face holds no seat.
-        deviceAside: (key) => edgeShadows ? edgeShadows.deviceAside(key) || seatedDevicesOfFace(key).some((d) => edgeShadows!.deviceAside(d)) : true,
+        // WIDENING WAITS ON THE FLEET'S SIGNED FRONTIER (K17): a face whose fleet board carries no qualifying frontier
+        // seats and shares with nobody; a shadow still narrows at once.
+        deviceAside: (key) => edgeShadows
+          ? edgeShadows.widenBlocked(deviceEdge.personaRootDid) || edgeShadows.deviceAside(key) || seatedDevicesOfFace(key).some((d) => edgeShadows!.deviceAside(d))
+          : true,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
       // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.
@@ -2318,7 +2413,7 @@ async function prepareNodeBootOn(
             return activeAtom.sign(image);
           },
           enrolment: { edge: deviceEdge, seal }, open: activeAtom.opener,
-          expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+          expectedEpoch: readFace(personaKelChain ?? [], standingAnchor)?.leaseEpoch(personaGroupId, leaseSlots) ?? 0,
           onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
       }
@@ -3088,8 +3183,8 @@ async function prepareNodeBootOn(
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     // EVERY carried face's own plane, each reached by the group that face's sealed anchors name: a name of one
     // face lands on that face's plane and on no other's.
-    personaSelves:   () => (personaSelves ??= bootstrap?.personaPlanes?.length
-      ? repoPersonaSelvesPlane(repo, bootstrap.personaPlanes, async () => {
+    personaSelves:   () => (personaSelves ??= provenPlanes.size > 0
+      ? repoPersonaSelvesPlane(repo, [...provenPlanes].map(([personaGroupId, url]) => ({ personaGroupId, url })), async () => {
           const faces: { handleIndex: number; personaGroupId: string }[] = [];
           for (const handleIndex of await listAnchoredPersonas()) {
             const anchors = await loadIdentityAnchors(handleIndex);
@@ -3113,7 +3208,8 @@ async function prepareNodeBootOn(
         for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
           try { await shadowRing.refold(); } catch { return true; }
         }
-        return shadowRing.deviceStanding(wornFleetRoot, activeAtom?.key ?? "") === "aside";
+        const standing = shadowRing.deviceStanding(wornFleetRoot, activeAtom?.key ?? "");
+        return standing === "aside" || standing === "unknown";
       },
       // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
       get cutMemory() {

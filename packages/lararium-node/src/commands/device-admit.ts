@@ -26,23 +26,28 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, effectiveLeaseEpoch,
-  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, type LarDoc,
+  leaseEpochPrefix, readFace,
+  signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
+  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, FLEET_HAND, type LarDoc,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
+import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
+import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
+import { resolveFace } from "../face-selector.js";
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /**
@@ -143,6 +148,16 @@ export class DeviceSetAside extends Error {
   }
 }
 
+export class DeviceFrontierUnknown extends Error {
+  constructor(why: string) {
+    super(
+      "[lares fleet join answer] REFUSED: this fleet's signed frontier reads unknown here (" + why + "). " +
+      "A delegation binds only against a frontier this vessel can verify; sync the fleet board and the root's persona KEL, then retry.",
+    );
+    this.name = "DeviceFrontierUnknown";
+  }
+}
+
 /**
  * THE BIND SITE'S CONSULT. The root signs no delegation for a device its own fleet board shows set aside, so a
  * fresh admit and a lease roll both skip that dyad. The read runs through this vessel's ledger: a raise a hand
@@ -161,6 +176,14 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, fa
     repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey: ownKey, authorityFor: fleetEdgeAuthority(fleetRoot),
   });
+  // ABSENCE IS NOT CLEAR: the board binds only against its signed frontier. Where no qualifying frontier covers the fleet the
+  // standing reads `unknown`, and a bind refuses by name rather than reading the missing raise as a clear dyad.
+  const lineage = await fleetLineageForVessel(repo, fleetRoot);
+  const frontier = lineage ? readFleetFrontier({
+    fleetRoot, board: fleet.handle.doc(), lineage, seenRaises: fleetRaiseCids(fleet.counted.acts),
+    pinned: readFrontierPins(fleet.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null,
+  }) : null;
+  if (!frontier || frontier.status !== "known") throw new DeviceFrontierUnknown(frontier ? frontier.missing.map((m) => `${m.hand}:${m.why}`).join(", ") : "no-lineage");
   const dyad = fleet.readings.get(deviceEdgeId(fleetRoot, joineeVerifyingKey.trim().toLowerCase().replace(/^0x/, "")));
   if (dyad?.stands === true) throw new DeviceSetAside(dyad.verdict);
 }
@@ -221,7 +244,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     tiddlers?: Record<string, { text?: string }>;
   }).tiddlers ?? {};
 
-  const face = opts.face ?? 0;
+  const face = await resolveFace(opts.face);
   // A face an operator added stands on its OWN anchors: the bootstrap and the daemon doc pin the founding face.
   const faceAnchors = face === 0 ? null : await loadIdentityAnchors(face);
   if (face !== 0 && faceAnchors === null) {
@@ -345,7 +368,15 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
   }
-  const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);
+  // THE ADMIT DOOR READS WHAT THE BOOT READS (`readFace`, the one door): the issuer's sealed anchor bounds the edge, so a stale
+  // daemon doc (an older valid slot) never signs a joinee below an epoch this device already accepted, and the log projects
+  // from the anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
+  const issuerAnchor = await loadFaceAnchorOfGroup(personaGroupId);
+  if (!issuerAnchor) throw new Error("[lares fleet join answer] Face proof: this face holds no sealed anchor; re-found or re-admit the face");
+  if (issuerAnchor.personaKelPrefix !== personaKelPrefix) throw new Error("[lares fleet join answer] Face proof: prefix; the bootstrap and daemon doc name a KEL prefix this face's sealed anchor does not; re-found or re-admit the face");
+  const reading = readFace(personaKelChain, issuerAnchor);
+  if (!reading) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
+  const boundEpoch = reading.leaseEpoch(personaGroupId, leaseSlotValues);
 
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
   const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
@@ -354,14 +385,43 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
     deviceVerifyingKey: opts.joineeVerifyingKey.toLowerCase(), hearthTrueName, boundEpoch });
+  const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
+  const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
+    extraDocs: [daemonDoc as LarDoc | undefined] });
+  const projection = reading.project(records, personaGroupId);
+  if (!projection.founded || projection.fork || !projection.head) {
+    throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
+  }
+  // THE WRITER NEVER BRANCHES BELOW WHAT THIS DEVICE ACCEPTED: the log it signs from must hold the anchor's pinned act at the
+  // pinned seq (the boot's own `frontier-falls` check), so a replica that replays an older valid log signs nothing.
+  if (issuerAnchor.frontier.actSeq >= 0 && projection.cids[issuerAnchor.frontier.actSeq] !== issuerAnchor.frontier.actCid) {
+    throw new Error("[lares fleet join answer] Face proof: frontier-falls; this replica's log stands below the act this device accepted; sync the face's persona plane and retry");
+  }
+  const signerKey = await ed25519VerifyingKeyFromSeed(signerSeed);
+  if (!reading.currentSigner(signerKey)) {
+    throw new Error("[lares fleet join answer] Face proof: root signer has no current KEL seat; re-admit the face");
+  }
+  const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
+  const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
+  const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
+    fields: { deviceKey: opts.joineeVerifyingKey.toLowerCase() } }, signer);
+  const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
+    { group: personaGroupId, act: "device-edge", epoch,
+      fields: { deviceKey: opts.joineeVerifyingKey.toLowerCase(), edgeDigest: edgeBodyDigest(signedEdge) } }, signer);
+  const personaActs = [...records, admission, edgeAct];
   const operation = { store: operationStore, atomSeed,
     signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
+  const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
+  const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+  const edgeFrontier = fleetFrontierCarriage(fleetBoard.doc(), fleetRoot);
   const payload = await runDeviceAdmitEdge({
+    edgeFrontier,
     operation,
     signerSeed,
     joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
     personaKelPrefix,
     personaKelChain,
+    personaActs,
     hearthTrueName,
     personaGroupId,
     meshCabalDocIdHex,
@@ -373,6 +433,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
     personaUrl,
   });
+  appendPersonaActs(personaHandle, [admission, edgeAct]);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
   // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's

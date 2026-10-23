@@ -24,6 +24,7 @@ import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjec
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { readFileSync } from "node:fs";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
+import { requireFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
@@ -86,6 +87,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const daemonAuth = {
     seed, vesselVerifyingKey: vesselKey, archiveOpens: true,
     personaGroupId: anchors.personaGroupId,
+    faceAnchor: await requireFaceAnchorOfGroup(anchors.personaGroupId),
     meshCabalDocIdHex: anchors.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID, ...args.bags], signerDid: anchors.signerDid,
     personaKel: { prefix: anchors.personaKelPrefix, chain: kel }, deviceEdge: anchors.deviceEdge,
     atom: { seed: hex(atomSeed), key: atom.key },

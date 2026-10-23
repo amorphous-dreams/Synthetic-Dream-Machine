@@ -30,9 +30,10 @@ describe("the daemon VM floor crossing", () => {
       ports.push(port1, port2);
       return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] };
     };
-    let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: IslandMsg_Manifest["syncPort"][] }) | undefined;
+    let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: IslandMsg_Manifest["syncPort"][]; afterPost?: () => void }) | undefined;
+    const posted: unknown[] = [];
     const host: DaemonVmHost = {
-      spawnWorker: () => ({ post: () => {}, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
+      spawnWorker: () => ({ post: (msg) => { posted.push(msg); }, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
       newSyncChannel: channel,
       newOwnedSyncChannel: channel,
       onManifestReplay: (factory) => { replayManifest = factory; },
@@ -52,6 +53,12 @@ describe("the daemon VM floor crossing", () => {
         const fresh = replayManifest!();
         expect(fresh.transfer).toHaveLength(2);
         expect(added).toHaveLength(4);
+        expect(original.every((adapter) => active.has(adapter)), "the old crossing stays until the replacement posts").toBe(true);
+        const beforePost = posted.length;
+        host.spawnWorker(new URL("file:///unused-floor-island")).post(fresh.msg, fresh.transfer);
+        expect(posted).toHaveLength(beforePost + 1);
+        fresh.afterPost?.();
+        fresh.afterPost?.();
         expect(active.size, "the fresh two replace the retired two").toBe(2);
         expect(original.every((adapter) => !active.has(adapter)), "the old crossing has no live adapter").toBe(true);
         expect(added.slice(2).every((adapter) => active.has(adapter)), "both fresh ports stay attached").toBe(true);

@@ -63,6 +63,8 @@ This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-K
 
 ''INTERNAL ⊥ EXTERNAL — the hard law.'' The fleet's ''internal'' identity — the pet-name declaring //these atoms form one hand// — ''NEVER equals'' the ''external'' identity the operator publishes as a Handle. The collector stays inside; the face goes out; ''no act may collapse them to one value''. That reads #the-vault's single bit at the fleet scale: publish the face, never the fleet.
 
+''THE FACE'S DOCUMENTS (operator ruling, 2026-10-22).'' A vessel starts at the floor while anonymous. Once it joins a PersonaGroup, the face's social documents follow the face to every device that wears it: its circles and its identities mint once at the founding, a signed `plane` act in the face's `@persona` log names each, the admit bundle carries them, and every admitted device adopts the same documents by url and syncs them (//"I do want my Kowloon Circles available on my devices once they know they belong when wearing that face"//). The face proof names them beside the persona plane, so a document named by no act, or by a stranger's act, mounts nowhere. Sessions stay per vessel: a session is motion (which device wears the face right now), and decisions cross devices, never motion.
+
 ''THE ROSTER LAW.'' The atom creates its face's group and sentinel, so the creator the group's key tree seats by construction, and the identifier every carried event names in cleartext, stands the face's own random key. The place's identity sits on no face's roster, and no roster carries a key that appears on another (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> #/identity-as-bond).
 
 <<~/ahu>>
@@ -221,6 +223,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7WgWY5IVppCa_NGgXRRwHsm6S0cjxlxqBazSZLS3WfU
+<<^ code="&#x0003;">>ni:///sha-256;mKSQ-Aoy0dYdGR6jYgBHM5jzq4c4lHkEfQiVw0CRmnc
 
 <<^ code="&#x0004;" -> to="?">>

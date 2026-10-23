@@ -66,7 +66,9 @@ export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<st
     hearthCanonDocs,
     personaGroupId: hex("a1"), meshCabalDocIdHex: hex("a3"),
     signerDid: "did:key:z6MkWireRig", personaKelPrefix: "EWireRigPrefix",
-    deviceEdge: { signed: true },
+    // The rig's edge carries the fields the sealed anchor commits to (root, device, hearth, epoch); no ceremony signs it.
+    deviceEdge: { signed: true, personaRootDid: `0x${hex("a5")}`, deviceVerifyingKey: hex("a7"), hearthTrueName: "wire-rig-hearth", boundEpoch: "0" },
+    personaActs: [], edgeFrontier: { records: [], snapshots: [] },
   } as unknown as CarriedAdmitPayload;
 }
 

@@ -17,7 +17,7 @@ export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } fr
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
-export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle } from "./shared-holder.js";
+export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle, houseName } from "./shared-holder.js";
 export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";
 export { makeSharedHolderCore } from "./shared-holder-core.js";
 export type { SharedHolderCore, SharedHolderCoreOptions, HolderHello, HolderIsland, HolderPort } from "./shared-holder-core.js";
@@ -76,7 +76,7 @@ export type {
   BrowserDaemonVmOptions,
   BrowserVerbTable, VerbReactor, BrowserVerbPlacementRequest,
 } from "./open-browser-daemon-vm.js";
-export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND } from "./admit-carriage.js";
+export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } from "./admit-carriage.js";
 // THE FLEET-JOIN DOOR's joining half: this browser requests a face's fleet, then lands the answer into an admit.
 export {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,

@@ -1,7 +1,7 @@
 /**
- * shared-holder-core — THE HOUSE BEHIND THE LOCK: one house per (face, persona root), a port per tab.
+ * shared-holder-core — THE HOUSE BEHIND THE LOCK: one house per SharedWorker name, a port per tab.
  *
- * The Web Lock (vessel-lock.ts) refuses a second holder over one store. This core IS the one holder: it runs
+ * The house Web Lock refuses a second holder for the same house. This core runs inside one named house holder: it runs
  * inside a module SharedWorker (shared-holder.worker.ts) and takes the store's lock for its own life. A connecting
  * port receives a greeting with a nonce and nothing else: it answers no ask until its tab admits a session.
  *
@@ -19,7 +19,7 @@
  * the presented object leaves that proof unchanged. Until the gate clears, nothing flows to a tab: the claimant hears its island's
  * boot handshake alone, every other port hears nothing, and the house Repo withholds its frames from the tab.
  *
- * Each house holds its own island, Repo, ports, owner, pending requests and camera leases. An island answer reaches
+ * The named house holds its island, Repo, ports, owner, pending requests and camera leases. An island answer reaches
  * the ports of its own house alone. A sealing ask (`custody:write`) goes to a tab of that house that announced it can
  * seal (`session:sealer`), since the key rests in the tab; with none ready the ask waits, named `seal-awaits-session`,
  * and lands when one announces. A house ends when its last session closes, its gate refuses, or its island faults:
@@ -109,7 +109,6 @@ export interface HolderLock {
 }
 
 /** The holder's refusal where its engine cannot start a house's island: the tab takes its dedicated-worker floor. */
-export const HOLDER_UNAVAILABLE_NO_WORKER = "holder-unavailable: no nested Worker in this engine";
 
 /** A port as the holder sees it — the two members `MessagePort` and a fake alike carry. */
 export interface HolderPort {
@@ -120,6 +119,7 @@ export interface HolderPort {
 
 export interface SharedHolderCoreOptions {
   readonly lockName:    string;
+  readonly expectedHouseName?: string;
   readonly locks:       LockHost | null;
   /** Stand the daemon island of one face house; `edgeDigest` names the edge the first session presented. */
   readonly spawnIsland: (personaGroup: string, personaRoot: string, edgeDigest: string) => HolderIsland;
@@ -412,6 +412,12 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     });
     if (!reading.ok) { refuse(port, reading.reason, msg.type); return; }
     const root = edge.personaRootDid;
+    if (opts.expectedHouseName) {
+      const bytes = new TextEncoder().encode(`${group}|${root}`);
+      const digestBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      const named = `lares:house:${Array.from(digestBytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+      if (named !== opts.expectedHouseName) { refuse(port, "wrong-house", msg.type); return; }
+    }
     const digest = deviceEdgeDigest(edge);
     // The house counts this admission before it waits on the Repo, so it cannot end under it; one that ended while
     // this session waited stands again fresh, and no port joins a house that has ended.

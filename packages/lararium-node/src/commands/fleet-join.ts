@@ -57,7 +57,7 @@ import { standingFaceScopes } from "../face-root-holdings.js";
 import { FaceProvisional, refuseWhileProvisional } from "../face-provisional.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
-  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
+  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, listPendingFleetJoinGroups, landFaceAddressSecret, mintFaceAddressSecret, noteIssuedFaceKeys, readFaceAddressSecret,
   readFaceJoinRecord, readPendingFleetJoin,
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -66,15 +66,15 @@ import { standFaceAtom } from "../face-atom-store.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
+import { resolveFace, FaceNotNamed } from "../face-selector.js";
 
-/** The face a join names where its caller names none: the founding face. */
-export const FLEET_JOIN_DEFAULT_FACE = 0;
-
-/** The face index a caller named, read whole: a non-negative integer, or a refusal by name. */
-function faceIndex(face: number | undefined): number {
-  const index = face ?? FLEET_JOIN_DEFAULT_FACE;
-  if (!Number.isSafeInteger(index) || index < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
-  return index;
+/** The face index a caller named, read whole (a non-negative integer, or a refusal by name); an unnamed face resolves as every command's does: the worn face, else the sole face, else a refusal that lists them. Never a silent `h0`. */
+async function faceIndex(face: number | undefined): Promise<number> {
+  if (face === undefined) {
+    try { return await resolveFace(); } catch (e) { if (e instanceof FaceNotNamed) throw new FleetJoinRefused("face-malformed", e.message); throw e; }
+  }
+  if (!Number.isSafeInteger(face) || face < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
+  return face;
 }
 
 /** A fleet join refused by name: the mesh readers' refusal, or this door's own. */
@@ -166,11 +166,11 @@ async function householdNamed<T>(work: () => Promise<T>): Promise<T> {
 
 /**
  * The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. `face` names
- * the persona index the join serves (`--face`, default the founding face); the index stays local to this vessel and
+ * the persona index the join serves (`--face`; unnamed, the worn face, else the sole face); the index stays local to this vessel and
  * never rides the offer, which names the face by its PersonaGroup and root key.
  */
 export async function runFleetJoinOffer(opts: { readonly sealHome: string; readonly face?: number }): Promise<FleetJoinOffer> {
-  const face = faceIndex(opts.face);
+  const face = await faceIndex(opts.face);
   const personaGroup = await facePersonaGroup(face);
   const rootKey = await heldRootKey(face);
   // A restored root may read and serve this face, but cannot add a vessel to its authority: refuse before the offer mints
@@ -200,7 +200,7 @@ export interface FleetJoinAnswerOptions {
 
 /** The root holder's answer to ONE request, read against the offer rebuilt over today's scopes. */
 export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<FleetJoinAnswer> {
-  const face = faceIndex(opts.face);
+  const face = await faceIndex(opts.face);
   const personaGroup = await facePersonaGroup(face);
   const rootKey = await heldRootKey(face);
   const nonce = typeof opts.request === "object" && opts.request !== null ? (opts.request as { nonce?: unknown }).nonce : undefined;
@@ -276,11 +276,11 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
 export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Promise<FleetJoinRequest> {
   const offer = readFleetJoinOffer(opts.offer);
   if (isRefusal(offer)) throw new FleetJoinRefused(offer.refusal, "the offer does not read.");
-  const pending = await readPendingFleetJoin();
+  const pending = await readPendingFleetJoin(offer.personaGroup);
   if (pending !== null) {
     const kept = readFleetJoinRequest(pending.request, offer);
     if (!isRefusal(kept)) return kept;
-    throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
+    throw new FleetJoinRefused("join-pending", "another fleet join stands pending for this face; land its answer, or abandon it (`lares fleet join abandon`).");
   }
   const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
@@ -300,16 +300,26 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
       sign: (image) => signHex(image, seed),
     });
     if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
-    await keepPendingFleetJoin({ request, offer, sealSecret: hex(seal.secret) });
+    await keepPendingFleetJoin(offer.personaGroup, { request, offer, sealSecret: hex(seal.secret) });
     return request;
   } finally { seed.fill(0); seal.secret.fill(0); }
 }
 
-/** Abandon the join pending here; answers whether one stood. Its face-scoped keys stay at rest. */
-export async function runFleetJoinAbandon(): Promise<boolean> {
-  const pending = await readPendingFleetJoin();
+/**
+ * Abandon the join pending for one face; answers whether one stood. Its face-scoped keys stay at rest. With no face
+ * named the vessel's one pending join goes; with several pending it refuses `face-not-named`, never the first one.
+ */
+export async function runFleetJoinAbandon(opts: { readonly personaGroup?: string } = {}): Promise<boolean> {
+  let group = opts.personaGroup;
+  if (group === undefined) {
+    const pendingGroups = await listPendingFleetJoinGroups();
+    if (pendingGroups.length > 1) throw new FleetJoinRefused("face-not-named", "joins stand pending for several faces; name the face to abandon.");
+    group = pendingGroups[0];
+    if (group === undefined) return false;
+  }
+  const pending = await readPendingFleetJoin(group);
   const nonce = (pending?.request as { nonce?: unknown } | undefined)?.nonce;
-  return typeof nonce === "string" ? clearPendingFleetJoin(nonce) : false;
+  return typeof nonce === "string" ? clearPendingFleetJoin(group, nonce) : false;
 }
 
 /**
@@ -318,7 +328,9 @@ export async function runFleetJoinAbandon(): Promise<boolean> {
  * answer again changes nothing it already landed.
  */
 export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly answer: unknown }): Promise<FleetJoinAnswer> {
-  const pending = await readPendingFleetJoin();
+  // The answer names its face; the kept offer for THAT face is read, and the answer verifies against it below.
+  const answeredGroup = (opts.answer as { personaGroup?: unknown } | null)?.personaGroup;
+  const pending = typeof answeredGroup === "string" ? await readPendingFleetJoin(answeredGroup) : null;
   if (pending === null) throw new FleetJoinRefused("join-absent", "no fleet join stands pending here; request one first (`lares fleet join request`).");
   const offer = readFleetJoinOffer(pending.offer);
   if (isRefusal(offer)) throw new FleetJoinRefused(offer.refusal, "the kept offer does not read.");
@@ -381,7 +393,7 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });
-  await clearPendingFleetJoin(request.nonce);
+  await clearPendingFleetJoin(offer.personaGroup, request.nonce);
   return answer;
 }
 

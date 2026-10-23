@@ -29,7 +29,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, idbGet, openVesselIdb,
+  FLEET_JOIN_STORE, idbGet, idbKeys, openVesselIdb,
 } from "./browser-vessel-identity.js";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
 import { browserFaceAtom } from "./browser-face-atom.js";
@@ -42,7 +42,9 @@ export class BrowserFleetJoinRefused extends Error {
   }
 }
 
-const PENDING = "fleet-join-pending";
+/** A face's pending join rests in its own row, so two faces join at once and one never answers for another. */
+const PENDING_PREFIX = "fleet-join-pending/";
+const pendingRow = (personaGroup: string): string => `${PENDING_PREFIX}${personaGroup}`;
 const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object" && v !== null && "refusal" in v;
 const faceKeyRow = (scope: FaceScope): string => `vessel-face-key/${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
@@ -104,8 +106,16 @@ export function browserVesselFaceKeyCustody(idbName = "lares:vessel"): VesselFac
   };
 }
 
-async function readPending(idbName: string): Promise<PendingJoin | null> {
-  return (await readKeystoreRow(idbName, PENDING) as PendingJoin | undefined) ?? null;
+async function readPending(idbName: string, personaGroup: string): Promise<PendingJoin | null> {
+  return (await readKeystoreRow(idbName, pendingRow(personaGroup)) as PendingJoin | undefined) ?? null;
+}
+
+/** Every face with a join pending in this browser, from the keystore's row names (clear or sealed). */
+async function pendingGroups(idbName: string): Promise<string[]> {
+  const db = await openVesselIdb(idbName);
+  try {
+    return (await idbKeys(db, "keystore")).map((k) => /^(?:sealed\/)?fleet-join-pending\/(.+)$/.exec(k)?.[1]).filter((g): g is string => g !== undefined).sort();
+  } finally { db.close(); }
 }
 
 /**
@@ -116,11 +126,11 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
   const idbName = opts.idbName ?? "lares:vessel";
   const offer = readFleetJoinOffer(opts.offer);
   if (isRefusal(offer)) throw new BrowserFleetJoinRefused(offer.refusal, "the offer does not read.");
-  const pending = await readPending(idbName);
+  const pending = await readPending(idbName, offer.personaGroup);
   if (pending !== null) {
     const kept = readFleetJoinRequest(pending.request, offer);
     if (!isRefusal(kept)) return kept;
-    throw new BrowserFleetJoinRefused("join-pending", "another fleet join stands pending in this browser; land its answer, or abandon it.");
+    throw new BrowserFleetJoinRefused("join-pending", "another fleet join stands pending for this face in this browser; land its answer, or abandon it.");
   }
   const atom = await browserFaceAtom(idbName, offer.personaGroup);
   const seal = fleetJoinSealPair();
@@ -141,26 +151,33 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };
     await withCustodyRows(idbName, async (rows) => {
-      if (await rows.read(PENDING) !== undefined) throw new BrowserFleetJoinRefused("join-pending", "another fleet join came to stand pending in this browser meanwhile.");
-      await rows.write(PENDING, kept);
+      if (await rows.read(pendingRow(offer.personaGroup)) !== undefined) throw new BrowserFleetJoinRefused("join-pending", "another fleet join for this face came to stand pending in this browser meanwhile.");
+      await rows.write(pendingRow(offer.personaGroup), kept);
     });
     return request;
   } finally { seal.secret.fill(0); }
 }
 
 /** Clear the pending row inside one transaction, when `keep` reads it as the one to clear; answers whether it went. */
-function clearPendingWhere(idbName: string, clear: (p: PendingJoin) => boolean): Promise<boolean> {
+function clearPendingWhere(idbName: string, personaGroup: string, clear: (p: PendingJoin) => boolean): Promise<boolean> {
   return withCustodyRows(idbName, async (rows) => {
-    const p = await rows.read(PENDING) as PendingJoin | undefined;
+    const p = await rows.read(pendingRow(personaGroup)) as PendingJoin | undefined;
     if (!p || !clear(p)) return false;
-    await rows.delete(PENDING);
+    await rows.delete(pendingRow(personaGroup));
     return true;
   });
 }
 
 /** Abandon the join pending here; answers whether one stood. Its face-scoped keys stay at rest. */
-export async function browserFleetJoinAbandon(idbName = "lares:vessel"): Promise<boolean> {
-  return clearPendingWhere(idbName, () => true);
+export async function browserFleetJoinAbandon(idbName = "lares:vessel", personaGroup?: string): Promise<boolean> {
+  let group = personaGroup;
+  if (group === undefined) {
+    const standing = await pendingGroups(idbName);
+    if (standing.length > 1) throw new BrowserFleetJoinRefused("face-not-named", "joins stand pending for several faces; name the face to abandon.");
+    group = standing[0];
+    if (group === undefined) return false;
+  }
+  return clearPendingWhere(idbName, group, () => true);
 }
 
 /**
@@ -171,7 +188,9 @@ export async function browserFleetJoinAbandon(idbName = "lares:vessel"): Promise
  */
 export async function browserFleetJoinLand(opts: { readonly answer: unknown; readonly idbName?: string }): Promise<{ readonly answer: FleetJoinAnswer; readonly admit: CarriedAdmitPayload }> {
   const idbName = opts.idbName ?? "lares:vessel";
-  const pending = await readPending(idbName);
+  // The answer names its face; the kept offer for THAT face is read, and the answer verifies against it below.
+  const answeredGroup = (opts.answer as { personaGroup?: unknown } | null)?.personaGroup;
+  const pending = typeof answeredGroup === "string" ? await readPending(idbName, answeredGroup) : null;
   if (pending === null) throw new BrowserFleetJoinRefused("join-absent", "no fleet join stands pending in this browser; carry an offer here first.");
   const offer = readFleetJoinOffer(pending.offer);
   if (isRefusal(offer)) throw new BrowserFleetJoinRefused(offer.refusal, "the kept offer does not read.");
@@ -190,7 +209,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
   const recordRow = `record:${answer.personaGroup}`;
   try {
     await withCustodyRows(idbName, async (rows) => {
-      const p = await rows.read(PENDING) as PendingJoin | undefined;
+      const p = await rows.read(pendingRow(offer.personaGroup)) as PendingJoin | undefined;
       if (p?.request?.nonce !== request.nonce || p.request.sealKey !== request.sealKey) {
         throw new BrowserFleetJoinRefused("join-absent", "no join pending here matches the request this answer lands.");
       }
@@ -210,7 +229,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
         os.put({ charter: answer.charter, admit: answer.admit, carriage: answer.carriage } satisfies KeptFleetJoinDial, dialRow(answer.personaGroup));
         done(undefined);
       }));
-      await rows.write(PENDING, { ...p, landed: true } satisfies PendingJoin);
+      await rows.write(pendingRow(offer.personaGroup), { ...p, landed: true } satisfies PendingJoin);
     });
   } finally { addressSecret.fill(0); }
   return { answer, admit };
@@ -218,6 +237,9 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
 
 /** The boot on a landed join stands: the pending join leaves. Answers whether a landed join stood; a join whose
  *  answer has not landed stays pending, whichever tab kept it. */
-export async function browserFleetJoinSettle(idbName = "lares:vessel"): Promise<boolean> {
-  return clearPendingWhere(idbName, (p) => p.landed === true);
+export async function browserFleetJoinSettle(idbName = "lares:vessel", personaGroup?: string): Promise<boolean> {
+  const groups = personaGroup === undefined ? await pendingGroups(idbName) : [personaGroup];
+  let settled = false;
+  for (const group of groups) if (await clearPendingWhere(idbName, group, (p) => p.landed === true)) settled = true;
+  return settled;
 }

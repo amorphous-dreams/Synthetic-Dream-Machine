@@ -136,7 +136,8 @@ import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDoc
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
-import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
+import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
+import { readFace } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -204,6 +205,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A faceless island has no binding verdict to wait for.
   if (!daemonAuth?.deviceEdge || !daemonAuth.personaGroupId) { gateCleared = true; clearGate(); }
   void gateClear.catch(() => undefined);
+  const pendingSeatLedgerFinds = new Map<string, Promise<unknown>>();
   const dyadReader = (ctx: IslandContext): DyadReader | undefined => readDyadFromBoard
     ? async (fleetRootDid, deviceVerifyingKey) => {
       const ownKey = daemonAuth?.atom?.key ?? daemonAuth?.vesselVerifyingKey;
@@ -213,11 +215,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const url = edgeLedgerDocUrl(ownKey);
         const handle = (ctx.repo.handles as Record<string, DocHandle<LarDoc> | undefined>)[url.slice("automerge:".length)];
         seatLedger = handle?.isReady() ? handle.doc() : undefined;
-        if (!seatLedger) void ctx.repo.find<LarDoc>(url).catch(() => undefined);
+        if (!seatLedger && !pendingSeatLedgerFinds.has(url)) {
+          pendingSeatLedgerFinds.set(url, ctx.repo.find<LarDoc>(url).catch(() => undefined));
+        }
       }
       return boardDyadReader(
         ctx.repo, dyadLedger, restDyadLedger, ownKey,
         seatLedger, fleetRootDid.trim().toLowerCase().replace(/^0x/, ""),
+        readFace(daemonAuth?.personaKel?.chain)?.lineage ?? null,
       )(fleetRootDid, deviceVerifyingKey);
     }
     : dyadReading;
@@ -414,7 +419,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
   const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
-    readLeaseFrontier(composite, daemonAuth.personaGroupId);
+    // THE ONE DOOR: the current roster's signed advances, floored under the sealed anchor this daemon stands on.
+    readLeaseUnderFace(composite, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
@@ -992,6 +998,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
+          ...(daemonAuth.faceAnchor ? { faceAnchor: daemonAuth.faceAnchor } : {}),
           ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
           registerBags:          daemonAuth.atom ? daemonAuth.registerBags.filter(isVesselGround) : daemonAuth.registerBags,
           ledger:                daemonBagDocLedger(ctx.composite),

@@ -40,6 +40,7 @@ import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 let base: string;
 let priorLarRoot: string | undefined;
@@ -79,6 +80,7 @@ async function seatVessel(root: string): Promise<void> {
   await generateOrLoadVesselIdentity();
   await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
+  await seedFleet(0);
   const { keys } = await seatChairs([0, 1, 2]);
   const charter = heldCharter({ keys, threshold: 2 });
   const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });

@@ -18,7 +18,8 @@
 
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import type { LeafIdentity } from "@lararium/mesh";
-import { loadVesselSigningSeed, loadVesselVerifyingKey, loadVesselCard } from "./node-vessel-identity.js";
+import { loadVesselSigningSeed, loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { requirePlaceCardOfOwnSeed } from "./place-card.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadVeilArchive } from "./identity-anchors.js";
 import { faceAtomKeyFromSeed } from "@lararium/mesh";
@@ -51,7 +52,7 @@ export async function loadLeafIdentity(arm: "place" | "face" = "place", face?: {
   const [seed, peerPubKey, contactCard] = await Promise.all([
     loadVesselSigningSeed(),
     loadVesselVerifyingKey(),
-    loadVesselCard(),
+    requirePlaceCardOfOwnSeed(),
   ]);
   return { arm: "place", contactCard, peerPubKey, sign: ed25519SignerFromSeed(seed) };
 }

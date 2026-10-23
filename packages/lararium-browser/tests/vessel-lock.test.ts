@@ -30,6 +30,29 @@ describe("the vessel lock refuses a second holder, loud, naming the first", () =
     await again.release();
   });
 
+  test("RED: a house tab and a dedicated tab never open one store together; CONTROL: house tabs coexist and the dedicated tab opens once they leave", async () => {
+    const idbName = `lares:vessel:test:house:${Date.now()}`;
+    const house = "house-1";
+    // The shared holder takes the HOUSE-scoped lock, as the SharedWorker does.
+    let endHolder: () => void = () => {};
+    const holderLife = new Promise<void>((r) => { endHolder = r; });
+    const holderTook = new Promise<void>((resolve) => { void navigator.locks.request(`${vesselLockName(idbName)}:${house}`, () => { resolve(); return holderLife; }); });
+    await holderTook;
+    const clientId = ((await navigator.locks.query()).held ?? []).find((h) => h.name === `${vesselLockName(idbName)}:${house}`)!.clientId;
+    const tabA = await holdVesselLock(idbName, undefined, { attachToHolder: clientId, houseName: house });
+    const tabB = await holdVesselLock(idbName, undefined, { attachToHolder: clientId, houseName: house });
+    expect(tabA.attached && tabB.attached, "house tabs coexist").toBe(true);
+    await expect(holdVesselLock(idbName), "a dedicated tab refuses while a house tab stands").rejects.toThrow(/already held/);
+    await tabA.release();
+    await expect(holdVesselLock(idbName), "one house tab still stands").rejects.toThrow(/already held/);
+    await tabB.release();
+    const dedicated = await holdVesselLock(idbName);
+    expect(dedicated.held).toBe(true);
+    await expect(holdVesselLock(idbName, undefined, { attachToHolder: clientId, houseName: house }), "and a house tab refuses while a dedicated tab stands").rejects.toThrow(/dedicated-worker tab/);
+    await dedicated.release();
+    endHolder();
+  });
+
   test("two stores never collide — the lock keys on the store name", async () => {
     const a = await holdVesselLock("lares:vessel:test:a");
     const b = await holdVesselLock("lares:vessel:test:b");

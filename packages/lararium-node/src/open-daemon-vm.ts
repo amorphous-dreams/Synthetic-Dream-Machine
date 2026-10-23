@@ -19,10 +19,11 @@
  */
 
 import { daemonWorkingMirror } from "./bag-paths.js";
+import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { CROSSROADS_DOC_URI } from "@lararium/mesh";
 import { join }                                          from "path";
 import {
-  type Repo, type AutomergeUrl, type LarDoc,
+  type Repo, type AutomergeUrl, type LarDoc, type DocHandle,
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
@@ -115,8 +116,12 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     { tideline: "hearth-private", label: "@daemon", expectPresent: true },
   );
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
+  // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
+  // library's boot query can answer `unavailable` for a document its own handle table already holds ready, and a held
+  // plane never needs the hearth-private tideline to believe it.
+  const heldPersona = personaUrl ? repo.handles[parseAutomergeUrl(personaUrl as AutomergeUrl).documentId] : undefined;
   const personaRead = personaUrl
-    ? (personaLate
+    ? (heldPersona?.isReady() ? heldPersona as DocHandle<LarDoc> : personaLate
         ? await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "mesh-shared", label: "@persona", scale: "vessel" })
         : await resolveBootDoc<LarDoc>(repo, personaUrl as AutomergeUrl, { tideline: "hearth-private", label: "@persona" }))
     : undefined;

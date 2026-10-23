@@ -18,7 +18,7 @@ import { isIslandToVesselMsg, isVesselToIslandMsg, type EdgeStanding } from "@la
 import { vesselDyadAsker } from "../src/sovereign-island-model.js";
 import { answerDyadAsk, nodeWorkerHandle, setDyadDoor } from "../src/worker-handle.js";
 
-const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned"];
+const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned", "unknown"];
 
 function portPair() {
   const island = new EventEmitter();
@@ -145,7 +145,7 @@ describe("the dyad door", () => {
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "open-browser-vessel.ts"), "utf8");
-    const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "browser-daemon-island.ts"), "utf8");
+    const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "daemon-island-start.ts"), "utf8");
     const behavior = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const boardReader = readFileSync(join(__dirname, "..", "..", "lararium-keyhive", "src", "board-dyad-reader.ts"), "utf8");
 
@@ -166,7 +166,7 @@ describe("the dyad door", () => {
     expect(src).toMatch(/read\.handle\.on\("change", \(\) => \{\n\s*fleetShadows = null;\n\s*fleetMoves \+= 1;/);
     expect(src).toMatch(/if \(startedAt !== fleetMoves\) return;/);
     expect(src).toMatch(/aside: \(peerId\) => siblingAside\(peerId\)/);
-    expect(src).toMatch(/deviceAside: \(vesselKey\) => !fleetShadows \|\| fleetShadows\.readings\.get\(deviceEdgeId\(fleetShadows\.root, vesselKey\)\)\?\.stands === true/);
+    expect(src).toMatch(/deviceAside: \(vesselKey\) => !fleetShadows \|\| fleetShadows\.frontier\.status !== "known" \|\| fleetShadows\.readings\.get\(deviceEdgeId\(fleetShadows\.root, vesselKey\)\)\?\.stands === true/);
     const boot = src.indexOf("daemon = await openBrowserDaemonVm(");
     expect(read).toBeGreaterThan(0);
     expect(read).toBeLessThan(boot);

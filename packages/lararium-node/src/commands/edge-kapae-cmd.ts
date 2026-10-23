@@ -32,21 +32,23 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads,
+  signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
   realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
   faceAtomKeyFromSeed,
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
-  listPersonaRoots, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
+  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 import { wornNexusLeaf } from "../nexus-leaf.js";
+import { fleetLineageForVessel } from "../fleet-lineage.js";
 
+import { resolveFace } from "../face-selector.js";
 export class EdgeKapaeError extends Error {}
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -149,7 +151,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     throw new EdgeKapaeError("the quorum hand acts on a realm's edge board — name the realm. A fleet's edge answers to its root alone.");
   }
 
-  const faceIndex = realm !== undefined ? (await loadActivePersonaIndex()) ?? 0 : opts.handleIndex ?? (await listPersonaRoots())[0];
+  const faceIndex = realm !== undefined ? await resolveFace() : await resolveFace(opts.handleIndex);
   const anchors = faceIndex === undefined ? null : await loadIdentityAnchors(faceIndex);
   const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
   if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");
@@ -203,7 +205,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (held.length === 0) {
       throw new EdgeKapaeError("no persona root held on this vessel — an act carries a signature, and this vessel signs with none.");
     }
-    const handleIndex = opts.handleIndex ?? held[0]!;
+    const handleIndex = faceIndex;   // the face the command resolved above (named, worn or sole); never the first root held
     if (!held.includes(handleIndex)) {
       throw new EdgeKapaeError(`persona root ${handleIndex} is not held here (held: ${held.join(", ")}).`);
     }
@@ -254,7 +256,18 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     }
 
     const act = await signEdgeKapae({ edgeId, raised: opts.raised, hand, parents, ...(epochCid === undefined ? {} : { epochCid }) }, signers);
-    before.handle.change((d) => writeEdgeKapae(d, act));
+    // A FLEET RAISE REGISTERS INTO THE ROOT'S NEXT FRONTIER (K17). The root signs the successor of its verified head
+    // counting every raise it issued, this one included, and the act and the frontier land together. A fleet whose board
+    // carries no signed genesis was never founded: the raise refuses before any byte lands.
+    let registered: Awaited<ReturnType<typeof nextFleetFrontier>> = null;
+    if (realm === undefined && hand === "holder" && opts.raised) {
+      const lineage = await fleetLineageForVessel(repo, scope);
+      if (!lineage) throw new EdgeKapaeError("this vessel reads no verified persona-KEL lineage for that fleet root — a raise registers into the root's signed frontier, and none can sign without it.");
+      registered = await nextFleetFrontier({ fleetRoot: scope, board: before.handle.doc(), lineage,
+        counted: [...fleetRaiseCids(before.counted.acts), act.actCid], signer: { key: scope, sign: signers[0]!.sign } });
+      if (!registered) throw new EdgeKapaeError("this fleet's board carries no verified signed frontier to extend — found the face first; nothing was written.");
+    }
+    before.handle.change((d) => { writeEdgeKapae(d, act); if (registered) landFleetFrontier(d, registered); });
     // AN ACT STANDS THE REALM UNDER ITS NEXUS, once it landed: the ledger keeps the first act's word
     // (kapae#/edge-hands), and an act refused before its write pins nothing.
     if (realm !== undefined) await noteVesselRealm(repo, vesselKey, realm, realmNexus!);

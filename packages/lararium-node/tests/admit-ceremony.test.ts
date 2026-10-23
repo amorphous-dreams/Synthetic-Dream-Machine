@@ -19,9 +19,10 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
+import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, fleetEdgeBoardDocUrl, edgeFrontierRecords, frontierSnapshots, readFleetFrontier, makeHandLineage, FLEET_HAND } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
 
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
  *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
  *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
@@ -73,7 +74,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     // ── ADMIT. The founder's PersonaGroup ROOT signs the joinee's edge. The joinee is not present; it
     //    supplies only its PUBLIC key. Nothing secret crosses.
     const payload = await runDeviceAdmitEdge({
-      signerSeed:         FOUNDER_SEED,
+      signerSeed:         FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED),
       joineeVerifyingKey: joineeKey,
       personaKelPrefix:   founder.f.personaKelPrefix,
       personaKelChain:    await founderPersonaKelChain(founder),
@@ -84,6 +85,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       islandDocUrl: null,
       hearthDaemonUrl: founder.f.daemonUrl,
       personaUrl:   founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     // ── CARRY. The payload leaves as bytes and arrives as bytes. This IS the channel — a paste, a QR, a
@@ -99,6 +101,20 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       payload:              carried,
       nexusPubkey:          await pubOf(JOINEE_SEED),
     });
+
+    // RED: an older bundle with no frontier refuses before seating; CONTROL: the carried
+    // founder genesis reads known from this joinee's local board with no live sync.
+    const root = await pubOf(FOUNDER_SEED);
+    const landed = await materializeSharedLarDoc(joineeRepo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+    expect(edgeFrontierRecords(landed.doc(), root, FLEET_HAND)).toHaveLength(1);
+    expect(frontierSnapshots(landed.doc()).size).toBe(1);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [root], threshold: 1 }])!;
+    expect(readFleetFrontier({ fleetRoot: root, board: landed.doc(), lineage, seenRaises: [], pinned: null }).status).toBe("known");
+    expect(readFleetFrontier({ fleetRoot: root, board: undefined, lineage, seenRaises: [], pinned: null }).status).toBe("unknown");
+    const refusedRepo = new Repo({ sharePolicy: async () => true });
+    await expect(runApplyAdmitPayload({ repo: refusedRepo, daemonHandle: seedDaemonDoc(refusedRepo), atomSeed: JOINEE_ATOM,
+      vesselDisplayName: "Ichi", payload: { ...carried, edgeFrontier: undefined } as never,
+      nexusPubkey: await pubOf(JOINEE_SEED) })).rejects.toThrow("lacks edgeFrontier");
 
     // ── THE ADMIT HANDS OUT THE JOINEE'S ARCHIVE, AND A SECOND ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The
     //    archive behind the card: it restores the joinee's own individual. Handed back in as `archiveBytes` with a
@@ -140,7 +156,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     const founder = await found();
     const joineeKey = await pubOf(JOINEE_ATOM);
     const base = await runDeviceAdmitEdge({
-      signerSeed:             FOUNDER_SEED,
+      signerSeed:             FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED),
       joineeVerifyingKey:     joineeKey,
       personaKelPrefix:       founder.f.personaKelPrefix,
       personaKelChain:        await founderPersonaKelChain(founder),
@@ -148,6 +164,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       personaGroupId:   founder.f.personaGroupId,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const capEvents = ["bWVtYmVyc2hpcC1vcC0x", "bWVtYmVyc2hpcC1vcC0y"];   // base64 blobs
     const payload = { ...base, capEvents };
@@ -173,7 +190,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       const founder = await found();
       const joineeKey = await pubOf(JOINEE_ATOM);
       const payload = await runDeviceAdmitEdge({
-        signerSeed:         FOUNDER_SEED,
+        signerSeed:         FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED),
         joineeVerifyingKey: joineeKey,
         personaKelPrefix:   founder.f.personaKelPrefix,
         personaKelChain:    await founderPersonaKelChain(founder),
@@ -181,6 +198,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
         personaGroupId:   founder.f.personaGroupId,
         meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
         syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+        personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
       } as Parameters<typeof runDeviceAdmitEdge>[0]);
       return payload;
     };

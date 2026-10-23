@@ -27,6 +27,7 @@ import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -40,6 +41,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
   await generateOrLoadPersonaGroupRoot(1);
   await seedFaceAtom(1);
   await ownedStore(larDataDir(), async (repo) => {
