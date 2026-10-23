@@ -32,6 +32,27 @@ def main(argv=None):
             p.add_argument('--slack-fraction',type=float,default=.20,
                            help='fraction of survivors reserved for novel valid phenotypes')
         if name=='epoch-loop':p.add_argument('--passes',type=int,default=5)
+    p=commands.add_parser('wide-epoch',help='Resumable staged constructive epochs')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--passes',type=int,default=3)
+    p.add_argument('--candidates',type=int,default=9)
+    p.add_argument('--exact-budget',type=int,default=6)
+    p.add_argument('--detail-budget',type=int,default=3)
+    p.add_argument('--topology-locus',action='append',default=[])
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--location-stack',type=Path)
+    p.add_argument('--identity-ledger',type=Path)
+    p=commands.add_parser('inspect-dem',help='Inspect an actual digest-checked DEM and its datum')
+    p.add_argument('--location-stack',type=Path,required=True)
+    p.add_argument('--source-id',required=True)
+    p=commands.add_parser('register-control',help='Fit held-out rigid survey control')
+    p.add_argument('--location-stack',type=Path,required=True)
+    p.add_argument('--source-frame',required=True)
+    p.add_argument('--target-frame',required=True)
+    p.add_argument('--source-id',required=True)
+    p.add_argument('--tolerance',type=float,required=True)
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('pet-name',help='Bind an observed entity or a nameless location set')
     p.add_argument('--witness',type=Path,required=True)
     p.add_argument('--ledger',type=Path,required=True)
@@ -48,6 +69,34 @@ def main(argv=None):
     group.add_argument('--branch')
     p.add_argument('--witness',type=Path,help='required for branch release')
     args=parser.parse_args(argv)
+    if args.command=='inspect-dem':
+        from .location_stack import LocationStack
+        from .geospatial import inspect_dem
+        result=inspect_dem(LocationStack.load(args.location_stack),args.source_id).to_dict()
+        print(json.dumps(result));return result
+    if args.command=='register-control':
+        from .location_stack import LocationStack
+        from .registration3d import register_control_csv
+        stack=LocationStack.load(args.location_stack)
+        fit=register_control_csv(stack,args.source_frame,args.target_frame,args.source_id,
+                                 tolerance_m=args.tolerance)
+        _save(args.out,fit.to_dict())
+        print(json.dumps({'state':fit.state,'holdout_rms':fit.holdout_rms}))
+        return fit
+    if args.command=='wide-epoch':
+        from .epochs import run_project_epochs
+        from .location_stack import LocationStack
+        project=Project.load(args.project)
+        ledger=PetNameLedger.load(args.identity_ledger) if args.identity_ledger else None
+        location=LocationStack.load(args.location_stack) if args.location_stack else None
+        result=run_project_epochs(project,args.out,passes=args.passes,
+                       candidates=args.candidates,exact_budget=args.exact_budget,
+                       detail_budget=args.detail_budget,seed=args.seed,
+                       topology_loci=args.topology_locus,ledger=ledger,
+                       location_stack=location)
+        print(json.dumps({'passes':len(result['passes']),
+                          'evidence_state':result['evidence_state']}))
+        return result
     if args.command=='pet-name':
         witness=RelationWitness.load(args.witness)
         ledger=PetNameLedger.load(args.ledger) if args.ledger.exists() else PetNameLedger(location=witness.location)

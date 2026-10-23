@@ -95,3 +95,51 @@ described in that research remain future integrations.
 - Novelty search and quality-diversity archives as protection for useful surprises.
 - Otakiage, a culturally distinct ritual of respectful release, as a metaphor for
   retiring a soft computational hold, not erasing a previous creative contribution.
+
+## Deep research / wide-epoch adapters
+
+The [research register](docs/research/register.md) preserves earlier experiments
+as archival testimony, with live contracts for
+[measured evidence](docs/research/measurement-contract.md),
+[constructive grammar](docs/research/growth-contract.md), and
+[staged epochs](docs/research/epoch-contract.md).
+
+Geospatial reading requires the optional dependencies: `pip install -e '.[geo]'`.
+`inspect_dem` reads real GeoTIFF metadata and validity masks, while `sample_dem`
+queries pixels in their declared projected-meter coordinate frame. The horizontal
+conversion refuses an unknown/changed vertical datum. A declared height datum
+does not itself constitute a survey verification.
+
+`register_control_csv` reads digest-checked, separated training/holdout survey
+correspondences and produces a measured 3D rigid-transform receipt. Manually
+supplied landmark pairs remain provisional. This does not calibrate a 3D-to-image
+projection from one picture. `load_xyz` and `sample_mesh` read actual XYZ and
+OBJ evidence; their sampled nearest-neighbor scores cannot replace BRep audits.
+
+`grow_program` offers an optional executable rule grammar for positive and
+negative CAD volumes, conditional nameless branches and parametric dimensions.
+`apply_rewrite` produces a *proposed* location-graph revision and content-hash
+receipt; it cannot change witnessed facts or substitute for CAD validation.
+
+A resumable, matched-method search: 
+
+```bash
+PYTHONPATH=. python -m projection_loom validate --project examples/grammar/project.json --out out/grammar-check
+PYTHONPATH=. python -m projection_loom wide-epoch --project examples/grammar/project.json \
+  --out out/grammar-epochs --passes 3 --candidates 9 --exact-budget 6 \
+  --detail-budget 3 --topology-locus branch --seed 41
+```
+
+Three emitters (Sobol, local and topology switch) propose bounded genomes. A
+cheap preview schedules CAD attention; full BRep and void audits admit candidates
+for objective scoring. Unavailable metrics may not masquerade as zero. The
+evidence status `synthetic`, `provisional` or `verified` follows its actual
+registration rather than the visual beauty of the result. All lineage and
+checkpoint files preserve their input/code fingerprints and are refused on
+incompatible re-entry.
+
+**Not implemented:** complete SfM/bundle adjustment, metric 3D reconstruction
+from a single drawing, learned grammar synthesis, multiwriter ledger merge,
+vertical-datum conversion, automatic IFC/OpenUSD/GIS scene import, exact BRep
+hidden-line export, or a Bayesian scene posterior. These remain research
+interfaces, not hidden compatibility promises.
