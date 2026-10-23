@@ -21,7 +21,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
-import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
+import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   LARARIUM_DOC_URI, LARES_DOC_URI, emptyLarDoc, foldRealmBags, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   realmBagRegistrationCounts, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, ed25519SignerFromSeed,
@@ -93,4 +93,21 @@ export async function standKahuCanon(opts: {
   const standing = await foldRealmBags(realm.doc(), board.nexus);
   const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
   return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}) };
+}
+
+/**
+ * THE CANON WAITS FOR THE PROOF. The keel mounts the Kahu canon during assembly, before the worn face's proof runs (the proof needs the
+ * KEL board and the daemon doc that stand later), so the mount itself cannot wait. Everything that could TOUCH the mounted documents
+ * does: no verb is wired until the daemon opens, no mirror writes until then, and a peer's sync of a canon document is denied here until
+ * the proof passes, for a vessel that owes a face proof (sealed custody names a face). A vessel with no face owes none.
+ */
+export function canonHeldUntilProof(input: {
+  readonly canon: KahuCanonDocs; readonly owesFaceProof: boolean; readonly faceProven: boolean; readonly documentId: string | undefined;
+}): boolean {
+  if (!input.owesFaceProof || input.faceProven || input.documentId === undefined) return false;
+  for (const url of [input.canon.lares, input.canon.lararium]) {
+    if (!url) continue;
+    try { if (String(interpretAsDocumentId(url as AutomergeUrl)) === input.documentId) return true; } catch { /* a malformed url names nothing */ }
+  }
+  return false;
 }

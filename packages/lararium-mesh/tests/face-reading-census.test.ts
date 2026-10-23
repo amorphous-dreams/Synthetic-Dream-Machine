@@ -113,6 +113,22 @@ describe("the face-reading census", () => {
       "lararium-node/src/commands/fleet-join.ts": "the landing guard reads the pinned group only to REFUSE a second join; it decides no authority",
       "lararium-node/src/open-node-vessel.ts": "the anchor-missing guard reads the daemon group only to REFUSE a boot",
     },
+    personaPlanes: {
+      "lararium-mesh/src/open-vessel-core.ts": "the field's type on the bootstrap record",
+      "lararium-node/src/boot-face-planes.ts": "the one enumerator of the bootstrap's plane entries",
+      "lararium-node/src/face-fleet-view.ts": "the bridge's exclusion reads it, and a bootstrap list can only ADD exclusions (the catalog's foreign planes ride beside it)",
+      "lararium-node/src/open-node-vessel.ts": "each entry is read only to PROVE it (provenPlanes) before registration; the selves plane, bag list and registration read the proven map",
+      "lararium-browser/src/open-browser-vessel.ts": "each entry is read only to PROVE it before registration; the bag list and the mount read the proven map",
+    },
+    bootFacePlanes: {
+      "lararium-node/src/boot-face-planes.ts": "the definition",
+      "lararium-node/src/face-fleet-view.ts": "facet and exclusion reads; the composer feeds it nothing until the worn face proved",
+      "lararium-node/src/open-node-vessel.ts": "reads the worn group's urls for the proof, which checks each against the signed plane acts",
+    },
+    readPersonaPlanes: {
+      "lararium-mesh/src/persona-planes.ts": "the definition",
+      "lararium-node/src/boot-face-planes.ts": "the enumerator calls it",
+    },
     headOpKey: {
       "lararium-mesh/src/persona-kel.ts": "the KEL reader's own definition",
       "lararium-mesh/src/face-anchor.ts": "the rotation re-anchor verifies the chain head with every quorum",

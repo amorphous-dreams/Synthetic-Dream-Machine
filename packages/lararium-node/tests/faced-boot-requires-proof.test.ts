@@ -70,4 +70,12 @@ describe("a faced boot proves its face", () => {
     expect(node).toContain("fleets: personaGroupId && wornFaceProved ? [{");
     expect(node).not.toContain("const otherFaces = new Set(bootstrap.personaPlanes");
   });
+
+  test("RED: the selves plane reads the proven planes, never the bootstrap's list; CONTROL: the proof loops still read each entry to prove it", () => {
+    const node = read("lararium-node/src/open-node-vessel.ts");
+    expect(node).toContain("repoPersonaSelvesPlane(repo, [...provenPlanes].map(");
+    expect(node).not.toMatch(/repoPersonaSelvesPlane\(repo, bootstrap\.personaPlanes/);
+    expect(node).toContain("provenPlanes.set(plane.personaGroupId, plane.url)");
+    expect(node).toContain("provenPlanes.set(personaGroupId, bootstrap.personaUrl)");
+  });
 });

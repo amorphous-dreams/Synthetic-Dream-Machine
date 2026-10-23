@@ -84,7 +84,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, type KahuCanonDocs }          from "./kahu-realm.js";
+import { standKahuCanon, canonHeldUntilProof, type KahuCanonDocs } from "./kahu-realm.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -743,6 +743,9 @@ async function prepareNodeBootOn(
   // The worn face's persona/identities/circles planes passed the face proof (set once in the daemon open): the gates, the same-operator
   // views and every other reader of the worn face's planes read nothing until it is true.
   let wornFaceProven = false;
+  // The persona planes a face proof vouched for, by group: the worn face's own, and each anchored face's whose held log names its url.
+  // Registration and every reader of a face's plane (the selves plane, the bag list) read THIS, never the bootstrap's list.
+  const provenPlanes = new Map<string, string>();
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
@@ -877,6 +880,8 @@ async function prepareNodeBootOn(
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
+      // THE KAHU CANON WAITS FOR THE FACE PROOF: a wire peer reads none of it until the worn face has proved (`canonHeldUntilProof`).
+      if (wsSocket && canonHeldUntilProof({ canon: kahuCanon, owesFaceProof: custodyGroup !== null, faceProven: wornFaceProven, documentId: documentId as string | undefined })) return false;
       // THE SELF-SLOT SPLIT — federatable-own vs private-own, keyed on the class the keyholder vouched
       // (selfSlotShareDecision holds the whole law + fail-closed default). A same-operator WS peer and
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
@@ -1926,8 +1931,7 @@ async function prepareNodeBootOn(
     // (never a global lookup; a not-yet-synced replica simply denies).
     const personaKelPrefix = bootMount?.personaKelPrefix ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
-    // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for. The worn face adds its own after its proof passes.
-    const provenPlanes = new Map<string, string>();
+    // THE PLANES A BOOT MAY REGISTER: only a plane a face proof vouched for (`provenPlanes`, declared with the boot's state above).
     let wornFaceProved = false;
     if (personaKelPrefix) {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
@@ -3179,8 +3183,8 @@ async function prepareNodeBootOn(
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     // EVERY carried face's own plane, each reached by the group that face's sealed anchors name: a name of one
     // face lands on that face's plane and on no other's.
-    personaSelves:   () => (personaSelves ??= bootstrap?.personaPlanes?.length
-      ? repoPersonaSelvesPlane(repo, bootstrap.personaPlanes, async () => {
+    personaSelves:   () => (personaSelves ??= provenPlanes.size > 0
+      ? repoPersonaSelvesPlane(repo, [...provenPlanes].map(([personaGroupId, url]) => ({ personaGroupId, url })), async () => {
           const faces: { handleIndex: number; personaGroupId: string }[] = [];
           for (const handleIndex of await listAnchoredPersonas()) {
             const anchors = await loadIdentityAnchors(handleIndex);
