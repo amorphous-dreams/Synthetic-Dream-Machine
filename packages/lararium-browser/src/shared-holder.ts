@@ -33,9 +33,15 @@ function holdSessionLock(sessionId: string): Promise<void> {
   });
 }
 
+/** What the door reads of a constructed SharedWorker: its port, and its own failure signal where the host raises one. */
+export interface SharedWorkerLike {
+  readonly port: MessagePort;
+  addEventListener?(type: "error", listener: (e: unknown) => void): void;
+}
+
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
-  readonly SharedWorker?: new (url: string | URL, opts?: { type?: "module"; name?: string }) => { readonly port: MessagePort };
+  readonly SharedWorker?: new (url: string | URL, opts?: { type?: "module"; name?: string }) => SharedWorkerLike;
 }
 
 /** Read the ambient `SharedWorker`, or nothing where the engine offers none. */
@@ -66,38 +72,39 @@ export async function attachSharedHolder(args: {
   readonly holderUrl: URL;
   readonly houseName: string;
   readonly host?:     SharedWorkerHost;
-  /** How long to wait for the greeting before reading the holder as absent (a script that never answers). */
-  readonly helloTimeoutMs?: number;
 }): Promise<SharedHolderAttach> {
   const host = args.host ?? ambientSharedWorkerHost();
   if (typeof host.SharedWorker !== "function") {
     return { kind: "floor", why: "this engine offers no SharedWorker; the daemon island rides a dedicated worker as before" };
   }
   let port: MessagePort;
+  let worker: SharedWorkerLike;
   try {
-    port = new host.SharedWorker(args.holderUrl, { type: "module", name: args.houseName }).port;
+    worker = new host.SharedWorker(args.holderUrl, { type: "module", name: args.houseName });
+    port = worker.port;
   } catch (e) {
     return { kind: "floor", why: `SharedWorker refused to start (${e instanceof Error ? e.message : String(e)}); the daemon island rides a dedicated worker` };
   }
+  // THE GREETING DECIDES, NEVER A CLOCK: the worker's own greeting attaches (however late it comes), its own `error` event
+  // or a construct-time refusal (above) floors at once, and a worker that does neither keeps the house waiting. No
+  // timer picks the floor, so a slow-starting SharedWorker never loses its house to a deadline.
   const greeting = await new Promise<HolderHello | HolderRefused | null>((resolve) => {
-    let timer: ReturnType<typeof setTimeout>;
     const onMsg = (e: MessageEvent): void => {
       const d = e.data as { kind?: unknown };
       if (d && (d.kind === "holder:hello" || d.kind === "holder:refused")) {
-        clearTimeout(timer);
         port.removeEventListener("message", onMsg);
         resolve(e.data as HolderHello | HolderRefused);
       }
     };
     port.addEventListener("message", onMsg);
-    port.start();
-    timer = setTimeout(() => {
+    worker.addEventListener?.("error", () => {
       port.removeEventListener("message", onMsg);
-      port.close();
+      try { port.close(); } catch { /* a closed port is already closed */ }
       resolve(null);
-    }, args.helloTimeoutMs ?? 5_000);
+    });
+    port.start();
   });
-  if (!greeting) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
+  if (!greeting) return { kind: "floor", why: "the shared holder worker raised an error before it greeted; the daemon island rides a dedicated worker" };
   if (greeting.kind === "holder:refused") {
     port.close();
     throw new SharedHolderRefusal(greeting);
