@@ -136,3 +136,11 @@ line classes, call `projection_loom.line_hierarchy.render_line_hierarchy`.
 
 See [Semantic linework](docs/semantic-lines.md) for authored part roles,
 screen-space detail limits, hierarchy weights, and the visibility contract.
+
+## Structural construction and contact validation
+
+Projects may provide a rooted `structure` graph and explicit `construction` operators. The construction grammar builds named masses from anchored parents, while volumetric joint tests distinguish positive interior overlap from vertex/edge/face contact. `policy: gate` blocks unsupported geometry before it becomes an accepted evolutionary parent. `policy: report` emits the same QA evidence without blocking rendering.
+
+The renderer inherits architectural line priorities from those same part roles. It preserves the four independent image-generation controls and writes a **separate, transparent structural QA overlay**. The overlays never alter the authoritative silhouette or the submitted silver-blueprint artwork.
+
+Use `examples/structural_project.json` to inspect a supported multi-level assembly. See [structural geometry](docs/structural-geometry.md) for the support graph, convex-solid overlap contract, explicit bracing mutations, rendering integration, and limitations for imported open/nonconvex assets.

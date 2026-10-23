@@ -5,6 +5,7 @@ from pathlib import Path
 from .evolution import Project,parameters_from_file,produce
 from .render import export_controls,light_vector,silhouette
 from .topology import assembly_contacts,mask_components
+from .structural_render import draw_joint_diagnostics
 from .epoch_loop import epoch_loop
 
 
@@ -76,14 +77,18 @@ def main(argv=None):
     if args.command=='render':
         photo,key=project.photo_reference()
         if key is None:key=light_vector(-75,50)
+        structural=project.audit(mesh,enforce=True)
         files=export_controls(mesh,project.cameras,args.out/'controls',
-                              light=key,style=project.settings.get('render'))
-        output={'controls':files,'mesh':str(args.out/'mesh.npz'),
+                              light=key,style=project.render_style())
+        diagnostics=(draw_joint_diagnostics(mesh,project.cameras,structural,args.out/'diagnostics')
+                     if structural else {})
+        output={'controls':files,'structural_audit':structural,'diagnostics':diagnostics,
+                'mesh':str(args.out/'mesh.npz'),
                 'geometry_mode':'deformation' if project.geometry_source else 'parametric',
                 'geometry_source':project.geometry_source}
     else:
         output={'geometry_source':project.geometry_source,
-                'contacts':assembly_contacts(mesh),
+                'contacts':assembly_contacts(mesh),'structural_audit':project.audit(mesh),
                 'projections':{name:mask_components(silhouette(mesh,camera)>96)
                                for name,camera in project.cameras.items()}}
     (args.out/'manifest.json').write_text(json.dumps(output,indent=2))

@@ -97,7 +97,7 @@ class Assembly:
         self.edges = []
         self.parts = []
 
-    def add(self, name, vertices, faces, material=0, creases=True):
+    def add(self, name, vertices, faces, material=0, creases=True, solid_kind=None):
         verts = np.asarray(vertices, dtype=np.float64)
         tris = np.asarray(faces, dtype=np.int32)
         if verts.ndim != 2 or verts.shape[1] != 3 or tris.shape[1] != 3:
@@ -107,7 +107,7 @@ class Assembly:
         self.vertices.extend(verts.tolist())
         self.faces.extend((tris + offset).tolist())
         self.materials.extend([int(material)] * len(tris))
-        self.parts.append({'name':str(name), 'first_face':first, 'num_faces':len(tris)})
+        self.parts.append({'name':str(name), 'first_face':first, 'num_faces':len(tris), 'solid_kind':solid_kind or 'unknown'})
         if creases:
             pts = verts[tris]
             normals = np.cross(pts[:, 1]-pts[:, 0], pts[:, 2]-pts[:, 0])
@@ -122,6 +122,16 @@ class Assembly:
                     continue
                 self.edges.append((a+offset,b+offset,int(material)))
         return self
+
+    @classmethod
+    def from_mesh(cls, mesh):
+        result=cls()
+        result.vertices=mesh.vertices.tolist()
+        result.faces=mesh.faces.tolist()
+        result.materials=mesh.materials.tolist()
+        result.edges=mesh.edges.tolist()
+        result.parts=[dict(p) for p in mesh.parts]
+        return result
 
     def prism(self, name, center, extent, material=0, taper=0.0, rotation=0.0):
         x,y,z = (float(v) for v in center)
@@ -141,7 +151,7 @@ class Assembly:
         for j in range(4):
             k=(j+1)%4
             faces.extend(((j,k,k+4),(j,k+4,j+4)))
-        return self.add(name,points,faces,material)
+        return self.add(name,points,faces,material,solid_kind="convex")
 
     def beam(self, name, start, end, width, depth, material=0):
         p=np.asarray(start,dtype=float)
@@ -163,7 +173,7 @@ class Assembly:
         for j in range(4):
             k=(j+1)%4
             faces.extend(((j,k,k+4),(j,k+4,j+4)))
-        return self.add(name,points,faces,material)
+        return self.add(name,points,faces,material,solid_kind="convex")
 
     def mesh(self):
         return Mesh(self.vertices,self.faces,self.materials,self.edges,self.parts)

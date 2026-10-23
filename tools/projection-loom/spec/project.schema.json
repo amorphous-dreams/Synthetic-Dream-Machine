@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.amorphousdreams.org/projection-loom/project/v1",
   "title": "Projection Loom project",
-  "description": "Parametric or inherited-mesh geometry and camera controls for projection-driven evolution",
+  "description": "Project-owned cameras, construction grammar, structural integrity contracts, and geometry evolution controls",
   "type": "object",
   "required": [
     "schema",
@@ -189,6 +189,114 @@
     "geometry": {
       "type": "string",
       "minLength": 1
+    },
+    "structure": {
+      "type": "object",
+      "description": "Optional support graph; report retains failures as diagnostics, gate rejects invalid solid joints.",
+      "required": [
+        "roots"
+      ],
+      "properties": {
+        "policy": {
+          "enum": [
+            "report",
+            "gate"
+          ]
+        },
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "foundation",
+              "primary",
+              "secondary",
+              "detail",
+              "exempt"
+            ]
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "parent",
+              "child"
+            ],
+            "properties": {
+              "parent": {
+                "type": "string"
+              },
+              "child": {
+                "type": "string"
+              },
+              "min_radius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "min_ratio": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "construction": {
+      "type": "array",
+      "description": "Explicit project-authored construction operators; never silently repair unsupported connections.",
+      "items": {
+        "type": "object",
+        "required": [
+          "operation",
+          "name",
+          "parent",
+          "child"
+        ],
+        "properties": {
+          "operation": {
+            "const": "brace"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "child": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "depth": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "width_parameter": {
+            "type": "string"
+          },
+          "depth_parameter": {
+            "type": "string"
+          },
+          "material": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "oneOf": [

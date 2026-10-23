@@ -159,13 +159,14 @@ def _anchor(project, project_seed, seed_geometry, out, export_size, resolution, 
     else:
         parameters = parameters_from_file(project_seed, project.initial)
         model = project.build(parameters)
+    project.audit(model,enforce=True)
     anchor_mesh = anchor_dir/'mesh.npz'
     model.save(anchor_mesh, parameters if seed_geometry is None else {})
     model.export_obj(anchor_dir/'mesh.obj')
     photo,light = project.photo_reference(size=resolution)
     controls = _control_paths(export_controls(model,project.cameras,anchor_dir/'controls',
                       size=export_size,light=light if light is not None else light_vector(-75,50),
-                      style=project.settings.get('render')))
+                      style=project.render_style()))
     bootstrap = []
     if not project.target_specs:
         if not auto_anchor:
@@ -292,12 +293,14 @@ def epoch_loop(project_path, out, seed=None, seed_geometry=None, *, passes=5,
         prior_quality=anchored_evidence(project,previous_mesh,fixed_targets,resolution)
         next_quality=anchored_evidence(project,candidate_mesh,fixed_targets,resolution)
         comparison=compare_controls(snapshot,current_controls)
+        structural=project.audit(candidate_mesh)
         # Score against original/anchored evidence before considering internally
         # generated similarity. A failed candidate remains available for inspection.
         evidence_ok=(next_quality['quality']>=prior_quality['quality']-evidence_tolerance
                      and next_quality['quality']>=anchor_evidence['quality']-evidence_tolerance)
         feedback_ok=comparison['combined']>=min_feedback_similarity
-        accepted=bool(evidence_ok and feedback_ok)
+        accepted=bool(evidence_ok and feedback_ok and
+                      (structural is None or structural['valid'] or structural['policy']=='report'))
         accepted_mesh=str((candidate_dir/'mesh.npz').resolve()) if accepted else incoming_mesh
         accepted_controls=current_controls if accepted else incoming_controls
         feedback_manifest={
@@ -309,6 +312,7 @@ def epoch_loop(project_path, out, seed=None, seed_geometry=None, *, passes=5,
             'structural_lighting_feedback':comparison,
             'prior_evidence':prior_quality,
             'candidate_evidence':next_quality,
+            'structural_audit':structural,
             'quality_gate':{'evidence_ok':evidence_ok,'feedback_ok':feedback_ok,
                             'accepted':accepted},
             'candidate_mesh':str((candidate_dir/'mesh.npz').resolve()),

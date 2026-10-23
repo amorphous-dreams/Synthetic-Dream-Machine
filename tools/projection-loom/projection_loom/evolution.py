@@ -13,6 +13,9 @@ from .cameras import Camera
 from .render import silhouette,export_controls,light_vector
 from .fitness import Objective,Target,PhotoReference
 from .topology import assembly_contacts,mask_components
+from .architecture_graph import ArchitectureGraph
+from .structural_render import draw_joint_diagnostics
+from .structural_mutations import apply_structural_operations
 
 
 @dataclass
@@ -27,6 +30,8 @@ class Project:
     photograph: dict | None
     settings: dict
     geometry_source: str | None = None
+    structure: ArchitectureGraph | None = None
+    construction: tuple = ()
 
     @classmethod
     def load(cls, path):
@@ -71,8 +76,10 @@ class Project:
                 raise ValueError(f'Initial {k} outside bounds')
         cameras={name:Camera.from_dict(values) for name,values in config['cameras'].items()}
         if not cameras:raise ValueError('At least one camera is required')
+        structure=(ArchitectureGraph.from_dict(config['structure'])
+                   if config.get('structure') else None)
         return cls(path,rig_path,builder,bounds,initial,cameras,
-                   config.get('targets',[]),config.get('photograph'),settings,geometry_source)
+                   config.get('targets',[]),config.get('photograph'),settings,geometry_source,structure,tuple(config.get('construction',[])))
 
     def with_geometry_seed(self, path):
         """Evolve this existing mesh with a subject-neutral deformation rig."""
@@ -87,7 +94,20 @@ class Project:
             result=result.mesh()
         if not isinstance(result,Mesh):
             raise TypeError('Builder must return a projection_loom.Mesh or Assembly')
+        if self.construction:
+            result=apply_structural_operations(result,self.construction,params)
         return result
+
+    def audit(self,mesh,enforce=False):
+        if not self.structure:return None
+        return self.structure.require_valid(mesh) if enforce else self.structure.audit(mesh)
+
+    def render_style(self):
+        style=dict(self.settings.get('render') or {})
+        if self.structure:
+            configured=dict(style.get('part_roles',{}))
+            style['part_roles']={**self.structure.drawing_roles(),**configured}
+        return style
 
     def targets(self,extra=(),size=(256,384)):
         specs=list(self.target_specs)
@@ -140,6 +160,7 @@ class Search:
                                  project.cameras,resolution,light,photo,
                                  project.settings.get('objective_weights'))
         self.records=[]
+        self.structure=project.structure
 
     def vector(self,parameters):
         return np.array([parameters[k] for k in self.names],dtype=float)
@@ -159,6 +180,19 @@ class Search:
                 candidate=silhouette(self.project.build(params),self.project.cameras[name],reference.shape[::-1])>96
                 overlap=(candidate&reference).sum()/max(1,(candidate|reference).sum())
                 stabilizer+=weight*(1-overlap)
+        if self.structure:
+            # Cheap preflight only: observed AABB gaps cannot support declared
+            # attachments. Positive AABB overlap is NOT a valid joint verdict.
+            model=_model
+            bounds={p['name']:(model.vertices[model.faces[p['first_face']:p['first_face']+p['num_faces']].ravel()].min(0),
+                                model.vertices[model.faces[p['first_face']:p['first_face']+p['num_faces']].ravel()].max(0))
+                    for p in model.parts}
+            gaps=[]
+            for x in self.structure.links:
+                lo_a,hi_a=bounds[x.parent];lo_b,hi_b=bounds[x.child]
+                gap=float(np.linalg.norm(np.maximum(0.,np.maximum(lo_b-hi_a,lo_a-hi_b))))
+                gaps.append(gap)
+            value+=.3*sum(gaps)/max(1,len(gaps))
         record={'cycle':int(cycle),'stage':stage,'loss':float(value),
                 'selection_loss':float(value+stabilizer),'parameters':params,
                 'metrics':metrics}
@@ -198,6 +232,8 @@ class Search:
 
     def evolve(self,start=None,cycles=2,burst=32,survivors=6,offspring=6):
         current=dict(start or self.project.initial)
+        if self.structure is not None and self.structure.policy=='gate':
+            self.project.audit(self.project.build(current),enforce=True)
         baseline=self.rank(self.vector(current),bool(self.objective.photo),0,'baseline')
         all_cycles=[]
         for cycle in range(1,int(cycles)+1):
@@ -215,7 +251,10 @@ class Search:
             base_candidate=self.rank(self.vector(candidate['parameters']),bool(self.objective.photo),cycle,'candidate')
             base_current=self.rank(self.vector(current),bool(self.objective.photo),cycle,'incumbent')
             if base_candidate['loss']<base_current['loss']:
-                current=dict(base_candidate['parameters'])
+                candidate_mesh=self.project.build(base_candidate['parameters'])
+                validation=self.project.audit(candidate_mesh)
+                if validation is None or validation['valid'] or validation['policy']=='report':
+                    current=dict(base_candidate['parameters'])
             # Generated feedback controls local drift; acceptance still uses unchanged evidence.
             stabilizers={}
             model=self.project.build(current)
@@ -230,7 +269,10 @@ class Search:
                             bool(self.objective.photo),cycle,'stability-candidate')
             reference_score=self.rank(self.vector(current),bool(self.objective.photo),cycle,'stability-reference')
             if trial['loss']<reference_score['loss']:
-                current=dict(trial['parameters'])
+                trial_mesh=self.project.build(trial['parameters'])
+                validation=self.project.audit(trial_mesh)
+                if validation is None or validation['valid'] or validation['policy']=='report':
+                    current=dict(trial['parameters'])
             all_cycles.append({'cycle':cycle,'best_loss':self.rank(self.vector(current),
                                bool(self.objective.photo),cycle,'cycle-complete')['loss'],
                                'parameters':dict(current)})
@@ -255,10 +297,13 @@ def produce(project_path,out,seed=None,feedback=(),cycles=2,burst=32,survivors=6
     report=search.evolve(initial,cycles,burst,survivors,offspring)
     output=Path(out);output.mkdir(parents=True,exist_ok=True)
     model=project.build(report['parameters'])
+    structural=project.audit(model,enforce=True)
     model.save(output/'mesh.npz',report['parameters'])
     model.export_obj(output/'mesh.obj')
     control_files=export_controls(model,project.cameras,output/'controls',export_size,light,
-                                  project.settings.get('render'))
+                                  project.render_style())
+    diagnostics=(draw_joint_diagnostics(model,project.cameras,structural,output/'diagnostics',export_size)
+                 if structural is not None else {})
     summary={'schema':'projection-loom/run/v1',
              'geometry_source':project.geometry_source,
              'rig_source':str(project.rig_path),
@@ -267,7 +312,8 @@ def produce(project_path,out,seed=None,feedback=(),cycles=2,burst=32,survivors=6
              'baseline_loss':report['baseline_loss'],'final_loss':report['score']['loss'],
              'evaluations':report['evaluations'],'cycles':report['cycles'],
              'elapsed_seconds':round(time.monotonic()-start,2),
-             'contacts':assembly_contacts(model),'outputs':control_files,
+             'contacts':assembly_contacts(model),'structural_audit':structural,
+             'diagnostics':diagnostics,'outputs':control_files,
              'projection_connectivity':{v:mask_components(silhouette(model,camera,resolution)>96)
                                         for v,camera in project.cameras.items()}}
     (output/'manifest.json').write_text(json.dumps(summary,indent=2))
