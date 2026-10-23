@@ -76,6 +76,17 @@ describe("record port log", () => {
     expect(log.ledger.begin("tx", ["a", "b"], "payload-ab").pending).toEqual([]);
   });
 
+  test("ledger-discard-releases-unapplied-slot; CONTROL: applied family remains resumable", () => {
+    const ledger = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 }).ledger;
+    ledger.begin("refused", ["a"], "payload-refused");
+    expect(ledger.discard("refused")).toBe(true);
+    expect(ledger.has("refused")).toBe(false);
+    ledger.begin("partial", ["a", "b"], "payload-partial");
+    ledger.recordApplied("partial", "a");
+    expect(ledger.discard("partial")).toBe(false);
+    expect(ledger.begin("partial", ["a", "b"], "payload-partial").pending).toEqual(["b"]);
+  });
+
   test("port-partial-visible-by-txid; CONTROL: one family appends contiguous entry sequences", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 });
     log.append([record("a"), record("b")], ["tx"]);

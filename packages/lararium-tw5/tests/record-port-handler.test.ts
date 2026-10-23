@@ -11,8 +11,6 @@ import { VerbTable } from "../src/verb-dispatcher.js";
 
 const origin = { kind: "tw-local", instanceId: "foreign" } as const;
 const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
-/** A digest runs off the microtask queue; a bounded run of macrotask turns lets it land. */
-const ioSettle = async () => { for (let turn = 0; turn < 50; turn++) { await new Promise<void>((resolve) => setImmediate(resolve)); await settle(); } };
 /** Send an ask and pump macrotask turns, a bounded run, until it posts one more answer. */
 const sendAwait = async (r: { messages: unknown[]; send(msg: never): Promise<void> }, msg: unknown): Promise<void> => {
   const count = () => r.messages.filter((m) => (m as { type?: string }).type === "port:answer").length;
@@ -38,7 +36,12 @@ async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: Islan
   const messages: IslandToVesselMsg[] = [];
   const wikiListeners = new Set<() => void>();
   let invoked = 0;
-  const tw5 = { $tw: { wiki: {
+  const tw5 = { $tw: { Tiddler: class {
+    constructor(private readonly fields: Record<string, unknown>) {}
+    getFieldStrings(): Record<string, string> {
+      return Object.fromEntries(Object.entries(this.fields).map(([key, value]) => [key, String(value)]));
+    }
+  }, config: { preferences: { jsonSpaces: 2 } }, wiki: {
     filterTiddlers: () => ["Ordinary", "$:/StoryList"],
     makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown; createElement: (tag: string) => { addEventListener: (type: string, listener: () => void) => void } } }) => {
       let heldContainer: { appendChild: (node: unknown) => void; removeChild: (node: unknown) => void } | undefined;
@@ -82,7 +85,7 @@ describe("record port handler", () => {
       expect(args).toEqual({ word: "yes" });
       expect(context.invocation.targets).toEqual(["Target"]);
       expect(context.invocation.requestedBy).toBe("admin-id");
-      expect(await context.cap("admin", "working")).toEqual({ ok: true, reason: "port-gate" });
+      expect(await context.cap("admin", "working")).toEqual({ ok: true });
       return { ran: true };
     }); return table; };
     const face = { id: "admin-id", role: "admin" };
@@ -94,7 +97,7 @@ describe("record port handler", () => {
     expect(runs).toBe(0);
     await r.close();
     let role = "guest";
-    const gated = await rig({ verbs, faceOf: () => ({ ...face, role }), authority: req =>
+    const gated = await rig({ verbs, faceOf: () => ({ ...face, role }), verbCap: () => async () => ({ ok: true }), authority: req =>
       (req.provenFace as { role: string }).role === "admin" ? { allowed: true } : { allowed: false, reason: "guest" } });
     await gated.send(openMsg());
     await gated.send(ask);
@@ -108,7 +111,7 @@ describe("record port handler", () => {
   });
 
   test("port-verb-system-kahu-refused: admin cannot CLEAR system canon without reach; CONTROL: CLEAR user bag succeeds", async () => {
-    const r = await rig({ faceOf: () => ({ id: "admin", role: "admin" }), authority: () => ({ allowed: true }) });
+    const r = await rig({ faceOf: () => ({ id: "admin", role: "admin" }), verbCap: () => async () => ({ ok: true }), authority: () => ({ allowed: true }) });
     await r.send(openMsg());
     await sendAwait(r, askMsg("verb", { subject: "CLEAR", args: { bag: "lar:///ha.ka.ba/bags/lares" } }));
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "kahu-reach" });
@@ -134,6 +137,81 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { ok: true } });
     expect(runs).toBe(1);
     await r.close();
+  });
+
+  test("port-verb-copy-bag-grants: a gated face denied source or destination lands nothing; CONTROL: both grants copy once", async () => {
+    const source = "lar:///test/port/source";
+    const destination = "lar:///test/port/destination";
+    const face = { id: "verified" };
+    let denied: string | undefined = source;
+    const checks: Array<[object, string, string]> = [];
+    const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }),
+      verbCap: (proven, portId) => async (access, bag) => {
+        checks.push([proven, portId, `${access}:${bag}`]);
+        return bag === denied ? { ok: false, reason: "withheld" } : { ok: true };
+      } });
+    const from = new MemoryTiddlerStore(source);
+    const to = new MemoryTiddlerStore(destination);
+    r.composite.addLayer({ bagId: source, store: from, writable: true, defaultWritable: false });
+    r.composite.addLayer({ bagId: destination, store: to, writable: true, defaultWritable: false });
+    await from.put({ tiddler: { title: "CopyMe", text: "source" } }, origin);
+    await r.send(openMsg());
+    const copy = (askId: string) => askMsg("verb", { askId, subject: "COPY",
+      args: { title: "CopyMe", "from-bag": source, "to-bag": destination, "change-id": askId } });
+    await sendAwait(r, copy("source-denied"));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cap-denied" });
+    expect(await to.get("CopyMe")).toBeNull();
+    denied = destination;
+    await sendAwait(r, copy("destination-denied"));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cap-denied" });
+    expect(await to.get("CopyMe")).toBeNull();
+    denied = undefined;
+    await sendAwait(r, copy("allowed"));
+    expect(ofType(r.messages, "port:answer").at(-1)?.status).toBe("answered");
+    expect((await to.get("CopyMe"))?.tiddler.text).toBe("source");
+    expect(checks).toContainEqual([face, "p", `read:${source}`]);
+    expect(checks).toContainEqual([face, "p", `admin:${destination}`]);
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "CopyMe")).toHaveLength(1);
+    await r.close();
+  });
+
+  test("port-verb-repack-read-grant: a gated face without read refuses; CONTROL: a lent read returns the pack", async () => {
+    const bag = "lar:///test/port/pack";
+    let read = false;
+    let storeReads = 0;
+    const r = await rig({ faceOf: () => ({ id: "verified" }), authority: () => ({ allowed: true }),
+      verbCap: () => async (access, requested) => ({ ok: read && access === "read" && requested === bag, reason: "withheld" }) });
+    const store = new MemoryTiddlerStore(bag);
+    const get = store.get.bind(store);
+    store.get = async (...args) => { storeReads++; return get(...args); };
+    r.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false });
+    await store.put({ tiddler: { title: "$:/config/OriginalTiddlerPaths", text: JSON.stringify({ Member: "bundle.json" }) } }, origin);
+    await store.put({ tiddler: { title: "Member", text: "body" } }, origin);
+    await r.send(openMsg());
+    storeReads = 0;   // the setup puts read the layer; count only what the verb reads
+    await sendAwait(r, askMsg("verb", { askId: "repack-denied", subject: "REPACK", args: { bag, "pack-path": "bundle.json" } }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "verb-unavailable" });
+    expect(storeReads).toBe(0);
+    read = true;
+    await sendAwait(r, askMsg("verb", { askId: "repack-allowed", subject: "REPACK", args: { bag, "pack-path": "bundle.json" } }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { verb: "REPACK", path: "bundle.json", count: 1 } });
+    expect(storeReads).toBeGreaterThan(0);
+    await r.close();
+  });
+
+  test("port-verb-default-cap-denies: a gated verb's bag check refuses without a lend; CONTROL: a lent cap permits it", async () => {
+    const face = { id: "verified" };
+    const ask = askMsg("verb", { subject: "CLEAR", args: { bag: "working" } });
+    const denied = await rig({ faceOf: () => face, authority: () => ({ allowed: true }) });
+    await denied.send(openMsg()); await sendAwait(denied, ask);
+    expect(ofType(denied.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cap-denied",
+      result: { message: expect.stringContaining("no-verb-cap") } });
+    await denied.close();
+    const allowed = await rig({ faceOf: () => face, authority: () => ({ allowed: true }),
+      verbCap: () => async () => ({ ok: true }) });
+    await allowed.send(openMsg()); await sendAwait(allowed, ask);
+    expect(ofType(allowed.messages, "port:answer").at(-1)?.status).toBe("answered");
+    await allowed.close();
   });
 
   test("port-cas-tier-refusals read no bytes; CONTROL: public matching bytes answer", async () => {
@@ -428,8 +506,10 @@ describe("record port handler", () => {
   test("port-written-follows-echo: one applied family echoes before its answer", async () => {
     const r = await rig();
     await r.send(openMsg());
+    const before = r.messages.length;
     await r.send(writeMsg("tx", "Ordinary"));
-    expect(r.messages.map(message => message.type).slice(-2)).toEqual(["port:changes", "port:written"]);
+    expect(r.messages.slice(before).map(message => message.type)).toEqual(["port:changes", "port:written"]);
+    expect(ofType(r.messages.slice(before), "port:changes")).toHaveLength(1);
     expect(ofType(r.messages, "port:written")[0]?.status).toBe("applied");
     await r.close();
   });
@@ -492,6 +572,21 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:reset").at(-1)?.reason).toBe("shape-changed");
     await r.send(openMsg("p", { since: cursor }));
     expect(ofType(r.messages, "port:reset")).toHaveLength(1);
+    await r.close();
+  });
+
+  test("port-same-shape-cursor-resumes-without-snapshot-or-reset; CONTROL: retained change reaches reopen", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    const cursor = ofType(r.messages, "port:snapshot")[0]!.baseCursor;
+    await r.composite.put({ tiddler: { title: "AfterBase", text: "body" } }, origin);
+    await settle();
+    const before = r.messages.length;
+    await r.send(openMsg("p", { since: cursor }));
+    const resumed = r.messages.slice(before);
+    expect(ofType(resumed, "port:snapshot")).toHaveLength(0);
+    expect(ofType(resumed, "port:reset")).toHaveLength(0);
+    expect(ofType(resumed, "port:changes").flatMap(message => message.entries.map(entry => entry.title))).toEqual(["AfterBase"]);
     await r.close();
   });
 
@@ -586,7 +681,7 @@ describe("record port handler", () => {
   });
 
   test("supersession stops after an in-flight family; CONTROL: the first family may finish", async () => {
-    const r = await rig();
+    const r = await rig({ actorOf: portId => portId === "p" || portId === "new" ? "same-bound-actor" : undefined });
     r.composite.addLayer({ bagId: "other", store: new MemoryTiddlerStore("other"), writable: true, defaultWritable: false });
     await r.send(openMsg());
     let release!: () => void;
@@ -621,6 +716,19 @@ describe("record port handler", () => {
     ] });
     expect(await r.composite.get("First")).not.toBeNull();
     expect(await r.composite.get("Second")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-precheck-refusals-release-window: 128 distinct invalid families cannot poison a later write; CONTROL: valid family lands", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    for (let index = 0; index < 128; index++) {
+      await r.send(writeMsg(`refused-${index}`, `lar://mara:operator@room/heading.angle.dynamic/${index}`));
+      expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "session-form-title" });
+    }
+    await r.send(writeMsg("after-refusals", "ValidAfterRefusals"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", txId: "after-refusals" });
+    expect(await r.composite.get("ValidAfterRefusals")).not.toBeNull();
     await r.close();
   });
 
@@ -685,6 +793,21 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-presence-uses-bound-actor-when-lent; CONTROL: unlent port keeps claimed presence label", async () => {
+    const cap = hasRecordPort({ actorOf: portId => portId === "bound-port" ? "bound-actor" : undefined });
+    const r = await rig({}, cap);
+    await r.send(openMsg("bound-port", { actor: "display-label" }));
+    await r.send(openMsg("peer"));
+    await r.send({ type: "port:presence", portId: "bound-port", actorKey: "display-label", beat: 1, state: {} });
+    expect(ofType(r.messages, "port:presence")).toHaveLength(0);
+    await r.send({ type: "port:presence", portId: "bound-port", actorKey: "bound-actor", beat: 1, state: {} });
+    expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "peer", actorKey: "bound-actor" });
+    await r.send(openMsg("unlent", { actor: "claimed-label" }));
+    await r.send({ type: "port:presence", portId: "unlent", actorKey: "claimed-label", beat: 1, state: {} });
+    expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "peer", actorKey: "claimed-label" });
+    await r.close();
+  });
+
   test("actor ledger survives reopen; CONTROL: new tx writes once", async () => {
     const r = await rig(); await r.send(openMsg()); await r.send(writeMsg("tx", "Once"));
     await r.send(openMsg()); await r.send(writeMsg("tx", "Once"));
@@ -692,6 +815,38 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:written")).toHaveLength(2);
     await r.send(writeMsg("next", "Next"));
     expect(await r.composite.get("Next")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-claimed-actor-cannot-supersede-or-select-ledger-or-edit: guest claims editor; CONTROL: editor stays live", async () => {
+    const edits: Array<[string, string]> = [];
+    const r = await rig({ mayEdit: (portId, actor) => { edits.push([portId, actor]); return actor === "editor-port"; } });
+    await r.send(openMsg("editor-port", { actor: "editor", edits: true }));
+    await r.send({ ...writeMsg("shared-id", "First"), portId: "editor-port" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", portId: "editor-port" });
+    await r.send(openMsg("guest-port", { actor: "editor", edits: true }));
+    await r.send({ ...writeMsg("shared-id", "First"), portId: "guest-port" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", portId: "guest-port", reason: "edits-not-granted" });
+    expect(edits).toContainEqual(["guest-port", "guest-port"]);
+    expect(edits).not.toContainEqual(["guest-port", "editor"]);
+    await r.send({ ...writeMsg("editor-next", "Second"), portId: "editor-port" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", portId: "editor-port" });
+    expect(await r.composite.get("Second")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-bound-actor-reopen-supersedes-and-keeps-ledger; CONTROL: same tx replays once", async () => {
+    const r = await rig({ actorOf: portId => portId === "first-port" || portId === "second-port" ? "editor-bound" : undefined,
+      mayEdit: (_portId, actor) => actor === "editor-bound" });
+    await r.send(openMsg("first-port", { actor: "first-label" }));
+    await r.send({ ...writeMsg("once", "Once"), portId: "first-port" });
+    const firstAnswer = ofType(r.messages, "port:written").at(-1)!;
+    await r.send(openMsg("second-port", { actor: "second-label" }));
+    await r.send({ ...writeMsg("once", "Once"), portId: "second-port" });
+    expect(ofType(r.messages, "port:written").at(-1)).toEqual({ ...firstAnswer, portId: "second-port" });
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "Once")).toHaveLength(1);
+    await r.send({ ...writeMsg("stale-port", "Never"), portId: "first-port" });
+    expect(await r.composite.get("Never")).toBeNull();
     await r.close();
   });
 

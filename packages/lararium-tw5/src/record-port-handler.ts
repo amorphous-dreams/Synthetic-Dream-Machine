@@ -16,11 +16,15 @@ import { RecordingDocument, RecordingNode, cameraContainer, cameraDocument, fire
 import { toBlocks, toLabelHtml, toText, type Block } from "./recording-serialisers.js";
 import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
-import { VerbTable } from "./verb-dispatcher.js";
+import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
   faceOf?: (portId: string) => object | undefined;
+  /** The composer lends bag grants tied to the verified face. */
+  verbCap?: (face: object, portId: string) => VerbContext["cap"];
+  /** The composer binds an actor to the transport; client actor labels carry presence only. */
+  actorOf?: (portId: string) => string | undefined;
   /** The port builds its own ACTION table; a caller can substitute a table for a focused witness. */
   verbs?: (ctx: IslandContext) => VerbTable;
   kahuReach?: KahuReachSource;
@@ -35,6 +39,8 @@ export interface RecordPortOptions {
 
 interface OpenPort {
   readonly open: PortMsg_Open;
+  readonly boundActor: string;
+  readonly presenceActor: string;
   readonly shape: PortShape;
   closed: boolean;
   held: boolean;
@@ -241,7 +247,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     const prior = port.ledger.has(msg.txId) ? port.written.get(msg.txId) : undefined;
     if (prior?.status === "applied") { if (!port.closed) ctx.post({ ...prior, portId: msg.portId }); return; }
     let granted = false;
-    try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.open.actor) === true; }
+    try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
     if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
     if (!prior && msg.basis && msg.basis !== log.cursorOf(port.shape, log.headSeq)) {
@@ -253,6 +259,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       maxBatchBytes: port.open.maxBatchBytes, validateRecord: record => localFilter(record.title) ? "local-title" : undefined });
     if ("refused" in verdict) { answer("refused", [], [], verdict.refused); return; }
     const families = [...new Set(msg.records.map(record => record.bag ?? "(default)"))];
+    let familyStarted = false;
     try {
       const begun = port.ledger.begin(msg.txId, families, digest);
       if (begun.answer) {
@@ -262,6 +269,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         return;
       }
       if (begun.pending.some(family => family !== "(default)" && !ctx.composite.hasBag(family))) {
+        port.ledger.discard(msg.txId);
         answer("refused", [], [], "bag-unavailable"); return;
       }
       for (const family of begun.pending) {
@@ -269,11 +277,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
         await ctx.composite.precheckFamily(puts, tombstones, family === "(default)" ? undefined : { bag: family });
-        if (port.closed) return;
+        if (port.closed) { port.ledger.discard(msg.txId); return; }
       }
       const failed: string[] = [];
       for (const family of begun.pending) {
-        if (port.closed) return;
+        if (port.closed) { port.ledger.discard(msg.txId); return; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
@@ -281,6 +289,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         tokens.set(token, { portId: msg.portId, txId: msg.txId });
         familyChanges.set(token, []);
         try {
+          familyStarted = true;
           await ctx.composite.writeFamily(puts, tombstones,
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
@@ -300,6 +309,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       flush(ctx);
       answer(result.status, [...result.applied], [...result.failed]);
     } catch (error) {
+      if (!familyStarted) port.ledger.discard(msg.txId);
       const reason = error instanceof Error && "reason" in error && typeof error.reason === "string"
         ? error.reason : error instanceof Error ? error.message : "write-failed";
       answer("refused", [], [], reason);
@@ -392,8 +402,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const invocation: Verb = { requestId: msg.askId, title: `lar:///ha.ka.ba/bags/wiki/verbs/${msg.askId}`,
           action, args, targets: msg.titles ?? [], batchMode: "best-effort",
           status: "pending", requestedBy, requestedAt: "" };
-        answered(await handler(args, { daemon: ctx.composite, invocation,
-          cap: async () => ({ ok: true, reason: "port-gate" }) }));
+        const cap = opts.verbCap?.(face!, msg.portId) ?? (async () => ({ ok: false, reason: "no-verb-cap" }));
+        answered(await handler(args, { daemon: ctx.composite, invocation, cap }));
       } catch (error) {
         if (isVerbRefusal(error)) {
           if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId,
@@ -454,19 +464,22 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       if (msg.type === "port:open") {
         if (msg.wikiUri !== ctx.wikiUri) return false;
         flush(ctx);
-        for (const [id, prior] of ports) if (prior.open.actor === msg.actor || id === msg.portId) {
+        const lentActor = opts.actorOf?.(msg.portId);
+        const boundActor = lentActor ?? msg.portId;
+        const presenceActor = lentActor ?? msg.actor;
+        for (const [id, prior] of ports) if (prior.boundActor === boundActor || id === msg.portId) {
           if (id === msg.portId) presence.close(id);
-          else presence.supersede(prior.open.actor, msg.portId);
+          else presence.supersede(prior.presenceActor, msg.portId);
           drop(id);
         }
         const shape: PortShape = { width: msg.width,
           ...(msg.localFilter ? { localFilter: msg.localFilter } : {}),
           ...(msg.fields ? { fields: msg.fields } : {}) };
-        let actor = actors.get(msg.actor);
-        if (!actor) { actor = { ledger: createTxLedger(), written: new Map() }; actors.set(msg.actor, actor); }
+        let actor = actors.get(boundActor);
+        if (!actor) { actor = { ledger: createTxLedger(), written: new Map() }; actors.set(boundActor, actor); }
         const since = msg.since ? log.parseCursor(msg.since) : undefined;
         const ackSeq = since && since.bootNonce === nonce && since.shapeId === log.shapeId(shape) ? since.seq : log.headSeq;
-        const port: OpenPort = { open: msg, shape, closed: false, held: false, opening: !msg.since,
+        const port: OpenPort = { open: msg, boundActor, presenceActor, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
           ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger };
         ports.set(msg.portId, port);
@@ -477,7 +490,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       if (!port) return true;
       if (msg.type === "port:close") drop(msg.portId);
       else if (msg.type === "port:presence") {
-        if (msg.actorKey !== port.open.actor) return true;
+        if (msg.actorKey !== port.presenceActor) return true;
         presenceSource = msg.portId;
         try {
           if (msg.gone) presence.close(msg.portId);

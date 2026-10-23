@@ -87,6 +87,13 @@ export function createTxLedger(limit = 1024, inFlightLimit = 128) {
       const state = states.get(txId);
       return !state || state.digest === digest;
     },
+    /** Release a refused transaction only when no family has landed. */
+    discard(txId: string): boolean {
+      const state = states.get(txId);
+      if (!state || state.applied.size > 0 || state.answer) return false;
+      states.delete(txId);
+      return true;
+    },
     begin(txId: string, families: readonly string[], digest: string): { pending: string[]; answer?: WrittenAnswer } {
       if (!txId || !digest || families.length === 0 || new Set(families).size !== families.length) throw new RangeError("invalid-transaction");
       let state = states.get(txId);
