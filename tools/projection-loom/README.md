@@ -182,3 +182,54 @@ from a single drawing, learned grammar synthesis, multiwriter ledger merge,
 vertical-datum conversion, automatic IFC/OpenUSD/GIS scene import, exact BRep
 hidden-line export, or a Bayesian scene posterior. These remain research
 interfaces, not hidden compatibility promises.
+
+## PoC 0 original imagery, operator helm, and final gallery
+
+The two **exact** original Necrospire PoC 0 PNGs now live in
+[`examples/necrospire/`](examples/necrospire/POC0_README.md). The RGBA alpha and
+archived 8-bit mask match exactly. The drawing remains a non-metric,
+provisionally registered illustration—not a surveyed 3D scene.
+
+The existing `ooda-steer` inbox lets an Operator–AI pair drive the runtime at
+safe phase boundaries without giving the scoring engine an LLM key.
+Optionally configure an Ollama or OpenAI-compatible provider for strictly
+bounded JSON **advice**, never tool execution or CAD-validity bypass:
+
+```sh
+# Deterministic full-speed run: no LLM provider or key needed.
+python -m projection_loom ooda-run --project examples/necrospire/project.json \
+  --out out/poc0 --passes 5 --candidates 12 --exact-budget 8 \
+  --detail-budget 5 --seed 20261023 --control full-speed
+
+# OpenAI-compatible remote endpoint; reads OPENAI_API_KEY from environment.
+python -m projection_loom ooda-run --project examples/necrospire/project.json \
+  --out out/poc0-llm --control auto-nav --llm-provider openai-compatible \
+  --llm-model YOUR_MODEL_NAME
+
+# Local Ollama endpoint (HTTP loopback only).
+python -m projection_loom ooda-run --project examples/necrospire/project.json \
+  --out out/poc0-ollama --control co-pilot --llm-provider ollama \
+  --llm-model YOUR_LOCAL_MODEL_NAME
+
+# Across all scored epochs, re-audit 4 diversity-separated survivors and export.
+python -m projection_loom ooda-finalists \
+  --project examples/necrospire/project.json --epochs out/poc0 \
+  --out out/poc0-finalists --count 4 --size 384 576
+```
+
+Pass `--llm-phases` to let an adviser request nested inquiries at phase gates.
+Such inquiries deliberately enter durable Operator checkpoints rather than
+silently continuing; do not enable that option in unattended production unless
+the Operator/agent will actually service those checkpoints. A provider failure
+is an operational error, not a failed CAD candidate. Provider prompts send
+bounded score/phenotype evidence; original images, local paths and keys remain
+outside the advice envelope. The CLI supports explicit manual steering whether
+or not a provider is installed.
+
+The across-epoch gallery considers only scored, CAD-valid candidates, then
+regrows/re-audits each and writes STEP, OBJ, render mesh, controls, and a
+comparison sheet. With the present six-locus PoC 0 builder, all four candidates
+may share one broad topology; that is an honest grammar limitation, not evidence
+that the method invented new structural kinds. See
+[`docs/hard-reference-scout.md`](docs/hard-reference-scout.md) for the next two
+hard-source choices and licensing gates.

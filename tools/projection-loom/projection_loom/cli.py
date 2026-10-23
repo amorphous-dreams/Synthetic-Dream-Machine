@@ -45,6 +45,13 @@ def main(argv=None):
     p.add_argument('--identity-ledger',type=Path)
     p.add_argument('--max-depth',type=int,default=12,help='optional nested inquiry depth budget')
     p.add_argument('--max-loops',type=int,default=4096,help='bounded session loop count')
+    p.add_argument('--llm-provider',choices=['none','ollama','openai-compatible'],default='none',
+                   help='opt-in LLM advice; without this, the Operator can still steer through the inbox')
+    p.add_argument('--llm-model',help='provider model name; required when provider enabled')
+    p.add_argument('--llm-endpoint',help='optional explicitly trusted HTTP(S) provider endpoint')
+    p.add_argument('--llm-key-env',default='OPENAI_API_KEY',help='environment variable containing API key')
+    p.add_argument('--llm-phases',action='store_true',help='allow the LLM to suggest nested inquiries at phase gates')
+    p.add_argument('--llm-timeout',type=float,default=35)
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],default='auto-nav')
     p.add_argument('--autonomy',type=float)
     p=commands.add_parser('inspect-dem',help='Inspect an actual digest-checked DEM and its datum')
@@ -85,10 +92,24 @@ def main(argv=None):
     p.add_argument('--identity-ledger',type=Path)
     p.add_argument('--max-depth',type=int,default=12,help='nested inquiry depth budget')
     p.add_argument('--max-loops',type=int,default=4096,help='bounded session loop count')
+    p.add_argument('--llm-provider',choices=['none','ollama','openai-compatible'],default='none',
+                   help='opt-in LLM advice; without this, the Operator can still steer through the inbox')
+    p.add_argument('--llm-model',help='provider model name; required when provider enabled')
+    p.add_argument('--llm-endpoint',help='optional explicitly trusted HTTP(S) provider endpoint')
+    p.add_argument('--llm-key-env',default='OPENAI_API_KEY',help='environment variable containing API key')
+    p.add_argument('--llm-phases',action='store_true',help='allow the LLM to suggest nested inquiries at phase gates')
+    p.add_argument('--llm-timeout',type=float,default=35)
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],
                    default='auto-nav', help='operator/AI steering preset')
     p.add_argument('--autonomy',type=float,
                    help='continuous AI discretion [0,1], overrides --control')
+    p=commands.add_parser('ooda-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--epochs',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--count',type=int,choices=[3,4,5],default=4)
+    p.add_argument('--size',type=int,nargs=2,default=[384,576])
+    p.add_argument('--no-production',action='store_true',help='preview gallery only; still CAD audited')
     p=commands.add_parser('ooda-status',help='Inspect the phase tree and operator checkpoints')
     p.add_argument('--session',type=Path,required=True)
     p=commands.add_parser('ooda-steer',help='Queue a control, applied at the next safe boundary')
@@ -118,14 +139,29 @@ def main(argv=None):
         presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
         project=Project.load(args.project)
         source=LocationStack.load(args.location_stack) if args.location_stack else None
+        model_advice = None
+        if args.llm_provider != 'none':
+            from .llm_helm import HelmLLM
+            model_advice=HelmLLM(args.llm_provider,args.llm_model,endpoint=args.llm_endpoint,
+                                 api_key_env=args.llm_key_env,timeout=args.llm_timeout)
         result=run_ooda_epochs(project,args.out,passes=args.passes,
             candidates=args.candidates,exact_budget=args.exact_budget,
             detail_budget=args.detail_budget,seed=args.seed,
             topology_loci=args.topology_locus,
             autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
             ledger_path=args.identity_ledger,location_stack=source,
-            max_depth=args.max_depth,max_loops=args.max_loops)
+            max_depth=args.max_depth,max_loops=args.max_loops,
+            adviser=model_advice.choose if model_advice else None,
+            phase_adviser=model_advice.phase if model_advice and args.llm_phases else None)
         print(json.dumps(result,indent=2));return result
+    if args.command=='ooda-finalists':
+        from .finalists import export_finalists
+        project=Project.load(args.project)
+        result=export_finalists(project,args.epochs,args.out,count=args.count,
+                                size=tuple(args.size),with_production=not args.no_production)
+        print(json.dumps({'actual_count':result['actual_count'],
+                          'gallery':str(args.out/'contact_sheet.png')}))
+        return result
     if args.command=='ooda-status':
         from .ooda import OODAJournal
         session=OODAJournal(args.session)
