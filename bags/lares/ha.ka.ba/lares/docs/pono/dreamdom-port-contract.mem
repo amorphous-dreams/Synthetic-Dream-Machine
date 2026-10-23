@@ -1,0 +1,129 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-contract.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 15
+manao             = 15
+manaoio           = 14
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-port-contract — the normative contract of the record port (D2): the port log and its cursor, the chunked snapshot, cursor reset, the atomic write boundary with txId and causedBy, tombstone retention, clockless presence, and the invoke gate; each answer names its red and its control; the owed rows beside it"
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
+written           = "2026-10-22"
+```
+
+<<~ ahu #/head>>
+
+! The record port contract ~ five questions, answered clockless
+
+''What this carrier holds.'' The house's answers, under the operator's standing delegation, to the five contract questions `dreamdom-roadmap#/the-order` (D2) raised from the field read (`dreamdom-port-field-scout`), plus the invoke gate. Each answer names the red that pins it and the control that keeps the red honest. The controller ruled the leans on 2026-10-22.
+
+''The base.'' The island keeps one ''port log'' per wiki actor. The log mints a monotone integer `seq` at each atomic family fire of the composite store, from any origin. A ''cursor'' reads `<bootNonce>.<shapeId>.<seq>`: `bootNonce` names one island boot; `shapeId` hashes the width, the `localFilter` and the projected-field set. The log lives in memory and carries no wall clock. The camera's frame `rev` and `mountEpoch` order frames; they never serve as a record cursor, since two clocks fused would each lie about the other.
+
+<<~/ahu>>
+
+<<~ ahu #/snapshot>>
+
+!! Q1 ~ the chunked snapshot holds a stable base
+
+* `port:open` fixes `baseSeq` and a `snapshotId`. Chunks `i/n` carry only records whose last-modified `seq` stands at or below `baseSeq`.
+* A record changed after the base drops out of the chunks and arrives through `port:changes{since: baseSeq}`, which the island sends after the final chunk.
+* The log never compacts below the `baseSeq` of a snapshot in transfer. A new open or a close supersedes the transfer; chunks of a dead `snapshotId` drop.
+* A client applies a record only when its `seq` exceeds the one it holds, so a double delivery changes nothing.
+* Reds: `port-snapshot-base-is-stable`, `port-snapshot-changed-record-arrives-once`. Control: with no change in transfer, the plain snapshot stands complete.
+
+<<~/ahu>>
+
+<<~ ahu #/reset>>
+
+!! Q2 ~ a cursor resets by name, never by skipping
+
+* `port:changes` answers `port:reset{reason, floorSeq, headSeq}` for `island-restarted` (nonce mismatch), `compacted` (`since` below the log floor), `shape-changed` (`shapeId` mismatch) and `lagged` (see #/tombstones). The client answers with a fresh open, which clears and rebuilds.
+* A width or `localFilter` change on an open port counts as a new open.
+* Reds: `port-cursor-reset-on-width-change`, `port-cursor-reset-on-expiry`, one per reason. Control: a cursor of the same shape inside retention resumes with no snapshot.
+
+<<~/ahu>>
+
+<<~ ahu #/write>>
+
+!! Q3 ~ one transaction, per-family atomicity, `port:written` last
+
+''Cross-bag atomicity cannot exist.'' The store's atomic unit holds one family inside one bag (`writeFamily`); a write that routes across bags takes separate calls, so no boundary spans them. The contract names this and builds on it.
+
+* The island validates the whole transaction first (routing, basis, `maxRecordBytes`, `maxBatchBytes`). A refusal found at validation refuses the whole transaction, and nothing writes.
+* It then applies per bag family. Each family fires its own change entry carrying `causedBy:[txId]`; other ports see each family as its own causal change and tell a partial transaction by its `txId`. `port:written` alone claims completeness.
+* The echo changes enqueue before `port:written` in one flush, so `port:written` never shows before its effects.
+* A per-port ledger of `txId` answers, bounded by entry count (1024) with a bounded in-flight window, holds the original `port:written`. A retried `txId` replays that answer and writes nothing twice. A store fault mid-transaction answers `port:written{status:"partial", applied, failed}`; a retry of the same `txId` resumes only the unapplied families.
+* Changes from other origins carry `causedBy:[]`; the field stays mandatory.
+* Reds: `port-echo-named-by-txid`, `port-write-retry-is-idempotent`, `port-written-follows-echo`, `port-write-refused-whole`, `port-write-partial-resumes`, `port-partial-visible-by-txid`. Control: a single-family write answers `applied` with one echo.
+* Open for the red to settle: how the store listener learns the current `txId`. The lean: a synchronous in-flight context at fire time. A `txId` on the shared `ChangeOrigin` stays the fallback if the red forces it.
+
+<<~/ahu>>
+
+<<~ ahu #/tombstones>>
+
+!! Q4 ~ tombstones by count, and a lagging subscriber learns by reset
+
+* A tombstone stands as a log entry `{title, deleted: true, seq}`. Retention counts entries (4096 per actor, a dial), plus the snapshot pin of #/snapshot. Open ports pin nothing.
+* A subscriber behind the floor receives `port:reset{reason: "compacted", floorSeq}`. A port whose undelivered backlog passes a byte budget drops the backlog and receives `port:reset{reason: "lagged"}`.
+* A skinny record carries `omitted: [fields]`, the fields that exist and went unprojected. A field in neither `fields` nor `omitted` stands deleted. A `load` answer carries `seq`; the larger `seq` wins, so a stale load never overwrites a newer record.
+* Reds: `port-tombstone-then-compaction-resets`, `port-skinny-omitted-vs-deleted`, `port-skinny-then-load`, `port-load-stale-never-overwrites`. Control: a tombstone inside retention reaches a lagging-but-in-range subscriber as a delete.
+
+<<~/ahu>>
+
+<<~ ahu #/presence>>
+
+!! Q5 ~ presence expires at causal boundaries; no timer runs anywhere in the port
+
+* Presence binds to its port, never persists, and at width none travels as the ruled separate droppable message. Each entry carries `{actorKey, beat, state}`.
+* An entry ends at: `port:close`; the transport's own disconnect event; supersession by a newer open of the same `actorKey`; or a ''beat lapse''. The island counts ''presence rounds'' (each `port:presence` it processes). An entry whose last `beat` stands more than `LAPSE_ROUNDS` rounds old (a dial, default 30) lapses at the next round.
+* ''As of the last round.'' A lapse counted in rounds fires only when a round happens. When the last live peer goes quiet, a dead peer's entry stands until the next round. The contract names this limit: presence reads "as of the last round", never "now". A half-open transport stays the relay's keepalive concern.
+* Reconnect: a new open sends the newcomer the full current presence set; the peer re-sends its own state, and old state never resumes. A receiver drops an arrival with a lower `beat`. Disconnect cleanup emits `port:presence{actorKey, gone: true}` at once.
+* Reds, none reading a wall clock: `port-presence-expires` (including the case where the only remaining peer sends one beat and the dead entry lapses on that round), `port-presence-close`, `port-presence-transport-gone`, `port-presence-supersede`, `port-presence-reconnect-full-set`, `port-presence-gone-fans-out`. Control: a refresh inside the window keeps the entry.
+
+<<~/ahu>>
+
+<<~ ahu #/invoke>>
+
+!! The invoke gate ~ authority re-checked at run time
+
+* `port:ask{kind: "invoke"}` carries a reference to the session's ''proven face'' (what the holder verified) and a `renderCursor`. The island never trusts a bare `requestedBy` string.
+* The gate runs an injected `authority(req)` verifier, which refuses by default (`no-authority`). Order: authority, then `renderCursor` freshness, then `invokeActions`; the authority check runs immediately before `invokeActions`, never cached from the render. A non-admin never learns freshness. `worker-trust` retires for the port's invoke path.
+* A signed-grant digest belongs to D4's actor manifest, outside this lane.
+* Reds: `non-admin-invoke-refused`, `ask-invoke-stale-cursor-refused`, `invoke-authority-rechecked-at-run`. Controls: an admin invokes once; the default production composition, which has no wiring until the composer patch lands after Wave C, refuses a port invoke by name (`no-authority`), so the gate never reads open through a missing wiring.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed beside the port ~ rows outside this lane's build
+
+* ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
+* ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
+* ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
+* ''`$:/info/browser/*`.'' No tier path handles it yet; the `localFilter` core names it and the tier tests pin it.
+* ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM `MemeAst` feeds the pass; a witness comparing it with the tree-sitter fold follows.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;iXWHia8MoXs23dyqUoVbDVWxRAuEXg1RZJmU_XEKfmc
+
+<<^ code="&#x0004;" -> to="?">>
