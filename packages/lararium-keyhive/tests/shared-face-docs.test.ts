@@ -70,6 +70,21 @@ describe("a face's circles and identities follow the face", () => {
     expect(proveFaceFromLog({ records: [...f.personaActs, forgedAct], chain: f.chain, group: f.face.personaGroupId, anchor, deviceKey: f.joineeKey, planes: { persona: f.applied.personaUrl, circles: f.applied.circlesUrl } }).ok).toBe(true);
   });
 
+  test("RED: a forged unsigned plane act ahead of the founder's never picks the adopted urls, and a malformed act refuses the bundle before any side effect", async () => {
+    const f = await founderAndJoinee();
+    const forged = { body: { act: "plane", plane: "circles", url: "automerge:forged", group: f.face.personaGroupId, seq: 99 }, sig: "00", signer: "00" };
+    const joineeAtom = new Uint8Array(32).fill(84);
+    const adopt = (personaActs: unknown[]) => {
+      const r = repo();
+      return { r, run: runApplyAdmitPayload({ repo: r, daemonHandle: seedDaemonDoc(r), atomSeed: joineeAtom, vesselDisplayName: "joinee",
+        payload: { ...f.payload, personaActs: personaActs as never }, nexusPubkey: key(new Uint8Array(32).fill(81)) }) };
+    };
+    const forgedFirst = await adopt([forged, ...(f.personaActs as unknown[])]).run;
+    expect(forgedFirst.circlesUrl, "the verified projection names the url, not the first raw record").toBe(f.face.circlesUrl);
+    const malformed = adopt([null, ...(f.personaActs as unknown[])]);
+    await expect(malformed.run).rejects.toThrow(/malformed persona act/);
+  });
+
   test("CONTROL: a vessel with no PersonaGroup reads only the floor, with no face documents", async () => {
     const placeRepo = repo();
     const place = await foundThePlace({ repo: placeRepo, vesselSeed: new Uint8Array(32).fill(91), hearthTrueName: "hearth" });

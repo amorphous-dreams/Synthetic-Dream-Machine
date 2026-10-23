@@ -51,7 +51,7 @@ import {
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
-  personaScopedBagIds,
+  personaScopedBagIds, personaLineageFromKel, projectPersonaLog,
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
   type PersonaKelEvent,
@@ -994,6 +994,15 @@ export async function runApplyAdmitPayload(
   if (!Array.isArray(payload.personaActs)) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaActs; re-admit the face.");
   }
+  // THE ACTS A BUNDLE CARRIES ARE JUDGED BEFORE ANY SIDE EFFECT: one malformed entry refuses the whole bundle by name, and the
+  // shared plane urls this device adopts read off the VERIFIED projection of the log under the carried KEL (never the first
+  // raw record that claims a plane).
+  if (payload.personaActs.some((a) => typeof a !== "object" || a === null || typeof (a as { body?: unknown }).body !== "object" || (a as { body?: unknown }).body === null)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload carries a malformed persona act; re-admit the face.");
+  }
+  const carriedLineage = personaLineageFromKel(payload.personaKelChain);
+  if (!carriedLineage) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona KEL carries no lineage; re-admit the face.");
+  const carriedPlanes = projectPersonaLog(payload.personaActs, { group: payload.personaGroupId, lineage: carriedLineage, authorize: () => true }).planes;
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }
@@ -1011,13 +1020,7 @@ export async function runApplyAdmitPayload(
   // this device's own (a bare probe). The boot proves the urls it mounts against the verified acts, so an act this apply
   // reads unverified moves nothing there. SESSIONS stay per vessel: a session is motion (which device wears the face now),
   // and decisions cross devices, never motion.
-  const planeUrlOf = (name: string): string | undefined => {
-    for (const a of payload.personaActs) {
-      const b = (a as { body?: { act?: unknown; plane?: unknown; url?: unknown } } | null)?.body;
-      if (b?.act === "plane" && b.plane === name && typeof b.url === "string") return b.url;
-    }
-    return undefined;
-  };
+  const planeUrlOf = (name: string): string | undefined => carriedPlanes[name];
   const sharedIdentitiesUrl = planeUrlOf("identities"), sharedCirclesUrl = planeUrlOf("circles");
   const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> | null = sharedIdentitiesUrl ? null
     : checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
