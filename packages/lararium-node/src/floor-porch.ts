@@ -51,7 +51,8 @@ export async function releasedFloorCids(opts: {
 
 /** Mount the porch's floor routes on a vessel's one request listener. */
 export function mountFloorPorch(args: {
-  readonly httpServer:  Server;
+  /** The server a bare listener rides when no dispatcher claims routes; a hearth main hands a dispatcher alone. */
+  readonly httpServer?: Server;
   readonly dispatcher?: HttpFaceDispatcher;
   readonly repo:        Repo;
   /** The Nexus this vessel's boards key on; the porch answers for this AID alone, and only when it reads as an AID. */
@@ -100,7 +101,7 @@ export function mountFloorPorch(args: {
   const unregister = dispatcher?.register({
     name: "floor-porch", routeKeys: [`floor:/floor/`, ...(serveCas ? [`cas:/cas/`] : [])], owns, handle,
   });
-  if (!unregister) httpServer.on("request", onRequest);
+  if (!unregister) httpServer?.on("request", onRequest);
   args.onLog?.(`floor porch: ${answers ? `answers /floor/${nexusPubkey.slice(0, 18)}…` : "answers no Nexus (no charter stands: the island is no AID)"}${serveCas ? " · /cas for the head's floor" : ""}`);
-  return { dispose: () => { if (unregister) unregister(); else httpServer.off("request", onRequest); } };
+  return { dispose: () => { if (unregister) unregister(); else httpServer?.off("request", onRequest); } };
 }

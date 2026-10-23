@@ -3252,10 +3252,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   }));
   const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
   // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
-  // and `/cas/<cid>` the blobs the head release names. A hearth without an HTTP server answers no porch.
-  if (opts.httpServer) {
+  // and `/cas/<cid>` the blobs the head release names. A hearth with neither a dispatcher nor a server answers no porch.
+  if (opts.httpServer || opts.dispatcher) {
     const porch = mountFloorPorch({
-      httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
+      ...(opts.httpServer ? { httpServer: opts.httpServer } : {}), ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
       nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: true,
       onLog: (line) => console.log(`[lararium] ${line}`),
     });
