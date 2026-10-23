@@ -262,6 +262,31 @@ class LocationStack:
             'verified_registrations': sum(r.state == 'verified' for r in self.registrations),
         }
 
+    def verify_source_bytes(self):
+        """Check every accessible local source against its declared content hash.
+
+        Network locators remain explicitly `unfetched`; neither a URL nor a
+        metadata digest alone proves that the current remote bytes agree.
+        """
+        from urllib.parse import urlparse
+        result={}
+        for source in self.sources.values():
+            scheme=urlparse(source.locator).scheme
+            if scheme in ('http','https'):
+                result[source.id]='unfetched'
+                continue
+            path=Path(source.locator)
+            if not path.is_file():
+                raise FileNotFoundError(f'Local source missing: {source.id}')
+            checksum=sha256()
+            with path.open('rb') as stream:
+                for chunk in iter(lambda: stream.read(1024*1024),b''):
+                    checksum.update(chunk)
+            if checksum.hexdigest()!=source.sha256:
+                raise ValueError(f'Source bytes disagree with hash: {source.id}')
+            result[source.id]='matched'
+        return result
+
     def audit_cad_bodies(self, assemblies: dict[str, object]):
         """Check each CAD body separately; no scene-wide Boolean fusion."""
         validated = []
