@@ -146,7 +146,8 @@ export class CompositeStore implements LarTiddlerStore {
 
     // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {
-      this.listeners.forEach((fn) => fn(change));
+      // One listener that throws never starves the listeners after it: each hears every change.
+      for (const fn of [...this.listeners]) { try { fn(change); } catch { /* a listener's fault stays its own */ } }
     });
     this.unsubs.set(layer.store, unsub);
 

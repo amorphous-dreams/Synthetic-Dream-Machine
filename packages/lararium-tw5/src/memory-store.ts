@@ -109,8 +109,14 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     }
     // The family has committed; a subscriber that throws faults the subscriber, never the commit, so the writer
     // reads success and a retry cannot apply the members a second time.
+    // Each change reads the store as it stands when it fires, so a listener that rewrites a later member leaves
+    // the last delivered value equal to the store's.
     for (const change of changes) {
-      try { this._emit(change); } catch { /* the commit stands */ }
+      const live = this._records.get(change.title);
+      const fired: LarTiddlerChange = change.record === null
+        ? (live?.meta?.deleted === true || live === undefined ? change : { ...change, record: live })
+        : { ...change, record: live ?? change.record };
+      try { this._emit(fired); } catch { /* the commit stands */ }
     }
   }
 

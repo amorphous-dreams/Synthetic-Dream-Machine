@@ -29,7 +29,7 @@ const askMsg = (kind: PortMsg_Ask["kind"], overrides: Partial<PortMsg_Ask> & { a
   type: "port:ask", portId: "p", askId: kind, kind, ...overrides,
 });
 
-async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort({ mayEdit: () => true, ...options })) {
+async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort({ mayEdit: () => true, ...options }), beforeEa?: (composite: CompositeStore) => void) {
   const composite = new CompositeStore();
   const store = new MemoryTiddlerStore("working");
   composite.addLayer({ bagId: "working", store, writable: true });
@@ -68,6 +68,7 @@ async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: Islan
   },
     rootWidget: { invokeActionString: () => { invoked++; } } } };
   const ctx = { wikiUri: "wiki", composite, tw5, handles: new Map(), recipe: { wikiSlug: "wiki" }, post: (message: IslandToVesselMsg) => messages.push(message) } as unknown as IslandContext;
+  beforeEa?.(composite);
   const cleanup = await cap.onEa?.(ctx);
   const send = async <T extends { type: string }>(msg: T) => { expect(cap.onSignal?.(msg.type, msg, ctx)).toBe(true); await settle(); };
   return { composite, store, messages, ctx, send, wikiChange: () => { for (const listener of wikiListeners) listener(); },
@@ -213,6 +214,31 @@ describe("record port handler", () => {
     r.composite.subscribe(() => { throw new Error("listener fault"); });
     await r.send({ type: "port:write", portId: "p", txId: "fam2", records: [{ title: "FamC", fields: { text: "c" } }, { title: "FamD", fields: { text: "d" } }] });
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "fam2", status: "applied" });
+    await r.close();
+  });
+  test("port-memory-family-reentrant-rewrite-keeps-store-truth: a listener that rewrites a later member leaves the highest-seq port value equal to the store's; CONTROL: an untouched member keeps its own value", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    let rewrote = false;
+    r.composite.subscribe(change => {
+      if (change.title === "RA" && !rewrote) { rewrote = true; void r.composite.put({ tiddler: { title: "RB", text: "new" } }, { kind: "tw-local", instanceId: "elsewhere" }); }
+    });
+    await r.send({ type: "port:write", portId: "p", txId: "re", records: [{ title: "RA", fields: { text: "a" } }, { title: "RB", fields: { text: "old" } }, { title: "RC", fields: { text: "c" } }] });
+    await settle();
+    const last = (title: string) => ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === title).sort((x, y) => x.seq - y.seq).at(-1);
+    expect((await r.store.get("RB"))?.tiddler["text"]).toBe("new");
+    expect(last("RB")?.fields["text"]).toBe("new");
+    expect(last("RC")?.fields["text"]).toBe("c");
+    await r.close();
+  });
+
+  test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
+    const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "boom", records: [{ title: "EA", fields: { text: "a" } }, { title: "EB", fields: { text: "b" } }] });
+    const entries = ofType(r.messages, "port:changes").flatMap(message => message.entries);
+    expect(entries.filter(entry => entry.causedBy.includes("boom")).map(entry => entry.title).sort()).toEqual(["EA", "EB"]);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "boom", status: "applied" });
     await r.close();
   });
   test("port-verb-no-authority and port-verb-guest-refused; CONTROL: admin runs once with proven identity and targets", async () => {
