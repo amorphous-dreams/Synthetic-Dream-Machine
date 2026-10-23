@@ -176,7 +176,8 @@ export function wireCoherenceProjection(shores: CoherenceProjectionShores): Cohe
 export function mountCoherenceProjection(ctx: IslandContext): () => void {
   const adapter = new WikiStoreAdapter(ctx.composite);
   const projector = wireCoherenceProjection({
-    read: () => adapter.consistency(),
+    // No fold holds the island's loop while a save waits to rest: the read waits for the rest door to go idle.
+    read: async () => { await ctx.rest?.idle(); return adapter.consistency(); },
     emit: (frame, rev) => {
       ctx.post({
         type: "event",
