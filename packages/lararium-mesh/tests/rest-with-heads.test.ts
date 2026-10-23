@@ -6,6 +6,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { next as A } from "@automerge/automerge";
 import { Repo } from "@automerge/automerge-repo";
+import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { REST_STALL_ROUNDS, answerRestWithHeads } from "../src/rest-with-heads.js";
 import { emptyLarDoc, type LarDoc } from "../src/index.js";
 
@@ -47,7 +48,34 @@ describe("the vessel's rest answer waits on the island's heads", () => {
     expect(await answerRestWithHeads(null, { type: "doc:rest", requestId: "f", documentIds: [], heads: {} })).toMatchObject({ rested: false });
   });
 
-  test("RED: heads that never arrive answer stalled by name after a bounded count of the vessel's own changes — CONTROL: the same ask answers rested when the heads arrive inside the bound", async () => {
+  test("RED: a rest ask for heads the island never sends answers stalled the moment its channel closes, on a quiet doc — CONTROL: the same ask answers rested when the heads arrive over the open channel", async () => {
+    const mc = new MessageChannel();
+    const vessel = new Repo({ network: [new MessageChannelNetworkAdapter(mc.port1)] });
+    const handle = vessel.create<LarDoc>(emptyLarDoc());
+    const island = A.change(A.clone(handle.doc()!), (doc) => { doc.tiddlers["lar:///t/x"] = { tiddler: { title: "lar:///t/x", text: "edit" } } as never; });
+    const islandRepo = new Repo({ network: [new MessageChannelNetworkAdapter(mc.port2)] });
+    const peers = await new Promise<string[]>((resolve) => { const t = setInterval(() => { if (vessel.peers.length > 0) { clearInterval(t); resolve([...vessel.peers]); } }, 5); });
+    const peer = peers[0]!;
+    const ask = { type: "doc:rest" as const, requestId: "q", documentIds: [handle.documentId], heads: { [handle.documentId]: A.getHeads(island) } };
+    let answer: { rested: boolean; stalled?: boolean; why?: string } | undefined;
+    void answerRestWithHeads(vessel, ask, peer).then((a) => { answer = a; });
+    await pause(); await pause();
+    expect(answer, "the channel stands and the doc is quiet: the ask waits").toBeUndefined();
+    mc.port2.close(); mc.port1.close();
+    (vessel.networkSubsystem as unknown as { emit(e: string, p: unknown): void }).emit("peer-disconnected", { peerId: peer });
+    await pause(); await pause();
+    expect(answer).toMatchObject({ rested: false, stalled: true });
+    expect(answer!.why).toContain("channel closed");
+    void islandRepo;
+    // CONTROL: the heads arrive over the open channel.
+    const second = pair();
+    let late: { rested: boolean; stalled?: boolean } | undefined;
+    void answerRestWithHeads(second.vessel, { type: "doc:rest", requestId: "t", documentIds: [second.handle.documentId], heads: { [second.handle.documentId]: A.getHeads(second.island) } }, "no-peer-known").then((a) => { late = a; });
+    await pause();
+    expect(late, "an unknown peer is a closed channel: stalled at once").toMatchObject({ stalled: true });
+  });
+
+  test("RED: heads that never arrive over an open channel answer stalled after the backstop count — CONTROL: heads inside the bound answer rested", async () => {
     const { vessel, handle, island } = pair();
     const ahead = { type: "doc:rest" as const, requestId: "s", documentIds: [handle.documentId], heads: { [handle.documentId]: A.getHeads(island) } };
     let answer: { rested: boolean; stalled?: boolean; why?: string } | undefined;
@@ -59,11 +87,9 @@ describe("the vessel's rest answer waits on the island's heads", () => {
     handle.change((doc) => { doc.tiddlers["lar:///t/last"] = { tiddler: { title: "lar:///t/last", text: "x" } } as never; });
     await pause();
     expect(answer).toMatchObject({ rested: false, stalled: true });
-    expect(answer!.why).toContain("stalled");
-    // CONTROL: the island's change arrives after a few of the vessel's own changes, inside the bound.
     const second = pair();
     let late: { rested: boolean; stalled?: boolean } | undefined;
-    void answerRestWithHeads(second.vessel, { type: "doc:rest", requestId: "t", documentIds: [second.handle.documentId], heads: { [second.handle.documentId]: A.getHeads(second.island) } }).then((a) => { late = a; });
+    void answerRestWithHeads(second.vessel, { type: "doc:rest", requestId: "t2", documentIds: [second.handle.documentId], heads: { [second.handle.documentId]: A.getHeads(second.island) } }).then((a) => { late = a; });
     await pause();
     second.handle.change((doc) => { doc.tiddlers["lar:///t/y"] = { tiddler: { title: "lar:///t/y", text: "y" } } as never; });
     second.handle.update((doc) => A.merge(doc, second.island));

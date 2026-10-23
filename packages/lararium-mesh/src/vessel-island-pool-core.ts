@@ -318,6 +318,8 @@ export class VesselIslandPoolCore {
   private readonly _mountSpecs = new Map<string, { spec: WikiMountSpec; pinned: boolean }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
+  /** The sync peer each wiki island's channel carries, so a rest ask reads a closed channel as a fact. */
+  private readonly _islandPeerOf = new Map<string, string>();
   private readonly _diskMirrorGrant: DiskMirrorGrant;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
@@ -651,7 +653,7 @@ export class VesselIslandPoolCore {
     // A session island's port rides its view and nothing wider; an island outside any session rides the port bare.
     if (this._mainRepo) {
       if (view) view.attach(this._mainRepo, mainPort);
-      else attachMessageChannelSync(this._mainRepo, mainPort);
+      else attachMessageChannelSync(this._mainRepo, mainPort, (peerId) => { this._islandPeerOf.set(wikiId, peerId); });
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
@@ -1058,7 +1060,7 @@ export class VesselIslandPoolCore {
       if (raw.type === "doc:rest" && !view && (raw as IslandMsg_DocRest).heads !== undefined) {
         const ask = raw as IslandMsg_DocRest;
         if (typeof ask.requestId !== "string") return;
-        void answerRestWithHeads(this._mainRepo, ask).then((answer) => {
+        void answerRestWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
           try { worker.post({ type: "doc:rested", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
         });
