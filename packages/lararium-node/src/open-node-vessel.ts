@@ -92,7 +92,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, proveFaceFromLog, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -2281,7 +2281,9 @@ async function prepareNodeBootOn(
       ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
       // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
       // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
-      ...(sovereign === null && joinSyncUrl ? { personaLate: true } : {}),
+      // An admitted device whose replica does not yet hold the plane (it syncs from the fleet) resolves it as a mesh-shared
+      // document, which waits for the sync, rather than reading the hearth-private "no reachable copy" under load.
+      ...((sovereign === null && joinSyncUrl) || (bootstrap.personaUrl && !heldDocOf(repo, bootstrap.personaUrl)) ? { personaLate: true } : {}),
       coreHash: assembly.coreHash,
       ...(pluginCids.length ? { pluginCids } : {}),
       grants: {
