@@ -57,9 +57,10 @@ resumes. See [phase-anchored recursion](docs/ooda-ha-procedural.md#phase-anchore
 For autonomous execution, use `--control auto-nav` (default) or
 `--control full-speed`, or set numeric `--autonomy` in `[0,1]`. Even then,
 an external operator may queue `pause`, `review`, `set-autonomy` and `choose`
-controls that apply at the next safe boundary. The included CLI uses a
-**deterministic selection policy**, not a connected LLM; the Python `adviser`
-hook accepts AI suggestions from independently wired providers. Read
+controls that apply at the next safe boundary. The CLI defaults to a **deterministic selection policy**. Optional
+`--llm-provider ollama` or `--llm-provider openai-compatible` engages the
+validated adviser for candidate choices; `--llm-phases` also permits bounded
+nested-inquiry suggestions. No provider receives authority over CAD gates. Read
 [the OODA-HA procedural contract](docs/ooda-ha-procedural.md) for the exact
 operator pairing, pet-name/o-takiage flow, and limitations.
 
@@ -241,3 +242,40 @@ runs a modern, lightweight CAD interpretation and a separately compiled syntheti
 OpenSCAD STL for each subject. Actual CC BY low-poly Ur and CC0 nosycat archives
 are linked but not yet ingested; the initial results test geometry adapters,
 fixed cameras, and multiseed operation, **not** external fidelity.
+
+## Hybrid CAD + polymesh named location (research prototype)
+
+The crystalline Necrospire foundation now has a separate faceted polymesh
+attached to the verified CAD cage by a named, spatially checked anchor. Exact
+CAD and its STEP export remain independently valid; the composite OBJ and
+render controls cannot claim one BRep union. Regrow the `#has`-capable location
+with two geometric languages, without freezing its relation graph:
+
+```bash
+PYTHONPATH=. python examples/necrospire/hybrid/hybrid_demo.py --out out/hybrid-necrospire
+PYTHONPATH=. python examples/necrospire/hybrid/run_hybrid_trial.py \
+  --out out/hybrid-two-epochs --epochs 2 --per-epoch 6
+```
+
+See [hybrid capability stacks](docs/hybrid-capability-stack.md) and the
+[surveyed API and license boundaries](docs/reference-intake-ci.md).
+
+## Local/CI dependency and external reference commands
+
+The dedicated `.github/workflows/projection-loom.yml` tests the working branch
+and PRs into `feature/green-jello-dinosaur-5` with Python 3.12, OpenSCAD,
+regression tests, and a hybrid-CAD smoke run. From Windows/WSL or Linux:
+
+```bash
+python -m pip install -r requirements-ci.txt
+python -m pip install --no-deps -e .
+python -m pytest -q tests
+python scripts/fetch_references.py --source brutalism2 \
+  --cache .ref-cache --lockfile references.lock.local.json --bootstrap-lock
+```
+
+A reference download remains an **unreviewed witness** until its digest has
+been inspected and the lock committed. Sketchfab's low-poly Ur uses the
+authenticated download API or an official browser archive; no unauthenticated
+scene scraping. Original CC0 OpenSCAD scripts and imported STLs never replace
+the project's construction genome. See [reference intake/CI](docs/reference-intake-ci.md).

@@ -140,6 +140,33 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 
 <<~/ahu>>
 
+<<~ ahu #/hybrid-capability-stack>>
+
+!! Hybrid kernels and independent witnesses
+
+* ''One pet-name, many geometries.'' A location MAY hold CAD BRep construction,
+  anonymous polygon entities, terrain, point witnesses and future SDF fields.
+  It MUST preserve kernel-specific capabilities and evidence scopes.
+* ''CAD certifies CAD.'' Every structural CAD body carries its own fused-solid
+  and void audits; a watertight polymesh serves composition and sculptural
+  iteration, not a hidden BRep certificate.
+* ''Relational attachment.'' A shared cage anchor carries measured CAD-to-mesh
+  proximity, tolerances and a recoverable construction relation. Anchor
+  proximity does not assert mechanical fusion or load-bearing strength.
+* ''Reproducible sources testify.'' CC0 OpenSCAD/STL and CC-BY Sketchfab models
+  MAY enter through provider-authorized downloads and source-digest locks.
+  External mesh samples and compiled OpenSCAD outputs retain their native
+  scale, provenance and license. A URL alone never establishes immutable input.
+* ''CI tests the contract without missing data.'' Pull requests MAY validate
+  synthetic fixtures, model kernels and CAD/mesh integration without claiming
+  they downloaded the external models. An exploratory archive fetch yields an
+  operator-reviewable hash before promotion to an official lock.
+* ''The surprising form may remain nameless.'' Geometry representations and
+  modeling workflows MAY branch without forcing permanence or final topology;
+  operator pet-names and o-takiage follow the held relations, not kernel ids.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence
@@ -155,6 +182,8 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-poc0">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
