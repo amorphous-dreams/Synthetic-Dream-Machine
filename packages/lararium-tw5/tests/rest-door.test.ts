@@ -101,6 +101,26 @@ describe.skipIf(wikiSkip)(`a control result waits on the rest door${skipNote}`, 
     await s.flush();
     expect(s.results.map((r) => r.status), "the vessel answered: the result leaves").toEqual(["applied", "applied"]);
   }, 120_000);
+
+  test("RED: a result answered after a held one waits behind it — CONTROL: the held one leaves first once rested", async () => {
+    const posts: IslandToVesselMsg[] = [];
+    const handles = new Map([[SLOT, new Repo({ network: [] }).create<LarDoc>(emptyLarDoc())]]);
+    const rest = makeRestDoor({ post: (m) => posts.push(m), handles: () => handles, mintId: () => "r2" });
+    s = await mountSurface(button, [], "lar:///test/projection-surface", rest);
+    const { dispatchLarControlEvent } = await import("../src/tw5-projection.js");
+    const hold = rest.begin();
+    const first = s.event("go", { kind: "lar:act", action: "lar:click" });
+    dispatchLarControlEvent(first);
+    hold.done([SLOT]);
+    await settle();
+    const second = s.event("go", { kind: "lar:act", action: "lar:click" });
+    dispatchLarControlEvent(second);
+    await s.flush();
+    expect(s.results.length, "neither has crossed while the rest waits").toBe(0);
+    rest.answer({ type: "doc:rested", requestId: "r2", rested: true });
+    await s.flush();
+    expect(s.results.map((r) => r.eventId)).toEqual([first.eventId, second.eventId]);
+  }, 120_000);
 });
 
 describe.skipIf(wikiSkip)(`the coherence fold waits for the rest door to go idle${skipNote}`, () => {
