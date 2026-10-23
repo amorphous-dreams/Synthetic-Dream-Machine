@@ -116,7 +116,12 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
  */
 export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort, onPeer?: (peerId: string) => void, onDropped?: (why: string) => void): () => void {
   const adapter = new MessageChannelNetworkAdapter(hardenedSyncPort(mainPort, onDropped));
-  if (onPeer) adapter.on("peer-candidate", ({ peerId }) => onPeer(peerId));
+  const standing = new Set<string>();
+  adapter.on("peer-candidate", ({ peerId }) => { standing.add(peerId); onPeer?.(peerId); });
+  // A port that closes under the vessel (the island's worker ended, or its side closed) carries no `leave`, and the
+  // adapter's strong port reference forwards no `close`, so the vessel's network subsystem never reads the peer as
+  // gone. The port's own close event is the fact.
+  mainPort.addEventListener("close", () => { for (const peerId of standing) adapter.emit("peer-disconnected", { peerId: peerId as never }); standing.clear(); });
   repo.networkSubsystem.addNetworkAdapter(adapter);
   return () => adapter.disconnect();
 }

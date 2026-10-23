@@ -8,7 +8,7 @@ import { next as A } from "@automerge/automerge";
 import { Repo } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { REST_STALL_ROUNDS, answerRestWithHeads } from "../src/rest-with-heads.js";
-import { emptyLarDoc, type LarDoc } from "../src/index.js";
+import { attachMessageChannelSync, emptyLarDoc, type LarDoc } from "../src/index.js";
 
 const pause = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
 
@@ -50,20 +50,20 @@ describe("the vessel's rest answer waits on the island's heads", () => {
 
   test("RED: a rest ask for heads the island never sends answers stalled the moment its channel closes, on a quiet doc — CONTROL: the same ask answers rested when the heads arrive over the open channel", async () => {
     const mc = new MessageChannel();
-    const vessel = new Repo({ network: [new MessageChannelNetworkAdapter(mc.port1)] });
+    const vessel = new Repo({ network: [] });
+    let peer = "";
+    attachMessageChannelSync(vessel, mc.port1, (id) => { peer = id; });
     const handle = vessel.create<LarDoc>(emptyLarDoc());
     const island = A.change(A.clone(handle.doc()!), (doc) => { doc.tiddlers["lar:///t/x"] = { tiddler: { title: "lar:///t/x", text: "edit" } } as never; });
     const islandRepo = new Repo({ network: [new MessageChannelNetworkAdapter(mc.port2)] });
-    const peers = await new Promise<string[]>((resolve) => { const t = setInterval(() => { if (vessel.peers.length > 0) { clearInterval(t); resolve([...vessel.peers]); } }, 5); });
-    const peer = peers[0]!;
+    await new Promise<void>((resolve) => { const t = setInterval(() => { if (peer !== "" && vessel.peers.includes(peer as never)) { clearInterval(t); resolve(); } }, 5); });
     const ask = { type: "doc:rest" as const, requestId: "q", documentIds: [handle.documentId], heads: { [handle.documentId]: A.getHeads(island) } };
     let answer: { rested: boolean; stalled?: boolean; why?: string } | undefined;
     void answerRestWithHeads(vessel, ask, peer).then((a) => { answer = a; });
     await pause(); await pause();
     expect(answer, "the channel stands and the doc is quiet: the ask waits").toBeUndefined();
-    mc.port2.close(); mc.port1.close();
-    (vessel.networkSubsystem as unknown as { emit(e: string, p: unknown): void }).emit("peer-disconnected", { peerId: peer });
-    await pause(); await pause();
+    mc.port2.close();   // the island's side ends: the real adapter's close path, no hand-emitted event
+    await new Promise((r) => setTimeout(r, 100));
     expect(answer).toMatchObject({ rested: false, stalled: true });
     expect(answer!.why).toContain("channel closed");
     void islandRepo;
