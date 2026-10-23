@@ -583,9 +583,10 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 ''SETTLED.'' The board-keying fork stands ''RULED WHOLE and CURED'' (2026-09-18) (#/the-nexus-keying-spine, `91ce09afb`+`c6cfe5b8d`; source declares closure at `open-node-vessel.ts:2272-2277`). The A1 sweep wired all 12 CLI-verb board reads through `nodeNexusIsland` (`0b085461c`). Device-admit carries on read, so a store-direct rite-then-admit sequence never strands a board mid-climb (`ac9a645ba`+`fadd667f0`). ''`heraldry.mem`'s dated order note (#/plan) (2026-09-13) names this fork "owed to the operator"; the ruling closed it the same evening, so a reader carries that note as history, never as open''.
 
+''The Herm carriage-CLIENT fetch leg stands built'' (measured 2026-10-22): a public cid the node lacks resolves through `resolveCidThroughDoor` in `open-node-vessel.ts`, which wires `hermCasTransitFromEnv()` (`node-cas.ts`) through `makeCidResolver` and writes the bytes through; `tests/herm-cas-transit.test.ts` and `tests/herm-reshares-public-blob.test.ts` hold it green. Board migration and the explicit DEPARTURE act stay owed below.
+
 ''NAMED-BUT-UNBUILT, in staged order:''
 
-<<~ has Owed carriage-client-fetch "what/the Herm carriage-CLIENT fetch leg — public-and-missing /cas/<cid> → fetch via hermCasTransit → write-through cid/ → serve status/STAGED, likely what flips e2e ⑦ green — plan is red-first on bulb-read-face.ts (miss→fetch→serve, CONTROL: private/contract miss does NOT fetch)">>
 <<~ has Owed board-migration "what/board-migration-on-connect for the boards beyond persona-KEL, PLUS the explicit DEPARTURE act status/PARTLY LANDED — the in-session case landed via carry-on-read; the broader climb + the sibling 'I left' act (distinguishing a deliberate departure from a torn-fence partition) stand UNBUILT (nexus-identity.ts:264-265)">>
 <<~ has Owed offering-doors "what/the offering announce record, the --apply mint+self-verify+announce, and the taker's kahuli-grammar --from door status/UNBUILT — the record, verify, and antigen fold stand built and unconsulted; nothing signs, announces, or reads an offering in production yet (offering.mem #/the-house-today, #/plan)">>
 <<~ has Owed crossroads-open "what/who writes @crossroads (community authority), how Nexus-level federation discovers it, whether it shards per-Nexus or DreamNet-wide status/DELIBERATELY OPEN — 'this meme MUST NOT pre-narrate them… the mechanism constrains; the outcomes emerge from use' (crossroads.mem #/open)">>
@@ -637,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tEzQiJC1d1WFZn_U8dbfoF3BKntWqaJXdpD0ptZPHlc
+<<^ code="&#x0003;">>ni:///sha-256;I74n2NE6HoKUFydu5zjVdAIF09Qbd8SICAbFPpvd-z8
 
 <<^ code="&#x0004;" -> to="?">>
