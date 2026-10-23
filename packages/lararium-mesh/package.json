@@ -16,6 +16,10 @@
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
     },
+    "./record-port": {
+      "import": "./dist/record-port.js",
+      "types": "./dist/record-port.d.ts"
+    },
     "./lar-camera": {
       "import": "./dist/lar-camera.js",
       "types": "./dist/lar-camera.d.ts"

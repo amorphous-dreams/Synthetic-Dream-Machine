@@ -10,6 +10,7 @@ const islandKinds = [
   "daemon:worldline-trajectory-result", "daemon:resolve-binding-result", "daemon:evict-request",
   "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "doc:rest", "custody:write",
   "view:catalog", "view:content", "view:settle", "lar:frame", "lar:control-result", "lar:service",
+  "port:snapshot", "port:changes", "port:reset", "port:written", "port:answer", "port:presence",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 
 function harness() {
@@ -193,7 +194,15 @@ describe("shared holder routing keeps every island answer on its binding", () =>
 
   test("every island-to-vessel kind in the protocol has one declared route", () => {
     expect(Object.keys(HOLDER_ROUTES).sort()).toEqual([...islandKinds].sort());
-    for (const kind of islandKinds) expect(HOLDER_ROUTES[kind]).toMatch(/^(reply|camera|owner)$/);
+    for (const kind of islandKinds) expect(HOLDER_ROUTES[kind]).toMatch(/^(reply|camera|owner|port)$/);
+  });
+
+  test("a record-port message drops by name while the holder keeps no port lease, and reaches no binding", async () => {
+    const h = harness(); const a = h.port(); const b = h.port();
+    await h.core.connect(a.endpoint); await h.core.connect(b.endpoint); await h.admit(a); await h.admit(b);
+    h.fromIsland({ type: "port:changes", portId: "p1", cursor: "n.x.1", entries: [] });
+    for (const port of [a, b]) expect(port.received.some((m) => (m as { type?: string }).type === "port:changes")).toBe(false);
+    expect(h.drops).toEqual(expect.arrayContaining([{ kind: "port:changes", reason: "no-port-lease" }]));
   });
 
   test("the port that stands the island owns its boot: `ready` before any manifest reaches it alone", async () => {

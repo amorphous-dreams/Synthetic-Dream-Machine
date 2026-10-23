@@ -1,0 +1,177 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-port-contract.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 15
+manao             = 15
+manaoio           = 14
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "dreamdom-port-contract — the normative contract of the record port (D2): the port log and its cursor, the chunked snapshot, cursor reset, the atomic write boundary with txId and causedBy, tombstone retention, clockless presence, and the invoke gate; each answer names its red and its control; the owed rows beside it"
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
+written           = "2026-10-22"
+```
+
+<<~ ahu #/head>>
+
+! The record port contract ~ five questions, answered clockless
+
+''What this carrier holds.'' The house's answers, under the operator's standing delegation, to the five contract questions `dreamdom-roadmap#/the-order` (D2) raised from the field read (`dreamdom-port-field-scout`), plus the invoke gate. Each answer names the red that pins it and the control that keeps the red honest. The controller ruled the leans on 2026-10-22.
+
+''The base.'' The island keeps one ''port log'' per wiki actor. The log mints a monotone integer `seq` per record entry. The entries of one synchronous turn of the composite store (one family fire) append together in one batch, contiguous, and reach each port in one `port:changes` message; a batch never splits across a cursor, so a family reads as one causal change. This rests on a premise the store keeps and a test pins: a composite family fire calls its subscribers synchronously before `writeFamily` resolves. A ''cursor'' reads `<bootNonce>.<shapeId>.<seq>`: `bootNonce` names one island boot; `shapeId` hashes the width, the `localFilter` and the projected-field set. The log lives in memory and carries no wall clock. The camera's frame `rev` and `mountEpoch` order frames; they never serve as a record cursor, since two clocks fused would each lie about the other.
+
+<<~/ahu>>
+
+<<~ ahu #/snapshot>>
+
+!! Q1 ~ the chunked snapshot holds a stable base
+
+* `port:open` fixes `baseSeq` and a `snapshotId`. Chunks `i/n` carry only records whose last-modified `seq` stands at or below `baseSeq`.
+* A record changed after the base drops out of the chunks and arrives through `port:changes{since: baseSeq}`, which the island sends after the final chunk.
+* The log never compacts below the `baseSeq` of a snapshot in transfer. The transfer spans one synchronous turn: the island posts every chunk, then `finishSnapshot`, then the changes after the base. A port whose open still awaits the store's read buffers its live changes and marks their titles dirty; a dirty title drops out of the chunks and arrives through the buffered changes after the final chunk, so no change precedes a chunk and none gets lost between the read and the base. A new open or a close supersedes the transfer; chunks of a dead `snapshotId` drop.
+* A client applies a record only when its `seq` exceeds the one it holds, so a double delivery changes nothing.
+* Reds: `port-snapshot-base-is-stable`, `port-snapshot-changed-record-arrives-once`. Control: with no change in transfer, the plain snapshot stands complete.
+
+<<~/ahu>>
+
+<<~ ahu #/reset>>
+
+!! Q2 ~ a cursor resets by name, never by skipping
+
+* `port:changes` answers `port:reset{reason, floorSeq, headSeq}` for `island-restarted` (nonce mismatch), `compacted` (`since` below the log floor), `shape-changed` (`shapeId` mismatch) and `lagged` (see #/tombstones). The client answers with a fresh open, which clears and rebuilds.
+* A width or `localFilter` change on an open port counts as a new open.
+* Reds: `port-cursor-reset-on-width-change`, `port-cursor-reset-on-expiry`, one per reason. Control: a cursor of the same shape inside retention resumes with no snapshot.
+
+<<~/ahu>>
+
+<<~ ahu #/write>>
+
+!! Q3 ~ one transaction, per-family atomicity, `port:written` last
+
+''Cross-bag atomicity cannot exist.'' The store's atomic unit holds one family inside one bag (`writeFamily`); a write that routes across bags takes separate calls, so no boundary spans them. The contract names this and builds on it.
+
+* The island validates the whole transaction first (routing, basis, `maxRecordBytes`, `maxBatchBytes`). A refusal found at validation refuses the whole transaction, and nothing writes.
+* It then applies per bag family. Each family fires its own change entry carrying `causedBy:[txId]`; other ports see each family as its own causal change and tell a partial transaction by its `txId`. `port:written` alone claims completeness.
+* The echo changes enqueue before `port:written` in one flush, so `port:written` never shows before its effects.
+* The island validates a family's destination before the first family writes (the composite's own `precheckFamily`), so a retired bag or a refused title refuses the whole transaction. A ledger of `txId` answers, kept per ''actor key'' so it survives a reopen, bounded by entry count (1024) with a bounded in-flight window, holds the original `port:written`. A retried `txId` replays a completed answer before the island checks the present open's grants or bags, and writes nothing twice; a partial retry validates only the pending families. A `txId` retried after its answer left the ledger lies outside the live epoch and applies as new; a client retries only the ids it holds unanswered, inside the in-flight window. Validation holds for the destination state at validation time: a destination that retires or changes before a later family commits, like a store-level check the precheck cannot reach, surfaces as a store fault after validation. Such a fault answers `port:written{status:"partial", applied, failed}`; a retry of the same `txId` resumes only the unapplied families. The client's `actor` string labels presence and nothing more: the ledger key, supersession and the `mayEdit` identity come from the composer's `actorOf(portId)` lend, else from the port itself. The client's `edits` flag requests a grant and never carries one: a `port:write` runs only when the port opened with `edits` and the composer's `mayEdit(portId, actor)` lend answers yes, so the default composition refuses every write (`edits-not-granted`). A transaction refused before any family starts releases its in-flight slot. A `txId` binds to a digest of its payload; a retry under the same id with another payload refuses `txid-payload-mismatch`. A family whose destination layer cannot write atomically (no `writeFamily`) refuses `non-atomic-layer` before any family lands, since a member-by-member fallback would replay landed members on a resend; the plain in-memory store stays non-atomic and the port refuses it by name, while the tests' atomic memory layer applies a family's members and then fires their changes in one synchronous stretch, so a listener that throws faults the listener and never the commit. The log appends changes in the order the store fired them; a family stays contiguous unless a listener fires a foreign write inside the emission, which the log then records between the members in its true place. Each family reaches the other ports as its own `port:changes` before the next family starts. The actor table holds at most `maxActors` (256) entries: a new open evicts the least recently opened closed actor with no unanswered transaction, and when none can go the open serves reads while its writes refuse `actor-table-full`. A record that names an explicit `bag` needs the composer's `bagGrant(portId, actor, bag)` lend (absent, `bag-not-granted`), and meets the Kahu predicate when that bag is system canon (`kahuReach`, `kahu-reach` by default for a stranger), since an edit grant covers the wiki's own layers and never canon. An island serves at most `maxPorts` (64) live ports: an open past it gets a `lagged` reset and holds nothing. A port holds at most `maxAsks` (32) started, unanswered asks and refuses the next `ask-queue-full`. A port holds at most `maxQueuedWrites` (16) admitted, unsettled writes; the next refuses `write-queue-full` at admission. A write queued behind another never runs after its port closed or a newer open superseded it.
+* Changes from other origins carry `causedBy:[]`; the field stays mandatory.
+* Reds: `port-echo-named-by-txid`, `port-write-retry-is-idempotent`, `port-written-follows-echo`, `port-write-refused-whole`, `port-write-partial-resumes`, `port-partial-visible-by-txid`. Control: a single-family write answers `applied` with one echo.
+* Open for the red to settle: how the store listener learns the current `txId`. The lean: a synchronous in-flight context at fire time. A `txId` on the shared `ChangeOrigin` stays the fallback if the red forces it.
+
+<<~/ahu>>
+
+<<~ ahu #/tombstones>>
+
+!! Q4 ~ tombstones by count, and a lagging subscriber learns by reset
+
+* A tombstone stands as a log entry `{title, deleted: true, seq}`. Retention counts entries (4096 per actor, a dial), plus the snapshot pin of #/snapshot. Open ports pin nothing.
+* A subscriber behind the floor receives `port:reset{reason: "compacted", floorSeq}`. A projection acknowledges applied changes with `port:ack{cursor}`; the island counts the bytes it posted since the last ack, and a port whose unacknowledged backlog passes a byte budget (a dial, default 1 MiB) stops receiving changes and receives one `port:reset{reason: "lagged"}`, then waits for a reopen. An ack counts only up to the highest cursor the island posted to that port; a claim beyond it clears nothing.
+* A skinny record carries `omitted: [fields]`, the fields that exist and went unprojected. A field in neither `fields` nor `omitted` stands deleted. A `load` answer carries `seq`; the larger `seq` wins, so a stale load never overwrites a newer record.
+* Reds: `port-tombstone-then-compaction-resets`, `port-skinny-omitted-vs-deleted`, `port-skinny-then-load`, `port-load-stale-never-overwrites`. Control: a tombstone inside retention reaches a lagging-but-in-range subscriber as a delete.
+
+<<~/ahu>>
+
+<<~ ahu #/presence>>
+
+!! Q5 ~ presence expires at causal boundaries; no timer runs anywhere in the port
+
+* Presence binds to its port, never persists, and at width none travels as the ruled separate droppable message. Each entry carries `{actorKey, beat, state}`.
+* An entry ends at: `port:close`; the transport's own disconnect event (the composer calls `transportGone(portId)` on the port cap when the binding's channel closes); supersession by a newer open of the same `actorKey`; a presence message whose `actorKey` differs from the one its port opened with drops; or a ''beat lapse''. The island counts ''presence rounds'' (each `port:presence` it processes). An entry whose last `beat` stands more than `LAPSE_ROUNDS` rounds old (a dial, default 30) lapses at the next round.
+* ''As of the last round.'' A lapse counted in rounds fires only when a round happens. When the last live peer goes quiet, a dead peer's entry stands until the next round. The contract names this limit: presence reads "as of the last round", never "now". A half-open transport stays the relay's keepalive concern.
+* Reconnect: a new open sends the newcomer the full current presence set; the peer re-sends its own state, and old state never resumes. A receiver drops an arrival with a lower `beat`. Disconnect cleanup emits `port:presence{actorKey, gone: true}` at once.
+* Reds, none reading a wall clock: `port-presence-expires` (including the case where the only remaining peer sends one beat and the dead entry lapses on that round), `port-presence-close`, `port-presence-transport-gone`, `port-presence-supersede`, `port-presence-reconnect-full-set`, `port-presence-gone-fans-out`. Control: a refresh inside the window keeps the entry.
+
+<<~/ahu>>
+
+<<~ ahu #/invoke>>
+
+!! The invoke gate ~ authority re-checked at run time
+
+* `port:ask{kind: "invoke"}` names an `affordanceId` and a `renderCursor`; it carries no action string and no identity claim. The island obtains the session's ''proven face'' (what the holder verified) from a server-held lookup the composer lends (`faceOf(portId)`), never from the message. The island retains the port's latest render mount; invoke fires the recorded listener of the affordance the render offered, and an `affordanceId` the render never offered refuses `unknown-affordance`.
+* The gate runs an injected `authority(req)` verifier, which refuses by default (`no-authority`, answered before the proven-face check). Order: authority, then `renderCursor` freshness, then the fire; the authority check runs immediately before the fire, never cached from the render. The render cursor goes stale on any later shared log entry and on any later change event of the engine's own wiki (a refresh can replace the offered nodes without a log entry), since the island tracks no per-render dependency set (conservative, and sound for transclusions). A non-admin never learns freshness. `worker-trust` retires for the port's invoke path.
+* A signed-grant digest belongs to D4's actor manifest, outside this lane.
+* Reds: `non-admin-invoke-refused`, `ask-invoke-stale-cursor-refused`, `invoke-authority-rechecked-at-run`. Controls: an admin invokes once; the default production composition, which has no wiring until the composer patch lands after Wave C, refuses a port invoke by name (`no-authority`), so the gate never reads open through a missing wiring.
+
+<<~/ahu>>
+
+<<~ ahu #/verb-cas>>
+
+!! The `verb` and `cas` asks ~ island-local, both fail closed
+
+* ''`verb`'' names a registered ACTION verb, its `args` and its `titles` as targets. It rides the same proven-face gate as `invoke` (`faceOf`, then `authority`, `no-authority` by default) with no render cursor, and its reactors meet bag grants only through a `verbCap(face, portId)` the composer lends (absent, every bag-grant check refuses `no-verb-cap`), and runs on a verb table the port cap builds for itself with `kahuReachClearedAtGate` unset. Every verb that lands bytes in a system canon bag therefore asks the Kahu predicate itself, and a missing `kahuReach` lend reads as a stranger and refuses. The routed-envelope path of `wiki:place-verb` stays as it stands.
+* ''`cas`'' answers from the island's own `resolveByCid`, re-hashing the bytes against the cid (`cas-corrupt` on a mismatch). The composer lends `casTierOf(cid)`: only a `public` body answers. An unknown tier refuses `cas-tier-unknown`, a veil or personagroup body `cas-private`, a contract body `cas-contract`, and none of those reads a byte. Without the lend, `cas` refuses by name; so the composer wiring row covers `casTierOf` and `kahuReach` beside `faceOf`, `mayEdit` and `authority`.
+* Reds: see the handler tests `port-verb-*` and `port-cas-*`.
+
+<<~/ahu>>
+
+<<~ ahu #/retry-law>>
+
+!! The one retry law ~ a resend of the same id, never a timer
+
+A lost answer repairs by one law on every path: the sender resends the ''same id'' a bounded number of times within a live epoch; the receiver treats the resend idempotently and replays its original answer; the loop ends on an answer or on an epoch change. No timer decides when to resend or when to stop: the sender resends at its next causal boundary (a reconnect, a fresh frame, the next act) and the bound counts attempts.
+
+* The port's `txId` retry (#/write) follows it: the ledger replays the original `port:written`.
+* The camera's page-control resend follows it as an owed row, outside this lane: `projection-sink.ts` `relay` sends once and never re-sends the pending `eventId`; the cure resends that `eventId` within the mount epoch, and the island's answer ring replays the answer.
+
+<<~/ahu>>
+
+<<~ ahu #/choices>>
+
+!! Choices the build made and the contract names
+
+* ''Story width'' projects the fields the caller selects; the roadmap leaves the story field set open. `full` carries every field and `none` carries none.
+* ''`append` returns `{seq, cursorOf(shape)}`.'' One actor log serves ports of different shapes, so the port binds the shape when it forms a wire cursor.
+* ''Byte limits'' (`maxRecordBytes`, `maxBatchBytes`) count the UTF-8 bytes of the record's JSON, excluding envelope framing.
+
+<<~/ahu>>
+
+<<~ ahu #/gate-scope>>
+
+!! Gate scope ~ two gates, kept apart
+
+The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admission (`kahuReachClearedAtGate`, the routed-envelope path in `wiki-behavior`'s setup) stays a separate gate and folds into nothing here. The actor manifest and any keyhive grant check belong to D4.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed beside the port ~ rows outside this lane's build
+
+* ''Composer wiring.'' The composer lends `faceOf(portId)`, `mayEdit(portId, actor)`, `bagGrant(portId, actor, bag)`, `actorOf(portId)` (a port write into system canon also needs `kahuReach`), `verbCap(face, portId)`, `casTierOf(cid)`, `kahuReach` and an `authority` verifier at the port cap, calls `transportGone(portId)` on channel close, and the holder keeps a port lease so port messages reach the binding that opened the port (today they drop by name, `no-port-lease`).
+* ''Mock witnesses.'' The retained-render staleness red uses a mock wiki that refreshes on the change event; a witness over a real `bootTestWiki` refresh stays owed. The commit-boundary drift red holds a mock bag, not a real store fault.
+* ''Listener timing.'' The causedBy attribution rests on synchronous store notification (the memory and Automerge layers keep it, and a mesh test pins the composite's). A layer that notifies after `writeFamily` settles would lose a write's `causedBy`; the layers beyond those two stay unread.
+* ''A flaky neighbour.'' `wiki-shore-draft-road` T2 failed once under full-suite load and passed alone and in repeats; it stays on the house flake list, untraced.
+* ''Read scope, ruled.'' Snapshot, changes, `load`, `filter` and `render` read the world the island's camera already paints to its one face, so the port ships with no `bagRead` lend: an island that serves readers of more than one authority needs a per-bag read lend before it opens a port to the second. The port holds the line: once the composer lends `faceOf`, an open must name a proven face with a stable string `id` (the verifier's subject, never the whole proof, which may rotate): the port remembers the first `id` and answers an open under another id, or under a lookup that throws or names no id, with a reset and holds nothing (`port-one-island-one-face`, `port-face-key-is-the-stable-id`). Every later message, and every delivery or answer that resumes after an await, re-reads the face: unless the id still equals the one the open proved, an ask or write is refused `face-changed` and the port retires, so a moved face reads, answers and acts under nothing: presence fan-out checks each recipient, and each bag-grant check a verb reactor makes re-reads the face. A reactor already past its last grant check when the face moves still finishes, since the island cannot cancel it mid-effect; that residue stays owed to the actor gate (`port-face-must-hold-for-every-ask-and-write`). The island keeps its first face for its whole life: a second face reuses a rebuilt island, since the wiki it serves may still carry the first face's records.
+* ''Port ownership.'' A `portId` names a port inside one island; the holder's port lease must carry which binding admitted it, so another binding cannot open, close, ack or ask under that id. Until the lease lands the holder drops port replies by name and no second binding hears them.
+* ''Control traffic.'' Presence and ack carry no per-port rate bound; the holder's lease and transport own that budget.
+* ''A retired port's landed write.'' When a port retires after a family landed, the ledger keeps the transaction unanswered until the same actor resends it; an actor that never resends holds one slot of the bounded in-flight window and its actor-table entry, which eviction skips. A cleanup of settled writes with no resend stays owed.
+* ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
+* ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
+* ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
+* ''`$:/info/browser/*`.'' No tier path handles it yet; the `localFilter` core names it and the tier tests pin it.
+* ''D1's same-id resend.'' The camera's page controls resend a pending `eventId` after a lost answer, under #/retry-law.
+* ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM `MemeAst` feeds the pass; a witness comparing it with the tree-sitter fold follows.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-field-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;03sUwV-iBGNhjbv5QHOImG_5WjCvhI2yHTChoLJJ2b4
+
+<<^ code="&#x0004;" -> to="?">>

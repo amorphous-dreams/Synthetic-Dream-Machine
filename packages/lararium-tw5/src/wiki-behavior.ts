@@ -27,6 +27,7 @@ import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasRecipeWatch, hasProjection } from "./has-island-watches.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
+import { hasRecordPort, type RecordPortOptions } from "./record-port-handler.js";
 
 /** The reboot-pending alert tiddler title. Tagged `$:/tags/Alert` so TW5's NATIVE
  *  alert area renders it (no custom banner needed). Stable title = one coalesced
@@ -85,6 +86,7 @@ export async function placeSystemAlert(
 const TW5_ALERT_TAG = "$:/tags/Alert";
 
 export interface WikiBehaviorOptions {
+  recordPort?: RecordPortOptions;
   /**
    * Platform side-effects to start on ea (e.g. node disk projection). Returns a
    * cleanup run on demote, or undefined for none. Browser supplies nothing —
@@ -173,5 +175,5 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
   // onHooAnu order (recipe · engine · projection-cleanup · registry-null) exactly. hasProjection is
   // the SHARED render cap the daemon also inherits — one VM, one surface path. Caller-supplied caps
   // fold at the tail — added capability, never a re-ordering of the base channels.
-  return composeIsland([dispatchCap, hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
+  return composeIsland([dispatchCap, hasRecordPort(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
 }

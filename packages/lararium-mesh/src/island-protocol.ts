@@ -68,6 +68,7 @@ import {
   readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService,
   type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Resend, type LarMsg_Service,
 } from "./lar-camera.js";
+import { isPortKind, readPortIslandMsg, readPortVesselMsg, type PortIslandToVesselMsg, type PortVesselToIslandMsg } from "./record-port.js";
 
 
 // ── Island storage configuration ──────────────────────────────────────────
@@ -710,6 +711,7 @@ export type VesselToIslandMsg =
   | WikiMsg_PlaceVerb
   | LarMsg_ControlEvent
   | LarMsg_Resend
+  | PortVesselToIslandMsg
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
@@ -992,7 +994,8 @@ export type IslandToVesselMsg =
   | IslandMsg_ViewCatalog
   | IslandMsg_ViewContent
   | IslandMsg_ViewSettle
-  | LarIslandToVesselMsg;
+  | LarIslandToVesselMsg
+  | PortIslandToVesselMsg;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1009,8 +1012,9 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // no cap and no TW5 handler ever sees one, and the island keeps running.
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
+  if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
   return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND>) || isSensoriumSignalType(v.type);
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
@@ -1020,8 +1024,9 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
+  if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
-    v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"]>,
+    v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 

@@ -317,6 +317,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       deliver(house.owner, msg);
       return;
     }
+    if (route === "port") { onDrop(msg.type, "no-port-lease"); return; }   // the port lease waits on the composer
     if (route === "camera") {
       const cameraId = msg.cameraId;
       if (typeof cameraId !== "string") { onDrop(msg.type, "missing-camera-id"); return; }

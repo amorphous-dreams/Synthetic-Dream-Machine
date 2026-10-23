@@ -40,6 +40,7 @@ export * from "./catalog-row.js";
 export * from "./floor-manifest.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
+export * from "./record-port.js";
 export * from "./resolver.js";
 export * from "./bag-residency.js";
 // WHERE a bag's bytes rest — repository | hearth | ley — the third self-describing axis beside the cap-tier

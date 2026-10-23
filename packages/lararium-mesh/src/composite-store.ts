@@ -25,6 +25,7 @@ import {
   corpusLarUri,
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
+import { assertStorableTitle } from "./title-law.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -145,7 +146,7 @@ export class CompositeStore implements LarTiddlerStore {
 
     // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {
-      this.listeners.forEach((fn) => fn(change));
+      this._tell(change);
     });
     this.unsubs.set(layer.store, unsub);
 
@@ -165,7 +166,7 @@ export class CompositeStore implements LarTiddlerStore {
           this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
             if (!rec) return;
             const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
-            this.listeners.forEach((fn) => fn(change));
+            this._tell(change);
           });
         }
       });
@@ -202,7 +203,7 @@ export class CompositeStore implements LarTiddlerStore {
       const answeredBy = resolved?.layer ?? layer;
       const heads = resolved?.heads;
       const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
-      this.listeners.forEach((fn) => fn(change));
+      this._tell(change);
       for (const projection of this.projections.keys()) projection.onUriChanged(change);
     }
   }
@@ -260,14 +261,36 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
-    this._requireBagForBase(options, "writeFamily");
-    const store = this._writeTargetFor(options?.bag, "writeFamily");
-    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
     if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
     for (const record of puts) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+  }
+
+  /** One listener that throws never starves the listeners after it: each hears every change. */
+  private _tell(change: LarTiddlerChange): void {
+    for (const fn of [...this.listeners]) { try { fn(change); } catch { /* a listener's fault stays its own */ } }
+  }
+
+  /** Run every composite-owned family check before a caller starts a transaction. */
+  async precheckFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): Promise<void> {
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
+    if (retired) await retired;
+    this._writeOptionsFor(options, store, "writeFamily");
+    if (typeof store.writeFamily !== "function") {
+      throw new VerbRefusal("non-atomic-layer", "CompositeStore.precheckFamily: destination cannot write a family atomically");
+    }
+  }
+
+  /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */
+  private _familyChecks(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): { store: LarTiddlerStore; retired: Promise<void> | void } {
+    this._requireBagForBase(options, "writeFamily");
+    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    for (const record of puts) assertStorableTitle(record.tiddler.title);
+    for (const title of tombstones) assertStorableTitle(title);
+    return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
   }
 
   /**
