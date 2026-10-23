@@ -74,6 +74,8 @@ interface OpenPort {
   readonly ledger: ReturnType<typeof createTxLedger>;
   readonly actorState: ActorState;
   readonly actorTableFull: boolean;
+  /** The face id the open proved; every later ask and write must still read the same id. */
+  readonly faceId: string | undefined;
   /** Writes admitted and not yet settled; the queue holds each message whole, so the count is bounded at admission. */
   queuedWrites: number;
   /** Asks started and not yet answered; the count is bounded at admission like the write queue. */
@@ -281,6 +283,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       ctx.post(wire);
     };
     if (port.closed) return;
+    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) { answer("refused", [], [], "face-changed"); return; }
     if (port.actorTableFull) { answer("refused", [], [], "actor-table-full"); return; }
     const digest = transactionDigest(msg.records);
     if (!port.ledger.matches(msg.txId, digest)) { answer("refused", [], [], "txid-payload-mismatch"); return; }
@@ -365,6 +368,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const ask = async (msg: PortMsg_Ask, ctx: IslandContext, port: OpenPort): Promise<void> => {
     const answered = (result: unknown) => { if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "answered", result })); };
     const refused = (reason: string) => { if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason })); };
+    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) { refused("face-changed"); return; }
     if (msg.kind === "filter") {
       try { answered(ctx.tw5.$tw.wiki.filterTiddlers(msg.subject ?? "").filter(title => visible(title, port))); }
       catch { refused("filter-unavailable"); }
@@ -555,7 +559,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const port: OpenPort = { open: msg, boundActor, presenceActor, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
           ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger,
-          actorState: actor, actorTableFull, queuedWrites: 0, asksInFlight: 0 };
+          actorState: actor, actorTableFull, faceId: openFace ?? undefined, queuedWrites: 0, asksInFlight: 0 };
         ports.set(msg.portId, port);
         void open(msg, ctx, port);
         return true;

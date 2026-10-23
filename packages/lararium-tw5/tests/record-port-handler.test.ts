@@ -368,6 +368,26 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-face-must-hold-for-every-ask-and-write: a face that changes after the open is refused face-changed; CONTROL: the same id still asks and writes", async () => {
+    let face: Record<string, unknown> = { id: "alice" };
+    const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }) });
+    await r.send(openMsg());
+    face = { id: "alice", proof: 2 };
+    await r.send(askMsg("load", { askId: "same", titles: ["Ordinary"], fields: ["text"] })); await ioSettle();
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "same", status: "answered" });
+    await r.send(writeMsg("same-w", "SameFace"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "same-w", status: "applied" });
+    face = { id: "bob" };
+    await r.send(askMsg("load", { askId: "swap", titles: ["Ordinary"], fields: ["text"] })); await ioSettle();
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "swap", status: "refused", reason: "face-changed" });
+    await r.send(askMsg("invoke", { askId: "swap-inv", renderCursor: "x", affordanceId: "a1" })); await ioSettle();
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "swap-inv", status: "refused", reason: "face-changed" });
+    await r.send(writeMsg("swap-w", "SwapFace"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "swap-w", status: "refused", reason: "face-changed" });
+    expect(await r.store.get("SwapFace")).toBeNull();
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());
@@ -426,9 +446,9 @@ describe("record port handler", () => {
     let face: object | undefined = { id: "admin" };
     const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }), verbs: () => table });
     await r.send(openMsg());
-    face = undefined;   // the binding loses its proof after the open
+    face = undefined;   // the binding loses its proof after the open: the port reads it as a changed face
     await r.send(askMsg("verb", { subject: "known" }));
-    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-proven-face" });
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "face-changed" });
     expect(runs).toBe(0);
     face = { id: "admin" };
     await r.send(askMsg("verb", { subject: "absent" }));
