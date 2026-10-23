@@ -19,7 +19,7 @@ the Operator selects two references in the talk-story floor.
 | [Barbican Estate / mohamedhussien](https://sketchfab.com/3d-models/barbican-estate-and-barbican-centre-5728720dc00d4dbebebee83125f68299) | Brutalist | Downloadable 460k-triangle scene | CC BY | Useful scene-scale composition; data provenance/metric quality unverified |
 | [Brutalist concrete TriCorner / Kilstrup](https://sketchfab.com/3d-models/building-brutalist-tricorner-a0923ae832474539bc856a8c6d3acc00) | Brutalist | Modular authored 586k-triangle 3D asset | CC BY-NC plus third-party texture restrictions | Design grammar reference, not scientific measurement |
 | [Future Brutalism kit / Vishchun](https://sketchfab.com/3d-models/future-brutalism-c9043d3066954260aef09877526f5b16) | Brutalist | ~20k-triangle modular environment kit | CC BY | Lightweight generative assembly, non-metric |
-| [Øm Jættestue Passage Grave / Balabanian](https://sketchfab.com/3d-models/passage-grave-m-jttestue-denmark-fe5da7d5202a4bfaa6b48e0096d4c6fd) | Megalithic | 610-image RealityCapture survey, indoor passage+chamber, 100k triangles | CC BY | **Strong navigable-void reference**; supports outside/inside/door/room distinctions |
+| [Øm Jættestue Passage Grave / Balabanian](https://sketchfab.com/3d-models/passage-grave-m-jttestue-denmark-fe5da7d5202a4bfaa6b48e0096d4c6fd) | Megalithic | 610-image RealityCapture survey, indoor passage+chamber, 100k triangles; **[Zenodo 4.9 MB GLB mirror](https://zenodo.org/records/10303394)** | CC BY | **Strong navigable-void reference**; supports outside/inside/door/room distinctions |
 | [Dólmen do Rapido III](https://sketchfab.com/3d-models/dolmen-do-rapido-iii-4210a4d4822c42be88afa4facd6f0ad1) | Megalithic | DJI Mini2 photogrammetry, ~1.9M triangles | CC BY | Chamber/corridor topology, heavier data; metric registration unverified |
 | [Stonehenge laser-scan report](https://historicengland.org.uk/research/results/reports/32-2012) | Megalithic | Professional 2011 survey and public archaeological analysis | Source scan not openly located | Valuable standards/ground truth, **report alone does not supply downloadable scan geometry** |
 | [Çatalhöyük North Area / OpenHeritage3D](https://www.openheritage3d.org/project.php?id=0xe0-7v64) | Neolithic (adjacent category) | Published ~5.7GB terrestrial LiDAR | project-specific CC license | Massive real building-void dataset; too heavy for first PoC baseline |
@@ -34,7 +34,7 @@ the Operator selects two references in the talk-story floor.
 1. Ziggurat of Ur, as above.
 2. Øm Passage Grave, for negative-space and circulation inference, with actual interior capture. Both sources use image-derived surface reconstruction rather than executable CAD grammar.
 
-Neither pair is operator-locked. The Operator may prioritize either complementary
+The Øm source also has an unusually easy directly published GLB (Zenodo DOI 10.5281/zenodo.10303394). The current Loom surface-witness adapter accepts digest-checked GLB and OBJ scenes as sampled evidence, not as CAD solids. Neither pair is operator-locked. The Operator may prioritize either complementary
 methods (scan + parametric source) or complementary architecture (terrace + chamber).
 
 ## Ingestion boundary

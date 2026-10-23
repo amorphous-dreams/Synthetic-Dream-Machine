@@ -79,15 +79,22 @@ def load_xyz(stack: LocationStack, source_id, *, max_points=100_000):
 
 
 def sample_mesh(stack: LocationStack, source_id, *, count=2000, seed=19):
-    """Surface-sample a *source* OBJ mesh for comparison, not reconstruction."""
+    """Surface-sample OBJ/GLB evidence, not a CAD genome or solid certificate."""
     import trimesh
     path,src,frame=_source(stack,source_id,{'photogrammetry_mesh','cad_model'})
     if count<1 or count>500_000:raise ValueError('Invalid sample budget')
-    if path.suffix.lower()!='.obj':
-        raise ValueError('This measured adapter accepts only OBJ meshes')
-    mesh=trimesh.load_mesh(path,process=False)
+    if path.suffix.lower() not in ('.obj', '.glb'):
+        raise ValueError('Surface witness adapter accepts OBJ or GLB only')
+    # GLB often contains a scene graph, instanced meshes, and transforms.
+    # Flatten only into ephemeral *witness points*; never claim a BRep union.
+    if path.stat().st_size > 100*1024*1024:
+        raise ValueError('Surface source exceeds 100 MiB per-file ingest limit')
+    obj=trimesh.load(path,process=False)
+    mesh=obj.to_geometry() if isinstance(obj,trimesh.Scene) else obj
     if not isinstance(mesh,trimesh.Trimesh) or len(mesh.faces)<1:
         raise ValueError('Source must contain triangle surface faces')
+    if len(mesh.faces)>4_000_000 or len(mesh.vertices)>5_000_000:
+        raise ValueError('Mesh exceeds geometric ingest complexity limit')
     if not np.isfinite(mesh.vertices).all():
         raise ValueError('Mesh coordinates must be finite')
     points,_=trimesh.sample.sample_surface(mesh,count,seed=seed)

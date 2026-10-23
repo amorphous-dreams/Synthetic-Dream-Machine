@@ -46,3 +46,25 @@ def test_reject_unregistered_cloud_scale(tmp_path):
     changed=replace(original,frame_id='other',units='model_unit')
     with pytest.raises(ValueError,match='Unregistered'):
         sampled_surface_distance(original,changed)
+
+
+def test_glb_scene_transforms_can_be_sampled_as_witness_only(tmp_path):
+    """A scan-style GLB scene can contribute points, never a CAD solid."""
+    import trimesh
+    stack,_=make_stack(tmp_path)
+    tri=trimesh.Trimesh(vertices=[[0,0,0],[1,0,0],[0,1,0]],faces=[[0,1,2]],process=False)
+    scene=trimesh.Scene()
+    scene.add_geometry(tri,node_name='base')
+    shift=np.eye(4); shift[:3,3]=[0,0,3]
+    scene.add_geometry(tri,node_name='upper',transform=shift)
+    file=tmp_path/'two-level.glb'
+    file.write_bytes(scene.export(file_type='glb'))
+    stack.add_source(Source.from_file('observed-glb','photogrammetry_mesh',file,'local'))
+    points=sample_mesh(stack,'observed-glb',count=60,seed=8)
+    a=points.as_array()
+    assert a.shape==(60,3)
+    assert a[:,2].min()==0 and a[:,2].max()==3
+    assert sampled_surface_distance(points,points)['sampled_bidirectional_rms']==0
+    file.write_bytes(file.read_bytes()+b'extra')
+    with pytest.raises(ValueError,match='changed'):
+        sample_mesh(stack,'observed-glb',count=10)
