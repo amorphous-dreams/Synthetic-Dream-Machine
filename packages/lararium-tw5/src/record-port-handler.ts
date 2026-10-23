@@ -470,7 +470,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           status: "pending", requestedBy, requestedAt: "" };
         const lent = opts.verbCap?.(face!, msg.portId) ?? (async () => ({ ok: false, reason: "no-verb-cap" }));
         // Each bag-grant check the reactor makes re-reads the face, so a face that moves mid-verb is refused at the next check.
-        const cap: VerbContext["cap"] = async (...args) => faceHolds(port) ? lent(...args) : { ok: false, reason: "face-changed" };
+        const cap: VerbContext["cap"] = async (...args) => {
+          if (!faceHolds(port)) return { ok: false, reason: "face-changed" };
+          const proof = await lent(...args);
+          return faceHolds(port) ? proof : { ok: false, reason: "face-changed" };   // a proof that settles after the face moved grants nothing
+        };
         answered(await handler(args, { daemon: ctx.composite, invocation, cap }));
       } catch (error) {
         if (isVerbRefusal(error)) {

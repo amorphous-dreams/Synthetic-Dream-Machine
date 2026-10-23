@@ -415,6 +415,29 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-verb-grant-pending-while-the-face-moves-grants-nothing: a positive proof that settles after the move is refused; CONTROL: a steady face's pending proof lands", async () => {
+    let face: Record<string, unknown> = { id: "alice" };
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    let hold = true;
+    const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }),
+      verbCap: () => async () => { if (hold) await gate; return { ok: true }; } });
+    await r.send(openMsg());
+    await r.store.put({ tiddler: { title: "Keep", text: "stays" } }, origin);
+    const pending = askMsg("verb", { askId: "slow", subject: "CLEAR", args: { bag: "working" } });
+    await r.send(pending);
+    face = { id: "bob" };
+    release(); await ioSettle();
+    expect(ofType(r.messages, "port:answer").some(message => message.askId === "slow" && message.status === "answered")).toBe(false);
+    expect(await r.store.get("Keep")).not.toBeNull();   // CLEAR never ran its effect
+    face = { id: "alice" };
+    hold = false;
+    await r.send(openMsg("again", { actor: "again" }));
+    await r.send({ ...askMsg("verb", { askId: "steady", subject: "CLEAR", args: { bag: "working" } }), portId: "again" }); await ioSettle();
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "steady", status: "answered" });
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());
