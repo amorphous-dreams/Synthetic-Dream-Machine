@@ -76,15 +76,30 @@ async function floorOutcome(page: Page): Promise<string> {
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<string>).catch(() => "no outcome");
 }
 
-/** The hearth's cabal releases the genesis floor: the seat signs the manifest's exact bytes, then seals the release. */
-async function releaseGenesisFloor(): Promise<void> {
+/** The genesis floor manifest's bytes, copied beside the run, and the approval file the seat signs over them. */
+function floorFiles(): { manifestFile: string; approvalFile: string } {
   const seed = JSON.parse(readFileSync(join(REPO, "genesis/seed.json"), "utf8")) as { tiddlers: Record<string, { tiddler: { cid?: string } }> };
   const manifestCid = seed.tiddlers["lar:///ha.ka.ba/bags/oracle/genesis-cid-floor"]?.tiddler.cid;
   expect(manifestCid, "the genesis seed names no floor manifest").toMatch(/^[0-9a-f]{64}$/);
-  const manifestFile = join(scratch, "floor-manifest.json"), approvalFile = join(scratch, "floor-approval.json");
+  const manifestFile = join(scratch, "floor-manifest.json");
   copyFileSync(join(REPO, "genesis/cas", manifestCid!), manifestFile);
-  const opened = await hearth!.cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
-  expect(opened.code, opened.stderr).toBe(0);
+  return { manifestFile, approvalFile: join(scratch, "floor-approval.json") };
+}
+
+/**
+ * The seat signs the manifest's exact bytes BEFORE the vessel stands: `nexus promote open` reads the sealed seat rows, which a
+ * standing vessel's key session owns, so the approval rides the founding rite and only the release (a store verb) waits for the
+ * live hearth.
+ */
+async function approveGenesisFloor(cli: (args: readonly string[]) => Promise<{ code: number; stdout: string; stderr: string }>): Promise<void> {
+  const { manifestFile, approvalFile } = floorFiles();
+  const opened = await cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
+  expect(opened.code, `${opened.stderr}\n${opened.stdout}`).toBe(0);
+}
+
+/** The hearth's cabal seals the release over the approval it signed at founding. */
+async function releaseGenesisFloor(): Promise<void> {
+  const { manifestFile, approvalFile } = floorFiles();
   const released = await hearth!.cli(["nexus", "release", manifestFile, "--approval", approvalFile]);
   expect(released.code, `${released.stderr}\n${released.stdout}`).toBe(0);
 }
@@ -108,7 +123,7 @@ beforeAll(async () => {
   hearth = await openStaged({
     tag: "floor-crossing",
     // The face stands at its own hearth's Nexus, so a fleet join certifies the device's face-scoped key there.
-    found: async (cli, root) => { await foundStagedHearth(cli, root, "hearth"); await mintStagedNexusKey(root); },
+    found: async (cli, root) => { await foundStagedHearth(cli, root, "hearth"); await mintStagedNexusKey(root); await approveGenesisFloor(cli); },
     daemonEnv: { LAR_PRONAOS_WEB_ROOT: WEB_ROOT, LAR_PRONAOS_ARTIFACT_RECORD: RECORD },
   });
   // The banner's crossing line names the URL a device opens: `[lararium]   <url>   (<face kind>)`.
