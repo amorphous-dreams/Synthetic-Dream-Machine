@@ -11,7 +11,7 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
-role      = "projection-driven, topology-aware, multi-view geometry evolution and control-image production"
+role      = "constructive-solid architecture, evolutionary form selection, and orthographic drafting control"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/projection-loom"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -24,44 +24,40 @@ uri-path  = "ha.ka.ba/lares/api/projection-loom"
 
 ! Projection Loom
 
-Projection Loom weaves rooted architectural construction, volumetric contact evidence, multi-view projection, and evolutionary selection into repeatable production assets. It accepts any named subject through a project-defined builder or an inherited mesh; it holds no subject's appearance as intrinsic code.
-
-Its outputs supply transparent silhouettes, depth-tested structure lines, neutral illuminated forms, and combined technical control images for 2D illustration and 3D production. Every view projects one held model, while the source evidence remains independently inspectable.
+Projection Loom grows architecture from authored CAD-solid construction rules, verifies volumetric attachment before admitting evolutionary lineages, and casts one continuous object into multiple orthographic drawing views. Each project supplies the subject's construction genome and evidence; the loom governs contact, projection, selection, and isolated control-media export.
 
 <<~/ahu>>
 
 <<~ ahu #/invariants>>
 
-!! Operating Invariants
+!! Solid Construction and Lineage
 
-* ''Identity through relation.'' A project binds a procedural builder or an inherited mesh, bounded parameters, named cameras, and observed targets; the loom supplies transforms and measurements without owning the subject.
-* ''Separation of inks.'' Silhouette, hierarchy-ranked structural edges, surface light, and their combination occupy distinct transparent output passes. Contact failures and intended support paths appear on separate review overlays; production ink never disguises engineering uncertainty.
-* ''Same frame, many views.'' Named camera axes refer to one object coordinate system. Elevations, plans, and oblique views share geometry rather than claiming reconstructed unseen truth.
-* ''Structure before appearance.'' A project names foundations, attachments, support paths, and declared exceptions. Bounding boxes and visible silhouette islands aid diagnosis; qualifying closed-convex solids must share positive interior volume under a role-scaled joint threshold when the project enables its structural gate. Unknown solids remain unknown, not silently connected.
-* ''Fitness with a held witness.'' Evolve diverse unlit lineages against observed silhouettes, refine selected candidates with bounded photometric evidence, and let self-produced views stabilize subsequent turns without promoting them to independent ground truth.
-* ''Geometry returns as geometry.'' A saved parametric checkpoint resumes its builder; an exported or imported mesh becomes a new held surface for bounded deformation. Re-entry preserves the shared camera frame and distinguishes inherited evidence from subsequent edits.
+* ''Grow from relation.'' The project names one material foundation and children with explicit parent attachment. Every new structure occupies measurable positive volume inside its supporting solid. Vertices and painted silhouettes do not invent support.
+* ''One joined body.'' Every candidate admitted to final production resolves as one valid OpenCascade BRep solid. Zero-thickness touches, detached decorations, and interrupted attachment graphs fail the solid gate; exceptions require a separate scene object, never an implied member of the same architecture.
+* ''Construction governs mutation.'' A genome changes bounded massing, tower spacing, gallery reach, brace sections, and other authored structural parameters. Each candidate regrows solid geometry. Tessellated projections serve as outputs, never as evolutionary genotype.
+* ''Shared camera, multiple witnesses.'' Front, side, back, top, and oblique views project the same held solid under named orthographic cameras. An external mask or painting informs form and light without claiming unseen geometry.
+* ''Ink follows engineering.'' Outline, occlusion, structural crease, material seam, and detail lines occupy separated controls. Semantic roles flow from named construction parts. Visual cleanup cannot disguise a failed joint.
+* ''Ancestry through genomes.'' A selected construction genome re-enters the same growth grammar across epochs. Independent source references remain the fitness witness; self-produced masks stabilize lineages only at secondary weight.
 
 <<~/ahu>>
 
 <<~ ahu #/contract>>
 
-!! Software Carrier
+!! Executable Carrier
 
-The executable carrier resides at `tools/projection-loom/`. A project supplies a JSON manifest containing a procedural builder or geometry source, optional rooted architectural grammar, named attachments and support thresholds, faces, materials, and semantic drawing roles where known. A run exports independently usable RGBA control passes, geometry checkpoints, and machine-readable scores.
+`tools/projection-loom/` supplies the `projection-loom/solid-project/v2` project contract and the `projection-loom` CLI. `validate` inspects authored attachment volumes and the fused CAD body. `grow` exports a single STEP production solid, interchange geometry, a saved genome, and independent transparent drawing controls. `evolve` explores Sobol populations and progressively narrower lineages subject to the solid gate. `epoch-loop` repeats full constructive growth and feedback passes while returning approved genomes to the growth grammar.
 
-`projection-loom render` projects an assembly and emits independent structural QA when its graph stands. `projection-loom validate` reports model-space broad-phase contacts, declared volumetric joint evidence, and per-view connected components. `projection-loom evolve` explores Sobol populations, selects separated lineages, refines them under optional lighting, and accepts re-fed view masks or RGBA images through named cameras. `--seed` reenters a procedural checkpoint. `--seed-geometry` reenters NPZ, OBJ, PLY, STL, GLB, or GLTF geometry as an editable mesh with bounded deformations; the two operations remain distinct. The manifest, tests, and command help state the executable contract.
-
-The loom does not infer hidden topology from a painting, replace authored architectural judgment, or mistake touching surfaces for joined solids. It distinguishes numeric closed-convex overlap from uncertain nonconvex/open-mesh inference. A supported assembly need not be a welded manifold; proof of manifold union, material strength, and physical stability calls for separate analyses.
+Every emitted render derives from the CAD model. A STEP model or render transport mesh may be archived as evidence; subsequent growth resumes through the genome and authored construction rules, not vertex bending of exported geometry. The geometry gate warrants overlap and CAD validity, not physical load performance.
 
 <<~/ahu>>
 
 <<~ ahu #/ooda-ha>>
 
-✶ observe the project manifest, held geometry, authoritative source masks, material evidence, and view registration
-⏿ orient named support paths and cameras to the same object; distinguish authored joints from witnessed silhouettes
-◇ select candidates whose required solid attachments qualify before allowing their projected fitness to govern
-▶ grow supported geometry, evolve unlit mass, refine lighting, audit joints, and export isolated control passes
-↺ re-feed approved masks or geometry as explicit bounded inputs, preserve the source witness, and carry the accepted model into the next run
+✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence
+⏿ orient every growing child toward its named supporting parent and the one shared orthographic coordinate frame
+◇ select only candidates whose overlaps and fused solid meet the project's construction requirements
+▶ grow solid volumes, evolve distinct lineages, verify joints, then cast separate silhouette, line, and light controls
+↺ carry the chosen construction genome into further epochs without allowing rendered masks or exported meshes to masquerade as structural ancestry
 
 <<~/ahu>>
 

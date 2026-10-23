@@ -1,8 +1,4 @@
-"""Projection Loom: geometry-to-control-image evolutionary production pipeline."""
-from .geometry import Assembly, Mesh
-from .geometry_seed import DEFORMATION_BOUNDS, IDENTITY, imported_geometry, seeded_builder
+"""Projection Loom: rooted CAD-solid growth, evolution, and technical views."""
+from .solid import SolidAssembly, box, beam, faceted_loft
 from .cameras import Camera
-__all__=['Assembly','Mesh','Camera','DEFORMATION_BOUNDS','IDENTITY','imported_geometry','seeded_builder','ArchitectureGraph','Attachment','ConstructionGrammar']
-
-from .architecture_graph import ArchitectureGraph, Attachment
-from .structural_mutations import ConstructionGrammar
+__all__=['SolidAssembly','box','beam','faceted_loft','Camera']

@@ -1,321 +1,122 @@
-"""Reproducible multi-lineage geometry search with photometric refinement."""
-from dataclasses import dataclass, replace
-from pathlib import Path
-import importlib.util
-import json
-import math
-import time
+"""Structural-gated evolutionary growth of CAD-solid architectural genomes."""
+from __future__ import annotations
 import numpy as np
 from scipy.stats import qmc
-from .geometry import Mesh
-from .geometry_seed import DEFORMATION_BOUNDS, IDENTITY, imported_geometry, seeded_builder
-from .cameras import Camera
-from .render import silhouette,export_controls,light_vector
-from .fitness import Objective,Target,PhotoReference
-from .topology import assembly_contacts,mask_components
-from .architecture_graph import ArchitectureGraph
-from .structural_render import draw_joint_diagnostics
-from .structural_mutations import apply_structural_operations
+from PIL import Image
+from .render import silhouette,buffers,light_vector
 
 
-@dataclass
-class Project:
-    path: Path
-    rig_path: Path
-    builder: object
-    bounds: dict
-    initial: dict
-    cameras: dict
-    target_specs: list
-    photograph: dict | None
-    settings: dict
-    geometry_source: str | None = None
-    structure: ArchitectureGraph | None = None
-    construction: tuple = ()
-
-    @classmethod
-    def load(cls, path):
-        path=Path(path).resolve()
-        config=json.loads(path.read_text())
-        if config.get('schema')!='projection-loom/project/v1':
-            raise ValueError('Unrecognized project schema')
-        if bool(config.get('builder')) == bool(config.get('geometry')):
-            raise ValueError('A project needs exactly one of builder or geometry')
-        settings=config.get('settings',{})
-        if config.get('geometry'):
-            source_path=(path.parent/config['geometry']).resolve()
-            source=imported_geometry(source_path)
-            builder=seeded_builder(source)
-            rig_path=source_path
-            bounds={str(k):tuple(map(float,v)) for k,v in
-                    config.get('bounds',DEFORMATION_BOUNDS).items()}
-            unknown=set(bounds)-set(DEFORMATION_BOUNDS)
-            if unknown:
-                raise ValueError(f'Unknown geometry deformation parameters: {sorted(unknown)}')
-            initial={k:float(config.get('initial',{}).get(k,IDENTITY[k])) for k in bounds}
-            geometry_source=str(source_path)
-        else:
-            module_file,qualname=config['builder'].split(':',1)
-            rig_path=(path.parent/module_file).resolve()
-            spec=importlib.util.spec_from_file_location('_projection_loom_rig',rig_path)
-            if spec is None or spec.loader is None:
-                raise ImportError(f'Cannot import builder: {rig_path}')
-            module=importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            builder=getattr(module,qualname)
-            bounds={str(k):tuple(map(float,v)) for k,v in config['bounds'].items()}
-            initial={k:float(config['initial'][k]) for k in bounds}
-            geometry_source=None
-        for name,(lo,hi) in bounds.items():
-            if not np.isfinite(lo+hi) or lo>=hi:
-                raise ValueError(f'Invalid bounds for {name}')
-        if not bounds:
-            raise ValueError('Evolution requires at least one bounded parameter')
-        for k,v in initial.items():
-            if not bounds[k][0]<=v<=bounds[k][1]:
-                raise ValueError(f'Initial {k} outside bounds')
-        cameras={name:Camera.from_dict(values) for name,values in config['cameras'].items()}
-        if not cameras:raise ValueError('At least one camera is required')
-        structure=(ArchitectureGraph.from_dict(config['structure'])
-                   if config.get('structure') else None)
-        return cls(path,rig_path,builder,bounds,initial,cameras,
-                   config.get('targets',[]),config.get('photograph'),settings,geometry_source,structure,tuple(config.get('construction',[])))
-
-    def with_geometry_seed(self, path):
-        """Evolve this existing mesh with a subject-neutral deformation rig."""
-        source=imported_geometry(path)
-        return replace(self, rig_path=Path(path).resolve(), builder=seeded_builder(source),
-                       bounds=dict(DEFORMATION_BOUNDS),initial=dict(IDENTITY),
-                       geometry_source=str(Path(path).resolve()))
-
-    def build(self,params):
-        result=self.builder(dict(params),int(self.settings.get('detail_level',1)))
-        if hasattr(result,'mesh') and not isinstance(result,Mesh):
-            result=result.mesh()
-        if not isinstance(result,Mesh):
-            raise TypeError('Builder must return a projection_loom.Mesh or Assembly')
-        if self.construction:
-            result=apply_structural_operations(result,self.construction,params)
-        return result
-
-    def audit(self,mesh,enforce=False):
-        if not self.structure:return None
-        return self.structure.require_valid(mesh) if enforce else self.structure.audit(mesh)
-
-    def render_style(self):
-        style=dict(self.settings.get('render') or {})
-        if self.structure:
-            configured=dict(style.get('part_roles',{}))
-            style['part_roles']={**self.structure.drawing_roles(),**configured}
-        return style
-
-    def targets(self,extra=(),size=(256,384)):
-        specs=list(self.target_specs)
-        for item in extra:
-            if isinstance(item, dict):
-                specs.append(dict(item))
-            else:
-                if '=' not in item: raise ValueError('Target must be VIEW=PATH')
-                view,path=item.split('=',1)
-                specs.append({'view':view,'path':path,'channel':'auto','weight':1.0})
-        for spec in specs:
-            if spec['view'] not in self.cameras:
-                raise ValueError(f'Unknown camera in target: {spec["view"]}')
-        return [Target.read(spec,self.path.parent,size=size) for spec in specs]
-
-    def photo_reference(self,size=(256,384)):
-        if not self.photograph:return None,None
-        p=Path(self.photograph['path'])
-        if not p.is_absolute():p=self.path.parent/p
-        angles=self.photograph.get('light_angles',[-80,45])
-        return PhotoReference(p,size),light_vector(*angles)
+def iou(a,b):
+    both=int((a&b).sum());either=int((a|b).sum())
+    return both/max(either,1)
 
 
-def parameters_from_file(path,defaults):
-    if path is None:return dict(defaults)
-    path=Path(path)
-    if path.suffix=='.npz':
-        with np.load(path,allow_pickle=False) as arrays:
-            if 'parameters_json' not in arrays:
-                raise ValueError('A mesh needs parameters_json to act as an evolutionary seed')
-            src=json.loads(str(arrays['parameters_json'].item()))
-    else:
-        src=json.loads(path.read_text())
-        src=src.get('parameters',src.get('winner',src))
-    if not isinstance(src,dict):raise ValueError('Seed must be a parameter map')
-    return {k:float(src.get(k,defaults[k])) for k in defaults}
-
-
-class Search:
-    def __init__(self,project,targets,photo=None,light=None,resolution=(256,384),rng_seed=4811):
+class Evolution:
+    def __init__(self,project,size=(128,192),seed=63):
         self.project=project
-        self.names=list(project.bounds)
-        self.lows=np.array([project.bounds[k][0] for k in self.names])
-        self.highs=np.array([project.bounds[k][1] for k in self.names])
-        self.spans=self.highs-self.lows
-        self.rng=np.random.default_rng(rng_seed)
-        self.targets=targets
-        self.reference=dict(project.initial)
-        self.objective=Objective(project.build,project.bounds,self.reference,targets,
-                                 project.cameras,resolution,light,photo,
-                                 project.settings.get('objective_weights'))
+        self.size=size
+        self.rng=np.random.default_rng(seed)
+        self.keys=list(project.bounds)
+        self.low=np.array([project.bounds[k][0] for k in self.keys])
+        self.high=np.array([project.bounds[k][1] for k in self.keys])
+        self.spread=self.high-self.low
+        self.source=project.source_mask(size)
+        if self.source is None:
+            initial=project.grow().tessellate(linear=.32)
+            self.source=project.anchor_mask(initial,size)
         self.records=[]
-        self.structure=project.structure
+        self.eval_count=0
 
-    def vector(self,parameters):
-        return np.array([parameters[k] for k in self.names],dtype=float)
+    def as_vector(self,p):return np.array([p[k] for k in self.keys])
+    def as_genome(self,x):return dict(zip(self.keys,[float(v) for v in np.clip(x,self.low,self.high)]))
 
-    def parameters(self,vector):
-        return {name:float(value) for name,value in zip(self.names,self.clip(vector))}
+    def evaluate(self,vec,lit=False,view_feedback=None):
+        self.eval_count+=1
+        genome=self.as_genome(vec)
+        try:
+            assembly=self.project.grow(genome)
+            audit=assembly.audit(join=False)
+            if not audit['valid']:
+                loss=2.0+0.3*len(audit['failed'])
+                self.records.append({'valid':False,'loss':loss,'genome':genome,'failed':len(audit['failed'])})
+                return loss
+            mesh=assembly.tessellate(linear=.35,angular=.30)
+            mask=self.project.anchor_mask(mesh,self.size)
+            shape_loss=1-iou(self.source,mask)
+            # A weak, scale-free prior resists trivial fortress shrinkage.
+            prior=np.mean(((np.asarray(vec)-self.as_vector(self.project.initial))/self.spread)**2)
+            loss=shape_loss+.023*prior
+            if view_feedback:
+                similarity=[]
+                for name,reference in view_feedback.items():
+                    if name in self.project.cameras:
+                        now=silhouette(mesh,self.project.cameras[name],self.size)>96
+                        similarity.append(iou(reference,now))
+                if similarity:loss+=.035*(1-np.mean(similarity))
+            if lit and self.project.reference and self.project.reference.suffix.lower()=='.png':
+                # Lighting stays secondary to solid-contact validity and silhouette.
+                buf=buffers(mesh,self.project.cameras[self.project.reference_view],self.size)
+                li=light_vector(*self.project.light_angles)
+                predicted=(buf['normal']@li).clip(0,1)
+                import cv2
+                image=np.array(Image.open(self.project.reference).convert('RGB'))
+                image=cv2.resize(image,self.size)
+                target=cv2.GaussianBlur(image.astype(np.float32)@np.array([.2126,.7152,.0722]),(0,0),2)
+                hit=mask & buf['occupancy']
+                if hit.sum()>50:
+                    a=predicted[hit];b=target[hit]
+                    corr=np.corrcoef(a,b)[0,1] if a.std()>1e-6 and b.std()>1e-6 else 0.0
+                    loss+=.025*(1-max(0,float(corr)))
+            row={'valid':True,'loss':float(loss),'shape_iou':iou(self.source,mask),'genome':genome,'lit':lit}
+        except Exception as exc:
+            loss=5.0
+            row={'valid':False,'loss':loss,'error':str(exc),'genome':genome,'lit':lit}
+        self.records.append(row)
+        return loss
 
-    def clip(self,vector):
-        return np.clip(np.asarray(vector,dtype=float),self.lows,self.highs)
+    def burst(self,center,count):
+        m=max(2,int(np.ceil(np.log2(count))))
+        pts=qmc.Sobol(len(self.keys),scramble=True,seed=int(self.rng.integers(1,2**30))).random_base2(m)
+        anchor=self.as_vector(center)
+        return [anchor]+[np.clip(.30*anchor+.70*(self.low+pt*self.spread),self.low,self.high) for pt in pts]
 
-    def rank(self,vector,lit=False,cycle=0,stage='explore',stability=None):
-        params=self.parameters(vector)
-        value,metrics,_model=self.objective(params,include_light=lit)
-        stabilizer=0.
-        if stability:
-            for name,(reference,weight) in stability.items():
-                candidate=silhouette(self.project.build(params),self.project.cameras[name],reference.shape[::-1])>96
-                overlap=(candidate&reference).sum()/max(1,(candidate|reference).sum())
-                stabilizer+=weight*(1-overlap)
-        if self.structure:
-            # Cheap preflight only: observed AABB gaps cannot support declared
-            # attachments. Positive AABB overlap is NOT a valid joint verdict.
-            model=_model
-            bounds={p['name']:(model.vertices[model.faces[p['first_face']:p['first_face']+p['num_faces']].ravel()].min(0),
-                                model.vertices[model.faces[p['first_face']:p['first_face']+p['num_faces']].ravel()].max(0))
-                    for p in model.parts}
-            gaps=[]
-            for x in self.structure.links:
-                lo_a,hi_a=bounds[x.parent];lo_b,hi_b=bounds[x.child]
-                gap=float(np.linalg.norm(np.maximum(0.,np.maximum(lo_b-hi_a,lo_a-hi_b))))
-                gaps.append(gap)
-            value+=.3*sum(gaps)/max(1,len(gaps))
-        record={'cycle':int(cycle),'stage':stage,'loss':float(value),
-                'selection_loss':float(value+stabilizer),'parameters':params,
-                'metrics':metrics}
-        self.records.append(record)
-        return record
-
-    def sobol(self,seed,count):
-        exponent=max(1,int(math.ceil(math.log2(count))))
-        grid=qmc.Sobol(len(self.names),scramble=True,seed=int(self.rng.integers(1,2**30)))
-        samples=qmc.scale(grid.random_base2(exponent),self.lows,self.highs)
-        anchor=self.vector(seed)
-        halfway=.35*anchor+.65*samples
-        return np.vstack((anchor,halfway))
-
-    def choose(self,records,count,separation=.045):
-        selected=[]
-        for row in sorted(records,key=lambda item:item['selection_loss']):
-            vec=self.vector(row['parameters'])
-            if all(np.linalg.norm((vec-self.vector(other['parameters']))/self.spans)/np.sqrt(len(self.names))
-                   >=separation for other in selected):
-                selected.append(row)
-            if len(selected)>=count:break
-        return selected
-
-    def mutate(self,survivors,sigmas,offspring,cycle,stage,lit=False,stability=None):
-        offspring=int(offspring)
-        for j,sigma in enumerate(sigmas):
-            generation=[]
-            for parent in survivors:
-                seed=self.vector(parent['parameters'])
-                generation.append(self.rank(seed,lit,cycle,stage+f'-{j}',stability))
+    def evolve(self,start=None,*,burst=32,survivors=6,offspring=5,rounds=2,lit_rounds=1,feedback=None):
+        begin=dict(start or self.project.initial)
+        first=self.burst(begin,burst)
+        population=[(self.evaluate(x,view_feedback=feedback),x) for x in first]
+        population=sorted(population,key=lambda r:r[0])
+        seeds=[]
+        for score,vec in population:
+            if score>=2:continue
+            if all(np.linalg.norm((vec-other[1])/self.spread)>0.11 for other in seeds):
+                seeds.append((score,vec))
+            if len(seeds)>=survivors:break
+        if not seeds:raise RuntimeError('No structurally valid lineage survived growth burst')
+        for generation in range(rounds):
+            sigma=[.13,.07,.035][min(generation,2)]
+            children=[]
+            for _,parent in seeds:
+                children.append((self.evaluate(parent,view_feedback=feedback),parent))
                 for _ in range(offspring):
-                    candidate=self.clip(seed+self.rng.normal(size=len(self.names))*self.spans*float(sigma))
-                    generation.append(self.rank(candidate,lit,cycle,stage+f'-{j}',stability))
-            survivors=self.choose(generation,len(survivors),separation=.02)
-        return survivors
-
-    def evolve(self,start=None,cycles=2,burst=32,survivors=6,offspring=6):
-        current=dict(start or self.project.initial)
-        if self.structure is not None and self.structure.policy=='gate':
-            self.project.audit(self.project.build(current),enforce=True)
-        baseline=self.rank(self.vector(current),bool(self.objective.photo),0,'baseline')
-        all_cycles=[]
-        for cycle in range(1,int(cycles)+1):
-            population=self.sobol(current,burst)
-            explored=[self.rank(v,False,cycle,'unlit-burst') for v in population]
-            selected=self.choose(explored,max(2,int(survivors)))
-            selected=self.mutate(selected,[.11,.065,.035],offspring,cycle,'unlit-lineage')
-            finalists=self.choose(selected,max(1,(int(survivors)+1)//2))
-            if self.objective.photo is not None:
-                lit_roster=[self.rank(self.vector(t['parameters']),True,cycle,'lit-entry') for t in finalists]
-                lit_roster=self.mutate(lit_roster,[.055,.028],max(2,offspring//2),cycle,'lit-lineage',lit=True)
-                candidate=min(lit_roster,key=lambda t:t['selection_loss'])
-            else:
-                candidate=min(finalists,key=lambda t:t['selection_loss'])
-            base_candidate=self.rank(self.vector(candidate['parameters']),bool(self.objective.photo),cycle,'candidate')
-            base_current=self.rank(self.vector(current),bool(self.objective.photo),cycle,'incumbent')
-            if base_candidate['loss']<base_current['loss']:
-                candidate_mesh=self.project.build(base_candidate['parameters'])
-                validation=self.project.audit(candidate_mesh)
-                if validation is None or validation['valid'] or validation['policy']=='report':
-                    current=dict(base_candidate['parameters'])
-            # Generated feedback controls local drift; acceptance still uses unchanged evidence.
-            stabilizers={}
-            model=self.project.build(current)
-            for name in self.project.settings.get('stability_views',[]):
-                if name not in self.project.cameras:raise ValueError('Unknown stability camera '+name)
-                mask=silhouette(model,self.project.cameras[name],self.objective.size)>96
-                stabilizers[name]=(mask,float(self.project.settings.get('stability_weight',.012)))
-            incumbent=self.rank(self.vector(current),bool(self.objective.photo),cycle,'stability-incumbent',stabilizers)
-            refined=self.mutate([incumbent],[.017],max(2,offspring//2),cycle,'stabilization',
-                                lit=bool(self.objective.photo),stability=stabilizers)
-            trial=self.rank(self.vector(min(refined,key=lambda t:t['selection_loss'])['parameters']),
-                            bool(self.objective.photo),cycle,'stability-candidate')
-            reference_score=self.rank(self.vector(current),bool(self.objective.photo),cycle,'stability-reference')
-            if trial['loss']<reference_score['loss']:
-                trial_mesh=self.project.build(trial['parameters'])
-                validation=self.project.audit(trial_mesh)
-                if validation is None or validation['valid'] or validation['policy']=='report':
-                    current=dict(trial['parameters'])
-            all_cycles.append({'cycle':cycle,'best_loss':self.rank(self.vector(current),
-                               bool(self.objective.photo),cycle,'cycle-complete')['loss'],
-                               'parameters':dict(current)})
-        final=self.rank(self.vector(current),bool(self.objective.photo),int(cycles),'final')
-        return {'parameters':current,'score':final,'cycles':all_cycles,'baseline_loss':baseline['loss'],
-                'evaluations':self.objective.calls,'records':self.records}
-
-
-def produce(project_path,out,seed=None,feedback=(),cycles=2,burst=32,survivors=6,offspring=6,
-            resolution=(256,384),export_size=(1024,1536),rng_seed=4811,seed_geometry=None):
-    start=time.monotonic()
-    if seed is not None and seed_geometry is not None:
-        raise ValueError('Use --seed for parametric restart or --seed-geometry for mesh deformation')
-    project=Project.load(project_path)
-    if seed_geometry is not None:
-        project=project.with_geometry_seed(seed_geometry)
-    targets=project.targets(feedback,size=resolution)
-    if not targets:raise ValueError('Evolution requires at least one silhouette target')
-    photo,light=project.photo_reference(size=resolution)
-    search=Search(project,targets,photo,light,resolution,rng_seed)
-    initial=parameters_from_file(seed,project.initial)
-    report=search.evolve(initial,cycles,burst,survivors,offspring)
-    output=Path(out);output.mkdir(parents=True,exist_ok=True)
-    model=project.build(report['parameters'])
-    structural=project.audit(model,enforce=True)
-    model.save(output/'mesh.npz',report['parameters'])
-    model.export_obj(output/'mesh.obj')
-    control_files=export_controls(model,project.cameras,output/'controls',export_size,light,
-                                  project.render_style())
-    diagnostics=(draw_joint_diagnostics(model,project.cameras,structural,output/'diagnostics',export_size)
-                 if structural is not None else {})
-    summary={'schema':'projection-loom/run/v1',
-             'geometry_source':project.geometry_source,
-             'rig_source':str(project.rig_path),
-             'geometry_mode':'deformation' if project.geometry_source else 'parametric',
-             'parameters':report['parameters'],
-             'baseline_loss':report['baseline_loss'],'final_loss':report['score']['loss'],
-             'evaluations':report['evaluations'],'cycles':report['cycles'],
-             'elapsed_seconds':round(time.monotonic()-start,2),
-             'contacts':assembly_contacts(model),'structural_audit':structural,
-             'diagnostics':diagnostics,'outputs':control_files,
-             'projection_connectivity':{v:mask_components(silhouette(model,camera,resolution)>96)
-                                        for v,camera in project.cameras.items()}}
-    (output/'manifest.json').write_text(json.dumps(summary,indent=2))
-    (output/'search.json').write_text(json.dumps(report['records'],indent=2))
-    return summary
+                    vec=np.clip(parent+self.rng.normal(0,sigma,size=len(parent))*self.spread,self.low,self.high)
+                    children.append((self.evaluate(vec,view_feedback=feedback),vec))
+            candidates=sorted(children,key=lambda r:r[0]);seeds=[]
+            for row in candidates:
+                if row[0]>=2:continue
+                if all(np.linalg.norm((row[1]-x[1])/self.spread)>.06 for x in seeds):seeds.append(row)
+                if len(seeds)>=survivors:break
+        if lit_rounds:
+            for generation in range(lit_rounds):
+                lit_candidates=[]
+                for _,vec in seeds:
+                    lit_candidates.append((self.evaluate(vec,lit=True,view_feedback=feedback),vec))
+                    for _ in range(max(2,offspring//2)):
+                        candidate=np.clip(vec+self.rng.normal(0,.035,size=len(vec))*self.spread,self.low,self.high)
+                        lit_candidates.append((self.evaluate(candidate,lit=True,view_feedback=feedback),candidate))
+                seeds=sorted(lit_candidates,key=lambda r:r[0])[:survivors]
+        chosen=[]
+        for score,vec in sorted(seeds,key=lambda r:r[0]):
+            if score>=2:continue
+            if all(np.linalg.norm((vec-prev[1])/self.spread)>.04 for prev in chosen):chosen.append((score,vec))
+            if len(chosen)>=3:break
+        return [{'loss':float(score),'genome':self.as_genome(vec)} for score,vec in chosen]
