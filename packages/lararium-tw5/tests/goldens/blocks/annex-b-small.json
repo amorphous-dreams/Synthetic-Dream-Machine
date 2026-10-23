@@ -1,0 +1,30 @@
+{
+  "kind": "div",
+  "children": [
+    {
+      "kind": "h1",
+      "children": [{ "kind": "text", "children": [], "text": "Start", "affordances": [] }],
+      "affordances": []
+    },
+    {
+      "kind": "p",
+      "children": [
+        { "kind": "text", "children": [], "text": "See ", "affordances": [] },
+        {
+          "kind": "a",
+          "children": [{ "kind": "text", "children": [], "text": "Alpha", "affordances": [] }],
+          "affordances": [{ "id": "a5", "kind": "link", "target": "Alpha" }]
+        },
+        { "kind": "text", "children": [], "text": " and ", "affordances": [] },
+        {
+          "kind": "a",
+          "children": [{ "kind": "text", "children": [], "text": "Beta", "affordances": [] }],
+          "affordances": [{ "id": "a8", "kind": "link", "target": "Beta" }]
+        },
+        { "kind": "text", "children": [], "text": ".", "affordances": [] }
+      ],
+      "affordances": []
+    }
+  ],
+  "affordances": []
+}
