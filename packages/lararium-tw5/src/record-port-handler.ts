@@ -37,8 +37,9 @@ interface OpenPort {
   readonly pending: Array<{ seq: number; bytes: number }>;
   pendingBytes: number;
   ackSeq: number;
+  postedSeq: number;
   snapshotId?: string;
-  rendered: { cursor: string; affordances: Map<string, { node: RecordingNode; kind: string }>; stop: () => void } | undefined;
+  rendered: { cursor: string; stale: boolean; affordances: Map<string, { node: RecordingNode; kind: string }>; stop: () => void } | undefined;
   readonly written: Map<string, PortMsg_Written>;
   readonly ledger: ReturnType<typeof createTxLedger>;
 }
@@ -137,6 +138,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       return;
     }
     ctx.post(wire);
+    port.postedSeq = Math.max(port.postedSeq, kept.at(-1)!.seq);
   };
   const flush = (ctx: IslandContext): void => {
     flushQueued = false;
@@ -210,14 +212,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       ctx.post(wire);
     };
     if (port.closed) return;
-    if (!port.open.edits) { answer("refused", [], [], "edits-not-granted"); return; }
     const prior = port.written.get(msg.txId);
     if (prior?.status === "applied") { if (!port.closed) ctx.post({ ...prior, portId: msg.portId }); return; }
+    if (!port.open.edits) { answer("refused", [], [], "edits-not-granted"); return; }
     if (!prior && msg.basis && msg.basis !== log.cursorOf(port.shape, log.headSeq)) {
       answer("refused", [], [], "stale-basis"); return;
-    }
-    if (msg.records.some(record => record.bag && !ctx.composite.hasBag(record.bag))) {
-      answer("refused", [], [], "bag-unavailable"); return;
     }
     const records = msg.records.map(record => ({ title: record.title, fields: record.fields,
       ...(record.tombstone ? { deleted: true } : {}) }));
@@ -226,20 +225,22 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     if ("refused" in verdict) { answer("refused", [], [], verdict.refused); return; }
     const families = [...new Set(msg.records.map(record => record.bag ?? "(default)"))];
     try {
-      for (const family of families) {
+      const begun = port.ledger.begin(msg.txId, families);
+      if (begun.answer) {
+        if (!port.closed) ctx.post(port.written.get(msg.txId) ? { ...port.written.get(msg.txId)!, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
+          status: begun.answer.status, applied: [...begun.answer.applied], failed: [...begun.answer.failed],
+          cursor: log.cursorOf(port.shape, log.headSeq) }));
+        return;
+      }
+      if (begun.pending.some(family => family !== "(default)" && !ctx.composite.hasBag(family))) {
+        answer("refused", [], [], "bag-unavailable"); return;
+      }
+      for (const family of begun.pending) {
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
         await ctx.composite.precheckFamily(puts, tombstones, family === "(default)" ? undefined : { bag: family });
         if (port.closed) return;
-      }
-      const begun = port.ledger.begin(msg.txId, families);
-      if (begun.answer) {
-        if (port.closed) return;
-        ctx.post(port.written.get(msg.txId) ? { ...port.written.get(msg.txId)!, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
-          status: begun.answer.status, applied: [...begun.answer.applied], failed: [...begun.answer.failed],
-          cursor: log.cursorOf(port.shape, log.headSeq) }));
-        return;
       }
       const failed: string[] = [];
       for (const family of begun.pending) {
@@ -286,9 +287,18 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const results = [];
       for (const title of titles) {
         if (!visible(title, port)) continue;
-        const record = await ctx.composite.get(title);
-        if (record && !record.meta?.deleted) results.push(load({ title, seq: lastSeq.get(title) ?? 0,
-          fields: fieldsOf(record) }, msg.fields ?? []));
+        let raced = true;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const before = lastSeq.get(title) ?? 0;
+          const record = await ctx.composite.get(title);
+          const after = lastSeq.get(title) ?? 0;
+          if (before !== after) continue;
+          raced = false;
+          if (record && !record.meta?.deleted) results.push(load({ title, seq: before,
+            fields: fieldsOf(record) }, msg.fields ?? []));
+          break;
+        }
+        if (raced) { refused("load-raced"); return; }
       }
       answered(results);
     } else if (msg.kind === "render") {
@@ -311,7 +321,13 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         }
         flush(ctx);
         const renderCursor = log.cursorOf(port.shape, log.headSeq);
-        port.rendered = { cursor: renderCursor, affordances: affordanceNodes(blocks, container), stop: unmount };
+        const rendered = { cursor: renderCursor, stale: false, affordances: affordanceNodes(blocks, container), stop: () => {
+          ctx.tw5.$tw.wiki.removeEventListener("change", changed);
+          unmount();
+        } };
+        const changed = () => { rendered.stale = true; };
+        ctx.tw5.$tw.wiki.addEventListener("change", changed);
+        port.rendered = rendered;
         answered({ form, value, renderCursor });
       } catch { port.rendered?.stop(); port.rendered = undefined; refused("render-unavailable"); }
     } else if (msg.kind === "invoke") {
@@ -321,7 +337,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         renderCursor: msg.renderCursor ?? "", affordanceId: msg.affordanceId ?? "" };
       try {
         const result = gateInvoke(req, { ...(opts.authority ? { authority: opts.authority } : {}),
-          currentRenderCursor: () => port.rendered?.cursor === req.renderCursor && log.cursorOf(port.shape, log.headSeq) === req.renderCursor ? req.renderCursor : "",
+          currentRenderCursor: () => port.rendered?.cursor === req.renderCursor && !port.rendered.stale && log.cursorOf(port.shape, log.headSeq) === req.renderCursor ? req.renderCursor : "",
           invokeActions: request => {
             const offered = port.rendered?.affordances.get(request.affordanceId);
             if (!offered) return "unknown-affordance";
@@ -374,7 +390,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const ackSeq = since && since.bootNonce === nonce && since.shapeId === log.shapeId(shape) ? since.seq : log.headSeq;
         const port: OpenPort = { open: msg, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
-          ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger };
+          ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger };
         ports.set(msg.portId, port);
         void open(msg, ctx, port);
         return true;
@@ -393,7 +409,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         writes = writes.then(() => write(msg, ctx, port));
       } else if ((msg as { type: string }).type === "port:ack") {
         const cursor = log.parseCursor((msg as unknown as { cursor: string }).cursor);
-        if (cursor && cursor.bootNonce === nonce && cursor.shapeId === log.shapeId(port.shape) && cursor.seq >= port.ackSeq && cursor.seq <= log.headSeq) {
+        if (cursor && cursor.bootNonce === nonce && cursor.shapeId === log.shapeId(port.shape) && cursor.seq >= port.ackSeq && cursor.seq <= port.postedSeq) {
           port.ackSeq = cursor.seq;
           while (port.pending.length && port.pending[0]!.seq <= cursor.seq) port.pendingBytes -= port.pending.shift()!.bytes;
         }

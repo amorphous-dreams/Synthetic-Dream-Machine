@@ -5,6 +5,12 @@ import { PORT_ACK, PORT_CLOSE, PORT_OPEN, PORT_PRESENCE, PORT_WRITE, mkPortChang
 const open = { type: PORT_OPEN, portId: "p1", wikiUri: "lar:///w", width: "skinny", actor: "alice", maxRecordBytes: 1024, maxBatchBytes: 4096 };
 
 describe("the record port reads whole at the island door", () => {
+  test("port-wire-whole-bound: oversized write refuses; CONTROL: one record passes", () => {
+    const records = Array.from({ length: 20 }, (_, i) => ({ title: `T${i}`, fields: { text: "x".repeat(900_000) } }));
+    const write = { type: PORT_WRITE, portId: "p1", txId: "t", records };
+    expect(readPortVesselMsg(write)).toBeNull();
+    expect(readPortVesselMsg({ ...write, records: records.slice(0, 1) })).not.toBeNull();
+  });
   test("CONTROL: a well-formed port:open passes the door", () => {
     expect(isVesselToIslandMsg(open)).toBe(true);
     expect(readPortVesselMsg(open)).not.toBeNull();
@@ -55,6 +61,16 @@ describe("the record port reads whole at the island door", () => {
 });
 
 describe("the record port reads whole at the vessel door", () => {
+  test("port-wire-whole-bound: oversized snapshot and changes refuse; CONTROL: small messages pass", () => {
+    const text = "x".repeat(900_000);
+    const records = Array.from({ length: 20 }, (_, i) => ({ title: `T${i}`, fields: { text } }));
+    const snapshot = mkPortSnapshot({ portId: "p1", snapshotId: "s", baseCursor: "b.s.0", i: 1, n: 1, records });
+    const changes = mkPortChanges({ portId: "p1", cursor: "b.s.20", entries: records.map((record, i) => ({ ...record, seq: i + 1, causedBy: [] })) });
+    expect(readPortIslandMsg(snapshot)).toBeNull();
+    expect(readPortIslandMsg(changes)).toBeNull();
+    expect(readPortIslandMsg({ ...snapshot, records: records.slice(0, 1) })).not.toBeNull();
+    expect(readPortIslandMsg({ ...changes, entries: changes.entries.slice(0, 1) })).not.toBeNull();
+  });
   test("snapshot chunk, changes with an empty causedBy, reset and written pass; malformed ones vanish", () => {
     expect(isIslandToVesselMsg(mkPortSnapshot({ portId: "p1", snapshotId: "s", baseCursor: "n.x.3", i: 1, n: 1, records: [{ title: "T", fields: {}, omitted: ["text"] }] }))).toBe(true);
     expect(isIslandToVesselMsg(mkPortSnapshot({ portId: "p1", snapshotId: "s", baseCursor: "n.x.3", i: 2, n: 1, records: [] }))).toBe(false);

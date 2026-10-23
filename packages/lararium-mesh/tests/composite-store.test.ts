@@ -41,6 +41,18 @@ function record(title: string, text: string, bag?: string) {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — layer management", () => {
+  test("composite-family-fire-synchronous: subscribers run before writeFamily resolves; CONTROL: written records persist", async () => {
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: TEST_WIKI_URI, store: new MemoryTiddlerStore(), writable: true });
+    const seen: string[] = [];
+    const unsubscribe = composite.subscribe(change => { seen.push(change.title); });
+    const writing = composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin());
+    await writing;
+    expect(seen).toEqual(["One", "Two"]);
+    expect(await composite.get("One")).not.toBeNull();
+    expect(await composite.get("Two")).not.toBeNull();
+    unsubscribe();
+  });
   test("starts with zero layers", () => {
     const store = new CompositeStore();
     expect(store.layerCount).toBe(0);

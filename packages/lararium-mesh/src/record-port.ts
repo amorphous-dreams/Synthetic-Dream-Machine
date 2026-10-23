@@ -178,6 +178,7 @@ const wireRecord = (r: unknown): boolean =>
 /** Read a vessel-to-island port message whole, or null. */
 export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
   if (!isRecord(v) || typeof v["type"] !== "string" || !isName(v["portId"])) return null;
+  if (!boundedBytes(v, 17 * 1024 * 1024)) return null;
   switch (v["type"]) {
     case PORT_OPEN:
       if (!isName(v["wikiUri"]) || !isName(v["actor"]) || typeof v["width"] !== "string" || !WIDTHS.has(v["width"])) return null;
@@ -230,6 +231,7 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
 /** Read an island-to-vessel port message whole, or null. */
 export function readPortIslandMsg(v: unknown): PortIslandToVesselMsg | null {
   if (!isRecord(v) || typeof v["type"] !== "string" || !isName(v["portId"])) return null;
+  if (!boundedBytes(v, 17 * 1024 * 1024)) return null;
   switch (v["type"]) {
     case PORT_SNAPSHOT:
       if (!isName(v["snapshotId"]) || !isName(v["baseCursor"]) || !isCount(v["i"]) || !isCount(v["n"]) || v["i"] < 1 || v["i"] > v["n"]) return null;

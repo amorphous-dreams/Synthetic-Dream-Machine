@@ -25,30 +25,162 @@ async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: Islan
   const store = new MemoryTiddlerStore("working");
   composite.addLayer({ bagId: "working", store, writable: true });
   const messages: IslandToVesselMsg[] = [];
+  const wikiListeners = new Set<() => void>();
   let invoked = 0;
   const tw5 = { $tw: { wiki: {
     filterTiddlers: () => ["Ordinary", "$:/StoryList"],
-    makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown; createElement: (tag: string) => { addEventListener: (type: string, listener: () => void) => void } } }) => ({
-      render: (container: { appendChild: (node: unknown) => void }) => {
+    makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown; createElement: (tag: string) => { addEventListener: (type: string, listener: () => void) => void } } }) => {
+      let heldContainer: { appendChild: (node: unknown) => void; removeChild: (node: unknown) => void } | undefined;
+      let heldButton: ReturnType<typeof options.document.createElement> | undefined;
+      const button = () => {
+        const next = options.document.createElement("button");
+        next.addEventListener("click", () => { invoked++; });
+        return next;
+      };
+      return {
+      render: (container: { appendChild: (node: unknown) => void; removeChild: (node: unknown) => void }) => {
+        heldContainer = container;
         container.appendChild(options.document.createTextNode("rendered"));
-        const button = options.document.createElement("button");
-        button.addEventListener("click", () => { invoked++; });
-        container.appendChild(button);
-      }, refresh: () => {}, domNodes: [],
-    }),
-    addEventListener: () => {}, removeEventListener: () => {},
+        heldButton = button();
+        container.appendChild(heldButton);
+      }, refresh: () => {
+        if (heldContainer && heldButton) heldContainer.removeChild(heldButton);
+        heldButton = button();
+        heldContainer?.appendChild(heldButton);
+      }, domNodes: [],
+    }; },
+    addEventListener: (type: string, listener: () => void) => { if (type === "change") wikiListeners.add(listener); },
+    removeEventListener: (type: string, listener: () => void) => { if (type === "change") wikiListeners.delete(listener); },
   },
     rootWidget: { invokeActionString: () => { invoked++; } } } };
   const ctx = { wikiUri: "wiki", composite, tw5, handles: new Map(), recipe: { wikiSlug: "wiki" }, post: (message: IslandToVesselMsg) => messages.push(message) } as unknown as IslandContext;
   const cleanup = await cap.onEa?.(ctx);
   const send = async <T extends { type: string }>(msg: T) => { expect(cap.onSignal?.(msg.type, msg, ctx)).toBe(true); await settle(); };
-  return { composite, store, messages, ctx, send, get invoked() { return invoked; },
+  return { composite, store, messages, ctx, send, wikiChange: () => { for (const listener of wikiListeners) listener(); },
+    get wikiListenerCount() { return wikiListeners.size; }, get invoked() { return invoked; },
     close: async () => { if (typeof cleanup === "function") await cleanup(); } };
 }
 const ofType = <T extends IslandToVesselMsg["type"]>(messages: IslandToVesselMsg[], type: T) =>
   messages.filter((message): message is Extract<IslandToVesselMsg, { type: T }> => message.type === type);
 
 describe("record port handler", () => {
+  test("port-load-raced: delayed A never carries B's seq; CONTROL: stable load carries A", async () => {
+    const r = await rig(); await r.send(openMsg());
+    await r.composite.put({ tiddler: { title: "Ordinary", text: "A" } }, origin); await settle();
+    await r.send(askMsg("load", { titles: ["Ordinary"], fields: ["text"] }));
+    expect((ofType(r.messages, "port:answer").at(-1)?.result as { fields: { text: string } }[])[0]?.fields.text).toBe("A");
+    const original = r.composite.get.bind(r.composite);
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    let captured = false;
+    r.composite.get = async (...args) => {
+      const value = await original(...args);
+      if (!captured) { captured = true; await held; }
+      return value;
+    };
+    await r.send(askMsg("load", { askId: "raced", titles: ["Ordinary"], fields: ["text"] }));
+    await r.composite.put({ tiddler: { title: "Ordinary", text: "B" } }, origin); await settle();
+    release(); await settle();
+    const latest = ofType(r.messages, "port:answer").at(-1)!;
+    expect(latest.status === "refused" && latest.reason === "load-raced" ||
+      (latest.result as { fields: { text: string } }[])[0]?.fields.text === "B").toBe(true);
+    await r.close();
+  });
+
+  test("port-replay-before-grants: completed tx replays with edits revoked; CONTROL: new tx refuses", async () => {
+    const r = await rig(); await r.send(openMsg()); await r.send(writeMsg("once", "Once"));
+    const original = ofType(r.messages, "port:written").at(-1)!;
+    await r.send(openMsg("p", { edits: false }));
+    await r.send(writeMsg("once", "Once"));
+    expect(ofType(r.messages, "port:written").at(-1)).toEqual(original);
+    await r.send(writeMsg("new", "New"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    await r.close();
+  });
+
+  test("port-partial-retry-skips-applied-bag: retired applied bag never blocks pending family; CONTROL: both land", async () => {
+    const r = await rig();
+    const first = new MemoryTiddlerStore("first");
+    const second = new MemoryTiddlerStore("second");
+    r.composite.addLayer({ bagId: "first", store: first, writable: true, defaultWritable: false });
+    r.composite.addLayer({ bagId: "second", store: second, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    const original = r.composite.writeFamily.bind(r.composite);
+    let fail = true;
+    r.composite.writeFamily = async (...args) => {
+      if (args[3]?.bag === "second" && fail) { fail = false; throw new Error("transient"); }
+      return original(...args);
+    };
+    const tx = { type: "port:write", portId: "p", txId: "partial", records: [
+      { title: "First", fields: { text: "one" }, bag: "first" }, { title: "Second", fields: { text: "two" }, bag: "second" },
+    ] };
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "partial", applied: ["first"], failed: ["second"] });
+    r.composite.removeLayer("first");
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", applied: ["first", "second"] });
+    expect(await second.get("Second")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-write-boundary-drift: second bag retires after first commit and resumes; CONTROL: first landed", async () => {
+    const r = await rig(); const second = new MemoryTiddlerStore("second");
+    r.composite.addLayer({ bagId: "second", store: second, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    const original = r.composite.writeFamily.bind(r.composite);
+    let calls = 0;
+    r.composite.writeFamily = async (...args) => {
+      calls++;
+      if (calls === 2) r.composite.removeLayer("second");
+      return original(...args);
+    };
+    const tx = { type: "port:write", portId: "p", txId: "drift", records: [
+      { title: "First", fields: { text: "one" } }, { title: "Second", fields: { text: "two" }, bag: "second" },
+    ] };
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "partial", applied: ["(default)"], failed: ["second"] });
+    expect(await r.composite.get("First")).not.toBeNull();
+    r.composite.addLayer({ bagId: "second", store: second, writable: true, defaultWritable: false });
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", applied: ["(default)", "second"] });
+    expect(await second.get("Second")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-ack-unsent-head: an ack beyond posted cursor leaves backlog; CONTROL: posted ack clears", async () => {
+    const r = await rig({ lagByteBudget: 300 }); await r.send(openMsg());
+    await r.composite.put({ tiddler: { title: "A", text: "x".repeat(80) } }, origin); await settle();
+    const posted = ofType(r.messages, "port:changes").at(-1)!.cursor;
+    await r.composite.put({ tiddler: { title: "$:/StoryList", text: "hidden" } }, origin); await settle();
+    const unsent = ofType(r.messages, "port:changes").at(-1)!.cursor.replace(/\d+$/, "2");
+    await r.send({ type: "port:ack", portId: "p", cursor: unsent });
+    await r.composite.put({ tiddler: { title: "B", text: "x".repeat(80) } }, origin); await settle();
+    expect(ofType(r.messages, "port:reset").at(-1)?.reason).toBe("lagged");
+    const c = await rig({ lagByteBudget: 300 }); await c.send(openMsg());
+    await c.composite.put({ tiddler: { title: "A", text: "x".repeat(80) } }, origin); await settle();
+    await c.send({ type: "port:ack", portId: "p", cursor: ofType(c.messages, "port:changes").at(-1)!.cursor });
+    await c.composite.put({ tiddler: { title: "B", text: "x".repeat(80) } }, origin); await settle();
+    expect(ofType(c.messages, "port:reset")).toHaveLength(0);
+    expect(posted).toBeDefined();
+    await r.close(); await c.close();
+  });
+
+  test("port-tw5-change-stales-render: local wiki event refuses old affordance; CONTROL: quiet render invokes", async () => {
+    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    await r.send(openMsg("p", { renders: ["blocks"] }));
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
+    const result = ofType(r.messages, "port:answer").at(-1)!.result as { renderCursor: string; value: { children: { affordances: { id: string }[] }[] } };
+    const affordanceId = result.value.children.flatMap(child => child.affordances)[0]!.id;
+    await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId }));
+    expect(r.invoked).toBe(1);
+    r.wikiChange();
+    await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("stale-cursor");
+    expect(r.invoked).toBe(1);
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
+    expect(r.wikiListenerCount).toBe(2);
+    await r.close(); expect(r.wikiListenerCount).toBe(0);
+  });
   test("port-echo-named-by-txid: the port echo names its tx; a foreign change carries no cause", async () => {
     const r = await rig();
     await r.send(openMsg());
