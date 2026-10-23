@@ -261,8 +261,8 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
-    await this.precheckFamily(puts, tombstones, options);
-    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
+    if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
     if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
     for (const record of puts) await store.put(record, origin, writeOptions);
@@ -271,13 +271,18 @@ export class CompositeStore implements LarTiddlerStore {
 
   /** Run every composite-owned family check before a caller starts a transaction. */
   async precheckFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): Promise<void> {
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
+    if (retired) await retired;
+    this._writeOptionsFor(options, store, "writeFamily");
+  }
+
+  /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */
+  private _familyChecks(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): { store: LarTiddlerStore; retired: Promise<void> | void } {
     this._requireBagForBase(options, "writeFamily");
     const store = this._writeTargetFor(options?.bag, "writeFamily");
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
-    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
-    if (retired) await retired;
-    this._writeOptionsFor(options, store, "writeFamily");
+    return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
   }
 
   /**

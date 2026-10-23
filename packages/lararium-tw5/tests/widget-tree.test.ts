@@ -1,3 +1,4 @@
+// vm-grammar-boundary: exempt — the Annex B widget-tree pass consumes the in-VM MemeAst, so its test drives parseMemeText and the meme-ast layer directly
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
