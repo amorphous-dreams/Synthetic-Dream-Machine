@@ -17,6 +17,7 @@ import { IDENTITIES_NAMESPACE } from "./lar-uris.js";
 import { MEMBER_ADD_PREFIX } from "./social-tiddlers.js";
 import { heldDocOf } from "./persona-act-board.js";
 import { storedRecord } from "./stored-record.js";
+import { plainRecordOrNull } from "./stored-value.js";
 import { parseAutomergeUrl, type AutomergeUrl } from "@automerge/automerge-repo";
 
 type DocHandle = import("@automerge/automerge-repo").DocHandle<LarDoc>;
@@ -27,13 +28,16 @@ function writeOwnEntries(handle: DocHandle, which: "identities" | "circles", ato
   handle.change((doc: LarDoc) => {
     for (const t of buildCeremonyTiddlers(atomKey, displayName)) {
       if ((t.bag === IDENTITIES_NAMESPACE) !== (which === "identities")) continue;
-      const standing = doc.tiddlers[t.title] as { tiddler?: Record<string, unknown> } | undefined;
+      const standing = plainRecordOrNull(doc.tiddlers[t.title]);
       if (standing) {
         // A circle the face already holds (the founder's `operators`) gains THIS device's own membership dot, add-only: the joinee's
-        // dot is a replica-keyed key no other device writes, so the merge never overwrites or removes another member.
-        if (t.bag !== IDENTITIES_NAMESPACE && standing.tiddler) {
-          for (const [field, value] of Object.entries(t.fields)) {
-            if (field.startsWith(MEMBER_ADD_PREFIX) && !(field in standing.tiddler)) { standing.tiddler[field] = value; wrote = true; }
+        // dot is a replica-keyed key no other device writes, so the merge never overwrites or removes another member. The record
+        // is read and rewritten through the stored-value doors.
+        if (t.bag !== IDENTITIES_NAMESPACE) {
+          const dots = Object.entries(t.fields).filter(([field]) => field.startsWith(MEMBER_ADD_PREFIX) && !(field in standing.tiddler));
+          if (dots.length > 0) {
+            doc.tiddlers[t.title] = storedRecord({ tiddler: { ...standing.tiddler, ...Object.fromEntries(dots) }, ...(standing.meta ? { meta: standing.meta } : {}) });
+            wrote = true;
           }
         }
         continue;
