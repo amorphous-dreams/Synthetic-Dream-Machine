@@ -4,7 +4,7 @@ import {
   mkPortSnapshot, mkPortWritten,
   type PortMsg_Open, type PortMsg_Ask, type PortMsg_Write, type PortMsg_Written, type PortWireRecord,
 } from "@lararium/mesh/record-port";
-import { isVerbRefusal, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
+import { isVerbRefusal, requireKahuReach, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
 import type { LarTiddlerChange } from "@lararium/mesh";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
@@ -36,6 +36,8 @@ export interface RecordPortOptions {
   retainEntries?: number;
   /** Maximum actor ledgers retained across port opens. */
   maxActors?: number;
+  /** Writes one port may hold admitted and unsettled; the next refuses `write-queue-full` (default 16). */
+  maxQueuedWrites?: number;
   bootNonce?: string;
 }
 
@@ -66,6 +68,8 @@ interface OpenPort {
   readonly ledger: ReturnType<typeof createTxLedger>;
   readonly actorState: ActorState;
   readonly actorTableFull: boolean;
+  /** Writes admitted and not yet settled; the queue holds each message whole, so the count is bounded at admission. */
+  queuedWrites: number;
 }
 
 export type RecordPortCap = IslandCap & { transportGone(portId: string): void };
@@ -113,6 +117,8 @@ function projected(entry: PortEntry, port: OpenPort): PortWireRecord & { seq: nu
 export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const maxActors = opts.maxActors ?? 256;
   if (!Number.isSafeInteger(maxActors) || maxActors < 1) throw new RangeError("maxActors");
+  const maxQueuedWrites = opts.maxQueuedWrites ?? 16;
+  if (!Number.isSafeInteger(maxQueuedWrites) || maxQueuedWrites < 1) throw new RangeError("maxQueuedWrites");
   const nonce = (opts.bootNonce ?? crypto.randomUUID()).replaceAll(".", "");
   const log = createPortLog({ bootNonce: nonce, lagByteBudget: opts.lagByteBudget ?? 1_048_576,
     ...(opts.retainEntries === undefined ? {} : { retainEntries: opts.retainEntries }) });
@@ -262,6 +268,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
     if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
+    // An explicit bag is no edit of the wiki: a system canon bag meets the Kahu predicate the verbs meet.
+    for (const bag of new Set(msg.records.flatMap(record => record.bag ? [record.bag] : []))) {
+      try { await requireKahuReach(bag, opts.kahuReach, "port write"); }
+      catch { answer("refused", [], [], "kahu-reach"); return; }
+    }
     if (!prior && msg.basis && msg.basis !== log.cursorOf(port.shape, log.headSeq)) {
       answer("refused", [], [], "stale-basis"); return;
     }
@@ -508,7 +519,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const port: OpenPort = { open: msg, boundActor, presenceActor, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
           ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger,
-          actorState: actor, actorTableFull };
+          actorState: actor, actorTableFull, queuedWrites: 0 };
         ports.set(msg.portId, port);
         void open(msg, ctx, port);
         return true;
@@ -524,7 +535,12 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           else presence.update(msg.portId, { actorKey: msg.actorKey, beat: msg.beat!, state: msg.state });
         } finally { presenceSource = undefined; }
       } else if (msg.type === "port:write") {
-        writes = writes.then(() => write(msg, ctx, port));
+        if (port.queuedWrites >= maxQueuedWrites) {
+          ctx.post(mkPortWritten({ portId: msg.portId, txId: msg.txId, status: "refused", applied: [], failed: [], reason: "write-queue-full" }));
+          return true;
+        }
+        port.queuedWrites++;
+        writes = writes.then(() => write(msg, ctx, port)).finally(() => { port.queuedWrites--; });
       } else if ((msg as { type: string }).type === "port:ack") {
         const cursor = log.parseCursor((msg as unknown as { cursor: string }).cursor);
         if (cursor && cursor.bootNonce === nonce && cursor.shapeId === log.shapeId(port.shape) && cursor.seq >= port.ackSeq && cursor.seq <= port.postedSeq) {

@@ -11,6 +11,7 @@ import { VerbTable } from "../src/verb-dispatcher.js";
 
 const origin = { kind: "tw-local", instanceId: "foreign" } as const;
 const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
+const ioSettle = async () => { for (let turn = 0; turn < 50; turn++) { await new Promise<void>((resolve) => setImmediate(resolve)); await settle(); } };
 /** Send an ask and pump macrotask turns, a bounded run, until it posts one more answer. */
 const sendAwait = async (r: { messages: unknown[]; send(msg: never): Promise<void> }, msg: unknown): Promise<void> => {
   const count = () => r.messages.filter((m) => (m as { type?: string }).type === "port:answer").length;
@@ -245,6 +246,42 @@ describe("record port handler", () => {
     expect(await r.store.get("GB")).toBeNull();
     expect(last("GB")?.deleted).toBe(true);
     expect(last("GC")?.fields["text"]).toBe("c");
+    await r.close();
+  });
+
+  test("port-write-explicit-system-bag-meets-kahu: an edit grant does not reach canon; CONTROL: an explicit user bag lands", async () => {
+    const canon = "lar:///ha.ka.ba/bags/lares";
+    const r = await rig();
+    const canonStore = new MemoryTiddlerStore(canon);
+    r.composite.addLayer({ bagId: canon, store: canonStore, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "canon-1", records: [{ title: "Canon", fields: { text: "x" }, bag: canon }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "canon-1", status: "refused", reason: "kahu-reach" });
+    expect(await canonStore.get("Canon")).toBeNull();
+    const user = new MemoryTiddlerStore("second");
+    r.composite.addLayer({ bagId: "second", store: user, writable: true, defaultWritable: false });
+    await r.send({ type: "port:write", portId: "p", txId: "user-1", records: [{ title: "Mine", fields: { text: "x" }, bag: "second" }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "user-1", status: "applied" });
+    expect(await user.get("Mine")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-write-queue-is-bounded: a flood past maxQueuedWrites refuses write-queue-full at admission; CONTROL: the admitted writes land and a later write is admitted", async () => {
+    const r = await rig({ maxQueuedWrites: 2 });
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const original = r.store.writeFamily!.bind(r.store);
+    r.store.writeFamily = async (...args) => { await gate; return original(...args); };
+    await r.send(openMsg());
+    for (let index = 0; index < 5; index++) await r.send(writeMsg(`flood-${index}`, `Flood${index}`));
+    const refused = ofType(r.messages, "port:written").filter(message => message.status === "refused" && message.reason === "write-queue-full");
+    expect(refused.map(message => message.txId)).toEqual(["flood-2", "flood-3", "flood-4"]);
+    release(); await settle(); await ioSettle();
+    expect(await r.store.get("Flood0")).not.toBeNull();
+    expect(await r.store.get("Flood1")).not.toBeNull();
+    expect(await r.store.get("Flood2")).toBeNull();
+    await r.send(writeMsg("after", "After")); await ioSettle();
+    expect(await r.store.get("After")).not.toBeNull();
     await r.close();
   });
 
