@@ -19,6 +19,7 @@ import { CompositeStore, corpusBagId } from "../src/composite-store.js";
 import { BAG_IDS, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lar-uris.js";
 import { wikiBagUri } from "../src/wiki-recipe.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
+import { AtomicMemoryStore } from "../../lararium-tw5/tests/atomic-memory-store.js";
 import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
 
 // ---------------------------------------------------------------------------
@@ -54,7 +55,7 @@ describe("CompositeStore — layer management", () => {
       .rejects.toMatchObject({ reason: "non-atomic-layer" });
     expect(await plainBacking.get("One")).toBeNull();
     expect(await plainBacking.get("Two")).toBeNull();
-    const atomic = new MemoryTiddlerStore();
+    const atomic = new AtomicMemoryStore();
     composite.addLayer({ bagId: "atomic", store: atomic, writable: true });
     await composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "atomic" });
     await composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin(), { bag: "atomic" });
@@ -63,7 +64,7 @@ describe("CompositeStore — layer management", () => {
   });
   test("composite-family-fire-synchronous: subscribers run before writeFamily resolves; CONTROL: written records persist", async () => {
     const composite = new CompositeStore();
-    composite.addLayer({ bagId: TEST_WIKI_URI, store: new MemoryTiddlerStore(), writable: true });
+    composite.addLayer({ bagId: TEST_WIKI_URI, store: new AtomicMemoryStore(), writable: true });
     const seen: string[] = [];
     const unsubscribe = composite.subscribe(change => { seen.push(change.title); });
     const writing = composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin());
