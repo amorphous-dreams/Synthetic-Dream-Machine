@@ -533,7 +533,7 @@ run_leaf() {
   # joining vessel reads the answer under that key, and the answer binds that nonce.
   step "A offers her face's fleet — the offer names its root key and a fresh nonce"
   local OFFER OFFER2
-  OFFER=$($COMPOSE exec -T lararium-a $LARES fleet join offer 2>&1 | sed -n '/^{/,/^}/p')
+  OFFER=$($COMPOSE exec -T lararium-a $LARES fleet join offer --face 0 2>&1 | sed -n '/^{/,/^}/p')
   if printf '%s' "$OFFER" | grep -q '"kind": "fleet-join-offer"' \
      && printf '%s' "$OFFER" | grep -qE '"rootKey": "[0-9a-f]{64}"' \
      && printf '%s' "$OFFER" | grep -qE '"nonce": "[0-9a-f]{64}"'; then ok; else
@@ -541,7 +541,7 @@ run_leaf() {
 
   # EACH OFFER MINTS ITS OWN NONCE: a request answers one offer, never every offer the hearth makes.
   step "a second offer carries a fresh nonce"
-  OFFER2=$($COMPOSE exec -T lararium-a $LARES fleet join offer 2>&1 | sed -n '/^{/,/^}/p')
+  OFFER2=$($COMPOSE exec -T lararium-a $LARES fleet join offer --face 0 2>&1 | sed -n '/^{/,/^}/p')
   local N1 N2
   N1=$(printf '%s' "$OFFER" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
   N2=$(printf '%s' "$OFFER2" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
@@ -556,7 +556,7 @@ run_leaf() {
   SEAL="09$(printf '0%.0s' $(seq 62))"
   FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"atomKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
   if printf '%s' "$FORGED" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/leaf-forged-request.json'; then
-    if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer /tmp/leaf-forged-request.json 2>&1); then
+    if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer --face 0 /tmp/leaf-forged-request.json 2>&1); then
       bad "the hearth answered a request no vessel signed"; printf '%s\n' "$ANSWER" | head -3 | sed 's/^/      /'
     elif printf '%s' "$ANSWER" | grep -q 'request-unsigned' && ! printf '%s' "$ANSWER" | grep -q 'fleet-join-answer'; then ok
     else bad "the forged request failed without refusing as request-unsigned"; printf '%s\n' "$ANSWER" | tail -3 | sed 's/^/      /'; fi
