@@ -205,7 +205,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (held.length === 0) {
       throw new EdgeKapaeError("no persona root held on this vessel — an act carries a signature, and this vessel signs with none.");
     }
-    const handleIndex = opts.handleIndex ?? held[0]!;
+    const handleIndex = faceIndex;   // the face the command resolved above (named, worn or sole); never the first root held
     if (!held.includes(handleIndex)) {
       throw new EdgeKapaeError(`persona root ${handleIndex} is not held here (held: ${held.join(", ")}).`);
     }

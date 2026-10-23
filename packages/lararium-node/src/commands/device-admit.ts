@@ -392,6 +392,11 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!projection.founded || projection.fork || !projection.head) {
     throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
   }
+  // THE WRITER NEVER BRANCHES BELOW WHAT THIS DEVICE ACCEPTED: the log it signs from must hold the anchor's pinned act at the
+  // pinned seq (the boot's own `frontier-falls` check), so a replica that replays an older valid log signs nothing.
+  if (issuerAnchor.frontier.actSeq >= 0 && projection.cids[issuerAnchor.frontier.actSeq] !== issuerAnchor.frontier.actCid) {
+    throw new Error("[lares fleet join answer] Face proof: frontier-falls; this replica's log stands below the act this device accepted; sync the face's persona plane and retry");
+  }
   const signerKey = await ed25519VerifyingKeyFromSeed(signerSeed);
   if (!lineage[lineage.length - 1]?.signers.includes(signerKey)) {
     throw new Error("[lares fleet join answer] Face proof: root signer has no current KEL seat; re-admit the face");

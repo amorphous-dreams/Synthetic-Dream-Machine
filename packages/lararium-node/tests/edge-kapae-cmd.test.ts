@@ -67,6 +67,21 @@ describe("runEdgeKapae", () => {
     await state.repo.rest();
   });
 
+  it("RED: an unnamed device act with two faces held signs as the WORN face's root, never the first root held; CONTROL: face 0 worn signs as face 0", async () => {
+    await generateOrLoadPersonaGroupRoot(1);
+    await seedFaceAtom(1);
+    await seedFleet(1);
+    const root0 = await loadPersonaGroupRootVerifyingKey(0), root1 = await loadPersonaGroupRootVerifyingKey(1);
+    expect(root0).not.toBe(root1);
+    await seatOwnCharter([0, 1]);
+    await wear(1);
+    const worn1 = await direct(runEdgeKapae)({ device: DEVICE, raised: true });
+    expect(worn1.boardUrl, "the worn face's fleet board").toBe(fleetEdgeBoardDocUrl(root1!));
+    await wear(0);
+    const worn0 = await direct(runEdgeKapae)({ device: DEVICE, raised: true });
+    expect(worn0.boardUrl).toBe(fleetEdgeBoardDocUrl(root0!));
+  });
+
   it("a device act lands on the signing root fleet board and names its device edge", async () => {
     const rootDid = await loadPersonaGroupRootVerifyingKey(0);
     const r = await direct(runEdgeKapae)({ device: DEVICE, raised: true });
