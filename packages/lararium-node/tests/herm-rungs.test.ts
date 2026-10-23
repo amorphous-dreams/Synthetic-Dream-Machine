@@ -202,9 +202,9 @@ describe("TEMPLE — the house's origins include every reach face on every stand
   });
 
   test("composed origins join the reach faces, each named once", () => {
-    const composed = [{ webOrigin: "https://house.example", relayOrigin: "http://house.lan:8080", oracleOrigin: "https://oracle.house.example" }];
+    const composed = [{ webOrigin: "https://house.example", relayOrigin: "http://house.lan:8080", flowOrigin: "https://flow.house.example" }];
     expect(houseOriginsOf(reach, composed)).toEqual([
-      "http://192.168.1.20:8080", "http://house.lan:8080", "https://house.example", "https://oracle.house.example",
+      "http://192.168.1.20:8080", "http://house.lan:8080", "https://house.example", "https://flow.house.example",
     ]);
   });
 });

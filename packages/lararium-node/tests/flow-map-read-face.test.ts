@@ -1,7 +1,7 @@
 /**
- * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated oracle socket. The serve →
+ * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated flow socket. The serve →
  * pull → verify round trip and the disclosure shore at the wire (only the coarse public projection crosses; the
- * vessel-local dial-records never leave) are proven beside the gate in oracle-floor-gate.test; what this suite
+ * vessel-local dial-records never leave) are proven beside the gate in flow-floor-gate.test; what this suite
  * keeps is the durable lineage: a restart re-serves the exact pointer it published, then makes a causal child on
  * change.
  * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales
@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { exportFlowSnapshot, type MeshPalaceDoc } from "@lararium/mesh";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
-import { floorGates, presenter, pullFloor } from "./oracle-floor-rig.js";
+import { floorGates, presenter, pullFloor } from "./flow-floor-rig.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (deterministic)

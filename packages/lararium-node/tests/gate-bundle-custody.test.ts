@@ -98,16 +98,16 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
 
   test("RED: a locked vessel derives every floor bundle through the real floor door and no sovereign one", async () => {
     const vessel = await staged();
-    const whileRaised = deriveGateBundle(await floor(), AID_A, floorRoute("/oracle")).pin;
+    const whileRaised = deriveGateBundle(await floor(), AID_A, floorRoute("/flow")).pin;
     expect(deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws")).pin.nexus.length).toBeGreaterThan(0);   // CONTROL: it derived while unlocked
     await vessel.holder.lock();
     expect(() => deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws"))).toThrow(CustodyLocked);
-    for (const path of ["/shelf", "/oracle", "/announce", "/relay"]) expect(deriveGateBundle(await floor(), AID_A, floorRoute(path)).pin.tier).toBe("floor");
-    expect(deriveGateBundle(await floor(), AID_A, floorRoute("/oracle")).pin).toEqual(whileRaised);            // the same floor pin, locked or raised
+    for (const path of ["/shelf", "/flow", "/announce", "/relay"]) expect(deriveGateBundle(await floor(), AID_A, floorRoute(path)).pin.tier).toBe("floor");
+    expect(deriveGateBundle(await floor(), AID_A, floorRoute("/flow")).pin).toEqual(whileRaised);            // the same floor pin, locked or raised
     // No seat at all reads as locked: the door opens nothing and asks nobody.
     seatCustody(null);
     expect(() => deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws"))).toThrow(CustodyLocked);
-    expect(deriveGateBundle(await floor(), AID_A, floorRoute("/oracle")).pin).toEqual(whileRaised);
+    expect(deriveGateBundle(await floor(), AID_A, floorRoute("/flow")).pin).toEqual(whileRaised);
   });
 
   test("RED: the two doors never pass for each other, by type, by mint and by root", async () => {
@@ -127,11 +127,11 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
     // BY ROOT: a door minted over the other root's derive stands as a root and derives nothing, since each
     // root refuses the other tier's child by name.
     const dressedFloor = floorGateRoot(floorKeyDoor(custodyDoor));
-    expect(() => deriveGateBundle(dressedFloor, AID_A, floorRoute("/oracle"))).toThrow(CustodyRootRefused);
+    expect(() => deriveGateBundle(dressedFloor, AID_A, floorRoute("/flow"))).toThrow(CustodyRootRefused);
     const dressedSovereign = sovereignGateRoot(custodyRootDoor(floorDoor));
     expect(() => deriveGateBundle(dressedSovereign, AID_A, sovereignRoute("/ws"))).toThrow(FloorKeyDoorRefused);
     // CONTROL: each door under its own tier derives.
-    expect(deriveGateBundle(floorGateRoot(floorDoor), AID_A, floorRoute("/oracle")).pin.tier).toBe("floor");
+    expect(deriveGateBundle(floorGateRoot(floorDoor), AID_A, floorRoute("/flow")).pin.tier).toBe("floor");
     expect(deriveGateBundle(sovereignGateRoot(custodyDoor), AID_A, sovereignRoute("/ws")).pin.tier).toBe("sovereign");
   });
 
@@ -168,10 +168,10 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
     await staged();
     const a = deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws"));
     const b = deriveGateBundle(sovereign(), AID_B, sovereignRoute("/ws"));
-    const fa = deriveGateBundle(await floor(), AID_A, floorRoute("/oracle"));
+    const fa = deriveGateBundle(await floor(), AID_A, floorRoute("/flow"));
     await staged();
     const other = deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws"));
-    const fother = deriveGateBundle(await floor(), AID_A, floorRoute("/oracle"));
+    const fother = deriveGateBundle(await floor(), AID_A, floorRoute("/flow"));
     const keys = [a, b, other, fa, fother].flatMap((bundle) => [bundle.pin.transportKey, bundle.pin.signingKey]);
     expect(new Set(keys).size).toBe(10);
     expect(new Set([a.knock, b.knock, other.knock, fa.knock, fother.knock]).size).toBe(5);
@@ -184,7 +184,7 @@ describe("a gate bundle over a staged custody", { timeout: 180_000 }, () => {
     const bundle = deriveGateBundle(sovereign(), AID_A, sovereignRoute("/ws"));
     await bundle.sign(new Uint8Array(0)).catch(() => undefined);
     bundle.drop();
-    deriveGateBundle(await floor(), AID_A, floorRoute("/oracle")).drop();
+    deriveGateBundle(await floor(), AID_A, floorRoute("/flow")).drop();
     expect(census(vessel.root)).toEqual(before);
   });
 });

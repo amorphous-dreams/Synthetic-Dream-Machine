@@ -46,7 +46,7 @@ import {
   type WalkRecord, type CarryOutcome,
   readHearthFloorCard,
 }                                            from "@lararium/mesh";
-import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCardPin, fileOwnHearthPins, hearthNameOf, oracleNexusFor } from "./browser-gate-pins.js";
+import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCardPin, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
@@ -859,11 +859,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
   // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.
   // The proof a browser carries is its FACE's: the atom signs it, and the card is the atom's. The device seed signs none.
-  const oracleAtomSeed = social.contactCard ? await requireBrowserFaceAtomSeed(idbName, social.personaGroupId) : null;
-  const oracleAtom = oracleAtomSeed ? faceAtomKeyFromSeed(oracleAtomSeed, social.personaGroupId) : null;
-  oracleAtomSeed?.fill(0);
-  const oracleProof: LeafIdentity | undefined = social.contactCard && oracleAtom
-    ? { arm: "face", contactCard: social.contactCard, peerPubKey: oracleAtom.key, sign: oracleAtom.sign }
+  const flowAtomSeed = social.contactCard ? await requireBrowserFaceAtomSeed(idbName, social.personaGroupId) : null;
+  const flowAtom = flowAtomSeed ? faceAtomKeyFromSeed(flowAtomSeed, social.personaGroupId) : null;
+  flowAtomSeed?.fill(0);
+  const flowProof: LeafIdentity | undefined = social.contactCard && flowAtom
+    ? { arm: "face", contactCard: social.contactCard, peerPubKey: flowAtom.key, sign: flowAtom.sign }
     : undefined;
 
   // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
@@ -899,7 +899,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE SEALED CROSSING. The dial knocks only under the full sovereign pin the joined face's fleet join carried (filed
   // above for the relay's hearth), presents that face under its own face-scoped key, and reads the gate's verdict under
   // the pin's signing key. A device with no face joined dials no sovereign gate: it stands at the floor and reads what
-  // the floor offers (`readOracle`). A hearth resting at its floor stands no sovereign gate, so its dial meets silence
+  // the floor offers (`readFloor`). A hearth resting at its floor stands no sovereign gate, so its dial meets silence
   // and re-dials until a person unlocks it.
   let relayAdapter: LarWSClientAdapter | null = null;
   // THE WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`): the sealed adapter presents a face, not a walk, so the walk
@@ -1072,7 +1072,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return [...carriageStack({
       repo, residency, self: leaf,
       nodeSeedHex: vesselVerifyingKey,   // the per-vessel cadence seed (browser-safe hex string, no Buffer)
-      ...(oracleProof ? { identity: oracleProof } : {}),
+      ...(flowProof ? { identity: flowProof } : {}),
       onLog: (l) => console.log(`[lararium-browser] ${l}`),
     })];
   })() : [];
@@ -1876,7 +1876,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // trust line the floor card (or the admit) carries, the epoch lineage re-derives from it, and no pin or presentation rides.
     // The Nexus OF THE HEARTH READ: the relay's own where `baseUrl` is the relay's hearth, and none elsewhere.
     readFloor: (baseUrl: string): Promise<HearthFloorRead> => readHearthFloor({
-      baseUrl, nexusPin: oracleNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
+      baseUrl, nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
     }),
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.

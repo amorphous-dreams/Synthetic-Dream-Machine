@@ -47,9 +47,9 @@ async function start(held = bytes): Promise<string> {
   const dispatcher = mountHttpFaceDispatcher(server);
   disposeDispatcher = dispatcher.dispose;
   dispatcher.register({
-    name: "oracle-test-face",
-    routeKeys: ["oracle-test:/oracle/pointer"],
-    owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname === "/oracle/pointer",
+    name: "flow-test-face",
+    routeKeys: ["flow-test:/flow/pointer"],
+    owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname === "/flow/pointer",
     handle: (_req, res) => { res.writeHead(200, { "content-type": "text/plain" }); res.end("other face"); },
   });
   // Register the public face after the neighboring face: the dispatcher must
@@ -73,7 +73,7 @@ describe("Node Pronaos public-artifact carrier", () => {
     expect(await head.text()).toBe("");
     expect((await fetch(`${origin}/assets/other.js`)).status).toBe(404);
     expect((await fetch(`${origin}/assets/published.js`, { method: "POST" })).status).toBe(405);
-    expect(await (await fetch(`${origin}/oracle/pointer`)).text()).toBe("other face");
+    expect(await (await fetch(`${origin}/flow/pointer`)).text()).toBe("other face");
     dispose?.(); dispose = undefined;
     const afterDispose = await fetch(`${origin}/assets/published.js`);
     expect(afterDispose.status).toBe(404);
@@ -86,7 +86,7 @@ describe("Node Pronaos public-artifact carrier", () => {
     const response = await fetch(`${origin}/assets/published.js`);
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("Pronaos artifact unavailable");
-    expect(await (await fetch(`${origin}/oracle/pointer`)).text()).toBe("other face");
+    expect(await (await fetch(`${origin}/flow/pointer`)).text()).toBe("other face");
   });
 
   test("rejects widened authority before mounting", () => {

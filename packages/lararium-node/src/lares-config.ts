@@ -43,14 +43,14 @@ export interface LaresVesselState {
   readonly cas?: string;
 }
 
-/** Explicit Web/relay/oracle reach composition. `LAR_PUBLIC_URL` remains the relay face only. */
+/** Explicit Web/relay/flow reach composition. `LAR_PUBLIC_URL` remains the relay face only. */
 export interface LaresOriginConfig {
-  /** Declare that Web, relay, and oracle share the relay face's origin. */
+  /** Declare that Web, relay, and flow share the relay face's origin. */
   readonly sameOrigin?: boolean;
   /** The Web-surface origin. Required unless `sameOrigin` is true. */
   readonly web?: string;
-  /** The oracle/read-face origin. Required unless `sameOrigin` is true. */
-  readonly oracle?: string;
+  /** The flow/read-face origin. Required unless `sameOrigin` is true. */
+  readonly flow?: string;
 }
 
 /** The `~/.lares/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
@@ -151,8 +151,8 @@ function originBoolean(value: unknown, label: string): boolean | undefined {
  * Resolve the explicit origin declaration once at the configuration shore.
  *
  * Environment values are ephemeral overrides of the per-daemon config. `LAR_PUBLIC_URL` deliberately
- * does not participate here: it names the relay reach face and never becomes Web or oracle authority.
- * Missing Web/oracle values remain missing so `originCompositionForFace` can refuse at the boot/banner edge.
+ * does not participate here: it names the relay reach face and never becomes Web or flow authority.
+ * Missing Web/flow values remain missing so `originCompositionForFace` can refuse at the boot/banner edge.
  */
 export function originDeclaration(cfg: LaresConfig = loadLaresConfig()): ExplicitOriginComposition {
   const envSame = process.env["LAR_SAME_ORIGIN"];
@@ -164,11 +164,11 @@ export function originDeclaration(cfg: LaresConfig = loadLaresConfig()): Explici
         throw new Error("[lares config] LAR_SAME_ORIGIN must be true or false");
       })();
   const webOrigin = process.env["LAR_WEB_ORIGIN"] ?? cfg.origins?.web;
-  const oracleOrigin = process.env["LAR_ORACLE_ORIGIN"] ?? cfg.origins?.oracle;
+  const flowOrigin = process.env["LAR_FLOW_ORIGIN"] ?? cfg.origins?.flow;
   return {
     ...(sameOrigin === undefined ? {} : { sameOrigin }),
     ...(webOrigin === undefined ? {} : { webOrigin }),
-    ...(oracleOrigin === undefined ? {} : { oracleOrigin }),
+    ...(flowOrigin === undefined ? {} : { flowOrigin }),
   };
 }
 

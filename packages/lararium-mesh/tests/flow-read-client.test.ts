@@ -1,7 +1,7 @@
 /**
  * flow-read-client — peers prove first at the FLOOR gate, then the reader rule runs.
  *
- * A real floor-tier gate (`makeFaceGate` over a floor world on "/oracle", seating channels) plays the peer's oracle face:
+ * A real floor-tier gate (`makeFaceGate` over a floor world on "/flow", seating channels) plays the peer's flow face:
  * its seat's open hands the channel a script that sends the pointer frame and the snapshot, as the node face will.
  * Every reader pins the gate (from the pair index) and the publisher (out of band).
  */
@@ -11,7 +11,7 @@ import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import { channelSessionTable, type GateSessionChannel } from "../src/gate-session-channel.js";
 import { ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { buildFlowPointer, exportFlowSnapshot, type FlowPointer, type FlowSnapshot } from "../src/flow-substrate.js";
-import { FLOW_POINTER_FRAME, ORACLE_SOCKET_ROUTE, oracleSocketUrl, pullAndVerifyFlow } from "../src/flow-read-client.js";
+import { FLOW_POINTER_FRAME, FLOW_SOCKET_ROUTE, flowSocketUrl, pullAndVerifyFlow } from "../src/flow-read-client.js";
 import { dialSocketTo, gateOver } from "./gate-dial-fixture.js";
 import { AUDIENCE, handDeadlines, presenter, world } from "./face-gate-fixture.js";
 
@@ -20,7 +20,7 @@ const OTHER = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
 const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 async function publish(seed = SEED, text = "the constitution"): Promise<{ snap: FlowSnapshot; ptr: FlowPointer }> {
-  const snap = await exportFlowSnapshot(A.from({ tiddlers: { oracle: { text } } }));
+  const snap = await exportFlowSnapshot(A.from({ tiddlers: { flow: { text } } }));
   return { snap, ptr: await buildFlowPointer({ snapshot: snap, parents: [], signerSeed: seed }) };
 }
 
@@ -33,8 +33,8 @@ interface Face {
 
 async function rig(face: Face, over: { silent?: boolean } = {}) {
   const sent = { pointer: false };
-  const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
-  const p = await presenter(w, "oracle reader");
+  const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
+  const p = await presenter(w, "flow reader");
   if (over.silent) w.held = null;
   const served = await publish();
   const ptr = face.ptr === undefined ? served.ptr : face.ptr;
@@ -59,13 +59,13 @@ async function rig(face: Face, over: { silent?: boolean } = {}) {
 }
 
 describe("flow-read-client over the sealed floor gate", () => {
-  test("CONTROL: a pinned dial pulls, verifies and loads the oracle; the dial went to the oracle route", async () => {
+  test("CONTROL: a pinned dial pulls, verifies and loads the flow; the dial went to the flow route", async () => {
     const r = await rig({});
     const res = await pullAndVerifyFlow<{ tiddlers: Record<string, { text: string }> }>("http://peer:8080", r.opts);
     expect(res.ok, res.reason).toBe(true);
-    expect(res.doc?.tiddlers["oracle"]?.text).toBe("the constitution");
-    expect(r.urls).toEqual([oracleSocketUrl("http://peer:8080")]);
-    expect(r.urls[0]).toBe("ws://peer:8080/oracle");
+    expect(res.doc?.tiddlers["flow"]?.text).toBe("the constitution");
+    expect(r.urls).toEqual([flowSocketUrl("http://peer:8080")]);
+    expect(r.urls[0]).toBe("ws://peer:8080/flow");
   });
 
   test("the snapshot may ride a sync message as well", async () => {

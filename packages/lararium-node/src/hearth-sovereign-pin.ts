@@ -15,7 +15,7 @@
  * there, so a pin a fleet-join answer carries names a Nexus a gate actually stands at; a vessel that keeps no charter
  * stands no sovereign gate and refuses `NoStoodNexus` by name.
  *
- * THE FLOOR PINS. The vessel stands its oracle's floor gate at the same Nexus on the oracle route, under its floor key
+ * THE FLOOR PINS. The vessel stands its flow's floor gate at the same Nexus on the flow route, under its floor key
  * (`floorGateRoot(vesselFloorKeyDoor())`). `stoodFloorPins` reads that pin set, so a fleet-join answer and the sovereign
  * session can carry it under a signature: a floor route takes its pin only through an authenticated relation or a
  * carried signed pin set (house ruling "The admit's gate pin").
@@ -23,7 +23,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/hearth-sovereign-pin
  */
 import {
-  ORACLE_SOCKET_ROUTE, SOVEREIGN_SYNC_ROUTE, deriveGateBundle, floorGateRoot, floorRoute, sovereignGateRoot, sovereignRoute,
+  FLOW_SOCKET_ROUTE, SOVEREIGN_SYNC_ROUTE, deriveGateBundle, floorGateRoot, floorRoute, sovereignGateRoot, sovereignRoute,
   type CustodyRootDoor, type FloorKeyDoor, type GateBundlePin,
 } from "@lararium/mesh";
 import { custodyGateDoor } from "./custody-seat.js";
@@ -47,8 +47,8 @@ export function stoodSovereignPin(sealHome: string, door: CustodyRootDoor = cust
   return hearthSovereignPin(aid, door);
 }
 
-/** The routes this vessel stands a floor gate on, at every Nexus it stands at: the oracle's. */
-export const STOOD_FLOOR_ROUTES: readonly string[] = [ORACLE_SOCKET_ROUTE];
+/** The routes this vessel stands a floor gate on, at every Nexus it stands at: the flow's. */
+export const STOOD_FLOOR_ROUTES: readonly string[] = [FLOW_SOCKET_ROUTE];
 
 /** The hearth's floor pins at `nexusAid`: one per floor route its floor gates stand on, the bundles' secrets dropped. */
 export function hearthFloorPins(nexusAid: string, door: FloorKeyDoor): GateBundlePin[] {

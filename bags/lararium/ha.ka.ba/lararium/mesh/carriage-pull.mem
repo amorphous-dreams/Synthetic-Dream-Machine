@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/carriage-pull.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullOracle`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (the shut-routes house ruling, stable-founding-road #/rulings)."
+role        = "invariant law: the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullFlow`) — one dial per (peer, Nexus) on the floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel stands as there, verified against the publisher key the carried dial names. The pin never comes off the wire or the dial entry. A peer this vessel holds no pin for is not dialed at all; a Nexus it can present nothing at is skipped by name. This is the proven gate-native caller that flips carriage peering open (the shut-routes house ruling, stable-founding-road #/rulings)."
 source-file = "packages/lararium-mesh/src/carriage-pull.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/carriage-pull"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -30,7 +30,7 @@ path stands beside it.
 
 !! Where the pin comes from ~ never the wire, never the dial entry
 
-The pair index (`admit-gate-pin`), keyed (peer's key, Nexus hex, `/oracle`, `floor`), filled only through an
+The pair index (`admit-gate-pin`), keyed (peer's key, Nexus hex, `/flow`, `floor`), filled only through an
 authenticated relation or a carried signed pin set (house ruling "The admit's gate pin"; `place-floor-pin`).
 A peer this vessel holds no pin for at any Nexus it stands in is not dialed at all (`pin-absent`): a
 stranger's crossroads, and a crossroads of another Nexus, are never knocked on. The `refresh` hook runs once
@@ -69,6 +69,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
 <<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
 
-<<^ code="&#x0003;">>ni:///sha-256;oolY5ZMkU6UbPa4ZAXHvYqCWDN4gAUCIXebAoHpexE4
+<<^ code="&#x0003;">>ni:///sha-256;bXiLYVOhJ7q3cmYLWm3_82s9Q2ZPAD6oVhgJ3W6tUBM
 
 <<^ code="&#x0004;" -> to="?">>

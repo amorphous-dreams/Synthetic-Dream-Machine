@@ -3,10 +3,10 @@
  *
  * This adapter projects a prepared Herm/Lararium Pronaos snapshot. It
  * does not discover a filesystem root, inspect private bags, mint identity,
- * answer oracle routes, or mutate a vessel. The caller supplies the exact
+ * answer flow routes, or mutate a vessel. The caller supplies the exact
  * exact prepared bytes and route names that the held public projection permits.
  *
- * `/ws`, `/oracle`, and `/bulb` remain other read faces. A static byte shore
+ * `/ws`, `/flow`, and `/bulb` remain other read faces. A static byte shore
  * cannot become their authority by falling through to it.
  *
  * THE ARRIVAL DESCRIPTOR (pronaos#/the-first-arrival). The same face answers one RFC 8615 well-known name,
@@ -104,7 +104,7 @@ export interface ArrivalDescriptor {
 
 /** Deployment inputs the descriptor reads beside the prepared projection. */
 export interface ArrivalOptions {
-  /** Every origin the house itself answers on (Web, relay, oracle, each reach face). A mirror may hold none of them. */
+  /** Every origin the house itself answers on (Web, relay, flow, each reach face). A mirror may hold none of them. */
   readonly houseOrigins: readonly string[];
   readonly mirrors?: readonly ArrivalMirror[];
 }
@@ -158,16 +158,16 @@ export function validateArrivalMirrors(
 
 /**
  * Every origin a house answers on: each reach face's origin, whatever its standing, plus each composed Web,
- * relay and oracle origin where the standing composes them. The reach faces feed in unconditionally, so a mirror
+ * relay and flow origin where the standing composes them. The reach faces feed in unconditionally, so a mirror
  * on the house's own origin refuses on every standing.
  */
 export function houseOriginsOf(
   reachFaces: readonly { readonly origin: string }[],
-  compositions: readonly { readonly webOrigin?: string; readonly relayOrigin: string; readonly oracleOrigin: string }[] | null,
+  compositions: readonly { readonly webOrigin?: string; readonly relayOrigin: string; readonly flowOrigin: string }[] | null,
 ): string[] {
   return [...new Set([
     ...reachFaces.map((face) => face.origin),
-    ...(compositions ?? []).flatMap((c) => [c.webOrigin, c.relayOrigin, c.oracleOrigin]
+    ...(compositions ?? []).flatMap((c) => [c.webOrigin, c.relayOrigin, c.flowOrigin]
       .filter((origin): origin is string => typeof origin === "string")),
   ])];
 }
@@ -355,7 +355,7 @@ export function pronaosRequestHandler(
     const query = rawUrl.search(/[?#]/);
     const rawPath = query < 0 ? rawUrl : rawUrl.slice(0, query);
     if (/%2e|%2f|%5c|%25/i.test(rawPath) || rawPath.includes("..")) {
-      if (rawPath === "/ws" || rawPath.startsWith("/oracle") || rawPath.startsWith("/bulb")) return false;
+      if (rawPath === "/ws" || rawPath.startsWith("/flow") || rawPath.startsWith("/bulb")) return false;
       refuse(res, "Pronaos path refused");
       return true;
     }
@@ -405,7 +405,7 @@ export function mountPronaosReadFace(
   const owns = (req: IncomingMessage): boolean => {
     const rawUrl = req.url ?? "/";
     if (/%2e|%2f|%5c|%25/i.test(rawUrl) || rawUrl.includes("..")) {
-      return !(rawUrl === "/ws" || rawUrl.startsWith("/oracle") || rawUrl.startsWith("/bulb"));
+      return !(rawUrl === "/ws" || rawUrl.startsWith("/flow") || rawUrl.startsWith("/bulb"));
     }
     return ownsPath(new URL(rawUrl, "http://localhost").pathname);
   };

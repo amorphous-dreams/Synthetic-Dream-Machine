@@ -56,7 +56,7 @@ import {
   type CountedEdgeBoard, type EdgeRollAnchor,
   type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
-  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, ORACLE_SOCKET_ROUTE,
+  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, FLOW_SOCKET_ROUTE,
   type FloorKeyDoor, type PlaceFloorPinStatement,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -75,7 +75,7 @@ import { edgeRollAnchorRealms } from "./edge-roll-anchor.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 import { admitCanonDocs } from "./device-admit.js";
 import { carryBundleFrom, type CarryBundle } from "../carry-bundle.js";
-import { oracleFloorPinAt } from "../herm-carriage.js";
+import { flowFloorPinAt } from "../herm-carriage.js";
 import { vesselFloorKeyDoor } from "../node-vessel-identity.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
@@ -262,7 +262,7 @@ export async function runNexusCarryFor(opts: {
   const aid = primaryNexusAid(home);
   let floorPin: PlaceFloorPinStatement | null = null;
   if (aid) {
-    const pin = oracleFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());
+    const pin = flowFloorPinAt(aid, opts.floorDoor ?? await vesselFloorKeyDoor());
     const signer = ed25519SignerFromSeed(seed);
     floorPin = await signPlaceFloorPin({ placeKey: nym, pin, sign: async (image) => hexToBytes(await signer(image)) });
   }
@@ -274,7 +274,7 @@ function floorPinOrRefuse(raw: string, nym: string, aid: string): PlaceFloorPinS
   let parsed: unknown;
   try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the --floor-pin statement does not parse as JSON — pass the `floorPin` `nexus carry-for --json` printed, whole."); }
   // The carrier set here is the named place alone: this checks the statement's own bytes; the board's readers judge the relation.
-  const read = readPlaceFloorPin(parsed, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, carriers: new Set([nym]) });
+  const read = readPlaceFloorPin(parsed, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers: new Set([nym]) });
   if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin statement does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
   if (read.placeKey !== nym) throw new NexusContractError("carry REFUSED: the --floor-pin statement names another place than the carry. Nothing was written.");
   return parsed as PlaceFloorPinStatement;

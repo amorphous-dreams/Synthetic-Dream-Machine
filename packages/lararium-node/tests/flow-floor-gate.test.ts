@@ -1,6 +1,6 @@
 /**
- * oracle-floor-gate — the oracle read face's server half on the floor gate (the oracle converts where browser boot
- * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/oracle",
+ * flow-floor-gate — the flow read face's server half on the floor gate (the flow converts where browser boot
+ * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/flow",
  * "floor") through the house's one dialer (`pullAndVerifyFlow`), and the face answers over the sealed channel:
  * one "session" message carrying the signed pointer frame, then the snapshot bytes, and no auth verb of its own.
  *
@@ -10,7 +10,7 @@
  *   · RED: at a PRIVATE gate a presenter with no arm reads nothing / CONTROL: the same presenter with its admit reads
  *     the map, and at an OPEN gate the bare presenter reads it too;
  *   · RED: a reader that pins the publisher's key wrong reads the pointer refused / CONTROL: the right key reads it;
- *   · the face stands one gate per Nexus it is handed, each on its own knock under the oracle route, and a dispose
+ *   · the face stands one gate per Nexus it is handed, each on its own knock under the flow route, and a dispose
  *     stands every gate down, closes the open sessions and leaves no upgrade claimed;
  *   · a session the face served closes once the reader closes, or once the linger lapses.
  */
@@ -22,7 +22,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import WsSocket from "ws";
 import {
-  pullAndVerifyFlow, dialEntryToRecord, ed25519VerifyingKeyFromSeed, dialFaceGate, dialedChannel, ORACLE_SOCKET_ROUTE,
+  pullAndVerifyFlow, dialEntryToRecord, ed25519VerifyingKeyFromSeed, dialFaceGate, dialedChannel, FLOW_SOCKET_ROUTE,
   type MeshPalaceDoc,
 } from "@lararium/mesh";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
@@ -55,7 +55,7 @@ async function stand(nexuses: readonly string[], opts: { lingerMs?: number } = {
   const server = createServer();
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const port = (server.address() as { port: number }).port;
-  const dir = mkdtempSync(join(tmpdir(), "oracle-floor-"));
+  const dir = mkdtempSync(join(tmpdir(), "flow-floor-"));
   const { handle, pub, loc } = palace();
   const worlds: World[] = [];
   const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
@@ -64,7 +64,7 @@ async function stand(nexuses: readonly string[], opts: { lingerMs?: number } = {
     httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir: dir,
     ...(opts.lingerMs !== undefined ? { lingerMs: opts.lingerMs } : {}),
     gates: async (sessions) => {
-      for (const nexus of nexuses) worlds.push(await world({ nexus, tier: "floor", route: ORACLE_SOCKET_ROUTE, sessions }));
+      for (const nexus of nexuses) worlds.push(await world({ nexus, tier: "floor", route: FLOW_SOCKET_ROUTE, sessions }));
       return worlds.map((w) => ({ gate: w.gate, pin: w.pin }));
     },
   });
@@ -76,7 +76,7 @@ const dialer = (url: string) => wsDialSocket(url, (u, protocols) => new WsSocket
 
 async function pull(base: string, w: World, p: Presenter, over: { arm?: Presenter["arm"] | null; seed?: Uint8Array } = {}) {
   return pullAndVerifyFlow<MeshPalaceDoc>(base, {
-    pins: { get: (key) => (key.route === ORACLE_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
+    pins: { get: (key) => (key.route === FLOW_SOCKET_ROUTE && key.tier === "floor" && key.nexus === w.pin.nexus ? w.pin : null) },
     hearth: "hearth-one", nexus: w.pin.nexus,
     presentation: { certificate: p.certificate, signer: p.signer, arm: over.arm === undefined ? p.arm : over.arm, history: p.history },
     audience: AUDIENCE, deadlines: realDeadlines(), verifyingKey: await ed25519VerifyingKeyFromSeed(over.seed ?? SEED), dialSocket: dialer,
@@ -88,7 +88,7 @@ function realDeadlines() {
   return { draw(lapse: () => void) { const t = setTimeout(lapse, 2_000); return { cancel: () => clearTimeout(t) }; } };
 }
 
-describe("the oracle read face on the floor gate", () => {
+describe("the flow read face on the floor gate", () => {
   test("serve → pull round-trips over a live socket, and the shore holds at the wire", async () => {
     const s = await stand(["nexus-a.synthetic"]);
     const w = s.worlds[0]!;
@@ -126,7 +126,7 @@ describe("the oracle read face on the floor gate", () => {
     const s = await stand(["nexus-a.synthetic", "nexus-b.synthetic"]);
     const [a, b] = s.worlds as [World, World];
     expect(gatePath(a.pin)).not.toBe(gatePath(b.pin));
-    expect(gatePath(a.pin).startsWith(`${ORACLE_SOCKET_ROUTE}/`)).toBe(true);
+    expect(gatePath(a.pin).startsWith(`${FLOW_SOCKET_ROUTE}/`)).toBe(true);
     expect((await pull(s.base, a, await presenter(a, "reader a"))).ok).toBe(true);
     expect((await pull(s.base, b, await presenter(b, "reader b"))).ok).toBe(true);
     expect(s.server.listenerCount("upgrade")).toBe(1);
@@ -143,7 +143,7 @@ describe("the oracle read face on the floor gate", () => {
     const w = s.worlds[0]!;
     const p = await presenter(w, "reader");
     // Dial by hand and never close: the face closes the session itself.
-    const socket = dialer(`${s.base.replace("http", "ws")}${ORACLE_SOCKET_ROUTE}`);
+    const socket = dialer(`${s.base.replace("http", "ws")}${FLOW_SOCKET_ROUTE}`);
     const outcome = await dialFaceGate({ pin: w.pin, tier: "floor", socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: handDeadlines() });
     if (outcome.state !== "verified") throw new Error(`the dial came to ${outcome.state}`);
     const channel = dialedChannel({ transport: outcome.transport, socket: { send: (f) => socket.send(f), recv: () => socket.recv(), cut: () => socket.close() } });

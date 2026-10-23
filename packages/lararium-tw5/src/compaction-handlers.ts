@@ -70,7 +70,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     // registry entry, read via the accessor (access≠load), not the composite.
     const oldDocUrl = await opts.catalog.urlOf(bagUrl);
     if (!oldDocUrl) {
-      throw new Error(`bag has no oracle: ${bagUrl}`);
+      throw new Error(`bag has no catalog row: ${bagUrl}`);
     }
 
     // Open the old doc; enumerate every tiddler, tombstones included.
@@ -180,7 +180,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     // Wiki oracle lives in the catalog registry — accessor read (recipe above stays
     // composite, it lives in the lararium bag, a real load layer).
     const oldDocUrl = await opts.catalog.urlOf(wikiKey);
-    if (!oldDocUrl) throw new Error(`wiki oracle missing for "${slug}"`);
+    if (!oldDocUrl) throw new Error(`wiki catalog row missing for "${slug}"`);
 
     // Compute the previous-canon URI. Walk existing stack to find the next
     // generation number; previous-canon URIs match canon/v\d+.

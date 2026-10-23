@@ -25,7 +25,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
   composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, memoryBackedWithdrawals,
-  ORACLE_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
+  FLOW_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
   type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
 } from "@lararium/mesh";
 import { mountFlowMapReadFace } from "../src/flow-read-face.js";
@@ -34,10 +34,10 @@ import { vesselGate } from "../src/vessel-gates.js";
 import { gateReadingsFor, layStatementOn, vesselCarriagePull } from "../src/herm-carriage.js";
 import { ownPlacePosture } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
-import { dialer, realDeadlines, AUDIENCE } from "./oracle-floor-rig.js";
+import { dialer, realDeadlines, AUDIENCE } from "./flow-floor-rig.js";
 import { rootOf, world, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
 
-const BEARING = "lar:///ha.ka.ba/@oracle/node/alpha";
+const BEARING = "lar:///ha.ka.ba/@flow/node/alpha";
 const servers: Server[] = [];
 const dirs: string[] = [];
 const disposers: Array<() => Promise<void> | void> = [];
@@ -87,7 +87,7 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
   const face = await mountFlowMapReadFace({
     httpServer: server, meshPalaceHandle: handle, signerSeed: h.seed, storageDir: dir,
     gates: async (sessions) => gateReadingsFor("herm", await readings()).map((r) => {
-      const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(r.aid), floorRoute(ORACLE_SOCKET_ROUTE));
+      const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(r.aid), floorRoute(FLOW_SOCKET_ROUTE));
       return {
         pin: bundle.pin,
         gate: vesselGate({
@@ -106,12 +106,12 @@ async function stand(h: Herm, w: World, readings: () => Promise<readonly Carried
   const pull = vesselCarriagePull<MeshPalaceDoc>({
     placeClass: "herm", ownPlaceKey: h.key, sign: h.sign, readings, ownNexus: () => null,
     openBoard: async () => board.doc,
-    ownFloorPin: async (nexus) => deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(ORACLE_SOCKET_ROUTE)).pin,
+    ownFloorPin: async (nexus) => deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE)).pin,
     layStatement: async (_url, statement) => { layStatementOn(board.handle, statement); },
     pins, audience: AUDIENCE, deadlines: realDeadlines(1_500), dialSocket: dialer,
   });
   const meshpalace: CapModule = { id: CAP.meshpalace, build: () => ({ handle } as MeshPalaceComponent) };
-  const vessel = await composeVessel([meshpalace, carriageCap({ peers: opts.peers ?? [], pullOracle: pull, pullIntervalMs: 1_000_000 })]);
+  const vessel = await composeVessel([meshpalace, carriageCap({ peers: opts.peers ?? [], pullFlow: pull, pullIntervalMs: 1_000_000 })]);
   disposers.push(() => vessel.dispose());
   const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
   return { origin, handle, pull, pins, refusals, carriage, close: () => new Promise<void>((r) => { face.dispose(); server.closeAllConnections?.(); server.close(() => r()); }) };
@@ -135,7 +135,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
   let dial: ReturnType<typeof dialEntryToRecord>;
   let O: Awaited<ReturnType<typeof stand>>, H1: Awaited<ReturnType<typeof stand>>, H2: Awaited<ReturnType<typeof stand>>;
   beforeAll(async () => {
-    w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-cabal.synthetic" });
+    w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-cabal.synthetic" });
     origin = await hermOf(w, "origin");
     relayOne = await hermOf(w, "relay-one");
     relayTwo = await hermOf(w, "relay-two");
@@ -208,7 +208,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
   }, 30_000);
 
   test("RED: a reader standing in ANOTHER Nexus holds no pin here and knocks nowhere; its foreign contract meets silence", async () => {
-    const elsewhere = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-other.synthetic" });
+    const elsewhere = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-other.synthetic" });
     const foreign = await hermOf(elsewhere, "foreign-herm");
     const foreignBoard = boardOf();
     const reader = readerPull(foreign, async () => [readingOf(elsewhere, [foreign.carry!])], foreignBoard);
@@ -233,7 +233,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
       const parsed = text ? JSON.parse(text) as { placeKey?: string; pin?: unknown } : null;
       if (parsed?.placeKey === relayTwo.key) pins.put(relayTwo.key, parsed.pin);
     }
-    return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" });
+    return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" });
   }
 
   test("RED: a herm stands no gate at a Nexus that does not carry it; the gate it stands answers the knock, OPEN by class", () => {

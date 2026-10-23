@@ -115,7 +115,7 @@ describe("the gate sync server", () => {
   });
 
   test("THE FLOOR PIN SET: a sovereign session hears its Nexus's floor pins once at open; a floor session, a Nexus-less one, a failing provider: none", async () => {
-    const PIN = { tier: "floor", route: "/oracle", nexus: "6e", signingKey: "aa".repeat(32), noiseKey: "bb".repeat(32) } as unknown as GateBundlePin;
+    const PIN = { tier: "floor", route: "/flow", nexus: "6e", signingKey: "aa".repeat(32), noiseKey: "bb".repeat(32) } as unknown as GateBundlePin;
     const asked: string[] = [];
     const server = gateSyncServer({ floorPins: (nexus) => { asked.push(nexus); return nexus === "n" ? [PIN] : nexus === "throws" ? (() => { throw new Error("no door"); })() : []; } });
     const read = (c: ReturnType<typeof fakeChannel>) => c.sent.filter((m) => m.kind === "session").map((m) => JSON.parse(new TextDecoder().decode(m.bytes)));

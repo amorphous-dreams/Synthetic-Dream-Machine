@@ -1,14 +1,14 @@
 /**
  * browser-gate-pins — the page's one pair index starts empty, files a hearth by its URL origin, files a floor card's
- * oracle pin at the floor tier alone, and draws deadlines from the page's timer.
+ * flow pin at the floor tier alone, and draws deadlines from the page's timer.
  */
 import { describe, expect, test } from "vitest";
 import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hex, type GateBundlePin } from "@lararium/mesh";
 import { browserGatePins, dialDeadlines, fileFloorCardPin, hearthNameOf } from "../src/browser-gate-pins.js";
 
 const NEXUS = hex(new TextEncoder().encode("nexus-floor"));
-const oraclePin = (fill: number): GateBundlePin => {
-  const b = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(fill) })), new TextEncoder().encode("nexus-floor"), floorRoute("/oracle"));
+const flowPin = (fill: number): GateBundlePin => {
+  const b = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(fill) })), new TextEncoder().encode("nexus-floor"), floorRoute("/flow"));
   try { return b.pin; } finally { b.drop(); }
 };
 
@@ -27,21 +27,21 @@ describe("the browser gate pins", () => {
     expect(hearthNameOf("not a url\n")).toBe("not a url");
   });
 
-  test("a floor card files the oracle's floor pin under the relay's name, at the floor tier alone", () => {
+  test("a floor card files the flow's floor pin under the relay's name, at the floor tier alone", () => {
     const pins = browserGatePins();
-    const pin = oraclePin(3);
+    const pin = flowPin(3);
     expect(fileFloorCardPin(pins, "ws://node:8080/ws", { pin, publisher: "ab".repeat(32) })).toBe(true);
-    expect(pins.get({ hearth: "ws://node:8080", nexus: NEXUS, route: "/oracle", tier: "floor" })).toEqual(pin);
+    expect(pins.get({ hearth: "ws://node:8080", nexus: NEXUS, route: "/flow", tier: "floor" })).toEqual(pin);
     expect(pins.get({ hearth: "ws://node:8080", nexus: NEXUS, route: "/ws", tier: "sovereign" })).toBeNull();
   });
 
   test("a card names no pin without a relay, and a pin the index already holds stands", () => {
     const pins = browserGatePins();
-    expect(fileFloorCardPin(pins, undefined, { pin: oraclePin(3), publisher: "ab".repeat(32) })).toBe(false);
+    expect(fileFloorCardPin(pins, undefined, { pin: flowPin(3), publisher: "ab".repeat(32) })).toBe(false);
     expect(pins.size).toBe(0);
-    pins.put("ws://node:8080", oraclePin(4));
-    expect(fileFloorCardPin(pins, "ws://node:8080/ws", { pin: oraclePin(3), publisher: "ab".repeat(32) })).toBe(false);
-    expect(pins.get({ hearth: "ws://node:8080", nexus: NEXUS, route: "/oracle", tier: "floor" })).toEqual(oraclePin(4));
+    pins.put("ws://node:8080", flowPin(4));
+    expect(fileFloorCardPin(pins, "ws://node:8080/ws", { pin: flowPin(3), publisher: "ab".repeat(32) })).toBe(false);
+    expect(pins.get({ hearth: "ws://node:8080", nexus: NEXUS, route: "/flow", tier: "floor" })).toEqual(flowPin(4));
   });
 
   test("a drawn deadline lapses once, and a cancelled one never does", async () => {
