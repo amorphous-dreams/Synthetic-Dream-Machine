@@ -140,6 +140,11 @@
     },
     "render": {
       "type": "object"
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable location scope for relational witnesses and pet-names."
     }
   }
 }

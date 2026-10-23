@@ -16,6 +16,10 @@ class VoidPart:
     kind: str
     connects: tuple[str, ...]
     exterior: bool
+    has: tuple[str, ...] = ()
+    slot: str | None = None
+    anonymous: bool = False
+    host: str | None = None
 
 
 class VoidAssembly:
@@ -28,14 +32,25 @@ class VoidAssembly:
         self.positive = positive
         self.voids: dict[str, VoidPart] = {}
 
-    def add(self, name, solid, *, kind='room', connects=(), exterior=False):
-        if name in self.voids:
+    def add(self, name, solid, *, kind='room', connects=(), exterior=False,has=(),slot=None,host=None):
+        from .relations import capabilities
+        anonymous = name is None
+        name = (f'~v-{len(self.voids)+1:04d}' if anonymous else str(name).strip())
+        if not name or (name.startswith('~v-') and not anonymous):
+            raise ValueError('Reserved or empty void handle')
+        if host is not None and hasattr(self.positive, 'parts') and host not in self.positive.parts:
+            raise ValueError(f'Unknown host for void: {host}')
+        if slot is not None:
+            slot = str(slot).strip()
+            if not slot or any(v.slot == slot for v in self.voids.values()):
+                raise ValueError('Slot must be unique among voids')
+        if name in self.voids or (hasattr(self.positive,'parts') and name in self.positive.parts):
             raise ValueError(f'Duplicate void: {name}')
         if kind not in {'room', 'corridor', 'doorway', 'stairwell', 'shaft', 'recess'}:
             raise ValueError(f'Unsupported void kind: {kind}')
         if not solid.isValid() or len(solid.Solids()) != 1 or solid.Volume() <= 0:
             raise ValueError('Void must be one valid positive-volume CAD solid')
-        self.voids[name] = VoidPart(str(name), solid, kind, tuple(connects), bool(exterior))
+        self.voids[name] = VoidPart(str(name), solid, kind, tuple(connects), bool(exterior),capabilities(has),slot,anonymous,host)
         if hasattr(self.positive, '_verified_material'):
             self.positive._verified_material = None
         return self

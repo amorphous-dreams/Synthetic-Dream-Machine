@@ -22,6 +22,7 @@ class Project:
     reference_view: str
     light_angles: tuple
     render_style: dict
+    location: str = 'untitled-location'
 
     @classmethod
     def load(cls,path):
@@ -54,8 +55,9 @@ class Project:
             raise ValueError('Only semantic linework is supported')
         settings={'linework_mode':'semantic','line_supersample':1,'presentation_width':540,
                   'supersample':1,'work_width':300,'material_gray':{0:.17,1:.70,2:.55},**settings}
+        location = str(conf.get('location') or (f.parent.name if f.stem == 'project' else f.stem))
         return cls(f,builder_path,builder,cameras,initial,bounds,ref_path,
-                   reference_view,tuple(conf.get('light_angles',[-80,35])),settings)
+                   reference_view,tuple(conf.get('light_angles',[-80,35])),settings,location)
 
     def grow(self,genome=None):
         pars=dict(self.initial)
@@ -91,7 +93,7 @@ class Project:
         if name not in self.cameras:raise ValueError(f'Missing reference camera: {name}')
         return silhouette(mesh,self.cameras[name],size,supersample=1)>96
 
-    def export(self,assembly,out,genome,size=(1024,1536)):
+    def export(self,assembly,out,genome,size=(1024,1536),*,ledger=None):
         out=Path(out);out.mkdir(parents=True,exist_ok=True)
         audit=assembly.audit(join=True)
         if not audit['valid']:
@@ -105,9 +107,18 @@ class Project:
         mesh.save(out/'render_mesh.npz')
         renders=export_controls(mesh,self.cameras,out/'controls',size=size,
                     light=light_vector(*self.light_angles),style=self.render_style)
+        witness=assembly.relation_witness(location=self.location)
+        witness.save(out/'relations.json')
+        pet_receipt = ledger.resolve(witness) if ledger is not None else []
+        if ledger is not None:
+            (out/'pet_name_receipt.json').write_text(json.dumps(
+                {'schema':'projection-loom/pet-name-receipt/v1',
+                 'witness_id': witness.witness_id, 'resolutions':pet_receipt,
+                 'soft_loss':ledger.soft_loss(witness)},indent=2))
         summary={'schema':'projection-loom/solid-model/v2',
                  'project':str(self.file),'genome':{k:float(v) for k,v in genome.items()},
-                 'geometry':'solid.step','contacts':audit,
+                 'geometry':'solid.step','contacts':audit,'relations':'relations.json',
+                 'pet_name_receipt':'pet_name_receipt.json' if ledger is not None else None,
                  'render_mesh':'render_mesh.npz','controls':renders,
                  'linework':'semantic','reference_evidence':str(self.reference) if self.reference else None,
                  'reference_camera':self.cameras[self.reference_view].to_dict() if self.reference else None,

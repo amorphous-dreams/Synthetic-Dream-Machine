@@ -12,8 +12,15 @@ def iou(a,b):
 
 
 class Evolution:
-    def __init__(self,project,size=(128,192),seed=63):
+    def __init__(self,project,size=(128,192),seed=63,*,ledger=None,slack_fraction=.20):
         self.project=project
+        if ledger is not None and ledger.location != project.location:
+            raise ValueError('Identity ledger location does not match project')
+        if not 0 <= slack_fraction <= 0.5:
+            raise ValueError('slack_fraction must lie between zero and one half')
+        self.ledger=ledger
+        self.slack_fraction=float(slack_fraction)
+        self.phenotypes={}
         self.size=size
         self.rng=np.random.default_rng(seed)
         self.keys=list(project.bounds)
@@ -57,6 +64,11 @@ class Evolution:
             # A weak, scale-free prior resists trivial fortress shrinkage.
             prior=np.mean(((np.asarray(vec)-self.as_vector(self.project.initial))/self.spread)**2)
             loss=shape_loss+.023*prior
+            witness=assembly.relation_witness(location=self.project.location)
+            traits=witness.feature_set()
+            self.phenotypes[tuple(np.round(vec,12))]=traits
+            pet_penalty=self.ledger.soft_loss(witness) if self.ledger is not None else 0.0
+            loss+=pet_penalty
             if view_feedback:
                 similarity=[]
                 for name,reference in view_feedback.items():
@@ -78,7 +90,8 @@ class Evolution:
                     a=predicted[hit];b=target[hit]
                     corr=np.corrcoef(a,b)[0,1] if a.std()>1e-6 and b.std()>1e-6 else 0.0
                     loss+=.025*(1-max(0,float(corr)))
-            row={'valid':True,'loss':float(loss),'shape_iou':iou(self.source,mask),'genome':genome,'lit':lit}
+            row={'valid':True,'loss':float(loss),'shape_iou':iou(self.source,mask),'genome':genome,'lit':lit,
+                 'pet_name_soft_loss':pet_penalty,'phenotype':sorted(traits)}
         except Exception as exc:
             loss=5.0
             row={'valid':False,'loss':loss,'error':str(exc),'genome':genome,'lit':lit}
@@ -91,17 +104,42 @@ class Evolution:
         anchor=self.as_vector(center)
         return [anchor]+[np.clip(.30*anchor+.70*(self.low+pt*self.spread),self.low,self.high) for pt in pts]
 
+    def select_with_slack(self, candidates, limit, separation):
+        '''Reserve a survivor slot for a different construction phenotype if available.'''
+        valid=sorted((item for item in candidates if item[0] < 2),key=lambda item:item[0])
+        if limit <= 0 or not valid:return []
+        reserve=min(limit-1,round(limit*self.slack_fraction))
+        chosen=[]
+        def fits(row):
+            return all(np.linalg.norm((row[1]-c[1])/self.spread)>separation for c in chosen)
+        # The main objective keeps at least one valid champion.
+        for row in valid:
+            if fits(row):chosen.append(row)
+            if len(chosen)>=limit-reserve:break
+        if reserve and chosen:
+            represented=set().union(*(self.phenotypes.get(tuple(np.round(c[1],12)),frozenset()) for c in chosen))
+            possibles=[]
+            for row in valid:
+                if any(np.array_equal(row[1],c[1]) for c in chosen) or not fits(row):continue
+                features=self.phenotypes.get(tuple(np.round(row[1],12)),frozenset())
+                novelty=len(features.symmetric_difference(represented))
+                if novelty>0:possibles.append((novelty,row))
+            for _,row in sorted(possibles,key=lambda x:(-x[0],x[1][0])):
+                if fits(row):
+                    chosen.append(row)
+                    represented.update(self.phenotypes.get(tuple(np.round(row[1],12)),frozenset()))
+                if len(chosen)>=limit:break
+        for row in valid:
+            if len(chosen)>=limit:break
+            if fits(row):chosen.append(row)
+        return chosen
+
     def evolve(self,start=None,*,burst=32,survivors=6,offspring=5,rounds=2,lit_rounds=1,feedback=None):
         begin=dict(start or self.project.initial)
         first=self.burst(begin,burst)
         population=[(self.evaluate(x,view_feedback=feedback),x) for x in first]
         population=sorted(population,key=lambda r:r[0])
-        seeds=[]
-        for score,vec in population:
-            if score>=2:continue
-            if all(np.linalg.norm((vec-other[1])/self.spread)>0.11 for other in seeds):
-                seeds.append((score,vec))
-            if len(seeds)>=survivors:break
+        seeds=self.select_with_slack(population,survivors,.11)
         if not seeds:raise RuntimeError('No structurally valid lineage survived growth burst')
         for generation in range(rounds):
             sigma=[.13,.07,.035][min(generation,2)]
@@ -111,11 +149,7 @@ class Evolution:
                 for _ in range(offspring):
                     vec=np.clip(parent+self.rng.normal(0,sigma,size=len(parent))*self.spread,self.low,self.high)
                     children.append((self.evaluate(vec,view_feedback=feedback),vec))
-            candidates=sorted(children,key=lambda r:r[0]);seeds=[]
-            for row in candidates:
-                if row[0]>=2:continue
-                if all(np.linalg.norm((row[1]-x[1])/self.spread)>.06 for x in seeds):seeds.append(row)
-                if len(seeds)>=survivors:break
+            seeds=self.select_with_slack(children,survivors,.06)
         if lit_rounds:
             for generation in range(lit_rounds):
                 lit_candidates=[]
@@ -124,10 +158,8 @@ class Evolution:
                     for _ in range(max(2,offspring//2)):
                         candidate=np.clip(vec+self.rng.normal(0,.035,size=len(vec))*self.spread,self.low,self.high)
                         lit_candidates.append((self.evaluate(candidate,lit=True,view_feedback=feedback),candidate))
-                seeds=sorted(lit_candidates,key=lambda r:r[0])[:survivors]
-        chosen=[]
-        for score,vec in sorted(seeds,key=lambda r:r[0]):
-            if score>=2:continue
-            if all(np.linalg.norm((vec-prev[1])/self.spread)>.04 for prev in chosen):chosen.append((score,vec))
-            if len(chosen)>=3:break
-        return [{'loss':float(score),'genome':self.as_genome(vec)} for score,vec in chosen]
+                seeds=self.select_with_slack(lit_candidates,survivors,.035)
+        chosen=self.select_with_slack(seeds,3,.04)
+        return [{'loss':float(score),'genome':self.as_genome(vec),
+                 'phenotype':sorted(self.phenotypes.get(tuple(np.round(vec,12)),frozenset()))}
+                for score,vec in chosen]

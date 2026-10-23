@@ -2,7 +2,7 @@
 
 ## Structural admissibility
 
-A project builder grows named volumes from its genome. Every child makes a
+A project builder grows authored or nameless volumes from its genome. Every child makes a
 measurable positive-volume intersection with its declared parent. The full
 construction must Boolean-fuse into one valid solid before a candidate can
 receive any fitness score. Independently authored empty volumes then carve
@@ -31,7 +31,7 @@ projection algorithm separately from subject-specific artistic inference.
 
 ## Golden principles
 
-- Construction genome and named attachment relationships survive regrowth.
+- Construction relationships and optional stable rule slots survive regrowth; pet-names do not control CAD face identities.
 - Positive and negative geometry describe one material body and one route graph.
 - Viewports are fixed for evidence and adaptive only for presentation.
 - Candidate validity precedes all aesthetic ranking.
@@ -58,3 +58,12 @@ projection algorithm separately from subject-specific artistic inference.
   distance.
 - Persistent topology identification review: keep authored feature names
   stable; do not rely on post-Boolean face sequence numbers.
+
+## Relation and name boundary
+
+The builder may grow anonymous children and voids with descriptive `#has`
+capabilities. A relational witness captures parentage, role, capability and
+explicit rule slot. A separate local-first ledger retains operator pet-names and
+location-set names. See `relational-identity.md` for o-takiage releases and
+reconciliation receipts. Neither pet-naming nor o-takiage changes the material
+or traversal validation gates.

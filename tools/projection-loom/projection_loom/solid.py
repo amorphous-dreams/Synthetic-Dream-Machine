@@ -22,6 +22,9 @@ class Part:
     role: str
     material: int
     min_overlap: float
+    has: tuple[str, ...] = ()
+    slot: str | None = None
+    anonymous: bool = False
 
 
 def box(center, size, taper=0.0):
@@ -84,8 +87,16 @@ class SolidAssembly:
         self.voids=None
         self._verified_material=None
 
-    def add(self,name,solid,*,parents=(),role='primary',material=0,min_overlap=None):
-        name=str(name)
+    def add(self,name,solid,*,parents=(),role='primary',material=0,min_overlap=None,has=(),slot=None):
+        from .relations import capabilities
+        anonymous = name is None
+        name = (f'~p-{len(self.parts)+1:04d}' if anonymous else str(name).strip())
+        if not name or (name.startswith('~p-') and not anonymous):
+            raise ValueError('Reserved or empty construction handle')
+        if slot is not None:
+            slot = str(slot).strip()
+            if not slot or any(p.slot == slot for p in self.parts.values()):
+                raise ValueError('Slot must be a unique nonempty construction relation')
         parents=tuple(parents)
         if name in self.parts:raise ValueError(f'Duplicate part: {name}')
         if not solid.isValid() or len(solid.Solids())!=1 or solid.Volume()<=0:
@@ -95,16 +106,26 @@ class SolidAssembly:
         if not self.parts and parents:raise ValueError('The first part must be a root')
         if self.parts and not parents:raise ValueError(f'{name} must name at least one parent')
         if any(p not in self.parts for p in parents):raise ValueError(f'Missing parent of {name}: {parents}')
-        part=Part(name,solid,parents,role,int(material),float(self.overlap_ratio if min_overlap is None else min_overlap))
+        part=Part(name,solid,parents,role,int(material),float(self.overlap_ratio if min_overlap is None else min_overlap),capabilities(has),slot,anonymous)
         self.parts[name]=part
         self._verified_material=None
         return self
 
-    def add_box(self,name,center,size,*,parents,role='primary',material=0,taper=0,min_overlap=None):
-        return self.add(name,box(center,size,taper=taper),parents=parents,role=role,material=material,min_overlap=min_overlap)
+    def add_box(self,name,center,size,*,parents,role='primary',material=0,taper=0,min_overlap=None,has=(),slot=None):
+        return self.add(name,box(center,size,taper=taper),parents=parents,role=role,material=material,min_overlap=min_overlap,has=has,slot=slot)
 
-    def add_beam(self,name,start,end,width,depth,*,parents,role='secondary',material=2,min_overlap=None):
-        return self.add(name,beam(start,end,width,depth),parents=parents,role=role,material=material,min_overlap=min_overlap)
+    def add_beam(self,name,start,end,width,depth,*,parents,role='secondary',material=2,min_overlap=None,has=(),slot=None):
+        return self.add(name,beam(start,end,width,depth),parents=parents,role=role,material=material,min_overlap=min_overlap,has=has,slot=slot)
+
+    def spawn(self, solid, *, parents=(), role='secondary', material=2, has=(), slot=None, min_overlap=None):
+        '''Grow an unnamed part; return an internal handle for downstream relations.'''
+        self.add(None, solid, parents=parents, role=role, material=material,
+                 has=has, slot=slot, min_overlap=min_overlap)
+        return next(reversed(self.parts))
+
+    def relation_witness(self, *, location='untitled-location'):
+        from .relations import RelationWitness
+        return RelationWitness.from_assembly(self, location=location)
 
     def contact(self,parent,child):
         a=self.parts[parent];b=self.parts[child]
@@ -156,12 +177,18 @@ class SolidAssembly:
             self._verified_material=void_report['carved'] if result['valid'] else None
         return result
 
-    def add_void(self,name,solid,*,kind='room',connects=(),exterior=False):
+    def add_void(self,name,solid,*,kind='room',connects=(),exterior=False,has=(),slot=None,host=None):
         from .voids import VoidAssembly
         if self.voids is None:self.voids=VoidAssembly(self)
         self._verified_material=None
-        self.voids.add(name,solid,kind=kind,connects=connects,exterior=exterior)
+        self.voids.add(name,solid,kind=kind,connects=connects,exterior=exterior,has=has,slot=slot,host=host)
         return self
+
+    def spawn_void(self, solid, *, kind='room', connects=(), exterior=False, has=(), slot=None, host=None):
+        '''Grow an unnamed void; return its internal handle for later route links.'''
+        self.add_void(None, solid, kind=kind, connects=connects, exterior=exterior,
+                      has=has, slot=slot, host=host)
+        return next(reversed(self.voids.voids))
 
     def material_solid(self):
         if self._verified_material is None:
