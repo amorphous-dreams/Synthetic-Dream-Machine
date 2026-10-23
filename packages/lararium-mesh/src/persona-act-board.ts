@@ -15,7 +15,7 @@ import { tiddlerText } from "./base-doc.js";
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
 import { makeHandLineage, type HandLineage } from "./hand-lineage.js";
 import { verifyingKeyFromDid, type LarDid } from "./lar-did.js";
-import type { PersonaKelEvent } from "./persona-kel.js";
+import { foldPersonaContests, type PersonaKelEvent } from "./persona-kel.js";
 import { actCid, signAct, type SignedAct } from "./signed-act.js";
 import { storedLarRecord } from "./stored-record.js";
 import type { PersonaActBody, PersonaActKind } from "./persona-act.js";
@@ -45,12 +45,20 @@ export function personaActRecordsOfGroup(doc: LarDoc | undefined | null, group: 
   return out;
 }
 
-/** The root's roster per epoch, from the verified KEL lineage: epoch = KEL seq, signer = the op-key that event seats. */
+/**
+ * The root's roster per epoch, from the VERIFIED KEL lineage: epoch = KEL seq, signer = the op-key that event seats. The chain a
+ * caller hands may carry the heap beside the lineage (a node ring transports events the reader set aside), so the lineage reads
+ * through the one KEL reader (`foldPersonaContests`): an event that does not verify seats no key, a fork stops the lineage (no
+ * lineage, fail-closed), and a trailing provisional rotation confers nothing until hardened.
+ */
 export function personaLineageFromKel(chain: readonly PersonaKelEvent[]): HandLineage | null {
-  const sorted = [...chain].sort((a, b) => a.seq - b.seq);
-  if (sorted.length === 0 || sorted[0]!.seq !== 0) return null;
+  const fold = foldPersonaContests(chain);
+  if (fold.fork) return null;
+  const verified = [...fold.kel];
+  while (verified.length > 0 && verified[verified.length - 1]!.provisional) verified.pop();
+  if (verified.length === 0 || verified[0]!.seq !== 0) return null;
   try {
-    return makeHandLineage(sorted.map((e) => ({ epoch: e.seq, signers: [verifyingKeyFromDid(e.opKeyDid as LarDid)], threshold: 1 })));
+    return makeHandLineage(verified.map((e) => ({ epoch: e.seq, signers: [verifyingKeyFromDid(e.opKeyDid as LarDid)], threshold: 1 })));
   } catch { return null; }
 }
 

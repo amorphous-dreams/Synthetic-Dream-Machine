@@ -4,8 +4,7 @@ import {
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, guardianRecoveryRegistrationCard, mintFaceAnchor,
   provisionThresholdRecoveryAtFounding, signLeaseAdvance,
 } from "@lararium/mesh";
-import { didFromVerifyingKey } from "@lararium/mesh";
-import type { PersonaKelEvent } from "@lararium/mesh";
+import { realKel, forgedRotation } from "../../lararium-mesh/tests/kel-fixture.js";
 import { raiseAnchorFromSlots } from "../src/lease-observation.js";
 
 describe("raiseAnchorFromSlots", () => {
@@ -30,11 +29,23 @@ describe("raiseAnchorFromSlots", () => {
   it("RED: a key the KEL rotated past raises no lease epoch; CONTROL: the current root's advance raises", async () => {
     const mk = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
     const oldK = await mk(1), newK = await mk(2);
-    const kel = [oldK, newK].map((k, seq) => ({ seq, opKeyDid: didFromVerifyingKey(k.key) }) as unknown as PersonaKelEvent);
+    const kel = (await realKel([oldK.key, newK.key])).chain;
     const anchor = mintFaceAnchor({ personaGroup: "g1", personaKelPrefix: "kel1", personaRootDid: `0x${newK.key}`, edge: {}, leaseEpoch: 2 });
     const retired = await signLeaseAdvance({ resource: "g1", epoch: 900 }, oldK);
     expect(raiseAnchorFromSlots(anchor, [retired], kel), "the retired key's advance moves nothing").toBe(anchor);
     const current = await signLeaseAdvance({ resource: "g1", epoch: 5 }, newK);
     expect(raiseAnchorFromSlots(anchor, [retired, current], kel).frontier.leaseEpoch).toBe(5);
+  });
+
+  it("RED: a rejected rotation in the chain (the heap a node ring carries) seats no lease signer; CONTROL: the real root still raises", async () => {
+    const mk = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+    const root = await mk(1), attacker = await mk(9);
+    const real = (await realKel([root.key])).chain;
+    const heap = [...real, forgedRotation(real, attacker.key)];
+    const anchor = mintFaceAnchor({ personaGroup: "g1", personaKelPrefix: "kel1", personaRootDid: `0x${root.key}`, edge: {}, leaseEpoch: 0 });
+    const forged = await signLeaseAdvance({ resource: "g1", epoch: 900 }, attacker);
+    const honest = await signLeaseAdvance({ resource: "g1", epoch: 3 }, root);
+    expect(raiseAnchorFromSlots(anchor, [forged], heap), "the attacker's fake rotation seats nothing").toBe(anchor);
+    expect(raiseAnchorFromSlots(anchor, [forged, honest], heap).frontier.leaseEpoch).toBe(3);
   });
 });

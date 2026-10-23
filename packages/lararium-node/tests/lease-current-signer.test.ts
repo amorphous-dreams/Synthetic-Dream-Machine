@@ -9,9 +9,10 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { describe, expect, test } from "vitest";
 import {
-  currentSignerOf, didFromVerifyingKey, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, leaseEpochSlotUri,
-  makeHandLineage, personaLineageFromKel, signLeaseAdvance, storedLarRecord, type LarDoc, type PersonaKelEvent,
+  currentSignerOf, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, leaseEpochSlotUri,
+  makeHandLineage, personaLineageFromKel, signLeaseAdvance, storedLarRecord, type LarDoc,
 } from "@lararium/mesh";
+import { realKel } from "../../lararium-mesh/tests/kel-fixture.js";
 import { rollSignedLeaseEpochOnBoard } from "../src/lease-rekey.js";
 
 const mk = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -28,7 +29,7 @@ describe("the one current-signer predicate", () => {
 
   test("RED (laundering): a current signer reads a forged high slot from a retired key and does NOT sign effective+1 of it; CONTROL: an honest current advance rolls", async () => {
     const oldK = await mk(1), newK = await mk(2);
-    const kel = [oldK, newK].map((k, seq) => ({ seq, opKeyDid: didFromVerifyingKey(k.key) }) as unknown as PersonaKelEvent);
+    const kel = (await realKel([oldK.key, newK.key])).chain;
     const seated = currentSignerOf(personaLineageFromKel(kel));
     const repo = new Repo({});
     const handle = repo.create<LarDoc>(emptyLarDoc() as LarDoc);
