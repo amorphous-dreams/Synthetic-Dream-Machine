@@ -56,23 +56,14 @@ export default defineConfig(async () => ({
         },
       },
       {
-        // The seventh silent loss on the whole road: edit, confirm, reload at once, on a staged hearth in real Chromium.
-        test: {
-          name: "rest-before-reload-e2e",
-          include: ["tests/e2e/rest-before-reload.e2e.test.ts"],
-          environment: "node",
-          browser: { enabled: false },
-          testTimeout: 300_000,
-          hookTimeout: 600_000,
-          env: { LAR_SAME_ORIGIN: "true" },
-        },
-      },
-      {
         // Golden 01 on the whole road: a staged hearth (a scratch LAR_ROOT of its own) serves the page and a real
         // Chromium acts on it. It stands a daemon, so its waits are long and it owns the process for its run.
         test: {
           name: "golden-whole-road-e2e",
-          include: ["tests/e2e/golden-whole-road.e2e.test.ts"],
+          // The seventh silent loss rides the same project: both files stand a daemon and a real Chromium, so they take
+          // the host one file at a time.
+          include: ["tests/e2e/golden-whole-road.e2e.test.ts", "tests/e2e/rest-before-reload.e2e.test.ts"],
+          fileParallelism: false,
           environment: "node",
           browser: { enabled: false },
           testTimeout: 300_000,

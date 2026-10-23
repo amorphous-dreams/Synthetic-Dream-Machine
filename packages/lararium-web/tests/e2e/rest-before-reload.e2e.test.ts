@@ -164,7 +164,13 @@ async function bodyAfterReload(page: Page, title: string, heldBy?: { holds: numb
   const { holds } = await reloadHonouringHolds(page);
   if (heldBy) heldBy.holds = holds;
   await awaitLive(page);
-  return await openByTitle(page, title) ? await paintedBody(page, title) : null;
+  // The page's search finds a title as the wiki indexes it; a slow host indexes late, so ask until the page names it.
+  const deadline = Date.now() + WAIT;
+  while (!(await openByTitle(page, title))) {
+    if (Date.now() > deadline) return null;
+    await new Promise((r) => setImmediate(r));
+  }
+  return paintedBody(page, title);
 }
 
 beforeAll(async () => {
