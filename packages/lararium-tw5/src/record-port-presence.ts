@@ -33,6 +33,7 @@ export class PresenceTracker {
   }
   close(portId: string): void {
     for (const [actorKey, entry] of this.held) if (entry.portId === portId) this.remove(actorKey);
+    this.retiredPorts.delete(portId);
   }
   transportGone(portId: string): void { this.close(portId); }
   /** A fresh open starts a new generation of a reusable transport id. */

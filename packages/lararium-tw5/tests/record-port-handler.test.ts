@@ -78,6 +78,115 @@ const ofType = <T extends IslandToVesselMsg["type"]>(messages: IslandToVesselMsg
   messages.filter((message): message is Extract<IslandToVesselMsg, { type: T }> => message.type === type);
 
 describe("record port handler", () => {
+  test("port refuses a non-atomic family without a member write; CONTROL: atomic layer writes the family", async () => {
+    const r = await rig();
+    const plainBacking = new MemoryTiddlerStore();
+    let puts = 0;
+    const plain = new Proxy(plainBacking, { get(target, key) {
+      if (key === "writeFamily") return undefined;
+      if (key === "put") return async (...args: Parameters<MemoryTiddlerStore["put"]>) => { puts++; return target.put(...args); };
+      const value = Reflect.get(target, key, target) as unknown;
+      return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(target) : value;
+    } });
+    r.composite.addLayer({ bagId: "plain", store: plain, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "plain-tx", records: [
+      { title: "PlainA", fields: { text: "a" }, bag: "plain" },
+      { title: "PlainB", fields: { text: "b" }, bag: "plain" },
+    ] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "non-atomic-layer" });
+    expect(puts).toBe(0);
+    expect(await plainBacking.get("PlainA")).toBeNull();
+    await r.send({ type: "port:write", portId: "p", txId: "atomic-tx", records: [
+      { title: "AtomicA", fields: { text: "a" } }, { title: "AtomicB", fields: { text: "b" } },
+    ] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied" });
+    expect(await r.store.get("AtomicB")).not.toBeNull();
+    await r.close();
+  });
+
+  test("actor ledger evicts closed actors under pressure; CONTROL: a live actor replays its answer", async () => {
+    const r = await rig({ maxActors: 2 });
+    await r.send(openMsg("p", { edits: true }));
+    await r.send(writeMsg("first", "First"));
+    await r.send({ type: "port:close", portId: "p" });
+    await r.send(openMsg("live", { edits: true }));
+    await r.send({ ...writeMsg("live-tx", "Live"), portId: "live" });
+    for (let index = 0; index < 300; index++) {
+      const portId = `reader-${index}`;
+      await r.send(openMsg(portId, { edits: false, presence: false }));
+      await r.send({ type: "port:close", portId });
+    }
+    await r.send(openMsg("p", { edits: true }));
+    await r.send(writeMsg("first", "First"));
+    // The evicted actor's answer left the table, so the resent id applies afresh: port p hears First twice.
+    expect(ofType(r.messages, "port:changes").filter(message => message.portId === "p").flatMap(message => message.entries).filter(entry => entry.title === "First")).toHaveLength(2);
+    await r.send({ ...writeMsg("live-tx", "Live"), portId: "live" });
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "Live")).toHaveLength(1);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", portId: "live" });
+    await r.close();
+  });
+
+  test("full actor table serves reads and refuses writes; CONTROL: existing actor writes", async () => {
+    const r = await rig({ maxActors: 1 });
+    await r.send(openMsg("held"));
+    await r.send(openMsg("reader"));
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "reader")).toBe(true);
+    await r.send({ ...writeMsg("blocked", "Never"), portId: "reader" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "actor-table-full" });
+    expect(await r.store.get("Never")).toBeNull();
+    await r.send({ ...writeMsg("held-tx", "Allowed"), portId: "held" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied" });
+    await r.close();
+  });
+
+  test("unanswered partial transaction protects a closed actor from eviction; CONTROL: its retry completes", async () => {
+    const r = await rig({ maxActors: 1 });
+    r.composite.addLayer({ bagId: "second", store: new MemoryTiddlerStore(), writable: true, defaultWritable: false });
+    const writeFamily = r.composite.writeFamily.bind(r.composite);
+    let failSecond = true;
+    r.composite.writeFamily = async (...args: Parameters<CompositeStore["writeFamily"]>) => {
+      if (args[3]?.bag === "second" && failSecond) throw new Error("second-fault");
+      return writeFamily(...args);
+    };
+    await r.send(openMsg("p"));
+    const tx: PortMsg_Write = { type: "port:write", portId: "p", txId: "partial", records: [
+      { title: "PartOne", fields: { text: "one" }, bag: "working" },
+      { title: "PartTwo", fields: { text: "two" }, bag: "second" },
+    ] };
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "partial", applied: ["working"] });
+    await r.send({ type: "port:close", portId: "p" });
+    await r.send(openMsg("reader", { edits: false }));
+    await r.send({ ...writeMsg("blocked", "Blocked"), portId: "reader" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ reason: "actor-table-full" });
+    await r.send({ type: "port:close", portId: "reader" });
+    failSecond = false;
+    await r.send(openMsg("p"));
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", applied: ["working", "second"] });
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "PartOne")).toHaveLength(1);
+    await r.close();
+  });
+
+  test("two bag families echo separately before written; CONTROL: one family echoes once", async () => {
+    const r = await rig();
+    r.composite.addLayer({ bagId: "second", store: new MemoryTiddlerStore(), writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    const before = r.messages.length;
+    await r.send({ type: "port:write", portId: "p", txId: "two", records: [
+      { title: "FirstBag", fields: { text: "a" }, bag: "working" },
+      { title: "SecondBag", fields: { text: "b" }, bag: "second" },
+    ] });
+    const output = r.messages.slice(before).filter(message => message.type === "port:changes" || message.type === "port:written");
+    expect(output.map(message => message.type)).toEqual(["port:changes", "port:changes", "port:written"]);
+    expect(output.slice(0, 2).map(message => message.type === "port:changes" ? message.entries.map(entry => [entry.title, entry.causedBy]) : []))
+      .toEqual([[["FirstBag", ["two"]]], [["SecondBag", ["two"]]]]);
+    const oneBefore = r.messages.length;
+    await r.send(writeMsg("one", "Single"));
+    expect(r.messages.slice(oneBefore).filter(message => message.type === "port:changes")).toHaveLength(1);
+    await r.close();
+  });
   test("port-verb-no-authority and port-verb-guest-refused; CONTROL: admin runs once with proven identity and targets", async () => {
     let runs = 0;
     const verbs = () => { const table = new VerbTable(); table.register("probe", async (args, context) => {

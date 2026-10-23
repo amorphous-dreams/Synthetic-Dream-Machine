@@ -34,7 +34,15 @@ export interface RecordPortOptions {
   lapseRounds?: number;
   lagByteBudget?: number;
   retainEntries?: number;
+  /** Maximum actor ledgers retained across port opens. */
+  maxActors?: number;
   bootNonce?: string;
+}
+
+interface ActorState {
+  ledger: ReturnType<typeof createTxLedger>;
+  written: Map<string, PortMsg_Written>;
+  unanswered: Set<string>;
 }
 
 interface OpenPort {
@@ -56,6 +64,8 @@ interface OpenPort {
   rendered: { cursor: string; stale: boolean; affordances: Map<string, { node: RecordingNode; kind: string }>; stop: () => void } | undefined;
   readonly written: Map<string, PortMsg_Written>;
   readonly ledger: ReturnType<typeof createTxLedger>;
+  readonly actorState: ActorState;
+  readonly actorTableFull: boolean;
 }
 
 export type RecordPortCap = IslandCap & { transportGone(portId: string): void };
@@ -101,12 +111,14 @@ function projected(entry: PortEntry, port: OpenPort): PortWireRecord & { seq: nu
 }
 
 export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
+  const maxActors = opts.maxActors ?? 256;
+  if (!Number.isSafeInteger(maxActors) || maxActors < 1) throw new RangeError("maxActors");
   const nonce = (opts.bootNonce ?? crypto.randomUUID()).replaceAll(".", "");
   const log = createPortLog({ bootNonce: nonce, lagByteBudget: opts.lagByteBudget ?? 1_048_576,
     ...(opts.retainEntries === undefined ? {} : { retainEntries: opts.retainEntries }) });
   const presence = new PresenceTracker(opts.lapseRounds);
   const ports = new Map<string, OpenPort>();
-  const actors = new Map<string, { ledger: ReturnType<typeof createTxLedger>; written: Map<string, PortMsg_Written> }>();
+  const actors = new Map<string, ActorState>();
   const tokens = new Map<string, { portId: string; txId: string }>();
   const familyChanges = new Map<string, LarTiddlerChange[]>();
   let tokenCounter = 0;
@@ -242,6 +254,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       ctx.post(wire);
     };
     if (port.closed) return;
+    if (port.actorTableFull) { answer("refused", [], [], "actor-table-full"); return; }
     const digest = transactionDigest(msg.records);
     if (!port.ledger.matches(msg.txId, digest)) { answer("refused", [], [], "txid-payload-mismatch"); return; }
     const prior = port.ledger.has(msg.txId) ? port.written.get(msg.txId) : undefined;
@@ -268,8 +281,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           cursor: log.cursorOf(port.shape, log.headSeq) }));
         return;
       }
+      port.actorState.unanswered.add(msg.txId);
       if (begun.pending.some(family => family !== "(default)" && !ctx.composite.hasBag(family))) {
-        port.ledger.discard(msg.txId);
+        if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId);
         answer("refused", [], [], "bag-unavailable"); return;
       }
       for (const family of begun.pending) {
@@ -277,11 +291,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
         await ctx.composite.precheckFamily(puts, tombstones, family === "(default)" ? undefined : { bag: family });
-        if (port.closed) { port.ledger.discard(msg.txId); return; }
+        if (port.closed) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
       }
       const failed: string[] = [];
       for (const family of begun.pending) {
-        if (port.closed) { port.ledger.discard(msg.txId); return; }
+        if (port.closed) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
@@ -298,18 +312,20 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         finally {
           const changes = familyChanges.get(token) ?? [];
+          if (queued.length) flush(ctx);
           for (const change of changes) queued.push({ change, causedBy: [msg.txId] });
           familyChanges.delete(token);
           tokens.delete(token);
-          if (changes.length && !flushQueued) { flushQueued = true; queueMicrotask(() => flush(ctx)); }
+          if (changes.length) flush(ctx);
         }
       }
       if (port.closed) return;
       const result = port.ledger.answer(msg.txId, failed);
+      if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
       answer(result.status, [...result.applied], [...result.failed]);
     } catch (error) {
-      if (!familyStarted) port.ledger.discard(msg.txId);
+      if (!familyStarted && port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId);
       const reason = error instanceof Error && "reason" in error && typeof error.reason === "string"
         ? error.reason : error instanceof Error ? error.message : "write-failed";
       answer("refused", [], [], reason);
@@ -476,12 +492,28 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           ...(msg.localFilter ? { localFilter: msg.localFilter } : {}),
           ...(msg.fields ? { fields: msg.fields } : {}) };
         let actor = actors.get(boundActor);
-        if (!actor) { actor = { ledger: createTxLedger(), written: new Map() }; actors.set(boundActor, actor); }
+        let actorTableFull = false;
+        if (actor) {
+          actors.delete(boundActor);
+          actors.set(boundActor, actor);
+        } else {
+          if (actors.size >= maxActors) {
+            for (const [key, candidate] of actors) {
+              if (candidate.unanswered.size || [...ports.values()].some(value => value.boundActor === key)) continue;
+              actors.delete(key);
+              break;
+            }
+          }
+          actor = { ledger: createTxLedger(), written: new Map(), unanswered: new Set() };
+          if (actors.size < maxActors) actors.set(boundActor, actor);
+          else actorTableFull = true;
+        }
         const since = msg.since ? log.parseCursor(msg.since) : undefined;
         const ackSeq = since && since.bootNonce === nonce && since.shapeId === log.shapeId(shape) ? since.seq : log.headSeq;
         const port: OpenPort = { open: msg, boundActor, presenceActor, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
-          ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger };
+          ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger,
+          actorState: actor, actorTableFull };
         ports.set(msg.portId, port);
         void open(msg, ctx, port);
         return true;

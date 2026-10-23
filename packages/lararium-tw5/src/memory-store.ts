@@ -90,6 +90,15 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     this._emit({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
+  /** A family lands as one synchronous turn: every title passes the door first, then every member applies, so no
+   *  member lands without the rest and a refused title writes nothing. */
+  async writeFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+    for (const record of puts) assertStorableTitle(record.tiddler.title);
+    for (const title of tombstones) assertStorableTitle(title);
+    for (const record of puts) await this.put(record, origin, options);
+    for (const title of tombstones) await this.tombstone(title, origin, options);
+  }
+
   /** HARD-remove: drop the record entirely (get → null = ABSENT, falls through),
    *  distinct from tombstone's kāpae hide. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin): Promise<void> {

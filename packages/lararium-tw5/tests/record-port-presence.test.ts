@@ -35,6 +35,17 @@ describe("clockless presence", () => {
     expect(t.update("old", { ...a, beat: 3 })).toBe(true);
     expect(t.snapshotFor("peer")).toEqual([{ ...a, beat: 3 }]);
   });
+  it("a dropped superseded port releases its retired marker; CONTROL: a live retired port stays blocked", () => {
+    const t = new PresenceTracker();
+    t.update("old", a);
+    t.supersede("a", "new");
+    expect(t.update("old", { ...a, beat: 2 })).toBe(false);
+    const retired = (t as unknown as { retiredPorts: Set<string> }).retiredPorts;
+    expect(retired.has("old")).toBe(true);
+    t.close("old");
+    expect(retired.size).toBe(0);
+    expect(t.update("old", { ...a, beat: 3 })).toBe(true);
+  });
   it("port-presence-reconnect-full-set", () => {
     const t = new PresenceTracker(); t.update("a-port", a); t.update("b-port", b);
     expect(t.snapshotFor("new")).toEqual([a, b]);

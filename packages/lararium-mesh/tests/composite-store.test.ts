@@ -41,6 +41,26 @@ function record(title: string, text: string, bag?: string) {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — layer management", () => {
+  test("precheck refuses a non-atomic destination before any family member lands; CONTROL: atomic layer writes", async () => {
+    const plainBacking = new MemoryTiddlerStore();
+    const plain = new Proxy(plainBacking, { get(target, key) {
+      if (key === "writeFamily") return undefined;
+      const value = Reflect.get(target, key, target) as unknown;
+      return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(target) : value;
+    } });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: "plain", store: plain, writable: true });
+    await expect(composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "plain" }))
+      .rejects.toMatchObject({ reason: "non-atomic-layer" });
+    expect(await plainBacking.get("One")).toBeNull();
+    expect(await plainBacking.get("Two")).toBeNull();
+    const atomic = new MemoryTiddlerStore();
+    composite.addLayer({ bagId: "atomic", store: atomic, writable: true });
+    await composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "atomic" });
+    await composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin(), { bag: "atomic" });
+    expect(await atomic.get("One")).not.toBeNull();
+    expect(await atomic.get("Two")).not.toBeNull();
+  });
   test("composite-family-fire-synchronous: subscribers run before writeFamily resolves; CONTROL: written records persist", async () => {
     const composite = new CompositeStore();
     composite.addLayer({ bagId: TEST_WIKI_URI, store: new MemoryTiddlerStore(), writable: true });

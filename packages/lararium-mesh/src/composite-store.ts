@@ -274,6 +274,9 @@ export class CompositeStore implements LarTiddlerStore {
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     this._writeOptionsFor(options, store, "writeFamily");
+    if (typeof store.writeFamily !== "function") {
+      throw new VerbRefusal("non-atomic-layer", "CompositeStore.precheckFamily: destination cannot write a family atomically");
+    }
   }
 
   /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */
