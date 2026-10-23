@@ -103,6 +103,35 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
+<<~ ahu #/retry-law>>
+
+!! The one retry law ~ a resend of the same id, never a timer
+
+A lost answer repairs by one law on every path: the sender resends the ''same id'' a bounded number of times within a live epoch; the receiver treats the resend idempotently and replays its original answer; the loop ends on an answer or on an epoch change. No timer decides when to resend or when to stop: the sender resends at its next causal boundary (a reconnect, a fresh frame, the next act) and the bound counts attempts.
+
+* The port's `txId` retry (#/write) follows it: the ledger replays the original `port:written`.
+* The camera's page-control resend follows it as an owed row, outside this lane: `projection-sink.ts` `relay` sends once and never re-sends the pending `eventId`; the cure resends that `eventId` within the mount epoch, and the island's answer ring replays the answer.
+
+<<~/ahu>>
+
+<<~ ahu #/choices>>
+
+!! Choices the build made and the contract names
+
+* ''Story width'' projects the fields the caller selects; the roadmap leaves the story field set open. `full` carries every field and `none` carries none.
+* ''`append` returns `{seq, cursorOf(shape)}`.'' One actor log serves ports of different shapes, so the port binds the shape when it forms a wire cursor.
+* ''Byte limits'' (`maxRecordBytes`, `maxBatchBytes`) count the UTF-8 bytes of the record's JSON, excluding envelope framing.
+
+<<~/ahu>>
+
+<<~ ahu #/gate-scope>>
+
+!! Gate scope ~ two gates, kept apart
+
+The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admission (`kahuReachClearedAtGate`, the routed-envelope path in `wiki-behavior`'s setup) stays a separate gate and folds into nothing here. The actor manifest and any keyhive grant check belong to D4.
+
+<<~/ahu>>
+
 <<~ ahu #/owed>>
 
 !! Owed beside the port ~ rows outside this lane's build
@@ -111,6 +140,7 @@ written           = "2026-10-22"
 * ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
 * ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
 * ''`$:/info/browser/*`.'' No tier path handles it yet; the `localFilter` core names it and the tier tests pin it.
+* ''D1's same-id resend.'' The camera's page controls resend a pending `eventId` after a lost answer, under #/retry-law.
 * ''Tree-sitter parity witness for `resolveWidgetTree`.'' The in-VM `MemeAst` feeds the pass; a witness comparing it with the tree-sitter fold follows.
 
 <<~/ahu>>
@@ -124,6 +154,6 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iXWHia8MoXs23dyqUoVbDVWxRAuEXg1RZJmU_XEKfmc
+<<^ code="&#x0003;">>ni:///sha-256;cysVtClG9Y-uQIPrbU7jtl4MtiWGh_BIRCfvVTBSksU
 
 <<^ code="&#x0004;" -> to="?">>
