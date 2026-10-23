@@ -68,3 +68,20 @@ def test_glb_scene_transforms_can_be_sampled_as_witness_only(tmp_path):
     file.write_bytes(file.read_bytes()+b'extra')
     with pytest.raises(ValueError,match='changed'):
         sample_mesh(stack,'observed-glb',count=10)
+
+
+def test_stl_source_intake_and_digest_mutation(tmp_path):
+    import trimesh
+    stack,_=make_stack(tmp_path)
+    cube=trimesh.creation.box(extents=[2,3,4])
+    path=tmp_path/'reference.stl'
+    cube.export(path)
+    stack.add_source(Source.from_file('stl','cad_model',path,'other'))
+    points=sample_mesh(stack,'stl',count=80,seed=4)
+    assert points.units=='model_unit'
+    assert points.sample_type=='sampled-triangle-surface'
+    assert points.as_array().shape==(80,3)
+    assert np.array_equal(points.as_array(),sample_mesh(stack,'stl',count=80,seed=4).as_array())
+    path.write_bytes(path.read_bytes()+b'\x00')
+    with pytest.raises(ValueError,match='changed'):
+        sample_mesh(stack,'stl',count=20)

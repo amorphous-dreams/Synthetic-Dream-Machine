@@ -79,12 +79,12 @@ def load_xyz(stack: LocationStack, source_id, *, max_points=100_000):
 
 
 def sample_mesh(stack: LocationStack, source_id, *, count=2000, seed=19):
-    """Surface-sample OBJ/GLB evidence, not a CAD genome or solid certificate."""
+    """Surface-sample OBJ, GLB or STL evidence, not CAD-genome or solid certificate."""
     import trimesh
     path,src,frame=_source(stack,source_id,{'photogrammetry_mesh','cad_model'})
     if count<1 or count>500_000:raise ValueError('Invalid sample budget')
-    if path.suffix.lower() not in ('.obj', '.glb'):
-        raise ValueError('Surface witness adapter accepts OBJ or GLB only')
+    if path.suffix.lower() not in ('.obj', '.glb', '.stl'):
+        raise ValueError('Surface witness adapter accepts OBJ, GLB or STL only')
     # GLB often contains a scene graph, instanced meshes, and transforms.
     # Flatten only into ephemeral *witness points*; never claim a BRep union.
     if path.stat().st_size > 100*1024*1024:
