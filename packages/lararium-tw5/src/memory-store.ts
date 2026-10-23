@@ -90,36 +90,6 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     this._emit({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
-  /** A family lands in one synchronous stretch: every title passes the door first, every member applies, and only
-   *  then do the changes fire, so no peer sees a member without the rest and nothing can interleave between them. A
-   *  subscriber that throws leaves the later subscribers and members still delivered. */
-  async writeFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
-    for (const record of puts) assertStorableTitle(record.tiddler.title);
-    for (const title of tombstones) assertStorableTitle(title);
-    const bag = this.bagId !== undefined ? { bag: this.bagId } : {};
-    const changes: LarTiddlerChange[] = [];
-    for (const record of puts) {
-      this._records.set(record.tiddler.title, record);
-      changes.push({ title: record.tiddler.title, record, origin, ...bag });
-    }
-    for (const title of tombstones) {
-      const existing = this._records.get(title);
-      this._records.set(title, { ...(existing ?? { tiddler: { title } }), meta: { ...(existing?.meta ?? {}), deleted: true } });
-      changes.push({ title, record: null, origin, ...bag });
-    }
-    // The family has committed; a subscriber that throws faults the subscriber, never the commit, so the writer
-    // reads success and a retry cannot apply the members a second time.
-    // Each change reads the store as it stands when it fires, so a listener that rewrites a later member leaves
-    // the last delivered value equal to the store's.
-    for (const change of changes) {
-      const live = this._records.get(change.title);
-      const fired: LarTiddlerChange = change.record === null
-        ? (live?.meta?.deleted === true || live === undefined ? change : { ...change, record: live })
-        : (live === undefined ? { ...change, record: null } : { ...change, record: live });
-      try { this._emit(fired); } catch { /* the commit stands */ }
-    }
-  }
-
   /** HARD-remove: drop the record entirely (get → null = ABSENT, falls through),
    *  distinct from tombstone's kāpae hide. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin): Promise<void> {

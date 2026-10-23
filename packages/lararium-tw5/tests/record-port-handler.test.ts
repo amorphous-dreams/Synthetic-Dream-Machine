@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
 import type { PortMsg_Open, PortMsg_Write, PortMsg_Ask } from "@lararium/mesh/record-port";
-import { MemoryTiddlerStore } from "../src/memory-store.js";
+import { AtomicMemoryStore as MemoryTiddlerStore } from "./atomic-memory-store.js";
 import { hasRecordPort } from "../src/record-port-handler.js";
 import { shapeId } from "../src/record-port-projection.js";
 import type { IslandContext } from "../src/island-context.js";
