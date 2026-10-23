@@ -6,7 +6,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { next as A } from "@automerge/automerge";
 import { Repo } from "@automerge/automerge-repo";
-import { answerRestWithHeads } from "../src/rest-with-heads.js";
+import { REST_STALL_ROUNDS, answerRestWithHeads } from "../src/rest-with-heads.js";
 import { emptyLarDoc, type LarDoc } from "../src/index.js";
 
 const pause = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
@@ -45,5 +45,29 @@ describe("the vessel's rest answer waits on the island's heads", () => {
     expect(await answerRestWithHeads(vessel, { type: "doc:rest", requestId: "d", documentIds: [handle.documentId], heads: { [handle.documentId]: ["not-a-hash"] } })).toMatchObject({ rested: false, why: "malformed rest ask" });
     expect(await answerRestWithHeads(vessel, { type: "doc:rest", requestId: "e", documentIds: [handle.documentId] })).toMatchObject({ rested: false });
     expect(await answerRestWithHeads(null, { type: "doc:rest", requestId: "f", documentIds: [], heads: {} })).toMatchObject({ rested: false });
+  });
+
+  test("RED: heads that never arrive answer stalled by name after a bounded count of the vessel's own changes — CONTROL: the same ask answers rested when the heads arrive inside the bound", async () => {
+    const { vessel, handle, island } = pair();
+    const ahead = { type: "doc:rest" as const, requestId: "s", documentIds: [handle.documentId], heads: { [handle.documentId]: A.getHeads(island) } };
+    let answer: { rested: boolean; stalled?: boolean; why?: string } | undefined;
+    void answerRestWithHeads(vessel, ahead).then((a) => { answer = a; });
+    await pause();
+    for (let i = 0; i < REST_STALL_ROUNDS - 1; i++) handle.change((doc) => { doc.tiddlers[`lar:///t/n${i}`] = { tiddler: { title: `lar:///t/n${i}`, text: "x" } } as never; });
+    await pause();
+    expect(answer, "one change short of the bound: still waiting").toBeUndefined();
+    handle.change((doc) => { doc.tiddlers["lar:///t/last"] = { tiddler: { title: "lar:///t/last", text: "x" } } as never; });
+    await pause();
+    expect(answer).toMatchObject({ rested: false, stalled: true });
+    expect(answer!.why).toContain("stalled");
+    // CONTROL: the island's change arrives after a few of the vessel's own changes, inside the bound.
+    const second = pair();
+    let late: { rested: boolean; stalled?: boolean } | undefined;
+    void answerRestWithHeads(second.vessel, { type: "doc:rest", requestId: "t", documentIds: [second.handle.documentId], heads: { [second.handle.documentId]: A.getHeads(second.island) } }).then((a) => { late = a; });
+    await pause();
+    second.handle.change((doc) => { doc.tiddlers["lar:///t/y"] = { tiddler: { title: "lar:///t/y", text: "y" } } as never; });
+    second.handle.update((doc) => A.merge(doc, second.island));
+    await pause(); await pause();
+    expect(late).toEqual({ rested: true });
   });
 });

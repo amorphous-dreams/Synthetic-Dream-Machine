@@ -29,6 +29,8 @@ export interface RestDoor {
   idle(): Promise<void>;
   /** Offer an inbound message; true when it carried a `doc:rested` answer. */
   answer(raw: unknown): boolean;
+  /** How many asks the vessel answered stalled: a rest whose heads never arrived reads here by name, and its act's result still leaves. */
+  stalledAsks(): number;
   /** Release every parked wait. */
   close(): void;
 }
@@ -38,6 +40,7 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
   const parked = new Map<string, () => void>();
   const waiting = new Set<Promise<void>>();
   let closed = false;
+  let stalled = 0;
 
   const rest = async (slots: readonly string[]): Promise<void> => {
     if (closed) return;
@@ -82,15 +85,17 @@ export function makeRestDoor(deps: RestDoorDeps): RestDoor {
     },
     answer(raw) {
       if (typeof raw !== "object" || raw === null) return false;
-      const { type, requestId, rested, why } = raw as Record<string, unknown>;
+      const { type, requestId, rested, why, stalled: stall } = raw as Record<string, unknown>;
       if (type !== "doc:rested" || typeof requestId !== "string") return false;
       const resolve = parked.get(requestId);
       if (!resolve) return true;
       parked.delete(requestId);
+      if (stall === true) stalled++;
       if (rested !== true) console.warn(`[rest-door] the vessel did not rest the act's documents: ${typeof why === "string" ? why : "unrested"}`);
       resolve();
       return true;
     },
+    stalledAsks: () => stalled,
     close() {
       closed = true;
       for (const resolve of parked.values()) resolve();
