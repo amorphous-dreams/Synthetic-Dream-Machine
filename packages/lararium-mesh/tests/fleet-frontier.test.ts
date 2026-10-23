@@ -70,4 +70,19 @@ describe("fleet-frontier", () => {
       { actCid: "a", raised: true, hand: "holder" }, { actCid: "b", raised: false, hand: "holder" }, { actCid: "c", raised: true, hand: "quorum" },
     ] as never)).toEqual(["a"]);
   });
+
+  test("RED: a counterfeit body planted under a real frontier's address cannot absorb its signatures; CONTROL: the founded fleet still reads known", async () => {
+    const { signer, lineage } = await setup();
+    const staged = emptyLarDoc();
+    const genesis = await landFleetGenesis(staged, ROOT, lineage, signer);
+    const cid = actCid(genesis.body);
+    const prefix = Object.keys(staged.tiddlers).find((k) => k.includes(`/${cid}/`))!.split(`/${cid}/`)[0]!;
+    // the counterfeit enumerates BEFORE the real record: written into the board first, carrying a body that does not hash to the address
+    const board = emptyLarDoc();
+    const key = `${prefix}/${cid}/00-counterfeit`;
+    (board.tiddlers as Record<string, unknown>)[key] = { tiddler: { title: key, text: JSON.stringify({ body: { ...genesis.body, epoch: 99 }, signatures: [] }) }, meta: { authority: "test" } };
+    Object.assign(board.tiddlers, staged.tiddlers);
+    const read = readFleetFrontier({ fleetRoot: ROOT, board, lineage, seenRaises: [], pinned: null });
+    expect(read.status, "the real genesis still qualifies; the counterfeit joined nothing").toBe("known");
+  });
 });

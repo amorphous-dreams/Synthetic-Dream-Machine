@@ -83,6 +83,11 @@ describe("a face's circles and identities follow the face", () => {
     expect(forgedFirst.circlesUrl, "the verified projection names the url, not the first raw record").toBe(f.face.circlesUrl);
     const malformed = adopt([null, ...(f.personaActs as unknown[])]);
     await expect(malformed.run).rejects.toThrow(/malformed persona act/);
+    // A bundle with no founded log, or no signed fleet frontier record, joins nothing and writes nothing.
+    await expect(adopt([]).run).rejects.toThrow(/empty, unfounded or forked/);
+    const noFrontier = repo();
+    await expect(runApplyAdmitPayload({ repo: noFrontier, daemonHandle: seedDaemonDoc(noFrontier), atomSeed: joineeAtom, vesselDisplayName: "joinee",
+      payload: { ...f.payload, edgeFrontier: { records: [], snapshots: [] } }, nexusPubkey: key(new Uint8Array(32).fill(81)) })).rejects.toThrow(/no signed fleet frontier/);
   });
 
   test("CONTROL: a vessel with no PersonaGroup reads only the floor, with no face documents", async () => {

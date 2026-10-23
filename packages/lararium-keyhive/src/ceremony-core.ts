@@ -1002,7 +1002,11 @@ export async function runApplyAdmitPayload(
   }
   const carriedLineage = personaLineageFromKel(payload.personaKelChain);
   if (!carriedLineage) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona KEL carries no lineage; re-admit the face.");
-  const carriedPlanes = projectPersonaLog(payload.personaActs, { group: payload.personaGroupId, lineage: carriedLineage, authorize: () => true }).planes;
+  const carriedLog = projectPersonaLog(payload.personaActs, { group: payload.personaGroupId, lineage: carriedLineage, authorize: () => true });
+  // A bundle that carries no founded, fork-free log, or no signed fleet frontier, joins nothing: refuse before any side effect.
+  if (!carriedLog.founded || carriedLog.fork || !carriedLog.head) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona log is empty, unfounded or forked; re-admit the face.");
+  if (payload.edgeFrontier.records.length === 0) throw new Error("[ceremony] runApplyAdmitPayload: payload carries no signed fleet frontier record; re-admit the face.");
+  const carriedPlanes = carriedLog.planes;
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }

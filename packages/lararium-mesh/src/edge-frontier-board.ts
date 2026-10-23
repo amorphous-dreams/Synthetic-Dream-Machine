@@ -50,6 +50,9 @@ export function edgeFrontierRecords(doc: LarDoc | undefined | null, board: strin
     try { parsed = JSON.parse(text) as typeof parsed; } catch { continue; }
     if (typeof parsed.body !== "object" || parsed.body === null || !Array.isArray(parsed.signatures)) continue;
     const cid = title.split("/").slice(-2)[0] ?? "";
+    // The title's cid is an ADDRESS: a body that does not hash to it is a counterfeit and joins nothing, so it can neither absorb
+    // the real frontier's signatures nor stand in for it.
+    try { if (actCid(parsed.body as never) !== cid) continue; } catch { continue; }
     const have = byCid.get(cid);
     if (have) have.signatures.push(...parsed.signatures);
     else byCid.set(cid, { body: parsed.body, signatures: [...parsed.signatures] });
