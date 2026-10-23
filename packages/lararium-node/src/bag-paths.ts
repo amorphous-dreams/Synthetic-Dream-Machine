@@ -28,7 +28,7 @@ export interface BagMirrorConfig {
    * WHO-face pointer (`isNexusHandlesUri`) never projects through THIS mirror. Baked in at grant
    * construction time from the RESOLVED `nexusIdentity().kind` — never re-derived from the tiddler
    * itself, which carries no kind. A private-nexus-of-one (`own`) or a dialed anchor (`anchor`)
-   * mints this pointer into the crossroads doc on first boot (who-face.ts `resolveOracleDoc`), and
+   * mints this pointer into the crossroads doc on first boot (who-face.ts `resolveCatalogRow`), and
    * without this guard every such boot's throwaway pointer disk-mirrors alongside the REAL
    * charter-backed crossroads library content. Curated library carriers are untouched — the guard
    * matches ONLY the handles-pointer shape, never the whole bag.

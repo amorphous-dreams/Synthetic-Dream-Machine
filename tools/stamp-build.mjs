@@ -77,6 +77,10 @@ export function sourceDigest(dir) {
     for (const e of [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
       if (e.name === "node_modules" || e.name === "dist" || e.name === ".git") continue;
       if (e.name.endsWith(".prev")) continue;
+      // TESTS NEVER ENTER A BUILD. No package's `tsconfig.build.json` includes `tests/` (each extends a tsconfig that excludes it or
+      // lists `src` alone), so a test edit changes no byte of dist; hashing it would stale every dist on a red-only edit and force a
+      // rebuild in every lane. The CLI's `build-freshness.ts#sourceDigest` imports this very function, so the two cannot drift.
+      if (e.isDirectory() ? e.name === "tests" : /\.test\.(ts|mts|cts)$/.test(e.name)) continue;
       const full = join(d, e.name);
       if (e.isDirectory()) { walk(full); continue; }
       if (!/\.(ts|mts|cts|json)$/.test(e.name)) continue;

@@ -9,7 +9,7 @@ import {
 } from "../src/lares-config.js";
 
 // The env vars the resolvers read — saved + restored so one test never leaks into the next.
-const ENV_KEYS = ["LAR_ROOT", "LAR_GENESIS", "LAR_BAGS", "LAR_PUBLIC_URL", "LAR_WEB_ORIGIN", "LAR_ORACLE_ORIGIN", "LAR_SAME_ORIGIN"] as const;
+const ENV_KEYS = ["LAR_ROOT", "LAR_GENESIS", "LAR_BAGS", "LAR_PUBLIC_URL", "LAR_WEB_ORIGIN", "LAR_FLOW_ORIGIN", "LAR_SAME_ORIGIN"] as const;
 
 describe("lares-config — the per-daemon resource-override reader", () => {
   let dir: string;
@@ -60,21 +60,31 @@ describe("lares-config — the per-daemon resource-override reader", () => {
 
   test("origin declaration reads explicit config values and leaves relay reach separate", () => {
     const cfg: LaresConfig = {
-      origins: { web: "https://web.home", oracle: "https://oracle.home" },
+      origins: { web: "https://web.home", flow: "https://flow.home" },
     };
-    expect(originDeclaration(cfg)).toEqual({ webOrigin: "https://web.home", oracleOrigin: "https://oracle.home" });
+    expect(originDeclaration(cfg)).toEqual({ webOrigin: "https://web.home", flowOrigin: "https://flow.home" });
   });
 
-  test("same-origin config is explicit and does not need Web/oracle copies", () => {
+  test("same-origin config is explicit and does not need Web/flow copies", () => {
     expect(originDeclaration({ origins: { sameOrigin: true } })).toEqual({ sameOrigin: true });
   });
 
-  test("origin env values override config, while LAR_PUBLIC_URL has no role in Web/oracle declaration", () => {
+  test("origin env values override config, while LAR_PUBLIC_URL has no role in Web/flow declaration", () => {
     process.env["LAR_PUBLIC_URL"] = "https://relay.home";
     process.env["LAR_WEB_ORIGIN"] = "https://web.env";
+    process.env["LAR_FLOW_ORIGIN"] = "https://flow.env";
+    const declaration = originDeclaration({ origins: { web: "https://web.config", flow: "https://flow.config" } });
+    expect(declaration).toEqual({ webOrigin: "https://web.env", flowOrigin: "https://flow.env" });
+  });
+
+  test("RED: the retired LAR_ORACLE_ORIGIN names nothing (no alias); CONTROL: LAR_FLOW_ORIGIN and the config's flow key declare the origin", () => {
     process.env["LAR_ORACLE_ORIGIN"] = "https://oracle.env";
-    const declaration = originDeclaration({ origins: { web: "https://web.config", oracle: "https://oracle.config" } });
-    expect(declaration).toEqual({ webOrigin: "https://web.env", oracleOrigin: "https://oracle.env" });
+    try {
+      expect(originDeclaration({ origins: { web: "https://web.config" } })).toEqual({ webOrigin: "https://web.config" });
+      expect(originDeclaration({ origins: { web: "https://web.config", flow: "https://flow.config" } })).toEqual({ webOrigin: "https://web.config", flowOrigin: "https://flow.config" });
+      process.env["LAR_FLOW_ORIGIN"] = "https://flow.env";
+      expect(originDeclaration({ origins: { web: "https://web.config" } })).toEqual({ webOrigin: "https://web.config", flowOrigin: "https://flow.env" });
+    } finally { delete process.env["LAR_ORACLE_ORIGIN"]; }
   });
 
   test("invalid same-origin env/config values refuse instead of degrading", () => {

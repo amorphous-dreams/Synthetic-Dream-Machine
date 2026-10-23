@@ -1,9 +1,9 @@
 /**
- * oracle-closed-door.test.ts — the herm oracle keeps silence (pronaos#/the-rung-ladder).
+ * flow-closed-door.test.ts — the herm flow keeps silence (pronaos#/the-rung-ladder).
  *
- * The oracle face is no HTTP face: every HTTP path under it — the pointer it publishes, the snapshot it holds,
+ * The flow face is no HTTP face: every HTTP path under it — the pointer it publishes, the snapshot it holds,
  * any method, any shape — draws THE closed door, byte for byte the answer a path no face claims draws. The
- * map crosses only the floor-gated oracle socket, to a dialer the gate sorted; a stranger who opens the socket
+ * map crosses only the floor-gated flow socket, to a dialer the gate sorted; a stranger who opens the socket
  * and proves nothing receives no frame of it. `/api/health` binds on a lararium alone: on a herm it is the
  * same closed door.
  */
@@ -13,13 +13,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportFlowSnapshot, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
+import { exportFlowSnapshot, FLOW_SOCKET_ROUTE } from "@lararium/mesh";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
-import { floorGates, presenter, pullFloor } from "./oracle-floor-rig.js";
+import { floorGates, presenter, pullFloor } from "./flow-floor-rig.js";
 
 const SEED   = new Uint8Array(32).fill(7);
 
@@ -71,11 +71,11 @@ async function listen(server: Server): Promise<string> {
   return `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 }
 
-describe("the oracle face keeps silence", () => {
-  test("every HTTP path under the oracle is the closed door; only a presenter the floor gate sorts reads the map", async () => {
+describe("the flow face keeps silence", () => {
+  test("every HTTP path under the flow is the closed door; only a presenter the floor gate sorts reads the map", async () => {
     const server = createServer();
     const dispatcher = mountHttpFaceDispatcher(server);
-    const storageDir = mkdtempSync(join(tmpdir(), "oracle-door-")); dirs.push(storageDir);
+    const storageDir = mkdtempSync(join(tmpdir(), "flow-door-")); dirs.push(storageDir);
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
@@ -96,12 +96,13 @@ describe("the oracle face keeps silence", () => {
     expect(control.body).toBe(CLOSED_DOOR.body);
 
     const probes: Array<[string, string]> = [
-      ["/oracle/pointer",                "GET"],     // the pointer the face publishes
-      [`/oracle/${cid}.bin`,             "GET"],     // the snapshot the face holds
-      ["/oracle/pointer",                "POST"],    // a wrong method
-      ["/oracle/pointer",                "OPTIONS"], // a preflight
-      [`/oracle/${"0".repeat(64)}.bin`,  "GET"],     // a cid the face never held
-      [ORACLE_SOCKET_ROUTE,              "GET"],     // the socket path, asked as a page
+      ["/flow/pointer",                "GET"],     // the pointer the face publishes
+      ["/oracle/pointer",              "GET"],     // the retired route: no alias, the same closed door
+      [`/flow/${cid}.bin`,             "GET"],     // the snapshot the face holds
+      ["/flow/pointer",                "POST"],    // a wrong method
+      ["/flow/pointer",                "OPTIONS"], // a preflight
+      [`/flow/${"0".repeat(64)}.bin`,  "GET"],     // a cid the face never held
+      [FLOW_SOCKET_ROUTE,              "GET"],     // the socket path, asked as a page
       [gatePath(w.pin),                  "GET"],     // the gate's own knock path, asked as a page
     ];
     for (const [path, method] of probes) {
@@ -109,7 +110,7 @@ describe("the oracle face keeps silence", () => {
     }
 
     // A STRANGER without the knock reaches no socket at all: the bare route draws no upgrade, so no frame.
-    const bare = new WebSocket(`${origin.replace("http", "ws")}${ORACLE_SOCKET_ROUTE}`);
+    const bare = new WebSocket(`${origin.replace("http", "ws")}${FLOW_SOCKET_ROUTE}`);
     expect(await framesOf(bare)).toEqual([]);
     // One WITH the knock that sends no honest first flight hears NOTHING: no opening, no refusal, no map frame.
     const knocker = new WebSocket(`${origin.replace("http", "ws")}${gatePath(w.pin)}`);
@@ -122,10 +123,10 @@ describe("the oracle face keeps silence", () => {
     await repo.shutdown();
   }, 30_000);
 
-  test("RED: under PRIVATE a presenter with no arm reads nothing from the oracle socket; CONTROL: its admit reads the map", async () => {
+  test("RED: under PRIVATE a presenter with no arm reads nothing from the flow socket; CONTROL: its admit reads the map", async () => {
     const server = createServer();
     const dispatcher = mountHttpFaceDispatcher(server);
-    const storageDir = mkdtempSync(join(tmpdir(), "oracle-private-")); dirs.push(storageDir);
+    const storageDir = mkdtempSync(join(tmpdir(), "flow-private-")); dirs.push(storageDir);
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const rig = floorGates(["nexus-a.synthetic"]);            // a PRIVATE Nexus: the world's default posture

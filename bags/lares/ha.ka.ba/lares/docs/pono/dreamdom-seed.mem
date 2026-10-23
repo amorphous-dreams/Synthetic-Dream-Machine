@@ -188,15 +188,15 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~ ahu #/the-moolelo>>
 
-!! The moʻolelo the train carries ~ DRAFT, awaiting the operator's blessing
+!! The moʻolelo the train carries ~ blessed by the operator, 2026-10-20
 
-# Four layers stand apart: store, engine, projections out, sensoria in, only where a vessel can enact them.
+# Four layers stand apart: store, engine, projections out, sensoria in (only where a vessel can enact them). The truth rests in the minds of the operators, and the CRDTs carry it to the synced stores.
 # One headless engine per wiki beside its store, lived as an actor: one id, one writer, hibernates.
 # The engine↔projection waist: subscribe, ask, invoke; keyed absolute frames at the grain each camera declares, transclusions resolved; writes travel as writes, never events.
 # A projection chooses a root template and a sink, owns its river and its focused control, never truth.
-# Subscription width scales lean → rich; the whole-replica glass reads as the widest setting.
+# Subscription width scales lean→rich, the whole-replica glass the widest setting.
 # The language carries portability; its suite carries the language.
-# //(proposed)// Any root over any document sink makes a camera; the page template over the DOM stands as the browser's first.
+# Any root over any document sink makes a camera; the page template over the DOM stands as the browser's first, and keeps every native affordance its people depend on.
 
 <<~/ahu>>
 
@@ -214,6 +214,6 @@ The train's final handback adds the conformance rows each DreamDOM surface publi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XC10Lk8AK7XO-HkJCCF24UelBHyklcXBQiJ4vfn6apI
+<<^ code="&#x0003;">>ni:///sha-256;uw1Y1WJqoz3sWKEO40470LxXnLZKmznryd6ycGTcOds
 
 <<^ code="&#x0004;" -> to="?">>

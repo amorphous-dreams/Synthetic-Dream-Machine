@@ -104,7 +104,7 @@ export interface CarriageComponent { readonly pullOnce: () => Promise<number>; r
 
 /**
  * A peer the carriage pulls: its http read-face and the gate key it PINS there. The key is the peer's vessel
- * key — the gate its oracle socket stands behind and the signer of its pointer — so a pull knocks on the path
+ * key — the gate its flow socket stands behind and the signer of its pointer — so a pull knocks on the path
  * that key derives, proves to it, and reads only a map it signed. A peer known by address alone is not dialed.
  */
 export interface MeshPeer {
@@ -196,7 +196,7 @@ export interface MeshSelf {
   readonly bearing: string;
   readonly coord: Coord;                 // routing-chart coord (r=standing, θ=kinship), published in its slot
   readonly peers: readonly MeshPeer[];   // bootstrap peers carried (∪ discovered dials); empty = a leaf
-  /** OWN gate key — the vessel key its read-face's oracle socket stands behind, published in its dial so a
+  /** OWN gate key — the vessel key its read-face's flow socket stands behind, published in its dial so a
    *  peer can knock and pin. ABSENT → no dial is published (nothing could reach the face). */
   readonly gatePubKey?: string;
   readonly maxFanout?: number;           // max peers pulled per cycle
@@ -270,11 +270,11 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  PEERS PROVE FIRST, AND THE PULL IS INJECTED. A carried dial names a peer's endpoint and gate KEY, never the full
  *  gate pin a sealed dial needs, so this cap dials nothing of its own: the bare route ships SHUT by name
  *  ("carriage-peering-shut", the shut-routes house ruling, stable-founding-road #/rulings). A caller that holds a
- *  gate-native pull (`carriage-pull`) hands it as `pullOracle`; a carriage handed none pulls nothing — it still stands
+ *  gate-native pull (`carriage-pull`) hands it as `pullFlow`; a carriage handed none pulls nothing — it still stands
  *  its own map. Nothing here reads `identity`; the type keeps it for the composer that passes it. */
 export function carriageCap(deps: {
   peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
-  pullOracle?: (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
+  pullFlow?: (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
@@ -285,8 +285,8 @@ export function carriageCap(deps: {
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
-      const pullOracle = deps.pullOracle;
-      if (!pullOracle) deps.onLog?.("carriage: carriage-peering-shut — no gate-native pull is handed in, so this vessel carries in nothing");
+      const pullFlow = deps.pullFlow;
+      if (!pullFlow) deps.onLog?.("carriage: carriage-peering-shut — no gate-native pull is handed in, so this vessel carries in nothing");
       const pullOnce = async (): Promise<number> => {
         let merged = 0;
         const peers = discoverPeers(mp.handle.doc(), deps.peers, deps.selfEndpoint, deps.maxFanout ?? 16, deps.selfCoord);
@@ -308,14 +308,14 @@ export function carriageCap(deps: {
             }
           }
         }
-        if (!pullOracle) return merged;   // the route is shut: nothing crosses in
+        if (!pullFlow) return merged;   // the route is shut: nothing crosses in
         for (const { endpoint: peer, gatePubKey } of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
             seenDiscovered.add(peer);
             deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
           }
           let verdict;
-          try { verdict = await pullOracle(peer, gatePubKey); }
+          try { verdict = await pullFlow(peer, gatePubKey); }
           catch { continue; } // a peer down/unreachable is no error — feed-or-fade
           if (!verdict.ok || !verdict.doc) continue;
           const incoming = verdict.doc.tiddlers;
@@ -404,7 +404,7 @@ export function carriageStack(deps: {
   /** Read no more (the old pull is shut); kept so existing call sites compile. */
   identity?:       LeafIdentity;
   /** A gate-native pull of a peer's public FLOW-map. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
-  pullOracle?:     (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
+  pullFlow?:     (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   pullIntervalMs?: number;
   onLog?:          (line: string) => void;
 }): readonly CapModule[] {
@@ -419,7 +419,7 @@ export function carriageStack(deps: {
       peers:       self?.peers ?? [],
       nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
       ...(deps.identity ? { identity: deps.identity } : {}),
-      ...(deps.pullOracle ? { pullOracle: deps.pullOracle } : {}),
+      ...(deps.pullFlow ? { pullFlow: deps.pullFlow } : {}),
       ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
       ...(self ? {
         ...(self.endpoint ? { selfEndpoint: self.endpoint } : {}), // absent → a leaf, not dial-able

@@ -26,18 +26,23 @@ written    = "2026-06-29"
 
 ! Oracle Governance
 
-> Status: PROPOSED — design intent, mostly unbuilt. The Two-Faced read-face
-> (`@oracle` content-addressed snapshot + signed monotone pointer) stands and witnessed
-> live; the per-nexus board, the threshold-steward source, and the three couplings ride
-> ahead of code.
+> Status: PROPOSED — design intent, mostly unbuilt. What stands of the read-face today:
+> the Nexus's one public answer is the floor release, sealed by a seated Kahu key and
+> served at the porch (`floor-release.ts`, `floor-answer.ts`, `floor-porch.ts`); the
+> flow map keeps its own signed monotone pointer under the `flow-pointer` domain
+> (`flow-substrate.ts`, `flow-read-client.ts`, `flow-read-face.ts`, route `/flow`). Each
+> vessel's own document pointers rest in its own `@catalog` rows (`catalog-row.ts`), so
+> no shared `@oracle` registry stands. The threshold-steward source and the three
+> couplings below ride ahead of code; read each `@oracle` below as that public answer.
 
 The `@oracle` carries a public read substrate — //what this neighborhood holds out for//
 //all to see//. This meme answers ''who governs it, at what scale, and how it stays''
 ''un-capturable''. The short of it: ''the founder seeds, the circle governs, the fork''
 ''guards.''
 
-''One `@oracle`, two faces — never a second board.'' This governance board reads as the
-''read face'' over the //same// `@oracle` substrate the registry/recipe plane already holds.
+''One public answer, two faces — never a second board.'' This governance board reads as the
+''read face'' over the //same// substrate the registry/recipe plane already holds (the
+genesis island document, still named `@oracle` until the floor read-face replaces its layer).
 The ''content/registry face'' mints the recipe + engine-blob CIDs + protocol invariants
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">>); the
 governed ''read face'' named here projects that content for public verify-only sight. The
@@ -189,6 +194,6 @@ it through a different door (<<~ loulou "lar:///ha.ka.ba/lararium/docs/peer-disc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QOcc3-hll6d52AX6SLShXzzou32Cd47CBnJ_Zt7-b-k
+<<^ code="&#x0003;">>ni:///sha-256;nFIw13H3SehmNiy-UkEKKgJcGD6Px-Jpfirb-6x6Af0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -2,9 +2,9 @@
  * flow-read-face — the node-side wiring of the Two-Faced Substrate.
  *
  * Serves a doc's signed causal pointer and the content-addressed snapshot it names (Automerge.save)
- * to PEERS WHO PROVED FIRST, over the FLOOR gate this vessel stands for each Nexus it is handed, on the oracle
+ * to PEERS WHO PROVED FIRST, over the FLOOR gate this vessel stands for each Nexus it is handed, on the flow
  * route behind each gate's own knock (`face-gate-server`):
- *   ws <ORACLE_SOCKET_ROUTE>/<knock> → Noise IK first flight · presentation · verdict → "session" pointer frame ·
+ *   ws <FLOW_SOCKET_ROUTE>/<knock> → Noise IK first flight · presentation · verdict → "session" pointer frame ·
  *   "sync" snapshot bytes → close
  *
  * The gates arm with the vessel's ONE sorter over each Nexus's posture, so under PRIVATE a presenter with no arm
@@ -12,7 +12,7 @@
  * gate's proof is the auth.
  *
  * The face is NOT an HTTP face. It claims no request path, so every HTTP request for it draws the
- * vessel's closed door, exactly as a path nobody claims (pronaos#/the-rung-ladder: the oracle rung answers proven
+ * vessel's closed door, exactly as a path nobody claims (pronaos#/the-rung-ladder: the flow rung answers proven
  * peers alone). It serves the herm's flow map. The FLOOR of system canon rides no pointer: the Nexus's release names
  * it by CID (`floor-release`), served at the porch (`floor-answer-face`).
  *
@@ -20,7 +20,7 @@
  * vessel seed, and a reader names that publisher key out of band (`pullAndVerifyFlow` `verifyingKey`).
  *
  * Write-refusal is by construction: the face only sends, the bytes are named by their own hash, and there is
- * no sync session. On each oracle-doc change the face re-exports the snapshot and publishes a fresh causal
+ * no sync session. On each flow-doc change the face re-exports the snapshot and publishes a fresh causal
  * pointer. The local causal frontier persists to disk so a reboot can continue the same lineage. A served
  * session closes when its reader closes, or once the linger lapses, so the bytes it sent flush before the cut.
  *
@@ -60,40 +60,40 @@ export interface FlowReadFace {
   readonly dispose: () => void;
 }
 
-/** The oracle face on its floor gates: the upgrade pathnames they stand on, one per Nexus. */
+/** The flow face on its floor gates: the upgrade pathnames they stand on, one per Nexus. */
 export interface FlowFloorFace extends FlowReadFace {
   readonly paths: () => readonly string[];
 }
 
 /** How long a served session waits for its reader to close before the face closes it. */
-export const ORACLE_LINGER_MS = 10_000;
+export const FLOW_LINGER_MS = 10_000;
 
-/** One floor gate on the oracle route for one Nexus, and the pin it answers under. */
-export interface OracleFloorGate {
+/** One floor gate on the flow route for one Nexus, and the pin it answers under. */
+export interface FlowReadGate {
   readonly gate: FaceGate;
   readonly pin:  GateBundlePin;
 }
 
 /**
- * The floor gate source: one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`.
+ * The floor gate source: one floor gate per Nexus on `floorRoute(FLOW_SOCKET_ROUTE)`, each seating through `sessions`.
  * A source whose Nexus set moves (a carry taken or dropped on a running vessel) names it on `onMoved`: the face then
  * asks it again, stands each gate on a path it did not stand, and stands down each path the source no longer names.
  */
-export interface OracleGateSource {
-  (sessions: GateSessionTable): Promise<readonly OracleFloorGate[]> | readonly OracleFloorGate[];
+export interface FlowGateSource {
+  (sessions: GateSessionTable): Promise<readonly FlowReadGate[]> | readonly FlowReadGate[];
   /** Follow the source's moves; answers the unfollow. */
   readonly onMoved?: (listener: () => void) => () => void;
 }
 
 /** The face's serving shape: its gates, built over the session table the face hands, and where they answer. */
-export interface OracleGateArgs {
-  /** Build one floor gate per Nexus on `floorRoute(ORACLE_SOCKET_ROUTE)`, each seating through `sessions`; a source
+export interface FlowGateArgs {
+  /** Build one floor gate per Nexus on `floorRoute(FLOW_SOCKET_ROUTE)`, each seating through `sessions`; a source
    *  that moves names it on its `onMoved`, and the face re-sweeps. */
-  readonly gates:       OracleGateSource;
+  readonly gates:       FlowGateSource;
   readonly httpServer:  Server;
   /** The vessel's dispatcher: each gate's path registers on it. Absent, one upgrade listener on `httpServer`. */
   readonly dispatcher?: HttpFaceDispatcher;
-  /** How long a served session waits for its reader to close (`ORACLE_LINGER_MS`). */
+  /** How long a served session waits for its reader to close (`FLOW_LINGER_MS`). */
   readonly lingerMs?:   number;
 }
 
@@ -102,7 +102,7 @@ export interface OracleGateArgs {
  * signing pointers with the vessel's seed. Idempotent in effect — re-exports only when the served doc's
  * content hash actually changes.
  */
-export async function mountFlowReadFace(args: OracleGateArgs & {
+export async function mountFlowReadFace(args: FlowGateArgs & {
   readonly oracleHandle: DocHandle<unknown>;
   /** The VESSEL seed — it signs the pointer. Its key is the publisher's, never the floor gate's. */
   readonly signerSeed:   Uint8Array;
@@ -113,7 +113,7 @@ export async function mountFlowReadFace(args: OracleGateArgs & {
   readonly exportSnapshot: (doc: unknown) => Promise<FlowSnapshot>;
 }): Promise<FlowFloorFace> {
   const { httpServer, oracleHandle, signerSeed, storageDir, onLog } = args;
-  const lingerMs = args.lingerMs ?? ORACLE_LINGER_MS;
+  const lingerMs = args.lingerMs ?? FLOW_LINGER_MS;
   const exportSnapshot = args.exportSnapshot;
   if (typeof exportSnapshot !== "function") throw new Error("flow read-face: exportSnapshot is required; no raw document serves by omission");
   const statePath = join(storageDir, STATE_FILE);
@@ -198,7 +198,7 @@ export async function mountFlowReadFace(args: OracleGateArgs & {
       if (stood.has(path)) continue;                    // the gate already standing stays the same gate
       const at = server.stand(entry);
       const unregister = args.dispatcher?.registerUpgrade({
-        name: `oracle:${at.path}`, path: at.path,
+        name: `flow:${at.path}`, path: at.path,
         handle: (req, socket, head) => { if (!server.handleUpgrade(req, socket, head)) socket.destroy(); },
       });
       stood.set(at.path, { down: () => { unregister?.(); at.unstand(); } });
@@ -243,7 +243,7 @@ export async function mountFlowReadFace(args: OracleGateArgs & {
  * territory never leaves. A Herm serves this as its sole substrate, on the same floor gates; a proven peer pulls
  * it with the same `pullAndVerifyFlow`. The Lares Viales floor on the wire.
  */
-export function mountFlowMapReadFace(args: OracleGateArgs & {
+export function mountFlowMapReadFace(args: FlowGateArgs & {
   readonly meshPalaceHandle: DocHandle<unknown>;
   readonly signerSeed:       Uint8Array;
   readonly storageDir:       string;

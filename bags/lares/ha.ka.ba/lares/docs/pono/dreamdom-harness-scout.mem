@@ -156,6 +156,8 @@ Note: the brief's `TiddlyWiki5/core/modules/startup.js` sits at `core/modules/st
 
 ## #9 — the orphaned meme-worker-script.ts
 
+//Frame, 2026-10-22: the file, its package export and the roadmap line this finding names have since retired; no tracked source, export or live carrier points at `meme-worker-script` now. The testimony below keeps its words.//
+
 `git grep` across tracked files (excluding dist) finds:
 - the file itself [packages/lararium-tw5/src/meme-worker-script.ts], which at import time boots a TW5Engine and attaches `self.addEventListener("message")` [77, 132];
 - a package export `"./meme-worker-script.js"` → `./dist/meme-worker-script.js` [packages/lararium-tw5/package.json:39-42];
@@ -199,6 +201,6 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gEYkrSJVimsqeXemoywpSY_iHq8QoWlr89yeZQMDpNM
+<<^ code="&#x0003;">>ni:///sha-256;lOF6dA57hscaqzaV05kbLE8pzvYzB-3GkfeHkaT0Qs0
 
 <<^ code="&#x0004;" -> to="?">>

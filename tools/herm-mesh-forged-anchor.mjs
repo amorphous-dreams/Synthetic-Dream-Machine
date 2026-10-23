@@ -53,7 +53,7 @@ try {
     const carriers = await mesh.foldCarrierSet(reading.denyBoard, reading.roster, ancestry);
     const index = mesh.hearthPinIndex();
     mesh.filePlaceFloorPins(index, mesh.placeFloorPinsFromBoard(board), {
-      nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.ORACLE_SOCKET_ROUTE, carriers,
+      nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.FLOW_SOCKET_ROUTE, carriers,
     });
     const present = (arm) => mesh.pullAndVerifyFlow(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
       pins: index, hearth: publisher, nexus: Buffer.from(bundle.aid, "utf8").toString("hex"),

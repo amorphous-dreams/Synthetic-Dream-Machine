@@ -1,7 +1,7 @@
 /**
  * herm-carriage-gate-native — carriage peering and the herm-to-herm relay of the public map, reopened gate-native.
  *
- * A real floor-tier gate on "/oracle" (a private Nexus: no stranger is answered) plays a herm's oracle face. The reader
+ * A real floor-tier gate on "/flow" (a private Nexus: no stranger is answered) plays a herm's flow face. The reader
  * is a faceless PLACE: its own key and the Nexus quorum's counted `carry` act over it (the place arm). The pin comes from a
  * statement the herm signed with the key the quorum's act names, read against the reader's own carrier fold
  * (lar:///ha.ka.ba/lararium/mesh/place-floor-pin). Each vector stands red first against its control.
@@ -12,7 +12,7 @@ import * as ed25519 from "@noble/ed25519";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import { channelSessionTable, type GateSessionChannel } from "../src/gate-session-channel.js";
 import { buildFlowPointer, exportFlowSnapshot } from "../src/flow-substrate.js";
-import { FLOW_POINTER_FRAME, ORACLE_SOCKET_ROUTE, pullAndVerifyFlow, type PlaceOraclePresentation } from "../src/flow-read-client.js";
+import { FLOW_POINTER_FRAME, FLOW_SOCKET_ROUTE, pullAndVerifyFlow, type PlaceFlowPresentation } from "../src/flow-read-client.js";
 import {
   filePlaceFloorPins, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard, readPlaceFloorPin, signPlaceFloorPin, writePlaceFloorPin,
 } from "../src/place-floor-pin.js";
@@ -28,7 +28,7 @@ const enc = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 /** The herm: a floor gate at `w`'s Nexus serving one FLOW map signed by its vessel key, as the node face serves it. */
 async function herm(w: World, serve: (send: () => void) => void = (send) => send()) {
-  const snap = await exportFlowSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@oracle/node/alpha" } } }));
+  const snap = await exportFlowSnapshot(A.from({ tiddlers: { "dial/node-alpha": { text: "lar:///ha.ka.ba/@flow/node/alpha" } } }));
   const ptr = await buildFlowPointer({ snapshot: snap, parents: [], signerSeed: HERM_SEED });
   const served = { count: 0 };
   const gate = gateOver(w, channelSessionTable((channel: GateSessionChannel) => {
@@ -42,14 +42,14 @@ async function herm(w: World, serve: (send: () => void) => void = (send) => send
   return { gate, key, served, sign: (image: Uint8Array) => ed25519.signAsync(image, HERM_SEED) };
 }
 
-const asPlace = (pl: Place, arm: Place["arm"] | null = pl.arm): PlaceOraclePresentation => ({ kind: "place", placeKey: pl.key, sign: pl.sign, arm });
+const asPlace = (pl: Place, arm: Place["arm"] | null = pl.arm): PlaceFlowPresentation => ({ kind: "place", placeKey: pl.key, sign: pl.sign, arm });
 
 /**
  * Pull with the reader's own deadline. The gate's own outcome decides the lapse, never a count of turns: a reader the
  * gate fell silent to can learn nothing more, so its deadline lapses by hand on both sides; a reader the gate attached
  * or answered finishes by itself; a reader that never dialed settles before any gate runs.
  */
-async function pull(w: World, h: Awaited<ReturnType<typeof herm>>, presentation: PlaceOraclePresentation, pins = hearthPinIndex()) {
+async function pull(w: World, h: Awaited<ReturnType<typeof herm>>, presentation: PlaceFlowPresentation, pins = hearthPinIndex()) {
   if (pins.size === 0) pins.put(h.key, w.pin);
   const deadlines = handDeadlines();
   const urls: string[] = [];
@@ -67,7 +67,7 @@ async function pull(w: World, h: Awaited<ReturnType<typeof herm>>, presentation:
 
 describe("the faceless reader at a herm's floor gate", () => {
   test("CONTROL: a place the Nexus carries presents its counted contract and reads the map, verified", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const { res } = await pull(w, h, asPlace(await place(w, "relay herm")));
     expect(res.ok, res.reason).toBe(true);
@@ -75,7 +75,7 @@ describe("the faceless reader at a herm's floor gate", () => {
   });
 
   test("CONTROL: a herm slow to serve still reads verified; no count of turns lapses an honest pull", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     // The herm answers only after the reader's side has turned many times over, as a loaded runner can.
     const later = (send: () => void) => { void (async () => { for (let i = 0; i < 2_000; i++) await new Promise((r) => setImmediate(r)); send(); })(); };
     const h = await herm(w, later);
@@ -85,7 +85,7 @@ describe("the faceless reader at a herm's floor gate", () => {
   });
 
   test("RED: a STRANGER (a place no Nexus carries, presenting no contract) meets silence and learns no pointer", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const { res } = await pull(w, h, asPlace(await place(w, "scraper"), null));
     expect(res.ok).toBe(false);
@@ -95,8 +95,8 @@ describe("the faceless reader at a herm's floor gate", () => {
   });
 
   test("RED: a reader carried by ANOTHER Nexus presents a contract this gate's root never counts, and meets silence", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-a.synthetic" });
-    const other = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-a.synthetic" });
+    const other = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
     const h = await herm(w);
     const pl = await place(other, "foreign herm");
     const { res } = await pull(w, h, asPlace(pl));
@@ -106,8 +106,8 @@ describe("the faceless reader at a herm's floor gate", () => {
   });
 
   test("RED: a reader whose index holds the herm's pin only at another Nexus refuses before it dials", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-a.synthetic" });
-    const other = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-a.synthetic" });
+    const other = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
     const h = await herm(w);
     const pins = hearthPinIndex();
     pins.put(h.key, other.pin);
@@ -119,10 +119,10 @@ describe("the faceless reader at a herm's floor gate", () => {
 });
 
 describe("the herm's floor pin, carried signed", () => {
-  const at = (w: World, carriers: Iterable<string>) => ({ nexusHex: w.pin.nexus, route: ORACLE_SOCKET_ROUTE, carriers: new Set(carriers) });
+  const at = (w: World, carriers: Iterable<string>) => ({ nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, carriers: new Set(carriers) });
 
   test("CONTROL: the herm's own statement files its pin for a reader whose replica counts the herm as carrier", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
     const read = readPlaceFloorPin(JSON.parse(JSON.stringify(statement)), at(w, [h.key]));
@@ -130,15 +130,15 @@ describe("the herm's floor pin, carried signed", () => {
   });
 
   test("RED: an announcement never authenticates its own first pin — a herm the reader's Nexus does not carry files nothing", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
     expect(readPlaceFloorPin(statement, at(w, []))).toEqual({ refusal: "place-uncarried" });
   });
 
   test("RED: a pin signed by any other key, or standing at another Nexus or tier, files nothing", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
-    const other = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
+    const other = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
     const sovereign = await world({ route: "/ws" });
     const h = await herm(w);
     const forger = Uint8Array.from({ length: 32 }, (_, i) => 99 - i);
@@ -154,7 +154,7 @@ describe("the herm's floor pin, carried signed", () => {
   });
 
   test("the statement rides the carriage board as a sidecar the act extractor never reads, and files from it", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const doc: LarDoc = { tiddlers: {} } as LarDoc;
     const statement = await signPlaceFloorPin({ placeKey: h.key, pin: w.pin, sign: h.sign });
@@ -164,13 +164,13 @@ describe("the herm's floor pin, carried signed", () => {
     const pins = hearthPinIndex();
     const filed = filePlaceFloorPins(pins, placeFloorPinsFromBoard(doc), at(w, [h.key]));
     expect(filed.filed).toEqual([h.key]);
-    expect(pins.get({ hearth: h.key, nexus: w.pin.nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" })).toEqual(w.pin);
+    expect(pins.get({ hearth: h.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" })).toEqual(w.pin);
   });
 });
 
 describe("the place arm a herm presents", () => {
   test("CONTROL: the counted head carry presents, with its counted past as lineage", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const seed = Uint8Array.from({ length: 32 }, (_, i) => i + 40);
     const first = await w.carryFor(seed);
     const { carriageEntryActCid } = await import("../src/carriage-registry.js");
@@ -183,8 +183,8 @@ describe("the place arm a herm presents", () => {
   });
 
   test("RED: an uncarry that descends from the contract leaves no arm, and an act the roster never counted presents none", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
-    const other = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
+    const other = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
     const seed = Uint8Array.from({ length: 32 }, (_, i) => i + 41);
     const key = hex(await ed25519.getPublicKeyAsync(seed));
     const first = await w.carryFor(seed);
@@ -198,22 +198,22 @@ describe("the place arm a herm presents", () => {
 
 describe("the gate-native carriage pull", () => {
   test("RED: a peer this vessel holds no floor pin for at any Nexus it stands in is never dialed", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
     const h = await herm(w);
     const urls: string[] = [];
     const reader = await place(w, "relay herm");
-    const pullOracle = gateNativeCarriagePull({
+    const pullFlow = gateNativeCarriagePull({
       pins: hearthPinIndex(), nexuses: () => [w.nexus], presentationFor: async () => asPlace(reader),
       audience: AUDIENCE, deadlines: handDeadlines(), dialSocket: (url) => { urls.push(url); return dialSocketTo(h.gate).socket; },
     });
-    const res = await pullOracle("http://herm.test", h.key);
+    const res = await pullFlow("http://herm.test", h.key);
     expect(res).toEqual({ ok: false, reason: CARRIAGE_PIN_ABSENT });
     expect(urls).toEqual([]);
   });
 
   test("CONTROL: one dial per (peer, Nexus), at the pin its board carried, presenting the place's contract — the map verifies", async () => {
-    const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
-    const elsewhere = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
+    const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
+    const elsewhere = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: "nexus-b.synthetic" });
     const h = await herm(w);
     const reader = await place(w, "relay herm");
     const board: LarDoc = { tiddlers: {} } as LarDoc;
@@ -222,10 +222,10 @@ describe("the gate-native carriage pull", () => {
     const pins = hearthPinIndex();
     const urls: string[] = [];
     const asked: string[] = [];
-    const pullOracle = gateNativeCarriagePull({
+    const pullFlow = gateNativeCarriagePull({
       pins,
       nexuses: () => [elsewhere.nexus, w.nexus, w.nexus],
-      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: ORACLE_SOCKET_ROUTE, carriers: new Set([h.key]) }); },
+      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, carriers: new Set([h.key]) }); },
       presentationFor: async (nexus) => {
         asked.push(nexus);
         const arm = await placeArmFor(carriageEntriesFromBoard(board), w.held!.roster, reader.key);
@@ -233,9 +233,9 @@ describe("the gate-native carriage pull", () => {
       },
       audience: AUDIENCE, deadlines: handDeadlines(), dialSocket: (url) => { urls.push(url); return dialSocketTo(h.gate).socket; },
     });
-    const res = await pullOracle("http://herm.test", h.key);
+    const res = await pullFlow("http://herm.test", h.key);
     expect(res.ok, res.reason).toBe(true);
-    expect(urls).toEqual(["ws://herm.test/oracle"]);
+    expect(urls).toEqual(["ws://herm.test/flow"]);
     expect(asked).toEqual([w.nexus]);
     expect(hex(utf8Bytes(w.nexus))).toBe(w.pin.nexus);
   });

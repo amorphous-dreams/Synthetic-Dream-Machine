@@ -8,7 +8,7 @@
  * nothing, and an HTTP request for it meets the vessel's closed door. (The floor of system canon rides no pointer: the Nexus's release
  * names it by CID, and a reader verifies it off the porch, `floor-answer`.)
  *
- * EVERY DIALER PINS TWICE. The gate's pin comes from the pair index the caller injects (hearth, Nexus, "/oracle",
+ * EVERY DIALER PINS TWICE. The gate's pin comes from the pair index the caller injects (hearth, Nexus, "/flow",
  * "floor"), never from the wire; the publisher's key (`verifyingKey`) is named out of band and is NOT the gate's key
  * (the floor key rests outside the vessel key), so a socket that proved to one gate cannot be fed another vessel's map.
  *
@@ -20,7 +20,7 @@
  * (kind "session" or "sync"), then closes. A face with no pointer yet closes without a message. The face sends no
  * challenge and reads no proof frame: the gate proves the peer before any message.
  *
- * Callers: the browser vessel's oracle read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
+ * Callers: the browser vessel's flow read (`open-browser-vessel`) and the gate-native carriage pull (`carriage-pull`);
  * the node's server half is `flow-read-face`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
@@ -38,7 +38,7 @@ import type { FacePresentation } from "./lar-ws-client-adapter.js";
 import { wsDialSocket } from "./ws-dial-socket.js";
 
 /**
- * THE ORACLE SOCKET ROUTE AND FRAME, SPELLED ONCE.
+ * THE FLOW SOCKET ROUTE AND FRAME, SPELLED ONCE.
  *
  * A server in `lararium-node` answers this route (behind its knock) and this client dials it. Spelled twice, the two move
  * only when someone remembers both — and they do not run in one process, so nothing forces the memory: a vessel
@@ -49,7 +49,7 @@ import { wsDialSocket } from "./ws-dial-socket.js";
  * then ONE message (the snapshot bytes that pointer names), then closes. A face with no pointer yet closes
  * without a message.
  */
-export const ORACLE_SOCKET_ROUTE  = "/oracle";
+export const FLOW_SOCKET_ROUTE  = "/flow";
 export const FLOW_POINTER_FRAME = "lar:flow-pointer";
 
 export interface FlowPointerFrame {
@@ -70,7 +70,7 @@ export interface FlowPullResult<T = unknown> {
  * `carry` act over that key (the place arm, `place-floor-pin`). A place with no contract at the
  * pinned Nexus presents none and sorts as any stranger does: silence where the Nexus reads private.
  */
-export interface PlaceOraclePresentation {
+export interface PlaceFlowPresentation {
   readonly kind:     "place";
   readonly placeKey: string;
   readonly sign:     (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
@@ -85,7 +85,7 @@ export interface FlowPullOpts {
   readonly nexus:             string;
   /** What the reader presents at the floor gate: a face (its certificate, the session's signer, at most one arm and its
    *  history), or a faceless place (its key and its carriage contract at this Nexus). */
-  readonly presentation:      FacePresentation | PlaceOraclePresentation;
+  readonly presentation:      FacePresentation | PlaceFlowPresentation;
   /** The audience the dial names. */
   readonly audience:          string;
   /** The reader's deadline source (the caller owns the clock): one for the dial, one for each wait on a message. */
@@ -94,13 +94,13 @@ export interface FlowPullOpts {
   readonly verifyingKey:      string;
   /** Locally held pointer identities; a missing parent is unavailable. */
   readonly knownPointerIds?: readonly string[];
-  /** A fresh dial socket (tests inject one). Default: the global `WebSocket` on the oracle route with the knock and flight in its upgrade. */
+  /** A fresh dial socket (tests inject one). Default: the global `WebSocket` on the flow route with the knock and flight in its upgrade. */
   readonly dialSocket?:       (url: string) => DialSocket;
 }
 
-/** The oracle socket URL for a peer's base URL — http(s) maps to ws(s); a ws(s) base rides as given. */
-export function oracleSocketUrl(baseUrl: string): string {
-  const u = new URL(baseUrl.replace(/\/+$/, "") + ORACLE_SOCKET_ROUTE);
+/** The flow socket URL for a peer's base URL — http(s) maps to ws(s); a ws(s) base rides as given. */
+export function flowSocketUrl(baseUrl: string): string {
+  const u = new URL(baseUrl.replace(/\/+$/, "") + FLOW_SOCKET_ROUTE);
   if (u.protocol === "http:") u.protocol = "ws:";
   else if (u.protocol === "https:") u.protocol = "wss:";
   return u.href;
@@ -110,7 +110,7 @@ function parseFrame(bytes: Uint8Array): unknown {
   try { return JSON.parse(new TextDecoder().decode(bytes)) as unknown; } catch { return undefined; }
 }
 
-function isOraclePointerFrame(v: unknown): v is FlowPointerFrame {
+function isFlowPointerFrame(v: unknown): v is FlowPointerFrame {
   return typeof v === "object" && v !== null
     && (v as { type?: unknown }).type === FLOW_POINTER_FRAME
     && typeof (v as { pointer?: unknown }).pointer === "object";
@@ -136,16 +136,16 @@ export async function pullAndVerifyFlow<T = unknown>(
   const tier = "floor" as const;
   // NEVER THROWS: an index that cannot read the key, a URL that does not parse and a dial that throws each answer by name.
   let pin: GateBundlePin | null;
-  try { pin = opts.pins.get({ hearth: opts.hearth, nexus: opts.nexus, route: ORACLE_SOCKET_ROUTE, tier }); }
+  try { pin = opts.pins.get({ hearth: opts.hearth, nexus: opts.nexus, route: FLOW_SOCKET_ROUTE, tier }); }
   catch { return { ok: false, reason: "the pin index could not read this hearth and Nexus (pin-unreadable)" }; }
   if (pin === null) return { ok: false, reason: "no floor pin held for this hearth and Nexus (pin-absent)" };
-  // The pin must stand where the read asked: at this Nexus, on the oracle route, at the floor. An index that answers with
+  // The pin must stand where the read asked: at this Nexus, on the flow route, at the floor. An index that answers with
   // a pin standing elsewhere dials nothing.
-  if (pin.nexus !== opts.nexus || pin.route !== ORACLE_SOCKET_ROUTE || pin.tier !== tier) {
+  if (pin.nexus !== opts.nexus || pin.route !== FLOW_SOCKET_ROUTE || pin.tier !== tier) {
     return { ok: false, reason: "the pin held stands at another Nexus, route or tier than this read asks (pin-other-nexus)" };
   }
   let url: string;
-  try { url = oracleSocketUrl(baseUrl); } catch { return { ok: false, reason: "the base url does not parse" }; }
+  try { url = flowSocketUrl(baseUrl); } catch { return { ok: false, reason: "the base url does not parse" }; }
   let socket: DialSocket;
   let outcome: Awaited<ReturnType<typeof dialFaceGate>> | Awaited<ReturnType<typeof dialPlaceGate>>;
   try {
@@ -178,7 +178,7 @@ async function pullOverChannel<T>(channel: GateSessionChannel, opts: FlowPullOpt
   const first = await nextWithin(channel, opts.deadlines);
   if (first === null || first.kind !== "session") return { ok: false, reason: "peer published no pointer" };
   const frame = parseFrame(first.bytes);
-  if (!isOraclePointerFrame(frame)) return { ok: false, reason: "peer published no pointer" };
+  if (!isFlowPointerFrame(frame)) return { ok: false, reason: "peer published no pointer" };
   const pointer = frame.pointer;
   const pointerVerdict = await verifyFlowPointer(pointer, {
     verifyingKey: opts.verifyingKey,

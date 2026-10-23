@@ -18,7 +18,7 @@ import { composeVessel, dialEntryToRecord, routingSlotToRecord, radialCoordinate
 import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, incommensurablePullMs, discoverPeers, dampedRadius, type MeshPalaceComponent } from "../src/node-caps.js";
 import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
-import { floorGates, oraclePuller, presenter } from "./oracle-floor-rig.js";
+import { floorGates, flowPuller, presenter } from "./flow-floor-rig.js";
 
 const SEED_A = new Uint8Array(32).fill(7);
 
@@ -30,7 +30,7 @@ async function standSource(handle: Parameters<typeof mountFlowMapReadFace>[0]["m
   const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signerSeed: SEED_A, storageDir: tmp(dir), gates: rig.gates });
   const w = rig.worlds[0]!;
   const p = await presenter(w, "carrying herm");
-  return { server, port, face, w, p, pullOracle: oraclePuller<MeshPalaceDoc>(w, p, { arm: null }) };
+  return { server, port, face, w, p, pullFlow: flowPuller<MeshPalaceDoc>(w, p, { arm: null }) };
 }
 async function listen(server: Server): Promise<number> {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
@@ -57,7 +57,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullOracle: src.pullOracle, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
+      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
 
@@ -87,7 +87,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullOracle: src.pullOracle, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
+      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
 
@@ -114,7 +114,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     // until the peer's public snapshot actually carries the new title before pulling, so this control
     // isn't racing that re-export.
     for (let i = 0; i < 50; i++) {
-      const v = await src.pullOracle(`http://127.0.0.1:${srcPort}`, await ed25519VerifyingKeyFromSeed(SEED_A));
+      const v = await src.pullFlow(`http://127.0.0.1:${srcPort}`, await ed25519VerifyingKeyFromSeed(SEED_A));
       if (v.ok && v.doc && changedDial.tiddler.title in v.doc.tiddlers) break;
       await new Promise((r) => setTimeout(r, 10));
     }
@@ -214,7 +214,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: [{ endpoint: "http://127.0.0.1:1/unreachable", gatePubKey: "ab".repeat(32) }], pullOracle: async () => { throw new Error("unreachable"); }, pullIntervalMs: 1_000_000 }),
+      carriageCap({ peers: [{ endpoint: "http://127.0.0.1:1/unreachable", gatePubKey: "ab".repeat(32) }], pullFlow: async () => { throw new Error("unreachable"); }, pullIntervalMs: 1_000_000 }),
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
     expect(await carriage.pullOnce()).toBe(0); // unreachable peer â†’ 0 merged, no throw
@@ -243,7 +243,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const provenHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const proven = await composeVessel([
       meshpalaceProviding(provenHandle),
-      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullOracle: src.pullOracle, pullIntervalMs: 1_000_000 }),
+      carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }),
     ]);
     await proven.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!.pullOnce();
     expect(Object.keys(provenHandle.doc()?.tiddlers ?? {})).toContain(srcDial.tiddler.title);

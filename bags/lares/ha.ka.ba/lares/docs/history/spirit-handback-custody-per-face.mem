@@ -787,6 +787,8 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` f
 
 !!! 2. Locked law, including the one unresolved house conflict
 
+//Frame, 2026-10-22: the operator has since ruled this conflict, so no reader takes it as open. `lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings holds the answers: 2026-10-19 (//a shared act never makes a shared secret//, rows sorted D/F/S, with X0's scoped place signer) and 2026-10-20 (the place signer's fifth duty). The testimony below keeps its words.//
+
 
 ''LEAD — lock the D/F partition:'' A shared act never creates a shared secret by itself. Split every mixed carrier first: every confidential row attributable to a PersonaGroup is ''D'', sealed under that group's own independent random FCK and opened only by that group's own slot tree; no VK wraps an FCK. Only deliberately public/bootstrap/transport/routing bytes are ''F''. Retain ''S'' only for a named confidential system payload that cannot be dissolved into a face row and must act before any face exists; name its principal and opener. Each browser tab asks for its face independently; a node opens any approved node-only S once per boot; CLI/MCP sessions each present face authority. The last browser tab discards live FCKs and leaves floor; node shutdown/restart drops volatile face and serving keys. No wall clock picks an owner or expires a session. One Keyhive identity per PersonaGroup, none above them; asker seals.
 
@@ -1469,6 +1471,6 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 
-<<^ code="&#x0003;">>ni:///sha-256;smSVH0WR7rlYIhRp7fWyD8pIpPJgVECdxdOnk4V3aXQ
+<<^ code="&#x0003;">>ni:///sha-256;mIsR9ZK52OClsm0OeS17Nw3QYAeWGFElmgPOMkcJEWQ
 
 <<^ code="&#x0004;" -> to="?">>

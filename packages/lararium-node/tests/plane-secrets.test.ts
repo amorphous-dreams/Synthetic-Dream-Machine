@@ -2,13 +2,13 @@
  * The contract-secrets plane — a store whose bytes lose their meaning on publication floors at CONTRACT.
  *
  * The guarantee under test rides the READING ORDER inside `structuralFloorFor` (proven in the mesh suite) and
- * the ASSEMBLY here: a floor oracle built through `makeTierFloorOracle` cannot silently omit the secrets
+ * the ASSEMBLY here: a floor oracle built through `makeTierFloorSource` cannot silently omit the secrets
  * reading, because each reading arrives as a named argument rather than as a remembered property.
  */
 import { describe, expect, test } from "vitest";
 
 import type { DocumentId } from "@automerge/automerge-repo";
-import { makeTierFloorOracle, structuralFloorFor, resolveTierForDoc, type CapTierRing } from "@lararium/mesh";
+import { makeTierFloorSource, structuralFloorFor, resolveTierForDoc, type CapTierRing } from "@lararium/mesh";
 import { makeContractSecretsRegistry, NO_CONTRACT_SECRETS_PLANE } from "../src/plane-secrets.js";
 
 const CREDS = "creds-doc" as DocumentId;
@@ -43,7 +43,7 @@ describe("a floor assembled through the constructor cannot forget a reading", ()
   test("a secrets plane floors at CONTRACT even when the federatable reading also claims it", () => {
     const reg = makeContractSecretsRegistry();
     reg.register(CREDS);
-    const floor = makeTierFloorOracle({
+    const floor = makeTierFloorSource({
       federatable: (d) => d === CREDS || d === "pub",   // the collision the ordering exists for
       sealed:      () => false,
       secrets:     (d) => reg.plane.isContractSecretsPlane(d as DocumentId),
@@ -53,7 +53,7 @@ describe("a floor assembled through the constructor cannot forget a reading", ()
   });
 
   test("every omitted reading fails closed toward VEIL, never away from it", () => {
-    const bare = makeTierFloorOracle({});
+    const bare = makeTierFloorSource({});
     expect(structuralFloorFor(bare, "anything")).toBe("veil");
     expect(bare.isContractSecretsPlane?.("anything")).toBe(false);
     expect(bare.isPublicPlane("anything")).toBe(false);
@@ -63,14 +63,14 @@ describe("a floor assembled through the constructor cannot forget a reading", ()
   test("the constructor always supplies the secrets reading, so no assembled oracle omits it", () => {
     // The whole reason the constructor exists: the field is optional on the interface for compatibility,
     // so a hand-rolled literal can leave it out and read identically to one that had nothing to declare.
-    expect(typeof makeTierFloorOracle({ federatable: () => true }).isContractSecretsPlane).toBe("function");
+    expect(typeof makeTierFloorSource({ federatable: () => true }).isContractSecretsPlane).toBe("function");
   });
 });
 
 describe("the keystone applied to a secrets plane", () => {
   const reg = makeContractSecretsRegistry();
   reg.register(CREDS);
-  const floor = makeTierFloorOracle({
+  const floor = makeTierFloorSource({
     federatable: () => true,                                            // the most permissive ambient reading
     secrets:     (d) => reg.plane.isContractSecretsPlane(d as DocumentId),
   });

@@ -181,10 +181,10 @@ The full list with its options stands at `dreamdom#/open-rulings`; this table na
 | the actor manifest shape | D4 | ruled 2026-10-16: `sensoria[]` names planes |
 | wake on act | D4 | ruled 2026-10-16: wake, bounded, with `superseded` |
 | `$:/state` per surface at width none | D4's multi-tab rows | ruled 2026-10-16: shared |
-| the interaction goldens as a family | D5 | open; the fourteen scripts stand as proposed |
-| the `core` charter and oracle ownership | D5's host rows | open; `core` as the hybrid charter names it |
+| the interaction goldens as a family | D5 | ruled 2026-10-20: the fourteen scripts and their `interaction/` section join the suite that defines a DreamDOM member, the pinned fork commit as oracle (`dreamdom#/open-rulings`) |
+| the `core` charter and oracle ownership | D5's host rows | ruled 2026-10-20: `core` holds the drafted operators and sorts by code point, locale-free; an engine-commit bump runs as its own lane that re-pours the goldens, and any result or parse-tree diff lands as a hoʻike (`dreamdom#/open-rulings`) |
 | Mudlet's first carrier and its MCP `lua` tool | D6's Mudlet rows | ruled 2026-10-16: the virtual-MUD listener; the `lua` tool off |
-| the moʻolelo | nothing | open; the draft stands marked |
+| the moʻolelo | nothing | blessed 2026-10-20 with the operator's edits to lines 1 and 7 (`dreamdom#/moolelo`) |
 
 A ruling reaches the operator only where its answer changes who holds authority, custody at rest or identity bytes and no ruling settles it; otherwise the controller takes the house reading named in the third column, marks it, and builds (`controller-handoff#/the-seat`).
 
@@ -245,6 +245,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e-cBcymCYg6X45HwH1G5zuICzqV-j_nat9QROHStFC8
+<<^ code="&#x0003;">>ni:///sha-256;liznA3TPRJRzgqzpY0u5bWlKouy_jXKAjsSGt0vIic4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -201,7 +201,7 @@ async function operatorDid(r: string): Promise<string> {
 
 /**
  * A reader at the herm's FLOOR gate for `nexusAid`, as a reader dials it: the pin the herm's floor key derives for that Nexus
- * on the oracle route, filed in a reader's own pair index, and a throwaway face (a chain no admit backs, `arm: null`) to
+ * on the flow route, filed in a reader's own pair index, and a throwaway face (a chain no admit backs, `arm: null`) to
  * present. The publisher's key (`verifyingKey`) is the herm's vessel key, never the gate's.
  *
  * WHERE A HERM'S GATE STANDS: at a Nexus whose quorum counted its `carry`, on the herm's own replica of that Nexus's
@@ -225,7 +225,7 @@ async function hermCharterAid(r: string): Promise<string | null> {
 async function hermFloorReader(r: string, nexusAid: string) {
   const mesh = await import("../../packages/lararium-mesh/src/index.js");
   const node = await import("../../packages/lararium-node/src/index.js");
-  const { ORACLE_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/flow-read-client.js");
+  const { FLOW_SOCKET_ROUTE } = await import("../../packages/lararium-mesh/src/flow-read-client.js");
   const fx = await import("../../packages/lararium-mesh/tests/face-gate-fixture.js");
   const prior = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = r;
@@ -233,11 +233,11 @@ async function hermFloorReader(r: string, nexusAid: string) {
     const vesselKey = (await node.loadVesselVerifyingKey()).toLowerCase();
     // The pin derives where the floor key door lives (the node package's own module graph): a door from one module instance
     // reads as foreign to a gate root from another (`door-other-tier`), so the derivation never mixes the two.
-    const { oracleFloorPinAt } = await import("../../packages/lararium-node/src/herm-carriage.js");
+    const { flowFloorPinAt } = await import("../../packages/lararium-node/src/herm-carriage.js");
     const pins = mesh.hearthPinIndex();
     const hearth = "hearth-herm-floor";
-    if (!pins.put(hearth, oracleFloorPinAt(nexusAid, await node.vesselFloorKeyDoor()))) throw new Error("the herm's floor pin did not file in the reader's index");
-    const w = await fx.world({ tier: "floor", route: ORACLE_SOCKET_ROUTE, nexus: nexusAid });
+    if (!pins.put(hearth, flowFloorPinAt(nexusAid, await node.vesselFloorKeyDoor()))) throw new Error("the herm's floor pin did not file in the reader's index");
+    const w = await fx.world({ tier: "floor", route: FLOW_SOCKET_ROUTE, nexus: nexusAid });
     const p = await fx.presenter(w, "herm-floor reader");
     return {
       verifyingKey: vesselKey,
@@ -301,7 +301,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     const origin = `http://127.0.0.1:${PORT}`;
     // A STRANGER asks for the pointer over HTTP and draws the one closed door — the vessel answers, and says
     // nothing. A refused connection here would mean nothing stands at all, which is a different verdict.
-    const stranger = await fetch(`${origin}/oracle/pointer`).catch(() => null);
+    const stranger = await fetch(`${origin}/flow/pointer`).catch(() => null);
     expect(stranger, `nothing answered on :${PORT} — no vessel stands there for R5 to lift`).not.toBeNull();
     expect(stranger!.status).toBe(CLOSED_DOOR.status);
     expect(await stranger!.text()).toBe(CLOSED_DOOR.body);
@@ -358,7 +358,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // A WELL-FORMED call. `where` requires `args.tiddler`; an empty payload earns "args.tiddler is
     // required" — the channel answering correctly, which a vector reading only `status` scores as a floor
     // that does not carry.
-    const r = await askVerb("where", { tiddler: "$:/lares/oracle" }, R3_CEILING_MS);
+    const r = await askVerb("where", { tiddler: "$:/lares/flow" }, R3_CEILING_MS);
     expect(r, `the verb channel never answered a well-formed \`where\`:\n${r.slice(0, 400)}\n${standLogTail(root)}`).toMatch(/"status":"done"/);
   }, R3_BUDGET_MS);
 
@@ -367,7 +367,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // neither may be the hang guard firing: a cutoff names no lift, so a refusal that never arrived reads red.
     // The circles plane arrives with the FACE — a PLACE bootstrap carries the daemon bag alone — so a follow
     // verb on this floor names the lift. (A face's own names answer no verb at all: they ride the custody door.) Answering
-    // "circles-<tag> unresolved: the oracle registry names no such plane" is true and useless: it reads
+    // "circles-<tag> unresolved: the flow registry names no such plane" is true and useless: it reads
     // as a broken registry to the one human who could fix it by lighting a face.
     const c = await askVerb("circle-list", { circle: "following" }, R4_CEILING_MS);
     expect(c, `\`circle-list\` on the floor refused in registry-fault language:\n${c.slice(0, 400)}\n${standLogTail(root)}`)

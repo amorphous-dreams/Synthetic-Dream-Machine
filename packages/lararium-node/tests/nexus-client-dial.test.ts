@@ -28,7 +28,7 @@ import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { hearthPinIndex } from "../../lararium-mesh/src/admit-gate-pin.js";
 import { presenter, AUDIENCE } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { restEvery } from "./resting-repo.js";
-import { realDeadlines } from "./oracle-floor-rig.js";
+import { realDeadlines } from "./flow-floor-rig.js";
 import { standGatedNode, type GatedNode } from "./gated-node-rig.js";
 import { startNexusClientDial, maybeStartNexusClientDial } from "../src/nexus-client-dial.js";
 

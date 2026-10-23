@@ -270,9 +270,9 @@ invents ''only the composition'', never a new primitive.
 
 <<~ ahu #/open-forks>>
 
-!! Open ~ four operator/wave-3 forks
+!! Forks ~ two settled, one a delegated lean, one open
 
-Four choices ride ahead of the build, each holding for the operator:
+Four choices rode ahead of the build; ① and ② stand settled, ③ stands as the controller's delegated lean, and ④ stays open:
 
 * ''① sha256 → BLAKE3 — SETTLED via self-describing multihash.'' The algorithm prefix
   carries the migration in-band (old ids stay parseable, new bodies hash `BLAKE3(ciphertext)`
@@ -281,14 +281,17 @@ Four choices ride ahead of the build, each holding for the operator:
   content key, and a lockbox carries that key to the bag's readers
   (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). No convergence secret
   derives a body key.
-* ''③ Indirection-map placement.'' The logical-name→cid map likely rides the Automerge doc
-  (small ordered causal metadata) — the docs/blobs split applied to the map.
-* ''④ Bilateral pin economics.'' Island A pins for B under a revocable cap — what does B
-  offer (reciprocal pin? the "fed node hums" ritual-feeding)? The one storage-economics
-  frontier no system solved without a global ledger.
+* ''③ Indirection-map placement — a delegated lean.'' Controller's delegated house lean (2026-10-22, under the operator's
+  standing confidence: //"go with your new leans if confident"//): the logical-name→cid map rides the Automerge doc of the
+  bag that owns those names (one owner per registry), the docs/blobs split applied to the map. Unratified; the operator may
+  reopen.
+* ''④ Bilateral pin economics — the controller's lean, unratified, OPEN for wave 3.'' Island A pins for B under a revocable cap.
+  The lean: within one operator's own fleet or PersonaGroup, pinning carries no price; across operators, B answers A's
+  revocable pin cap with a reciprocal revocable pin, each side keeping only its own local ledger, never a global one; an
+  unreciprocated pin simply lapses at A's revocation. The "fed node hums" ritual-feeding stays its fiction. The operator
+  has not ruled it (recorded 2026-10-22).
 
-the four forks stay genuinely open; the operator's
-priors decide them, and wave-3 may reopen any.
+fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
@@ -307,6 +310,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jY_9Ft3cFBru0PjJIvPkw6knJvyxJWWee51SOd6n6LA
+<<^ code="&#x0003;">>ni:///sha-256;yp5frDj0ZiOYI37jE2EjM8paek9TKSNhL6gFI7ERqmc
 
 <<^ code="&#x0004;" -> to="?">>

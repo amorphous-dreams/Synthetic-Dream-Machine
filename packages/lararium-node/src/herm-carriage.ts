@@ -20,7 +20,7 @@
  */
 import {
   carriageAncestryFromBoard, foldCarriageDetails, foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
-  signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, ORACLE_SOCKET_ROUTE,
+  signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, FLOW_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
   type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
   type FlowPullResult, type PlaceFloorPinStatement,
@@ -46,7 +46,7 @@ export interface VesselCarriagePullDeps {
   readonly ownNexus:    () => string | null;
   /** Read a carriage board on this vessel's own replica. */
   readonly openBoard:   (url: AutomergeUrl) => Promise<LarDoc | undefined>;
-  /** A herm only: the floor pin its own gate stands at `nexus` on the oracle route. */
+  /** A herm only: the floor pin its own gate stands at `nexus` on the flow route. */
   readonly ownFloorPin?: (nexus: string) => Promise<GateBundlePin | null>;
   /** A herm only: lay its signed statement on its own replica of the board at `url` (written once; again when moved). */
   readonly layStatement?: (url: AutomergeUrl, statement: PlaceFloorPinStatement) => Promise<void>;
@@ -59,9 +59,9 @@ export interface VesselCarriagePullDeps {
   readonly onLog?:      (line: string) => void;
 }
 
-/** The floor pin a vessel's oracle gate stands at `nexus`, derived from its floor key door; the derived secret drops at once. */
-export function oracleFloorPinAt(nexus: string, door: FloorKeyDoor): GateBundlePin {
-  const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(ORACLE_SOCKET_ROUTE));
+/** The floor pin a vessel's flow gate stands at `nexus`, derived from its floor key door; the derived secret drops at once. */
+export function flowFloorPinAt(nexus: string, door: FloorKeyDoor): GateBundlePin {
+  const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE));
   try { return bundle.pin; } finally { bundle.drop(); }
 }
 
@@ -95,7 +95,7 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
       const stated = statements.map((s) => (typeof s === "object" && s !== null && typeof (s as { placeKey?: unknown }).placeKey === "string" ? (s as { placeKey: string }).placeKey : "?"));
       const acts = [...r.denyBoard].filter((e) => e.action === "carry" || e.action === "uncarry")
         .map((e) => `${e.action}:${e.nym.slice(0, 8)}@${e.sealEpochCid.slice(-8)}`).sort().join(",") || "none";
-      const { filed, refused } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
+      const { filed, refused } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: FLOW_SOCKET_ROUTE, carriers });
       if (refused.length > 0 && deps.onLog) {
         const folded = await foldCarriageDetails(r.denyBoard, r.roster, ancestry);
         const reasons = folded.entries.filter((e) => (e.action === "carry" || e.action === "uncarry") && stated.includes(e.nym))

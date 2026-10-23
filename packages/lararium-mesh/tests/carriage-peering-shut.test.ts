@@ -1,7 +1,7 @@
 /**
  * carriage peering is SHUT by name unless a gate-native pull is handed in (the shut-routes house ruling, stable-founding-road #/rulings): the cap dials
  * nothing of its own, a dial entry carries a gate key and never a full pin, and an untested fallback counts as open.
- * A carriage handed a `pullOracle` merges what it returns.
+ * A carriage handed a `pullFlow` merges what it returns.
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
@@ -23,18 +23,18 @@ async function stand(deps: Partial<Parameters<typeof carriageCap>[0]>): Promise<
 }
 
 describe("carriage peering", () => {
-  test("SHUT: with no pullOracle (even with an identity handed in) nothing is pulled, and the shut is named", async () => {
+  test("SHUT: with no pullFlow (even with an identity handed in) nothing is pulled, and the shut is named", async () => {
     const s = await stand({ identity: { contactCard: "c", peerPubKey: "p", sign: () => "s" } as never });
     expect(await s.pullOnce()).toBe(0);
     expect(s.logs.some((l) => l.includes("carriage-peering-shut"))).toBe(true);
     await s.dispose();
   });
 
-  test("CONTROL: a handed pullOracle is asked for each peer with its endpoint and gate key, and its map merges", async () => {
+  test("CONTROL: a handed pullFlow is asked for each peer with its endpoint and gate key, and its map merges", async () => {
     const asked: Array<[string, string]> = [];
     const incoming = emptyMeshPalaceDoc();
     incoming.tiddlers["probe/one"] = { tiddler: { title: "probe/one", text: "x" }, kind: "probe" } as never;
-    const s = await stand({ pullOracle: async (peer, key) => { asked.push([peer, key]); return { ok: true, doc: incoming } as never; } });
+    const s = await stand({ pullFlow: async (peer, key) => { asked.push([peer, key]); return { ok: true, doc: incoming } as never; } });
     await s.pullOnce();
     expect(asked.length).toBeGreaterThanOrEqual(1);
     for (const pair of asked) expect(pair).toEqual(["http://peer.test", "ab".repeat(32)]);

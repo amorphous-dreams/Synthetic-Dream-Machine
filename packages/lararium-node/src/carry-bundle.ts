@@ -27,7 +27,7 @@ import {
   foundingRoster, materializeSharedLarDoc, placeArmFor, placeFloorPinsFromBoard, readPlaceFloorPin, writeCarriageEntry,
   writePlaceFloorPin, writeRollAnchor, rollAnchorsFromBoard, isRollAnchor, carriageAncestryFromBoard,
   epochSeats, rollAnchorCounts, verifySealLineage,
-  CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, ORACLE_SOCKET_ROUTE,
+  CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, FLOW_SOCKET_ROUTE,
   type CarriageEntry, type PlaceFloorPinStatement, type RollAnchor, type SealEpoch,
 } from "@lararium/mesh";
 import { charterHomeFor } from "./carried-set.js";
@@ -148,7 +148,7 @@ export async function takeCarryBundle(opts: {
   const nexusHex = Buffer.from(aid, "utf8").toString("hex");
   const landing: PlaceFloorPinStatement[] = [];
   for (const raw of floorPins) {
-    const read = readPlaceFloorPin(raw, { nexusHex, route: ORACLE_SOCKET_ROUTE, carriers });
+    const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, carriers });
     if (!("refusal" in read)) landing.push(raw as PlaceFloorPinStatement);
   }
   handle.change((d) => {
