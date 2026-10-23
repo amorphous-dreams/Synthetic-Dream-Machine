@@ -75,9 +75,11 @@ export interface PortMsg_Ask {
   portId: string;
   askId: string;
   kind: PortAskKind;
-  /** filter: the filter string. render/load: the title. verb and cas: the named verb. */
+  /** filter: the filter string. render/load: the title. verb: the verb name. cas: the CID. */
   subject?: string;
   titles?: string[];
+  /** String arguments for a verb; at most 64 keys and 65536 UTF-8 bytes per value. */
+  args?: Record<string, string>;
   fields?: string[];
   form?: PortRenderForm;
   renderCursor?: string;
@@ -160,6 +162,8 @@ const boundedBytes = (v: unknown, max: number): boolean => {
 };
 const isFields = (v: unknown): v is Record<string, string> => isRecord(v) && Object.keys(v).length <= 256
   && Object.values(v).every((x) => typeof x === "string" && new TextEncoder().encode(x).length <= 1_048_576);
+const isArgs = (v: unknown): v is Record<string, string> => isRecord(v) && Object.keys(v).length <= 64
+  && Object.values(v).every((x) => typeof x === "string" && new TextEncoder().encode(x).length <= 65_536);
 const PORT_BYTES_MAX = 16 * 1024 * 1024;
 const WIDTHS: ReadonlySet<string> = new Set<PortWidthName>(["full", "skinny", "story", "none"]);
 const ASKS: ReadonlySet<string> = new Set<PortAskKind>(["filter", "render", "load", "verb", "cas", "invoke"]);
@@ -202,6 +206,7 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       if (v["subject"] !== undefined && typeof v["subject"] !== "string") return null;
       if ((v["subject"] as string | undefined)?.length! > 65536) return null;
       if (v["titles"] !== undefined && !isNames(v["titles"])) return null;
+      if (v["args"] !== undefined && !isArgs(v["args"])) return null;
       if (v["fields"] !== undefined && !isNames(v["fields"], 256)) return null;
       if (v["form"] !== undefined && !(typeof v["form"] === "string" && FORMS.has(v["form"]))) return null;
       if (v["renderCursor"] !== undefined && !isName(v["renderCursor"])) return null;
@@ -210,6 +215,7 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       return { type: PORT_ASK, portId: v["portId"], askId: v["askId"], kind: v["kind"],
         ...(v["subject"] === undefined ? {} : { subject: v["subject"] }),
         ...(v["titles"] === undefined ? {} : { titles: v["titles"] }),
+        ...(v["args"] === undefined ? {} : { args: v["args"] }),
         ...(v["fields"] === undefined ? {} : { fields: v["fields"] }),
         ...(v["form"] === undefined ? {} : { form: v["form"] }),
         ...(v["renderCursor"] === undefined ? {} : { renderCursor: v["renderCursor"] }),

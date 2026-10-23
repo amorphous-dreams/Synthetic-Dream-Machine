@@ -7,9 +7,19 @@ import { shapeId } from "../src/record-port-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 import type { IslandCap } from "../src/island-caps.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
+import { VerbTable } from "../src/verb-dispatcher.js";
 
 const origin = { kind: "tw-local", instanceId: "foreign" } as const;
 const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
+/** A digest runs off the microtask queue; a bounded run of macrotask turns lets it land. */
+const ioSettle = async () => { for (let turn = 0; turn < 50; turn++) { await new Promise<void>((resolve) => setImmediate(resolve)); await settle(); } };
+/** Send an ask and pump macrotask turns, a bounded run, until it posts one more answer. */
+const sendAwait = async (r: { messages: unknown[]; send(msg: never): Promise<void> }, msg: unknown): Promise<void> => {
+  const count = () => r.messages.filter((m) => (m as { type?: string }).type === "port:answer").length;
+  const before = count();
+  await r.send(msg as never);
+  for (let turn = 0; turn < 5000 && count() <= before; turn++) await new Promise<void>((resolve) => setImmediate(resolve));
+};
 const openMsg = (portId = "p", overrides: Partial<PortMsg_Open> = {}): PortMsg_Open => ({
   type: "port:open", portId, wikiUri: "wiki", actor: portId, width: "full",
   edits: true, presence: true, maxRecordBytes: 4096, maxBatchBytes: 8192, ...overrides,
@@ -17,7 +27,7 @@ const openMsg = (portId = "p", overrides: Partial<PortMsg_Open> = {}): PortMsg_O
 const writeMsg = (txId: string, title: string, fields: Record<string, string> = { text: "body" }): PortMsg_Write => ({
   type: "port:write", portId: "p", txId, records: [{ title, fields }],
 });
-const askMsg = (kind: PortMsg_Ask["kind"], overrides: Partial<PortMsg_Ask> = {}): PortMsg_Ask => ({
+const askMsg = (kind: PortMsg_Ask["kind"], overrides: Partial<PortMsg_Ask> & { args?: Record<string, string> } = {}): PortMsg_Ask & { args?: Record<string, string> } => ({
   type: "port:ask", portId: "p", askId: kind, kind, ...overrides,
 });
 
@@ -65,6 +75,126 @@ const ofType = <T extends IslandToVesselMsg["type"]>(messages: IslandToVesselMsg
   messages.filter((message): message is Extract<IslandToVesselMsg, { type: T }> => message.type === type);
 
 describe("record port handler", () => {
+  test("port-verb-no-authority and port-verb-guest-refused; CONTROL: admin runs once with proven identity and targets", async () => {
+    let runs = 0;
+    const verbs = () => { const table = new VerbTable(); table.register("probe", async (args, context) => {
+      runs++;
+      expect(args).toEqual({ word: "yes" });
+      expect(context.invocation.targets).toEqual(["Target"]);
+      expect(context.invocation.requestedBy).toBe("admin-id");
+      expect(await context.cap("admin", "working")).toEqual({ ok: true, reason: "port-gate" });
+      return { ran: true };
+    }); return table; };
+    const face = { id: "admin-id", role: "admin" };
+    const r = await rig({ verbs, faceOf: () => face });
+    await r.send(openMsg());
+    const ask = askMsg("verb", { subject: "probe", args: { word: "yes" }, titles: ["Target"] });
+    await r.send(ask);
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-authority" });
+    expect(runs).toBe(0);
+    await r.close();
+    let role = "guest";
+    const gated = await rig({ verbs, faceOf: () => ({ ...face, role }), authority: req =>
+      (req.provenFace as { role: string }).role === "admin" ? { allowed: true } : { allowed: false, reason: "guest" } });
+    await gated.send(openMsg());
+    await gated.send(ask);
+    expect(ofType(gated.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "guest" });
+    expect(runs).toBe(0);
+    role = "admin";
+    await gated.send(ask);
+    expect(ofType(gated.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { ran: true } });
+    expect(runs).toBe(1);
+    await gated.close();
+  });
+
+  test("port-verb-system-kahu-refused: admin cannot CLEAR system canon without reach; CONTROL: CLEAR user bag succeeds", async () => {
+    const r = await rig({ faceOf: () => ({ id: "admin", role: "admin" }), authority: () => ({ allowed: true }) });
+    await r.send(openMsg());
+    await sendAwait(r, askMsg("verb", { subject: "CLEAR", args: { bag: "lar:///ha.ka.ba/bags/lares" } }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "kahu-reach" });
+    await sendAwait(r, askMsg("verb", { subject: "CLEAR", args: { bag: "working" } }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.status).toBe("answered");
+    await r.close();
+  });
+
+  test("port-verb-no-proven-face and unknown verb refuse; CONTROL: known verb reaches its handler", async () => {
+    let runs = 0;
+    const table = new VerbTable();
+    table.register("known", async () => { runs++; return { ok: true }; });
+    let face: object | undefined;
+    const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }), verbs: () => table });
+    await r.send(openMsg());
+    await r.send(askMsg("verb", { subject: "known" }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-proven-face" });
+    expect(runs).toBe(0);
+    face = { id: "admin" };
+    await r.send(askMsg("verb", { subject: "absent" }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-such-verb" });
+    await r.send(askMsg("verb", { subject: "known" }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { ok: true } });
+    expect(runs).toBe(1);
+    await r.close();
+  });
+
+  test("port-cas-tier-refusals read no bytes; CONTROL: public matching bytes answer", async () => {
+    const bytes = new TextEncoder().encode("public body");
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const cid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    let reads = 0;
+    let tier: "veil" | "personagroup" | "contract" | "public" | undefined;
+    let returned: Uint8Array | null = bytes;
+    const r = await rig({ casTierOf: () => tier });
+    r.ctx.resolveByCid = async () => { reads++; return returned; };
+    await r.send(openMsg());
+    const ask = askMsg("cas", { subject: cid });
+    for (const [next, reason] of [[undefined, "cas-tier-unknown"], ["veil", "cas-private"], ["personagroup", "cas-private"], ["contract", "cas-contract"]] as const) {
+      tier = next;
+      await sendAwait(r, ask);
+      expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason });
+      expect(reads).toBe(0);
+    }
+    tier = "public";
+    returned = null;
+    await sendAwait(r, ask);
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cas-missing" });
+    returned = new Uint8Array([1]);
+    await sendAwait(r, ask);
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cas-corrupt" });
+    returned = bytes;
+    await sendAwait(r, ask);
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { cid, bytesBase64: "cHVibGljIGJvZHk=" } });
+    await r.close();
+  });
+
+  test("port-cas-default-tier-unknown and bad cid refuse; CONTROL: public tier requires resolver", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    await sendAwait(r, askMsg("cas", { subject: "bad" }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "bad-cid" });
+    await sendAwait(r, askMsg("cas", { subject: "a".repeat(64) }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cas-tier-unknown" });
+    await r.close();
+    const publicPort = await rig({ casTierOf: () => "public" });
+    await publicPort.send(openMsg());
+    await sendAwait(publicPort, askMsg("cas", { subject: "a".repeat(64) }));
+    expect(ofType(publicPort.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cas-unavailable" });
+    await publicPort.close();
+  });
+
+  test("port-cas-too-large refuses before hashing; CONTROL: a bounded public body answers", async () => {
+    const small = new TextEncoder().encode("small");
+    const digest = await crypto.subtle.digest("SHA-256", small);
+    const cid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    const r = await rig({ casTierOf: () => "public" });
+    r.ctx.resolveByCid = async () => new Uint8Array(786_433);
+    await r.send(openMsg());
+    await sendAwait(r, askMsg("cas", { subject: cid }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "cas-too-large" });
+    r.ctx.resolveByCid = async () => small;
+    await sendAwait(r, askMsg("cas", { subject: cid }));
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "answered", result: { cid, bytesBase64: "c21hbGw=" } });
+    await r.close();
+  });
   test("port-write-needs-server-grant: edits request without lookup refuses; CONTROL: server grant writes once", async () => {
     const denied = await rig({}, hasRecordPort());
     await denied.send(openMsg());

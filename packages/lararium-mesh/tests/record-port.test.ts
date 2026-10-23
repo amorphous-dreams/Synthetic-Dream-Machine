@@ -33,6 +33,13 @@ describe("the record port reads whole at the island door", () => {
     expect(isVesselToIslandMsg({ type: "port:ask", portId: "p1", askId: "a", kind: "invoke", renderCursor: "b.s.0", affordanceId: "a1", subject: "act" })).toBe(false);
     expect(readPortVesselMsg({ type: "port:ask", portId: "p1", askId: "a", kind: "invoke", renderCursor: "b.s.0", affordanceId: "a1", provenFace: { role: "admin" }, requestedBy: "admin" })).toEqual({ type: "port:ask", portId: "p1", askId: "a", kind: "invoke", renderCursor: "b.s.0", affordanceId: "a1" });
   });
+  test("port-ask-args-bounds: too many keys, oversized UTF-8 value, and non-string values vanish; CONTROL: bounded args survive", () => {
+    const ask = { type: "port:ask", portId: "p1", askId: "v", kind: "verb", subject: "CLEAR" };
+    expect(readPortVesselMsg({ ...ask, args: { bag: "working" } })).toMatchObject({ args: { bag: "working" } });
+    expect(readPortVesselMsg({ ...ask, args: Object.fromEntries(Array.from({ length: 65 }, (_, i) => [`k${i}`, "x"])) })).toBeNull();
+    expect(readPortVesselMsg({ ...ask, args: { bag: "é".repeat(32769) } })).toBeNull();
+    expect(readPortVesselMsg({ ...ask, args: { bag: 1 } })).toBeNull();
+  });
   test("presence carries a beat or a gone mark, never neither", () => {
     expect(isVesselToIslandMsg({ type: PORT_PRESENCE, portId: "p1", actorKey: "a" })).toBe(false);
     expect(isVesselToIslandMsg({ type: PORT_PRESENCE, portId: "p1", actorKey: "a", beat: 3 })).toBe(true);

@@ -103,6 +103,16 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
+<<~ ahu #/verb-cas>>
+
+!! The `verb` and `cas` asks ~ island-local, both fail closed
+
+* ''`verb`'' names a registered ACTION verb, its `args` and its `titles` as targets. It rides the same proven-face gate as `invoke` (`faceOf`, then `authority`, `no-authority` by default) with no render cursor, and runs on a verb table the port cap builds for itself with `kahuReachClearedAtGate` unset. Every verb that lands bytes in a system canon bag therefore asks the Kahu predicate itself, and a missing `kahuReach` lend reads as a stranger and refuses. The routed-envelope path of `wiki:place-verb` stays as it stands.
+* ''`cas`'' answers from the island's own `resolveByCid`, re-hashing the bytes against the cid (`cas-corrupt` on a mismatch). The composer lends `casTierOf(cid)`: only a `public` body answers. An unknown tier refuses `cas-tier-unknown`, a veil or personagroup body `cas-private`, a contract body `cas-contract`, and none of those reads a byte. Without the lend, `cas` refuses by name; so the composer wiring row covers `casTierOf` and `kahuReach` beside `faceOf`, `mayEdit` and `authority`.
+* Reds: see the handler tests `port-verb-*` and `port-cas-*`.
+
+<<~/ahu>>
+
 <<~ ahu #/retry-law>>
 
 !! The one retry law ~ a resend of the same id, never a timer
@@ -136,8 +146,10 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 !! Owed beside the port ~ rows outside this lane's build
 
-* ''Composer wiring.'' The composer lends `faceOf(portId)`, `mayEdit(portId, actor)` and an `authority` verifier at the port cap, calls `transportGone(portId)` on channel close, and the holder keeps a port lease so port messages reach the binding that opened the port (today they drop by name, `no-port-lease`).
-* ''Ask kinds `verb` and `cas`'' answer refused `ask-kind-not-wired`; their handlers stay owed beside the D2 row.
+* ''Composer wiring.'' The composer lends `faceOf(portId)`, `mayEdit(portId, actor)`, `casTierOf(cid)`, `kahuReach` and an `authority` verifier at the port cap, calls `transportGone(portId)` on channel close, and the holder keeps a port lease so port messages reach the binding that opened the port (today they drop by name, `no-port-lease`).
+* ''Mock witnesses.'' The retained-render staleness red uses a mock wiki that refreshes on the change event; a witness over a real `bootTestWiki` refresh stays owed. The commit-boundary drift red holds a mock bag, not a real store fault.
+* ''Listener timing.'' The causedBy attribution rests on synchronous store notification (the memory and Automerge layers keep it, and a mesh test pins the composite's). A layer that notifies after `writeFamily` settles would lose a write's `causedBy`; the layers beyond those two stay unread.
+* ''A flaky neighbour.'' `wiki-shore-draft-road` T2 failed once under full-suite load and passed alone and in repeats; it stays on the house flake list, untraced.
 * ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
 * ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
 * ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
@@ -156,6 +168,6 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5TNu7PvjjP2OSOFQiqD3GALDl6agR6iAYiukB_mrKB4
+<<^ code="&#x0003;">>ni:///sha-256;tp_k3ALoWQ4CX-FYCRINcuqb-Of7ZoUZGepFlTa-T44
 
 <<^ code="&#x0004;" -> to="?">>

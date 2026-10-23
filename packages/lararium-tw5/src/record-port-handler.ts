@@ -4,7 +4,7 @@ import {
   mkPortSnapshot, mkPortWritten,
   type PortMsg_Open, type PortMsg_Ask, type PortMsg_Write, type PortMsg_Written, type PortWireRecord,
 } from "@lararium/mesh/record-port";
-import type { LarTiddlerRecord } from "@lararium/mesh";
+import { isVerbRefusal, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
 import type { LarTiddlerChange } from "@lararium/mesh";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
@@ -15,10 +15,16 @@ import { gateInvoke, type AuthorityResult, type InvokeRequest } from "./record-p
 import { RecordingDocument, RecordingNode, cameraContainer, cameraDocument, fireRecorded } from "./recording-document.js";
 import { toBlocks, toLabelHtml, toText, type Block } from "./recording-serialisers.js";
 import { mountCamera } from "./tw5-camera.js";
+import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
+import { VerbTable } from "./verb-dispatcher.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
   faceOf?: (portId: string) => object | undefined;
+  /** The port builds its own ACTION table; a caller can substitute a table for a focused witness. */
+  verbs?: (ctx: IslandContext) => VerbTable;
+  kahuReach?: KahuReachSource;
+  casTierOf?: (cid: string) => CapTier | undefined;
   /** The composer lends a server-held write grant for this port and actor. */
   mayEdit?: (portId: string, actor: string) => boolean;
   lapseRounds?: number;
@@ -103,6 +109,16 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const lastSeq = new Map<string, number>();
   let writes: Promise<void> = Promise.resolve();
   let presenceSource: string | undefined;
+  let verbs: VerbTable | undefined;
+  const verbTable = (ctx: IslandContext): VerbTable => {
+    if (verbs) return verbs;
+    if (opts.verbs) return verbs = opts.verbs(ctx);
+    const table = new VerbTable();
+    registerActionReactors(table, { composite: ctx.composite, tw5: makeTw5Deserializer(ctx.tw5),
+      ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
+      ...(opts.kahuReach ? { kahuReach: opts.kahuReach } : {}) });
+    return verbs = table;
+  };
 
   const finish = (port: OpenPort): void => {
     if (port.snapshotId) log.finishSnapshot(port.snapshotId);
@@ -360,6 +376,55 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         else if (result.value === "unknown-affordance") refused("unknown-affordance");
         else answered({ invoked: result.value });
       } catch { refused("invoke-unavailable"); }
+    } else if (msg.kind === "verb") {
+      // The mesh source carries args; this intersection also tolerates a stale built mesh declaration.
+      const args = (msg as PortMsg_Ask & { args?: Record<string, string> }).args ?? {};
+      const face = opts.faceOf?.(msg.portId);
+      const req: InvokeRequest = { ...(face ? { provenFace: face } : {}), renderCursor: "", affordanceId: "" };
+      try {
+        const gated = gateInvoke(req, { ...(opts.authority ? { authority: opts.authority } : {}),
+          currentRenderCursor: () => "", invokeActions: () => true });
+        if (!gated.invoked) { refused(gated.reason); return; }
+        const action = msg.subject ?? "";
+        const handler = verbTable(ctx).get(action);
+        if (!handler) { refused("no-such-verb"); return; }
+        const requestedBy = face && "id" in face && typeof face.id === "string" ? face.id : `port:${msg.portId}`;
+        const invocation: Verb = { requestId: msg.askId, title: `lar:///ha.ka.ba/bags/wiki/verbs/${msg.askId}`,
+          action, args, targets: msg.titles ?? [], batchMode: "best-effort",
+          status: "pending", requestedBy, requestedAt: "" };
+        answered(await handler(args, { daemon: ctx.composite, invocation,
+          cap: async () => ({ ok: true, reason: "port-gate" }) }));
+      } catch (error) {
+        if (isVerbRefusal(error)) {
+          if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId,
+            status: "refused", reason: error.reason, result: { message: error.message } }));
+        } else refused("verb-unavailable");
+      }
+    } else if (msg.kind === "cas") {
+      const cid = msg.subject ?? "";
+      if (!/^[a-fA-F0-9]{64}$/.test(cid)) { refused("bad-cid"); return; }
+      let tier: CapTier | undefined;
+      try { tier = opts.casTierOf?.(cid); } catch { /* A failed tier lookup grants nothing. */ }
+      if (tier === undefined) { refused("cas-tier-unknown"); return; }
+      if (tier === "contract") { refused("cas-contract"); return; }
+      if (tier !== "public") { refused("cas-private"); return; }
+      if (!ctx.resolveByCid) { refused("cas-unavailable"); return; }
+      try {
+        const bytes = await ctx.resolveByCid(cid);
+        if (!bytes) { refused("cas-missing"); return; }
+        if (bytes.byteLength > 786_432) { refused("cas-too-large"); return; }
+        const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(bytes));
+        const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+        if (actual !== cid.toLowerCase()) { refused("cas-corrupt"); return; }
+        let binary = "";
+        for (let offset = 0; offset < bytes.length; offset += 32768)
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
+        const result = { cid, bytesBase64: btoa(binary) };
+        if (new TextEncoder().encode(JSON.stringify(result)).length > 1_048_576) {
+          refused("cas-too-large"); return;
+        }
+        answered(result);
+      } catch { refused("cas-unavailable"); }
     } else refused("ask-kind-not-wired");
   };
 
