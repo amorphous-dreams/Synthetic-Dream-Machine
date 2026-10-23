@@ -270,9 +270,9 @@ invents ''only the composition'', never a new primitive.
 
 <<~ ahu #/open-forks>>
 
-!! Open ~ four operator/wave-3 forks
+!! Forks ~ three ruled, one open for wave 3
 
-Four choices ride ahead of the build, each holding for the operator:
+Four choices rode ahead of the build:
 
 * ''① sha256 → BLAKE3 — SETTLED via self-describing multihash.'' The algorithm prefix
   carries the migration in-band (old ids stay parseable, new bodies hash `BLAKE3(ciphertext)`
@@ -281,14 +281,16 @@ Four choices ride ahead of the build, each holding for the operator:
   content key, and a lockbox carries that key to the bag's readers
   (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). No convergence secret
   derives a body key.
-* ''③ Indirection-map placement.'' The logical-name→cid map likely rides the Automerge doc
-  (small ordered causal metadata) — the docs/blobs split applied to the map.
-* ''④ Bilateral pin economics.'' Island A pins for B under a revocable cap — what does B
-  offer (reciprocal pin? the "fed node hums" ritual-feeding)? The one storage-economics
-  frontier no system solved without a global ledger.
+* ''③ Indirection-map placement — RULED.'' The logical-name→cid map rides the Automerge doc (small ordered
+  causal metadata), the docs/blobs split applied to the map (house ruling under the operator's delegation,
+  2026-10-22).
+* ''④ Bilateral pin economics — house lean recorded, OPEN for wave 3.'' Island A pins for B under a revocable cap.
+  Within one operator's own fleet or PersonaGroup, pinning carries no price. Across operators, B answers A's
+  revocable pin cap with a reciprocal revocable pin, each side keeping only its own local ledger, never a global
+  one; an unreciprocated pin simply lapses at A's revocation. The "fed node hums" ritual-feeding stays its fiction
+  (house ruling under the operator's delegation, 2026-10-22).
 
-the four forks stay genuinely open; the operator's
-priors decide them, and wave-3 may reopen any.
+fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
@@ -307,6 +309,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jY_9Ft3cFBru0PjJIvPkw6knJvyxJWWee51SOd6n6LA
+<<^ code="&#x0003;">>ni:///sha-256;f_g4dKycfbsteskTbfVTgnObWH5Ojdvw6FrbAvi02Go
 
 <<^ code="&#x0004;" -> to="?">>
