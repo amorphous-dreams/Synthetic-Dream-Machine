@@ -120,7 +120,6 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const ports = new Map<string, OpenPort>();
   const actors = new Map<string, ActorState>();
   const tokens = new Map<string, { portId: string; txId: string }>();
-  const familyChanges = new Map<string, LarTiddlerChange[]>();
   let tokenCounter = 0;
   const queued: Array<{ change: LarTiddlerChange; causedBy: string[] }> = [];
   let flushQueued = false;
@@ -301,7 +300,6 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
         const token = `port:${++tokenCounter}:${crypto.randomUUID()}`;
         tokens.set(token, { portId: msg.portId, txId: msg.txId });
-        familyChanges.set(token, []);
         try {
           familyStarted = true;
           await ctx.composite.writeFamily(puts, tombstones,
@@ -311,12 +309,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           if (port.closed) return;
         } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         finally {
-          const changes = familyChanges.get(token) ?? [];
-          if (queued.length) flush(ctx);
-          for (const change of changes) queued.push({ change, causedBy: [msg.txId] });
-          familyChanges.delete(token);
           tokens.delete(token);
-          if (changes.length) flush(ctx);
+          flush(ctx);
         }
       }
       if (port.closed) return;
@@ -461,9 +455,10 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const tokenId = change.origin.kind === "tw-local" ? change.origin.instanceId : undefined;
         const token = tokenId ? tokens.get(tokenId) : undefined;
         for (const port of ports.values()) if (port.opening) port.dirty.add(change.title);
-        if (token && tokenId) { familyChanges.get(tokenId)?.push(change); return; }
-        const causedBy: string[] = [];
+        // Every change joins one queue in the order the store fired it, a port write's echo naming its txId.
+        const causedBy: string[] = token ? [token.txId] : [];
         queued.push({ change, causedBy });
+        if (token) return;
         if (!flushQueued) { flushQueued = true; queueMicrotask(() => flush(ctx)); }
       });
       const unsubscribePresence = presence.subscribe(value => {

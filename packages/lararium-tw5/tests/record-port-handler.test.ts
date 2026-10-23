@@ -187,6 +187,34 @@ describe("record port handler", () => {
     expect(r.messages.slice(oneBefore).filter(message => message.type === "port:changes")).toHaveLength(1);
     await r.close();
   });
+  test("port-memory-family-lands-in-one-stretch: a foreign write fired inside a listener cannot split the family; CONTROL: a throwing listener leaves the commit standing", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    const seen: string[] = [];
+    let fired = false;
+    r.composite.subscribe(change => {
+      seen.push(change.title);
+      if (change.title === "FamA" && !fired) { fired = true; void r.composite.put({ tiddler: { title: "Foreign", text: "c" } }, { kind: "tw-local", instanceId: "elsewhere" }); }
+    });
+    const before = r.messages.length;
+    await r.send({ type: "port:write", portId: "p", txId: "fam", records: [
+      { title: "FamA", fields: { text: "a" } }, { title: "FamB", fields: { text: "b" } },
+    ] });
+    await settle();
+    // Both members applied before any listener ran, so a listener sees the whole family in the store.
+    expect(await r.store.get("FamA")).not.toBeNull();
+    expect(await r.store.get("FamB")).not.toBeNull();
+    const entries = ofType(r.messages.slice(before) as never, "port:changes").flatMap(message => message.entries);
+    // The port log keeps the order the store fired (here the listener fired the foreign write between the members).
+    expect(entries.map(entry => entry.title)).toEqual(seen.filter(title => entries.some(entry => entry.title === title)));
+    expect(entries.find(entry => entry.title === "FamB")?.causedBy).toEqual(["fam"]);
+    expect(entries.find(entry => entry.title === "Foreign")?.causedBy).toEqual([]);
+    // CONTROL: a listener that throws faults the listener, never the write.
+    r.composite.subscribe(() => { throw new Error("listener fault"); });
+    await r.send({ type: "port:write", portId: "p", txId: "fam2", records: [{ title: "FamC", fields: { text: "c" } }, { title: "FamD", fields: { text: "d" } }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "fam2", status: "applied" });
+    await r.close();
+  });
   test("port-verb-no-authority and port-verb-guest-refused; CONTROL: admin runs once with proven identity and targets", async () => {
     let runs = 0;
     const verbs = () => { const table = new VerbTable(); table.register("probe", async (args, context) => {
