@@ -183,9 +183,10 @@ describe("a fold that fails leaves no reading", () => {
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
     const vesselKey = (await wornAtomKey());
     let fail = false;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         fleetRoots: () => { if (fail) throw new Error("the store would not read"); return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => phone,
       });
@@ -209,9 +210,10 @@ describe("the reading goes dark the moment a board moves", () => {
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
     const vesselKey = (await wornAtomKey());
     let refolds = 0;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot], lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
       });
       await ring.refold();

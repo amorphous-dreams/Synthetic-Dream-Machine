@@ -41,6 +41,18 @@ describe("the node fleet ring widens through a signed frontier", () => {
     } finally { f.ring.dispose(); await f.repo.shutdown(); }
   });
 
+  test("RED: an UNKNOWN fleet frontier reads the device aside at the gate consult; CONTROL: a founded board reads it clear", async () => {
+    const f = await fixture();
+    try {
+      await f.ring.refold();
+      expect(f.ring.frontierOf(f.fleetRoot)?.status).toBe("unknown");
+      expect(f.ring.deviceAside(f.vesselKey), "absence is not clear: an unknown frontier vouches for no device").toBe(true);
+      await f.genesis();
+      await f.ring.refold();
+      expect(f.ring.deviceAside(f.vesselKey)).toBe(false);
+    } finally { f.ring.dispose(); await f.repo.shutdown(); }
+  });
+
   test("RED: a fleet with no held lineage blocks widening even with a signed genesis", async () => {
     const f = await fixture();
     const noLineage = makeEdgeShadowRing({ repo: f.repo, vesselKey: () => f.vesselKey, sealHome: "",

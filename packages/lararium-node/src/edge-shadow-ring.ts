@@ -135,7 +135,12 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
   const deviceAside = (vesselKey: string): boolean => {
     if (!last) return true;                                    // no fold yet → fail closed
     const device = bare(vesselKey);
-    return last.fleets.some((f) => f.readings.get(deviceEdgeId(f.fleetRoot, device))?.stands === true);
+    const standings = last.fleets.map((f) => edgeStandingAsOf(f.readings.get(deviceEdgeId(f.fleetRoot, device)), f.rolled, f.frontier.status === "known"));
+    if (standings.includes("aside")) return true;
+    // ABSENCE IS NOT CLEAR: a fleet whose signed frontier reads unknown vouches for no device, so unless a fleet with a KNOWN
+    // frontier names this device, the door answers aside (it widens nothing and waits for the frontier).
+    const named = last.fleets.some((f) => f.frontier.status === "known" && f.readings.has(deviceEdgeId(f.fleetRoot, device)));
+    return standings.includes("unknown") && !named;
   };
 
   const realmFold = (realm: string): RealmFold | undefined =>
