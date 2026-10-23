@@ -35,7 +35,7 @@ export interface HeldLockInfo {
 export interface LockHost {
   request(
     name: string,
-    options: { ifAvailable?: true },
+    options: { ifAvailable?: true; mode?: "shared" | "exclusive" },
     callback: (lock: { name: string } | null) => Promise<unknown> | unknown,
   ): Promise<unknown>;
   query?(): Promise<{ held?: ReadonlyArray<HeldLockInfo> }>;
@@ -71,7 +71,7 @@ export interface VesselLockHold {
  * The callback's promise stays pending until `release()`, which is what keeps the lock held — the
  * platform releases a lock the moment its callback settles.
  */
-export async function holdVesselLock(
+async function holdScopedLock(
   idbName: string,
   host: LockHost | null = ambientLocks(),
   opts: {
@@ -121,6 +121,40 @@ export async function holdVesselLock(
     `[vessel] the store "${idbName}" is already held — lock "${name}" held by ${holder}. One holder per vessel ` +
     `store on this origin; close the other tab (or worker) before opening this vessel here.`,
   );
+}
+
+/**
+ * Hold the vessel store's lock for the caller's life, or refuse loud with the holder named.
+ *
+ * A tab attached to a house ALSO holds the store's base lock in SHARED mode: house tabs coexist (each a port to the one
+ * holder), and a dedicated-worker tab, which asks the base lock exclusive, refuses while any house tab stands. The
+ * holder's own lock is scoped by house, so without this a dedicated tab and a house tab opened one store together.
+ */
+export async function holdVesselLock(
+  idbName: string,
+  host: LockHost | null = ambientLocks(),
+  opts: { readonly attachToHolder?: string | null; readonly houseName?: string } = {},
+): Promise<VesselLockHold> {
+  const scoped = await holdScopedLock(idbName, host, opts);
+  if (!opts.houseName || !host) return scoped;
+  const base = vesselLockName(idbName);
+  let endShared: () => void = () => {};
+  const sharedLife = new Promise<void>((resolve) => { endShared = resolve; });
+  let settledShared: Promise<unknown> = Promise.resolve();
+  const granted = await new Promise<boolean>((resolve, reject) => {
+    settledShared = host.request(base, { ifAvailable: true, mode: "shared" }, (lock) => {
+      resolve(lock !== null);
+      return lock === null ? undefined : sharedLife;
+    }).catch(reject);
+  }).catch((error) => { throw new Error(`[vessel] cannot acquire Web Lock for store "${idbName}" ("${base}"): ${error instanceof Error ? error.message : String(error)}`); });
+  if (!granted) {
+    await scoped.release();
+    throw new Error(
+      `[vessel] the store "${idbName}" is already held by a dedicated-worker tab (lock "${base}" held exclusive: ${await describeHolder(host, base)}). ` +
+      "A house tab and a dedicated tab never open one store together; close the other tab before opening this vessel here.",
+    );
+  }
+  return { ...scoped, release: async () => { endShared(); await settledShared; await scoped.release(); } };
 }
 
 /** The client id the platform reports holding the lock, or null when it cannot say. */
