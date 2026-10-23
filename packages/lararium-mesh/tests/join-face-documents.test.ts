@@ -4,7 +4,8 @@ import { generateAutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { emptyIdentitiesDoc, emptyCirclesDoc } from "../src/lar-uris.js";
 import * as A from "@automerge/automerge";
 import { joinFaceDocuments, joinFaceDocumentsOnArrival } from "../src/join-face-documents.js";
-import { didKeyFromVerifyingKey } from "../src/cold-boot-ceremony.js";
+import { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "../src/cold-boot-ceremony.js";
+import { circleTiddlerUri } from "../src/lar-uris.js";
 
 const KEY = "ab".repeat(32);
 
@@ -36,5 +37,22 @@ describe("joinFaceDocuments", () => {
     await Promise.resolve();
     const got = joinee.handles[identities.documentId]!.doc()!;
     expect(Object.keys(got.tiddlers).some((k) => k.includes(didKeyFromVerifyingKey(KEY)))).toBe(true);
+  });
+
+  test("RED: the joinee's membership dot lands in the founder's occupied `operators` circle, add-only; CONTROL: the founder's dot stays and a second join adds nothing", () => {
+    const repo = new Repo({});
+    const founderKey = "cd".repeat(32);
+    const circles = repo.create(emptyCirclesDoc()), identities = repo.create(emptyIdentitiesDoc());
+    circles.change((doc) => {
+      for (const t of buildCeremonyTiddlers(founderKey, "founder")) if (t.title === circleTiddlerUri("operators")) (doc.tiddlers as Record<string, unknown>)[t.title] = { tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } };
+    });
+    const urls = { identities: identities.url, circles: circles.url };
+    const dotsOf = () => Object.keys((circles.doc()!.tiddlers[circleTiddlerUri("operators")] as unknown as { tiddler: Record<string, unknown> }).tiddler).filter((k) => k.startsWith("mbr+:"));
+    expect(dotsOf()).toHaveLength(1);
+    expect(joinFaceDocuments(repo, urls, KEY, "device").circles).toBe(true);
+    expect(dotsOf(), "the founder's dot and the joinee's").toHaveLength(2);
+    expect(dotsOf().some((k) => k.includes(didKeyFromVerifyingKey(founderKey)))).toBe(true);
+    expect(dotsOf().some((k) => k.includes(didKeyFromVerifyingKey(KEY)))).toBe(true);
+    expect(joinFaceDocuments(repo, urls, KEY, "device").circles, "a second join adds nothing").toBe(false);
   });
 });

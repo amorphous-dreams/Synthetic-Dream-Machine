@@ -58,12 +58,12 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (!anchor) throw new PersonaLeaseError("this face holds no sealed anchor; re-found it");
   const seed = await loadPersonaGroupRootSeed(handleIndex);
   const key = await ed25519VerifyingKeyFromSeed(seed);
-  const face = await fleetFaceForVessel(opts.repo, key);
+  const face = await fleetFaceForVessel(opts.repo, key, anchor);
   if (!face) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
   const seated = face.currentSigner;
   if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const daemon = await opts.repo.find<LarDoc>(daemonUrlOfBootstrap() as AutomergeUrl);
-  const r = await rollSignedLeaseEpochOnBoard(daemon, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated);
+  const r = await rollSignedLeaseEpochOnBoard(daemon, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated, face.floor);
   const raised = raiseFaceFrontier(anchor, { leaseEpoch: r.rolled });
   if (raised !== anchor) await keepFaceAnchorOfGroup(raised);
   await opts.repo.flush();

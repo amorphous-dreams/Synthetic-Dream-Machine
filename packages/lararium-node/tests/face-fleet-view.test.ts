@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { DAEMON_BAG_ID, DeterministicFederationGate, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, type FaceGrantReading } from "@lararium/mesh";
-import { faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
+import { faceFleetFacets, faceFleetViews, foreignFaceDocs } from "../src/face-fleet-view.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
@@ -117,5 +117,28 @@ describe("the worn face's books: the bridge until O1", () => {
     const named = faceFleetViews(() => forged, () => G1);
     named.seat("device", grant(G1));
     expect(await named.gateFor("device")!.mayFederate(idOf(WIKI))).toBe(true);
+  });
+
+  test("RED: another face's plane the bootstrap OMITS but the catalog names stays out of the worn bridge, by the derived shape; CONTROL: the worn face's own planes and a wiki still read", async () => {
+    const onlyWorn = { ...bootstrap(ONE), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };    // the bootstrap forgets face two
+    const sib = personaSiblingBagIds(personaBagIdFor(G2));
+    const catalog = { tiddlers: {
+      [personaBagIdFor(G2)]: { tiddler: { title: personaBagIdFor(G2), text: TWO.persona } },
+      [sib.circles]: { tiddler: { title: sib.circles, text: TWO.circles } },
+      [personaBagIdFor(G1)]: { tiddler: { title: personaBagIdFor(G1), text: ONE.persona } },
+      "lar:///ha.ka.ba/bags/my-wiki": { tiddler: { title: "lar:///ha.ka.ba/bags/my-wiki", text: WIKI } },
+    } } as never;
+    const foreign = foreignFaceDocs(catalog, G1);
+    expect(foreign.has(String(idOf(TWO.persona))) && foreign.has(String(idOf(TWO.circles)))).toBe(true);
+    expect(foreign.has(String(idOf(ONE.persona))), "the worn face's own plane is not foreign").toBe(false);
+    const bare = faceFleetViews(() => onlyWorn, () => G1);
+    bare.seat("worn", grant(G1));
+    expect(await bare.gateFor("worn")!.mayFederate(idOf(TWO.circles)), "the bug: the bootstrap alone leaks face two").toBe(true);
+    const views = faceFleetViews(() => onlyWorn, () => G1, () => foreign);
+    views.seat("worn", grant(G1));
+    expect(await views.gateFor("worn")!.mayFederate(idOf(TWO.circles))).toBe(false);
+    expect(await views.gateFor("worn")!.mayFederate(idOf(TWO.persona))).toBe(false);
+    expect(await views.gateFor("worn")!.mayFederate(idOf(WIKI))).toBe(true);
+    expect(await views.gateFor("worn")!.mayFederate(idOf(ONE.circles))).toBe(true);
   });
 });

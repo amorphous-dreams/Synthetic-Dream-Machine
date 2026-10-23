@@ -71,12 +71,14 @@ export async function rollSignedLeaseEpochOnBoard(
   handle: DocHandle<LarDoc>, resource: string,
   signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
   authorize: (writerHex: string) => boolean,
+  /** The anchor's floor (`FaceReading.floor`): the roll never reads below what this device accepted. */
+  floor: (observed: number) => number = (observed) => observed,
 ): Promise<LeaseRekeyResult> {
   if (!authorize(signer.key.toLowerCase())) throw new Error("lease-rekey: signer has no PersonaGroup KEL seat");
   const prefix = leaseEpochPrefix(resource);
   const slots = Object.entries(handle.doc()?.tiddlers ?? {})
     .filter(([title]) => title.startsWith(prefix)).map(([, record]) => tiddlerText(record));
-  const effective = signedLeaseEpoch(resource, slots, authorize);
+  const effective = floor(signedLeaseEpoch(resource, slots, authorize));
   const rolled = rolledLeaseEpoch(effective);
   const slot = leaseEpochSlotUri(resource, signer.key);
   const signed = await signLeaseAdvance({ resource, epoch: rolled }, signer);

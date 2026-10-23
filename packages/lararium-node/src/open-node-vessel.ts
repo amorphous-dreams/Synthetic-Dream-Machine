@@ -44,7 +44,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, personaScopedBagIds,
+  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -187,7 +187,7 @@ import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
 import { vesselAdmitReader, vesselGate, type VesselGateDeps } from "./vessel-gates.js";
 import { gateShadowRing, type FaceDeviceReading } from "./gate-shadow-ring.js";
 import { faceDeviceBook }                        from "./face-device-book.js";
-import { faceFleetViews }                        from "./face-fleet-view.js";
+import { faceFleetViews, foreignFaceDocs }          from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
@@ -746,7 +746,9 @@ async function prepareNodeBootOn(
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
-  const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup);
+  let catalogForViews: (() => LarDoc | undefined) | null = null;
+  const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
+    () => (custodyGroup && catalogForViews ? foreignFaceDocs(catalogForViews(), custodyGroup) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1834,6 +1836,7 @@ async function prepareNodeBootOn(
   // Daemon VM — sovereign daemon island + the operator's authn/z home. `slot` ABSENT (herm) →
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
+    catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
     // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
     let atFloor = false;
@@ -2269,15 +2272,12 @@ async function prepareNodeBootOn(
       registerBags: deriveRegisterBags({
         // The mounted face registers its own planes on its own hive, and no hive registers a face it does not
         // wear: another compartment's planes register when it is worn, under its own atom.
-        // The catalog names every face's plane documents, so the worn face's reading leaves the others' out.
-        fleets: bootstrap.personaPlanes.filter((p) => p.personaGroupId === personaGroupId).map((p) => {
-          const otherFaces = new Set(bootstrap.personaPlanes.filter((o) => o.personaGroupId !== personaGroupId)
-            .flatMap((o) => { const plane = personaScopedBagIds(o.personaGroupId); return [plane.persona, plane.circles, plane.identities, plane.sessions]; }));
-          return {
-            personaGroupId: p.personaGroupId,
-            catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()).filter((bag) => !otherFaces.has(bag)),
-          };
-        }),
+        // The catalog names every face's plane documents; `deriveRegisterBags` leaves every face-scoped bag but the worn group's own four
+        // out by their derived shape, so no list of the other faces (a mutable bootstrap's) decides it.
+        fleets: personaGroupId && wornFaceProved ? [{
+          personaGroupId,
+          catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()),
+        }] : [],
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }),

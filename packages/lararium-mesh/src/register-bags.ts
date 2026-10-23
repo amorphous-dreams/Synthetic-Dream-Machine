@@ -42,7 +42,7 @@
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
-import { personaScopedBagIds } from "./persona-scope.js";
+import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -128,7 +128,9 @@ export function deriveRegisterBags(input: RegisterBagsInput): string[] {
   const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? KAHU_CANON_GROUND : []), ...(input.wikiBags ?? [])];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
-    out.push(face.persona, face.circles, face.identities, face.sessions, ...(fleet.catalogNamed ?? []));
+    // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
+    // recognises without any list of the others.
+    out.push(face.persona, face.circles, face.identities, face.sessions, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
 }

@@ -191,3 +191,14 @@ describe("★ the registry admits only its OWN kind ★", () => {
     expect(catalogNamedBags(catalog)).not.toContain("lar:///ha.ka.ba/bags/never-minted");
   });
 });
+
+describe("a group registers its own four planes and never another face's, by the derived shape", () => {
+  test("RED: the catalog names another face's plane bags and no list of faces is consulted: they stay out; CONTROL: ordinary catalog bags and the group's own four register", () => {
+    const mine = "ab".repeat(16), theirs = "cd".repeat(16);
+    const other = personaScopedBagIds(theirs);
+    const own = personaScopedBagIds(mine);
+    const bags = deriveRegisterBags({ fleets: [{ personaGroupId: mine, catalogNamed: [...WORK, other.persona, other.circles, other.identities, other.sessions, own.circles] }] });
+    for (const foreign of [other.persona, other.circles, other.identities, other.sessions]) expect(bags, foreign).not.toContain(foreign);
+    for (const bag of [...WORK, own.persona, own.circles, own.identities, own.sessions]) expect(bags, bag).toContain(bag);
+  });
+});

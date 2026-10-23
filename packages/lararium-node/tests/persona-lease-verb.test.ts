@@ -9,11 +9,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
-  DAEMON_BAG_ID, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, tiddlerText, type LarDoc,
+  DAEMON_BAG_ID, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
-import { loadFaceAnchorOfGroup } from "../src/face-anchor-store.js";
+import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
@@ -73,6 +73,16 @@ describe("lares persona lease", () => {
     const slots = await slotsOf(group);
     const authorize = () => true;
     expect(signedLeaseEpoch(group, ["50", ...slots.filter((s) => s.startsWith("{"))], (w) => w !== "ab".repeat(32) && authorize()), "the unsigned 50 and the stranger's 40 never counted").toBe(1);
+  }, 120_000);
+
+  it("RED: a roll never reads below the epoch this device's sealed anchor accepted, so an older replica cannot sign a roll that stales nothing; CONTROL: the roll climbs from the floor", async () => {
+    await setup(true);
+    const group = (await loadIdentityAnchors(0))!.personaGroupId;
+    const anchor = (await loadFaceAnchorOfGroup(group))!;
+    await keepFaceAnchorOfGroup(raiseFaceFrontier(anchor, { leaseEpoch: 5 }));       // this device accepted epoch 5; the daemon replica shows no slot
+    const out = (await roll()) as { effective: number; rolled: number; frontier: number };
+    expect(out).toMatchObject({ effective: 5, rolled: 6, frontier: 6 });
+    expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(6);
   }, 120_000);
 
   it("CONTROL: a second advance climbs by one and the anchor follows", async () => {

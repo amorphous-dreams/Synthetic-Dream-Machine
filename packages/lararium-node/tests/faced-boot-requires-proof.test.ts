@@ -53,10 +53,21 @@ describe("a faced boot proves its face", () => {
   test("RED: the worn face's gates, same-operator views and Kahu mount read sealed custody's group, never the bootstrap's group text, and the views and gates wait for the proof", () => {
     const src = read("lararium-node/src/open-node-vessel.ts");
     expect(src).toContain("const custodyGroup: string | null = wornMount?.personaGroupId");
-    expect(src).toContain("faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup)");
+    expect(src).toContain("faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,");
     expect(src).toContain("return wornFaceProven && custodyGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup: custodyGroup } : null;");
     expect(src).toContain("personaGroupId: custodyGroup,");
     expect(src).not.toMatch(/faceBootTiddlers\??\.\[PERSONA_GROUP_ID_TIDDLER\]/);
     expect(src).toContain("wornFaceProven = true;");
+  });
+
+  test("RED: the browser mounts the plane its proof checked and authorizes only proven planes; the node registers its worn group's four and no face's by list", () => {
+    const browser = read("lararium-browser/src/open-browser-vessel.ts");
+    expect(browser).toContain("{ personaUrl: provenWornPlaneUrl, personaBagId: personaBagIdFor(wornGroup) }");
+    expect(browser).toContain("fleets: [...provenPlanes.keys()].map(");
+    expect(browser).not.toMatch(/\.\.\.\(social\.personaUrl \? \{ personaUrl: social\.personaUrl \}/);
+    expect(browser).not.toMatch(/fleets: social\.personaPlanes\.map/);
+    const node = read("lararium-node/src/open-node-vessel.ts");
+    expect(node).toContain("fleets: personaGroupId && wornFaceProved ? [{");
+    expect(node).not.toContain("const otherFaces = new Set(bootstrap.personaPlanes");
   });
 });

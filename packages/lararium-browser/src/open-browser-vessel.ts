@@ -1254,6 +1254,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE FACE PROVES ITSELF FROM ITS SIGNED RECORDS (node parity): the founding under the anchored prefix, every plane
       // this boot mounts named by a signed act, and this device seated by a signed admission. The persona plane and the
       // daemon doc (where an admit bundle's acts rest) both carry records; the fold judges them.
+      // WHAT THE FACE PROOF VOUCHED FOR, read by everything below that mounts or authorizes a plane: the worn face's persona plane (the
+      // url the proof checked) and the proven persona planes by group. Nothing below reads the founding bootstrap's singular fields.
+      let provenWornPlaneUrl: string | null = null;
+      const provenPlanes = new Map<string, string>();
       {
         // A FACED BOOT PROVES ITS FACE: a social record that omits the persona plane cannot skip the proof.
         // The founding bootstrap names ONE face's shared documents: the worn face's persona plane reads off its own plane entry,
@@ -1281,7 +1285,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
         // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
-        const provenPlanes = new Map<string, string>([[wornGroup, wornPlaneUrl]]);
+        provenWornPlaneUrl = wornPlaneUrl;
+        provenPlanes.set(wornGroup, wornPlaneUrl);
         for (const plane of social.personaPlanes) {
           if (plane.personaGroupId === wornGroup) continue;
           const other = await loadBrowserFaceAnchor(idbName, plane.personaGroupId);
@@ -1335,9 +1340,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // bag nor any bag its own catalog named, which no test could see and no throw announced.
         registerBags: deriveRegisterBags({
           // EVERY compartment registers; exactly one mounts. The two verbs part company here.
-          fleets: social.personaPlanes.map((pl) => ({
-            personaGroupId: pl.personaGroupId,
-            catalogNamed: pl.personaGroupId === (wornMount?.personaGroupId ?? social.personaGroupId) ? catalogNamedBags(catalogHandle.doc()) : [],
+          // Only the planes a face proof vouched for: the worn face's and each anchored face's own (never a raw bootstrap entry).
+          fleets: [...provenPlanes.keys()].map((personaGroupId) => ({
+            personaGroupId,
+            catalogNamed: personaGroupId === wornGroup ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
           wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
         }),
@@ -1400,8 +1406,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
         // a person's face — so absence here names an unfinished founding rather than a crossroads, and
         // the VM stands faceless instead of resolving a document nobody founded.
-        ...(social.personaUrl ? { personaUrl: social.personaUrl } : {}),
-        ...(social.personaBagId ? { personaBagId: social.personaBagId } : {}),
+        // The plane the face proof checked is the plane the worker mounts (a switched face's own, never the founding bootstrap's).
+        ...(provenWornPlaneUrl ? { personaUrl: provenWornPlaneUrl, personaBagId: personaBagIdFor(wornGroup) } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         workerScriptUrl: daemonWorkerUrl,
         // The holder path: the island already stands once per origin; this tab's handle IS its port.
