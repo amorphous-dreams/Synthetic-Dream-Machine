@@ -77,6 +77,19 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
+<<~ ahu #/multimodal-location>>
+
+!! One Location, Many Witnesses
+
+* ''The location is not one body.'' A pet-named location holds a changing set of nameless architectural bodies, terrain, surfaces, surveys, photographs, void networks and unresolved hypotheses. Each constructed CAD body meets its own strict fusion and void gates; unrelated bodies and open terrain need not fuse into one global solid.
+* ''Keep testimony in its native frame.'' Source artifacts carry content digests and explicit pixel/local/geospatial frames. A DEM holds its CRS and height datum; a painting supplies pixels, never invented meters or unseen chambers.
+* ''Registration must testify.'' A fixed camera or a declared transformation alone does not prove alignment. Independently verified alignment requires external anchors and a measured residual. Provisional relations remain provisional.
+* ''Source, inference, and proposal differ.'' The witness ledger records which source supports each observation. Inferred or imagined structures cannot silently become surveyed facts.
+* ''Preserve choices across method loops.'' Reconstruction, grammar regrowth, local parameter tuning, constrained void growth, quality-diversity selection, and pet-name release may operate as distinct bounded loops with visible input/output contracts and causal checkpoints. No method may promote invalid geometry.
+* ''Executable scope.'' The current `location_stack` code validates the heterogeneous evidence envelope, references, frames, source digests, and independent CAD body audit; it does not itself run GIS conversion, photogrammetry, Bayesian inference, or multi-method scheduling.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence

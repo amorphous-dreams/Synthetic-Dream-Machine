@@ -58,6 +58,16 @@ not a required dependency of the reusable engine or its tests.
 See [Relational identity, pet-names and o-takiage](docs/relational-identity.md) for
 the semantics, ambiguity policy, and saved-ledger contract.
 
+## Evidence-first, heterogeneous locations
+
+`projection_loom.location_stack` carries source-linked observations, proposed entities,
+separate CAD bodies, and geospatial terrain under one location pet-name. The
+current contract never invents metric scale from an image or demands that a
+whole location Boolean-fuse into one solid. See
+[Multimodal locations and wide epochs](docs/multimodal-location-research.md).
+The scene/evidence contract is tested, but the GIS and photogrammetry backends
+described in that research remain future integrations.
+
 ## Camera evidence policy
 
 - `fit: bounds` and `fit: height` present architectural geometry on sheets.
