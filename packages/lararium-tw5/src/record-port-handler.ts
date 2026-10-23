@@ -468,7 +468,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const invocation: Verb = { requestId: msg.askId, title: `lar:///ha.ka.ba/bags/wiki/verbs/${msg.askId}`,
           action, args, targets: msg.titles ?? [], batchMode: "best-effort",
           status: "pending", requestedBy, requestedAt: "" };
-        const cap = opts.verbCap?.(face!, msg.portId) ?? (async () => ({ ok: false, reason: "no-verb-cap" }));
+        const lent = opts.verbCap?.(face!, msg.portId) ?? (async () => ({ ok: false, reason: "no-verb-cap" }));
+        // Each bag-grant check the reactor makes re-reads the face, so a face that moves mid-verb is refused at the next check.
+        const cap: VerbContext["cap"] = async (...args) => faceHolds(port) ? lent(...args) : { ok: false, reason: "face-changed" };
         answered(await handler(args, { daemon: ctx.composite, invocation, cap }));
       } catch (error) {
         if (isVerbRefusal(error)) {
@@ -518,7 +520,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         if (!flushQueued) { flushQueued = true; queueMicrotask(() => flush(ctx)); }
       });
       const unsubscribePresence = presence.subscribe(value => {
-        for (const port of ports.values()) if (port.open.presence && port.open.portId !== presenceSource)
+        for (const port of [...ports.values()]) if (port.open.presence && port.open.portId !== presenceSource && faceHolds(port))
           ctx.post(mkPortPresence({ portId: port.open.portId, ...value }));
       });
       return () => { unsubscribe(); unsubscribePresence(); for (const id of [...ports.keys()]) drop(id); };

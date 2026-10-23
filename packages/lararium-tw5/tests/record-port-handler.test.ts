@@ -400,6 +400,21 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-moved-face-gets-no-presence-and-no-further-verb-grants: a recipient whose face moved hears nothing and retires; CONTROL: a steady recipient hears the beat", async () => {
+    let faceQ: Record<string, unknown> = { id: "alice" };
+    const r = await rig({ faceOf: portId => portId === "q" ? faceQ : { id: "alice" } });
+    await r.send(openMsg("p", { actor: "xp" })); await r.send(openMsg("q", { actor: "xq" })); await r.send(openMsg("s", { actor: "xs" }));
+    faceQ = { id: "bob" };
+    const before = r.messages.length;
+    await r.send({ type: "port:presence", portId: "p", actorKey: "xp", beat: 1 });
+    const heard = (portId: string) => r.messages.slice(before).some(message => message.type === "port:presence" && message.portId === portId);
+    expect(heard("s")).toBe(true);
+    expect(heard("q")).toBe(false);
+    await r.send({ type: "port:presence", portId: "p", actorKey: "xp", beat: 2 });
+    expect(r.messages.slice(before).filter(message => message.type === "port:presence" && message.portId === "q")).toHaveLength(0);
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());
