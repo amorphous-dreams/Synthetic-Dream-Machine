@@ -25,10 +25,11 @@ import { tiddlerText } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { larBootstrapPath } from "../vessel-paths.js";
 import {
-  loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore, loadActivePersonaIndex,
+  loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore,
 } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 
+import { resolveFace } from "../face-selector.js";
 export interface HandlePublishOptions {
   /** The display name the world reads — "Guru-Josh", "The Dread Pirate Roberts". */
   readonly glamour: string;
@@ -66,7 +67,7 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   ]);
   const daemonDoc = daemonHandle.doc() as LarDoc;
 
-  const handleIndex = opts.handleIndex ?? (await loadActivePersonaIndex()) ?? 0;
+  const handleIndex = await resolveFace(opts.handleIndex);
   const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
@@ -119,7 +120,7 @@ async function openOwnFace(verb: string, repo: Repo, handleIndexOpt?: number): P
   ]);
   const daemonDoc = daemonHandle.doc() as LarDoc;
 
-  const handleIndex = handleIndexOpt ?? (await loadActivePersonaIndex()) ?? 0;
+  const handleIndex = await resolveFace(handleIndexOpt);
   const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });

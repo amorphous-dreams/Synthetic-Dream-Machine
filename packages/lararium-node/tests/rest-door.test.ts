@@ -45,8 +45,10 @@ describe("the rest door", () => {
     await expect(vesselRestAsker(w.port)(["doc-a"])).rejects.toThrow(/did not acknowledge doc-a.*no rest door/);
     const rested: string[][] = [];
     setRestDoor(async (ids) => { rested.push([...ids]); });
+    expect(await answerDocRest({ requestId: "proof", documentIds: ["doc-a", "doc-b"] }))
+      .toMatchObject({ rested: true, proof: { documentIds: ["doc-a", "doc-b"] } });
     await expect(vesselRestAsker(w.port)(["doc-a", "doc-b"])).resolves.toBeUndefined();
-    expect(rested).toEqual([["doc-a", "doc-b"]]);
+    expect(rested).toEqual([["doc-a", "doc-b"], ["doc-a", "doc-b"]]);
   });
 
   test("D2 — a faulting door answers unrested with its fault", async () => {

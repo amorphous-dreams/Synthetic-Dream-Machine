@@ -101,6 +101,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
       case "reissue": return await personaReissue(args);
+      case "lease": return await personaLease(args);
       case "guardian": return await personaGuardian(args);
       case "provisional": return await personaProvisional(args);
       case "confirm": return await personaConfirm(args);
@@ -153,6 +154,20 @@ async function personaReissue(args: ParsedArgs): Promise<number> {
       console.log(`  admitted:  ${String(r["admitted"])}  (the admit keeps naming this key; gates read the line to the new one)`);
       console.log(`  hand-over: ${String(r["handOver"])}  (on the Nexus's carriage board)`);
     },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona lease [index]` — roll the face's lease epoch forward with a signed advance. The persona root signs
+ * effective + 1 into its own slot; stale grants go cold, and the sealed anchor's frontier rises to the epoch that verified.
+ */
+async function personaLease(args: ParsedArgs): Promise<number> {
+  const index = args.positional[1] === undefined ? 0 : parseIndex(args.positional[1]);
+  const r = (await storeVerb("persona-lease", { handleIndex: index })).output as Record<string, unknown>;
+  emit(args, {
+    ok: true, data: r,
+    human: () => console.log(`the face at h${index} advanced its lease from ${String(r["effective"])} to ${String(r["rolled"])} (signed); the sealed frontier reads ${String(r["frontier"])}`),
   });
   return 0;
 }

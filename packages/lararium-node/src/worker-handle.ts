@@ -55,7 +55,7 @@ export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "
   const base = { type: "doc:rested" as const, requestId: ask.requestId };
   const door = restDoor;
   if (!door) return { ...base, rested: false, why: "no rest door stands on this vessel" };
-  try { await door(ask.documentIds); return { ...base, rested: true }; }
+  try { await door(ask.documentIds); return { ...base, rested: true, proof: { documentIds: [...ask.documentIds] } }; }
   catch (e) { return { ...base, rested: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 
@@ -77,7 +77,7 @@ export async function answerDyadAsk(ask: Pick<IslandMsg_DyadAsk, "requestId" | "
   if (!door) return { ...base, standing: "aside" };
   try {
     const standing = await door(ask.fleetRoot, ask.deviceKey);
-    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" ? standing : "aside" };
+    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" || standing === "unknown" ? standing : "aside" };
   } catch { return { ...base, standing: "aside" }; }
 }
 

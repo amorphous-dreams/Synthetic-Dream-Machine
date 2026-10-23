@@ -1,15 +1,23 @@
-/** A production-holder island witness: its Web Lock exists exactly while this worker lives. */
+/** In-realm production holder witness: a lock lives exactly as long as its island port. */
 import { deviceEdgeDigest } from "@lararium/mesh/holder-session-proof";
+import type { BrowserIslandScope } from "../../src/browser-sovereign-island-model.js";
 
-const id = new URL(self.location.href).searchParams.get("id");
-if (!id) throw new Error("stub island needs a lock id");
-const lockName = `island:${id}`;
-void navigator.locks.request(lockName, async () => new Promise<void>(() => {}));
-self.postMessage({ type: "ready" });
-self.addEventListener("message", (event: MessageEvent) => {
-  const message = event.data as { type?: string; daemonAuth?: { deviceEdge?: Parameters<typeof deviceEdgeDigest>[0] } };
-  if (message?.type !== "manifest") return;
-  const edge = message.daemonAuth?.deviceEdge;
-  if (!edge) throw new Error("manifest names no device edge");
-  self.postMessage({ type: "gate:clear", edgeDigest: deviceEdgeDigest(edge), personaRoot: edge.personaRootDid });
-});
+export function startIsland(scope: BrowserIslandScope): void {
+  const id = new URL(self.location.href).searchParams.get("id");
+  if (!id) throw new Error("stub island needs a lock id");
+  const controller = new AbortController();
+  void navigator.locks.request(`island:${id}:${(self as unknown as { name: string }).name}`, { signal: controller.signal }, async () =>
+    new Promise<void>((resolve) => { scope.onStop?.(resolve); })).catch((error) => {
+      if (!controller.signal.aborted) throw error;
+    });
+  scope.onStop?.(() => controller.abort());
+  scope.listen((raw) => {
+    const message = raw as { type?: string; daemonAuth?: { deviceEdge?: Parameters<typeof deviceEdgeDigest>[0] } };
+    if (message?.type === "teardown") { scope.post({ type: "teardown:ack" }); return; }
+    if (message?.type !== "manifest") return;
+    const edge = message.daemonAuth?.deviceEdge;
+    if (!edge) throw new Error("manifest names no device edge");
+    scope.post({ type: "gate:clear", edgeDigest: deviceEdgeDigest(edge), personaRoot: edge.personaRootDid } as never);
+  });
+  scope.ready();
+}

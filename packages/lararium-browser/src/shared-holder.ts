@@ -1,5 +1,5 @@
 /**
- * shared-holder — the TAB'S door onto the one-per-origin holder (shared-holder-core.ts).
+ * shared-holder — the TAB'S door onto the one-per-house holder (shared-holder-core.ts).
  *
  * When the engine offers `SharedWorker`, the vessel open connects to the holder script, waits for its greeting,
  * and holds the port: the daemon VM then spawns NO worker of its own — `holderWorkerHandle(port)` wraps the
@@ -14,7 +14,7 @@
 import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
 import { signHolderSessionProof } from "@lararium/mesh/holder-session-proof";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
-import { HOLDER_UNAVAILABLE_NO_WORKER, type HolderHello, type HolderRefused } from "./shared-holder-core.js";
+import { type HolderHello, type HolderRefused } from "./shared-holder-core.js";
 import { waitsForAdmission } from "./holder-admission.js";
 
 const portEnvelopes = new WeakMap<MessagePort, SessionEnvelope & { readonly nonce: string }>();
@@ -33,9 +33,15 @@ function holdSessionLock(sessionId: string): Promise<void> {
   });
 }
 
+/** What the door reads of a constructed SharedWorker: its port, and its own failure signal where the host raises one. */
+export interface SharedWorkerLike {
+  readonly port: MessagePort;
+  addEventListener?(type: "error", listener: (e: unknown) => void): void;
+}
+
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
-  readonly SharedWorker?: new (url: string | URL, opts?: { type?: "module"; name?: string }) => { readonly port: MessagePort };
+  readonly SharedWorker?: new (url: string | URL, opts?: { type?: "module"; name?: string }) => SharedWorkerLike;
 }
 
 /** Read the ambient `SharedWorker`, or nothing where the engine offers none. */
@@ -64,44 +70,55 @@ export class SharedHolderRefusal extends Error {
 /** Connect to the holder and wait for its greeting; the floor where the engine offers no SharedWorker. */
 export async function attachSharedHolder(args: {
   readonly holderUrl: URL;
+  readonly houseName: string;
   readonly host?:     SharedWorkerHost;
-  /** How long to wait for the greeting before reading the holder as absent (a script that never answers). */
-  readonly helloTimeoutMs?: number;
+  /** The CALLER's cancellation (a harness that will not wait on a worker that neither greets nor errors); the door itself sets no deadline. */
+  readonly signal?:   AbortSignal;
 }): Promise<SharedHolderAttach> {
   const host = args.host ?? ambientSharedWorkerHost();
   if (typeof host.SharedWorker !== "function") {
     return { kind: "floor", why: "this engine offers no SharedWorker; the daemon island rides a dedicated worker as before" };
   }
   let port: MessagePort;
+  let worker: SharedWorkerLike;
   try {
-    port = new host.SharedWorker(args.holderUrl, { type: "module", name: "lares:shared-holder" }).port;
+    worker = new host.SharedWorker(args.holderUrl, { type: "module", name: args.houseName });
+    port = worker.port;
   } catch (e) {
     return { kind: "floor", why: `SharedWorker refused to start (${e instanceof Error ? e.message : String(e)}); the daemon island rides a dedicated worker` };
   }
+  // THE GREETING DECIDES, NEVER A CLOCK: the worker's own greeting attaches (however late it comes), its own `error` event
+  // or a construct-time refusal (above) floors at once, and a worker that does neither keeps the house waiting. No
+  // timer picks the floor, so a slow-starting SharedWorker never loses its house to a deadline.
   const greeting = await new Promise<HolderHello | HolderRefused | null>((resolve) => {
-    let timer: ReturnType<typeof setTimeout>;
     const onMsg = (e: MessageEvent): void => {
       const d = e.data as { kind?: unknown };
       if (d && (d.kind === "holder:hello" || d.kind === "holder:refused")) {
-        clearTimeout(timer);
         port.removeEventListener("message", onMsg);
         resolve(e.data as HolderHello | HolderRefused);
       }
     };
     port.addEventListener("message", onMsg);
-    port.start();
-    timer = setTimeout(() => {
+    const floor = (): void => {
       port.removeEventListener("message", onMsg);
-      port.close();
+      try { port.close(); } catch { /* a closed port is already closed */ }
       resolve(null);
-    }, args.helloTimeoutMs ?? 5_000);
+    };
+    worker.addEventListener?.("error", floor);
+    args.signal?.addEventListener("abort", floor, { once: true });
+    if (args.signal?.aborted) floor();
+    // A re-check, never a choice: a worker that is slow to greet is NAMED in the console while the house keeps waiting for it.
+    const recheck = setTimeout(() => console.warn(`[shared-holder] the holder for house "${args.houseName}" has not greeted yet; still waiting on its own greeting or error`), 5_000);
+    const clear = (): void => clearTimeout(recheck);
+    port.addEventListener("message", function once(e: MessageEvent) {
+      const d = e.data as { kind?: unknown };
+      if (d && (d.kind === "holder:hello" || d.kind === "holder:refused")) { clear(); port.removeEventListener("message", once); }
+    });
+    args.signal?.addEventListener("abort", clear, { once: true });
+    worker.addEventListener?.("error", clear);
+    port.start();
   });
-  if (!greeting) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
-  // A holder whose engine cannot start an island refuses before any admission; the tab takes the dedicated-worker floor.
-  if (greeting.kind === "holder:refused" && greeting.cause === HOLDER_UNAVAILABLE_NO_WORKER) {
-    port.close();
-    return { kind: "floor", why: `${greeting.cause}; the daemon island rides a dedicated worker` };
-  }
+  if (!greeting) return { kind: "floor", why: "the shared holder worker raised an error or was cancelled before it greeted; the daemon island rides a dedicated worker" };
   if (greeting.kind === "holder:refused") {
     port.close();
     throw new SharedHolderRefusal(greeting);
@@ -138,7 +155,7 @@ export interface HolderHandleHooks {
   /** Start the dedicated daemon when a greeted holder cannot launch its island. */
   readonly floor?: () => VesselWorkerHandle;
   /** Rebuild a manifest with new transferred ports after its first ports crossed to the holder. */
-  readonly rePost?: () => { readonly msg: object; readonly transfer: Transferable[] };
+  readonly rePost?: () => { readonly msg: object; readonly transfer: Transferable[]; readonly afterPost?: () => void };
 }
 
 /**
@@ -156,27 +173,43 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   const waiting: Array<{ msg: object; transfer: Transferable[] }> = [];
   let floorHandle: VesselWorkerHandle | null = null;
   let floorReady = true;
+  let floorFailure: string | undefined;
   let detachFloorReady: (() => void) | undefined;
   let manifestSent = false;
   const listeners = new Set<{ cb: (message: unknown) => void; detach?: () => void }>();
   const errorListeners = new Set<{ cb: (error: Error) => void; detach?: () => void }>();
+  const refuse = (msg: object, why: string): void => {
+    const ask = msg as { type?: unknown; requestId?: unknown };
+    const requestId = typeof ask.requestId === "string" ? ask.requestId : undefined;
+    const error = `[shared-holder] ${why}${requestId ? ` (${requestId})` : ""}`;
+    const replyType = ask.type === "wiki:place-verb" ? "wiki:verb-result"
+      : ask.type === "daemon:delegate-verb" ? "daemon:verb-result" : "fault";
+    for (const entry of listeners) entry.cb({ type: replyType, ...(requestId ? { requestId } : {}),
+      ...(replyType === "fault" ? { wikiUri: "" } : {}), error });
+  };
   const takeFloor = (): void => {
     if (floorHandle || !hooks?.floor) return;
     const floor = hooks.floor();
     floorHandle = floor;
     for (const entry of listeners) entry.detach = floor.listen(entry.cb);
     for (const entry of errorListeners) entry.detach = floor.onError(entry.cb);
+    floor.onError((error) => {
+      if (floorFailure) return;
+      floorFailure = `replacement floor failed before ready: ${error.message}`;
+      detachFloorReady?.(); detachFloorReady = undefined;
+      for (const queued of waiting.splice(0)) refuse(queued.msg, floorFailure);
+    });
     if (manifestSent) {
       // The replacement worker announces ready only after its inbound listener stands.
       floorReady = false;
       let readySeen = false;
       detachFloorReady = floor.listen((message) => {
-        if ((message as { type?: unknown })?.type !== "ready" || readySeen) return;
+        if ((message as { type?: unknown })?.type !== "ready" || readySeen || floorFailure) return;
         readySeen = true;
         detachFloorReady?.();
         detachFloorReady = undefined;
         const fresh = hooks.rePost?.();
-        if (fresh) floor.post(fresh.msg, fresh.transfer);
+        if (fresh) { floor.post(fresh.msg, fresh.transfer); fresh.afterPost?.(); }
         floorReady = true;
         for (const queued of waiting.splice(0)) floor.post(queued.msg, queued.transfer);
       });
@@ -210,6 +243,7 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
   }
   return {
     post: (msg, transfer) => {
+      if (floorFailure) { refuse(msg as object, floorFailure); return; }
       if (floorHandle) {
         if (floorReady) floorHandle.post(msg, transfer);
         else waiting.push({ msg: msg as object, transfer: (transfer ?? []) as Transferable[] });
@@ -261,6 +295,13 @@ export function holderWorkerHandle(port: MessagePort, session?: HolderFaceSessio
       return () => { port.removeEventListener("messageerror", fn); entry.detach?.(); errorListeners.delete(entry); };
     },
     // A tab never terminates the shared island; closing its port is the whole of leaving.
-    terminate: () => { try { send({ type: "session:close" }, []); } finally { detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
+    terminate: () => { try { send({ type: "session:close" }, []); } finally { waiting.splice(0); detachFloorReady?.(); port.close(); floorHandle?.terminate(); } },
   };
+}
+
+/** Stable SharedWorker name for one face's house. */
+export async function houseName(group: string, root: string): Promise<string> {
+  const bytes = new TextEncoder().encode(`${group}|${root}`);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return `lares:house:${Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
 }

@@ -51,16 +51,18 @@ import {
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
-  personaScopedBagIds,
+  personaScopedBagIds, readFace,
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
-  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
+  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
   type PersonaKelEvent,
   dyadId, signDyadBindingWithSeed, writeDyad,
   mintFaceAtomSeed, faceAtomKeyFromSeed, FACE_CHECKPOINT_INFO,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
   enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
-  type LarTiddlerStore,
+  type LarTiddlerStore, writePersonaAct,
+  signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc,
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -285,6 +287,34 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
 }
 
 /**
+ * The vessel's own self-certifying Keyhive ContactCard, minted from THE VESSEL'S OWN SEED and nothing else: the place card.
+ * `foundThePlace` mints it at a place founding; a joinee node, which founds no place, mints it here so it never reaches a
+ * place-arm presentation cardless. The archive leaves with the card (it holds the prekey secrets the card names).
+ */
+export async function mintPlaceCard(input: { readonly vesselSeed: Uint8Array; readonly archiveBytes?: Uint8Array }): Promise<{ readonly contactCardJson: string; readonly archive: Uint8Array; readonly vesselIdentifierHex: string }> {
+  const keyhive = new KeyhiveProvider();
+  await keyhive.init({ seed: input.vesselSeed, eventStore: new InMemoryEventStore(), ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
+  try {
+    return {
+      vesselIdentifierHex: await keyhive.vesselIdentifierHex(),
+      contactCardJson: new TextDecoder().decode(await keyhive.contactCard()),
+      archive: await keyhive.exportArchive(),
+    };
+  } finally { await keyhive.dispose(); }
+}
+
+/** Does this card name the individual whose verifying key is `vesselKeyHex`? Read through a throwaway provider, never trusted from the JSON. */
+export async function placeCardIsOf(contactCardJson: string, vesselKeyHex: string): Promise<boolean> {
+  const reader = new KeyhiveProvider();
+  await reader.init({ seed: new Uint8Array(32).fill(1), eventStore: new InMemoryEventStore() });
+  try {
+    const { id } = await reader.receiveContactCard(new TextEncoder().encode(contactCardJson));
+    return String(id).toLowerCase().replace(/^0x/, "").endsWith(vesselKeyHex.toLowerCase().replace(/^0x/, ""));
+  } catch { return false; }
+  finally { await reader.dispose(); }
+}
+
+/**
  * The cabal sentinel's seed for a face founded at one hearth: the sentinel URI under the hearth's Nexus AID, so two
  * hearths' cabals seed apart. A face founded at no hearth (a hearth-agnostic leaf) seeds from the bare URI.
  */
@@ -415,6 +445,36 @@ function writeGroupSecretSeal(
 }
 
 /**
+ * The founding's SIGNED RECORDS, landed by the one path both shores take: the persona root signs the face's genesis log
+ * onto its `@persona` plane (the founding, one `plane` act per plane, the founder device's admission and its edge) and the
+ * fleet's empty genesis frontier onto its fleet board. Signatures are deterministic, so a founding that re-enters from its
+ * checkpoint lands the same bytes and nothing doubles. A contracted founding holds no root seed and signs none: the
+ * contracting operator's records arrive with its edge.
+ */
+async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; atomSeed: Uint8Array; face: Pick<FaceFoundingResult, "personaGroupId" | "personaKelPrefix" | "personaUrl" | "identitiesUrl" | "circlesUrl" | "sessionsUrl" | "founderEdge" | "signerDid"> }): Promise<void> {
+  if (input.binding.mode !== "self-stood") return;
+  const { face } = input;
+  const seed = input.binding.signerSeed;
+  const rootKey = await ed25519VerifyingKeyFromSeed(seed);
+  if (rootKey !== verifyingKeyFromDid(face.signerDid as never)) throw new Error("[founding] the root that signs the face's records differs from the founder's DID");
+  const signer = { key: rootKey, sign: ed25519SignerFromSeed(seed) };
+  const acts = await signFoundingLog({
+    group: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
+    rootCommitment: faceRootCommitment(face.founderEdge.personaRootDid), epoch: 0,
+    planes: { persona: face.personaUrl, identities: face.identitiesUrl, circles: face.circlesUrl, sessions: face.sessionsUrl },
+    deviceKey: faceAtomKeyFromSeed(input.atomSeed, face.personaGroupId).key,
+    edgeDigest: edgeBodyDigest(face.founderEdge),
+  }, signer);
+  const plane = await input.repo.find<LarDoc>(face.personaUrl as never);
+  plane.change((draft) => { for (const act of acts) writePersonaAct(draft, act); });
+  const lineage = makeHandLineage([{ epoch: 0, signers: [rootKey], threshold: 1 }])!;
+  const board = await materializeSharedLarDoc(input.repo, fleetEdgeBoardDocUrl(rootKey), "board:edge-kapae");
+  const draft = { tiddlers: {} } as unknown as LarDoc;
+  await landFleetGenesis(draft, rootKey, lineage, signer);
+  board.change((d) => { Object.assign(d.tiddlers, draft.tiddlers); });
+}
+
+/**
  * Found the FACE — the persona group, its private plane, the social planes, the binding edge and the
  * persona-KEL inception — onto a place that already stands.
  *
@@ -431,7 +491,9 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
   if (prior) {
     await landFaceCheckpoint(daemonHandle, prior);
-    return { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
+    const resumed = { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
+    await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: resumed });
+    return resumed;
   }
   // WHETHER THIS FACE MOUNTS. The founding face (h0) writes the singular daemon-doc pins below; an
   // additional compartment mints its own individual, is returned, and writes none of them (a register-many
@@ -625,6 +687,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   };
   const events = (await store.list()).filter((e) => !standing.has(e.hash)).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
   const { atomSeed: _heldSeed, ...publicResult } = result;
+  await landFaceGenesis({ repo, binding: input.binding, atomSeed, face: result });
   const checkpoint: FaceCheckpoint = { scope: foundingScope, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
@@ -740,6 +803,9 @@ export interface DeviceAdmitEdgeInput {
   personaKelPrefix:       string;
   /** The founder's persona-KEL chain snapshot, which seeds the joinee's local board. */
   personaKelChain:       readonly PersonaKelEvent[];
+  /** Signed persona records to carry to the joinee's daemon doc. */
+  personaActs:           readonly unknown[];
+  edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
   /** The hearth true-name (engine CID) the joinee binds TO. */
   hearthTrueName:         string;
   /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
@@ -786,6 +852,9 @@ export async function runDeviceAdmitEdge(
   if (!input.personaKelChain || input.personaKelChain.length === 0) {
     throw new Error("[ceremony] runDeviceAdmitEdge: personaKelChain required — the joinee seeds its local KEL board from it");
   }
+  if (!input.edgeFrontier || !Array.isArray(input.edgeFrontier.records) || !Array.isArray(input.edgeFrontier.snapshots)) {
+    throw new Error("[ceremony] runDeviceAdmitEdge: edgeFrontier required");
+  }
   if (typeof input.personaUrl !== "string" || input.personaUrl.length === 0) {
     throw new Error("[ceremony] runDeviceAdmitEdge: personaUrl required — the joinee syncs the founder's shared persona doc from it");
   }
@@ -810,6 +879,8 @@ export async function runDeviceAdmitEdge(
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
+    personaActs:            input.personaActs,
+    edgeFrontier:           input.edgeFrontier,
     deviceEdge,
     groupSecretSeal,
     hearthTrueName:         input.hearthTrueName,
@@ -917,6 +988,25 @@ export async function runApplyAdmitPayload(
   if (typeof payload.personaUrl !== "string" || payload.personaUrl.length === 0) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaUrl — refusing to admit (pre-field payload would seed a fresh, unsynced persona doc).");
   }
+  if (!payload.edgeFrontier || !Array.isArray(payload.edgeFrontier.records) || !Array.isArray(payload.edgeFrontier.snapshots)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks edgeFrontier; re-admit the face.");
+  }
+  if (!Array.isArray(payload.personaActs)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaActs; re-admit the face.");
+  }
+  // THE ACTS A BUNDLE CARRIES ARE JUDGED BEFORE ANY SIDE EFFECT: one malformed entry refuses the whole bundle by name, and the
+  // shared plane urls this device adopts read off the VERIFIED projection of the log under the carried KEL (never the first
+  // raw record that claims a plane).
+  if (payload.personaActs.some((a) => typeof a !== "object" || a === null || typeof (a as { body?: unknown }).body !== "object" || (a as { body?: unknown }).body === null)) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload carries a malformed persona act; re-admit the face.");
+  }
+  const carriedFace = readFace(payload.personaKelChain);
+  if (!carriedFace) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona KEL carries no lineage; re-admit the face.");
+  const carriedLog = carriedFace.project(payload.personaActs, payload.personaGroupId);
+  // A bundle that carries no founded, fork-free log, or no signed fleet frontier, joins nothing: refuse before any side effect.
+  if (!carriedLog.founded || carriedLog.fork || !carriedLog.head) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona log is empty, unfounded or forked; re-admit the face.");
+  if (payload.edgeFrontier.records.length === 0) throw new Error("[ceremony] runApplyAdmitPayload: payload carries no signed fleet frontier record; re-admit the face.");
+  const carriedPlanes = carriedLog.planes;
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }
@@ -929,8 +1019,17 @@ export async function runApplyAdmitPayload(
   // so the two devices name one set identically or they sync nothing. the daemon bag stays sovereign-per-vessel
   // and is seeded fresh above; the face's planes are shared ground reached by one derivation.
   const planes = personaScopedBagIds(payload.personaGroupId);
-  const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> = checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
-  const circlesHandle: ReturnType<typeof seedCirclesDoc> = checkpoint ? await repo.find(checkpoint.result.circlesUrl as never) : seedCirclesDoc(repo, planes.circles);
+  // A FACE'S CIRCLES AND IDENTITIES ARE THE FACE'S, NOT THE DEVICE'S: the founder minted them once and a signed `plane` act in
+  // the bundle names each, so this device adopts those documents by url and syncs them; a bundle that names none seeds
+  // this device's own (a bare probe). The boot proves the urls it mounts against the verified acts, so an act this apply
+  // reads unverified moves nothing there. SESSIONS stay per vessel: a session is motion (which device wears the face now),
+  // and decisions cross devices, never motion.
+  const planeUrlOf = (name: string): string | undefined => carriedPlanes[name];
+  const sharedIdentitiesUrl = planeUrlOf("identities"), sharedCirclesUrl = planeUrlOf("circles");
+  const identitiesHandle: ReturnType<typeof seedIdentitiesDoc> | null = sharedIdentitiesUrl ? null
+    : checkpoint ? await repo.find(checkpoint.result.identitiesUrl as never) : seedIdentitiesDoc(repo, planes.identities);
+  const circlesHandle: ReturnType<typeof seedCirclesDoc> | null = sharedCirclesUrl ? null
+    : checkpoint ? await repo.find(checkpoint.result.circlesUrl as never) : seedCirclesDoc(repo, planes.circles);
   const sessionsHandle: ReturnType<typeof seedSessionsDoc> = checkpoint ? await repo.find(checkpoint.result.sessionsUrl as never) : seedSessionsDoc(repo, planes.sessions);
   // The persona doc: the joinee RECEIVES the founder's shared veiled-identity doc to SYNC it
   // (the membership-sync foundation) — REQUIRED now (guarded above), never a fresh local seed.
@@ -939,14 +1038,15 @@ export async function runApplyAdmitPayload(
 
   const ceremonyTiddlers = buildCeremonyTiddlers(atom.key, vesselDisplayName);
   for (const t of ceremonyTiddlers) {
+    // A shared document is not held yet on a fresh device; the founder seeded it, and this device's own entry joins it on a boot that holds it.
     if (t.bag === IDENTITIES_NAMESPACE) {
-      identitiesHandle.change((doc) => {
+      identitiesHandle?.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });
     } else {
-      circlesHandle.change((doc) => {
+      circlesHandle?.change((doc) => {
         if (!doc.tiddlers[t.title]) {
           doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
@@ -979,8 +1079,8 @@ export async function runApplyAdmitPayload(
     await keyhive.dispose();
     result = {
       contactCardJson, archive,
-      identitiesUrl: identitiesHandle.url as string,
-      circlesUrl: circlesHandle.url as string,
+      identitiesUrl: sharedIdentitiesUrl ?? identitiesHandle!.url as string,
+      circlesUrl: sharedCirclesUrl ?? circlesHandle!.url as string,
       sessionsUrl: sessionsHandle.url as string,
       daemonUrl: daemonHandle.url as string,
       personaUrl, personaBagId,
@@ -1004,6 +1104,7 @@ export async function runApplyAdmitPayload(
   // and the root→joinee edge (mirrors the founding write). The joinee boots through its Binding
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
+    for (const act of payload.personaActs) writePersonaAct(doc, act as Parameters<typeof writePersonaAct>[1]);
     writeDyad(doc, joineeDyad);
     if (!mount) {
       writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
@@ -1039,6 +1140,21 @@ export async function runApplyAdmitPayload(
     const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
     kelBoard.change((draft) => {
       for (const event of payload.personaKelChain) writePersonaKelEvent(draft, event);
+    });
+  }
+
+  // Carry the founder's signed fleet frontier into the joinee's local replica for offline reads.
+  {
+    const root = verifyingKeyFromDid(payload.signerDid as never);
+    const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+    board.change((draft) => {
+      for (const [cid, raises] of payload.edgeFrontier.snapshots) {
+        if (frontierSnapshotCid(raises) === cid) writeFrontierSnapshot(draft, raises);
+      }
+      for (const raw of payload.edgeFrontier.records) {
+        const record = raw as EdgeFrontier;
+        if (record?.body && Array.isArray(record.signatures)) writeEdgeFrontier(draft, record);
+      }
     });
   }
 

@@ -99,7 +99,7 @@ describe("the relation class — a secret only the other party re-issues", () =>
     try {
       const rows = await rowsOf(v.homes, {
         ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}",
-        [`face-address-secret-${"5e".repeat(16)}.bin`]: "x", "fleet-join-pending.json": "{}", [`face-join-record-${"6f".repeat(16)}.json`]: "{}",
+        [`face-address-secret-${"5e".repeat(16)}.bin`]: "x", [`fleet-join-pending-${"6e".repeat(16)}.json`]: "{}", [`face-join-record-${"6f".repeat(16)}.json`]: "{}",
       });
       // A row the table names by a digest reads under its name with that digest.
       expect([...rows.values()].map((r) => r.row).sort()).toEqual(RELATION_ROWS);

@@ -29,6 +29,8 @@ const SITES: readonly Site[] = [
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.writeVeilArchive\(/g, count: 1, selector: "authenticated", act: "boot's write door uses the mounted face's group from its mount or daemon pins" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.archive\(/g, count: 1, selector: "none", act: "boot reads the place's archive whatever face is worn" },
   { file: join(NODE, "open-node-vessel.ts"), token: /\bsovereign\.veilArchive\(/g, count: 1, selector: "authenticated", act: "boot reads the mounted face's group archive" },
+  { file: join(NODE, "place-card.ts"), token: /\bloadIdentityArchive\(/g, count: 1, selector: "none", act: "a joinee's place card mint restores the place's own archive, whatever face is worn" },
+  { file: join(NODE, "place-card.ts"), token: /\bpersistIdentityArchive\(/g, count: 1, selector: "none", act: "a joinee's place card rests the place's own archive when none stands" },
   { file: join(NODE, "node-daemon-island.ts"), token: /sealOnVessel\("(?:archive|veil)"/g, count: 2, selector: "bytes-only", act: "the worker port carries a carrier label and bytes, no row" },
   { file: join(KEYHIVE, "operator-daemon-behavior.ts"), token: /\bpersistArchiveFloor\(/g, count: 1, selector: "bytes-only", act: "boot's archive floor writes both rows through byte-only callbacks" },
   { file: join(KEYHIVE, "operator-daemon-behavior.ts"), token: /provider === veilKh \? persistVeilArchive : persistArchive/g, count: 1, selector: "bytes-only", act: "a content-key wrap rests the provider's archive: provider identity picks the row" },

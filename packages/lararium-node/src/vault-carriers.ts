@@ -78,6 +78,7 @@ import {
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
+import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { outboxKeyPath } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
@@ -317,6 +318,8 @@ function buildTable(): readonly CarrierRow[] {
     // A group digest owns this local atom row; bundles leave its seed on this vessel.
     id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_GROUP_FILE, custody: "hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    id({ row: "face-anchor", target: tgt(["D"]), match: FACE_ANCHOR_GROUP_FILE, custody: "hot", keyClass: "device-minted",
+         writer: "face-anchor-store", name: (m) => `face-anchor-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A founding ask holds a seed until its group row keeps it.
     id({ row: "face-atom-ask", target: tgt(["D"]), match: FACE_ATOM_ASK_FILE, custody: "hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
@@ -352,8 +355,8 @@ function buildTable(): readonly CarrierRow[] {
          writer: "fleet-join-custody", name: (m) => `face-address-secret-${m[1]}` }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
-    id({ row: "fleet-join-pending", target: tgt(["D"]), match: file("fleet-join-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "fleet-join-custody" }),
+    id({ row: "fleet-join-pending", target: tgt(["D"]), match: /^fleet-join-pending-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `fleet-join-pending-${m[1]}` }),
     // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
     id({ row: "face-join-record", target: tgt(["D"]), match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",

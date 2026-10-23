@@ -25,6 +25,7 @@ import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavio
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
+  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
@@ -86,12 +87,19 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
+    faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+      personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  const writeSlot = (value: string) => daemonHandle.change((d) => {
+  // A face's lease slot counts only SIGNED by a key the KEL seats: the root signs; a bare number raises nothing.
+  const writeSlotText = (text: string) => daemonHandle.change((d) => {
     const title = leaseEpochSlotUri(cer.personaGroupId, "another-writer");
-    (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text: value } };
+    (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } };
   });
-  return { ctx, daemonAuth, daemonHandle, writeSlot, chain };
+  const writeSlot = async (epoch: number) => writeSlotText(await signLeaseAdvance(
+    { resource: cer.personaGroupId, epoch },
+    { key: cer.founderEdge.personaRootDid.replace(/^0x/, ""), sign: ed25519SignerFromSeed(FOUNDER_SEED) }));
+  const writeUnsignedSlot = writeSlotText;
+  return { ctx, daemonAuth, daemonHandle, writeSlot, writeUnsignedSlot, chain };
 }
 
 const boot = async (daemonAuth: unknown, ctx: unknown) => {
@@ -108,8 +116,17 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
 
   test("V2 — a slot present is read: a slot of 1 over an edge bound at 0 refuses STALE", async () => {
     const { ctx, daemonAuth, writeSlot } = await standIsland();
-    writeSlot("1");
+    await writeSlot(1);
     await expect(boot(daemonAuth, ctx)).rejects.toThrow(/delegation lease stale/);
+  }, 60_000);
+
+  test("V2b — RED: an unsigned slot, or a stranger's signed one, raises nothing: the boot stands", async () => {
+    const { ctx, daemonAuth, writeUnsignedSlot } = await standIsland();
+    writeUnsignedSlot("1");
+    await expect(boot(daemonAuth, ctx)).resolves.toBeUndefined();
+    writeUnsignedSlot(await signLeaseAdvance({ resource: daemonAuth.personaGroupId, epoch: 9 },
+      { key: "ab".repeat(32), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(8)) }));
+    await expect(boot(daemonAuth, ctx)).resolves.toBeUndefined();
   }, 60_000);
 
   test("V3 — realm-feed and realm-clock reach the composite's daemon layer", async () => {

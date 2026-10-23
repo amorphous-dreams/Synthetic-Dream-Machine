@@ -20,6 +20,7 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
 import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -31,6 +32,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
 });
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
@@ -63,6 +65,21 @@ describe("runEdgeKapae", () => {
     const state = await boardState(r.boardUrl, r.signers[0]!);
     expect(state.readings.get(vouch.edgeId)?.stands).toBe(true);
     await state.repo.rest();
+  });
+
+  it("RED: an unnamed device act with two faces held signs as the WORN face's root, never the first root held; CONTROL: face 0 worn signs as face 0", async () => {
+    await generateOrLoadPersonaGroupRoot(1);
+    await seedFaceAtom(1);
+    await seedFleet(1);
+    const root0 = await loadPersonaGroupRootVerifyingKey(0), root1 = await loadPersonaGroupRootVerifyingKey(1);
+    expect(root0).not.toBe(root1);
+    await seatOwnCharter([0, 1]);
+    await wear(1);
+    const worn1 = await direct(runEdgeKapae)({ device: DEVICE, raised: true });
+    expect(worn1.boardUrl, "the worn face's fleet board").toBe(fleetEdgeBoardDocUrl(root1!));
+    await wear(0);
+    const worn0 = await direct(runEdgeKapae)({ device: DEVICE, raised: true });
+    expect(worn0.boardUrl).toBe(fleetEdgeBoardDocUrl(root0!));
   });
 
   it("a device act lands on the signing root fleet board and names its device edge", async () => {

@@ -59,11 +59,11 @@ export interface BrowserDaemonVmOptions {
   /** URL of the compiled browser daemon island Worker script. */
   workerScriptUrl:  URL;
   /** The spawn seam. ABSENT → a dedicated module Worker at `workerScriptUrl` (today's path). PRESENT → the
-   *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per origin and
+   *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per house and
    *  this tab attaches to it; no worker spawns here. */
   spawnWorker?:     (url: URL) => VesselWorkerHandle;
   /** The holder path installs this factory for a replacement manifest after a late floor swap. */
-  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) => void;
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[]; afterPost?: () => void }) => void;
 }
 
 export { VerbTable };

@@ -25,7 +25,7 @@
  * `CustodyLocked`.
  */
 import { randomBytes } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readdirSync } from "node:fs";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
@@ -33,8 +33,8 @@ import { larIdentityDir } from "./vessel-paths.js";
 
 /** A face's address secret's file, for the carrier table: `face-address-secret-<32 hex>.bin`. */
 export const FACE_ADDRESS_SECRET_FILE = /^face-address-secret-([0-9a-f]{32})\.bin$/;
-/** The joining vessel's pending join, for the carrier table. */
-export const FLEET_JOIN_PENDING_FILE = "fleet-join-pending.json";
+/** A joining vessel's pending join, for the carrier table: `fleet-join-pending-<32 hex>.json`, one per face it joins. */
+export const FLEET_JOIN_PENDING_FILE = /^fleet-join-pending-([0-9a-f]{32})\.json$/;
 /** A joined face's record, for the carrier table: `face-join-record-<32 hex>.json`. */
 export const FACE_JOIN_RECORD_FILE = /^face-join-record-([0-9a-f]{32})\.json$/;
 
@@ -49,6 +49,11 @@ function faceRowName(row: string, personaGroup: string): string {
 /** The row a face's address secret rests in, named by a digest of its PersonaGroup. */
 export function faceAddressSecretFile(personaGroup: string): string {
   return `face-address-secret-${faceRowName("face-address-secret", personaGroup)}.bin`;
+}
+
+/** The row a face's pending join rests in, named by a digest of its PersonaGroup: two faces' joins never share a row. */
+export function fleetJoinPendingFile(personaGroup: string): string {
+  return `fleet-join-pending-${faceRowName("fleet-join-pending", personaGroup)}.json`;
 }
 
 /** The row a joined face's record rests in, named by a digest of its PersonaGroup. */
@@ -102,34 +107,55 @@ export interface PendingFleetJoin {
   readonly sealSecret: string;
 }
 
-/** Keep a pending join. A different join already pending refuses: one join at a time. */
-export async function keepPendingFleetJoin(pending: PendingFleetJoin): Promise<void> {
+/** Keep a face's pending join. A different join already pending for THAT face refuses: one join at a time per face. */
+export async function keepPendingFleetJoin(personaGroup: string, pending: PendingFleetJoin): Promise<void> {
   const bytes = utf8.encode(JSON.stringify(pending));
+  const file = fleetJoinPendingFile(personaGroup);
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await updateCustodyRow("identity", FLEET_JOIN_PENDING_FILE, (standing) => {
+  await updateCustodyRow("identity", file, (standing) => {
     if (standing === null) return { plaintext: bytes, value: undefined };
-    if (!bytesEqual(standing, bytes)) throw new CustodyRowUnavailable("identity", FLEET_JOIN_PENDING_FILE, "names-another-key");
+    if (!bytesEqual(standing, bytes)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
 
-/** The pending join this vessel keeps, or null. */
-export async function readPendingFleetJoin(): Promise<PendingFleetJoin | null> {
-  const bytes = await readCustodyRow("identity", FLEET_JOIN_PENDING_FILE);
-  if (bytes === null) return null;
+function readPendingBytes(bytes: Uint8Array, file: string): PendingFleetJoin {
   try {
     const v = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
     if (typeof v !== "object" || v === null) throw new Error("malformed");
     const r = v as Record<string, unknown>;
     if (typeof r["sealSecret"] !== "string" || !/^[0-9a-f]{64}$/.test(r["sealSecret"])) throw new Error("malformed");
     return { request: r["request"], offer: r["offer"], sealSecret: r["sealSecret"] };
-  } catch { throw new CustodyRowUnavailable("identity", FLEET_JOIN_PENDING_FILE, "malformed"); }
-  finally { bytes.fill(0); }
+  } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
 }
 
-/** Remove the pending join whose request carries `nonce`; answers whether one stood. Another pending join stays. */
-export async function clearPendingFleetJoin(nonce: string): Promise<boolean> {
-  return removeCustodyRow("identity", FLEET_JOIN_PENDING_FILE, (bytes) => {
+/** The pending join this vessel keeps for one face, or null. */
+export async function readPendingFleetJoin(personaGroup: string): Promise<PendingFleetJoin | null> {
+  const file = fleetJoinPendingFile(personaGroup);
+  const bytes = await readCustodyRow("identity", file);
+  if (bytes === null) return null;
+  try { return readPendingBytes(bytes, file); } finally { bytes.fill(0); }
+}
+
+/** Every face with a join pending here: the PersonaGroup each kept offer names. */
+export async function listPendingFleetJoinGroups(): Promise<string[]> {
+  const out: string[] = [];
+  let names: string[] = [];
+  try { names = readdirSync(larIdentityDir()); } catch { return out; }
+  for (const file of names.filter((n) => FLEET_JOIN_PENDING_FILE.test(n)).sort()) {
+    const bytes = await readCustodyRow("identity", file);
+    if (bytes === null) continue;
+    try {
+      const group = (readPendingBytes(bytes, file).offer as { personaGroup?: unknown } | undefined)?.personaGroup;
+      if (typeof group === "string") out.push(group);
+    } finally { bytes.fill(0); }
+  }
+  return out;
+}
+
+/** Remove one face's pending join whose request carries `nonce`; answers whether one stood. Another face's join stays. */
+export async function clearPendingFleetJoin(personaGroup: string, nonce: string): Promise<boolean> {
+  return removeCustodyRow("identity", fleetJoinPendingFile(personaGroup), (bytes) => {
     try {
       const r = JSON.parse(new TextDecoder().decode(bytes)) as { request?: { nonce?: unknown } };
       return r.request?.nonce === nonce;

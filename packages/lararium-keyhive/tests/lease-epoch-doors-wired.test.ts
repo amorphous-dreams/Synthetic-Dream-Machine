@@ -27,7 +27,9 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).toMatch(/readonly expectedEpoch\?:\s*number/);
     // The forwarding call itself — expectedEpoch reaches verifyEdgeAgainstPersonaKel's opts.
     expect(src).toMatch(/if \(input\.expectedEpoch === undefined\)[\s\S]{0,220}current lease frontier unavailable/);
-    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(input\.deviceEdge!,\s*chain,\s*\{\s*expectedEpoch:\s*input\.expectedEpoch\s*\}/);
+    // The epoch the gate walks under is the observed one lifted to the sealed anchor's frontier (a stale replica lowers nothing).
+    expect(src).toMatch(/leaseEpochUnderAnchor\(input\.faceAnchor!,\s*input\.expectedEpoch\)/);
+    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(input\.deviceEdge!,\s*chain,\s*\{\s*expectedEpoch:\s*anchorEpoch\.epoch\s*\}/);
   });
 
   test("★ operator-daemon-behavior.ts ALSO threads it into the boot-time bootDaemonKeyhive call (Binding Gate door) ★", () => {
@@ -64,7 +66,7 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("★ ONE ROAD: every lease read goes through the island's own daemon layer, never the oracle registry ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/readLeaseFrontier\(composite,\s*daemonAuth\.personaGroupId\)/);
+    expect(src).toMatch(/readLeaseUnderFace\(composite,\s*daemonAuth\.personaGroupId,/);
     expect(src).not.toMatch(/storeOf\(DAEMON_BAG_ID\)/);
     expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = daemonLayerOf\(ctx\.composite\)/);
   });

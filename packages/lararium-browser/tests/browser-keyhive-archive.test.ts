@@ -22,13 +22,20 @@ import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@l
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
-import { loadBrowserSigningSeed, openVesselIdb, idbPut } from "../src/browser-vessel-identity.js";
+import { loadBrowserSigningSeed, openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
 import {
   BrowserArchiveRowMissing, BrowserArchiveRowUnreadable, browserVeilArchiveRow,
   loadBrowserKeyhiveArchive, loadBrowserVeilArchive, saveBrowserKeyhiveArchive,
 } from "../src/browser-keyhive-archive.js";
 
 const BAG = "lar:///browser.reload.bag";
+async function foundedGroup(idbName: string): Promise<string> {
+  const db = await openVesselIdb(idbName);
+  try {
+    const row = (await idbKeys(db, "keystore")).find((k) => /^(?:sealed\/)?face-atom\//.test(k));
+    return row!.replace(/^(?:sealed\/)?face-atom\//, "");   // the founding rests the atom before the bootstrap commits
+  } finally { db.close(); }
+}
 
 /** Found a browser vessel for real and halt once its catalog stands. */
 async function foundHalted(): Promise<string> {
@@ -69,10 +76,10 @@ describe("a browser vessel keeps its keyhive Archives", () => {
   test("K1 a founding leaves the vessel's Archive and face 0's veil Archive in the keystore", async () => {
     const idbName = await foundHalted();
     const vessel = await loadBrowserKeyhiveArchive(idbName);
-    const veil = await loadBrowserVeilArchive(idbName, 0);
+    const veil = await loadBrowserVeilArchive(idbName, await foundedGroup(idbName));
     expect(vessel?.byteLength ?? 0).toBeGreaterThan(0);
     expect(veil?.byteLength ?? 0).toBeGreaterThan(0);
-    expect(await loadBrowserVeilArchive(idbName, 1), "no other face founded here").toBeUndefined();
+    expect(await loadBrowserVeilArchive(idbName, "other-group"), "no other face founded here").toBeUndefined();
   });
 
   test("K2 THE RELOAD: a creator restored from its kept Archive opens what it sealed and seals anew", async () => {
@@ -97,7 +104,7 @@ describe("a browser vessel keeps its keyhive Archives", () => {
   test("K3 each row holds its own identity: the veil's Archive refuses under the vessel seed", async () => {
     const idbName = await foundHalted();
     const seed = await loadBrowserSigningSeed(idbName);
-    const veil = (await loadBrowserVeilArchive(idbName, 0))!;
+    const veil = (await loadBrowserVeilArchive(idbName, await foundedGroup(idbName)))!;
     const wrong = new KeyhiveProvider();
     await expect(wrong.init({ seed, eventStore: new InMemoryEventStore(), archiveBytes: veil }))
       .rejects.toBeInstanceOf(ArchiveIdentityMismatch);
@@ -124,7 +131,7 @@ describe("a browser vessel keeps its keyhive Archives", () => {
   test("K4 a torn row refuses by name, an absent row reads undefined, and an empty Archive never lands", async () => {
     const idbName = `archive-rows-${crypto.randomUUID()}`;
     expect(await loadBrowserKeyhiveArchive(idbName)).toBeUndefined();
-    expect(await loadBrowserVeilArchive(idbName, 0)).toBeUndefined();
+    expect(await loadBrowserVeilArchive(idbName, "group-a")).toBeUndefined();
 
     const standing = new Uint8Array([9, 8, 7, 6]);
     await saveBrowserKeyhiveArchive(idbName, standing);
@@ -132,9 +139,9 @@ describe("a browser vessel keeps its keyhive Archives", () => {
     expect(Array.from((await loadBrowserKeyhiveArchive(idbName))!), "the standing bytes never moved").toEqual([9, 8, 7, 6]);
 
     const idb = await openVesselIdb(idbName);
-    try { await idbPut(idb, "keystore", browserVeilArchiveRow(0), "not bytes"); } finally { idb.close(); }
-    await expect(loadBrowserVeilArchive(idbName, 0)).rejects.toBeInstanceOf(BrowserArchiveRowUnreadable);
-    await expect(loadBrowserVeilArchive(idbName, 0)).rejects.toThrow(/veil-archive-h0/);
-    expect(() => browserVeilArchiveRow(-1)).toThrow(/face index/);
+    try { await idbPut(idb, "keystore", browserVeilArchiveRow("group-a"), "not bytes"); } finally { idb.close(); }
+    await expect(loadBrowserVeilArchive(idbName, "group-a")).rejects.toBeInstanceOf(BrowserArchiveRowUnreadable);
+    await expect(loadBrowserVeilArchive(idbName, "group-a")).rejects.toThrow(/veil-archive-ggroup-a/);
+    expect(() => browserVeilArchiveRow("")).toThrow(/PersonaGroup/);
   });
 });

@@ -17,8 +17,9 @@ const boot = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vess
 const code = boot.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
 
 describe("the node boot's Kahu canon wiring", () => {
-  test("the keel's system canon rests on standKahuCanon, over the face pin the bootstrap carries", () => {
-    expect(code).toMatch(/systemCanon:\s*async\s*\(\)\s*=>\s*\{[\s\S]{0,400}standKahuCanon\(\{[\s\S]{0,300}PERSONA_GROUP_ID_TIDDLER/);
+  test("the keel's system canon rests on standKahuCanon, over the face sealed custody names (never the bootstrap's group text)", () => {
+    expect(code).toMatch(/systemCanon:\s*async\s*\(\)\s*=>\s*\{[\s\S]{0,400}standKahuCanon\(\{[\s\S]{0,300}personaGroupId: custodyGroup/);
+    expect(code).not.toMatch(/standKahuCanon\(\{[\s\S]{0,300}PERSONA_GROUP_ID_TIDDLER/);
   });
   test("no genesis office mints a system document and no reconcile writes a catalog row for one", () => {
     expect(code).not.toMatch(/mintLaresIfAbsent|mintLarariumIfAbsent|reconcileWellKnownTiddlers/);

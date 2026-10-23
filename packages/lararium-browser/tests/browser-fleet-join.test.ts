@@ -67,9 +67,23 @@ async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoin
   return { kind: "fleet-join-answer", ...body, certificates, grants, signature: await signHex(fleetJoinAnswerImage(body), s.root) };
 }
 
-const pendingOf = (idbName: string) => readKeystoreRow(idbName, "fleet-join-pending");
+const pendingOf = (idbName: string) => readKeystoreRow(idbName, `fleet-join-pending/${GROUP}`);
 
 describe("the browser's fleet join", () => {
+  test("B0 — two faces' joins stand pending at once; abandon without a name refuses, and naming one clears only it", async () => {
+    const s = await stage();
+    const GROUP_B = "0xb7f1c2a9d4e60382";
+    const offerB = fleetJoinOffer({ personaGroup: GROUP_B, rootKey: s.root.key, nonce: "cd".repeat(32), scopes: [s.face.scope] });
+    await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    await browserFleetJoinRequest({ offer: offerB, idbName: s.idbName });
+    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP}`), "face A's own row").toBeDefined();
+    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP_B}`), "face B's own row").toBeDefined();
+    await expect(browserFleetJoinAbandon(s.idbName)).rejects.toThrow(/face-not-named/);
+    expect(await browserFleetJoinAbandon(s.idbName, GROUP_B)).toBe(true);
+    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP}`), "A stands").toBeDefined();
+    expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);   // the one left goes without a name
+  });
+
   test("B1 — the browser mints its own face-scoped key and requests; the same offer again answers the kept request", async () => {
     const s = await stage();
     const request = await browserFleetJoinRequest({ offer: JSON.parse(JSON.stringify(s.offer)), idbName: s.idbName });
@@ -141,7 +155,7 @@ describe("the browser's fleet join", () => {
     const s = await stage();
     const first = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
     // The break: the key rests, but the pending row never came to stand.
-    await withCustodyRows(s.idbName, (rows) => rows.delete("fleet-join-pending"));
+    await withCustodyRows(s.idbName, (rows) => rows.delete(`fleet-join-pending/${GROUP}`));
     const again = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
     expect(again.requests[0]!.vesselFaceKey).toBe(first.requests[0]!.vesselFaceKey);
   });

@@ -15,20 +15,35 @@
  * refuses `BrowserArchiveRowUnreadable` by row name: nothing reads a torn row as an empty one, and nothing
  * mints an identity over it.
  *
- * Rows: `keyhive-archive` (the vessel individual) · `veil-archive-h<N>` (face N's creator-veil).
+ * Rows: `keyhive-archive` (the vessel individual) · `veil-archive-g<PersonaGroup>` (a face's creator-veil).
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-keyhive-archive
  */
 import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { idbKeys, openVesselIdb } from "./browser-vessel-identity.js";
 
 const VESSEL_ARCHIVE_ROW = "keyhive-archive";
 
-/** The row that keeps face `handleIndex`'s creator-veil Archive. */
-export function browserVeilArchiveRow(handleIndex: number): string {
-  if (!Number.isSafeInteger(handleIndex) || handleIndex < 0) {
-    throw new Error(`[browser-keyhive-archive] a veil archive row names a face index; got ${String(handleIndex)}`);
+/** The row that keeps one PersonaGroup's creator-veil Archive. */
+export function browserVeilArchiveRow(personaGroup: string): string {
+  if (!personaGroup) throw new Error("[browser-keyhive-archive] a veil archive row names its PersonaGroup");
+  return `veil-archive-g${personaGroup}`;
+}
+
+/** Old handle-index rows cannot identify the face that owns them. Boot refuses before restoring an Archive. */
+export class BrowserOldShapeVeilArchiveRefused extends Error {
+  override readonly name = "BrowserOldShapeVeilArchiveRefused";
+  constructor(readonly idbName: string, readonly row: string) {
+    super(`[browser-keyhive-archive] refuses: this store holds the old face-archive shape; re-found the face (${row} in "${idbName}")`);
   }
-  return `veil-archive-h${handleIndex}`;
+}
+
+export async function oldShapeVeilRow(idbName: string): Promise<void> {
+  const db = await openVesselIdb(idbName);
+  try {
+    const row = (await idbKeys(db, "keystore")).find((key) => /^(?:sealed\/)?veil-archive-h\d+$/.test(key));
+    if (row) throw new BrowserOldShapeVeilArchiveRefused(idbName, row);
+  } finally { db.close(); }
 }
 
 /** A row that stands and does not hold Archive bytes. */
@@ -83,12 +98,12 @@ export function saveBrowserKeyhiveArchive(idbName: string, bytes: Uint8Array): P
   return writeRow(idbName, VESSEL_ARCHIVE_ROW, bytes);
 }
 
-/** Face `handleIndex`'s creator-veil Archive as it rests, or `undefined` when none ever stood. */
-export function loadBrowserVeilArchive(idbName = "lares:vessel", handleIndex = 0): Promise<Uint8Array | undefined> {
-  return readRow(idbName, browserVeilArchiveRow(handleIndex));
+/** A PersonaGroup's creator-veil Archive as it rests, or `undefined` when none ever stood. */
+export function loadBrowserVeilArchive(idbName: string, personaGroup: string): Promise<Uint8Array | undefined> {
+  return readRow(idbName, browserVeilArchiveRow(personaGroup));
 }
 
-/** Keep face `handleIndex`'s creator-veil Archive. */
-export function saveBrowserVeilArchive(idbName: string, handleIndex: number, bytes: Uint8Array): Promise<void> {
-  return writeRow(idbName, browserVeilArchiveRow(handleIndex), bytes);
+/** Keep a PersonaGroup's creator-veil Archive. */
+export function saveBrowserVeilArchive(idbName: string, personaGroup: string, bytes: Uint8Array): Promise<void> {
+  return writeRow(idbName, browserVeilArchiveRow(personaGroup), bytes);
 }

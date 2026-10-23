@@ -40,6 +40,9 @@ import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
+import { fleetLineageOf } from "../src/fleet-lineage.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -54,6 +57,7 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();
@@ -103,9 +107,11 @@ async function withRing<T>(
 ): Promise<T> {
   const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
   const vesselKey = (await wornAtomKey());
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
   return ownedStore(larDataDir(), async (repo) => run(makeEdgeShadowRing({
     repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
     fleetRoots: () => [fleetRoot],
+    lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
     charterRealm: () => charterRealm,
     vesselKeyOfPeer: (peerId) => peers[peerId]?.vessel ?? null,
     realmNymOfPeer: (peerId) => peers[peerId]?.nym ?? null,
@@ -177,9 +183,10 @@ describe("a fold that fails leaves no reading", () => {
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
     const vesselKey = (await wornAtomKey());
     let fail = false;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         fleetRoots: () => { if (fail) throw new Error("the store would not read"); return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => phone,
       });
@@ -203,9 +210,10 @@ describe("the reading goes dark the moment a board moves", () => {
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
     const vesselKey = (await wornAtomKey());
     let refolds = 0;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot], lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
       });
       await ring.refold();
@@ -484,6 +492,7 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
+    await wearPersona(0);   // three faces held: the vessel wears the one these vectors act as
     const keys = [...(await seatChairs([0, 1, 2])).keys];
     const charter = heldCharter({ keys, threshold: 2 });
     writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));

@@ -268,15 +268,25 @@ export interface WornPersonaMount {
  * Index 0 answers `null` by design: the founding face already owns the mount pins, so re-pinning it from
  * anchors would replace a reading with an identical one and invite the two sources to drift.
  */
+/** A worn face whose mount material is lost: the boot refuses by name rather than come up wearing another face. */
+export class WornFaceRefused extends Error {
+  constructor(readonly handleIndex: number, readonly lacking: string) {
+    super(`[persona] worn h${handleIndex} cannot mount: its anchors lack ${lacking}; the vessel will not come up on another face's pins. Re-found h${handleIndex} to write its full mount material, or wear another face.`);
+    this.name = "WornFaceRefused";
+  }
+}
+
 export async function readWornPersonaMount(
   vault: PersonaVault,
   report?: (reason: string) => void,
+  opts: { readonly refuse?: "null" | "throw" } = {},
 ): Promise<WornPersonaMount | null> {
   const handleIndex = await vault.selector.load();
   if (handleIndex === undefined || handleIndex === 0) return null;
 
   // Past this line a switch IS owed, so every `null` below is a REFUSAL and says so.
   const refuse = (lacking: string): null => {
+    if (opts.refuse === "throw") throw new WornFaceRefused(handleIndex, lacking);
     report?.(`worn h${handleIndex} cannot mount — its anchors lack ${lacking}; the vessel comes up on the founding face's pins. Re-found h${handleIndex} to write its full mount material.`);
     return null;
   };

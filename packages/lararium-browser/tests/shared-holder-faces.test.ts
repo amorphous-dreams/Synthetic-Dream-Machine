@@ -3,6 +3,8 @@ import { buildDeviceDelegation, type DeviceDelegationTiddler } from "../../larar
 import { faceAtomKeyFromSeed, type FaceAtomKey } from "../../lararium-mesh/src/face-atom.js";
 import { signHolderSessionProof } from "../../lararium-mesh/src/holder-session-proof.js";
 import { makeSharedHolderCore, type HolderIsland, type HolderPort } from "../src/shared-holder-core.js";
+import { houseName } from "../src/shared-holder.js";
+
 
 type Envelope = { ownerEpoch: string; sessionId: string; generation: number };
 type Hello = Envelope & { kind: "holder:hello"; nonce?: string };
@@ -19,7 +21,7 @@ async function face(group: string, rootByte: number, atomByte: number) {
   return { atom, edge };
 }
 
-function harness() {
+function harness(expectedHouseName?: string) {
   const spawned: string[] = [];
   const islands = new Map<string, {
     posts: Message[]; emit: (message: Message) => void; terminated: number;
@@ -54,6 +56,7 @@ function harness() {
   };
   const options = {
     lockName: "holder-faces-test",
+    ...(expectedHouseName ? { expectedHouseName } : {}),
     locks: { request: async (_name: string, _opts: { ifAvailable: true }, callback: (lock: { name: string } | null) => unknown) => callback({ name: "holder-faces-test" }) },
     spawnIsland,
     makeRepo: (group: string) => {
@@ -108,6 +111,16 @@ function harness() {
 }
 
 describe("the holder admits face sessions and houses each group", () => {
+  test("a signed session for another house name refuses before Repo or island boot", async () => {
+    const a = await face(A, 41, 51);
+    const h = harness(await houseName(B, a.edge.personaRootDid));
+    const tab = h.port(); await h.core.connect(tab.endpoint);
+    await h.open(tab, A, a.edge, a.atom);
+    expect(tab.messages("holder:refused").at(-1)).toMatchObject({ cause: "wrong-house" });
+    expect(h.spawned).toHaveLength(0);
+    expect(h.madeRepos).toHaveLength(0);
+  });
+
   test("R3a: a stranger's verb refuses; an admitted tab receives its result", async () => {
     const h = harness(); const tab = h.port(); await h.core.connect(tab.endpoint);
     tab.send({ type: "wiki:place-verb", requestId: "stranger", verb: "read" });

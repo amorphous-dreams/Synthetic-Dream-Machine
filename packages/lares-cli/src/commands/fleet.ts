@@ -16,7 +16,7 @@
  * request named. The joinee reads the answer under the root key its kept offer named, so the courier carries that
  * key before the answer exists.
  *
- * `--face N` names which of the root holder's faces the join serves (default 0, the founding face); the answer
+ * `--face N` names which of the root holder's faces the join serves (unnamed: the worn face, else the sole face, else a refusal that lists them); the answer
  * names the same face its offer named. The index stays local to the root holder: the offer and the answer name the
  * face by its PersonaGroup and root key, so the joining vessel takes no `--face`.
  *
@@ -54,7 +54,7 @@ function emitFile(args: ParsedArgs, value: unknown, what: string): void {
   console.log(`[lares fleet join] ${what} written to ${at}`);
 }
 
-/** The face a root holder's act names: `--face N`, a whole number from 0, or nothing for the founding face. */
+/** The face a root holder's act names: `--face N`, a whole number from 0, or nothing (the worn or sole face resolves in the node). */
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
   // A bare `--face` (or `--no-face`) names no index: it refuses rather than fall back to the founding face.

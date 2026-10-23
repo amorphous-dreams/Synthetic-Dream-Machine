@@ -24,6 +24,7 @@ import {
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, announceSeatRoll, keyhiveSeatShore, runSeatDuties, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
+import { fleetFixture } from "./fleet-fixture.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, pair, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -123,13 +124,15 @@ const roll = (raiseCids: string[], seat: { group: string; member: string } | und
   ({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-1", ...(seat ? { seat } : {}), raiseCids, how });
 
 describe("a private body seals on real Keyhive identities, end to end", () => {
-  it("a fresh empty fleet board leaves a healthy sibling in the content-key wrap", async () => {
+  it("a founded fleet board leaves a healthy sibling in the content-key wrap", async () => {
     const { devices: [f, sibling] } = await fleet(0x08, ["founder", "sibling"]);
     const root = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(6));
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
-      await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
-      const read = boardDyadReader(repo, repo.create(emptyLarDoc()), undefined, f!.id);
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const fx = await fleetFixture(new Uint8Array(32).fill(6));
+      await fx.found(board);
+      const read = boardDyadReader(repo, repo.create(emptyLarDoc()), undefined, f!.id, undefined, undefined, fx.lineage);
       f!.standingOf = (member) => read(root, member);
       f!.reseat();
       const result = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("shared across the fresh fleet"), signer: f!.signer });
@@ -263,6 +266,15 @@ describe("a removed device opens nothing sealed after its removal", () => {
     await carry(b!, f!);
     expect(await opens(f!, after.body.ref)).toBe("sealed by b after the raise");
     expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
+  });
+
+  it("RED: an unknown fleet frontier keeps a reader out of a new content key; CONTROL: a clear reader opens it", async () => {
+    const { devices: [f, b, c] } = await fleet(0x45, ["f", "b", "c"]);
+    f!.standing.set(bare(c!.id), "unknown");
+    const sealed = await seal(f!, "frontier held");
+    await carry(f!, b!); await carry(f!, c!);
+    expect(await opens(b!, sealed.body.ref)).toBe("frontier held");
+    expect(await opens(c!, sealed.body.ref)).toBe("REFUSED:bag-unfounded");
   });
 
   it("a party this vessel's edge reading sets aside receives no key, whatever the group seats", async () => {

@@ -23,6 +23,7 @@ import {
   type LarDoc, type PersonaKelEvent,
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
+  mintFaceAnchor,
 } from "@lararium/mesh";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
@@ -82,6 +83,8 @@ beforeAll(async () => {
       signerDid:             cer.signerDid,
       personaKel:            { prefix: cer.personaKelPrefix, chain: kelChain },
       deviceEdge:            cer.founderEdge,
+      faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+        personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
       faceVerifyingKey:      cer.founderEdge.deviceVerifyingKey,
     },
   };

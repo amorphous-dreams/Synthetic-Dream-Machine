@@ -171,7 +171,7 @@ function instrumentBootSource(source) {
     `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); resolve(); }`,
   );
   body = body.replace(
-    /worker\.post\(manifestMsg, transfer\);/,
+    /worker\.post\(initialPost\.msg, initialPost\.transfer\);/,
     (match) => `console.log("[C4 boot] host:manifest-post"); ${match}`,
   );
 

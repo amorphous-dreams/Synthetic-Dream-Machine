@@ -85,13 +85,13 @@ describe("a refused take keeps no charter its landing imported", () => {
   test("RED: a charter landed where none stood is gone once the take refuses; CONTROL: a take that holds keeps it", async () => {
     bootstrapNaming(null);
     seam.takeFails = true;
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "admit-refused" });
+    await expect(runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } })).rejects.toMatchObject({ refusal: "admit-refused" });
     expect(seam.writes).toEqual(["charter"]);
     expect(existsSync(seam.charterPath)).toBe(false);                                    // RED
 
     seam.takeFails = false;
     seam.writes = [];
-    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
     expect(existsSync(seam.charterPath)).toBe(true);                                     // CONTROL
   });
 
@@ -99,7 +99,7 @@ describe("a refused take keeps no charter its landing imported", () => {
     bootstrapNaming(null);
     seam.takeFails = true;
     seam.outcome = "extended";
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "admit-refused" });
+    await expect(runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } })).rejects.toMatchObject({ refusal: "admit-refused" });
     expect(existsSync(seam.charterPath)).toBe(true);
   });
 });

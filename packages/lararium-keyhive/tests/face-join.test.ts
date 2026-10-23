@@ -10,6 +10,7 @@ import { describe, test, expect } from "vitest";
 import { buildDeviceDelegation, hexToBytes, makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
+import { fleetFixture } from "./fleet-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
@@ -59,14 +60,16 @@ const summons = (deviceEdge: Awaited<ReturnType<typeof edgeFor>>, force?: boolea
   ({ kind: "face-join/v1" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
 
 describe("the gate — a signature, never a list", () => {
-  test("a healthy second device joins through the readable empty fleet board", async () => {
+  test("a healthy second device joins through the founded fleet board", async () => {
     const edge = await edgeFor();
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
-      await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const fx = await fleetFixture(FOUNDER_SEED);
+      await fx.found(board);
       const ledger = repo.create(emptyLarDoc());
       const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(8));
-      const read = boardDyadReader(repo, ledger, undefined, own);
+      const read = boardDyadReader(repo, ledger, undefined, own, undefined, undefined, fx.lineage);
       const joineeDyad = await read(edge.personaRootDid, edge.deviceVerifyingKey);
       const ctx = { ...(await ctxFor()), dyad: () => joineeDyad };
       const provider = fakeProvider();
@@ -236,6 +239,13 @@ describe("the Binding Gate reads the dyad's shadow", () => {
     expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
     const control = await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" });
     expect(control.ok).toBe(true);
+  });
+  test("RED: an UNKNOWN fleet frontier binds nobody at the live join gate; CONTROL: a clear device still binds", async () => {
+    const base = await ctxFor(), p = fakeProvider();
+    const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "unknown" });
+    expect(refused).toEqual({ ok: false, reason: "edge refused: no qualifying signed edge frontier" });
+    expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
+    expect((await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" })).ok).toBe(true);
   });
   test("the shadow lookup receives the summons device key", async () => {
     const base = await ctxFor(), seen: string[] = [];

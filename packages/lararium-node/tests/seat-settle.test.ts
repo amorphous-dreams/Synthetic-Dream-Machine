@@ -46,6 +46,7 @@ import { IslandAskAbandoned, IslandVerbRefused, askIslandVerb } from "../src/isl
 import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
 
@@ -66,6 +67,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await seedFaceAtom(0);
     repo = new Repo({});
+    await seedFleet(0, { repo });
     fleetRoot = bare((await loadPersonaGroupRootVerifyingKey(0))!);
     vesselKey = bare((await atomKeyOf()));
     how = "revoked";

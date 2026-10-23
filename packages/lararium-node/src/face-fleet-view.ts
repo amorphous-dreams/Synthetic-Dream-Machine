@@ -31,7 +31,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
+import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, catalogNamedBags, faceTagOfBag, personaScopeTag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
@@ -69,6 +69,24 @@ export function otherFacePlanes(bootstrapTiddlers: BootTiddlers, personaGroup: s
   return out;
 }
 
+/**
+ * Every plane document of a face OTHER than `worn` the CATALOG names, as document IDs: a face-scoped bag id (any of the four families) whose
+ * tag is not the worn group's. The derived shape recognises them, so an other-face entry the bootstrap omits still stays out of the bridge.
+ */
+export function foreignFaceDocs(catalog: LarDoc | undefined | null, worn: string): ReadonlySet<string> {
+  const out = new Set<string>();
+  let wornTag: string | null = null;
+  try { wornTag = personaScopeTag(worn); } catch { /* a malformed worn group names no tag: every face-scoped bag is foreign */ }
+  for (const bag of catalogNamedBags(catalog)) {
+    const tag = faceTagOfBag(bag);
+    if (tag === null || tag === wornTag) continue;
+    const url = tiddlerText(catalog?.tiddlers?.[bag]);
+    if (!url) continue;
+    try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
+  }
+  return out;
+}
+
 /** The share verdict's face gate over one view: a document crosses where the view would let the session fetch it. */
 export function viewFederationGate(view: SessionDocumentView): FederationGate {
   return { mayFederate: (documentId: DocumentId) => view.fetch(String(documentId)).ok };
@@ -89,7 +107,7 @@ export interface FaceFleetViews {
  * One view per seated peer, its facets read off `bootstrap()` at the seat. `wornGroup` names the face this vessel
  * wears (the bootstrap's pin where none is named): its sessions also read the vessel's books (the bridge above).
  */
-export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null): FaceFleetViews {
+export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, foreign?: () => ReadonlySet<string>): FaceFleetViews {
   const views = new Map<string, { view: SessionDocumentView; gate: FederationGate }>();
   const drop = (peerId: string): void => {
     const held = views.get(peerId);
@@ -104,13 +122,16 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       const facets = tiddlers ? faceFleetFacets(tiddlers, face.personaGroup) : null;
       if (facets === null || facets.documents.length === 0) return;
       const view = new SessionDocumentView({ profile: "face", facets });
-      const worn = (wornGroup ? wornGroup() : null) ?? tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
+      // The worn face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
+      const worn = wornGroup ? wornGroup() : (tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null);
       if (worn !== face.personaGroup || tiddlers === null) {
         views.set(peerId, { view, gate: viewFederationGate(view) });
         return;
       }
       // THE BRIDGE: the worn face reads the vessel's books too, every document but another face's planes.
-      const others = otherFacePlanes(tiddlers, face.personaGroup);
+      // The other faces' planes: the bootstrap's list (it can only add) and the catalog's, recognised by shape (it can not be omitted).
+      const named = otherFacePlanes(tiddlers, face.personaGroup);
+      const others: ReadonlySet<string> = foreign ? new Set([...named, ...foreign()]) : named;
       const gate: FederationGate = {
         mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || !others.has(String(documentId))),
       };

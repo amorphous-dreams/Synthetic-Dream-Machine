@@ -13,7 +13,7 @@ const T = vi.hoisted(() => ({
   daemon: "lar:///ha.ka.ba/bags/daemon",
   kel: "lar:///ha.ka.ba/lares/persona-kel-prefix",
 }));
-const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[] }));
+const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorPrefix: "kel-zero", anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null, cids: [] as string[], anchorCid: null as string | null }));
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
@@ -28,6 +28,8 @@ vi.mock("../src/hearth-sovereign-pin.js", async () => {
     },
   };
 });
+// Which face an unnamed run resolves has its reds in face-selector.test.ts; this suite reads which root signs.
+vi.mock("../src/face-selector.js", () => ({ resolveFace: async (named?: number) => named ?? 0, FaceNotNamed: class extends Error {} }));
 vi.mock("../src/identity-anchors.js", () => ({
   loadIdentityAnchors: async (face: number) => {
     seam.anchorsAsked.push(face);
@@ -38,6 +40,9 @@ vi.mock("../src/node-vessel-identity.js", () => ({
   loadPersonaGroupRootSeed: async (face = 0) => { seam.seeds.push(face); return new Uint8Array(32).fill(face); },
   loadPersonaGroupRootVerifyingKey: async () => undefined,
   loadVesselVerifyingKey: async () => "vessel",
+}));
+vi.mock("../src/face-anchor-store.js", () => ({
+  loadFaceAnchorOfGroup: async (group: string) => ({ personaGroup: group, personaKelPrefix: group === "group-two" ? "kel-two" : seam.anchorPrefix, frontier: { leaseEpoch: seam.anchorLease, actSeq: seam.anchorSeq, actCid: seam.anchorCid } }),
 }));
 vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => new Uint8Array(32).fill(9) }));
 vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => ({}) }) }));
@@ -62,8 +67,21 @@ vi.mock("@lararium/mesh", async (real) => {
     personaKelBoardDocUrl: () => "board",
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
     oracleGenesisDocUrl: () => "oracle",
+    // This suite reads WHICH face's root signs; the signed log's own proofs have their reds elsewhere (persona-act-boot).
+    // The one door (`readFace`) stands mocked: this suite reads WHICH face's root signs and what the door is asked, not the KEL fold.
+    readFace: (_chain: unknown, anchor?: { frontier: { leaseEpoch: number; actSeq: number } }) => ({
+      lineage: [{ epoch: 0, signers: [], threshold: 1, rosterHash: "h" }],
+      currentSigner: () => true,
+      observedLease: () => seam.observed,
+      leaseEpoch: () => Math.max(seam.observed, anchor?.frontier.leaseEpoch ?? 0),
+      project: () => {
+        seam.projectedWith = { acceptedThrough: anchor?.frontier.actSeq };
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids };
+      },
+    }),
   };
 });
+vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => [], appendPersonaActs: () => {} }));
 
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
 
@@ -77,7 +95,7 @@ const admitAt = (face?: number) => runDeviceAdmit({ repo, catalogUrl: "catalog",
 
 describe("runDeviceAdmit names the face whose root signs", () => {
   beforeEach(() => {
-    seam.edge = null; seam.seeds = []; seam.anchorsAsked = [];
+    seam.edge = null; seam.seeds = []; seam.anchorsAsked = []; seam.observed = 0; seam.anchorPrefix = "kel-zero"; seam.anchorLease = 0; seam.anchorSeq = -1; seam.projectedWith = null; seam.cids = []; seam.anchorCid = null;
     seam.bootstrapPath = join(tmpdir(), `lar-device-admit-face-${process.pid}.json`);
     writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: {
       [T.group]: { text: "group-zero" }, [T.cabal]: { text: "cabal-zero" }, [T.daemon]: { text: "automerge:daemon" },
@@ -105,5 +123,34 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     await expect(admitAt(3)).rejects.toThrow(/no face at index 3/);
     expect(seam.seeds).toEqual([]);
     expect(seam.edge).toBeNull();
+  });
+
+  test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {
+    seam.observed = 0; seam.anchorLease = 7; seam.anchorSeq = 4; seam.anchorCid = "p4"; seam.cids = ["a", "b", "c", "d", "p4"];
+    await admitAt();
+    expect(seam.edge!["boundEpoch"], "the anchor's epoch 7 bounds the edge, not the stale slot's 0").toBe(7);
+    expect(seam.projectedWith).toMatchObject({ acceptedThrough: 4 });
+    seam.observed = 9; seam.edge = null;
+    await admitAt();
+    expect(seam.edge!["boundEpoch"], "a verified higher advance still lands").toBe(9);
+  });
+
+  test("RED: a bootstrap/daemon KEL prefix the sealed anchor does not name refuses before any signing; CONTROL: the matching prefix signs", async () => {
+    seam.anchorPrefix = "kel-elsewhere";
+    await expect(admitAt()).rejects.toThrow(/KEL prefix this face's sealed anchor does not/);
+    expect(seam.edge).toBeNull();
+    seam.anchorPrefix = "kel-zero";
+    await admitAt();
+    expect(seam.edge).not.toBeNull();
+  });
+
+  test("RED: a replica that replays an older valid log (the anchor's pinned act missing from it) signs nothing; CONTROL: the log holding the pinned act signs", async () => {
+    seam.anchorSeq = 2; seam.anchorCid = "pinned";
+    seam.cids = ["a", "b", "other"];
+    await expect(admitAt()).rejects.toThrow(/frontier-falls/);
+    expect(seam.edge).toBeNull();
+    seam.cids = ["a", "b", "pinned"];
+    await admitAt();
+    expect(seam.edge).not.toBeNull();
   });
 });
