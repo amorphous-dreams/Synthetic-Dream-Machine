@@ -26,16 +26,16 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, currentSignerOf, projectPersonaLog,
+  leaseEpochPrefix, readFace,
   signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type LarDoc,
+  LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, FLEET_HAND, type LarDoc,
 } from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, leaseEpochUnderAnchor, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
@@ -368,15 +368,15 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
   }
-  const lineage = personaLineageFromKel(personaKelChain);
-  if (!lineage) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
-  // THE ADMIT DOOR READS WHAT THE BOOT READS: the issuer's sealed anchor bounds the edge, so a stale daemon doc (an older
-  // valid slot) never signs a joinee below an epoch this device already accepted, and the log is projected from the
-  // anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
+  // THE ADMIT DOOR READS WHAT THE BOOT READS (`readFace`, the one door): the issuer's sealed anchor bounds the edge, so a stale
+  // daemon doc (an older valid slot) never signs a joinee below an epoch this device already accepted, and the log projects
+  // from the anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
   const issuerAnchor = await loadFaceAnchorOfGroup(personaGroupId);
   if (!issuerAnchor) throw new Error("[lares fleet join answer] Face proof: this face holds no sealed anchor; re-found or re-admit the face");
   if (issuerAnchor.personaKelPrefix !== personaKelPrefix) throw new Error("[lares fleet join answer] Face proof: prefix; the bootstrap and daemon doc name a KEL prefix this face's sealed anchor does not; re-found or re-admit the face");
-  const boundEpoch = leaseEpochUnderAnchor(issuerAnchor, signedLeaseEpoch(personaGroupId, leaseSlotValues, currentSignerOf(lineage))).epoch;
+  const reading = readFace(personaKelChain, issuerAnchor);
+  if (!reading) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
+  const boundEpoch = reading.leaseEpoch(personaGroupId, leaseSlotValues);
 
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
   const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
@@ -388,7 +388,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
     extraDocs: [daemonDoc as LarDoc | undefined] });
-  const projection = projectPersonaLog(records, { group: personaGroupId, lineage, authorize: () => true, acceptedThrough: issuerAnchor.frontier.actSeq });
+  const projection = reading.project(records, personaGroupId);
   if (!projection.founded || projection.fork || !projection.head) {
     throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
   }
@@ -398,7 +398,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error("[lares fleet join answer] Face proof: frontier-falls; this replica's log stands below the act this device accepted; sync the face's persona plane and retry");
   }
   const signerKey = await ed25519VerifyingKeyFromSeed(signerSeed);
-  if (!lineage[lineage.length - 1]?.signers.includes(signerKey)) {
+  if (!reading.currentSigner(signerKey)) {
     throw new Error("[lares fleet join answer] Face proof: root signer has no current KEL seat; re-admit the face");
   }
   const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
@@ -413,8 +413,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
   const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
   const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
-  const edgeFrontier = { records: edgeFrontierRecords(fleetBoard.doc(), fleetRoot, FLEET_HAND),
-    snapshots: [...frontierSnapshots(fleetBoard.doc())].map(([cid, raises]) => [cid, [...raises]] as [string, string[]]) };
+  const edgeFrontier = fleetFrontierCarriage(fleetBoard.doc(), fleetRoot);
   const payload = await runDeviceAdmitEdge({
     edgeFrontier,
     operation,

@@ -10,8 +10,8 @@
  */
 
 import { edgeBodyDigest, type FaceAnchor } from "./face-anchor.js";
-import { personaLineageFromKel } from "./persona-act-board.js";
-import { projectPersonaLog, type PersonaProjection } from "./persona-act.js";
+import { readFace } from "./face-reading.js";
+import type { PersonaProjection } from "./persona-act.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 
 /** The planes of a face, by the name a `plane` act carries. */
@@ -42,9 +42,9 @@ export function proveFaceFromLog(input: {
   /** The plane URLs the boot is about to register, by plane name. */
   readonly planes: Readonly<Record<string, string | null | undefined>>;
 }): { readonly ok: true; readonly projection: PersonaProjection } | { readonly ok: false; readonly refusal: FaceBootRefusal } {
-  const lineage = personaLineageFromKel(input.chain);
-  if (!lineage) return { ok: false, refusal: { why: "no-lineage" } };
-  const projection = projectPersonaLog(input.records, { group: input.group, lineage, authorize: () => true, acceptedThrough: input.anchor.frontier.actSeq });
+  const reading = readFace(input.chain, input.anchor);
+  if (!reading) return { ok: false, refusal: { why: "no-lineage" } };
+  const projection = reading.project(input.records, input.group);
   if (projection.fork) return { ok: false, refusal: { why: "fork", seq: projection.fork.seq } };
   if (!projection.founded) return { ok: false, refusal: { why: "no-founding" } };
   if (projection.personaKelPrefix !== input.anchor.personaKelPrefix) return { ok: false, refusal: { why: "prefix" } };

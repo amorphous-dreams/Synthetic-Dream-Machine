@@ -11,12 +11,12 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-lease
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, currentSignerOf, type LarDoc } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc } from "@lararium/mesh";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../face-anchor-store.js";
-import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { fleetFaceForVessel } from "../fleet-lineage.js";
 import { rollSignedLeaseEpochOnBoard } from "../lease-rekey.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { larBootstrapPath } from "../vessel-paths.js";
@@ -58,9 +58,9 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   if (!anchor) throw new PersonaLeaseError("this face holds no sealed anchor; re-found it");
   const seed = await loadPersonaGroupRootSeed(handleIndex);
   const key = await ed25519VerifyingKeyFromSeed(seed);
-  const lineage = await fleetLineageForVessel(opts.repo, key);
-  if (!lineage) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
-  const seated = currentSignerOf(lineage);
+  const face = await fleetFaceForVessel(opts.repo, key);
+  if (!face) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
+  const seated = face.currentSigner;
   if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const daemon = await opts.repo.find<LarDoc>(daemonUrlOfBootstrap() as AutomergeUrl);
   const r = await rollSignedLeaseEpochOnBoard(daemon, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated);

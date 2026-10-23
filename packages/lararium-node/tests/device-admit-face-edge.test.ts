@@ -68,9 +68,17 @@ vi.mock("@lararium/mesh", async (real) => {
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
     oracleGenesisDocUrl: () => "oracle",
     // This suite reads WHICH face's root signs; the signed log's own proofs have their reds elsewhere (persona-act-boot).
-    personaLineageFromKel: () => [{ epoch: 0, signers: Object.assign([], { includes: () => true }), threshold: 1, rosterHash: "h" }],
-    projectPersonaLog: (_records: unknown, opts: Record<string, unknown>) => { seam.projectedWith = opts; return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids }; },
-    signedLeaseEpoch: () => seam.observed,
+    // The one door (`readFace`) stands mocked: this suite reads WHICH face's root signs and what the door is asked, not the KEL fold.
+    readFace: (_chain: unknown, anchor?: { frontier: { leaseEpoch: number; actSeq: number } }) => ({
+      lineage: [{ epoch: 0, signers: [], threshold: 1, rosterHash: "h" }],
+      currentSigner: () => true,
+      observedLease: () => seam.observed,
+      leaseEpoch: () => Math.max(seam.observed, anchor?.frontier.leaseEpoch ?? 0),
+      project: () => {
+        seam.projectedWith = { acceptedThrough: anchor?.frontier.actSeq };
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids };
+      },
+    }),
   };
 });
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => [], appendPersonaActs: () => {} }));

@@ -51,7 +51,7 @@ import {
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
-  personaScopedBagIds, personaLineageFromKel, projectPersonaLog,
+  personaScopedBagIds, readFace,
   buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
   type PersonaKelEvent,
@@ -1000,9 +1000,9 @@ export async function runApplyAdmitPayload(
   if (payload.personaActs.some((a) => typeof a !== "object" || a === null || typeof (a as { body?: unknown }).body !== "object" || (a as { body?: unknown }).body === null)) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload carries a malformed persona act; re-admit the face.");
   }
-  const carriedLineage = personaLineageFromKel(payload.personaKelChain);
-  if (!carriedLineage) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona KEL carries no lineage; re-admit the face.");
-  const carriedLog = projectPersonaLog(payload.personaActs, { group: payload.personaGroupId, lineage: carriedLineage, authorize: () => true });
+  const carriedFace = readFace(payload.personaKelChain);
+  if (!carriedFace) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona KEL carries no lineage; re-admit the face.");
+  const carriedLog = carriedFace.project(payload.personaActs, payload.personaGroupId);
   // A bundle that carries no founded, fork-free log, or no signed fleet frontier, joins nothing: refuse before any side effect.
   if (!carriedLog.founded || carriedLog.fork || !carriedLog.head) throw new Error("[ceremony] runApplyAdmitPayload: payload's persona log is empty, unfounded or forked; re-admit the face.");
   if (payload.edgeFrontier.records.length === 0) throw new Error("[ceremony] runApplyAdmitPayload: payload carries no signed fleet frontier record; re-admit the face.");

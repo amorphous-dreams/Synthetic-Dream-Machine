@@ -74,8 +74,8 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, currentSignerOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
-  readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
+  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
@@ -1264,7 +1264,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
-          records: [...personaActRecordsOfGroup(planeDoc, wornGroup), ...personaActRecordsOfGroup(daemonDoc, wornGroup)],
+          records: faceRecordsOf([planeDoc, daemonDoc], wornGroup),
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
           planes: { persona: wornPlaneUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
@@ -1275,7 +1275,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const head = proof.projection.head;
         const leasePrefix = leaseEpochPrefix(wornGroup);
         const leaseSlots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
-        const observedLease = signedLeaseEpoch(wornGroup, leaseSlots, currentSignerOf(personaLineageFromKel(personaKelChain)));
+        const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
         const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
         if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
         // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
@@ -1290,7 +1290,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           if (!chain || chain.length === 0) continue;
           const otherDoc = heldDocOf(repo, plane.url);
           if (proveFaceFromLog({
-            records: [...personaActRecordsOfGroup(otherDoc, plane.personaGroupId), ...personaActRecordsOfGroup(daemonDoc, plane.personaGroupId)],
+            records: faceRecordsOf([otherDoc, daemonDoc], plane.personaGroupId),
             chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url },
           }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
         }
@@ -1383,7 +1383,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             });
           }
           if (startedAt !== fleetMoves) return;                  // overtaken: the read the move set off lands instead
-          const lineage = personaLineageFromKel(daemonAuth.personaKel?.chain ?? []);
+          const lineage = readFace(daemonAuth.personaKel?.chain)?.lineage ?? null;
           const frontier: WideningRead = lineage ? readFleetFrontier({
             fleetRoot: scope, board: read.handle.doc(), lineage, seenRaises: fleetRaiseCids(read.counted.acts),
             pinned: readFrontierPins(read.ledger.doc(), scope)[FLEET_HAND] ?? null,
@@ -1491,7 +1491,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
-            expectedEpoch: signedLeaseEpoch(group, leaseSlots, currentSignerOf(personaLineageFromKel(daemonAuth.personaKel.chain))),
+            expectedEpoch: readFace(daemonAuth.personaKel.chain, faceAnchor)?.leaseEpoch(group, leaseSlots) ?? 0,
             onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }

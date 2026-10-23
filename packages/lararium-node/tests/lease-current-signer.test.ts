@@ -4,8 +4,6 @@
  * signer's effective+1); every lease consumer asks the one door and none flattens the lineage to "any epoch". Control: an honest
  * current-epoch advance still lands and rolls.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { describe, expect, test } from "vitest";
 import {
@@ -43,18 +41,5 @@ describe("the one current-signer predicate", () => {
     const second = await rollSignedLeaseEpochOnBoard(handle, GROUP, newK, seated);
     expect(second.effective, "the honest current advance lands").toBe(1);
     await expect(rollSignedLeaseEpochOnBoard(handle, GROUP, oldK, seated)).rejects.toThrow(/no PersonaGroup KEL seat/);
-  });
-
-  test("RED: every lease consumer asks the one door and none flattens the lineage to any epoch", () => {
-    const root = join(import.meta.dirname, "..", "..");
-    const sites = [
-      "lararium-keyhive/src/operator-daemon-behavior.ts", "lararium-node/src/commands/device-admit.ts", "lararium-node/src/commands/persona-lease.ts",
-      "lararium-node/src/open-node-vessel.ts", "lararium-browser/src/open-browser-vessel.ts", "lararium-node/src/lease-observation.ts",
-    ];
-    for (const rel of sites) {
-      const src = readFileSync(join(root, rel), "utf8");
-      expect(src, rel).toContain("currentSignerOf(");
-      expect(src, `${rel} must not read any epoch of the lineage as a lease signer`).not.toMatch(/\.some\(\(epoch\) => epoch\.signers\.includes|flatMap\(\(e\) => e\.signers\)/);
-    }
   });
 });

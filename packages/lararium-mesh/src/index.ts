@@ -75,6 +75,7 @@ export * from "./persona-act.js";
 export * from "./persona-act-board.js";
 export * from "./lease-advance.js";
 export * from "./face-boot-proof.js";
+export * from "./face-reading.js";
 export * from "./join-face-documents.js";
 export * from "./edge-frontier-board.js";
 export * from "./fleet-frontier.js";

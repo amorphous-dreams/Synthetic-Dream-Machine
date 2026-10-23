@@ -7,7 +7,7 @@
  * stands unknown.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, personaLineageFromKel, type HandLineage } from "@lararium/mesh";
+import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceReading, type HandLineage } from "@lararium/mesh";
 import { CustodyLocked } from "./custody-holder.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow } from "./nexus-standing.js";
@@ -15,7 +15,7 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 
 const bare = (root: string): string => root.trim().toLowerCase().replace(/^0x/, "");
 
-export async function fleetLineageOf(repo: Repo, fleetRoot: string, islands: readonly string[]): Promise<HandLineage | null> {
+export async function fleetFaceOf(repo: Repo, fleetRoot: string, islands: readonly string[]): Promise<FaceReading | null> {
   let prefix: string | null = null;
   try {
     for (const index of await listAnchoredPersonas()) {
@@ -27,14 +27,23 @@ export async function fleetLineageOf(repo: Repo, fleetRoot: string, islands: rea
   for (const island of islands) {
     const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(island), "board:persona-kel");
     const chain = personaKelChainForPrefix(board.doc(), prefix);
-    const lineage = chain ? personaLineageFromKel(chain) : null;
-    if (lineage) return lineage;
+    const face = readFace(chain);
+    if (face) return face;
   }
   return null;
 }
 
+/** The fleet root's lineage, for the readers that take the roster alone. */
+export async function fleetLineageOf(repo: Repo, fleetRoot: string, islands: readonly string[]): Promise<HandLineage | null> {
+  return (await fleetFaceOf(repo, fleetRoot, islands))?.lineage ?? null;
+}
+
 /** The same read from a CLI door: the islands are the ones this vessel's boot resolves (the island, then those below it). */
-export async function fleetLineageForVessel(repo: Repo, fleetRoot: string): Promise<HandLineage | null> {
+export async function fleetFaceForVessel(repo: Repo, fleetRoot: string): Promise<FaceReading | null> {
   const ownVesselKey = await loadVesselVerifyingKey();
-  return fleetLineageOf(repo, fleetRoot, [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })]);
+  return fleetFaceOf(repo, fleetRoot, [nodeNexusIsland({ ownVesselKey }), ...nodeNexusIslandsBelow({ ownVesselKey })]);
+}
+
+export async function fleetLineageForVessel(repo: Repo, fleetRoot: string): Promise<HandLineage | null> {
+  return (await fleetFaceForVessel(repo, fleetRoot))?.lineage ?? null;
 }

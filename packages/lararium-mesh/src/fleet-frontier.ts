@@ -75,3 +75,13 @@ export function landFleetFrontier(draft: LarDoc, registered: { readonly frontier
   writeFrontierSnapshot(draft, registered.raises);
   writeEdgeFrontier(draft, registered.frontier);
 }
+
+/** The fleet's carried frontier records and snapshots, as an admit bundle ships them: unjudged transport (the joinee's reader verifies). */
+export function fleetFrontierCarriage(board: LarDoc | undefined | null, fleetRoot: string): {
+  readonly records: unknown[]; readonly snapshots: Array<[string, string[]]>;
+} {
+  return {
+    records: edgeFrontierRecords(board, bare(fleetRoot), FLEET_HAND),
+    snapshots: [...frontierSnapshots(board)].map(([cid, raises]) => [cid, [...raises]] as [string, string[]]),
+  };
+}
