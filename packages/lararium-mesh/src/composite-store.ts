@@ -25,6 +25,7 @@ import {
   corpusLarUri,
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
+import { assertStorableTitle } from "./title-law.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -260,14 +261,23 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
-    this._requireBagForBase(options, "writeFamily");
+    await this.precheckFamily(puts, tombstones, options);
     const store = this._writeTargetFor(options?.bag, "writeFamily");
-    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
-    if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
     if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
     for (const record of puts) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+  }
+
+  /** Run every composite-owned family check before a caller starts a transaction. */
+  async precheckFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): Promise<void> {
+    this._requireBagForBase(options, "writeFamily");
+    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    for (const record of puts) assertStorableTitle(record.tiddler.title);
+    for (const title of tombstones) assertStorableTitle(title);
+    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
+    if (retired) await retired;
+    this._writeOptionsFor(options, store, "writeFamily");
   }
 
   /**
