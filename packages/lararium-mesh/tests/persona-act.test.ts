@@ -82,4 +82,18 @@ describe("persona-act", () => {
     const pr = projectPersonaLog([f, wrongEpoch, good, retired], { group: G, lineage, authorize: () => true });
     expect(pr.devices).toEqual(["dev1"]);
   });
+
+  test("RED: the retired-key window: after the KEL rotates, the old key adds no admission at its old epoch beyond the accepted frontier; CONTROL: what the reader already accepted stands", async () => {
+    const oldRoot = await who(1), newRoot = await who(2);
+    const lineage = lineageOf([oldRoot.key], [newRoot.key]);
+    const f = await signAct(act(0, null, "founding", { personaKelPrefix: "kel1", rootCommitment: "rc" }), oldRoot);
+    const a = await signAct(act(1, actCid(f.body), "admission", { deviceKey: "dev1" }), oldRoot);
+    const stale = await signAct(act(2, actCid(a.body), "admission", { deviceKey: "devEvil" }), oldRoot);   // epoch 0, after the roll, before any epoch-1 act
+    const open = projectPersonaLog([f, a, stale], { group: G, lineage, authorize: () => true });
+    expect(open.devices, "with no frontier pinned the reader keeps every epoch's own roster").toEqual(["dev1", "devEvil"]);
+    const pinned = projectPersonaLog([f, a, stale], { group: G, lineage, authorize: () => true, acceptedThrough: 1 });
+    expect(pinned.devices, "beyond the accepted frontier the rotated-past key adds nothing").toEqual(["dev1"]);
+    const fresh = await signAct(act(2, actCid(a.body), "admission", { deviceKey: "dev2", epoch: 1 }), newRoot);
+    expect(projectPersonaLog([f, a, fresh], { group: G, lineage, authorize: () => true, acceptedThrough: 1 }).devices).toEqual(["dev1", "dev2"]);
+  });
 });

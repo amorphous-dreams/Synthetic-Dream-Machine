@@ -44,7 +44,7 @@ export function proveFaceFromLog(input: {
 }): { readonly ok: true; readonly projection: PersonaProjection } | { readonly ok: false; readonly refusal: FaceBootRefusal } {
   const lineage = personaLineageFromKel(input.chain);
   if (!lineage) return { ok: false, refusal: { why: "no-lineage" } };
-  const projection = projectPersonaLog(input.records, { group: input.group, lineage, authorize: () => true });
+  const projection = projectPersonaLog(input.records, { group: input.group, lineage, authorize: () => true, acceptedThrough: input.anchor.frontier.actSeq });
   if (projection.fork) return { ok: false, refusal: { why: "fork", seq: projection.fork.seq } };
   if (!projection.founded) return { ok: false, refusal: { why: "no-founding" } };
   if (projection.personaKelPrefix !== input.anchor.personaKelPrefix) return { ok: false, refusal: { why: "prefix" } };

@@ -12,7 +12,7 @@
  */
 
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
-import { rosterAt, type HandLineage } from "./hand-lineage.js";
+import { currentRoster, rosterAt, type HandLineage } from "./hand-lineage.js";
 import { foldActs, type ActBody, type ActFold, type SignedAct } from "./signed-act.js";
 
 export type PersonaActKind = "founding" | "admission" | "device-edge" | "plane";
@@ -50,7 +50,15 @@ export interface PersonaProjection {
 export type PersonaAuthorize = (signer: string, body: PersonaActBody) => boolean;
 
 /** Fold a carried set of `@persona` records into the verified projection. */
-export function projectPersonaLog(records: readonly unknown[], opts: { readonly group: string; readonly lineage: HandLineage; readonly authorize: PersonaAuthorize }): PersonaProjection {
+export function projectPersonaLog(records: readonly unknown[], opts: {
+  readonly group: string; readonly lineage: HandLineage; readonly authorize: PersonaAuthorize;
+  /**
+   * THE RETIRED-KEY WINDOW: a reader that holds an accepted frontier passes its seq. An act beyond that seq signs under the
+   * KEL's CURRENT epoch; a key the KEL has rotated past adds nothing new, whatever epoch it claims. What the reader already
+   * accepted (seq at or below the pin) keeps its own epoch's roster.
+   */
+  readonly acceptedThrough?: number;
+}): PersonaProjection {
   const fold = foldActs(records, {
     domain: PERSONA_ACT_DOMAIN, group: opts.group,
     authorize: (signer, body) => {
@@ -58,6 +66,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: { readonly 
       if ((body.seq === 0) !== (b.act === "founding")) return false;   // the founding stands at seq 0 and nowhere else
       const roster = rosterAt(opts.lineage, b.epoch);
       if (!roster || !roster.signers.includes(signer)) return false;   // a link verifies under its own epoch's keys
+      if (opts.acceptedThrough !== undefined && body.seq > opts.acceptedThrough && b.epoch < currentRoster(opts.lineage).epoch) return false;   // a rotated-past epoch signs nothing new
       return opts.authorize(signer, b);
     },
     link: (body, prior) => prior === null || (body as PersonaActBody).epoch >= (prior as PersonaActBody).epoch,

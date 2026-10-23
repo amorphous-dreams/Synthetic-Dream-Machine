@@ -81,8 +81,8 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 * ''The FCK fence'' leaves this wave whole and becomes Wave D (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k15-wave-d-lane">>). The two key-class `test.fails` rows in `face-isolation-routes.test.ts` stand for it.
 * ''A face's circles and identities follow the face'' (operator ruling, 2026-10-22): minted once at founding, named by a signed `plane` act, carried in the admit bundle, adopted by every admitted device, and named in the face proof beside the persona plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">> #/the-atom). Sessions stay per vessel, as motion.
 * ''A device's own entry joins the face's shared documents when they ARRIVE'': a fresh device holds neither document at its admit, so `joinFaceDocumentsOnArrival` subscribes to the replica's own progress view and writes its identity entry and ceremony circles the moment the document is ready, once. No reboot and no timer decide it, and a vessel outside the group never reaches it. Red and control: `join-face-documents.test.ts`.
-* ''The retired-key window'': an act or lease signed by a device key after its KEL rotation retired the key still folds under the roster of its own epoch. The roster per epoch bounds it; a gate that must refuse a retired key reads the head epoch, and that read is owed with the recovery door.
-* ''The shared holder's greeting wait'' keeps one five-second timer for Firefox, where a SharedWorker port gives no earlier signal. Every other wait in the holder rides an event or a causal read.
+* ''The retired-key window after a lost-and-recovered offline device'': an act beyond a reader's accepted frontier signs under the KEL's current epoch, and a lease advance counts only from the current roster. A legitimate act or advance signed under the old epoch that this reader had not yet accepted therefore needs re-signing under the new epoch; the recovery door (K18) owns that re-sign.
+* ''The joinee's @persona at the daemon VM'' resolves through `resolveBootDoc` on the hearth-private tideline; a joinee whose persona plane has not synced reads `no reachable copy` under CI load (two e2e shards, green on rerun). The proof side reads held-only; the daemon VM side stays an owing.
 * ''The realm leg'' is its own lane, K17-R (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane">>): one lease law on the realm boards, landed after Wave C.
 
 <<~/ahu>>
@@ -98,6 +98,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CICj2yXITWw3SQZnRiSXoslNkPV5FD3xDCPQobhWkHw
+<<^ code="&#x0003;">>ni:///sha-256;UKc5QVaEjHA8LJMquxjwhOsxuPnUekL52NnLA3DAnCE
 
 <<^ code="&#x0004;" -> to="?">>
