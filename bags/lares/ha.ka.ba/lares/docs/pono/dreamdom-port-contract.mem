@@ -153,6 +153,7 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 * ''Read scope, ruled.'' Snapshot, changes, `load`, `filter` and `render` read the world the island's camera already paints to its one face, so the port ships with no `bagRead` lend: an island that serves readers of more than one authority needs a per-bag read lend before it opens a port to the second. The port holds the line: once the composer lends `faceOf`, an open must name a proven face with a stable string `id` (the verifier's subject, never the whole proof, which may rotate): the port remembers the first `id` and answers an open under another id, or under a lookup that throws or names no id, with a reset and holds nothing (`port-one-island-one-face`, `port-face-key-is-the-stable-id`). Every later message, and every delivery or answer that resumes after an await, re-reads the face: unless the id still equals the one the open proved, an ask or write is refused `face-changed` and the port retires, so a moved face reads, answers and acts under nothing: presence fan-out checks each recipient, and each bag-grant check a verb reactor makes re-reads the face. A reactor already past its last grant check when the face moves still finishes, since the island cannot cancel it mid-effect; that residue stays owed to the actor gate (`port-face-must-hold-for-every-ask-and-write`). The island keeps its first face for its whole life: a second face reuses a rebuilt island, since the wiki it serves may still carry the first face's records.
 * ''Port ownership.'' A `portId` names a port inside one island; the holder's port lease must carry which binding admitted it, so another binding cannot open, close, ack or ask under that id. Until the lease lands the holder drops port replies by name and no second binding hears them.
 * ''Control traffic.'' Presence and ack carry no per-port rate bound; the holder's lease and transport own that budget.
+* ''A retired port's landed write.'' When a port retires after a family landed, the ledger keeps the transaction unanswered until the same actor resends it; an actor that never resends holds one slot of the bounded in-flight window and its actor-table entry, which eviction skips. A cleanup of settled writes with no resend stays owed.
 * ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
 * ''Clockless debt in `hand-gate.ts`.'' The 400 ms trailing write and the 2 s cap decide by wall clock. Causal replacement: flush at the next store family boundary or the next act, and cap by a count of coalesced changes.
 * ''Clockless debt in `tw5-projection.ts`.'' The camera `mountEpoch` mints from `Date.now()`. Causal replacement: a per-island boot nonce plus a rising counter.
@@ -171,6 +172,6 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jqJOh-5s-Z4xLV8bLv33wawW_STBJV1mwmS7chAfrhA
+<<^ code="&#x0003;">>ni:///sha-256;03sUwV-iBGNhjbv5QHOImG_5WjCvhI2yHTChoLJJ2b4
 
 <<^ code="&#x0004;" -> to="?">>
