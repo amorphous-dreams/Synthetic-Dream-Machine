@@ -1,0 +1,15 @@
+{
+  "schema":"projection-loom/external-reference-poc/v1",
+  "subject":"Ziggurat of Ur - expressly hypothetical modern CAD reconstruction",
+  "sources":[
+    {"id":"ur-lower-platform","type":"historical-measurement-summary","status":"published-approximation","dimensions_m":{"length":62.5,"width":43.0,"height":11},"citation":"https://ancientmeasures.com/temples/ziggurat-of-ur/"},
+    {"id":"ur-second-stage","type":"architectural-historical-source","status":"archaeological-reconstruction","dimensions_m":{"length":36,"width":26,"height":5.7},"citation":"https://enenuru.net/pdfs/RlA%2014%205-6%20Uqair%20-%20Uzumua.pdf"},
+    {"id":"ur-other-base","type":"educational-summary","status":"conflicting-rounded-estimate","dimensions_m":{"length":64,"width":46},"citation":"https://smarthistory.org/ziggurat-of-ur/"},
+    {"id":"ur-three-stairs","type":"excavation-report","status":"documented-relationship", "citation":"https://www.penn.museum/sites/journal/1235/"},
+    {"id":"ur-modern-low-poly","type":"third-party-3d-model","status":"linked-not-ingested","triangles":44700,"license":"CC BY","author":"History Builds","citation":"https://sketchfab.com/3d-models/ziggurat-f2ffb4bd5200400eac37fbce5c010ef0"},
+    {"id":"ur-drone-scan","type":"photogrammetry-mesh","status":"held-for-later","license":"CC BY-NC","citation":"https://sketchfab.com/3d-models/ziggurat-of-ur-01a917691d344f3d801f67151de6b2f0"}
+  ],
+  "hypotheses":["upper shrine footprint, exact height and roof","flanking stair geometry","ramp profiles","taper curves","uniformity of stages"],
+  "scale":"meters for numeric approximate historical dimensions; other geometry conjectural",
+  "evidence_state":"mixed-published-and-interpretive-unregistered"
+}

@@ -233,3 +233,11 @@ may share one broad topology; that is an honest grammar limitation, not evidence
 that the method invented new structural kinds. See
 [`docs/hard-reference-scout.md`](docs/hard-reference-scout.md) for the next two
 hard-source choices and licensing gates.
+
+## Pair A first-pass experiment (isolated branch)
+
+The [Ur reconstruction / Brutalist OpenSCAD](docs/pair-a-first-pass.md) control
+runs a modern, lightweight CAD interpretation and a separately compiled synthetic
+OpenSCAD STL for each subject. Actual CC BY low-poly Ur and CC0 nosycat archives
+are linked but not yet ingested; the initial results test geometry adapters,
+fixed cameras, and multiseed operation, **not** external fidelity.

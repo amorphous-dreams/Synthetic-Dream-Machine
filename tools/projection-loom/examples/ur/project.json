@@ -1,0 +1,22 @@
+{
+  "schema":"projection-loom/solid-project/v2",
+  "builder":"grow.py:grow",
+  "location":"ur-great-ziggurat--interpretive-poc",
+  "cameras":{
+    "front":{"azimuth":0,"elevation":0,"fit":"bounds"},
+    "left":{"azimuth":270,"elevation":0,"fit":"bounds"},
+    "right":{"azimuth":90,"elevation":0,"fit":"bounds"},
+    "top":{"azimuth":0,"elevation":90,"fit":"bounds"},
+    "oblique":{"azimuth":43,"elevation":28,"fit":"bounds"}
+  },
+  "initial":{
+    "base_length":62.5,"base_width":43.0,"base_height":11.0,
+    "stage_height":5.7,"stair_width":4.4,"summit_shrine":1
+  },
+  "bounds":{
+    "base_length":[60,66],"base_width":[41,47],"base_height":[9.5,12.0],
+    "stage_height":[5.0,6.5],"stair_width":[3.4,5.7],"summit_shrine":[0,1]
+  },
+  "reference_view":"oblique",
+  "render":{"linework_mode":"semantic","work_width":160,"presentation_width":300}
+}
