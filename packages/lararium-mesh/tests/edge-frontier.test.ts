@@ -62,6 +62,15 @@ describe("edge-frontier", () => {
     expect(readWideningFrontier(B, [hand], reading([g], snaps([]), [], { seq: 1, cid: actCid(f1.body) }))).toEqual({ status: "unknown", missing: [{ hand: "fleet", why: "does-not-extend-pin" }] });
   });
 
+  test("RED: a linked frontier that drops a raise its predecessor counted reads unknown for a fresh reader; CONTROL: the honest successor keeps it", async () => {
+    const { s, hand, g, lng, snaps, reading } = await setup();
+    const f1 = await signNextFrontier(g, ["raiseA"], lng, [s]);
+    const shrunk = await signNextFrontier(f1, [], lng, [s]);
+    expect(readWideningFrontier(B, [hand], reading([g, f1, shrunk], snaps([], ["raiseA"]), []))).toMatchObject({ status: "unknown", missing: [{ hand: "fleet", why: "snapshot-shrinks" }] });
+    const kept = await signNextFrontier(f1, ["raiseA", "raiseB"], lng, [s]);
+    expect(readWideningFrontier(B, [hand], reading([g, f1, kept], snaps([], ["raiseA"], ["raiseA", "raiseB"]), ["raiseA", "raiseB"])).status).toBe("known");
+  });
+
   test("RED: two conflicting frontiers at one seq read as a fork and answer unknown", async () => {
     const { s, hand, g, lng, snaps, reading } = await setup();
     const left = await signNextFrontier(g, ["raiseA"], lng, [s]);

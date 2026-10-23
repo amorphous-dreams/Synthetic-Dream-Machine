@@ -62,7 +62,9 @@ export async function nextFleetFrontier(input: {
   const fold = foldHandFrontiers(root, { hand: FLEET_HAND, lineage: input.lineage }, edgeFrontierRecords(input.board, root, FLEET_HAND));
   const head = fold.chain[fold.chain.length - 1];
   if (fold.fork || !head) return null;
-  const raises = [...new Set(input.counted)].sort();
+  // The successor commits everything its predecessor counted: a local board that lost a raise never signs a shrinking frontier.
+  const prior = frontierSnapshots(input.board).get(head.act.body.snapshot) ?? [];
+  const raises = [...new Set([...input.counted, ...prior])].sort();
   const roster = currentRoster(input.lineage);
   const next = await signNextFrontier(head.act, raises, { epoch: roster.epoch, rosterHash: roster.rosterHash }, [input.signer]);
   return { frontier: next, raises };

@@ -80,7 +80,7 @@ export interface RaisingHand {
 }
 
 export type FrontierMissing =
-  | { readonly hand: string; readonly why: "no-frontier" | "below-threshold" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "counts-unseen-raise" | "does-not-extend-pin" | "stale-lineage" };
+  | { readonly hand: string; readonly why: "no-frontier" | "below-threshold" | "fork" | "missing-snapshot" | "withholds-seen-raise" | "counts-unseen-raise" | "does-not-extend-pin" | "stale-lineage" | "snapshot-shrinks" };
 
 export type WideningRead =
   | { readonly status: "known"; readonly asOf: Readonly<Record<string, { seq: number; cid: string }>>; readonly counted: Readonly<Record<string, readonly string[]>> }
@@ -121,6 +121,16 @@ export function readWideningFrontier(board: string, hands: readonly RaisingHand[
     const snap = r.snapshots.get(body.snapshot);
     if (!snap || frontierSnapshotCid(snap) !== body.snapshot) { missing.push({ hand: h.hand, why: "missing-snapshot" }); continue; }
     const have = new Set(snap);
+    // A LINK NEVER DROPS A RAISE ITS PREDECESSOR COUNTED: every link's snapshot holds, and holds everything the link before it held.
+    let shrinks = false, absent = false, before: ReadonlySet<string> | null = null;
+    for (const link of fold.chain) {
+      const linkSnap = r.snapshots.get(link.act.body.snapshot);
+      if (!linkSnap || frontierSnapshotCid(linkSnap) !== link.act.body.snapshot) { absent = true; break; }
+      if (before && [...before].some((c) => !linkSnap.includes(c))) { shrinks = true; break; }
+      before = new Set(linkSnap);
+    }
+    if (absent) { missing.push({ hand: h.hand, why: "missing-snapshot" }); continue; }
+    if (shrinks) { missing.push({ hand: h.hand, why: "snapshot-shrinks" }); continue; }
     if (r.seenRaises.some((c) => !have.has(c))) { missing.push({ hand: h.hand, why: "withholds-seen-raise" }); continue; }
     // The frontier counts a raise this reader lacks: its shadow cannot read here yet, so the board waits as unknown
     // until the act itself arrives (sync always carries acts).
