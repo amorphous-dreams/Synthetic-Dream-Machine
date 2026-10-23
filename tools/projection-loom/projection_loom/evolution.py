@@ -92,9 +92,12 @@ class Project:
     def targets(self,extra=(),size=(256,384)):
         specs=list(self.target_specs)
         for item in extra:
-            if '=' not in item: raise ValueError('Target must be VIEW=PATH')
-            view,path=item.split('=',1)
-            specs.append({'view':view,'path':path,'channel':'auto','weight':1.0})
+            if isinstance(item, dict):
+                specs.append(dict(item))
+            else:
+                if '=' not in item: raise ValueError('Target must be VIEW=PATH')
+                view,path=item.split('=',1)
+                specs.append({'view':view,'path':path,'channel':'auto','weight':1.0})
         for spec in specs:
             if spec['view'] not in self.cameras:
                 raise ValueError(f'Unknown camera in target: {spec["view"]}')

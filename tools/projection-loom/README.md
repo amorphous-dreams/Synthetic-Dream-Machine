@@ -64,6 +64,20 @@ projection-loom evolve --project examples/project.json \
   --out out/revision
 ```
 
+## Five-pass epoch loops
+
+Run complete geometry search, multi-view rendering, and bounded self-feedback through five separately checkpointed passes:
+
+```bash
+projection-loom epoch-loop --project examples/project.json \
+  --seed-geometry path/to/existing_mesh.npz \
+  --out out/epoch-05 --passes 5 --burst 64 --survivors 10 --offspring 8
+```
+
+Every pass re-enters the accepted mesh and all four control modalities per view. Previously generated silhouettes guide the next search at low weight; linework and lighting controls participate in a continuity gate without replacing fixed source evidence. To continue a stopped run, reuse the same options with `--resume`.
+
+See [epoch-loop documentation](docs/epoch-loop.md) for the complete feedback contract, configuration, directory layout, and acceptance rules.
+
 ### Geometry re-entry
 
 **Parametric re-entry** uses `--seed` with a previous `mesh.npz` or parameter JSON. It invokes the same project builder and resumes editing that builder's original parameters.

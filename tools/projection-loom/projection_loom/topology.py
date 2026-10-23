@@ -14,7 +14,7 @@ def mask_components(binary, minimum_area=2):
             'relative_stray_area':sum(ordered[1:])/max(1,ordered[0]) if ordered else 1.0}
 
 
-def assembly_contacts(mesh, tolerance=0.005):
+def assembly_contacts(mesh, tolerance=None, relative_tolerance=0.008):
     """Report conservative broad-phase contact between independent mesh parts.
 
     Overlapping bounding boxes establish candidate contact, not Boolean union.
@@ -28,6 +28,9 @@ def assembly_contacts(mesh, tolerance=0.005):
         xyz=verts[np.unique(subset)]
         boxes.append((xyz.min(axis=0),xyz.max(axis=0)))
     n=len(boxes)
+    if tolerance is None:
+        span=np.asarray(mesh.vertices).max(axis=0)-np.asarray(mesh.vertices).min(axis=0)
+        tolerance=max(1e-8,float(relative_tolerance)*float(np.linalg.norm(span)))
     roots=list(range(n))
     def find(x):
         while roots[x]!=x:
@@ -50,7 +53,8 @@ def assembly_contacts(mesh, tolerance=0.005):
     return {'part_contact_groups':result,'part_contact_count':len(result),
             'unattached_parts':[p for group in result[1:] for p in group],
             'indexed_body_count':int(raw.body_count), 'watertight':bool(raw.is_watertight),
-            'method':'expanded axis-aligned bounding-box broad-phase',
+            'method':'scale-relative expanded axis-aligned bounding-box broad-phase',
+            'contact_tolerance':float(tolerance),
             'contact_is_heuristic':True}
 
 
