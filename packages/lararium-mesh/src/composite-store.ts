@@ -146,8 +146,7 @@ export class CompositeStore implements LarTiddlerStore {
 
     // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {
-      // One listener that throws never starves the listeners after it: each hears every change.
-      for (const fn of [...this.listeners]) { try { fn(change); } catch { /* a listener's fault stays its own */ } }
+      this._tell(change);
     });
     this.unsubs.set(layer.store, unsub);
 
@@ -167,7 +166,7 @@ export class CompositeStore implements LarTiddlerStore {
           this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
             if (!rec) return;
             const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
-            this.listeners.forEach((fn) => fn(change));
+            this._tell(change);
           });
         }
       });
@@ -204,7 +203,7 @@ export class CompositeStore implements LarTiddlerStore {
       const answeredBy = resolved?.layer ?? layer;
       const heads = resolved?.heads;
       const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
-      this.listeners.forEach((fn) => fn(change));
+      this._tell(change);
       for (const projection of this.projections.keys()) projection.onUriChanged(change);
     }
   }
@@ -268,6 +267,11 @@ export class CompositeStore implements LarTiddlerStore {
     if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
     for (const record of puts) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+  }
+
+  /** One listener that throws never starves the listeners after it: each hears every change. */
+  private _tell(change: LarTiddlerChange): void {
+    for (const fn of [...this.listeners]) { try { fn(change); } catch { /* a listener's fault stays its own */ } }
   }
 
   /** Run every composite-owned family check before a caller starts a transaction. */

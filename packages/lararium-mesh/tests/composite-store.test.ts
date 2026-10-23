@@ -593,3 +593,21 @@ describe("CompositeStore — the default writable under the recipe layer model",
     expect((await composite.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
   });
 });
+
+describe("CompositeStore — a listener's fault stays its own", () => {
+  test("a throwing listener never starves a later one across a forwarded change, a populated add and a live remove; CONTROL: the later one hears all three", async () => {
+    const composite = new CompositeStore();
+    composite.subscribe(() => { throw new Error("earlier listener fault"); });
+    const heard: string[] = [];
+    composite.subscribe(change => heard.push(change.title));
+    const working = new MemoryTiddlerStore("w");
+    composite.addLayer({ bagId: "w", store: working, writable: true });
+    await working.put({ tiddler: { title: "Forwarded", text: "x" } }, wikiOrigin());
+    const library = new MemoryTiddlerStore("lib");
+    await library.put({ tiddler: { title: "Populated", text: "y" } }, wikiOrigin());
+    composite.addLayer({ bagId: "lib", store: library, writable: false });
+    await composite.removeLayerLive("lib");
+    expect(heard).toContain("Forwarded");
+    expect(heard.filter(title => title === "Populated").length).toBeGreaterThanOrEqual(2);
+  });
+});

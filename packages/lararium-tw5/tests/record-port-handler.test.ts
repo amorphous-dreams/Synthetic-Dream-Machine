@@ -232,6 +232,22 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-memory-family-reentrant-removal-keeps-store-truth: a listener that hard-removes a later member leaves the port's last value absent like the store; CONTROL: an untouched member stays", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    let removed = false;
+    r.composite.subscribe(change => {
+      if (change.title === "GA" && !removed) { removed = true; void r.composite.remove("GB", { kind: "tw-local", instanceId: "elsewhere" }); }
+    });
+    await r.send({ type: "port:write", portId: "p", txId: "gone", records: [{ title: "GA", fields: { text: "a" } }, { title: "GB", fields: { text: "old" } }, { title: "GC", fields: { text: "c" } }] });
+    await settle();
+    const last = (title: string) => ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === title).sort((x, y) => x.seq - y.seq).at(-1);
+    expect(await r.store.get("GB")).toBeNull();
+    expect(last("GB")?.deleted).toBe(true);
+    expect(last("GC")?.fields["text"]).toBe("c");
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());

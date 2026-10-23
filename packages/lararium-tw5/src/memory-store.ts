@@ -115,7 +115,7 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
       const live = this._records.get(change.title);
       const fired: LarTiddlerChange = change.record === null
         ? (live?.meta?.deleted === true || live === undefined ? change : { ...change, record: live })
-        : { ...change, record: live ?? change.record };
+        : (live === undefined ? { ...change, record: null } : { ...change, record: live });
       try { this._emit(fired); } catch { /* the commit stands */ }
     }
   }
