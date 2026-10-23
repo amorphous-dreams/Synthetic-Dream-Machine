@@ -18,6 +18,31 @@ export class RecordingNode {
   readonly isTiddlyWikiFakeDom = true;
   private content = "";
   private html = "";
+  private selectedValue: string | undefined;
+  private checkedValue: boolean | undefined;
+  private selectedState: boolean | undefined;
+  offsetLeft = 0; offsetTop = 0; offsetWidth = 0; offsetHeight = 0;
+  get offsetParent(): RecordingNode | null { return this.parentNode; }
+  get checked(): boolean { return this.checkedValue ?? this.hasAttribute("checked"); }
+  set checked(value: boolean) { this.checkedValue = value; }
+  get selected(): boolean { return this.selectedState ?? this.hasAttribute("selected"); }
+  set selected(value: boolean) { this.selectedState = value; }
+  get options(): RecordingNode[] { return this.childNodes.flatMap(child => child.tag === "option" ? [child] : child.tag === "optgroup" ? child.options : []); }
+  get value(): string {
+    if (this.tag === "select") return this.selectedValue ?? this.options.find(option => option.selected)?.value ?? this.options[0]?.value ?? "";
+    return this.getAttribute("value") ?? this.textContent;
+  }
+  set value(value: string) {
+    if (this.tag === "select") {
+      this.selectedValue = value;
+      for (const option of this.options) option.selected = option.value === value;
+    } else this.setAttribute("value", value);
+  }
+  get text(): string { return this.textContent; }
+  getBoundingClientRect(): { top: number; left: number; right: number; bottom: number; width: number; height: number } {
+    return { top: this.offsetTop, left: this.offsetLeft, right: this.offsetLeft + this.offsetWidth,
+      bottom: this.offsetTop + this.offsetHeight, width: this.offsetWidth, height: this.offsetHeight };
+  }
   constructor(readonly nodeId: number, tag: string, readonly nodeType: 1 | 3) {
     this.tagName = tag.toUpperCase();
     this.tag = tag.toLowerCase();
