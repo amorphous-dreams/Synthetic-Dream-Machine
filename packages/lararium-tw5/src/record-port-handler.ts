@@ -40,6 +40,8 @@ export interface RecordPortOptions {
   maxQueuedWrites?: number;
   /** Live ports one island serves; an open past it gets a `lagged` reset (the island could not serve it) and holds nothing (default 64). */
   maxPorts?: number;
+  /** Asks one port may hold started and unanswered; the next refuses `ask-queue-full` (default 32). */
+  maxAsks?: number;
   /** The composer lends the bags a port may name in a write: admin on that bag for the bound actor. Absent, every explicit bag refuses `bag-not-granted`. */
   bagGrant?: (portId: string, actor: string, bag: string) => boolean;
   bootNonce?: string;
@@ -74,6 +76,8 @@ interface OpenPort {
   readonly actorTableFull: boolean;
   /** Writes admitted and not yet settled; the queue holds each message whole, so the count is bounded at admission. */
   queuedWrites: number;
+  /** Asks started and not yet answered; the count is bounded at admission like the write queue. */
+  asksInFlight: number;
 }
 
 export type RecordPortCap = IslandCap & { transportGone(portId: string): void };
@@ -121,6 +125,8 @@ function projected(entry: PortEntry, port: OpenPort): PortWireRecord & { seq: nu
 export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const maxActors = opts.maxActors ?? 256;
   if (!Number.isSafeInteger(maxActors) || maxActors < 1) throw new RangeError("maxActors");
+  const maxAsks = opts.maxAsks ?? 32;
+  if (!Number.isSafeInteger(maxAsks) || maxAsks < 1) throw new RangeError("maxAsks");
   const maxPorts = opts.maxPorts ?? 64;
   if (!Number.isSafeInteger(maxPorts) || maxPorts < 1) throw new RangeError("maxPorts");
   const maxQueuedWrites = opts.maxQueuedWrites ?? 16;
@@ -533,7 +539,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const port: OpenPort = { open: msg, boundActor, presenceActor, shape, closed: false, held: false, opening: !msg.since,
           baseSeq: log.headSeq, dirty: new Set(), buffered: [], pending: [], pendingBytes: 0,
           ackSeq, postedSeq: ackSeq, rendered: undefined, written: actor.written, ledger: actor.ledger,
-          actorState: actor, actorTableFull, queuedWrites: 0 };
+          actorState: actor, actorTableFull, queuedWrites: 0, asksInFlight: 0 };
         ports.set(msg.portId, port);
         void open(msg, ctx, port);
         return true;
@@ -561,7 +567,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           port.ackSeq = cursor.seq;
           while (port.pending.length && port.pending[0]!.seq <= cursor.seq) port.pendingBytes -= port.pending.shift()!.bytes;
         }
-      } else if (msg.type === "port:ask") void ask(msg, ctx, port);
+      } else if (msg.type === "port:ask") {
+        if (port.asksInFlight >= maxAsks) {
+          ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason: "ask-queue-full" }));
+          return true;
+        }
+        port.asksInFlight++;
+        void ask(msg, ctx, port).finally(() => { port.asksInFlight--; });
+      }
       return true;
     },
   };

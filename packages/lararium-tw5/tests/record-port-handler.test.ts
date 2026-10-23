@@ -315,6 +315,23 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-ask-queue-is-bounded: asks past maxAsks refuse ask-queue-full while reads are held; CONTROL: the held asks answer and a later ask is admitted", async () => {
+    const r = await rig({ maxAsks: 2 });
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const get = r.composite.get.bind(r.composite);
+    r.composite.get = async (title: string) => { await gate; return get(title); };
+    await r.send(openMsg());
+    for (let index = 0; index < 4; index++) await r.send(askMsg("load", { askId: `l${index}`, titles: ["Ordinary"], fields: ["text"] }));
+    const refused = ofType(r.messages, "port:answer").filter(message => message.status === "refused" && message.reason === "ask-queue-full");
+    expect(refused.map(message => message.askId)).toEqual(["l2", "l3"]);
+    release(); await ioSettle();
+    expect(ofType(r.messages, "port:answer").filter(message => message.status === "answered").map(message => message.askId).sort()).toEqual(["l0", "l1"]);
+    await r.send(askMsg("load", { askId: "l9", titles: ["Ordinary"], fields: ["text"] })); await ioSettle();
+    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "l9", status: "answered" });
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());
