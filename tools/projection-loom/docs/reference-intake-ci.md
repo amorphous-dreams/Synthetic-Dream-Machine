@@ -70,11 +70,15 @@ Python 3.12, explicitly constrained direct dependencies, OpenSCAD, all tests,
 Ur/Brutalist validation, and a hybrid Necrospire smoke run. It uploads STEP,
 preview controls and dependency/kernel receipts as short-retention artifacts.
 
-An optional `workflow_dispatch` job fetches the public CC0 archive, runs a
-bounded OpenSCAD + STL witness check, and uploads an **unreviewed** source hash.
-This dispatch needs a workflow reachable from GitHub's default branch; it may
-not appear in the Actions menu until that happens. No Sketchfab token enters
-this workflow. The manual local fetch commands remain available meanwhile.
+A separate *advisory* job fetches the public CC0 archive on trusted working-
+branch pushes (or a later `workflow_dispatch`), samples bounded STL witnesses,
+and uploads the original zip plus an **unreviewed** SHA-256 lock. The job
+never runs on pull-request events, has read-only permissions, and cannot
+block core CAD tests if the third-party host fails. It does not compile
+unreviewed external OpenSCAD scripts; the Operator runs that step after
+source review. A manual dispatch needs a workflow on GitHub's default branch
+and may not appear in the Actions menu until then. No Sketchfab token enters
+this workflow. The local fetch commands remain available meanwhile.
 
 ## Failure and scope boundaries
 

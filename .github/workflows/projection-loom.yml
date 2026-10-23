@@ -86,7 +86,8 @@ jobs:
 
   cc0-public-witness:
     name: Public CC0 external source (advisory, unpinned until reviewed)
-    if: github.event_name == 'workflow_dispatch' && inputs.public_reference
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.public_reference)
+    continue-on-error: true
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
@@ -112,7 +113,7 @@ jobs:
             --bootstrap-lock
           python scripts/inspect_reference_pack.py \
             --receipt out/references/receipts/brutalism2.json \
-            --compile-one-scad --out out/references/reference-evidence.json
+            --out out/references/reference-evidence.json
       - name: Upload source-integrity review artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -122,5 +123,6 @@ jobs:
             tools/projection-loom/out/references.lock.review.json
             tools/projection-loom/out/references/receipts/*.json
             tools/projection-loom/out/references/reference-evidence.json
+            tools/projection-loom/out/references/archives/brutalism2.zip
           retention-days: 14
           if-no-files-found: warn
