@@ -349,6 +349,25 @@ describe("record port handler", () => {
     await r.close(); await bare.close();
   });
 
+  test("port-face-key-is-the-stable-id: a renewed proof for the same face reopens; CONTROL: a lookup that throws or names no id opens nothing", async () => {
+    let face: Record<string, unknown> | undefined = { id: "alice", proof: { nonce: 1 } };
+    let fault = false;
+    const r = await rig({ faceOf: () => { if (fault) throw new Error("lookup fault"); return face; } });
+    await r.send(openMsg("q1", { actor: "x1" }));
+    face = { proof: { nonce: 2 }, id: "alice" };
+    await r.send(openMsg("q2", { actor: "x2" }));
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "q2")).toBe(true);
+    fault = true;
+    await r.send(openMsg("q3", { actor: "x3" }));
+    fault = false; face = { role: "guest" };
+    await r.send(openMsg("q4", { actor: "x4" }));
+    for (const portId of ["q3", "q4"]) {
+      expect(ofType(r.messages, "port:reset").filter(message => message.portId === portId)).toHaveLength(1);
+      expect(ofType(r.messages, "port:snapshot").some(message => message.portId === portId)).toBe(false);
+    }
+    await r.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());
@@ -404,9 +423,10 @@ describe("record port handler", () => {
     let runs = 0;
     const table = new VerbTable();
     table.register("known", async () => { runs++; return { ok: true }; });
-    let face: object | undefined;
+    let face: object | undefined = { id: "admin" };
     const r = await rig({ faceOf: () => face, authority: () => ({ allowed: true }), verbs: () => table });
     await r.send(openMsg());
+    face = undefined;   // the binding loses its proof after the open
     await r.send(askMsg("verb", { subject: "known" }));
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-proven-face" });
     expect(runs).toBe(0);
@@ -775,7 +795,7 @@ describe("record port handler", () => {
   });
 
   test("port-tw5-change-stales-render: local wiki event refuses old affordance; CONTROL: quiet render invokes", async () => {
-    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    const r = await rig({ faceOf: () => ({ id: "face" }), authority: () => ({ allowed: true }) });
     await r.send(openMsg("p", { renders: ["blocks"] }));
     await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const result = ofType(r.messages, "port:answer").at(-1)!.result as { renderCursor: string; value: { children: { affordances: { id: string }[] }[] } };
@@ -890,7 +910,7 @@ describe("record port handler", () => {
 
   test("non-admin-invoke-refused: claimed admin fails; CONTROL: proven admin fires", async () => {
     let role = "guest";
-    const r = await rig({ faceOf: () => ({ role }), authority: req => (req.provenFace as { role: string }).role === "admin" ? { allowed: true } : { allowed: false, reason: "not-admin" } });
+    const r = await rig({ faceOf: () => ({ id: "face", role }), authority: req => (req.provenFace as { role: string }).role === "admin" ? { allowed: true } : { allowed: false, reason: "not-admin" } });
     await r.send(openMsg("p", { renders: ["blocks"] }));
     await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const result = ofType(r.messages, "port:answer").at(-1)?.result as { renderCursor: string; value: { children: { affordances: { id: string }[] }[] } };
@@ -906,7 +926,7 @@ describe("record port handler", () => {
   });
 
   test("ask-invoke-stale-cursor-refused: a changed rendered title invalidates admin's cursor", async () => {
-    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    const r = await rig({ faceOf: () => ({ id: "face" }), authority: () => ({ allowed: true }) });
     await r.send(openMsg("p", { renders: ["blocks"] }));
     await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const renderCursor = (ofType(r.messages, "port:answer").at(-1)?.result as { renderCursor: string }).renderCursor;
@@ -919,7 +939,7 @@ describe("record port handler", () => {
 
   test("invoke-authority-rechecked-at-run: a later denial wins; admin render control invokes once", async () => {
     let allowed = true;
-    const r = await rig({ faceOf: () => ({}), authority: () => allowed ? { allowed: true } : { allowed: false, reason: "revoked" } });
+    const r = await rig({ faceOf: () => ({ id: "face" }), authority: () => allowed ? { allowed: true } : { allowed: false, reason: "revoked" } });
     await r.send(openMsg("p", { renders: ["blocks"] }));
     await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const answer = ofType(r.messages, "port:answer").at(-1);
@@ -1196,7 +1216,7 @@ describe("record port handler", () => {
   });
 
   test("forged affordance and transcluded change refuse; CONTROL: offered affordance fires", async () => {
-    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    const r = await rig({ faceOf: () => ({ id: "face" }), authority: () => ({ allowed: true }) });
     await r.composite.put({ tiddler: { title: "Ordinary", text: "{{Transcluded}}" } }, origin);
     await r.composite.put({ tiddler: { title: "Transcluded", text: "before" } }, origin);
     await settle();

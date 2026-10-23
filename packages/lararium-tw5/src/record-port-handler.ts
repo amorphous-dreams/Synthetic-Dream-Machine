@@ -137,9 +137,15 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const presence = new PresenceTracker(opts.lapseRounds);
   const ports = new Map<string, OpenPort>();
   let islandFace: string | undefined;
-  const readFace = (portId: string): string | undefined => {
-    try { const face = opts.faceOf?.(portId); return face === undefined ? undefined : JSON.stringify(face); } catch { return undefined; }
+  /** The face's scope key: the verifier's stable `id`. A lent lookup that throws or names no string id yields null. */
+  const readFace = (portId: string): string | null | undefined => {
+    if (!opts.faceOf) return undefined;
+    try {
+      const face = opts.faceOf(portId) as { id?: unknown } | undefined;
+      return face !== undefined && face !== null && typeof face.id === "string" && face.id !== "" ? face.id : null;
+    } catch { return null; }
   };
+
   const actors = new Map<string, ActorState>();
   const tokens = new Map<string, { portId: string; txId: string }>();
   let tokenCounter = 0;
@@ -510,7 +516,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           return true;
         }
         const openFace = readFace(msg.portId);
-        if (openFace !== undefined && islandFace !== undefined && openFace !== islandFace) {
+        if (openFace === null || (openFace !== undefined && islandFace !== undefined && openFace !== islandFace)) {
           ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
           return true;
         }
