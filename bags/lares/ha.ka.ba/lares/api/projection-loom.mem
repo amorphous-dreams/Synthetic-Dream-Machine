@@ -90,6 +90,29 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
+<<~ ahu #/procedural-helm>>
+
+!! Executable OODA-HA Helm
+
+A location may run a hierarchy of guarded OODA-HA controllers: one location
+loop, bounded epoch loops, and candidates whose CAD audits execute inside their
+own Act phase. Every loop moves ✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act ->
+↺ Ho'oko / Aftermath -> close; a parent cannot close while children remain.
+
+An adjustable Operator/AI steering policy holds manual, shared, auto-nav, and
+full-speed modes on one continuous autonomy gradient. Every mode accepts
+explicit intervention at safe phase or candidate boundaries. Validated
+previews, relational witnesses, bounded AI suggestions, pet-name/o-takiage
+and lineage choices re-enter through durable operator checkpoints. A control
+cannot bypass source, geometry, registration, or CAD-validity gates.
+
+The default CLI follows scored-policy auto-navigation, not an undocumented LLM
+provider. A separate adviser callback may propose choices, but never invent
+validity. Development Aftermath still reviews OUR code and decisions;
+this procedural runtime Aftermath reviews the evolving location's outcome.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence
@@ -104,6 +127,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>

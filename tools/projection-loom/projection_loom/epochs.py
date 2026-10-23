@@ -147,7 +147,7 @@ class WideEpoch:
         self.data['snapshot_sha256']=_hash({k:v for k,v in self.data.items() if k!='snapshot_sha256'})
         _atomic(self.checkpoint,self.data)
 
-    def run(self,proposals,*,grow,score,preview=None):
+    def run(self,proposals,*,grow,score,preview=None,before_candidate=None,after_candidate=None,should_continue=None):
         proposals=list(proposals)
         if len({p.id for p in proposals})!=len(proposals):
             raise ValueError('Duplicate proposal ID')
@@ -186,9 +186,17 @@ class WideEpoch:
                                             'emitter':p.emitter,'parent':p.parent}
         detail_count=sum(r.get('state')=='scored' for r in self.data['results'].values())
         for _,_,p in scheduled:
+            # Cooperative interruptions happen between completed candidate
+            # evaluations, never mid-Boolean operation. Reentry uses the saved
+            # candidate receipts and never repeats a completed CAD side effect.
+            if should_continue is not None and not should_continue():
+                self._save()
+                return self.data
             previous=self.data['results'].get(p.id)
-            if previous is not None and previous['state'] in ('scored','rejected','audited'):
+            if previous is not None and previous['state'] in ('scored','rejected','audited','error'):
                 continue
+            if before_candidate is not None:
+                before_candidate(p)
             try:
                 assembly=grow(p.genome)
                 audit=assembly.audit(join=True)
@@ -229,8 +237,36 @@ class WideEpoch:
             self.data['results'][p.id]=result
             self.data['attempts'].append({'proposal_id':p.id,'state':result['state']})
             self._save()
+            if after_candidate is not None:
+                after_candidate(p,result)
         self._save()
         return self.data
+
+    def completed(self, proposals, *, preview=None):
+        """Check that the exact scheduled candidate set has durable results.
+
+        Deferred candidates do not count as completed auditions. An evaluator
+        error counts as a completed attempt, never as a valid geometry score.
+        """
+        estimates=[]
+        for p in proposals:
+            value=0. if preview is None else float(preview(p.genome))
+            if not math.isfinite(value):raise ValueError('Preview score must be finite')
+            estimates.append((value,p.id,p))
+        ordered=sorted(estimates,key=lambda x:(x[0],x[1]))
+        scheduled=[]
+        if self.reserve_emitter:
+            methods={p.emitter for _,_,p in estimates}
+            if len(methods)<=self.max_exact:
+                for method in sorted(methods):
+                    scheduled.append(next(row for row in ordered if row[2].emitter==method))
+        ids={row[2].id for row in scheduled}
+        for row in ordered:
+            if len(scheduled)>=self.max_exact:break
+            if row[2].id not in ids:
+                scheduled.append(row);ids.add(row[2].id)
+        return all(self.data['results'].get(row[2].id,{}).get('state') in
+                   ('scored','audited','rejected','error') for row in scheduled)
 
 
 def project_silhouette_score(project,*,size=(96,144)):

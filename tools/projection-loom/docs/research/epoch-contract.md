@@ -17,8 +17,10 @@
    separately from measured loss. Resumable checkpoints record a source digest,
    construction-code digest, proposal roster, seed, budgets and every result.
 
-`run_project_epochs` re-enters the selected *genome*; every next model regrows
-from the builder and the same fixed scoring reference. It never promotes a
+`run_ooda_epochs` governs the active CLI and re-enters the selected *genome*.
+The lower-level `run_project_epochs` test helper also offers deterministic
+reentry. Every next model regrows from the builder and the same fixed scoring
+reference. No loop promotes a
 self-generated mask into a new external measurement. The CLI includes
 `wide-epoch`, `inspect-dem` and `register-control`.
 
@@ -38,3 +40,5 @@ Active implementation does not perform general likelihood estimation, automatic
 multi-photo SfM, implicit geometry reconstruction, texture inversion, learning
 new grammar macros, or active next-best-view suggestions. These require
 separately validated backends and research trials.
+
+The active `wide-epoch` CLI now uses [guarded nested OODA-HA](../ooda-ha-procedural.md) with human review boundaries.

@@ -1,0 +1,83 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-ooda-ha.mem"
+namespace = "&#x0950; &#x0901;"
+title = "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha"
+type = "text/memetic-wikitext+tiddlywiki"
+role = "fractal constructive-control flow and operator/AI joint steering"
+tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
+```
+
+<<~ ahu #/entry>>
+
+! OODA-HA Runs as a Construction Procedure
+
+The original noosphere OODA-HA governs how a working Lares observes,
+orients, decides, acts and reviews the consequences. Within Projection Loom,
+that sequence also governs the executable location, epoch and candidate
+controllers. Do not confuse this runtime state machine with the developers'
+Aftermath/self-review phase; both use the pattern, neither manufactures a
+CAD material from a phase name.
+
+<<~/ahu>>
+
+<<~ ahu #/five-phases>>
+
+!! Every Active Loop Moves in Order
+
+* ''✶ Observe:'' receive original evidence, current location/lineage, source and code digests.
+* ''⏿ Orient:'' establish reference frames, available methods, validity gates, budgets and uncertain sources.
+* ''◇ Decide:'' commit an explicit bounded candidate audition or operator-guided course.
+* ''▶ Act:'' regrow CAD solids and voids, audit exact constructive validity, score only valid material. The enclosing Act may wake child loops; a candidate's actual evaluation occurs while its child sits in Act, never as post-hoc story.
+* ''↺ Hoʻoko / Aftermath:'' inspect measured consequences, preview viable alternatives, allow pet-naming and o-takiage, carry the accepted genome and open another Observe. A parent may not close while a child remains active.
+
+<<~/ahu>>
+
+<<~ ahu #/two-at-the-helm>>
+
+!! Operator and AI Hold Adjustable Authority
+
+Autonomy moves continuously across manual, co-pilot, auto-nav and full speed.
+The Operator MAY pause and review at a safe boundary, steer toward a viable
+lineage, pet-name a recognized nameless entity or entire location, request
+another direction, or release a name/fork with o-takiage. The AI MAY advise
+from observed and validated candidates. An adviser suggestion does not count
+as operator consent and does not invent authority over kernel geometry.
+
+The hard gates remain invariant across every autonomy setting: one valid
+material body per constructed assembly, declared join and void tests, source
+provenance, fixed evidence viewport, finite measurements and durable causality.
+The machine checks controls between candidate evaluations and never claims
+that a mid-Boolean operation can be forcibly interrupted.
+
+<<~/ahu>>
+
+<<~ ahu #/persistence>>
+
+!! Persist Consequences Rather Than Performance
+
+The location loop contains epoch loops containing candidate loops. Every
+phase records a digest-checked transition, every candidate keeps a separate
+CAD result receipt, and operator controls travel through an append-only local
+inbox. Reentry resumes completed work; it never reinterprets an old preview
+as external evidence. Changed source/code/experiment identity calls for a fork.
+A trusted local inbox does not pretend to solve distributed authorization.
+
+CLI auto-nav currently follows deterministic measured-loss selection. A
+provider-neutral adviser hook may add actual AI suggestions without bypassing
+the operator's steering policy. The machine's procedural OODA-HA operates in
+code; naming the phases in comments alone would not satisfy this meme.
+
+<<~/ahu>>
+
+<<~ ahu #/links>>
+
+`tools/projection-loom/docs/ooda-ha-procedural.md` carries the executable
+contract and safe-point controls.
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+
+<<~/ahu>>

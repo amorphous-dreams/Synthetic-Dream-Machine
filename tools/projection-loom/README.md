@@ -24,6 +24,36 @@ next evolutionary generation.
 * A share of valid survivors may carry novel structural phenotypes forward. This
   slack never weakens the CAD and void validity gates.
 
+## Fractal OODA-HA steering: the active wide-epoch driver
+
+The default `wide-epoch` CLI now executes an actual five-phase hierarchical
+controller, not a descriptive loop label. A pet-named location runs epoch
+loops, and each scheduled candidate runs its own Observe / Orient / Decide /
+**actual CAD Act** / Aftermath loop. Checkpoints and operator controls can
+pause, resume, alter autonomy, review verified CAD previews, pet-name a
+nameless entity, select an alternative valid lineage, or perform o-takiage.
+The hard geometry and original-evidence gates remain unchanged.
+
+```bash
+PYTHONPATH=. python -m projection_loom wide-epoch \
+  --project examples/grammar/project.json --out out/helm \
+  --passes 3 --candidates 9 --exact-budget 6 --detail-budget 3 \
+  --control manual --topology-locus branch
+PYTHONPATH=. python -m projection_loom ooda-status --session out/helm/session.json
+PYTHONPATH=. python -m projection_loom ooda-steer \
+  --session out/helm/session.json --action approve-plan
+# Repeat wide-epoch with the same arguments. Inspect out/helm/previews/.
+```
+
+For autonomous execution, use `--control auto-nav` (default) or
+`--control full-speed`, or set numeric `--autonomy` in `[0,1]`. Even then,
+an external operator may queue `pause`, `review`, `set-autonomy` and `choose`
+controls that apply at the next safe boundary. The included CLI uses a
+**deterministic selection policy**, not a connected LLM; the Python `adviser`
+hook accepts AI suggestions from independently wired providers. Read
+[the OODA-HA procedural contract](docs/ooda-ha-procedural.md) for the exact
+operator pairing, pet-name/o-takiage flow, and limitations.
+
 ## Run the current package
 
 Install Python 3.12+ and CadQuery/OpenCascade, NumPy, SciPy, Pillow, OpenCV,

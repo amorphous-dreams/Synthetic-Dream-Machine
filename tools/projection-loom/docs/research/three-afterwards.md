@@ -94,3 +94,13 @@ changes across datums; direct IFC/CityGML/OpenUSD interchange; exact point-to-BR
 and hidden-line comparison; constructive macro induction; multiwriter causal
 ledger merge; operator-blind diversity evaluation at large budgets. These remain
 research, not silent features.
+
+## Distinguish machine control from our development Aftermath
+
+These three historical Aftermath reviews examined **our work** at widening
+apertures; they do not represent three automatic features of the machine.
+The later [executable OODA-HA controller](../ooda-ha-procedural.md) deliberately
+adopts the same five-phase grammar as a *separate* runtime discipline over
+location, epoch and candidate actions. Its own Aftermath phase yields
+selectable audited previews, lineage receipts and operator intervention. It
+does not exempt us from independently reviewing code, tests and memetic laws.

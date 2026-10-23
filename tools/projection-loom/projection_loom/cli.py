@@ -43,6 +43,8 @@ def main(argv=None):
     p.add_argument('--seed',type=int,default=41)
     p.add_argument('--location-stack',type=Path)
     p.add_argument('--identity-ledger',type=Path)
+    p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],default='auto-nav')
+    p.add_argument('--autonomy',type=float)
     p=commands.add_parser('inspect-dem',help='Inspect an actual digest-checked DEM and its datum')
     p.add_argument('--location-stack',type=Path,required=True)
     p.add_argument('--source-id',required=True)
@@ -68,7 +70,78 @@ def main(argv=None):
     group.add_argument('--name')
     group.add_argument('--branch')
     p.add_argument('--witness',type=Path,help='required for branch release')
+    p=commands.add_parser('ooda-run', help='Run nested OODA-HA with durable operator steering')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--passes',type=int,default=3)
+    p.add_argument('--candidates',type=int,default=9)
+    p.add_argument('--exact-budget',type=int,default=6)
+    p.add_argument('--detail-budget',type=int,default=3)
+    p.add_argument('--topology-locus',action='append',default=[])
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--location-stack',type=Path)
+    p.add_argument('--identity-ledger',type=Path)
+    p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],
+                   default='auto-nav', help='operator/AI steering preset')
+    p.add_argument('--autonomy',type=float,
+                   help='continuous AI discretion [0,1], overrides --control')
+    p=commands.add_parser('ooda-status',help='Inspect the phase tree and operator checkpoints')
+    p.add_argument('--session',type=Path,required=True)
+    p=commands.add_parser('ooda-steer',help='Queue a control, applied at the next safe boundary')
+    p.add_argument('--session',type=Path,required=True)
+    p.add_argument('--action',choices=['pause','resume','review','set-autonomy','approve-plan','choose',
+                            'prefer-emitter','pet-name','o-takiage'],required=True)
+    p.add_argument('--autonomy',type=float)
+    p.add_argument('--proposal')
+    p.add_argument('--emitter',choices=['sobol','local','topology'])
+    p.add_argument('--name')
+    p.add_argument('--target')
+    p.add_argument('--branch')
+    p.add_argument('--mode',choices=['entity','location'],default='entity')
+    p.add_argument('--has',action='append',default=[])
+    p.add_argument('--member-has',action='append',default=[])
+    p.add_argument('--retain',type=float,default=.4)
     args=parser.parse_args(argv)
+    if args.command=='ooda-run':
+        from .ooda import run_ooda_epochs
+        from .location_stack import LocationStack
+        presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
+        project=Project.load(args.project)
+        source=LocationStack.load(args.location_stack) if args.location_stack else None
+        result=run_ooda_epochs(project,args.out,passes=args.passes,
+            candidates=args.candidates,exact_budget=args.exact_budget,
+            detail_budget=args.detail_budget,seed=args.seed,
+            topology_loci=args.topology_locus,
+            autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
+            ledger_path=args.identity_ledger,location_stack=source)
+        print(json.dumps(result,indent=2));return result
+    if args.command=='ooda-status':
+        from .ooda import OODAJournal
+        session=OODAJournal(args.session)
+        state=session.summary()
+        state['open_loops']=[{'id':n['id'],'phase':n['phase'],'scope':n['scope']}
+            for n in session.data['loops'].values() if n['phase']!='closed']
+        print(json.dumps(state,indent=2));return state
+    if args.command=='ooda-steer':
+        from .ooda import submit_control
+        parameters={}
+        if args.action=='set-autonomy':
+            if args.autonomy is None:parser.error('set-autonomy needs --autonomy')
+            parameters['autonomy']=args.autonomy
+        elif args.action=='choose':
+            if not args.proposal:parser.error('choose needs --proposal')
+            parameters['proposal_id']=args.proposal
+        elif args.action=='prefer-emitter':
+            if not args.emitter:parser.error('prefer-emitter needs --emitter')
+            parameters['emitter']=args.emitter
+        elif args.action=='pet-name':
+            parameters=dict(proposal_id=args.proposal,name=args.name,
+                target=args.target,mode=args.mode,has=args.has,
+                member_has=args.member_has,retain=args.retain)
+        elif args.action=='o-takiage':
+            parameters=dict(name=args.name,branch=args.branch,proposal_id=args.proposal)
+        msg=submit_control(args.session,args.action,**parameters)
+        print(json.dumps(msg,indent=2));return msg
     if args.command=='inspect-dem':
         from .location_stack import LocationStack
         from .geospatial import inspect_dem
@@ -84,18 +157,20 @@ def main(argv=None):
         print(json.dumps({'state':fit.state,'holdout_rms':fit.holdout_rms}))
         return fit
     if args.command=='wide-epoch':
-        from .epochs import run_project_epochs
+        from .ooda import run_ooda_epochs
         from .location_stack import LocationStack
         project=Project.load(args.project)
         ledger=PetNameLedger.load(args.identity_ledger) if args.identity_ledger else None
         location=LocationStack.load(args.location_stack) if args.location_stack else None
-        result=run_project_epochs(project,args.out,passes=args.passes,
+        presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
+        result=run_ooda_epochs(project,args.out,passes=args.passes,
                        candidates=args.candidates,exact_budget=args.exact_budget,
                        detail_budget=args.detail_budget,seed=args.seed,
-                       topology_loci=args.topology_locus,ledger=ledger,
-                       location_stack=location)
+                       topology_loci=args.topology_locus,
+                       autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
+                       ledger_path=args.identity_ledger,location_stack=location)
         print(json.dumps({'passes':len(result['passes']),
-                          'evidence_state':result['evidence_state']}))
+                          'status':result['status'],'awaiting':result['awaiting']}))
         return result
     if args.command=='pet-name':
         witness=RelationWitness.load(args.witness)
