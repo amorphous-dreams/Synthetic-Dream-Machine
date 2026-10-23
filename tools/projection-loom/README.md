@@ -125,3 +125,14 @@ A single-view reference constrains visible appearance, not hidden topology. Orth
 ## Source layout
 
 `projection_loom/geometry.py` defines assemblies and mesh IO; `geometry_seed.py` defines direct geometry re-entry and bounded deformations; `cameras.py` defines view coordinates; `render.py` supplies control passes; `topology.py` supplies connectivity diagnostics; `fitness.py` supplies image and lighting metrics; `evolution.py` supplies search and project loading; `cli.py` supplies the command surface. `examples/` contains a subject-neutral parametric demonstration and `tests/` exercises the contracts.
+
+## Architectural line hierarchy
+
+A semantic drafting renderer classifies visible lines into whole-object outlines,
+interpart occlusion contours, angular structural creases, material seams, and
+secondary detail. Enable it with `settings.render.linework_mode: "semantic"` while
+retaining the same four image-generation control outputs. For independent RGBA
+line classes, call `projection_loom.line_hierarchy.render_line_hierarchy`.
+
+See [Semantic linework](docs/semantic-lines.md) for authored part roles,
+screen-space detail limits, hierarchy weights, and the visibility contract.

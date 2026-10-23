@@ -125,12 +125,20 @@ def render_controls(mesh,camera,size=(1024,1536),light=None,style=None):
     shaded=lit_rgba(buf,key,ambient=float(style.get('ambient',.27)),
                     diffuse=float(style.get('diffuse',.66)),material_gray=style.get('material_gray'))
     shaded=shaded.resize(size,Image.Resampling.BICUBIC)
-    line_buf=buffers(mesh,camera,size)
-    lines=visible_lines(mesh,camera,line_buf,size,style)
-    silhouette_bool=np.asarray(mask)>0
-    stroke=np.asarray(lines,dtype=np.uint8).copy()
-    stroke[...,3]*=np.uint8(silhouette_bool)
-    lines=Image.fromarray(stroke,'RGBA')
+    mode=style.get('linework_mode','legacy')
+    if mode=='semantic':
+        from .line_hierarchy import render_line_hierarchy
+        lines=render_line_hierarchy(mesh,camera,size,style=style)['structure']
+    elif mode=='legacy':
+        line_buf=buffers(mesh,camera,size)
+        lines=visible_lines(mesh,camera,line_buf,size,style)
+        stroke=np.asarray(lines,dtype=np.uint8).copy()
+        # Preserve graded silhouette alpha on the composited linework pass.
+        stroke[...,3]=np.uint8(np.rint(stroke[...,3].astype(np.float32)*(
+            np.asarray(mask,dtype=np.float32)/255.)))
+        lines=Image.fromarray(stroke,'RGBA')
+    else:
+        raise ValueError('linework_mode must be legacy or semantic')
     plain=np.asarray(shaded,dtype=np.uint8).copy()
     plain[...,3]=mask
     shaded=Image.fromarray(plain,'RGBA')
