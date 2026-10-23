@@ -323,7 +323,7 @@ The frame carries the declarations beside each key, the way WorkerDOM put the fl
 | `data-lar-drag-titles` (proposed) | `makeDraggable` sites at render | the `text/vnd.tiddler` payload the page sets on `dragstart` |
 | membership key `shortcuts` (proposed) | the engine from `$:/tags/KeyboardShortcut` | the global descriptor set the page listens for on its document |
 
-A node whose `data-lar-on` lacks the event type never relays, and the browser default stands: external links open, native toggles toggle, the file picker opens. The camera's top element carries a render id, so every act climbs from a node and an unbound one answers `unclaimed`. A middle click relays only to a link's ordinary binding and is never cancelled; a modified click on an ordinary link and any click on an external link stay with the browser.
+A node whose `data-lar-on` lacks the event type never relays, and the browser default stands: external links open, native toggles toggle, the file picker opens. The camera's top element carries a render id, so every act climbs from a node and an unbound one answers `unclaimed`. A middle click relays only to a link's ordinary binding and is never cancelled; a modified click on an ordinary link and any click on an external link stay with the browser. The page relays a modified or middle click with its modifiers, and the ISLAND owns the rule: a node that declares `click:ordinary` answers `applied` to a click with `ctrl`, `meta` or `button` other than 0 and dispatches nothing into the widget tree, because stock TiddlyWiki's link widget would still add the tiddler to the story on a ctrl-click (`navigateSuppressNavigation` suppresses the history entry only). Red: `declared-cancellation.engine` (a modified and a middle click leave the story as it stood; control: the ordinary click opens the tiddler). The golden-whole-road W4 raises a barrier act (a throwaway tiddler through the editor) before it reads the story, because the island answers acts in order and a late act otherwise lands after a read made at once.
 
 !!! The wire, extended
 
@@ -609,6 +609,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u0QpS-rRYDzRvJL6qAH9iP55aTkrK7ujVBKjwJKn9G8
+<<^ code="&#x0003;">>ni:///sha-256;05l-17eTiu8_Um1zAqRrMZxY4fKlP5MYbVLofqfRvv8
 
 <<^ code="&#x0004;" -> to="?">>

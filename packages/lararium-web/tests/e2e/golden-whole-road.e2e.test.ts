@@ -37,6 +37,7 @@ const WAIT = 120_000;
 
 const ALPHA = golden.world.tiddlers[0]!.title;
 const BETA = golden.world.tiddlers[1]!.title;
+const SENTINEL = "lar:///t/link/sentinel";
 
 let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
@@ -184,6 +185,11 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     await link.click({ button: "middle" });
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 2);
     expect(await lastClick()).toMatchObject({ prevented: false, button: 1 });
+    // The island answers acts in the order they left the page, and a late act can land after a story read made at
+    // once. A throwaway tiddler made through the page's editor is a barrier: its frame stands only after every act
+    // relayed before it ran, so the story read after it sees what the modified and middle clicks did.
+    await makeTiddler(SENTINEL, "a barrier behind the relayed clicks");
+    await closeTiddler(SENTINEL);
     expect(await story()).toEqual([ALPHA]);
   });
 
