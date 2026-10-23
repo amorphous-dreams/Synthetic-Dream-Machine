@@ -270,7 +270,7 @@ invents ''only the composition'', never a new primitive.
 
 <<~ ahu #/open-forks>>
 
-!! Forks ~ three ruled, one open for wave 3
+!! Forks ~ two settled, one ruled under delegation, one open
 
 Four choices rode ahead of the build:
 
@@ -282,13 +282,12 @@ Four choices rode ahead of the build:
   (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). No convergence secret
   derives a body key.
 * ''③ Indirection-map placement — RULED.'' The logical-name→cid map rides the Automerge doc (small ordered
-  causal metadata), the docs/blobs split applied to the map (house ruling under the operator's delegation,
-  2026-10-22).
-* ''④ Bilateral pin economics — house lean recorded, OPEN for wave 3.'' Island A pins for B under a revocable cap.
-  Within one operator's own fleet or PersonaGroup, pinning carries no price. Across operators, B answers A's
-  revocable pin cap with a reciprocal revocable pin, each side keeping only its own local ledger, never a global
-  one; an unreciprocated pin simply lapses at A's revocation. The "fed node hums" ritual-feeding stays its fiction
-  (house ruling under the operator's delegation, 2026-10-22).
+  causal metadata), the docs/blobs split applied to the map (house ruling under the operator's delegation, 2026-10-22).
+* ''④ Bilateral pin economics — an UNRATIFIED controller lean, OPEN for wave 3.'' Island A pins for B under a revocable cap.
+  The lean: within one operator's own fleet or PersonaGroup, pinning carries no price; across operators, B answers A's
+  revocable pin cap with a reciprocal revocable pin, each side keeping only its own local ledger, never a global one; an
+  unreciprocated pin simply lapses at A's revocation. The "fed node hums" ritual-feeding stays its fiction. The operator
+  has not ruled it (recorded 2026-10-22).
 
 fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
@@ -309,6 +308,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f_g4dKycfbsteskTbfVTgnObWH5Ojdvw6FrbAvi02Go
+<<^ code="&#x0003;">>ni:///sha-256;25Cvsq81KFouqGu4sNm1Xm9f-F9rRxCdPL62_HD2jOs
 
 <<^ code="&#x0004;" -> to="?">>
