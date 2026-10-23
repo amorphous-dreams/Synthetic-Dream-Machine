@@ -30,7 +30,7 @@ const askMsg = (kind: PortMsg_Ask["kind"], overrides: Partial<PortMsg_Ask> & { a
   type: "port:ask", portId: "p", askId: kind, kind, ...overrides,
 });
 
-async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort({ mayEdit: () => true, ...options }), beforeEa?: (composite: CompositeStore) => void) {
+async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort({ mayEdit: () => true, bagGrant: () => true, ...options }), beforeEa?: (composite: CompositeStore) => void) {
   const composite = new CompositeStore();
   const store = new MemoryTiddlerStore("working");
   composite.addLayer({ bagId: "working", store, writable: true });
@@ -282,6 +282,36 @@ describe("record port handler", () => {
     expect(await r.store.get("Flood2")).toBeNull();
     await r.send(writeMsg("after", "After")); await ioSettle();
     expect(await r.store.get("After")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-write-named-bag-needs-a-bag-grant: a wiki edit grant does not reach another mounted bag; CONTROL: the lent bag lands", async () => {
+    const r = await rig({ bagGrant: (_portId, _actor, bag) => bag === "granted" });
+    const daemon = new MemoryTiddlerStore("daemon"); const granted = new MemoryTiddlerStore("granted");
+    r.composite.addLayer({ bagId: "daemon", store: daemon, writable: true, defaultWritable: false });
+    r.composite.addLayer({ bagId: "granted", store: granted, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "named-1", records: [{ title: "Probe", fields: { text: "x" }, bag: "daemon" }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "named-1", status: "refused", reason: "bag-not-granted" });
+    expect(await daemon.get("Probe")).toBeNull();
+    await r.send({ type: "port:write", portId: "p", txId: "named-2", records: [{ title: "Probe", fields: { text: "x" }, bag: "granted" }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "named-2", status: "applied" });
+    const bare = await rig({ bagGrant: undefined });
+    await bare.send(openMsg());
+    await bare.send({ type: "port:write", portId: "p", txId: "named-3", records: [{ title: "Probe", fields: { text: "x" }, bag: "working" }] });
+    expect(ofType(bare.messages, "port:written").at(-1)).toMatchObject({ reason: "bag-not-granted" });
+    await r.close(); await bare.close();
+  });
+
+  test("port-open-count-is-bounded: an open past maxPorts gets a reset and holds nothing; CONTROL: a closed slot admits the next", async () => {
+    const r = await rig({ maxPorts: 2 });
+    await r.send(openMsg("a1", { actor: "x1" })); await r.send(openMsg("a2", { actor: "x2" }));
+    await r.send(openMsg("a3", { actor: "x3" }));
+    expect(ofType(r.messages, "port:reset").filter(message => message.portId === "a3")).toHaveLength(1);
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "a3")).toBe(false);
+    await r.send({ type: "port:close", portId: "a1" });
+    await r.send(openMsg("a3", { actor: "x3" }));
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "a3")).toBe(true);
     await r.close();
   });
 

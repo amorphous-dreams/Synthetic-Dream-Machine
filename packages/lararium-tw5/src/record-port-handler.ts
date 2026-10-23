@@ -38,6 +38,10 @@ export interface RecordPortOptions {
   maxActors?: number;
   /** Writes one port may hold admitted and unsettled; the next refuses `write-queue-full` (default 16). */
   maxQueuedWrites?: number;
+  /** Live ports one island serves; an open past it gets a `lagged` reset (the island could not serve it) and holds nothing (default 64). */
+  maxPorts?: number;
+  /** The composer lends the bags a port may name in a write: admin on that bag for the bound actor. Absent, every explicit bag refuses `bag-not-granted`. */
+  bagGrant?: (portId: string, actor: string, bag: string) => boolean;
   bootNonce?: string;
 }
 
@@ -117,6 +121,8 @@ function projected(entry: PortEntry, port: OpenPort): PortWireRecord & { seq: nu
 export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
   const maxActors = opts.maxActors ?? 256;
   if (!Number.isSafeInteger(maxActors) || maxActors < 1) throw new RangeError("maxActors");
+  const maxPorts = opts.maxPorts ?? 64;
+  if (!Number.isSafeInteger(maxPorts) || maxPorts < 1) throw new RangeError("maxPorts");
   const maxQueuedWrites = opts.maxQueuedWrites ?? 16;
   if (!Number.isSafeInteger(maxQueuedWrites) || maxQueuedWrites < 1) throw new RangeError("maxQueuedWrites");
   const nonce = (opts.bootNonce ?? crypto.randomUUID()).replaceAll(".", "");
@@ -268,8 +274,12 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
     if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
-    // An explicit bag is no edit of the wiki: a system canon bag meets the Kahu predicate the verbs meet.
+    // An explicit bag is no edit of the wiki: the composer must lend the bag, and a system canon bag also meets
+    // the Kahu predicate the verbs meet.
     for (const bag of new Set(msg.records.flatMap(record => record.bag ? [record.bag] : []))) {
+      let lent = false;
+      try { lent = opts.bagGrant?.(msg.portId, port.boundActor, bag) === true; } catch { /* A failed lookup grants nothing. */ }
+      if (!lent) { answer("refused", [], [], "bag-not-granted"); return; }
       try { await requireKahuReach(bag, opts.kahuReach, "port write"); }
       catch { answer("refused", [], [], "kahu-reach"); return; }
     }
@@ -485,6 +495,10 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       if (msg.type === "port:open") {
         if (msg.wikiUri !== ctx.wikiUri) return false;
         flush(ctx);
+        if (!ports.has(msg.portId) && ports.size >= maxPorts) {
+          ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
+          return true;
+        }
         const lentActor = opts.actorOf?.(msg.portId);
         const boundActor = lentActor ?? msg.portId;
         const presenceActor = lentActor ?? msg.actor;
