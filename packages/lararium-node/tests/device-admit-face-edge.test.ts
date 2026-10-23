@@ -13,7 +13,7 @@ const T = vi.hoisted(() => ({
   daemon: "lar:///ha.ka.ba/bags/daemon",
   kel: "lar:///ha.ka.ba/lares/persona-kel-prefix",
 }));
-const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[] }));
+const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null }));
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
@@ -41,6 +41,9 @@ vi.mock("../src/node-vessel-identity.js", () => ({
   loadPersonaGroupRootVerifyingKey: async () => undefined,
   loadVesselVerifyingKey: async () => "vessel",
 }));
+vi.mock("../src/face-anchor-store.js", () => ({
+  loadFaceAnchorOfGroup: async () => ({ personaGroup: "g", frontier: { leaseEpoch: seam.anchorLease, actSeq: seam.anchorSeq, actCid: null } }),
+}));
 vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => new Uint8Array(32).fill(9) }));
 vi.mock("@lararium/tw5", async (real) => ({ ...(await real<Record<string, unknown>>()), makeCatalogAccessor: () => ({ storeOf: async () => ({}) }) }));
 vi.mock("../src/edge-board.js", () => ({ readVesselEdgeBoard: async () => ({ readings: new Map() }) }));
@@ -65,9 +68,9 @@ vi.mock("@lararium/mesh", async (real) => {
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
     oracleGenesisDocUrl: () => "oracle",
     // This suite reads WHICH face's root signs; the signed log's own proofs have their reds elsewhere (persona-act-boot).
-    personaLineageFromKel: () => [{ epoch: 0, signers: { includes: () => true }, threshold: 1, rosterHash: "h" }],
-    projectPersonaLog: () => ({ founded: true, fork: null, head: { seq: 3, cid: "head" } }),
-    signedLeaseEpoch: () => 0,
+    personaLineageFromKel: () => [{ epoch: 0, signers: Object.assign([], { includes: () => true }), threshold: 1, rosterHash: "h" }],
+    projectPersonaLog: (_records: unknown, opts: Record<string, unknown>) => { seam.projectedWith = opts; return { founded: true, fork: null, head: { seq: 3, cid: "head" } }; },
+    signedLeaseEpoch: () => seam.observed,
   };
 });
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => [], appendPersonaActs: () => {} }));
@@ -84,7 +87,7 @@ const admitAt = (face?: number) => runDeviceAdmit({ repo, catalogUrl: "catalog",
 
 describe("runDeviceAdmit names the face whose root signs", () => {
   beforeEach(() => {
-    seam.edge = null; seam.seeds = []; seam.anchorsAsked = [];
+    seam.edge = null; seam.seeds = []; seam.anchorsAsked = []; seam.observed = 0; seam.anchorLease = 0; seam.anchorSeq = -1; seam.projectedWith = null;
     seam.bootstrapPath = join(tmpdir(), `lar-device-admit-face-${process.pid}.json`);
     writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: {
       [T.group]: { text: "group-zero" }, [T.cabal]: { text: "cabal-zero" }, [T.daemon]: { text: "automerge:daemon" },
@@ -112,5 +115,15 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     await expect(admitAt(3)).rejects.toThrow(/no face at index 3/);
     expect(seam.seeds).toEqual([]);
     expect(seam.edge).toBeNull();
+  });
+
+  test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {
+    seam.observed = 0; seam.anchorLease = 7; seam.anchorSeq = 4;
+    await admitAt();
+    expect(seam.edge!["boundEpoch"], "the anchor's epoch 7 bounds the edge, not the stale slot's 0").toBe(7);
+    expect(seam.projectedWith).toMatchObject({ acceptedThrough: 4 });
+    seam.observed = 9; seam.edge = null;
+    await admitAt();
+    expect(seam.edge!["boundEpoch"], "a verified higher advance still lands").toBe(9);
   });
 });

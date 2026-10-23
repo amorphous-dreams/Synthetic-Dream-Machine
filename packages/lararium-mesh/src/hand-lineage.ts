@@ -62,3 +62,14 @@ export function rosterAt(lineage: HandLineage, epoch: unknown): HandEpoch | null
 export function currentRoster(lineage: HandLineage): HandEpoch {
   return lineage[lineage.length - 1]!;
 }
+
+/**
+ * THE ONE PREDICATE for "may this key sign now": it stands in the lineage's CURRENT roster. Every lease reader and writer asks
+ * this door (never "any epoch of the lineage"), so a key the KEL has rotated past raises no lease at the daemon gate, the admit
+ * door, the lease writer or either sibling boot. No lineage reads no signer.
+ */
+export function currentSignerOf(lineage: HandLineage | null | undefined): (writer: string) => boolean {
+  if (!lineage || lineage.length === 0) return () => false;
+  const seated = new Set(currentRoster(lineage).signers);
+  return (writer) => seated.has(writer);
+}

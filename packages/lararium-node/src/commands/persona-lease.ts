@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-lease
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, type LarDoc } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, currentSignerOf, type LarDoc } from "@lararium/mesh";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
@@ -60,10 +60,10 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   const key = await ed25519VerifyingKeyFromSeed(seed);
   const lineage = await fleetLineageForVessel(opts.repo, key);
   if (!lineage) throw new PersonaLeaseError("this vessel reads no verified persona-KEL lineage for that root, so no advance can verify");
-  const seated = new Set(lineage.flatMap((e) => e.signers));
-  if (!seated.has(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
+  const seated = currentSignerOf(lineage);
+  if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const daemon = await opts.repo.find<LarDoc>(daemonUrlOfBootstrap() as AutomergeUrl);
-  const r = await rollSignedLeaseEpochOnBoard(daemon, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, (w) => seated.has(w));
+  const r = await rollSignedLeaseEpochOnBoard(daemon, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated);
   const raised = raiseFaceFrontier(anchor, { leaseEpoch: r.rolled });
   if (raised !== anchor) await keepFaceAnchorOfGroup(raised);
   await opts.repo.flush();

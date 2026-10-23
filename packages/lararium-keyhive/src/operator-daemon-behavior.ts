@@ -137,7 +137,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { personaLineageFromKel } from "@lararium/mesh";
+import { currentSignerOf, personaLineageFromKel } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -419,8 +419,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
   const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
-    readLeaseFrontier(composite, daemonAuth.personaGroupId, (writer) =>
-      (personaLineageFromKel(daemonAuth.personaKel?.chain ?? []) ?? []).some((epoch) => epoch.signers.includes(writer)));
+    readLeaseFrontier(composite, daemonAuth.personaGroupId, currentSignerOf(personaLineageFromKel(daemonAuth.personaKel?.chain ?? [])));
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)

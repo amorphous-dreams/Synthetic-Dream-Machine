@@ -74,7 +74,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
+  faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, currentSignerOf, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog, personaActRecordsOfGroup, personaLineageFromKel,
   readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, signedLeaseEpoch,
   type WideningRead,
 } from "@lararium/mesh";
@@ -1465,8 +1465,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
-            expectedEpoch: signedLeaseEpoch(group, leaseSlots, (writer) =>
-              (personaLineageFromKel(daemonAuth.personaKel.chain) ?? []).some((epoch) => epoch.signers.includes(writer))),
+            expectedEpoch: signedLeaseEpoch(group, leaseSlots, currentSignerOf(personaLineageFromKel(daemonAuth.personaKel.chain))),
             onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }

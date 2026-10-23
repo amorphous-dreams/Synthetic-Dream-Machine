@@ -26,7 +26,7 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, projectPersonaLog,
+  leaseEpochPrefix, signedLeaseEpoch, personaLineageFromKel, currentSignerOf, projectPersonaLog,
   signPersonaAct, actCid, edgeBodyDigest, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   LARES_DOC_URI, LARARIUM_DOC_URI, tiddlerText, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type LarDoc,
 } from "@lararium/mesh";
@@ -35,7 +35,7 @@ import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, leaseEpochUnderAnchor, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
@@ -43,6 +43,7 @@ import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
@@ -369,8 +370,12 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const lineage = personaLineageFromKel(personaKelChain);
   if (!lineage) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
-  const boundEpoch = signedLeaseEpoch(personaGroupId, leaseSlotValues,
-    (writer) => lineage.some((epoch) => epoch.signers.includes(writer)));
+  // THE ADMIT DOOR READS WHAT THE BOOT READS: the issuer's sealed anchor bounds the edge, so a stale daemon doc (an older
+  // valid slot) never signs a joinee below an epoch this device already accepted, and the log is projected from the
+  // anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
+  const issuerAnchor = await loadFaceAnchorOfGroup(personaGroupId);
+  if (!issuerAnchor) throw new Error("[lares fleet join answer] Face proof: this face holds no sealed anchor; re-found or re-admit the face");
+  const boundEpoch = leaseEpochUnderAnchor(issuerAnchor, signedLeaseEpoch(personaGroupId, leaseSlotValues, currentSignerOf(lineage))).epoch;
 
   if (!opts.catalogUrl) throw new Error("the face's PersonaGroup catalog is absent");
   const operationStore = await makeCatalogAccessor(repo, opts.catalogUrl).storeOf(personaBagIdFor(personaGroupId));
@@ -382,7 +387,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
     extraDocs: [daemonDoc as LarDoc | undefined] });
-  const projection = projectPersonaLog(records, { group: personaGroupId, lineage, authorize: () => true });
+  const projection = projectPersonaLog(records, { group: personaGroupId, lineage, authorize: () => true, acceptedThrough: issuerAnchor.frontier.actSeq });
   if (!projection.founded || projection.fork || !projection.head) {
     throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
   }
