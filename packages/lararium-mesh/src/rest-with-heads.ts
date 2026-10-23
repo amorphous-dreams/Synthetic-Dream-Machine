@@ -12,13 +12,13 @@ import { hasHeads } from "@automerge/automerge";
 import type { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import type { IslandMsg_DocRest } from "./island-protocol.js";
 
-/** How many changes the vessel's copy may take without holding the island's heads before the ask answers stalled (rounds, never a timer). */
+/** Backstop only: the primary stall is a closed channel the vessel reads. How many changes the vessel's copy may take without holding the island's heads before the ask answers stalled (rounds, never a timer). */
 export const REST_STALL_ROUNDS = 512;
 const MAX_HEADS = 1024;
 const MAX_DOCUMENTS = 64;
 const HEAD_HASH = /^[0-9a-f]{64}$/;
 
-export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocRest): Promise<{ rested: boolean; stalled?: boolean; why?: string }> {
+export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocRest, islandPeer?: string): Promise<{ rested: boolean; stalled?: boolean; why?: string }> {
   if (!repo) return { rested: false, why: "no vessel Repo stands" };
   const heads = ask.heads;
   if (typeof heads !== "object" || heads === null || !Array.isArray(ask.documentIds) || ask.documentIds.length > MAX_DOCUMENTS) return { rested: false, why: "malformed rest ask" };
@@ -33,14 +33,22 @@ export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocR
       const holds = (): boolean => { try { return hasHeads(handle.doc() as Parameters<typeof hasHeads>[0], named); } catch { return false; } };
       if (!holds()) {
         let rounds = 0;
+        let channelClosed = false;
         const arrived = await new Promise<boolean>((resolve) => {
+          const finish = (done: boolean): void => { handle.off("heads-changed", onChange); repo.networkSubsystem.off("peer-disconnected", onGone); resolve(done); };
           const onChange = (): void => {
             const done = holds();
-            if (done || ++rounds >= REST_STALL_ROUNDS) { handle.off("heads-changed", onChange); resolve(done); }
+            if (done || ++rounds >= REST_STALL_ROUNDS) finish(done);
           };
+          // A closed channel carries no heads: the vessel reads that fact, not a count.
+          const onGone = ({ peerId }: { peerId: string }): void => { if (peerId === islandPeer) { channelClosed = true; finish(holds()); } };
           handle.on("heads-changed", onChange);
+          if (islandPeer !== undefined) {
+            repo.networkSubsystem.on("peer-disconnected", onGone);
+            if (!repo.peers.includes(islandPeer as never)) { channelClosed = true; finish(holds()); }
+          }
         });
-        if (!arrived) return { rested: false, stalled: true, why: `stalled: the vessel's copy of ${id} changed ${REST_STALL_ROUNDS} times without holding the island's heads` };
+        if (!arrived) return { rested: false, stalled: true, why: channelClosed ? `stalled: the island's channel closed before the vessel's copy of ${id} held its heads` : `stalled: the vessel's copy of ${id} changed ${REST_STALL_ROUNDS} times without holding the island's heads` };
       }
     }
     written.push(handle.documentId);
