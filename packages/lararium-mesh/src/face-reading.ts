@@ -32,6 +32,8 @@ export interface FaceReading {
   readonly observedLease: (group: string, slotTexts: Iterable<unknown>) => number;
   /** The lease epoch a door acts under: the observed epoch, never below what the anchor this reading holds accepted. */
   readonly leaseEpoch: (group: string, slotTexts: Iterable<unknown>) => number;
+  /** Floor an epoch some reader observed under the anchor this reading holds (never below what the anchor accepted). */
+  readonly floor: (observed: number) => number;
   /** The act log's projection under this lineage, from the anchor's accepted frontier (so a rotated-past key adds nothing new). */
   readonly project: (records: readonly unknown[], group: string) => PersonaProjection;
 }
@@ -44,6 +46,7 @@ export function readFace(chain: readonly PersonaKelEvent[] | null | undefined, a
   const observedLease = (group: string, slotTexts: Iterable<unknown>): number => signedLeaseEpoch(group, slotTexts, currentSigner);
   return {
     lineage, currentSigner, observedLease,
+    floor: (observed) => anchor ? leaseEpochUnderAnchor(anchor, observed).epoch : observed,
     leaseEpoch: (group, slotTexts) => {
       const observed = observedLease(group, slotTexts);
       return anchor ? leaseEpochUnderAnchor(anchor, observed).epoch : observed;

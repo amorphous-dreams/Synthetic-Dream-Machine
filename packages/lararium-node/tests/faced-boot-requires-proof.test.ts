@@ -49,4 +49,14 @@ describe("a faced boot proves its face", () => {
     expect(src).not.toMatch(/raiseAnchorFromSlots\(faceAnchor,/);
     expect(src).toContain("{ await keepFaceAnchorOfGroup(pinned); standingAnchor = pinned; }");
   });
+
+  test("RED: the worn face's gates, same-operator views and Kahu mount read sealed custody's group, never the bootstrap's group text, and the views and gates wait for the proof", () => {
+    const src = read("lararium-node/src/open-node-vessel.ts");
+    expect(src).toContain("const custodyGroup: string | null = wornMount?.personaGroupId");
+    expect(src).toContain("faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup)");
+    expect(src).toContain("return wornFaceProven && custodyGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup: custodyGroup } : null;");
+    expect(src).toContain("personaGroupId: custodyGroup,");
+    expect(src).not.toMatch(/faceBootTiddlers\??\.\[PERSONA_GROUP_ID_TIDDLER\]/);
+    expect(src).toContain("wornFaceProven = true;");
+  });
 });

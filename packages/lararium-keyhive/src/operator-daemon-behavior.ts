@@ -136,7 +136,7 @@ import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDoc
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
-import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
+import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
@@ -419,7 +419,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
   const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
-    readLeaseFrontier(composite, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain)?.currentSigner ?? (() => false));
+    // THE ONE DOOR: the current roster's signed advances, floored under the sealed anchor this daemon stands on.
+    readLeaseUnderFace(composite, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)

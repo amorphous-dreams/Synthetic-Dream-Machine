@@ -667,6 +667,10 @@ async function prepareNodeBootOn(
   // mask was on. A worn non-founding face carries its own mount material in its anchors — the pins below
   // default to it. Null means no switch is owed (h0, nothing worn, or anchors without the material).
   const wornMount = sovereign ? await sovereign.wornMount(storageDir) : null;
+  // THE FACE THIS VESSEL WEARS, READ FROM SEALED CUSTODY ALONE: the worn mount's group, else the founding face's anchors. The mutable
+  // bootstrap never names the face (it carries planes; the proof checks them against this one). A locked or faceless place names none.
+  const custodyGroup: string | null = wornMount?.personaGroupId
+    ?? (sovereign ? ((await loadIdentityAnchors(0).catch((e: unknown) => { if (e instanceof CustodyLocked) return null; throw e; }))?.personaGroupId ?? null) : null);
   // THE ROSTER READS WHOLE BEFORE ANYTHING STANDS ON IT. Every reading of what this vessel carries by persona (a
   // seated chair, a kept consent, the worn leaf) answers off the persona roster, and those readings answer empty
   // when they cannot read. So a sovereign composition reads the roster here, once, with no catch: a roster that
@@ -736,10 +740,13 @@ async function prepareNodeBootOn(
   // D3: the bootstrap's tiddlers once the boot reads them, and one scoped view per same-operator session over the
   // planes of the face its gate proved (`face-fleet-view`). The share verdict reads a same-operator peer through it.
   let faceBootTiddlers: Record<string, { text?: string }> | null = null;
+  // The worn face's persona/identities/circles planes passed the face proof (set once in the daemon open): the gates, the same-operator
+  // views and every other reader of the worn face's planes read nothing until it is true.
+  let wornFaceProven = false;
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
-  const faceViews = faceFleetViews(() => faceBootTiddlers, () => wornMount?.personaGroupId ?? null);
+  const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup);
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1276,8 +1283,8 @@ async function prepareNodeBootOn(
   // withdrawal memory a sovereign gate keeps across a restart.
   // THE WORN FACE the gates' rings read: the mount's own, or the founding face the bootstrap pins.
   const wornGateFace = (): { readonly face: number; readonly personaGroup: string } | null => {
-    const personaGroup = wornMount?.personaGroupId ?? faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
-    return personaGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup } : null;
+    // The sealed custody group, and only once the face proof passed: the bootstrap's group text decides nothing here.
+    return wornFaceProven && custodyGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup: custodyGroup } : null;
   };
   const wornFaceRecords = async () => {
     const worn = wornGateFace();
@@ -1792,7 +1799,7 @@ async function prepareNodeBootOn(
     systemCanon: async () => {
       kahuCanon = await standKahuCanon({
         repo, sealHome, vesselKey: vesselIdentity.verifyingKey,
-        personaGroupId: faceBootTiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null,
+        personaGroupId: custodyGroup,   // sealed custody names the face; the composition tears down whole if its proof later refuses
       });
       return kahuCanon;
     },
@@ -1953,6 +1960,7 @@ async function prepareNodeBootOn(
           planes: { persona: bootstrap.personaUrl, identities: bootstrap.identitiesUrl, circles: bootstrap.circlesUrl } });
         if (!proof.ok) throw new Error(`[lararium] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornFaceProved = true;
+        wornFaceProven = true;
         provenPlanes.set(personaGroupId, bootstrap.personaUrl);
         // THE VERIFIED HEAD PINS THE ANCHOR'S LOG FRONTIER: a later boot that reads an older valid log names `frontier-falls`.
         const head = proof.projection.head;

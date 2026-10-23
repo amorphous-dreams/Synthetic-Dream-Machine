@@ -104,7 +104,8 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       const facets = tiddlers ? faceFleetFacets(tiddlers, face.personaGroup) : null;
       if (facets === null || facets.documents.length === 0) return;
       const view = new SessionDocumentView({ profile: "face", facets });
-      const worn = (wornGroup ? wornGroup() : null) ?? tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
+      // The worn face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
+      const worn = wornGroup ? wornGroup() : (tiddlers?.[PERSONA_GROUP_ID_TIDDLER]?.text ?? null);
       if (worn !== face.personaGroup || tiddlers === null) {
         views.set(peerId, { view, gate: viewFederationGate(view) });
         return;

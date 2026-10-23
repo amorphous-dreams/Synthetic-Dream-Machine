@@ -2,7 +2,9 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, leaseEpochSlotUri, currentSignerOf, makeHandLineage,
   signLeaseAdvance, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "@lararium/tw5";
-import { readLeaseFrontier } from "../src/lease-frontier.js";
+import { readLeaseFrontier, readLeaseUnderFace } from "../src/lease-frontier.js";
+import { readFace, mintFaceAnchor, raiseFaceFrontier } from "@lararium/mesh";
+import { realKel } from "../../lararium-mesh/tests/kel-fixture.js";
 
 const group = "ab".repeat(16);
 const other = "cd".repeat(16);
@@ -43,5 +45,22 @@ describe("signed PersonaGroup lease frontier", () => {
     expect(await readLeaseFrontier(composite, group, currentSignerOf(lineage))).toEqual({ kind: "epoch", n: 0 });
     await put(newK.key, await signLeaseAdvance({ resource: group, epoch: 4 }, newK));
     expect(await readLeaseFrontier(composite, group, currentSignerOf(lineage))).toEqual({ kind: "epoch", n: 4 });
+  });
+
+  test("RED: the live join and grant lease read floors under the sealed anchor, so a missing or replayed older slot never lowers it; CONTROL: a higher signed advance still rises", async () => {
+    const root = { key: await ed25519VerifyingKeyFromSeed(rootSeed), sign: ed25519SignerFromSeed(rootSeed) };
+    const chain = (await realKel([root.key])).chain;
+    const anchor = raiseFaceFrontier(mintFaceAnchor({ personaGroup: group, personaKelPrefix: chain[0]!.prefix, personaRootDid: `0x${root.key}`, edge: {}, leaseEpoch: 0 }), { leaseEpoch: 7 });
+    const composite = new CompositeStore();
+    const store = new MemoryTiddlerStore(DAEMON_BAG_ID);
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store, writable: true });
+    const put = async (value: string) => { await store.put({ tiddler: { title: leaseEpochSlotUri(group, root.key), text: value }, meta: { authority: "test" } } as never, { kind: "test" } as never); };
+    await put(await signLeaseAdvance({ resource: group, epoch: 2 }, root));      // a replayed OLDER slot
+    const face = readFace(chain, anchor);
+    expect(await readLeaseUnderFace(composite, group, face), "the anchor's 7 stands over the slot's 2").toEqual({ kind: "epoch", n: 7 });
+    expect(await readLeaseFrontier(composite, group, face!.currentSigner), "the unfloored read is the bug").toEqual({ kind: "epoch", n: 2 });
+    await put(await signLeaseAdvance({ resource: group, epoch: 9 }, root));
+    expect(await readLeaseUnderFace(composite, group, face)).toEqual({ kind: "epoch", n: 9 });
+    expect(await readLeaseUnderFace(composite, group, null), "no verified face reads no signer").toEqual({ kind: "epoch", n: 0 });
   });
 });

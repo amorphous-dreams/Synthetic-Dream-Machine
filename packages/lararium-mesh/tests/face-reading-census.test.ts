@@ -16,6 +16,11 @@
  *   lease-frontier.ts, lease-rekey.ts   lease readers/writers that TAKE the door's `currentSigner` as their authorize argument
  *   boot-daemon-keyhive.ts the Binding Gate's anchor floor on the epoch a door handed it
  *
+ * THE CENSUS BY SPELLING (round 5): three further spellings carry authority without naming a primitive above, so each is censused
+ * by name, with its allowed files and the reason beside each. The two Handle files per spelling belong to lane K15-H ("the Handle
+ * owner rides the anchor", kit row #/k15-h in k15-wave-c-lane.mem): they stay named here until K15-H migrates them behind the door,
+ * and a Handle file that leaves the list without migrating, or a NEW reader of a spelling, goes red.
+ *
  * A KNOWN POSITIVE proves the scanner can see: a synthetic raw read must be flagged, and the real door must be found holding
  * the primitives, so a zero elsewhere means something.
  */
@@ -85,5 +90,59 @@ describe("the face-reading census", () => {
     };
     const tree = new Map(srcTree().map((f) => [f.rel, f.src] as const));
     for (const [rel, needs] of Object.entries(sites)) for (const need of needs) expect(tree.get(rel), `${rel} reads ${need}`).toContain(need);
+  });
+
+  // ── the census by spelling ──────────────────────────────────────────────────────────────────────
+  const SPELLINGS: Record<string, Record<string, string>> = {
+    PERSONA_KEL_PREFIX_TIDDLER: {
+      "lararium-mesh/src/lar-uris.ts": "the name's definition",
+      "lararium-keyhive/src/ceremony-core.ts": "founding and admit WRITE the daemon pin",
+      "lararium-node/src/commands/device-admit.ts": "the issuer reads its selector, then refuses unless the sealed anchor names the same prefix",
+      "lararium-browser/src/open-browser-vessel.ts": "the browser WRITES the pin into the daemon doc",
+      "lararium-node/src/commands/handle.ts": "K15-H: Handle founding/burn/rotation owner prefix",
+      "lararium-browser/src/browser-handle-verbs.ts": "K15-H: Handle burn/rotation owner prefix",
+      "lararium-mesh/src/handle-publish.ts": "K15-H: Handle founding owner prefix",
+    },
+    PERSONA_GROUP_ID_TIDDLER: {
+      "lararium-mesh/src/lar-uris.ts": "the name's definition",
+      "lararium-keyhive/src/ceremony-core.ts": "founding and admit WRITE the daemon pin",
+      "lararium-node/src/commands/init.ts": "founding and admit WRITE the bootstrap pin; existence checks decide no authority",
+      "lararium-node/src/boot-face-planes.ts": "reads planes for a group the CALLER names (custody's); the bootstrap fallback serves a caller that names none",
+      "lararium-node/src/face-fleet-view.ts": "falls back to the bootstrap text only where no caller names the worn face (the composer names custody's)",
+      "lararium-node/src/commands/device-admit.ts": "the issuer reads its selector, then refuses unless the sealed anchor names the same group",
+      "lararium-node/src/commands/fleet-join.ts": "the landing guard reads the pinned group only to REFUSE a second join; it decides no authority",
+      "lararium-node/src/open-node-vessel.ts": "the anchor-missing guard reads the daemon group only to REFUSE a boot",
+    },
+    headOpKey: {
+      "lararium-mesh/src/persona-kel.ts": "the KEL reader's own definition",
+      "lararium-mesh/src/face-anchor.ts": "the rotation re-anchor verifies the chain head with every quorum",
+      "lararium-mesh/src/persona-group-secret.ts": "the enrolment verifier (head op-key sealed it)",
+      "lararium-node/src/local-persona-kel.ts": "the node's KEL verifier over the board",
+      "lararium-node/src/persona-kel-ring.ts": "the ring's verified-head reader",
+      "lararium-node/src/commands/handle.ts": "K15-H: owner burn/rotation head",
+      "lararium-browser/src/browser-handle-verbs.ts": "K15-H: owner burn/rotation head",
+    },
+  };
+  const usesName = (src: string, name: string): boolean => new RegExp(`\\b${name}\\b`).test(stripComments(src));
+
+  test("KNOWN POSITIVE: each spelling's scanner flags a synthetic read, and every allowed file really names its spelling", () => {
+    const tree = srcTree();
+    for (const [name, allowed] of Object.entries(SPELLINGS)) {
+      expect(usesName(`const g = tiddlers[${name}]?.text;`, name), `the scanner sees ${name}`).toBe(true);
+      expect(usesName(`// ${name} said here only`, name), `a comment is not a read of ${name}`).toBe(false);
+      for (const rel of Object.keys(allowed)) {
+        const file = tree.find((f) => f.rel === rel);
+        expect(file, `${rel} stands in the tree`).toBeDefined();
+        expect(usesName(file!.src, name), `${rel} still names ${name} (an allowed file that no longer does belongs off the list)`).toBe(true);
+      }
+    }
+  });
+
+  test("RED: no NEW file reads a censused spelling, and the list holds no file that stopped (K15-H files leave it only by migrating)", () => {
+    const tree = srcTree();
+    for (const [name, allowed] of Object.entries(SPELLINGS)) {
+      const readers = tree.filter((f) => usesName(f.src, name)).map((f) => f.rel).sort();
+      expect(readers, `readers of ${name}`).toEqual(Object.keys(allowed).sort());
+    }
   });
 });

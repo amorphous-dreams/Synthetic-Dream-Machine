@@ -107,4 +107,15 @@ describe("the worn face's books: the bridge until O1", () => {
     switched.seat("worn-device", grant(G1));
     expect(await switched.gateFor("worn-device")!.mayFederate(idOf(WIKI))).toBe(false);
   });
+
+  test("RED: a caller that names no worn face (sealed custody's group, nothing proven yet) opens no bridge, whatever the bootstrap's group text says; CONTROL: the named worn face keeps it", async () => {
+    const forged = { ...bootstrap(ONE, TWO), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };   // the mutable bootstrap claims G1 is worn
+    const unnamed = faceFleetViews(() => forged, () => null);
+    unnamed.seat("device", grant(G1));
+    expect(await unnamed.gateFor("device")!.mayFederate(idOf(WIKI)), "no custody-named worn face: the vessel's books stay shut").toBe(false);
+    expect(await unnamed.gateFor("device")!.mayFederate(idOf(ONE.circles)), "its own planes still read").toBe(true);
+    const named = faceFleetViews(() => forged, () => G1);
+    named.seat("device", grant(G1));
+    expect(await named.gateFor("device")!.mayFederate(idOf(WIKI))).toBe(true);
+  });
 });

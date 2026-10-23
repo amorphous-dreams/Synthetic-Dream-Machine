@@ -55,3 +55,17 @@ export async function readLeaseFrontier(
     return { kind: "unavailable", why: `the daemon layer read faulted: ${(err as Error)?.message ?? String(err)}` };
   }
 }
+
+/**
+ * The lease a LIVE door acts under: the current roster's signed advances off the daemon layer (`FaceReading.currentSigner`), floored
+ * under the sealed anchor the reading holds, so a missing or replayed older slot never lowers the epoch a join or a grant checks an
+ * edge against. No verified face reading: no signer, so nothing raises; an unavailable layer stays unavailable.
+ */
+export async function readLeaseUnderFace(
+  composite: DaemonLayerHolder | null | undefined,
+  groupDocIdHex: string | null | undefined,
+  face: { readonly currentSigner: (writerHex: string) => boolean; readonly floor: (observed: number) => number } | null,
+): Promise<LeaseFrontier> {
+  const frontier = await readLeaseFrontier(composite, groupDocIdHex, face?.currentSigner ?? (() => false));
+  return frontier.kind === "epoch" && face ? { kind: "epoch", n: face.floor(frontier.n) } : frontier;
+}

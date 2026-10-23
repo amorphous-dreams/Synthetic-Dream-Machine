@@ -240,6 +240,13 @@ describe("the Binding Gate reads the dyad's shadow", () => {
     const control = await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" });
     expect(control.ok).toBe(true);
   });
+  test("RED: an UNKNOWN fleet frontier binds nobody at the live join gate; CONTROL: a clear device still binds", async () => {
+    const base = await ctxFor(), p = fakeProvider();
+    const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "unknown" });
+    expect(refused).toEqual({ ok: false, reason: "edge refused: no qualifying signed edge frontier" });
+    expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
+    expect((await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" })).ok).toBe(true);
+  });
   test("the shadow lookup receives the summons device key", async () => {
     const base = await ctxFor(), seen: string[] = [];
     await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: (key) => { seen.push(key); return "clear"; } });
