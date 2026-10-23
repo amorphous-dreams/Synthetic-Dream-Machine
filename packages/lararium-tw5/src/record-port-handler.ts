@@ -180,8 +180,17 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     presence.close(portId);
     ports.delete(portId);
   };
+  /** A port serves only while the face its open proved still stands; a changed face retires the port. */
+  const faceChanged = (port: OpenPort): boolean =>
+    port.faceId !== undefined && opts.faceOf !== undefined && readFace(port.open.portId) !== port.faceId;
+  const faceHolds = (port: OpenPort): boolean => {
+    if (port.closed) return false;
+    if (!faceChanged(port)) return true;
+    drop(port.open.portId);
+    return false;
+  };
   const postEntries = (ctx: IslandContext, port: OpenPort, entries: readonly PortEntry[]): void => {
-    if (port.closed || port.held) return;
+    if (!faceHolds(port) || port.held) return;
     if (port.opening) { port.buffered.push(...entries); return; }
     const kept = entries.filter(entry => visible(entry.title, port));
     if (!kept.length) return;
@@ -230,7 +239,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       port.snapshotId = reservation.snapshotId;
       try {
         const entries = await ctx.composite.entries();
-        if (port.closed || ports.get(msg.portId) !== port) return;
+        if (!faceHolds(port) || ports.get(msg.portId) !== port) return;
         const records = entries.filter(entry => visible(entry.title, port) && !port.dirty.has(entry.title)).map(entry => {
           const value = projectRecord({ title: entry.title, seq: lastSeq.get(entry.title) ?? 0,
             fields: fieldsOf(entry.record) }, port.shape);
@@ -240,7 +249,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         log.finishSnapshot(reservation.snapshotId);
         port.snapshotId = snapshot.snapshotId;
         for (const chunk of snapshot.chunks) {
-          if (port.closed || ports.get(msg.portId) !== port || port.snapshotId !== snapshot.snapshotId) break;
+          if (!faceHolds(port) || ports.get(msg.portId) !== port || port.snapshotId !== snapshot.snapshotId) break;
           ctx.post(mkPortSnapshot({ portId: msg.portId, snapshotId: snapshot.snapshotId,
             baseCursor: log.cursorOf(port.shape, snapshot.baseSeq), i: chunk.i, n: chunk.n,
             records: chunk.records.map(record => ({ title: record.title, seq: record.seq ?? 0,
@@ -263,17 +272,17 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         port.dirty.clear();
         // A failed store read leaves this port unable to serve its snapshot; lagged asks the client to reopen.
         port.held = true;
-        if (!port.closed && ports.get(msg.portId) === port)
+        if (faceHolds(port) && ports.get(msg.portId) === port)
           ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
         return;
       }
     }
-    if (!port.closed && msg.presence) for (const value of presence.snapshotFor(msg.portId))
+    if (faceHolds(port) && msg.presence) for (const value of presence.snapshotFor(msg.portId))
       ctx.post(mkPortPresence({ portId: msg.portId, ...value }));
   };
   const write = async (msg: PortMsg_Write, ctx: IslandContext, port: OpenPort): Promise<void> => {
     const answer = (status: "applied" | "partial" | "refused", applied: string[], failed: string[], reason?: string) => {
-      if (port.closed) return;
+      if (!faceHolds(port)) return;
       const wire = mkPortWritten({ portId: msg.portId, txId: msg.txId, status, applied, failed,
         ...(reason ? { reason } : {}), cursor: log.cursorOf(port.shape, log.headSeq) });
       if (status !== "refused") {
@@ -283,12 +292,15 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       ctx.post(wire);
     };
     if (port.closed) return;
-    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) { answer("refused", [], [], "face-changed"); return; }
+    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) {
+      if (!port.closed) ctx.post(mkPortWritten({ portId: msg.portId, txId: msg.txId, status: "refused", applied: [], failed: [], reason: "face-changed" }));
+      drop(msg.portId); return;
+    }
     if (port.actorTableFull) { answer("refused", [], [], "actor-table-full"); return; }
     const digest = transactionDigest(msg.records);
     if (!port.ledger.matches(msg.txId, digest)) { answer("refused", [], [], "txid-payload-mismatch"); return; }
     const prior = port.ledger.has(msg.txId) ? port.written.get(msg.txId) : undefined;
-    if (prior?.status === "applied") { if (!port.closed) ctx.post({ ...prior, portId: msg.portId }); return; }
+    if (prior?.status === "applied") { if (faceHolds(port)) ctx.post({ ...prior, portId: msg.portId }); return; }
     let granted = false;
     try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
@@ -315,7 +327,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     try {
       const begun = port.ledger.begin(msg.txId, families, digest);
       if (begun.answer) {
-        if (!port.closed) ctx.post(prior ? { ...prior, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
+        if (faceHolds(port)) ctx.post(prior ? { ...prior, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
           status: begun.answer.status, applied: [...begun.answer.applied], failed: [...begun.answer.failed],
           cursor: log.cursorOf(port.shape, log.headSeq) }));
         return;
@@ -330,11 +342,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
         await ctx.composite.precheckFamily(puts, tombstones, family === "(default)" ? undefined : { bag: family });
-        if (port.closed) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
+        if (!faceHolds(port)) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
       }
       const failed: string[] = [];
       for (const family of begun.pending) {
-        if (port.closed) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
+        if (!faceHolds(port)) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
         const puts = members.filter(record => !record.tombstone).map(record => ({ tiddler: { ...record.fields, title: record.title } }));
         const tombstones = members.filter(record => record.tombstone).map(record => record.title);
@@ -346,14 +358,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
           port.ledger.recordApplied(msg.txId, family);
-          if (port.closed) return;
+          if (!faceHolds(port)) return;
         } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         finally {
           tokens.delete(token);
           flush(ctx);
         }
       }
-      if (port.closed) return;
+      if (!faceHolds(port)) return;
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
@@ -366,9 +378,12 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     }
   };
   const ask = async (msg: PortMsg_Ask, ctx: IslandContext, port: OpenPort): Promise<void> => {
-    const answered = (result: unknown) => { if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "answered", result })); };
-    const refused = (reason: string) => { if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason })); };
-    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) { refused("face-changed"); return; }
+    const answered = (result: unknown) => { if (faceHolds(port)) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "answered", result })); };
+    const refused = (reason: string) => { if (faceHolds(port)) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason })); };
+    if (port.faceId !== undefined && readFace(msg.portId) !== port.faceId) {
+      if (!port.closed) ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason: "face-changed" }));
+      drop(msg.portId); return;
+    }
     if (msg.kind === "filter") {
       try { answered(ctx.tw5.$tw.wiki.filterTiddlers(msg.subject ?? "").filter(title => visible(title, port))); }
       catch { refused("filter-unavailable"); }
@@ -566,6 +581,13 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       }
       const port = ports.get(msg.portId);
       if (!port) return true;
+      if (msg.type !== "port:close" && faceChanged(port)) {
+        // The face moved under the open: say so where the message expects an answer, then retire the port.
+        if (msg.type === "port:ask") ctx.post(mkPortAnswer({ portId: msg.portId, askId: msg.askId, status: "refused", reason: "face-changed" }));
+        else if (msg.type === "port:write") ctx.post(mkPortWritten({ portId: msg.portId, txId: msg.txId, status: "refused", applied: [], failed: [], reason: "face-changed" }));
+        drop(msg.portId);
+        return true;
+      }
       if (msg.type === "port:close") drop(msg.portId);
       else if (msg.type === "port:presence") {
         if (msg.actorKey !== port.presenceActor) return true;

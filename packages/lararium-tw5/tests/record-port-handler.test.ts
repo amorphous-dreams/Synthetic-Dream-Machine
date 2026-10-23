@@ -378,13 +378,25 @@ describe("record port handler", () => {
     await r.send(writeMsg("same-w", "SameFace"));
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "same-w", status: "applied" });
     face = { id: "bob" };
+    expect(r.messages.some(message => message.type === "port:answer" && (message as { askId?: string }).askId === "swap")).toBe(false);
     await r.send(askMsg("load", { askId: "swap", titles: ["Ordinary"], fields: ["text"] })); await ioSettle();
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "swap", status: "refused", reason: "face-changed" });
+    // The first refusal retired the port: nothing it sends afterwards acts or answers.
     await r.send(askMsg("invoke", { askId: "swap-inv", renderCursor: "x", affordanceId: "a1" })); await ioSettle();
-    expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ askId: "swap-inv", status: "refused", reason: "face-changed" });
+    expect(ofType(r.messages, "port:answer").some(message => message.askId === "swap-inv")).toBe(false);
     await r.send(writeMsg("swap-w", "SwapFace"));
-    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "swap-w", status: "refused", reason: "face-changed" });
+    expect(ofType(r.messages, "port:written").some(message => message.txId === "swap-w")).toBe(false);
     expect(await r.store.get("SwapFace")).toBeNull();
+    face = { id: "alice" };
+    await r.send(openMsg("again"));
+    face = { id: "bob" };
+    await r.send({ type: "port:presence", portId: "again", actorKey: "again", beat: 1 });   // a control message retires the port too
+    face = { id: "alice" };
+    await r.send(openMsg("again2"));
+    face = { id: "bob" };
+    await r.send({ ...writeMsg("swap-w2", "SwapFace2"), portId: "again2" });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "swap-w2", status: "refused", reason: "face-changed" });
+    expect(await r.store.get("SwapFace2")).toBeNull();
     await r.close();
   });
 
@@ -451,6 +463,7 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "face-changed" });
     expect(runs).toBe(0);
     face = { id: "admin" };
+    await r.send(openMsg());   // the changed face retired the port; the proven face opens it afresh
     await r.send(askMsg("verb", { subject: "absent" }));
     expect(ofType(r.messages, "port:answer").at(-1)).toMatchObject({ status: "refused", reason: "no-such-verb" });
     await r.send(askMsg("verb", { subject: "known" }));
