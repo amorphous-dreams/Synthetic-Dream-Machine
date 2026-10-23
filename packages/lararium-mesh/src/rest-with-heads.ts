@@ -12,11 +12,13 @@ import { hasHeads } from "@automerge/automerge";
 import type { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import type { IslandMsg_DocRest } from "./island-protocol.js";
 
+/** How many changes the vessel's copy may take without holding the island's heads before the ask answers stalled (rounds, never a timer). */
+export const REST_STALL_ROUNDS = 512;
 const MAX_HEADS = 1024;
 const MAX_DOCUMENTS = 64;
 const HEAD_HASH = /^[0-9a-f]{64}$/;
 
-export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocRest): Promise<{ rested: boolean; why?: string }> {
+export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocRest): Promise<{ rested: boolean; stalled?: boolean; why?: string }> {
   if (!repo) return { rested: false, why: "no vessel Repo stands" };
   const heads = ask.heads;
   if (typeof heads !== "object" || heads === null || !Array.isArray(ask.documentIds) || ask.documentIds.length > MAX_DOCUMENTS) return { rested: false, why: "malformed rest ask" };
@@ -30,10 +32,15 @@ export async function answerRestWithHeads(repo: Repo | null, ask: IslandMsg_DocR
     if (named.length > 0) {
       const holds = (): boolean => { try { return hasHeads(handle.doc() as Parameters<typeof hasHeads>[0], named); } catch { return false; } };
       if (!holds()) {
-        await new Promise<void>((resolve) => {
-          const onChange = (): void => { if (holds()) { handle.off("heads-changed", onChange); resolve(); } };
+        let rounds = 0;
+        const arrived = await new Promise<boolean>((resolve) => {
+          const onChange = (): void => {
+            const done = holds();
+            if (done || ++rounds >= REST_STALL_ROUNDS) { handle.off("heads-changed", onChange); resolve(done); }
+          };
           handle.on("heads-changed", onChange);
         });
+        if (!arrived) return { rested: false, stalled: true, why: `stalled: the vessel's copy of ${id} changed ${REST_STALL_ROUNDS} times without holding the island's heads` };
       }
     }
     written.push(handle.documentId);

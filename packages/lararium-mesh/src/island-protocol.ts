@@ -884,6 +884,8 @@ export interface IslandMsg_DocRested {
   rested: boolean;
   /** The vessel names the documents its rest door finished flushing before this acknowledgment. */
   proof?: { documentIds: string[] };
+  /** True when the vessel's copy changed `REST_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
+  stalled?: boolean;
   why?: string;
 }
 

@@ -56,6 +56,22 @@ describe("the island's rest door", () => {
     warn.mockRestore();
   });
 
+  test("RED: a stalled answer reads by name in stalledAsks and still releases the act — CONTROL: a rested answer counts none", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const d = door();
+    const ok = d.rest.begin(); ok.done([SLOT]); await settle();
+    d.rest.answer({ type: "doc:rested", requestId: "r1", rested: true });
+    await d.rest.idle();
+    expect(d.rest.stalledAsks(), "CONTROL").toBe(0);
+    const act = d.rest.begin(); act.done([SLOT]); await settle();
+    d.rest.answer({ type: "doc:rested", requestId: "r2", rested: false, stalled: true, why: "stalled: the heads never arrived" });
+    await d.rest.idle();
+    expect(d.rest.stalledAsks()).toBe(1);
+    expect(d.rest.held(), "the act's result leaves: a stall never hangs the page").toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("stalled"));
+    warn.mockRestore();
+  });
+
   test("the island flushes its own store before it asks the vessel, and a door that closes lets every wait go", async () => {
     const order: string[] = [];
     const d = door({ flushOwn: async () => { order.push("flush"); } });
