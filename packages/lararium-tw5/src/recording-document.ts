@@ -7,6 +7,33 @@ export interface RecordedListener {
   readonly callback: EventListenerOrEventListenerObject;
 }
 
+/** Dispatch a recorded affordance through the same bubbling path as the blocks host. */
+export function fireRecorded(node: RecordingNode, type: string, body: Record<string, unknown> = {}): boolean {
+  const geometry = body["geometry"] as { top: number; left: number; width: number; height: number } | undefined;
+  if (geometry) {
+    node.offsetTop = geometry.top; node.offsetLeft = geometry.left;
+    node.offsetWidth = geometry.width; node.offsetHeight = geometry.height;
+  }
+  const modifiers = (body["modifiers"] ?? {}) as Record<string, unknown>;
+  let stopped = false;
+  const event = {
+    type, target: node, currentTarget: node,
+    ctrlKey: !!modifiers["ctrl"], metaKey: !!modifiers["meta"], altKey: !!modifiers["alt"], shiftKey: !!modifiers["shift"],
+    button: Number(modifiers["button"] ?? 0),
+    preventDefault(): void {}, stopPropagation(): void { stopped = true; },
+  } as unknown as Event;
+  let claimed = false;
+  for (let current: RecordingNode | null = node; current && !stopped; current = current.parentNode) {
+    for (const listener of [...current.listeners].filter(listener => listener.type === type)) {
+      claimed = true;
+      if (typeof listener.callback === "function") listener.callback.call(current as unknown as EventTarget, event);
+      else listener.callback.handleEvent(event);
+      if (stopped) break;
+    }
+  }
+  return claimed;
+}
+
 export class RecordingNode {
   readonly attributes: Record<string, string> = {};
   readonly style: Record<string, string> = {};

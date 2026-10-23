@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { gateInvoke } from "../src/record-port-invoke-gate.js";
 
 describe("invoke gate", () => {
-  const req = { provenFace: {}, renderCursor: "r1", affordanceId: "a0", action: "click" };
+  const req = { provenFace: {}, renderCursor: "r1", affordanceId: "a0" };
   const invokeActions = vi.fn(() => "ran");
   const currentRenderCursor = () => "r1";
   it("non-admin-invoke-refused", () => {
@@ -27,6 +27,7 @@ describe("invoke gate", () => {
   });
   it("control: default composition refuses no-authority", () => {
     expect(gateInvoke(req, { currentRenderCursor, invokeActions })).toEqual({ invoked: false, reason: "no-authority" });
+    expect(gateInvoke({ renderCursor: "r1", affordanceId: "a0" }, { currentRenderCursor, invokeActions })).toEqual({ invoked: false, reason: "no-authority" });
   });
   it("non-admin never learns freshness", () => {
     const cursor = vi.fn(() => "new");
@@ -34,6 +35,6 @@ describe("invoke gate", () => {
     expect(cursor).not.toHaveBeenCalled();
   });
   it("bare requestedBy cannot supply a proven face", () => {
-    expect(gateInvoke({ requestedBy: "admin", renderCursor: "r1", affordanceId: "a0", action: "click" }, { authority: () => ({ allowed: true }), currentRenderCursor, invokeActions })).toEqual({ invoked: false, reason: "no-proven-face" });
+    expect(gateInvoke({ renderCursor: "r1", affordanceId: "a0" }, { authority: () => ({ allowed: true }), currentRenderCursor, invokeActions })).toEqual({ invoked: false, reason: "no-proven-face" });
   });
 });

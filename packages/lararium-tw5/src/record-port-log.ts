@@ -1,4 +1,6 @@
 /** Clockless, in-memory record log for one wiki actor. No store or transport owns this module. */
+import { shapeId, type PortShape } from "./record-port-projection.js";
+export type { PortShape } from "./record-port-projection.js";
 
 export interface PortRecord {
   readonly title: string;
@@ -12,11 +14,6 @@ export interface PortEntry extends PortRecord {
   readonly causedBy: readonly string[];
 }
 
-export interface PortShape {
-  readonly width: string;
-  readonly localFilter: string;
-  readonly fields: readonly string[];
-}
 
 export type ResetReason = "island-restarted" | "compacted" | "shape-changed" | "lagged";
 export interface PortReset {
@@ -138,23 +135,17 @@ export function createPortLog(options: { readonly bootNonce: string; readonly re
   let headSeq = 0;
   let floorSeq = 0;
   let snapshotSerial = 0;
-  let active: PortSnapshot | undefined;
+  const active = new Map<string, PortSnapshot>();
   const entries: PortEntry[] = [];
   const ledger = createTxLedger();
 
-  const shapeId = (shape: PortShape): string => {
-    const key = JSON.stringify([shape.width, shape.localFilter, [...shape.fields].sort()]);
-    let hash = 2166136261;
-    for (const byte of new TextEncoder().encode(key)) hash = Math.imul(hash ^ byte, 16777619) >>> 0;
-    return hash.toString(36);
-  };
   const cursorOf = (shape: PortShape, seq: number): string => {
     if (!Number.isSafeInteger(seq) || seq < 0 || seq > headSeq) throw new RangeError("invalid-cursor-seq");
     return `${bootNonce}.${shapeId(shape)}.${seq}`;
   };
   const compact = (): void => {
     const wantedFloor = Math.max(0, headSeq - retainEntries);
-    const newFloor = active ? Math.min(wantedFloor, active.baseSeq) : wantedFloor;
+    const newFloor = Math.min(wantedFloor, ...[...active.values()].map(snapshot => snapshot.baseSeq));
     while (entries.length && entries[0]!.seq <= newFloor) entries.shift();
     floorSeq = newFloor;
   };
@@ -173,13 +164,15 @@ export function createPortLog(options: { readonly bootNonce: string; readonly re
       if (!Number.isSafeInteger(seq)) return undefined;
       return { bootNonce: match[1]!, shapeId: match[2]!, seq };
     },
-    append(records: readonly PortRecord[], causedBy: readonly string[]): { seq: number; cursorOf: (shape: PortShape) => string } {
-      if (!Array.isArray(causedBy) || causedBy.some((id) => !id)) throw new RangeError("invalid-caused-by");
+    append(records: readonly PortRecord[], causedBy: readonly string[] | readonly (readonly string[])[]): { seq: number; cursorOf: (shape: PortShape) => string } {
+      const causes: readonly (readonly string[])[] = Array.isArray(causedBy[0])
+        ? causedBy as readonly (readonly string[])[] : records.map(() => causedBy as readonly string[]);
+      if (causes.length !== records.length || causes.some(cause => !Array.isArray(cause) || cause.some(id => !id))) throw new RangeError("invalid-caused-by");
       if (headSeq + records.length > Number.MAX_SAFE_INTEGER) throw new RangeError("sequence-exhausted");
-      for (const record of records) {
-        const entry: PortEntry = { title: record.title, fields: { ...record.fields }, ...(record.deleted ? { deleted: true } : {}), seq: ++headSeq, causedBy: [...causedBy] };
+      for (const [index, record] of records.entries()) {
+        const entry: PortEntry = { title: record.title, fields: { ...record.fields }, ...(record.deleted ? { deleted: true } : {}), seq: ++headSeq, causedBy: [...causes[index]!] };
         entries.push(entry);
-        if (active) for (const chunk of active.chunks) {
+        for (const snapshot of active.values()) for (const chunk of snapshot.chunks) {
           const index = chunk.records.findIndex((item) => item.title === entry.title);
           if (index >= 0) chunk.records.splice(index, 1);
         }
@@ -196,11 +189,10 @@ export function createPortLog(options: { readonly bootNonce: string; readonly re
       if ("refused" in verdict) return verdict;
       return { accepted: true, ...this.append(records, causedBy) };
     },
-    openSnapshot(shape: PortShape, records: readonly PortRecord[], maxBatchBytes: number): PortSnapshot {
+    openSnapshot(shape: PortShape, records: readonly PortRecord[], maxBatchBytes: number, atSeq = headSeq): PortSnapshot {
       if (!Number.isSafeInteger(maxBatchBytes) || maxBatchBytes < 1) throw new RangeError("invalid-snapshot-limit");
-      active = undefined;
       compact();
-      const baseSeq = headSeq;
+      const baseSeq = atSeq;
       const chunks: SnapshotChunk[] = [];
       let batch: PortRecord[] = [];
       let batchBytes = 0;
@@ -209,7 +201,7 @@ export function createPortLog(options: { readonly bootNonce: string; readonly re
         const copy: PortRecord = { title: record.title, fields: { ...record.fields }, ...(record.deleted ? { deleted: true } : {}), seq: record.seq };
         const size = bytes(copy);
         if (size > maxBatchBytes) throw new RangeError("snapshot-record-too-large");
-        if (batch.length && batchBytes + size > maxBatchBytes) {
+        if (batch.length && (batchBytes + size > maxBatchBytes || batch.length >= 4096)) {
           chunks.push({ i: chunks.length + 1, n: 0, records: batch });
           batch = [];
           batchBytes = 0;
@@ -219,16 +211,16 @@ export function createPortLog(options: { readonly bootNonce: string; readonly re
       }
       chunks.push({ i: chunks.length + 1, n: 0, records: batch });
       for (const chunk of chunks) chunk.n = chunks.length;
-      active = { snapshotId: `${bootNonce}:snapshot:${++snapshotSerial}:${shapeId(shape)}`, baseSeq, chunks };
-      return active;
+      const snapshot = { snapshotId: `${bootNonce}:snapshot:${++snapshotSerial}:${shapeId(shape)}`, baseSeq, chunks };
+      active.set(snapshot.snapshotId, snapshot);
+      return snapshot;
     },
     finishSnapshot(snapshotId: string): boolean {
-      if (!active || active.snapshotId !== snapshotId) return false;
-      active = undefined;
+      if (!active.delete(snapshotId)) return false;
       compact();
       return true;
     },
-    supersedeSnapshot(): void { active = undefined; compact(); },
+    supersedeSnapshot(): void { active.clear(); compact(); },
     changesSince(cursor: string, shape: PortShape): { entries: PortEntry[]; headCursor: string } | { reset: PortReset } {
       const parsed = this.parseCursor(cursor);
       if (!parsed || parsed.bootNonce !== bootNonce) return reset("island-restarted");

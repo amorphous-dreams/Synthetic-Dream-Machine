@@ -1,6 +1,6 @@
 /** Walk interaction scripts through a headless blocks affordance sink. */
 import { mountCamera } from "../../../src/tw5-camera.js";
-import { RecordingDocument, RecordingNode, cameraContainer, cameraDocument } from "../../../src/recording-document.js";
+import { RecordingDocument, RecordingNode, cameraContainer, cameraDocument, fireRecorded } from "../../../src/recording-document.js";
 import { toBlocks, type Affordance, type Block } from "../../../src/recording-serialisers.js";
 import { neverPersists } from "../../../src/island-adaptor.js";
 import { bootTestWiki } from "../../test-wiki.js";
@@ -49,31 +49,6 @@ function attr(node: RecordingNode, key: string): string | null {
   if (key === "data-lar-on") return [...new Set(node.listeners.map(listener => listener.type))].join(" ") || null;
   if (key === "data-lar-cancel") return node.tag === "a" && node.listeners.some(listener => listener.type === "click") ? "click:ordinary" : null;
   return node.getAttribute(key);
-}
-function fire(node: RecordingNode, type: string, body: Fields): boolean {
-  const geometry = body["geometry"] as { top: number; left: number; width: number; height: number } | undefined;
-  if (geometry) {
-    node.offsetTop = geometry.top; node.offsetLeft = geometry.left;
-    node.offsetWidth = geometry.width; node.offsetHeight = geometry.height;
-  }
-  const modifiers = (body["modifiers"] ?? {}) as Record<string, unknown>;
-  let stopped = false;
-  const event = {
-    type, target: node, currentTarget: node,
-    ctrlKey: !!modifiers["ctrl"], metaKey: !!modifiers["meta"], altKey: !!modifiers["alt"], shiftKey: !!modifiers["shift"],
-    button: Number(modifiers["button"] ?? 0),
-    preventDefault(): void {}, stopPropagation(): void { stopped = true; },
-  } as unknown as Event;
-  let claimed = false;
-  for (let current: RecordingNode | null = node; current && !stopped; current = current.parentNode) {
-    for (const listener of [...current.listeners].filter(listener => listener.type === type)) {
-      claimed = true;
-      if (typeof listener.callback === "function") listener.callback.call(current as unknown as EventTarget, event);
-      else listener.callback.handleEvent(event);
-      if (stopped) break;
-    }
-  }
-  return claimed;
 }
 
 export async function runBlocksGolden(script: GoldenScript, hooks: EngineRunHooks): Promise<BlocksRun> {
@@ -149,7 +124,7 @@ export async function runBlocksGolden(script: GoldenScript, hooks: EngineRunHook
             for (const option of node.options) option.selected = chosen.includes(option.value);
             if (!node.hasAttribute("multiple")) node.value = chosen[0] ?? "";
           }
-          const claimed = fire(node, type, body);
+          const claimed = fireRecorded(node, type, body);
           if (!sense) answers.push(claimed ? "applied" : "refused:unclaimed");
           await hooks.settle();
           trace.push(`${at}: ${control} -> ${offered[0]!.id} ${type}`);

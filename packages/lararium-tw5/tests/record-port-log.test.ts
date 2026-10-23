@@ -1,15 +1,20 @@
 import { describe, expect, test } from "vitest";
 import { createPortLog, echoBeforeWritten, validateTx, type PortRecord } from "../src/record-port-log.js";
+import { shapeId } from "../src/record-port-projection.js";
 
-const shape = { width: "full", localFilter: "local", fields: ["text", "tags"] };
-const otherShape = { ...shape, width: "skinny" };
+const shape = { width: "full" as const, localFilter: ["local"], fields: ["text", "tags"] };
+const otherShape = { ...shape, width: "skinny" as const };
 const record = (title: string, text = title): PortRecord => ({ title, fields: { text } });
 
 describe("record port log", () => {
+  test("canonical shape hash drives log cursors; CONTROL: same shape resumes", () => {
+    const log = createPortLog({ bootNonce: "boot", lagByteBudget: 1000 });
+    expect(log.cursorOf(shape, 0)).toBe(`boot.${shapeId(shape)}.0`);
+    expect(log.changesSince(log.cursorOf(shape, 0), shape)).toMatchObject({ entries: [] });
+  });
   test("port-echo-named-by-txid; CONTROL: foreign origin carries an empty cause", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 });
-    log.append([record("own")], ["tx-1"]);
-    log.append([record("foreign")], []);
+    log.append([record("own"), record("foreign")], [["tx-1"], []]);
     const result = log.changesSince(log.cursorOf(shape, 0), shape);
     expect("entries" in result && result.entries.map((entry) => entry.causedBy)).toEqual([["tx-1"], []]);
   });
@@ -53,12 +58,12 @@ describe("record port log", () => {
     expect(log.ledger.begin("tx", ["a", "b"]).pending).toEqual([]);
   });
 
-  test("port-partial-visible-by-txid; CONTROL: each family gets one sequence", () => {
+  test("port-partial-visible-by-txid; CONTROL: one family appends contiguous entry sequences", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 });
-    log.append([record("a")], ["tx"]);
-    log.append([record("b")], ["tx"]);
+    log.append([record("a"), record("b")], ["tx"]);
+    log.append([record("c")], ["tx"]);
     const result = log.changesSince(log.cursorOf(shape, 0), shape);
-    expect("entries" in result && result.entries.map((entry) => [entry.seq, entry.causedBy])).toEqual([[1, ["tx"]], [2, ["tx"]]]);
+    expect("entries" in result && result.entries.map((entry) => [entry.seq, entry.causedBy])).toEqual([[1, ["tx"]], [2, ["tx"]], [3, ["tx"]]]);
   });
 
   test("port-snapshot-base-is-stable; CONTROL: no change gives a complete plain snapshot", () => {
@@ -81,6 +86,18 @@ describe("record port log", () => {
     expect(snap.chunks.flatMap((chunk) => chunk.records.map((r) => r.title))).toEqual(["steady"]);
     const delta = log.changesSince(log.cursorOf(shape, snap.baseSeq), shape);
     expect("entries" in delta && delta.entries.map((r) => r.title)).toEqual(["changed"]);
+  });
+
+  test("concurrent snapshot pins protect each open; CONTROL: finishing both permits compaction", () => {
+    const log = createPortLog({ bootNonce: "boot", retainEntries: 1, lagByteBudget: 10000 });
+    log.append([record("a")], []);
+    const first = log.openSnapshot(shape, [{ ...record("a"), seq: 1 }], 1000);
+    const second = log.openSnapshot(shape, [{ ...record("a"), seq: 1 }], 1000);
+    log.append([record("b"), record("c")], []);
+    log.finishSnapshot(first.snapshotId);
+    expect(log.floorSeq).toBe(1);
+    log.finishSnapshot(second.snapshotId);
+    expect(log.floorSeq).toBe(2);
   });
 
   test("port-cursor-reset-on-width-change; CONTROL: same shape resumes", () => {

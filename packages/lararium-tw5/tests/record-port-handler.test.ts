@@ -28,17 +28,20 @@ async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: Islan
   let invoked = 0;
   const tw5 = { $tw: { wiki: {
     filterTiddlers: () => ["Ordinary", "$:/StoryList"],
-    makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown } }) => ({
+    makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown; createElement: (tag: string) => { addEventListener: (type: string, listener: () => void) => void } } }) => ({
       render: (container: { appendChild: (node: unknown) => void }) => {
         container.appendChild(options.document.createTextNode("rendered"));
+        const button = options.document.createElement("button");
+        button.addEventListener("click", () => { invoked++; });
+        container.appendChild(button);
       }, refresh: () => {}, domNodes: [],
     }),
     addEventListener: () => {}, removeEventListener: () => {},
   },
     rootWidget: { invokeActionString: () => { invoked++; } } } };
-  const ctx = { wikiUri: "wiki", composite, tw5, post: (message: IslandToVesselMsg) => messages.push(message) } as unknown as IslandContext;
+  const ctx = { wikiUri: "wiki", composite, tw5, handles: new Map(), recipe: { wikiSlug: "wiki" }, post: (message: IslandToVesselMsg) => messages.push(message) } as unknown as IslandContext;
   const cleanup = await cap.onEa?.(ctx);
-  const send = async (msg: { type: string }) => { expect(cap.onSignal?.(msg.type, msg, ctx)).toBe(true); await settle(); };
+  const send = async <T extends { type: string }>(msg: T) => { expect(cap.onSignal?.(msg.type, msg, ctx)).toBe(true); await settle(); };
   return { composite, store, messages, ctx, send, get invoked() { return invoked; },
     close: async () => { if (typeof cleanup === "function") await cleanup(); } };
 }
@@ -127,22 +130,30 @@ describe("record port handler", () => {
     await r.close();
   });
 
-  test("non-admin-invoke-refused: verifier refuses while admin control invokes once", async () => {
-    const r = await rig({ authority: req => req.requestedBy === "admin" ? { allowed: true } : { allowed: false, reason: "not-admin" } });
-    await r.send(openMsg());
-    await r.send(askMsg("invoke", { askId: "denied", provenFace: {}, requestedBy: "guest", renderCursor: "bad", subject: "action" }));
+  test("non-admin-invoke-refused: claimed admin fails; CONTROL: proven admin fires", async () => {
+    let role = "guest";
+    const r = await rig({ faceOf: () => ({ role }), authority: req => (req.provenFace as { role: string }).role === "admin" ? { allowed: true } : { allowed: false, reason: "not-admin" } });
+    await r.send(openMsg("p", { renders: ["blocks"] }));
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
+    const result = ofType(r.messages, "port:answer").at(-1)?.result as { renderCursor: string; value: { children: { affordances: { id: string }[] }[] } };
+    const affordanceId = result.value.children.flatMap(child => child.affordances)[0]!.id;
+    await r.send({ ...askMsg("invoke", { askId: "denied", renderCursor: result.renderCursor, affordanceId }), provenFace: { role: "admin" }, requestedBy: "admin" });
     expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("not-admin");
     expect(r.invoked).toBe(0);
+    role = "admin";
+    await r.send(askMsg("invoke", { askId: "allowed", renderCursor: result.renderCursor, affordanceId }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.result).toEqual({ invoked: true });
+    expect(r.invoked).toBe(1);
     await r.close();
   });
 
   test("ask-invoke-stale-cursor-refused: a changed rendered title invalidates admin's cursor", async () => {
-    const r = await rig({ authority: () => ({ allowed: true }) });
-    await r.send(openMsg("p", { renders: ["html"] }));
-    await r.send(askMsg("render", { subject: "Ordinary", form: "html" }));
+    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    await r.send(openMsg("p", { renders: ["blocks"] }));
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const renderCursor = (ofType(r.messages, "port:answer").at(-1)?.result as { renderCursor: string }).renderCursor;
     await r.composite.put({ tiddler: { title: "Ordinary", text: "changed" } }, origin);
-    await r.send(askMsg("invoke", { provenFace: {}, renderCursor, subject: "action" }));
+    await r.send(askMsg("invoke", { renderCursor, affordanceId: "forged" }));
     expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("stale-cursor");
     expect(r.invoked).toBe(0);
     await r.close();
@@ -150,17 +161,19 @@ describe("record port handler", () => {
 
   test("invoke-authority-rechecked-at-run: a later denial wins; admin render control invokes once", async () => {
     let allowed = true;
-    const r = await rig({ authority: () => allowed ? { allowed: true } : { allowed: false, reason: "revoked" } });
-    await r.send(openMsg("p", { renders: ["html"] }));
-    await r.send(askMsg("render", { subject: "Ordinary", form: "html" }));
+    const r = await rig({ faceOf: () => ({}), authority: () => allowed ? { allowed: true } : { allowed: false, reason: "revoked" } });
+    await r.send(openMsg("p", { renders: ["blocks"] }));
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
     const answer = ofType(r.messages, "port:answer").at(-1);
     expect(answer?.status).toBe("answered");
     const renderCursor = (answer?.result as { renderCursor: string }).renderCursor;
+    const value = (answer?.result as { value: { affordances: { id: string }[]; children: { affordances: { id: string }[] }[] } }).value;
+    const affordanceId = value.children.flatMap(child => child.affordances)[0]!.id;
     allowed = false;
-    await r.send(askMsg("invoke", { askId: "denied", provenFace: {}, renderCursor, subject: "action" }));
+    await r.send(askMsg("invoke", { askId: "denied", renderCursor, affordanceId }));
     expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("revoked");
     allowed = true;
-    await r.send(askMsg("invoke", { askId: "allowed", provenFace: {}, renderCursor, subject: "action" }));
+    await r.send(askMsg("invoke", { askId: "allowed", renderCursor, affordanceId }));
     expect(ofType(r.messages, "port:answer").at(-1)?.result).toEqual({ invoked: true });
     expect(r.invoked).toBe(1);
     await r.close();
@@ -168,11 +181,9 @@ describe("record port handler", () => {
 
   test("default makeWikiBehavior composition refuses invoke with no-authority", async () => {
     const behavior = makeWikiBehavior();
-    const r = await rig({}, { onEa: () => {}, onSignal: (type, raw, ctx) => behavior.onSignal(type, raw, ctx) });
-    // The default composition opens its port during ea; dispatch setup needs a full booted engine.
-    // This direct signal control confirms that the absent verifier never grants an invoke.
+    const r = await rig({}, behavior);
     await r.send(openMsg());
-    await r.send(askMsg("invoke", { provenFace: {}, renderCursor: "x", subject: "action" }));
+    await r.send(askMsg("invoke", { renderCursor: "x", affordanceId: "a0" }));
     expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("no-authority");
     await r.close();
   });
@@ -188,6 +199,154 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:presence")).toContainEqual(expect.objectContaining({ portId: "fresh", beat: 1 }));
     await r.send({ type: "port:close", portId: "p" });
     expect(ofType(r.messages, "port:presence")).toContainEqual(expect.objectContaining({ portId: "q", gone: true }));
+    await r.close();
+  });
+
+  test("closed queued write refuses to land; CONTROL: a live write lands", async () => {
+    const r = await rig();
+    await r.send(openMsg());
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const original = r.composite.precheckFamily.bind(r.composite);
+    r.composite.precheckFamily = async (...args) => { await held; return original(...args); };
+    await r.send(writeMsg("closed", "Closed"));
+    await r.send({ type: "port:close", portId: "p" });
+    release(); await settle();
+    expect(await r.composite.get("Closed")).toBeNull();
+    expect(ofType(r.messages, "port:written")).toHaveLength(0);
+    await r.send(openMsg());
+    await r.send(writeMsg("live", "Live"));
+    expect(await r.composite.get("Live")).not.toBeNull();
+    await r.close();
+  });
+
+  test("supersession stops after an in-flight family; CONTROL: the first family may finish", async () => {
+    const r = await rig();
+    r.composite.addLayer({ bagId: "other", store: new MemoryTiddlerStore("other"), writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const original = r.composite.writeFamily.bind(r.composite);
+    let calls = 0;
+    r.composite.writeFamily = async (...args) => { calls++; if (calls === 1) await held; return original(...args); };
+    await r.send({ type: "port:write", portId: "p", txId: "stopped", records: [
+      { title: "First", fields: { text: "one" } }, { title: "Second", fields: { text: "two" }, bag: "other" },
+    ] });
+    await r.send(openMsg("new", { actor: "p" }));
+    release(); await settle();
+    expect(calls).toBe(1);
+    expect(await r.composite.get("First")).not.toBeNull();
+    expect(await r.composite.get("Second")).toBeNull();
+    expect(ofType(r.messages, "port:written")).toHaveLength(0);
+    await r.close();
+  });
+
+  test("late invalid family refuses whole transaction; CONTROL: two valid families land", async () => {
+    const r = await rig();
+    r.composite.addLayer({ bagId: "other", store: new MemoryTiddlerStore("other"), writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "invalid", records: [
+      { title: "First", fields: { text: "one" } },
+      { title: "lar://mara:operator@room/heading.angle.dynamic", fields: { text: "bad" }, bag: "other" },
+    ] });
+    expect(await r.composite.get("First")).toBeNull();
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "session-form-title" });
+    await r.send({ type: "port:write", portId: "p", txId: "valid", records: [
+      { title: "First", fields: { text: "one" } }, { title: "Second", fields: { text: "two" }, bag: "other" },
+    ] });
+    expect(await r.composite.get("First")).not.toBeNull();
+    expect(await r.composite.get("Second")).not.toBeNull();
+    await r.close();
+  });
+
+  test("family changes batch once and foreign prefix carries no cause; CONTROL: port token carries tx", async () => {
+    const r = await rig(); await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "tx", records: [
+      { title: "A", fields: { text: "a" } }, { title: "B", fields: { text: "b" } },
+    ] });
+    const own = ofType(r.messages, "port:changes").filter(message => message.entries.some(entry => entry.title === "A"));
+    expect(own).toHaveLength(1);
+    expect(own[0]!.entries.map(entry => entry.causedBy)).toEqual([["tx"], ["tx"]]);
+    expect(own[0]!.entries[1]!.seq).toBe(own[0]!.entries[0]!.seq + 1);
+    await r.composite.put({ tiddler: { title: "Foreign", text: "x" } }, { kind: "tw-local", instanceId: "port:p:forged" });
+    await settle();
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).find(entry => entry.title === "Foreign")?.causedBy).toEqual([]);
+    await r.close();
+  });
+
+  test("snapshot held read buffers foreign change after chunks; CONTROL: unchanged title stays in chunk", async () => {
+    const r = await rig();
+    await r.composite.put({ tiddler: { title: "Changed", text: "old" } }, origin);
+    await r.composite.put({ tiddler: { title: "Steady", text: "still" } }, origin);
+    await settle();
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const original = r.composite.entries.bind(r.composite);
+    r.composite.entries = async () => { const value = await original(); await held; return value; };
+    await r.send(openMsg());
+    await r.composite.put({ tiddler: { title: "Changed", text: "new" } }, origin);
+    await settle();
+    expect(ofType(r.messages, "port:changes")).toHaveLength(0);
+    release(); await settle();
+    const chunks = ofType(r.messages, "port:snapshot");
+    expect(chunks.flatMap(chunk => chunk.records.map(record => record.title))).toEqual(["Steady"]);
+    expect(r.messages.findIndex(message => message.type === "port:changes")).toBeGreaterThan(r.messages.findIndex(message => message.type === "port:snapshot"));
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "Changed")).toHaveLength(1);
+    await r.close();
+  });
+
+  test("lag without ack resets; CONTROL: acked changes continue", async () => {
+    const r = await rig({ lagByteBudget: 300 }); await r.send(openMsg());
+    await r.composite.put({ tiddler: { title: "A", text: "x".repeat(80) } }, origin); await settle();
+    const cursor = ofType(r.messages, "port:changes").at(-1)?.cursor;
+    expect(cursor).toBeDefined();
+    await r.send({ type: "port:ack", portId: "p", cursor: cursor! });
+    await r.composite.put({ tiddler: { title: "B", text: "x".repeat(80) } }, origin); await settle();
+    expect(ofType(r.messages, "port:reset")).toHaveLength(0);
+    await r.composite.put({ tiddler: { title: "C", text: "x".repeat(80) } }, origin); await settle();
+    expect(ofType(r.messages, "port:reset").at(-1)?.reason).toBe("lagged");
+    await r.close();
+  });
+
+  test("presence key binds to actor and transportGone fans gone; CONTROL: own key fans state", async () => {
+    const cap = hasRecordPort(); const r = await rig({}, cap);
+    await r.send(openMsg("p")); await r.send(openMsg("q"));
+    await r.send({ type: "port:presence", portId: "p", actorKey: "q", beat: 1, state: {} });
+    expect(ofType(r.messages, "port:presence")).toHaveLength(0);
+    await r.send({ type: "port:presence", portId: "p", actorKey: "p", beat: 1, state: {} });
+    expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "q", actorKey: "p" });
+    cap.transportGone("p");
+    expect(ofType(r.messages, "port:presence").at(-1)).toMatchObject({ portId: "q", actorKey: "p", gone: true });
+    await r.close();
+  });
+
+  test("actor ledger survives reopen; CONTROL: new tx writes once", async () => {
+    const r = await rig(); await r.send(openMsg()); await r.send(writeMsg("tx", "Once"));
+    await r.send(openMsg()); await r.send(writeMsg("tx", "Once"));
+    expect(ofType(r.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "Once")).toHaveLength(1);
+    expect(ofType(r.messages, "port:written")).toHaveLength(2);
+    await r.send(writeMsg("next", "Next"));
+    expect(await r.composite.get("Next")).not.toBeNull();
+    await r.close();
+  });
+
+  test("forged affordance and transcluded change refuse; CONTROL: offered affordance fires", async () => {
+    const r = await rig({ faceOf: () => ({}), authority: () => ({ allowed: true }) });
+    await r.composite.put({ tiddler: { title: "Ordinary", text: "{{Transcluded}}" } }, origin);
+    await r.composite.put({ tiddler: { title: "Transcluded", text: "before" } }, origin);
+    await settle();
+    await r.send(openMsg("p", { renders: ["blocks"] }));
+    await r.send(askMsg("render", { subject: "Ordinary", form: "blocks" }));
+    const result = ofType(r.messages, "port:answer").at(-1)!.result as { renderCursor: string; value: { children: { affordances: { id: string }[] }[] } };
+    const affordanceId = result.value.children.flatMap(child => child.affordances)[0]!.id;
+    await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId: "forged" }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("unknown-affordance");
+    await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId }));
+    expect(r.invoked).toBe(1);
+    await r.composite.put({ tiddler: { title: "Transcluded", text: "changed" } }, origin); await settle();
+    await r.send(askMsg("invoke", { renderCursor: result.renderCursor, affordanceId }));
+    expect(ofType(r.messages, "port:answer").at(-1)?.reason).toBe("stale-cursor");
+    expect(r.invoked).toBe(1);
     await r.close();
   });
 });
