@@ -86,6 +86,7 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 * ''A joinee that boots from its daemon-carried act bundle'' keeps that projection until a reboot when a later persona-plane replica carries a competing same-sequence act. The arrival-triggered re-proof and what it does on a fork belong to K18, beside the recovery door and the equivocation handling.
 * ''End-to-end gate controls'': the faced-boot composer controls read source order and the admit door's face-edge suite mocks the log projection and the lease read; a sealed-vessel run that inspects catalog side effects, and the real-engine holder lifecycle in a browser whose module graph greets (the Chromium and Firefox harness here floors, so those cases skip), ride the container weld in `tools/mesh-scenarios.sh`.
 * ''The holder's teardown backstop'' keeps one five-second timer that completes a teardown whose island never acknowledged. It decides nothing about identity, a frontier or a greeting; the house is already ended when it fires.
+* ''The holder door takes the user's cancel'': `attachSharedHolder` sets no deadline, so a worker that neither greets nor errors waits forever. Every production caller passes a `signal` tied to the user's intent (the tab closing, a face switch, a user abort). `open-browser-vessel.ts` holds no such signal today (`BrowserVesselOptions` carries none), so the wiring and its red (a silent worker plus a user abort floors the boot at once) ride the first lane that gives the vessel open an abort path.
 * ''The realm leg'' is its own lane, K17-R (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/k17-realm-lease-lane">>): one lease law on the realm boards, landed after Wave C.
 
 <<~/ahu>>
@@ -101,6 +102,6 @@ One joint lane (`feature/green-jello-dinosaur-5--k15-wave-c`), one pull request,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xkOxU3n38agijMr7OnE2qzXErgd0nTrS16H6qPPp3aI
+<<^ code="&#x0003;">>ni:///sha-256;QrTLI2Wq6hSSNn76nlwBAcxK0djRidLErYK2LlytJ0A
 
 <<^ code="&#x0004;" -> to="?">>
