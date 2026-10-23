@@ -287,7 +287,7 @@ export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistV
 // The reach-face helpers — every http origin a vessel answers on + the ws:// dial each yields. Re-used by the
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
 export {
-  deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, oracleOriginForFace,
+  deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, flowOriginForFace,
   assertWaystoneCustody, crossingBannerLines, OriginCustodyRefusal,
   type ReachFace, type InterfaceTable, type ExplicitOriginComposition, type FaceOriginComposition,
   type WaystoneOriginComposition, type StandingOriginComposition, type OriginStanding,

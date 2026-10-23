@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, ORACLE_SOCKET_ROUTE, type LarDoc,
+  placeFloorPinsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
   ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -57,7 +57,7 @@ async function filedHere(): Promise<readonly string[]> {
       const doc = await open(carriageDocUrl(r.island), "board:carriage-contracts");
       const carriers = await foldCarrierSet(carriageEntriesFromBoard(doc), r.roster);
       filed.push(...filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc),
-        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, carriers }).filed);
+        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, carriers }).filed);
     }
     return filed;
   });
@@ -209,7 +209,7 @@ describe("a carry bundle carries the counted carries of the places whose floor p
     expect(result.nyms).toContain(herm);
     expect(result.nyms).toContain(reader);
     for (const nym of result.nyms) {
-      expect(pins.get({ hearth: nym, nexus: Buffer.from(aid, "utf8").toString("hex"), route: ORACLE_SOCKET_ROUTE, tier: "floor" })).not.toBeNull();
+      expect(pins.get({ hearth: nym, nexus: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, tier: "floor" })).not.toBeNull();
     }
     at(roots.reader);
     expect(await filedHere()).toContain(lastHop);

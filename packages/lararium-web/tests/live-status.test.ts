@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
@@ -54,7 +54,7 @@ describe("served-origin crossing", () => {
 });
 
 describe("the floor card the arrival URL carries", () => {
-  const card = { pin: { tier: "floor", nexus: "6e", route: "/oracle", transportKey: "aa", signingKey: "bb" }, publisher: "cc" } as const;
+  const card = { pin: { tier: "floor", nexus: "6e", route: "/flow", transportKey: "aa", signingKey: "bb" }, publisher: "cc" } as const;
   const read = (text: string) => (text === "Y2FyZA" ? card : null);
 
   test("CONTROL: a card in the fragment reaches the one reader, and reads back", () => {
@@ -110,13 +110,13 @@ describe("the connection row publishes its mount as data", () => {
   });
 });
 
-describe("an ?oracle= naming another hearth says what the browser reads", () => {
-  test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?oracle=, draws none", () => {
+describe("an ?flow= naming another hearth says what the browser reads", () => {
+  test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?flow=, draws none", () => {
     const relay = "ws://node:5440/ws";
-    expect(oracleElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's oracle");
-    expect(oracleElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's oracle");
-    expect(oracleElsewhereNote("http://node:5440", relay)).toBeNull();
-    expect(oracleElsewhereNote(null, relay)).toBeNull();
-    expect(oracleElsewhereNote("not a url", relay)).toContain("only its own hearth's oracle");
+    expect(flowElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's flow");
+    expect(flowElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's flow");
+    expect(flowElsewhereNote("http://node:5440", relay)).toBeNull();
+    expect(flowElsewhereNote(null, relay)).toBeNull();
+    expect(flowElsewhereNote("not a url", relay)).toContain("only its own hearth's flow");
   });
 });

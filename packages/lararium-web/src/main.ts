@@ -28,7 +28,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { LAR_WHOLE_VALUE_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, readHearthFloorCard, type GenesisSeed, type MeshPeer } from "@lararium/mesh";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
+import { defaultReadFace, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -142,7 +142,7 @@ function askCustody(question: CustodyAsk | { readonly kind: "clear" }): Promise<
 
 
 /**
- * The oracle read-face this page reads from, when no `?oracle=` names one.
+ * The flow read-face this page reads from, when no `?flow=` names one.
  *
  * The page is served BY the vessel it reads, so the host that delivered it is the host that answers — a
  * literal `localhost` reads true only where the browser and the node share a machine, and silently points a
@@ -163,13 +163,13 @@ function set(id: string, text: string, cls = ""): void {
 // The floor — the Nexus's one public answer. The page reads it only through its own vessel, which fetches the hearth's porch
 // (`/floor/<Nexus AID>`) and the head release's blobs by CID, and verifies every step here: the epoch lineage re-derives the
 // AID the floor card (or the admit) carries, the head release seals as a seat of its epoch under the cabal's approval of the
-// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page (?oracle=… names
+// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page (?flow=… names
 // another). The read records no acceptance: the page's running floor stays the genesis floor it booted on.
 type FloorReader = (baseUrl: string) => Promise<HearthFloorRead>;
 async function readFloor(read: FloorReader): Promise<void> {
   const params = new URLSearchParams(location.search);
-  const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const elsewhere = oracleElsewhereNote(params.get("oracle"), resolveRelayUrl(params));
+  const readFace = params.get("flow") ?? defaultReadFace(location);
+  const elsewhere = flowElsewhereNote(params.get("flow"), resolveRelayUrl(params));
   const say = (text: string, cls = ""): void => set("floor-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
   say(`reading the porch at ${readFace} …`);
   try {
@@ -340,7 +340,7 @@ async function bootVessel(): Promise<void> {
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayParams = new URLSearchParams(location.search);
   const relayUrl = resolveRelayUrl(relayParams);
-  // #floor=<card> → the hearth's oracle floor card, carried by hand off its banner: what a device at the floor reads under.
+  // #floor=<card> → the hearth's flow floor card, carried by hand off its banner: what a device at the floor reads under.
   const floor = floorCardOf(location.hash, readHearthFloorCard);
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
@@ -359,7 +359,7 @@ async function bootVessel(): Promise<void> {
   }
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
   const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
-  // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
+  // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer flow
   //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). An entry with no
   //   key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");

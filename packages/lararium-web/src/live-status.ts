@@ -19,7 +19,7 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
 
 /**
  * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the
- * oracle's floor pin and the key its snapshot is signed under, read by the mesh's one reader (`readHearthFloorCard`). A torn
+ * flow's floor pin and the key its snapshot is signed under, read by the mesh's one reader (`readHearthFloorCard`). A torn
  * card reads none.
  */
 export function floorCardOf(
@@ -36,17 +36,17 @@ export function resolveRelayUrl(params: URLSearchParams): string | undefined {
 }
 
 /**
- * The line the web status owes when `?oracle=` names a hearth other than the relay's: a read at another hearth
- * dials under no Nexus the page holds, so the browser reads only its own hearth's oracle until a carried pin set
- * reaches browsers. Null when `?oracle=` is absent or names the relay's own host.
+ * The line the web status owes when `?flow=` names a hearth other than the relay's: a read at another hearth
+ * dials under no Nexus the page holds, so the browser reads only its own hearth's flow until a carried pin set
+ * reaches browsers. Null when `?flow=` is absent or names the relay's own host.
  */
-export function oracleElsewhereNote(oracleParam: string | null, relayUrl: string | undefined): string | null {
-  if (oracleParam === null || oracleParam === "") return null;
+export function flowElsewhereNote(flowParam: string | null, relayUrl: string | undefined): string | null {
+  if (flowParam === null || flowParam === "") return null;
   const hostOf = (url: string): string | null => { try { return new URL(url).host; } catch { return null; } };
-  const here = hostOf(oracleParam);
+  const here = hostOf(flowParam);
   const relayHost = relayUrl === undefined ? null : hostOf(relayUrl);
   if (here !== null && here === relayHost) return null;
-  return "the browser reads only its own hearth's oracle until a carried pin set reaches browsers; an ?oracle= naming another host is not read";
+  return "the browser reads only its own hearth's flow until a carried pin set reaches browsers; an ?flow= naming another host is not read";
 }
 
 export interface ConnectionPresentation {

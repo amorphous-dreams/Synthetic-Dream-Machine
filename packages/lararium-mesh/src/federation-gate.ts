@@ -498,7 +498,7 @@ export function answersStrangers(postures: readonly FederationPosture[]): boolea
  *   · otherwise a STRANGER — admitted at the public shelf iff `answersStrangers`, else null: SILENCE.
  *
  * Every input is a fact the caller proved before asking; this fold decides precedence and nothing else, so one
- * reading orders every gate (the relay and the oracle socket alike).
+ * reading orders every gate (the relay and the flow socket alike).
  */
 export function classifySocket(proven: {
   readonly sameOperator:     boolean;
@@ -540,8 +540,8 @@ export function classifySocket(proven: {
  * No vessel's share config calls this fn: the node composes `carrierShareDecision` and the browser
  * `federationShareDecision`, so no `CapTierRing` stands on a live path, neither its `floor` oracle nor its
  * `declared` source. A bag's declared tier reaches production through the `bagTier` readers alone (the
- * crossing gate, the bulb read face). Lighting this shore needs a composer that hands it a floor oracle
- * answering all three readings (cap-tier.ts `makeTierFloorOracle`) + a doc→bag resolver over the bag
+ * crossing gate, the bulb read face). Lighting this shore needs a composer that hands it a floor source
+ * answering all three readings (cap-tier.ts `makeTierFloorSource`) + a doc→bag resolver over the bag
  * registry (the same bridge `identityShareDecision`'s bound names). This fn is that shore's tested socket;
  * it never fakes a verdict.
  *

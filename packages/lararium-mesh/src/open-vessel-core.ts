@@ -31,7 +31,7 @@ import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
-import { resolveOracleDoc } from "./oracle-doc.js";
+import { resolveCatalogRow } from "./catalog-row.js";
 
 /**
  * The doc URLs a vessel's bootstrap resolves.
@@ -323,7 +323,7 @@ export async function mountWikiSlot(
   // Resolve the CANON doc by its content key (bags/{slug}) — where the mint
   // writer keys it. The wiki IDENTITY (wikis/{slug}, slot.wikiKey) is a separate
   // registry entry, not the canon-doc lookup.
-  const wikiHandle = presetWikiHandle ?? await resolveOracleDoc(
+  const wikiHandle = presetWikiHandle ?? await resolveCatalogRow(
     catalogHandle, slot.wikiBagId,
     (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
     "vessel-boot",

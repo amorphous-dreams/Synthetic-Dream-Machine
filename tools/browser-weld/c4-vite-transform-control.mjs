@@ -269,7 +269,7 @@ async function runCase(browser, mode) {
     workerReceipts,
     scriptReceipts,
     console: consoleReceipts,
-    oracleRefusals: consoleReceipts.filter((receipt) => /ERR_CONNECTION_REFUSED/.test(receipt.text)),
+    connectionRefusals: consoleReceipts.filter((receipt) => /ERR_CONNECTION_REFUSED/.test(receipt.text)),
   };
   await page.close();
   await context.close();

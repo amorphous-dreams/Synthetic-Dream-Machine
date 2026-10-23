@@ -1,5 +1,5 @@
 /**
- * oracle-floor-resweep — the oracle face's floor gates follow the Nexuses this vessel stands in, at every refold, as the
+ * flow-floor-resweep — the flow face's floor gates follow the Nexuses this vessel stands in, at every refold, as the
  * sync gates do (`mountFlowReadFace`'s `gates.onMoved`).
  *
  * A carry-take on a running herm lands a carrier seal the gate sweep then reads: the floor gate for that Nexus must
@@ -19,8 +19,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Duplex } from "node:stream";
 import { Repo } from "@automerge/automerge-repo";
-import { ORACLE_SOCKET_ROUTE, type GateSessionTable, type MeshPalaceDoc } from "@lararium/mesh";
-import { mountFlowMapReadFace, type FlowFloorFace, type OracleFloorGate } from "../src/flow-read-face.js";
+import { FLOW_SOCKET_ROUTE, type GateSessionTable, type MeshPalaceDoc } from "@lararium/mesh";
+import { mountFlowMapReadFace, type FlowFloorFace, type FlowReadGate } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import type { HttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { world, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
@@ -53,7 +53,7 @@ function recordingDispatcher(): HttpFaceDispatcher & { readonly paths: Set<strin
 async function stand(initial: readonly string[]) {
   const server = createServer();
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
-  const dir = mkdtempSync(join(tmpdir(), "oracle-resweep-"));
+  const dir = mkdtempSync(join(tmpdir(), "flow-resweep-"));
   const repo = new Repo({ sharePolicy: async () => true });
   const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
   const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
@@ -61,10 +61,10 @@ async function stand(initial: readonly string[]) {
   let nexuses = [...initial];
   const worlds = new Map<string, World>();
   const listeners = new Set<() => void>();
-  const gates = Object.assign(async (sessions: GateSessionTable): Promise<readonly OracleFloorGate[]> => {
-    const out: OracleFloorGate[] = [];
+  const gates = Object.assign(async (sessions: GateSessionTable): Promise<readonly FlowReadGate[]> => {
+    const out: FlowReadGate[] = [];
     for (const nexus of nexuses) {
-      const w = await world({ nexus, tier: "floor", route: ORACLE_SOCKET_ROUTE, sessions });
+      const w = await world({ nexus, tier: "floor", route: FLOW_SOCKET_ROUTE, sessions });
       worlds.set(nexus, w);
       out.push({ gate: w.gate, pin: w.pin });
     }
@@ -84,7 +84,7 @@ async function stand(initial: readonly string[]) {
   };
 }
 
-describe("the oracle face's floor gates follow the refold", () => {
+describe("the flow face's floor gates follow the refold", () => {
   test("RED: a Nexus read after the mount stands its gate; RED: one no longer read stands down; CONTROL: a standing gate stays", async () => {
     const r = await stand(["nexus-a.synthetic"]);
     const a = gatePath(r.worlds.get("nexus-a.synthetic")!.pin);

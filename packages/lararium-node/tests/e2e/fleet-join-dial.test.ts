@@ -12,11 +12,11 @@
  *       its quorum never signed refuses at land by name (`admit-…`); neither writes a charter, a bundle, a secret or a
  *       record. CONTROL: the true answer lands.
  *   F3  a second answer reuses the face's admit A minted at the first: one admit on the board, one kept bundle
- *   F4  the joinee keeps A's floor pins at A's Nexus, at floor tier on the oracle route, as the answer carried them
+ *   F4  the joinee keeps A's floor pins at A's Nexus, at floor tier on the flow route, as the answer carried them
  *   F5  RED: the sovereign pin ROTATES (another gate door): the face's household admit is minted again, committed to the
  *       new pin, and the kept file replaced; never the old one reused. CONTROL: the same door again reuses the new one.
  *   F1 also witnesses house ruling "The admit's gate pin": (b) B's boot files the kept floor pins under the hearth it dials, before
- *       any crossing; (a) a dial index holding the sovereign pin alone learns A's oracle pin over the verified sovereign
+ *       any crossing; (a) a dial index holding the sovereign pin alone learns A's flow pin over the verified sovereign
  *       session, and both carriers name the same pin
  */
 import { createServer, type Server } from "node:http";
@@ -28,7 +28,7 @@ import { Repo, type AutomergeUrl, type DocHandle, type PeerId } from "@automerge
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import * as ed25519 from "@noble/ed25519";
 import {
-  DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, SOVEREIGN_SYNC_ROUTE, ORACLE_SOCKET_ROUTE, deriveGateBundle, fleetJoinAnswerImage, heldNexusRoot,
+  DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE, deriveGateBundle, fleetJoinAnswerImage, heldNexusRoot,
   custodyRootDoor, gateBundleDigest,
   hex, makeMultiSigQuorumVerifier, memoryBackedWithdrawals, nexusAidOf, sovereignGateRoot, sovereignRoute, utf8Bytes,
   type FleetJoinAnswer, type GateBundle, type GateSession,
@@ -151,10 +151,10 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
     });
   }, 120_000);
 
-  test("F4: the joinee keeps the hearth's floor pins at its Nexus, at floor tier on the oracle route", async () => {
+  test("F4: the joinee keeps the hearth's floor pins at its Nexus, at floor tier on the flow route", async () => {
     const kept = await as(B, async () => readKeptHearthFloorPins(larSealHome(), aidA));
     expect(kept).toEqual(answer.floorPins);
-    expect(kept.map((p) => [p.tier, p.route, p.nexus])).toEqual([["floor", ORACLE_SOCKET_ROUTE, hex(utf8Bytes(aidA))]]);
+    expect(kept.map((p) => [p.tier, p.route, p.nexus])).toEqual([["floor", FLOW_SOCKET_ROUTE, hex(utf8Bytes(aidA))]]);
   });
 
   test("F1 RED (witness): offer → request → answer → land → boot dial → same-operator sync, nothing seeded by hand", async () => {
@@ -212,15 +212,15 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
       expect(choice.warnings).toEqual([]);
       // (b) the signed answer's floor pins file under the dialed hearth before any crossing.
       const hearthName = hearthNameOf(choice.syncUrl!);
-      const oracleKey = { hearth: hearthName, nexus: choice.pin!.nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" as const };
+      const flowKey = { hearth: hearthName, nexus: choice.pin!.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" as const };
       const booted = hearthGatePins();
       fileHearthPins(booted, choice.filings);
-      expect(booted.get(oracleKey)).toEqual(answer.floorPins[0]);
+      expect(booted.get(flowKey)).toEqual(answer.floorPins[0]);
       expect(hearth.floor).toEqual(answer.floorPins);
-      // (a) the dial's index holds the sovereign pin alone; the session must teach it the oracle's.
+      // (a) the dial's index holds the sovereign pin alone; the session must teach it the flow's.
       const pins = hearthGatePins();
       fileHearthPins(pins, choice.filings.filter((f) => f.pin.tier === "sovereign"));
-      expect(pins.get(oracleKey)).toBeNull();
+      expect(pins.get(flowKey)).toBeNull();
       const personaGroup = bootstrapGroup(larBootstrapPath());
       expect(personaGroup).toBe(groupA);
       const composed = await composeDialPresentation({
@@ -243,11 +243,11 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
         }
         expect([...sessions.values()][0]!.class).toBe("same-operator");
         const start1 = Date.now();
-        while (pins.get(oracleKey) === null) {
+        while (pins.get(flowKey) === null) {
           if (Date.now() - start1 > 15_000) throw new Error("the sovereign session never carried the hearth's floor pins");
           await new Promise((r) => setTimeout(r, 25));
         }
-        expect(pins.get(oracleKey)).toEqual(answer.floorPins[0]);
+        expect(pins.get(flowKey)).toEqual(answer.floorPins[0]);
         const there = await findWhenReady<{ fleet: string; back?: string }>(repo, doc.url, 15_000);
         expect(there.doc()?.fleet).toBe("the face's own document");
         there.change((d) => { d.back = "from the joinee"; });

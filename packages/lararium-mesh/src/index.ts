@@ -36,7 +36,7 @@ export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
 export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
-export * from "./oracle-doc.js";
+export * from "./catalog-row.js";
 export * from "./floor-manifest.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
@@ -159,11 +159,11 @@ export {
   RENEW_ELAPSED, WARN_ELAPSED, URGENT_ELAPSED,
 } from "./cert-expiry-gauge.js";
 // The bag's sharing-posture as SELF-DESCRIBING DATA — the 4-tier total order + the tighten-only keystone.
-export type { CapTier, TierFloorOracle, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
+export type { CapTier, TierFloorSource, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
 export {
   CAP_TIER_ORDER, DEFAULT_CAP_TIER, capTierRank, parseCapTier, meetCapTier, resolveTier,
   refineBagTierWithTiddlers, mayDeclareTier, mayDeclassify, structuralFloorFor, resolveTierForDoc,
-  tierPermitsRelayPeer, makeTierFloorOracle,
+  tierPermitsRelayPeer, makeTierFloorSource,
 } from "./cap-tier.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {

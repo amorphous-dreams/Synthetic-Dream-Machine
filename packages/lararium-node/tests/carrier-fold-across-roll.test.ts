@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  carriageDocUrl, foundingRoster, hearthPinIndex, materializeSharedLarDoc, ORACLE_SOCKET_ROUTE, rollAnchorKey,
+  carriageDocUrl, foundingRoster, hearthPinIndex, materializeSharedLarDoc, FLOW_SOCKET_ROUTE, rollAnchorKey,
   rollAnchorsFromBoard, type LarDoc,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -137,7 +137,7 @@ async function filed(nyms: readonly string[]): Promise<{ pins: boolean[]; counte
         const placed = await placeCarriedNexuses({ sealHome: larSealHome(), ownVesselKey: nym, open: boards.open });
         counted.push(placed.some((r) => r.aid === aid));
       }
-      return { pins: nyms.map((nym) => pins.get({ hearth: nym, nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" }) !== null), counted };
+      return { pins: nyms.map((nym) => pins.get({ hearth: nym, nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" }) !== null), counted };
     } finally { boards.dispose(); }
   });
 }

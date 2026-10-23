@@ -126,7 +126,7 @@ import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { composeDialPresentation } from "./dial-presentation.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
-import { gateReadingsFor, layStatementOn, oracleFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
+import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
@@ -190,10 +190,10 @@ import { custodyGateDoor }                       from "./custody-seat.js";
 import { vesselFloorKeyDoor }                    from "./node-vessel-identity.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
-import type { OracleGateArgs, OracleFloorGate }  from "./flow-read-face.js";
+import type { FlowGateArgs, FlowReadGate }  from "./flow-read-face.js";
 import {
   deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
-  SOVEREIGN_SYNC_ROUTE, ORACLE_SOCKET_ROUTE,
+  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE,
   type GateBundle, type GateSession, type GateSessionTable,
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
@@ -484,7 +484,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    *  floor it was handed keeps standing; a floor it stood itself releases. */
   teardown: () => Promise<void>;
   /** The oracle's floor gates, one per Nexus this vessel stands in — the read face a host mounts takes them. */
-  floorGates: OracleGateArgs["gates"];
+  floorGates: FlowGateArgs["gates"];
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
@@ -520,7 +520,7 @@ export interface NodeHermResult {
    *  `null` when no relay was configured. */
   carriageRelayGatePubKey: string | null;
   /** The oracle's floor gates, one per Nexus this vessel stands in. */
-  floorGates:       OracleGateArgs["gates"];
+  floorGates:       FlowGateArgs["gates"];
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
   /** Each carried face's own persona plane off this thread's Repo; null where no face stands lit. */
@@ -577,7 +577,7 @@ interface NodeBootPrep {
   /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
   vesselGateKey:    string;
   /** The oracle's floor gates, one per Nexus this vessel stands in. */
-  floorGates:       OracleGateArgs["gates"];
+  floorGates:       FlowGateArgs["gates"];
   /** THE GATE-NATIVE CARRIAGE PULL (the routes ruling, stable-founding-road: carriage peering flips on a proven gate-native
    *  caller): one floor dial per (peer, Nexus) at the pin this vessel's boards carried, presenting what it stands as there. */
   carriagePull:     (peer: string, publisherKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
@@ -1333,10 +1333,10 @@ async function prepareNodeBootOn(
    * moves as the sync gates' does: every membership refold tells each face that follows it (`floorGatesMoved`), and the
    * face asks again, so a carry taken on a running herm stands its floor gate and an uncarry stands it down.
    */
-  const floorGates: OracleGateArgs["gates"] = Object.assign(async (sessions: GateSessionTable) => {
+  const floorGates: FlowGateArgs["gates"] = Object.assign(async (sessions: GateSessionTable) => {
     const door = await vesselFloorKeyDoor();
-    return (await gateNexuses()).map((nexus): OracleFloorGate => {
-      const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(ORACLE_SOCKET_ROUTE));
+    return (await gateNexuses()).map((nexus): FlowReadGate => {
+      const bundle = deriveGateBundle(floorGateRoot(door), new TextEncoder().encode(nexus), floorRoute(FLOW_SOCKET_ROUTE));
       return { gate: vesselGate(gateDeps, { bundle, nexus, sessions }), pin: bundle.pin };
     });
   }, {
@@ -1473,7 +1473,7 @@ async function prepareNodeBootOn(
     ownNexus:    ownNexusAid,
     openBoard:   (url) => carriedBoards.open(url, "board:carriage-contracts"),
     ...(placeClass === "herm" ? {
-      ownFloorPin: async (nexus: string) => oracleFloorPinAt(nexus, await vesselFloorKeyDoor()),
+      ownFloorPin: async (nexus: string) => flowFloorPinAt(nexus, await vesselFloorKeyDoor()),
       layStatement: async (url, statement) => { layStatementOn(await materializeSharedLarDoc(repo, url, "board:carriage-contracts"), statement); },
     } : {
       facePresentation: async (pin) => {
@@ -3219,7 +3219,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     nodeSeedHex: Buffer.from(p.vesselSeed).toString("hex"),
     ...(identity ? { identity } : {}),
-    pullOracle:  p.carriagePull,
+    pullFlow:  p.carriagePull,
     ...(p.residency ? { residency: p.residency } : {}),
     onLog: (l) => console.log(`[lararium] ${l}`),
   }) : [];
@@ -3252,10 +3252,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   }));
   const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
   // THE PORCH ANSWERS FOR THE FLOOR: `/floor/<AID>` hands a stranger the release rows this board carries (each with its lineage),
-  // and `/cas/<cid>` the blobs the head release names. A hearth without an HTTP server answers no porch.
-  if (opts.httpServer) {
+  // and `/cas/<cid>` the blobs the head release names. A hearth with neither a dispatcher nor a server answers no porch.
+  if (opts.httpServer || opts.dispatcher) {
     const porch = mountFloorPorch({
-      httpServer: opts.httpServer, ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
+      ...(opts.httpServer ? { httpServer: opts.httpServer } : {}), ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
       nexusPubkey: p.nexusPubkey, casDir: casDirForStorage(opts.storageDir), serveCas: true,
       onLog: (line) => console.log(`[lararium] ${line}`),
     });
@@ -3341,8 +3341,8 @@ async function composeNodeHermOn(
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
-    oracleGates: p.floorGates,
-    pullOracle:  p.carriagePull,
+    flowGates: p.floorGates,
+    pullFlow:  p.carriagePull,
     ...(opts.meshSelf ? { meshSelf: { ...opts.meshSelf, gatePubKey: p.vesselGateKey } } : {}),
     ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
