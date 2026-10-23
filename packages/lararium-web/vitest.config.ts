@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
+import { refusalIsHostDependency } from "./engine-refusal.js";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
 // differ on exactly the seams it owns (editing stacks, focus, the accessibility tree). Pure phone-seat tests remain
@@ -20,8 +21,8 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
     return all;
   } catch (err) {
     const text = String((err as Error).message);
-    // Only the host-dependency refusal drops the instance; a missing executable or a broken install fails the run loud.
-    if (!/missing dependencies/i.test(text)) throw err;
+    // Only the host-dependency refusal drops the instance (`engine-refusal.ts`); a missing executable or a broken install fails the run loud.
+    if (!refusalIsHostDependency(text)) throw err;
     const libs = text.match(/lib[\w.-]+\.so[\d.]*/g) ?? [];
     const words = libs.length > 0
       ? `the host lacks ${libs.length} system libraries (${libs.slice(0, 3).join(", ")}, ...); a root run of "playwright install-deps webkit" cures it`
@@ -52,6 +53,18 @@ export default defineConfig(async () => ({
           environment: "node",
           browser: { enabled: false },
           testTimeout: 90_000,
+        },
+      },
+      {
+        // The seventh silent loss on the whole road: edit, confirm, reload at once, on a staged hearth in real Chromium.
+        test: {
+          name: "rest-before-reload-e2e",
+          include: ["tests/e2e/rest-before-reload.e2e.test.ts"],
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+          env: { LAR_SAME_ORIGIN: "true" },
         },
       },
       {

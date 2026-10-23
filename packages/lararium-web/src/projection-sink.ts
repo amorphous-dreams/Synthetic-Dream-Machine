@@ -111,6 +111,10 @@ export interface ProjectionSink {
   /** Take an island's host-door ask: open it under a fresh act and the manifest, or refuse it by name; either
    *  way answer `lar:service-result` on the return leg. */
   applyService(ask: LarSurfaceService): Promise<ServiceVerdict>;
+  /** How many reliable acts this page relayed and holds no answer for. */
+  pendingActs(): number;
+  /** Release the page's unload hold. */
+  dispose(): void;
   /** The manifest this surface opened with, for the vessel's surface-open (`lar:resend{manifest}`). */
   manifest(): LarSurfaceManifest;
 }
@@ -471,6 +475,16 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   /** Every reliable act this page relayed and has no answer for yet, by event id. */
   const pending = new Map<string, { readonly surface: string; readonly target: string }>();
   const PENDING_MAX = 1024;
+  // THE PAGE HOLDS ITS UNLOAD while a relayed act still waits for its result: a confirmed edit answers once its
+  // document rests, and a page that leaves first would lose it. The hold rides the browser's own leave prompt and
+  // reads the pending count at the moment of the leave: no timer decides. `pagehide` gives a page no way to hold.
+  const holdUnload = (event: BeforeUnloadEvent): void => {
+    if (pending.size === 0) return;
+    event.preventDefault();
+    event.returnValue = "";
+  };
+  const leaving = host.ownerDocument.defaultView;
+  leaving?.addEventListener("beforeunload", holdUnload);
   type EventBody = Omit<LarMsg_ControlEvent, "type" | "eventId" | "cameraId" | "mountEpoch" | "seenFrameRev" | "seenMembershipRev" | "controlId" | "renderId" | "kind">;
   const relay = (target: Target, kind: LarControlKind, body: EventBody): LarMsg_ControlEvent | undefined => {
     if (!doors || shownSurface === null || !plateEl.hidden) return;    // under the plate the shown frame names no live mount
@@ -1123,6 +1137,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     apply,
     applyResult,
     applyService,
+    pendingActs: () => pending.size,
+    dispose: () => { leaving?.removeEventListener("beforeunload", holdUnload); },
     manifest: () => ({ services: [...manifestKinds] }),
     setBreath: (surface, breath) => { stateOf(surface).breath = breath; renderPlate(); },
     awaitSurface: (surface) => { awaited = surface === shownSurface ? null : surface; renderPlate(); },
