@@ -101,6 +101,8 @@ const ridMap = new Map<string, RidNode>();
 /** One mounted story camera: the roots it paints, the ids it painted, and its epoch, senses and answers. */
 interface CameraScope {
   readonly rest?: RestDoor;
+  /** The last held result still waiting to leave; later results queue behind it. */
+  tail?: Promise<void> | undefined;
   readonly wikiUri: string;
   readonly cameraId: string;
   readonly popupRoot: RidNode;
@@ -596,8 +598,12 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
     // A confirmed act answers once its writes rest: the result waits on the rest door, so a page that reads
     // `applied` holds an edit the vessel's store keeps.
     const resting = scope && !sense && status === "applied" ? scope.rest?.held() ?? null : null;
-    if (scope && resting) void resting.then(() => scope.post(result));
-    else if (scope) scope.post(result);
+    if (scope && (resting || scope.tail)) {
+      // Results leave in the order the acts answered: one held result holds every later one behind it.
+      const behind = Promise.all([scope.tail, resting]).then(() => { scope.post(result); });
+      scope.tail = behind;
+      void behind.finally(() => { if (scope.tail === behind) scope.tail = undefined; });
+    } else if (scope) scope.post(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
     return result;
   };
