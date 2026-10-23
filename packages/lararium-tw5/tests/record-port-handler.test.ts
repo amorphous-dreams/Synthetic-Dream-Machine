@@ -3,6 +3,7 @@ import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
 import type { PortMsg_Open, PortMsg_Write, PortMsg_Ask } from "@lararium/mesh/record-port";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { hasRecordPort } from "../src/record-port-handler.js";
+import { shapeId } from "../src/record-port-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 import type { IslandCap } from "../src/island-caps.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
@@ -20,7 +21,7 @@ const askMsg = (kind: PortMsg_Ask["kind"], overrides: Partial<PortMsg_Ask> = {})
   type: "port:ask", portId: "p", askId: kind, kind, ...overrides,
 });
 
-async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort(options)) {
+async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: IslandCap = hasRecordPort({ mayEdit: () => true, ...options })) {
   const composite = new CompositeStore();
   const store = new MemoryTiddlerStore("working");
   composite.addLayer({ bagId: "working", store, writable: true });
@@ -64,6 +65,104 @@ const ofType = <T extends IslandToVesselMsg["type"]>(messages: IslandToVesselMsg
   messages.filter((message): message is Extract<IslandToVesselMsg, { type: T }> => message.type === type);
 
 describe("record port handler", () => {
+  test("port-write-needs-server-grant: edits request without lookup refuses; CONTROL: server grant writes once", async () => {
+    const denied = await rig({}, hasRecordPort());
+    await denied.send(openMsg());
+    await denied.send(writeMsg("no-lookup", "Denied"));
+    expect(ofType(denied.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(await denied.composite.get("Denied")).toBeNull();
+    await denied.close();
+
+    const granted = await rig({ mayEdit: (portId, actor) => portId === "p" && actor === "p" });
+    await granted.send(openMsg());
+    await granted.send(writeMsg("granted", "Allowed"));
+    expect(ofType(granted.messages, "port:written").at(-1)?.status).toBe("applied");
+    expect(await granted.composite.get("Allowed")).not.toBeNull();
+    expect(ofType(granted.messages, "port:changes").flatMap(message => message.entries).filter(entry => entry.title === "Allowed")).toHaveLength(1);
+    await granted.close();
+  });
+
+  test("port-write-revoked-server-grant: false lookup for port refuses; CONTROL: true lookup writes", async () => {
+    let allowed = false;
+    const r = await rig({ mayEdit: (portId, actor) => allowed && portId === "p" && actor === "p" });
+    await r.send(openMsg());
+    await r.send(writeMsg("revoked", "Denied"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(await r.composite.get("Denied")).toBeNull();
+    allowed = true;
+    await r.send(writeMsg("allowed", "Allowed"));
+    expect(ofType(r.messages, "port:written").at(-1)?.status).toBe("applied");
+    expect(await r.composite.get("Allowed")).not.toBeNull();
+    await r.send(openMsg("p", { edits: false }));
+    await r.send(writeMsg("not-asked", "NoRequest"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(await r.composite.get("NoRequest")).toBeNull();
+    await r.close();
+  });
+
+  test("default makeWikiBehavior refuses write by name; CONTROL: server-granted handler writes", async () => {
+    const defaultPort = await rig({}, makeWikiBehavior());
+    await defaultPort.send(openMsg());
+    await defaultPort.send(writeMsg("default", "Denied"));
+    expect(ofType(defaultPort.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    expect(await defaultPort.composite.get("Denied")).toBeNull();
+    await defaultPort.close();
+    const granted = await rig();
+    await granted.send(openMsg());
+    await granted.send(writeMsg("control", "Allowed"));
+    expect(await granted.composite.get("Allowed")).not.toBeNull();
+    await granted.close();
+  });
+
+  test("port-rejected-opening-read-resets-and-unpins: failed entries resets; CONTROL: fresh read snapshots", async () => {
+    const r = await rig({ retainEntries: 1, bootNonce: "read-fault" });
+    await r.composite.put({ tiddler: { title: "Before", text: "one" } }, origin); await settle();
+    const original = r.composite.entries.bind(r.composite);
+    let reject!: (reason: Error) => void;
+    const held = new Promise<void>((_resolve, fail) => { reject = fail; });
+    let first = true;
+    r.composite.entries = async () => {
+      if (first) { first = false; await held; }
+      return original();
+    };
+    await r.send(openMsg());
+    await r.composite.put({ tiddler: { title: "After", text: "two" } }, origin); await settle();
+    reject(new Error("read-failed")); await settle();
+    expect(ofType(r.messages, "port:reset").at(-1)).toMatchObject({ reason: "lagged", headSeq: 2 });
+    expect(ofType(r.messages, "port:snapshot")).toHaveLength(0);
+    expect(ofType(r.messages, "port:changes")).toHaveLength(0);
+    await r.composite.put({ tiddler: { title: "Third", text: "three" } }, origin); await settle();
+    await r.send(openMsg("p", { since: `read-fault.${shapeId({ width: "full" })}.1` }));
+    expect(ofType(r.messages, "port:reset").at(-1)).toMatchObject({ reason: "compacted", floorSeq: 2 });
+    await r.send(openMsg());
+    expect(ofType(r.messages, "port:snapshot").at(-1)?.records.map(record => record.title)).toEqual(["Before", "After", "Third"]);
+    await r.close();
+  });
+
+  test("port-txid-payload-mismatch-refuses-partial-retry: changed pending fields refuse; CONTROL: identical retry resumes", async () => {
+    const r = await rig();
+    const second = new MemoryTiddlerStore("second");
+    r.composite.addLayer({ bagId: "second", store: second, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    const original = r.composite.writeFamily.bind(r.composite);
+    let fail = true;
+    r.composite.writeFamily = async (...args) => {
+      if (args[3]?.bag === "second" && fail) { fail = false; throw new Error("transient"); }
+      return original(...args);
+    };
+    const tx: PortMsg_Write = { type: "port:write", portId: "p", txId: "partial-digest", records: [
+      { title: "First", fields: { text: "one" } }, { title: "Second", fields: { text: "two" }, bag: "second" },
+    ] };
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "partial", applied: ["(default)"], failed: ["second"] });
+    await r.send({ ...tx, records: [tx.records[0]!, { ...tx.records[1]!, fields: { text: "changed" } }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "txid-payload-mismatch" });
+    expect(await second.get("Second")).toBeNull();
+    await r.send(tx);
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", applied: ["(default)", "second"] });
+    expect((await second.get("Second"))?.tiddler.text).toBe("two");
+    await r.close();
+  });
   test("port-load-raced: delayed A never carries B's seq; CONTROL: stable load carries A", async () => {
     const r = await rig(); await r.send(openMsg());
     await r.composite.put({ tiddler: { title: "Ordinary", text: "A" } }, origin); await settle();
@@ -88,11 +187,15 @@ describe("record port handler", () => {
   });
 
   test("port-replay-before-grants: completed tx replays with edits revoked; CONTROL: new tx refuses", async () => {
-    const r = await rig(); await r.send(openMsg()); await r.send(writeMsg("once", "Once"));
+    let granted = true;
+    const r = await rig({ mayEdit: () => granted }); await r.send(openMsg()); await r.send(writeMsg("once", "Once"));
     const original = ofType(r.messages, "port:written").at(-1)!;
-    await r.send(openMsg("p", { edits: false }));
+    granted = false;
+    await r.send(openMsg("p", { edits: true }));
     await r.send(writeMsg("once", "Once"));
     expect(ofType(r.messages, "port:written").at(-1)).toEqual(original);
+    await r.send(writeMsg("once", "Once", { text: "changed" }));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "txid-payload-mismatch" });
     await r.send(writeMsg("new", "New"));
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
     await r.close();

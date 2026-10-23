@@ -8,7 +8,7 @@ import type { LarTiddlerRecord } from "@lararium/mesh";
 import type { LarTiddlerChange } from "@lararium/mesh";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
-import { createPortLog, createTxLedger, validateTx, type PortEntry } from "./record-port-log.js";
+import { createPortLog, createTxLedger, transactionDigest, validateTx, type PortEntry } from "./record-port-log.js";
 import { localFilter, projectRecord, load, type PortShape } from "./record-port-projection.js";
 import { PresenceTracker } from "./record-port-presence.js";
 import { gateInvoke, type AuthorityResult, type InvokeRequest } from "./record-port-invoke-gate.js";
@@ -19,6 +19,8 @@ import { mountCamera } from "./tw5-camera.js";
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
   faceOf?: (portId: string) => object | undefined;
+  /** The composer lends a server-held write grant for this port and actor. */
+  mayEdit?: (portId: string, actor: string) => boolean;
   lapseRounds?: number;
   lagByteBudget?: number;
   retainEntries?: number;
@@ -163,14 +165,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     } else {
       const reservation = log.openSnapshot(port.shape, [], msg.maxBatchBytes, port.baseSeq);
       port.snapshotId = reservation.snapshotId;
-      const entries = await ctx.composite.entries();
-      if (port.closed || ports.get(msg.portId) !== port) return;
-      const records = entries.filter(entry => visible(entry.title, port) && !port.dirty.has(entry.title)).map(entry => {
-        const value = projectRecord({ title: entry.title, seq: lastSeq.get(entry.title) ?? 0,
-          fields: fieldsOf(entry.record) }, port.shape);
-        return { title: value.title, seq: value.seq ?? 0, fields: value.fields as Record<string, string>, omitted: [...value.omitted] };
-      });
       try {
+        const entries = await ctx.composite.entries();
+        if (port.closed || ports.get(msg.portId) !== port) return;
+        const records = entries.filter(entry => visible(entry.title, port) && !port.dirty.has(entry.title)).map(entry => {
+          const value = projectRecord({ title: entry.title, seq: lastSeq.get(entry.title) ?? 0,
+            fields: fieldsOf(entry.record) }, port.shape);
+          return { title: value.title, seq: value.seq ?? 0, fields: value.fields as Record<string, string>, omitted: [...value.omitted] };
+        });
         const snapshot = log.openSnapshot(port.shape, records, msg.maxBatchBytes, port.baseSeq);
         log.finishSnapshot(reservation.snapshotId);
         port.snapshotId = snapshot.snapshotId;
@@ -194,7 +196,13 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       } catch {
         port.opening = false;
         finish(port);
-        if (!port.closed) ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
+        port.buffered.length = 0;
+        port.dirty.clear();
+        // A failed store read leaves this port unable to serve its snapshot; lagged asks the client to reopen.
+        port.held = true;
+        if (!port.closed && ports.get(msg.portId) === port)
+          ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
+        return;
       }
     }
     if (!port.closed && msg.presence) for (const value of presence.snapshotFor(msg.portId))
@@ -212,9 +220,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       ctx.post(wire);
     };
     if (port.closed) return;
-    const prior = port.written.get(msg.txId);
+    const digest = transactionDigest(msg.records);
+    if (!port.ledger.matches(msg.txId, digest)) { answer("refused", [], [], "txid-payload-mismatch"); return; }
+    const prior = port.ledger.has(msg.txId) ? port.written.get(msg.txId) : undefined;
     if (prior?.status === "applied") { if (!port.closed) ctx.post({ ...prior, portId: msg.portId }); return; }
-    if (!port.open.edits) { answer("refused", [], [], "edits-not-granted"); return; }
+    let granted = false;
+    try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.open.actor) === true; }
+    catch { /* A failed lookup grants nothing. */ }
+    if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
     if (!prior && msg.basis && msg.basis !== log.cursorOf(port.shape, log.headSeq)) {
       answer("refused", [], [], "stale-basis"); return;
     }
@@ -225,9 +238,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     if ("refused" in verdict) { answer("refused", [], [], verdict.refused); return; }
     const families = [...new Set(msg.records.map(record => record.bag ?? "(default)"))];
     try {
-      const begun = port.ledger.begin(msg.txId, families);
+      const begun = port.ledger.begin(msg.txId, families, digest);
       if (begun.answer) {
-        if (!port.closed) ctx.post(port.written.get(msg.txId) ? { ...port.written.get(msg.txId)!, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
+        if (!port.closed) ctx.post(prior ? { ...prior, portId: msg.portId } : mkPortWritten({ portId: msg.portId, txId: msg.txId,
           status: begun.answer.status, applied: [...begun.answer.applied], failed: [...begun.answer.failed],
           cursor: log.cursorOf(port.shape, log.headSeq) }));
         return;

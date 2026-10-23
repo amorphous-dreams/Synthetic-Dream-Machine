@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { createPortLog, echoBeforeWritten, validateTx, type PortRecord } from "../src/record-port-log.js";
+import { createPortLog, echoBeforeWritten, transactionDigest, validateTx, type PortRecord } from "../src/record-port-log.js";
 import { shapeId } from "../src/record-port-projection.js";
 
 const shape = { width: "full" as const, localFilter: ["local"], fields: ["text", "tags"] };
@@ -7,6 +7,24 @@ const otherShape = { ...shape, width: "skinny" as const };
 const record = (title: string, text = title): PortRecord => ({ title, fields: { text } });
 
 describe("record port log", () => {
+  test("txid-payload-mismatch binds ordered canonical payload; CONTROL: reordered field keys resume", () => {
+    const ledger = createPortLog({ bootNonce: "boot", lagByteBudget: 1000 }).ledger;
+    const original = transactionDigest([
+      { title: "A", fields: { text: "one" } }, { title: "B", fields: { text: "two", tags: "x" }, bag: "second" },
+    ]);
+    ledger.begin("tx", ["(default)", "second"], original);
+    ledger.recordApplied("tx", "(default)");
+    ledger.answer("tx", ["second"]);
+    const changed = transactionDigest([
+      { title: "A", fields: { text: "one" } }, { title: "B", fields: { text: "changed", tags: "x" }, bag: "second" },
+    ]);
+    expect(() => ledger.begin("tx", ["(default)", "second"], changed)).toThrow("txid-payload-mismatch");
+    const canonical = transactionDigest([
+      { title: "A", fields: { text: "one" } }, { title: "B", fields: { tags: "x", text: "two" }, bag: "second" },
+    ]);
+    expect(canonical).toBe(original);
+    expect(ledger.begin("tx", ["(default)", "second"], canonical).pending).toEqual(["second"]);
+  });
   test("canonical shape hash drives log cursors; CONTROL: same shape resumes", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 1000 });
     expect(log.cursorOf(shape, 0)).toBe(`boot.${shapeId(shape)}.0`);
@@ -21,13 +39,13 @@ describe("record port log", () => {
 
   test("port-write-retry-is-idempotent; CONTROL: a single-family write answers applied with one echo", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 });
-    const first = log.ledger.begin("tx-1", ["bag-a"]);
+    const first = log.ledger.begin("tx-1", ["bag-a"], "payload-a");
     expect(first.pending).toEqual(["bag-a"]);
     log.append([record("a")], ["tx-1"]);
     log.ledger.recordApplied("tx-1", "bag-a");
     const answer = log.ledger.answer("tx-1");
     expect(answer).toEqual({ txId: "tx-1", status: "applied", applied: ["bag-a"], failed: [] });
-    expect(log.ledger.begin("tx-1", ["bag-a"])).toEqual({ pending: [], answer });
+    expect(log.ledger.begin("tx-1", ["bag-a"], "payload-a")).toEqual({ pending: [], answer });
     expect(log.headSeq).toBe(1);
   });
 
@@ -49,13 +67,13 @@ describe("record port log", () => {
 
   test("port-write-partial-resumes; CONTROL: an applied family stays applied", () => {
     const log = createPortLog({ bootNonce: "boot", lagByteBudget: 10000 });
-    log.ledger.begin("tx", ["a", "b"]);
+    log.ledger.begin("tx", ["a", "b"], "payload-ab");
     log.ledger.recordApplied("tx", "a");
     expect(log.ledger.answer("tx", ["b"])).toEqual({ txId: "tx", status: "partial", applied: ["a"], failed: ["b"] });
-    expect(log.ledger.begin("tx", ["a", "b"]).pending).toEqual(["b"]);
+    expect(log.ledger.begin("tx", ["a", "b"], "payload-ab").pending).toEqual(["b"]);
     log.ledger.recordApplied("tx", "b");
     expect(log.ledger.answer("tx").status).toBe("applied");
-    expect(log.ledger.begin("tx", ["a", "b"]).pending).toEqual([]);
+    expect(log.ledger.begin("tx", ["a", "b"], "payload-ab").pending).toEqual([]);
   });
 
   test("port-partial-visible-by-txid; CONTROL: one family appends contiguous entry sequences", () => {

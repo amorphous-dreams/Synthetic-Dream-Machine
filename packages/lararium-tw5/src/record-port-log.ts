@@ -43,11 +43,33 @@ export interface WrittenAnswer {
 
 interface LedgerState {
   readonly families: readonly string[];
+  readonly digest: string;
   readonly applied: Set<string>;
   answer?: WrittenAnswer;
 }
 
-/** A per-port ledger stores completed answers and resumes partial families. */
+/** Canonical ordered write payload, hashed with FNV-1a 64 over UTF-8 bytes. */
+export function transactionDigest(records: readonly {
+  readonly title: string;
+  readonly fields: Readonly<Record<string, string>>;
+  readonly tombstone?: true;
+  readonly bag?: string;
+}[]): string {
+  const families = [...new Set(records.map(record => record.bag ?? "(default)"))];
+  const canonical = JSON.stringify([families, records.map(record => [
+    record.title,
+    Object.entries(record.fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0),
+    record.tombstone === true,
+    record.bag ?? null,
+  ])]);
+  let hash = 0xcbf29ce484222325n;
+  for (const byte of new TextEncoder().encode(canonical)) {
+    hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & 0xffffffffffffffffn;
+  }
+  return `${canonical.length}:${hash.toString(16).padStart(16, "0")}`;
+}
+
+/** A per-actor ledger stores completed answers and resumes partial families. */
 export function createTxLedger(limit = 1024, inFlightLimit = 128) {
   if (!Number.isSafeInteger(limit) || limit < 1 || !Number.isSafeInteger(inFlightLimit) || inFlightLimit < 1) {
     throw new RangeError("invalid-ledger-limit");
@@ -60,17 +82,22 @@ export function createTxLedger(limit = 1024, inFlightLimit = 128) {
     return state;
   };
   return {
-    begin(txId: string, families: readonly string[]): { pending: string[]; answer?: WrittenAnswer } {
-      if (!txId || families.length === 0 || new Set(families).size !== families.length) throw new RangeError("invalid-transaction");
+    has(txId: string): boolean { return states.has(txId); },
+    matches(txId: string, digest: string): boolean {
+      const state = states.get(txId);
+      return !state || state.digest === digest;
+    },
+    begin(txId: string, families: readonly string[], digest: string): { pending: string[]; answer?: WrittenAnswer } {
+      if (!txId || !digest || families.length === 0 || new Set(families).size !== families.length) throw new RangeError("invalid-transaction");
       let state = states.get(txId);
-      if (state && (state.families.length !== families.length || state.families.some((family, i) => family !== families[i]))) {
-        throw new RangeError("txid-family-mismatch");
+      if (state && (state.digest !== digest || state.families.length !== families.length || state.families.some((family, i) => family !== families[i]))) {
+        throw new RangeError("txid-payload-mismatch");
       }
       if (!state) {
         let active = 0;
         for (const value of states.values()) if (!value.answer) active++;
         if (active >= inFlightLimit) throw new RangeError("in-flight-window-full");
-        state = { families: [...families], applied: new Set() };
+        state = { families: [...families], digest, applied: new Set() };
         states.set(txId, state);
       }
       if (state.answer?.status === "applied") return { pending: [], answer: state.answer };
