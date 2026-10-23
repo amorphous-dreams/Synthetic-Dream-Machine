@@ -332,6 +332,23 @@ describe("record port handler", () => {
     await r.close();
   });
 
+  test("port-one-island-one-face: an open under a second face gets a reset and holds nothing; CONTROL: the first face reopens and a lent-less island serves", async () => {
+    let face = { id: "first" };
+    const r = await rig({ faceOf: () => face });
+    await r.send(openMsg("f1", { actor: "x1" }));
+    face = { id: "second" };
+    await r.send(openMsg("f2", { actor: "x2" }));
+    expect(ofType(r.messages, "port:reset").filter(message => message.portId === "f2")).toHaveLength(1);
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "f2")).toBe(false);
+    face = { id: "first" };
+    await r.send(openMsg("f3", { actor: "x3" }));
+    expect(ofType(r.messages, "port:snapshot").some(message => message.portId === "f3")).toBe(true);
+    const bare = await rig();
+    await bare.send(openMsg("b1")); await bare.send(openMsg("b2", { actor: "other" }));
+    expect(ofType(bare.messages, "port:snapshot").some(message => message.portId === "b2")).toBe(true);
+    await r.close(); await bare.close();
+  });
+
   test("port-echo-survives-an-earlier-throwing-listener: a composite listener that throws never starves the port; CONTROL: both members still echo", async () => {
     const r = await rig({}, undefined, composite => { composite.subscribe(() => { throw new Error("earlier listener fault"); }); });
     await r.send(openMsg());

@@ -136,6 +136,10 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     ...(opts.retainEntries === undefined ? {} : { retainEntries: opts.retainEntries }) });
   const presence = new PresenceTracker(opts.lapseRounds);
   const ports = new Map<string, OpenPort>();
+  let islandFace: string | undefined;
+  const readFace = (portId: string): string | undefined => {
+    try { const face = opts.faceOf?.(portId); return face === undefined ? undefined : JSON.stringify(face); } catch { return undefined; }
+  };
   const actors = new Map<string, ActorState>();
   const tokens = new Map<string, { portId: string; txId: string }>();
   let tokenCounter = 0;
@@ -505,6 +509,12 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
           return true;
         }
+        const openFace = readFace(msg.portId);
+        if (openFace !== undefined && islandFace !== undefined && openFace !== islandFace) {
+          ctx.post(mkPortReset({ portId: msg.portId, reason: "lagged", floorSeq: log.floorSeq, headSeq: log.headSeq }));
+          return true;
+        }
+        if (openFace !== undefined) islandFace ??= openFace;
         const lentActor = opts.actorOf?.(msg.portId);
         const boundActor = lentActor ?? msg.portId;
         const presenceActor = lentActor ?? msg.actor;
