@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "projection-loom"
+version = "1.0.0"
+description = "Reproducible multi-view geometry evolution and technical control-image production"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "opencv-python-headless>=4.8",
+  "Pillow>=10",
+  "trimesh>=4",
+  "scikit-image>=0.22"
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+projection-loom = "projection_loom.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["projection_loom*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

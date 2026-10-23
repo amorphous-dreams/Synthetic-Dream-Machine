@@ -1,0 +1,76 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x0950; &#x0901;"
+role      = "projection-driven, topology-aware, multi-view geometry evolution and control-image production"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+
+! Projection Loom
+
+Projection Loom weaves parametric geometry, a shared camera frame, image evidence, topology checks, and evolutionary selection into repeatable production assets. It accepts any named subject through a project-defined builder or an inherited mesh; it holds no subject's appearance as intrinsic code.
+
+Its outputs supply transparent silhouettes, depth-tested structure lines, neutral illuminated forms, and combined technical control images for 2D illustration and 3D production. Every view projects one held model, while the source evidence remains independently inspectable.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+
+!! Operating Invariants
+
+* ''Identity through relation.'' A project binds a procedural builder or an inherited mesh, bounded parameters, named cameras, and observed targets; the loom supplies transforms and measurements without owning the subject.
+* ''Separation of inks.'' Silhouette, visible edges, surface light, and their combination occupy distinct output passes. A generated treatment never overwrites the structural evidence that conditioned it.
+* ''Same frame, many views.'' Named camera axes refer to one object coordinate system. Elevations, plans, and oblique views share geometry rather than claiming reconstructed unseen truth.
+* ''Connectivity before polish.'' Count projected islands on raw masks and inspect assembly-part contacts before any optional cleanup. An axis-aligned contact test serves as a conservative broad-phase indication, never a watertightness certificate.
+* ''Fitness with a held witness.'' Evolve diverse unlit lineages against observed silhouettes, refine selected candidates with bounded photometric evidence, and let self-produced views stabilize subsequent turns without promoting them to independent ground truth.
+* ''Geometry returns as geometry.'' A saved parametric checkpoint resumes its builder; an exported or imported mesh becomes a new held surface for bounded deformation. Re-entry preserves the shared camera frame and distinguishes inherited evidence from subsequent edits.
+
+<<~/ahu>>
+
+<<~ ahu #/contract>>
+
+!! Software Carrier
+
+The executable carrier resides at `tools/projection-loom/`. A project supplies a JSON manifest containing a procedural builder or a geometry source, with faces, materials, structural edges, and named parts where known. A run exports independently usable RGBA control passes, geometry checkpoints, and machine-readable scores.
+
+`projection-loom render` projects an assembly. `projection-loom validate` reports model-space contacts and per-view connected components. `projection-loom evolve` explores Sobol populations, selects separated lineages, refines them under optional lighting, and accepts re-fed view masks or RGBA images through named cameras. `--seed` reenters a procedural checkpoint. `--seed-geometry` reenters NPZ, OBJ, PLY, STL, GLB, or GLTF geometry as an editable mesh with bounded deformations; the two operations remain distinct. The manifest, tests, and command help state the executable contract.
+
+The loom does not infer hidden topology from a painting, replace authored architectural judgment, or claim that a kit-bashed assembly forms a fused manifold. Such claims require separate geometric proof.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ observe the project manifest, held geometry, authoritative source masks, material evidence, and view registration
+⏿ orient every camera to the shared object and distinguish witnessed silhouettes from inferred surfaces
+◇ select diverse candidates under the stable topology-and-silhouette objective
+▶ evolve unlit forms, refine lighting correspondence, validate raw projections, and export isolated control passes
+↺ re-feed approved masks or geometry as explicit bounded inputs, preserve the source witness, and carry the accepted model into the next run
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+
+<<~/ahu>>
+
+<<^ code="&#x0004;" -> to="?">>

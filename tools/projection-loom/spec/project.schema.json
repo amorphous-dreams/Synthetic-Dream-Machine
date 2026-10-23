@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.amorphousdreams.org/projection-loom/project/v1",
+  "title": "Projection Loom project",
+  "description": "Parametric or inherited-mesh geometry and camera controls for projection-driven evolution",
+  "type": "object",
+  "required": [
+    "schema",
+    "cameras"
+  ],
+  "properties": {
+    "schema": {
+      "const": "projection-loom/project/v1"
+    },
+    "builder": {
+      "type": "string",
+      "pattern": "^[^:]+:[A-Za-z_][A-Za-z0-9_]*$",
+      "description": "Python assembly callable relative to the project manifest"
+    },
+    "bounds": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "description": "Required for builder projects; optional bounded deformation subset for imported mesh projects"
+    },
+    "initial": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Required for builder projects; geometry sources default to an identity deformation"
+    },
+    "cameras": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "azimuth": {
+            "type": "number"
+          },
+          "elevation": {
+            "type": "number"
+          },
+          "fit": {
+            "enum": [
+              "height",
+              "bounds"
+            ]
+          },
+          "margin": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMaximum": 0.5
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "view",
+          "path"
+        ],
+        "properties": {
+          "view": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "channel": {
+            "enum": [
+              "auto",
+              "alpha",
+              "luma"
+            ]
+          },
+          "threshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "invert": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "roi": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    "photograph": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "light_angles": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "detail_level": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stability_views": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stability_weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "objective_weights": {
+          "type": "object",
+          "properties": {
+            "topology": {
+              "type": "number",
+              "minimum": 0
+            },
+            "shape_prior": {
+              "type": "number",
+              "minimum": 0
+            },
+            "photometry": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "render": {
+          "type": "object",
+          "properties": {
+            "supersample": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "work_width": {
+              "type": "integer",
+              "minimum": 16
+            },
+            "ambient": {
+              "type": "number",
+              "minimum": 0
+            },
+            "diffuse": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "geometry": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "builder",
+        "bounds",
+        "initial"
+      ],
+      "not": {
+        "required": [
+          "geometry"
+        ]
+      }
+    },
+    {
+      "required": [
+        "geometry"
+      ],
+      "not": {
+        "required": [
+          "builder"
+        ]
+      }
+    }
+  ]
+}

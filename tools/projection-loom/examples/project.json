@@ -1,0 +1,25 @@
+{
+  "schema": "projection-loom/project/v1",
+  "builder": "assembly.py:build",
+  "bounds": {
+    "width": [0.78, 1.22],
+    "height": [0.75, 1.25],
+    "reach": [0.75, 1.20]
+  },
+  "initial": {"width": 1.0, "height": 1.0, "reach": 1.0},
+  "cameras": {
+    "reference": {"azimuth": 42.0, "elevation": 14.0, "fit": "height"},
+    "front": {"azimuth": 0.0, "elevation": 0.0, "fit": "height"},
+    "side": {"azimuth": 90.0, "elevation": 0.0, "fit": "height"},
+    "rear": {"azimuth": 180.0, "elevation": 0.0, "fit": "height"},
+    "top": {"azimuth": 0.0, "elevation": 90.0, "fit": "bounds"}
+  },
+  "targets": [],
+  "settings": {
+    "detail_level": 1,
+    "stability_views": ["front", "side"],
+    "stability_weight": 0.012,
+    "objective_weights": {"topology": 0.12, "shape_prior": 0.08, "photometry": 0.035},
+    "render": {"supersample": 2, "work_width": 384, "ambient": 0.27, "diffuse": 0.66}
+  }
+}

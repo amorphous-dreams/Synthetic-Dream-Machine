@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+out/
+*.npz
+*.obj
