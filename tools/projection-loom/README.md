@@ -29,7 +29,11 @@ next evolutionary generation.
 The default `wide-epoch` CLI now executes an actual five-phase hierarchical
 controller, not a descriptive loop label. A pet-named location runs epoch
 loops, and each scheduled candidate runs its own Observe / Orient / Decide /
-**actual CAD Act** / Aftermath loop. Checkpoints and operator controls can
+**actual CAD Act** / Aftermath loop. Any parent phase may also launch a
+full nested inquiry (e.g., Observe investigating contradictory sources or
+Aftermath asking what an unusual gallery connects). The parent holds that
+phase until the inquiry finishes; no phase must spawn a child. Checkpoints
+and operator controls can
 pause, resume, alter autonomy, review verified CAD previews, pet-name a
 nameless entity, select an alternative valid lineage, or perform o-takiage.
 The hard geometry and original-evidence gates remain unchanged.
@@ -44,6 +48,11 @@ PYTHONPATH=. python -m projection_loom ooda-steer \
   --session out/helm/session.json --action approve-plan
 # Repeat wide-epoch with the same arguments. Inspect out/helm/previews/.
 ```
+
+Use `ooda-steer --action open-inquiry --loop epoch-0001 --question 'Why?'`
+to request a full child OODA-HA under the epoch's current phase. Advance each
+inquiry phase using `--action advance-inquiry --loop <id> --phase <phase> --note <receipt>`; when it closes, the original plan or review checkpoint
+resumes. See [phase-anchored recursion](docs/ooda-ha-procedural.md#phase-anchored-inquiries-deepen-attention-without-forcing-recursion).
 
 For autonomous execution, use `--control auto-nav` (default) or
 `--control full-speed`, or set numeric `--autonomy` in `[0,1]`. Even then,

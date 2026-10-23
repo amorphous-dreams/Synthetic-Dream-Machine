@@ -113,6 +113,33 @@ this procedural runtime Aftermath reviews the evolving location's outcome.
 
 <<~/ahu>>
 
+<<~ ahu #/phase-anchored-recursion>>
+
+!! Any Active Phase May Spawn a Child Inquiry
+
+* ''A loop holds its own attention.'' A location, epoch, candidate or inquiry
+  MAY open a complete child OODA-HA from any active phase: ✶ Observe,
+  ⏿ Orient, ◇ Decide, ▶ Act, or ↺ Hoʻoko/Aftermath. The child remembers
+  its immutable parent-phase anchor, and the parent SHALL NOT leave that
+  phase until the child returns with a recorded consequence.
+* ''No forced symmetry.'' The five phases invite inquiry without demanding
+  five descendants. Depth and total-loop limits remain explicitly
+  configurable safeguards against runaway branching, not a fixed form grammar.
+* ''Operator and AI share the helm.'' An Operator MAY request an inquiry
+  during a paused plan, preview review, or automatic phase safe point.
+  A narrow phase-adviser callback MAY propose one question for deeper review.
+  Every inquiry persists its five phase receipts, returns to the suspended
+  parent checkpoint, and never overwrites preview choices or lineage history.
+* ''A receipt does not manufacture work.'' The inquiry's Act may record the
+  Operator/AI's action and external tools' receipts. Only a real CAD
+  evaluation may claim its material Boolean, connection and void gates.
+  AI inquiry proposals MAY NOT waive validity or evidence-source conditions.
+* ''Aftermath observes itself.'' A runtime Aftermath can open nested OODA-HA
+  for consequences of a grown location. The developers' Aftermath continues
+  to inspect the code, comments and actual outcomes of our own work.
+
+<<~/ahu>>
+
 <<~ ahu #/ooda-ha>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence

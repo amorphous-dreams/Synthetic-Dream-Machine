@@ -43,6 +43,8 @@ def main(argv=None):
     p.add_argument('--seed',type=int,default=41)
     p.add_argument('--location-stack',type=Path)
     p.add_argument('--identity-ledger',type=Path)
+    p.add_argument('--max-depth',type=int,default=12,help='optional nested inquiry depth budget')
+    p.add_argument('--max-loops',type=int,default=4096,help='bounded session loop count')
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],default='auto-nav')
     p.add_argument('--autonomy',type=float)
     p=commands.add_parser('inspect-dem',help='Inspect an actual digest-checked DEM and its datum')
@@ -81,6 +83,8 @@ def main(argv=None):
     p.add_argument('--seed',type=int,default=41)
     p.add_argument('--location-stack',type=Path)
     p.add_argument('--identity-ledger',type=Path)
+    p.add_argument('--max-depth',type=int,default=12,help='nested inquiry depth budget')
+    p.add_argument('--max-loops',type=int,default=4096,help='bounded session loop count')
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],
                    default='auto-nav', help='operator/AI steering preset')
     p.add_argument('--autonomy',type=float,
@@ -90,7 +94,8 @@ def main(argv=None):
     p=commands.add_parser('ooda-steer',help='Queue a control, applied at the next safe boundary')
     p.add_argument('--session',type=Path,required=True)
     p.add_argument('--action',choices=['pause','resume','review','set-autonomy','approve-plan','choose',
-                            'prefer-emitter','pet-name','o-takiage'],required=True)
+                            'prefer-emitter','pet-name','o-takiage',
+                            'open-inquiry','advance-inquiry'],required=True)
     p.add_argument('--autonomy',type=float)
     p.add_argument('--proposal')
     p.add_argument('--emitter',choices=['sobol','local','topology'])
@@ -101,6 +106,11 @@ def main(argv=None):
     p.add_argument('--has',action='append',default=[])
     p.add_argument('--member-has',action='append',default=[])
     p.add_argument('--retain',type=float,default=.4)
+    p.add_argument('--loop',help='existing parent loop or active inquiry loop id')
+    p.add_argument('--question',help='question initiating a phase-anchored inquiry')
+    p.add_argument('--phase',choices=['orient','decide','act','aftermath','closed'],
+                   help='next phase of an active inquiry')
+    p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
     if args.command=='ooda-run':
         from .ooda import run_ooda_epochs
@@ -113,13 +123,15 @@ def main(argv=None):
             detail_budget=args.detail_budget,seed=args.seed,
             topology_loci=args.topology_locus,
             autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
-            ledger_path=args.identity_ledger,location_stack=source)
+            ledger_path=args.identity_ledger,location_stack=source,
+            max_depth=args.max_depth,max_loops=args.max_loops)
         print(json.dumps(result,indent=2));return result
     if args.command=='ooda-status':
         from .ooda import OODAJournal
         session=OODAJournal(args.session)
         state=session.summary()
-        state['open_loops']=[{'id':n['id'],'phase':n['phase'],'scope':n['scope']}
+        state['open_loops']=[{'id':n['id'],'phase':n['phase'],'scope':n['scope'],
+                              'parent_phase':n.get('parent_phase')}
             for n in session.data['loops'].values() if n['phase']!='closed']
         print(json.dumps(state,indent=2));return state
     if args.command=='ooda-steer':
@@ -140,6 +152,14 @@ def main(argv=None):
                 member_has=args.member_has,retain=args.retain)
         elif args.action=='o-takiage':
             parameters=dict(name=args.name,branch=args.branch,proposal_id=args.proposal)
+        elif args.action=='open-inquiry':
+            if not args.loop or not args.question:
+                parser.error('open-inquiry needs --loop and --question')
+            parameters=dict(parent_loop=args.loop, question=args.question)
+        elif args.action=='advance-inquiry':
+            if not args.loop or not args.phase:
+                parser.error('advance-inquiry needs --loop and --phase')
+            parameters=dict(loop_id=args.loop,phase=args.phase,detail={'note':args.note or ''})
         msg=submit_control(args.session,args.action,**parameters)
         print(json.dumps(msg,indent=2));return msg
     if args.command=='inspect-dem':
@@ -168,7 +188,8 @@ def main(argv=None):
                        detail_budget=args.detail_budget,seed=args.seed,
                        topology_loci=args.topology_locus,
                        autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
-                       ledger_path=args.identity_ledger,location_stack=location)
+                       ledger_path=args.identity_ledger,location_stack=location,
+                       max_depth=args.max_depth,max_loops=args.max_loops)
         print(json.dumps({'passes':len(result['passes']),
                           'status':result['status'],'awaiting':result['awaiting']}))
         return result

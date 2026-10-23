@@ -8,11 +8,14 @@ feature.
 
 ## One location, nested loops, five guarded phases
 
-The machine only advances `observe -> orient -> decide -> act -> aftermath -> closed`.
-The closing boundary reopens a subsequent loop at Observe. An epoch may only grow
-under the enclosing location's Act; a candidate may only grow under its epoch's
-Act. Neither parent may close with an open child. Every transition carries a
-persisted receipt, not a comment or log message pretending a transition occurred.
+The machine advances `observe -> orient -> decide -> act -> aftermath -> closed`.
+The closing boundary can reopen another loop at Observe. Production epochs
+normally grow under their location's Act, and CAD candidate loops under their
+epoch's Act. **Any active phase** can additionally open a child inquiry; the
+child records its immutable `parent_phase` and finishes a full five-phase cycle
+before the parent may leave that phase. Neither the parent nor an inquiry can
+close with an open child. This recursion is *optional*, not a forced five-way
+fan-out. Each transition persists a receipt, not a post-hoc phase label.
 
 ```mermaid
 flowchart TD
@@ -122,10 +125,63 @@ initial run's identity already reserves a default `out/identity-ledger.json`
 location, so a pet-name may arrive only after the first preview without making
 the original session incompatible.
 
+## Phase-anchored inquiries: deepen attention without forcing recursion
+
+A named loop or nameless location may open a bounded child investigation within
+**any** active OODA-HA phase. That inquiry completes its own
+`observe -> orient -> decide -> act -> aftermath -> closed` progression. The
+parent remains at its original phase until the child closes, and the journal
+records both the anchor and the return. An inquiry may itself open another
+inquiry inside its own Aftermath (or any other phase), with a configurable
+safety budget. The recursion pattern invites attention; it does not require
+all five phases to spawn children.
+
+A practical example pauses a manual epoch review, opens a child inside its
+Aftermath, and then returns to exactly the same validated preview options:
+
+```bash
+python -m projection_loom ooda-steer --session out/ooda/session.json \
+  --action open-inquiry --loop epoch-0001 \
+  --question 'What does the newly grown gallery connect?'
+# Reinvoke the matching ooda-run command to apply the queued control.
+python -m projection_loom ooda-status --session out/ooda/session.json
+# Read the 'awaiting.loop' inquiry id from the status response:
+python -m projection_loom ooda-steer --session out/ooda/session.json \
+  --action advance-inquiry --loop '<inquiry-loop-id>' --phase orient \
+  --note 'The gallery touches the upper landing'
+# Repeat advance-inquiry for decide, act, aftermath, closed, then rerun.
+# Each explicit receipt records the Operator/AI pair's observation or decision.
+```
+
+`--action open-inquiry` accepts an active parent loop. The phase at the safe
+boundary becomes its immutable anchor; an already-closed parent cannot receive
+one. `--action advance-inquiry` advances **one legal phase at a time**, and
+`--note` records what the Operator/AI pair observed, chose, did, or concluded.
+Closing the child restores a suspended plan/review checkpoint, including its
+original options. A control delivered during an unsafe change of phase fails
+openly rather than acquiring a misleading historical anchor.
+
+The Python API also supports optional `run_ooda_epochs(..., phase_adviser=...)`.
+This callback receives a documented snapshot for each epoch phase and can
+return either `None` or `{'question': '...'}`. The resulting child blocks the
+phase until the Operator/AI pair advances it; no LLM provider comes built in.
+The callback cannot waive CAD validity or pretend that written phase notes ran
+an external computation. This distinguishes actual candidate Act (real CAD
+execution) from inquiry Act (an operator/AI action receipt, with separately
+owned tools as appropriate).
+
+Recursion limits default to 12 nested levels and 4096 loops per session;
+`--max-depth` and `--max-loops` configure them when starting a fresh run.
+An in-flight run retains its limits and input/code fingerprint. Changing those
+constraints requires a new session, not a silent mutation of its history.
+
 ## Failure, safety and persistence
 
-- **Fractal invariants:** phase order never skips ahead; children run only in
-  parent Act; closing a parent requires all children closed.
+- **Fractal invariants:** phases never skip ahead; child inquiries can run
+  inside Observe, Orient, Decide, Act or Aftermath; the parent cannot exit
+  the anchoring phase while any child remains open. Ordinary epoch/candidate
+  children continue to grow from parent Act. Finite, configurable recursion
+  depth and total-loop budgets prevent accidental runaway fan-out.
 - **Durability:** source hashes, code hash (all active Python modules and the
   builder), budgets, deterministic proposal seeds and session identity determine
   reentry. Changed code or sources require a *fork*, never silent in-place resume.
@@ -152,7 +208,11 @@ the original session incompatible.
   https://docs.langchain.com/oss/python/langgraph/interrupts
 - AWS durable workflows suspend work without holding a process running:
   https://docs.aws.amazon.com/durable-execution/patterns/best-practices/pause-resume/
-- Hierarchical statecharts: nested state boundaries and guarded transitions.
+- Harel-style statecharts: hierarchical state boundaries and guarded transitions.
+  https://www.sciencedirect.com/science/article/pii/0167642387900359
+- LangGraph human-in-the-loop cautions: after interruptions, node code may
+  replay; isolate side effects and persist phase receipts before re-entry.
+  https://docs.langchain.com/oss/python/langgraph/interrupts
 - Event-sourced persistence: immutable operator interventions and explicit
   run identity rather than mutable undocumented guidance.
 

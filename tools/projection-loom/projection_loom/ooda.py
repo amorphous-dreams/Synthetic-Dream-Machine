@@ -1,7 +1,9 @@
 """OODA-HA as an executable, nested, human-steerable workflow.
 
 A location contains epoch loops; each epoch contains actual evaluated candidate
-loops.  The five phases are guarded state transitions, not descriptive tags.
+loops. Any active phase may also open a subordinate inquiry, which must finish
+before its anchoring parent phase can advance. The five phases are guarded state
+transitions, not descriptive tags.
 Only the epoch Act calls a CAD evaluator, and it checkpoints completed candidates
 before acknowledging external controls.  Operator commands arrive through an
 append-only local inbox so a separate CLI process never rewrites the runner's
@@ -23,7 +25,10 @@ from .epochs import WideEpoch, propose_methods, project_code_digest, project_sil
 from .epochs import _hash, _atomic
 
 PHASES = ('observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
-SCHEMA = 'projection-loom/ooda-ha-session/v1'
+SCHEMA = 'projection-loom/ooda-ha-session/v2'
+CONTROL_SCHEMA = 'projection-loom/ooda-ha-control/v2'
+DEFAULT_MAX_DEPTH = 12
+DEFAULT_MAX_LOOPS = 4096
 
 
 def _fingerprint(value):
@@ -52,7 +57,8 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
     service.  Distinct immutable files avoid writers clobbering session.json.
     """
     allowed = {'pause', 'resume', 'review', 'set-autonomy', 'approve-plan',
-               'choose', 'prefer-emitter', 'pet-name', 'o-takiage'}
+               'choose', 'prefer-emitter', 'pet-name', 'o-takiage',
+               'open-inquiry', 'advance-inquiry'}
     if action not in allowed:
         raise ValueError('Unrecognized steering action')
     if actor != 'operator':
@@ -75,6 +81,18 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
             raise ValueError('Pet-name mode must be entity or location')
     if action == 'o-takiage' and bool(parameters.get('name')) == bool(parameters.get('branch')):
         raise ValueError('O-takiage needs exactly one name or branch')
+    if action == 'open-inquiry':
+        if (set(parameters) != {'parent_loop', 'question'} or
+                not isinstance(parameters['parent_loop'], str) or
+                not isinstance(parameters['question'], str) or
+                not parameters['question'].strip() or len(parameters['question']) > 4096):
+            raise ValueError('Open inquiry requires a parent_loop and a bounded question')
+    if action == 'advance-inquiry':
+        if (set(parameters) != {'loop_id', 'phase', 'detail'} or
+                parameters['phase'] not in PHASES[1:] or
+                not isinstance(parameters['detail'], dict) or
+                len(json.dumps(parameters['detail'], allow_nan=False)) > 8192):
+            raise ValueError('Advance inquiry requires a next phase and a bounded detail dictionary')
     base = Path(session_path)
     if not base.exists():
         raise FileNotFoundError('Initialize the OODA run before sending controls')
@@ -83,7 +101,7 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
         raise ValueError('Not an OODA-HA session')
     if snapshot.get('status') == 'completed':
         raise ValueError('This OODA session has completed; start a new location epoch')
-    request = {'schema': 'projection-loom/ooda-ha-control/v1', 'id': f'{time_ns():020d}-{uuid4().hex}',
+    request = {'schema': CONTROL_SCHEMA, 'id': f'{time_ns():020d}-{uuid4().hex}',
                'run_id': snapshot['run_id'], 'actor': actor, 'action': action,
                'parameters': parameters}
     inbox = base.parent / 'controls' / 'inbox'
@@ -113,7 +131,11 @@ def single_runner(session_path):
 
 class OODAJournal:
     """Persist validated transitions, nested loops and operator interventions."""
-    def __init__(self, path, *, identity=None, initial=None, autonomy=.70):
+    def __init__(self, path, *, identity=None, initial=None, autonomy=.70,
+                 max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS):
+        if (isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1 or
+                isinstance(max_loops, bool) or not isinstance(max_loops, int) or max_loops < 1):
+            raise ValueError('Finite positive OODA depth and loop budgets are required')
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if self.path.exists():
@@ -125,6 +147,8 @@ class OODAJournal:
                 raise ValueError('Unknown OODA session schema')
             if identity is not None and data['identity'] != identity:
                 raise ValueError('Incompatible OODA session; fork to change sources, code or budgets')
+            if data.get('limits') != {'max_depth': max_depth, 'max_loops': max_loops}:
+                raise ValueError('OODA recursion budget changed; fork rather than replay')
             self.data = data
         else:
             if identity is None or initial is None:
@@ -135,6 +159,7 @@ class OODAJournal:
                          'policy': {'autonomy': auto, 'preferred_emitter': None},
                          'status': 'running', 'awaiting': None, 'paused_reason': None,
                          'loops': {}, 'events': [], 'applied_controls': {},
+                         'limits': {'max_depth':max_depth, 'max_loops':max_loops},
                          'current_epoch': 0, 'current_genome': dict(initial),
                          'passes': []}
             self.begin('location', parent=None, scope='location',
@@ -154,21 +179,50 @@ class OODAJournal:
         self.data['events'].append(e)
         return e
 
-    def begin(self, loop_id, *, parent, scope, evidence):
-        if loop_id in self.data['loops']:
-            return self.data['loops'][loop_id]
+    def begin(self, loop_id, *, parent, scope, evidence, parent_phase=None):
+        """Open a real child beneath *any* active parent phase.
+
+        A child carries an immutable phase anchor; the parent may not leave
+        that phase until the child completes. Re-entry by loop_id is idempotent.
+        The parent remains authoritative over the original task and controls.
+        """
+        if not isinstance(loop_id, str) or not loop_id or not isinstance(scope, str) or not scope:
+            raise ValueError('Every loop needs a nonempty identifier and scope')
+        existing = self.data['loops'].get(loop_id)
+        if existing is not None:
+            if existing['parent'] != parent or existing['scope'] != scope:
+                raise ValueError('Loop id already names another parent or scope')
+            return existing
+        if len(self.data['loops']) >= self.data['limits']['max_loops']:
+            raise ValueError('OODA loop budget reached; choose a new bounded session')
+        depth = 0
         if parent is not None:
             p = self.data['loops'].get(parent)
-            if p is None or p['phase'] != 'act':
-                raise ValueError('A nested OODA loop must grow under an active parent Act')
-            p['children'].append(loop_id)
-        self.data['loops'][loop_id] = {'id': loop_id, 'parent': parent,
-            'scope': scope, 'phase': 'observe', 'children': [],
-            'receipts': {'observe': evidence}}
-        self.event('phase', loop_id, phase='observe', detail=evidence)
-        return self.data['loops'][loop_id]
+            if p is None or p['phase'] == 'closed':
+                raise ValueError('A child needs an active parent loop')
+            if parent_phase is not None and p['phase'] != parent_phase:
+                raise ValueError('Parent phase changed before child was attached')
+            parent_phase = p['phase']
+            depth = p['depth'] + 1
+            if depth > self.data['limits']['max_depth']:
+                raise ValueError('OODA recursion depth budget reached')
+        elif parent_phase is not None:
+            raise ValueError('A root loop has no parent phase')
+        # Verify the evidence is serializable *before* mutating the parent.
+        _hash(evidence)
+        node = {'id': loop_id, 'parent': parent, 'parent_phase': parent_phase,
+                'depth': depth, 'scope': scope, 'phase': 'observe',
+                'children': [], 'receipts': {'observe': evidence}}
+        self.data['loops'][loop_id] = node
+        if parent is not None:
+            self.data['loops'][parent]['children'].append(loop_id)
+        self.event('phase', loop_id, phase='observe', detail=evidence,
+                   parent_phase=parent_phase)
+        self.save()
+        return node
 
     def transition(self, loop_id, phase, detail=None):
+        """Advance only after every child anchored to this phase has closed."""
         if phase not in PHASES:
             raise ValueError('Unknown OODA-HA phase')
         node = self.data['loops'][loop_id]
@@ -178,14 +232,104 @@ class OODAJournal:
             return False
         if target != prior + 1:
             raise ValueError(f'Illegal OODA-HA phase transition: {node["phase"]} -> {phase}')
-        if phase == 'closed' and any(self.data['loops'][x]['phase'] != 'closed'
-                                     for x in node['children']):
-            raise ValueError('A parent cannot close while child loops remain open')
+        open_children = [child for child in node['children']
+                         if self.data['loops'][child]['phase'] != 'closed']
+        if open_children:
+            raise ValueError(f'Parent phase {node["phase"]} awaits child loops: {open_children}')
+        receipt = detail if detail is not None else {}
+        _hash(receipt)
         node['phase'] = phase
-        node['receipts'][phase] = detail if detail is not None else {}
-        self.event('phase', loop_id, phase=phase, detail=node['receipts'][phase])
+        node['receipts'][phase] = receipt
+        self.event('phase', loop_id, phase=phase, detail=receipt)
+        if phase == 'closed' and node['parent'] is not None:
+            self.event('child-return', node['parent'], child=loop_id,
+                       anchor=node['parent_phase'], outcome=receipt)
         self.save()
         return True
+
+    def open_inquiry(self, parent_loop, question, *, loop_id=None):
+        """Let an Operator/AI investigation interrupt any active phase.
+
+        A prior preview/plan checkpoint remains underneath this inquiry. An
+        inquiry never certifies CAD or modifies previously scored candidates.
+        """
+        parent = self.data['loops'].get(parent_loop)
+        if parent is None or parent['phase'] == 'closed':
+            raise ValueError('Inquiry requires a currently active parent')
+        if not isinstance(question, str) or not question.strip() or len(question) > 4096:
+            raise ValueError('Inquiry question must contain bounded text')
+        if loop_id is None:
+            loop_id = f'{parent_loop}/inquiry-{len(parent["children"])+1:04d}'
+        existed = loop_id in self.data['loops']
+        node = self.begin(loop_id, parent=parent_loop, scope='inquiry', evidence={
+            'question': question, 'anchor': parent['phase']})
+        if existed and node['phase'] == 'closed':
+            return node  # Idempotent control replay never reopens a completed loop.
+        if 'return_to' not in node:
+            node['return_to'] = self.data['awaiting']
+        self.data['awaiting'] = {'kind':'inquiry','loop':loop_id,
+                                 'parent':parent_loop, 'anchor':node['parent_phase'],
+                                 'question':question}
+        self.data['status'] = 'awaiting_operator'
+        if not existed:
+            self.event('inquiry-open',loop_id,parent=parent_loop,
+                       anchor=node['parent_phase'],question=question)
+        self.save()
+        return node
+
+    def advance_inquiry(self, loop_id, phase, detail=None):
+        """Carry one inquiry phase with an explicit operator/AI receipt."""
+        node = self.data['loops'].get(loop_id)
+        if node is None or node['scope'] != 'inquiry':
+            raise ValueError('Only an inquiry may advance with inquiry controls')
+        if phase not in PHASES[1:]:
+            raise ValueError('Inquiry phase must follow Observe')
+        if node['phase'] == phase and node['receipts'].get(phase) == (detail or {}):
+            # A crash between transition persistence and control acknowledgement
+            # must not duplicate the operation or replay the side effect.
+            return node
+        if self.data['awaiting'] is None or self.data['awaiting'].get('loop') != loop_id:
+            raise ValueError('The requested inquiry is not the active checkpoint')
+        self.transition(loop_id, phase, detail)
+        if phase == 'closed':
+            self.data['awaiting'] = node['return_to']
+            self.data['status'] = 'awaiting_operator' if node['return_to'] else 'running'
+            self.event('inquiry-return',node['parent'],child=loop_id,
+                       anchor=node['parent_phase'], outcome=detail or {})
+        self.save()
+        return node
+
+    def consult_phase(self, loop_id, adviser=None):
+        """Optional AI/Operator phase adviser proposes bounded *child inquiry*.
+
+        The adviser cannot mutate the parent, certify evidence, or skip a gate.
+        A question causes a durable operator checkpoint before the phase moves.
+        The phase consultation and its deterministic child ID survive re-entry.
+        """
+        if adviser is None:
+            return self.poll()
+        node = self.data['loops'][loop_id]
+        phase = node['phase']
+        if phase in ('closed',):
+            return self.poll()
+        consulted = node.setdefault('consulted_phases', [])
+        if phase in consulted:
+            return self.poll()
+        child_id = f'{loop_id}/consult-{phase}'
+        if child_id not in self.data['loops']:
+            response = adviser({'loop_id':loop_id, 'scope':node['scope'],
+                                'phase':phase, 'parent_phase':node['parent_phase'],
+                                'autonomy':self.autonomy,
+                                'evidence':node['receipts'].get(phase,{})})
+            if response is not None:
+                if (not isinstance(response,dict) or set(response) != {'question'} or
+                        not isinstance(response['question'],str) or
+                        not response['question'].strip()):
+                    raise ValueError('Phase adviser may only propose one bounded inquiry question')
+                self.open_inquiry(loop_id,response['question'],loop_id=child_id)
+        consulted.append(phase)
+        self.save()
+        return self.poll()
 
     def candidate_start(self, epoch_id, proposal):
         """The candidate enters Act *before* CAD growth and scoring begin."""
@@ -240,8 +384,9 @@ class OODAJournal:
                 if self.data['applied_controls'][key] != digest:
                     raise ValueError('Previously applied control was altered')
                 continue
-            if item.get('run_id') != self.data['run_id'] or item.get('actor') != 'operator':
-                raise ValueError('Control belongs to another run or unauthorized actor')
+            if (item.get('schema') != CONTROL_SCHEMA or
+                    item.get('run_id') != self.data['run_id'] or item.get('actor') != 'operator'):
+                raise ValueError('Control belongs to another run, schema, or unauthorized actor')
             action, args = item['action'], item.get('parameters', {})
             waiting = self.data['awaiting']
             if action in ('pet-name','o-takiage','choose') and (waiting is None or waiting['kind'] != 'review'):
@@ -251,7 +396,12 @@ class OODAJournal:
                 self.data['force_review'] = True
                 self.save()
                 continue
-            if action == 'pause':
+            if action == 'open-inquiry':
+                self.open_inquiry(args['parent_loop'], args['question'],
+                                  loop_id=f'{args["parent_loop"]}/inquiry-{key}')
+            elif action == 'advance-inquiry':
+                self.advance_inquiry(args['loop_id'], args['phase'], args['detail'])
+            elif action == 'pause':
                 self.data['status'] = 'paused'
                 self.data['paused_reason'] = 'operator pause requested'
             elif action == 'review':
@@ -334,7 +484,12 @@ class OODAJournal:
                 'completed_epochs': self.data['current_epoch'],
                 'passes': self.data['passes'], 'selected_genome': self.data['current_genome'],
                 'session': str(self.path), 'identity_ledger': self.data['identity']['ledger_path'],
-                'events': len(self.data['events'])}
+                'events': len(self.data['events']),
+                'inquiries': [{'id': n['id'], 'parent': n['parent'],
+                               'parent_phase': n['parent_phase'], 'phase': n['phase'],
+                               'depth': n['depth']}
+                              for n in self.data['loops'].values()
+                              if n['scope'] == 'inquiry' and n['phase'] != 'closed']}
 
 
 def _source_hashes(project, location_stack):
@@ -424,7 +579,8 @@ def _preferred_choice(options, preferred_emitter, autonomy):
 def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     exact_budget=6, detail_budget=3, seed=41,
                     topology_loci=(), autonomy=.70, ledger_path=None,
-                    location_stack=None, adviser=None):
+                    location_stack=None, adviser=None, phase_adviser=None,
+                    max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS):
     """Execute fractal OODA-HA over real staged CAD epochs, with safe pauses.
 
     Re-enter using precisely the same evidence, code and budgets.  The journal
@@ -450,7 +606,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 'ledger_path': str(ledger_path)}
     with single_runner(out/'session.json'):
         journal = OODAJournal(out/'session.json', identity=identity,
-                              initial=project.initial, autonomy=autonomy)
+                              initial=project.initial, autonomy=autonomy,
+                              max_depth=max_depth, max_loops=max_loops)
         journal.poll()
         if journal.data['status'] == 'completed':
             return journal.summary()
@@ -468,16 +625,22 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 journal.save()
             node = journal.data['loops'][loop_id]
             if node['phase'] == 'observe':
+                if not journal.consult_phase(loop_id, phase_adviser):
+                    break
                 journal.transition(loop_id, 'orient', {
                     'available_methods': ['sobol', 'local', 'topology'],
                     'budgets': {'exact': exact_budget, 'detail': detail_budget},
                     'registration': identity['score_state']})
             if node['phase'] == 'orient':
+                if not journal.consult_phase(loop_id, phase_adviser):
+                    break
                 journal.transition(loop_id, 'decide', {
                     'sampling_seed': seed + i, 'candidates': candidates,
                     'topology_loci': list(topology_loci),
                     'recommendation': 'bounded multi-emitter CAD auditions'})
             if node['phase'] == 'decide':
+                if not journal.consult_phase(loop_id, phase_adviser):
+                    break
                 if journal.autonomy < .25 and not node.get('plan_approved'):
                     if journal.data['awaiting'] is None:
                         journal.wait('plan', epoch_id=loop_id)
@@ -488,6 +651,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     journal.save()
                 journal.transition(loop_id, 'act', {'operation': 'grow, audit and score candidates'})
             if node['phase'] == 'act':
+                if not journal.consult_phase(loop_id, phase_adviser):
+                    break
                 from .relations import PetNameLedger
                 ledger = PetNameLedger.load(ledger_path) if ledger_path and Path(ledger_path).exists() else None
                 ledger_digest = sha256(Path(ledger_path).read_bytes()).hexdigest() if ledger else None
@@ -542,6 +707,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     'scored': sum(r['state'] == 'scored' for r in data['results'].values()),
                     'options': options, 'errors': sum(r['state'] == 'error' for r in data['results'].values())})
             if node['phase'] == 'aftermath':
+                if not journal.consult_phase(loop_id, phase_adviser):
+                    break
                 if not journal.poll():
                     break
                 options = node.get('options', [])

@@ -30,8 +30,34 @@ CAD material from a phase name.
 * ''✶ Observe:'' receive original evidence, current location/lineage, source and code digests.
 * ''⏿ Orient:'' establish reference frames, available methods, validity gates, budgets and uncertain sources.
 * ''◇ Decide:'' commit an explicit bounded candidate audition or operator-guided course.
-* ''▶ Act:'' regrow CAD solids and voids, audit exact constructive validity, score only valid material. The enclosing Act may wake child loops; a candidate's actual evaluation occurs while its child sits in Act, never as post-hoc story.
-* ''↺ Hoʻoko / Aftermath:'' inspect measured consequences, preview viable alternatives, allow pet-naming and o-takiage, carry the accepted genome and open another Observe. A parent may not close while a child remains active.
+* ''▶ Act:'' regrow CAD solids and voids, audit exact constructive validity, score only valid material. A candidate's actual CAD evaluation occurs during its Act, never as post-hoc story.
+* ''↺ Hoʻoko / Aftermath:'' inspect measured consequences, preview viable alternatives, allow pet-naming and o-takiage, carry the accepted genome and open another Observe. This phase may investigate itself through another OODA-HA; development Aftermath remains a separate practice.
+
+<<~/ahu>>
+
+<<~ ahu #/phase-anchored-recursion>>
+
+!! Any Phase May Invite Another Loop
+
+An active parent MAY open a child OODA-HA inside Observe, Orient, Decide, Act,
+or Aftermath. The child remembers the exact parent phase as an immutable
+relationship, pursues its own five-phase investigation and returns a witnessed
+consequence. The parent MUST remain in the anchoring phase until all of its
+children close. Reentry cannot duplicate previously completed actions.
+
+The pattern invites recursion when uncertainty, surprising relations, or an
+Operator/AI intervention warrants attention; it does NOT require a fixed
+five-way fan-out. Session-controlled depth and loop budgets prevent runaway
+recursion without hardcoding one architectural decomposition. The runtime
+inquiry's Act may carry an operator/AI action receipt; only a tool or executor
+performing real work may claim its actual side effects. CAD Act continues to
+require real BRep validation.
+
+A child in Aftermath may open its own child. An inquiry can interrupt an
+Operator preview review and return to precisely the same candidate choices.
+The Operator may intervene during auto-nav at a safe boundary. Pet-names and
+whole-location holds remain separate from these ephemeral procedural loop
+identifiers. Releasing a pet-name never rewrites loop history.
 
 <<~/ahu>>
 
@@ -58,7 +84,8 @@ that a mid-Boolean operation can be forcibly interrupted.
 
 !! Persist Consequences Rather Than Performance
 
-The location loop contains epoch loops containing candidate loops. Every
+The location loop contains ordinary epoch and candidate loops; any active
+phase may also contain subordinate inquiries. Every
 phase records a digest-checked transition, every candidate keeps a separate
 CAD result receipt, and operator controls travel through an append-only local
 inbox. Reentry resumes completed work; it never reinterprets an old preview

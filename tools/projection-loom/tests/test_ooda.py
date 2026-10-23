@@ -48,6 +48,7 @@ def test_strict_phase_graph_requires_real_parent_act(tmp_path):
         j.transition('candidate-1',phase)
     for phase in ('aftermath','closed'):
         j.transition('epoch-1',phase)
+    for phase in ('aftermath','closed'):
         j.transition('location',phase)
     assert OODAJournal(tmp_path/'session.json').data['loops']['candidate-1']['phase']=='closed'
 
