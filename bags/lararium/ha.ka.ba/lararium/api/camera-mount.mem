@@ -100,10 +100,14 @@ the unit of absolute state its frames key by (the whole surface, a tiddler frame
 Every frame carries whole state for its key and a monotone revision; no frame carries a delta.
 The ruling and its reasons live at `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`.
 
-''C-7 No engine on the main thread.''
-Every TW5 engine runs inside a worker on every platform, so a browser camera's widget tree never
-binds `window.document` directly. The camera renders into its own VM-side document; the main thread
-paints that camera's frames and returns events and sensed state.
+''C-7 No truth on the main thread.''
+Every authoritative TW5 engine and store runs inside a worker on every platform. At width none a
+browser camera's widget tree never binds `window.document`: the camera renders into its own VM-side
+document, and the main thread paints its frames and returns events and sensed state. At glass width
+(DreamDOM D3, behind a flag) a main-thread engine binds `window.document` as a camera over records
+the worker replicates through the record port; it holds no truth, and every write it makes lands
+through the port and settles in the worker. The ruling (2026-10-16) stands in `packages/AGENTS.md`
+and `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/open-rulings`.
 
 ''C-8 A camera renders through the template stack; live controls belong to the page.''
 A camera's chain runs TiddlyWiki's page-template and layout layers and stops there. A layout tiddler
@@ -131,8 +135,8 @@ const unmount = tw5.mountCamera({
 | Mobile native | platform fake doc (React Native bridge) | Native surface |
 | Headless / MCP | `$tw.fakeDocument` or null render | Tool-side projection |
 
-The Story River camera renders in the worker and the main thread paints its frames as real HTML
-into the shadow pane (C-7). Canvas cameras behind it each hold their own VM-side document.
+At width none the Story River camera renders in the worker and the main thread paints its frames as
+real HTML into the shadow pane (C-7). Canvas cameras behind it each hold their own VM-side document.
 The `mountCamera` interface stays identical. The `document` type changes; the chain does not.
 
 <<~ ahu #/edges>>
@@ -145,6 +149,6 @@ The `mountCamera` interface stays identical. The `document` type changes; the ch
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jaqlKyaq8HrutghzPEhIx9Jfet_wh3B4uOb5zlm8ViE
+<<^ code="&#x0003;">>ni:///sha-256;CUdgRPUm44cKnsnJDdBlHvXQInEPmd_x_RdT7o8IqWg
 
 <<^ code="&#x0004;" -> to="?">>
