@@ -140,6 +140,7 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     await makeTiddler(BETA, golden.world.tiddlers[1]!.text);
     await closeTiddler(BETA);
     await makeTiddler(ALPHA, golden.world.tiddlers[0]!.text.replace("[ext[outside|https://example.test/]]", "[[outside|https://example.test/]]"));
+    // barrier: makeTiddler and closeTiddler each wait for the frame to stand or leave in the river, so the island has answered every act before the story read
     expect(await story()).toEqual([ALPHA]);
     await armDefaultProbe();
   });
