@@ -1,0 +1,12 @@
+# Versions exercised in the Loom CI design environment, 2026-10-23.
+# Direct dependency constraints; pip resolves additional transitive requirements.
+cadquery==2.8.0
+numpy==2.3.5
+scipy==1.17.0
+networkx==3.6.1
+opencv-python-headless==4.13.0.92
+Pillow==12.3.0
+trimesh==4.11.1
+pytest==9.0.2
+rasterio==1.5.0
+pyproj==3.7.2

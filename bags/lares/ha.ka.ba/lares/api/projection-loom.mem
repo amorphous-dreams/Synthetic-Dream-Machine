@@ -1,0 +1,209 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x0950; &#x0901;"
+role      = "constructive-solid architecture, evolutionary form selection, and orthographic drafting control"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+
+! Projection Loom
+
+Projection Loom grows architecture from authored CAD-solid construction rules, verifies volumetric attachment before admitting evolutionary lineages, and casts one continuous object into multiple orthographic drawing views. Each project supplies the subject's construction genome and evidence; the loom governs contact, projection, selection, and isolated control-media export.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+
+!! Solid Construction and Lineage
+
+* ''Grow from relation.'' The project names one material foundation and children with explicit parent attachment. Every new structure occupies measurable positive volume inside its supporting solid. Vertices and painted silhouettes do not invent support.
+* ''One joined body.'' Every candidate admitted to final production resolves as one valid OpenCascade BRep solid. Zero-thickness touches, detached decorations, and interrupted attachment graphs fail the solid gate; exceptions require a separate scene object, never an implied member of the same architecture.
+* ''Construction governs mutation.'' A genome changes bounded massing, tower spacing, gallery reach, brace sections, and other authored structural parameters. Each candidate regrows solid geometry. Tessellated projections serve as outputs, never as evolutionary genotype.
+* ''Shared camera, multiple witnesses.'' Front, side, back, top, and oblique views project the same held solid under named orthographic cameras. An external mask or painting informs form and light without claiming unseen geometry.
+* ''Ink follows engineering.'' Outline, occlusion, structural crease, material seam, and detail lines occupy separated controls. Semantic roles flow from named construction parts. Visual cleanup cannot disguise a failed joint.
+* ''Ancestry through genomes.'' A selected construction genome re-enters the same growth grammar across epochs. Independent source references remain the fitness witness; self-produced masks stabilize lineages only at secondary weight.
+
+<<~/ahu>>
+
+<<~ ahu #/contract>>
+
+!! Executable Carrier
+
+`tools/projection-loom/` supplies the `projection-loom/solid-project/v2` project contract and the `projection-loom` CLI. `validate` inspects authored attachment volumes and the fused CAD body. `grow` exports a single STEP production solid, interchange geometry, a saved genome, and independent transparent drawing controls. `evolve` explores Sobol populations and progressively narrower lineages subject to the solid gate. `epoch-loop` repeats full constructive growth and feedback passes while returning approved genomes to the growth grammar.
+
+Every emitted render derives from the CAD model. A STEP model or render transport mesh may be archived as evidence; subsequent growth resumes through the genome and authored construction rules, not vertex bending of exported geometry. The geometry gate warrants overlap and CAD validity, not physical load performance.
+
+<<~/ahu>>
+
+<<~ ahu #/negative-spaces-and-witnesses>>
+
+!! Carved Material and Fixed Evidence
+
+* ''Positive and negative grow together.'' Rooms, gates, shafts, and recesses enter as named CAD voids. Their declared route graph must connect reachable spaces to exterior cuts, and carving must leave one valid material solid.
+* ''One material witness.'' STEP, OBJ, raster masks, light, and structure lines all derive from the same carved BRep. A per-part uncut mesh cannot substitute for the production body.
+* ''The camera cannot move for fitness.'' Presentation may auto-fit. External image evidence requires a fixed viewport, and a non-reference fitness target locks to the initial construction before mutation. Fixed does not imply independently registered to art.
+* ''Validity precedes selection.'' All candidates must pass the full fused-solid and void tests before any visual agreement score enters evolution.
+* ''Evergreen implementation.'' Active tests use the current subject-neutral construction grammar and independent synthetic calibration controls, never stale source models.
+
+<<~/ahu>>
+
+<<~ ahu #/relational-emergence>>
+
+!! Relational Emergence and Pet-Names
+
+* ''Identity enacts relation.'' A construction node testifies through what it attaches to, carries, opens, or supports. Its technical handle names an address within one regrowth; an anonymous handle or kernel face index never claims eternal identity.
+* ''Slack for the unnamed.'' The builder MAY grow valid nameless material and negative volumes, nesting them in generative trees. The evolutionary selector reserves a bounded portion of valid lineages for surprising relational phenotypes without weakening the fused-solid, joint, void or fixed-camera gates.
+* ''Pet-name after discovery.'' A witnessed, unique constellation of role, parent relation, stable rule slot when supplied, and `#has` capabilities MAY receive an operator pet-name. Names enter a separate local-first ledger and introduce only bounded soft evolutionary affinity. Two indistinguishable siblings MUST remain ambiguous until a distinguishing relation arrives.
+* ''Name a location as a living set.'' A pet-named location MAY contain an entire set of nameless entities whose `#has` capabilities compose the location's observed behavior. Membership can grow and recede; no member must receive its own name.
+* ''O-takiage releases; it does not erase.'' An operator MAY release one pet-name or a whole construction fork. Branch release also loosens a surrounding location's soft expectations for that fork, while preserving the location, unchanged CAD gates, past receipts and the freed entities for further growth. The borrowed term gestures toward respectful retirement of an old hold; the software does not enact a religious ceremony.
+* ''Causal islands, not global now.'' Witness receipts mark local observations. The ledger preserves ordered local events and guards against recognized stale writers. Reconciling distributed ledgers needs explicit causal handling rather than a fabricated global state.
+* ''The name does not fetch.'' A `lar:` address and a pet-name point to held relations; neither automatically acquires geometry, permissions or universal authority.
+
+<<~/ahu>>
+
+<<~ ahu #/multimodal-location>>
+
+!! One Location, Many Witnesses
+
+* ''The location is not one body.'' A pet-named location holds a changing set of nameless architectural bodies, terrain, surfaces, surveys, photographs, void networks and unresolved hypotheses. Each constructed CAD body meets its own strict fusion and void gates; unrelated bodies and open terrain need not fuse into one global solid.
+* ''Keep testimony in its native frame.'' Source artifacts carry content digests and explicit pixel/local/geospatial frames. A DEM holds its CRS and height datum; a painting supplies pixels, never invented meters or unseen chambers.
+* ''Registration must testify.'' A fixed camera or a declared transformation alone does not prove alignment. Independently verified alignment requires external anchors and a measured residual. Provisional relations remain provisional.
+* ''Source, inference, and proposal differ.'' The witness ledger records which source supports each observation. Inferred or imagined structures cannot silently become surveyed facts.
+* ''Preserve choices across method loops.'' Reconstruction, grammar regrowth, local parameter tuning, constrained void growth, quality-diversity selection, and pet-name release may operate as distinct bounded loops with visible input/output contracts and causal checkpoints. No method may promote invalid geometry.
+* ''Executable scope.'' The current `location_stack` code validates the heterogeneous evidence envelope, references, frames, source digests, and independent CAD body audit; it does not itself run GIS conversion, photogrammetry, Bayesian inference, or multi-method scheduling.
+
+<<~/ahu>>
+
+<<~ ahu #/procedural-helm>>
+
+!! Executable OODA-HA Helm
+
+A location may run a hierarchy of guarded OODA-HA controllers: one location
+loop, bounded epoch loops, and candidates whose CAD audits execute inside their
+own Act phase. Every loop moves ✶ Observe -> ⏿ Orient -> ◇ Decide -> ▶ Act ->
+↺ Ho'oko / Aftermath -> close; a parent cannot close while children remain.
+
+An adjustable Operator/AI steering policy holds manual, shared, auto-nav, and
+full-speed modes on one continuous autonomy gradient. Every mode accepts
+explicit intervention at safe phase or candidate boundaries. Validated
+previews, relational witnesses, bounded AI suggestions, pet-name/o-takiage
+and lineage choices re-enter through durable operator checkpoints. A control
+cannot bypass source, geometry, registration, or CAD-validity gates.
+
+The default CLI follows scored-policy auto-navigation, not an undocumented LLM
+provider. A separate adviser callback may propose choices, but never invent
+validity. Development Aftermath still reviews OUR code and decisions;
+this procedural runtime Aftermath reviews the evolving location's outcome.
+
+<<~/ahu>>
+
+<<~ ahu #/phase-anchored-recursion>>
+
+!! Any Active Phase May Spawn a Child Inquiry
+
+* ''A loop holds its own attention.'' A location, epoch, candidate or inquiry
+  MAY open a complete child OODA-HA from any active phase: ✶ Observe,
+  ⏿ Orient, ◇ Decide, ▶ Act, or ↺ Hoʻoko/Aftermath. The child remembers
+  its immutable parent-phase anchor, and the parent SHALL NOT leave that
+  phase until the child returns with a recorded consequence.
+* ''No forced symmetry.'' The five phases invite inquiry without demanding
+  five descendants. Depth and total-loop limits remain explicitly
+  configurable safeguards against runaway branching, not a fixed form grammar.
+* ''Operator and AI share the helm.'' An Operator MAY request an inquiry
+  during a paused plan, preview review, or automatic phase safe point.
+  A narrow phase-adviser callback MAY propose one question for deeper review.
+  Every inquiry persists its five phase receipts, returns to the suspended
+  parent checkpoint, and never overwrites preview choices or lineage history.
+* ''A receipt does not manufacture work.'' The inquiry's Act may record the
+  Operator/AI's action and external tools' receipts. Only a real CAD
+  evaluation may claim its material Boolean, connection and void gates.
+  AI inquiry proposals MAY NOT waive validity or evidence-source conditions.
+* ''Aftermath observes itself.'' A runtime Aftermath can open nested OODA-HA
+  for consequences of a grown location. The developers' Aftermath continues
+  to inspect the code, comments and actual outcomes of our own work.
+
+<<~/ahu>>
+
+<<~ ahu #/hybrid-capability-stack>>
+
+!! Hybrid kernels and independent witnesses
+
+* ''One pet-name, many geometries.'' A location MAY hold CAD BRep construction,
+  anonymous polygon entities, terrain, point witnesses and future SDF fields.
+  It MUST preserve kernel-specific capabilities and evidence scopes.
+* ''CAD certifies CAD.'' Every structural CAD body carries its own fused-solid
+  and void audits; a watertight polymesh serves composition and sculptural
+  iteration, not a hidden BRep certificate.
+* ''Relational attachment.'' A shared cage anchor carries measured CAD-to-mesh
+  proximity, tolerances and a recoverable construction relation. Anchor
+  proximity does not assert mechanical fusion or load-bearing strength.
+* ''Reproducible sources testify.'' CC0 OpenSCAD/STL and CC-BY Sketchfab models
+  MAY enter through provider-authorized downloads and source-digest locks.
+  External mesh samples and compiled OpenSCAD outputs retain their native
+  scale, provenance and license. A URL alone never establishes immutable input.
+* ''CI tests the contract without missing data.'' Pull requests MAY validate
+  synthetic fixtures, model kernels and CAD/mesh integration without claiming
+  they downloaded the external models. An exploratory archive fetch yields an
+  operator-reviewable hash before promotion to an official lock.
+* ''The surprising form may remain nameless.'' Geometry representations and
+  modeling workflows MAY branch without forcing permanence or final topology;
+  operator pet-names and o-takiage follow the held relations, not kernel ids.
+
+<<~/ahu>>
+
+<<~ ahu #/evergreen-capability-composition>>
+
+!! One Helm, Composable Capabilities
+
+* ''One helm.'' Compound and CAD-only epochs run in the SAME executable OODA-HA controller.
+* ''An entity composes narrowly.'' CAD, derived polygon, standalone polygon, contacts and semantic sockets are independently bounded capabilities, not compulsory geometry types.
+* ''Lineage inherits methods.'' A selected genome includes CAD and surface loci, recipe, operator fingerprints and source hashes. OBJ and STEP never replace generative ancestry.
+* ''Native truth stays native.'' Exact BRep structural audits, watertight polygon surfaces and spatial sockets retain different claims; no implicit cross-kernel fusion occurs.
+* ''Aftermath remains real.'' A final gallery grows as a child of the location Aftermath, regrowing diverse scored constructions. Developer Aftermath separately reviews our source.
+* ''One painting remains provisional.'' Source-alpha image fitting guides only bounded visual detail, not measured world scale or calibrated pose.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence
+⏿ orient every growing child toward its named supporting parent and the one shared orthographic coordinate frame
+◇ select only candidates whose overlaps and fused solid meet the project's construction requirements
+▶ grow solid volumes, evolve distinct lineages, verify joints, then cast separate silhouette, line, and light controls
+↺ carry the chosen construction genome into further epochs without allowing rendered masks or exported meshes to masquerade as structural ancestry
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-poc0">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;rpqAknBDOrbE5pA_s6wI9Ajj1solpkLQAM4Q6FGSc-o
+
+<<^ code="&#x0004;" -> to="?">>

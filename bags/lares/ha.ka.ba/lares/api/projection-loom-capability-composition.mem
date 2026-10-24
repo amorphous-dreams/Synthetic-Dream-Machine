@@ -1,0 +1,106 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem"
+l-space = "stable"
+namespace = "&#x0950; &#x0901;"
+role = "one fractal OODA-HA helm commanding per-entity capability DAGs, separate kernel witnesses and inherited generative recipes"
+tags = ["api/pono/meme"]
+title = "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/projection-loom-capability-composition"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+! Identity carries capabilities; one helm carries their becoming
+
+A pet-named location holds relations among entities. An entity MAY grow through
+an intentionally narrow and composable sequence of CAD, polygon, attachment,
+void and future geometric operators. Its pet-name follows witnessed relations,
+not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+!! One OODA-HA authority
+
+* ''One helm.'' All living capability epochs MUST enter the executable
+  `run_ooda_epochs` phase controller. A second compound epoch scheduler MUST NOT
+  independently decide lineages, invent previews or apply operator controls.
+* ''Capabilities as child loops.'' Each actual candidate Act MAY open nested
+  capability OODA-HA loops. Their trusted operators MUST execute in their own
+  Acts; their effects and validation receipts MUST return before the parent
+  leaves its phase. An inactive capability reports inactivity, not fabricated
+  successful work.
+* ''Per-entity composition, not global uniformity.'' A crystal MAY carry CAD,
+  polymesh and a semantic socket; fortress MAY carry CAD and rooms; Joining MAY
+  carry CAD contact with optional sculptural growth. An unrelated nameless
+  entity MAY carry only a polygon operator. Operator versions and activation
+  gates belong to the recipe.
+* ''Lineage inherits methods.'' A selected lineage carries bounded CAD loci,
+  surface loci, active operators, recipe digest, original evidence hashes and
+  operator implementation fingerprints. An exported OBJ or STEP never replaces
+  that generative ancestry.
+* ''Kernel authority remains scoped.'' CAD gates certify exact structural
+  contact, fused valid material and carved voids. Closed polymesh gates certify
+  polygon surface/volume only. Semantic socket tests certify proximity, NEVER
+  cross-kernel Boolean fusion or structural load-bearing capacity.
+* ''The view budget constrains ornament.'' An unregistered artwork MAY guide
+  limited, source-digest-checked visible surface displacement in a fixed camera
+  while preserving protected CAD sockets. It MUST NOT infer true world scale,
+  mechanical soundness, or unseen backsides.
+* ''Do not consume exploration to preserve lineage.'' The inherited parent
+  takes its own named proposal seat. Sobol, local and topology generators retain
+  their independent trials; exact evaluation budgets may defer but not silently
+  replace them.
+* ''Operator choice remains real.'' Aftermath MUST present audited compound
+  preview witnesses with entity `#has` propositions for pet-naming, o-takiage
+  and choosing an alternate valid parent. Full-speed and manual steering run
+  the same phase machine and mandatory gates.
+* ''Aftermath births a reviewable gallery.'' A final location Aftermath MAY
+  open its own full OODA-HA gallery loop. It evaluates the historical scored
+  pool, retains meaningful slack, then regrows and audits each finalist. When
+  fewer than three distinct forms survive, it reports the shortfall rather
+  than duplicating models or manufacturing an image-fitness success.
+* ''Evergreen in widening and tightening passes.'' Development Aftermath
+  inspects method claims, code boundaries, then overall architectural fit;
+  the ensuing tightening passes correct code, tests, documentation and CI.
+  Runtime Aftermath records consequences of model growth, not development QA.
+
+<<~/ahu>>
+
+<<~ ahu #/executable>>
+!! Active source
+
+`tools/projection-loom/projection_loom/capability_stack.py` registers a
+trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
+CAD-derived meshes and semantic sockets; `ooda.py` executes the single
+recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
+provides the underlying strict CAD audition. The original Necrospire RGBA and
+alpha, an under-specified visual witness, remain authoritative reference
+bytes, not a calibrated survey.
+
+Run with `python -m projection_loom ooda-run --project
+examples/necrospire/project.json --capability-recipe
+examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
+--candidates 4 --exact-budget 3 --detail-budget 3 --finalists 3
+--out out/compound` from `tools/projection-loom/`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_TN_qDeYxALTlkoVRMUlRTo1U0HgGOBK_HUTk20OXvg
+
+<<^ code="&#x0004;" -> to="?">>

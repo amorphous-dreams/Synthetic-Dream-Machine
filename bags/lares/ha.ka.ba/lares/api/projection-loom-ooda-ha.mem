@@ -1,0 +1,127 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-ooda-ha.mem"
+namespace = "&#x0950; &#x0901;"
+title = "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha"
+uri-path = "ha.ka.ba/lares/api/projection-loom-ooda-ha"
+type = "text/memetic-wikitext+tiddlywiki"
+role = "fractal constructive-control flow and operator/AI joint steering"
+tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
+```
+
+<<~ ahu #/entry>>
+
+! OODA-HA Runs as a Construction Procedure
+
+The original noosphere OODA-HA governs how a working Lares observes,
+orients, decides, acts and reviews the consequences. Within Projection Loom,
+that sequence also governs the executable location, epoch and candidate
+controllers. Do not confuse this runtime state machine with the developers'
+Aftermath/self-review phase; both use the pattern, neither manufactures a
+CAD material from a phase name.
+
+<<~/ahu>>
+
+<<~ ahu #/five-phases>>
+
+!! Every Active Loop Moves in Order
+
+* ''✶ Observe:'' receive original evidence, current location/lineage, source and code digests.
+* ''⏿ Orient:'' establish reference frames, available methods, validity gates, budgets and uncertain sources.
+* ''◇ Decide:'' commit an explicit bounded candidate audition or operator-guided course.
+* ''▶ Act:'' regrow CAD solids and voids, audit exact constructive validity, score only valid material. A candidate's actual CAD evaluation occurs during its Act, never as post-hoc story.
+* ''↺ Hoʻoko / Aftermath:'' inspect measured consequences, preview viable alternatives, allow pet-naming and o-takiage, carry the accepted genome and open another Observe. This phase may investigate itself through another OODA-HA; development Aftermath remains a separate practice.
+
+<<~/ahu>>
+
+<<~ ahu #/phase-anchored-recursion>>
+
+!! Any Phase May Invite Another Loop
+
+An active parent MAY open a child OODA-HA inside Observe, Orient, Decide, Act,
+or Aftermath. The child remembers the exact parent phase as an immutable
+relationship, pursues its own five-phase investigation and returns a witnessed
+consequence. The parent MUST remain in the anchoring phase until all of its
+children close. Reentry cannot duplicate previously completed actions.
+
+The pattern invites recursion when uncertainty, surprising relations, or an
+Operator/AI intervention warrants attention; it does NOT require a fixed
+five-way fan-out. Session-controlled depth and loop budgets prevent runaway
+recursion without hardcoding one architectural decomposition. The runtime
+inquiry's Act may carry an operator/AI action receipt; only a tool or executor
+performing real work may claim its actual side effects. CAD Act continues to
+require real BRep validation.
+
+A child in Aftermath may open its own child. An inquiry can interrupt an
+Operator preview review and return to precisely the same candidate choices.
+The Operator may intervene during auto-nav at a safe boundary. Pet-names and
+whole-location holds remain separate from these ephemeral procedural loop
+identifiers. Releasing a pet-name never rewrites loop history.
+
+<<~/ahu>>
+
+<<~ ahu #/two-at-the-helm>>
+
+!! Operator and AI Hold Adjustable Authority
+
+Autonomy moves continuously across manual, co-pilot, auto-nav and full speed.
+The Operator MAY pause and review at a safe boundary, steer toward a viable
+lineage, pet-name a recognized nameless entity or entire location, request
+another direction, or release a name/fork with o-takiage. The AI MAY advise
+from observed and validated candidates. An adviser suggestion does not count
+as operator consent and does not invent authority over kernel geometry.
+
+The hard gates remain invariant across every autonomy setting: one valid
+material body per constructed assembly, declared join and void tests, source
+provenance, fixed evidence viewport, finite measurements and durable causality.
+The machine checks controls between candidate evaluations and never claims
+that a mid-Boolean operation can be forcibly interrupted.
+
+<<~/ahu>>
+
+<<~ ahu #/persistence>>
+
+!! Persist Consequences Rather Than Performance
+
+The location loop contains ordinary epoch and candidate loops; any active
+phase may also contain subordinate inquiries. Every
+phase records a digest-checked transition, every candidate keeps a separate
+CAD result receipt, and operator controls travel through an append-only local
+inbox. Reentry resumes completed work; it never reinterprets an old preview
+as external evidence. Changed source/code/experiment identity calls for a fork.
+A trusted local inbox does not pretend to solve distributed authorization.
+
+CLI auto-nav currently follows deterministic measured-loss selection. A
+provider-neutral adviser hook may add actual AI suggestions without bypassing
+the operator's steering policy. The machine's procedural OODA-HA operates in
+code; naming the phases in comments alone would not satisfy this meme.
+
+<<~/ahu>>
+
+<<~ ahu #/evergreen-capability-composition>>
+
+!! Fractal capability stages under one authority
+
+A candidate's Act MAY open one full child OODA-HA per trusted, versioned capability operator. These children execute real CAD and polymesh generation, carry receipts, and close before the candidate Aftermath. Existing manual, auto-nav, AI adviser, pet-name and o-takiage controls govern those exact compound proposals without a second runner. The location Aftermath MAY itself open a final-gallery OODA-HA, regrowing and auditing scored survivors from across every epoch. The source reference stays provisional unless independently registered.
+
+<<~/ahu>>
+
+<<~ ahu #/links>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
+
+`tools/projection-loom/docs/ooda-ha-procedural.md` carries the executable
+contract and safe-point controls.
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;TUazYAqmh4nhgQGKAwtjKYYMbBZC70WdTZIom2Rr8ik
+
+<<^ code="&#x0004;" -> to="?">>
