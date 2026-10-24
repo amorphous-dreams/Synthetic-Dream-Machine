@@ -116,7 +116,6 @@ describe("the face-reading census", () => {
     personaPlanes: {
       "lararium-mesh/src/open-vessel-core.ts": "the field's type on the bootstrap record",
       "lararium-node/src/boot-face-planes.ts": "the one enumerator of the bootstrap's plane entries",
-      "lararium-node/src/face-fleet-view.ts": "the bridge's exclusion reads it, and a bootstrap list can only ADD exclusions (the catalog's foreign planes ride beside it)",
       "lararium-node/src/open-node-vessel.ts": "each entry is read only to PROVE it (provenPlanes) before registration; the selves plane, bag list and registration read the proven map",
       "lararium-browser/src/open-browser-vessel.ts": "each entry is read only to PROVE it before registration; the bag list and the mount read the proven map",
     },

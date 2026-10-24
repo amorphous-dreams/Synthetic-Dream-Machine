@@ -540,14 +540,20 @@ export { crossingDirection, type CrossingDirection, type CrossingCost } from "./
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "./key-class.js";
 export type { KeyClass } from "./key-class.js";
+export { FCK_SEAL_MAGIC, FCK_SEAL_NONCE_LENGTH, FCK_SEAL_TAG_LENGTH, FCK_SEAL_MIN_LENGTH, readFckCarrier, splitFckFrame, joinFckFrame } from "./fck-envelope.js";
+export type { FckCarrierReading } from "./fck-envelope.js";
+export { mintFck, faceCarrierContext, sealUnderFck, openUnderFck } from "./fck.js";
+export type { FaceCustodyKey, FaceCarrier, FckOpening } from "./fck.js";
 // The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
 // proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
   writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation, assertNoOldCustodyShape,
   CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertNoOldFaceShape, commitFaceTree,
 } from "./sealed-writer.js";
 export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
+  WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs,
 } from "./sealed-writer.js";
 export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
 export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";

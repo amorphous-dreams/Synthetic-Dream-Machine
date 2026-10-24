@@ -43,6 +43,8 @@ import { bindSlot, encodeSlotTree, decodeSlotTree, type SlotSpec, type SlotTree 
 import { sealUnderVk, openUnderVk, vkAnswersCheck, type VesselKey, type VkOpening } from "./vk.js";
 import { readVkCarrier, type VkCarrierReading } from "./vk-envelope.js";
 import { isRelationClass, type KeyClass } from "./key-class.js";
+import { openUnderFck, sealUnderFck, type FaceCarrier, type FaceCustodyKey, type FckOpening } from "./fck.js";
+import { readFckCarrier } from "./fck-envelope.js";
 
 /** The store the writer works through. Every path names one file. */
 export interface CustodyIo {
@@ -68,6 +70,19 @@ export interface CustodyIo {
  * when the row names one; a `relation` carrier's refusals say that only the other party re-issues its bytes.
  */
 export interface SealedCarrier { readonly name: string; readonly path: string; readonly keyClass?: KeyClass | null }
+
+/** The frame and context for one custody class; every mutating operation uses the same holder and tree proof. */
+interface CarrierSeal<C extends SealedCarrier> {
+  readonly open: (key: VesselKey, carrier: C, bytes: Uint8Array | null) => VkOpening | FckOpening;
+  readonly seal: (key: VesselKey, carrier: C, plaintext: Uint8Array, rng: RandomProvider) => Uint8Array;
+  readonly read: (bytes: Uint8Array | null) => VkCarrierReading;
+}
+const VK_SEAL: CarrierSeal<SealedCarrier> = {
+  open: (key, carrier, bytes) => openUnderVk(key, carrier.name, bytes),
+  seal: (key, carrier, plaintext, rng) => sealUnderVk(key, carrier.name, plaintext, rng),
+  read: readVkCarrier,
+};
+const FACE_SEAL: CarrierSeal<FaceCarrier> = { open: openUnderFck, seal: sealUnderFck, read: readFckCarrier };
 
 /** The sidecar of a single write. A stray one never committed; settling removes it. */
 export const SEALING_SUFFIX = ".vk-sealing";
@@ -172,17 +187,18 @@ export async function assertNoOldCustodyShape(args: {
 }
 
 /** Read the store for the old shape. Throws `OldShapeRefusal` when any carrier stands with no tree; writes nothing. */
-async function refuseOldShape(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly SealedCarrier[]): Promise<void> {
+async function refuseOldShape<C extends SealedCarrier>(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly C[], seal: CarrierSeal<C> = VK_SEAL as CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
   const standing: StandingCarrier[] = [];
   for (const carrier of carriers) {
-    const reading = readVkCarrier(await io.read(carrier.path));
+    const reading = seal.read(await io.read(carrier.path));
     if (reading !== "absent") standing.push({ carrier, reading });
   }
   const named = new Set(carriers.map((c) => c.path));
   const unlisted: string[] = [];
   for (const path of await io.list()) {
+    if (scope && !scope(path)) continue;
     if (path === treePath || isSidecar(path) || named.has(path)) continue;
-    const reading = readVkCarrier(await io.read(path));
+    const reading = seal.read(await io.read(path));
     if (reading === "sealed" || reading === "torn") unlisted.push(path);
   }
   if (standing.length > 0 || unlisted.length > 0) throw new OldShapeRefusal(standing, unlisted.sort(), treePath);
@@ -215,7 +231,22 @@ export async function openSealedCarrier(args: { readonly io: CustodyIo; readonly
  * holds nothing or bytes `vk` opens.
  */
 export async function writeSealedCarrier(args: WriteSealedCarrierArgs): Promise<void> {
-  return args.io.exclusive(() => writeHeld(args));
+  return args.io.exclusive(() => writeHeld(args, VK_SEAL));
+}
+
+export interface WriteFaceCarrierArgs {
+  readonly io: CustodyIo; readonly key: FaceCustodyKey; readonly treePath: string;
+  readonly carrier: FaceCarrier; readonly plaintext: Uint8Array; readonly rng?: RandomProvider;
+}
+
+/** Seal a D row only after its own face tree proves the key and its standing context opens. */
+export async function writeFaceCarrier(args: WriteFaceCarrierArgs): Promise<void> {
+  return args.io.exclusive(() => writeHeld({ ...args, vk: args.key }, FACE_SEAL, facePathScope(args.treePath)));
+}
+
+/** Read a D row with the expected context supplied by the caller. */
+export async function openFaceCarrier(args: { readonly io: CustodyIo; readonly key: FaceCustodyKey; readonly carrier: FaceCarrier }): Promise<FckOpening> {
+  return openUnderFck(args.key, args.carrier, await args.io.read(args.carrier.path));
 }
 
 /** What an update decides: the carrier's next plaintext, or `null` to leave it as it stands; and the caller's answer. */
@@ -229,12 +260,26 @@ export interface SealedCarrierUpdate<T> { readonly plaintext: Uint8Array | null;
 export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, "plaintext"> & {
   readonly decide: (standing: VkOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
 }): Promise<T> {
-  return args.io.exclusive(async () => {
-    const standing = openUnderVk(args.vk, args.carrier.name, await args.io.read(args.carrier.path));
-    const next = await args.decide(standing);
-    if (next.plaintext !== null) {
-      await writeHeld({ io: args.io, vk: args.vk, treePath: args.treePath, carrier: args.carrier, plaintext: next.plaintext, ...(args.rng ? { rng: args.rng } : {}) });
-    }
+  return updateCarrierHeld(args.io, args.vk, args.treePath, args.carrier, args.decide, VK_SEAL, args.rng);
+}
+
+export async function updateFaceCarrier<T>(args: Omit<WriteFaceCarrierArgs, "plaintext"> & {
+  readonly decide: (standing: FckOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
+}): Promise<T> {
+  return updateCarrierHeld(args.io, args.key, args.treePath, args.carrier, args.decide, FACE_SEAL, args.rng, facePathScope(args.treePath));
+}
+
+async function updateCarrierHeld<C extends SealedCarrier, O extends VkOpening | FckOpening, T>(
+  io: CustodyIo, key: VesselKey, treePath: string, carrier: C,
+  decide: (standing: O) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>,
+  seal: CarrierSeal<C>, rng?: RandomProvider, scope?: (path: string) => boolean,
+): Promise<T> {
+  return io.exclusive(async () => {
+    if (scope) await proveAgainstTree(io, treePath, key);
+    const standing = seal.open(key, carrier, await io.read(carrier.path)) as O;
+    const next = await decide(standing);
+    if (next.plaintext !== null) await writeHeld({ io, vk: key, treePath, carrier, plaintext: next.plaintext,
+      ...(rng ? { rng } : {}) }, seal, scope);
     return next.value;
   });
 }
@@ -249,14 +294,25 @@ export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, 
 export async function removeSealedCarrier(args: Omit<WriteSealedCarrierArgs, "plaintext" | "rng"> & {
   readonly when?: (plaintext: Uint8Array) => boolean;
 }): Promise<boolean> {
-  const { io, vk, carrier } = args;
+  return removeCarrierHeld(args.io, args.vk, args.treePath, args.carrier, VK_SEAL, args.when);
+}
+
+export async function removeFaceCarrier(args: Omit<WriteFaceCarrierArgs, "plaintext" | "rng"> & {
+  readonly when?: (plaintext: Uint8Array) => boolean;
+}): Promise<boolean> {
+  return removeCarrierHeld(args.io, args.key, args.treePath, args.carrier, FACE_SEAL, args.when, facePathScope(args.treePath));
+}
+
+async function removeCarrierHeld<C extends SealedCarrier>(io: CustodyIo, vk: VesselKey, treePath: string, carrier: C,
+  seal: CarrierSeal<C>, when?: (plaintext: Uint8Array) => boolean, scope?: (path: string) => boolean): Promise<boolean> {
+  if (scope && !scope(carrier.path)) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   return io.exclusive(async () => {
-    await proveAgainstTree(io, args.treePath, vk);
-    const standing = openUnderVk(vk, carrier.name, await io.read(carrier.path));
+    await proveAgainstTree(io, treePath, vk);
+    const standing = seal.open(vk, carrier, await io.read(carrier.path));
     if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
     let wanted = true;
     if (standing.reading === "opens") {
-      try { wanted = args.when ? args.when(standing.plaintext) : true; } finally { standing.plaintext.fill(0); }
+      try { wanted = when ? when(standing.plaintext) : true; } finally { standing.plaintext.fill(0); }
     }
     if (!wanted) return false;
     await io.remove(`${carrier.path}${SEALING_SUFFIX}`);
@@ -276,22 +332,23 @@ export interface WriteSealedCarrierArgs {
   readonly rng?:      RandomProvider;
 }
 
-async function writeHeld(args: WriteSealedCarrierArgs): Promise<void> {
+async function writeHeld<C extends SealedCarrier>(args: WriteSealedCarrierArgs & { readonly carrier: C }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
   const { io, vk, carrier } = args;
+  if (scope && !scope(carrier.path)) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   try {
     await proveAgainstTree(io, args.treePath, vk);
   } catch (err) {
-    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOldShape(io, args.treePath, [carrier]);
+    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOldShape(io, args.treePath, [carrier], seal, scope);
     throw err;
   }
-  const standing = openUnderVk(vk, carrier.name, await io.read(carrier.path));
+  const standing = seal.open(vk, carrier, await io.read(carrier.path));
   if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
 
-  const sealed = sealUnderVk(vk, carrier.name, args.plaintext, args.rng ?? defaultCryptoProvider);
+  const sealed = seal.seal(vk, carrier, args.plaintext, args.rng ?? defaultCryptoProvider);
   const side = `${carrier.path}${SEALING_SUFFIX}`;
   await io.write(side, sealed);
   await readBackOrDiscard(io, side, sealed, (back) => {
-    const o = openUnderVk(vk, carrier.name, back);
+    const o = seal.open(vk, carrier, back);
     return o.reading === "opens" && sameReading(o.plaintext, args.plaintext);
   });
   await io.rename(side, carrier.path);
@@ -310,7 +367,23 @@ async function readBackOrDiscard(io: CustodyIo, side: string, written: Uint8Arra
  * `rotateVk` moves it. Founding (nothing standing) commits the first tree.
  */
 export async function commitSlotTree(args: CommitSlotTreeArgs): Promise<void> {
-  return args.io.exclusive(() => commitHeld(args));
+  return args.io.exclusive(() => commitHeld(args, VK_SEAL));
+}
+
+export interface CommitFaceTreeArgs {
+  readonly io: CustodyIo; readonly path: string; readonly expected: Uint8Array | null;
+  readonly key: FaceCustodyKey; readonly tree: SlotTree; readonly carriers: readonly FaceCarrier[];
+}
+
+/** Bind a face tree only when its key answers its check and no face row stands without it. */
+export async function commitFaceTree(args: CommitFaceTreeArgs): Promise<void> {
+  return args.io.exclusive(() => commitHeld({ ...args, vk: args.key }, FACE_SEAL, facePathScope(args.path)));
+}
+
+export async function assertNoOldFaceShape(args: {
+  readonly io: Pick<CustodyIo, "read" | "list">; readonly treePath: string; readonly carriers: readonly FaceCarrier[];
+}): Promise<void> {
+  return refuseOldShape(args.io, args.treePath, args.carriers, FACE_SEAL, facePathScope(args.treePath));
 }
 
 export interface CommitSlotTreeArgs {
@@ -328,14 +401,15 @@ export interface CommitSlotTreeArgs {
   readonly carriers: readonly SealedCarrier[];
 }
 
-async function commitHeld(args: CommitSlotTreeArgs): Promise<void> {
+async function commitHeld<C extends SealedCarrier>(args: CommitSlotTreeArgs & { readonly carriers: readonly C[] }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
   const { io, path } = args;
+  if (scope && args.carriers.some((c) => !scope(c.path))) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   const standing = await io.read(path);
   if (!sameReading(standing, args.expected)) {
     throw new Error(`sealed-writer: the slot tree at ${path} moved since it was read; read it again before binding`);
   }
   if (standing !== null) await proveAgainstTree(io, path, args.vk);
-  else await refuseOldShape(io, path, args.carriers);
+  else await refuseOldShape(io, path, args.carriers, seal, scope);
   if (!vkAnswersCheck(args.vk, args.tree.vkCheck)) throw new TreeVkRefusal("vk-mismatch", path);
   const bytes = encodeSlotTree(args.tree);
   const reading = decodeSlotTree(bytes);
@@ -353,7 +427,26 @@ async function commitHeld(args: CommitSlotTreeArgs): Promise<void> {
  * written. Returns the new tree.
  */
 export async function rotateVk(args: RotateVkArgs): Promise<SlotTree> {
-  return args.io.exclusive(() => rotateHeld(args));
+  return args.io.exclusive(() => rotateHeld(args, VK_SEAL));
+}
+
+export interface RotateFckArgs {
+  readonly io: CustodyIo; readonly treePath: string; readonly carriers: readonly FaceCarrier[];
+  readonly oldKey: FaceCustodyKey; readonly newKey: FaceCustodyKey;
+  readonly slots: readonly SlotSpec[]; readonly rng?: RandomProvider;
+}
+
+/** Re-seal the complete carrier census of one face, then commit that face's new slot tree. */
+export async function rotateFck(args: RotateFckArgs): Promise<SlotTree> {
+  return args.io.exclusive(() => rotateHeld({ ...args, oldVk: args.oldKey, newVk: args.newKey }, FACE_SEAL, facePathScope(args.treePath)));
+}
+
+/** A face tree and its rows occupy one directory subtree so a census cannot claim a sibling's files. */
+function facePathScope(treePath: string): (path: string) => boolean {
+  const at = treePath.lastIndexOf("/");
+  const prefix = treePath.slice(0, at + 1);
+  if (prefix.length < 2) throw new Error("sealed-writer: a face tree needs its own directory namespace");
+  return (path) => path.startsWith(prefix);
 }
 
 export interface RotateVkArgs {
@@ -367,8 +460,9 @@ export interface RotateVkArgs {
   readonly rng?:     RandomProvider;
 }
 
-async function rotateHeld(args: RotateVkArgs): Promise<SlotTree> {
+async function rotateHeld<C extends SealedCarrier>(args: RotateVkArgs & { readonly carriers: readonly C[] }, seal: CarrierSeal<C>, scope?: (path: string) => boolean): Promise<SlotTree> {
   const { io, treePath } = args;
+  if (scope && args.carriers.some((c) => !scope(c.path))) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
   const rng = args.rng ?? defaultCryptoProvider;
   const treeSide = `${treePath}${ROTATING_SUFFIX}`;
   if (await io.read(treeSide) !== null) {
@@ -380,16 +474,17 @@ async function rotateHeld(args: RotateVkArgs): Promise<SlotTree> {
   const named = new Set(args.carriers.map((c) => c.path));
   const uncovered: string[] = [];
   for (const path of await io.list()) {
+    if (scope && !scope(path)) continue;
     if (path === treePath || isSidecar(path) || named.has(path)) continue;
-    const reading = readVkCarrier(await io.read(path));
+    const reading = seal.read(await io.read(path));
     if (reading === "sealed" || reading === "torn") uncovered.push(path);
   }
   if (uncovered.length > 0) throw new CensusRefusal(uncovered.sort());
 
   // PRE-VALIDATE: every carrier opens under the old VK before a single temp exists.
-  const opened: { carrier: SealedCarrier; plaintext: Uint8Array }[] = [];
+  const opened: { carrier: C; plaintext: Uint8Array }[] = [];
   for (const carrier of args.carriers) {
-    const o = openUnderVk(args.oldVk, carrier.name, await io.read(carrier.path));
+    const o = seal.open(args.oldVk, carrier, await io.read(carrier.path));
     if (o.reading === "absent") continue;
     if (o.reading !== "opens") throw new CustodyRefusal(o.reading, carrier);
     opened.push({ carrier, plaintext: o.plaintext });
@@ -404,11 +499,11 @@ async function rotateHeld(args: RotateVkArgs): Promise<SlotTree> {
   try {
     for (const { carrier, plaintext } of opened) {
       const side = `${carrier.path}${ROTATING_SUFFIX}`;
-      const sealed = sealUnderVk(args.newVk, carrier.name, plaintext, rng);
+      const sealed = seal.seal(args.newVk, carrier, plaintext, rng);
       sides.push(side);
       await io.write(side, sealed);
       await readBackOrDiscard(io, side, sealed, (back) => {
-        const o = openUnderVk(args.newVk, carrier.name, back);
+        const o = seal.open(args.newVk, carrier, back);
         return o.reading === "opens" && sameReading(o.plaintext, plaintext);
       });
     }
@@ -435,6 +530,15 @@ export async function settleRotation(args: SettleRotationArgs): Promise<"clean" 
   return args.io.exclusive(() => settleHeld(args));
 }
 
+export async function settleFaceRotation(args: {
+  readonly io: CustodyIo; readonly treePath: string; readonly carriers: readonly FaceCarrier[];
+  readonly onSweep?: (path: string) => void;
+}): Promise<"clean" | "completed" | "discarded"> {
+  const scope = facePathScope(args.treePath);
+  if (args.carriers.some((c) => !scope(c.path))) throw new Error("sealed-writer: a face carrier lies outside its tree namespace");
+  return args.io.exclusive(() => settleHeld(args, scope));
+}
+
 export interface SettleRotationArgs {
   readonly io:       CustodyIo;
   readonly treePath: string;
@@ -442,7 +546,7 @@ export interface SettleRotationArgs {
   readonly onSweep?: (path: string) => void;
 }
 
-async function settleHeld(args: SettleRotationArgs): Promise<"clean" | "completed" | "discarded"> {
+async function settleHeld(args: SettleRotationArgs, scope?: (path: string) => boolean): Promise<"clean" | "completed" | "discarded"> {
   const { io, treePath } = args;
   const treeSide = `${treePath}${ROTATING_SUFFIX}`;
   const treeSideBytes = await io.read(treeSide);
@@ -457,7 +561,7 @@ async function settleHeld(args: SettleRotationArgs): Promise<"clean" | "complete
     }
     await io.rename(treeSide, treePath);
     for (const path of await io.list()) {
-      if (path.endsWith(SEALING_SUFFIX)) { await io.remove(path); args.onSweep?.(path); }
+      if ((!scope || scope(path)) && path.endsWith(SEALING_SUFFIX)) { await io.remove(path); args.onSweep?.(path); }
     }
     return "completed";
   }
@@ -467,6 +571,7 @@ async function settleHeld(args: SettleRotationArgs): Promise<"clean" | "complete
     if (await io.read(side) !== null) { await io.remove(side); strays = true; }
   }
   for (const path of await io.list()) {
+    if (scope && !scope(path)) continue;
     if (path.endsWith(ROTATING_SUFFIX) && path !== treeSide) { await io.remove(path); strays = true; args.onSweep?.(path); }
     if (path.endsWith(SEALING_SUFFIX)) { await io.remove(path); strays = true; args.onSweep?.(path); }
   }
