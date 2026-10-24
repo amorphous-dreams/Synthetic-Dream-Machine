@@ -1,5 +1,7 @@
 # Projection Loom - Evergreen Constructive CAD
 
+**Current operator handoff:** [Working status, how-tos and backlog](docs/HANDOFF.md), backed by the Lares `projection-loom-handoff.mem` in `bags/lares/ha.ka.ba/lares/api/`. Read the **live** PR head before resuming a checkpoint.
+
 Projection Loom grows architecture from authored and nameless positive CAD solids and
 intentional negative volumes. Every production artifact originates from a validated Boolean
 material body. The construction genome, not a triangulated export, supplies the

@@ -1,0 +1,184 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-handoff">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-handoff.mem"
+l-space = "working"
+namespace = "&#x0950; &#x0901;"
+role = "volatile operational handoff, operator how-tos, verified receipts, in-flight work and prioritized backlog for Projection Loom"
+tags = ["api/pono/meme", "working/handoff"]
+title = "lar:///ha.ka.ba/lares/api/projection-loom-handoff"
+type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/projection-loom-handoff"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/entry>>
+! Projection Loom — Operator/Lares handoff XII
+
+''Scope.'' PR #84; working branch feature/green-jello-dinosaur-5--projection-loom;
+inspected baseline commit 36a9466 on 2026-10-23 (America/Los_Angeles).
+Fetch the live branch head on every re-entry. This meme carries a //volatile
+handoff//, not enduring architectural canon or a second noosphere boot.
+
+''Authoritative human runbook.'' tools/projection-loom/docs/HANDOFF.md.
+''Stable method.'' lar:///ha.ka.ba/lares/api/projection-loom-capability-composition.
+''Boot.'' Read the live noosphere-boot.mem on its default branch before action.
+
+<<~/ahu>>
+
+<<~ ahu #/held-integrities>>
+!! What the machina currently enacts
+
+* ''One OODA-HA helm.'' Location, epoch, candidate, capability and final-gallery
+  loops run through projection_loom.ooda.run_ooda_epochs. Child inquiries MAY
+  open under any active phase; parent phases hold until their children close.
+  Do not introduce a parallel compound epoch scheduler.
+* ''Each entity carries only useful capabilities.'' A Crystal MAY run CAD cage
+  -> CAD-derived polymesh -> protected semantic socket. Joining MAY hold CAD
+  contacts with optional polymesh skin. Fortress MAY hold CAD and carved voids.
+  Nameless entities MAY hold standalone meshes. A location keeps their relations.
+* ''Lineage inherits recipes.'' The selected bounded compound genome preserves
+  CAD loci, mesh loci, a recipe digest, source hashes, and trusted operator
+  fingerprints. Baked STEP/OBJ outputs never become the authoritative genome.
+* ''Kernel truth remains scoped.'' A one-solid BRep audit proves its own CAD;
+  polygon watertightness proves a surface property; a semantic socket measures
+  proximity. Their composite visualization never claims an exact fused
+  CAD+mesh solid or structural loading certificate.
+* ''Operator judgment survives autonomy.'' Manual/co-pilot/auto-nav/full-speed
+  share controls for pause, review, choose, pet-name, o-takiage, inquiry and
+  steering. Optional Ollama/OpenAI-compatible advice enters a guarded boundary.
+* ''One painting carries provisional testimony.'' Exact original Necrospire
+  RGBA+L8 alpha live in examples/necrospire. Its fixed oblique camera does not
+  carry independent survey registration.
+
+<<~/ahu>>
+
+<<~ ahu #/tested>>
+!! Verification and the inconvenient evidence
+
+* Hosted Projection Loom PR run 40050559194: SUCCESS, 200 passed, 7 warnings
+  in 32.13 seconds; nested capability trial passed.
+* Hosted held-out witnesses run 40050555639: SUCCESS.
+* Hosted general repository run 40050555705: FAILURE, with package/witness/E2E
+  jobs red. Triage before asserting whole-repository CI success.
+* Three-epoch Necrospire compound trial: 4 exploratory proposals per epoch
+  plus inherited parent seat, 95 OODA loops, 3 independently regrown finalists.
+  Best provisional image IoU ~0.704, still below earlier CAD-only ~0.7296.
+* Trusted-push CC0 brutalism2 fetch: 113109 bytes, SHA-256
+  8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3.
+  Artifact 12542954065 holds an UNREVIEWED archive/lock; operator review pending.
+* External Ur low-poly asset: not yet admitted as verified data; official
+  Sketchfab browser/OAuth download needed.
+
+<<~/ahu>>
+
+<<~ ahu #/operator-howto>>
+!! Do it, inspect it, steer it
+
+From repo root, switch to the PR branch, then enter tools/projection-loom:
+
+```bash
+git fetch origin
+git switch feature/green-jello-dinosaur-5--projection-loom
+git pull --ff-only
+cd tools/projection-loom
+python -m pip install -r requirements-ci.txt
+python -m pip install --no-deps -e .
+python -m pytest -q tests
+python -m projection_loom ooda-run --project examples/necrospire/project.json --capability-recipe examples/necrospire/hybrid/recipe.json --out out/necrospire-compound --control full-speed --passes 3 --candidates 4 --exact-budget 3 --detail-budget 3 --score-size 128 192 --finalists 3
+python scripts/check_compound_epoch.py --out out/necrospire-compound
+python -m projection_loom ooda-status --session out/necrospire-compound/session.json
+```
+
+Read out/necrospire-compound/previews/epoch_NNN/review.json and
+out/necrospire-compound/finalists/gallery.json and contact_sheet.png.
+Review exact CAD, polygons, source provenance and socket receipts separately.
+
+For an operator-guided voyage, use --control manual and a NEW out directory.
+At a checkpoint issue `ooda-steer --session OUT/session.json --action approve-plan`,
+then rerun the SAME initial `ooda-run` command; repeat for review gates.
+Use `--action review`, `--action pause`, `--action set-autonomy --autonomy 0.4`,
+or `--action open-inquiry --loop epoch-0001 --question "What connects?"`.
+An inquiry advances through `--action advance-inquiry --loop ID --phase PHASE
+--note TEXT`. To pet-name a reviewed entity, provide the actual proposal and
+@entity/Crystal witness handle using `--action pet-name --proposal ID --target
+@entity/Crystal --name "Crystal with Opinions"`. Use `--action choose --proposal
+ID` to steer a validated lineage; use `--action o-takiage --name "Crystal with
+Opinions"` to release the hold without erasing its history. Operator controls
+apply at safe phase boundaries, not inside uninterruptible CAD kernel calls.
+
+For a locally installed LLM, add `--llm-provider ollama --llm-model MODEL`;
+for a trusted OpenAI-compatible service use `--llm-provider openai-compatible
+--llm-model MODEL` with the documented endpoint and OPENAI_API_KEY environment
+variable. No provider may choose outside verified previews or waive gates.
+
+For the CC0 hard reference, run `python scripts/fetch_references.py --source
+brutalism2 --cache .ref-cache --lockfile references.lock.local.json
+--bootstrap-lock`; review digest/license/contents before promoting the lock.
+For Ur, honor official downloaded-archive/OAuth flows and attribution.
+
+<<~/ahu>>
+
+<<~ ahu #/inflight>>
+!! In flight ~ work that still lacks a settled ruling
+
+# Review and pin the acquired CC0 Brutalist archive (GitHub artifact 12542954065);
+  compile/import source models only after manifest, license and hash review.
+# Triage the repo-wide red CI against the Loom-specific green run; repair any
+  actual Loom regressions without silencing unrelated evidence.
+# Improve the crystal fracture and visual silhouette grammar. Current
+  compound geometry underperforms CAD-only IoU; this defect earns tests, not hype.
+# Grow stronger Joining architectural transitions and distinct phenotype niches
+  while retaining independent CAD/mesh/socket audit authority.
+# Independently register image/view evidence. A fixed viewport alone does not
+  establish the source artist's camera pose or real-world scale.
+# Bring in the authorized Ur low-poly model for a multi-seed external witness,
+  preserving native scale and license. Do not silently import the dense scan.
+
+<<~/ahu>>
+
+<<~ ahu #/backlog>>
+!! Ordered backlog / re-entry keys
+
+P0: Keep PR Loom CI green; investigate general CI red; approve CC0 lock;
+    verify immutable recipe/implementation/source checkpoint identity.
+P1: Test multi-resolution crystal sculpting, joining forms, and alternative
+    quality-diversity generations against CAD-only and held-out witnesses;
+    build an Operator-facing preview/steering UI; test independent multi-view
+    calibration and real Pair A sources.
+P2: Explicit SDF/VDB and cross-kernel Boolean with separate certification,
+    scene/variant export, verified agent-scale clearance and structural loads,
+    causal multiwriter ledger merges, production provider connectivity.
+No backlog item automatically grants a new capability.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+✶ Observe the live boot and branch, current CI, source/recipe fingerprints and
+  the actual candidate's material and surface receipts.
+⏿ Orient by entity capability dependencies and the Operator's declared goal;
+  never treat a rendered surface as a structural CAD assertion.
+◇ Choose a bounded hypothesis and a decisive test, preserving room for
+  nameless lineages and operator intervention.
+▶ Act inside the single nested OODA-HA controller; change source and tests
+  together; update this handoff when the live checkpoint changes.
+↺ Review the implementation we actually ran; widen to the whole Loom, tighten
+  back into code/receipts, and preserve failures as testimony.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-capability-composition">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
+<<~/ahu>>
+
+<<^ code="&#x0004;" -> to="?">>
