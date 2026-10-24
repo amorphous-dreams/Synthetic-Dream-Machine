@@ -1,5 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom-epochs">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-epochs.mem"
@@ -49,3 +52,7 @@ The three loops record consequences, not a ceremonial claim of certainty.
 `tools/projection-loom/docs/research/epoch-contract.md`, `docs/research/three-afterwards.md` and `docs/ooda-ha-procedural.md` carry current tests and limitations. The machine enacts the five phases as a guarded nested runtime controller; developer aftermaths still review our work, not a simulated CAD feature.
 
 <<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;7h9o-GtoX7V7qtPaa3VaIXG5gy5aomOGnjYBbHLDmJM
+
+<<^ code="&#x0004;" -> to="?">>

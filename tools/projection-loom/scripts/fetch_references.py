@@ -180,7 +180,7 @@ def acquire(source_id, cache, *, lockfile=None, bootstrap=False, offline=False,
             f.write(raw)
             temp = Path(f.name)
         os.replace(temp, archive)
-    # Extraction does not clobber previously verified samples on failure.
+    # Stage and validate extracted samples before replacing the verified cache.
     extraction = cache / 'extracted' / source_id
     extraction.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=source_id+'-', dir=extraction.parent))
