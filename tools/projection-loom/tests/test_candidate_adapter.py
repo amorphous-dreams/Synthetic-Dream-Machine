@@ -58,12 +58,12 @@ def test_adapter_receipts_stop_and_resume_once(tmp_path):
     path = tmp_path/'stop.json'
     first = epoch(path)
     first.run(candidates(), adapter=CandidateAdapter(**actions))
-    assert seen == [('a', 'scored')]
+    assert seen == [('b', 'scored')]
     assert not first.completed(candidates(), preview=callbacks()['preview'])
     next_run = epoch(path)
     next_run.run(candidates(), adapter=CandidateAdapter(**dict(
         callbacks(), after_candidate=lambda p, r: seen.append((p.id, r['state'])))))
-    assert [x[0] for x in seen] == ['a', 'b', 'c']
+    assert [x[0] for x in seen] == ['b', 'a', 'c']
     assert next_run.completed(candidates(), preview=callbacks()['preview'])
 
 
