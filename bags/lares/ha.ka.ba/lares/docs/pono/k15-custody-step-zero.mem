@@ -195,9 +195,13 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 
 A node with no omnibus VK still has to name the faces it can unlock before any face opens, so the identity home keeps ONE F row, `face-index`, in the clear. It lists the node's faces in local face order. Each entry holds the SHA-256 digest of its PersonaGroup (null while the founding stands), the digest of the founding's ask (null once the group stands) and the filename of the face's own slot tree. It holds no name, no handle, no prefix, no label and no key bytes.
 
-''The accepted leak, and only it:'' the count of the node's faces and their PersonaGroup digests. The digests already name the carriers on disk (`face-atom-g<digest>.bin`, `veil-archive-g<digest>.bin`), so the index shows a stolen disk no fact it does not already show. A removed face leaves a tombstone entry, so no other face's local ordinal moves.
+''The accepted leak, and only it:'' the count of the node's faces, tombstones included (so a removal history leaks as a count); each PersonaGroup's digest; each founding ask's digest; and each tree's random filename. Nothing else: no name, no handle, no prefix, no label, no key byte, and nothing derived from the face custody id beyond the filename itself. The digests already name the carriers on disk (`face-atom-g<digest>.bin`, `veil-archive-g<digest>.bin`), so the index shows a stolen disk no fact it does not already show. A removed face leaves a tombstone entry, so no other face's local ordinal moves.
 
-The red: the index of two founded faces carries no byte of either face's name, handle, KEL prefix, root key or label, and reads the same whether the faces are locked or open. The control: the digests in the index are the digests the carriers on disk bear, and `vault status` prints the count and the digests alone.
+''The index routes and never decides.'' It rests at F, unauthenticated, so a swapped or tampered entry could point a group at another face's tree. After an unlock, the D anchors row under that face's own FCK names its PersonaGroup; the vessel compares that group with the index entry's digest and refuses by name on a mismatch, before it seats anything. The index never chooses a worn face's authority either: `readFace` reads the sealed anchor.
+
+''The owner in every D context is the face custody id (`fcid`),'' a random 16-byte id minted with the face's slot tree at the founding's start. It is immutable and never reused. Rows that exist before the PersonaGroup does (the persona root, the founding's atom ask) seal under it, and so do the rows after, so nothing re-seals when the group arrives. The anchors row binds the fcid to the PersonaGroup. Rows are local and never cross vessels, so the id needs no cross-vessel stability.
+
+The reds: the index of two founded faces carries no field beyond the entries' tree filename, group digest and ask digest and no byte of either face's name, handle, KEL prefix, root key or label, and reads the same whether the faces are locked or open; swapping two entries' trees makes an unlock open a tree and then refuse at the anchors check, with no face seated. The controls: the digests in the index are the digests the carriers on disk bear, the honest index seats its face, and `vault status` prints the count and the digests alone.
 
 <<~/ahu>>
 
@@ -224,6 +228,6 @@ The red: the index of two founded faces carries no byte of either face's name, h
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;bY5URQnN7khHizWUtLp5BvTBv5bUxILLB0sKHnM5xz0
+<<^ code="&#x0003;">>ni:///sha-256;t22wWELPq4SmGZnbsoos3mwyCmTtHXXUQXh3pt169-M
 
 <<^ code="&#x0004;" -> to="?">>
