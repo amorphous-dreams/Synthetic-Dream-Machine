@@ -46,6 +46,33 @@ class Proposal:
             raise ValueError('Genome must contain only finite loci')
 
 
+@dataclass(frozen=True)
+class CandidateAdapter:
+    """The callbacks one candidate Act requires, independent of geometry kernel.
+
+    Only the callable contract travels. WideEpoch still owns scheduling, exact
+    BRep/void admission, bounded scoring, witnesses, receipts, and reentry.
+    The adapter never asserts CAD/polymesh fusion or elevates source evidence.
+    """
+    grow: object
+    score: object
+    preview: object = None
+    before_candidate: object = None
+    after_candidate: object = None
+    should_continue: object = None
+    feature_hook: object = None
+    witness_hook: object = None
+
+    def __post_init__(self):
+        if not callable(self.grow) or not callable(self.score):
+            raise ValueError('Candidate adapter requires grow and score callbacks')
+        for name in ('preview', 'before_candidate', 'after_candidate',
+                     'should_continue', 'feature_hook', 'witness_hook'):
+            value = getattr(self, name)
+            if value is not None and not callable(value):
+                raise ValueError(f'Candidate adapter callback {name} must be callable')
+
+
 def propose_methods(bounds,initial,*,seed=41,count=12,topology_loci=(),scale=.12):
     """Generate deterministic Sobol/local/topology candidates, no CAD claims.
 
@@ -147,7 +174,21 @@ class WideEpoch:
         self.data['snapshot_sha256']=_hash({k:v for k,v in self.data.items() if k!='snapshot_sha256'})
         _atomic(self.checkpoint,self.data)
 
-    def run(self,proposals,*,grow,score,preview=None,before_candidate=None,after_candidate=None,should_continue=None,feature_hook=None,witness_hook=None):
+    def run(self,proposals,*,grow=None,score=None,preview=None,before_candidate=None,after_candidate=None,should_continue=None,feature_hook=None,witness_hook=None,adapter=None):
+        if adapter is not None:
+            if not isinstance(adapter, CandidateAdapter):
+                raise ValueError('Expected a CandidateAdapter')
+            if any(x is not None for x in (
+                    grow, score, preview, before_candidate, after_candidate,
+                    should_continue, feature_hook, witness_hook)):
+                raise ValueError('Use either candidate adapter or direct callbacks, not both')
+            grow, score = adapter.grow, adapter.score
+            preview = adapter.preview
+            before_candidate, after_candidate = adapter.before_candidate, adapter.after_candidate
+            should_continue = adapter.should_continue
+            feature_hook, witness_hook = adapter.feature_hook, adapter.witness_hook
+        if not callable(grow) or not callable(score):
+            raise ValueError('Candidate evaluation needs grow and score callbacks')
         proposals=list(proposals)
         if len({p.id for p in proposals})!=len(proposals):
             raise ValueError('Duplicate proposal ID')

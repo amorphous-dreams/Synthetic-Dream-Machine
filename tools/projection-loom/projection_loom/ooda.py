@@ -21,7 +21,7 @@ import os
 from PIL import Image
 import numpy as np
 
-from .epochs import WideEpoch, propose_methods, project_code_digest, project_silhouette_score
+from .epochs import CandidateAdapter, WideEpoch, propose_methods, project_code_digest, project_silhouette_score
 from .epochs import _hash, _atomic
 
 PHASES = ('observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
@@ -953,11 +953,15 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     journal.save()
                 def go():
                     return journal.poll()
-                data = runner.run(batch,grow=grow,score=score,preview=preview,
-                     feature_hook=features if compositor else None,
-                     witness_hook=witnesses if compositor else None,
-                     before_candidate=before,after_candidate=after,
-                     should_continue=go)
+                # One callback bundle for CAD-only and compound candidates.
+                # The epoch owns exact gates; the bundle owns no evidence authority.
+                adapter = CandidateAdapter(
+                    grow=grow, score=score, preview=preview,
+                    feature_hook=features if compositor else None,
+                    witness_hook=witnesses if compositor else None,
+                    before_candidate=before, after_candidate=after,
+                    should_continue=go)
+                data = runner.run(batch, adapter=adapter)
                 # Recover missing micro-loop receipts after a process crash
                 # between the CAD checkpoint and journal acknowledgement.
                 lookup = {p.id:p for p in batch}
