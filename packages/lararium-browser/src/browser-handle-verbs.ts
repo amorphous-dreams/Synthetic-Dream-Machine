@@ -9,14 +9,14 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
   loadPersonaRootSeed, resolveOwnHandleChain, boardHeadCid, burnOwnHandle, signHandleCard,
-  attestUnderHead, normalizeHandleClaim, headOpKey, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
+  attestUnderHead, normalizeHandleClaim,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
-import { tiddlerText } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
+import { readHandleOwnerBrowser } from "./browser-handle-publish.js";
 
 interface OwnFaceBrowserContext {
   readonly board:        DocHandle<LarDoc>;
@@ -102,9 +102,8 @@ export async function burnFaceBrowser(opts: {
   idbName?:     string;
   /** Bury the face from ABOVE — the owning persona (its head op-key) signs, not the seated handle key. */
   fromPersona?: boolean;
-  /** OWNER-burn only: the daemon doc carrying the persona-KEL prefix that owns the face. */
-  daemonDoc?:   LarDoc;
-  /** OWNER-burn only: the per-Nexus persona-KEL board twin, off which the owner head op-key resolves. */
+  /** OWNER-burn only: the per-Nexus persona-KEL board twin, off which the owner head op-key resolves. The owner prefix rides
+   *  the selected face's sealed anchor (`readFaceOwner`), never a daemon document. */
   kelBoard?:    DocHandle<LarDoc>;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
@@ -124,18 +123,12 @@ export async function burnFaceBrowser(opts: {
   if (opts.fromPersona) {
     // OWNER-burn: the owning persona buries the face from above. Resolve its verified head op-key off the
     // per-Nexus persona-KEL board, then the pure hand-resolver decides whether the root seed may sign.
-    if (!opts.daemonDoc) {
-      throw new Error("[browser handle burn --from-persona] the daemon doc is required to prove the owner; use a self-burn.");
-    }
     if (!opts.kelBoard) {
       throw new Error("[browser handle burn --from-persona] the persona-KEL board is required to resolve the owner head; use a self-burn.");
     }
-    const personaKelPrefix = tiddlerText(opts.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
-    if (!personaKelPrefix) {
-      throw new Error("[browser handle burn --from-persona] no persona-KEL prefix on the daemon doc — cannot prove the owner; use a self-burn.");
-    }
-    const personaChain = personaKelChainForPrefix(opts.kelBoard.doc() as LarDoc, personaKelPrefix);
-    const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
+    const owner = await readHandleOwnerBrowser({ handleIndex: opts.handleIndex, kelBoard: opts.kelBoard, idbName, verb: "burn --from-persona" });
+    const personaKelPrefix = owner.personaKelPrefix;
+    const headOpKeyDid     = owner.headOpKeyDid;
     const resolved     = await resolveOwnerBurnHandBrowser({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
     if (!resolved.ok) throw new Error(`[browser handle burn --from-persona] ${resolved.reason}`);
     hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, ownerBurn: resolved.ownerBurn, buildCard };

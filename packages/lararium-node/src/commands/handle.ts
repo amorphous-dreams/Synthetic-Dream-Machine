@@ -2,28 +2,27 @@
  * `lares handle publish` — the Node adapter for the publicly published "here I am" note (a Handle).
  *
  * A Handle is a persona's outward face: a self-certifying card carrying its glamour, put on the Nexus's WHO
- * board so the relay carries it to peers. The card anchors to its persona — the daemon doc's persona-KEL
- * prefix seats as the face's owner, so a lost presentation key recovers THROUGH the persona rather than
+ * board so the relay carries it to peers. The card anchors to its persona — the sealed anchor's persona-KEL
+ * prefix (through `readFaceOwner`) seats as the face's owner, so a lost presentation key recovers THROUGH the persona rather than
  * orphaning the face. This adapter reads the store's one holder, loads the persona seed + prefix, resolves the WHO board,
  * and mints + announces.
  *
  * Only the disk/store shores belong here; the mint logic (the veiled key, the causal publication frontier, the announce)
  * is platform-blind in @lararium/mesh (publishPersonaGlamour), the very code a browser vessel runs.
  */
-import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
-import { readFileSync, existsSync } from "node:fs";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, materializeSharedLarDoc, whoBoardDocUrl,
-  publishHandleFromDaemonDoc,
+  materializeSharedLarDoc, whoBoardDocUrl,
+  publishHandleForFace, readFaceOwner,
   resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard,
-  attestUnderHead, normalizeHandleClaim, headOpKey, personaKelBoardDocUrl, personaKelChainForPrefix,
+  attestUnderHead, normalizeHandleClaim, personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
-  type PersonaPublicHandleRecord,
+  type PersonaPublicHandleRecord, type FaceOwner, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { tiddlerText } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
-import { larBootstrapPath } from "../vessel-paths.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import {
   loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore,
 } from "../node-vessel-identity.js";
@@ -40,50 +39,55 @@ export interface HandlePublishOptions {
 }
 
 /**
- * runHandlePublish — the disk adapter: resolve the daemon doc + WHO board from the vessel's own store, load
+ * runHandlePublish — the disk adapter: resolve the WHO board and the selected face's sealed-anchor owner, load
  * the persona seed at the chosen index, and publish the Handle. The WHO board rides the deterministic per-Nexus
  * id (nexusPubkey = this vessel's verifying key), so the announce lands on the island board the relay syncs.
  */
 export async function runHandlePublish(opts: HandlePublishOptions): Promise<HandleCard> {
-  const bootstrap  = larBootstrapPath();
-  if (!existsSync(bootstrap)) {
-    throw new Error(`[lares handle publish] ${bootstrap} not found — run \`lares vessel found\` first.`);
-  }
-  const tiddlers = (JSON.parse(
-    (JSON.parse(readFileSync(bootstrap, "utf8")) as { text?: string }).text ?? "{}",
-  ) as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-  const daemonUrl = tiddlers[DAEMON_BAG_ID]?.text ?? null;
-  if (!daemonUrl) {
-    throw new Error("[lares handle publish] daemon doc URL missing from social-bootstrap.json — run `lares vessel found`.");
-  }
-
-  const repo     = opts.repo;
-  const progress = repo.findWithProgress(daemonUrl as AutomergeUrl);
-  const daemonHandle = await Promise.race([
-    progress.whenReady(),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("[lares handle publish] daemon doc not ready after 5s")), 5000),
-    ),
-  ]);
-  const daemonDoc = daemonHandle.doc() as LarDoc;
-
+  const repo        = opts.repo;
   const handleIndex = await resolveFace(opts.handleIndex);
-  const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  // THE OWNER RIDES THE SEALED ANCHOR (the door): never the daemon tiddler.
+  const owner       = await readHandleOwner(repo, handleIndex, boardIsland, "publish");
+  const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
   const store       = await makeNodePublicHandleStore();
 
-  const card = await publishHandleFromDaemonDoc({
-    daemonDoc, board, seed, handleIndex, glamour: opts.glamour, store,
-  });
+  const card = await publishHandleForFace({ owner, board, seed, handleIndex, glamour: opts.glamour, store });
   await repo.flush();
   return card;
 }
 
+/**
+ * The owner of the face `handleIndex` selects, from its SEALED anchor (the identity home's anchors row names the PersonaGroup, the
+ * PersonaGroup names the face-anchor row) read against the verified persona-KEL chain beneath the anchor's prefix on the
+ * per-Nexus board, through `readFaceOwner`. The daemon doc's `PERSONA_KEL_PREFIX_TIDDLER` names the founding face and a
+ * document can move it, so no Handle act reads it. Refuses by name on a missing anchor, a missing or forked chain, or a chain
+ * under another prefix.
+ */
+async function readHandleOwner(repo: Repo, handleIndex: number, boardIsland: ReturnType<typeof nodeNexusIsland>, verb: string): Promise<FaceOwner> {
+  return readHandleOwnerOf(handleIndex, async (prefix) => {
+    const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
+    return personaKelChainForPrefix(kelBoard.doc(), prefix);
+  }, verb);
+}
+
+/** The owner read over the sealed rows alone; `chainFor` supplies the persona-KEL chain a prefix names (the per-Nexus board's). */
+export async function readHandleOwnerOf(
+  handleIndex: number, chainFor: (prefix: string) => Promise<PersonaKelEvent[] | null>, verb: string,
+): Promise<FaceOwner> {
+  const group  = (await loadIdentityAnchors(handleIndex))?.personaGroupId ?? null;
+  const anchor = group ? await loadFaceAnchorOfGroup(group) : null;
+  const chain  = anchor ? await chainFor(anchor.personaKelPrefix) : null;
+  const read   = await readFaceOwner(chain, anchor);
+  if (!read.ok) throw new Error(`[lares handle ${verb}] persona h${handleIndex}: ${read.reason}`);
+  return read.owner;
+}
+
 interface OwnFaceContext {
   readonly repo:         Repo;
-  readonly daemonDoc:    LarDoc;
+  readonly boardIsland:  ReturnType<typeof nodeNexusIsland>;
   readonly board:        DocHandle<LarDoc>;
   readonly handleIndex:  number;
   readonly seed:         Uint8Array;
@@ -95,31 +99,11 @@ interface OwnFaceContext {
 }
 
 /**
- * Open the vessel's own published face for a persona: resolve the daemon doc + WHO board, load the persona
+ * Open the vessel's own published face for a persona: resolve the WHO board, load the persona
  * seed, find the announced nym + one settled verified chain off the board, and derive the seated handle-key signer.
  * The shared boot for burn and attest supplies only its own act over this context.
  */
 async function openOwnFace(verb: string, repo: Repo, handleIndexOpt?: number): Promise<OwnFaceContext> {
-  const bootstrap  = larBootstrapPath();
-  if (!existsSync(bootstrap)) {
-    throw new Error(`[lares handle ${verb}] ${bootstrap} not found — run \`lares vessel found\` first.`);
-  }
-  const tiddlers = (JSON.parse(
-    (JSON.parse(readFileSync(bootstrap, "utf8")) as { text?: string }).text ?? "{}",
-  ) as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-  const daemonUrl = tiddlers[DAEMON_BAG_ID]?.text ?? null;
-  if (!daemonUrl) {
-    throw new Error(`[lares handle ${verb}] daemon doc URL missing from social-bootstrap.json — run \`lares vessel found\`.`);
-  }
-  const progress = repo.findWithProgress(daemonUrl as AutomergeUrl);
-  const daemonHandle = await Promise.race([
-    progress.whenReady(),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`[lares handle ${verb}] daemon doc not ready after 5s`)), 5000),
-    ),
-  ]);
-  const daemonDoc = daemonHandle.doc() as LarDoc;
-
   const handleIndex = await resolveFace(handleIndexOpt);
   const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
@@ -140,7 +124,7 @@ async function openOwnFace(verb: string, repo: Repo, handleIndexOpt?: number): P
   const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
   const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
 
-  return { repo, daemonDoc, board, handleIndex, seed, record, chain, headCid, veiledSigner };
+  return { repo, boardIsland, board, handleIndex, seed, record, chain, headCid, veiledSigner };
 }
 
 /** The owning persona's authorizing hand — the member prefix, its head op-key, and a signer for that key. The
@@ -222,15 +206,9 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
 
   let hand: Parameters<typeof burnOwnHandle>[0];
   if (opts.fromPersona) {
-    // OWNER-burn: the owning persona buries the face from above. Resolve its verified head op-key off the
-    // per-Nexus persona-KEL board, then the pure hand-resolver decides whether the root seed may sign.
-    const personaKelPrefix = tiddlerText(face.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
-    if (!personaKelPrefix) throw new Error("[lares handle burn] no persona-KEL prefix on the daemon doc — cannot prove the owner; use `--self`.");
-    const nexusPubkey  = await loadVesselVerifyingKey();
-    const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-    const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
-    const personaChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
-    const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
+    // OWNER-burn: the owning persona buries the face from above. Its prefix and verified head op-key come from the
+    // sealed anchor through the door, then the pure hand-resolver decides whether the root seed may sign.
+    const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "burn --from-persona");
     const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
     if (!resolved.ok) throw new Error(`[lares handle burn --from-persona] ${resolved.reason}`);
     hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, ownerBurn: resolved.ownerBurn, buildCard };
@@ -270,13 +248,7 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   const face = await openOwnFace("rotate", opts.repo, opts.handleIndex);
 
   // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
-  const personaKelPrefix = tiddlerText(face.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
-  if (!personaKelPrefix) throw new Error("[lares handle rotate] no persona-KEL prefix on the daemon doc — a face is owned by its persona; cannot authorize a rotation.");
-  const nexusPubkey  = await loadVesselVerifyingKey();
-  const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
-  const personaChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
-  const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
+  const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "rotate");
   const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
   if (!resolved.ok) throw new Error(`[lares handle rotate] ${resolved.reason}`);
 
