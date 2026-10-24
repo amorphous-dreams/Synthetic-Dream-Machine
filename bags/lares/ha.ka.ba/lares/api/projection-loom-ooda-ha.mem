@@ -8,6 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-ooda-ha.mem"
 namespace = "&#x0950; &#x0901;"
 title = "lar:///ha.ka.ba/lares/api/projection-loom-ooda-ha"
+uri-path = "ha.ka.ba/lares/api/projection-loom-ooda-ha"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "fractal constructive-control flow and operator/AI joint steering"
 tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
@@ -121,6 +122,6 @@ contract and safe-point controls.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EffmoVzRvbOxkuvcteSFPhDcbc1MyNNX8Cvq_v11ABo
+<<^ code="&#x0003;">>ni:///sha-256;TUazYAqmh4nhgQGKAwtjKYYMbBZC70WdTZIom2Rr8ik
 
 <<^ code="&#x0004;" -> to="?">>

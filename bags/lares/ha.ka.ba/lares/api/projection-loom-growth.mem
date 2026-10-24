@@ -8,6 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-growth.mem"
 namespace = "&#x0950; &#x0901;"
 title = "lar:///ha.ka.ba/lares/api/projection-loom-growth"
+uri-path = "ha.ka.ba/lares/api/projection-loom-growth"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "nameless constructive grammar and reversible hypothesis graph"
 tags = ["api/pono/meme", "projection-loom", "generative"]
@@ -43,6 +44,6 @@ index wins eternal personhood.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;baI9HHOzKjaVghWfFJ39MUYcOaurs_6ts4sB9SZMEfQ
+<<^ code="&#x0003;">>ni:///sha-256;YANCG_u66sp-c9Mj698oQncBLYd0MrVscZbB3AXhyYI
 
 <<^ code="&#x0004;" -> to="?">>

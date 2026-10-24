@@ -8,6 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-research.mem"
 namespace = "&#x0950; &#x0901;"
 title = "lar:///ha.ka.ba/lares/api/projection-loom-research"
+uri-path = "ha.ka.ba/lares/api/projection-loom-research"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "kept research testimony, measurement contracts and open questions"
 tags = ["api/pono/meme", "projection-loom", "research"]
@@ -66,6 +67,6 @@ The unobserved stays unobserved. An image without metric control never confers m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0cSYZpL7rVUkG9vLalaIIzdO4rB7-Jq0iGpNDX0O6U8
+<<^ code="&#x0003;">>ni:///sha-256;oG73gacHr6p_LsjxA1hO2XhMuq4NkY05AhlGQ9YiAVk
 
 <<^ code="&#x0004;" -> to="?">>

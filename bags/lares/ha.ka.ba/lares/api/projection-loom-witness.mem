@@ -8,6 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-witness.mem"
 namespace = "&#x0950; &#x0901;"
 title = "lar:///ha.ka.ba/lares/api/projection-loom-witness"
+uri-path = "ha.ka.ba/lares/api/projection-loom-witness"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "source and registration witness law"
 tags = ["api/pono/meme", "projection-loom", "evidence"]
@@ -43,6 +44,6 @@ alone measure the hidden side of a fortress.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VD07sNi6ae3vOIBHmCmWl_ZRTRZB5fWj7xyJwDYsPzQ
+<<^ code="&#x0003;">>ni:///sha-256;sL-xtSgoj57XXwC6JjXsJc-5gyArbnUYQgge4sv6ytM
 
 <<^ code="&#x0004;" -> to="?">>

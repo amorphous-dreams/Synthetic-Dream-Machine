@@ -6,6 +6,7 @@
 ```toml meta
 cacheable = true
 l-space = "stable"
+namespace = "&#x0950; &#x0901;"
 role = "Pair A hard-reference, seed provenance and first-pass evidence gates"
 tags = ["api/pono/meme"]
 title = "lar:///ha.ka.ba/lares/api/projection-loom-pair-a"
@@ -54,6 +55,6 @@ validate the machina's mechanics but not the external reconstruction's fidelity.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code="&#x0003;">>ni:///sha-256;feY1sIGetR7BpPg7mVFVABMQ2zfdeloAH67RcmcM_HM
+<<^ code="&#x0003;">>ni:///sha-256;AtXSzQLfNDESUWQajhIvXaI83sHHh2jJy9-qV4gsE_4
 
 <<^ code="&#x0004;" -> to="?">>

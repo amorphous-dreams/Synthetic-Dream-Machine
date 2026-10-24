@@ -8,6 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom-epochs.mem"
 namespace = "&#x0950; &#x0901;"
 title = "lar:///ha.ka.ba/lares/api/projection-loom-epochs"
+uri-path = "ha.ka.ba/lares/api/projection-loom-epochs"
 type = "text/memetic-wikitext+tiddlywiki"
 role = "bounded evolutionary method orchestration and aftermath"
 tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
@@ -53,6 +54,6 @@ The three loops record consequences, not a ceremonial claim of certainty.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7h9o-GtoX7V7qtPaa3VaIXG5gy5aomOGnjYBbHLDmJM
+<<^ code="&#x0003;">>ni:///sha-256;_x57rz559ilbYuaE3PSnhaW67qZCTxfoUUBhHo0bzIw
 
 <<^ code="&#x0004;" -> to="?">>
