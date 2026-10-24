@@ -219,3 +219,18 @@ constraints requires a new session, not a silent mutation of its history.
 These principles inform a small, dependency-light local state machine rather
 than importing an agent framework whose failure and replay semantics would
 have to be audited independently.
+
+## A single OODA-HA engine runs generative capability DAGs
+
+A pet-named entity can generate multiple complementary geometric representations
+through a versioned `CapabilityRecipe`. This does **not** create an alternate
+scheduler. The *same* controller opens a capability child under each candidate's
+Act; it records Observe, Orient, Decide, real operator Act and Aftermath before
+the candidate can close. Manual and opt-in adviser/operator controls retain the
+same behavior and provenance as CAD-only searches.
+
+The location's final output also runs inside a real child loop anchored to its
+Aftermath. It reopens archived recipes, regrows CAD and surfaces, validates
+all native-kernel gates, writes independent STEP/OBJ results and the across-epoch
+contact sheet, and then returns to the parent. See
+[capability composition](capability-ooda-integration.md).

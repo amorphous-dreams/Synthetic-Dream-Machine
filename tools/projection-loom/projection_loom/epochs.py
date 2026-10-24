@@ -147,7 +147,7 @@ class WideEpoch:
         self.data['snapshot_sha256']=_hash({k:v for k,v in self.data.items() if k!='snapshot_sha256'})
         _atomic(self.checkpoint,self.data)
 
-    def run(self,proposals,*,grow,score,preview=None,before_candidate=None,after_candidate=None,should_continue=None):
+    def run(self,proposals,*,grow,score,preview=None,before_candidate=None,after_candidate=None,should_continue=None,feature_hook=None,witness_hook=None):
         proposals=list(proposals)
         if len({p.id for p in proposals})!=len(proposals):
             raise ValueError('Duplicate proposal ID')
@@ -211,12 +211,24 @@ class WideEpoch:
                     losses={k:float(losses[k]) for k in self.objectives}
                     if any(not math.isfinite(v) or v<0 for v in losses.values()):
                         raise ValueError('Losses must be finite and nonnegative')
-                    witness=assembly.relation_witness(location=self.identity['location'])
+                    # A compound entity can add capability witnesses without replacing
+                    # the CAD construction's independent relational testimony.
+                    witness=(witness_hook(p.genome,assembly) if witness_hook else
+                             assembly.relation_witness(location=self.identity['location']))
+                    if witness.location != self.identity['location']:
+                        raise ValueError('Witness location changed during evaluation')
                     pet_loss=float(self.pet_ledger.soft_loss(witness)) if self.pet_ledger else 0.
                     if not math.isfinite(pet_loss) or pet_loss<0:
                         raise ValueError('Invalid pet-name preference')
                     combined=float(sum(losses.values())+pet_loss)
-                    phenotype=sorted(witness.feature_set())
+                    features=witness.feature_set()
+                    if feature_hook is not None:
+                        additions=feature_hook(p.genome,assembly)
+                        if (not isinstance(additions,(tuple,list,set,frozenset)) or
+                            len(additions)>256 or any(not isinstance(x,str) or not x or len(x)>128 for x in additions)):
+                            raise ValueError('Capability phenotype hook must return bounded text features')
+                        features=features.union(additions)
+                    phenotype=sorted(features)
                     niche=_hash(phenotype)[:16]
                     result={'state':'scored','losses':losses,'pet_loss':pet_loss,
                             'combined_loss':combined,'niche':niche,'phenotype':phenotype,

@@ -485,6 +485,7 @@ class OODAJournal:
                 'passes': self.data['passes'], 'selected_genome': self.data['current_genome'],
                 'session': str(self.path), 'identity_ledger': self.data['identity']['ledger_path'],
                 'events': len(self.data['events']),
+                'gallery': self.data.get('gallery'),
                 'inquiries': [{'id': n['id'], 'parent': n['parent'],
                                'parent_phase': n['parent_phase'], 'phase': n['phase'],
                                'depth': n['depth']}
@@ -564,6 +565,157 @@ def _previews(project, run, epoch_index, folder, *, limit=4):
     return options
 
 
+def _composition_previews(compositor, run, epoch_index, folder, *, limit=4):
+    """Real reviewed choices from exact-audited compound genomes.
+
+    Pet-name controls consume entity-capability witnesses from the SAME
+    construction that produced the screenshot. A preview never proves the art
+    camera was calibrated; only the CAD, mesh and sockets earned their gates.
+    """
+    from .render import silhouette
+    folder.mkdir(parents=True,exist_ok=True)
+    scored=[]
+    for pid,row in run.data['results'].items():
+        if row['state']=='scored':
+            scored.append({'proposal_id':pid,'combined_loss':row['combined_loss'],
+                    'niche':row['niche'],'emitter':row['emitter'],
+                    'genome':run.data['proposals'][pid]['genome']})
+    scored.sort(key=lambda x:(x['combined_loss'],x['proposal_id']))
+    selected=[]
+    if scored:selected.append(scored.pop(0))
+    while scored and len(selected)<limit:
+        niches={x['niche'] for x in selected}
+        emitters={x['emitter'] for x in selected}
+        scored.sort(key=lambda x:(x['niche'] in niches,x['emitter'] in emitters,
+                                  x['combined_loss'],x['proposal_id']))
+        selected.append(scored.pop(0))
+    archive_ids={x['proposal_id'] for x in run.data['archive'].values()}
+    options=[]
+    for item in selected:
+        build=compositor.grow(item['genome'])
+        if not build.audit['composite_valid_for_render']:
+            raise RuntimeError('Scored compound failed to regrow for review')
+        mask=silhouette(build.scene.render_mesh(),compositor.camera,compositor.size)>96
+        rgba=np.zeros((compositor.size[1],compositor.size[0],4),dtype=np.uint8)
+        rgba[mask]=[196,212,232,255]
+        stem=item['proposal_id']
+        Image.fromarray(rgba,'RGBA').save(folder/(stem+'.png'))
+        build.witness().save(folder/(stem+'.relations.json'))
+        _atomic(folder/(stem+'.genome.json'),{
+            'genome':item['genome'],'recipe_sha256':compositor.recipe.sha256})
+        options.append({'proposal_id':stem,'loss':item['combined_loss'],
+            'emitter':item['emitter'],'archive_elite':stem in archive_ids,
+            'niche':item['niche'],'preview':str(folder/(stem+'.png')),
+            'witness':str(folder/(stem+'.relations.json')),
+            'genome':str(folder/(stem+'.genome.json')),
+            'recipe_sha256':compositor.recipe.sha256,
+            'evidence_state':run.score_state})
+    _atomic(folder/'review.json',{'epoch':epoch_index+1,'options':options,
+             'authority':'CAD+polymesh audited; source image registration remains provisional'})
+    return options
+
+
+def _composition_finalists(compositor, output, *, passes, count):
+    """Act within the location Aftermath: regrow diverse lineages from recipes.
+
+    All scored epoch archives participate. Only a regenerated, audited compound
+    can become a finalist. The STEP remains exact CAD material, while OBJ
+    carries separately qualified surface layers.
+    """
+    from .capability_stack import digest
+    from .render import silhouette
+    if not 3<=count<=5:
+        raise ValueError('Finalist request must be 3-5')
+    out=Path(output)
+    pool={}
+    for epoch in range(passes):
+        path=out/f'epoch_{epoch+1:03d}.json'
+        data=json.loads(path.read_text(encoding='utf8'))
+        for proposal_id,result in data['results'].items():
+            if (result.get('state')!='scored' or
+                    not result.get('audit',{}).get('valid') or
+                    not result['audit'].get('union_valid') or
+                    result['audit'].get('union_solids')!=1):
+                continue
+            genome=data['proposals'][proposal_id]['genome']
+            key=digest(genome)
+            row={'proposal_id':proposal_id,'genome':genome,
+                 'niche':result['niche'],'epoch':epoch+1,
+                 'combined_loss':result['combined_loss'],
+                 'losses':result['losses'],'phenotype':result['phenotype'],
+                 'emitter':data['proposals'][proposal_id]['emitter']}
+            if key not in pool or row['combined_loss']<pool[key]['combined_loss']:
+                pool[key]=row
+    available=sorted(pool.values(),key=lambda x:(x['combined_loss'],x['proposal_id']))
+    chosen=[]
+    # The full scored pool, not merely one elite per niche, remains eligible.
+    # Retain a champion; reserve the remaining seats for distinct niches
+    # before falling back to meaningful genome distance.
+    for row in available:
+        if not chosen:
+            chosen.append(row)
+            continue
+        if len(chosen)>=count:break
+        if row['niche'] in {x['niche'] for x in chosen}:continue
+        genome=row['genome']
+        if any(sum(((genome[k]-x['genome'][k])/(hi-lo))**2
+                   for k,(lo,hi) in compositor.recipe.bounds.items())**.5 < .08 for x in chosen):
+            continue
+        chosen.append(row)
+    for row in available:
+        if len(chosen)>=count:break
+        if row in chosen:continue
+        genome=row['genome']
+        if any(sum(((genome[k]-x['genome'][k])/(hi-lo))**2
+                   for k,(lo,hi) in compositor.recipe.bounds.items())**.5 < .08 for x in chosen):
+            continue
+        chosen.append(row)
+    preview_size=compositor.size
+    witness=compositor.source_mask
+    if witness is None:
+        seed=compositor.grow(compositor.recipe.initial)
+        witness=silhouette(seed.scene.render_mesh(),compositor.camera,preview_size)>96
+    pictures=[Image.fromarray(np.uint8(witness)*255,'L')]
+    labels=['SOURCE (provisional)' if compositor.project.reference else 'SYNTHETIC SEED']
+    receipts=[]
+    for n,row in enumerate(chosen,1):
+        built=compositor.grow(row['genome'])
+        if not built.audit['cad_valid'] or not built.audit['composite_valid_for_render']:
+            raise RuntimeError('Finalist failed CAD/mesh/socket gates')
+        folder=out/'finalists'/f'candidate_{n:02d}'
+        built.export(folder,{compositor.project.reference_view:compositor.camera},
+                     compositor.registry,size=(256,384))
+        mask=silhouette(built.scene.render_mesh(),compositor.camera,preview_size)>96
+        Image.fromarray(np.uint8(mask)*255,'L').save(folder/'scored_mask.png')
+        built.witness().save(folder/'relations.json')
+        receipts.append({'rank':n,'epoch':row['epoch'],'niche':row['niche'],
+              'loss':row['combined_loss'],'genome':row['genome'],
+              'recipe_sha256':compositor.recipe.sha256,'folder':str(folder),
+              'cad_valid':True,'mesh_valid_for_render':True,
+              'cad_mesh_union_verified':False})
+        pictures.append(Image.fromarray(np.uint8(mask)*255,'L'))
+        labels.append(f'COMPOUND {n} / IoU {1-row["losses"]["silhouette"]:.3f}')
+    W,H=preview_size
+    sheet=Image.new('RGB',((len(pictures))*W*2,H*2+28),(17,19,24))
+    from PIL import ImageDraw
+    draw=ImageDraw.Draw(sheet)
+    for i,(pic,label) in enumerate(zip(pictures,labels)):
+        sheet.paste(pic.resize((W*2,H*2)).convert('RGB'),(i*W*2,28))
+        draw.text((i*W*2+5,7),label,fill=(235,235,238))
+    (out/'finalists').mkdir(exist_ok=True)
+    sheet.save(out/'finalists'/'contact_sheet.png')
+    receipt={'schema':'projection-loom/composed-gallery/v1',
+             'location':compositor.recipe.location,'recipe_sha256':compositor.recipe.sha256,
+             'operator_sha256':compositor.registry.fingerprint(),
+             'available_distinct_genomes':len(pool),'requested':count,
+             'actual_count':len(receipts),'finalists':receipts,
+             'evidence_state':'provisional' if compositor.project.reference else 'synthetic',
+             'cad_mesh_union_verified':False,
+             'contact_sheet':str(out/'finalists'/'contact_sheet.png')}
+    _atomic(out/'finalists'/'gallery.json',receipt)
+    return receipt
+
+
 def _preferred_choice(options, preferred_emitter, autonomy):
     if not options:
         return None
@@ -580,8 +732,9 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     exact_budget=6, detail_budget=3, seed=41,
                     topology_loci=(), autonomy=.70, ledger_path=None,
                     location_stack=None, adviser=None, phase_adviser=None,
-                    max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS):
-    """Execute fractal OODA-HA over real staged CAD epochs, with safe pauses.
+                    max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS,
+                    recipe=None, registry=None, score_size=(128,192), finalists=3):
+    """One fractal OODA-HA controller for CAD and compound-capability epochs.
 
     Re-enter using precisely the same evidence, code and budgets.  The journal
     and per-epoch CAD checkpoints supply durability; operator controls are
@@ -597,16 +750,67 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
     # The ledger path belongs to the run identity even before a pet-name is
     # authored. Creating that file during Aftermath needs no session migration.
     ledger_path = Path(ledger_path).resolve() if ledger_path else (out/'identity-ledger.json').resolve()
-    identity = {'location': project.location, 'source_digests': _source_hashes(project, location_stack),
-                'construction_digest': project_code_digest(project),
-                'score_state': 'provisional' if project.reference else 'synthetic',
-                'passes': passes, 'candidates': candidates, 'exact_budget': exact_budget,
-                'detail_budget': detail_budget, 'seed': seed,
-                'topology_loci': sorted(set(topology_loci)),
+    compositor = None
+    if recipe is not None:
+        from .capability_stack import CapabilityCompositor
+        from .calibration import freeze_display_camera
+        from .render import silhouette
+        if (len(score_size)!=2 or any(isinstance(x,bool) or not isinstance(x,int) or
+               x<32 or x>1024 for x in score_size)):
+            raise ValueError('Capability score viewport requires bounded width and height')
+        if not 3<=finalists<=5:
+            raise ValueError('Compound finale requires 3-5 requested survivors')
+        source_hashes = _source_hashes(project,location_stack)
+        if project.reference is not None:
+            if recipe.source_hashes.get('image') != source_hashes['image']:
+                raise ValueError('Compound recipe source digest differs from actual image bytes')
+            source_mask = project.source_mask(score_size)
+            camera = project.cameras[project.reference_view]
+            if camera.fit != 'fixed':
+                raise ValueError('External compound fitness needs fixed reference camera')
+        else:
+            source_mask = None
+            seed_assembly = project.grow(recipe.cad_genome(recipe.initial))
+            seed_audit = seed_assembly.audit(join=True)
+            if not seed_audit['valid']:
+                raise ValueError('Cannot freeze the reference-free viewport on invalid CAD')
+            seed_mesh = seed_assembly.tessellate(linear=.35,angular=.3,union=True)
+            camera = freeze_display_camera(project.cameras[project.reference_view],
+                                           seed_mesh.vertices,score_size)
+        compositor = CapabilityCompositor(project,recipe,registry=registry,camera=camera,
+                           size=score_size,source_mask=source_mask)
+        if source_mask is None:
+            seed_build = compositor.grow(recipe.initial)
+            source_mask = silhouette(seed_build.scene.render_mesh(),camera,score_size)>96
+        if not recipe.source_hashes.items() <= source_hashes.items():
+            raise ValueError('Compound source lineage references missing or changed witnesses')
+        initial = dict(recipe.initial)
+        bounds = recipe.bounds
+        score_state = 'provisional' if project.reference is not None else 'synthetic'
+        construction_digest = compositor.construction_digest()
+        objectives = ('silhouette','prior')
+        extra_topology = [step.activation for step in recipe.steps if step.activation]
+        topology_loci = tuple(dict.fromkeys([*topology_loci,*extra_topology]))
+    else:
+        source_hashes = _source_hashes(project,location_stack)
+        initial = dict(project.initial)
+        bounds = project.bounds
+        score_state = 'provisional' if project.reference else 'synthetic'
+        construction_digest = project_code_digest(project)
+        objectives = ('silhouette',)
+    identity = {'location': project.location, 'source_digests': source_hashes,
+                'construction_digest': construction_digest,
+                'score_state': score_state, 'passes': passes, 'candidates': candidates,
+                'exact_budget': exact_budget, 'detail_budget': detail_budget,
+                'seed': seed, 'topology_loci': sorted(set(topology_loci)),
                 'ledger_path': str(ledger_path)}
+    if compositor is not None:
+        identity.update(capability_recipe_sha256=recipe.sha256,
+              capability_operator_sha256=compositor.registry.fingerprint(),
+              score_size=list(score_size),finalists=finalists)
     with single_runner(out/'session.json'):
         journal = OODAJournal(out/'session.json', identity=identity,
-                              initial=project.initial, autonomy=autonomy,
+                              initial=initial, autonomy=autonomy,
                               max_depth=max_depth, max_loops=max_loops)
         journal.poll()
         if journal.data['status'] == 'completed':
@@ -629,6 +833,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     break
                 journal.transition(loop_id, 'orient', {
                     'available_methods': ['sobol', 'local', 'topology'],
+                    'capability_recipe':recipe.sha256 if recipe else None,
                     'budgets': {'exact': exact_budget, 'detail': detail_budget},
                     'registration': identity['score_state']})
             if node['phase'] == 'orient':
@@ -637,7 +842,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 journal.transition(loop_id, 'decide', {
                     'sampling_seed': seed + i, 'candidates': candidates,
                     'topology_loci': list(topology_loci),
-                    'recommendation': 'bounded multi-emitter CAD auditions'})
+                    'recommendation': 'bounded multi-emitter CAD and capability auditions' if compositor else 'bounded multi-emitter CAD auditions'})
             if node['phase'] == 'decide':
                 if not journal.consult_phase(loop_id, phase_adviser):
                     break
@@ -649,7 +854,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                         break
                     node['plan_approved'] = True
                     journal.save()
-                journal.transition(loop_id, 'act', {'operation': 'grow, audit and score candidates'})
+                journal.transition(loop_id, 'act', {'operation': 'grow, audit and score candidates',
+                      'capability_recipe':recipe.sha256 if recipe else None})
             if node['phase'] == 'act':
                 if not journal.consult_phase(loop_id, phase_adviser):
                     break
@@ -661,31 +867,95 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     raise ValueError('Pet-name ledger changed during epoch Act; apply updates after review')
                 node['ledger_digest'] = frozen
                 journal.save()
-                batch = propose_methods(project.bounds, current, seed=seed+i, count=candidates,
+                batch = propose_methods(bounds, current, seed=seed+i, count=candidates,
                                         topology_loci=topology_loci)
-                score, state = project_silhouette_score(project)
+                # The first proposal explicitly tests the selected compound
+                # lineage, allowing CAD and surface operators to co-evolve.
+                if compositor is not None:
+                    from .epochs import Proposal
+                    batch[0] = Proposal(batch[0].id,batch[0].emitter,dict(current),'selected-parent')
+                solid_score, state = (project_silhouette_score(project) if compositor is None
+                                      else (None,score_state))
                 runner = WideEpoch(location=project.location,
                                    source_digests=identity['source_digests'],
                                    construction_digest=identity['construction_digest'],
-                                   objectives=('silhouette',),score_state=state,
+                                   objectives=objectives,score_state=state,
                                    checkpoint=out/f'epoch_{i+1:03d}.json',
                                    max_exact=exact_budget,max_detail=detail_budget,
                                    seed=seed+i,pet_ledger=ledger)
-                root_initial = dict(project.initial)
+                running_id = [None]
+                builds = {}
+                from .capability_stack import digest as genome_digest
                 def preview(genome):
-                    return sum(((genome[k] - root_initial[k]) /
-                        (project.bounds[k][1] - project.bounds[k][0]))**2
-                        for k in project.bounds)/len(project.bounds)
+                    return float(np.mean([((genome[k]-current[k]) / (hi-lo))**2
+                                    for k,(lo,hi) in bounds.items()]))
                 def before(proposal):
+                    running_id[0] = proposal.id
                     journal.candidate_start(loop_id, proposal)
-                def after(proposal, result):
-                    journal.candidate_receipt(loop_id, proposal, result)
+                def capability_event(step, event, receipt):
+                    """A child loop executes within the candidate's live Act."""
+                    if running_id[0] is None:
+                        raise ValueError('Capability stage outside candidate Act')
+                    parent = loop_id + '/' + running_id[0]
+                    child = parent + '/capability/' + step.id
+                    if event == 'begin':
+                        journal.begin(child,parent=parent,scope='capability',
+                            evidence={'entity':step.entity,'operator':step.operator,
+                                      'dependencies':receipt['dependencies'],
+                                      'recipe_sha256':recipe.sha256})
+                        for earlier,later,detail in (
+                            ('observe','orient',{'dependencies':receipt['dependencies']}),
+                            ('orient','decide',{'operator':step.operator}),
+                            ('decide','act',{'execute':step.id})):
+                            if journal.data['loops'][child]['phase']==earlier:
+                                journal.transition(child,later,detail)
+                    elif event == 'end':
+                        if journal.data['loops'][child]['phase']=='act':
+                            journal.transition(child,'aftermath',receipt)
+                        if journal.data['loops'][child]['phase']=='aftermath':
+                            journal.transition(child,'closed',{'state':receipt['state']})
+                    else:
+                        raise ValueError('Unknown capability phase event')
+                def grow(genome):
+                    if compositor is None:
+                        return project.grow(genome)
+                    build=compositor.grow(genome,stage_event=capability_event)
+                    builds[genome_digest(genome)] = build
+                    return build.scene.assembly
+                def score(genome,assembly):
+                    if compositor is None:
+                        return solid_score(genome,assembly)
+                    from .render import silhouette
+                    from .evolution import iou
+                    build=builds[genome_digest(genome)]
+                    mask=silhouette(build.scene.render_mesh(),compositor.camera,score_size)>96
+                    normalized=np.array([(genome[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
+                    origin=np.array([(recipe.initial[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
+                    return {'silhouette':float(1-iou(source_mask,mask)),
+                            'prior':float(.008*np.mean((normalized-origin)**2))}
+                def features(genome,assembly):
+                    build=builds[genome_digest(genome)]
+                    traits={f'{row["entity"]}:{row["operator"]}:{row["id"]}'
+                            for row in build.steps if row['state']=='complete'}
+                    for key,value in genome.items():
+                        if key in recipe.cad_keys or key.endswith('seed'):continue
+                        lo,hi=bounds[key]
+                        band=int(min(3,4*(value-lo)/(hi-lo)))
+                        traits.add(f'gene:{key}:{band}')
+                    return sorted(traits)
+                def witnesses(genome,assembly):
+                    return builds[genome_digest(genome)].witness()
+                def after(proposal,result):
+                    journal.candidate_receipt(loop_id,proposal,result)
+                    running_id[0] = None
                     journal.save()
                 def go():
                     return journal.poll()
-                data = runner.run(batch,grow=project.grow,score=score,preview=preview,
-                                  before_candidate=before,after_candidate=after,
-                                  should_continue=go)
+                data = runner.run(batch,grow=grow,score=score,preview=preview,
+                     feature_hook=features if compositor else None,
+                     witness_hook=witnesses if compositor else None,
+                     before_candidate=before,after_candidate=after,
+                     should_continue=go)
                 # Recover missing micro-loop receipts after a process crash
                 # between the CAD checkpoint and journal acknowledgement.
                 lookup = {p.id:p for p in batch}
@@ -699,8 +969,12 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 # persistent result; a pause leaves it open for reentry.
                 if not runner.completed(batch, preview=preview):
                     break
-                options = _previews(project, runner, i, out/f'previews/epoch_{i+1:03d}',
-                                    limit=4 if journal.autonomy < .9 else 2)
+                options = (_composition_previews(compositor,runner,i,
+                                out/f'previews/epoch_{i+1:03d}',
+                                limit=4 if journal.autonomy<.9 else 2)
+                    if compositor else
+                    _previews(project,runner,i,out/f'previews/epoch_{i+1:03d}',
+                              limit=4 if journal.autonomy<.9 else 2))
                 node['options'] = options
                 journal.transition(loop_id, 'aftermath', {
                     'auditioned': sum(r['state'] not in ('deferred',) for r in data['results'].values()),
@@ -768,8 +1042,31 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 journal.transition(loop_id, 'closed')
                 journal.save()
         if journal.data['current_epoch'] == passes and journal.data['status'] == 'running':
-            journal.transition('location', 'aftermath', {
-                'epochs':passes,'selected_genome':journal.data['current_genome']})
+            if journal.data['loops']['location']['phase']=='act':
+                journal.transition('location', 'aftermath', {
+                    'epochs':passes,'selected_genome':journal.data['current_genome']})
+            if compositor is not None:
+                # Gallery growth belongs to the *existing location Aftermath*;
+                # it may not create a second execution controller.
+                gallery_id='location/final-gallery'
+                gallery_node=journal.data['loops'].get(gallery_id)
+                if gallery_node is None:
+                    gallery_node=journal.begin(gallery_id,parent='location',scope='gallery',
+                        evidence={'source':'completed epoch archives','recipe':recipe.sha256})
+                if gallery_node['phase']=='observe':
+                    journal.transition(gallery_id,'orient',{'budget':finalists,'evidence':score_state})
+                if gallery_node['phase']=='orient':
+                    journal.transition(gallery_id,'decide',{'selection':'valid, diverse compound recipes'})
+                if gallery_node['phase']=='decide':
+                    journal.transition(gallery_id,'act',{'operation':'regrow exact CAD and polygon witnesses'})
+                if gallery_node['phase']=='act':
+                    gallery=_composition_finalists(compositor,out,passes=passes,count=finalists)
+                    journal.data['gallery']=gallery
+                    journal.transition(gallery_id,'aftermath',{
+                        'actual_count':gallery['actual_count'],
+                        'requested':finalists,'cad_mesh_union_verified':False})
+                if gallery_node['phase']=='aftermath':
+                    journal.transition(gallery_id,'closed',{'result':'audited composite gallery'})
             journal.transition('location', 'closed')
             journal.data['status']='completed'
             journal.save()

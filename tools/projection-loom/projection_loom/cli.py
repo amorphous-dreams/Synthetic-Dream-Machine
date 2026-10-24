@@ -54,6 +54,12 @@ def main(argv=None):
     p.add_argument('--llm-timeout',type=float,default=35)
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],default='auto-nav')
     p.add_argument('--autonomy',type=float)
+    p.add_argument('--capability-recipe',type=Path,
+                   help='optional per-entity CAD/mesh capability genome; same OODA helm')
+    p.add_argument('--score-size',type=int,nargs=2,default=[128,192],
+                   metavar=('WIDTH','HEIGHT'),help='fixed compound evidence viewport')
+    p.add_argument('--finalists',type=int,choices=[3,4,5],default=3,
+                   help='valid CAD and mesh compound survivors regenerated in location Aftermath')
     p=commands.add_parser('inspect-dem',help='Inspect an actual digest-checked DEM and its datum')
     p.add_argument('--location-stack',type=Path,required=True)
     p.add_argument('--source-id',required=True)
@@ -103,6 +109,12 @@ def main(argv=None):
                    default='auto-nav', help='operator/AI steering preset')
     p.add_argument('--autonomy',type=float,
                    help='continuous AI discretion [0,1], overrides --control')
+    p.add_argument('--capability-recipe',type=Path,
+                   help='optional capability recipe; a selected lineage carries CAD plus polymesh genes')
+    p.add_argument('--score-size',type=int,nargs=2,default=[128,192],
+                   metavar=('WIDTH','HEIGHT'),help='fixed compound evidence viewport')
+    p.add_argument('--finalists',type=int,choices=[3,4,5],default=3,
+                   help='regrow distinct compound finalists inside location Aftermath')
     p=commands.add_parser('ooda-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--epochs',type=Path,required=True)
@@ -133,12 +145,17 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
-    if args.command=='ooda-run':
+    if args.command in ('ooda-run','wide-epoch'):
         from .ooda import run_ooda_epochs
         from .location_stack import LocationStack
         presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
         project=Project.load(args.project)
         source=LocationStack.load(args.location_stack) if args.location_stack else None
+        if args.capability_recipe:
+            from .capability_stack import CapabilityRecipe
+            recipe=CapabilityRecipe.load(args.capability_recipe)
+        else:
+            recipe=None
         model_advice = None
         if args.llm_provider != 'none':
             from .llm_helm import HelmLLM
@@ -152,7 +169,8 @@ def main(argv=None):
             ledger_path=args.identity_ledger,location_stack=source,
             max_depth=args.max_depth,max_loops=args.max_loops,
             adviser=model_advice.choose if model_advice else None,
-            phase_adviser=model_advice.phase if model_advice and args.llm_phases else None)
+            phase_adviser=model_advice.phase if model_advice and args.llm_phases else None,
+            recipe=recipe,score_size=tuple(args.score_size),finalists=args.finalists)
         print(json.dumps(result,indent=2));return result
     if args.command=='ooda-finalists':
         from .finalists import export_finalists
@@ -212,23 +230,6 @@ def main(argv=None):
         _save(args.out,fit.to_dict())
         print(json.dumps({'state':fit.state,'holdout_rms':fit.holdout_rms}))
         return fit
-    if args.command=='wide-epoch':
-        from .ooda import run_ooda_epochs
-        from .location_stack import LocationStack
-        project=Project.load(args.project)
-        ledger=PetNameLedger.load(args.identity_ledger) if args.identity_ledger else None
-        location=LocationStack.load(args.location_stack) if args.location_stack else None
-        presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
-        result=run_ooda_epochs(project,args.out,passes=args.passes,
-                       candidates=args.candidates,exact_budget=args.exact_budget,
-                       detail_budget=args.detail_budget,seed=args.seed,
-                       topology_loci=args.topology_locus,
-                       autonomy=args.autonomy if args.autonomy is not None else presets[args.control],
-                       ledger_path=args.identity_ledger,location_stack=location,
-                       max_depth=args.max_depth,max_loops=args.max_loops)
-        print(json.dumps({'passes':len(result['passes']),
-                          'status':result['status'],'awaiting':result['awaiting']}))
-        return result
     if args.command=='pet-name':
         witness=RelationWitness.load(args.witness)
         ledger=PetNameLedger.load(args.ledger) if args.ledger.exists() else PetNameLedger(location=witness.location)

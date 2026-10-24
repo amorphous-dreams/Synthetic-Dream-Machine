@@ -65,6 +65,15 @@ jobs:
           test -s out/hybrid-ci/hybrid_manifest.json
       - name: Multi-epoch hybrid polymesh control
         run: python examples/necrospire/hybrid/run_hybrid_trial.py --out out/hybrid-trial-ci --epochs 2 --per-epoch 4
+      - name: Compound OODA-HA candidate and capability cycles
+        run: |
+          python -m projection_loom ooda-run \
+            --project examples/necrospire/project.json \
+            --capability-recipe examples/necrospire/hybrid/recipe.json \
+            --out out/compound-ci --control full-speed \
+            --passes 2 --candidates 3 --exact-budget 2 --detail-budget 2 \
+            --score-size 64 96 --finalists 3
+          python scripts/check_compound_epoch.py --out out/compound-ci
       - name: Validate synthetic Pair A constructions
         run: |
           python -m projection_loom validate --project examples/ur/project.json --out out/ur-validation
@@ -79,6 +88,7 @@ jobs:
             tools/projection-loom/out-dependencies.txt
             tools/projection-loom/out/hybrid-ci/**
             tools/projection-loom/out/hybrid-trial-ci/**
+            tools/projection-loom/out/compound-ci/**
             tools/projection-loom/out/ur-validation/**
             tools/projection-loom/out/brutalist-validation/**
           if-no-files-found: warn

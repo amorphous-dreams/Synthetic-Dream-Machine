@@ -86,6 +86,7 @@ class SolidAssembly:
         self.thickness_ratio=float(thickness_ratio)
         self.voids=None
         self._verified_material=None
+        self._verified_audit=None
 
     def add(self,name,solid,*,parents=(),role='primary',material=0,min_overlap=None,has=(),slot=None):
         from .relations import capabilities
@@ -109,6 +110,7 @@ class SolidAssembly:
         part=Part(name,solid,parents,role,int(material),float(self.overlap_ratio if min_overlap is None else min_overlap),capabilities(has),slot,anonymous)
         self.parts[name]=part
         self._verified_material=None
+        self._verified_audit=None
         return self
 
     def add_box(self,name,center,size,*,parents,role='primary',material=0,taper=0,min_overlap=None,has=(),slot=None):
@@ -142,6 +144,11 @@ class SolidAssembly:
                 'valid':bool(vol>=threshold and bbox_min>=required_thickness)}
 
     def audit(self, *, join=False):
+        # A complete, immutable assembly may reuse its verified BRep receipt.
+        # add()/add_void() invalidate both CAD material and audit together.
+        if join and self._verified_audit is not None:
+            from copy import deepcopy
+            return deepcopy(self._verified_audit)
         graph=nx.DiGraph()
         graph.add_nodes_from(self.parts)
         for part in self.parts.values():
@@ -175,12 +182,16 @@ class SolidAssembly:
             result['voids']={k:v for k,v in void_report.items() if k!='carved'}
             result['valid']=bool(void_report['valid'])
             self._verified_material=void_report['carved'] if result['valid'] else None
+        if result['valid']:
+            from copy import deepcopy
+            self._verified_audit=deepcopy(result)
         return result
 
     def add_void(self,name,solid,*,kind='room',connects=(),exterior=False,has=(),slot=None,host=None):
         from .voids import VoidAssembly
         if self.voids is None:self.voids=VoidAssembly(self)
         self._verified_material=None
+        self._verified_audit=None
         self.voids.add(name,solid,kind=kind,connects=connects,exterior=exterior,has=has,slot=slot,host=host)
         return self
 

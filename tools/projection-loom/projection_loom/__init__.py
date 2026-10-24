@@ -11,6 +11,7 @@ from .ooda import OODAJournal, run_ooda_epochs, submit_control, control_mode
 from .geospatial import inspect_dem, sample_dem, project_xy
 from .registration3d import register_control_csv, register_landmarks, fit_rigid
 from .surface_witness import load_xyz, sample_mesh, sampled_surface_distance
+from .capability_stack import Capability, CapabilityRecipe, CapabilityCompositor, OperatorRegistry
 
 __all__ = ['SolidAssembly','box','beam','faceted_loft','VoidAssembly',
            'VoidPart','Camera','RelationWitness','PetNameLedger','capabilities',
@@ -19,4 +20,5 @@ __all__ = ['SolidAssembly','box','beam','faceted_loft','VoidAssembly',
            'WideEpoch','Proposal','propose_methods','run_project_epochs',
            'OODAJournal','run_ooda_epochs','submit_control','control_mode',
            'inspect_dem','sample_dem','project_xy','register_control_csv',
-           'register_landmarks','fit_rigid','load_xyz','sample_mesh','sampled_surface_distance']
+           'register_landmarks','fit_rigid','load_xyz','sample_mesh','sampled_surface_distance',
+           'Capability','CapabilityRecipe','CapabilityCompositor','OperatorRegistry']

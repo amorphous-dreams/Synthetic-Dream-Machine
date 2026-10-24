@@ -279,3 +279,42 @@ been inspected and the lock committed. Sketchfab's low-poly Ur uses the
 authenticated download API or an official browser archive; no unauthenticated
 scene scraping. Original CC0 OpenSCAD scripts and imported STLs never replace
 the project's construction genome. See [reference intake/CI](docs/reference-intake-ci.md).
+
+## Evergreen XII — single fractal OODA-HA capability compositor
+
+An individual named or nameless architectural entity can now carry a **narrow,
+versioned generative capability stack**. The original CAD root owns exact
+structural/void validity. Derived polygon geometry grows from the audited CAD
+part, with protected semantic sockets and bounded image-space detail. A part
+without CAD representation can also execute a standalone polygon operator
+inside a composed location. Each material, polygon, and attachment certificate
+retains its own scope.
+
+The existing `ooda-run` and `wide-epoch` commands now share **one controller**.
+Add `--capability-recipe examples/necrospire/hybrid/recipe.json` to either
+command: each scheduled candidate Act opens full OODA-HA capability child
+loops, then produces one combined lineage genome for operator review,
+pet-naming, o-takiage, and re-entry. The location Aftermath opens its own
+final-gallery loop and regrows three to five distinct CAD-plus-mesh artifacts
+when enough candidates pass the exact and polygon gates. The program never
+chooses a winner or creates a second journal in a separate compound scheduler.
+
+Run the **actual PoC 0** including the independent original RGBA alpha witness:
+
+```bash
+python -m projection_loom ooda-run \
+  --project examples/necrospire/project.json \
+  --capability-recipe examples/necrospire/hybrid/recipe.json \
+  --out out/compound-necrospire --control full-speed \
+  --passes 3 --candidates 4 --exact-budget 3 --detail-budget 3 \
+  --score-size 128 192 --finalists 3
+python scripts/check_compound_epoch.py --out out/compound-necrospire
+```
+
+See [executable capability composition](docs/capability-ooda-integration.md)
+for the phase tree, source/recipe fingerprints, review boundaries and
+limitations. Existing `finalists.py` only targets CAD-only experiments;
+compound finalists are now produced by the same OODA controller's location
+Aftermath, never by a competing runner.
+
+The [three-aperture implementation Aftermath](docs/research/compound-ooda-aftermath.md) records the live engineering critique, corrections and re-entry keys.
