@@ -31,7 +31,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, catalogNamedBags, faceTagOfBag, personaScopeTag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
+import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, catalogNamedBags, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
@@ -52,34 +52,16 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
   return { documents, content: [] };
 }
 
-/** Every persona-scoped plane of a face OTHER than `personaGroup` this bootstrap carries, as document IDs. */
-export function otherFacePlanes(bootstrapTiddlers: BootTiddlers, personaGroup: string): ReadonlySet<string> {
-  const out = new Set<string>();
-  let family: ReturnType<typeof bootFacePlanes>["personaPlanes"];
-  try { family = bootFacePlanes(bootstrapTiddlers, null).personaPlanes; } catch { return out; }
-  for (const plane of family) {
-    if (plane.personaGroupId === personaGroup) continue;
-    let theirs: ReturnType<typeof bootFacePlanes>;
-    try { theirs = bootFacePlanes(bootstrapTiddlers, plane.personaGroupId); } catch { continue; }
-    for (const url of [plane.url, theirs.personaUrl, theirs.identitiesUrl, theirs.circlesUrl, theirs.sessionsUrl]) {
-      if (!url) continue;
-      try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
-    }
-  }
-  return out;
-}
-
 /**
- * Every plane document of a face OTHER than `worn` the CATALOG names, as document IDs: a face-scoped bag id (any of the four families) whose
- * tag is not the worn group's. The derived shape recognises them, so an other-face entry the bootstrap omits still stays out of the bridge.
+ * The documents the worn face's bridge may read beyond its own view: every document the catalog names under a bag id that is NOT
+ * face-scoped (a wiki, a draft, the catalog, the oracle: the vessel's books), as document IDs. An ALLOW-LIST: a document the catalog
+ * does not name as a book reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or
+ * renamed is shut out by default and never let in by an omission. The worn face's own four planes ride its view.
  */
-export function foreignFaceDocs(catalog: LarDoc | undefined | null, worn: string): ReadonlySet<string> {
+export function bridgeBooks(catalog: LarDoc | undefined | null): ReadonlySet<string> {
   const out = new Set<string>();
-  let wornTag: string | null = null;
-  try { wornTag = personaScopeTag(worn); } catch { /* a malformed worn group names no tag: every face-scoped bag is foreign */ }
   for (const bag of catalogNamedBags(catalog)) {
-    const tag = faceTagOfBag(bag);
-    if (tag === null || tag === wornTag) continue;
+    if (isFaceScopedBag(bag)) continue;
     const url = tiddlerText(catalog?.tiddlers?.[bag]);
     if (!url) continue;
     try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
@@ -107,7 +89,7 @@ export interface FaceFleetViews {
  * One view per seated peer, its facets read off `bootstrap()` at the seat. `wornGroup` names the face this vessel
  * wears (the bootstrap's pin where none is named): its sessions also read the vessel's books (the bridge above).
  */
-export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, foreign?: () => ReadonlySet<string>): FaceFleetViews {
+export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>): FaceFleetViews {
   const views = new Map<string, { view: SessionDocumentView; gate: FederationGate }>();
   const drop = (peerId: string): void => {
     const held = views.get(peerId);
@@ -128,12 +110,10 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
         views.set(peerId, { view, gate: viewFederationGate(view) });
         return;
       }
-      // THE BRIDGE: the worn face reads the vessel's books too, every document but another face's planes.
-      // The other faces' planes: the bootstrap's list (it can only add) and the catalog's, recognised by shape (it can not be omitted).
-      const named = otherFacePlanes(tiddlers, face.personaGroup);
-      const others: ReadonlySet<string> = foreign ? new Set([...named, ...foreign()]) : named;
+      // THE BRIDGE: the worn face reads the vessel's books too: its own view, plus the allow-list the catalog names (`bridgeBooks`).
+      // A caller that names no books opens no bridge, so the default is shut.
       const gate: FederationGate = {
-        mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || !others.has(String(documentId))),
+        mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || (books?.().has(String(documentId)) ?? false)),
       };
       views.set(peerId, { view, gate });
     },

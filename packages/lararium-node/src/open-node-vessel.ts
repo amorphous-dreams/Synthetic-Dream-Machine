@@ -187,7 +187,7 @@ import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
 import { vesselAdmitReader, vesselGate, type VesselGateDeps } from "./vessel-gates.js";
 import { gateShadowRing, type FaceDeviceReading } from "./gate-shadow-ring.js";
 import { faceDeviceBook }                        from "./face-device-book.js";
-import { faceFleetViews, foreignFaceDocs }          from "./face-fleet-view.js";
+import { faceFleetViews, bridgeBooks }                from "./face-fleet-view.js";
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord }                    from "./fleet-join-custody.js";
@@ -751,7 +751,7 @@ async function prepareNodeBootOn(
   // The worn face also reads this vessel's wikis, catalog and bags (the bridge until O1, `face-fleet-view`).
   let catalogForViews: (() => LarDoc | undefined) | null = null;
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
-    () => (custodyGroup && catalogForViews ? foreignFaceDocs(catalogForViews(), custodyGroup) : new Set<string>()));
+    () => (catalogForViews ? bridgeBooks(catalogForViews()) : new Set<string>()));
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel

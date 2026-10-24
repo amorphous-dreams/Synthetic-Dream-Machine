@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { DAEMON_BAG_ID, DeterministicFederationGate, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, type FaceGrantReading } from "@lararium/mesh";
-import { faceFleetFacets, faceFleetViews, foreignFaceDocs } from "../src/face-fleet-view.js";
+import { faceFleetFacets, faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
@@ -78,12 +78,13 @@ describe("a same-operator session reads its own face's documents", () => {
   });
 });
 
-describe("the worn face's books: the bridge until O1", () => {
+describe("the worn face's books: the bridge until O1 (an allow-list the catalog names)", () => {
   const WIKI = generateAutomergeUrl();                                   // a personal-wiki slot doc: no face tags it
   const pinned = { ...bootstrap(ONE, TWO), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };
+  const books = () => new Set([String(idOf(WIKI))]);                     // the catalog names the wiki as a book
 
-  test("the worn face reads the vessel's books and never another face's planes", async () => {
-    const views = faceFleetViews(() => pinned);
+  test("the worn face reads the vessel's books and its own planes, and never another face's planes", async () => {
+    const views = faceFleetViews(() => pinned, () => G1, books);
     views.seat("worn-device", grant(G1));
     const gate = views.gateFor("worn-device")!;
     expect(await gate.mayFederate(idOf(WIKI))).toBe(true);
@@ -94,33 +95,29 @@ describe("the worn face's books: the bridge until O1", () => {
   });
 
   test("RED: a face carried but not worn reads its own planes alone", async () => {
-    const views = faceFleetViews(() => pinned);
+    const views = faceFleetViews(() => pinned, () => G1, books);
     views.seat("other-device", grant(G2));
     const gate = views.gateFor("other-device")!;
     expect(await gate.mayFederate(idOf(TWO.circles))).toBe(true);        // CONTROL: its own book
     expect(await gate.mayFederate(idOf(WIKI))).toBe(false);
     expect(await gate.mayFederate(idOf(ONE.persona))).toBe(false);
     // The worn group the vessel names wins over the bootstrap's pin.
-    const switched = faceFleetViews(() => pinned, () => G2);
+    const switched = faceFleetViews(() => pinned, () => G2, books);
     switched.seat("other-device", grant(G2));
     expect(await switched.gateFor("other-device")!.mayFederate(idOf(WIKI))).toBe(true);
     switched.seat("worn-device", grant(G1));
     expect(await switched.gateFor("worn-device")!.mayFederate(idOf(WIKI))).toBe(false);
   });
 
-  test("RED: a caller that names no worn face (sealed custody's group, nothing proven yet) opens no bridge, whatever the bootstrap's group text says; CONTROL: the named worn face keeps it", async () => {
-    const forged = { ...bootstrap(ONE, TWO), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };   // the mutable bootstrap claims G1 is worn
-    const unnamed = faceFleetViews(() => forged, () => null);
-    unnamed.seat("device", grant(G1));
-    expect(await unnamed.gateFor("device")!.mayFederate(idOf(WIKI)), "no custody-named worn face: the vessel's books stay shut").toBe(false);
-    expect(await unnamed.gateFor("device")!.mayFederate(idOf(ONE.circles)), "its own planes still read").toBe(true);
-    const named = faceFleetViews(() => forged, () => G1);
-    named.seat("device", grant(G1));
-    expect(await named.gateFor("device")!.mayFederate(idOf(WIKI))).toBe(true);
+  test("RED: no books named opens no bridge; a caller that names none sees only the view", async () => {
+    const views = faceFleetViews(() => pinned, () => G1);
+    views.seat("worn-device", grant(G1));
+    expect(await views.gateFor("worn-device")!.mayFederate(idOf(WIKI))).toBe(false);
+    expect(await views.gateFor("worn-device")!.mayFederate(idOf(ONE.circles))).toBe(true);
   });
 
-  test("RED: another face's plane the bootstrap OMITS but the catalog names stays out of the worn bridge, by the derived shape; CONTROL: the worn face's own planes and a wiki still read", async () => {
-    const onlyWorn = { ...bootstrap(ONE), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };    // the bootstrap forgets face two
+  test("RED: another face's plane that no catalog row, no bootstrap entry and no list names reads NOTHING across the bridge (read 6: an omission never lets a document in); CONTROL: the catalog's non-face books are allowed", async () => {
+    const STRAYED = generateAutomergeUrl();                              // a foreign face's plane document with every name removed
     const sib = personaSiblingBagIds(personaBagIdFor(G2));
     const catalog = { tiddlers: {
       [personaBagIdFor(G2)]: { tiddler: { title: personaBagIdFor(G2), text: TWO.persona } },
@@ -128,17 +125,16 @@ describe("the worn face's books: the bridge until O1", () => {
       [personaBagIdFor(G1)]: { tiddler: { title: personaBagIdFor(G1), text: ONE.persona } },
       "lar:///ha.ka.ba/bags/my-wiki": { tiddler: { title: "lar:///ha.ka.ba/bags/my-wiki", text: WIKI } },
     } } as never;
-    const foreign = foreignFaceDocs(catalog, G1);
-    expect(foreign.has(String(idOf(TWO.persona))) && foreign.has(String(idOf(TWO.circles)))).toBe(true);
-    expect(foreign.has(String(idOf(ONE.persona))), "the worn face's own plane is not foreign").toBe(false);
-    const bare = faceFleetViews(() => onlyWorn, () => G1);
-    bare.seat("worn", grant(G1));
-    expect(await bare.gateFor("worn")!.mayFederate(idOf(TWO.circles)), "the bug: the bootstrap alone leaks face two").toBe(true);
-    const views = faceFleetViews(() => onlyWorn, () => G1, () => foreign);
+    const allowed = bridgeBooks(catalog);
+    expect(allowed.has(String(idOf(WIKI))), "a non-face book").toBe(true);
+    for (const face of [TWO.persona, TWO.circles, ONE.persona]) expect(allowed.has(String(idOf(face))), "face-scoped rows are never books").toBe(false);
+    const onlyWorn = { ...bootstrap(ONE), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };    // the bootstrap forgets face two
+    const views = faceFleetViews(() => onlyWorn, () => G1, () => allowed);
     views.seat("worn", grant(G1));
-    expect(await views.gateFor("worn")!.mayFederate(idOf(TWO.circles))).toBe(false);
-    expect(await views.gateFor("worn")!.mayFederate(idOf(TWO.persona))).toBe(false);
-    expect(await views.gateFor("worn")!.mayFederate(idOf(WIKI))).toBe(true);
-    expect(await views.gateFor("worn")!.mayFederate(idOf(ONE.circles))).toBe(true);
+    const gate = views.gateFor("worn")!;
+    expect(await gate.mayFederate(idOf(STRAYED)), "the document no list names").toBe(false);
+    expect(await gate.mayFederate(idOf(TWO.circles)), "a catalog row for face two is not a book").toBe(false);
+    expect(await gate.mayFederate(idOf(WIKI))).toBe(true);
+    expect(await gate.mayFederate(idOf(ONE.circles))).toBe(true);
   });
 });
