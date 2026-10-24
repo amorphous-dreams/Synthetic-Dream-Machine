@@ -4,6 +4,48 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XIII — red-first adapter lift and evergreen aftermath
+
+**Live-code re-entry:** this addendum records the handoff after the carrier repair and
+candidate-adapter lift; the SHA in the original Wave XII preface remains historical.
+Always inspect the live PR head and CI verdict rather than treating a scheduled run
+as completed evidence. The base noosphere boot remains read at
+`feature/green-jello-dinosaur-5`; PR #84 edits live only on
+`feature/green-jello-dinosaur-5--projection-loom`.
+
+**Observe / Orient.** Whole-repository CI at the first carrier-frame repair
+`de679331` still found five unaddressed `uri-path` fields and two namespace
+metadata fields. The dedicated Loom and held-out jobs were green. The corpus
+reader itself reported zero torn frames or bad checks; this was a *metadata* gate,
+not an excuse to weaken framing. Commit `ff2dd34` fixes the seven metadata
+records and restamps their SHA-256 spans.
+
+**Decide / Act — RED then GREEN.** Commit `dc8d24b` introduces
+`tests/test_candidate_adapter.py` with an import-time RED for a missing
+`CandidateAdapter`. The tests constrain callback/adapter identity (including
+durable checkpoint bytes), audit/detail budget, scored/audited/deferred outcomes,
+interrupted safe-point replay, callback-mixing refusal, and backend-error
+isolation. Commit `dcfd3c3` introduces a frozen callback adapter in
+`epochs.py`, preserving the previous keyword-callback interface for callers.
+`ooda.py` passes exactly one adapter to `WideEpoch.run` for both CAD-only and
+compound construction. The tests must turn GREEN in the new-head Loom CI before
+this is considered an independently verified equivalence lift.
+
+**Aftermath / evergreen.** This abstraction lifts *invocation intent*, not
+geometry or truth authority. `WideEpoch` still owns scheduling, exact CAD/void
+admission, objective completeness, nonnegative finite losses, pet-name preference,
+phenotype niches, checkpoint snapshots, and causal receipts. The compound
+`CapabilityCompositor` still executes its trusted dependency DAG and separate
+polymesh/socket audit. An image-matching score remains provisional without
+independent external registration. A failed scoring backend remains `error`,
+never a claim that an architectural candidate was structurally invalid.
+
+**Re-entry gates.** Require green new-head Loom CI, held-out witnesses, and the
+whole-repository package/corpus gates. If the whole repository remains red,
+name the specific failing tests before another lift. Do not regenerate a previous
+checkpoint directory after a changed code digest: fork new trial output. Keep the
+original source bytes, camera, operator registry, and recipe fingerprints intact.
+
 ## Current verification / next operator re-entry
 
 At inspected head `8fdc71d`, [Loom PR run #40068055277](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068055277) and [Loom push run #40068051193](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068051193) both **passed 200 tests** (7 warnings each). This handoff update requires its own new-head CI receipt.
