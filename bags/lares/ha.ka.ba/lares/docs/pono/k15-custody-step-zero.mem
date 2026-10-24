@@ -189,6 +189,18 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 
 <<~/ahu>>
 
+<<~ ahu #/the-floor-index>>
+
+!!! The floor index of faces (ruled 2026-10-23)
+
+A node with no omnibus VK still has to name the faces it can unlock before any face opens, so the identity home keeps ONE F row, `face-index`, in the clear. It lists the node's faces in local face order. Each entry holds the SHA-256 digest of its PersonaGroup (null while the founding stands), the digest of the founding's ask (null once the group stands) and the filename of the face's own slot tree. It holds no name, no handle, no prefix, no label and no key bytes.
+
+''The accepted leak, and only it:'' the count of the node's faces and their PersonaGroup digests. The digests already name the carriers on disk (`face-atom-g<digest>.bin`, `veil-archive-g<digest>.bin`), so the index shows a stolen disk no fact it does not already show. A removed face leaves a tombstone entry, so no other face's local ordinal moves.
+
+The red: the index of two founded faces carries no byte of either face's name, handle, KEL prefix, root key or label, and reads the same whether the faces are locked or open. The control: the digests in the index are the digests the carriers on disk bear, and `vault status` prints the count and the digests alone.
+
+<<~/ahu>>
+
 <<~ ahu #/open-joints>>
 
 !!! The place seed's reach (ruled 2026-10-19)
@@ -212,6 +224,6 @@ A bundle for PersonaGroup X contains X's root/identity, X's Keyhive and Veil arc
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;BZXsphn0bsMc3qtJdfrD4V7ThfgZ47I2d4ZJRdetHnw
+<<^ code="&#x0003;">>ni:///sha-256;bY5URQnN7khHizWUtLp5BvTBv5bUxILLB0sKHnM5xz0
 
 <<^ code="&#x0004;" -> to="?">>
