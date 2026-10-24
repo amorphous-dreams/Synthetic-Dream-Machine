@@ -100,6 +100,8 @@ The train closes when ''every surface of the superset publishes a row'' (`dreamd
 * ''Waits on'': D0. The serialisers wait on nothing; `blocks` for memetic-wikitext specifically waits on the Annex B widget-tree pass (D5).
 * ''Spikes'': the blocks sink over a recording document (#/the-spikes 8); the synchronous ask on Node (`Atomics.wait` plus `receiveMessageOnPort`, bounded waits only).
 * ''Rulings'' (`dreamdom#/open-rulings`, ruled 2026-10-16): presence at width none travels as a separate droppable message. The port ships with `causedBy` mandatory and skinny behind a flag.
+* ''Stands'' (PR #87, 2026-10-23): the worker half: the port log, the wire, the island handler, one island to one face with a moved face retiring its port, the bounds, the composer lends and the holder's routes dropped by name until a port lease. Owed before D3: the composer wiring and the page transport, so no glass engine reaches a port yet, and the ledger slot a retired port's landed write keeps until its actor resends.
+* ''The seventh silent loss'' (measured 2026-10-23; `dreamdom#/what-a-sink-keeps`): a reload soon after Confirm lost the edit, the island's loop stalled by a whole-corpus coherence refold. Lane `dreamdom-rest-before-reload` cures it ahead of D3: a per-title stalk memo, the browser rest door with heads (a stalled rest named, never silent), the page's unload hold while a reliable act waits, and the island owning the modified-click rule the stall had hidden. The remaining whole-corpus fold stays an owed row.
 
 !!! D3 · THE GLASS ENGINE AND THE WIDTH SPIKE ~ full, skinny and story behind a flag (lane `dreamdom-glass`; waits on D1 and D2)
 * ''Builds'': a port adaptor as a startup module on the glass that binds `$tw.wiki`'s `change` event, lands `port:changes` under an origin tag its own listener skips, posts `port:write` with `txId` and keeps the write optimistic until `port:written` echoes; no `$tw.syncer` constructed and no `syncadaptor` module shipped; the glass boot from the same CAS core blob by hash; the page template over `window.document` mounted in-process as the browser's first camera; skinny and story as settings of the same adaptor; `lar:service` doors reached from the glass engine's root handlers; the multi-tab topology (a Web Lock elects the leader, the leader's worker holds the engine, a SharedWorker or a BroadcastChannel handshake routes other tabs, a late tab gets a snapshot and never a missed `ready`); peer write into an open draft shown with the newer-base prompt; `§9` of `packages/AGENTS.md` reworded on the operator's ruling.
@@ -245,6 +247,6 @@ A ruling reaches the operator only where its answer changes who holds authority,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tkWhy0_Lcp_pw2OtjYVpi7ojV0s8Cq89a_rtHOCciXQ
+<<^ code="&#x0003;">>ni:///sha-256;sqZ6fEkoMOjwD4uGRJzZdbS7UVW1N_Y8NflzHcuTnXk
 
 <<^ code="&#x0004;" -> to="?">>
