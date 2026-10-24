@@ -1,8 +1,16 @@
 # Projection Loom — Evergreen Handoff (Wave XII)
 
-**As-of source:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom`, inspected at commit `36a9466` (2026-10-23, America/Los_Angeles). **This document travels with the branch; check the live PR head on re-entry.** A later commit supersedes the snapshot. Do not mistake a fixed SHA for the latest state.
+**As-of source:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom`, inspected at prior handoff head `8fdc71d` (2026-10-23, America/Los_Angeles). **This document travels with the branch; check the live PR head on re-entry.** A later commit supersedes the snapshot. Do not mistake a fixed SHA for the latest state.
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
+
+## Current verification / next operator re-entry
+
+At inspected head `8fdc71d`, [Loom PR run #40068055277](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068055277) and [Loom push run #40068051193](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068051193) both **passed 200 tests** (7 warnings each). This handoff update requires its own new-head CI receipt.
+
+[Whole-repository CI #40068051246](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068051246) had failed package/E2E steps during inspection; [held-out #40068051197](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068051197) was still running. Neither outcome changes the Loom-specific test record.
+
+**Re-entry:** fetch live boot + branch head; read this runbook and the handoff meme; check newest Loom Actions; run the complete compound PoC in a *new* output directory when source/code/recipe changed; compare full CAD, polygon and socket audits and final-gallery previews; review the acquired but UNREVIEWED CC0 lock before promoting it.
 
 ## Current ruling — one helm, multiple capabilities per entity
 

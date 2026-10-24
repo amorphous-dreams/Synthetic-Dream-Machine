@@ -21,13 +21,31 @@ uri-path = "ha.ka.ba/lares/api/projection-loom-handoff"
 ! Projection Loom — Operator/Lares handoff XII
 
 ''Scope.'' PR #84; working branch feature/green-jello-dinosaur-5--projection-loom;
-inspected baseline commit 36a9466 on 2026-10-23 (America/Los_Angeles).
+inspected prior handoff head 8fdc71d on 2026-10-23 (America/Los_Angeles).
 Fetch the live branch head on every re-entry. This meme carries a //volatile
 handoff//, not enduring architectural canon or a second noosphere boot.
 
 ''Authoritative human runbook.'' tools/projection-loom/docs/HANDOFF.md.
 ''Stable method.'' lar:///ha.ka.ba/lares/api/projection-loom-capability-composition.
 ''Boot.'' Read the live noosphere-boot.mem on its default branch before action.
+
+<<~/ahu>>
+
+<<~ ahu #/live-status-refresh>>
+!! Live head and CI re-entry (23 October 2026)
+
+* Inspected head 8fdc71d: PR Loom CI #40068055277 SUCCESS (200 passed,
+  7 warnings, 31.36s); push Loom CI #40068051193 SUCCESS (200 passed,
+  7 warnings, 36.53s). The new handoff commit must earn its own run.
+* General repository CI #40068051246 showed package and E2E failures
+  during this inspection; held-out #40068051197 remained in flight.
+  Scope the Loom green tests separately from unrelated repo gates.
+* GitHub artifact #12542954065 holds a downloaded, UNREVIEWED CC0
+  brutalism2 ZIP: 113109 bytes, SHA-256
+  8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3.
+  Do not claim a reviewed lock or admitted external CAD model.
+* Source status, runbook and backlog follow the living branch. Read the
+  live head and operator commands before continuing any epoch.
 
 <<~/ahu>>
 
