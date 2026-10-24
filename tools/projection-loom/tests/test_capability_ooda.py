@@ -89,7 +89,7 @@ def test_fullspeed_two_epochs_inherit_dual_genome_and_restart_idempotently(tmp_p
     journal=json.loads((out/'session.json').read_text())
     assert len([x for x in journal['loops'].values() if x['scope']=='epoch'])==2
     assert journal['loops']['location/final-gallery']['phase']=='closed'
-    assert journal['passes'][0]['parent_genome']==json.loads((out/'epoch_002.json').read_text())['proposals']['candidate-0001']['genome']
+    assert journal['passes'][0]['parent_genome']==json.loads((out/'epoch_002.json').read_text())['proposals']['lineage-seed']['genome']
     events=len(journal['events'])
     again=run_ooda_epochs(project,out,recipe=recipe,autonomy=0,**args)
     assert again['status']=='completed' and again['events']==events
@@ -137,3 +137,18 @@ def test_sourceless_named_location_with_standalone_polymesh(tmp_path):
     assert result['gallery']['evidence_state']=='synthetic'
     assert any('@entity/Found Object' in RelationWitness.load(Path(x['folder'])/'relations.json').nodes
                for x in result['gallery']['finalists'])
+
+
+def test_inherited_parent_does_not_displace_sobol_exploration(tmp_path):
+    project,recipe=necro()
+    result=run_ooda_epochs(project,tmp_path/'slack',recipe=recipe,autonomy=1.,
+                           **small())
+    assert result['status']=='completed'
+    epoch=json.loads((tmp_path/'slack'/'epoch_001.json').read_text())
+    proposals=epoch['proposals']
+    assert set(proposals)=={'lineage-seed','candidate-0001','candidate-0002','candidate-0003'}
+    assert proposals['lineage-seed']['emitter']=='lineage'
+    assert proposals['candidate-0001']['emitter']=='sobol'
+    assert proposals['candidate-0002']['emitter']=='local'
+    assert proposals['candidate-0003']['emitter']=='topology'
+    assert proposals['lineage-seed']['genome']==recipe.initial

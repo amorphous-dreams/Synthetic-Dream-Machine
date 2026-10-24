@@ -291,6 +291,8 @@ inside a composed location. Each material, polygon, and attachment certificate
 retains its own scope.
 
 The existing `ooda-run` and `wide-epoch` commands now share **one controller**.
+The selected parent occupies a distinct lineage seed seat, preserving all
+Sobol/local/topology proposals rather than masquerading as an exploration sample.
 Add `--capability-recipe examples/necrospire/hybrid/recipe.json` to either
 command: each scheduled candidate Act opens full OODA-HA capability child
 loops, then produces one combined lineage genome for operator review,

@@ -55,6 +55,10 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
   limited, source-digest-checked visible surface displacement in a fixed camera
   while preserving protected CAD sockets. It MUST NOT infer true world scale,
   mechanical soundness, or unseen backsides.
+* ''Do not consume exploration to preserve lineage.'' The inherited parent
+  takes its own named proposal seat. Sobol, local and topology generators retain
+  their independent trials; exact evaluation budgets may defer but not silently
+  replace them.
 * ''Operator choice remains real.'' Aftermath MUST present audited compound
   preview witnesses with entity `#has` propositions for pet-naming, o-takiage
   and choosing an alternate valid parent. Full-speed and manual steering run

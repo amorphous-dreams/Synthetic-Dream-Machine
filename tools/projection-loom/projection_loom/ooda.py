@@ -869,11 +869,13 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 journal.save()
                 batch = propose_methods(bounds, current, seed=seed+i, count=candidates,
                                         topology_loci=topology_loci)
-                # The first proposal explicitly tests the selected compound
-                # lineage, allowing CAD and surface operators to co-evolve.
+                # The selected parent gets a distinct seat; never sacrifice
+                # Sobol exploration to make room for inheritance. Every
+                # emitter keeps its own bounded proposals and the lineage
+                # seed competes under the exact same mandatory CAD gates.
                 if compositor is not None:
                     from .epochs import Proposal
-                    batch[0] = Proposal(batch[0].id,batch[0].emitter,dict(current),'selected-parent')
+                    batch.insert(0,Proposal('lineage-seed','lineage',dict(current),'selected-parent'))
                 solid_score, state = (project_silhouette_score(project) if compositor is None
                                       else (None,score_state))
                 runner = WideEpoch(location=project.location,

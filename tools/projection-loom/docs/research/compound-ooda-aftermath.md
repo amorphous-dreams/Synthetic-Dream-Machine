@@ -38,8 +38,8 @@ not geometric vertex indices.
 ## ↺ Self-review — tightening back to source
 
 1. The original 178-test baseline passed. The OODA-integrated and capability
-   integrity tests then passed 199/199 in this local snapshot.
-2. A three-epoch, four-proposal-per-epoch full-speed Necrospire CLI trial
+   integrity tests then passed 200/200 in this local snapshot.
+2. A three-epoch, four-exploratory-proposal-per-epoch plus an inherited-parent seat full-speed Necrospire CLI trial
    produced three independently regrown audited CAD+mesh finalists and
    95 total nested phase loops; all source agreement remains provisional.
 3. Selection of finalists from *niche champions only* omitted valid and
@@ -48,7 +48,10 @@ not geometric vertex indices.
 4. A separate `compound_epochs.py` runner no longer appears in the active
    package. `wide-epoch` and `ooda-run` enter the same controller; both retain
    manual/AI policy, phase inquiries and source gates.
-5. Generated visuals remain similar and have not surpassed the CAD-only
+5. An inherited parent had silently displaced the first Sobol proposal.
+   The parent now has an explicit `lineage-seed` seat, so Sobol, local and
+   topology exploration remain intact even at narrow budgets.
+6. Generated visuals remain similar and have not surpassed the CAD-only
    silhouette baseline. This remains an explicit geometry/search limitation,
    not a reason to relabel the camera as calibrated.
 

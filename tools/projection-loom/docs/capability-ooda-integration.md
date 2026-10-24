@@ -57,7 +57,8 @@ neither human nor adviser can waive CAD and source evidence gates.
 
 ## Epoch inheritance and operator controls
 
-Each surviving proposal carries both CAD and surface loci as one bounded
+The selected parent gets a dedicated `lineage-seed` proposal and does not
+replace Sobol, local or topology candidates. Each surviving proposal carries both CAD and surface loci as one bounded
 **compound genome**, with immutable recipe digest, source hashes and trusted
 operator fingerprint. Changing a source, recipe, implementation, or algorithm
 invalidates an in-progress journal's identity; fork the run rather than
