@@ -1,10 +1,35 @@
 # OODA-HA runs the Loom: executable, fractal control plane
 
-**Authority:** The current `projection_loom.ooda` and `WideEpoch` contracts. The
+**Authority:** The single `projection_loom/fractal-ooda-ha.py` controller,
+the `projection_loom.ooda` compatibility import, and `WideEpoch` contracts. The
 noosphere boot defines the five-phase practice; this implementation adopts its
 sequence as a **runtime state machine**. It does not confuse the developers'
 Aftermath/self-review practice with a new architectural material or geometry
 feature.
+
+## Fractal module, OODA-HA law and re-entry
+
+The controller's implementation filename now reads `fractal-ooda-ha.py`.
+Python callers keep `from projection_loom.ooda import run_ooda_epochs`:
+the old module forwards to the physical implementation through `importlib`,
+not through a separate scheduling authority. The CLI contract retains
+`ooda-run`, `ooda-steer`, and `ooda-status` names for compatibility.
+
+Read this against the governing `noosphere-boot.mem#/ooda-ha` and
+`projection-loom-ooda-ha.mem`, not four-phase OODA:
+`observe → orient → decide → act → aftermath → closed`.
+`closed` records the boundary after Aftermath rather than a sixth OODA phase.
+A new epoch reopens Observe with the accepted genome; it never skips
+Aftermath. An inquiry may open inside any active phase, including Aftermath;
+a parent cannot advance while that child remains open.
+
+The shared `selection.py` supplies two *distinct* pure policies:
+`schedule_candidates` allocates bounded exact-audit seats; and
+`select_review_candidates` chooses scored, audited operator review options.
+They use shared data shapes, not shared geometry authority. CAD-only and
+compound renderers each regrow and audit their selected candidates.
+Regression tests cover deterministic emitter-seat reservation, review diversity,
+unscored exclusion, five ordered phases, nested Aftermath and legacy imports.
 
 ## One location, nested loops, five guarded phases
 
