@@ -2256,6 +2256,16 @@ async function prepareNodeBootOn(
         : personaGroupId ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("the mounted face names no PersonaGroup")));
       stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
     }
+    // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before `daemonAuth` snapshots `standingAnchor`, so the
+    // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
+    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
+    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    if (faceAnchor && personaGroupId && personaKelChain) {
+      const prefix = leaseEpochPrefix(personaGroupId);
+      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
+      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
+    }
     const faceLit = activeAtom !== null && atomSeed !== null;
     const daemonAuth = {
       seed:                 vesselSeed,
@@ -2337,15 +2347,6 @@ async function prepareNodeBootOn(
       rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
-    // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
-    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
-    if (faceAnchor && personaGroupId && personaKelChain) {
-      const prefix = leaseEpochPrefix(personaGroupId);
-      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
-      const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
-      if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
-    }
-
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
