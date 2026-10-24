@@ -15,6 +15,7 @@ import math
 import os
 import numpy as np
 from scipy.stats import qmc
+from .selection import schedule_candidates
 
 SCHEMA = 'projection-loom/wide-epoch/v1'
 
@@ -199,34 +200,16 @@ class WideEpoch:
             self._save()
         elif existing!=pmap:
             raise ValueError('Proposal set changed after epoch began')
-        estimates=[]
+        scheduled=schedule_candidates(proposals,preview=preview,
+                                      max_exact=self.max_exact,
+                                      reserve_emitter=self.reserve_emitter)
+        selected={p.id for p in scheduled}
         for p in proposals:
-            estimate=0.0 if preview is None else float(preview(p.genome))
-            if not math.isfinite(estimate):
-                raise ValueError('Preview score must be finite')
-            estimates.append((estimate,p.id,p))
-        # When budget permits, every method retains a seat at the audition.
-        # This is scheduling slack, never a structural or fitness waiver.
-        ordered=sorted(estimates,key=lambda x:(x[0],x[1]))
-        scheduled=[]
-        if self.reserve_emitter:
-            methods={p.emitter for _,_,p in estimates}
-            if len(methods)<=self.max_exact:
-                for method in sorted(methods):
-                    scheduled.append(next(row for row in ordered if row[2].emitter==method))
-        already={row[2].id for row in scheduled}
-        for row in ordered:
-            if len(scheduled)>=self.max_exact:break
-            if row[2].id not in already:
-                scheduled.append(row)
-                already.add(row[2].id)
-        selected={p.id for _,_,p in scheduled}
-        for _,_,p in estimates:
             if p.id not in selected and p.id not in self.data['results']:
                 self.data['results'][p.id]={'state':'deferred','reason':'exact-audit budget',
                                             'emitter':p.emitter,'parent':p.parent}
         detail_count=sum(r.get('state')=='scored' for r in self.data['results'].values())
-        for _,_,p in scheduled:
+        for p in scheduled:
             # Cooperative interruptions happen between completed candidate
             # evaluations, never mid-Boolean operation. Reentry uses the saved
             # candidate receipts and never repeats a completed CAD side effect.
@@ -301,25 +284,11 @@ class WideEpoch:
         Deferred candidates do not count as completed auditions. An evaluator
         error counts as a completed attempt, never as a valid geometry score.
         """
-        estimates=[]
-        for p in proposals:
-            value=0. if preview is None else float(preview(p.genome))
-            if not math.isfinite(value):raise ValueError('Preview score must be finite')
-            estimates.append((value,p.id,p))
-        ordered=sorted(estimates,key=lambda x:(x[0],x[1]))
-        scheduled=[]
-        if self.reserve_emitter:
-            methods={p.emitter for _,_,p in estimates}
-            if len(methods)<=self.max_exact:
-                for method in sorted(methods):
-                    scheduled.append(next(row for row in ordered if row[2].emitter==method))
-        ids={row[2].id for row in scheduled}
-        for row in ordered:
-            if len(scheduled)>=self.max_exact:break
-            if row[2].id not in ids:
-                scheduled.append(row);ids.add(row[2].id)
-        return all(self.data['results'].get(row[2].id,{}).get('state') in
-                   ('scored','audited','rejected','error') for row in scheduled)
+        scheduled=schedule_candidates(proposals,preview=preview,
+                                      max_exact=self.max_exact,
+                                      reserve_emitter=self.reserve_emitter)
+        return all(self.data['results'].get(p.id,{}).get('state') in
+                   ('scored','audited','rejected','error') for p in scheduled)
 
 
 def project_silhouette_score(project,*,size=(96,144)):
