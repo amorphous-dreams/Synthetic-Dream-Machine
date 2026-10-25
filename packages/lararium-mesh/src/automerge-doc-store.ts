@@ -298,6 +298,14 @@ export class AutomergeDocStore implements LarTiddlerStore {
     } catch { return false; }
   }
 
+  /** True where the document holds every head in `named`: those changes reached this replica. */
+  holdsHeads(named: readonly string[]): boolean {
+    try {
+      const standing = this.handle.doc();
+      return !!standing && hasHeads(standing, named as string[]);
+    } catch { return false; }
+  }
+
   /** Attach the handle's causal snapshot to its state envelope when its API exposes heads. */
   private _headsForEnvelope(): readonly string[] | undefined {
     if (!this.handle.doc()) return undefined;

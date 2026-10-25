@@ -36,11 +36,14 @@ async function stand() {
   let handler: ((changes: Record<string, unknown>) => void) | null = null;
   /** The heads the view has landed, as the island's ledger would hold them. */
   const landed = new Set<string>();
+  /** The heads the island's own replica of the document holds, whether or not the view landed them yet. */
+  const held = new Set<string>();
   const far = { closed: false, cancelled: 0, close: (): void => {} };
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: root }],
     carrierFileFn: async () => ({ ext: MEME_EXT, body: body(records), encoding: "utf8" }),
     viewHolds: (_bag, _uri, heads) => heads.every((h) => landed.has(h)),
+    docHolds: (_bag, heads) => heads.every((h) => held.has(h)),
     farSideClosed: () => {
       let resolve: () => void = () => {};
       const promise = new Promise<void>((r) => { resolve = r; });
@@ -63,7 +66,7 @@ async function stand() {
     for (const h of heads) landed.add(h);
     handler?.({ [URI]: { modified: true } });
   };
-  return { projector, file, arrive, far };
+  return { projector, file, arrive, far, held };
 }
 const waitsHeld = (p: LarDiskProjector): number => (p as unknown as { settleWakes: Set<unknown> }).settleWakes.size
   + (p as unknown as { settleInboxes: Set<unknown> }).settleInboxes.size;
@@ -151,6 +154,21 @@ describe("the settle word follows the heads its gesture landed", () => {
     s.arrive("A LATER STATE");
     s.far.close();
     expect(await asked).toMatchObject({ ok: true, settledCount: 1 });
+  });
+
+  test("a close with the heads already in the island's own replica keeps the wait: only heads the replica lacks can no longer arrive", async () => {
+    const s = await stand();
+    let answered: Record<string, unknown> | null = null;
+    void ask(s, "THE NAMED RECORDS", HEADS).then((a) => { answered = a; });
+    await flushJobs();
+    s.held.add(HEADS[0]!);   // the replica holds the change; the view has not landed it yet
+    s.far.close();
+    await flushJobs();
+    expect(answered, "the heads stand in the replica, so the view still gets them").toBeNull();
+    s.arrive("THE NAMED RECORDS");
+    await flushJobs();
+    expect(answered).toMatchObject({ ok: true, settledCount: 1 });
+    expect(waitsHeld(s.projector)).toBe(0);
   });
 
   test("a heads list that is not whole refuses by name", async () => {

@@ -139,9 +139,10 @@ export function mountDiskProjection(
   layerIndexOf: (bagId) => ctx.composite.layerIndexOf(bagId),
   // THE SETTLE WORD FOLLOWS HEADS: the wiki has landed a bag's document up to the heads a gesture named
   // (`wikiLandedCovers`), and the far side has closed when the island's Repo holds no sync peer: no record
-  // comes through a link that closed (`farSideClosedOf`).
+  // comes through a link that closed (`farSideClosedOf`), unless the island's own replica holds the heads (`docHolds`).
   viewHolds: (bagId, _uri, heads) => wikiLandedCovers(ctx.tw5, bagId, heads),
   farSideClosed: () => farSideClosedOf(ctx.repo),
+  docHolds: (bagId, heads) => ctx.composite.storeForBag(bagId)?.holdsHeads?.(heads) === true,
   // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.

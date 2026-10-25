@@ -130,6 +130,13 @@ export interface LarDiskProjectorOptions {
    * watch when the word ends first. Absent, only the arrival of the records, a later word or a stop ends a word.
    */
   readonly farSideClosed?: (bagId: string) => { readonly promise: Promise<void>; readonly cancel: () => void };
+  /**
+   * True where the island's own replica of the bag's document holds every named head. Heads the replica holds
+   * reach the view through the island's own pipeline, whatever the link does, so a close never ends a word for
+   * a carrier whose heads the replica holds: only heads the replica lacks can no longer arrive. Absent, a close
+   * reads every named head as absent.
+   */
+  readonly docHolds?: (bagId: string, heads: readonly string[]) => boolean;
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
   /**
@@ -369,6 +376,7 @@ export class LarDiskProjector {
   private readonly layerIndexOf: ((bagId: string) => number) | undefined;
   private readonly viewHolds: ((bagId: string, uri: string, heads: readonly string[]) => boolean) | undefined;
   private readonly farSideClosed: ((bagId: string) => { readonly promise: Promise<void>; readonly cancel: () => void }) | undefined;
+  private readonly docHolds: ((bagId: string, heads: readonly string[]) => boolean) | undefined;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
   private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
@@ -410,6 +418,7 @@ export class LarDiskProjector {
     this.layerIndexOf = opts.layerIndexOf;
     this.viewHolds = opts.viewHolds;
     this.farSideClosed = opts.farSideClosed;
+    this.docHolds = opts.docHolds;
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.onConflictResolved = opts.onConflictResolved;
@@ -1144,7 +1153,9 @@ export class LarDiskProjector {
    * (the named records or a later one). Without a hash match the heads alone end the wait, so a view that
    * moved past the named records never keeps a word waiting. A word that names heads also listens for the far
    * side to close (`farSideClosed`): the close brings one last look, and a carrier the look still finds
-   * absent reads `closed`. A word with no heads claims nothing about the link and follows the hash alone.
+   * absent reads `closed`, unless the island's own replica already holds its heads (`docHolds`): those reach
+   * the view through the island's own pipeline, and the word keeps waiting for them. A word with no heads
+   * claims nothing about the link and follows the hash alone.
    *
    * A HANDSHAKE, NO CLOCK. Records a gesture landed elsewhere reach this wiki by sync, at no instant a caller
    * can name, and the wiki raises its change event on a later tick than the view moves. So the word never
@@ -1252,10 +1263,11 @@ export class LarDiskProjector {
             }
           }
           if (waiting.size === 0 || this.stopping) break;
-          // A look that followed the close ends the word: what it found absent can never come.
-          if (afterClose) break;
+          // A look that followed the close ends the word: what it found absent can never come. A carrier whose
+          // named heads the island's own replica holds still comes, through the island's own pipeline.
+          if (afterClose && ![...waiting.keys()].some((uri) => { const h = named.get(uri); return h !== undefined && this.docHolds?.(bagId, h) === true; })) break;
           if (inbox.all || inbox.roots.size > 0) continue;   // a change came during the look: look again now
-          await (farClosed === null ? wake.promise : Promise.race([wake.promise, farClosed]));
+          await (farClosed === null || closed ? wake.promise : Promise.race([wake.promise, farClosed]));
         } finally {
           wake.cancel();
         }

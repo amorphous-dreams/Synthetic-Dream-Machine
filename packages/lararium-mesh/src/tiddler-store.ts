@@ -215,6 +215,9 @@ export interface LarTiddlerStore {
    */
   coversHeads?(have: readonly string[], named: readonly string[]): boolean;
 
+  /** Optional: true where the document holds every head in `named` (those changes reached this replica). */
+  holdsHeads?(named: readonly string[]): boolean;
+
   /**
    * Write a record to live wiki state.
    * Must NOT write to lares/ (canon path). Future canon promotion must use a

@@ -29,6 +29,8 @@ describe("AutomergeDocStore.coversHeads", () => {
     expect(store.coversHeads(first, second), "an earlier state never covers a later one").toBe(false);
     expect(store.coversHeads(second, ["f".repeat(64)]), "heads the document never saw cover nothing").toBe(false);
     expect(store.coversHeads(["f".repeat(64)], first), "a state the document never held covers nothing").toBe(false);
+    expect(store.holdsHeads(second), "the replica holds the heads it wrote").toBe(true);
+    expect(store.holdsHeads(["f".repeat(64)]), "and not heads it never saw").toBe(false);
     await repo.shutdown();
   });
 });
