@@ -4,6 +4,37 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XVII — canonical JSON encoding only, no common evidence authority
+
+**✶ Observe / ⏿ Orient.** Phase-law extraction earned green dedicated Loom
+CI at exact head `85d1b843` (both push and PR workflows). Whole-repository
+and held-out witness gates were not final at the next code boundary. Five
+Python modules repeated the same sorted, compact UTF-8 JSON SHA-256 encoding
+with distinct identity scopes and permissiveness rules.
+
+**◇ Decide / RED.** `tests/test_provenance_encoding.py` at `11e59b7`
+imports the initially missing `provenance_encoding` module and pins
+hardcoded Unicode and empty-location digest vectors, strict nonfinite
+rejection, the 20-character relational digest and separation from source-file
+byte hashes. A failed hash vector is a lineage-breaking regression, not an
+opportunity to silently reissue identities.
+
+**▶ Act.** Commit `335730a` adds `canonical_json_sha256` and routes
+`epochs._hash`, `capability_stack.digest`, session fingerprinting,
+relational short fingerprints, and location snapshot hashing through it.
+Strict scopes explicitly reject NaN; the prior permissive JSON spelling
+for location/relations is retained with an explicit option. Each native
+caller continues owning the *meaning* of its digest. Exact source-file
+SHA-256, operator implementation fingerprints, BRep audits, mesh audits,
+registration witnesses and recipe/source assertions remain separate.
+
+**↺ Aftermath / reentry.** New-head Loom, whole-repository, and held-out
+witness checks remain mandatory. No geometry, authority or recipe schema
+changed intentionally. Code hash changes require a fresh output directory
+rather than replay into an old checkpoint. An eventual strict migration of
+legacy nonfinite evidence would require a separate explicit identity/version
+decision, not a cleanup side effect.
+
 ## Wave XVI — phase law as pure decisions, one journal as the executing helm
 
 **✶ Observe / ⏿ Orient:** At the green Wave XV Loom gate (218 passing

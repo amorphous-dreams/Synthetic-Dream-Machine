@@ -49,11 +49,32 @@ handoff//, not enduring architectural canon or a second noosphere boot.
 
 <<~/ahu>>
 
+<<~ ahu #/wave-xvii-reentry>>
+
+!! Current alpha bearing — code and checks (24 October 2026)
+
+The legacy snapshot at 8fdc71d and its run IDs remain historical testimony.
+For current code, read `tools/projection-loom/docs/HANDOFF.md` and the live
+PR #84 head before resuming; do not substitute that historical branch SHA.
+The canonical controller is
+`projection_loom.fractal_ooda_ha.run_ooda_epochs`, with pure
+`phase_rules.py` and distinct `review.py` / `gallery.py` renderers.
+
+Wave XVII (red-first `11e59b7`, implementation `335730a`) isolates shared
+canonical JSON encoding in `provenance_encoding.py` without merging evidence
+identities. Unicode vectors, short relational IDs, strict recipe/session
+JSON, permissive legacy location/relational spelling and raw source bytes
+have separate regression controls. Dedicated Loom CI at preceding Wave XVI
+head `85d1b843` passed; check *new-head* Loom, whole-repo and held-out
+gates before declaring this wave independently green.
+
+<<~/ahu>>
+
 <<~ ahu #/held-integrities>>
 !! What the machina currently enacts
 
 * ''One OODA-HA helm.'' Location, epoch, candidate, capability and final-gallery
-  loops run through projection_loom.ooda.run_ooda_epochs. Child inquiries MAY
+  loops run through projection_loom.fractal_ooda_ha.run_ooda_epochs. Child inquiries MAY
   open under any active phase; parent phases hold until their children close.
   Do not introduce a parallel compound epoch scheduler.
 * ''Each entity carries only useful capabilities.'' A Crystal MAY run CAD cage
@@ -199,6 +220,6 @@ No backlog item automatically grants a new capability.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2n5KvQz7X2yxhZ3i38vlK3htQtjhP9YOCHUHj2aKYmM
+<<^ code="&#x0003;">>ni:///sha-256;cAqpwR_Q22SpDnHxga9dABqbtOke5cGjXkxp99Ej0_8
 
 <<^ code="&#x0004;" -> to="?">>

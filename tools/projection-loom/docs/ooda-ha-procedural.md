@@ -42,6 +42,23 @@ verifies the new port, with full nested-epoch tests retaining behavior
 witnesses. Run a new output directory after this code move because the
 construction fingerprint necessarily changes.
 
+## Canonical encoding without a universal evidence identity
+
+`provenance_encoding.canonical_json_sha256()` captures only one existing
+encoding rule: SHA-256 of sorted, compact UTF-8 JSON with unescaped Unicode.
+Five call sites use it while preserving their different domains: exact
+candidate checkpoint identity, recipe/operator-bound construction identity,
+OODA session identity, shortened relational descriptions and location
+snapshots. Strict scopes reject nonfinite JSON; historically permissive
+relational/location digests pass `allow_nan=True` explicitly to avoid a
+silent identity migration. Neither behavior is a claim of source authenticity.
+
+Hash actual source **bytes** with their original per-source byte-SHA256
+contracts, never with a JSON model representation. Keep native BRep,
+polymesh, survey and registration validation independent. The regression
+vectors in `tests/test_provenance_encoding.py` pin exact byte identity and
+reject tampered location snapshots.
+
 ## Pure phase-law helpers beneath the single journal
 
 `phase_rules.py` holds the immutable phase sequence and two pure
