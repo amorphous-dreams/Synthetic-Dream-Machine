@@ -346,3 +346,11 @@ compound finalists are now produced by the same OODA-HA controller's location
 Aftermath, never by a competing runner.
 
 The [three-aperture implementation Aftermath](docs/research/compound-ooda-ha-aftermath.md) records the live engineering critique, corrections and re-entry keys.
+
+
+### Native pre-campaign readiness
+
+Run `campaign-readiness` for matched source-bound control/candidate campaigns,
+independent topology activation controls, replay equivalence and a sealed file manifest.
+`campaign-verify --out <directory>` checks the entire archive. See the
+[evergreen runbook](docs/HANDOFF.md) for parameters and evidence limitations.

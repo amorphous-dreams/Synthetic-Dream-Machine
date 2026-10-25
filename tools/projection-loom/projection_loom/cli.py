@@ -147,6 +147,21 @@ def main(argv=None):
                    help='generations between compatible cross-family locus grafts')
     p.add_argument('--mutation-scale',type=float,default=.16,
                    help='relative spread for local breeding (0,.4]')
+    p=commands.add_parser('campaign-readiness',
+                          help='Run complete bounded native evidence, comparison, replay and sealing')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--capability-recipe',type=Path,required=True)
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--passes',type=int,default=2)
+    p.add_argument('--offspring-per-family',type=int,default=3)
+    p.add_argument('--exact-budget',type=int,default=12)
+    p.add_argument('--detail-budget',type=int,default=6)
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--score-size',nargs=2,type=int,default=[64,96])
+    p.add_argument('--control-mutation-scale',type=float,default=.10)
+    p.add_argument('--candidate-mutation-scale',type=float,default=.16)
+    p=commands.add_parser('campaign-verify',help='Independently verify every sealed evidence file')
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('ooda-ha-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--epochs',type=Path,required=True)
@@ -177,6 +192,19 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='campaign-readiness':
+        from .pre_campaign_readiness import run_readiness
+        result=run_readiness(args.project,args.capability_recipe,args.out,
+            passes=args.passes,offspring=args.offspring_per_family,
+            exact=args.exact_budget,detail=args.detail_budget,seed=args.seed,
+            size=tuple(args.score_size),control_scale=args.control_mutation_scale,
+            candidate_scale=args.candidate_mutation_scale)
+        print(json.dumps(result,indent=2));return result
+    if args.command=='campaign-verify':
+        from .pre_campaign_readiness import verify_seal
+        result=verify_seal(args.out)
+        print(json.dumps({'schema':result['schema'],'sha256':result['sha256'],
+                          'files':len(result['files'])},indent=2));return result
     if args.command=='feature-annotate':
         from .feature_evidence import FeatureEvidence
         parsed={}

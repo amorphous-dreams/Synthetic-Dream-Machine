@@ -4,6 +4,41 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Implemented pre-campaign integrated evidence path
+
+The new `campaign-readiness` CLI supplies an immutable source/camera/recipe/code/
+objective contract; a 2^3 physical Joining/gallery/crown-brace activation matrix
+with native STEP/OBJ/socket/control receipts; fresh paired six-family runs with
+identical source, seed, epochs, evaluation budgets and global losses (different
+declared mutation scales); independently verified native/scored/mask yield;
+a deliberately interrupted native-checkpoint replay; and a bytewise SHA-256
+seal verified by `campaign-verify`. It orchestrates the one existing OODA-HA
+controller, never forks the five phases.
+
+    cd tools/projection-loom
+    python -m projection_loom campaign-readiness \
+      --project examples/necrospire/project_alpha.json \
+      --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+      --out out/pre-campaign-unique \
+      --passes 2 --offspring-per-family 3 \
+      --exact-budget 12 --detail-budget 6 --score-size 64 96
+    python -m projection_loom campaign-verify --out out/pre-campaign-unique
+
+A directed native rejection records `no-go`, never a fabricated successful
+construction. Evidence remains provisional fixed-view artwork; neither
+survey registration nor CAD/polygon Boolean fusion follows. Family-local
+`regional` fitness stays outside global comparisons. Historical pilot artifacts
+remain untouched and incomparable to revised combined loss.
+
+The `necrospire-pre-campaign.yml` workflow runs a smaller bounded native
+witness and packages the sealed output with an independent ZIP digest.
+Actions artifacts expire after 90 days: archive the bundle outside Actions for
+durable preservation, then verify its manifest. Current-head held-out and
+whole-repository CI plus Operator authorization remain separate full-campaign
+gates. Alpha deliberately adds no compatibility aliases or release ordinals.
+
+---
+
 ## Interrupted-turn recovery · full Necrospire campaign readiness (2026-10-25)
 
 **Last inspected source head before this handoff update:** `2df01a049942f3558f60913a8ff680ca19728d27` on `feature/green-jello-dinosaur-5--projection-loom` ([PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84)). The prior research/hardening changes already reside in GitHub commits on this branch, including current source code and the preceding sections of this runbook. This handoff commit adds a decision ledger, **not** a new native experiment. The GitHub connector can verify the remote branch and commit ancestry; it cannot inspect a separate unpushed operator workstation.

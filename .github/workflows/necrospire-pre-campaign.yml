@@ -1,0 +1,89 @@
+name: Projection Loom native pre-campaign evidence
+
+on:
+  push:
+    branches:
+      - feature/green-jello-dinosaur-5--projection-loom
+    paths:
+      - '.github/workflows/necrospire-pre-campaign.yml'
+      - 'tools/projection-loom/projection_loom/pre_campaign_readiness.py'
+      - 'tools/projection-loom/projection_loom/cli.py'
+      - 'tools/projection-loom/tests/test_pre_campaign_readiness.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: projection-loom-native-pre-campaign
+  cancel-in-progress: true
+
+jobs:
+  native-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/projection-loom/requirements-ci.txt
+      - name: Install native modeling kernels
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+      - name: Native topology, matched runs, checkpoint replay and seal
+        run: |
+          python -m projection_loom campaign-readiness \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/pre-campaign-readiness \
+            --passes 1 --offspring-per-family 1 \
+            --exact-budget 3 --detail-budget 2 --seed 41 \
+            --score-size 64 96 | tee out-readiness.json
+          python -m projection_loom campaign-verify --out out/pre-campaign-readiness \
+            | tee out-readiness-seal.json
+      - name: Independently inspect bounded conclusion
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path('out-readiness.json').read_text())
+          assert row['schema']=='projection-loom/pre-campaign-evidence'
+          assert row['paired']['same_source_camera_seed_objectives_budgets']
+          assert row['evidence_gate'] in ('no-go','bounded-evidence-complete')
+          assert json.loads(Path('out/pre-campaign-readiness/replay/replay.json').read_text())['equivalent']
+          print('Bounded readiness classification:',row['evidence_gate'])
+          PY
+      - name: Package source-bound evidence with external digest
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          path=Path('out/pre-campaign-readiness')
+          if path.exists():
+              with ZipFile('out-readiness.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+                  for f in sorted(path.rglob('*')):
+                      if f.is_file():z.write(f,f.relative_to(path.parent))
+          PY
+          if test -f out-readiness.zip; then sha256sum out-readiness.zip > out-readiness.zip.sha256; fi
+      - name: Upload local native evidence for external durable preservation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: projection-loom-native-readiness
+          path: |
+            tools/projection-loom/out-readiness.zip
+            tools/projection-loom/out-readiness.zip.sha256
+            tools/projection-loom/out-readiness.json
+            tools/projection-loom/out-readiness-seal.json
+          if-no-files-found: warn
+          retention-days: 90
