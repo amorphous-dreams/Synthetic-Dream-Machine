@@ -4,6 +4,20 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Oblique Seed · single pet-named source entity
+
+Original RGBA and separately stored L8 alpha now form **one**
+content-addressed, pet-named source seed: `Necrospire's First Glimpse`,
+stable slot `@seed/oblique-seed`. Exact-channel equivalence and source
+digests pin the pair. The alpha supplies source silhouette; RGBA contributes
+bounded appearance edges to image-guided polygon sculpting. Source-cue
+operators and the OODA-HA pet-name ledger preserve lineage and influence
+without claiming a second source vote or overriding CAD gates.
+The live recipe regenerates via `hybrid/make_alpha_recipe.py`; see
+`docs/OBLIQUE_SEED.md`. Prior frozen experiment outputs remain unchanged.
+
+---
+
 ## Fresh Necrospire lineages · original proxy versus pinned nosycat CC0
 
 The original six-generation pilot remains frozen and unrelated to both fresh
