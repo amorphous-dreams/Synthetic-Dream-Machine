@@ -147,7 +147,7 @@ jobs:
           assert six_gallery['actual_count']==12 and final_gallery['actual_count']==3
           assert final_gallery['cad_mesh_union_verified'] is False
           first=final_gallery['finalists'][0]
-          assert first['epoch']==6 and abs(1-first['losses']['silhouette']-best['iou'])<1e-9 if 'losses' in first else abs(1-first['loss']-best['iou'])<1e-9
+          assert first['epoch']==6 and abs(first['loss']-best['loss'])<1e-9
           regional_session=json.loads((regional/'session.json').read_text())
           regional_archive=json.loads((regional/'lineage_archive.json').read_text())
           regional_gallery=json.loads((regional/'lineage_gallery/gallery.json').read_text())
