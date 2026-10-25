@@ -70,7 +70,7 @@ def test_single_helm_breeding_reentry_and_scoped_gallery(tmp_path):
     assert len(archive.data['members'])>=1
     assert (output/'finalists'/'gallery.json').is_file()
     assert (output/'lineage_gallery'/'gallery.json').is_file()
-    journal=OODAJournal(output/'session.json')
+    journal=OODAJournal(output/'session.json',max_loops=700)
     assert journal.data['loops']['location']['phase']=='closed'
     assert journal.data['loops']['location/final-gallery']['phase']=='closed'
     assert all(x['evidence_state']=='provisional' for x in archive.elites())

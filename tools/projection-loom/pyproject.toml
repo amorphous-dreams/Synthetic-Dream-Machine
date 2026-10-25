@@ -16,3 +16,4 @@ projection-loom = "projection_loom.cli:main"
 include = ["projection_loom*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: full native CAD, compound rendering and OODA-HA integration"]

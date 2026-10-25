@@ -15,7 +15,7 @@ import math
 import os
 import numpy as np
 from scipy.stats import qmc
-from .selection import schedule_candidates
+from .selection import schedule_candidates, allocate_detail_seats
 from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = 'projection-loom/wide-epoch/v1'
@@ -210,6 +210,9 @@ class WideEpoch:
                                       reserve_emitter=self.reserve_emitter,
                                       emitter_turn=self.emitter_turn)
         selected={p.id for p in scheduled}
+        detail_ids={p.id for p in allocate_detail_seats(
+            scheduled, max_detail=self.max_detail,
+            emitter_turn=self.emitter_turn, preview=preview)}
         for p in proposals:
             if p.id not in selected and p.id not in self.data['results']:
                 self.data['results'][p.id]={'state':'deferred','reason':'exact-audit budget',
@@ -232,7 +235,7 @@ class WideEpoch:
                 audit=assembly.audit(join=True)
                 if not audit.get('valid',False) or audit.get('union_solids')!=1 or not audit.get('union_valid'):
                     result={'state':'rejected','reason':'CAD or void gate','audit':audit}
-                elif detail_count>=self.max_detail:
+                elif p.id not in detail_ids or detail_count>=self.max_detail:
                     result={'state':'audited','reason':'detail budget','audit':audit}
                 else:
                     losses=score(p.genome,assembly)

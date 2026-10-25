@@ -154,10 +154,12 @@ class LineageArchive:
         row = self.data['champions'].get(family)
         return copy.deepcopy(row) if row else None
 
-    def parents(self, family, limit=3):
+    def parents(self, family, limit=3, *, before_generation=None):
         if not 1 <= limit <= 20:
             raise ValueError('Parent selection must be bounded')
-        eligible = sorted((x for x in self.data['members'].values() if x['family'] == family),
+        eligible = sorted((x for x in self.data['members'].values()
+                           if x['family'] == family and
+                           (before_generation is None or int(x['id'].split('/')[0]) < before_generation)),
                           key=lambda row: (row['combined_loss'], row['id']))
         seen, parents = set(), []
         for row in eligible:
@@ -216,7 +218,7 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
         sobol = qmc.Sobol(len(focus), scramble=True,
                           seed=seed+generation*1013+family_index*65521).random_base2(
                               max(1, int(np.ceil(np.log2(offspring_per_family)))))
-        parents = archive.parents(family, limit=3)
+        parents = archive.parents(family, limit=3, before_generation=generation)
         for j in range(offspring_per_family):
             mode = ('sobol', 'local', 'topology')[j % 3]
             primary = parents[j % len(parents)] if parents else None
@@ -226,7 +228,8 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
             # the donor contributes only focus loci and remains attributable.
             if parents and generation % migration_every == 0 and j == 0:
                 donor_family = families[(family_index-1) % len(families)]
-                donor = archive.best(donor_family)
+                donor = next(iter(archive.parents(donor_family, limit=1,
+                                                        before_generation=generation)),None)
                 if donor is not None:
                     for k in focus[::2]:
                         anchor[k] = float(donor['genome'][k])

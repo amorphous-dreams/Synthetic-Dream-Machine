@@ -85,3 +85,64 @@ def select_review_candidates(data, *, limit=4):
                                    x['combined_loss'], x['proposal_id']))
         selected.append(scored.pop(0))
     return selected
+
+
+
+def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None):
+    """Reserve native-scoring capacity across breeding islands and methods.
+
+    Only already exact-scheduled proposals participate. Existing nonbreeding
+    epochs keep their original ordered scoring semantics. For family emitters,
+    allocate one rotating method seat per family, then round-robin the remaining
+    seats. A preview orders within a mode but is never a validity filter.
+    """
+    if type(max_detail) is not int or max_detail < 1:
+        raise ValueError('Detail budget must be positive')
+    if type(emitter_turn) is not int or emitter_turn < 0:
+        raise ValueError('Emitter turn must be nonnegative')
+    rows = list(scheduled)
+    if not rows:
+        return []
+    if any(not p.emitter.startswith('family:') for p in rows):
+        return rows[:max_detail]
+    grouped = {}
+    for proposal in rows:
+        tokens = proposal.emitter.split(':')
+        if len(tokens) != 3 or not tokens[1] or not tokens[2]:
+            raise ValueError('Malformed family emitter in detail scheduler')
+        grouped.setdefault(tokens[1], {}).setdefault(tokens[2], []).append(proposal)
+    families = sorted(grouped)
+    choices = {}
+    for family in families:
+        for method, options in grouped[family].items():
+            choices[(family,method)] = sorted(
+                options,key=lambda p: ((float(preview(p.genome)) if preview else 0.),p.id))
+    first = families[emitter_turn % len(families):] + families[:emitter_turn % len(families)]
+    chosen, used = [], set()
+    for level in range(max(len(grouped[family]) for family in families) *
+                       max(len(grouped[family][method]) for family in families for method in grouped[family])):
+        for family in first:
+            if len(chosen) >= max_detail:
+                break
+            methods = sorted(grouped[family])
+            rotation = emitter_turn % len(methods)
+            by_turn = methods[rotation:] + methods[:rotation]
+            # For subsequent rounds, prefer a different source variation method.
+            method = by_turn[level % len(by_turn)]
+            available = choices[(family,method)]
+            candidate = next((p for p in available if p.id not in used),None)
+            if candidate is not None:
+                chosen.append(candidate)
+                used.add(candidate.id)
+        if len(chosen) >= max_detail:
+            break
+    # If some family modes have few members, still use the remaining budget
+    # without conflating a generated preview with structural admission.
+    if len(chosen) < max_detail:
+        for proposal in rows:
+            if proposal.id not in used:
+                chosen.append(proposal)
+                used.add(proposal.id)
+            if len(chosen) >= max_detail:
+                break
+    return chosen
