@@ -118,7 +118,7 @@ def test_loci_io_export_then_apply_round_trip(tmp_path):
 
 
 def test_loci_io_embeddings_reads_stored_vectors_in_session_order(tmp_path):
-    """The FFZ Measure servo's cosine feed: read STORED vectors back, ordered per
+    """The FFZ Measure cosine feed: read STORED vectors back, ordered per
     session by (source_file, chunk_index). Never re-embeds (model-agnostic)."""
     from mempalace.palace import get_collection
 
