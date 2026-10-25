@@ -4,6 +4,33 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Five inward OODA-HA loops · 2026-10-25
+
+**Live working branch:** `feature/green-jello-dinosaur-5--projection-loom` (PR #84), boot `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. **Inspected implementation head before this documentary commit:** `3927d4327f22a997ce24f4531e6e058b8562a2e3`. Never infer CI success for a newer SHA from an older green run. Preserve the frozen pre-regional Necrospire archive and its historical schema/source receipts; new runs use new output directories.
+
+**Theme → Arc → Measure → Beat → Pulse:** five tightening apertures, with test-first failure controls in `tests/test_ooda_ha_inward.py` and the existing controller/phase suites. The five *phases* remain **✶ Observe → ⏿ Orient → ◇ Decide → ▶ Act → ↺ Hoʻoko/Aftermath** at every aperture; `closed` marks completed Aftermath, never a sixth or abbreviated substitute. No four-phase OODA runtime, CLI, alias, controller, or canon promotion.
+
+1. **Theme / repository ontology.** ✶ Observed four-phase-looking names in public CLI, Python APIs, tests, active docs and CI; ⏿ such names offered a plausible but incomplete control model; ◇ replace rather than alias; ▶ `run_ooda_ha_epochs`, `OODAHAJournal`, `ooda-ha-run`, `ooda-ha-steer`, `ooda-ha-status`, `ooda-ha-finalists` now define the public contract. Active test/doc paths use `test_ooda_ha.py`, `test_capability_ooda_ha.py` and `capability-ooda-ha-integration.md`; retired symbols are rejected by tests/static architecture checks. ↺ Former spelling remains only in explicit negative-control code or attributed historical Git state.
+2. **Arc / actual state-machine law.** ✶ Observed `closed` listed inside `PHASES`; ⏿ that leaked a sixth state into the ontology; ◇ separate the endpoint; ▶ `phase_rules.PHASES` now holds exactly five phases, `TERMINAL='closed'`, `STATES=(*PHASES, TERMINAL)`; next-phase checks and control/inquiry phase choices admit terminal closure only after Aftermath. ↺ Tests enforce every adjacent transition and child-phase anchor without skipping Aftermath.
+3. **Measure / durable testimony.** ✶ Observed re-entry silently accepted a repeated loop ID with different Observe testimony, and same-phase replays discarded contradictory receipts without warning; ⏿ those silently revise provenance; ◇ immutable replay or explicit refusal; ▶ `OODAHAJournal.begin`, `transition` and `advance_inquiry` reject differing source/parent-phase/receipt evidence while accepting byte-equivalent idempotence. ↺ Negative tests verify unchanged persisted session bytes.
+4. **Beat / candidate continuity.** ✶ Observed completed candidate journal loops ignored a different claimed result; ⏿ retry could report a new outcome against the old Act; ◇ fingerprint proposal identity at Observe and compare Aftermath; ▶ `candidate_start` now binds id, emitter, parent, genome, and ancestry SHA-256, while `candidate_receipt` refuses any colliding result and resumes a persisted Aftermath before closing. ↺ Tests attempt changed genomes, emitters, and result states after a completed native-style Act.
+5. **Pulse / alias-safe memory and static guard.** ✶ Observed journal receipts held mutable external dictionary references and the architecture gate verified phase ownership but not its full five-phase content; ⏿ callback mutation or a four-phase regression could evade integrity review; ◇ copy before retaining and check the law itself; ▶ Observe, phase, event, and adviser data now use defensive copies; `scripts/check_architecture.py` refuses any `PHASES` other than the five named active phases. ↺ Tests mutate caller-owned and adviser-owned objects and replace Aftermath with a four-phase declaration to prove the guards can detect it.
+
+**Integration gate:** the test-first pass, architecture check, full `pytest -q tests`, two-generation native campaign, grammar/annotation/donor native workflow, whole-repository CI and held-out witnesses must be inspected at the current head. No uncompleted or cancelled workflow counts as green. Separate geometric/native evidence from operator-driven source annotations and external registration. After a red job, keep its log, repair its concrete cause, then re-run on a new SHA.
+
+**Canonical quick check (from `tools/projection-loom/`):**
+
+```bash
+python scripts/check_architecture.py
+python -m pytest -q tests/test_ooda_ha_inward.py tests/test_phase_rules.py \
+  tests/test_ooda_ha.py tests/test_capability_ooda_ha.py \
+  tests/test_phase_recursion.py tests/test_control_replay.py
+python -m projection_loom ooda-ha-run --help
+python -m projection_loom ooda-ha-steer --help
+```
+
+---
+
 ## Five widening OODA-HA code reviews · 2026-10-25
 
 The five loops widened the aperture from individual marks to whole-repository identity. Each change first received a failing/negative contract in `tests/test_evergreen_five_loops.py`, except the already-covered CAD/feature contracts retained in adjacent test suites.
