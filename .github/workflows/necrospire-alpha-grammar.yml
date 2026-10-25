@@ -1,4 +1,4 @@
-name: Necrospire alpha grammar and interaction witness
+name: Necrospire evergreen grammar and interaction witness
 on:
   push:
     branches:
@@ -9,6 +9,8 @@ on:
       - 'tools/projection-loom/examples/necrospire/**'
       - 'tools/projection-loom/tests/test_wave_xxv_search.py'
       - 'tools/projection-loom/tests/test_evergreen_five_loops.py'
+      - 'tools/projection-loom/scripts/**'
+      - 'tools/projection-loom/spec/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,7 +18,7 @@ concurrency:
   group: necrospire-grammar-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  v3-native:
+  evergreen-native:
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     defaults:
@@ -39,22 +41,22 @@ jobs:
       - name: RED contracts now green
         run: |
           python -m pytest -q tests/test_wave_xxv_search.py tests/test_open_topology.py tests/test_search_strategy_alpha.py tests/test_evergreen_five_loops.py
-      - name: Fresh v3 generation with native CAD and independently regrown gallery
+      - name: Fresh source-bound generation with native CAD and independently regrown gallery
         run: |
           python -m projection_loom ooda-run \
             --project examples/necrospire/project_alpha.json \
             --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
-            --out out/necrospire-v3-feature-grammar-witness \
+            --out out/necrospire-evergreen-feature-grammar-witness \
             --control full-speed --breeding --passes 1 \
             --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
             --seed 41 --score-size 128 192 --finalists 3 \
             | tee out-alpha-grammar-run.log
-      - name: Native OODA closure and v3 reachability receipt
+      - name: Native OODA closure and evergreen searchability receipt
         run: |
-          python scripts/check_compound_epoch.py --out out/necrospire-v3-feature-grammar-witness \
+          python scripts/check_compound_epoch.py --out out/necrospire-evergreen-feature-grammar-witness \
             | tee out-alpha-grammar-native-audit.json
           python -m projection_loom search-census \
-            --archive out/necrospire-v3-feature-grammar-witness/lineage_archive.json \
+            --archive out/necrospire-evergreen-feature-grammar-witness/lineage_archive.json \
             --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
             --out out-alpha-grammar-census.json
           python - <<'PY'
@@ -64,7 +66,7 @@ jobs:
           assert census['declared_loci']==29
           assert census['unreachable_loci']==[]
           assert census['scored_members']>0
-          assert json.loads(Path('out/necrospire-v3-feature-grammar-witness/session.json').read_text())['status']=='completed'
+          assert json.loads(Path('out/necrospire-evergreen-feature-grammar-witness/session.json').read_text())['status']=='completed'
           PY
       - name: Close annotated source and authorized donor route through one native OODA helm
         run: |
@@ -126,9 +128,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: necrospire-v3-feature-grammar-witness
+          name: necrospire-evergreen-feature-grammar-witness
           path: |
-            tools/projection-loom/out/necrospire-v3-feature-grammar-witness/
+            tools/projection-loom/out/necrospire-evergreen-feature-grammar-witness/
             tools/projection-loom/out-alpha-grammar-run.log
             tools/projection-loom/out-alpha-grammar-native-audit.json
             tools/projection-loom/out-alpha-grammar-census.json
