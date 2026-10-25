@@ -111,3 +111,21 @@ def test_replay_works_when_witness_file_disappears_after_commit(tmp_path, monkey
     fresh.poll()
     assert cmd['id'] in fresh.data['applied_controls']
     assert PetNameLedger.load(path).claims[0]['name'] == 'Original'
+
+def test_release_outcome_remains_independent_of_ledger_receipt(tmp_path):
+    session, path, journal = review(tmp_path)
+    submit_control(session, 'pet-name', proposal_id='candidate-1',
+                   target='foundation', name='Must Survive')
+    journal.poll()
+    request = submit_control(session, 'o-takiage', name='Must Survive')
+    journal.poll()
+    ledger = PetNameLedger.load(path)
+    receipt = next(e for e in ledger.history if e.get('control_id') == request['id'])
+    outcome = receipt['control_outcome']
+    assert outcome['action'] == 'o-takiage'
+    assert outcome['released'] == [ledger.claims[0]['claim_id']]
+    assert 'control_outcome' not in outcome
+    assert outcome is not receipt
+    assert json.loads(json.dumps(ledger.to_dict())) == ledger.to_dict()
+    lineage = [e for e in journal.data['events'] if e['kind'] == 'lineage-intervention']
+    assert lineage[-1]['result'] == outcome
