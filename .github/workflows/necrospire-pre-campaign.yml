@@ -45,8 +45,8 @@ jobs:
             --project examples/necrospire/project_alpha.json \
             --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
             --out out/pre-campaign-readiness \
-            --passes 1 --offspring-per-family 1 \
-            --exact-budget 3 --detail-budget 2 --seed 41 \
+            --passes 1 --offspring-per-family 3 \
+            --exact-budget 12 --detail-budget 6 --seed 41 \
             --score-size 64 96 | tee out-readiness.json
           python -m projection_loom campaign-verify --out out/pre-campaign-readiness \
             | tee out-readiness-seal.json
@@ -58,6 +58,7 @@ jobs:
           row=json.loads(Path('out-readiness.json').read_text())
           assert row['schema']=='projection-loom/pre-campaign-evidence'
           assert row['paired']['same_source_camera_seed_objectives_budgets']
+          assert row['paired']['proposal_divergence']['different_genomes'] > 0
           assert row['evidence_gate'] in ('no-go','bounded-evidence-complete')
           assert json.loads(Path('out/pre-campaign-readiness/replay/replay.json').read_text())['equivalent']
           print('Bounded readiness classification:',row['evidence_gate'])

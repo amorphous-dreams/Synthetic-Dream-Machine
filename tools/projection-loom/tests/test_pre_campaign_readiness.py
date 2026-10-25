@@ -59,3 +59,21 @@ def test_directed_topology_truth_table_keeps_failures_attributed(tmp_path):
             assert (tmp_path / row["native_manifest"]).is_file()
         else:
             assert row["reason"]
+
+
+def test_mutation_pair_requires_different_actual_genomes(tmp_path):
+    from projection_loom.pre_campaign_readiness import proposal_divergence
+    control, candidate = tmp_path / "control", tmp_path / "candidate"
+    control.mkdir(); candidate.mkdir()
+    proposals = {"a": {"emitter": "family:crown:local", "genome": {"x": .2}},
+                 "b": {"emitter": "family:keep:sobol", "genome": {"x": .4}}}
+    (control / "epoch_001.json").write_text(json.dumps({"proposals": proposals}))
+    (candidate / "epoch_001.json").write_text(json.dumps({"proposals": proposals}))
+    assert proposal_divergence(control, candidate, 1)["different_genomes"] == 0
+    modified = json.loads(json.dumps(proposals))
+    modified["a"]["genome"]["x"] = .3
+    (candidate / "epoch_001.json").write_text(json.dumps({"proposals": modified}))
+    witness = proposal_divergence(control, candidate, 1)
+    assert witness["matched_proposals"] == 2
+    assert witness["different_genomes"] == 1
+    assert witness["differing_emitters"] == {"family:crown:local": 1}

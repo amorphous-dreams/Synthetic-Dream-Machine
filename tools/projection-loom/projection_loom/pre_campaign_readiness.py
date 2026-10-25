@@ -244,6 +244,27 @@ def campaign_metrics(root, passes):
     }
 
 
+def proposal_divergence(control_root, candidate_root, passes):
+    """Prove the declared mutation policy actually changes paired proposals."""
+    changed = Counter()
+    matched = 0
+    for generation in range(1, passes + 1):
+        name = "epoch_%03d.json" % generation
+        control = json.loads((Path(control_root) / name).read_text())["proposals"]
+        candidate = json.loads((Path(candidate_root) / name).read_text())["proposals"]
+        if set(control) != set(candidate):
+            raise ValueError("Matched run changed proposal identities")
+        for ident in sorted(control):
+            if control[ident]["emitter"] != candidate[ident]["emitter"]:
+                raise ValueError("Matched run changed emitter identity")
+            matched += 1
+            if control[ident]["genome"] != candidate[ident]["genome"]:
+                changed[control[ident]["emitter"]] += 1
+    return {"matched_proposals": matched,
+            "different_genomes": sum(changed.values()),
+            "differing_emitters": dict(sorted(changed.items()))}
+
+
 def bounded_run(project, recipe, output, policy, mutation_scale, *,
                 passes=None, offspring=None, exact=None, detail=None):
     result = run_ooda_ha_epochs(
@@ -363,14 +384,17 @@ def run_readiness(project_file, recipe_file, output, *, passes=2,
     bounded_run(project, recipe, output / "candidate", policy, candidate_scale)
     control = campaign_metrics(output / "control", passes)
     candidate = campaign_metrics(output / "candidate", passes)
+    divergence = proposal_divergence(output / "control", output / "candidate", passes)
     replay = replay_control(project, recipe, output / "replay", policy)
     no_go = (topology["native_valid"] != 8 or not replay["equivalent"]
+             or divergence["different_genomes"] == 0
              or control["errors"] or candidate["errors"]
              or not control["scored"] or not candidate["scored"])
     result = signed({
         "schema": REPORT, "contract_sha256": contract["sha256"],
         "topology_sha256": topology["sha256"], "replay_sha256": replay["sha256"],
         "paired": {"control": control, "candidate": candidate,
+                   "proposal_divergence": divergence,
                    "same_source_camera_seed_objectives_budgets": True,
                    "control_mutation_scale": control_scale,
                    "candidate_mutation_scale": candidate_scale,

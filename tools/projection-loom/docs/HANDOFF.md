@@ -24,6 +24,9 @@ controller, never forks the five phases.
       --exact-budget 12 --detail-budget 6 --score-size 64 96
     python -m projection_loom campaign-verify --out out/pre-campaign-unique
 
+The paired run also demands actual changed proposal genomes; Sobol-only
+sampling cannot certify a mutation-scale comparison.
+
 A directed native rejection records `no-go`, never a fabricated successful
 construction. Evidence remains provisional fixed-view artwork; neither
 survey registration nor CAD/polygon Boolean fusion follows. Family-local
