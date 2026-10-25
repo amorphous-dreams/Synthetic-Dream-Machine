@@ -107,7 +107,7 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
         draw.text((i*W*2+5,7),label,fill=(235,235,238))
     (out/'finalists').mkdir(exist_ok=True)
     sheet.save(out/'finalists'/'contact_sheet.png')
-    receipt={'schema':'projection-loom/composed-gallery/v1',
+    receipt={'schema':'projection-loom/composed-gallery',
              'location':compositor.recipe.location,'recipe_sha256':compositor.recipe.sha256,
              'operator_sha256':compositor.registry.fingerprint(),
              'available_distinct_genomes':len(pool),'requested':count,
@@ -184,7 +184,7 @@ def regrow_lineage_gallery(compositor, archive, output, *, limit_per_family=2):
         sheet.paste(mask.resize((W*2,H*2)).convert('RGB'),(x,y+29))
         draw.text((x+4,y+7),label,fill=(235,235,238))
     sheet.save(root/'contact_sheet.png')
-    record={'schema':'projection-loom/lineage-review-gallery/v1',
+    record={'schema':'projection-loom/lineage-review-gallery',
             'recipe_sha256':compositor.recipe.sha256,
             'source_digests':compositor.recipe.source_hashes,
             'family_count':len(FAMILY_FOCUSES), 'requested_per_family':limit_per_family,
