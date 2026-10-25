@@ -772,7 +772,8 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                                    max_exact=exact_budget,max_detail=detail_budget,
                                    seed=seed+i,pet_ledger=ledger,
                                    emitter_turn=i,
-                                   emitter_performance=emitter_performance(archive,before_generation=i+1) if breeding else None)
+                                   emitter_performance=emitter_performance(archive,before_generation=i+1) if breeding else None,
+                                   local_objectives=('regional',) if breeding else ())
                 running_id = [None]
                 builds = {}
                 visual_index = {}

@@ -126,7 +126,7 @@ class WideEpoch:
     def __init__(self,*,location,source_digests,construction_digest,
                  objectives,score_state,checkpoint,max_exact,max_detail,seed=41,
                  pet_ledger=None,registration_receipt=None,reserve_emitter=True,
-                 emitter_turn=0,emitter_performance=None):
+                 emitter_turn=0,emitter_performance=None,local_objectives=()):
         if score_state not in ('synthetic','provisional','verified'):
             raise ValueError('Evidence status must be explicit')
         if score_state=='verified':
@@ -145,6 +145,11 @@ class WideEpoch:
         if not objectives or len(set(objectives))!=len(objectives):
             raise ValueError('Objective names must be unique and nonempty')
         self.objectives=tuple(objectives)
+        self.local_objectives=tuple(local_objectives)
+        if (len(set(self.local_objectives))!=len(self.local_objectives)
+                or any(x not in self.objectives for x in self.local_objectives)
+                or len(self.local_objectives)==len(self.objectives)):
+            raise ValueError('Local objectives must be a proper subset of measured objectives')
         self.score_state=score_state
         self.checkpoint=Path(checkpoint)
         self.max_exact=int(max_exact)
@@ -158,7 +163,9 @@ class WideEpoch:
         self.identity={'schema':SCHEMA,'location':str(location),
                        'source_digests':dict(sorted(source_digests.items())),
                        'construction_digest':str(construction_digest),
-                       'objectives':list(self.objectives),'score_state':score_state,
+                       'objectives':list(self.objectives),
+                       'local_objectives':list(self.local_objectives),
+                       'score_state':score_state,
                        'max_exact':max_exact,'max_detail':max_detail,'seed':seed,
                        'registration_digest':registration_receipt.get('sha256') if registration_receipt else None,
                        'reserve_emitter':bool(reserve_emitter),
@@ -263,7 +270,11 @@ class WideEpoch:
                     pet_loss=float(self.pet_ledger.soft_loss(witness)) if self.pet_ledger else 0.
                     if not math.isfinite(pet_loss) or pet_loss<0:
                         raise ValueError('Invalid pet-name preference')
-                    combined=float(sum(losses.values())+pet_loss)
+                    # Family-specific specialist regions are not comparable
+                    # between breeding islands. Retain their measurements,
+                    # but never add them to the global quality ranking.
+                    combined=float(sum(v for k,v in losses.items()
+                                       if k not in self.local_objectives)+pet_loss)
                     features=witness.feature_set()
                     if feature_hook is not None:
                         additions=feature_hook(p.genome,assembly)
