@@ -125,7 +125,7 @@ def regrow_compound_gallery(compositor, output, *, passes, count, unique_visual=
 def regrow_lineage_gallery(compositor, archive, output, *, limit_per_family=2):
     """Operator pinboard: visually distinct, independently re-audited family survivors.
 
-    No separate OODA controller, new source record, or structural certificate.
+    No separate OODA-HA controller, new source record, or structural certificate.
     All CAD and polygon scopes are checked again from the inherited genome.
     """
     from .campaign import FAMILY_FOCUSES, visual_descriptor

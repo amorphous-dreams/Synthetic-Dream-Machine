@@ -1,4 +1,4 @@
-"""Audit a completed compound OODA run without trusting its human-readable claims."""
+"""Audit a completed compound OODA-HA run without trusting its human-readable claims."""
 from __future__ import annotations
 import argparse,json
 from pathlib import Path
@@ -10,7 +10,7 @@ def inspect(folder):
     gallery=json.loads((root/'finalists/gallery.json').read_text(encoding='utf8'))
     loops=session['loops']
     if session['status']!='completed' or loops['location']['phase']!='closed':
-        raise ValueError('Location and OODA helm did not close')
+        raise ValueError('Location and OODA-HA helm did not close')
     if loops['location/final-gallery']['parent_phase']!='aftermath':
         raise ValueError('Final gallery escaped the location Aftermath')
     candidates=[x for x in loops.values() if x['scope']=='candidate']

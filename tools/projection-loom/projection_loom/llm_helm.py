@@ -2,7 +2,7 @@
 
 The model receives bounded, source-classified summaries (not original images,
 secrets, CAD execution handles or free-form tools). It may suggest only one
-validated candidate id, or ask one bounded investigation question. The OODA
+validated candidate id, or ask one bounded investigation question. The OODA-HA
 journal remains responsible for every decision, intervention, and CAD gate.
 Network requests stay synchronous at checkpoint boundaries; resumed journals
 must not replay completed adviser consultations.

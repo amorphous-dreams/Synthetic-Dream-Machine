@@ -85,7 +85,7 @@ class LineageArchive:
 
     Assimilation is idempotent on the epoch's immutable source checkpoint.
     Epoch results are written by WideEpoch *before* this Archive. A crash
-    after archive save but before OODA Aftermath replays the exact receipt.
+    after archive save but before OODA-HA Aftermath replays the exact receipt.
     """
 
     def __init__(self, path, *, identity):

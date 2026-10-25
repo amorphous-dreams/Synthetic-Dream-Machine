@@ -2,7 +2,7 @@
 
 Different authorities still own their own identities: exact CAD audits,
 provisional meshes, source file bytes, bounded recipes, relational witnesses,
-and OODA sessions. This module only eliminates encoding drift.
+and OODA-HA sessions. This module only eliminates encoding drift.
 """
 
 

@@ -17,7 +17,7 @@
    separately from measured loss. Resumable checkpoints record a source digest,
    construction-code digest, proposal roster, seed, budgets and every result.
 
-`run_ooda_epochs` governs the active CLI and re-enters the selected *genome*.
+`run_ooda_ha_epochs` governs the active CLI and re-enters the selected *genome*.
 The lower-level `run_project_epochs` test helper also offers deterministic
 reentry. Every next model regrows from the builder and the same fixed scoring
 reference. No loop promotes a

@@ -6,7 +6,7 @@ PoC 0 enters with an exact original RGBA and alpha image, a held source digest,
 and an **unverified** fixed oblique camera. The first hybrid trial modeled a
 crystal polymesh beside a CAD assembly, but the mutation pipeline did not
 carry surface recipes through lineage selection. A local provisional
-compound-epoch prototype added those recipes but ran an independent OODA-like
+compound-epoch prototype added those recipes but ran an independent, incomplete four-phase style
 scheduler. That division violated the intent of the common Operator/AI helm.
 
 ## ⏿ Orient — widening aperture 1: kernel truth
@@ -21,7 +21,7 @@ scheduler. That division violated the intent of the common Operator/AI helm.
 
 A parallel compound loop introduces divergent preview, pause, pet-name,
 o-takiage, adviser and phase semantics. The solution does not require
-additional OODA-HA ceremony. One `OODAJournal` runs location, epoch,
+additional OODA-HA ceremony. One `OODAHAJournal` runs location, epoch,
 candidate, capability and final-gallery children, all with true phase/Act
 ordering. The lower-level `WideEpoch` remains an evaluator with no independent
 Operator decision authority.
@@ -37,7 +37,7 @@ not geometric vertex indices.
 
 ## ↺ Self-review — tightening back to source
 
-1. The original 178-test baseline passed. The OODA-integrated and capability
+1. The original 178-test baseline passed. The OODA-HA-integrated and capability
    integrity tests then passed 200/200 in this local snapshot.
 2. A three-epoch, four-exploratory-proposal-per-epoch plus an inherited-parent seat full-speed Necrospire CLI trial
    produced three independently regrown audited CAD+mesh finalists and
@@ -46,7 +46,7 @@ not geometric vertex indices.
    distinct scored forms. Corrected the final location Aftermath to include
    all scored CAD-valid proposals across epochs while favoring niche diversity.
 4. A separate `compound_epochs.py` runner no longer appears in the active
-   package. `wide-epoch` and `ooda-run` enter the same controller; both retain
+   package. `wide-epoch` and `ooda-ha-run` enter the same controller; both retain
    manual/AI policy, phase inquiries and source gates.
 5. An inherited parent had silently displaced the first Sobol proposal.
    The parent now has an explicit `lineage-seed` seat, so Sobol, local and

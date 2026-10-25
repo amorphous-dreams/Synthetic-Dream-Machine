@@ -345,4 +345,4 @@ limitations. Existing `finalists.py` only targets CAD-only experiments;
 compound finalists are now produced by the same OODA-HA controller's location
 Aftermath, never by a competing runner.
 
-The [three-aperture implementation Aftermath](docs/research/compound-ooda-aftermath.md) records the live engineering critique, corrections and re-entry keys.
+The [three-aperture implementation Aftermath](docs/research/compound-ooda-ha-aftermath.md) records the live engineering critique, corrections and re-entry keys.
