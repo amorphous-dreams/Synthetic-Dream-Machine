@@ -124,7 +124,8 @@ class WideEpoch:
     """
     def __init__(self,*,location,source_digests,construction_digest,
                  objectives,score_state,checkpoint,max_exact,max_detail,seed=41,
-                 pet_ledger=None,registration_receipt=None,reserve_emitter=True):
+                 pet_ledger=None,registration_receipt=None,reserve_emitter=True,
+                 emitter_turn=0):
         if score_state not in ('synthetic','provisional','verified'):
             raise ValueError('Evidence status must be explicit')
         if score_state=='verified':
@@ -148,6 +149,9 @@ class WideEpoch:
         self.max_exact=int(max_exact)
         self.max_detail=int(max_detail)
         self.pet_ledger=pet_ledger
+        if type(emitter_turn) is not int or emitter_turn < 0:
+            raise ValueError('Emitter turn must be a nonnegative integer')
+        self.emitter_turn=emitter_turn
         self.reserve_emitter=bool(reserve_emitter)
         self.identity={'schema':SCHEMA,'location':str(location),
                        'source_digests':dict(sorted(source_digests.items())),
@@ -155,7 +159,8 @@ class WideEpoch:
                        'objectives':list(self.objectives),'score_state':score_state,
                        'max_exact':max_exact,'max_detail':max_detail,'seed':seed,
                        'registration_digest':registration_receipt.get('sha256') if registration_receipt else None,
-                       'reserve_emitter':bool(reserve_emitter)}
+                       'reserve_emitter':bool(reserve_emitter),
+                       'emitter_turn':emitter_turn}
         for value in self.identity['source_digests'].values():
             if not isinstance(value,str) or len(value)!=64:
                 raise ValueError('Source records need content hashes')
@@ -202,7 +207,8 @@ class WideEpoch:
             raise ValueError('Proposal set changed after epoch began')
         scheduled=schedule_candidates(proposals,preview=preview,
                                       max_exact=self.max_exact,
-                                      reserve_emitter=self.reserve_emitter)
+                                      reserve_emitter=self.reserve_emitter,
+                                      emitter_turn=self.emitter_turn)
         selected={p.id for p in scheduled}
         for p in proposals:
             if p.id not in selected and p.id not in self.data['results']:
@@ -286,7 +292,8 @@ class WideEpoch:
         """
         scheduled=schedule_candidates(proposals,preview=preview,
                                       max_exact=self.max_exact,
-                                      reserve_emitter=self.reserve_emitter)
+                                      reserve_emitter=self.reserve_emitter,
+                                      emitter_turn=self.emitter_turn)
         return all(self.data['results'].get(p.id,{}).get('state') in
                    ('scored','audited','rejected','error') for p in scheduled)
 

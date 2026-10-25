@@ -9,13 +9,16 @@ from __future__ import annotations
 import math
 
 
-def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=True):
+def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=True,
+                        emitter_turn=0):
     """Return the exact, deterministic audition order for an epoch.
 
     When enough exact seats exist, one representative of each emitter runs
     before filling the remaining budget by preview priority. Preview costs can
     order work; they cannot certify CAD or erase a method's reserved seat.
     """
+    if type(emitter_turn) is not int or emitter_turn < 0:
+        raise ValueError('Emitter turn must be a nonnegative integer')
     proposals = list(proposals)
     if len({p.id for p in proposals}) != len(proposals):
         raise ValueError('Duplicate proposal ID')
@@ -32,8 +35,16 @@ def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=T
     if reserve_emitter:
         methods = {p.emitter for _, _, p in estimates}
         if len(methods) <= max_exact:
-            for method in sorted(methods):
-                scheduled.append(next(row for row in ordered if row[2].emitter == method))
+            # Preserve the established complete method-seat ordering.
+            reserved = sorted(methods)
+        else:
+            # Overflow: round-robin method seats across epochs rather than
+            # letting the small-preview incumbent starve exploration forever.
+            by_preview = list(dict.fromkeys(p.emitter for _, _, p in ordered))
+            offset = emitter_turn % len(by_preview)
+            reserved = (by_preview[offset:] + by_preview[:offset])[:max_exact]
+        for method in reserved:
+            scheduled.append(next(row for row in ordered if row[2].emitter == method))
     already = {row[2].id for row in scheduled}
     for row in ordered:
         if len(scheduled) >= max_exact:

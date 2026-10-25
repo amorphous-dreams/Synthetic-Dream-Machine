@@ -670,7 +670,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                                    objectives=objectives,score_state=state,
                                    checkpoint=out/f'epoch_{i+1:03d}.json',
                                    max_exact=exact_budget,max_detail=detail_budget,
-                                   seed=seed+i,pet_ledger=ledger)
+                                   seed=seed+i,pet_ledger=ledger,
+                                   emitter_turn=i)
                 running_id = [None]
                 builds = {}
                 from .capability_stack import digest as genome_digest
