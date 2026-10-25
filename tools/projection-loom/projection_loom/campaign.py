@@ -363,8 +363,11 @@ FAMILY_ENTITIES = {
 
 def validate_breeding_recipe(recipe):
     """Admit by required source-held loci, not a release or schema ordinal."""
+    # Only the structural substrate is mandatory. Source-attached grammars
+    # (gallery, buttress, brutalist, future detail) contribute their loci
+    # when actually present; the brood filters its family foci by bounds.
     required={key for genes in FAMILY_FOCUSES.values()
-              for key in genes if not key.startswith('grammar.')}
+              for key in genes if not key.startswith(('grammar.','brutalist.'))}
     if (recipe is None or not required.issubset(recipe.bounds)
             or not recipe.source_hashes or not recipe.cad_keys):
         raise ValueError('Breeding requires a source-bound structural recipe with all required loci')

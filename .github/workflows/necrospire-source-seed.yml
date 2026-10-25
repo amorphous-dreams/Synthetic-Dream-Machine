@@ -10,6 +10,7 @@ on:
       - 'tools/projection-loom/projection_loom/capability_stack.py'
       - 'tools/projection-loom/projection_loom/hybrid.py'
       - 'tools/projection-loom/projection_loom/fractal_ooda_ha.py'
+      - 'tools/projection-loom/projection_loom/campaign.py'
       - 'tools/projection-loom/examples/necrospire/seed_oblique.json'
       - 'tools/projection-loom/examples/necrospire/hybrid/make_alpha_recipe.py'
       - 'tools/projection-loom/tests/test_seed_entity.py'
