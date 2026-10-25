@@ -79,3 +79,42 @@ def test_pulse_feature_manifest_refuses_symlink_escape_even_when_digest_matches(
     }))
     with pytest.raises(ValueError,match="outside|escape|symlink"):
         FeatureEvidence.load(manifest,source_sha256="a"*64,score_size=(16,12))
+
+
+def test_beat_grammar_failed_program_is_atomic_on_existing_audited_assembly():
+    from projection_loom.grammar import grow_program
+    from projection_loom.solid import SolidAssembly
+    body=SolidAssembly()
+    body.add_box("root",(0,0,0),(4,4,4),parents=())
+    assert body.audit(join=True)["valid"]
+    cached=body._verified_audit
+    valid={"key":"wing","op":"box","parents":["root"],
+           "center":[1.6,0,0],"size":[2,1,1]}
+    invalid={"key":"broken","op":"box","parents":["wing"],
+             "center":[0,0,0],"size":[-2,1,1]}
+    with pytest.raises(ValueError):
+        grow_program([valid,invalid],{},assembly=body)
+    assert list(body.parts)==["root"]
+    assert body._verified_audit is cached
+    assert body.voids is None
+    assert grow_program([valid],{},assembly=body) is body
+    assert list(body.parts)==["root","wing"]
+    assert body._verified_audit is None
+    assert body.audit(join=True)["valid"]
+
+
+def test_beat_failed_grammar_void_does_not_pollute_existing_void_receipt():
+    from projection_loom.grammar import grow_program
+    from projection_loom.solid import SolidAssembly, box
+    body=SolidAssembly()
+    body.add_box("root",(0,0,0),(4,4,4),parents=())
+    body.add_void("entry",box((0,-2,0),(1,3,2)),kind="doorway",exterior=True)
+    assert body.audit(join=True)["valid"]
+    retained=body.voids.voids.copy()
+    proposed={"key":"alcove","op":"void-box","host":"root",
+              "center":[0,0,0],"size":[.6,.6,.6],"kind":"recess"}
+    with pytest.raises(ValueError, match="Unsupported"):
+        grow_program([proposed,{"key":"wrong","op":"untrusted"}],
+                     {},assembly=body)
+    assert body.voids.voids==retained
+    assert body.voids.positive is body
