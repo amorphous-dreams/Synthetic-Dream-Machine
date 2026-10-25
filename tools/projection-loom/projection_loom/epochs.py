@@ -71,12 +71,15 @@ class CandidateAdapter:
     should_continue: object = None
     feature_hook: object = None
     witness_hook: object = None
+    admission_hook: object = None
+    measurement_hook: object = None
 
     def __post_init__(self):
         if not callable(self.grow) or not callable(self.score):
             raise ValueError('Candidate adapter requires grow and score callbacks')
         for name in ('preview', 'before_candidate', 'after_candidate',
-                     'should_continue', 'feature_hook', 'witness_hook'):
+                     'should_continue', 'feature_hook', 'witness_hook',
+                     'admission_hook', 'measurement_hook'):
             value = getattr(self, name)
             if value is not None and not callable(value):
                 raise ValueError(f'Candidate adapter callback {name} must be callable')
@@ -198,19 +201,21 @@ class WideEpoch:
         self.data['snapshot_sha256']=_hash({k:v for k,v in self.data.items() if k!='snapshot_sha256'})
         _atomic(self.checkpoint,self.data)
 
-    def run(self,proposals,*,grow=None,score=None,preview=None,before_candidate=None,after_candidate=None,should_continue=None,feature_hook=None,witness_hook=None,adapter=None):
+    def run(self,proposals,*,grow=None,score=None,preview=None,before_candidate=None,after_candidate=None,should_continue=None,feature_hook=None,witness_hook=None,admission_hook=None,measurement_hook=None,adapter=None):
         if adapter is not None:
             if not isinstance(adapter, CandidateAdapter):
                 raise ValueError('Expected a CandidateAdapter')
             if any(x is not None for x in (
                     grow, score, preview, before_candidate, after_candidate,
-                    should_continue, feature_hook, witness_hook)):
+                    should_continue, feature_hook, witness_hook,
+                    admission_hook, measurement_hook)):
                 raise ValueError('Use either candidate adapter or direct callbacks, not both')
             grow, score = adapter.grow, adapter.score
             preview = adapter.preview
             before_candidate, after_candidate = adapter.before_candidate, adapter.after_candidate
             should_continue = adapter.should_continue
             feature_hook, witness_hook = adapter.feature_hook, adapter.witness_hook
+            admission_hook, measurement_hook = adapter.admission_hook, adapter.measurement_hook
         if not callable(grow) or not callable(score):
             raise ValueError('Candidate evaluation needs grow and score callbacks')
         proposals=list(proposals)
@@ -260,50 +265,68 @@ class WideEpoch:
                 audit=assembly.audit(join=True)
                 if not audit.get('valid',False) or audit.get('union_solids')!=1 or not audit.get('union_valid'):
                     result={'state':'rejected','reason':'CAD or void gate','audit':audit}
-                elif detail_count>=self.max_detail:
-                    result={'state':'audited','reason':'detail budget','audit':audit}
                 else:
-                    losses=score(p.genome,assembly)
-                    if set(losses)!=set(self.objectives):
-                        raise ValueError('Every scored model needs every declared loss')
-                    losses={k:float(losses[k]) for k in self.objectives}
-                    if any(not math.isfinite(v) or v<0 for v in losses.values()):
-                        raise ValueError('Losses must be finite and nonnegative')
-                    # A compound entity can add capability witnesses without replacing
-                    # the CAD construction's independent relational testimony.
-                    witness=(witness_hook(p.genome,assembly) if witness_hook else
-                             assembly.relation_witness(location=self.identity['location']))
-                    if witness.location != self.identity['location']:
-                        raise ValueError('Witness location changed during evaluation')
-                    pet_loss=float(self.pet_ledger.soft_loss(witness)) if self.pet_ledger else 0.
-                    if not math.isfinite(pet_loss) or pet_loss<0:
-                        raise ValueError('Invalid pet-name preference')
-                    # Family-specific specialist regions are not comparable
-                    # between breeding islands. Retain their measurements,
-                    # but never add them to the global quality ranking.
-                    combined=float(sum(v for k,v in losses.items()
-                                       if k not in self.local_objectives)+pet_loss)
-                    features=witness.feature_set()
-                    if feature_hook is not None:
-                        additions=feature_hook(p.genome,assembly)
-                        if (not isinstance(additions,(tuple,list,set,frozenset)) or
-                            len(additions)>256 or any(not isinstance(x,str) or not x or len(x)>128 for x in additions)):
-                            raise ValueError('Capability phenotype hook must return bounded text features')
-                        features=features.union(additions)
-                    phenotype=sorted(features)
-                    niche=_hash(phenotype)[:16]
-                    result={'state':'scored','losses':losses,'pet_loss':pet_loss,
-                            'detail_role':'reserved' if p.id in detail_ids else 'backfill',
-                            'combined_loss':combined,'niche':niche,'phenotype':phenotype,
-                            'witness_id':witness.witness_id,'evidence_state':self.score_state,
-                            'audit':audit}
-                    old=self.data['archive'].get(niche)
-                    if old is None or combined<old['combined_loss']:
-                        self.data['archive'][niche]={'proposal_id':p.id,
-                            'combined_loss':combined,'genome':dict(p.genome),
-                            'losses':losses,'evidence_state':self.score_state,
-                            'phenotype':phenotype}
-                    detail_count+=1
+                    # Independent bounded-environment policy after real CAD admission.
+                    # It can refuse an oversized world but never certify native validity.
+                    screening = admission_hook(p.genome,assembly) if admission_hook else None
+                    if screening is not None and (not isinstance(screening,dict)
+                            or type(screening.get('accepted')) is not bool):
+                        raise ValueError('Admission hook must return a typed finite receipt')
+                    if screening is not None and not screening['accepted']:
+                        result={'state':'rejected','reason':'exploration-envelope',
+                                'audit':audit,'screening':screening}
+                    elif detail_count>=self.max_detail:
+                        result={'state':'audited','reason':'detail budget','audit':audit}
+                        if screening is not None:result['screening']=screening
+                    else:
+                            losses=score(p.genome,assembly)
+                        if set(losses)!=set(self.objectives):
+                            raise ValueError('Every scored model needs every declared loss')
+                        losses={k:float(losses[k]) for k in self.objectives}
+                        if any(not math.isfinite(v) or v<0 for v in losses.values()):
+                            raise ValueError('Losses must be finite and nonnegative')
+                        # A compound entity can add capability witnesses without replacing
+                        # the CAD construction's independent relational testimony.
+                        witness=(witness_hook(p.genome,assembly) if witness_hook else
+                                 assembly.relation_witness(location=self.identity['location']))
+                        if witness.location != self.identity['location']:
+                            raise ValueError('Witness location changed during evaluation')
+                        pet_loss=float(self.pet_ledger.soft_loss(witness)) if self.pet_ledger else 0.
+                        if not math.isfinite(pet_loss) or pet_loss<0:
+                            raise ValueError('Invalid pet-name preference')
+                        # Family-specific specialist regions are not comparable
+                        # between breeding islands. Retain their measurements,
+                        # but never add them to the global quality ranking.
+                        combined=float(sum(v for k,v in losses.items()
+                                           if k not in self.local_objectives)+pet_loss)
+                        features=witness.feature_set()
+                        if feature_hook is not None:
+                            additions=feature_hook(p.genome,assembly)
+                            if (not isinstance(additions,(tuple,list,set,frozenset)) or
+                                len(additions)>256 or any(not isinstance(x,str) or not x or len(x)>128 for x in additions)):
+                                raise ValueError('Capability phenotype hook must return bounded text features')
+                            features=features.union(additions)
+                        phenotype=sorted(features)
+                        niche=_hash(phenotype)[:16]
+                        result={'state':'scored','losses':losses,'pet_loss':pet_loss,
+                                'detail_role':'reserved' if p.id in detail_ids else 'backfill',
+                                'combined_loss':combined,'niche':niche,'phenotype':phenotype,
+                                'witness_id':witness.witness_id,'evidence_state':self.score_state,
+                                'audit':audit}
+                        if screening is not None:result['screening']=screening
+                        if measurement_hook is not None:
+                            measured=measurement_hook(p.genome,assembly)
+                            if not isinstance(measured,dict):
+                                raise ValueError('Measurement hook must return a JSON object')
+                            _hash(measured)
+                            result['extra_observations']=measured
+                        old=self.data['archive'].get(niche)
+                        if old is None or combined<old['combined_loss']:
+                            self.data['archive'][niche]={'proposal_id':p.id,
+                                'combined_loss':combined,'genome':dict(p.genome),
+                                'losses':losses,'evidence_state':self.score_state,
+                                'phenotype':phenotype}
+                        detail_count+=1
             except Exception as exc:
                 # A broken scoring backend is not evidence of a bad architectural
                 # candidate. Keep operational failures apart from CAD rejection.

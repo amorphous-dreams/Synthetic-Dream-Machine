@@ -551,7 +551,8 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     recipe=None, registry=None, score_size=(128,192), finalists=3,
                     breeding=False, offspring_per_family=6,
                     migration_every=4, mutation_scale=.16,
-                    feature_evidence_path=None, transfer_bundle_path=None):
+                    feature_evidence_path=None, transfer_bundle_path=None,
+                    exploration_budget=None):
     """One fractal OODA-HA controller for CAD and compound-capability epochs.
 
     Re-enter using precisely the same evidence, code and budgets.  The journal
@@ -649,6 +650,15 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
         score_state = 'provisional' if project.reference else 'synthetic'
         construction_digest = project_code_digest(project)
         objectives = ('silhouette',)
+    exploration_seed_mesh = None
+    if exploration_budget is not None:
+        if compositor is None or project.reference is None:
+            raise ValueError('Exploration requires a source-bound compound project')
+        from .exploration import ExplorationBudget
+        if not isinstance(exploration_budget, ExplorationBudget):
+            raise ValueError('Exploration must use a bounded typed policy')
+        seed_build = compositor.grow(recipe.initial)
+        exploration_seed_mesh = seed_build.scene.render_mesh()
     identity = {'location': project.location, 'source_digests': source_hashes,
                 'construction_digest': construction_digest,
                 'score_state': score_state, 'passes': passes, 'candidates': candidates,
@@ -657,6 +667,8 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 'ledger_path': str(ledger_path),
                 'feature_evidence_sha256':feature_sha,
                 'transfer_bundle_sha256':transfer_digest}
+    if exploration_budget is not None:
+        identity['exploration_sha256']=exploration_budget.record()['sha256']
     if compositor is not None:
         identity.update(capability_recipe_sha256=recipe.sha256,
               capability_operator_sha256=compositor.registry.fingerprint(),
@@ -830,13 +842,32 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     build=compositor.grow(genome,stage_event=capability_event)
                     builds[genome_digest(genome)] = build
                     return build.scene.assembly
+                def admission(genome,assembly):
+                    if exploration_budget is None:
+                        return None
+                    from .exploration import audit_envelope
+                    build=builds[genome_digest(genome)]
+                    try:
+                        geometry=audit_envelope(build.scene.render_mesh(),compositor.camera,
+                                                exploration_seed_mesh,exploration_budget)
+                    except ValueError as exc:
+                        return {'accepted':False,'reason':str(exc),
+                                'policy_sha256':exploration_budget.record()['sha256']}
+                    return {'accepted':True,'geometry':geometry,
+                            'policy_sha256':exploration_budget.record()['sha256']}
+                observations={}
                 def score(genome,assembly):
                     if compositor is None:
                         return solid_score(genome,assembly)
                     from .render import silhouette
                     from .evolution import iou
                     build=builds[genome_digest(genome)]
-                    mask=silhouette(build.scene.render_mesh(),compositor.camera,score_size)>96
+                    mesh=build.scene.render_mesh()
+                    mask=silhouette(mesh,compositor.camera,score_size)>96
+                    if exploration_budget is not None:
+                        from .exploration import measure_exploration
+                        observations[genome_digest(genome)]=measure_exploration(
+                            mesh,compositor.camera,exploration_seed_mesh,exploration_budget)
                     if breeding:
                         visual_index[genome_digest(genome)]=visual_descriptor(mask)
                     normalized=np.array([(genome[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
@@ -878,7 +909,10 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     feature_hook=features if compositor else None,
                     witness_hook=witnesses if compositor else None,
                     before_candidate=before, after_candidate=after,
-                    should_continue=go)
+                    should_continue=go,
+                    admission_hook=admission if exploration_budget is not None else None,
+                    measurement_hook=(lambda genome,assembly: observations[genome_digest(genome)])
+                                     if exploration_budget is not None else None)
                 data = runner.run(batch, adapter=adapter)
                 # Recover missing micro-loop receipts after a process crash
                 # between the CAD checkpoint and journal acknowledgement.
