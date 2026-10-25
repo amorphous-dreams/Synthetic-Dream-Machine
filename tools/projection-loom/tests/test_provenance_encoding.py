@@ -21,7 +21,7 @@ from projection_loom.location_stack import LocationStack
 UNICODE_FIXTURE = {'z': [3, {'μ': 'Hā Ka'}], 'a': 0.5}
 FULL = 'd9eb31ea682c4c0e0410c290770cc8e8c85ac0db88edc464567e8e1c1557caf7'
 NAN_LEGACY = '159f99e03ec6dfb7edcad87bac613ac97a235493ad8b79b33cfa4002fb4477f8'
-EMPTY_LOCATION = 'ad7b30fcc99872754ef53e3173ae7e59a793c0dedb3d368d4596dbb89303d1f3'
+EMPTY_LOCATION = 'd12defae4f252b26aba23f740ad8476a3e2ce77aed791561564ec9c1ce0f7c13'
 
 
 def test_full_fingerprints_preserve_exact_unicode_bytes_and_field_order():
@@ -47,9 +47,10 @@ def test_strict_scopes_reject_nonfinite_while_legacy_permissive_is_explicit():
             hash_func(bad)
 
 
-def test_location_snapshot_keeps_legacy_hash_and_rejects_tampering():
+def test_location_snapshot_uses_evergreen_identity_and_rejects_tampering():
     stack = LocationStack('New Delos')
     payload = stack.to_dict()
+    assert payload['schema'] == 'projection-loom/location-stack'
     assert payload['snapshot_sha256'] == EMPTY_LOCATION
     assert canonical_json_sha256({
         k: v for k, v in payload.items() if k != 'snapshot_sha256'
