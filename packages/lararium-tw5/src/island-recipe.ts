@@ -144,6 +144,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   });
   seedCheckpoints.set(tw5, checkpoint);
+  adaptors.set(tw5, adaptor);
 
   return { adaptor, stores };
 }
@@ -162,3 +163,13 @@ export function seedDrained(tw5: TW5Engine): Promise<void> {
 }
 
 const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();
+/** The shore each engine's recipe mounted, so a behavior the island composes reads what the shore landed. */
+const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
+
+/**
+ * True where the engine's shore has landed, in the wiki, every change of `bag`'s document up to the heads
+ * `named`. An engine whose recipe mounted no shore answers false.
+ */
+export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly string[]): boolean {
+  return adaptors.get(tw5)?.landedCovers(bag, named) ?? false;
+}

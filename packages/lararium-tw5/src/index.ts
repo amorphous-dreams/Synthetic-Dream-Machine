@@ -107,7 +107,7 @@ export type {
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-export { buildIslandRecipe } from "./island-recipe.js";
+export { buildIslandRecipe, wikiLandedCovers } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";

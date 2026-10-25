@@ -19,6 +19,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { projectionDrained, settleWordOver } from "../harness/settle-word.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -48,19 +49,6 @@ async function awaitWikisCarrier(timeoutMs = 60_000): Promise<string> {
   }
 }
 
-/** Wait until the projected file's bytes stabilize across a quiet window. */
-async function awaitSettled(quietMs = 4_000, timeoutMs = 60_000): Promise<string> {
-  const start = Date.now();
-  let last = ""; let since = Date.now();
-  for (;;) {
-    const now = existsSync(projected) ? readFileSync(projected, "utf8") : "";
-    if (now !== last) { last = now; since = Date.now(); }
-    else if (now && Date.now() - since > quietMs) return now;
-    if (Date.now() - start > timeoutMs) return now;
-    await sleep(500);
-  }
-}
-
 function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
   return lar.cli(["ingest", "--source", wikisDir, "--to", WORKING, "--in-wiki", ...extra, "--json"]);
 }
@@ -74,7 +62,8 @@ beforeAll(async () => {
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();
-  await awaitSettled();
+  // The file stands; the island looks at the disk and drains its queue before any scan reads it.
+  await projectionDrained(lar);
 }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
@@ -107,7 +96,7 @@ describe("wikis ingest-back — the working write-layer round-trips", () => {
 
     // the working projection re-renders canonical, the edit preserved. THE SETTLE WORD: the apply answers
     // once that projection has run, so the file reads as it leaves it. No nap, no quiet-window poll.
-    expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: 1 });
+    settleWordOver(r, { settledCount: 1 });
     const settled = readFileSync(projected, "utf8");
     expect(settled).toContain("(wikis-ingest-back-edit)");
 

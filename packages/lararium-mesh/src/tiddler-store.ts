@@ -210,6 +210,15 @@ export interface LarTiddlerStore {
   getHeads?(): Promise<readonly string[] | null>;
 
   /**
+   * Optional causal-past read for CRDT-backed stores: true where the document, read as of the heads `have`,
+   * holds every head in `named`. A store with no causal history omits it, and a caller reads that as false.
+   */
+  coversHeads?(have: readonly string[], named: readonly string[]): boolean;
+
+  /** Optional: true where the document holds every head in `named` (those changes reached this replica). */
+  holdsHeads?(named: readonly string[]): boolean;
+
+  /**
    * Write a record to live wiki state.
    * Must NOT write to lares/ (canon path). Future canon promotion must use a
    * Keyhive-backed proposal/receipt graph outside this store.

@@ -117,15 +117,17 @@ export interface SettleReading {
 }
 
 /**
- * THE SETTLE WORD. A gesture that landed records names each carrier with the hash its records render; the
- * island answers once the projection those records cause has run (`settle`, `shore-verb.ts`), so a scan that
- * follows reads what the projection left. The island holds no clock for it: the caller's own wait bounds it.
+ * THE SETTLE WORD. A gesture that landed records names each carrier with the hash its records render, and with
+ * the causal heads it landed where the island's store keeps history; the island answers once the projection
+ * those records cause has run (`settle`, `shore-verb.ts`), so a scan that follows reads what the projection
+ * left. The island holds no clock for it. A word that named heads ends by name (`far-side-closed`) when the
+ * link that would carry them closes first, so the caller's own wait stands as one bound among others.
  */
 export async function askSettle(
   ask: (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>,
-  bag: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string }>,
+  bag: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>,
 ): Promise<SettleReading> {
-  const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records })) });
+  const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records, ...(c.heads !== undefined && c.heads.length > 0 ? { heads: [...c.heads] } : {}) })) });
   const o = answer.output;
   const count = (name: string): number => (typeof o[name] === "number" ? (o[name] as number) : 0);
   if (!answer.ok) return { settled: false, shore: true, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };

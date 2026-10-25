@@ -14,7 +14,7 @@ const plainDoc = (doc: unknown): { tiddlers: Record<string, LarTiddlerRecord> } 
   ({ tiddlers: Object.fromEntries(plainEntries((doc as LarDoc | undefined)?.tiddlers)) });
 import { IslandAdaptor, LandingDoorUnavailableError } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
-import { HandGate, type ShoreTimers } from "../src/hand-gate.js";
+import type { ShoreTimers } from "../src/hand-gate.js";
 import { WaveLanding } from "../src/wave-landing.js";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { armBackstop } from "../src/modules/meme-backstop.js";
@@ -75,11 +75,23 @@ async function rig(timers?: ShoreTimers, yieldHost?: () => Promise<void>) {
   composite.addLayer({ bagId: workingBag, store: working, writable: true });
   const adaptor = new IslandAdaptor(engine, composite, "shore-vector", timers);
   adaptor.installLandingQueue(yieldHost);
+  // THE STORE'S CHANGE REACHES AN OBSERVER BESIDE THE SHORE: every title a change or a changeset names lands here as
+  // the store raises it, so a vector waits on the arrival itself and never on a pause after the write.
+  const arrivals: string[] = [];
+  const hearers = new Set<() => void>();
+  const heard = (titles: readonly string[]): void => { arrivals.push(...titles); for (const hearer of [...hearers]) hearer(); };
+  composite.addProjection({ onUriChanged: (change) => heard([change.title]), onChangeset: (changes) => heard(changes.map((change) => change.title)) });
   adaptor.start();
   const save = vi.spyOn(adaptor, "saveTiddler");
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns(); // settle the manual pointer setup while the adaptor is not resident
-  return { engine, wiki, Tiddler, repo, canonHandle, workingHandle, canon, working, composite, adaptor, save, unbridge };
+  /** Resolves once the shore has heard every title since `mark` (`arrivals.length` taken before the write). The store's own event ends the wait. */
+  const hearSince = (mark: number, titles: readonly string[]): Promise<void> => new Promise<void>((resolve) => {
+    const check = (): void => { const seen = new Set(arrivals.slice(mark)); if (titles.every((title) => seen.has(title))) { hearers.delete(check); resolve(); } };
+    hearers.add(check);
+    check();
+  });
+  return { engine, wiki, Tiddler, repo, canonHandle, workingHandle, canon, working, composite, adaptor, save, unbridge, arrivals, hearSince };
 }
 
 describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
@@ -103,8 +115,8 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
 
     const control = "lar:///t/shore/A-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "hand" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.adaptor.handsRested();
+    await r.adaptor.landingIdle();
     expect(r.save).toHaveBeenCalledTimes(1);
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("hand");
     r.unbridge();
@@ -131,7 +143,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(r.workingHandle.heads()).toEqual(heads);
     expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.meta?.changeId).toBe("n-change");
     r.wiki.addTiddler(new r.Tiddler({ ...landed.getFieldStrings(), text: "changed control" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(r.save).toHaveBeenCalledTimes(1);
     r.unbridge();
     await r.adaptor.stop();
@@ -141,6 +153,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
   // Bulk changes retain the source bag on every queued title.
   test("A2: one Automerge change touching twelve titles lands every wiki provenance stamp", async () => {
     const r = await rig();
+    const a2Mark = r.arrivals.length;
     r.workingHandle.change((doc) => {
       for (let i = 0; i < 12; i++) {
         const title = `lar:///t/shore/A2-${i}`;
@@ -148,7 +161,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       }
     });
     // The change feeds the real store's changeset projection; the shore checkpoints its first empty queue.
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.hearSince(a2Mark, Array.from({ length: 12 }, (_, i) => `lar:///t/shore/A2-${i}`));
     await r.adaptor.armSeedCheckpoint();
     for (let i = 0; i < 12; i++) {
       const title = `lar:///t/shore/A2-${i}`;
@@ -156,7 +169,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       expect(r.wiki.getChangeCount(title)).toBe(1);
     }
     r.wiki.addTiddler(new r.Tiddler({ title: "lar:///t/shore/A2-0", text: "changed control" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(r.save).toHaveBeenCalledTimes(1);
     r.unbridge();
     await r.adaptor.stop();
@@ -167,8 +180,9 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
   test("E + control: an explicit absent ledger entry does not swallow the next hand", async () => {
     const r = await rig();
     const absent = "lar:///t/shore/E-absent";
+    const eMark = r.arrivals.length;
     await r.working.tombstone(absent, remote);
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.hearSince(eMark, [absent]);
     await r.adaptor.armSeedCheckpoint();
     expect(r.adaptor.ledger.landedOf(absent)?.tiddler).toBeNull();
     const writes: string[] = [];
@@ -178,13 +192,13 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
       return writeFamily(puts, deletes, origin, options);
     });
     r.wiki.addTiddler(new r.Tiddler({ title: absent, text: "created by hand" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(writes.filter((title) => title === absent)).toHaveLength(1);
 
     const control = "lar:///t/shore/E-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "first" }));
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(writes.filter((title) => title === control)).toHaveLength(1);
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     r.unbridge();
@@ -430,7 +444,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(r.adaptor.ledger.landedOf(repeated)?.heads).toEqual(["head-300"]);
     const before = r.save.mock.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: repeated, text: "changed hand" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(r.save.mock.calls.length - before).toBe(1);
     r.unbridge();
     await r.adaptor.stop();
@@ -486,7 +500,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const control = "lar:///t/shore/I-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed field" }));
     delayedChange?.({ [control]: {} });
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed field");
     releaseBridge();
     rawWiki.addEventListener = nativeAdd;
@@ -723,7 +737,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(save).toHaveBeenCalledTimes(0);
     expect(Object.keys(plainDoc(workingHandle.doc()).tiddlers)).toEqual([]);
     wiki.addTiddler(new Tiddler({ title: "lar:///t/shore/hydration-control", text: "hand" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await adaptor.handsRested();
     expect(plainDoc(workingHandle.doc()).tiddlers["lar:///t/shore/hydration-control"]?.tiddler.text).toBe("hand");
     unbridge();
     await adaptor.stop();
@@ -735,10 +749,11 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
   test("M + control: a canon carrier seeds without a working copy, while a hand lands in working", async () => {
     const r = await rig();
     const title = "lar:///t/shore/M-canon";
+    const mMark = r.arrivals.length;
     r.canonHandle.change((doc) => {
       doc.tiddlers[title] = { tiddler: { title, text: "canon content" } };
     });
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.hearSince(mMark, [title]);
     await r.adaptor.armSeedCheckpoint();
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe("canon content");
     expect(Object.keys(plainDoc(r.workingHandle.doc()).tiddlers)).toEqual([]);
@@ -746,7 +761,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
 
     const control = "lar:///t/shore/M-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "hand" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("hand");
     r.unbridge();
     await r.adaptor.stop();
@@ -1104,8 +1119,9 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const title = "lar:///t/shore/lazy";
     const body = "CAS body restored in the wiki";
     const cid = createHash("sha256").update(body).digest("hex");
+    const lazyMark = r.arrivals.length;
     await r.working.put({ tiddler: { title, _is_skinny: "yes", textCid: cid } }, remote);
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.hearSince(lazyMark, [title]);
     await r.adaptor.armSeedCheckpoint();
     const heads = r.workingHandle.heads();
     const removeLazy = installLazyResolver(r.engine, async (requested) => requested === cid ? new TextEncoder().encode(body) : null);
@@ -1117,7 +1133,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(r.workingHandle.heads()).toEqual(heads);
     const control = "lar:///t/shore/lazy-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     removeLazy();
     r.unbridge();
@@ -1129,8 +1145,9 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
   test("H + control: separate Repos merging one doc surface a same-field race without loss", async () => {
     const r = await rig();
     const title = "lar:///t/shore/H";
+    const hMark = r.arrivals.length;
     await r.working.put({ tiddler: { title, text: "base" } }, remote);
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await r.hearSince(hMark, [title]);
     await r.adaptor.armSeedCheckpoint();
     const draftBag = wikiSlotUri("shore-vector", "draft");
     const draftHandle = r.repo.create<LarDoc>(emptyLarDoc());
@@ -1141,9 +1158,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const remoteStore = new AutomergeDocStore(remoteHandle, workingBag);
     r.wiki.addTiddler(new r.Tiddler({ title, text: "hand value" }));
     await turns(); // the hand gate is armed but has not reached its trailing edge
+    const mergeMark = r.arrivals.length;
     await remoteStore.put({ tiddler: { title, text: "remote value" } }, remote);
     r.workingHandle.merge(remoteHandle);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await r.hearSince(mergeMark, [title]);
     await turns();
     const drafts = await r.working.parallelDrafts(title);
     expect(drafts.map((draft) => draft.tiddler.text).sort()).toEqual(["hand value", "remote value"]);
@@ -1151,7 +1169,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(r.save).toHaveBeenCalledTimes(1);
     const control = "lar:///t/shore/H-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed field" }));
-    await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
+    await r.adaptor.handsRested();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed field");
     r.unbridge();
     await r.adaptor.stop();
