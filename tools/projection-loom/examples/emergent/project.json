@@ -1,5 +1,5 @@
 {
-  "schema":"projection-loom/solid-project/v2",
+  "schema":"projection-loom/solid-project",
   "location":"a-place-without-a-final-name",
   "builder":"grow.py:grow",
   "cameras":{
