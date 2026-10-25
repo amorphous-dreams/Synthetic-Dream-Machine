@@ -348,8 +348,10 @@ FAMILY_FOCUSES = {
                  'join.enable','join.relief','join.fracture','join.seed','join.wave',
                  'grammar.gallery','grammar.gallery_span'),
     'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height',
-              'grammar.buttress','grammar.brace_span'),
-    'keep': ('keep_taper','tower_height','spire_segmentation','gate_width'),
+              'grammar.buttress','grammar.brace_span',
+              'brutalist.bands','brutalist.band_count','brutalist.projection'),
+    'keep': ('keep_taper','tower_height','spire_segmentation','gate_width',
+             'brutalist.piers','brutalist.pier_count'),
     'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed'),
 }
 # Search populations and operator-given pet-names have separate authority.
