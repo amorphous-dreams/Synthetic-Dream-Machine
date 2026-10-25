@@ -11,7 +11,7 @@ import { SyncedTree, contentHash, syncedTreeKey } from "../src/synced-tree.js";
 import { carrierHash } from "@lararium/mesh";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
-// at the moment a row (or, under a single-file tree, the whole map) stands ready to land. Unarmed, it passes through.
+// at the moment a row stands ready to land. Unarmed, it passes through.
 const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void), unlinkFault: null as null | Error, readFault: null as null | Error }));
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();
@@ -172,23 +172,38 @@ describe("synced-tree — the base holds two sides", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("a single-file tree of an earlier shape names no base, and the tree says so by name", () => {
+  test("a `.json` file beside the directory has no part in the tree and draws no word", () => {
     const { dir } = fresh();
     const p = join(dir, "synced-tree");
-    const earlier = `${p}.json`;
+    const beside = `${p}.json`;
     const bytes = JSON.stringify({ k: { path: AT, disk: "d1", records: "r1" } });
-    writeFileSync(earlier, bytes, "utf-8");
+    writeFileSync(beside, bytes, "utf-8");
     const said: string[] = [];
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
     try { t = new SyncedTree(p); } finally { console.warn = warn; }
-    expect(said).toEqual([`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`]);
+    expect(said).toEqual([]);
     expect(t.size).toBe(0);
-    expect(t.baseAt("k", AT)).toBeNull();
     t.set("k", AT, "d2");
     expect(new SyncedTree(p).baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
-    expect(readFileSync(earlier, "utf-8")).toBe(bytes);          // nothing rewrites the earlier file
+    expect(readFileSync(beside, "utf-8")).toBe(bytes);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a file standing at the directory's own path leaves the tree in memory, says so, and stays untouched", () => {
+    const { dir } = fresh();
+    const p = join(dir, "synced-tree");
+    writeFileSync(p, "occupied", "utf-8");
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    let t: SyncedTree;
+    try { t = new SyncedTree(p); } finally { console.warn = warn; }
+    expect(said).toEqual([`[synced-tree] ${p} stands as a file; the tree holds its bases in memory`]);
+    t.set("k", AT, "d2");
+    expect(t.baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
+    expect(readFileSync(p, "utf-8")).toBe("occupied");
     rmSync(dir, { recursive: true, force: true });
   });
 });
