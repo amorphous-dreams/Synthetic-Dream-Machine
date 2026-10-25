@@ -4,6 +4,27 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XIV — causal replay recovery and canonical alpha names
+
+On the current alpha branch, `fractal_ooda_ha.py` holds the single OODA-HA
+controller. `ooda.py` and `fractal-ooda-ha.py` have been retired rather than
+preserved as compatibility bridges. Tests, CLI, and public imports now use
+`projection_loom.fractal_ooda_ha`.
+
+A crash after the identity ledger's atomic save but before the journal's
+acknowledgement can no longer silently rerun the same pet-name or o-takiage.
+The ledger history binds operator control ID, command digest, and outcome in
+one write; re-entry checks that durable receipt before loading a preview
+witness. Tampered control bytes trigger refusal. Regression tests simulate
+the crash and missing preview witness after a committed effect.
+
+No distributed transaction or multi-writer guarantee follows from this
+repair. The single-runner guard and stale-ledger compare-and-swap checks
+remain in force. Native CAD and mesh scopes retain independent authority.
+
+**Evidence gate:** This addition must earn completed new-head dedicated
+Loom, general CI and held-out witness receipts before calling it verified.
+
 ## Wave XIII — red-first adapter lift and evergreen aftermath
 
 **Live-code re-entry:** this addendum records the handoff after the carrier repair and
@@ -158,7 +179,7 @@ Review the *actual* source author/license, included file list, ZIP safety report
 
 ✶ **Observe:** Fetch the **live** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from the default branch, then this handoff and the linked `projection-loom.mem`, `projection-loom-capability-composition.mem`, `projection-loom-ooda-ha.mem`. Inspect PR #84 head and workflow runs; never rely solely on this snapshot.
 
-⏿ **Orient:** Read `projection_loom/capability_stack.py`, `hybrid.py`, `ooda.py`, `epochs.py`, `tests/test_capability_ooda.py`, `tests/test_capability_integrity.py`, and the Necrospire `recipe.json`. The sole active evolutionary authority resides in `ooda.py`.
+⏿ **Orient:** Read `projection_loom/capability_stack.py`, `hybrid.py`, `fractal_ooda_ha.py`, `epochs.py`, `tests/test_capability_ooda.py`, `tests/test_capability_integrity.py`, and the Necrospire `recipe.json`. The sole procedural controller resides in `fractal_ooda_ha.py`; `epochs.py` performs bounded candidate evaluations.
 
 ◇ **Decide:** Choose an explicit next operator/epoch experiment, with evidence and scope. Operator decisions steer soft preferences; no human/AI decision waives hard CAD, mesh, source, registration or provenance gates.
 

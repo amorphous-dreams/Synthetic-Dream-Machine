@@ -1,35 +1,27 @@
 # OODA-HA runs the Loom: executable, fractal control plane
 
-**Authority:** The single `projection_loom/fractal_ooda_ha.py` controller,
-the `projection_loom.fractal_ooda_ha` compatibility import, and `WideEpoch` contracts. The
-noosphere boot defines the five-phase practice; this implementation adopts its
-sequence as a **runtime state machine**. It does not confuse the developers'
-Aftermath/self-review practice with a new architectural material or geometry
-feature.
+**Authority:** `projection_loom.fractal_ooda_ha` owns the single nested five-phase controller; `WideEpoch` carries bounded CAD candidate evaluations. The noosphere boot governs Observe → Orient → Decide → Act → Hoʻoko/Aftermath, with `closed` marking the boundary after the fifth phase.
 
-## Fractal module, OODA-HA law and re-entry
+## Canonical alpha entrypoint and recoverability
 
-The controller's implementation filename now reads `fractal_ooda_ha.py`.
-Python callers keep `from projection_loom.fractal_ooda_ha import run_ooda_epochs`:
-the old module forwards to the physical implementation through `importlib`,
-not through a separate scheduling authority. The CLI contract retains
-`ooda-run`, `ooda-steer`, and `ooda-status` names for compatibility.
+The only runtime Python module name now reads `fractal_ooda_ha.py`.
+Callers import `run_ooda_epochs`, `OODAJournal`, and `submit_control`
+from `projection_loom.fractal_ooda_ha`. The retired `ooda.py` and its
+compatibility shim no longer exist. The CLI keeps its established operator
+commands (`ooda-run`, `ooda-steer`, `ooda-status`) because they describe
+the operator procedure.
 
-Read this against the governing `noosphere-boot.mem#/ooda-ha` and
-`projection-loom-ooda-ha.mem`, not four-phase OODA:
-`observe → orient → decide → act → aftermath → closed`.
-`closed` records the boundary after Aftermath rather than a sixth OODA phase.
-A new epoch reopens Observe with the accepted genome; it never skips
-Aftermath. An inquiry may open inside any active phase, including Aftermath;
-a parent cannot advance while that child remains open.
+The identity ledger now stores each pet-name or o-takiage control ID, original
+command digest, and outcome in the same atomic ledger write as its mutation.
+If a process fails after this write and before journal acknowledgement, replay
+reads the ledger receipt and repairs the journal without repeating the effect.
+A digest mismatch refuses replay. Two files still do not form a general
+distributed transaction; this approach addresses the specifically witnessed
+local control crash boundary.
 
-The shared `selection.py` supplies two *distinct* pure policies:
-`schedule_candidates` allocates bounded exact-audit seats; and
-`select_review_candidates` chooses scored, audited operator review options.
-They use shared data shapes, not shared geometry authority. CAD-only and
-compound renderers each regrow and audit their selected candidates.
-Regression tests cover deterministic emitter-seat reservation, review diversity,
-unscored exclusion, five ordered phases, nested Aftermath and legacy imports.
+The pure `selection.py` exposes two distinct decisions: exact candidate
+scheduling and scored review selection. A preview is never structural evidence,
+and the two native geometry auditors retain separate truth scopes.
 
 ## One location, nested loops, five guarded phases
 
