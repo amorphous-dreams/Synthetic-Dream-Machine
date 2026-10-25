@@ -140,7 +140,7 @@ def main(argv=None):
     p.add_argument('--transfer-bundle',type=Path,
                    help='operator-authorized normalized cross-location proposal fragments')
     p.add_argument('--breeding',action='store_true',
-                   help='six-family quality-diversity campaign using a versioned structural recipe')
+                   help='six-family quality-diversity campaign using a source-bound structural recipe')
     p.add_argument('--offspring-per-family',type=int,default=6,
                    help='bounded 1..32 offspring per family per generation')
     p.add_argument('--migration-every',type=int,default=4,
