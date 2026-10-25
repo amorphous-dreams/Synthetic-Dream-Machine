@@ -1,24 +1,24 @@
 {
   "bounds": {
     "crystal.fracture": [
-      0.0,
+      0,
       0.26
     ],
     "crystal.guide": [
-      0.0,
+      0,
       0.25
     ],
     "crystal.relief": [
-      0.0,
+      0,
       0.31
     ],
     "crystal.seed": [
-      0.0,
-      99.0
+      0,
+      99
     ],
     "crystal.wave": [
-      3.0,
-      15.0
+      3,
+      15
     ],
     "fortress_width": [
       4.4,
@@ -33,28 +33,28 @@
       0.82
     ],
     "join.enable": [
-      0.0,
-      1.0
+      0,
+      1
     ],
     "join.fracture": [
-      0.0,
+      0,
       0.16
     ],
     "join.relief": [
-      0.0,
+      0,
       0.22
     ],
     "join.seed": [
-      0.0,
-      99.0
+      0,
+      99
     ],
     "join.wave": [
-      3.0,
-      12.0
+      3,
+      12
     ],
     "shaft_length": [
-      19.0,
-      27.0
+      19,
+      27
     ],
     "shaft_width": [
       2.7,
@@ -75,27 +75,26 @@
   ],
   "initial": {
     "crystal.fracture": 0.1,
-    "crystal.guide": 0.0,
+    "crystal.guide": 0,
     "crystal.relief": 0.14,
-    "crystal.seed": 13.0,
-    "crystal.wave": 7.0,
+    "crystal.seed": 13,
+    "crystal.wave": 7,
     "fortress_width": 4.9,
-    "gallery_reach": 1.0,
+    "gallery_reach": 1,
     "gate_width": 0.66,
     "join.enable": 0.2,
     "join.fracture": 0.05,
     "join.relief": 0.06,
-    "join.seed": 11.0,
-    "join.wave": 5.0,
-    "shaft_length": 22.0,
+    "join.seed": 11,
+    "join.wave": 5,
+    "shaft_length": 22,
     "shaft_width": 3.1,
     "tower_height": 2.9
   },
   "location": "necrospire",
   "pet_name": "Necrospire: A Crystal Bearing a Fortress",
   "provenance": "provisional",
-  "schema": "projection-loom/capability-recipe/v1",
-  "sha256": "9a4bdcaeb67d2ff11ceb941a3877a42eecedf6ee75fb044495cfccef0ca59410",
+  "schema": "projection-loom/capability-recipe",
   "source_hashes": {
     "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
   },
@@ -255,5 +254,5 @@
       "socket": "lower terrace"
     }
   ],
-  "version": 1
+  "sha256": "797734e4f354bd7d85fe50f611b41c812b2b7da574780c93f1591c2b90b03313"
 }
