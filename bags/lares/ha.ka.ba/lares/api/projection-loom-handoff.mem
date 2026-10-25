@@ -70,6 +70,27 @@ gates before declaring this wave independently green.
 
 <<~/ahu>>
 
+<<~ ahu #/wave-xviii-xix-reentry>>
+
+!! Live alpha bearing for the next OODA-HA loop
+
+Waves XVIII and XIX add domain-scoped typed receipt views and executable
+architecture/dependency guards. The one five-phase OODA-HA controller remains
+`projection_loom.fractal_ooda_ha`; pure phase legality lives in
+`phase_rules.py`, with renderer and candidate-selection policies beneath
+the helm. Neither a common display status nor a completed capability
+certifies fused structure, original source authenticity or survey pose.
+
+Read the ACTUAL PR #84 head, `tools/projection-loom/docs/HANDOFF.md`,
+and the current Actions receipts. A linear, bisectable chain contains
+tests, implementation, CI gates and evergreen documentation. If a
+result fails, read the corresponding code and repair it with another
+explicit aftermath loop. Historical Wave XII-XVII SHA/run IDs are
+testimony, not the current source of truth. No automatic source promotion
+or PR merge is authorized by this handoff.
+
+<<~/ahu>>
+
 <<~ ahu #/held-integrities>>
 !! What the machina currently enacts
 
@@ -220,6 +241,6 @@ No backlog item automatically grants a new capability.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cAqpwR_Q22SpDnHxga9dABqbtOke5cGjXkxp99Ej0_8
+<<^ code="&#x0003;">>ni:///sha-256;tIZgx5mNRTyIUoYltKPi3GLp8SXGkQs4eVUrOZz8U6U
 
 <<^ code="&#x0004;" -> to="?">>

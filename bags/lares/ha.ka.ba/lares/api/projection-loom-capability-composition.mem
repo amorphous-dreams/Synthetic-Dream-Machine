@@ -99,6 +99,33 @@ examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
 
 <<~/ahu>>
 
+<<~ ahu #/typed-receipts-and-ci-gates>>
+
+!! Typed witnesses must not merge evidence authority
+
+`evidence_receipts.py` MAY display typed native BRep audits, polygon surface
+audits, CAD/mesh socket proximity, frame registration, trusted capability
+execution and Operator preferences. The shared envelope has a domain and a
+status; it MUST NOT grant a universal validity or source-authenticity claim.
+A rendering cannot certify cross-kernel Boolean fusion, and a verified fit
+does not independently authenticate survey bytes.
+
+!! Code quality keeps one helm
+
+`scripts/check_architecture.py` MUST refuse duplicate OODA controllers,
+retired alpha module aliases, side effects inside `phase_rules.py` and
+back-edges from renderers to the helm. `fractal_ooda_ha.OODAJournal` remains
+the only active five-phase controller. CI checks the direct dependency pins,
+Python syntax and installed package consistency, and records resolved
+versions as evidence, NOT as a complete cryptographic dependency lock.
+
+A queued or cancelled CI job remains an open verification loop. Only the
+final published branch head may support a GREEN claim after dedicated Loom,
+whole-repository and held-out witnesses all pass; failures invite bisecting
+the stepwise red-first commits, not relaxing native evidence checks.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom-hybrid">>
@@ -106,6 +133,6 @@ examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nO-FMk7V1eBRPN_ACFsGsnMpBHOLs6oygrSwFEgqVN8
+<<^ code="&#x0003;">>ni:///sha-256;-jb0Pzw6i-OCx9tJtwJOvZeJxurvWG6lquAMqhq3Enc
 
 <<^ code="&#x0004;" -> to="?">>
