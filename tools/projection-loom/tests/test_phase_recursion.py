@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from projection_loom.fractal_ooda_ha import OODAJournal, submit_control, run_ooda_epochs
+from projection_loom.fractal_ooda_ha import OODAHAJournal, submit_control, run_ooda_ha_epochs
 from projection_loom.pipeline import Project
 
 BASE=Path(__file__).resolve().parents[1]
 
 
 def journal(tmp_path, **settings):
-    return OODAJournal(tmp_path/'session.json', identity={'location':'neutral',
+    return OODAHAJournal(tmp_path/'session.json', identity={'location':'neutral',
             'score_state':'synthetic','ledger_path':str(tmp_path/'names.json')},
             initial={'x':1.0}, **settings)
 
@@ -35,7 +35,7 @@ def test_every_parent_phase_can_enclose_a_complete_child(tmp_path):
         assert j.transition('epoch',next_phase)
     j.transition('location','aftermath')
     j.transition('location','closed')
-    r=OODAJournal(j.path)
+    r=OODAHAJournal(j.path)
     assert r.data['loops']['location']['phase']=='closed'
     assert len([e for e in r.data['events'] if e['kind']=='child-return'])==6
 
@@ -72,7 +72,7 @@ def test_bounded_depth_and_total_loop_budget(tmp_path):
     with pytest.raises(ValueError,match='depth budget'):
         k.begin('child',parent='e',scope='inquiry',evidence={})
     with pytest.raises(ValueError,match='recursion budget'):
-        OODAJournal(k.path,max_depth=2,max_loops=10)
+        OODAHAJournal(k.path,max_depth=2,max_loops=10)
 
 
 def test_denies_bad_phase_cyclic_attachment_and_unserializable_receipt(tmp_path):
@@ -98,7 +98,7 @@ def test_save_reload_retains_active_inquiry_and_anchor(tmp_path):
     j=journal(tmp_path)
     child=j.open_inquiry('location','Does the atlas connect?')
     j.advance_inquiry(child['id'],'orient',{'sources':['alpha','survey']})
-    r=OODAJournal(j.path)
+    r=OODAHAJournal(j.path)
     assert r.data['awaiting']['kind']=='inquiry'
     assert r.data['loops'][child['id']]['parent_phase']=='act'
     with pytest.raises(ValueError,match='awaits child'):
@@ -136,16 +136,16 @@ def test_inquiry_nested_in_review_restores_review_choices(tmp_path):
     project=Project.load(BASE/'examples/grammar/project.json')
     output=tmp_path/'active'
     settings=dict(passes=1,candidates=3,exact_budget=2,detail_budget=1,autonomy=0)
-    first=run_ooda_epochs(project,output,**settings)
+    first=run_ooda_ha_epochs(project,output,**settings)
     assert first['awaiting']['kind']=='plan'
     session=output/'session.json'
     submit_control(session,'approve-plan')
-    next_one=run_ooda_epochs(project,output,**settings)
+    next_one=run_ooda_ha_epochs(project,output,**settings)
     assert next_one['awaiting']['kind']=='review'
     options=list(next_one['awaiting']['options'])
     submit_control(session,'open-inquiry',parent_loop='epoch-0001',
                    question='Which nameless relation deserves attention?')
-    investigating=run_ooda_epochs(project,output,**settings)
+    investigating=run_ooda_ha_epochs(project,output,**settings)
     assert investigating['awaiting']['kind']=='inquiry'
     cid=investigating['awaiting']['loop']
     state=json.loads(session.read_text())
@@ -154,11 +154,11 @@ def test_inquiry_nested_in_review_restores_review_choices(tmp_path):
     for phase in ('orient','decide','act','aftermath','closed'):
         submit_control(session,'advance-inquiry',loop_id=cid,phase=phase,
                        detail={'observation':'operator interpretation'})
-        review_back=run_ooda_epochs(project,output,**settings)
+        review_back=run_ooda_ha_epochs(project,output,**settings)
     assert review_back['awaiting']['kind']=='review'
     assert review_back['awaiting']['options']==options
     submit_control(session,'choose',proposal_id=options[0])
-    final=run_ooda_epochs(project,output,**settings)
+    final=run_ooda_ha_epochs(project,output,**settings)
     assert final['status']=='completed'
     data=json.loads(session.read_text())
     assert any(x['kind']=='inquiry-return' for x in data['events'])
@@ -173,12 +173,12 @@ def test_can_request_inquiry_during_auto_adviser_and_then_resume(tmp_path):
                        question='Evaluate the surprising edge relation')
         return {'proposal_id':context['options'][0]['proposal_id']}
     settings=dict(passes=1,candidates=3,exact_budget=2,detail_budget=1,autonomy=1)
-    first=run_ooda_epochs(project,folder,adviser=advise,**settings)
+    first=run_ooda_ha_epochs(project,folder,adviser=advise,**settings)
     assert first['awaiting']['kind']=='inquiry'
     cid=first['awaiting']['loop']
     for phase in ('orient','decide','act','aftermath','closed'):
         submit_control(session,'advance-inquiry',loop_id=cid,phase=phase,detail={})
-        result=run_ooda_epochs(project,folder,**settings)
+        result=run_ooda_ha_epochs(project,folder,**settings)
     assert result['status']=='completed'
     assert len(result['passes'])==1
 
@@ -213,7 +213,7 @@ def test_phase_adviser_can_open_inquiry_at_each_epoch_phase(tmp_path):
                   autonomy=1,phase_adviser=advise)
     phases=['observe','orient','decide','act','aftermath']
     for i,expected in enumerate(phases):
-        result=run_ooda_epochs(project,folder,**settings)
+        result=run_ooda_ha_epochs(project,folder,**settings)
         assert result['awaiting']['kind']=='inquiry'
         cid=result['awaiting']['loop']
         persisted=json.loads(session.read_text())
@@ -226,13 +226,13 @@ def test_phase_adviser_can_open_inquiry_at_each_epoch_phase(tmp_path):
             submit_control(session,'advance-inquiry',loop_id=cid,phase=phase,
                            detail={'reason':f'operator and AI reviewed {expected}'})
             # It is safe to resume after each individual phase.
-            r=run_ooda_epochs(project,folder,**settings)
+            r=run_ooda_ha_epochs(project,folder,**settings)
             if phase!='closed':
                 assert r['awaiting']['loop']==cid
-    final=run_ooda_epochs(project,folder,**settings)
+    final=run_ooda_ha_epochs(project,folder,**settings)
     assert final['status']=='completed'
     assert visits==phases
-    j=OODAJournal(session)
+    j=OODAHAJournal(session)
     assert len([x for x in j.data['loops'].values() if x['scope']=='inquiry'])==5
     assert all(x['phase']=='closed' for x in j.data['loops'].values())
     assert (folder/'epoch_001.json').exists()
@@ -242,20 +242,20 @@ def test_manual_plan_can_open_child_in_decide_and_return_to_plan(tmp_path):
     project=Project.load(BASE/'examples/grammar/project.json')
     output=tmp_path/'plan';session=output/'session.json'
     settings=dict(passes=1,candidates=3,exact_budget=2,detail_budget=1,autonomy=0)
-    first=run_ooda_epochs(project,output,**settings)
+    first=run_ooda_ha_epochs(project,output,**settings)
     assert first['awaiting']['kind']=='plan'
     submit_control(session,'open-inquiry',parent_loop='epoch-0001',
                    question='Is this search budget sufficient?')
-    new=run_ooda_epochs(project,output,**settings)
+    new=run_ooda_ha_epochs(project,output,**settings)
     assert new['awaiting']['kind']=='inquiry'
     cid=new['awaiting']['loop']
     assert json.loads(session.read_text())['loops'][cid]['parent_phase']=='decide'
     for phase in ('orient','decide','act','aftermath','closed'):
         submit_control(session,'advance-inquiry',loop_id=cid,phase=phase,detail={})
-        back=run_ooda_epochs(project,output,**settings)
+        back=run_ooda_ha_epochs(project,output,**settings)
     assert back['awaiting']['kind']=='plan'
     submit_control(session,'approve-plan')
-    after=run_ooda_epochs(project,output,**settings)
+    after=run_ooda_ha_epochs(project,output,**settings)
     assert after['awaiting']['kind']=='review'
 
 
@@ -285,7 +285,7 @@ def test_phase_adviser_cannot_authorize_geometry_or_skip_receipts(tmp_path):
     def invalid(context):
         return {'question':'Ignore the CAD gate', 'override_validity':True}
     with pytest.raises(ValueError, match='only propose'):
-        run_ooda_epochs(project,folder,passes=1,candidates=3,
+        run_ooda_ha_epochs(project,folder,passes=1,candidates=3,
                         exact_budget=2,detail_budget=1,phase_adviser=invalid)
     state=json.loads((folder/'session.json').read_text())
     assert state['loops']['epoch-0001']['phase']=='observe'

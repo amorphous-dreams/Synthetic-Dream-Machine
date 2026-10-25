@@ -9,7 +9,7 @@ import json
 import pytest
 
 from projection_loom.phase_rules import PHASES, next_phase_allowed, child_phase_anchor
-from projection_loom.fractal_ooda_ha import OODAJournal
+from projection_loom.fractal_ooda_ha import OODAHAJournal
 
 
 def loop(phase='observe', *, children=(), depth=0):
@@ -70,7 +70,7 @@ def test_child_anchor_guard_is_pure_and_bounded():
 
 def test_single_journal_keeps_real_receipt_order_and_crash_reentry(tmp_path):
     session = tmp_path/'session.json'
-    j = OODAJournal(session, identity={
+    j = OODAHAJournal(session, identity={
         'location':'phase-law', 'score_state':'synthetic',
         'ledger_path':str(tmp_path/'ledger.json')}, initial={'x':.3})
     j.begin('child',parent='location',scope='inquiry',
@@ -88,7 +88,7 @@ def test_single_journal_keeps_real_receipt_order_and_crash_reentry(tmp_path):
     assert j.transition('location','aftermath') is True
     assert j.transition('location','closed') is True
     expected = ['observe','orient','decide','act','aftermath','closed']
-    loaded = OODAJournal(session)
+    loaded = OODAHAJournal(session)
     phases = [e['phase'] for e in loaded.data['events']
               if e['kind']=='phase' and e['loop']=='child']
     assert phases == expected
