@@ -38,11 +38,13 @@ def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=T
             # Preserve the established complete method-seat ordering.
             reserved = sorted(methods)
         else:
-            # Overflow: round-robin method seats across epochs rather than
-            # letting the small-preview incumbent starve exploration forever.
-            by_preview = list(dict.fromkeys(p.emitter for _, _, p in ordered))
-            offset = emitter_turn % len(by_preview)
-            reserved = (by_preview[offset:] + by_preview[:offset])[:max_exact]
+            # Overflow rotates a STABLE emitter ring. A preview may choose
+            # the best proposal within a method but must not reorder the
+            # ring itself, or changing previews can cancel the rotation and
+            # starve the same families indefinitely.
+            ordered_methods = sorted(methods)
+            offset = emitter_turn % len(ordered_methods)
+            reserved = (ordered_methods[offset:] + ordered_methods[:offset])[:max_exact]
         for method in reserved:
             scheduled.append(next(row for row in ordered if row[2].emitter == method))
     already = {row[2].id for row in scheduled}

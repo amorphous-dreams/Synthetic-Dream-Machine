@@ -221,8 +221,14 @@ class WideEpoch:
             if p.id not in selected and p.id not in self.data['results']:
                 self.data['results'][p.id]={'state':'deferred','reason':'exact-audit budget',
                                             'emitter':p.emitter,'parent':p.parent}
+        # Evaluate designated detailed-scoring candidates first. If some
+        # fail their native gate or the scoring backend, other exact-audited
+        # candidates may fill unused scoring capacity. Reentry sees the same
+        # order and durable prior results; no preview certifies geometry.
+        prioritized = [p for p in scheduled if p.id in detail_ids]
+        prioritized.extend(p for p in scheduled if p.id not in detail_ids)
         detail_count=sum(r.get('state')=='scored' for r in self.data['results'].values())
-        for p in scheduled:
+        for p in prioritized:
             # Cooperative interruptions happen between completed candidate
             # evaluations, never mid-Boolean operation. Reentry uses the saved
             # candidate receipts and never repeats a completed CAD side effect.
@@ -239,7 +245,7 @@ class WideEpoch:
                 audit=assembly.audit(join=True)
                 if not audit.get('valid',False) or audit.get('union_solids')!=1 or not audit.get('union_valid'):
                     result={'state':'rejected','reason':'CAD or void gate','audit':audit}
-                elif p.id not in detail_ids or detail_count>=self.max_detail:
+                elif detail_count>=self.max_detail:
                     result={'state':'audited','reason':'detail budget','audit':audit}
                 else:
                     losses=score(p.genome,assembly)
@@ -268,6 +274,7 @@ class WideEpoch:
                     phenotype=sorted(features)
                     niche=_hash(phenotype)[:16]
                     result={'state':'scored','losses':losses,'pet_loss':pet_loss,
+                            'detail_role':'reserved' if p.id in detail_ids else 'backfill',
                             'combined_loss':combined,'niche':niche,'phenotype':phenotype,
                             'witness_id':witness.witness_id,'evidence_state':self.score_state,
                             'audit':audit}

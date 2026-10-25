@@ -36,7 +36,10 @@ def pareto_front(rows):
     # They are meaningful only within the same family, never as cross-family
     # coordinates of a supposedly global Pareto front.
     comparable={'silhouette','prior','macro','contour'}
-    keys=sorted(set.intersection(*(set(r.get('losses',{})) for r in rows)) & comparable)
+    shared=[frozenset(r.get('losses',{})) & comparable for r in rows]
+    if any(axis != shared[0] for axis in shared[1:]):
+        raise ValueError('Pareto requires consistent measured objective axes')
+    keys=sorted(shared[0])
     def vector(r):
         return tuple(float(r['losses'][k]) for k in keys) if keys else (float(r['combined_loss']),)
     observations=[(r,vector(r)) for r in rows]
@@ -50,13 +53,18 @@ def diversity_parents(rows,limit,*,specialist=False):
     """Retain the global champion, niche specialists, Pareto survivors, other masks."""
     if type(limit) is not int or not 1<=limit<=20:
         raise ValueError('Parent limit must lie in 1..20')
+    rows=list(rows)
+    if not rows:return []
     ranked=sorted(rows,key=lambda r:(r.get('specialist_loss',r['combined_loss'])
           if specialist else r['combined_loss'],r['combined_loss'],r['id']))
-    unique={}
+    # A local specialist with the SAME exact mask must not displace the
+    # genuinely best whole-location genome before the global champion is
+    # retained. Other masks still compete by local specialist score.
+    champion=min(rows,key=lambda r:(r['combined_loss'],r['id']))
+    unique={champion['mask_sha256']:champion}
     for row in ranked:unique.setdefault(row['mask_sha256'],row)
     candidates=list(unique.values())
-    if not candidates:return []
-    selected=[min(candidates,key=lambda r:(r['combined_loss'],r['id']))]
+    selected=[champion]
     def add(row):
         if row['mask_sha256'] not in {v['mask_sha256'] for v in selected}:
             selected.append(row)

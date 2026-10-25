@@ -22,7 +22,7 @@ def test_scheduler_preserves_emitter_seats_and_preview_order():
     assert [p.id for p in schedule_candidates(
         rows, preview=scored, max_exact=3)] == ['b', 'a', 'c']
     assert [p.id for p in schedule_candidates(
-        rows, preview=scored, max_exact=2)] == ['a', 'b']
+        rows, preview=scored, max_exact=2)] == ['b', 'a']
     assert [p.id for p in schedule_candidates(
         rows, preview=scored, max_exact=3, reserve_emitter=False)] == ['a', 'b', 'c']
     assert [p.id for p in schedule_candidates(

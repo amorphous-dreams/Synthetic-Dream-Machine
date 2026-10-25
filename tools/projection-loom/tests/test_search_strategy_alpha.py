@@ -83,7 +83,8 @@ def test_component_specialists_assemble_in_shared_source_identity(tmp_path):
         "results":{p.id:{"state":"scored","combined_loss":.3,
             "losses":{"silhouette":.2,"prior":.02,"regional":.08},
             "phenotype":[phenotype,"visual-niche:region-A"],
-            "witness_id":"w","evidence_state":"provisional"}}}
+            "witness_id":"w","evidence_state":"provisional",
+            "audit":{"valid":True,"union_solids":1,"union_valid":True}}}}
     assert archive.assimilate(1,run)["scored"]==1
     inherited=make_brood(recipe.bounds,recipe.initial,archive,seed=41,
                          generation=2,offspring_per_family=3)

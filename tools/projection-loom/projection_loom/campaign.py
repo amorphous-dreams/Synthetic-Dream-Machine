@@ -7,6 +7,8 @@ archive. Rejected and deferred candidates remain counted in generation receipts.
 from __future__ import annotations
 
 import copy
+import math
+import re
 from hashlib import sha256
 from pathlib import Path
 import numpy as np
@@ -80,6 +82,42 @@ def visual_descriptor(mask):
     return descriptor
 
 
+def _scored_observation(result):
+    """Check native admission before an epoch can influence reproduction.
+
+    Source-view scores are provisional unless independently certified; a
+    convincing loss without a complete native gate is not lineage evidence.
+    """
+    audit=result.get('audit')
+    if (not isinstance(audit,dict) or audit.get('valid') is not True
+            or audit.get('union_valid') is not True
+            or type(audit.get('union_solids')) is not int
+            or audit['union_solids'] != 1):
+        raise ValueError('Scored lineage requires a valid single-solid native CAD/void audit')
+    losses=result.get('losses')
+    if not isinstance(losses,dict) or not losses or any(
+            isinstance(v,bool) or not isinstance(v,(int,float))
+            or not math.isfinite(v) or v<0 for v in losses.values()):
+        raise ValueError('Scored lineage requires finite nonnegative measured losses')
+    combined=result.get('combined_loss')
+    if (isinstance(combined,bool) or not isinstance(combined,(int,float))
+            or not math.isfinite(combined) or combined<0):
+        raise ValueError('Scored lineage combined loss must be finite and nonnegative')
+    if not isinstance(result.get('witness_id'),str) or not result['witness_id'].strip():
+        raise ValueError('Scored lineage requires a native source-bound witness')
+    if result.get('evidence_state') not in ('provisional','synthetic','verified'):
+        raise ValueError('Scored lineage requires an attributed evidence state')
+    traits=result.get('phenotype')
+    if not isinstance(traits,list) or not all(isinstance(v,str) for v in traits):
+        raise ValueError('Scored lineage requires recorded visual mask and niche')
+    masks=[v.split(':',1)[1] for v in traits if v.startswith('visual:')]
+    niches=[v.split(':',1)[1] for v in traits if v.startswith('visual-niche:')]
+    if (len(masks)!=1 or re.fullmatch('[0-9a-f]{64}',masks[0]) is None
+            or len(niches)!=1 or not niches[0]):
+        raise ValueError('Scored lineage requires one exact SHA-256 mask and measured niche')
+    return masks[0],niches[0]
+
+
 class LineageArchive:
     """One durable archive per *source-bound* breeding campaign.
 
@@ -129,6 +167,12 @@ class LineageArchive:
         results = checkpoint.get('results', {})
         if set(results) - set(proposals):
             raise ValueError('A candidate result has no recorded source proposal')
+        # Validate scored evidence BEFORE the checksum touches potentially
+        # nonfinite JSON, and before any partial lineage mutation can occur.
+        measured={}
+        for proposal_id,result in results.items():
+            if result.get('state')=='scored':
+                measured[proposal_id]=_scored_observation(result)
         key = str(generation)
         # Bind replay to every admitted and refused state, not only the winners.
         checksum = _hash({'run_id':checkpoint['run_id'], 'proposals':proposals,
@@ -154,11 +198,9 @@ class LineageArchive:
             if len(parts) != 3 or parts[0] != 'family':
                 raise ValueError('Breeding archive needs a source-bound family emitter')
             family = parts[1]
-            traits = result.get('phenotype', [])
-            masks = [feature.split(':', 1)[1] for feature in traits if feature.startswith('visual:')]
-            niches = [feature.split(':', 1)[1] for feature in traits if feature.startswith('visual-niche:')]
-            if len(masks) != 1 or len(masks[0]) != 64 or len(niches) != 1:
-                raise ValueError('Scored breeding member needs one measured visual phenotype')
+            if family not in FAMILY_FOCUSES:
+                raise ValueError('Scored breeding member has an unknown search family')
+            mask_sha,niche=measured[proposal_id]
             ident = f'{generation:04d}/{proposal_id}'
             focus = FAMILY_FOCUSES.get(family, ())
             genome = dict(proposal['genome'])
@@ -170,7 +212,7 @@ class LineageArchive:
                    'component_genome':{k:genome[k] for k in focus if k in genome},
                    'specialist_loss':float(regional + .2*result['losses']['silhouette'])
                          if regional is not None else float(result['combined_loss']),
-                   'mask_sha256': masks[0], 'niche': niches[0],
+                   'mask_sha256': mask_sha, 'niche': niche,
                    'combined_loss': result['combined_loss'],
                    'losses': dict(result['losses']),
                    'witness_id': result.get('witness_id'),
