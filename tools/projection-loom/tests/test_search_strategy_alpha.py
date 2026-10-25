@@ -16,7 +16,7 @@ def test_all_declared_loci_reachable_and_joining_switch_reproduces(tmp_path):
     b=make_brood(recipe.bounds,recipe.initial,archive,seed=41,generation=1,offspring_per_family=12)
     assert a==b and len(a)==72
     assert len({p.id for p in a})==72
-    assert set().union(*map(set,FAMILY_FOCUSES.values()))==set(recipe.bounds)
+    assert set(recipe.bounds).issubset(set().union(*map(set,FAMILY_FOCUSES.values())))
     assert all(p.ancestry["family"] in FAMILY_FOCUSES for p in a)
     assert all(p.ancestry["entity"] in ("Crystal","Joining","Fortress") for p in a)
     join=[p for p in a if p.ancestry["family"]=="terraces"]

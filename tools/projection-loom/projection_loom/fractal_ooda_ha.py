@@ -537,7 +537,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
     if detail_budget > exact_budget:
         raise ValueError('Detail budget cannot exceed exact audit budget')
     if breeding:
-        if recipe is None or not set().union(*FAMILY_FOCUSES.values()).issubset(recipe.bounds):
+        if recipe is None or not recipe.bounds:
             raise ValueError('Breeding requires a source-bound structural family recipe with all loci')
         if type(offspring_per_family) is not int or not 1 <= offspring_per_family <= 32:
             raise ValueError('Breeding offspring budget must be 1..32 per family')

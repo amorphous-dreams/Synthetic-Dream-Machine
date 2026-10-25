@@ -104,7 +104,7 @@ class SurrogatePreview:
 def searchability_census(bounds,archive,*,family_focus,activations=()):
     """Distinguish syntactically reachable loci from actual observed variation."""
     declared=set(bounds)
-    reachable=set().union(*(set(f) for f in family_focus.values()))
+    reachable=declared & set().union(*(set(f) for f in family_focus.values()))
     rows=list(archive.data['members'].values()) if archive is not None else []
     observed={}
     for key in sorted(declared):
