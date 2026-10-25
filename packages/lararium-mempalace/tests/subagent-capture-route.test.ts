@@ -32,11 +32,20 @@ describe("spiritCaptureSourceFile", () => {
     expect(patch["lar_parent_handle"]).toBe("run-99");            // closes back to the main run
   });
 
-  test("legacy un-prefixed spirit names: handle law UNSHIFTED, surface carried HONESTLY", () => {
-    const legacy = "wing_x__spirits/Mapper__agent-abc123def__run-run-99.jsonl";
-    const patch = buildPatch(harvestTurnGradient("Lares (Mapper): the verb leads"), legacy);
+  test("a spirit name with no surface token: handle law UNSHIFTED, surface carried HONESTLY as unknown", () => {
+    const foreign = "wing_x__spirits/Mapper__agent-abc123def__run-run-99.jsonl";
+    const patch = buildPatch(harvestTurnGradient("Lares (Mapper): the verb leads"), foreign);
     expect(patch["lar_agent"]).toBe("Mapper");
     expect(patch["lar_agent_handle"]).toBe("run-99.abc123def");
     expect(patch["lar_surface"]).toBe("unknown"); // no surface token → honest, never a guessed "claude"
+  });
+
+  test("★ a spirit basename without the run token names no agent, no sidechain and no handle ★", () => {
+    const runless = "wing_x__spirits/claude__Mapper__agent-abc123def.jsonl";
+    const patch = buildPatch(harvestTurnGradient("Lares (Mapper): the verb leads"), runless);
+    expect(patch["lar_surface"]).toBe("claude");
+    expect(patch["lar_agent"]).toBeUndefined();
+    expect(patch["lar_sidechain"]).toBeUndefined();
+    expect(patch["lar_agent_handle"]).toBeUndefined();
   });
 });

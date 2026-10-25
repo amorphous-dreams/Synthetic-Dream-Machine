@@ -34,7 +34,7 @@ const TOKENS: Record<string, string> = Object.fromEntries([
     "genesisCasCidsFromOracle", "loadOrMaterializeOracle", "hearthOracle", "leafOracle", "emptyOracle", "mutatedOracle", "onlyOracle", "withOracle",
     "oracleRec", "oracleOf", "OracleRecord", "fakeOracle", "oracleNames", "oracleWriters", "bindsOracleUrl", "registerCrossroadsInOracle",
   ].map((t) => [t, SLICE5] as const),
-  ...["oracleTw", "oracleRel", "oracleReadFace", "LAR_ORACLE_ORIGIN"].map((t) => [t, OTHER] as const),
+  ...["oracleTw", "oracleRel", "oracleReadFace"].map((t) => [t, OTHER] as const),
 ]);
 
 const FILES: Record<string, string> = {

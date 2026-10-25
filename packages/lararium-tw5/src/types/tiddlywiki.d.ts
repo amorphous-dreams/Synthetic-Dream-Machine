@@ -10,25 +10,16 @@
  * here use a `TW5*` prefix and coexist without collision — different
  * interface names, two parallel type graphs.
  *
- * **Why both:**
- *   - tw5-typed is broader and stricter; tracking upstream changes
- *     gives us future-friendliness AND surfaces canonical types for
- *     NEW code (e.g. Path V plugin packaging imports directly from
- *     `'tiddlywiki'`).
- *   - The hand-rolled types here model exactly what our existing call
- *     sites use, including domain-specific shapes (filter operator
- *     `operand`/`suffix` access, `_larKukaliHook` extension slot) that
- *     tw5-typed's stricter coverage doesn't expose. A cold migration
- *     would force ~30 minutes of churn across 12 sites.
- *
- * **Migration path:**
- *   - NEW code prefers tw5-typed names directly:
- *       `import type { Widget } from 'tiddlywiki';`
- *   - EXISTING code uses local `TW5*` aliases until the call site is
- *     touched naturally; switch the import at that time.
- *   - As file-by-file migrations land, the types in this file shrink.
- *     Eventually only domain-specific extensions remain — and those
- *     migrate to declaration-merging blocks per linonetwo's README:
+ * **Division of labour:**
+ *   - tw5-typed is broader and stricter: it carries the canonical upstream
+ *     types, and NEW code imports them directly from `'tiddlywiki'`
+ *     (`import type { Widget } from 'tiddlywiki';`).
+ *   - The hand-rolled types here model exactly what our call sites use,
+ *     including domain-specific shapes (filter operator `operand`/`suffix`
+ *     access) that tw5-typed's stricter
+ *     coverage doesn't expose. Call sites use the local `TW5*` aliases.
+ *   - Domain-specific extensions that belong on the upstream types use
+ *     declaration merging per linonetwo's README:
  *       `declare module 'tiddlywiki' { interface ITiddlyWiki { ... } }`
  *
  * **Authoring notes (local schema):**
@@ -38,8 +29,6 @@
  *     prototype chain, not ES6 class extends. Constructors are typed separately.
  *   - Filter `source` is the TW5 iterator protocol: a function that accepts a
  *     callback receiving (tiddler | undefined, title) for each input tiddler.
- *   - TW5Wiki carries an optional extension slot (_larKukaliHook) written by
- *     LarariumTW5.registerKukaliHook() so KukaliWidget can read it without a cast.
  */
 
 import type {

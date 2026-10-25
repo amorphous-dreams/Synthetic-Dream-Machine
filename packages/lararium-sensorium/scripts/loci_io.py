@@ -56,7 +56,7 @@ READ_BATCH = 2000
 WRITE_BATCH = 1000
 
 # The kapae down-weight floor (strand C) — a rewound turn's drawers ride this salience so they
-# barely bend the FFZ Measure rhythm (ffz-orchestrator reads lar_salience, default 1.0). A small
+# barely bend the FFZ Measure rhythm (a reader takes lar_salience, default 1.0). A small
 # (0,1] value: it cannot trip a gong on its own, yet keeps the drawer recall-visible (set-aside,
 # never erased). Mirrors the ffz test's floor (0.01).
 KAPAE_FLOOR_SALIENCE = 0.01
@@ -126,7 +126,7 @@ def cmd_export(args):
 
 
 def cmd_embeddings(args):
-    """Read STORED embeddings back out of the palace — the FFZ Measure servo's
+    """Read STORED embeddings back out of the palace — the FFZ Measure's
     CONTENT-plane cohesion feed. The nomic vectors were already computed by the palace
     at insert; the shared `read_stored_embeddings` cap NEVER re-embeds and NEVER loads a
     model (model-agnostic readback), honoring the NO-new-model law. One NDJSON record

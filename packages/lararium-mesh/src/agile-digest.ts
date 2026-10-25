@@ -5,16 +5,16 @@
  * scheme sit side by side with no re-key. A digest WITHOUT a tag names no algorithm and is refused:
  * a bare hex string is malformed here, never read as an implied `sha256`.
  *
- *   - `parseDigest`   — `algo:hex` (canonical), the `algo-hex` SRI/`sourceCidOf` spelling, and the
- *                       RFC 9530 `Repr-Digest` field value `sha-256=:<base64>:` all read as one
- *                       `(algo, hex)`. A bare hex, or anything else, throws a named error.
+ *   - `parseDigest`   — `algo:hex` and the RFC 9530 `Repr-Digest` field value
+ *                       `sha-256=:<base64>:` read as one `(algo, hex)`. A bare hex, or anything
+ *                       else, throws a named error.
  *   - `digestsEqual`  — parses BOTH sides and compares `(algo, hex)`; a side that does not parse
  *                       reads NOT-equal (never throws on a hot path).
  *   - `formatDigest`  — emits the canonical tagged form `algo:hex`.
- *   - `tagDigest`     — re-spells any accepted form as canonical `algo:hex`.
+ *   - `tagDigest`     — re-spells an accepted form as `algo:hex`.
  *   - `reprDigestOf`  — emits the RFC 9530 `Repr-Digest` field value for the HTTP skins.
  *
- * A stored anchor holding a bare hex therefore matches nothing: the gates that compare against it
+ * A stored anchor holding a bare hex matches nothing: the gates that compare against it
  * read it as moved, and the next projection that finds the disk in step records the tagged form.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/agile-digest
@@ -82,16 +82,15 @@ function base64OfHex(hex: string): string {
 /**
  * Parse a digest string into `(algo, hex)`.
  *
- *   "sha256:ab…"      → { algo: "sha256", hex: "ab…" }   (canonical tagged, `:`)
- *   "sha256-ab…"      → { algo: "sha256", hex: "ab…" }   (SRI / sourceCidOf, `-`)
+ *   "sha256:ab…"      → { algo: "sha256", hex: "ab…" }   (tagged, `:`)
  *   "sha-256=:q80…=:" → { algo: "sha256", hex: "ab…" }   (RFC 9530 Repr-Digest)
  *   "blake3:cd…"      → { algo: "blake3", hex: "cd…" }   (another scheme rides free)
  *   "ab…64…"          → throws — a bare hex names no algorithm
  *
  * The hex and the algo lowercase. Throws a NAMED error on anything else.
  *
- * The separator split is FIRST-delimiter only, and accepted only when the head reads as an
- * algorithm tag and the tail as hex — hex holds neither `:` nor `-`, so no value mis-splits.
+ * The split falls on the first `:` only, and holds only when the head reads as an
+ * algorithm tag and the tail as hex — hex holds no `:`, so no value mis-splits.
  */
 export function parseDigest(digest: string): ParsedDigest {
   if (typeof digest !== "string" || digest.length === 0) {
@@ -108,7 +107,7 @@ export function parseDigest(digest: string): ParsedDigest {
     return { algo: SHA256_ALGO, hex };
   }
 
-  const sepIndex = firstSeparator(digest);
+  const sepIndex = digest.indexOf(":");
   if (sepIndex > 0) {
     const algo = digest.slice(0, sepIndex).toLowerCase();
     const hex = digest.slice(sepIndex + 1).toLowerCase();
@@ -122,15 +121,6 @@ export function parseDigest(digest: string): ParsedDigest {
     throw new TypeError(`parseDigest: bare hex "${digest.slice(0, 16)}…" names no algorithm — write it tagged (\`sha256:<hex>\`)`);
   }
   throw new TypeError(`parseDigest: not a tagged digest "${digest}"`);
-}
-
-/** The index of the first `:` or `-` separator, or -1 when the value carries neither. */
-function firstSeparator(s: string): number {
-  const colon = s.indexOf(":");
-  const dash = s.indexOf("-");
-  if (colon < 0) return dash;
-  if (dash < 0) return colon;
-  return Math.min(colon, dash);
 }
 
 /** Emit the canonical tagged form `algo:hex`. Lowercases both; validates the
@@ -155,7 +145,7 @@ export function reprDigestOf(digest: string): string {
   return `sha-256=:${base64OfHex(hex)}:`;
 }
 
-/** Re-spell a digest in any accepted form as canonical `algo:hex` (idempotent on canonical input).
+/** Re-spell an accepted digest as `algo:hex` (idempotent on tagged input).
  *  A bare hex throws, as `parseDigest` does. */
 export function tagDigest(digest: string): string {
   const { algo, hex } = parseDigest(digest);

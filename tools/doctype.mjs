@@ -20,8 +20,7 @@ const REPO = process.env["REPO"] ?? process.cwd();
 const SPEC_URI = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext";
 const ROOT = "memetic-wikitext+tiddlywiki";
 // QUOTED, because a bare positional binds a PHANTOM parameter and leaves the slot EMPTY — the carrier-head
-// ruling, and the cure the corpus already took when 738 carriers and their minters converted. This witness
-// was the one reader left on the retired spelling, so it called 725 canonical carriers "the wrong form".
+// ruling.
 const DECLARATION = `<<!DOCTYPE "${ROOT}" "${SPEC_URI}">>`;
 const { carrierFiles, inSubmodule } = await distCarrierFiles(REPO, "doctype");
 // A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
@@ -73,8 +72,7 @@ for (const f of carriers) {
   const { lines, live } = liveLines(text);
   const findLive = (p) => lines.findIndex((l, i) => live(i) && p(l.trim()));
   const at = findLive((l) => l.startsWith("<<!DOCTYPE"));
-  // A CALL binds with `=`. The colon form is retired outright — early alpha, no back-compat — so a
-  // carrier still spelling `<<^ code:` reads as the fault it is rather than a tolerated SOH.
+  // A CALL binds with `=`: the heading line reads `<<^ code=…`.
   const sohAt = findLive((l) => l.startsWith("<<^ code="));
   if (at < 0) { missing.push(f); continue; }
   const first = (lines[at] ?? "").trim();

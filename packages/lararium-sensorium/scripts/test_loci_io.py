@@ -217,7 +217,7 @@ def test_cmd_kapae_skips_missing_shas(monkeypatch, capsys, tmp_path):
 # The cmd_* tests above call in-process and bypass argparse — exactly why the FFZ readers'
 # bare `loci_io <sub>` (no --palace) crashed unguarded. These spawn the real CLI to lock the
 # boundary contract: read subcommands REFUSE a missing palace (no silent guest-reach) and run
-# graceful WITH one (the shape ffz-orchestrator's readers now pass).
+# graceful WITH one (the shape the FFZ readers pass).
 
 import os as _os
 import subprocess as _subprocess

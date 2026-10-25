@@ -78,9 +78,9 @@ LAR_SCHEMA = AdapterSchema(
                                       description="the turn's POSITION in its source stream (producer-given index; the hash-derived dedup pseudo-chunk never stamps) — recall's self-discount grades same-root hits by this distance against the caller's horizon"),
         "lar_ffz": FieldSpec(type="string", required=False, indexed=True,
                              description="rhythmic ADDRESS — the worldline clock's phase frozen at this turn's grounding boundary: Theme.Arc.Measure.Beat.Segment[.block], prefix-truncatable (segment ticks, block offsets; ffz-clock#rhythmic-address)"),
-        # ── kapae down-weight (strand C) — the rewind salience the FFZ Measure servo reads ──────────
+        # ── kapae down-weight (strand C) — the rewind salience a Measure reader reads ──────────
         "lar_salience": FieldSpec(type="float", required=False, indexed=True,
-                                  description="kapae down-weight in (0,1] (default 1.0): a rewound / road-not-taken drawer rides a floor salience so it barely bends the Measure rhythm (ffz-orchestrator#kapae-down-weight)"),
+                                  description="kapae down-weight in (0,1] (default 1.0): a rewound / road-not-taken drawer rides a floor salience so it barely bends the Measure rhythm"),
         "lar_kapae": FieldSpec(type="string", required=False, indexed=True,
                                description="the rewind LIVENESS stamp: iso whole-seconds of kapae detection (legacy drawers carry int 1) — set aside, never erased/hidden; readers RANK by it (any truthy = rewound) — the convergence twin of the KG valid-close + the structurepalace tally-decrement"),
         "lar_frontier": FieldSpec(type="string", required=False, indexed=True,

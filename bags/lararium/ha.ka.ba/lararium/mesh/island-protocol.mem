@@ -25,21 +25,19 @@ Discriminated union for all messages crossing the vessel / causal-island boundar
 Every message MUST carry its `type`, and no version counter rides beside it. Platform-neutral — no Node or browser imports.
 Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes only.
 
-!!! Island Sovereignty Law — nine clauses (isomorphic across all vessel types)
+!!! Island Sovereignty Law — seven clauses (isomorphic across all vessel types)
 
 # Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
-# The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas.
+# The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
 # The island owns its timing. The wiki shore queues every inbound change at `$tw.lares.enqueueNalu` and lands the queue in slices, yielding to the host between them; the in-wiki nalu engine applies each change synchronously (`$tw.lares.applyNalu`). One queue serves all bags. No raw-message-receipt drains (`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`).
-# //(retired)// The frame-completion ACK signal — drain timing stays island-internal.
-# Vessel oracle delta delivery removed. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
-# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null = pre-CAS). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the @lararium CRDT doc after `handle.whenReady()`; two vessels federating @lararium share the engine automatically via Automerge sync.
+# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null names no pinned core). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the @lararium CRDT doc after `handle.whenReady()`; two vessels federating @lararium share the engine automatically via Automerge sync.
 # The vessel MUST close `mainPort` at evict/unmount time. Failure leaks the Automerge NetworkAdapter silently. Structural: every vessel holds `mainPort: MessagePort` on its hot slot and calls `mainPort.close()` in teardown. No exceptions.
 # Federation shore — when a grant carries a non-empty AutomergeUrl, two obligations activate. Vessel: wire `MessageChannelNetworkAdapter(mainPort)` on the vessel Repo before delivering `manifest`. Island: call `repo.find(docUrl).whenReady()` and await readiness before seeding TW5 and declaring `ea`; failure on either side moves the slot to disposed within `HANDSHAKE_TIMEOUT_MS`. Gate proof: `federation-shore.test.ts` (node) + `browser-repo-in-island.test.ts` test 2 (browser). When this law holds, two vessels sharing a bag converge without any explicit sync call.
 # TW5 SHALL NOT instantiate on the main thread. Every `TW5Engine` lives inside a sovereign Worker; the main thread holds `DocHandle` references and `CompositeStore` layers only. Any `bootTw5()` outside a Worker constitutes a sovereignty violation.
 
 !!! IslandGrants — typed ocap manifest capabilities
 
-The keel cut (2026-06-09) retired the `resolver` dictionary (slot URI → AutomergeUrl map, a main-owned lookup). The manifest HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
+The manifest HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
 
 | Grant | Carries | Law |
 |---|---|---|
@@ -122,6 +120,6 @@ The keel cut (2026-06-09) retired the `resolver` dictionary (slot URI → Autome
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E5SbGA56RfgilhaX0SJ_F5TBU5XymwhE6lQRkVMf-Pw
+<<^ code="&#x0003;">>ni:///sha-256;6A9fPot26FKgOlSMmzPK8lu5ZUGUzUlGqIe8BfUTC1s
 
 <<^ code="&#x0004;" -> to="?">>

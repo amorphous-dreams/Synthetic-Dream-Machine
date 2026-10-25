@@ -1,8 +1,8 @@
 /**
  * copilot-wire — `lares vessel stand --copilot`: wire the LARES MCP seat (memory through the lares house)
- * and the Lares session-ingest hook into the GitHub Copilot CLI home (~/.copilot/). A stale mempalace
- * MCP entry is reaped in the same pass — a harness holding its own palace holder reaches past the
- * node into the store, and N writers on one Chroma index is what corrupts it.
+ * and the Lares session-ingest hook into the GitHub Copilot CLI home (~/.copilot/). A harness reaches
+ * memory through that seat and holds no palace holder of its own: N writers on one Chroma index
+ * corrupt it.
  *
  * Copilot CLI (GA 2026-02) reads JSON config, like Claude:
  *   - MCP   → ~/.copilot/mcp-config.json   ({ mcpServers: { name: {type,command,args,tools} } })
@@ -54,21 +54,12 @@ export function wireCopilotHome(opts: { home?: string } = {}): CopilotWireResult
   const steps: CopilotWireStep[] = [];
   let changed = false;
 
-  // 1. The MCP seat → ~/.copilot/mcp-config.json. Reap a stale `mempalace` entry (a harness holding
-  //    its own palace holder reaches PAST the node into the store) and register the LARES seat in
-  //    its place — recall/harvest/status/worldline over the memory sensorium, through the lares house.
+  // 1. The MCP seat → ~/.copilot/mcp-config.json: the LARES seat —
+  //    recall/harvest/status/worldline over the memory sensorium, through the lares house.
   const mcpPath = join(dir, "mcp-config.json");
   const cfg = readJson<McpConfig>(mcpPath, {});
   const servers = (cfg.mcpServers ??= {});
   let mcpDirty = false;
-
-  if (servers["mempalace"] !== undefined) {
-    delete servers["mempalace"];
-    mcpDirty = true;
-    steps.push({ item: "mcp:mempalace", action: "reaped", detail: "removed a stale mcp-config.json entry — memory rides the lares seat now" });
-  } else {
-    steps.push({ item: "mcp:mempalace", action: "absent", detail: "not registered (memory rides the lares seat)" });
-  }
 
   const laresMcp = resolveLaresMcp();
   if (laresMcp === null) {

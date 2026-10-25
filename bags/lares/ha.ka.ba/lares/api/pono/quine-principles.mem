@@ -216,15 +216,7 @@ identify themselves via public keys"). CID-addressed tiddlers in IPLD would comp
 this: the content certifies itself at the data level, the capability certifies itself
 at the access level.
 
-''Migration path:''
-```
-Today:   lar:///ha.ka.ba/lares/api/...  →  filesystem path
-Sprint 6: same URI                              →  Automerge DocHandle
-Sprint N: same URI                             →  Beelay sedimentree
-Sprint N+k: same URI + CID hint               →  IPLD CAR store
-```
-
-The `lar:` URI resolver (FPI-5 trim tab) makes this migration transparent to all callers.
+''One URI, many substrates.'' The same `lar:` URI resolves against whatever substrate holds the bytes (a filesystem path, an Automerge DocHandle), and the resolver (FPI-5 trim tab) keeps that transparent to all callers.
 
 <<~/ahu>>
 
@@ -269,6 +261,6 @@ of the pattern. The TypeScript file stands as the material instantiation; the me
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sza9qjQ3PkZ3GryxoX57ECgYc9r0nJZpOjeobEHA-BI
+<<^ code="&#x0003;">>ni:///sha-256;JP7MwadrN7OpXq_Wipsj53ypvWi_eUfBwp9B4FR6788
 
 <<^ code="&#x0004;" -> to="?">>

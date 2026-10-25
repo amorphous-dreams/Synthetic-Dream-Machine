@@ -42,7 +42,7 @@ Not a pranala edge. Never use `control:has` to express ahu-slot ancestry.
 `class(...)` list becomes one `control:has` edge — the parent class and every interface alike.
 `my_device := class(creative_device, challengeable, listenable_t):` → three `control:has` edges
 (`creative_device`, `challengeable`, `listenable_t`). The graph holds no privileged is-a parent:
-a type //has// its components. Composition only — the `extends` / is-a framing stays retired (web3).
+a type //has// its components. Composition only (web3): the scene model carries no `extends` / is-a framing.
 
 <<~/ahu>>
 
@@ -210,6 +210,6 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1f6edJ8NfM3wuGEMI_v_-qHfcju_mGKYZ8lvCSYsx4U
+<<^ code="&#x0003;">>ni:///sha-256;LQuy8I8nAv_H1iZZeLwiFybBHSwmFvgF1LuAZydJlG0
 
 <<^ code="&#x0004;" -> to="?">>

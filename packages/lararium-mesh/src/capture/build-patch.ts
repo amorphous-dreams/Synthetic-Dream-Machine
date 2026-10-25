@@ -39,9 +39,8 @@ export interface CaptureContext {
    */
   readonly beat?: string | number;
   /**
-   * Measure (L2) — the topic-shift segment LABEL the one-plane (N=1) quorum servo commits on a
-   * gong (`centroidDriftStep` + `quorumStep` in ffz-project). Absent between gongs (the φ-band
-   * free-runs).
+   * Measure (L2) — the topic-shift segment LABEL a caller supplies. Absent where none does (the
+   * φ-band free-runs).
    */
   readonly measure?: string | number;
   /**
@@ -126,8 +125,8 @@ function deriveArc(sourceFile?: string): string | null {
 
 /**
  * Derive the originating harness from a staged source_file (prefixed `<surface>__…`).
- * An absent or un-prefixed source carries "unknown" HONESTLY — the old silent
- * default-to-"claude" stamped a guess as provenance, hiding un-tokened producers.
+ * An absent or un-prefixed source carries "unknown" HONESTLY — a guessed default would
+ * stamp a guess as provenance and hide un-tokened producers.
  * Downstream reads the field as a free string (adapter.py FieldSpec, no enum), so
  * the honest value rides without breaking a consumer.
  */
@@ -142,7 +141,7 @@ export function deriveSurface(sourceFile?: string): string {
  * Strip one leading `<surface>__` token off a staged basename. Spirit basenames carry it
  * too (`<surface>__<name>__agent-<id>__run-<run>.jsonl`, spiritStageBasename) — without the
  * strip, deriveAgent's lazy `(.+?)` would swallow `<surface>__` into the agent label.
- * Legacy un-prefixed names pass through untouched (the handle law never shifts).
+ * Un-prefixed names pass through untouched (the handle law never shifts).
  */
 function stripSurfaceToken(base: string): string {
   const pfx = base.split("__")[0] ?? "";
@@ -151,14 +150,15 @@ function stripSurfaceToken(base: string): string {
 
 /**
  * Derive the tasked-spirit name from a subagent-staged source_file
- * (`<name>__agent-<id>.jsonl`, the convention from subagent-mine.ts), else null.
+ * (`<name>__agent-<id>__run-<run>.jsonl`, the convention from subagent-mine.ts), else null.
+ * A basename without the run token names no spirit.
  * A drawer with a name reads as a spirit turn (lar_sidechain), kept queryable by
  * actor in the spirits wing — distinct from the main agent's verbatim.
  */
 export function deriveAgent(sourceFile?: string): string | null {
   if (!sourceFile) return null;
   const base = stripSurfaceToken(sourceFile.replace(/\\/g, "/").split("/").pop() ?? "");
-  const m = /^(.+?)__agent-[^/]+\.jsonl$/.exec(base);
+  const m = /^(.+?)__agent-[^/]+?__run-[^/]+\.jsonl$/.exec(base);
   return m ? (m[1] ?? null) : null;
 }
 
@@ -167,8 +167,7 @@ export function deriveAgent(sourceFile?: string): string | null {
  * (`<name>__agent-<id>__run-<run>.jsonl`, the convention from subagent-mine.ts).
  * Returns `<run>.<agentId>` — the run-root . span, the trace-id/span-id formalized
  * (lar:///…/agent-worldline#name) — or null. Identity rides this handle; the
- * pet-name (deriveAgent) only labels. Legacy two-part names (no `__run-`) predate
- * the handle and yield null; they earn one on the next mine.
+ * pet-name (deriveAgent) only labels. A name without `__run-` yields null.
  * Flat `subagents/` gives a `run.child` path; deep parentUuid nesting is a
  * documented extension (agent-worldline#open).
  */
@@ -187,7 +186,7 @@ export function deriveHandle(sourceFile?: string, frontier?: string | null): str
  * Derive the ROOT worldline handle from a MAIN-agent staged source_file
  * (`<surface>__<run>.jsonl` — the convention for a top-level session transcript,
  * NO `__agent-` segment). Returns the run (= the session id), or null for a spirit
- * (handled by deriveHandle) or a legacy un-prefixed name. The run a main drawer
+ * (handled by deriveHandle) or an un-prefixed name. The run a main drawer
  * yields here EQUALS the run-part of every spirit it spawned, so a spirit's
  * `lar_parent_handle` resolves back to the main agent's `lar_agent_handle` — the
  * attribution graph closes (agent-worldline#attribution).

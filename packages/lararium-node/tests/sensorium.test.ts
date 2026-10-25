@@ -103,6 +103,17 @@ describe("sensorium manifest — SHEAF-TRUE shape", () => {
       .toEqual(m);
   });
 
+  test("★ a manifest reads its declared lifecycle; an undeclared state derives; an unknown state refuses ★", () => {
+    const m = buildSensoriumManifest(dir, { sensorium: "memory", lar: "lar:///x", caps: {}, ephemeral: true });
+    expect(m.lifecycle).toBe("pioneer");
+    expect(parseSensoriumManifest(JSON.parse(JSON.stringify(m))).lifecycle).toBe("pioneer");
+    expect(parseSensoriumManifest({ ...m, lifecycle: "tombstone" }).lifecycle).toBe("tombstone");
+    const { lifecycle: _declared, ...undeclared } = m;
+    expect(parseSensoriumManifest(undeclared).lifecycle).toBe("pioneer");
+    expect(() => parseSensoriumManifest({ ...m, lifecycle: "frozen" })).toThrow(/lifecycle/);
+    expect(() => parseSensoriumManifest({ ...m, lifecycle: null })).toThrow(/lifecycle/);
+  });
+
   test("carries the li/ki VARIANCE tag — fiber caps = sheaf (li), bands/coupling = cosheaf (ki)", () => {
     const m = buildSensoriumManifest(dir, {
       sensorium: "memory",

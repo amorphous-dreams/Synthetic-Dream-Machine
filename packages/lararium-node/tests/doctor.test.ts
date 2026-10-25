@@ -61,9 +61,9 @@ describe("sweepDocs", () => {
     expect(text).toMatch(/all clean/);
   });
 
-  // H2 — a probe that spent its own patience (unresolved) names NO safety verdict: it must
+  // A probe that spent its own patience (unresolved) names NO safety verdict: it must
   // count apart from condemned, and it must NEVER flip `degraded`.
-  test("RED-WOULD-BE: unresolved counts apart from condemned and never degrades the chart", async () => {
+  test("unresolved counts apart from condemned and never degrades the chart", async () => {
     const report = await sweepDocs(
       ["aaa1", "bbb2", "ccc3"],
       mockProbe({ bbb2: "unresolved" }),
@@ -74,14 +74,6 @@ describe("sweepDocs", () => {
     expect(report.unresolved).toBe(1);
     expect(report.healthy).toBe(2);
     expect(report.degraded).toBe(false);
-  });
-
-  test("MUTATION PROOF: folding unresolved into condemned (the H2 shape) would flip degraded true", () => {
-    // Re-enact the retired shape by hand: the old isCondemned() read `status !== "ok"`, so an
-    // unresolved verdict condemned exactly like a torn one.
-    const entries = [{ documentId: "bbb2", status: "unresolved" as const }];
-    const oldCondemned = entries.filter((e) => e.status !== "ok").length;
-    expect(oldCondemned).toBe(1); // proves the OLD shape would have degraded the chart
   });
 
   test("formatDoctorReport names unresolved docs apart from condemned, never under 'condemned:'", () => {

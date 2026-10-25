@@ -23,16 +23,13 @@
  *
  * The guest `~/.mempalace` holds no seat here. An operator raises it deliberately (`lares mempalace
  * setup`) and imports FROM it (`guest-import.ts`); the vessel never binds into it.
- *
- * `reaped` / `absent`: a wire leg removes any mempalace registration it finds beside registering the
- * lares one, so a harness config converges on the one owner whatever state it arrives in.
  */
 
 import { existsSync } from "node:fs";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
 import { memorySensoriumDir } from "@lararium/node";
 
-export type WireAction = "wired" | "present" | "missing-script" | "reaped" | "absent";
+export type WireAction = "wired" | "present" | "missing-script";
 
 /** The resolved MCP server command a harness config records: argv + the env its import needs. */
 export interface LaresMcpCommand {

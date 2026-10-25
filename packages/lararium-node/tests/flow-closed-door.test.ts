@@ -97,7 +97,6 @@ describe("the flow face keeps silence", () => {
 
     const probes: Array<[string, string]> = [
       ["/flow/pointer",                "GET"],     // the pointer the face publishes
-      ["/oracle/pointer",              "GET"],     // the retired route: no alias, the same closed door
       [`/flow/${cid}.bin`,             "GET"],     // the snapshot the face holds
       ["/flow/pointer",                "POST"],    // a wrong method
       ["/flow/pointer",                "OPTIONS"], // a preflight

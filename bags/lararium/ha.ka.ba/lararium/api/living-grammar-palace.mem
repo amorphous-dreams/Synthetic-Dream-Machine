@@ -303,63 +303,29 @@ The FFZ rhythmic distance and the Measure drift ride the ''SAME enriched metric'
 ''floor'' — the clock's containment-distance and the drift readout speak one currency, the [0,∞] the
 enrichment hands them.
 
-!!! The fused Measure ~ RETIRED. The tower answers the question the pool was invented to ask.
+!!! The Measure ~ drift reads as a change in description length
 
-''The corroboration reading dies with the product, and it dies for the reason the meme itself named.''
+''The tower answers the question a pooled Measure would ask.''
 
-The Measure asked one causal-inference question — //did the three planes drift together because ONE event//
-//moved them, or did they wander apart?// — and answered it by POOLING per-plane evidence, guarded by a
-whitening step the canon flagged as load-bearing (//"the planes are NOT conditionally independent … WHITEN//
-//before pooling, or the gong double-counts"//).
-
-''That warning stands correct and mis-priced.'' It read the dependence as a
-NUISANCE COVARIANCE to whiten away. ''The dependence names the STRUCTURE.'' Structure carries 97.8% of the
-record's bits (#/unification), so under a tower "three planes agree" reads NEAR-TAUTOLOGICAL — ''one plane heard''
-''three times.'' And a pool cannot be rescued by whitening: strip 97.8% of the signal and what returns IS the
-residual — ''which the two-part code already names, and prices, without a fusion rule.'' //The cure, taken//
-//seriously, collapses into the compression.// The canon walked to the edge of the finding and called it a
-covariance correction.
+The Measure asks one causal-inference question — //did the three planes drift together because ONE event//
+//moved them, or did they wander apart?// — and the chain answers it without a fusion rule. The planes are
+NOT conditionally independent, and the dependence names the STRUCTURE, never a nuisance covariance to whiten
+away. Structure carries 97.8% of the record's bits (#/unification), so under a tower "three planes agree"
+reads NEAR-TAUTOLOGICAL — ''one plane heard three times.'' Whitening the dependence out would strip 97.8% of
+the signal, and what returns IS the residual — ''which the two-part code already names, and prices, without a
+fusion rule.''
 
 <<~moves fuse-the-planes -> read-the-height on/the-chain if/the-planes-nest do/price-the-residual-in-bits>>
 
-''So the whole fusion stack retires'' — the precision-weighted log-opinion-pool, the shared-hazard
-multivariate BOCPD, the sparsified threshold-then-sum, the corroboration ladder. ''Every hand-tuned weight''
-''in it named a symptom of the wrong algebra'' (#the-sins, Ad-Hoc-Weighting, which the meme already forbade).
-A chain HOLDS an order; it needs no rule for combining incomparable coordinates. ''The chain deletes the''
-''fusion problem rather than solving it.''
+''No fusion stack stands in the Measure'': no precision-weighted log-opinion-pool, no shared-hazard
+multivariate BOCPD, no sparsified threshold-then-sum, no corroboration ladder. ''Every hand-tuned weight''
+''in such a stack would name a symptom of the wrong algebra'' (#the-sins, Ad-Hoc-Weighting, which the meme
+already forbids). A chain HOLDS an order; it needs no rule for combining incomparable coordinates. ''The chain''
+''deletes the fusion problem rather than solving it.''
 
-''What replaces it costs less and claims less.'' Drift reads as a change in DESCRIPTION LENGTH: an event
-that moves the corpus lengthens `l(G)+l(D|G)` until the grammar re-earns its bits. One currency, one
-ledger, no pooling — and no gong that can fire on a single artifact wearing three coats.
-
-//(The paragraphs below record the retired mechanism; they stand for the reader who must recognize it, and//
-//they name no live surface.)//
-
-The readout computes as a ''precision-weighted LOG-OPINION-POOL'' — a ''shared-hazard multivariate''
-''BOCPD'' (Bayesian online change-point detection) with factorized per-plane likelihoods. Its character:
-
-<<~ scale measure "multiplicative ~ a log-opinion-pool MULTIPLIES the per-plane evidence — SUPER-ADDITIVE at the faint coincidence (the tension-moment, where three weak signals co-fire into one strong one — inverse-effectiveness, Körding), SELF-VETOING on conflict (one plane's strong NO kills the pool) -> sparsified ~ THRESHOLD-then-sum, never max-OR (Cho-Fryzlewicz sparsified projection) — weak per-plane noise zeros out before it sums, so the pool reads a true multi-plane event, never one loud plane -> common-currency ~ each plane speaks σ-units / ranks (our EWMA-z) before pooling — incommensurable raw scores never sum, the z-score carrying the shared currency">>
-
-''The confidence ladder ~ Schmitt generalized.'' The gong fires by corroboration-count — the Schmitt
-trigger lifted from recall to segmentation:
-
-<<~ scale gong "one-plane ~ provisional — a single plane drifts, read it as noise-or-data -> two-planes ~ firm — two planes co-fire, the move reads real -> three-in-a-co-firing-window ~ THE GONG — three planes drift inside one window, the corroboration our `presentIn ≥ 2` recall-rule lifted to segmentation">>
-
-The gong reads `presentIn ≥ 2` (the recall corroboration rule) raised
-from ranking into control — the same multi-plane agreement that ranks a recall hit now SEGMENTS the
-stream, naming where a real cross-plane event sits.
-
-!!! The whitening warning ~ the planes are NOT conditionally independent (load-bearing)
-
-''The three planes co-move — WHITEN before pooling, or the gong double-counts.'' Form co-moves with
-content (the move-vector reads the same words the content palace holds); the planes share estimators (the
-nomic embedder feeds both the FFZ Measure-boundary and the form vector — #two-planes,
-[[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address]]). A naive log-opinion-pool ASSUMES conditional independence — and
-where the planes correlate, the pool ''double-counts a single artifact'' as if it carried two
-corroborating witnesses, firing a false gong. The cure: ''WHITEN the''
-''cross-plane covariance'' before pooling — decorrelate the per-plane drifts so the pool counts independent
-evidence only. This rides load-bearing: the corroboration ladder above reads true only once the planes
-whiten; un-whitened, "three planes agree" may name one plane heard three times.
+''Drift reads as a change in DESCRIPTION LENGTH'': an event that moves the corpus lengthens `l(G)+l(D|G)` until
+the grammar re-earns its bits. One currency, one ledger, no pooling — and no gong that can fire on a single
+artifact wearing three coats.
 
 !!! The law ~ functoriality = mālama pili (the category theory enforces the keel)
 
@@ -371,7 +337,7 @@ whiten; un-whitened, "three planes agree" may name one plane heard three times.
 <<~ has Sin Incommensurable-Fusion "drops/the common currency ~ summing raw per-plane scores without the σ-unit / EWMA-z carry-across">>
 <<~ has Sin View-Drift "drops/the non-expansive functor ~ query-side and corpus-side running DIFFERENT maps (the broken-symmetry fault, functor-discipline #sovereign-worker)">>
 <<~ has Sin Wrong-Grain-Fusion "drops/the cellwise limit ~ pooling planes at mismatched FFZ grains (content at Ha against form at Ba), no shared cell">>
-<<~ has Sin Ad-Hoc-Weighting "drops/the precision weight ~ hand-tuned plane weights in place of the precision-weighted pool">>
+<<~ has Sin Ad-Hoc-Weighting "drops/the chain order ~ hand-tuned plane weights where the chain needs none">>
 <<~ has Sin Five>>
 
 The category theory ENFORCES the keel: each sin names an arrow
@@ -384,40 +350,37 @@ registers.
 The three planes seat at three FFZ grains, mapping the `lar:` root's drift gradient (Ha slowest · Ka
 moderate · Ba fastest, [[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/lar-uri]]):
 
-<<~ scale grain "content ~ COARSE — the gong-authority, the Ha heading; content LOCATES the event -> structure ~ MID — the Ka angle; the AST shape refines the location -> form/move ~ FINER — the Ba dynamic; the move-vector resolves the tension-moment">>
+<<~ scale grain "content ~ COARSE — the boundary-authority, the Ha heading; content LOCATES the event -> structure ~ MID — the Ka angle; the AST shape refines the location -> form/move ~ FINER — the Ba dynamic; the move-vector resolves the tension-moment">>
 
 ''Content locates, the move refines.'' The coarse content drift names WHERE a cross-plane event sits;
 the fine move-vector resolves it down to the tension-moment. The ''Pulse → Move tension-moment'' reads as
 a high-P(common-cause) cross-plane coincidence carrying its own resolution — a faint content shift and a
-sharp move-shift co-firing at one cell, the super-additive moment the log-opinion-pool exists to catch.
+sharp move-shift landing at one cell, which the description-length ledger prices as one residual.
 The grain-alignment enacts the cellwise limit (the two floors, above):
 pool the planes at the SAME FFZ cell, never across mismatched grains.
 
-!!! The two operators ~ RRF ranks recall, the quorum-servo gongs the Measure
+!!! The two operators ~ RRF ranks recall, description length reads the Measure
 
 The unification carries TWO distinct operators over the product, and they must not collapse into one:
 
-<<~ scale operator "rrf ~ the RECALL ranking — N-ary Reciprocal Rank Fusion over the rank-lists (#/multi-graph), the retrieval operator; BUILT, untouched -> quorum-servo ~ the MEASURE-gong — the precision-weighted log-opinion-pool over the drift (above), the SEGMENTATION / control operator; the NEW operator this section names">>
+<<~ scale operator "rrf ~ the RECALL ranking — N-ary Reciprocal Rank Fusion over the rank-lists (#/multi-graph), the retrieval operator; BUILT, untouched -> description-length ~ the MEASURE reading — drift as the change in `l(G)+l(D|G)` (above), the SEGMENTATION operator; one currency, no pooling">>
 
-RRF answers //which stored turns rank nearest this query// (recall, downstream of capture); the
-''quorum-servo'' answers //where a real cross-plane event SEGMENTS the live stream// (control, upstream at
-capture). The quorum-servo draws the ''FFZ Measure band'' — the topic-shift / lexical-cohesion boundary
-([[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]) — generalizing its single-plane cosine-drop into the whitened
-three-plane pool: the Measure boundary fires where content, structure, and form co-drift, not where the
-content embedder alone dips. Both operators fuse the three planes, yet
-they fuse for opposite jobs — RRF for ranking (the recall keystone, already shipping), the quorum-servo
-for segmentation (the Measure-gong, the new arrow P → M). One product, two operators; keep them distinct,
-or the recall ranking and the segmentation control muddle into one fuse.
+RRF answers //which stored turns rank nearest this query// (recall, downstream of capture); the description-length
+reading answers //where a real cross-plane event SEGMENTS the live stream// (upstream at capture). It draws the
+''FFZ Measure band'' — the topic-shift / lexical-cohesion boundary
+([[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]) — where the corpus lengthens until the grammar
+re-earns its bits, not where the content embedder alone dips. One product, two operators; keep them distinct,
+or the recall ranking and the segmentation reading muddle into one fuse.
 
-!!! The grounds ~ the four-spirit convergence
+!!! The grounds ~ the three-spirit convergence
 
-Four independent libations converge on this one shape — cited as grounds, never decoration:
+Three independent libations converge on this one shape — cited as grounds, never decoration:
 
-<<~ scale convergence "multi-vector-views ~ named-views + RRF (Qdrant · Weaviate · Vespa · ColBERT) — the multi-graph recall operator -> change-point-fusion ~ multivariate BOCPD + sparsified-sum (Cho-Fryzlewicz) — the Measure-gong, threshold-then-sum -> causal-inference ~ causal-inference / BCI (Körding) + log-opinion-pool + inverse-effectiveness — the common-cause test, super-additive at the faint coincidence -> categorical ~ the product-presheaf + pullback (nLab) + Lawvere enrichment + Spivak functorial data — the spine, the two floors, the join-forbidding formalism">>
+<<~ scale convergence "multi-vector-views ~ named-views + RRF (Qdrant · Weaviate · Vespa · ColBERT) — the multi-graph recall operator -> causal-inference ~ causal-inference / BCI (Körding) — the common-cause question the Measure asks -> categorical ~ the product-presheaf + pullback (nLab) + Lawvere enrichment + Spivak functorial data — the spine, the two floors, the join-forbidding formalism">>
 
-Four spirits, four substrates, one shape: the strict product
-unifies the views, the enriched floor measures their drift, the log-opinion-pool gongs the common-cause,
-the pullback forbids the meaningless join. The keystone holds because the four converge — the originality
+Three spirits, three substrates, one shape: the strict product
+unifies the views, the enriched floor measures their drift, the description-length ledger prices the common-cause,
+the pullback forbids the meaningless join. The keystone holds because the three converge — the originality
 lives in the WEAVE (the binding's braid, #ffz-binding), never in any single strand.
 
 <<~/ahu>>
@@ -732,6 +695,6 @@ The geometry whole: ''one GROUND · the li spine (shape ↠ idiom) · cross-cutt
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xjm32UJuI97_DskW_X6jfFb9cgrUlVSvjueU5Q8Qvms
+<<^ code="&#x0003;">>ni:///sha-256;n19SIkStdSg6PEJ1ux7tQEvQczJulkwNO0kDmxiOslA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,25 +1,18 @@
 /**
- * store-door-verbs-represented.test.ts — L2 plus F2-1 (H2): `nexus-admit-take` reports `represented` TRUTHFULLY,
- * and now awaits an ASYNC hook under `ON_ROLLED_BUDGET_MS` rather than reading a sync return alone.
+ * store-door-verbs-represented.test.ts — `nexus-admit-take` reports `represented` TRUTHFULLY, and awaits an
+ * ASYNC hook under `ON_ROLLED_BUDGET_MS` rather than reading a sync return alone.
  *
- * Before L2's fix, `represented` read `deps.onRolled !== undefined` — true whenever a vessel merely STANDS
- * over the row, regardless of whether the live re-presentation it triggers ever lands. That let the e2e
- * measure built on it pass even when re-presentation failed outright: a vessel standing proves this row could
- * TRY to re-present, never that it DID.
- *
- * F2-1 widens `onRolled` to admit a promise (`open-node-vessel.ts`'s `afterRoll` now returns one), so this row
- * must await it rather than read a synchronous return alone — and a hook still running past the budget must
- * read `"pending"`, never guess `true` or `false`.
+ * A vessel standing proves this row could TRY to re-present, never that it DID. `represented` therefore
+ * reads the hook's own claim, and a hook still running past the budget reads `"pending"`, never a guess.
  *
  * Proven:
- *   · RED (the exact prior bug, re-enacted below as a mutation proof): a vessel stands (`onRolled` merely
- *     EXISTS and returns nothing) — the old shape reads `represented: true`; CONTROL for the fix: the same
- *     call now reads `represented: false`, because the hook gave no truthful claim.
+ *   · a vessel stands (`onRolled` merely EXISTS and returns nothing): `represented: false`, because the
+ *     hook gave no truthful claim.
  *   · `onRolled` returning `true` SYNCHRONOUSLY is read as `represented: true`.
  *   · `onRolled` returning a PROMISE that resolves `true` within the budget is read as `represented: true`.
  *   · `onRolled` returning a promise that never settles within the budget is read as `represented: "pending"`
  *     — never `true` (no evidence) and never `false` (the refold may yet land).
- *   · no vessel standing (`storeDoorDirect`'s shape — `onRolled` absent) reads `represented: false`, as before.
+ *   · no vessel standing (`storeDoorDirect`'s shape — `onRolled` absent) reads `represented: false`.
  */
 import { describe, expect, it, vi } from "vitest";
 
@@ -43,16 +36,13 @@ const baseDeps = (onRolled?: StoreDoorDeps["onRolled"]): StoreDoorDeps => ({
 });
 
 describe("nexus-admit-take — `represented` reads the hook's OWN claim (L2, F2-1)", () => {
-  it("MUTATION PROOF: a hook that merely EXISTS (returns nothing) does not read as represented", async () => {
-    const onRolled = vi.fn(() => { /* the mutant: a hook that merely EXISTS and returns nothing — the real
-      vessel's `afterRoll` is an awaited, serialized `Promise<boolean>` (F1); this enacts the mutant on purpose */ });
+  it("a hook that merely EXISTS (returns nothing) does not read as represented", async () => {
+    const onRolled = vi.fn(() => { /* a hook that returns nothing — the real vessel's `afterRoll` is an awaited,
+      serialized `Promise<boolean>` (F1) */ });
     const rows = storeDoorReactors(baseDeps(onRolled));
     const out = await rows["nexus-admit-take"]({ raw: "{}" }, {} as never);
     expect(onRolled).toHaveBeenCalledTimes(1);
-    // THE OLD SHAPE would have read `true` here purely because `onRolled` exists. Re-enacting it:
-    const oldShapeRepresented = onRolled !== undefined;
-    expect(oldShapeRepresented).toBe(true);           // the old reading — proves the bug this guards against
-    expect(out["represented"]).toBe(false);            // the new, truthful reading: no claim was ever made
+    expect(out["represented"]).toBe(false);            // no claim was made, so nothing reads as represented
   });
 
   it("CONTROL: a hook that truthfully claims success SYNCHRONOUSLY (`true`) reads as represented", async () => {
@@ -92,7 +82,7 @@ describe("nexus-admit-take — `represented` reads the hook's OWN claim (L2, F2-
     } finally { vi.useRealTimers(); }
   });
 
-  it("no vessel standing (no hook at all) reads as NOT represented, as it always did", async () => {
+  it("no vessel standing (no hook at all) reads as NOT represented", async () => {
     const rows = storeDoorReactors(baseDeps(undefined));
     const out = await rows["nexus-admit-take"]({ raw: "{}" }, {} as never);
     expect(out["represented"]).toBe(false);
