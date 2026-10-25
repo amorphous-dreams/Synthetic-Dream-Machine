@@ -1079,7 +1079,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const issued = groups.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin));
     const issuedStrays = strays.map(({ slot, uri }) => this.store.tombstoneInBag(slot, uri, origin));
     const settled = await Promise.allSettled([...issued, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
-    hold?.done(groups.filter((_, index) => settled[index]!.status === "fulfilled").map((g) => g.bag));
+    let handBags: string[] = [];
+    if (hold) {
+      // The act's result waits on the rest door, so the hands the act's dispatch left marked on the gate (the story
+      // list the navigator rewrote, for one) leave now and rest with it: a reload that follows reads the story the
+      // person left, never the one from before the confirm.
+      const others = this.gate.titles().filter((title) => !members.includes(title));
+      await Promise.allSettled(others.map((title) => this._leaveNow(title)));
+      handBags = others.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined);
+    }
+    hold?.done([...new Set([...groups.filter((_, index) => settled[index]!.status === "fulfilled").map((g) => g.bag), ...handBags])]);
     let fault: Error | null = null;
     const asError = (reason: unknown): Error => reason instanceof Error ? reason : new Error(String(reason));
     const refused = new Set<string>();
