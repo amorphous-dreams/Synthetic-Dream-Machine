@@ -203,7 +203,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(custody.rows.filter((r) => r.fault).map((r) => r.file)).toEqual([]);
     expect(new Set(custody.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(custody.rows.length);
     for (const r of custody.rows) {
-      if (r.custody === "hot" || r.custody === "cold") expect(r.reading, r.file).toBe("sealed");
+      if (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold") expect(r.reading, r.file).toBe("sealed");
       else expect(typeof r.bare === "string" && r.bare.length > 0, `${r.file} names the law it rests bare under`).toBe(true);
     }
     // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.

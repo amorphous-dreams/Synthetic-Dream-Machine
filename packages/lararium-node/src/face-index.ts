@@ -167,7 +167,7 @@ export function findFace(index: FaceIndex, by: { readonly fcid?: string; readonl
   return null;
 }
 
-/** Where one file of a face rests: `faces/<fcid>/<file>`, the face found by group or ask digest. The legacy flat spelling answers when the index names no such face, so a reader of an absent row still gets a path that does not exist. Opens nothing. */
+/** Where one file of a face rests: `faces/<fcid>/<file>`, the face found by group or ask digest. A face the index does not name answers with a flat path under the identity home, where no file stands. Opens nothing. */
 export function faceFilePathSync(identityDir: string, by: { readonly group?: string; readonly ask?: string }, file: string): string {
   const found = findFace(readFaceIndexSync(identityDir), by);
   return found === null ? join(identityDir, file) : join(faceDir(identityDir, found.fcid), file);

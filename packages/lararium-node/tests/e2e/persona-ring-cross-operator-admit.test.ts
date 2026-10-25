@@ -72,7 +72,7 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // `CustodyLocked`.
 import {
   runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel,
-  larSealHome, readNexusDoc, writeNexusDoc,
+  larSealHome, readNexusDoc, writeNexusDoc, seatFaceRoute,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
@@ -83,7 +83,9 @@ let seedCharter: NexusDoc | null = null;
 const charterDocAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...seedCharter!, federationPosture });
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { TEST_CUSTODY, openTestCustody } from "../found-route.js";
+import { TEST_CUSTODY, TEST_SLOT, openTestCustody } from "../found-route.js";
+// The founding runs from dist/, so the face route seats on dist/'s copy of the seam.
+seatFaceRoute(async () => [TEST_SLOT]);
 import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 
 // ---------------------------------------------------------------------------

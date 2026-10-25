@@ -20,6 +20,7 @@ import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gathe
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
@@ -286,6 +287,9 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
   }
   if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
   const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
+  seatNewFaceRoute();
+  if (daemonUp && !memory) await handFaceRouteToVessel(`h${asRaw ?? "restore"}`);
   const result = await restoreFromBundle({
     file, credentials, memory, ...(asRaw !== undefined ? { as: Number(asRaw) } : {}),
     run: (act, actArgs) => sealedActVia(act, actArgs),
@@ -312,6 +316,8 @@ async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
   const face = named.startsWith("persona-") ? { prefix: named } : { verifyingKey: named };
   if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
   const cards = await gatherCards("lares vault restore --cards");
+  seatNewFaceRoute();
+  if ((await sendCustodyFrame({ op: "custody" })) !== null) await handFaceRouteToVessel(`h${asRaw}`);
   const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: (act, actArgs) => sealedActVia(act, actArgs) });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
