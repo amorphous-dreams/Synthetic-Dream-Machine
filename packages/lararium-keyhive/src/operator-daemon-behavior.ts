@@ -333,6 +333,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
 
   let slotDocs: SlotDocResolver | null = null;
+  let floorLifted = false;
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
@@ -354,6 +355,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // kit's own act. Reading alone re-cuts nothing — a record that fails stays a record.
         if (!seated) seated = await takeFaceGrantIfPublished(ctx);
         if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
+        // THE ANON-VEIL LIFT runs ONCE per process, the first time this vessel reads as seated: at the seat's landing, or at a
+        // boot that finds the face already seated. The join is the gate; nothing asks per item.
+        if (seated && !floorLifted) {
+          floorLifted = true;
+          try {
+            const lifted = await slotDocs!.liftFloor();
+            if (lifted.moved.length + lifted.finished.length > 0) console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
+          } catch (err) { floorLifted = false; console.log(`[daemon] the anon-veil lift faulted (${(err as Error)?.message ?? err}) — it runs again at the next seat read`); }
+        }
         return seated;
       },
     });

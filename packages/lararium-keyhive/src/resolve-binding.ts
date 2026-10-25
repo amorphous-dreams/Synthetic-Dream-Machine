@@ -48,13 +48,17 @@ export interface DocMinter {
  * store that does save it. `flush` resolves only after both, and rejects when either does.
  */
 export function restingMinter(repo: DocMinter, rest: (documentIds: readonly string[]) => Promise<void>): DocMinter {
+  const more = repo as unknown as { find?: (url: string) => unknown; delete?: (url: string) => unknown };
   return {
     create: (initialValue) => repo.create(initialValue),
     flush: async (documents) => {
       await repo.flush(documents);
       await rest(documents ?? []);
     },
-  };
+    // The lift reads and deletes documents through the same repo that mints them.
+    ...(typeof more.find === "function" ? { find: (url: string) => more.find!.call(repo, url) } : {}),
+    ...(typeof more.delete === "function" ? { delete: (url: string) => more.delete!.call(repo, url) } : {}),
+  } as DocMinter;
 }
 
 /** The binding kinds — one tiddler `kind` field per slot. */
@@ -116,7 +120,7 @@ export class BindingRegistrationRefusal extends Error {
  * mint + delegate + record it when absent.
  *
  * Reuse-on-present returns the stored URL without minting. A vessel-only record
- * takes a face document after the face seats. Its recorded Keyhive document ID restores
+ * moves under the face at the seat's landing, by the lift pass (`anon-lift`), and this resolver never re-registers it. A face record's recorded Keyhive document ID restores
  * the process-local mapping on the provider that holds it. Reuse MUST NOT block boot on
  * a doc not yet decryptable on this device (the two-phase Keyhive window): the
  * caller mounts the URL and the island surfaces it when sync delivers the BeeKEM
@@ -137,7 +141,6 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
       if (typeof docId !== "string" || !docId) throw new BindingRegistrationRefusal(key, existing);
       args.faceDoor.adopt(existing, docId);
     }
-    await regrantOnSeat(args, key, existing, fields);
     return { url: existing, minted: false };
   }
 
@@ -208,36 +211,4 @@ export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{
     }
   }
   return unbound;
-}
-
-/**
- * A SEAT LANDING AFTER THE MINT RE-GRANTS THE BINDING. A record reading `face-reach = "vessel-only"` names
- * a binding minted while the face stood pinned and unseated; once the seat's events reach this vessel the
- * face can mint its own Keyhive document for the same Automerge URL. The record then
- * names that face document, and the next reuse adopts it without another grant.
- */
-async function regrantOnSeat(
-  args: ResolveBindingArgs,
-  key: string,
-  url: string,
-  fields: Record<string, unknown> | undefined,
-): Promise<void> {
-  if (fields?.["face-reach"] !== "vessel-only") return;
-  if (!args.personaGroupId) return;
-  const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
-  if (!seated) return;
-  if (!args.faceDoor) return;
-  const keyhiveDocId = (await args.faceDoor.remint(url)).docId;
-  // Every field the record carried rides through; only the posture moves.
-  const carried: Record<string, string> = {};
-  for (const [k, v] of Object.entries(fields ?? {})) {
-    if (k !== "title" && typeof v === "string") carried[k] = v;
-  }
-  const origin: ChangeOrigin = { kind: "lares-verb", requestId: `binding-regrant-${args.fingerprint.slice(0, 8)}` };
-  await args.daemonStore.put(mutableLarRecord(key, {
-    ...carried,
-    text:         url,
-    "face-reach": "face",
-    "keyhive-doc-id": keyhiveDocId,
-  }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 }

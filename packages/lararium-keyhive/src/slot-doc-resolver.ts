@@ -30,6 +30,7 @@ import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
 import { resolveOrMintBinding, type BindingKind, type DocMinter } from "./resolve-binding.js";
+import { liftVesselOnlyIntoFace, type LiftRepo, type LiftResult } from "./anon-lift.js";
 
 /** The Automerge-repo surface the resolver needs: mint (`create`) and the floor mint's readiness. */
 export interface SlotDocRepo extends DocMinter {
@@ -63,6 +64,8 @@ export interface SlotDocResolver {
   slotDoc(slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null>;
   /** The ONE draft resolver: `slotDoc(slug, "draft")`, minting on absent — never null. */
   draft(slug: string): Promise<SlotDoc>;
+  /** The anon-veil lift (`anon-lift`): everything this vessel minted at the floor moves under the seated face. Idempotent. */
+  liftFloor(): Promise<LiftResult>;
 }
 
 type RecipeTrace = { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] };
@@ -175,5 +178,20 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     },
     slotDoc,
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
+    liftFloor: async () => {
+      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [] };   // no seat, nothing to lift into
+      const repo = args.repo as unknown as Partial<LiftRepo>;
+      if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
+      return liftVesselOnlyIntoFace({
+        repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
+        mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
+        traceOf: async (slug) => {
+          const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
+          if (!url) return null;
+          const recipeTrace = { wikiDocId: url, libraryBagDocIds: [] as readonly string[] };
+          return { fingerprint: await computeRecipeFingerprint(recipeTrace), recipeTrace };
+        },
+      });
+    },
   };
 }
