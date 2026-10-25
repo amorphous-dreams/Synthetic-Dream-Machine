@@ -339,7 +339,7 @@ python -m projection_loom ooda-ha-run \
 python scripts/check_compound_epoch.py --out out/compound-necrospire
 ```
 
-See [executable capability composition](docs/capability-ooda-integration.md)
+See [executable capability composition](docs/capability-ooda-ha-integration.md)
 for the phase tree, source/recipe fingerprints, review boundaries and
 limitations. Existing `finalists.py` only targets CAD-only experiments;
 compound finalists are now produced by the same OODA-HA controller's location

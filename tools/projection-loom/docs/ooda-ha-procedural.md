@@ -347,4 +347,4 @@ The location's final output also runs inside a real child loop anchored to its
 Aftermath. It reopens archived recipes, regrows CAD and surfaces, validates
 all native-kernel gates, writes independent STEP/OBJ results and the across-epoch
 contact sheet, and then returns to the parent. See
-[capability composition](capability-ooda-integration.md).
+[capability composition](capability-ooda-ha-integration.md).

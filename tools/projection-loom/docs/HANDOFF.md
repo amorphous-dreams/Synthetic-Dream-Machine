@@ -36,8 +36,8 @@ The five loops widened the aperture from individual marks to whole-repository id
 
 - **✶ Observe:** Operator-drawn feature masks were hashed against source pixels and image size but could survive a reference-camera change.
 - **⏿ Orient:** fixed-view source fitness cannot detach from its camera contract.
-- **◇ Decide:** bind each annotation snapshot to the exact fixed camera/view/viewport and reject a mismatch *before* OODA Act.
-- **▶ Act:** feature-mask authoring, loader and single OODA helm now exchange one camera/source digest; the hosted native workflow exercises `feature-annotate` and `transfer-seed` through a real new `ooda-run`.
+- **◇ Decide:** bind each annotation snapshot to the exact fixed camera/view/viewport and reject a mismatch *before* OODA-HA Act.
+- **▶ Act:** feature-mask authoring, loader and single OODA-HA helm now exchange one camera/source digest; the hosted native workflow exercises `feature-annotate` and `transfer-seed` through a real new `ooda-ha-run`.
 - **↺ Aftermath:** [native annotated/donor witness #40191027683](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40191027683) **completed successfully on its tested code head**. A later schema refactor earns its own verification.
 
 **5. Theme · evergreen source and repository law**
@@ -62,7 +62,7 @@ From `tools/projection-loom/`, start a **fresh output directory** when source, r
 python -m pytest -q tests/test_evergreen_five_loops.py tests/test_wave_xxv_search.py \
   tests/test_open_topology.py tests/test_search_strategy_alpha.py
 python examples/necrospire/hybrid/make_alpha_recipe.py
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project_alpha.json \
   --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
   --out out/necrospire-evergreen-fresh \
@@ -75,7 +75,7 @@ python -m projection_loom search-census \
   --capability-recipe examples/necrospire/hybrid/recipe_alpha.json
 ```
 
-The `feature-annotate` CLI snapshots Operator-drawn Crystal, Joining and Fortress masks at the scoring viewport; `transfer-seed --authorize` creates a source/target bound, **proposal-only** donor bundle. Feed either into `ooda-run` with `--feature-evidence` or `--transfer-bundle` on a **new** checkpoint. Only the Operator authorizes transfers, pet-names, deletion, promotion, or o-takiage. No control bypasses exact CAD/contact/void, polygon or semantic-socket checks.
+The `feature-annotate` CLI snapshots Operator-drawn Crystal, Joining and Fortress masks at the scoring viewport; `transfer-seed --authorize` creates a source/target bound, **proposal-only** donor bundle. Feed either into `ooda-ha-run` with `--feature-evidence` or `--transfer-bundle` on a **new** checkpoint. Only the Operator authorizes transfers, pet-names, deletion, promotion, or o-takiage. No control bypasses exact CAD/contact/void, polygon or semantic-socket checks.
 
 ---
 
@@ -87,7 +87,7 @@ The `feature-annotate` CLI snapshots Operator-drawn Crystal, Joining and Fortres
 
 **New implementation surface:** `projection_loom/search_strategy.py` provides Pareto nondominance among separately scored, already audited candidates; a cheap regional source-view loss; diversity-aware parent selection; conservative neighbor-based surrogate audition priority; emitter performance/uncertainty measurements; and a reproducible searchability census. None of these helpers enters the phase journal or certifies geometry.
 
-**Component coevolution:** `campaign.py` now groups loci into six anonymous search-family fragments mapped to three *architectural entities*: Crystal (`needle`, `fractured`, `crystal`), Joining (`terraces`), and Fortress (`crown`, `keep`). Each family's breeding parent contributes its own focus loci; other families contribute independently selected collaborator fragments. The assembled **whole-location** genome travels into the existing native CAD, void, polygon, socket and source-view tests under one `fractal_ooda_ha.run_ooda_epochs` controller. Every proposal records family, component parent, collaborator IDs and generation; no Operator pet-name turns into a reproduction policy. Cross-family overlap remains explicitly ordered; source recipe, construction digest and candidate checkpoint guard changes.
+**Component coevolution:** `campaign.py` now groups loci into six anonymous search-family fragments mapped to three *architectural entities*: Crystal (`needle`, `fractured`, `crystal`), Joining (`terraces`), and Fortress (`crown`, `keep`). Each family's breeding parent contributes its own focus loci; other families contribute independently selected collaborator fragments. The assembled **whole-location** genome travels into the existing native CAD, void, polygon, socket and source-view tests under one `fractal_ooda_ha.run_ooda_ha_epochs` controller. Every proposal records family, component parent, collaborator IDs and generation; no Operator pet-name turns into a reproduction policy. Cross-family overlap remains explicitly ordered; source recipe, construction digest and candidate checkpoint guard changes.
 
 **Reachability repaired:** all 25 version-2 recipe loci now belong to at least one variation family. In particular, `join.enable` can cross the actual 0.5 activation threshold, so `join.mesh` and `join.socket` can enter candidate builds, subject to their independent native audits. Reachability does not guarantee that a candidate passes those gates. Earlier frozen pre-regional archive and its inactive Joining receipts remain unmodified.
 
@@ -124,7 +124,7 @@ The source-held original Necrospire painting alpha has SHA-256 `78f8d1f0cf44a98b
 | Global phenotype niches, *old coarse semantics* | **2** |
 | Family champions surviving | **6 / 6** |
 | Audited finalists / distinct family gallery masks | **3 / 12** |
-| Candidate / capability OODA child loops | **216 / 1,944** |
+| Candidate / capability OODA-HA child loops | **216 / 1,944** |
 | Best provisional fixed-view IoU | **0.738410**, `needle-006-004` (gen 6, Sobol) |
 
 The earlier three-epoch compound reference scored **0.704476** IoU; the pilot improved it by about **0.033934 absolute IoU** on the same fixed source view. This supersedes the *active* interpretation that the older ~0.704 compound PoC defined the present ceiling. It does not establish generalization to independent views, physical accuracy, or a structural CAD/polymesh union. Each family (`needle`, `fractured`, `terraces`, `crown`, `keep`, `crystal`) received fair Sobol/local/topology auditions, retained source-bound parentage and culling receipts, and preserved `deferred` as a distinct state rather than a failed geometric audit.
@@ -142,7 +142,7 @@ An **offline reread of 12 frozen family-survivor masks** found **four new region
 From `tools/projection-loom/`, after fetching the current branch, validating dependencies and checking the new-head tests, use a genuinely new output path:
 
 ```sh
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project_breeding.json \
   --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
   --out out/necrospire-breeding-sixgen-postregional-20261025 \
@@ -153,13 +153,13 @@ python scripts/check_compound_epoch.py \
   --out out/necrospire-breeding-sixgen-postregional-20261025
 ```
 
-Confirm the output directory contains no prior checkpoint before running. Preserve the new `session.json`, `epoch_*.json`, `lineage_archive.json`, `lineage_gallery/`, `finalists/`, exact masks and native STEP/OBJ. Compare with the **frozen archive read-only**: check independent CAD/BRep and authored void audits; separate polygon/socket evidence; matched source, recipe, code and camera identities; unique exact masks and cross-run overlap; actual contour differences among regrown survivors; six-family and emitter survival; and best provisional source-view IoU. Report old coarse and new six-band niche counts as **different versioned semantics**, never a raw percentage improvement. `check_compound_epoch.py` checks OODA/gallery integrity, **not** the entire contour or cross-run analysis. Do not mark this campaign complete without actual execution and receipts.
+Confirm the output directory contains no prior checkpoint before running. Preserve the new `session.json`, `epoch_*.json`, `lineage_archive.json`, `lineage_gallery/`, `finalists/`, exact masks and native STEP/OBJ. Compare with the **frozen archive read-only**: check independent CAD/BRep and authored void audits; separate polygon/socket evidence; matched source, recipe, code and camera identities; unique exact masks and cross-run overlap; actual contour differences among regrown survivors; six-family and emitter survival; and best provisional source-view IoU. Report old coarse and new six-band niche counts as **different versioned semantics**, never a raw percentage improvement. `check_compound_epoch.py` checks OODA-HA/gallery integrity, **not** the entire contour or cross-run analysis. Do not mark this campaign complete without actual execution and receipts.
 
 ### O-takiage — retire stale pressure, keep attributed history
 
 **Released as active claims:** `8fdc71d` as the latest head; the older 200-test and general-CI-red snapshots as present status; the preliminary ~0.704 compound result as the breeding ceiling; and the single-generation regional control as a substitute for the requested full six generations. The Wave XII–XIX material below, the [brief session handoff](BRANCHED_SESSION_HANDOFF.md), and the working memetic handoff retain their provenance; they do **not** become fresh evidence or a second controller.
 
-**Retained boundaries:** Fixed-view artwork fit remains provisional; no independent survey registration, reviewed CC0 Brutalist source lock, authorized external Ur model, engineering load certificate, or Boolean **CAD-plus-polymesh fused body** has been earned. Keep STEP/CAD, polygon, semantic socket, source provenance and Operator preferences separate. This documentation o-takiage releases **outdated attention holds**; it does **not** issue `ooda-steer --action o-takiage`, remove any pet-name, erase archive history, merge PR #84, or promote a source. Operator authorization remains necessary for those distinct actions.
+**Retained boundaries:** Fixed-view artwork fit remains provisional; no independent survey registration, reviewed CC0 Brutalist source lock, authorized external Ur model, engineering load certificate, or Boolean **CAD-plus-polymesh fused body** has been earned. Keep STEP/CAD, polygon, semantic socket, source provenance and Operator preferences separate. This documentation o-takiage releases **outdated attention holds**; it does **not** issue `ooda-ha-steer --action o-takiage`, remove any pet-name, erase archive history, merge PR #84, or promote a source. Operator authorization remains necessary for those distinct actions.
 
 **Live queue:** Run and audit the fresh full post-regional campaign; compare contour diversity and lineage survival without retroactively recoding the frozen baseline; then update this section only with observed receipts. Recheck the latest PR-head Actions rather than transferring prior green status automatically.
 
@@ -171,7 +171,7 @@ The following wave records and their older "current/next" declarations remain at
 
 ## Wave XIX — one helm, one phase law, dependency and syntax gates
 
-**✶ Observe / ⏿ Orient:** Waves XIV–XVIII retired compatibility OODA
+**✶ Observe / ⏿ Orient:** Waves XIV–XVIII retired compatibility OODA-HA
 modules, extracted pure phase rules and CAD/compound presentation ports,
 made control-ledger replay recoverable, and gave evidence each native truth
 scope. A refactor could nevertheless reintroduce a second controller or
@@ -182,7 +182,7 @@ transitive set was only recorded in artifacts.
 `tests/test_architecture_contract.py`: an initially absent static
 `scripts.check_architecture` and missing
 `check_env.verify_direct_pins` are the red contracts. Tests include
-negative controls for a retired `ooda.py`, duplicate OODA controller,
+negative controls for a retired `ooda.py`, duplicate OODA-HA controller,
 phase-law filesystem writes, rendering-to-controller back-edges, unpinned
 or omitted direct dependencies, and a required CI hygiene stage.
 
@@ -191,13 +191,13 @@ checks direct pinned versions against `pyproject.toml` and the running
 CI environment; commit `391d681` adds `pip check`, `compileall`,
 and the source architecture check before expensive CAD regression runs.
 These gates add no geometry, calibration or source authority. The one
-execution owner remains `fractal_ooda_ha.OODAJournal`; pure
+execution owner remains `fractal_ooda_ha.OODAHAJournal`; pure
 `phase_rules.py` and renderers have no scheduling power.
 
 **↺ Aftermath / honesty:** CI `requirements-ci.txt` pins direct inputs;
 `pip freeze` in the workflow artifact records the actual transitive
 environment, but is NOT a fully hermetic, wheel-hashed lockfile. The
-checks prevent unnoticed package inconsistency and a second OODA helm.
+checks prevent unnoticed package inconsistency and a second OODA-HA helm.
 Do not claim Wave XIX or whole PR green until the final published head
 passes dedicated Loom, whole-repository and held-out witnesses. If
 something fails, inspect its code/receipt, identify the first bad
@@ -228,7 +228,7 @@ domain/status presentation envelope WITHOUT any generic "valid" boolean.
 The review and gallery renderers use the CAD and compound views for
 admission, the capability runner validates step-state receipts, and
 fractal_ooda_ha keeps sole operator preference authority. Existing
-wire schemas, source hashes, kernels and durable OODA records are not
+wire schemas, source hashes, kernels and durable OODA-HA records are not
 rewritten. The isolated negative-control tests pass locally.
 
 **Aftermath:** A declared verified control fit is NOT proof of survey
@@ -272,7 +272,7 @@ decision, not a cleanup side effect.
 
 **✶ Observe / ⏿ Orient:** At the green Wave XV Loom gate (218 passing
 tests, workflow 40147526377), two concerns remained in
-`fractal_ooda_ha.OODAJournal`: phase legality and durable transition effects.
+`fractal_ooda_ha.OODAHAJournal`: phase legality and durable transition effects.
 The whole-repository and held-out workflows had not resolved their queued
 test cells before the next commits and cannot be counted as green.
 
@@ -287,7 +287,7 @@ after a denied transition.
 `next_phase_allowed`, and `child_phase_anchor` into pure
 `phase_rules.py`. They only read the phase tree and raise or return a
 decision. They cannot persist anything, start a loop, or certify geometry.
-`fractal_ooda_ha.py` remains the **sole controller**: `OODAJournal.begin`
+`fractal_ooda_ha.py` remains the **sole controller**: `OODAHAJournal.begin`
 and `transition` still own mutation, evidence serialization, event order,
 checksums, reentry and child-return receipts. Other candidate and gallery
 executors retain the same native evidence gates.
@@ -408,7 +408,7 @@ The Loom grows a **pet-named or nameless location** as a relational ensemble. An
 - **Other entities:** may use standalone polygon capability without a CAD parent. Pet-names bind observed relationships, not generated face/vertex indices.
 - **Certificate boundaries:** BRep CAD passes one-solid/contact/void audits; polygon layers pass independent closed-volume or declared open-surface audits; anchors establish spatial proximity only. A mixed render **does not certify one fused CAD-and-mesh solid, watertight mechanical interface or strength**.
 - **Lineage:** the chosen genome carries CAD loci, polymesh loci, the recipe's digest, evidence hashes, and trusted operator/version fingerprints. A baked OBJ/STEP remains an output, not the next generation's genome.
-- **One procedural authority:** `projection_loom.fractal_ooda_ha.run_ooda_epochs` controls location → epoch → candidate → capability children and the final-gallery child in location Aftermath. `wide-epoch` and `ooda-run` enter that helm. `WideEpoch` remains a bounded candidate evaluator, not a second controller. A phase may optionally open a full child OODA-HA inquiry, and its parent waits before advancing.
+- **One procedural authority:** `projection_loom.fractal_ooda_ha.run_ooda_ha_epochs` controls location → epoch → candidate → capability children and the final-gallery child in location Aftermath. `wide-epoch` and `ooda-ha-run` enter that helm. `WideEpoch` remains a bounded candidate evaluator, not a second controller. A phase may optionally open a full child OODA-HA inquiry, and its parent waits before advancing.
 - **Operator / AI:** manual, co-pilot, auto-nav and full-speed share one control inbox. The optional LLM adviser (Ollama or OpenAI-compatible endpoint) may suggest validated choices or questions, but cannot override any hard validity gate.
 
 ## Historical PoC 0 and Pair A receipts (prior milestones)
@@ -439,9 +439,9 @@ python -m pytest -q tests
 Run the complete PoC 0 compound capability loop and verify what it actually produced:
 
 ```bash
-python -m projection_loom ooda-run --project examples/necrospire/project.json --capability-recipe examples/necrospire/hybrid/recipe.json --out out/necrospire-compound --control full-speed --passes 3 --candidates 4 --exact-budget 3 --detail-budget 3 --score-size 128 192 --finalists 3
+python -m projection_loom ooda-ha-run --project examples/necrospire/project.json --capability-recipe examples/necrospire/hybrid/recipe.json --out out/necrospire-compound --control full-speed --passes 3 --candidates 4 --exact-budget 3 --detail-budget 3 --score-size 128 192 --finalists 3
 python scripts/check_compound_epoch.py --out out/necrospire-compound
-python -m projection_loom ooda-status --session out/necrospire-compound/session.json
+python -m projection_loom ooda-ha-status --session out/necrospire-compound/session.json
 ```
 
 Inspect `out/necrospire-compound/session.json`, `previews/epoch_NNN/review.json`, `finalists/gallery.json`, `finalists/contact_sheet.png`, and each finalist's `recipe.json`, STEP/OBJ, witnesses and audits. The final gallery regrows diverse scored candidates across *all* epochs; if fewer than three valid distinct forms survive, it reports the shortfall rather than fabricating diversity.
@@ -449,19 +449,19 @@ Inspect `out/necrospire-compound/session.json`, `previews/epoch_NNN/review.json`
 For manual helm, use a **new output path** and replace `--control full-speed` with `--control manual`. The run pauses at decision gates. From another shell, send controls and then rerun **the identical initial command**:
 
 ```bash
-python -m projection_loom ooda-status --session out/necrospire-manual/session.json
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action approve-plan
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action review
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action set-autonomy --autonomy 0.4
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action open-inquiry --loop epoch-0001 --question "What does the crystal join?"
+python -m projection_loom ooda-ha-status --session out/necrospire-manual/session.json
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action approve-plan
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action review
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action set-autonomy --autonomy 0.4
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action open-inquiry --loop epoch-0001 --question "What does the crystal join?"
 ```
 
-Advance an opened inquiry with `ooda-steer --action advance-inquiry --loop ID --phase PHASE --note TEXT`, using the journal-reported ID and allowed next phase. At an actual preview review, find the current proposal and entity handle in `review.json`/witness; then:
+Advance an opened inquiry with `ooda-ha-steer --action advance-inquiry --loop ID --phase PHASE --note TEXT`, using the journal-reported ID and allowed next phase. At an actual preview review, find the current proposal and entity handle in `review.json`/witness; then:
 
 ```bash
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action pet-name --proposal candidate-0002 --target @entity/Crystal --name "Crystal with Opinions" --has faceted
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action choose --proposal candidate-0002
-python -m projection_loom ooda-steer --session out/necrospire-manual/session.json --action o-takiage --name "Crystal with Opinions"
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action pet-name --proposal candidate-0002 --target @entity/Crystal --name "Crystal with Opinions" --has faceted
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action choose --proposal candidate-0002
+python -m projection_loom ooda-ha-steer --session out/necrospire-manual/session.json --action o-takiage --name "Crystal with Opinions"
 ```
 
 **Illustrative IDs:** use the actual proposal/handle from the current review, not these example identifiers. Pet-name/o-takiage change soft lineage expectations and history, never the CAD gates. Interventions execute at safe phase boundaries; they do not interrupt a Boolean operation mid-kernel.
@@ -480,7 +480,7 @@ Review the *actual* source author/license, included file list, ZIP safety report
 ## Historical Wave XII–XIX backlog (superseded by live queue above)
 
 **P0 — preserve and verify:** 
-1. Keep the dedicated Projection Loom CI green when updating this handoff. On the new head, check `python -m pytest -q tests`, compound OODA smoke, validated STEP, gallery artifacts, and source hashes.
+1. Keep the dedicated Projection Loom CI green when updating this handoff. On the new head, check `python -m pytest -q tests`, compound OODA-HA smoke, validated STEP, gallery artifacts, and source hashes.
 2. Triage red **general** repository CI, isolate whether branch changes contributed, and repair attributable failures without suppressing unrelated checks.
 3. Review the successful CC0 `brutalism2` download artifact, approve/pin its SHA-256 if licensing and content permit, then register *real* external model controls. Preserve advisory-vs-approved distinction.
 4. Freeze no stale checkpoints across changes to source, operator, recipe or code. Resume only under the same identities; otherwise fork a new epoch experiment.
@@ -502,7 +502,7 @@ Review the *actual* source author/license, included file list, ZIP safety report
 
 ✶ **Observe:** Fetch the full boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` explicitly from `feature/green-jello-dinosaur-5` (unless the Operator selects another ref). Read this runbook's *current bearing first*, then `projection-loom.mem`, `projection-loom-capability-composition.mem`, and `projection-loom-ooda-ha.mem`. Inspect the actual PR #84 head and workflow runs; never silently use `main` or a snapshot head.
 
-⏿ **Orient:** Read `projection_loom/capability_stack.py`, `hybrid.py`, `fractal_ooda_ha.py`, `epochs.py`, `tests/test_capability_ooda.py`, `tests/test_capability_integrity.py`, and the Necrospire `recipe.json`. The sole procedural controller resides in `fractal_ooda_ha.py`; `epochs.py` performs bounded candidate evaluations.
+⏿ **Orient:** Read `projection_loom/capability_stack.py`, `hybrid.py`, `fractal_ooda_ha.py`, `epochs.py`, `tests/test_capability_ooda_ha.py`, `tests/test_capability_integrity.py`, and the Necrospire `recipe.json`. The sole procedural controller resides in `fractal_ooda_ha.py`; `epochs.py` performs bounded candidate evaluations.
 
 ◇ **Decide:** Choose an explicit next operator/epoch experiment, with evidence and scope. Operator decisions steer soft preferences; no human/AI decision waives hard CAD, mesh, source, registration or provenance gates.
 

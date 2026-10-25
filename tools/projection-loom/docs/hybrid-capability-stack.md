@@ -91,7 +91,7 @@ No unrequested SDF backend or production USD export appears in this wave.
 The first control above remains historical. Current production-facing
 capability composition lives in `projection_loom.capability_stack`, and the
 only multi-epoch controller for these recipes lives in
-`projection_loom.ooda.run_ooda_epochs`. A candidate's validated BRep passes
+`projection_loom.ooda.run_ooda_ha_epochs`. A candidate's validated BRep passes
 through trusted per-entity operators to grow a separate, protected polymesh
 surface and semantic sockets. Every stage executes as an actual OODA-HA child
 in the parent candidate Act; selected *CAD and mesh loci* return as one genome.
@@ -100,4 +100,4 @@ without assigning a permanent identity to an OpenCascade face or mesh vertex.
 The old `run_hybrid_trial.py` remains a comparative **historical probe**, not
 another source of lineage authority.
 
-See [the executable contract](capability-ooda-integration.md).
+See [the executable contract](capability-ooda-ha-integration.md).
