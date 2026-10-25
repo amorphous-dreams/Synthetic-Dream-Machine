@@ -2,9 +2,8 @@
  * claude-wire — `lares vessel stand --claude`: wire the Lares hooks into ~/.claude/settings.json (so a Claude
  * harness auto-wakes on SessionStart and auto-keeps verbatim memory on Stop/SessionEnd) and register
  * the LARES MCP seat in ~/.claude.json (so recall reaches the memory sensorium THROUGH the lares
- * house). Any stale `mempalace` MCP registration is reaped in the same pass — a harness holding its
- * own palace holder reaches past the node into the store, and N sessions on one Chroma index is the
- * contention that truncated the HNSW segment.
+ * house). A harness reaches memory through that seat and holds no palace holder of its own: N sessions
+ * on one Chroma index is the contention that truncates the HNSW segment.
  *
  * Pono shape: a DEEP MERGE that PRESERVES everything already in settings.json (the
  * operator's permissions, model, theme, …). Idempotent — a hook already pointing at
@@ -53,25 +52,6 @@ export async function acquireLock(lockPath: string): Promise<ClaimedName> {
     }
   }
   throw refuse();
-}
-
-/**
- * Reap a stale `mempalace` MCP from ~/.claude.json. A harness holding its own palace holder reaches
- * PAST the node into the store — N sessions, N writers, one Chroma index. The `lares` seat below
- * replaces it; this removes what an older wiring left, so the decouple heals on the next stand.
- */
-function reapMempalaceMcp(): ClaudeWireStep {
-  const got = spawnSync("claude", ["mcp", "get", "mempalace"], { encoding: "utf8", timeout: 10_000 });
-  if (got.error !== undefined) {
-    return { item: "mcp:mempalace", action: "absent", detail: "`claude` CLI not found — nothing to reap" };
-  }
-  if (got.status !== 0) {
-    return { item: "mcp:mempalace", action: "absent", detail: "not registered (memory rides the lares seat)" };
-  }
-  const r = spawnSync("claude", ["mcp", "remove", "--scope", "user", "mempalace"], { encoding: "utf8", timeout: 15_000 });
-  return r.status === 0
-    ? { item: "mcp:mempalace", action: "reaped", detail: "removed a stale mempalace MCP — harnesses reach memory through lares now" }
-    : { item: "mcp:mempalace", action: "missing-script", detail: `claude mcp remove failed: ${(r.stderr ?? "").trim().slice(0, 80)}` };
 }
 
 /**
@@ -170,7 +150,7 @@ const HOOK_SPECS: readonly HookSpec[] = [
  */
 export const CLEANUP_PERIOD_DAYS_FLOOR = 99999;
 
-export type WireAction = "wired" | "present" | "missing-script" | "reaped" | "absent";
+export type WireAction = "wired" | "present" | "missing-script";
 
 export interface ClaudeWireStep {
   readonly item: string;
@@ -185,7 +165,7 @@ export interface ClaudeWireResult {
   readonly steps: readonly ClaudeWireStep[];
 }
 
-/** Wire the plugin hooks + mempalace MCP into ~/.claude/settings.json. Idempotent; preserves existing settings. */
+/** Wire the plugin hooks + the lares MCP seat into ~/.claude/settings.json. Idempotent; preserves existing settings. */
 export async function wireClaudeHome(opts: { home?: string } = {}): Promise<ClaudeWireResult> {
   const home = opts.home ?? homedir();
   const claudeDir = join(home, ".claude");
@@ -275,13 +255,6 @@ function wireUnderLock(settingsPath: string): ClaudeWireResult {
   }
 
   // Memory reaches the harness through the LARES seat, never a palace holder of the harness's own.
-  // Reap any stale mempalace registration from both stores (the dead settings.json key here, then
-  // ~/.claude.json via the `claude` CLI), then register the lares MCP in the seat it vacates.
-  if (settings.mcpServers !== undefined && settings.mcpServers["mempalace"] !== undefined) {
-    delete settings.mcpServers["mempalace"];
-    changed = true;
-  }
-  steps.push(reapMempalaceMcp());
   steps.push(registerLaresMcp());
 
   // The boot pointer. Claude reads ~/.claude/CLAUDE.md at every wake and expands `@path` as an include.
