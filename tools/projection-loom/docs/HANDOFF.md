@@ -1,8 +1,59 @@
-# Projection Loom — Evergreen Runbook (Waves XII–XXIV)
+# Projection Loom — Evergreen Runbook (Waves XII–XXV)
 
 **Live scope:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom` → base `feature/green-jello-dinosaur-5`. Inspected implementation head `081287ee2580d99e62f2df86dc2abeed88945b7e` (2026-10-25) precedes this runbook-only commit. Recheck the actual branch and workflow receipts at each re-entry. The authoritative boot comes from `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`; do not silently substitute `main`. The runbook preserves older wave history below the live bearing.
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
+
+## Wave XXV — feature-local evidence, learned coupling, grammar growth and transfer (2026-10-25)
+
+**Current alpha working ref:** PR #84 on `feature/green-jello-dinosaur-5--projection-loom`. At writing, implementation and RED-first tests have landed; current-head Actions must be inspected before claiming success. Prior head `4e479baf074166f55265f08669ac7c22950ba5b1` **passed** two Projection Loom CI jobs and the [two-generation source-bound coevolution/native witness](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40188749218). Those receipts do not certify Wave XXV.
+
+**Source and recipe boundary:** the frozen pre-regional six-generation pilot in `examples/necrospire/experiments/breeding_20261025/` remains byte-identical and immutable. Its v2 recipe stays at `hybrid/recipe_breeding.json`. The new `project_alpha.json` / `hybrid/recipe_alpha.json` introduce **29 source-bound loci**, version **3**, and a separate reproducible `hybrid/make_alpha_recipe.py` generator. New grammar parameters are `grammar.gallery`, `grammar.gallery_span`, `grammar.buttress`, and `grammar.brace_span`. The two operator-controlled switches admit or omit separately attached **east gallery** and **crown brace** native CAD members. Both require real positive-volume parent overlap and fused BRep/void audits. The source painting is never treated as geometry. The optional Join polygon mesh and protected semantic socket still have independent surface/anchor scope, not a CAD+mesh Boolean union.
+
+**Test-first design:** `tests/test_wave_xxv_search.py` was committed before the new search/geometry implementation. It demands generation-frozen measured interaction observations, family-focus expansion, exact source/Operator region masks, authorization-gated cross-location fragments, native grammar parts and additional union volume, and exact v3 recipe reproduction. Existing `tests/test_search_strategy_alpha.py` also protects fair six-family evolution of both the original 25-parameter and v3 29-parameter recipes. The test suites plus a fresh native v3 generation run in `.github/workflows/necrospire-alpha-grammar.yml`; do not call that experiment successful before its actual completed run.
+
+**Interactions:** `search_strategy.infer_locus_interactions` performs a bounded pairwise observational-residual comparison on already scored, source-bound members from generations strictly *before* the active epoch. `adaptive_foci` adds up to two implicated partner loci to a family's search neighborhood. The reports explicitly label their statistical status `observational-association`: correlations alone do not prove physical causal coupling or justify transferring structural authority.
+
+**Feature attention:** `feature_evidence.FeatureEvidence` accepts exact-pixel operator-authored masks for Crystal, Joining and/or Fortress, checks the source's actual SHA-256, each annotation PNG digest, image dimensions and nonempty regions, then supplies a narrowly scoped provisional regional silhouette residual. When a family has no supplied mask, it uses the older documented six-band fallback; neither branch claims ground-truth feature segmentation. The source image, view and representation must remain under the usual fixed-camera/source/code identity gates.
+
+**Transfer:** `genetic_transfer` normalizes only specifically authorized, shared, bounded loci from a source recipe into a different target recipe. Each bundle binds target recipe SHA-256, donor label, source recipe SHA-256, family, loci, and explicit Operator authorization. `verify_transfer_bundle` checks the bundle digest and target/family bounds *before* the helm opens a new output checkpoint. Transfer is a proposal only. It never imports a donor mesh, source image, pet-name, accepted structural claim or external canon.
+
+**One controller:** CLI `feature-annotate` and `transfer-seed` prepare evidence only; `ooda-run` remains the sole OODA-HA executor. `--feature-evidence` and `--transfer-bundle` take files prepared under the current recipe and refuse unsound evidence. Their digests join the durable session and lineage-archive identities, so reentry cannot silently change masks or donors. The CAD/void gates, native polygon layers, semantic sockets, operator controls, family fairness and exact candidate receipts still govern each result.
+
+### Alpha operator commands
+
+Run from `tools/projection-loom/`; these commands select a **new** experiment, never the frozen pre-regional output:
+
+```bash
+python -m pytest -q tests/test_wave_xxv_search.py tests/test_search_strategy_alpha.py
+python examples/necrospire/hybrid/make_alpha_recipe.py
+python -m projection_loom ooda-run \
+  --project examples/necrospire/project_alpha.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+  --out out/necrospire-alpha-v3-fresh \
+  --control full-speed --breeding --passes 2 \
+  --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+  --seed 41 --score-size 128 192 --finalists 3
+python scripts/check_compound_epoch.py --out out/necrospire-alpha-v3-fresh
+python -m projection_loom search-census \
+  --archive out/necrospire-alpha-v3-fresh/lineage_archive.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_alpha.json
+```
+
+To attach **operator-drawn** feature masks, use an actual PNG with exactly the chosen score viewport dimensions (e.g. 128 by 192) and a known entity handle, then:
+
+```bash
+python -m projection_loom feature-annotate \
+  --project examples/necrospire/project_alpha.json \
+  --region Fortress=/absolute/path/to/operator-drawn-fortress.png \
+  --score-size 128 192 --out out/operator-features/features.json
+```
+
+Pass `--feature-evidence out/operator-features/features.json` to a *new* `ooda-run` output. To authorize a specific donor, run `python -m projection_loom transfer-seed --help`, supply distinct source/target recipes, an exact donor genome, its lineage ID, family and repeated focus loci, and `--authorize`. This writes a digest-bound bundle; `ooda-run --transfer-bundle PATH` then uses it only as bounded candidate ancestry. Do not reuse an already-created checkpoint while changing masks or donors.
+
+**Next audit:** require a green head for Loom, held-out witnesses, general CI and the v3 native witness; test both grammar switches with exact CAD and independently generated galleries. Review per-family survival, exact-mask uniqueness, contour novelty, interacting gene evidence, source-frame scores, repaired Joining behavior, and transfer ancestry. When a test fails, preserve the failing CI witness and repair the code/tests on another commit; do not rewrite frozen experimental evidence.
+
+---
 
 ## Alpha research implementation — post-Wave XXIV (under verification)
 
