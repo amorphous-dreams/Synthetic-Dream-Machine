@@ -168,6 +168,7 @@ def test_alpha_recipe_grows_two_true_optional_structural_motifs():
     assert grown.audit['cad_valid']
     assert grown.audit['composite_valid_for_render']
     assert grown.audit['composite_cad_union_verified'] is False
+    assert grown.audit['cad']['union_volume']>initial.audit['cad']['union_volume']
     assert 'east gallery' in grown.scene.assembly.parts
     assert 'crown brace' in grown.scene.assembly.parts
     assert {s['id'] for s in grown.steps if s['state']=='complete'} >= {
