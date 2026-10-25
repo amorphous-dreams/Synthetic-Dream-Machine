@@ -373,7 +373,7 @@ def main(argv=None):
         print(json.dumps({'lineages':len(results),'evaluations':evolution.eval_count}))
         return results
     if args.command=='epoch-loop':
-        manifest={'passes':[],'schema':'projection-loom/solid-epochs/v2','policy':'each generation grows fresh solids from v2 genome; meshes never become seeds'}
+        manifest={'passes':[],'schema':'projection-loom/solid-epochs','policy':'each generation grows fresh solids from v2 genome; meshes never become seeds'}
         immutable=genome.copy()
         current=dict(genome)
         for i in range(args.passes):
