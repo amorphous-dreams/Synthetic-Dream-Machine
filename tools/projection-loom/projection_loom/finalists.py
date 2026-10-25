@@ -67,7 +67,7 @@ def export_finalists(project,epochs,out,*,count=4,size=(384,576),
         raise ValueError('No CAD-valid scored candidates available for final export')
     evo=Evolution(project,size=size,seed=41)
     panels=[]
-    manifest={'schema':'projection-loom/final-candidates/v1','location':project.location,
+    manifest={'schema':'projection-loom/final-candidates','location':project.location,
               'reference':'provisional-unregistered' if project.reference else 'synthetic',
               'target_count':count,'actual_count':len(candidates),
               'method':'lowest-loss champion, then phenotype and parameter diversity',
