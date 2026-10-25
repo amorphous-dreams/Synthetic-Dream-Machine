@@ -1,8 +1,74 @@
-# Projection Loom — Evergreen Handoff (Waves XII–XIX)
+# Projection Loom — Evergreen Runbook (Waves XII–XXIV)
 
-**As-of source:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom`, inspected at prior handoff head `8fdc71d` (2026-10-23, America/Los_Angeles). **This document travels with the branch; check the live PR head on re-entry.** A later commit supersedes the snapshot. Do not mistake a fixed SHA for the latest state.
+**Live scope:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom` → base `feature/green-jello-dinosaur-5`. Inspected implementation head `081287ee2580d99e62f2df86dc2abeed88945b7e` (2026-10-25) precedes this runbook-only commit. Recheck the actual branch and workflow receipts at each re-entry. The authoritative boot comes from `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`; do not silently substitute `main`. The runbook preserves older wave history below the live bearing.
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
+
+## Current bearing — 2026-10-25 (Waves XX–XXIV)
+
+### Verified head and the open experiment
+
+At inspected implementation head `081287ee2580d99e62f2df86dc2abeed88945b7e`, [Projection Loom push #40181597653](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40181597653), [Projection Loom PR #40181602462](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40181602462), [held-out witnesses #40181597665](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40181597665), and [whole-repository CI #40181597697](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40181597697) all reported **completed success**. The frozen experiment's `full_pytest.log` separately records **258 passed, 7 warnings**. Older red whole-repository CI receipts and 200-test runs further below belong to earlier historical SHAs. This documentation update creates a different head and must earn its own CI receipts.
+
+**Completed:** The six-generation **pre-regional** Necrospire breeding pilot and the separate **one-generation** regional-control experiment. **Not yet executed:** a full **six-generation post-regional** campaign and its independent cross-run comparison. No `necrospire-postregional.yml` workflow had been committed at the inspected implementation head. A proposed hosted job or previous conversational plan never counts as a completed run.
+
+### Frozen pre-regional six-generation record — do not relabel
+
+The source-held original Necrospire painting alpha has SHA-256 `78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7`; the version-2 capability recipe records `7f317bc1abcce96979ea7b37c51219e9a3134856a8e387a736bb3fa6ba024b2a`. Seed `41`, six generations, six anonymous families, 12 offspring per family/generation, native CAD exact budget `36` and detail budget `18`, and viewport `128 × 192` all remain fixed. The oblique camera aligns provisionally to a **single original artwork silhouette**, not an independently registered survey pose.
+
+| Frozen measure | Recorded result |
+| --- | ---: |
+| Births / exact CAD auditions | **432 / 216** |
+| Scored / audited without detail / deferred | **108 / 108 / 216** |
+| Rejected / evaluator errors | **0 / 0** |
+| Unique exact silhouette SHA-256 masks | **89** |
+| Global phenotype niches, *old coarse semantics* | **2** |
+| Family champions surviving | **6 / 6** |
+| Audited finalists / distinct family gallery masks | **3 / 12** |
+| Candidate / capability OODA child loops | **216 / 1,944** |
+| Best provisional fixed-view IoU | **0.738410**, `needle-006-004` (gen 6, Sobol) |
+
+The earlier three-epoch compound reference scored **0.704476** IoU; the pilot improved it by about **0.033934 absolute IoU** on the same fixed source view. This supersedes the *active* interpretation that the older ~0.704 compound PoC defined the present ceiling. It does not establish generalization to independent views, physical accuracy, or a structural CAD/polymesh union. Each family (`needle`, `fractured`, `terraces`, `crown`, `keep`, `crystal`) received fair Sobol/local/topology auditions, retained source-bound parentage and culling receipts, and preserved `deferred` as a distinct state rather than a failed geometric audit.
+
+The frozen evidence lives under [`examples/necrospire/experiments/breeding_20261025/`](../examples/necrospire/experiments/breeding_20261025/): `RESULTS.json`, `SHA256SUMS.txt`, `sixgen_native_audit.json`, `lineage_gallery_receipt.json`, `sixgen_family_gallery.png`, `winner_needle-006-004/` (STEP, OBJ, source-view mask, genome, recipe and witness receipts) and `necrospire_breeding_sixgen_complete.zip` (complete journal, epoch records, gallery and archive). Never reissue old checkpoint identity, relabel old niches, replace generated output with a new genotype, or promote an image to verified external geometry.
+
+### Wave XXIV regional semantics — separate populations
+
+`campaign.visual_descriptor` now includes six quantized horizontal silhouette-width bands in addition to area, extent and asymmetry; exact mask hashes still identify individual rendered silhouettes. This change splits architectural profile niches but does not itself evolve fresh geometry, prove greater fitness, or change the structural authority of a candidate. Parents are chosen from scored, family-ranked members deduplicated by exact visual mask identity, not through a claimed cross-kernel fusion.
+
+An **offline reread of 12 frozen family-survivor masks** found **four new regional niches** versus **one old coarse niche within that same sample**. That does not overwrite the full frozen pilot's **two coarse niches across all 108 scored members**. The separate *one-generation* regional-control archive (`necrospire_breeding_regional_control.zip`) and `regional_native_audit.json` record **12 candidate loops**, **108 capability loops**, and **3 finalists**. The control's full archive reports **5 regional niches**; its `regional_control_gallery_receipt.json` shows **10 distinct survivor masks in 4 regional niches**. The archive and gallery use different populations, so their counts need not match.
+
+### Fresh six-generation post-regional experiment — next action
+
+From `tools/projection-loom/`, after fetching the current branch, validating dependencies and checking the new-head tests, use a genuinely new output path:
+
+```sh
+python -m projection_loom ooda-run \
+  --project examples/necrospire/project_breeding.json \
+  --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
+  --out out/necrospire-breeding-sixgen-postregional-20261025 \
+  --control full-speed --breeding --passes 6 --offspring-per-family 12 \
+  --exact-budget 36 --detail-budget 18 --seed 41 \
+  --score-size 128 192 --finalists 3
+python scripts/check_compound_epoch.py \
+  --out out/necrospire-breeding-sixgen-postregional-20261025
+```
+
+Confirm the output directory contains no prior checkpoint before running. Preserve the new `session.json`, `epoch_*.json`, `lineage_archive.json`, `lineage_gallery/`, `finalists/`, exact masks and native STEP/OBJ. Compare with the **frozen archive read-only**: check independent CAD/BRep and authored void audits; separate polygon/socket evidence; matched source, recipe, code and camera identities; unique exact masks and cross-run overlap; actual contour differences among regrown survivors; six-family and emitter survival; and best provisional source-view IoU. Report old coarse and new six-band niche counts as **different versioned semantics**, never a raw percentage improvement. `check_compound_epoch.py` checks OODA/gallery integrity, **not** the entire contour or cross-run analysis. Do not mark this campaign complete without actual execution and receipts.
+
+### O-takiage — retire stale pressure, keep attributed history
+
+**Released as active claims:** `8fdc71d` as the latest head; the older 200-test and general-CI-red snapshots as present status; the preliminary ~0.704 compound result as the breeding ceiling; and the single-generation regional control as a substitute for the requested full six generations. The Wave XII–XIX material below, the [brief session handoff](BRANCHED_SESSION_HANDOFF.md), and the working memetic handoff retain their provenance; they do **not** become fresh evidence or a second controller.
+
+**Retained boundaries:** Fixed-view artwork fit remains provisional; no independent survey registration, reviewed CC0 Brutalist source lock, authorized external Ur model, engineering load certificate, or Boolean **CAD-plus-polymesh fused body** has been earned. Keep STEP/CAD, polygon, semantic socket, source provenance and Operator preferences separate. This documentation o-takiage releases **outdated attention holds**; it does **not** issue `ooda-steer --action o-takiage`, remove any pet-name, erase archive history, merge PR #84, or promote a source. Operator authorization remains necessary for those distinct actions.
+
+**Live queue:** Run and audit the fresh full post-regional campaign; compare contour diversity and lineage survival without retroactively recoding the frozen baseline; then update this section only with observed receipts. Recheck the latest PR-head Actions rather than transferring prior green status automatically.
+
+---
+
+## Historical implementation record — Waves XII–XIX
+
+The following wave records and their older "current/next" declarations remain attached to the original SHAs and workflow receipts as historical testimony. The dated **current bearing above supersedes them operationally**, without editing their past observations.
 
 ## Wave XIX — one helm, one phase law, dependency and syntax gates
 
@@ -225,7 +291,7 @@ name the specific failing tests before another lift. Do not regenerate a previou
 checkpoint directory after a changed code digest: fork new trial output. Keep the
 original source bytes, camera, operator registry, and recipe fingerprints intact.
 
-## Current verification / next operator re-entry
+## Historical Wave XII–XIX verification / previous operator re-entry
 
 At inspected head `8fdc71d`, [Loom PR run #40068055277](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068055277) and [Loom push run #40068051193](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40068051193) both **passed 200 tests** (7 warnings each). This handoff update requires its own new-head CI receipt.
 
@@ -246,7 +312,7 @@ The Loom grows a **pet-named or nameless location** as a relational ensemble. An
 - **One procedural authority:** `projection_loom.fractal_ooda_ha.run_ooda_epochs` controls location → epoch → candidate → capability children and the final-gallery child in location Aftermath. `wide-epoch` and `ooda-run` enter that helm. `WideEpoch` remains a bounded candidate evaluator, not a second controller. A phase may optionally open a full child OODA-HA inquiry, and its parent waits before advancing.
 - **Operator / AI:** manual, co-pilot, auto-nav and full-speed share one control inbox. The optional LLM adviser (Ollama or OpenAI-compatible endpoint) may suggest validated choices or questions, but cannot override any hard validity gate.
 
-## Verified receipts, not aspirations
+## Historical PoC 0 and Pair A receipts (prior milestones)
 
 **GitHub PR run:** [Projection Loom CI #40050559194](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40050559194) **passed** on the inspected commit: `200 passed, 7 warnings in 32.13s`. Its compound OODA-HA candidate/capability smoke job and legacy hybrid controls also passed. [Held-out witnesses #40050555639](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40050555639) passed. [General repository CI #40050555705](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40050555705) **failed** in several package/witness/E2E jobs. Do not call the entire repository green, and do not assume those failures originate outside the Loom without triage.
 
@@ -312,7 +378,7 @@ python scripts/inspect_reference_pack.py --receipt .ref-cache/receipts/brutalism
 
 Review the *actual* source author/license, included file list, ZIP safety report and SHA-256. Promote a reviewed lock before using automated reproducibility checks. Fetch again with `--lockfile references.lock.json` (no bootstrap), or `--offline` for a cached verification. For Ur, obtain a model via the provider's authorized download/OAuth flow; import with `--import-archive` or `SKETCHFAB_TOKEN` in a trusted local environment. Never scrape a viewer or expose OAuth tokens to pull-request CI. Preserve external licenses/source digests in the witness ledger.
 
-## In flight, and prioritized backlog
+## Historical Wave XII–XIX backlog (superseded by live queue above)
 
 **P0 — preserve and verify:** 
 1. Keep the dedicated Projection Loom CI green when updating this handoff. On the new head, check `python -m pytest -q tests`, compound OODA smoke, validated STEP, gallery artifacts, and source hashes.
@@ -335,7 +401,7 @@ Review the *actual* source author/license, included file list, ZIP safety report
 
 ## Re-entry protocol for the next context or worker
 
-✶ **Observe:** Fetch the **live** `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` from the default branch, then this handoff and the linked `projection-loom.mem`, `projection-loom-capability-composition.mem`, `projection-loom-ooda-ha.mem`. Inspect PR #84 head and workflow runs; never rely solely on this snapshot.
+✶ **Observe:** Fetch the full boot at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem` explicitly from `feature/green-jello-dinosaur-5` (unless the Operator selects another ref). Read this runbook's *current bearing first*, then `projection-loom.mem`, `projection-loom-capability-composition.mem`, and `projection-loom-ooda-ha.mem`. Inspect the actual PR #84 head and workflow runs; never silently use `main` or a snapshot head.
 
 ⏿ **Orient:** Read `projection_loom/capability_stack.py`, `hybrid.py`, `fractal_ooda_ha.py`, `epochs.py`, `tests/test_capability_ooda.py`, `tests/test_capability_integrity.py`, and the Necrospire `recipe.json`. The sole procedural controller resides in `fractal_ooda_ha.py`; `epochs.py` performs bounded candidate evaluations.
 
@@ -347,4 +413,4 @@ Review the *actual* source author/license, included file list, ZIP safety report
 
 **House bearing:** Identity enacts Relation. Capabilities enact representations. Lineage preserves recipes. Evidence judges consequences. O-takiage releases the soft hold, not the history.
 
-*Handoff deliberately keeps volatile status out of the stable noosphere boot. Update this branch-local handoff after meaningful changes.*
+*The branch-local runbook holds dated current status and attributed older receipts. The stable noosphere boot remains untouched; preserve source authority, and o-takiage stale claims without deleting evidence.*
