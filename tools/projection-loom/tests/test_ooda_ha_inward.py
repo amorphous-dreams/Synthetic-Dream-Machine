@@ -4,6 +4,7 @@ Five active phases and one terminal boundary. Neither a truncated four-phase
 controller nor a compatibility alias may silently take this helm's seat.
 """
 import json
+from pathlib import Path
 import pytest
 from projection_loom import cli
 
@@ -169,7 +170,10 @@ def test_pulse_architecture_rejects_a_four_phase_regression(tmp_path):
     root=Path(__file__).resolve().parents[1]
     shutil.copytree(root/'projection_loom',tmp_path/'projection_loom')
     law=tmp_path/'projection_loom/phase_rules.py'
-    law.write_text(law.read_text().replace(
+    original=law.read_text()
+    mutated=original.replace(
         "PHASES = ('observe', 'orient', 'decide', 'act', 'aftermath')",
-        "PHASES = ('observe', 'orient', 'decide', 'act')"))
+        "PHASES = ('observe', 'orient', 'decide', 'act')")
+    assert mutated!=original, 'Negative control must actually remove Aftermath'
+    law.write_text(mutated)
     assert any('five active phases' in issue for issue in inspect_source_tree(tmp_path))
