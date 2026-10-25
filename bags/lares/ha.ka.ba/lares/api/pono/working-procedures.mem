@@ -140,6 +140,26 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
+<<~ ahu #/an-absence-names-its-far-side-barrier>>
+
+!! An absence names its far-side barrier ~ the boundary half of the silent-zero law
+
+The house proves a zero with a known positive: an instrument that reads nothing must show it can read something. This law carries that rule across a boundary. ''An instrument that asserts across a boundary (process, thread or worker, storage, network) names the causal event it waits for on the far side'': a sentinel act's answer, a rested count, a tally line, a disconnect event. An absence assertion (nothing happened, the state holds, a count stays zero) with no far-side barrier before it counts as no check. The instrument reads honestly on its own shore and goes blind at the crossing, and a zero read before the far side could speak states nothing about the far side.
+
+!!! Testimony, from one day
+* ''Process.'' A merge train read a test suite's exit code while the config threw at load and vitest exited 0 with no tally; another log tallied "1 failed" over a recorded exit 0. The barrier is the tally line, read beside the exit code.
+* ''Thread.'' `golden-whole-road` W4 asserted "the story holds" right after a modified click and a middle click, before any act relayed across the page-to-island wire could arrive. The acts landed about 1.1 s late and broke W5 and W6 once a faster island let them arrive inside the run. Its polls waited on the page's own tab count, a near-shore event. The barrier is a sentinel act's answer.
+* ''Storage.'' The rest-before-reload control R2 decided "rested" by searching IndexedDB for plaintext bytes, while the doc store rests encrypted and compressed; it read rests that never happened. The barrier is a rested count.
+* ''Network.'' automerge-repo's MessageChannel adapter never forwarded a port's close, so a vessel never learned an island died. The barrier is a disconnect event, and the adapter owes it.
+
+!!! The instrument
+* ''`tools/barrier-witness.sh` reads the e2e set'' (`packages/*/tests/e2e/**`, `tests/e2e/**`). It flags an absence assertion (a `.not.` form with a literal, a `toEqual` or `toBe` on a value the test's own name calls unchanged, a `toBe(0)` or `toHaveLength(0)` count) that follows no barrier after the test's last act.
+* ''A barrier is one of three.'' An awaited call that names a sentinel; an awaited `expect.poll` or `waitForFunction` that reads the SAME thing the assertion reads, or names an answer; or a comment `// barrier: <the far-side event>`. A bare or vague marker reads red, and a barrier above the act bars nothing.
+* ''A poll on a near-shore event bars nothing about a far shore.'' A tab that opened says the page's own event happened, and says nothing of what the island has yet to answer.
+* ''Allowances name an owner row'': the lane whose landing kills the allowance. A bare allowance and a stale one read red. The open backlog stands against a ceiling that only comes down.
+
+<<~/ahu>>
+
 <<~ ahu #/working-agreements>>
 
 !! Working agreements ~ what binds every spirit
@@ -167,6 +187,6 @@ Collide each before trusting it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5uGIxLVf1h5dJBQ3GogZI-ypw_Q-sQUFN0XmCPhUt4I
+<<^ code="&#x0003;">>ni:///sha-256;fR6HDSIdpbZxK8igK3zCIAX-b3jMg_7mv6p3HTV9RWg
 
 <<^ code="&#x0004;" -> to="?">>

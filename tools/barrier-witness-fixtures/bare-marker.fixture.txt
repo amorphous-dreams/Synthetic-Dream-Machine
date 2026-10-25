@@ -1,0 +1,13 @@
+// A marker that names nothing is no barrier, and it reads red by itself.
+describe("the island", () => {
+  test("a span with no binding raises no act and the story stands unchanged", async () => {
+    await page.locator("span.plain").first().click();
+    // barrier:
+    expect(await story()).toEqual([ALPHA]);
+  });
+  test("a marker with one vague word", async () => {
+    await page.locator("span.plain").first().click();
+    // barrier: later
+    expect(await story()).not.toContain("beta");
+  });
+});
