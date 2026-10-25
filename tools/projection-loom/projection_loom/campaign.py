@@ -118,6 +118,64 @@ def _scored_observation(result):
     return masks[0],niches[0]
 
 
+def _activation_thresholds(activations):
+    """Only declared constructive switches become part of a durable funnel."""
+    if isinstance(activations, dict):
+        pairs = activations.items()
+    else:
+        pairs = ((name, .5) for name in activations)
+    thresholds = {}
+    for name, threshold in pairs:
+        if (not isinstance(name, str) or not name
+                or isinstance(threshold, bool) or not isinstance(threshold, (int, float))
+                or not math.isfinite(threshold) or not 0 < threshold < 1):
+            raise ValueError('Activation funnel needs named finite thresholds in (0,1)')
+        if name in thresholds:
+            raise ValueError('Duplicate activation in source-bound funnel')
+        thresholds[name] = float(threshold)
+    return dict(sorted(thresholds.items()))
+
+
+def _native_valid(result):
+    audit = result.get('audit')
+    return (isinstance(audit, dict) and audit.get('valid') is True
+            and audit.get('union_valid') is True
+            and type(audit.get('union_solids')) is int
+            and audit['union_solids'] == 1)
+
+
+def activation_funnel(proposals, results, activations=()):
+    """Witness each topological switch through proposed -> audited -> scored.
+
+    CAD rejection is evidence of *attempted* exploration, not a successful
+    native descendant. Never infer feasibility from score or reachability.
+    """
+    thresholds = _activation_thresholds(activations)
+    stages = ('proposed', 'exact_attempted', 'native_valid',
+              'scored', 'audited', 'rejected', 'deferred', 'error')
+    report = {
+        key: {stage: {'active': 0, 'inactive': 0} for stage in stages}
+        for key in thresholds
+    }
+    for ident, proposal in proposals.items():
+        result = results[ident]
+        state = result['state']
+        for key, threshold in thresholds.items():
+            genome = proposal.get('genome', {})
+            value = genome.get(key)
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not math.isfinite(value)):
+                raise ValueError(f'Missing or invalid activation locus {key}')
+            side = 'active' if value >= threshold else 'inactive'
+            report[key]['proposed'][side] += 1
+            if state != 'deferred':
+                report[key]['exact_attempted'][side] += 1
+            if _native_valid(result):
+                report[key]['native_valid'][side] += 1
+            report[key][state][side] += 1
+    return report
+
+
 class LineageArchive:
     """One durable archive per *source-bound* breeding campaign.
 
@@ -157,16 +215,24 @@ class LineageArchive:
                                                if k != 'snapshot_sha256'})
         _atomic(self.path, self.data)
 
-    def assimilate(self, generation, checkpoint):
-        """Assimilate only completed auditable results, exactly once per epoch."""
+    def assimilate(self, generation, checkpoint, *, activations=()):
+        """Assimilate complete native observations, exactly once per epoch."""
         if type(generation) is not int or generation < 1:
             raise ValueError('Generation must be a positive integer')
         if not isinstance(checkpoint, dict):
             raise ValueError('Epoch must provide a durable checkpoint dictionary')
         proposals = checkpoint.get('proposals', {})
         results = checkpoint.get('results', {})
-        if set(results) - set(proposals):
-            raise ValueError('A candidate result has no recorded source proposal')
+        if set(results) != set(proposals):
+            raise ValueError('A completed generation needs a result for every source proposal')
+        # Admit no fictitious geometry: valid native audits must precede
+        # reproductive scoring, while unsuccessfully audited topology remains
+        # recorded as a separate, useful searchability observation.
+        thresholds = _activation_thresholds(activations)
+        funnel = activation_funnel(proposals, results, thresholds)
+        for result in results.values():
+            if result['state'] == 'audited' and not _native_valid(result):
+                raise ValueError('Audited unscored member needs a native CAD/void witness')
         # Validate scored evidence BEFORE the checksum touches potentially
         # nonfinite JSON, and before any partial lineage mutation can occur.
         measured={}
@@ -176,7 +242,7 @@ class LineageArchive:
         key = str(generation)
         # Bind replay to every admitted and refused state, not only the winners.
         checksum = _hash({'run_id':checkpoint['run_id'], 'proposals':proposals,
-                          'results':results})
+                          'results':results, 'activation_thresholds':thresholds})
         old = self.data['generations'].get(key)
         if old is not None:
             if old['epoch_digest'] != checksum:
@@ -230,7 +296,8 @@ class LineageArchive:
                 snapshot['component_elites'][key_component] = row
         snapshot['pareto'] = [r['id'] for r in pareto_front(snapshot['members'].values())]
         snapshot['generations'][key] = {'epoch_digest': checksum, 'summary': counts,
-                                         'run_id': checkpoint['run_id']}
+                                         'run_id': checkpoint['run_id'],
+                                         'activation_funnel':funnel}
         self.data = snapshot
         self._save()
         return dict(counts)
@@ -257,8 +324,19 @@ class LineageArchive:
                       key=lambda x:(x['combined_loss'],x['id']))
 
     def census(self, bounds, *, activations=()):
-        return searchability_census(bounds,self,family_focus=FAMILY_FOCUSES,
-                                    activations=activations)
+        census = searchability_census(bounds,self,family_focus=FAMILY_FOCUSES,
+                                     activations=activations)
+        cumulative = {}
+        for generation in sorted(self.data['generations'], key=int):
+            observed = self.data['generations'][generation].get('activation_funnel', {})
+            for locus, stages in observed.items():
+                target = cumulative.setdefault(locus, {
+                    stage: {'active':0, 'inactive':0} for stage in stages})
+                for stage, sides in stages.items():
+                    for side in ('active','inactive'):
+                        target[stage][side] += sides[side]
+        census['activation_funnel'] = cumulative
+        return census
 
 
 # These are anonymous search families, not Operator pet-names. Every family
@@ -387,10 +465,17 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     value=genome[key]+float(rng.normal(0,mutation_scale))*(hi-lo)
                 else:
                     value=genome[key]
-                    if key in ('spire_segmentation','join.enable',
-                                'grammar.gallery','grammar.buttress'):
+                    # Isolate one topology switch per proposal, not a
+                    # bundle of correlated changes whose failing native CAD
+                    # gate cannot be attributed to an individual capability.
+                    discrete=tuple(k for k in focus if k in (
+                        'spire_segmentation','join.enable',
+                        'grammar.gallery','grammar.buttress'))
+                    selected=(discrete[(generation + j//3) % len(discrete)]
+                              if discrete else None)
+                    if key==selected:
                         value=lo+(.8 if value < (lo+hi)/2 else .2)*(hi-lo)
-                    elif k==(j//3)%len(focus):
+                    elif selected is None and k==(j//3)%len(focus):
                         value+=(.22 if generation%2 else -.22)*(hi-lo)
                 genome[key]=float(np.clip(value,lo,hi))
             brood.append(Proposal(
