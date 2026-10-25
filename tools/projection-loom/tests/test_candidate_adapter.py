@@ -1,4 +1,4 @@
-"""RED-first equivalence contract for the OODA candidate evaluation lift.
+"""RED-first equivalence contract for the OODA-HA candidate evaluation lift.
 
 One adapter carries callback intent. It must not alter CAD admission, losses,
 witnesses, checkpoints, budgets, failure semantics, or resume behavior.

@@ -1,6 +1,6 @@
 """Alpha architectural invariants: one helm, many evidence witnesses.
 
-The live branch is authoritative; retired OODA modules are not compatibility
+The live branch is authoritative; retired four-phase modules are not compatibility
 contracts. These tests exercise an inspection helper with explicit negative
 controls so a future accidental duplicate runner or impure guard fails CI.
 """
@@ -43,8 +43,8 @@ def test_architecture_witness_rejects_backedge_from_renderers(tmp_path):
     package = tmp_path / 'projection_loom'
     shutil.copytree(ROOT / 'projection_loom', package)
     review = package / 'review.py'
-    review.write_text(review.read_text() + '\nfrom .fractal_ooda_ha import OODAJournal\n')
-    assert any('Renderer and pure policy cannot import the OODA helm' in item
+    review.write_text(review.read_text() + '\nfrom .fractal_ooda_ha import OODAHAJournal\n')
+    assert any('Renderer and pure policy cannot import the OODA-HA helm' in item
                for item in inspect_source_tree(tmp_path))
 
 

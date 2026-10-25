@@ -7,7 +7,7 @@ import pytest
 
 from projection_loom.capability_stack import Capability, CapabilityRecipe, CapabilityCompositor, default_registry
 from projection_loom.pipeline import Project
-from projection_loom.fractal_ooda_ha import run_ooda_epochs, submit_control
+from projection_loom.fractal_ooda_ha import run_ooda_ha_epochs, submit_control
 from projection_loom.relations import PetNameLedger, RelationWitness
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -45,10 +45,10 @@ def test_operator_review_pet_names_compound_entity_then_exports_gallery(tmp_path
     project,recipe=necro()
     out=tmp_path/'helm'
     args=small()
-    first=run_ooda_epochs(project,out,recipe=recipe,autonomy=0,**args)
+    first=run_ooda_ha_epochs(project,out,recipe=recipe,autonomy=0,**args)
     assert first['awaiting']['kind']=='plan'
     submit_control(out/'session.json','approve-plan')
-    second=run_ooda_epochs(project,out,recipe=recipe,autonomy=0,**args)
+    second=run_ooda_ha_epochs(project,out,recipe=recipe,autonomy=0,**args)
     assert second['awaiting']['kind']=='review'
     cards=second['review_cards']
     assert cards
@@ -58,7 +58,7 @@ def test_operator_review_pet_names_compound_entity_then_exports_gallery(tmp_path
     submit_control(out/'session.json','pet-name',proposal_id=target['proposal_id'],
                    target='@entity/Crystal',name='Nightglass Witness',mode='entity')
     submit_control(out/'session.json','choose',proposal_id=target['proposal_id'])
-    complete=run_ooda_epochs(project,out,recipe=recipe,autonomy=0,**args)
+    complete=run_ooda_ha_epochs(project,out,recipe=recipe,autonomy=0,**args)
     assert complete['status']=='completed' and complete['completed_epochs']==1
     assert complete['gallery']['actual_count']>=1
     assert (out/'finalists/contact_sheet.png').exists()
@@ -80,7 +80,7 @@ def test_fullspeed_two_epochs_inherit_dual_genome_and_restart_idempotently(tmp_p
     project,recipe=necro()
     out=tmp_path/'epochs'
     args=small(passes=2)
-    result=run_ooda_epochs(project,out,recipe=recipe,autonomy=1.,**args)
+    result=run_ooda_ha_epochs(project,out,recipe=recipe,autonomy=1.,**args)
     assert result['status']=='completed' and result['completed_epochs']==2
     assert result['gallery']['requested']==3
     assert result['gallery']['actual_count']>=2
@@ -91,7 +91,7 @@ def test_fullspeed_two_epochs_inherit_dual_genome_and_restart_idempotently(tmp_p
     assert journal['loops']['location/final-gallery']['phase']=='closed'
     assert journal['passes'][0]['parent_genome']==json.loads((out/'epoch_002.json').read_text())['proposals']['lineage-seed']['genome']
     events=len(journal['events'])
-    again=run_ooda_epochs(project,out,recipe=recipe,autonomy=0,**args)
+    again=run_ooda_ha_epochs(project,out,recipe=recipe,autonomy=0,**args)
     assert again['status']=='completed' and again['events']==events
     for entry in result['gallery']['finalists']:
         model=Path(entry['folder'])
@@ -106,17 +106,17 @@ def test_fullspeed_two_epochs_inherit_dual_genome_and_restart_idempotently(tmp_p
 def test_recipe_or_operator_changes_reject_resume_checkpoint(tmp_path):
     project,recipe=necro()
     args=small()
-    run_ooda_epochs(project,tmp_path/'original',recipe=recipe,autonomy=0,**args)
+    run_ooda_ha_epochs(project,tmp_path/'original',recipe=recipe,autonomy=0,**args)
     different=CapabilityRecipe(location=recipe.location,pet_name=recipe.pet_name,
           steps=recipe.steps,bounds=recipe.bounds,initial=dict(recipe.initial,**{'crystal.relief':.2}),
           cad_keys=recipe.cad_keys,source_hashes=recipe.source_hashes)
     with pytest.raises(ValueError,match='Incompatible'):
-        run_ooda_epochs(project,tmp_path/'original',recipe=different,autonomy=0,**args)
+        run_ooda_ha_epochs(project,tmp_path/'original',recipe=different,autonomy=0,**args)
     original=default_registry()
     shifted=default_registry()
     shifted.register('new-source-bound-op',lambda ctx,step:{'kind':'test'})
     with pytest.raises(ValueError,match='Incompatible'):
-        run_ooda_epochs(project,tmp_path/'original',recipe=recipe,registry=shifted,
+        run_ooda_ha_epochs(project,tmp_path/'original',recipe=recipe,registry=shifted,
                         autonomy=0,**args)
     assert original.fingerprint()!=shifted.fingerprint()
 
@@ -130,7 +130,7 @@ def test_sourceless_named_location_with_standalone_polymesh(tmp_path):
         bounds={**project.bounds,'radius':(.15,1.2)},
         initial={**project.initial,'radius':.6},
         cad_keys=tuple(project.initial),source_hashes={},provenance='synthetic')
-    result=run_ooda_epochs(project,tmp_path/'void',recipe=recipe,
+    result=run_ooda_ha_epochs(project,tmp_path/'void',recipe=recipe,
              passes=1,candidates=3,exact_budget=2,detail_budget=2,
              score_size=(64,96),finalists=3,autonomy=1.)
     assert result['status']=='completed'
@@ -141,7 +141,7 @@ def test_sourceless_named_location_with_standalone_polymesh(tmp_path):
 
 def test_inherited_parent_does_not_displace_sobol_exploration(tmp_path):
     project,recipe=necro()
-    result=run_ooda_epochs(project,tmp_path/'slack',recipe=recipe,autonomy=1.,
+    result=run_ooda_ha_epochs(project,tmp_path/'slack',recipe=recipe,autonomy=1.,
                            **small())
     assert result['status']=='completed'
     epoch=json.loads((tmp_path/'slack'/'epoch_001.json').read_text())
