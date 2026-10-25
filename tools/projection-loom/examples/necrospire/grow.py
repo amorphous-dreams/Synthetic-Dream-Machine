@@ -44,13 +44,13 @@ def grow(p):
         from projection_loom.grammar import grow_program
         grammar=[
             {'key':'east gallery','op':'box','parents':['lower terrace'],
-             'center':[fort*.48,0,1.6],
+             'center':[fort*.72,0,1.6],
              'size':[{'param':'grammar.gallery_span','factor':1.0},1.25,.64],
              'role':'secondary','has':['#has/gallery','#has/extension'],
              'slot':'east-gallery',
              'when':{'param':'grammar.gallery','min':.5}},
             {'key':'crown brace','op':'box','parents':['upper keep'],
-             'center':[fort*.23,0,3.2+tower*.72],
+             'center':[fort*.31,0,3.2+tower*.72],
              'size':[{'param':'grammar.brace_span'},.92,1.4],
              'role':'secondary','has':['#has/brace','#has/fortification'],
              'slot':'crown-brace',
