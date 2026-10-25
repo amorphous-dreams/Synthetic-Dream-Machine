@@ -119,6 +119,10 @@ def main(argv=None):
                    metavar=('WIDTH','HEIGHT'),help='fixed compound evidence viewport')
     p.add_argument('--finalists',type=int,choices=[3,4,5],default=3,
                    help='regrow distinct compound finalists inside location Aftermath')
+    p.add_argument('--feature-evidence',type=Path,
+                   help='operator-annotated source-bound region masks, provisional only')
+    p.add_argument('--transfer-bundle',type=Path,
+                   help='operator-authorized normalized cross-location proposal fragments')
     p.add_argument('--breeding',action='store_true',
                    help='six-family quality-diversity campaign using a versioned structural recipe')
     p.add_argument('--offspring-per-family',type=int,default=6,
@@ -202,7 +206,9 @@ def main(argv=None):
             breeding=getattr(args,'breeding',False),
             offspring_per_family=getattr(args,'offspring_per_family',6),
             migration_every=getattr(args,'migration_every',4),
-            mutation_scale=getattr(args,'mutation_scale',.16))
+            mutation_scale=getattr(args,'mutation_scale',.16),
+            feature_evidence_path=getattr(args,'feature_evidence',None),
+            transfer_bundle_path=getattr(args,'transfer_bundle',None))
         print(json.dumps(result,indent=2));return result
     if args.command=='ooda-finalists':
         from .finalists import export_finalists
