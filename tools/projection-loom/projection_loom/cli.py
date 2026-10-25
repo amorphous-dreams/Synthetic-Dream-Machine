@@ -85,6 +85,10 @@ def main(argv=None):
     group.add_argument('--name')
     group.add_argument('--branch')
     p.add_argument('--witness',type=Path,help='required for branch release')
+    p=commands.add_parser('search-census',help='Inspect measured source-bound lineage reachability; never generate geometry')
+    p.add_argument('--archive',type=Path,required=True)
+    p.add_argument('--capability-recipe',type=Path,required=True)
+    p.add_argument('--out',type=Path,help='optional JSON witness path')
     p=commands.add_parser('ooda-run', help='Run nested OODA-HA with durable operator steering')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
@@ -153,6 +157,22 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='search-census':
+        from .campaign import LineageArchive
+        from .capability_stack import CapabilityRecipe
+        from .search_strategy import emitter_performance
+        recipe=CapabilityRecipe.load(args.capability_recipe)
+        payload=json.loads(args.archive.read_text(encoding='utf-8'))
+        archive=LineageArchive(args.archive,identity=payload['identity'])
+        if archive.identity.get('recipe_sha256') not in (None,recipe.sha256):
+            raise ValueError('Census recipe identity differs from lineage archive')
+        result=archive.census(recipe.bounds,activations=tuple(
+            step.activation for step in recipe.steps if step.activation))
+        result['emitter_performance']=emitter_performance(archive)
+        result['recipe_sha256']=recipe.sha256
+        if args.out:_save(args.out,result)
+        print(json.dumps(result,indent=2))
+        return result
     if args.command in ('ooda-run','wide-epoch'):
         from .fractal_ooda_ha import run_ooda_epochs
         from .location_stack import LocationStack
