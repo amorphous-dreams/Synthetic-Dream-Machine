@@ -17,8 +17,8 @@
  * is not a destruction and passes — an operator who runs a step twice should not be punished for it.
  * A partner's charter takes `--carry` and lands BESIDE the primary, under its own Nexus AID.
  */
-import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
-import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync } from "node:fs";
+import { describe, it, expect, afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
+import { cpSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -129,26 +129,46 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   let root: string;
   let prior: string | undefined;
   let scratch: string;
-  beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-carry-cli-"));
-    scratch = mkdtempSync(join(tmpdir(), "lares-carry-src-"));
+  let snapshot: { dir: string; keys: string[] } | undefined;
+  // ONE ROOT FOR THE DESCRIBE. A face's key derivation is the cost of a founding and of an unlock, and the custody seat
+  // keeps the keys it opened for as long as the home stays the same: so the root stands once, the founding runs once inside it,
+  // and each test starts from the bytes that founding wrote (or from nothing, for a test that plants its own).
+  beforeAll(async () => {
     prior = process.env["LAR_ROOT"];
+    root = mkdtempSync(join(tmpdir(), "lares-carry-cli-"));
     process.env["LAR_ROOT"] = root;
+    await found();                       // the one founding, paid in the hook and not in the first test
   });
-  afterEach(() => {
+  afterAll(() => {
     if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     rmSync(root, { recursive: true, force: true });
-    rmSync(scratch, { recursive: true, force: true });
+    if (snapshot) rmSync(snapshot.dir, { recursive: true, force: true });
   });
+  beforeEach(() => {
+    process.env["LAR_ROOT"] = root;
+    for (const entry of readdirSync(root)) rmSync(join(root, entry), { recursive: true, force: true });
+    scratch = mkdtempSync(join(tmpdir(), "lares-carry-src-"));
+  });
+  afterEach(() => { rmSync(scratch, { recursive: true, force: true }); });
 
-  /** This vessel's own founding: three held roots seated at the primary path. */
+  /**
+   * This vessel's own founding: three held roots seated at the primary path. The first call founds inside the describe's root
+   * and keeps a copy of what it wrote; every later call lays that copy back.
+   */
   async function found(): Promise<string[]> {
-    // Each chair holds a seat key of its own, filed under a face this vessel holds a root for.
-    const keys: string[] = [];
-    // A one-byte seed per chair, so the charter fixture signs the genesis's inception as each seat.
-    for (const i of [0, 1, 2]) { await generateOrLoadPersonaGroupRoot(i); keys.push((await storeSeatKey(i, new Uint8Array(32).fill(150 + i))).toLowerCase()); }
-    writeNexusDoc(larSealHome(), (await charter(keys)));
-    return keys;
+    if (snapshot === undefined) {
+      // Each chair holds a seat key of its own, filed under a face this vessel holds a root for.
+      const keys: string[] = [];
+      // A one-byte seed per chair, so the charter fixture signs the genesis's inception as each seat.
+      for (const i of [0, 1, 2]) { await generateOrLoadPersonaGroupRoot(i); keys.push((await storeSeatKey(i, new Uint8Array(32).fill(150 + i))).toLowerCase()); }
+      writeNexusDoc(larSealHome(), (await charter(keys)));
+      const dir = mkdtempSync(join(tmpdir(), "lares-carry-snapshot-"));
+      cpSync(root, dir, { recursive: true });
+      snapshot = { dir, keys };
+      return keys;
+    }
+    cpSync(snapshot.dir, root, { recursive: true });
+    return [...snapshot.keys];
   }
 
   function partnerFile(doc: NexusDoc, name = "partner.mem"): string {
