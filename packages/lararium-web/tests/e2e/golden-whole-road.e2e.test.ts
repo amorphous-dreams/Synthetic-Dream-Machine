@@ -213,8 +213,9 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
   test("W6 — an unbound span raises no act: the default stands and the story holds", async () => {
     const before = opened.length;
     await wiki().locator(".tc-story-river span.plain").first().click();
+    const clicked = await lastClick();   // the sentinel's own clicks come after: read this one's verdict first
     await raiseSentinel();
-    expect((await lastClick()).prevented).toBe(false);
+    expect(clicked.prevented).toBe(false);
     expect(opened.length).toBe(before);
     expect(await story()).toEqual([ALPHA]);
   });
