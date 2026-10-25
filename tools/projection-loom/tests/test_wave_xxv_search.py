@@ -172,3 +172,12 @@ def test_alpha_recipe_grows_two_true_optional_structural_motifs():
     assert 'crown brace' in grown.scene.assembly.parts
     assert {s['id'] for s in grown.steps if s['state']=='complete'} >= {
         'join.gallery','fortress.buttress'}
+
+def test_v3_recipe_is_regenerated_without_modifying_source_bound_v2():
+    from examples.necrospire.hybrid.make_alpha_recipe import make
+    generated=make()
+    committed=CapabilityRecipe.load(EXAMPLES/'hybrid/recipe_alpha.json')
+    legacy=CapabilityRecipe.load(EXAMPLES/'hybrid/recipe_breeding.json')
+    assert generated.sha256==committed.sha256
+    assert generated.sha256!=legacy.sha256
+    assert generated.source_hashes==legacy.source_hashes
