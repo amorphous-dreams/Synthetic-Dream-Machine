@@ -5,28 +5,28 @@
       0.3
     ],
     "crown_taper": [
-      0.0,
+      0,
       0.24
     ],
     "crystal.fracture": [
-      0.0,
+      0,
       0.26
     ],
     "crystal.guide": [
-      0.0,
+      0,
       0.25
     ],
     "crystal.relief": [
-      0.0,
+      0,
       0.31
     ],
     "crystal.seed": [
-      0.0,
-      99.0
+      0,
+      99
     ],
     "crystal.wave": [
-      3.0,
-      15.0
+      3,
+      15
     ],
     "fortress_width": [
       4.4,
@@ -41,27 +41,27 @@
       0.82
     ],
     "join.enable": [
-      0.0,
-      1.0
+      0,
+      1
     ],
     "join.fracture": [
-      0.0,
+      0,
       0.16
     ],
     "join.relief": [
-      0.0,
+      0,
       0.22
     ],
     "join.seed": [
-      0.0,
-      99.0
+      0,
+      99
     ],
     "join.wave": [
-      3.0,
-      12.0
+      3,
+      12
     ],
     "keep_taper": [
-      0.0,
+      0,
       0.2
     ],
     "parapet_fraction": [
@@ -77,16 +77,16 @@
       0.17
     ],
     "shaft_length": [
-      19.0,
-      27.0
+      19,
+      27
     ],
     "shaft_width": [
       2.7,
       3.8
     ],
     "spire_segmentation": [
-      0.0,
-      1.0
+      0,
+      1
     ],
     "terrace_offset": [
       -0.4,
@@ -119,37 +119,36 @@
     "spire_segmentation"
   ],
   "initial": {
-    "crown_offset": 0.0,
-    "crown_taper": 0.0,
+    "crown_offset": 0,
+    "crown_taper": 0,
     "crystal.fracture": 0.1,
-    "crystal.guide": 0.0,
+    "crystal.guide": 0,
     "crystal.relief": 0.14,
-    "crystal.seed": 13.0,
-    "crystal.wave": 7.0,
+    "crystal.seed": 13,
+    "crystal.wave": 7,
     "fortress_width": 4.9,
-    "gallery_reach": 1.0,
+    "gallery_reach": 1,
     "gate_width": 0.66,
     "join.enable": 0.2,
     "join.fracture": 0.05,
     "join.relief": 0.06,
-    "join.seed": 11.0,
-    "join.wave": 5.0,
-    "keep_taper": 0.0,
+    "join.seed": 11,
+    "join.wave": 5,
+    "keep_taper": 0,
     "parapet_fraction": 0.68,
-    "shaft_asymmetry": 0.0,
+    "shaft_asymmetry": 0,
     "shaft_jaggedness": 0.05,
-    "shaft_length": 22.0,
+    "shaft_length": 22,
     "shaft_width": 3.1,
-    "spire_segmentation": 0.0,
-    "terrace_offset": 0.0,
+    "spire_segmentation": 0,
+    "terrace_offset": 0,
     "terrace_overhang": 1.32,
     "tower_height": 2.9
   },
   "location": "necrospire",
   "pet_name": "Necrospire: A Crystal Bearing a Fortress",
   "provenance": "provisional",
-  "schema": "projection-loom/capability-recipe/v1",
-  "sha256": "7f317bc1abcce96979ea7b37c51219e9a3134856a8e387a736bb3fa6ba024b2a",
+  "schema": "projection-loom/capability-recipe",
   "source_hashes": {
     "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
   },
@@ -309,5 +308,5 @@
       "socket": "lower terrace"
     }
   ],
-  "version": 2
+  "sha256": "93fc72b3ee1a9619983bc3b5fffb1f4dac6b8f71acd774bb2afe06e36f59c568"
 }
