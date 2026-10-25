@@ -10,7 +10,7 @@ describe("the key-class vocabulary", () => {
     expect(isKeyClass("relation")).toBe(true);
   });
 
-  test("CONTROL: the old spellings stand, and a near-miss of the new one does not", () => {
+  test("CONTROL: the other classes stand, and a near-miss of relation does not", () => {
     for (const c of ["device-minted", "seed", "cloud-synced"]) expect(isKeyClass(c)).toBe(true);
     for (const c of ["relations", "Relation", "relationship", "", null, undefined, 4]) expect(isKeyClass(c)).toBe(false);
   });
