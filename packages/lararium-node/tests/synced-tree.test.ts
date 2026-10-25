@@ -244,12 +244,12 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     expect(t.renameSourceUri(BAG, h)).toBeNull();
   });
 
-  test("spelling-agnostic: every tagged spelling of one digest resolves the same carrier", () => {
+  test("a tagged digest and the RFC spelling of one digest resolve the same carrier; a dash spelling resolves nothing", () => {
     const t = freshTree();
     const hex = "a".repeat(64);
     t.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, `sha256:${hex}`);
     expect(t.renameSourceUri(BAG, `sha256:${hex}`)).toBe("lar:///a.b.c");
-    expect(t.renameSourceUri(BAG, `sha256-${hex}`)).toBe("lar:///a.b.c");     // SRI spelling, same digest
+    expect(t.renameSourceUri(BAG, `sha256-${hex}`)).toBeNull();
   });
 
   test("★ a BARE hex names no algorithm: stored, it stays out of the index; asked, it resolves nothing ★", () => {
