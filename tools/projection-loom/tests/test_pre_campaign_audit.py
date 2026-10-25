@@ -93,3 +93,37 @@ def test_conditional_topology_mutates_one_switch_at_a_time(tmp_path):
         assert len(switches)==1
         generations.extend(switches)
     assert set(generations)=={"join.enable","grammar.gallery"}
+
+
+def test_high_dimensional_surrogates_and_interactions_refuse_underdetermined_learning():
+    import numpy as np
+    from projection_loom.search_strategy import SurrogatePreview, infer_locus_interactions
+    keys=[f"locus-{i:02d}" for i in range(29)]
+    bounds={k:(0.,1.) for k in keys}
+    rng=np.random.default_rng(92)
+    members={}
+    for i in range(30):
+        genome=dict(zip(keys,map(float,rng.random(len(keys)))))
+        members[f"0001/p{i:03d}"]={"id":f"0001/p{i:03d}",
+            "genome":genome,"losses":{"silhouette":float(rng.random())}}
+    class Archive:
+        data={"members":members}
+    surrogate=SurrogatePreview(bounds,Archive())
+    assert not surrogate.ready
+    assert surrogate.predict({k:.5 for k in keys})["predicted_loss"] is None
+    assert infer_locus_interactions(bounds,Archive(),min_samples=24)==[]
+
+
+def test_candidate_proposal_rejects_untyped_genomes_before_native_audition():
+    import pytest
+    from projection_loom.epochs import Proposal, WideEpoch
+    for bad in (True, False, "0.2", float("nan"), float("inf"), None):
+        with pytest.raises(ValueError,match="finite|numeric|loci|Genome"):
+            Proposal("bad","sobol",{"x":bad})
+    for bad in (True, 0, "", None):
+        with pytest.raises(ValueError,match="id|emitter"):
+            Proposal(bad,"sobol",{"x":.3})
+    with pytest.raises(ValueError,match="budget|Budget"):
+        WideEpoch(location="demo",source_digests={},construction_digest="c"*64,
+             objectives=("silhouette",),score_state="synthetic",
+             checkpoint="/dev/null",max_exact=True,max_detail=1)
