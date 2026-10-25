@@ -1,7 +1,7 @@
 # OODA-HA runs the Loom: executable, fractal control plane
 
-**Authority:** The single `projection_loom/fractal-ooda-ha.py` controller,
-the `projection_loom.ooda` compatibility import, and `WideEpoch` contracts. The
+**Authority:** The single `projection_loom/fractal_ooda_ha.py` controller,
+the `projection_loom.fractal_ooda_ha` compatibility import, and `WideEpoch` contracts. The
 noosphere boot defines the five-phase practice; this implementation adopts its
 sequence as a **runtime state machine**. It does not confuse the developers'
 Aftermath/self-review practice with a new architectural material or geometry
@@ -9,8 +9,8 @@ feature.
 
 ## Fractal module, OODA-HA law and re-entry
 
-The controller's implementation filename now reads `fractal-ooda-ha.py`.
-Python callers keep `from projection_loom.ooda import run_ooda_epochs`:
+The controller's implementation filename now reads `fractal_ooda_ha.py`.
+Python callers keep `from projection_loom.fractal_ooda_ha import run_ooda_epochs`:
 the old module forwards to the physical implementation through `importlib`,
 not through a separate scheduling authority. The CLI contract retains
 `ooda-run`, `ooda-steer`, and `ooda-status` names for compatibility.

@@ -27,7 +27,7 @@ durable checkpoint bytes), audit/detail budget, scored/audited/deferred outcomes
 interrupted safe-point replay, callback-mixing refusal, and backend-error
 isolation. Commit `dcfd3c3` introduces a frozen callback adapter in
 `epochs.py`, preserving the previous keyword-callback interface for callers.
-`ooda.py` passes exactly one adapter to `WideEpoch.run` for both CAD-only and
+`fractal_ooda_ha.py` passes exactly one adapter to `WideEpoch.run` for both CAD-only and
 compound construction. The tests must turn GREEN in the new-head Loom CI before
 this is considered an independently verified equivalence lift.
 
@@ -64,7 +64,7 @@ The Loom grows a **pet-named or nameless location** as a relational ensemble. An
 - **Other entities:** may use standalone polygon capability without a CAD parent. Pet-names bind observed relationships, not generated face/vertex indices.
 - **Certificate boundaries:** BRep CAD passes one-solid/contact/void audits; polygon layers pass independent closed-volume or declared open-surface audits; anchors establish spatial proximity only. A mixed render **does not certify one fused CAD-and-mesh solid, watertight mechanical interface or strength**.
 - **Lineage:** the chosen genome carries CAD loci, polymesh loci, the recipe's digest, evidence hashes, and trusted operator/version fingerprints. A baked OBJ/STEP remains an output, not the next generation's genome.
-- **One procedural authority:** `projection_loom.ooda.run_ooda_epochs` controls location → epoch → candidate → capability children and the final-gallery child in location Aftermath. `wide-epoch` and `ooda-run` enter that helm. `WideEpoch` remains a bounded candidate evaluator, not a second controller. A phase may optionally open a full child OODA-HA inquiry, and its parent waits before advancing.
+- **One procedural authority:** `projection_loom.fractal_ooda_ha.run_ooda_epochs` controls location → epoch → candidate → capability children and the final-gallery child in location Aftermath. `wide-epoch` and `ooda-run` enter that helm. `WideEpoch` remains a bounded candidate evaluator, not a second controller. A phase may optionally open a full child OODA-HA inquiry, and its parent waits before advancing.
 - **Operator / AI:** manual, co-pilot, auto-nav and full-speed share one control inbox. The optional LLM adviser (Ollama or OpenAI-compatible endpoint) may suggest validated choices or questions, but cannot override any hard validity gate.
 
 ## Verified receipts, not aspirations
