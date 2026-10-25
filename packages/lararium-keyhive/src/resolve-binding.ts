@@ -141,6 +141,19 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
       if (typeof docId !== "string" || !docId) throw new BindingRegistrationRefusal(key, existing);
       args.faceDoor.adopt(existing, docId);
     }
+    // A VESSEL-ONLY RECORD ASKS THE SEAT. The later grant lands as a record on the PersonaGroup plane, and the seat is taken
+    // where the daemon reads it (`faceSeated`); the lift pass runs inside that read and moves the record under the face. This
+    // call re-reads the record after the ask, so a binding the lift moved returns its new document.
+    if (fields?.["face-reach"] === "vessel-only" && args.personaGroupId && args.faceSeated && await args.faceSeated()) {
+      const moved = await args.daemonStore.get(key);
+      const movedFields = moved?.tiddler as Record<string, unknown> | undefined;
+      const movedUrl = tiddlerText(moved);
+      if (movedUrl && movedFields?.["face-reach"] === "face") {
+        const docId = movedFields["keyhive-doc-id"];
+        if (typeof docId === "string" && docId && args.faceDoor) args.faceDoor.adopt(movedUrl, docId);
+        return { url: movedUrl, minted: false };
+      }
+    }
     return { url: existing, minted: false };
   }
 

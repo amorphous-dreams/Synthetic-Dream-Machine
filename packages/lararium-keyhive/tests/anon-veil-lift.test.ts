@@ -19,7 +19,7 @@ import { describe, test, expect } from "vitest";
 import { identityShareDecision, makeIslandRepo, type DocumentId, type Repo } from "@lararium/mesh";
 import {
   CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey,
-  emptyLarDoc, mutableLarRecord, storedLarRecord, wikiBagUri, wikiDraftDocKey, type LarDoc, type LarTiddlerRecord,
+  emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -78,7 +78,8 @@ async function write(v: Vessel, url: string, title: string, text: string): Promi
 async function textOf(v: Vessel, url: string, title: string): Promise<string | undefined> {
   const handle = await v.repo.find<LarDoc>(url as never);
   await handle.whenReady?.();
-  return (handle.doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined)?.tiddler["text"] as string | undefined;
+  const record = handle.doc()?.tiddlers?.[title];
+  return record === undefined ? undefined : plainField(record, "text") as string;
 }
 /** Whether the repo still opens a document from its storage: false once it is deleted. */
 async function opens(v: Vessel, url: string): Promise<boolean> {

@@ -21,8 +21,8 @@
  */
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
-  mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid,
-  type ChangeOrigin, type CompositeStore, type LarDoc, type LarTiddlerRecord,
+  mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
+  type ChangeOrigin, type CompositeStore, type LarDoc,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -57,14 +57,13 @@ const PREFIXES = [
 const digestOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
 const originFor = (tag: string): ChangeOrigin => ({ kind: "lares-verb", requestId: `anon-lift-${tag}`.slice(0, 32) });
 
-/** Copy `from`'s tiddlers into `into` where `into` holds none of that title. */
+/** Copy `from`'s tiddlers into `into` where `into` holds none of that title: read through the read door, written through the write door. */
 function carryTiddlers(from: LarDoc | undefined, into: { change(fn: (doc: LarDoc) => void): void }): void {
-  const source = from?.tiddlers ?? {};
-  const titles = Object.keys(source);
-  if (titles.length === 0) return;
+  const source = plainEntries(from?.tiddlers);
+  if (source.length === 0) return;
   into.change((doc) => {
-    for (const title of titles) {
-      if (doc.tiddlers[title] === undefined) doc.tiddlers[title] = JSON.parse(JSON.stringify(source[title])) as LarTiddlerRecord;
+    for (const [title, record] of source) {
+      if (doc.tiddlers[title] === undefined) doc.tiddlers[title] = storedRecord(record);
     }
   });
 }
@@ -152,9 +151,8 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
   const catalog = args.catalog;
   if (catalog) {
     const handle = await catalog.handle();
-    const tiddlers = (handle.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
     const mark = `/drafts/${encodeURIComponent(requireLarDid(args.vesselDid, "anon-lift"))}`;
-    for (const [floorKey, rec] of Object.entries(tiddlers)) {
+    for (const [floorKey, rec] of plainEntries(handle.doc()?.tiddlers)) {
       if (!floorKey.endsWith(mark)) continue;
       const fields = textFieldsOf(rec.tiddler as Record<string, unknown>);
       const oldUrl = fields["text"] ?? null;
