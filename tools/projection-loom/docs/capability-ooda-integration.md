@@ -3,8 +3,8 @@
 ## Current executable contract
 
 The **only active multi-epoch CLI controller** for exploratory and compound
-search runs in `projection_loom.ooda.run_ooda_epochs`. `wide-epoch` and
-`ooda-run` invoke the same controller. `projection_loom.capability_stack`
+search runs in `projection_loom.fractal_ooda_ha.run_ooda_ha_epochs`. `wide-epoch` and
+`ooda-ha-run` invoke the same controller. `projection_loom.capability_stack`
 defines validated operators and recipes, not another epoch state machine.
 The lower-level `WideEpoch` handles budgeted candidate CAD/void admission and
 fitness within the parent OODA-HA Act; it never independently makes operator
@@ -78,7 +78,7 @@ smaller *actual* count, without cloning models to manufacture diversity.
 ## Run locally or in GitHub Actions
 
 ```bash
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project.json \
   --capability-recipe examples/necrospire/hybrid/recipe.json \
   --out out/necrospire-compound \
@@ -88,12 +88,12 @@ python -m projection_loom ooda-run \
 python scripts/check_compound_epoch.py --out out/necrospire-compound
 ```
 
-The same `ooda-run` command, with the **same** project, recipe, budgets,
+The same `ooda-ha-run` command, with the **same** project, recipe, budgets,
 viewport and code, resumes after a checkpoint. Inspect
 `out/necrospire-compound/previews/`, `session.json`, and
 `finalists/contact_sheet.png` for operator steering and visual review. Pass
 `--control manual` for the plan/review pauses; send safe-point commands with
-`ooda-steer`.
+`ooda-ha-steer`.
 
 ## Readiness and limitations
 

@@ -52,7 +52,7 @@ jobs:
             tests/test_selection_policies.py
       - name: Run independent two-generation audited component campaign
         run: |
-          python -m projection_loom ooda-run \
+          python -m projection_loom ooda-ha-run \
             --project examples/necrospire/project_breeding.json \
             --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
             --out out/necrospire-alpha-coevolution-witness \

@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   cad-and-hybrid:
-    name: CAD, hybrid mesh, OODA helm and reference contracts
+    name: CAD, hybrid mesh, OODA-HA helm and reference contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -72,7 +72,7 @@ jobs:
         run: python examples/necrospire/hybrid/run_hybrid_trial.py --out out/hybrid-trial-ci --epochs 2 --per-epoch 4
       - name: Compound OODA-HA candidate and capability cycles
         run: |
-          python -m projection_loom ooda-run \
+          python -m projection_loom ooda-ha-run \
             --project examples/necrospire/project.json \
             --capability-recipe examples/necrospire/hybrid/recipe.json \
             --out out/compound-ci --control full-speed \

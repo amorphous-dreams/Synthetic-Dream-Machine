@@ -2,7 +2,7 @@
 
 **Source:** The original Necrospire painting alpha mask (`source_alpha_8bit.png`),
 referenced by the SHA-256 in the immutable capability recipe. **Authority:**
-The one `fractal_ooda_ha.run_ooda_epochs` controller owns Observe → Orient →
+The one `fractal_ooda_ha.run_ooda_ha_epochs` controller owns Observe → Orient →
 Decide → Act → Aftermath. The breeding archive and culling policies do not
 create a second helm or promote a rendering into source evidence.
 
@@ -48,7 +48,7 @@ requires a **fresh output directory**, not replay into an earlier journal.
 ## Three-generation control (already measured)
 
 ```sh
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project_breeding.json \
   --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
   --out out/necrospire-breeding-pilot-v2 --control full-speed --breeding \
@@ -80,7 +80,7 @@ an honest same-code checkpoint and is not relabeled retroactively.
 | Coarse global phenotype niches (old descriptor) | **2** |
 | Surviving family champions | **6 of 6** |
 | Finalists / family review masks | **3 / 12** |
-| OODA candidate / capability child loops | **216 / 1,944** |
+| OODA-HA candidate / capability child loops | **216 / 1,944** |
 | Best silhouette IoU | **0.738410** (`needle-006-004`, generation 6, Sobol) |
 
 The original fixed-view three-epoch seed score was ~0.7045 IoU, so the absolute
@@ -103,7 +103,7 @@ of the descriptor; a new-code campaign needs its own receipts.
 ## Six-generation pilot — reproducible command
 
 ```sh
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project_breeding.json \
   --capability-recipe examples/necrospire/hybrid/recipe_breeding.json \
   --out out/necrospire-breeding-six-generations-v2 --control full-speed \

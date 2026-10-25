@@ -47,13 +47,13 @@ PYTHONPATH=. python -m projection_loom wide-epoch \
   --project examples/grammar/project.json --out out/helm \
   --passes 3 --candidates 9 --exact-budget 6 --detail-budget 3 \
   --control manual --topology-locus branch
-PYTHONPATH=. python -m projection_loom ooda-status --session out/helm/session.json
-PYTHONPATH=. python -m projection_loom ooda-steer \
+PYTHONPATH=. python -m projection_loom ooda-ha-status --session out/helm/session.json
+PYTHONPATH=. python -m projection_loom ooda-ha-steer \
   --session out/helm/session.json --action approve-plan
 # Repeat wide-epoch with the same arguments. Inspect out/helm/previews/.
 ```
 
-Use `ooda-steer --action open-inquiry --loop epoch-0001 --question 'Why?'`
+Use `ooda-ha-steer --action open-inquiry --loop epoch-0001 --question 'Why?'`
 to request a full child OODA-HA under the epoch's current phase. Advance each
 inquiry phase using `--action advance-inquiry --loop <id> --phase <phase> --note <receipt>`; when it closes, the original plan or review checkpoint
 resumes. See [phase-anchored recursion](docs/ooda-ha-procedural.md#phase-anchored-inquiries-deepen-attention-without-forcing-recursion).
@@ -71,7 +71,7 @@ operator pairing, pet-name/o-takiage flow, and limitations.
 ## Alpha architecture and CI verification
 
 The canonical controller is `projection_loom.fractal_ooda_ha`.
-A lightweight static guard refuses retired OODA aliases, duplicate
+A lightweight static guard refuses retired OODA-HA aliases, duplicate
 controllers, impure phase-law code and dependency back-edges from
 renderers to the helm. Check it independently with:
 
@@ -217,29 +217,29 @@ The two **exact** original Necrospire PoC 0 PNGs now live in
 archived 8-bit mask match exactly. The drawing remains a non-metric,
 provisionally registered illustration—not a surveyed 3D scene.
 
-The existing `ooda-steer` inbox lets an Operator–AI pair drive the runtime at
+The existing `ooda-ha-steer` inbox lets an Operator–AI pair drive the runtime at
 safe phase boundaries without giving the scoring engine an LLM key.
 Optionally configure an Ollama or OpenAI-compatible provider for strictly
 bounded JSON **advice**, never tool execution or CAD-validity bypass:
 
 ```sh
 # Deterministic full-speed run: no LLM provider or key needed.
-python -m projection_loom ooda-run --project examples/necrospire/project.json \
+python -m projection_loom ooda-ha-run --project examples/necrospire/project.json \
   --out out/poc0 --passes 5 --candidates 12 --exact-budget 8 \
   --detail-budget 5 --seed 20261023 --control full-speed
 
 # OpenAI-compatible remote endpoint; reads OPENAI_API_KEY from environment.
-python -m projection_loom ooda-run --project examples/necrospire/project.json \
+python -m projection_loom ooda-ha-run --project examples/necrospire/project.json \
   --out out/poc0-llm --control auto-nav --llm-provider openai-compatible \
   --llm-model YOUR_MODEL_NAME
 
 # Local Ollama endpoint (HTTP loopback only).
-python -m projection_loom ooda-run --project examples/necrospire/project.json \
+python -m projection_loom ooda-ha-run --project examples/necrospire/project.json \
   --out out/poc0-ollama --control co-pilot --llm-provider ollama \
   --llm-model YOUR_LOCAL_MODEL_NAME
 
 # Across all scored epochs, re-audit 4 diversity-separated survivors and export.
-python -m projection_loom ooda-finalists \
+python -m projection_loom ooda-ha-finalists \
   --project examples/necrospire/project.json --epochs out/poc0 \
   --out out/poc0-finalists --count 4 --size 384 576
 ```
@@ -316,7 +316,7 @@ without CAD representation can also execute a standalone polygon operator
 inside a composed location. Each material, polygon, and attachment certificate
 retains its own scope.
 
-The existing `ooda-run` and `wide-epoch` commands now share **one controller**.
+The existing `ooda-ha-run` and `wide-epoch` commands now share **one controller**.
 The selected parent occupies a distinct lineage seed seat, preserving all
 Sobol/local/topology proposals rather than masquerading as an exploration sample.
 Add `--capability-recipe examples/necrospire/hybrid/recipe.json` to either
@@ -330,7 +330,7 @@ chooses a winner or creates a second journal in a separate compound scheduler.
 Run the **actual PoC 0** including the independent original RGBA alpha witness:
 
 ```bash
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/necrospire/project.json \
   --capability-recipe examples/necrospire/hybrid/recipe.json \
   --out out/compound-necrospire --control full-speed \
@@ -342,7 +342,7 @@ python scripts/check_compound_epoch.py --out out/compound-necrospire
 See [executable capability composition](docs/capability-ooda-integration.md)
 for the phase tree, source/recipe fingerprints, review boundaries and
 limitations. Existing `finalists.py` only targets CAD-only experiments;
-compound finalists are now produced by the same OODA controller's location
+compound finalists are now produced by the same OODA-HA controller's location
 Aftermath, never by a competing runner.
 
 The [three-aperture implementation Aftermath](docs/research/compound-ooda-aftermath.md) records the live engineering critique, corrections and re-entry keys.

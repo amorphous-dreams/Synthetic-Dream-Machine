@@ -5,8 +5,8 @@
 ## Architecture hygiene is a witness, not another helm
 
 `scripts/check_architecture.py` statically inspects the Python module
-tree: `fractal_ooda_ha.py` alone may define `run_ooda_epochs` and
-`OODAJournal`; `phase_rules.py` alone owns the PHASES sequence and
+tree: `fractal_ooda_ha.py` alone may define `run_ooda_ha_epochs` and
+`OODAHAJournal`; `phase_rules.py` alone owns the PHASES sequence and
 must not gain filesystem side effects. Rendering, evidence and pure
 selection modules may not import the controller. Retired alpha aliases
 (`ooda.py`, `fractal-ooda-ha.py`) are refused, not silently preserved.
@@ -28,11 +28,11 @@ ordered phases and Aftermath remains mandatory.
 ## Canonical alpha entrypoint and recoverability
 
 The only runtime Python module name now reads `fractal_ooda_ha.py`.
-Callers import `run_ooda_epochs`, `OODAJournal`, and `submit_control`
+Callers import `run_ooda_ha_epochs`, `OODAHAJournal`, and `submit_control`
 from `projection_loom.fractal_ooda_ha`. The retired `ooda.py` and its
-compatibility shim no longer exist. The CLI keeps its established operator
-commands (`ooda-run`, `ooda-steer`, `ooda-status`) because they describe
-the operator procedure.
+compatibility shim no longer exist. The CLI uses the explicit five-phase operator commands
+(`ooda-ha-run`, `ooda-ha-steer`, `ooda-ha-status`); the former four-phase
+names do not resolve to this controller.
 
 The identity ledger now stores each pet-name or o-takiage control ID, original
 command digest, and outcome in the same atomic ledger write as its mutation.
@@ -57,7 +57,7 @@ audit and recipe fingerprint. Neither renderer can promote an artwork to
 independent survey evidence.
 
 `gallery.py` regrows distinct compound finalists across completed epoch
-records. Only the one `fractal_ooda_ha.run_ooda_epochs` helm opens its
+records. Only the one `fractal_ooda_ha.run_ooda_ha_epochs` helm opens its
 gallery child loop in location Aftermath, records the real Act, reviews native
 CAD and polymesh receipts, and closes it. The renderer supplies artifacts and
 results, never phase transitions. `tests/test_presentation_boundary.py`
@@ -92,7 +92,7 @@ red-first negative controls in tests/test_evidence_receipts.py.
 encoding rule: SHA-256 of sorted, compact UTF-8 JSON with unescaped Unicode.
 Five call sites use it while preserving their different domains: exact
 candidate checkpoint identity, recipe/operator-bound construction identity,
-OODA session identity, shortened relational descriptions and location
+OODA-HA session identity, shortened relational descriptions and location
 snapshots. Strict scopes reject nonfinite JSON; historically permissive
 relational/location digests pass `allow_nan=True` explicitly to avoid a
 silent identity migration. Neither behavior is a claim of source authenticity.
@@ -112,7 +112,7 @@ is their completion boundary. The guards decide whether a parent can
 advance or a child can anchor to a phase, checking open children and
 bounded depth without any filesystem or event-writing authority.
 
-`fractal_ooda_ha.OODAJournal` remains the only executing authority.
+`fractal_ooda_ha.OODAHAJournal` remains the only executing authority.
 Its `begin()` and `transition()` methods call the guards, then own
 all mutation, event receipts, integrity stamps and persistent replay.
 `tests/test_phase_rules.py` checks both pure law and persisted journal
@@ -177,14 +177,14 @@ checks, budgets, and archive admission gates.
 
 The command-line policy's autonomous choices currently derive from **deterministic
 loss ranking plus bounded operator preference**, not an LLM. The Python
-`run_ooda_epochs(..., adviser=callable)` hook admits an external AI adviser that
+`run_ooda_ha_epochs(..., adviser=callable)` hook admits an external AI adviser that
 can propose only an already validated preview option and a rationale; operator
 control remains authoritative. No network service or AI-provider credentials
 are assumed.
 
 ## Hand-off, preview, pet-name, review, o-takiage
 
-`ooda-run` (also the `wide-epoch` CLI) establishes `out/session.json`,
+`ooda-ha-run` (also the `wide-epoch` CLI) establishes `out/session.json`,
 `out/status.json`, individual `out/epoch_NNN.json` CAD checkpoints and a
 `out/previews/epoch_NNN/review.json` with actual image previews, genome files,
 relational witnesses, CAD-evidence status and losses. The review panel includes
@@ -194,21 +194,21 @@ of newly regrown validated CAD, **not ground-truth survey evidence**.
 
 ```bash
 # First pass: manual waits on an Observe/Orient/Decide planning checkpoint.
-python -m projection_loom ooda-run \
+python -m projection_loom ooda-ha-run \
   --project examples/grammar/project.json --out out/ooda \
   --passes 3 --candidates 9 --exact-budget 6 --detail-budget 3 \
   --control manual --topology-locus branch
-python -m projection_loom ooda-status --session out/ooda/session.json
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-status --session out/ooda/session.json
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action approve-plan
-# Repeat the identical ooda-run invocation to advance to the candidate review.
+# Repeat the identical ooda-ha-run invocation to advance to the candidate review.
 # Browse out/ooda/previews/epoch_001/review.json and its PNGs/witnesses.
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action pet-name --proposal candidate-0002 --target '~p-0003' \
   --name 'Bridge With Opinions' --has bridge
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action choose --proposal candidate-0002
-# Repeat ooda-run to grow the next epoch from the chosen genome.
+# Repeat ooda-ha-run to grow the next epoch from the chosen genome.
 ```
 
 To loosen that name's hold at a future review, queue `--action o-takiage
@@ -221,15 +221,15 @@ already-scored generation's frozen ledger.
 To intervene during an `auto-nav`/`full-speed` process, another process may queue:
 
 ```bash
-python -m projection_loom ooda-steer --session out/ooda/session.json --action pause
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json --action pause
 # The runner stops at the *next candidate/phase safe point*, not mid CAD Boolean.
-python -m projection_loom ooda-steer --session out/ooda/session.json --action review
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json --action review
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action prefer-emitter --emitter topology
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action set-autonomy --autonomy 0.40
-python -m projection_loom ooda-steer --session out/ooda/session.json --action resume
-# Reinvoke the same ooda-run arguments if the process has returned.
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json --action resume
+# Reinvoke the same ooda-ha-run arguments if the process has returned.
 ```
 
 Controls enter immutable inbox files. The single runner applies each once and
@@ -254,13 +254,13 @@ A practical example pauses a manual epoch review, opens a child inside its
 Aftermath, and then returns to exactly the same validated preview options:
 
 ```bash
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action open-inquiry --loop epoch-0001 \
   --question 'What does the newly grown gallery connect?'
-# Reinvoke the matching ooda-run command to apply the queued control.
-python -m projection_loom ooda-status --session out/ooda/session.json
+# Reinvoke the matching ooda-ha-run command to apply the queued control.
+python -m projection_loom ooda-ha-status --session out/ooda/session.json
 # Read the 'awaiting.loop' inquiry id from the status response:
-python -m projection_loom ooda-steer --session out/ooda/session.json \
+python -m projection_loom ooda-ha-steer --session out/ooda/session.json \
   --action advance-inquiry --loop '<inquiry-loop-id>' --phase orient \
   --note 'The gallery touches the upper landing'
 # Repeat advance-inquiry for decide, act, aftermath, closed, then rerun.
@@ -275,7 +275,7 @@ Closing the child restores a suspended plan/review checkpoint, including its
 original options. A control delivered during an unsafe change of phase fails
 openly rather than acquiring a misleading historical anchor.
 
-The Python API also supports optional `run_ooda_epochs(..., phase_adviser=...)`.
+The Python API also supports optional `run_ooda_ha_epochs(..., phase_adviser=...)`.
 This callback receives a documented snapshot for each epoch phase and can
 return either `None` or `{'question': '...'}`. The resulting child blocks the
 phase until the Operator/AI pair advances it; no LLM provider comes built in.
