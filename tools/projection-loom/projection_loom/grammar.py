@@ -46,8 +46,22 @@ def grow_program(steps, genome, *, overlap_ratio=.012, assembly=None):
     while preserving the named rule-slot when one is supplied. The operators
     deliberately require explicit placement and parent/route relations.
     """
-    assembly=assembly if assembly is not None else SolidAssembly(overlap_ratio=overlap_ratio)
+    # Construct on a staged assembly: a malformed later rule cannot leave a
+    # partially mutated real CAD body, void registry, or stale proof cache.
+    original=assembly
+    if original is None:
+        assembly=SolidAssembly(overlap_ratio=overlap_ratio)
+    else:
+        from .voids import VoidAssembly
+        assembly=SolidAssembly(overlap_ratio=original.overlap_ratio,
+                               thickness_ratio=original.thickness_ratio)
+        assembly.parts=dict(original.parts)
+        if original.voids is not None:
+            assembly.voids=VoidAssembly(assembly)
+            assembly.voids.voids=dict(original.voids.voids)
     handles={name:name for name in assembly.parts}
+    if assembly.voids is not None:
+        handles.update({name:name for name in assembly.voids.voids})
     seen=set(handles)
     for step in steps:
         key=step['key']
@@ -110,4 +124,17 @@ def grow_program(steps, genome, *, overlap_ratio=.012, assembly=None):
         handles[key]=handle
     if not assembly.parts:
         raise ValueError('Construction grammar produced no material body')
+    if original is not None:
+        original_parts=len(original.parts)
+        original_voids=len(original.voids.voids) if original.voids else 0
+        changed=len(assembly.parts)!=original_parts or (
+            len(assembly.voids.voids) if assembly.voids else 0)!=original_voids
+        if changed:
+            original.parts=assembly.parts
+            original.voids=assembly.voids
+            if original.voids is not None:
+                original.voids.positive=original
+            original._verified_material=None
+            original._verified_audit=None
+        return original
     return assembly
