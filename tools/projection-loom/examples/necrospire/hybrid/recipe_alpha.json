@@ -172,7 +172,7 @@
   "location": "necrospire",
   "pet_name": "Necrospire: A Crystal Bearing a Fortress",
   "provenance": "provisional",
-  "schema": "projection-loom/capability-recipe/v1",
+  "schema": "projection-loom/capability-recipe",
   "source_hashes": {
     "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
   },
@@ -368,6 +368,5 @@
       "socket": null
     }
   ],
-  "version": 3,
-  "sha256": "ba1e7ceb49a92f86f3e7009f466db3adf9aa49f5af2c1b6e1ed09f772f950c05"
+  "sha256": "2c60b211cb4b21c6bf85761f9cb1fb91d3510b20b78607dbfe73fba074397074"
 }
