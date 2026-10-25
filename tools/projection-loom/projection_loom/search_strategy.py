@@ -81,8 +81,17 @@ def diversity_parents(rows,limit,*,specialist=False):
 
 class SurrogatePreview:
     """Uncertainty/novelty-aware *ordering* only. No model may waive an exact audit."""
-    def __init__(self,bounds,archive,*,min_samples=12,before_generation=None):
+    def __init__(self,bounds,archive,*,min_samples=None,before_generation=None):
         self.keys=list(bounds)
+        # A dozen scores in a 29-locus grammar cannot validate a global
+        # predictor. Only use model-based ordering after a conservative
+        # observations-per-dimension floor; earlier epochs still explore by
+        # measured genome novelty, never by fabricated predicted fitness.
+        if min_samples is None:
+            min_samples=max(12,2*(len(self.keys)+1))
+        if type(min_samples) is not int or min_samples<1:
+            raise ValueError('Surrogate sample floor must be a positive integer')
+        self.min_samples=min_samples
         self.low=np.array([bounds[k][0] for k in self.keys],dtype=float)
         self.spread=np.array([bounds[k][1]-bounds[k][0] for k in self.keys],dtype=float)
         if np.any(self.spread<=0):raise ValueError('Invalid surrogate bounds')
@@ -225,7 +234,12 @@ def infer_locus_interactions(bounds,archive,*,before_generation=None,
     rows=sorted((r for r in archive.data['members'].values()
         if before_generation is None or int(r['id'].split('/')[0])<before_generation),
         key=lambda r:r['id']) if archive else []
-    if len(rows)<min_samples or len(keys)<2:return []
+    # A least-squares model with more parameters than observations can
+    # interpolate the losses perfectly: its residuals then provide no usable
+    # interaction evidence. Require meaningful residual degrees of freedom.
+    if type(min_samples) is not int or min_samples<2:
+        raise ValueError('Interaction sample floor must be a positive integer')
+    if len(rows)<max(min_samples,2*(len(keys)+1)) or len(keys)<2:return []
     data=np.array([[(r['genome'][k]-bounds[k][0])/(bounds[k][1]-bounds[k][0])
                     for k in keys] for r in rows],dtype=float)
     y=np.array([r['losses']['silhouette'] for r in rows],dtype=float)

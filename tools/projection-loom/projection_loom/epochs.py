@@ -42,10 +42,17 @@ class Proposal:
     ancestry: dict | None = None
 
     def __post_init__(self):
-        if not self.id or not self.emitter or not self.genome:
-            raise ValueError('Proposal needs an id, generator, and genome')
-        if any(not math.isfinite(float(x)) for x in self.genome.values()):
-            raise ValueError('Genome must contain only finite loci')
+        if (not isinstance(self.id, str) or not self.id.strip()
+                or not isinstance(self.emitter, str) or not self.emitter.strip()):
+            raise ValueError('Proposal needs a string id and emitter')
+        if not isinstance(self.genome, dict) or not self.genome:
+            raise ValueError('Genome needs bounded numeric loci')
+        for key, value in self.genome.items():
+            if (not isinstance(key, str) or not key
+                    or isinstance(value, (bool, np.bool_))
+                    or not isinstance(value, (int, float, np.number))
+                    or not math.isfinite(float(value))):
+                raise ValueError('Genome must contain finite numeric loci')
 
 
 @dataclass(frozen=True)
@@ -140,7 +147,8 @@ class WideEpoch:
                 receipt_data.get('holdout_count',0)<3 or
                 receipt_data.get('holdout_max',float('inf'))>receipt_data.get('threshold_m',0)):
                 raise ValueError('Registration receipt digest or survey provenance invalid')
-        if max_exact<1 or max_detail<1 or max_detail>max_exact:
+        if (type(max_exact) is not int or type(max_detail) is not int
+                or max_exact<1 or max_detail<1 or max_detail>max_exact):
             raise ValueError('Invalid staged evaluation budgets')
         if not objectives or len(set(objectives))!=len(objectives):
             raise ValueError('Objective names must be unique and nonempty')
