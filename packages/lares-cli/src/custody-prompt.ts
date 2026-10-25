@@ -54,6 +54,20 @@ async function askRoute(question: string, allowBoth: boolean): Promise<readonly 
   throw new Error("no route chosen after three tries");
 }
 
+/**
+ * A yes or no with NO default: a blank line asks again, and three misses refuse. The answer is the operator's each time it is
+ * asked; nothing here remembers one.
+ */
+export async function askYesNo(question: string): Promise<boolean> {
+  for (let i = 0; i < 3; i++) {
+    const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
+    if (a === "y" || a === "yes") return true;
+    if (a === "n" || a === "no") return false;
+    say("  (answer y or n; there is no default)");
+  }
+  throw new Error("no answer after three tries; nothing was founded");
+}
+
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
 async function readSheets(label: string): Promise<string[]> {
   const sheets: string[] = [];

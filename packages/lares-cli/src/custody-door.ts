@@ -12,7 +12,7 @@ import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
-  | { readonly op: "lock" }
+  | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }

@@ -38,7 +38,7 @@ import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "..
 import { restoreLines, type RestoreLanded } from "../vault-restore.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { seatNewFaceRoute } from "../face-route-prompt.js";
+import { noteFoundingNodeRoute, seatNewFaceRoute } from "../face-route-prompt.js";
 
 /**
  * The founding route: the human route (a passphrase or paper pin) the custody binds at birth.
@@ -106,6 +106,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
       // the founding itself runs the same check again under its custody claim.
       await assertStoreUnoccupied({ io, treePath: vkSlotsPath(homes.identity), carriers: occupantCarriers(homes) });
       slots = await gatherRoute();
+      noteFoundingNodeRoute(slots);
     }
     if (args.flags["hearth"] === true) return await foundHearth(args, { storageDir, genesisDir, slots });
     await ownedStore(storageDir, (repo) => runInit({

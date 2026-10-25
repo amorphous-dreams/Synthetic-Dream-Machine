@@ -84,6 +84,7 @@ function harness(opts: {
     lock: async () => { unlocked = false; },
     unlockFace: async (_face: unknown) => ({ reading: "opens", fcid: "00".repeat(16), ordinal: 0, slot: "face-slot" }),
     unlockFaces: async () => [],
+    unlockedFaces: () => [],
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),

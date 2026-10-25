@@ -205,7 +205,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
       assert.equal(log.includes(needle), false, "K1: no log line carries it");
       assert.equal(stored.raw.includes(needle), false, "K1: no file under the root carries it");
     }
-    assert.match(log, /\[custody\] unlocked: slot \S+ opened the vessel key/, "K1 control: the door logged the slot that opened");
+    assert.match(log, /\[custody\] unlocked: slot \S+ opened the node key/, "K1 control: the door logged the slot that opened");
     assert.match(log, /\[custody\] unlock: no-slot-opens/, "the miss logged its reading and nothing of what was sent");
 
     // ── K4: three misses spend the boot's attempts; a restart opens the door again ───────────────────────────

@@ -159,7 +159,6 @@ import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
-import { custodyHeld } from "./custody-seat.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
@@ -180,7 +179,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
+import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
 import { faceGateServer, gateSessionRegistry, timerGateDeadlines } from "./face-gate-server.js";
 import { gateSyncServer, type GateSyncSocket }    from "./gate-sync-server.js";
@@ -650,11 +649,13 @@ async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
-  if (custodyHeld()) await sweepFoundingSeeds();
+  // THE GATE: sovereign only when the node key stands held AND the worn face stands unlocked; otherwise the floor composes.
+  const sovereignOpen = sovereignStands();
+  if (sovereignOpen) await sweepFoundingSeeds();
   // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
   // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
   // process holds its vessel key, and stands at the floor when it holds none.
-  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (custodyHeld() ? seatedSovereignReaders() : null);
+  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (sovereignOpen ? seatedSovereignReaders() : null);
   // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
   // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
   // boots repo-relative as it always has.

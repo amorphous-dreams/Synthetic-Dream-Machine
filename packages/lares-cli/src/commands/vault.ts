@@ -11,7 +11,7 @@
  */
 
 import {
-  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus,
+  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
 import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
@@ -132,6 +132,18 @@ function printCustody(c: CustodyStatus): void {
     console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
     for (const sl of c.tree.slots) console.log(`    ${sl.id}  t=${sl.t}  ${sl.pins.join(" + ")}`);
   }
+  // A face's rows fold into ONE line per face: its handle index, its custody id, the count of rows that rest under its key and
+  // the two digests the floor index names for it. A face row never prints by name here; only a fault does.
+  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold");
+  const floorIndex = readFaceIndexSync(larIdentityDir()).faces;
+  floorIndex.forEach((f, ordinal) => {
+    if (!("fcid" in f)) return;
+    const mine = faceRows.filter((r) => r.file.startsWith(`faces/${f.fcid}/`));
+    const sealedHere = mine.filter((r) => r.reading === "sealed" && !r.fault).length;
+    const faultsHere = mine.filter((r) => r.fault).length;
+    const dg = (d: string | null): string => (d === null ? "-" : `${d.slice(0, 12)}…`);
+    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its key, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
+  });
   const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
   const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;
   const faults = c.rows.filter((r) => r.fault);
@@ -140,7 +152,7 @@ function printCustody(c: CustodyStatus): void {
     : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
   // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
   const groups = new Map<string, CustodyStatusRow[]>();
-  for (const r of c.rows) {
+  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold") || x.fault)) {
     const key = `${r.row}\u0000${r.reading}`;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
@@ -223,6 +235,8 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
 
 /** `vault lock`: the standing vessel drops its key, tears its sovereign composition down and stands at the floor. */
 async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultLockFace(args, daemonUp, face);
   if (!daemonUp) {
     emit(args, { ok: true, data: { locked: true, was: "no-vessel" }, human: () => console.log("no vessel stands on this store: nothing holds a key, so nothing to lock.") });
     return 0;
@@ -237,6 +251,49 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
     ? `locked: the vessel dropped its key and stands as ${String(a["standing"])}; every sovereign act waits on \`lares vault unlock\`.`
     : `already locked: the vessel holds no key and stands as ${String(a["standing"])}.`) });
   return 0;
+}
+
+/** `--face N` as a handle index, or undefined when the flag stands absent. */
+function faceOption(args: ParsedArgs): number | undefined {
+  const raw = args.options["face"];
+  if (typeof raw !== "string") return undefined;
+  const n = Number(raw);
+  if (!Number.isSafeInteger(n) || n < 0) throw new UsageError("--face names a handle index (a whole number from 0)");
+  return n;
+}
+
+/** `vault lock --face N`: that face drops its key; the vessel stands at the floor only when N was the face it wore. */
+async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number): Promise<number> {
+  if (!daemonUp) {
+    emit(args, { ok: true, data: { locked: true, was: "no-vessel", face }, human: () => console.log(`no vessel stands on this store: nothing holds face h${face}'s key, so nothing to lock.`) });
+    return 0;
+  }
+  const a = await sendCustodyFrame({ op: "lock", face });
+  if (a === null || a["locked"] !== true) {
+    const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
+    emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: a, human: () => console.log(a["was"] === "unlocked"
+    ? `locked: face h${face} dropped its key; the vessel stands as ${String(a["standing"])}.`
+    : `already locked: face h${face} held no key.`) });
+  return 0;
+}
+
+/** The face's custody id and its opened tree, or null after saying why. */
+async function openFaceOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes, io: FsCustodyIo, face: number, creds: readonly Credential[]) {
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  if (entry === undefined || !("fcid" in entry)) {
+    emit(args, { ok: false, error: { code: "face-not-named", message: `no face h${face} stands in the floor index` }, human: () => console.error(`lares vault ${verb}: no face h${face} stands in the floor index — nothing was changed`) });
+    return null;
+  }
+  const o = await openFaceTree({ io, homes, fcid: entry.fcid, credentials: creds });
+  if (o.reading !== "opens") {
+    const why = o.reading === "no-slot-opens" ? `no route of face h${face} opens under what was presented — nothing was changed` : `the slot tree of face h${face} reads ${o.reading} — nothing was changed`;
+    emit(args, { ok: false, error: { code: o.reading, message: why }, data: { reading: o.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
+    return null;
+  }
+  return { fcid: entry.fcid, fck: o.fck };
 }
 
 /**
@@ -339,6 +396,16 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes --passphrase or --paper, not both");
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
+  const face = faceOption(args);
+  if (face !== undefined) {
+    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`);
+    const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
+    if (!f) return 1;
+    const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
+    const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
+    emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
+    return 0;
+  }
   const creds = await gatherCredentials("lares vault bind");
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
@@ -351,12 +418,43 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
+async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
+  const creds = await gatherCredentials(`lares vault unbind --face ${face}`);
+  const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
+  if (!f) return 1;
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  const treeBytes = await io.read(`${homes.identity}/faces/${f.fcid}/fk-slots.bin`);
+  const tree = decodeSlotTree(treeBytes);
+  if (tree.reading !== "readable") throw new UsageError(`the slot tree of face h${face} is not readable; nothing was changed`);
+  if (!tree.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in face h${face}'s tree`);
+  let staying: SlotSpec[] | undefined;
+  if (rotate) {
+    staying = [];
+    for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
+      const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
+      const proof = openVk(tree.tree, got.credentials);
+      if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+      staying.push(got.spec);
+    }
+  }
+  const out = await unbindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, slotId, ...(staying ? { rotate: staying } : {}) });
+  void entry;
+  const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
+  say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`);
+  say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `--rotate` ends that route.");
+  emit(args, { ok: true, data: { face, slotId, rotated: out.rotated, slots: out.tree.slots.length }, human: () => undefined });
+  return 0;
+}
+
 async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const slotId = args.positional[1];
   if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [--rotate]` (ids print under `lares vault status`; --rotate takes no value and stands before or after the id)");
   const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultUnbindFace(args, homes, io, face, slotId, rotate);
   const creds = await gatherCredentials("lares vault unbind");
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;

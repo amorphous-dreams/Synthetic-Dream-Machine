@@ -201,7 +201,7 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   const sealHome = larSealHome();
   const standingDoc = readNexusDoc(sealHome);
   if (standingDoc === null && nexusCharterStands(sealHome)) {
-    throw refuse("charter-torn", "the charter doc stands here but reads TORN or in an earlier shape — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
+    throw refuse("charter-torn", "the charter doc stands here but reads TORN — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
   }
   const doc = standingDoc ?? emptyFoundingCharterDoc();
   if ((doc.sealLineage?.length ?? 0) > 1) {

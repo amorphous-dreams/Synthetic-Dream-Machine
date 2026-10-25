@@ -575,9 +575,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
-      "lares vault lock                       # the standing vessel drops its key and stands at the floor",
-      "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
-      "lares vault unbind <slot-id>           # unlock, remove a slot; the rotation offer prints",
+      "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
+      "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
+      "lares vault unbind <slot-id> [--face N]   # unlock, remove a slot; the rotation offer prints; --face N leaves the node tree alone",
       "lares vault unbind <slot-id> --rotate  # one act: a new vessel key seals every carrier and each staying slot binds over it",
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",

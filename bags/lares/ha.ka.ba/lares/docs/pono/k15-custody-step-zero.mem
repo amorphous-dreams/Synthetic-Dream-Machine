@@ -96,7 +96,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `restore-pending` `:394-395` | cold | ''D:'' one target-face restore transaction; split the global file, authenticate its target before staging, and never stage sibling material. |
 | `device-share` `:396-397` | face-cold | ''D:'' face-indexed recovery device share, not a common device share. |
 
-The worn face is SESSION state: no `active-persona` row rests (the person names the face at each unlock, `lares vault unlock --face N`, and a flat `.active-persona*.json` reads as an earlier shape).
+The worn face is SESSION state: no `active-persona` row rests (the person names the face at each unlock, `lares vault unlock --face N`).
 
 Rows whose class includes ''LEAD'' block byte movement until their payload and owning principal are proved. Current `face` and `bundle` fields describe filename/export selection only (`vault-carriers.ts:119-165`); they never confer cryptographic separation. The existing VK rotation sweeps all hot/cold rows (`:64-68,477-510`), so K15 replaces it with per-face and named-S rotation.
 
@@ -234,6 +234,26 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 * ''The census sorts by capability, never by host'' (operator ruling, 2026-10-19). Each present use of a vessel seed, on node and browser alike, sorts by the capability it serves: a floor duty goes to the place signer, which a vessel holds only while it stands a floor; an act on a face's behalf (a dial, a join, an enrolment, a sibling channel, a daemon proof) goes to that face's atom; nothing else keeps a device-wide key. The browser's device seed (`open-browser-vessel.ts`: the Keyhive Individual, the oracle proof, daemon auth, sibling enrolment, the group-secret opener) and the node's (`open-node-vessel.ts`) take the same sort.
 * ''The seed's other reach narrows to an allowlist.'' The online place signer serves the floor duties the roadmap's place-signer ruling enumerates; every other present use (the daemon's auth, the device-key signer, the internal asks) either names its domain on that allowlist or takes a key of its own.
 
+<<~ ahu #/open-joints/the-node-tree-and-the-unlock>>
+
+!!! The node tree, the serving tree and the unlock (slice 3)
+
+''The node (S) tree'' is the slot tree `s-slots.bin` wrapping one random S key. It seals exactly two rows: `gate-root` (`gate-root.bin`) and the place archive (`place-archive.bin`). No D row, no face key and no serving key rests under it. The seal frame names it `lares-s-seal`.
+
+''The serving tree'' (`sk-slots.bin`) stands on its own: the serving key (SK) wraps under its own slots, bound over the founding route with a wrapped key, salt and slot ids of their own, and no other key wraps it. A rotation of the S key moves no byte of it.
+
+''The face tree'' (`faces/<fcid>/fk-slots.bin`) wraps that face's FCK under the face's routes. The three trees stay independent whatever route they share: a rotation or unbind on one leaves the others opening (`face-s-independence.test.ts`).
+
+''One typed credential per unlock.'' `lares vault unlock` opens S and the face this vessel wears; `--face N` names the face; `--all` tries the credential on every face tree. A vessel holding several faces and told none refuses `face-not-named`. The credential reaches only the trees it fits; a face it does not fit stays shut.
+
+''The sovereign gate.'' The daemon composes sovereign when S stands held AND the worn face stands unlocked (a place with no face needs S alone); otherwise the floor composes. `sovereignStands()` reads this as a pure query. `lares vault lock --face N` drops one face; locking the worn face, or locking S, stands the vessel back at the floor through the same gate, and a sibling's lock leaves sovereign standing. The founding sweep of seeds runs under the gate only.
+
+''The first founding asks, with nothing preselected:'' whether persona zero's face tree takes the same typed route as the node tree ("one credential then opens both"), answered each time with no default. Either answer leaves the two trees independent.
+
+''Status prints a face as one line:'' its handle index, a custody-id prefix, the count of rows under its key, and the group and ask digests the floor index names. A face's row never prints by name; only a fault does.
+
+<<~/ahu>>
+
 !! OPEN JOINTS
 
 
@@ -248,6 +268,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rjubhnpb-_VVFcgpg-atndZ5B7DkgTzPBTJVfD09Pfk
+<<^ code="&#x0003;">>ni:///sha-256;kLUXT23FiRO3SOtG1ZNxlc8cjMsIwzj6k87O1h3ttO8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -26,7 +26,7 @@ vi.mock("../src/prompt-secret.js", () => {
   };
 });
 
-import { FsCustodyIo, foundCustody, custodyStatus, unlockCustody, vesselCustodyHomes } from "@lararium/node";
+import { FsCustodyIo, foundCustody, custodyStatus, unlockCustody, vesselCustodyHomes, makeCustodyHolder, openFaceTree } from "@lararium/node";
 import { writeSealedCarrier } from "@lararium/mesh";
 import { helpLines } from "../src/command-help.js";
 import { parseArgs } from "../src/parse-args.js";
@@ -103,6 +103,49 @@ describe("vault door — a credential rides a TTY alone", () => {
     answers.push("p", "route-pass");
     const got = await gatherFoundingRoute();
     expect(got).toEqual([{ t: 1, pins: [{ kind: "passphrase", passphrase: "route-pass" }] }]);
+  });
+});
+
+describe("vault door — one face's own tree", () => {
+  async function foundOneFace(): Promise<string> {
+    const homes = vesselCustodyHomes();
+    const io = new FsCustodyIo(homes);
+    const u = await unlockCustody({ io, homes, credentials: [{ kind: "passphrase", passphrase: PW }] });
+    if (u.reading !== "opens") throw new Error("node key did not open");
+    const holder = makeCustodyHolder({ io, homes });
+    await holder.adopt(u.vk);
+    const { fcid } = await holder.foundFace({ group: "1".repeat(64), slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
+    await holder.lock();
+    return fcid;
+  }
+
+  it("★ status prints a face as one counted line with digests, never its rows by name ★", async () => {
+    await foundOneFace();
+    out.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
+    const text = out.join("\n");
+    expect(text).toMatch(/face h0 +[0-9a-f]{12}…  \d+ row\(s\): \d+ sealed under its key, 0 at fault +group 111111111111…/);
+    expect(text).not.toMatch(/face-owner/);
+  });
+
+  it("★ bind --face N lands in the face's own tree and leaves the node tree at its one slot ★", async () => {
+    const fcid = await foundOneFace();
+    answers.push("p", PW, "n", PW2);
+    expect(await run("bind", "--face", "0", "--passphrase")).toBe(0);
+    expect(await slots()).toHaveLength(1);                                                     // the node tree is untouched
+    const homes = vesselCustodyHomes();
+    const io = new FsCustodyIo(homes);
+    const second = await openFaceTree({ io, homes, fcid, credentials: [{ kind: "passphrase", passphrase: PW2 }] });
+    expect(second.reading).toBe("opens");
+    const refusal = await openFaceTree({ io, homes, fcid, credentials: [{ kind: "passphrase", passphrase: "not-a-route" }] });
+    expect(refusal.reading).toBe("no-slot-opens");                                             // CONTROL
+  });
+
+  it("★ lock --face N with no vessel standing says so and changes nothing ★", async () => {
+    await foundOneFace();
+    const before = tree(root);
+    expect(await run("lock", "--face", "0")).toBe(0);
+    expect(tree(root)).toBe(before);
   });
 });
 

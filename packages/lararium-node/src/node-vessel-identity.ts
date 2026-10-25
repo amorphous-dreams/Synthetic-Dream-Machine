@@ -84,8 +84,9 @@ import {
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
+import { readFaceIndexSync } from "./face-index.js";
 import {
-  openedCustody, exclusiveCustody, unlockedFaceOrdinals, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
 } from "./custody-seat.js";
 
 /**
@@ -695,6 +696,27 @@ export async function orphanPersonaRootKey(handleIndex: number): Promise<string 
  */
 let wornInSession: number | undefined;
 export function setWornFaceInSession(handleIndex: number | undefined): void { wornInSession = handleIndex; }
+
+/**
+ * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the worn face unlocked. A pure query: it reads the
+ * seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A place
+ * the floor index names no face for needs S alone; a place with faces and no face worn (none, or several and none chosen) stands
+ * at the floor.
+ */
+export function sovereignStands(): boolean {
+  const holder = standingCustody();
+  if (holder === null || !holder.isUnlocked()) return false;
+  const faces = readFaceIndexSync(larIdentityDir()).faces;
+  const named = faces.flatMap((f, ordinal) => ("fcid" in f ? [{ ordinal, fcid: f.fcid }] : []));
+  if (named.length === 0) return true;
+  const open = new Set(holder.unlockedFaces());
+  const openOrdinals = named.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
+  const worn = wornInSession ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
+  return worn !== undefined && openOrdinals.includes(worn);
+}
+
+/** The face this session wears when one stands open, or undefined: the session's choice, else the one face standing open. */
+export function wornFaceOrdinal(): number | undefined { return wornInSession; }
 
 function nodeActivePersonaStore(_login: string | null): ActivePersonaStore {
   return {

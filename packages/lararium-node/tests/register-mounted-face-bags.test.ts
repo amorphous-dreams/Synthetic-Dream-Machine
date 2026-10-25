@@ -1,3 +1,4 @@
+import { setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
@@ -164,6 +165,7 @@ describe("registerBags at node open names only the mounted face", () => {
         custody: { slots: [] },
       });
 
+      setWornFaceInSession(0);                    // the unlock names the face this vessel wears: A
       const bags = await captureRegisterBags(root);
       assertOneFaceShape(bags, faceA.personaGroupId);
       const set = new Set(bags);

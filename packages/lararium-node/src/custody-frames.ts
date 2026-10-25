@@ -45,7 +45,7 @@
 import type { Socket } from "node:net";
 import type { Credential, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
-import { setWornFaceInSession } from "./node-vessel-identity.js";
+import { setWornFaceInSession, sovereignStands, wornFaceOrdinal } from "./node-vessel-identity.js";
 import { listFaceOrdinals } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
@@ -53,7 +53,7 @@ import { SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
-  | { readonly op: "lock" }
+  | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
@@ -72,7 +72,7 @@ export type CustodyAnswer =
   | ({ readonly op: "unlock"; readonly held?: boolean } & HolderUnlock & Partial<CustodyStanding>)
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[] }
-  | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked" } & Partial<CustodyStanding>)
+  | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   | { readonly op: "face-route"; readonly parked: true }
@@ -184,6 +184,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
       return { op: "unlock", ...u, standing: deps.standing() };
     }
     const freshly = u.reading === "opens";
+    const openBefore = new Set(holder.unlockedFaces());
+    const wornBefore = wornFaceOrdinal();
     // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
     if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
     const standing = listFaceOrdinals();
@@ -211,6 +213,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${worn !== undefined ? `; face h${worn} open` : ""}`);
     // The unlock NAMES the face this vessel wears for the life of the unlock: session state, never a pointer at rest.
     if (worn !== undefined) setWornFaceInSession(worn);
+    // An unlock over a held key that opens no new face and changes no worn face stands nothing new.
+    if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (worn === undefined || worn === wornBefore)) {
+      return { op: "unlock", ...u, standing: deps.standing() };
+    }
     const stood = await deps.recompose(true);
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
     // stands at the floor and the holder drops what it opened: held and standing never disagree.
@@ -220,6 +226,24 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
       return { op: "unlock", ...u, ...stood, held: false };
     }
     return { op: "unlock", ...u, ...stood, held: true };
+  };
+
+  /**
+   * `lock --face N`: one face drops its key. The worn face's lock stands the vessel back at the floor through the same gate the
+   * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
+   */
+  const lockFaceOf = async (ordinal: number): Promise<CustodyAnswer> => {
+    const named = await holder.faceStanding({ ordinal });
+    if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
+    const wasOpen = named.unlocked;
+    const wasWorn = sovereignStands();
+    await holder.lockFace(named.fcid);
+    deps.onLog(`locked: face h${ordinal} key dropped`);
+    if (wasOpen && wasWorn && !sovereignStands()) {
+      const stood = await deps.recompose(true);
+      return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
+    }
+    return { op: "lock", locked: true, was: wasOpen ? "unlocked" : "locked", face: ordinal, standing: deps.standing() };
   };
 
   const lock = async (): Promise<CustodyAnswer> => {
@@ -330,10 +354,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
       }
       act = () => unlock(credentials, { ...(named !== undefined ? { face: named as number } : {}), ...(all === true ? { all: true } : {}) });
     } else if (op === "lock") {
-      act = lock;
+      const face = (parsed as { face?: unknown }).face;
+      if (face !== undefined && (!Number.isSafeInteger(face) || (face as number) < 0)) {
+        answer(sock, { op, status: "error", errorMessage: "a lock frame's `face` names a handle index (a whole number from 0)", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = face === undefined ? lock : () => lockFaceOf(face as number);
     } else {
       act = async () => ({
-        op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(),
+        op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
         standing: deps.standing(), testScratch: deps.testScratch,
       });
     }

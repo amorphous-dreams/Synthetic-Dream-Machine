@@ -327,6 +327,7 @@ seatCustodyWhenNeeded(
   async (holder) => {
     const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     if (opened.reading !== "opens" && opened.reading !== "already-unlocked") throw new Error(`the staged custody reads ${opened.reading} under the test route`);
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   },
 );
 
