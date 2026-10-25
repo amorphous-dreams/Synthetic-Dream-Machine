@@ -155,7 +155,7 @@ def test_existing_grammar_grows_optional_material_into_existing_valid_assembly()
 def test_alpha_recipe_grows_two_true_optional_structural_motifs():
     project=Project.load(EXAMPLES/'project_alpha.json')
     recipe=CapabilityRecipe.load(EXAMPLES/'hybrid/recipe_alpha.json')
-    assert recipe.version==3
+    assert {'grammar.gallery','grammar.buttress'}.issubset(recipe.bounds)
     assert set(project.bounds)==set(recipe.cad_keys)
     assert len(recipe.bounds)==29
     assert recipe.source_hashes['image']==hashlib.sha256(project.reference.read_bytes()).hexdigest()
