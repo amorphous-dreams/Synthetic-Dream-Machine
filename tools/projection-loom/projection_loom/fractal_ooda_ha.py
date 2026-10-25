@@ -523,7 +523,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS,
                     recipe=None, registry=None, score_size=(128,192), finalists=3,
                     breeding=False, offspring_per_family=6,
-                    migration_every=4, mutation_scale=.16):
+                    migration_every=4, mutation_scale=.16,
+                    feature_evidence_path=None, transfer_bundle_path=None):
     """One fractal OODA-HA controller for CAD and compound-capability epochs.
 
     Re-enter using precisely the same evidence, code and budgets.  The journal
@@ -546,6 +547,28 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
             raise ValueError('Breeding mutation scale must be within (0,.4]')
         # The family population, not --candidates, determines birth count.
         candidates = len(FAMILY_FOCUSES) * offspring_per_family
+    feature_evidence=None
+    feature_sha=None
+    if feature_evidence_path is not None:
+        if not breeding or recipe is None or project.reference is None:
+            raise ValueError('Feature annotations require source-bound breeding')
+        from .feature_evidence import FeatureEvidence
+        feature_evidence=FeatureEvidence.load(
+            feature_evidence_path,
+            source_sha256=sha256(project.reference.read_bytes()).hexdigest(),
+            score_size=score_size)
+        feature_sha=feature_evidence.digest
+    transfers=()
+    transfer_digest=None
+    if transfer_bundle_path is not None:
+        if not breeding or recipe is None:
+            raise ValueError('Transfer bundles require a source-bound breeding recipe')
+        from .genetic_transfer import verify_transfer_bundle
+        payload=json.loads(Path(transfer_bundle_path).read_text(encoding='utf8'))
+        transfers=tuple(verify_transfer_bundle(payload,
+            target_recipe_sha256=recipe.sha256,target_bounds=recipe.bounds,
+            family_focus=FAMILY_FOCUSES))
+        transfer_digest=payload['sha256']
     out = Path(output)
     out.mkdir(parents=True, exist_ok=True)
     # The ledger path belongs to the run identity even before a pet-name is
@@ -604,7 +627,9 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 'score_state': score_state, 'passes': passes, 'candidates': candidates,
                 'exact_budget': exact_budget, 'detail_budget': detail_budget,
                 'seed': seed, 'topology_loci': sorted(set(topology_loci)),
-                'ledger_path': str(ledger_path)}
+                'ledger_path': str(ledger_path),
+                'feature_evidence_sha256':feature_sha,
+                'transfer_bundle_sha256':transfer_digest}
     if compositor is not None:
         identity.update(capability_recipe_sha256=recipe.sha256,
               capability_operator_sha256=compositor.registry.fingerprint(),
@@ -621,6 +646,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
             'recipe_sha256':recipe.sha256,
             'score_size':list(score_size),
             'seed':seed, 'breeding':identity['breeding'],
+            'feature_evidence_sha256':feature_sha,
+            'transfer_bundle_sha256':transfer_digest,
             'location':project.location}
     with single_runner(out/'session.json'):
         archive = (LineageArchive(out/'lineage_archive.json',identity=archive_identity)
@@ -697,7 +724,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 journal.save()
                 batch = (make_brood(bounds, initial, archive, seed=seed,
                               generation=i+1,offspring_per_family=offspring_per_family,
-                              migration_every=migration_every,mutation_scale=mutation_scale)
+                              migration_every=migration_every,mutation_scale=mutation_scale,
+                              transfer_seeds=transfers)
                          if breeding else propose_methods(bounds,current,seed=seed+i,
                              count=candidates,topology_loci=topology_loci))
                 # The selected parent gets a distinct seat; never sacrifice
@@ -785,7 +813,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                           'prior':float(.008*np.mean((normalized-origin)**2))}
                     if breeding:
                         family=(running_id[0] or '').split('-')[0]
-                        loss['regional']=regional_loss(source_mask,mask,family)
+                        loss['regional']=regional_loss(source_mask,mask,family,
+                            attention=feature_evidence.mask_for(family) if feature_evidence else None)
                         loss.update(multiscale_source_loss(source_mask,mask))
                     return loss
                 def features(genome,assembly):
