@@ -49,6 +49,14 @@ relationship, pursues its own five-phase investigation and returns a witnessed
 consequence. The parent MUST remain in the anchoring phase until all of its
 children close. Reentry cannot duplicate previously completed actions.
 
+The code places phase law in `projection_loom/phase_rules.py`:
+`PHASES`, `next_phase_allowed`, and `child_phase_anchor` are pure
+decisions without durable state or operator power. The sole
+`fractal_ooda_ha.OODAJournal` MUST apply phase changes, append actual
+receipts and persist consequences; extracting validation MUST NOT create
+a second helm. `closed` marks completion after the five phases, not
+a sixth OODA action.
+
 The pattern invites recursion when uncertainty, surprising relations, or an
 Operator/AI intervention warrants attention; it does NOT require a fixed
 five-way fan-out. Session-controlled depth and loop budgets prevent runaway
@@ -122,6 +130,6 @@ contract and safe-point controls.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TUazYAqmh4nhgQGKAwtjKYYMbBZC70WdTZIom2Rr8ik
+<<^ code="&#x0003;">>ni:///sha-256;c7I9IcZh4UZBKfi4MN6fhfocMkPjCPWU2UnC4P8xNGU
 
 <<^ code="&#x0004;" -> to="?">>

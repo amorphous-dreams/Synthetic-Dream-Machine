@@ -4,6 +4,37 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XVI — phase law as pure decisions, one journal as the executing helm
+
+**✶ Observe / ⏿ Orient:** At the green Wave XV Loom gate (218 passing
+tests, workflow 40147526377), two concerns remained in
+`fractal_ooda_ha.OODAJournal`: phase legality and durable transition effects.
+The whole-repository and held-out workflows had not resolved their queued
+test cells before the next commits and cannot be counted as green.
+
+**◇ Decide / RED:** Commit `eb82059` adds
+`tests/test_phase_rules.py`, initially importing an absent
+`projection_loom.phase_rules` module. It covers all five ordered phases,
+the distinct `closed` boundary, idempotent replay, parent-phase anchoring,
+open-child blocking, depth budgets, and unchanged on-disk journal receipts
+after a denied transition.
+
+**▶ Act:** Commit `ea36c5f` moves `PHASES`,
+`next_phase_allowed`, and `child_phase_anchor` into pure
+`phase_rules.py`. They only read the phase tree and raise or return a
+decision. They cannot persist anything, start a loop, or certify geometry.
+`fractal_ooda_ha.py` remains the **sole controller**: `OODAJournal.begin`
+and `transition` still own mutation, evidence serialization, event order,
+checksums, reentry and child-return receipts. Other candidate and gallery
+executors retain the same native evidence gates.
+
+**↺ Aftermath / reentry key:** Require completed Loom-specific, whole-
+repository, and held-out witness checks at the *actual current head*.
+A queued/cancelled workflow is not green. After a code-hash change, fork
+construction output rather than reentering an older checkpoint directory.
+Only advance to evidence/provenance extraction after this code equivalence
+gate closes.
+
 ## Wave XV — review/gallery separation with no second controller
 
 **Observe / RED:** `tests/test_presentation_boundary.py` imports the absent

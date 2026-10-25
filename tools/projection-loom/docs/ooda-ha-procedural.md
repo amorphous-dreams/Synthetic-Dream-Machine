@@ -42,6 +42,23 @@ verifies the new port, with full nested-epoch tests retaining behavior
 witnesses. Run a new output directory after this code move because the
 construction fingerprint necessarily changes.
 
+## Pure phase-law helpers beneath the single journal
+
+`phase_rules.py` holds the immutable phase sequence and two pure
+guards, `next_phase_allowed()` and `child_phase_anchor()`. The five
+active phases are Observe, Orient, Decide, Act and Aftermath; `closed`
+is their completion boundary. The guards decide whether a parent can
+advance or a child can anchor to a phase, checking open children and
+bounded depth without any filesystem or event-writing authority.
+
+`fractal_ooda_ha.OODAJournal` remains the only executing authority.
+Its `begin()` and `transition()` methods call the guards, then own
+all mutation, event receipts, integrity stamps and persistent replay.
+`tests/test_phase_rules.py` checks both pure law and persisted journal
+behavior, including denial without a file write and child return from
+an Act anchor. No geometry audit or external source claim follows
+from a phase helper.
+
 ## One location, nested loops, five guarded phases
 
 The machine advances `observe -> orient -> decide -> act -> aftermath -> closed`.
