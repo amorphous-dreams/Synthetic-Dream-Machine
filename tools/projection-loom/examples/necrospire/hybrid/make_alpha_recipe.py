@@ -33,7 +33,7 @@ def make():
     assert {k:initial[k] for k in project.initial}==project.initial
     return CapabilityRecipe(location=base.location,pet_name=base.pet_name,
         steps=steps,bounds=bounds,initial=initial,cad_keys=tuple(project.initial),
-        source_hashes=base.source_hashes,version=3,provenance=base.provenance)
+        source_hashes=base.source_hashes,provenance=base.provenance)
 
 if __name__=='__main__':
     make().save(HERE/'recipe_alpha.json')
