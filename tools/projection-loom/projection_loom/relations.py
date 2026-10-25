@@ -243,9 +243,13 @@ class PetNameLedger:
             raise ValueError('Operator control already committed')
         if not self.history or self.history[-1].get('control_id') is not None:
             raise ValueError('No fresh ledger event for operator control')
+        # o-takiage returns the very event that we augment below.
+        # Snapshot it before mutation, or JSON sees a self-referential dict.
+        snapshot = json.loads(json.dumps(outcome, allow_nan=False))
         self.history[-1].update(control_id=control_id,
                                 command_digest=command_digest,
-                                control_outcome=outcome)
+                                control_outcome=snapshot)
+        return snapshot
 
     def pet_name(self, name, handle, witness, *, mode='entity', has=(), member_has=(), retain=0.4):
         name = str(name).strip()

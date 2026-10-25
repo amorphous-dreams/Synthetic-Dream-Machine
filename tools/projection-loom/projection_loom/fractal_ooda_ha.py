@@ -462,7 +462,7 @@ class OODAJournal:
                         outcome = ledger.o_takiage(name=args.get('name'),
                                                   branch=args.get('branch'),witness=witness)
                     witness_id = witness.witness_id if witness else None
-                    ledger.commit_control(key,digest,outcome)
+                    outcome = ledger.commit_control(key,digest,outcome)
                     ledger.save(path)
                 self.event('lineage-intervention',waiting['loop'],action=action,
                            result=outcome, witness_id=witness_id)
