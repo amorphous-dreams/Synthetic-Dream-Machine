@@ -25,7 +25,7 @@ from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery, regrow_lineage_gallery
 from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor
-from .search_strategy import SurrogatePreview, regional_loss
+from .search_strategy import SurrogatePreview, regional_loss, adaptive_priorities, emitter_performance
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
@@ -722,9 +722,18 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
                 surrogate=SurrogatePreview(bounds,archive) if breeding else None
+                emitter_credit=adaptive_priorities(batch,archive) if breeding else {}
+                by_genome={}
+                for proposal in batch:
+                    digest=genome_digest(proposal.genome)
+                    by_genome[digest]=min(by_genome.get(digest,0.),
+                                          emitter_credit.get(proposal.id,0.))
                 def preview(genome):
                     if surrogate is not None:
-                        return surrogate.priority(genome)
+                        # Conservative exploration bonus improves the cheap
+                        # ordering, never the CAD gate or mandatory reservations.
+                        return surrogate.priority(genome)+.02*by_genome.get(
+                            genome_digest(genome),0.)
                     return float(np.mean([((genome[k]-current[k]) / (hi-lo))**2
                                     for k,(lo,hi) in bounds.items()]))
                 def before(proposal):
@@ -826,7 +835,11 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     node['archive_assimilated']=True
                     journal.event('lineage-culling',loop_id,generation=i+1,
                                   counts=culling,niches=len(archive.elites()),
-                                  surviving_families=sorted(archive.data['champions']))
+                                  surviving_families=sorted(archive.data['champions']),
+                                  adaptive_emitter_evidence=emitter_performance(archive),
+                                  measured_searchability=archive.census(
+                                      bounds,activations=tuple(
+                                          step.activation for step in recipe.steps if step.activation)))
                     journal.save()
                 options = (render_compound_review(compositor,runner,i,
                                 out/f'previews/epoch_{i+1:03d}',
