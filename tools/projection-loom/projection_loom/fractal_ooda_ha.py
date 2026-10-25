@@ -558,7 +558,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
         feature_evidence=FeatureEvidence.load(
             feature_evidence_path,
             source_sha256=sha256(project.reference.read_bytes()).hexdigest(),
-            score_size=score_size)
+            score_size=score_size,
+            view_sha256=FeatureEvidence.view_identity(project,score_size))
         feature_sha=feature_evidence.digest
     transfers=()
     transfer_digest=None
