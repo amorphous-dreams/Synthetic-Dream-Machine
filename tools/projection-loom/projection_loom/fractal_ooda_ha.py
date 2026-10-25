@@ -331,9 +331,15 @@ class OODAHAJournal:
     def candidate_start(self, epoch_id, proposal):
         """The candidate enters Act *before* CAD growth and scoring begin."""
         loop_id = epoch_id + '/' + proposal.id
-        if loop_id not in self.data['loops']:
-            self.begin(loop_id, parent=epoch_id, scope='candidate',
-                       evidence={'proposal':proposal.id,'parent':proposal.parent})
+        # Candidate Observe binds the entire proposed construction, not just
+        # its display ID. Replay must not replace the genome or collaboration.
+        proposal_hash = _fingerprint({
+            'id':proposal.id, 'emitter':proposal.emitter,
+            'genome':proposal.genome, 'parent':proposal.parent,
+            'ancestry':proposal.ancestry})
+        self.begin(loop_id, parent=epoch_id, scope='candidate',
+                   evidence={'proposal':proposal.id,'parent':proposal.parent,
+                             'proposal_sha256':proposal_hash})
         node = self.data['loops'][loop_id]
         if node['phase'] == 'observe':
             self.transition(loop_id, 'orient', {'emitter':proposal.emitter,
@@ -351,12 +357,19 @@ class OODAHAJournal:
         """Close the candidate's actual Act and preserve its Aftermath."""
         self.candidate_start(epoch_id, proposal)
         loop_id=epoch_id+'/'+proposal.id
-        if self.data['loops'][loop_id]['phase']=='act':
-            self.transition(loop_id, 'aftermath',
-                {'outcome':result['state'],'loss':result.get('combined_loss'),
-                 'reason':result.get('reason'),
-                 'valid':bool(result.get('audit',{}).get('valid',False))})
-            self.transition(loop_id, 'closed')
+        aftermath={'outcome':result['state'],'loss':result.get('combined_loss'),
+                   'reason':result.get('reason'),
+                   'valid':bool(result.get('audit',{}).get('valid',False))}
+        node=self.data['loops'][loop_id]
+        if node['phase']=='act':
+            self.transition(loop_id, 'aftermath', aftermath)
+        elif node['phase'] in ('aftermath', TERMINAL):
+            if node['receipts'].get('aftermath') != aftermath:
+                raise ValueError('Candidate Aftermath receipt collision on replay')
+        else:
+            raise ValueError('Candidate result requires a completed Act')
+        if node['phase']=='aftermath':
+            self.transition(loop_id, TERMINAL)
 
     def wait(self, reason, *, epoch_id, options=()):
         self.data['status'] = 'awaiting_operator'
