@@ -118,3 +118,46 @@ def test_beat_failed_grammar_void_does_not_pollute_existing_void_receipt():
                      {},assembly=body)
     assert body.voids.voids==retained
     assert body.voids.positive is body
+
+
+def test_measure_distinct_authorized_donors_enter_repeated_family_slots():
+    from projection_loom.capability_stack import CapabilityRecipe
+    from projection_loom.campaign import LineageArchive, make_brood
+    example=Path(__file__).resolve().parents[1] / "examples/necrospire/hybrid"
+    recipe=CapabilityRecipe.load(example/"recipe_breeding.json")
+    source={"shaft_width":(0.0,10.0)}
+    seeds=[build_transfer_seed(source,recipe.bounds,family="needle",
+        donor_id=f"other-location/donor-{i}",source_recipe_sha256="a"*64,
+        target_recipe_sha256=recipe.sha256,donor_genome={"shaft_width":v},
+        focus=("shaft_width",),authorized=True) for i,v in enumerate((2.0,8.0))]
+    class History:
+        data={"members":{}}
+        def component_parents(self,family,limit=3,*,before_generation=None):
+            if family!="needle":
+                return []
+            return [{"id":"0001/needle-001-001","genome":dict(recipe.initial),
+                     "component_genome":{"shaft_width":recipe.initial["shaft_width"]}}]
+    a=make_brood(recipe.bounds,recipe.initial,History(),seed=41,
+                 generation=2,offspring_per_family=6,transfer_seeds=seeds)
+    adopted=[p for p in a if p.ancestry["family"]=="needle" and p.ancestry.get("transfer")]
+    assert [p.ancestry["transfer"]["donor_id"] for p in adopted]==[
+        "other-location/donor-0","other-location/donor-1"]
+    assert [p.genome["shaft_width"] for p in adopted]==pytest.approx([2.92,3.58])
+    assert all(p.ancestry["component_parent"].startswith("0001/") for p in adopted)
+    assert all(p.parent.startswith("transfer:") for p in adopted)
+    b=make_brood(recipe.bounds,recipe.initial,History(),seed=41,
+                 generation=2,offspring_per_family=6,transfer_seeds=seeds)
+    assert a==b
+
+
+def test_measure_topology_emitter_crosses_new_discrete_grammar_switches(tmp_path):
+    from projection_loom.capability_stack import CapabilityRecipe
+    from projection_loom.campaign import LineageArchive, make_brood
+    recipe=CapabilityRecipe.load(Path(__file__).resolve().parents[1]/
+                        "examples/necrospire/hybrid/recipe_alpha.json")
+    archive=LineageArchive(tmp_path/"lineages.json",identity={"recipe":recipe.sha256})
+    rows=make_brood(recipe.bounds,recipe.initial,archive,seed=41,
+                   generation=1,offspring_per_family=3)
+    for family, switch in (("terraces","grammar.gallery"),("crown","grammar.buttress")):
+        topology=next(p for p in rows if p.emitter==f"family:{family}:topology")
+        assert topology.genome[switch]>=.5, (family,switch,topology.genome[switch])
