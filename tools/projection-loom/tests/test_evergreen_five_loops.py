@@ -72,7 +72,7 @@ def test_pulse_feature_manifest_refuses_symlink_escape_even_when_digest_matches(
     (folder/"region.png").symlink_to(outside)
     manifest=folder/"feature.json"
     manifest.write_text(json.dumps({
-        "schema":"projection-loom/feature-evidence/v1",
+        "schema":"projection-loom/feature-evidence",
         "source_sha256":"a"*64,"evidence_state":"operator-annotated",
         "regions":{"Fortress":{"path":"region.png",
                  "sha256":hashlib.sha256(outside.read_bytes()).hexdigest()}}
