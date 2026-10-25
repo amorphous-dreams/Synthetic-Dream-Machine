@@ -13,6 +13,7 @@ import json
 import math
 import os
 from pathlib import Path
+from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = 'projection-loom/relational-ledger/v1'
 WITNESS = 'projection-loom/relational-witness/v1'
@@ -34,7 +35,8 @@ def capabilities(values):
 
 
 def _digest(value):
-    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode('utf8')).hexdigest()[:20]
+    # A witness descriptor is deliberately shorter than a full recipe digest.
+    return canonical_json_sha256(value, allow_nan=True)[:20]
 
 
 @dataclass(frozen=True)

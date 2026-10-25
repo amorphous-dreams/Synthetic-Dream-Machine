@@ -17,13 +17,13 @@ import trimesh
 import cadquery as cq
 
 from .hybrid import HybridLocation, derived_cad_surface, semantic_cad_point
+from .provenance_encoding import canonical_json_sha256
 
 SCHEMA='projection-loom/capability-recipe/v1'
 
 
 def digest(obj):
-    return sha256(json.dumps(obj,sort_keys=True,allow_nan=False,
-                    ensure_ascii=False,separators=(',',':')).encode('utf-8')).hexdigest()
+    return canonical_json_sha256(obj)
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import re
 from collections import defaultdict
+from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = 'projection-loom/location-stack/v1'
 HEX_SHA256 = re.compile(r'^[0-9a-f]{64}$')
@@ -312,8 +313,7 @@ class LocationStack:
             'relations': [asdict(r) for r in self.relations],
             'registrations': [asdict(r) for r in self.registrations],
         }
-        serialized = json.dumps(data, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
-        data['snapshot_sha256'] = sha256(serialized.encode('utf8')).hexdigest()
+        data['snapshot_sha256'] = canonical_json_sha256(data, allow_nan=True)
         return data
 
     @classmethod
@@ -322,8 +322,7 @@ class LocationStack:
             raise ValueError('Location-stack schema is not the active contract')
         recorded = data.get('snapshot_sha256')
         unsigned = {k: v for k, v in data.items() if k != 'snapshot_sha256'}
-        encoded = json.dumps(unsigned, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
-        if not recorded or sha256(encoded.encode('utf8')).hexdigest() != recorded:
+        if not recorded or canonical_json_sha256(unsigned, allow_nan=True) != recorded:
             raise ValueError('Location snapshot digest mismatch')
         stack = cls(data['location_id'], data.get('pet_name'))
         for row in data['frames']:

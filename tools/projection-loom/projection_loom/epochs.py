@@ -16,13 +16,13 @@ import os
 import numpy as np
 from scipy.stats import qmc
 from .selection import schedule_candidates
+from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = 'projection-loom/wide-epoch/v1'
 
 
 def _hash(value):
-    return sha256(json.dumps(value,sort_keys=True,separators=(',',':'),
-                             ensure_ascii=False,allow_nan=False).encode()).hexdigest()
+    return canonical_json_sha256(value)
 
 
 def _atomic(path,value):

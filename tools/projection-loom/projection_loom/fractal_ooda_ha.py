@@ -25,6 +25,7 @@ from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
+from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = 'projection-loom/ooda-ha-session/v2'
 CONTROL_SCHEMA = 'projection-loom/ooda-ha-control/v2'
@@ -33,8 +34,7 @@ DEFAULT_MAX_LOOPS = 4096
 
 
 def _fingerprint(value):
-    return sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
-                             separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+    return canonical_json_sha256(value)
 
 
 def _autonomy(value):
