@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: necrospire-breeding-results-publish
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   reproduce-and-publish:
