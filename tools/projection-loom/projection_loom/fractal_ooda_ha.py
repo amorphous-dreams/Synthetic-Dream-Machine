@@ -26,6 +26,7 @@ from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
+from .evidence_receipts import OperatorPreferenceReceipt
 
 SCHEMA = 'projection-loom/ooda-ha-session/v2'
 CONTROL_SCHEMA = 'projection-loom/ooda-ha-control/v2'
@@ -369,6 +370,8 @@ class OODAJournal:
                     item.get('run_id') != self.data['run_id'] or item.get('actor') != 'operator'):
                 raise ValueError('Control belongs to another run, schema, or unauthorized actor')
             action, args = item['action'], item.get('parameters', {})
+            if action in ('choose', 'prefer-emitter', 'set-autonomy'):
+                OperatorPreferenceReceipt.from_control(item)
             waiting = self.data['awaiting']
             if action in ('pet-name','o-takiage','choose') and (waiting is None or waiting['kind'] != 'review'):
                 # A future-directed intervention may arrive before a preview

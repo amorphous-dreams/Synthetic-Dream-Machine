@@ -18,6 +18,7 @@ import cadquery as cq
 
 from .hybrid import HybridLocation, derived_cad_surface, semantic_cad_point
 from .provenance_encoding import canonical_json_sha256
+from .evidence_receipts import CapabilityStepReceipt, CompoundAuditReceipt
 
 SCHEMA='projection-loom/capability-recipe/v1'
 
@@ -288,13 +289,15 @@ class CapabilityCompositor:
                 except Exception as e:
                     row={'id':step.id,'entity':step.entity,'operator':step.operator,
                          'state':'error','error':str(e)}
+                    CapabilityStepReceipt.from_native(row)
                     if stage_event:stage_event(step,'end',row)
                     raise ValueError(f'Capability {step.id} failed: {e}') from e
+            CapabilityStepReceipt.from_native(row)
             context.results[step.id]=row
             context.receipts.append(row)
             if stage_event:stage_event(step,'end',row)
         audit=scene.audit()
-        if not audit['composite_valid_for_render']:
+        if not CompoundAuditReceipt.from_native(audit).render_admissible:
             raise ValueError('Composite render gates failed')
         # CAD and mesh authority remain separate even after every stage passes.
         return CompositeBuild(context,audit)

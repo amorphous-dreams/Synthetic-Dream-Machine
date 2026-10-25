@@ -10,6 +10,7 @@ import numpy as np
 
 from .epochs import _atomic
 from .selection import select_review_candidates
+from .evidence_receipts import CadAuditReceipt, CompoundAuditReceipt
 
 
 def render_cad_review(project, run, epoch_index, folder, *, limit=4):
@@ -28,7 +29,7 @@ def render_cad_review(project, run, epoch_index, folder, *, limit=4):
     for elite in elites:
         candidate = project.grow(elite['genome'])
         audit = candidate.audit(join=True)
-        if not audit['valid'] or audit.get('union_solids') != 1 or not audit.get('union_valid'):
+        if not CadAuditReceipt.from_native(audit).admitted:
             raise RuntimeError('Audited elite failed to regrow for the preview')
         mesh = candidate.tessellate(linear=.35, angular=.3, union=True)
         mask = silhouette(mesh, evo.reference_camera, evo.size) > 96
@@ -66,7 +67,7 @@ def render_compound_review(compositor, run, epoch_index, folder, *, limit=4):
     options=[]
     for item in selected:
         build=compositor.grow(item['genome'])
-        if not build.audit['composite_valid_for_render']:
+        if not CompoundAuditReceipt.from_native(build.audit).render_admissible:
             raise RuntimeError('Scored compound failed to regrow for review')
         mask=silhouette(build.scene.render_mesh(),compositor.camera,compositor.size)>96
         rgba=np.zeros((compositor.size[1],compositor.size[0],4),dtype=np.uint8)

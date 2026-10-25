@@ -11,6 +11,7 @@ from PIL import Image
 import numpy as np
 
 from .epochs import _atomic
+from .evidence_receipts import CompoundAuditReceipt
 
 
 def regrow_compound_gallery(compositor, output, *, passes, count):
@@ -78,7 +79,7 @@ def regrow_compound_gallery(compositor, output, *, passes, count):
     receipts=[]
     for n,row in enumerate(chosen,1):
         built=compositor.grow(row['genome'])
-        if not built.audit['cad_valid'] or not built.audit['composite_valid_for_render']:
+        if not CompoundAuditReceipt.from_native(built.audit).render_admissible:
             raise RuntimeError('Finalist failed CAD/mesh/socket gates')
         folder=out/'finalists'/f'candidate_{n:02d}'
         built.export(folder,{compositor.project.reference_view:compositor.camera},
