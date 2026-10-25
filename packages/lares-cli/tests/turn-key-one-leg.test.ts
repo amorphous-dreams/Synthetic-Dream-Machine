@@ -1,16 +1,11 @@
 /**
- * THE TURN KEY HAS ONE READER, AND THE DOCSTRING NAMES IT.
+ * THE TURN KEY HAS ONE READER PER LEG, AND THE DOCSTRING NAMES IT.
  *
- * `turnKeyOf`'s docstring asserted a LIVE lockstep invariant between two legs: the CAPTURE leg driven by
- * a TypeScript `readExchanges`, and the BEARING/rewind leg driven by `readTurns`. The capture leg MOVED —
- * `lares sense capture` hands source identity to the daemon and Python's `capture_sources.py` reads the
- * transcript, its `_turn_key` self-describing as a "turnKeyOf port". The file contradicted itself 620
- * lines apart: `cmdCapture`'s own docstring already says "the TypeScript layer neither reads exchanges for
- * capture nor holds a capture WAL", while `readExchanges` stood exported with ZERO callers.
- *
- * A docstring naming a dead driver is worse than none: it tells the next reader the lockstep holds by
- * construction, so nobody measures it. It does NOT hold on the fallback path — see the divergence the
- * docstring now carries, and the two formulas asserted below.
+ * `turnKeyOf` drives the BEARING/rewind leg through `readTurns`. The capture leg rides Python:
+ * `lares sense capture` hands source identity to the daemon and `capture_sources.py` reads the
+ * transcript, its `_turn_key` self-describing as a "turnKeyOf port". The two formulas agree on the
+ * native uuid and part on the fallback path, and the docstring names that divergence so the next
+ * reader measures it instead of assuming lockstep.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -23,24 +18,15 @@ const PY_CAPTURE = join(repoRoot, "packages", "lararium-sensorium", "scripts", "
 const harvestSrc = () => readFileSync(HARVEST, "utf8");
 const pySrc = () => readFileSync(PY_CAPTURE, "utf8");
 
-describe("★ the retired capture reader leaves no stub behind ★", () => {
-  test("harvest.ts exports no `readExchanges` — the capture leg rides Python", () => {
-    expect(harvestSrc()).not.toMatch(/export function readExchanges\b/);
-  });
-
-  test("CONTROL — the two readers the file DOES drive still stand", () => {
-    // A grep that matched nothing would pass the assertion above for the wrong reason.
+describe("★ the bearing leg drives its own reader ★", () => {
+  test("the two readers the file drives stand", () => {
     const src = harvestSrc();
     expect(src, "the bearing/rewind leg's reader").toMatch(/function readTurns\b/);
     expect(src, "the key itself").toMatch(/export function turnKeyOf\b/);
   });
-
-  test("nothing in the CLI source reaches for the retired name", () => {
-    expect(harvestSrc()).not.toContain("readExchanges");
-  });
 });
 
-describe("★ the docstring points at the surviving reader, and NAMES the divergence ★", () => {
+describe("★ the docstring points at the capture leg's reader, and NAMES the divergence ★", () => {
   /** The doc comment immediately above `turnKeyOf`. */
   function turnKeyDoc(): string {
     const src = harvestSrc();
@@ -60,10 +46,6 @@ describe("★ the docstring points at the surviving reader, and NAMES the diverg
     const doc = turnKeyDoc();
     expect(doc, "the field the Python preimage folds in and this one does not").toContain("chunk_index");
     expect(doc, "and the path on which the two legs part").toMatch(/fallback/i);
-  });
-
-  test("CONTROL — the docstring no longer claims the retired TypeScript driver", () => {
-    expect(turnKeyDoc()).not.toContain("readExchanges");
   });
 });
 

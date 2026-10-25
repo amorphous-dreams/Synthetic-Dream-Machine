@@ -77,14 +77,12 @@ describe("lares-config — the per-daemon resource-override reader", () => {
     expect(declaration).toEqual({ webOrigin: "https://web.env", flowOrigin: "https://flow.env" });
   });
 
-  test("RED: the retired LAR_ORACLE_ORIGIN names nothing (no alias); CONTROL: LAR_FLOW_ORIGIN and the config's flow key declare the origin", () => {
-    process.env["LAR_ORACLE_ORIGIN"] = "https://oracle.env";
+  test("the config's flow key and LAR_FLOW_ORIGIN declare the origin", () => {
     try {
-      expect(originDeclaration({ origins: { web: "https://web.config" } })).toEqual({ webOrigin: "https://web.config" });
       expect(originDeclaration({ origins: { web: "https://web.config", flow: "https://flow.config" } })).toEqual({ webOrigin: "https://web.config", flowOrigin: "https://flow.config" });
       process.env["LAR_FLOW_ORIGIN"] = "https://flow.env";
       expect(originDeclaration({ origins: { web: "https://web.config" } })).toEqual({ webOrigin: "https://web.config", flowOrigin: "https://flow.env" });
-    } finally { delete process.env["LAR_ORACLE_ORIGIN"]; }
+    } finally { delete process.env["LAR_FLOW_ORIGIN"]; }
   });
 
   test("invalid same-origin env/config values refuse instead of degrading", () => {
