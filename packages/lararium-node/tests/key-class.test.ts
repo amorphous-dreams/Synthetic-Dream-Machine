@@ -99,11 +99,11 @@ describe("the relation class — a secret only the other party re-issues", () =>
     try {
       const rows = await rowsOf(v.homes, {
         ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}",
-        [`face-address-secret-${"5e".repeat(16)}.bin`]: "x", [`fleet-join-pending-${"6e".repeat(16)}.json`]: "{}", [`face-join-record-${"6f".repeat(16)}.json`]: "{}",
+        [`faces/${"ab".repeat(16)}/face-address-secret-g${"5e".repeat(32)}.bin`]: "x", [`faces/${"ab".repeat(16)}/fleet-join-pending-g${"6e".repeat(32)}.json`]: "{}", [`faces/${"ab".repeat(16)}/face-join-record-g${"6f".repeat(32)}.json`]: "{}",
       });
       // A row the table names by a digest reads under its name with that digest.
       expect([...rows.values()].map((r) => r.row).sort()).toEqual(RELATION_ROWS);
-      for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: "hot" });
+      for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: ["face-address-secret", "face-join-record", "fleet-join-pending"].includes(r.row) ? "face-hot" : "hot" });
     } finally { v.drop(); }
   });
 

@@ -5,7 +5,7 @@
  * Eight custody classes: `floor` (outside the VK, the floor's own key material), `floor-plain` (plain bytes the
  * floor reads, or public by construction), `serving` (under SK), `hot` (VK-sealed, opened at unlock), `cold`
  * (VK-sealed, opened per act) `outbox` (under the outbox key the VK wraps in its own hot row), `face-hot` and `face-cold` (under a face key). Rows span three homes: the identity home, the storage directory (its
- * `hosting/` and `walk/` subtrees) and the seal home.
+ * `hosting/` subtree), the face directories in the identity home, and the seal home.
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
@@ -19,9 +19,13 @@ import {
 import { custodyRootCarrier } from "../src/custody-root.js";
 import {
   bindSlot, commitSlotTree, mintVk, openSealedCarrier, openVk, decodeSlotTree, writeSealedCarrier, CensusRefusal,
-  TreeVkRefusal, mintOutboxKey, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type VesselKey,
+  TreeVkRefusal, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
+import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { openOutboxKey, outboxKeyFile } from "../src/outbox-key.js";
+import { handleRowPathIn } from "./face-paths.js";
+import { readFckCarrier } from "@lararium/mesh";
 
 const HOST = "0123456789abcdef0123456789abcdef";
 
@@ -69,7 +73,7 @@ const SOWN: Record<string, string> = {
   "identity/vk-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/custody-root.bin":                  "root",
-  "identity/outbox-key.bin":                    "x",
+  [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
   "identity/keyhive-archive.bin":               "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
@@ -82,12 +86,12 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/recovery-device-share-h0.bin`]:      "x",
   [`identity/faces/${FCID}/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
   [`identity/faces/${FCID}/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
-  [`identity/cadence-key-${"7c".repeat(16)}.bin`]:       "x",
+  [`identity/faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`]: "x",
   [`identity/faces/${FCID}/.restore-pending-h0.json`]: "x",
-  [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
-  [`identity/face-address-secret-${"5e".repeat(16)}.bin`]: "x",
-  [`identity/fleet-join-pending-${"6e".repeat(16)}.json`]: "{}",
-  [`identity/face-join-record-${"6f".repeat(16)}.json`]: "{}",
+  [`identity/faces/${FCID}/vessel-face-key-h0-${"cd".repeat(16)}.bin`]: "x",
+  [`identity/faces/${FCID}/face-address-secret-g${"5e".repeat(32)}.bin`]: "x",
+  [`identity/faces/${FCID}/fleet-join-pending-g${"6e".repeat(32)}.json`]: "{}",
+  [`identity/faces/${FCID}/face-join-record-g${"6f".repeat(32)}.json`]: "{}",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
@@ -103,8 +107,8 @@ const SOWN: Record<string, string> = {
   [`vessel/hosting/${HOST}/spent-bafyepoch`]:   "n a b\n",
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
   [`vessel/hosting/${HOST}/carry/guest/blobs/abc`]:   "sealed",
-  [`vessel/walk/${HOST}.json`]:                 "{}",
-  [`vessel/gate-memory/${"ef".repeat(32)}.bin`]: "x",
+  [`identity/faces/${FCID}/walk-h0-${HOST}.json`]: "{}",
+  [`identity/faces/${FCID}/gate-memory-h0-${"ef".repeat(32)}.bin`]: "x",
   "vessel/sealed/lockbox/aa.bb-cc":             "x",
   "vessel/sealed/own/notes":                    "x",
   "vessel/sealed/outbox/aa.bb":                 "x",
@@ -115,8 +119,8 @@ const SOWN: Record<string, string> = {
   "nexus/nexus/carriage-admit/AID1.json":       "{}",
   "nexus/nexus/key-line/AID1.json":             "[]",
   "nexus/transition-pending.json":              "{}",
-  "nexus/transitions.json":                     "{}",
-  [`nexus/cofound-${"5a".repeat(32)}.json`]:     "{}",
+  "nexus/transitions.json":                     "[]",
+  [`identity/faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`]: "{}",
 };
 
 /** The ruled class of every row (refound K7, K12, K15 and the custody plan's hot and cold lists). */
@@ -126,26 +130,26 @@ const RULED: Record<string, CustodyClass> = {
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
-  // The outbox's parcels rest under the outbox key, which the VK wraps in its own hot row (custody#/the-table, the outbox).
-  "sealed-outbox": "outbox", "outbox-key": "hot",
+  // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
+  "sealed-outbox": "outbox", "outbox-key": "face-hot",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
   "persona-roster": "face-hot", "persona-petnames": "face-hot", "persona-declarations": "face-hot",
   "public-handles": "face-hot", "handle-book": "face-hot",
-  "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
-  "transition-pending": "hot", "transitions": "hot",
+  "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "face-hot", "gate-memory": "face-hot",
+  "transition-pending": "floor-plain", "transitions": "floor-plain",
   "persona-root": "face-cold", "device-share": "face-cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
-  "vessel-face-key": "hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
-  // The fleet-join door's two rows: a face's address secret on each of its vessels, and a join half done.
-  "face-address-secret": "hot", "fleet-join-pending": "hot", "face-join-record": "hot",
+  "vessel-face-key": "face-hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
+  // The fleet-join door's three rows: a face's address secret, a join half done, and the joined face's record.
+  "face-address-secret": "face-hot", "fleet-join-pending": "face-hot", "face-join-record": "face-hot",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
   "seat-key": "face-cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
-  "cadence-key": "cold",
+  "cadence-key": "face-cold",
   // One joint founding's record: public material and the judged image, read at each joint signature.
-  "cofound": "hot",
+  "cofound": "face-hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
   "restore-pending": "face-cold",
 };
@@ -165,6 +169,9 @@ describe("the carrier table", () => {
   test("every row reads its ruled class, and the table names no row the ruling does not", () => {
     const table = carrierTable();
     expect(Object.fromEntries(table.map((r) => [r.row, r.custody]))).toEqual(RULED);
+    for (const name of ["transition-pending", "transitions"])
+      expect(table.find((r) => r.row === name)).toMatchObject({ target: { classes: ["F"] }, custody: "floor-plain", keyClass: null });
+    expect(table.filter((r) => r.custody === "cold")).toEqual([]);
     expect(new Set(table.map((r) => r.row)).size).toBe(table.length);
     for (const r of table) {
       expect(CUSTODY_CLASSES).toContain(r.custody);
@@ -182,15 +189,18 @@ describe("the carrier table", () => {
       expect(at("storage", `hosting/${HOST}/spent-bafyepoch`)?.row).toBe("hosting-spent");
       expect(at("storage", `hosting/${HOST}/carry/guest/record.json`)?.row).toBe("hosting-carry");
       expect(at("storage", `hosting/${HOST}/carry/guest/blobs/abc`)?.row).toBe("hosting-carry");
-      expect(at("storage", `walk/${HOST}.json`)?.row).toBe("walk");
+      expect(at("identity", `faces/${FCID}/walk-h0-${HOST}.json`)).toMatchObject({ row: "walk", custody: "face-hot", face: 0 });
+      expect(at("identity", `faces/${FCID}/gate-memory-h0-${"ef".repeat(32)}.bin`)).toMatchObject({ row: "gate-memory", custody: "face-hot", face: 0 });
+      expect(at("identity", `faces/${FCID}/outbox-key-h0.bin`)).toMatchObject({ row: "outbox-key", custody: "face-hot", face: 0 });
       expect(at("seal", "founding-roster.mem")?.row).toBe("charter");
       expect(at("seal", "carried/AID1/founding-roster.mem")?.row).toBe("carried-charter");
       expect(at("seal", "nexus/carriage-consent/AID1.json")?.row).toBe("carriage-consent");
       expect(at("seal", "nexus/carriage-admit/AID1.json")?.row).toBe("carriage-admit");
       expect(at("seal", "nexus/key-line/AID1.json")?.row).toBe("nexus-key-line");
-      expect(at("seal", "transitions.json")?.custody).toBe("hot");
-      expect(at("seal", `cofound-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "hot", face: "vessel" });
-      expect(at("identity", `cadence-key-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "cold", face: "vessel", keyClass: "device-minted" });
+      expect(at("seal", "transition-pending.json")).toMatchObject({ row: "transition-pending", custody: "floor-plain" });
+      expect(at("seal", "transitions.json")).toMatchObject({ row: "transitions", custody: "floor-plain" });
+      expect(at("identity", `faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "face-hot", face: 0 });
+      expect(at("identity", `faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "face-cold", face: 0, keyClass: "device-minted" });
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
       expect(at("identity", `faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
@@ -273,26 +283,28 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: vkSealedCarriers(homes) });
     const sealed: SealedCarrier[] = [
       custodyRootCarrier(homes.identity),
-      { name: `storage/walk/${HOST}.json`, path: join(homes.storage, "walk", `${HOST}.json`) },
-      { name: "seal/transitions.json", path: join(homes.seal, "transitions.json") },
+      { name: `storage/hosting/${HOST}/state.json`, path: join(homes.storage, "hosting", HOST, "state.json") },
     ];
     for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
+    sow(homes, { "nexus/transition-pending.json": "{}", "nexus/transitions.json": "[]" });
     return { io, homes, vk, drop, sealed };
   }
 
-  test("every hot and cold carrier standing names its VK-sealed carrier by home and file; floor rows stay out", async () => {
+  test("every hot and cold carrier standing names its VK-sealed carrier by home and file; plain rows stay out", async () => {
     const v = await founded();
     try {
       sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "identity/.vessel-card-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
       const carriers = vkSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.find((c) => c.name === "identity/custody-root.bin")).toEqual(custodyRootCarrier(v.homes.identity));
+      expect(carriers.some((c) => c.name.startsWith("seal/transition"))).toBe(false);
     } finally { v.drop(); }
   });
 
-  test("CONTROL (P5-2): the rotation re-seals every carrier the table names, across all three homes", async () => {
+  test("CONTROL (P5-2): rotation re-seals VK carriers and preserves plain seal rows", async () => {
     const v = await founded();
     try {
+      const plainBefore = ["transition-pending.json", "transitions.json"].map((file) => readFileSync(join(v.homes.seal, file)));
       const newVk = mintVk();
       await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk, slots: [{ t: 1, pins: [right] }] });
       const tree = decodeSlotTree(await v.io.read(vkSlotsPath(v.homes.identity)));
@@ -302,31 +314,31 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
         const r = await openSealedCarrier({ io: v.io, vk: (o as { vk: VesselKey }).vk, carrier: c });
         expect(r.reading === "opens" && str(r.plaintext), c.name).toBe(`${c.name}-v1`);
       }
+      for (const [i, file] of ["transition-pending.json", "transitions.json"].entries())
+        expect(readFileSync(join(v.homes.seal, file)).equals(plainBefore[i]!)).toBe(true);
     } finally { v.drop(); }
   });
 
-  test("RED (the outbox): the rotation re-seals the outbox key's row and reads no parcel — a sealed parcel stays byte-identical and the key opens under the new VK", async () => {
-    const v = await founded();
+  test("RED (the outbox): VK rotation leaves the face-sealed key and parcel byte-identical; the face still opens both", async () => {
+    const v = await seatScratchCustody("carrier-outbox");
     try {
-      const keyCarrier: SealedCarrier = { name: "identity/outbox-key.bin", path: join(v.homes.identity, "outbox-key.bin") };
-      const outboxKey = mintOutboxKey();
-      await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: vkSlotsPath(v.homes.identity), carrier: keyCarrier, plaintext: outboxKey });
+      const outboxKey = await openOutboxKey(0);
+      const keyPath = handleRowPathIn(v.homes.identity, outboxKeyFile(0));
+      const keyBefore = readFileSync(keyPath);
+      expect(readFckCarrier(keyBefore)).toBe("sealed");
       const parcel = sealOutboxParcel(outboxKey, "reader-one", text("a parcel"));
       const parcelPath = join(v.homes.storage, "sealed", "outbox", `${"ab".repeat(16)}.${restDigest(parcel)}`);
       mkdirSync(dirname(parcelPath), { recursive: true });
       writeFileSync(parcelPath, parcel);
       const names = vkSealedCarriers(v.homes).map((c) => c.name);
-      expect(names).toContain("identity/outbox-key.bin");
+      expect(names.some((n) => n.endsWith(`/${outboxKeyFile(0)}`))).toBe(false);
       expect(names.some((n) => n.includes("sealed/outbox"))).toBe(false);
-      const newVk = mintVk();
-      await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk, slots: [{ t: 1, pins: [right] }] });
+      await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] });
+      expect(readFileSync(keyPath).equals(keyBefore)).toBe(true);
       expect(Array.from(readFileSync(parcelPath))).toEqual(Array.from(parcel));
-      const tree = decodeSlotTree(await v.io.read(vkSlotsPath(v.homes.identity)));
-      const o = tree.reading === "readable" ? openVk(tree.tree, [right]) : null;
-      const opened = await openSealedCarrier({ io: v.io, vk: (o as { vk: VesselKey }).vk, carrier: keyCarrier });
-      expect(opened.reading === "opens" && Array.from(opened.plaintext)).toEqual(Array.from(outboxKey));
-      expect(openOutboxParcel(readOutboxKey(opened.reading === "opens" ? opened.plaintext : null)!, readFileSync(parcelPath))?.reader).toBe("reader-one");
-    } finally { v.drop(); }
+      expect(Array.from(await openOutboxKey(0))).toEqual(Array.from(outboxKey));
+      expect(openOutboxParcel(readOutboxKey(await openOutboxKey(0))!, readFileSync(parcelPath))?.reader).toBe("reader-one");
+    } finally { await v.drop(); }
   });
 
   test("RED (P5-2): a VK-sealed file no row names refuses the rotation before any write, and every carrier still opens", async () => {
@@ -420,11 +432,11 @@ describe("the census names every private file outside the table", () => {
     const { homes, root } = freshHomes();
     try {
       sownOwnerOnly(homes);
-      sow(homes, { "identity/custody-root.bin.vk-sealing": "x", "nexus/transitions.json.vk-rotating": "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
+      sow(homes, { "identity/custody-root.bin.vk-sealing": "x", [`vessel/hosting/${HOST}/state.json.vk-rotating`]: "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
       expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([
         ["identity", "custody-root.bin.vk-sealing", "sidecar"],
+        ["storage", `hosting/${HOST}/state.json.vk-rotating`, "sidecar"],
         ["storage", "sealed/lockbox/TMP-00aa", "sidecar"],
-        ["seal", "transitions.json.vk-rotating", "sidecar"],
       ]);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });

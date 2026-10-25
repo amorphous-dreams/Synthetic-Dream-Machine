@@ -17,17 +17,12 @@
  * The row counts among the VK-sealed carriers, so a rotation re-seals it under the new VK with its bytes unchanged.
  * The parcels rest under the outbox key's own seal, which the rotation never reads.
  */
-import { join } from "node:path";
 import { readOutboxKey, mintOutboxKey, type OutboxKey } from "@lararium/mesh";
 import { updateCustodyRow } from "./custody-seat.js";
-import { larIdentityDir } from "./vessel-paths.js";
 
-const OUTBOX_KEY_FILE = "outbox-key.bin";
-
-/** The outbox key's carrier path in the identity home. The carrier table spells its row through it. */
-export function outboxKeyPath(identityDir: string = larIdentityDir()): string {
-  return join(identityDir, OUTBOX_KEY_FILE);
-}
+/** One outbox key per SENDING FACE: `outbox-key-h<N>.bin`, in that face's own directory under its key. */
+export const OUTBOX_KEY_FILE = /^outbox-key-h(0|[1-9]\d*)\.bin$/;
+export const outboxKeyFile = (face: number): string => `outbox-key-h${face}.bin`;
 
 /** A row that opens to anything but one outbox key: the act stops and mints nothing over it. */
 export class OutboxKeyUnreadable extends Error {
@@ -36,12 +31,12 @@ export class OutboxKeyUnreadable extends Error {
 }
 
 /**
- * The vessel's outbox key: the row's bytes where it stands, a fresh key sealed into it where it does not. Refuses
+ * The outbox key of the sending face `face`: the row's bytes where it stands, a fresh key sealed into it where it does not. Refuses
  * `CustodyLocked` on a locked vessel and `CustodyRowUnavailable` on a row the seat's key does not open, before any
  * mint.
  */
-export function openOutboxKey(): Promise<OutboxKey> {
-  return updateCustodyRow<OutboxKey>("identity", OUTBOX_KEY_FILE, (standing) => {
+export function openOutboxKey(face: number): Promise<OutboxKey> {
+  return updateCustodyRow<OutboxKey>("identity", outboxKeyFile(face), (standing) => {
     if (standing !== null) {
       const key = readOutboxKey(standing);
       if (key === null) throw new OutboxKeyUnreadable(standing.length);

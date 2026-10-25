@@ -101,7 +101,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     const code = await cmdNexus(args(["publish", "plugins"], { apply: true, json: false }, { source }));
     expect(code).not.toBe(0);
     const said = [...errs, ...logs].join("\n");
-    expect(said).toMatch(/active persona|genesis/i);
+    expect(said).toMatch(/a face to sign as|genesis/i);
     expect(said).not.toMatch(/unknown/i);
   });
 

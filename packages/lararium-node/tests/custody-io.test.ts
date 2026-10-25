@@ -269,7 +269,7 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
   });
 });
 
-/** Found a scratch vessel through the production port: a tree over a fresh VK, then one carrier per home. */
+/** Found a scratch vessel through the production port: a tree over a fresh VK, plus public seal rows. */
 async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; sealed: SealedCarrier[] }> {
   const vk = mintVk();
   const treePath = vkSlotsPath(homes.identity);
@@ -277,18 +277,20 @@ async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; 
   const sealed: SealedCarrier[] = [
     { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     { name: "identity/custody-root.bin", path: join(homes.identity, "custody-root.bin"), keyClass: "device-minted" },
-    { name: "storage/walk/AID.json", path: join(homes.storage, "walk", "AID.json") },
-    { name: "seal/transitions.json", path: join(homes.seal, "transitions.json") },
+    { name: `storage/hosting/${"ab".repeat(16)}/state.json`, path: join(homes.storage, "hosting", "ab".repeat(16), "state.json") },
   ];
   for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
+  await io.write(join(homes.seal, "transition-pending.json"), text("{}"));
+  await io.write(join(homes.seal, "transitions.json"), text("[]"));
   return { vk, treePath, sealed };
 }
 
 describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", { timeout: 60_000 }, () => {
-  test("CONTROL: a rotation re-seals every carrier across the three homes; the new VK opens each to its old plaintext, the old VK opens none, and no sidecar stands", async () => {
+  test("CONTROL: a rotation re-seals every VK carrier and leaves public seal rows readable with no key", async () => {
     const io = new FsCustodyIo(homes);
     const f = await found(io);
     const before = new Map(await Promise.all(f.sealed.map(async (c) => [c.path, Buffer.from((await io.read(c.path))!).toString("hex")] as const)));
+    const plain = ["transition-pending.json", "transitions.json"].map((file) => ({ path: join(homes.seal, file), bytes: readFileSync(join(homes.seal, file)) }));
     const newVk = mintVk();
     await rotateVesselVk({ io, homes, oldVk: f.vk, newVk, slots: [{ t: 1, pins: [pass] }] });
 
@@ -302,6 +304,10 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
       expect((await openSealedCarrier({ io, vk: f.vk, carrier: c })).reading, c.name).toBe("key-fails");    // the retired VK opens nothing
       expect(Buffer.from((await io.read(c.path))!).toString("hex"), c.name).not.toBe(before.get(c.path));   // the bytes MOVED
       expect(readVkCarrier((await io.read(c.path))!)).toBe("sealed");
+    }
+    for (const row of plain) {
+      expect(readFileSync(row.path).equals(row.bytes)).toBe(true);
+      expect(readVkCarrier((await io.read(row.path))!)).toBe("bare");
     }
     for (const p of await io.list()) expect(p.endsWith(SEALING_SUFFIX) || p.endsWith(ROTATING_SUFFIX) || p.endsWith(".io-tmp"), p).toBe(false);   // rename left no sidecar
     expect(existsSync(io.claimPath())).toBe(false);

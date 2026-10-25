@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { TreeVkRefusal, type Credential } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
 import { vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 import { handleRowPathIn } from "./face-paths.js";
 
@@ -42,8 +42,14 @@ function hashes(dir: string): Record<string, string> {
   }
   return out;
 }
-beforeEach(() => { const s = stage("main"); root = s.root; homes = s.homes; io = s.io; });
-afterEach(() => { for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true }); });
+beforeEach(() => {
+  seatFaceAutoFounder(() => [{ t: 1, pins: [pass(RIGHT)] }]);
+  const s = stage("main"); root = s.root; homes = s.homes; io = s.io;
+});
+afterEach(() => {
+  seatFaceAutoFounder(null);
+  for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
+});
 
 describe("CustodyHolder", () => {
   test("H1 wrong route holds nothing and changes no file; right route opens", async () => {
@@ -229,14 +235,14 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
 });
 
 describe("CustodyHolder.removeColdRow — an act removes the cold row it committed", () => {
-  const COLD = `cadence-key-${"ab".repeat(16)}.bin`;
+  const COLD = ".persona-group-root-h0.json";
   const HOT = ".persona-admissions.json";
   test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
-    expect(existsSync(join(homes.identity, COLD))).toBe(true);
+    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(true);
     expect(await h.removeColdRow("identity", COLD)).toBe(true);
-    expect(existsSync(join(homes.identity, COLD))).toBe(false);
+    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(false);
     expect(await h.removeColdRow("identity", COLD)).toBe(false);
   });
 
@@ -253,18 +259,19 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
     await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
     await h.lock();
     await expect(h.removeColdRow("identity", COLD)).rejects.toBeInstanceOf(CustodyLocked);
-    expect(existsSync(join(homes.identity, COLD))).toBe(true);
+    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(true);
   });
 
   test("C4 a cold row another vessel's key sealed stays, and the removal refuses by name", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
+    await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"of this vessel"}'));
     const other = stage("c4-other");
     const o = await found(other); await o.unlock([pass(RIGHT)]);
     await o.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"of another vessel"}'));
-    mkdirSync(homes.identity, { recursive: true });
-    writeFileSync(join(homes.identity, COLD), readFileSync(join(other.homes.identity, COLD)));
-    const before = readFileSync(join(homes.identity, COLD));
-    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/cadence-key-[0-9a-f]{32}\.bin reads/);
-    expect(readFileSync(join(homes.identity, COLD)).equals(before)).toBe(true);
+    const ownPath = handleRowPathIn(homes.identity, COLD);
+    writeFileSync(ownPath, readFileSync(handleRowPathIn(other.homes.identity, COLD)));
+    const before = readFileSync(ownPath);
+    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/\.persona-group-root-h0\.json reads/);
+    expect(readFileSync(ownPath).equals(before)).toBe(true);
   });
 });

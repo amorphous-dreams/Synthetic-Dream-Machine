@@ -18,8 +18,8 @@
  *       key no row holds reads as done; a torn charter, primary or carried, refuses the whole act.
  *   A6  RED: THE CARDS READ BEFORE ANY ROW MOVES: a card the head never committed, two cards for one chair, fewer
  *       cards than the head's count, an unarmed head: each refuses by name and no row moves.
- *   A7  AT THE FLOOR every arming, the retirement, the roll's hand and the stand-in reading refuse `CustodyLocked`;
- *       `seat.held` answers.
+ *   A7  AT THE FLOOR armings, the roll's hand and stand-in reading refuse `CustodyLocked`;
+ *       public retirement and `seat.held` readings answer.
  *   A8  ONE FACE'S PUBLIC HALVES: the reader opens that face's rows alone; a row that answers another key refuses.
  *   A9  RED: THE ROLL'S HAND SIGNS ONLY A LAWFUL ROLL OF THIS VESSEL'S SEATS: a key no row here holds, a successor
  *       short of one distinct digest per seat or under another rule, a roll revealing fewer seats than the head's
@@ -233,14 +233,15 @@ describe("the rite arms its heads behind the door", () => {
     expect(seatRows()).toBe(rows);
   });
 
-  test("A7 — at the floor the armings, the retirement, the roll's hand and the stand-in refuse; the held reading answers", async () => {
+  test("A7 — at the floor the armings, the roll's hand and stand-in refuse; public retirement and held readings answer", async () => {
     const c = await custody("arm-a7");
     await stand([0]);
     const { armed, cards } = await writeGenesis();
     await c.holder.lock();
-    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }), () => act("seat.retire", { keys: armed.seatedKeys }),
+    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }),
       () => act("seal.sign", { seat: armed.seatedKeys[0], image: "ab" })];
     for (const step of steps) expect(await step().catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
+    expect(await act("seat.retire", { keys: armed.seatedKeys })).toEqual({ retired: [], kept: armed.seatedKeys.map((key) => ({ key, why: "seated" })) });
     writeFileSync(join(c.root, ".lar-test-scratch"), "");
     expect(await act("seat.readback-stand-in").catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
     expect(await act("seat.held", { keys: armed.seatedKeys })).toEqual({ held: armed.seatedKeys });

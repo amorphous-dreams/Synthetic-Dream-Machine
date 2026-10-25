@@ -110,21 +110,20 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("RED — a cleartext secret beside a slot tree reads OLD SHAPE, in any home", () => {
+  test("RED — a cleartext secret beside a slot tree reads OLD SHAPE; a public transition stays plain", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
         "identity/vk-slots.bin": "slots",
         "identity/custody-root.bin": sealedBytes("root"),
-        "vessel/walk/0123456789abcdef0123456789abcdef.json": '{"wallet":"plain"}',
+        [`identity/faces/${"ab".repeat(16)}/walk-h0-0123456789abcdef0123456789abcdef.json`]: '{"wallet":"plain"}',
         "nexus/transitions.json": "{}",
       });
       const shape = readCustodyShape(homes, reading);
       expect(shape.kind).toBe("old-shape");
       if (shape.kind === "old-shape") {
         expect(shape.offenders).toEqual([
-          { home: "storage", file: "walk/0123456789abcdef0123456789abcdef.json", row: "walk", reason: "cleartext-beside-tree" },
-          { home: "seal", file: "transitions.json", row: "transitions", reason: "cleartext-beside-tree" },
+          { home: "identity", file: `faces/${"ab".repeat(16)}/walk-h0-0123456789abcdef0123456789abcdef.json`, row: "walk", reason: "cleartext-beside-tree" },
         ]);
       }
     } finally { rmSync(root, { recursive: true, force: true }); }
@@ -167,7 +166,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("CONTROL: a hearth-shaped slotted home, every secret sealed in every home, reads SLOTTED and stays byte-identical", () => {
+  test("CONTROL: a hearth-shaped slotted home keeps secrets sealed and transitions plain", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
@@ -178,7 +177,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
         [`identity/faces/${"ab".repeat(16)}/.handle-book-h0.json`]: fckSealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
         "nexus/founding-roster.mem": "charter",
-        "nexus/transitions.json": sealedBytes("[]"),
+        "nexus/transitions.json": "[]",
       });
       const before = treeHash(root);
       expect(readCustodyShape(homes, reading)).toEqual({ kind: "slotted" });

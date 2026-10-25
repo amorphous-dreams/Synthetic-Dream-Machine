@@ -46,15 +46,10 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { GATE_MEMORY_ROW_MAX_BYTES, canonicalJson, type GateMemoryRows } from "@lararium/mesh";
 import { CustodyRowUnavailable, type CustodyHolder } from "./custody-holder.js";
 import { readCustodyRow, standingCustody, updateCustodyRow } from "./custody-seat.js";
-import { larDataDir } from "./vessel-paths.js";
 
-/** The directory, under the storage home, that holds every gate memory row. */
-export const GATE_MEMORY_DIR = "gate-memory";
 /** A row's name: a proof-subject digest, 64 characters of bare lower-case hex. */
 const ROW_NAME = /^[0-9a-f]{64}$/;
 
@@ -63,14 +58,17 @@ export class GateMemoryRowRefused extends Error {
   override readonly name = "GateMemoryRowRefused";
 }
 
-/** The path of the row `name`, relative to the storage home. Refuses a name outside the one spelling. */
-export function gateMemoryRowFile(name: string): string {
+/**
+ * The file of the row `name` in the memory of the gate of face `gateFace`: `gate-memory-h<N>-<name>.bin`, resting in that face's
+ * own directory under its key. Refuses a name outside the one spelling.
+ */
+export function gateMemoryRowFile(gateFace: number, name: string): string {
   if (typeof name !== "string" || !ROW_NAME.test(name)) {
     throw new GateMemoryRowRefused("a gate memory row answers to a proof-subject digest (64 characters of bare lower-case hex) and to no other name");
   }
-  return `${GATE_MEMORY_DIR}/${name}.bin`;
+  if (!Number.isSafeInteger(gateFace) || gateFace < 0) throw new GateMemoryRowRefused(`a gate memory row belongs to a gate's face (a handle index), not ${String(gateFace)}`);
+  return `gate-memory-h${gateFace}-${name}.bin`;
 }
-
 /** The events a row's plaintext lists, each by its canonical spelling; `null` where the bytes read as no list. */
 function eventsOf(bytes: Uint8Array): Set<string> | null {
   try {
@@ -79,18 +77,18 @@ function eventsOf(bytes: Uint8Array): Set<string> | null {
   } catch { return null; }
 }
 
-function makeRows(): GateMemoryRows {
+function makeRows(gateFace: number): GateMemoryRows {
   return Object.freeze({
     async read(name: string): Promise<Uint8Array | null> {
-      const file = gateMemoryRowFile(name);
-      const bytes = await readCustodyRow("storage", file);
+      const file = gateMemoryRowFile(gateFace, name);
+      const bytes = await readCustodyRow("identity", file);
       // A row that opens to no list refuses by name, exactly as one that does not open: the gate that asked
       // falls silent, where a row read as nothing would let it treat the face as never learned.
-      if (bytes !== null && eventsOf(bytes) === null) throw new CustodyRowUnavailable("storage", file, "malformed");
+      if (bytes !== null && eventsOf(bytes) === null) throw new CustodyRowUnavailable("identity", file, "malformed");
       return bytes;
     },
     async write(name: string, bytes: Uint8Array): Promise<void> {
-      const file = gateMemoryRowFile(name);
+      const file = gateMemoryRowFile(gateFace, name);
       if (!(bytes instanceof Uint8Array) || bytes.length === 0 || bytes.length > GATE_MEMORY_ROW_MAX_BYTES) {
         throw new GateMemoryRowRefused(`a gate memory row holds between 1 and ${GATE_MEMORY_ROW_MAX_BYTES} bytes`);
       }
@@ -99,31 +97,33 @@ function makeRows(): GateMemoryRows {
       if (arriving === null) throw new GateMemoryRowRefused("a gate memory row lists events: these bytes read as no list");
       // The decision runs only over a row that reads whole or over nothing: every other reading refuses first,
       // and a locked seat refuses before the decision runs, so a refused write leaves no directory behind.
-      await updateCustodyRow("storage", file, (standing) => {
+      await updateCustodyRow("identity", file, (standing) => {
         if (standing !== null) {
           const held = eventsOf(standing);
-          if (held === null) throw new CustodyRowUnavailable("storage", file, "malformed");
+          if (held === null) throw new CustodyRowUnavailable("identity", file, "malformed");
           for (const event of held) {
             if (!arriving.has(event)) throw new GateMemoryRowRefused("a gate's memory only accretes: this write lacks an event the row holds, so the row keeps its bytes");
           }
         }
-        mkdirSync(join(larDataDir(), GATE_MEMORY_DIR), { recursive: true, mode: 0o700 });
         return { plaintext: next, value: undefined };
       });
     },
   });
 }
 
-const DOORS = new WeakMap<CustodyHolder, GateMemoryRows>();
+const DOORS = new WeakMap<CustodyHolder, Map<number, GateMemoryRows>>();
 
 /**
- * The vessel's door for a gate's memory, over the custody seat of the home the vessel's resolvers name. One door
- * per seated holder; a home with no seat answers a door of its own that refuses every row `CustodyLocked`.
+ * The door for the memory of ONE face's gate, over the custody seat of the home the vessel's resolvers name. A gate reads and
+ * writes only its own face's rows: another unlocked face's withdrawals read absent through this door. One door per
+ * (seated holder, face); a home with no seat answers a door of its own that refuses every row `CustodyLocked`.
  */
-export function gateMemoryRows(): GateMemoryRows {
+export function gateMemoryRows(gateFace: number): GateMemoryRows {
   const holder = standingCustody();
-  if (holder === null) return makeRows();
-  let door = DOORS.get(holder);
-  if (door === undefined) { door = makeRows(); DOORS.set(holder, door); }
+  if (holder === null) return makeRows(gateFace);
+  let byFace = DOORS.get(holder);
+  if (byFace === undefined) { byFace = new Map(); DOORS.set(holder, byFace); }
+  let door = byFace.get(gateFace);
+  if (door === undefined) { door = makeRows(gateFace); byFace.set(gateFace, door); }
   return door;
 }

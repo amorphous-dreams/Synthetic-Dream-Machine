@@ -111,9 +111,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     // ── SEAL: the crossing verifies whole and lands beside the charter.
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).toBe(0);
 
-    // The record rests SEALED beside the charter: the file reads as no JSON, and the custody seat opens it.
-    expect(readVkCarrier(readFileSync(join(larSealHome(), "transitions.json")))).toBe("sealed");
-    const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", "transitions.json"))!)) as ReserveTransition[];
+    // A crossing record is public: it rests in the clear as a plain list, readable with no key.
+    expect(Array.isArray(JSON.parse(readFileSync(join(larSealHome(), "transitions.json"), "utf8")))).toBe(true);
+    const kept = JSON.parse(readFileSync(join(larSealHome(), "transitions.json"), "utf8")) as ReserveTransition[];
     expect(kept).toHaveLength(1);
     expect(kept[0]!.fromEpochCid).toBe(fromHead.epochCid);
     expect(kept[0]!.toEpochCid).toBe(toHead.epochCid);

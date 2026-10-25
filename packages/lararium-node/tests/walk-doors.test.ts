@@ -23,6 +23,9 @@ import {
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
+import { handleRowPath, faceRowNames } from "./face-paths.js";
+import { walkRowFile } from "../src/node-walk-store.js";
+import { dirname } from "node:path";
 import { nexusLeafFor, wornNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
 import { rollHosting, hostingDir } from "../src/hosting-store.js";
@@ -52,7 +55,7 @@ async function invite(gate = GATE, relay: string | null = RELAY): Promise<string
   epoch ??= await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });
   return encodeInvite({ nexusAid: AID, gatePubKey: gate, token: mintHostToken(epoch), ...(relay ? { relay } : {}) });
 }
-const walkDirOf = (): string => join(larDataDir(), "walk");
+const walkDirOf = (): string => dirname(handleRowPath(walkRowFile(0, GATE)));
 
 describe("lares walk — take, as the worn face, at one hearth", () => {
   it("RED: a vessel wearing no face takes no invite and writes nothing; CONTROL: worn, the take keeps it as that face", async () => {
@@ -60,7 +63,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     await expect(runWalkTake({ carried: await invite() })).rejects.toThrow(/wears no face/);
-    expect(existsSync(walkDirOf())).toBe(false);
+    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await wearPersona(0);
     const taken = await runWalkTake({ carried: await invite() });
     expect(taken).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, leaf: (await nexusLeafFor(0, AID))!.verifyingKey });
@@ -88,7 +91,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     const [here, there] = [await invite(GATE), await invite(OTHER_GATE)];
     // The handshake holds the overlap: neither take seals its row until both have read that this vessel walks
     // nowhere. Which take seals first stays the machine's own choice; the vessel keeps that one hearth alone.
-    const gate = holdSealsUntilBothArrive(seatedCustody()!, /^walk\//);
+    const gate = holdSealsUntilBothArrive(seatedCustody()!, /^walk-h/);
     let outcomes: PromiseSettledResult<Awaited<ReturnType<typeof runWalkTake>>>[];
     try { outcomes = await Promise.allSettled([runWalkTake({ carried: here }), runWalkTake({ carried: there })]); }
     finally { gate.release(); }
@@ -104,7 +107,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     await expect(runWalkTake({ carried: await invite(), dialGate: OTHER_GATE })).rejects.toThrow(/dial stands to the hearth/);
-    expect(existsSync(walkDirOf())).toBe(false);
+    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await runWalkTake({ carried: await invite() });
     await expect(runWalkTake({ carried: await invite(OTHER_GATE) })).rejects.toBeInstanceOf(WalkRefusal);
     expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
@@ -132,7 +135,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await expect(runWalkInvite()).rejects.toThrow(/walks nowhere/);
     await runWalkTake({ carried: await invite() });
     await expect(runWalkInvite()).rejects.toThrow(/holds no invite/);
-    const store = nodeWalkStore();
+    const store = nodeWalkStore({ face: 0 });
     const second = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: epoch.cid, cap: 3 });
     const older = mintHostToken(epoch), newer = mintHostToken(second);
     await store.update(GATE, (held) => ({ ...held!, wallet: [{ epoch: epoch.cid, token: older }, { epoch: second.cid, token: newer }] }));
@@ -146,19 +149,19 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
 
 describe("the walk and hosting stores stand owner-only", () => {
   it("RED: the walk and hosting directories are 0700, and an existing wider one is re-moded", async () => {
+    const mode = (p: string): number => statSync(p).mode & 0o777;
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
-    mkdirSync(walkDirOf(), { recursive: true });
-    chmodSync(walkDirOf(), 0o755);
+    await runWalkTake({ carried: await invite() });
+    expect(mode(walkDirOf())).toBe(0o700); // the face directory was founded owner-only
     mkdirSync(join(larDataDir(), "hosting"), { recursive: true });
     chmodSync(join(larDataDir(), "hosting"), 0o755);
     await runWalkTake({ carried: await invite() });
     await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
-    const mode = (p: string): number => statSync(p).mode & 0o777;
     expect(mode(walkDirOf())).toBe(0o700);
     expect(mode(join(larDataDir(), "hosting"))).toBe(0o700);
     expect(mode(await hostingDir(AID))).toBe(0o700);
-    expect(readdirSync(walkDirOf())).toHaveLength(1);                     // CONTROL: the record landed
+    expect(readdirSync(walkDirOf()).filter((n) => n.startsWith("walk-"))).toHaveLength(1);                     // CONTROL: the record landed
   });
 });

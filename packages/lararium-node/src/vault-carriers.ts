@@ -83,7 +83,7 @@ import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
 import { FACES_DIR, FACE_INDEX_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
-import { outboxKeyPath } from "./outbox-key.js";
+import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
@@ -400,21 +400,21 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-vessel-identity", name: (m) => `persona-public-handles-h${m[1]}`, face: faceOf }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
-    id({ row: "vessel-face-key", target: tgt(["D"]), match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
-         writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
+    faceRowOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-key-custody", name: (m) => `vessel-face-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
     // vessel by the fleet-join door alone. Its file names a digest of the face's PersonaGroup. No rotation
     // regenerates it, and no bundle body carries it: it stays on its vessels.
-    id({ row: "face-address-secret", target: tgt(["D"]), match: /^face-address-secret-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "relation",
-         writer: "fleet-join-custody", name: (m) => `face-address-secret-${m[1]}` }),
+    faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
-    id({ row: "fleet-join-pending", target: tgt(["D"]), match: /^fleet-join-pending-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
-         writer: "fleet-join-custody", name: (m) => `fleet-join-pending-${m[1]}` }),
+    faceRowOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `fleet-join-pending-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
-    id({ row: "face-join-record", target: tgt(["D"]), match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
-         writer: "fleet-join-custody", name: (m) => `face-join-record-${m[1]}` }),
+    faceRowOf({ row: "face-join-record", target: tgt(["D"]), inner: /^face-join-record-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-join-record-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // One face's recognition book, in that face's own row: the nyms it recognised and the private labels it keeps for them.
     faceRowOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-circle-store", name: (m) => `handle-book-h${m[1]}`, face: faceOf, bundle: "whole" }),
@@ -433,26 +433,29 @@ function buildTable(): readonly CarrierRow[] {
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-carry", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}carry/.+$`),
           custody: "hot", keyClass: null, writer: "hosting-carry" }),
-    row({ row: "walk", target: tgt(["D", "F"], LEAD), home: "storage", under: "walk", match: /^walk\/[^/]+\.json$/,
-          custody: "hot", keyClass: null, writer: "node-walk-store" }),
+    faceRowOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-walk-store", name: (m) => `walk-h${m[1]}-${m[2]}`, face: faceOf }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
     // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
-    row({ row: "gate-memory", target: tgt(["D", "F"], LEAD), home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
-          custody: "hot", keyClass: null, writer: "gate-memory-rows" }),
+    // A gate's withdrawal memory rests in the face whose gate learned it: the file name's handle index only spells the face, the face's own directory is the location.
+    faceRowOf({ row: "gate-memory", target: tgt(["D"]), inner: /^gate-memory-h(0|[1-9]\d*)-([0-9a-f]{64})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "gate-memory-rows", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
     // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
-    row({ row: "transition-pending", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: file("transition-pending.json"),
-          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
-    row({ row: "transitions", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: file("transitions.json"),
-          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
+    row({ row: "transition-pending", target: tgt(["F"]), home: "seal", under: "", match: file("transition-pending.json"),
+          custody: "floor-plain", keyClass: null, writer: "seal-ceremony",
+          bare: "a crossing in progress carries public key-sets, signatures and witnesses and no secret: any holder of the charter verifies it, and no seat key or card rests in it" }),
+    row({ row: "transitions", target: tgt(["F"]), home: "seal", under: "", match: file("transitions.json"),
+          custody: "floor-plain", keyClass: null, writer: "seal-ceremony",
+          bare: "sealed crossing records carry public key-sets, signatures and witnesses and no secret: each record verifies from the charter alone" }),
     // One joint founding's record (`cofound-record`): the offer this vessel made or answered, its seat and hearth
     // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
-    row({ row: "cofound", target: tgt(["D", "F"], LEAD), home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
-          custody: "hot", keyClass: null, writer: "cofound-record" }),
+    faceRowOf({ row: "cofound", target: tgt(["D"]), inner: /^cofound-h(0|[1-9]\d*)-([0-9a-f]{64})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "cofound-record", name: (m) => `cofound-h${m[1]}-${m[2]}`, face: faceOf }),
 
     // The vessel's outbox key (`outbox-key`): minted once, at the first unlocked composition, and handed to the daemon
     // island at each unlock. It seals the outbox's parcels and nothing beside them; it stays on its vessel.
-    id({ row: "outbox-key", target: tgt(["D"]), match: exact(outboxKeyPath()), custody: "hot", keyClass: "device-minted",
-         writer: "outbox-key" }),
+    faceRowOf({ row: "outbox-key", target: tgt(["D"]), inner: OUTBOX_KEY_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+         writer: "outbox-key", name: (m) => `outbox-key-h${m[1]}`, face: faceOf }),
 
     // ── outbox: sealed under the outbox key the VK wraps ───────────────────────────────────────
     // The parcels a vessel wrapped for a reader, until the member lane takes them: each sealed whole, its reader
@@ -474,8 +477,8 @@ function buildTable(): readonly CarrierRow[] {
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
-    id({ row: "cadence-key", target: tgt(["D", "F"], LEAD), match: /^cadence-key-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "device-minted",
-         writer: "cadence-key-store", name: (m) => `cadence-key-${m[1]}` }),
+    faceRowOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",
+         writer: "cadence-key-store", name: (m) => `cadence-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
     faceRowOf({ row: "restore-pending", target: tgt(["D"]), inner: RESTORE_PENDING_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed", name: (m) => `restore-pending-h${m[1]}`,
@@ -573,7 +576,9 @@ export function flatFaceRowCarriers(identityDir: string): Array<{ readonly row: 
   const out: Array<{ row: string; file: string; path: string; keyClass: KeyClass | null }> = [];
   // The shared files an earlier shape kept for ALL faces at once (one roster, one map per family): no face owns them now.
   const earlier: ReadonlyArray<readonly [string, RegExp]> = [
-    ["anchor-roster", /^anchor-roster\.json$/], ["active-persona", /^\.active-persona(?:-[^./]+)?\.json$/], ["handle-book", /^\.handle-book\.json$/], ["persona-roster", /^\.persona-roster(?:-[^./]+)?\.json$/],
+    ["anchor-roster", /^anchor-roster\.json$/], ["outbox-key", /^outbox-key\.bin$/], ["cadence-key", /^cadence-key-[0-9a-f]{32}\.bin$/],
+    ["vessel-face-key", /^vessel-face-key-[0-9a-f]{32}\.bin$/], ["face-address-secret", /^face-address-secret-[0-9a-f]{32}\.bin$/],
+    ["fleet-join-pending", /^fleet-join-pending-[0-9a-f]{32}\.json$/], ["face-join-record", /^face-join-record-[0-9a-f]{32}\.json$/], ["active-persona", /^\.active-persona(?:-[^./]+)?\.json$/], ["handle-book", /^\.handle-book\.json$/], ["persona-roster", /^\.persona-roster(?:-[^./]+)?\.json$/],
     ["persona-petnames", /^\.persona-petnames(?:-[^./]+)?\.json$/], ["persona-declarations", /^\.persona-declarations(?:-[^./]+)?\.json$/],
     ["public-handles", /^\.persona-public-handles(?:-[^./]+)?\.json$/],
   ];

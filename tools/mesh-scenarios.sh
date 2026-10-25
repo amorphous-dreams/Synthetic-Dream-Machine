@@ -1612,7 +1612,7 @@ run_seal() {
     HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 13 /state/data/lares/identity/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
     [ "$HEAD" = "lares-vk-seal" ] || BARE="$BARE $ROW"
   done
-  ROSTER_ROW=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^\.persona-roster(-[^./]+)?-h0\.json$' | head -1 || true)
+  ROSTER_ROW=$($COMPOSE exec -T lararium-a sh -c 'ls -1A /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^\.persona-roster(-[^./]+)?-h0\.json$' | head -1 || true)
   [ -n "$ROSTER_ROW" ] || BARE="$BARE persona-roster-h0 (missing)"
   for ROW in anchors-h0.json $ROSTER_ROW $VEIL_ROWS; do
     HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 14 /state/data/lares/identity/faces/*/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')

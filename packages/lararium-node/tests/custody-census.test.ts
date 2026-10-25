@@ -18,11 +18,11 @@ const SPEC: ReadonlyArray<readonly [row: string, classes: readonly CustodyPart[]
   ["public-handles", ["D"], false], ["vessel-face-key", ["D"], false], ["face-address-secret", ["D"], false],
   ["fleet-join-pending", ["D"], false], ["face-join-record", ["D"], false], ["handle-book", ["D"], false],
   ["guardian-set", ["D"], false], ["face-provisional", ["D"], false], ["hosting-state", ["D", "F"], true],
-  ["hosting-spent", ["D", "F"], true], ["hosting-carry", ["D", "F"], true], ["walk", ["D", "F"], true],
-  ["gate-memory", ["D", "F"], true], ["transition-pending", ["D", "F"], true], ["transitions", ["D", "F"], true],
-  ["cofound", ["D", "F"], true], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],
+  ["hosting-spent", ["D", "F"], true], ["hosting-carry", ["D", "F"], true], ["walk", ["D"], false],
+  ["gate-memory", ["D"], false], ["transition-pending", ["F"], false], ["transitions", ["F"], false],
+  ["cofound", ["D"], false], ["outbox-key", ["D"], false], ["sealed-outbox", ["D"], false],
   ["persona-root", ["D"], false], ["face-proof-key", ["D"], false], ["seat-key", ["D"], false],
-  ["cadence-key", ["D", "F"], true], ["restore-pending", ["D"], false], ["device-share", ["D"], false],
+  ["cadence-key", ["D"], false], ["restore-pending", ["D"], false], ["device-share", ["D"], false],
 ];
 
 /** The spec's node S candidates: the only rows that may carry an S part. */

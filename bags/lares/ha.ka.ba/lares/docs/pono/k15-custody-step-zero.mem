@@ -72,27 +72,27 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `persona-petnames` `node-vessel-identity.ts` | face-hot | ''D:'' per-face private name in the face's own row (`.persona-petnames-h<N>.json`); it appears only after that face unlocks. |
 | `persona-declarations` `node-vessel-identity.ts` | face-hot | ''D:'' each face's private declaration (handle, seat claim, chair) in its own row (`.persona-declarations-h<N>.json`). A signed, intentionally public declaration travels by its own published record and never by this row. |
 | `public-handles` `node-vessel-identity.ts` | face-hot | ''D:'' the owner mapping of a face's own published record in its own row (`.persona-public-handles-h<N>.json`); public handle bytes ride their own signed record. |
-| `vessel-face-key` `:317-318` | hot | ''D:'' private face-scoped vessel key belongs to the PersonaGroup named by its proof relation. Current digest filename has no `face` selector; add an authenticated mapping. It stays local, outside a face bundle. |
-| `face-address-secret` `:322-323` | hot | ''D:'' face's fleet address secret; digest-to-PersonaGroup mapping is required. It stays local unless a defined face recovery route includes it. |
-| `fleet-join-pending` `:326-327` | hot | ''D:'' split the single pending file into target-face rows, including its X25519 secret/request; bind target before writing. Public signed offer/answer transport is F. A pending join with no proven target refuses. |
-| `face-join-record` `:330-331` | hot | ''D:'' joined face's private record/grants; digest-to-face mapping is required. Public certificates may be copied at F only as separately defined fields. |
+| `vessel-face-key` `face-key-custody.ts` | face-hot | ''D:'' the private face-scoped vessel key rests in the local face whose proof key the scope names, `faces/<fcid>/vessel-face-key-h<N>-<scope digest>.bin`; the founding or join that minted it binds it, and a reader finds it by the scope digest across the face directories (names alone) before that face's key opens it. It stays local, outside a face bundle. |
+| `face-address-secret` `fleet-join-custody.ts` | face-hot | ''D:'' the face's fleet address secret rests in that face, `face-address-secret-g<sha256 of its PersonaGroup>.bin`; the name's digest is the group digest the floor index holds. Local unless a defined face recovery route includes it. |
+| `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
+| `face-join-record` `fleet-join-custody.ts` | face-hot | ''D:'' the joined face's private record and grants, `face-join-record-g<group digest>.json` in that face. |
 | `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the worn face's book; a vessel wearing none recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
 | `guardian-set` `:337-338` | face-hot | ''D:'' each face's guardian/recovery commitments under that face; its intended local row rides its one-face bundle. Guardians keep their own secret shares. |
 | `face-provisional` `:341-342` | face-hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
 | `hosting-state` `:343-344` | hot | ''D/F split, LEAD:'' assign confidential hosting state to the authorizing face; public hosting advertisements may be F. A proven irreducible node service secret needs a new named S row, not this catchall. |
 | `hosting-spent` `:345-346` | hot | ''D/F split, LEAD:'' per-face replay/spend authority D; public nonsecret replay markers F only after payload audit. |
 | `hosting-carry` `:347-348` | hot | ''D/F split, LEAD:'' ciphertext carriage may be F; any private plaintext/key or relation goes to owning face D. Inspect payload before migration. |
-| `walk` `:349-350` | hot | ''D/F split, LEAD:'' private walker receipt/seed/relationship D by owning face; public carriage bytes F. Browser has a corresponding `walk/*` matcher. |
-| `gate-memory` `:353-354` | hot | ''D/F split, LEAD:'' withdrawal memory per proof subject maps to the owning face D; a public revocation statement may be F. Its digest filename alone does not prove ownership. |
-| `transition-pending` `:356-357` | hot | ''D/F split, LEAD:'' confidential ceremony state D by participating face; signed public transition proof F after field audit. No unassigned global pending secret. |
-| `transitions` `:358-359` | hot | ''D/F split, LEAD:'' split private lineage by face; verified public transition records may be F. |
-| `cofound` `:362-363` | hot | ''D/F split, LEAD:'' private offer/authority context D by the acting face; public halves and jointly signed image F where the payload proves public. |
-| `outbox-key` `:367-368` | hot | ''D:'' one outbox key per sending face, opened under that face's FCK, or retire it for a face-scoped equivalent. It cannot remain VK-wrapped. |
+| `walk` `node-walk-store.ts` | face-hot | ''D:'' the walking face owns its private walk record, `walk-h<N>-<gate digest>.json` in that face; a vessel still walks at one hearth (every face's names are read), and the daemon lists only the unlocked faces' walks. |
+| `gate-memory` `gate-memory-rows.ts` | face-hot | ''D:'' a gate's withdrawal memory rests in the face whose gate learned it, `gate-memory-h<N>-<subject digest>.bin`; each gate reads and writes only its own face's rows, and another unlocked face's withdrawal reads absent through it. |
+| `transition-pending` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: a crossing in progress holds public key-sets, signatures and witnesses and no secret, so it rests in the clear in the seal home (`plain-rows.ts`), readable with no key, written under the custody claim. |
+| `transitions` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: each sealed crossing record is a verified public record (key-sets, signatures, witnesses), so it rests in the clear beside the charter and verifies from the charter alone. |
+| `cofound` `cofound-record.ts` | face-hot | ''D:'' the acting face's record of a joint founding, `cofound-h<N>-<offer fingerprint>.json` in that face; the jointly signed image is public and rides the offer and join files. |
+| `outbox-key` `outbox-key.ts` | face-hot | ''D:'' one outbox key per sending face, `outbox-key-h<N>.bin` in that face. A flat `outbox-key.bin` reads as an earlier shape. The parcels partition by the sending face's key (a parcel sealed under another face's key never opens). |
 | `sealed-outbox` `:373-374` | outbox | ''D:'' local sealed parcels partition by sending face and its outbox key. Wire ciphertext can be copied as F carriage; the local outbox key and reader relation do not become floor authority. |
 | `persona-root` `:377-378` | face-cold | ''D:'' face root under that face's FCK; one-face bundle includes it. |
 | `face-proof-key` `:381-382` | face-cold | ''D:'' per-face Nexus proof key under that FCK; bundle selection remains face-specific. |
 | `seat-key` `:386-387` | face-cold | ''D:'' face's local seat key; stays on its vessel, not in a face bundle. |
-| `cadence-key` `:390-391` | cold | ''D/F split, LEAD:'' private hearth cadence authority must map to the authorizing face if it is face authority; its public half is F. If genuinely node-only, specify a new named S principal/opener before assigning it. The current digest filename does not settle this. |
+| `cadence-key` `cadence-key-store.ts` | face-cold | ''D:'' the minting face owns the hearth cadence key, `cadence-key-h<N>-<digest>.bin` in that face; a reader finds it by the digest across the face directories. No vessel S principal in this lane. |
 | `restore-pending` `:394-395` | cold | ''D:'' one target-face restore transaction; split the global file, authenticate its target before staging, and never stage sibling material. |
 | `device-share` `:396-397` | face-cold | ''D:'' face-indexed recovery device share, not a common device share. |
 
@@ -118,7 +118,7 @@ The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/brows
 | `nexus-key/h<N>/*` | ''D:'' that face's private per-Nexus keys; public verification line F if separately represented. |
 | `vessel-face-key/*|*` | ''D:'' the face named by authenticated relation, never inferred from delimiter text alone; add owner lookup/binding. |
 | `fleet-join-secret/*` | ''D:'' target face's address/join secret; add authenticated owner mapping. |
-| `fleet-join-pending` | ''D:'' split into one target-face pending row before its secret lands; public offer/answer envelope F. |
+| `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
 
 The browser's clear-before-slot allowance for `vessel-key`, `keyhive-archive`, and `veil-archive-h<N>` (`browser-custody.ts:390-395`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and rows (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
@@ -248,6 +248,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;zSgFD8bFEEfBa4qF12roeeKrEdu5wrX20weKvkIH4go
+<<^ code="&#x0003;">>ni:///sha-256;PdAbhbUI9Y0pjCF_3LE-EPF53crLfWQQMUNdu8H8Ejc
 
 <<^ code="&#x0004;" -> to="?">>

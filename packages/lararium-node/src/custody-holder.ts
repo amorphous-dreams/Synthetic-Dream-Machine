@@ -35,7 +35,7 @@ import {
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type VesselKey,
 } from "@lararium/mesh";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
-import { appendFaceEntry, bindFaceAsk, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
+import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
@@ -405,7 +405,9 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const selector = faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) as Exclude<FaceSelector, null>;
     let found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
     if (!found && forWrite && faceAutoFounder) {
-      await doFoundFace({ fillRetired: true, ...("group" in selector ? { group: selector.group } : "ask" in selector ? { ask: selector.ask } : { ordinal: selector.ordinal }), slots: faceAutoFounder(selector) });
+      // Two writers racing to the same absent face found it once: the loser finds the winner's face standing.
+      try { await doFoundFace({ fillRetired: true, ...("group" in selector ? { group: selector.group } : "ask" in selector ? { ask: selector.ask } : { ordinal: selector.ordinal }), slots: faceAutoFounder(selector) }); }
+      catch (err) { if (!(err instanceof FaceIndexRefused)) throw err; }
       found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
     }
     if (!found) throw new FaceCustodyAbsent(file);

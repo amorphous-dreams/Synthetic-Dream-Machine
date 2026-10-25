@@ -411,7 +411,7 @@ export interface SovereignReaders {
   /** Seal one face's veil archive at rest. */
   readonly writeVeilArchive: (bytes: Uint8Array, personaGroup: string) => Promise<void>;
   /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
-  readonly outboxKey: () => Promise<Uint8Array>;
+  readonly outboxKey: (face: number) => Promise<Uint8Array>;
 }
 
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
@@ -1306,6 +1306,9 @@ async function prepareNodeBootOn(
     return activeAtom.key;
   } });
   deviceOfPresenter = (seat) => deviceBook.deviceOfSeat(seat);
+  // THE GATE'S FACE: the face whose gate this composition stands (the mount's own, else the founding face). Its withdrawal memory
+  // rests in that face's subtree under its key, and no other face's gate reads it.
+  const gateFace = wornMount?.handleIndex ?? 0;
   const gateDeps: VesselGateDeps = {
     readings: readEveryCarried,
     posture:  postureOf,
@@ -1319,7 +1322,7 @@ async function prepareNodeBootOn(
       },
     }),
     withdrawals: sovereign
-      ? storedWithdrawals(gateMemoryRows(), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
+      ? storedWithdrawals(gateMemoryRows(gateFace), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
       : memoryBackedWithdrawals(),
     deadlines: timerGateDeadlines(),
     audience:  DAEMON_BAG_ID,
@@ -2242,7 +2245,7 @@ async function prepareNodeBootOn(
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
     // verb refuses `outbox-shut`, and `lares vault status` names the row.
     const outboxKey = sovereign
-      ? await sovereign.outboxKey().catch((err: unknown) => {
+      ? await sovereign.outboxKey(mountedFace).catch((err: unknown) => {
         console.log(`[outbox] the outbox key's row opens to no key (${err instanceof Error ? err.message : String(err)}) — the daemon island stands with its outbox shut`);
         return null;
       })

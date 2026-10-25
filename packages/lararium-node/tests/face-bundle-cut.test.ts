@@ -86,7 +86,7 @@ beforeEach(async () => {
   const proof0 = secretOf(3), proof1 = secretOf(5), vesselFace = secretOf(9);
   await storeFaceProofKey({ faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, proof0, 0);
   await storeFaceProofKey({ faceKey: await publicOf(proof1), nexus: "nexus-test-one" }, proof1, 1);
-  await storeVesselFaceKey({ faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, vesselFace);
+  await storeVesselFaceKey(0, { faceKey: await publicOf(proof0), nexus: "nexus-test-one" }, vesselFace);
   const book = new HandleBook();
   const mine = await cardOf(11, "friend-of-zero"), theirs = await cardOf(12, "FRIEND-OF-ONE"), nobodys = await cardOf(13, "UNTAGGED-FRIEND");
   await book.ingest(mine, undefined, keys.face0); book.setPetname(mine.nym, "Ana", keys.face0);

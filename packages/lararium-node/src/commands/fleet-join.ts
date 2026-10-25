@@ -283,7 +283,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     if (!isRefusal(kept)) return kept;
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending for this face; land its answer, or abandon it (`lares fleet join abandon`).");
   }
-  await ensureFaceCustodyOfGroup(offer.personaGroup);
+  const joinFace = await ensureFaceCustodyOfGroup(offer.personaGroup);
   const atomSeed = await standFaceAtom(offer.personaGroup);
   const atomKey = faceAtomKeyFromSeed(atomSeed, offer.personaGroup).key;
   const seal = fleetJoinSealPair();
@@ -296,7 +296,7 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
         const standing = await readVesselFaceKeyPublic(scope);
         if (standing !== null) return standing;
         const minted = await mintVesselFaceKey();
-        try { await storeVesselFaceKey(scope, minted.secret); } finally { minted.secret.fill(0); }
+        try { await storeVesselFaceKey(joinFace.ordinal, scope, minted.secret); } finally { minted.secret.fill(0); }
         return minted.publicKey;
       },
       sign: (image) => signHex(image, seed),
