@@ -111,7 +111,8 @@ def prepare(out, archive):
         # OODA-HA source witnesses hold only registered project/image evidence;
         # external CC0 dependencies retain an independently pinned manifest.
         source_hashes=dict(recipe.source_hashes),
-        provenance=recipe.provenance)
+        provenance=recipe.provenance,
+        seed_entity_sha256=recipe.seed_entity_sha256)
     project_path=HERE/"project_nosycat.generated.json"
     recipe_path=HERE/"hybrid"/"recipe_nosycat.generated.json"
     project_path.write_text(json.dumps(new_project,sort_keys=True,indent=2)+"\n")

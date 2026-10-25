@@ -300,7 +300,7 @@ def semantic_cad_point(shape, selector, *, linear=.35, angular=.3):
 
 
 def derived_cad_surface(shape, params, *, camera=None, size=(128,192),
-                        source_mask=None, socket_name='top-east'):
+                        source_mask=None, source_edges=None, socket_name='top-east'):
     """Deterministic, watertight sculptural polymesh from actual BRep vertices.
 
     Fracture growth acts on a *derived* mesh; the source CAD never changes.
@@ -342,7 +342,23 @@ def derived_cad_surface(shape, params, *, camera=None, size=(128,192),
     gap=np.linalg.norm(xyz-anchor,axis=1)
     fade=np.clip((gap-radius)/max(radius*.8,1e-5),0,1)**2
     # Protect every vertex at the source socket and gradually release outward.
-    delta=reference.vertex_normals*(ripple*fade)[:,None]
+    # Bounded RGBA appearance cues can modulate the sculptural response,
+    # but never the BRep or the source silhouette target. Alpha and RGBA
+    # derive from one entity; do not count them as independent evidence.
+    appearance_guided=False
+    signal=np.ones(len(xyz),dtype=float)
+    if source_edges is not None and guide>0 and camera is not None:
+        import cv2
+        edges=np.asarray(source_edges,dtype=bool)
+        if edges.shape!=(size[1],size[0]):
+            raise ValueError('Seed RGB edge cue disagrees with source frame')
+        distance=cv2.distanceTransform((~edges).astype(np.uint8),cv2.DIST_L2,3)
+        pixels=camera.project(xyz,size)[0]
+        col=np.clip(np.rint(pixels[:,0]).astype(int),0,size[0]-1)
+        row=np.clip(np.rint(pixels[:,1]).astype(int),0,size[1]-1)
+        signal+=.12*guide*np.exp(-distance[row,col]/4.)
+        appearance_guided=True
+    delta=reference.vertex_normals*(ripple*fade*signal)[:,None]
     projected_scale=None
     if camera is not None:
         if camera.fit!='fixed' and source_mask is not None:
@@ -359,7 +375,9 @@ def derived_cad_surface(shape, params, *, camera=None, size=(128,192),
             'protected_socket':socket_name,'protected_radius':radius,
             'maximum_world_deviation':float(np.max(np.linalg.norm(modified-xyz,axis=1))),
             'pixel_scale':projected_scale,'evidence_state':'provisional' if source_mask is not None else 'synthetic',
-            'guidance_applied':False}
+            'guidance_applied':False,
+            'appearance_cue_applied':appearance_guided,
+            'appearance_cue_peak_gain':float(signal.max())}
     if source_mask is not None and guide>0 and camera is not None:
         # Model evidence can nudge *visible, unprotected* surface vertices only.
         # The update wins admission only when the mesh remains valid and its

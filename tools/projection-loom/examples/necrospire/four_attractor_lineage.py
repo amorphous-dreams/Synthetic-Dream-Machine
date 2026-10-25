@@ -111,7 +111,8 @@ def prepare(out):
             location=recipe.location, pet_name=recipe.pet_name,
             steps=recipe.steps, bounds=recipe.bounds, initial=changed,
             cad_keys=recipe.cad_keys, source_hashes=recipe.source_hashes,
-            provenance=recipe.provenance)
+            provenance=recipe.provenance,
+            seed_entity_sha256=recipe.seed_entity_sha256)
         # No change to the original alpha project: this fork captures a new
         # source-bound constructor in its OWN recipe + project on the runner.
         project_dict["initial"] = {k: changed[k] for k in project.initial}

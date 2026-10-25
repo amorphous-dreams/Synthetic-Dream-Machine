@@ -520,6 +520,8 @@ class OODAHAJournal:
 def _source_hashes(project, location_stack):
     hashes = ({'image': sha256(project.reference.read_bytes()).hexdigest()}
               if project.reference else {})
+    if getattr(project,'seed_entity',None) is not None:
+        hashes.update(project.seed_entity.source_digests())
     if location_stack is not None:
         location_stack.audit()
         location_stack.verify_source_bytes()
@@ -689,6 +691,23 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
             'transfer_bundle_sha256':transfer_digest,
             'location':project.location}
     with single_runner(out/'session.json'):
+        if compositor is not None and getattr(project,'seed_entity',None) is not None:
+            # Operator-authorized initial pet-name, bound once to a durable
+            # relational seed selector; never a transient CAD face or filename.
+            from .relations import PetNameLedger
+            seed_entity=project.seed_entity
+            if not ledger_path.exists():
+                named=PetNameLedger(location=project.location)
+                named.pet_name(seed_entity.pet_name,'@seed/'+seed_entity.slot,
+                    compositor.grow(recipe.initial).witness(),mode='entity',
+                    has=seed_entity.witness_has(),retain=.4)
+                named.save(ledger_path)
+            else:
+                named=PetNameLedger.load(ledger_path)
+                holds=[c for c in named.claims if c['active'] and
+                       c['name']==seed_entity.pet_name]
+                if len(holds)!=1 or holds[0]['born_handle']!='@seed/'+seed_entity.slot:
+                    raise ValueError('Source seed pet-name ledger does not match the named seed')
         archive = (LineageArchive(out/'lineage_archive.json',identity=archive_identity)
                    if breeding else None)
         journal = OODAHAJournal(out/'session.json', identity=identity,

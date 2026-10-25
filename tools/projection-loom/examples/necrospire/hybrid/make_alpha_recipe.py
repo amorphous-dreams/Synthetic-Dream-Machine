@@ -20,20 +20,29 @@ def make():
     }
     bounds={**base.bounds,**{k:(v[0],v[1]) for k,v in extra.items()}}
     initial={**base.initial,**{k:v[2] for k,v in extra.items()}}
-    steps=(*base.steps,
+    from projection_loom.capability_stack import Capability
+    seed_step=Capability('seed.oblique','Oblique Seed','seed-cue',
+        has=('#has/source-silhouette','#has/source-appearance'))
+    steps=(seed_step,*base.steps,
         Capability('join.gallery','Joining','cad',depends_on=('join.cad',),
                    part='east gallery',activation='grammar.gallery',
                    has=('#has/gallery','#has/extension')),
         Capability('fortress.buttress','Fortress','cad',depends_on=('fortress.cad',),
                    part='crown brace',activation='grammar.buttress',
                    has=('#has/brace','#has/fortification')))
+    # Every source-guided mesh depends on the one named seed, not an
+    # independently weighted second image attractor.
+    steps=tuple(Capability.from_dict({**s.to_dict(),
+        'depends_on':['seed.oblique',*s.depends_on]}) if s.operator=='cad-polymesh'
+        else s for s in steps)
     # A compound recipe also holds polygon-only loci. The CAD project
     # owns exactly its own subset of the content-addressed constructive genome.
     assert {k:bounds[k] for k in project.bounds}==project.bounds
     assert {k:initial[k] for k in project.initial}==project.initial
     return CapabilityRecipe(location=base.location,pet_name=base.pet_name,
         steps=steps,bounds=bounds,initial=initial,cad_keys=tuple(project.initial),
-        source_hashes=base.source_hashes,provenance=base.provenance)
+        source_hashes={**base.source_hashes,**project.seed_entity.source_digests()},
+        provenance=base.provenance,seed_entity_sha256=project.seed_entity.sha256)
 
 if __name__=='__main__':
     make().save(HERE/'recipe_alpha.json')

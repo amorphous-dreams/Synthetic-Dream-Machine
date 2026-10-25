@@ -91,7 +91,7 @@ class OperatorRegistry:
 class CapabilityRecipe:
     """Immutable plan + mutable, bounded numeric loci; one named location."""
     def __init__(self,*,location,pet_name,steps,bounds,initial,cad_keys,
-                 source_hashes=None,provenance='provisional'):
+                 source_hashes=None,provenance='provisional',seed_entity_sha256=None):
         self.location=str(location)
         self.pet_name=pet_name
         self.steps=tuple(Capability.from_dict(x) if isinstance(x,dict) else x for x in steps)
@@ -99,6 +99,7 @@ class CapabilityRecipe:
         self.initial={str(k):float(v) for k,v in initial.items()}
         self.cad_keys=tuple(cad_keys)
         self.source_hashes=dict(source_hashes or {})
+        self.seed_entity_sha256=seed_entity_sha256
         self.provenance=provenance
         self._validate()
 
@@ -130,6 +131,8 @@ class CapabilityRecipe:
             if any(locus not in self.bounds for _,locus in step.params):raise ValueError('Undeclared operator locus')
         for v in self.source_hashes.values():
             if not re.fullmatch(r'[a-f0-9]{64}',str(v)):raise ValueError('Invalid source digest')
+        if self.seed_entity_sha256 is not None and not re.fullmatch(r'[a-f0-9]{64}',str(self.seed_entity_sha256)):
+            raise ValueError('Capability seed binding must use exact SHA-256 identity')
         # A declared recipe never upgrades artwork to survey registration.
         if self.provenance=='verified' and not self.source_hashes:
             raise ValueError('Verified evidence requires independent sources')
@@ -141,6 +144,8 @@ class CapabilityRecipe:
              'bounds':{k:list(v) for k,v in self.bounds.items()},
              'initial':self.initial,'cad_keys':list(self.cad_keys),
              'source_hashes':self.source_hashes}
+        if self.seed_entity_sha256 is not None:
+            obj['seed_entity_sha256']=self.seed_entity_sha256
         obj['sha256']=digest(obj)
         return obj
 
@@ -167,17 +172,28 @@ class CapabilityRecipe:
         return {'schema':'projection-loom/compound-lineage',
                 'recipe_sha256':self.sha256,'operator_sha256':registry.fingerprint(),
                 'genome':self.verify_genome(genome),'source_hashes':self.source_hashes,
-                'location':self.location,'pet_name':self.pet_name}
+                'location':self.location,'pet_name':self.pet_name,
+                'seed_entity_sha256':self.seed_entity_sha256}
 
 
 class BuildContext:
-    def __init__(self,recipe,genome,assembly,scene,camera,size,source_mask,registry):
+    def __init__(self,recipe,genome,assembly,scene,camera,size,source_mask,registry,seed_entity=None):
         self.recipe=recipe;self.genome=genome;self.assembly=assembly;self.scene=scene
         self.camera=camera;self.size=size;self.source_mask=source_mask;self.registry=registry
+        self.seed_entity=seed_entity
         self.results={};self.receipts=[]
 
     def params(self,step):
         return {p:float(self.genome[locus]) for p,locus in step.params}
+
+
+def _seed_cue(ctx,step):
+    if ctx.seed_entity is None:
+        raise ValueError('A seed cue requires a content-verified source entity')
+    if step.part or step.layer or step.socket:
+        raise ValueError('A source cue cannot declare a CAD part or geometry socket')
+    return {**ctx.seed_entity.cue(ctx.size), 'kind':'source-seed',
+            'authority':'two witnesses of one provisional pet-named source entity'}
 
 
 def _cad(ctx,step):
@@ -197,14 +213,18 @@ def _cad_mesh(ctx,step):
     if not step.part or not step.layer:raise ValueError('Derived surface needs CAD part and layer')
     part=ctx.assembly.parts[step.part].solid
     params=ctx.params(step)
-    source=ctx.source_mask if params.get('guide',0)>0 else None
+    guided=params.get('guide',0)>0
+    source=ctx.seed_entity.mask(ctx.size) if guided and ctx.seed_entity is not None else (
+        ctx.source_mask if guided else None)
+    appearance=ctx.seed_entity.appearance_edges(ctx.size) if guided and ctx.seed_entity is not None else None
     mesh,info=derived_cad_surface(part,params,camera=ctx.camera,size=ctx.size,
-                                  source_mask=source,
+                                  source_mask=source,source_edges=appearance,
                                   socket_name=step.socket or 'top-east')
     ctx.scene.add_mesh(step.layer,mesh,genotype=params,source='procedural',role=step.role,
                        requires_volume=True,covers_part=step.part)
     return {'kind':'polymesh','layer':step.layer,'part':step.part,
-            'authority':'polygon-surface','geometry':info}
+            'authority':'polygon-surface','geometry':info,
+            'seed_entity_sha256':ctx.seed_entity.sha256 if guided and ctx.seed_entity is not None else None}
 
 
 def _standalone_mesh(ctx,step):
@@ -231,7 +251,7 @@ def _socket(ctx,step):
 
 def default_registry():
     reg=OperatorRegistry()
-    for name,fn in [('cad',_cad),('cad-contact',_contact),
+    for name,fn in [('seed-cue',_seed_cue),('cad',_cad),('cad-contact',_contact),
                     ('cad-polymesh',_cad_mesh),('standalone-polymesh',_standalone_mesh),
                     ('semantic-socket',_socket)]:
         reg.register(name,fn)
@@ -249,7 +269,13 @@ class CapabilityCompositor:
         self.registry=registry or default_registry()
         self.camera=camera or project.cameras[project.reference_view]
         self.size=tuple(size)
+        self.seed_entity=getattr(project,'seed_entity',None)
         self.source_mask=source_mask
+        if self.seed_entity is not None:
+            if recipe.seed_entity_sha256 is not None and recipe.seed_entity_sha256!=self.seed_entity.sha256:
+                raise ValueError('Recipe seed identity differs from project source seed')
+            if source_mask is not None and not np.array_equal(source_mask,self.seed_entity.mask(self.size)):
+                raise ValueError('Scoring mask differs from the named source seed alpha')
         if self.camera.fit!='fixed' and source_mask is not None:
             raise ValueError('External evidence requires a fixed camera')
         if source_mask is not None and np.asarray(source_mask).shape!=(size[1],size[0]):
@@ -265,7 +291,8 @@ class CapabilityCompositor:
     def construction_digest(self):
         from .epochs import project_code_digest
         return digest({'engine':project_code_digest(self.project),
-                       'recipe':self.recipe.sha256,'operators':self.registry.fingerprint()})
+                       'recipe':self.recipe.sha256,'operators':self.registry.fingerprint(),
+                       'seed_entity_sha256':self.seed_entity.sha256 if self.seed_entity else None})
 
     def grow(self,genome,*,stage_event=None):
         clean=self.recipe.verify_genome(genome)
@@ -274,7 +301,8 @@ class CapabilityCompositor:
         if not report['valid'] or report.get('union_solids')!=1 or not report.get('union_valid'):
             raise ValueError('Composite CAD gate failed')
         scene=HybridLocation(self.recipe.location,assembly,pet_name=self.recipe.pet_name)
-        context=BuildContext(self.recipe,clean,assembly,scene,self.camera,self.size,self.source_mask,self.registry)
+        context=BuildContext(self.recipe,clean,assembly,scene,self.camera,self.size,self.source_mask,self.registry,
+                             seed_entity=self.seed_entity)
         for step in self.recipe.steps:
             if stage_event:stage_event(step,'begin',{'dependencies':list(step.depends_on)})
             if any(context.results.get(dep,{}).get('state')!='complete' for dep in step.depends_on):
@@ -329,6 +357,13 @@ class CompositeBuild:
             raise ValueError('Location witness handle collides with CAD construction')
         nodes[root] = Occurrence(root, 'location', 'composed-location', (),
                                  capabilities(('generative',)), 'location-root')
+        seed=self.context.seed_entity
+        if seed is not None:
+            handle='@seed/'+seed.slot
+            if handle in nodes:
+                raise ValueError('Seed source handle collides with authored geometry')
+            nodes[handle]=Occurrence(handle,'entity','source-seed',(root,),
+                                     capabilities(seed.witness_has()),seed.slot)
         entities = dict.fromkeys(step.entity for step in self.recipe.steps)
         for entity in entities:
             handle = '@entity/' + entity
@@ -345,6 +380,8 @@ class CompositeBuild:
     def manifest(self,registry):
         return {'schema':'projection-loom/compound-build',
                 'lineage':self.recipe.lineage(self.genome,registry),
+                'source_seed':self.context.seed_entity.cue(self.context.size)
+                                if self.context.seed_entity else None,
                 'steps':self.steps,'audit':self.audit,
                 'capability_features':sorted(f"{row['entity']}:{row['operator']}:{row['id']}"
                                 for row in self.steps if row['state']=='complete'),
