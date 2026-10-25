@@ -38,7 +38,7 @@ def _active(step, genome):
     return _number({'param':guard['param']},genome)>=_number(guard['min'],genome)
 
 
-def grow_program(steps, genome, *, overlap_ratio=.012):
+def grow_program(steps, genome, *, overlap_ratio=.012, assembly=None):
     """Interpret a bounded, typed program; no imported mesh seeds or implicit links.
 
     Supported operators: root-box, box, beam, void-box. A `key` names a local
@@ -46,9 +46,9 @@ def grow_program(steps, genome, *, overlap_ratio=.012):
     while preserving the named rule-slot when one is supplied. The operators
     deliberately require explicit placement and parent/route relations.
     """
-    assembly=SolidAssembly(overlap_ratio=overlap_ratio)
-    handles={}
-    seen=set()
+    assembly=assembly if assembly is not None else SolidAssembly(overlap_ratio=overlap_ratio)
+    handles={name:name for name in assembly.parts}
+    seen=set(handles)
     for step in steps:
         key=step['key']
         if not isinstance(key,str) or not key or key in seen:
