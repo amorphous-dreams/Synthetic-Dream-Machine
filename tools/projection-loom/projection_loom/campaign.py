@@ -225,11 +225,12 @@ FAMILY_FOCUSES = {
     'needle': ('shaft_width','shaft_length','shaft_asymmetry','shaft_jaggedness'),
     'fractured': ('shaft_jaggedness','spire_segmentation','crystal.fracture','crystal.wave','crystal.seed'),
     'terraces': ('terrace_overhang','terrace_offset','gallery_reach','fortress_width',
-                 'join.enable','join.relief','join.fracture','join.seed','join.wave'),
-    'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height'),
+                 'join.enable','join.relief','join.fracture','join.seed','join.wave',
+                 'grammar.gallery','grammar.gallery_span'),
+    'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height',
+              'grammar.buttress','grammar.brace_span'),
     'keep': ('keep_taper','tower_height','spire_segmentation','gate_width'),
-    'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed',
-                'grammar.gallery','grammar.buttress','grammar.gallery_span','grammar.brace_span'),
+    'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed'),
 }
 # Search populations and operator-given pet-names have separate authority.
 # An entity may have several distinct reproductive search islands.
