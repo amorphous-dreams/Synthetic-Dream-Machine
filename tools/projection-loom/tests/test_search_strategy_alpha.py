@@ -137,3 +137,25 @@ def test_surplus_scoring_seats_adapt_but_preserve_family_fairness():
     assert {p.emitter.split(':')[1] for p in selected}=={'needle','crown'}
     assert all(any(p.emitter==f'family:{f}:{m}' for p in selected)
                for f in ('needle','crown') for m in ('local','sobol','topology'))
+
+
+def test_adaptive_snapshots_never_relearn_same_active_generation():
+    from projection_loom.search_strategy import emitter_performance, SurrogatePreview
+    class Archive:
+        data={"members":{
+            "before":{"id":"0001/needle-001-001","family":"needle",
+                "emitter":"family:needle:sobol","combined_loss":.4,
+                "mask_sha256":"a","genome":{"x":.1},
+                "losses":{"silhouette":.4}},
+            "current":{"id":"0002/needle-002-001","family":"needle",
+                "emitter":"family:needle:sobol","combined_loss":.01,
+                "mask_sha256":"b","genome":{"x":.9},
+                "losses":{"silhouette":.01}}
+        }}
+    archive=Archive()
+    assert emitter_performance(archive,before_generation=2)[
+        "family:needle:sobol"]["scored"]==1
+    model=SurrogatePreview({"x":(0.,1.)},archive,min_samples=1,before_generation=2)
+    assert model.predict({"x":.9})["predicted_loss"]==pytest.approx(.4)
+    assert emitter_performance(archive)[
+        "family:needle:sobol"]["scored"]==2

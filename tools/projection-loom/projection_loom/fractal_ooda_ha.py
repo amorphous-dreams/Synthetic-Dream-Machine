@@ -717,13 +717,13 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                                    max_exact=exact_budget,max_detail=detail_budget,
                                    seed=seed+i,pet_ledger=ledger,
                                    emitter_turn=i,
-                                   emitter_performance=emitter_performance(archive) if breeding else None)
+                                   emitter_performance=emitter_performance(archive,before_generation=i+1) if breeding else None)
                 running_id = [None]
                 builds = {}
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
-                surrogate=SurrogatePreview(bounds,archive) if breeding else None
-                emitter_credit=adaptive_priorities(batch,archive) if breeding else {}
+                surrogate=SurrogatePreview(bounds,archive,before_generation=i+1) if breeding else None
+                emitter_credit=adaptive_priorities(batch,archive,before_generation=i+1) if breeding else {}
                 by_genome={}
                 for proposal in batch:
                     digest=genome_digest(proposal.genome)

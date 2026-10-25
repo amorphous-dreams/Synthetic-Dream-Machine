@@ -66,12 +66,14 @@ def diversity_parents(rows,limit,*,specialist=False):
 
 class SurrogatePreview:
     """Uncertainty/novelty-aware *ordering* only. No model may waive an exact audit."""
-    def __init__(self,bounds,archive,*,min_samples=12):
+    def __init__(self,bounds,archive,*,min_samples=12,before_generation=None):
         self.keys=list(bounds)
         self.low=np.array([bounds[k][0] for k in self.keys],dtype=float)
         self.spread=np.array([bounds[k][1]-bounds[k][0] for k in self.keys],dtype=float)
         if np.any(self.spread<=0):raise ValueError('Invalid surrogate bounds')
-        rows=sorted(archive.data['members'].values(),key=lambda r:r['id']) if archive else []
+        rows=sorted((r for r in archive.data['members'].values()
+            if before_generation is None or int(r['id'].split('/')[0])<before_generation),
+            key=lambda r:r['id']) if archive else []
         self.x=np.array([[r['genome'][k] for k in self.keys] for r in rows],dtype=float).reshape((-1,len(self.keys)))
         self.x=(self.x-self.low)/self.spread
         self.y=np.array([r['losses']['silhouette'] for r in rows],dtype=float)
@@ -114,11 +116,13 @@ def searchability_census(bounds,archive,*,family_focus,activations=()):
         'observed':observed}
 
 
-def emitter_performance(archive):
+def emitter_performance(archive,*,before_generation=None):
     """Measured quality/diversity gain per family/method; never native validity."""
     if archive is None:
         return {}
-    rows=sorted(archive.data['members'].values(),key=lambda x:x['id'])
+    rows=sorted((r for r in archive.data['members'].values()
+                 if before_generation is None or int(r['id'].split('/')[0])<before_generation),
+                key=lambda x:x['id'])
     best={}
     seen=set()
     score={}
@@ -142,14 +146,14 @@ def emitter_performance(archive):
     return score
 
 
-def adaptive_priorities(proposals, archive):
+def adaptive_priorities(proposals, archive, *, before_generation=None):
     """Bounded secondary ordering, preserving mandatory emitter reservations.
 
     Smaller score means earlier audition *within a reserved method/priority
     stratum*. No unseen candidate is marked invalid; under-tested methods
     receive optimistic uncertainty credit.
     """
-    performance=emitter_performance(archive)
+    performance=emitter_performance(archive,before_generation=before_generation)
     all_seen=sum(x['scored'] for x in performance.values())
     value={}
     for proposal in proposals:
