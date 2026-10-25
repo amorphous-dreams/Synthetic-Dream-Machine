@@ -24,7 +24,7 @@ from .epochs import CandidateAdapter, WideEpoch, propose_methods, project_code_d
 from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery, regrow_lineage_gallery
-from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor
+from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor, validate_breeding_recipe
 from .search_strategy import SurrogatePreview, regional_loss, adaptive_priorities, emitter_performance, multiscale_source_loss
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
@@ -537,10 +537,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
     if detail_budget > exact_budget:
         raise ValueError('Detail budget cannot exceed exact audit budget')
     if breeding:
-        required={k for loci in FAMILY_FOCUSES.values() for k in loci
-                  if not k.startswith('grammar.')}
-        if recipe is None or recipe.version<2 or not required.issubset(recipe.bounds):
-            raise ValueError('Breeding requires a source-bound version-two-or-newer structural family recipe with all required loci')
+        validate_breeding_recipe(recipe)
         if type(offspring_per_family) is not int or not 1 <= offspring_per_family <= 32:
             raise ValueError('Breeding offspring budget must be 1..32 per family')
         if type(migration_every) is not int or migration_every < 2:
