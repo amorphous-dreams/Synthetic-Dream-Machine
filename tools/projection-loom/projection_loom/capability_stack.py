@@ -164,7 +164,7 @@ class CapabilityRecipe:
         return {k:float(genome[k]) for k in self.cad_keys}
 
     def lineage(self,genome,registry):
-        return {'schema':'projection-loom/compound-lineage/v1',
+        return {'schema':'projection-loom/compound-lineage',
                 'recipe_sha256':self.sha256,'operator_sha256':registry.fingerprint(),
                 'genome':self.verify_genome(genome),'source_hashes':self.source_hashes,
                 'location':self.location,'pet_name':self.pet_name}
@@ -343,7 +343,7 @@ class CompositeBuild:
         return RelationWitness(nodes, location=self.recipe.location)
 
     def manifest(self,registry):
-        return {'schema':'projection-loom/compound-build/v1',
+        return {'schema':'projection-loom/compound-build',
                 'lineage':self.recipe.lineage(self.genome,registry),
                 'steps':self.steps,'audit':self.audit,
                 'capability_features':sorted(f"{row['entity']}:{row['operator']}:{row['id']}"
