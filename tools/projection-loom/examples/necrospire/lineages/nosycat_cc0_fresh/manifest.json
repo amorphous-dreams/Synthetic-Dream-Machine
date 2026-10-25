@@ -1,0 +1,59 @@
+{
+  "schema": "projection-loom/nosycat-four-attractor-lineage",
+  "seed": 58363,
+  "parent_lineage": null,
+  "frozen_six_generation_pilot": "excluded",
+  "prior_four_attractor_experiment": "comparison-only; not a genetic donor",
+  "original_alpha_sha256": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7",
+  "original_rgba_sha256": "80e1d0ee8ae4bda505c053b42ea1d1f661d71ed4c174f57c15423027872c4f89",
+  "ur_proxy_sha256": "5a1651d27dfdd171d8513bc523183e0897a72c6eae962e0cd1553d3042d9b22e",
+  "brutalism_source": {
+    "schema": "projection-loom/upstream-brutalist-capability",
+    "url": "https://opengameart.org/sites/default/files/brutalism2.zip",
+    "license": "CC0-1.0",
+    "archive_sha256": "8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3",
+    "source_files": {
+      "apartments1": "47e7b4b2619189cc39c0e7da2124ce5af711979c4ea1e63cfd4cf647e9d8949a",
+      "apartments2": "15029c2e1a0f261bfe4abbaaade8c2ca2de034af642929b58106580068efefc4",
+      "apartments3": "0091d1b117bc6e975cee1d06d7a121888b58d6a0407540655cf542bf2cd0b156",
+      "commercial1": "d9613f8d3723021d377a700163057f9aafbf1674809dd1b17438c3441a9199a5",
+      "commercial2": "e084a93b4d044efe1eab59e4289bfebcec828b738192154b06f43077111b41e2",
+      "commercial3": "7a1781dfa218d7c688927ca533a43b4a0ad2b9390962c2d7764a66de7783c249",
+      "hotel1": "6ed3bdf65392a81f317354f122fda6a65406833530d5e3f15df7b42e1e778a1c",
+      "institute1": "ff3df8109fb6517e35a50234220f43728d2753ea2e754aa6d165beddb1daa382"
+    },
+    "motifs": {
+      "horizontal_band_rule": "institute1.scad for z = [0:5]",
+      "vertical_pier_rule": "institute1.scad for x = [0:4]",
+      "floor_slab_rule": "commercial1.scad for z = [0:7]",
+      "balcony_repetition": "apartments1.scad for i = [0:7]"
+    },
+    "reuse": "native CadQuery adaptation; upstream OpenSCAD itself remains runnable",
+    "non_authority": "STL witness not a CAD BRep nor automatically a generalized grammar"
+  },
+  "source_guide_ratios": {
+    "ur_stage": 0.576,
+    "ur_rise": 0.5181818181818182,
+    "brutalist_overhang": 0.4230769230769231,
+    "brutalist_slab": 0.6842105263157895
+  },
+  "recipe_sha256": "92abbf8e2f01b60a5283330ffea0db8988d6837c315ff9cceccb47ce83a17a76",
+  "initial_sha256": "884dd2096da9cd60cdf9db198f997045cc08d76c438d83c12daa42539e191d2e",
+  "activated_capabilities": [
+    "brutalist.bands.cad",
+    "brutalist.piers.cad"
+  ],
+  "policy": {
+    "generations": 3,
+    "offspring_per_family": 3,
+    "exact_per_generation": 12,
+    "detail_per_generation": 6,
+    "score_size": [
+      64,
+      96
+    ],
+    "overscan": 2,
+    "seed": 58363
+  },
+  "sha256": "d781725123b0451d6c5272675e4767ef07b95d6c493f29956726cae4c2068b71"
+}
