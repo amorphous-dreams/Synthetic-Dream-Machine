@@ -191,3 +191,36 @@ def test_arc_feature_mask_receipt_binds_fixed_view_not_just_source_bytes(tmp_pat
     with pytest.raises(ValueError,match="view|camera"):
         FeatureEvidence.load(saved,source_sha256=evidence.source_sha256,
             score_size=(64,96),view_sha256=expected)
+
+
+def test_theme_live_recipes_hold_capabilities_not_ordinal_release_versions():
+    from projection_loom.capability_stack import CapabilityRecipe, OperatorRegistry
+    from projection_loom.pipeline import Project
+    example=Path(__file__).resolve().parents[1]/"examples/necrospire"
+    recipe=CapabilityRecipe.load(example/"hybrid/recipe_alpha.json")
+    assert "version" not in recipe.to_dict()
+    assert not hasattr(recipe,"version")
+    assert recipe.to_dict()["schema"]=="projection-loom/capability-recipe"
+    assert {"grammar.gallery","grammar.buttress"}.issubset(recipe.bounds)
+    assert json.loads((example/"project_alpha.json").read_text())["schema"]=="projection-loom/solid-project"
+    project=Project.load(example/"project_alpha.json")
+    assert set(project.bounds)==set(recipe.cad_keys)
+    registry=OperatorRegistry()
+    registry.register("probe", lambda ctx, step: {"kind":"test"})
+    first=registry.fingerprint()
+    assert isinstance(first,str) and len(first)==64
+
+
+def test_theme_source_bound_breeding_never_uses_release_ordinals_as_admission():
+    from projection_loom.campaign import validate_breeding_recipe
+    from projection_loom.capability_stack import CapabilityRecipe
+    example=Path(__file__).resolve().parents[1]/"examples/necrospire/hybrid"
+    recipe=CapabilityRecipe.load(example/"recipe_alpha.json")
+    assert validate_breeding_recipe(recipe)==recipe
+    # A source-held recipe missing a structural locus cannot breed, regardless
+    # of any claimed label, generation or metadata.
+    from copy import copy
+    missing=copy(recipe)
+    missing.bounds={k:v for k,v in recipe.bounds.items() if k!="shaft_width"}
+    with pytest.raises(ValueError,match="loci|Breeding|source"):
+        validate_breeding_recipe(missing)
