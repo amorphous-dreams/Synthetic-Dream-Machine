@@ -19,9 +19,10 @@ SCHEMA = 'projection-loom/lineage-archive/v1'
 def visual_descriptor(mask):
     """Camera-fixed binary occupancy phenotype; identical pixels have one ID.
 
-    Binned area/extent/center/asymmetry provide a *coarse* quality-diversity
-    niche. The full mask digest catches identical output despite different
-    numeric genes. Descriptors compare only the same fixed view and size.
+    Region-binned silhouette spans retain architectural diversity even when
+    area, bounding box and asymmetry agree. The exact pixel digest catches
+    identical outputs despite different genes. Fixed-view/source comparisons
+    only: a visual niche is never a structural or survey certificate.
     """
     pixels = np.asarray(mask)
     if pixels.ndim != 2 or pixels.size == 0:
@@ -31,8 +32,19 @@ def visual_descriptor(mask):
     height, width = pixels.shape
     digest = sha256(f'{width}x{height}\0'.encode() + pixels.tobytes(order='C')).hexdigest()
     area = int(pixels.sum())
+    # Six horizontal bands are an intentionally coarse architectural profile.
+    # The 16-bin width quantization tolerates one-pixel fringe variations;
+    # exact mask SHA-256 still distinguishes those outputs for lineage receipts.
+    region_widths = []
+    for band in np.array_split(pixels, 6, axis=0):
+        occupied_x = np.flatnonzero(np.any(band, axis=0))
+        region_widths.append(int(occupied_x[-1] - occupied_x[0] + 1)
+                             if len(occupied_x) else 0)
+    region_niche = '-'.join(str(min(15, int(16 * span / width)))
+                            for span in region_widths)
     if area == 0:
-        return {'mask_sha256': digest, 'niche': 'empty', 'occupancy': 0.0}
+        return {'mask_sha256': digest, 'niche': 'empty', 'occupancy': 0.0,
+                'region_widths': region_widths}
     yy, xx = np.where(pixels)
     x0, x1, y0, y1 = int(xx.min()), int(xx.max()) + 1, int(yy.min()), int(yy.max()) + 1
     left = int(pixels[:, :width//2].sum())
@@ -44,9 +56,10 @@ def visual_descriptor(mask):
         'mask_sha256': digest, 'occupancy': round(occupancy, 9),
         'bbox': [x0, y0, x1, y1],
         'asymmetry': round((right - left) / area, 9),
+        'region_widths': region_widths,
         'niche': f'area:{binned(occupancy)}|width:{binned((x1-x0)/width)}|'
                  f'height:{binned((y1-y0)/height)}|x:{binned((x0+x1)/(2*width))}|'
-                 f'asym:{binned((1+(right-left)/area)/2)}'
+                 f'asym:{binned((1+(right-left)/area)/2)}|profile:{region_niche}'
     }
     return descriptor
 
