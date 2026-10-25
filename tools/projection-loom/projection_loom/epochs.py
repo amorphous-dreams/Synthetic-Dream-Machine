@@ -18,7 +18,7 @@ from scipy.stats import qmc
 from .selection import schedule_candidates, allocate_detail_seats
 from .provenance_encoding import canonical_json_sha256
 
-SCHEMA = 'projection-loom/wide-epoch/v1'
+SCHEMA = 'projection-loom/wide-epoch'
 
 
 def _hash(value):
@@ -382,7 +382,7 @@ def run_project_epochs(project, output, *, passes=3, candidates=9,
                        'scored':sum(x['state']=='scored' for x in result['results'].values()),
                        'elite_count':len(elites),'parent_genome':dict(current),
                        'status':state,'receipt':str(run.checkpoint)})
-    summary={'schema':'projection-loom/wide-epoch-summary/v1',
+    summary={'schema':'projection-loom/wide-epoch-summary',
              'location':project.location,'source_digests':source_hashes,
              'construction_digest':model_hash,'passes':epochs,
              'selected_genome':current,'evidence_state':state}
