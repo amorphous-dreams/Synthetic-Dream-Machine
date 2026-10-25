@@ -1,5 +1,5 @@
 {
-  "schema":"projection-loom/solid-project/v2",
+  "schema":"projection-loom/solid-project",
   "builder":"grow.py:grow",
   "location":"ur-great-ziggurat--interpretive-poc",
   "cameras":{
