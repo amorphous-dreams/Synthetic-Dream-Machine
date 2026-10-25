@@ -107,3 +107,33 @@ def test_emitter_performance_and_credit_preserve_unseen_methods():
     bonuses=adaptive_priorities(proposals,Archive())
     assert set(bonuses)=={"one","two"}
     assert bonuses["two"]<0 and all(np.isfinite(v) for v in bonuses.values())
+
+
+def test_multiscale_contour_observes_structural_difference():
+    from projection_loom.search_strategy import multiscale_source_loss
+    source=np.zeros((64,64),dtype=bool)
+    source[10:40,12:36]=True
+    same=multiscale_source_loss(source,source)
+    assert same['macro']==0 and same['contour']==0
+    changed=source.copy()
+    changed[20:40,16:36]=False
+    values=multiscale_source_loss(source,changed)
+    assert values['macro']>0 and values['contour']>0
+    assert all(0<=v<=1 for v in values.values())
+    with pytest.raises(ValueError):
+        multiscale_source_loss(source,np.zeros((64,64),dtype=float))
+
+def test_surplus_scoring_seats_adapt_but_preserve_family_fairness():
+    from projection_loom.selection import allocate_detail_seats
+    from projection_loom.epochs import Proposal
+    rows=[Proposal(f'{f}-{m}-{k}',f'family:{f}:{m}',{'x':float(k)})
+        for f in ('needle','crown')
+        for m in ('sobol','local','topology') for k in range(3)]
+    rewards={'family:needle:local':{'exploration_value':1.,'scored':2},
+             'family:crown:topology':{'exploration_value':1.,'scored':2}}
+    selected=allocate_detail_seats(rows,max_detail=10,emitter_turn=0,
+                                   emitter_performance=rewards)
+    assert len(selected)==10
+    assert {p.emitter.split(':')[1] for p in selected}=={'needle','crown'}
+    assert all(any(p.emitter==f'family:{f}:{m}' for p in selected)
+               for f in ('needle','crown') for m in ('local','sobol','topology'))

@@ -158,3 +158,34 @@ def adaptive_priorities(proposals, archive):
             confidence=(2*math.log(all_seen+2)/max(1,n))**.5
             value[proposal.id]=-min(1.,reward+.15*confidence)
     return value
+
+
+def multiscale_source_loss(source,candidate):
+    """Image-level macro/micro observations, not registration or native CAD proof."""
+    from scipy.ndimage import binary_erosion, distance_transform_edt
+    a,b=np.asarray(source),np.asarray(candidate)
+    if a.dtype!=np.dtype('bool') or b.dtype!=np.dtype('bool') or a.shape!=b.shape or a.ndim!=2:
+        raise ValueError('Multiscale losses need equal boolean masks')
+    # Occupancy pooling suppresses image-scale aliasing while retaining major
+    # architectural masses. Do not interpret this as a source-authentic view.
+    def pool(mask,factor):
+        h,w=mask.shape
+        return np.array([[mask[i:min(i+factor,h),j:min(j+factor,w)].any()
+            for j in range(0,w,factor)] for i in range(0,h,factor)],dtype=bool)
+    levels=[]
+    for factor in (2,4,8):
+        x,y=pool(a,factor),pool(b,factor)
+        union=np.logical_or(x,y).sum()
+        levels.append(1-float(np.logical_and(x,y).sum()/union) if union else 0.)
+    edge_a=np.logical_xor(a,binary_erosion(a))
+    edge_b=np.logical_xor(b,binary_erosion(b))
+    if not edge_a.any() and not edge_b.any():
+        contour=0.
+    elif not edge_a.any() or not edge_b.any():
+        contour=1.
+    else:
+        da=np.minimum(distance_transform_edt(~edge_a),8.)
+        db=np.minimum(distance_transform_edt(~edge_b),8.)
+        contour=.5*(float(np.mean(db[edge_a]))+float(np.mean(da[edge_b])))/8.
+    return {'macro':float(.04*np.mean(levels)),
+            'contour':float(.025*contour)}

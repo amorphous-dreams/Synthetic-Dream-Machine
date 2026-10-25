@@ -88,7 +88,8 @@ def select_review_candidates(data, *, limit=4):
 
 
 
-def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None):
+def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None,
+                          emitter_performance=None):
     """Reserve native-scoring capacity across breeding islands and methods.
 
     Only already exact-scheduled proposals participate. Existing nonbreeding
@@ -119,6 +120,7 @@ def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None
                 options,key=lambda p: ((float(preview(p.genome)) if preview else 0.),p.id))
     first = families[emitter_turn % len(families):] + families[:emitter_turn % len(families)]
     chosen, used = [], set()
+    performance=emitter_performance or {}
     for level in range(max(len(grouped[family]) for family in families) *
                        max(len(grouped[family][method]) for family in families for method in grouped[family])):
         for family in first:
@@ -128,7 +130,18 @@ def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None
             rotation = emitter_turn % len(methods)
             by_turn = methods[rotation:] + methods[:rotation]
             # For subsequent rounds, prefer a different source variation method.
-            method = by_turn[level % len(by_turn)]
+            if level==0:
+                method=by_turn[0]
+            else:
+                # Reward measured novelty and improvements while preferring
+                # under-tested methods. Guarantees at least one family seat
+                # before learned weights affect surplus capacity.
+                method=min(by_turn,key=lambda m: (
+                    -float(performance.get('family:'+family+':'+m,{})
+                           .get('exploration_value',0.)),
+                    float(performance.get('family:'+family+':'+m,{})
+                          .get('scored',0)),
+                    by_turn.index(m)))
             available = choices[(family,method)]
             candidate = next((p for p in available if p.id not in used),None)
             if candidate is not None:

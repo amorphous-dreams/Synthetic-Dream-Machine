@@ -25,7 +25,7 @@ from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery, regrow_lineage_gallery
 from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor
-from .search_strategy import SurrogatePreview, regional_loss, adaptive_priorities, emitter_performance
+from .search_strategy import SurrogatePreview, regional_loss, adaptive_priorities, emitter_performance, multiscale_source_loss
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
@@ -589,7 +589,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
         bounds = recipe.bounds
         score_state = 'provisional' if project.reference is not None else 'synthetic'
         construction_digest = compositor.construction_digest()
-        objectives = ('silhouette','prior','regional') if breeding else ('silhouette','prior')
+        objectives = ('silhouette','prior','regional','macro','contour') if breeding else ('silhouette','prior')
         extra_topology = [step.activation for step in recipe.steps if step.activation]
         topology_loci = tuple(dict.fromkeys([*topology_loci,*extra_topology]))
     else:
@@ -716,7 +716,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                                    checkpoint=out/f'epoch_{i+1:03d}.json',
                                    max_exact=exact_budget,max_detail=detail_budget,
                                    seed=seed+i,pet_ledger=ledger,
-                                   emitter_turn=i)
+                                   emitter_turn=i,
+                                   emitter_performance=emitter_performance(archive) if breeding else None)
                 running_id = [None]
                 builds = {}
                 visual_index = {}
@@ -785,6 +786,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     if breeding:
                         family=(running_id[0] or '').split('-')[0]
                         loss['regional']=regional_loss(source_mask,mask,family)
+                        loss.update(multiscale_source_loss(source_mask,mask))
                     return loss
                 def features(genome,assembly):
                     build=builds[genome_digest(genome)]
