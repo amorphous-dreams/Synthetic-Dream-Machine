@@ -21,7 +21,7 @@ import { currentSignerOf, type HandLineage } from "./hand-lineage.js";
 import { signedLeaseEpoch } from "./lease-advance.js";
 import { personaActRecordsOfGroup, personaLineageFromKel } from "./persona-act-board.js";
 import { projectPersonaLog, type PersonaProjection } from "./persona-act.js";
-import type { PersonaKelEvent } from "./persona-kel.js";
+import { headOpKey, type PersonaKelEvent } from "./persona-kel.js";
 
 export interface FaceReading {
   /** The verified roster per epoch (epoch = KEL seq). */
@@ -61,4 +61,35 @@ export function readFace(chain: readonly PersonaKelEvent[] | null | undefined, a
 /** The persona-act records a set of held documents carry for one group: unjudged transport for `FaceReading.project`. */
 export function faceRecordsOf(docs: readonly (LarDoc | undefined | null)[], group: string): unknown[] {
   return docs.flatMap((doc) => personaActRecordsOfGroup(doc, group));
+}
+
+/**
+ * THE OWNER OF A HANDLE: the selected face's sealed anchor names the owner Persona KEL prefix, and the verified chain beneath
+ * that prefix names the head op-key that authorizes burn and rotation. Handle founding, burn and rotation take both from here
+ * and from nowhere else: the mutable daemon tiddler never names an owner, so a document change cannot choose a foreign or stale
+ * prefix for a signed Handle inception. Only `readFaceOwner` issues one (`isFaceOwner` is the receiving core's check).
+ */
+export interface FaceOwner {
+  readonly personaKelPrefix: string;
+  /** The verified head op-key of the chain under the anchor's prefix (every quorum checked). */
+  readonly headOpKeyDid: string;
+  readonly reading: FaceReading;
+}
+
+const issuedOwners = new WeakSet<object>();
+export const isFaceOwner = (candidate: unknown): candidate is FaceOwner => typeof candidate === "object" && candidate !== null && issuedOwners.has(candidate);
+
+export async function readFaceOwner(
+  chain: readonly PersonaKelEvent[] | null | undefined, anchor: FaceAnchor | null | undefined,
+): Promise<{ readonly ok: true; readonly owner: FaceOwner } | { readonly ok: false; readonly reason: string }> {
+  if (!anchor) return { ok: false, reason: "this face holds no sealed anchor; re-found or re-admit the face (fail-closed, a Handle never takes its owner from a document)" };
+  if (!chain || chain.length === 0) return { ok: false, reason: `the persona-KEL chain for ${anchor.personaKelPrefix.slice(0, 20)}… is absent from the local board (fail-closed)` };
+  if (chain.some((e) => e.prefix !== anchor.personaKelPrefix)) return { ok: false, reason: "prefix: the chain names a KEL prefix this face's sealed anchor does not" };
+  const reading = readFace(chain, anchor);
+  if (!reading) return { ok: false, reason: "no verified lineage: the persona-KEL chain forks or does not verify (fail-closed)" };
+  const head = await headOpKey(chain, { verifyQuorums: true });
+  if (head === null) return { ok: false, reason: "the persona-KEL head does not verify (fail-closed), so the owner cannot be proven" };
+  const owner: FaceOwner = { personaKelPrefix: anchor.personaKelPrefix, headOpKeyDid: head, reading };
+  issuedOwners.add(owner);
+  return { ok: true, owner };
 }

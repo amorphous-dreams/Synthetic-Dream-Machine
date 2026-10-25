@@ -41,7 +41,7 @@ function read(rel: string): string {
 /** Every island-scoped door name, keyed by the file that calls it. Captures the ARGUMENT. */
 const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/handle.ts",         door: /whoBoardDocUrl\(([^)]*)\)/g,        count: 2 },
-  { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 2 },
+  { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
   { file: "local-persona-kel.ts",       door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
   { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 1 },
   { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
