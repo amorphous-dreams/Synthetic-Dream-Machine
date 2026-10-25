@@ -4,6 +4,28 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Alpha research implementation — post-Wave XXIV (under verification)
+
+**Operator authority, 2026-10-25:** no historical compatibility constraint. The architecture now moves toward semi-independent feature-lineage coevolution and source-bound quality-diversity sampling. Changes below *do not* constitute a completed next six-generation experiment, a green CI result, or an independently calibrated feature-fitness signal. Inspect live PR #84 commit SHA and completed Actions before relying on them.
+
+**New implementation surface:** `projection_loom/search_strategy.py` provides Pareto nondominance among separately scored, already audited candidates; a cheap regional source-view loss; diversity-aware parent selection; conservative neighbor-based surrogate audition priority; emitter performance/uncertainty measurements; and a reproducible searchability census. None of these helpers enters the phase journal or certifies geometry.
+
+**Component coevolution:** `campaign.py` now groups loci into six anonymous search-family fragments mapped to three *architectural entities*: Crystal (`needle`, `fractured`, `crystal`), Joining (`terraces`), and Fortress (`crown`, `keep`). Each family's breeding parent contributes its own focus loci; other families contribute independently selected collaborator fragments. The assembled **whole-location** genome travels into the existing native CAD, void, polygon, socket and source-view tests under one `fractal_ooda_ha.run_ooda_epochs` controller. Every proposal records family, component parent, collaborator IDs and generation; no Operator pet-name turns into a reproduction policy. Cross-family overlap remains explicitly ordered; source recipe, construction digest and candidate checkpoint guard changes.
+
+**Reachability repaired:** all 25 version-2 recipe loci now belong to at least one variation family. In particular, `join.enable` can cross the actual 0.5 activation threshold, so `join.mesh` and `join.socket` can enter candidate builds, subject to their independent native audits. Reachability does not guarantee that a candidate passes those gates. Earlier frozen pre-regional archive and its inactive Joining receipts remain unmodified.
+
+**Measured selection:** families retain a global champion, breed from measured silhouette-diverse niches and Pareto alternatives, and retain scored fragment-specialist residuals. Regional image strips proxy local improvement in the **unregistered painted view** only. Better source masks or independent component observations would be required to claim true feature-local fidelity. The genome-aware surrogate and emitter reward give modest, capped priority bonuses after family/method reservations; they cannot reject unseen geometry, skip native CAD gates, or confer human preference authority. The archived results remain provisional.
+
+**More expressive descriptions:** exact binary-mask digest remains the identity of an observed image. The version-2 phenotype descriptor adds region centers, occupancy profiles, and enclosed silhouette holes to its existing horizontal width profile. This shifts niche semantics **again**. Any full new campaign MUST fork a fresh output directory and may compare old and new exact masks directly, but MUST NOT compare raw niche counts across versions as if the bins meant the same thing.
+
+**Evidence and tests:** `tests/test_search_strategy_alpha.py` covers deterministic fragment and collaborator ancestry, locus coverage and Joining activation, image observations, regional source-view loss, Pareto selection, surrogate uncertainty and emitter rewards. New-head Loom, held-out, and repository CI remained pending when this paragraph was written. If a gate goes red, inspect its concrete job logs and repair the actual failing test/implementation; never change the frozen experimental archive to satisfy new expectations.
+
+**Remaining work (do not prematurely close):** full native/regression verification of the new feature-lineage system; run and independently audit a new multi-generation campaign; measure exact silhouette novelty and family survival at equal native-audition budgets; test local-region fitness against Operator-annotated or independently sourced feature masks; experiment with adaptive budget allocation beyond the current bounded priority bias; and evaluate true evolvable construction grammar topology in a versioned source-bound recipe. An unused optimization name or planned experiment does not count as a landed capability.
+
+**New trial command (after completed CI):** preserve the six-generation command in the current section below, but choose an **unused** output path such as `out/necrospire-coevolution-alpha-v3`. Source image and recipe may stay identical; changed construction and search policy already demand a new checkpoint. Freeze a fresh receipt before A/B comparison.
+
+---
+
 ## Current bearing — 2026-10-25 (Waves XX–XXIV)
 
 ### Verified head and the open experiment
