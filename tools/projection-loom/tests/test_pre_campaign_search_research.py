@@ -8,9 +8,10 @@ import numpy as np
 import pytest
 
 from projection_loom.epochs import Proposal
+from projection_loom.campaign import activation_funnel
 from projection_loom.selection import schedule_candidates
 from projection_loom.search_strategy import (
-    SurrogatePreview, infer_locus_interactions, activation_funnel,
+    SurrogatePreview, infer_locus_interactions,
 )
 
 
@@ -44,16 +45,16 @@ def test_activation_funnel_counts_opportunities_separately_from_native_success()
                    "b":{"state":"scored","audit":{"valid":True}},
                    "c":{"state":"rejected","audit":{"valid":False}},
                    "d":{"state":"deferred"}}}
-    stats=activation_funnel([checkpoint],loci=("join.enable",))
-    active=stats["join.enable"]["active"]
-    assert active=={"generated":3,"deferred":1,"attempted":2,
-                     "native_valid":1,"scored":0,"audited_only":1,
-                     "rejected":1,"errors":0}
-    assert stats["join.enable"]["inactive"]["scored"]==1
-    assert stats["join.enable"]["inactive"]["generated"]==1
-    with pytest.raises(ValueError,match="state|result|proposal"):
-        activation_funnel([{"proposals":{},"results":{"orphan":{"state":"scored"}}}],
-                          loci=("join.enable",))
+    checkpoint["results"]["a"]["audit"].update(union_valid=True,union_solids=1)
+    checkpoint["results"]["b"]["audit"].update(union_valid=True,union_solids=1)
+    report=activation_funnel(checkpoint["proposals"],checkpoint["results"],
+                             ("join.enable",))["join.enable"]
+    assert report["proposed"]=={"active":3,"inactive":1}
+    assert report["exact_attempted"]=={"active":2,"inactive":1}
+    assert report["native_valid"]=={"active":1,"inactive":1}
+    assert report["scored"]=={"active":0,"inactive":1}
+    assert report["audited"]=={"active":1,"inactive":0}
+    assert report["rejected"]=={"active":1,"inactive":0}
 
 
 def test_observational_interaction_inference_refuses_underdetermined_25_locus_archives():
