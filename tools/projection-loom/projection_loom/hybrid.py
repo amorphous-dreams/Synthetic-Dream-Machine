@@ -227,7 +227,7 @@ class HybridLocation:
         combined.export_obj(out/'composite_render.obj')
         controls=export_controls(combined,cameras,out/'controls',size=size,
                                  style=style or {'supersample':1,'work_width':200})
-        manifest={'schema':'projection-loom/hybrid-location/v1',
+        manifest={'schema':'projection-loom/hybrid-location',
                   'location':self.location,'pet_name':self.pet_name,
                   'cad_step':'cad_body.step', 'composite_mesh':'composite_render.obj',
                   'mesh_layers':{name:{'asset':name+'.obj','source':v['source'],
