@@ -90,3 +90,20 @@ def test_component_specialists_assemble_in_shared_source_identity(tmp_path):
     needle=[p for p in inherited if p.ancestry["family"]=="needle"]
     assert any(p.parent.startswith("0001/") for p in needle)
     assert all(p.ancestry["generation"]==2 for p in inherited)
+
+
+def test_emitter_performance_and_credit_preserve_unseen_methods():
+    from projection_loom.search_strategy import emitter_performance, adaptive_priorities
+    from projection_loom.epochs import Proposal
+    class Archive:
+        data={"members":{"r1":{"id":"r1","family":"needle",
+            "emitter":"family:needle:sobol","combined_loss":.3,
+            "mask_sha256":"different","losses":{"silhouette":.3}}}}
+    scores=emitter_performance(Archive())
+    assert scores["family:needle:sobol"]["improvements"]==1
+    proposals=[
+        Proposal("one","family:needle:sobol",{"x":.1}),
+        Proposal("two","family:needle:topology",{"x":.8})]
+    bonuses=adaptive_priorities(proposals,Archive())
+    assert set(bonuses)=={"one","two"}
+    assert bonuses["two"]<0 and all(np.isfinite(v) for v in bonuses.values())
