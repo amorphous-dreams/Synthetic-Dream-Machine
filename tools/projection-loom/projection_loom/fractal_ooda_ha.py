@@ -24,8 +24,8 @@ from .epochs import CandidateAdapter, WideEpoch, propose_methods, project_code_d
 from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery
+from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 
-PHASES = ('observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
 SCHEMA = 'projection-loom/ooda-ha-session/v2'
 CONTROL_SCHEMA = 'projection-loom/ooda-ha-control/v2'
 DEFAULT_MAX_DEPTH = 12
@@ -196,19 +196,9 @@ class OODAJournal:
             return existing
         if len(self.data['loops']) >= self.data['limits']['max_loops']:
             raise ValueError('OODA loop budget reached; choose a new bounded session')
-        depth = 0
-        if parent is not None:
-            p = self.data['loops'].get(parent)
-            if p is None or p['phase'] == 'closed':
-                raise ValueError('A child needs an active parent loop')
-            if parent_phase is not None and p['phase'] != parent_phase:
-                raise ValueError('Parent phase changed before child was attached')
-            parent_phase = p['phase']
-            depth = p['depth'] + 1
-            if depth > self.data['limits']['max_depth']:
-                raise ValueError('OODA recursion depth budget reached')
-        elif parent_phase is not None:
-            raise ValueError('A root loop has no parent phase')
+        parent_phase, depth = child_phase_anchor(
+            self.data['loops'], parent, parent_phase=parent_phase,
+            max_depth=self.data['limits']['max_depth'])
         # Verify the evidence is serializable *before* mutating the parent.
         _hash(evidence)
         node = {'id': loop_id, 'parent': parent, 'parent_phase': parent_phase,
@@ -224,19 +214,9 @@ class OODAJournal:
 
     def transition(self, loop_id, phase, detail=None):
         """Advance only after every child anchored to this phase has closed."""
-        if phase not in PHASES:
-            raise ValueError('Unknown OODA-HA phase')
-        node = self.data['loops'][loop_id]
-        prior = PHASES.index(node['phase'])
-        target = PHASES.index(phase)
-        if target == prior:
+        if not next_phase_allowed(self.data['loops'], loop_id, phase):
             return False
-        if target != prior + 1:
-            raise ValueError(f'Illegal OODA-HA phase transition: {node["phase"]} -> {phase}')
-        open_children = [child for child in node['children']
-                         if self.data['loops'][child]['phase'] != 'closed']
-        if open_children:
-            raise ValueError(f'Parent phase {node["phase"]} awaits child loops: {open_children}')
+        node = self.data['loops'][loop_id]
         receipt = detail if detail is not None else {}
         _hash(receipt)
         node['phase'] = phase
