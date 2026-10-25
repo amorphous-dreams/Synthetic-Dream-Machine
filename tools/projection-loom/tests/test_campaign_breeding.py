@@ -18,7 +18,7 @@ def test_breeding_recipe_is_a_new_source_bound_identity():
     project,recipe=breeding()
     old=CapabilityRecipe.load(EXAMPLES/'hybrid/recipe.json')
     assert recipe.sha256!=old.sha256
-    assert recipe.version==2
+    assert {'shaft_asymmetry','join.enable'}.issubset(recipe.bounds)
     assert recipe.source_hashes==old.source_hashes
     assert set(project.initial)==set(recipe.cad_keys)
     assert set(project.initial)>set(Project.load(EXAMPLES/'project.json').initial)
