@@ -91,6 +91,25 @@ def inspect_source_tree(root):
                 if name in PHASE_IO_METHODS or name in ('open', 'exec', 'eval'):
                     errors.append(f'Phase-law module must not write: {name}')
 
+    # The five active phases are non-negotiable; 'closed' is not a phase.
+    # Refuse an accidental return to four-phase OODA even if all other
+    # module ownership and AST checks still pass.
+    law = package / 'phase_rules.py'
+    if law.is_file():
+        try:
+            law_ast = ast.parse(law.read_text(encoding='utf8'))
+            active = next((
+                ast.literal_eval(node.value)
+                for node in law_ast.body
+                if isinstance(node, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == 'PHASES'
+                        for t in node.targets)
+            ), None)
+            if active != ('observe','orient','decide','act','aftermath'):
+                errors.append('Phase law requires exactly five active phases, including Aftermath')
+        except (SyntaxError, ValueError, TypeError):
+            errors.append('Phase law five active phases cannot be statically verified')
+
     if runners != ['fractal_ooda_ha.py']:
         errors.append(f'More than one OODA-HA controller, or wrong entrypoint: {runners}')
     if journals != ['fractal_ooda_ha.py']:

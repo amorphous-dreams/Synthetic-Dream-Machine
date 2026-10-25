@@ -11,6 +11,7 @@ checkpoint.  This is cooperative pausing at safe points, not preemptive CAD abor
 """
 from __future__ import annotations
 from contextlib import contextmanager
+from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
 from uuid import uuid4
@@ -179,7 +180,7 @@ class OODAHAJournal:
 
     def event(self, kind, loop_id=None, **detail):
         e = {'seq': len(self.data['events']) + 1, 'kind': kind,
-             'loop': loop_id, **detail}
+             'loop': loop_id, **deepcopy(detail)}
         self.data['events'].append(e)
         return e
 
@@ -213,7 +214,7 @@ class OODAHAJournal:
         _hash(evidence)
         node = {'id': loop_id, 'parent': parent, 'parent_phase': parent_phase,
                 'depth': depth, 'scope': scope, 'phase': 'observe',
-                'children': [], 'receipts': {'observe': evidence}}
+                'children': [], 'receipts': {'observe': deepcopy(evidence)}}
         self.data['loops'][loop_id] = node
         if parent is not None:
             self.data['loops'][parent]['children'].append(loop_id)
@@ -234,7 +235,7 @@ class OODAHAJournal:
         if not next_phase_allowed(self.data['loops'], loop_id, phase):
             return False
         node['phase'] = phase
-        node['receipts'][phase] = receipt
+        node['receipts'][phase] = deepcopy(receipt)
         self.event('phase', loop_id, phase=phase, detail=receipt)
         if phase == 'closed' and node['parent'] is not None:
             self.event('child-return', node['parent'], child=loop_id,
@@ -317,7 +318,7 @@ class OODAHAJournal:
             response = adviser({'loop_id':loop_id, 'scope':node['scope'],
                                 'phase':phase, 'parent_phase':node['parent_phase'],
                                 'autonomy':self.autonomy,
-                                'evidence':node['receipts'].get(phase,{})})
+                                'evidence':deepcopy(node['receipts'].get(phase,{}))})
             if response is not None:
                 if (not isinstance(response,dict) or set(response) != {'question'} or
                         not isinstance(response['question'],str) or
