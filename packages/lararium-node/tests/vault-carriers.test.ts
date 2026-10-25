@@ -83,7 +83,7 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
   [`identity/faces/${FCID}/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
   [`identity/cadence-key-${"7c".repeat(16)}.bin`]:       "x",
-  "identity/.restore-pending.json": "x",
+  [`identity/faces/${FCID}/.restore-pending-h0.json`]: "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
   [`identity/face-address-secret-${"5e".repeat(16)}.bin`]: "x",
   [`identity/fleet-join-pending-${"6e".repeat(16)}.json`]: "{}",
@@ -149,7 +149,7 @@ const RULED: Record<string, CustodyClass> = {
   // One joint founding's record: public material and the judged image, read at each joint signature.
   "cofound": "hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
-  "restore-pending": "cold",
+  "restore-pending": "face-cold",
 };
 
 describe("the carrier table", () => {

@@ -229,7 +229,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
 });
 
 describe("CustodyHolder.removeColdRow — an act removes the cold row it committed", () => {
-  const COLD = ".restore-pending.json";
+  const COLD = `cadence-key-${"ab".repeat(16)}.bin`;
   const HOT = ".persona-roster.json";
   test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
@@ -264,7 +264,7 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
     mkdirSync(homes.identity, { recursive: true });
     writeFileSync(join(homes.identity, COLD), readFileSync(join(other.homes.identity, COLD)));
     const before = readFileSync(join(homes.identity, COLD));
-    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/\.restore-pending\.json reads/);
+    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/cadence-key-[0-9a-f]{32}\.bin reads/);
     expect(readFileSync(join(homes.identity, COLD)).equals(before)).toBe(true);
   });
 });

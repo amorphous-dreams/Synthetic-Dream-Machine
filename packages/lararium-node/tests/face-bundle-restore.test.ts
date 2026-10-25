@@ -206,7 +206,7 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-const pendingStands = (): boolean => existsSync(join(larIdentityDir(), RESTORE_PENDING_FILE));
+const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R1 + R2 — the restored face stands under the same prefix at a NEW seat; a second restore refuses", async () => {

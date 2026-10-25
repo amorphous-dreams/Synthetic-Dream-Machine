@@ -145,7 +145,7 @@ function homeTree(): string {
 }
 /** The identity home's files and every file in its indexed face directories. */
 const identityNames = (): string[] => [...readdirSync(larIdentityDir()), ...faceRowNames()].sort();
-const pendingStands = (): boolean => existsSync(join(larIdentityDir(), RESTORE_PENDING_FILE));
+const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("the root cards re-land a face's lineage and root, and open no memory", () => {
   test("C1 — two cards restore the face onto a fresh hearth at a free index, under a new seat, holding no key and no memory", async () => {

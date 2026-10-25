@@ -269,7 +269,9 @@ const restFileHolds = (file: string, bytes: Uint8Array): boolean => {
 };
 
 /** The restore's commit row: what one restore still owes this vessel (`face-bundle-restore`). */
-export const RESTORE_PENDING_FILE = ".restore-pending.json";
+/** A restore's commit row rests in its TARGET face, named by the handle index it lands at. */
+export const RESTORE_PENDING_FILE = /^\.restore-pending-h(0|[1-9]\d*)\.json$/;
+export const restorePendingFile = (target: number): string => `.restore-pending-h${target}.json`;
 
 /** The face a per-face filename names: its first capture, a handle-index. */
 const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
@@ -475,7 +477,7 @@ function buildTable(): readonly CarrierRow[] {
          writer: "cadence-key-store", name: (m) => `cadence-key-${m[1]}` }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
-    id({ row: "restore-pending", target: tgt(["D"]), match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "restore-pending", target: tgt(["D"]), inner: RESTORE_PENDING_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed", name: (m) => `restore-pending-h${m[1]}`,
          writer: "face-bundle-restore" }),
     faceRowOf({ row: "device-share", target: tgt(["D"]), inner: DEVICE_SHARE_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
