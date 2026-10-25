@@ -4,21 +4,21 @@ from pathlib import Path
 
 import pytest
 
-from projection_loom.fractal_ooda_ha import OODAJournal, run_ooda_epochs, submit_control
+from projection_loom.fractal_ooda_ha import OODAHAJournal, run_ooda_ha_epochs, submit_control
 
 
 def test_fractal_ooda_ha_owns_the_real_five_phase_engine():
     engine = import_module('projection_loom.fractal_ooda_ha')
     assert Path(engine.__file__).name == 'fractal_ooda_ha.py'
-    assert engine.OODAJournal is OODAJournal
-    assert engine.run_ooda_epochs is run_ooda_epochs
+    assert engine.OODAHAJournal is OODAHAJournal
+    assert engine.run_ooda_ha_epochs is run_ooda_ha_epochs
     assert engine.submit_control is submit_control
     assert engine.PHASES == (
         'observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
 
 
 def test_aftermath_inquiry_blocks_return_and_carries_own_aftermath(tmp_path):
-    journal = OODAJournal(
+    journal = OODAHAJournal(
         tmp_path / 'session.json',
         identity={'location': 'synthetic', 'score_state': 'synthetic',
                   'ledger_path': str(tmp_path / 'names.json')},

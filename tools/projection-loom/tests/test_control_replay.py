@@ -7,14 +7,14 @@ import json
 
 import pytest
 
-from projection_loom.fractal_ooda_ha import OODAJournal, submit_control
+from projection_loom.fractal_ooda_ha import OODAHAJournal, submit_control
 from projection_loom.relations import Occurrence, PetNameLedger, RelationWitness
 
 
 def review(tmp_path):
     session = tmp_path / 'session.json'
     ledger_path = tmp_path / 'identity-ledger.json'
-    journal = OODAJournal(
+    journal = OODAHAJournal(
         session,
         identity={'location': 'replay-site', 'score_state': 'synthetic',
                   'ledger_path': str(ledger_path)},
@@ -52,8 +52,8 @@ def test_pet_name_recovers_committed_ledger_without_reapplying(tmp_path, monkeyp
                              target='foundation', name='The First Name', mode='entity')
     after_durable_save(monkeypatch, journal)
     assert len(PetNameLedger.load(path).claims) == 1
-    assert command['id'] not in OODAJournal(session).data['applied_controls']
-    resumed = OODAJournal(session)
+    assert command['id'] not in OODAHAJournal(session).data['applied_controls']
+    resumed = OODAHAJournal(session)
     resumed.poll()
     assert command['id'] in resumed.data['applied_controls']
     ledger = PetNameLedger.load(path)
@@ -75,7 +75,7 @@ def test_o_takiage_recovers_release_without_releasing_twice(tmp_path, monkeypatc
     command = submit_control(session, 'o-takiage', name='Releasable')
     after_durable_save(monkeypatch, journal)
     assert not PetNameLedger.load(path).claims[0]['active']
-    resumed = OODAJournal(session)
+    resumed = OODAHAJournal(session)
     resumed.poll()
     ledger = PetNameLedger.load(path)
     assert not ledger.claims[0]['active']
@@ -95,7 +95,7 @@ def test_replay_refuses_tampered_command_after_ledger_commit(tmp_path, monkeypat
     tampered['parameters']['name'] = 'Changed On Replay'
     inbox.write_text(json.dumps(tampered))
     with pytest.raises(ValueError, match='digest|altered|mismatch'):
-        OODAJournal(session).poll()
+        OODAHAJournal(session).poll()
     ledger = PetNameLedger.load(path)
     assert [c['name'] for c in ledger.claims] == ['Original']
     assert len(ledger.history) == 1
@@ -107,7 +107,7 @@ def test_replay_works_when_witness_file_disappears_after_commit(tmp_path, monkey
                          target='foundation', name='Original')
     after_durable_save(monkeypatch, journal)
     (tmp_path / 'witness.json').unlink()
-    fresh = OODAJournal(session)
+    fresh = OODAHAJournal(session)
     fresh.poll()
     assert cmd['id'] in fresh.data['applied_controls']
     assert PetNameLedger.load(path).claims[0]['name'] == 'Original'
