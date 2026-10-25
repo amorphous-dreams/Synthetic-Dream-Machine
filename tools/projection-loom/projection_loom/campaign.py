@@ -275,6 +275,10 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
         if any(k not in focus_map[family] or not 0<=v<=1 for k,v in transfer['loci'].items()):
             raise ValueError('Invalid normalized transfer locus')
         transfer_by_family.setdefault(family,[]).append(transfer)
+    # A requested donor must enter a real mutation slot, not silently disappear.
+    transfer_slots=sum(j%3==1 for j in range(offspring_per_family))
+    if any(len(v)>transfer_slots for v in transfer_by_family.values()):
+        raise ValueError('Authorized transfer seeds exceed available family-local offspring slots')
     families=list(FAMILY_FOCUSES)
     ancestry={f:archive.component_parents(f,limit=3,before_generation=generation)
               for f in families}
@@ -313,7 +317,9 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     genome[key]=float(primary['component_genome'].get(key,primary['genome'][key]))
             parent_id=primary['id'] if primary else 'original-seed'
             imported=transfer_by_family.get(family,())
-            active_transfer=imported[0] if imported and j==1 and not primary else None
+            transfer_slot=j//3 if j%3==1 else None
+            active_transfer=(imported[transfer_slot] if transfer_slot is not None
+                             and transfer_slot<len(imported) else None)
             if active_transfer is not None:
                 for key,value in active_transfer['loci'].items():
                     lo,hi=bounds[key]
@@ -329,7 +335,8 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     value=genome[key]+float(rng.normal(0,mutation_scale))*(hi-lo)
                 else:
                     value=genome[key]
-                    if key in ('spire_segmentation','join.enable'):
+                    if key in ('spire_segmentation','join.enable',
+                                'grammar.gallery','grammar.buttress'):
                         value=lo+(.8 if value < (lo+hi)/2 else .2)*(hi-lo)
                     elif k==(j//3)%len(focus):
                         value+=(.22 if generation%2 else -.22)*(hi-lo)
@@ -338,7 +345,8 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                 id=f'{family}-{generation:03d}-{j+1:03d}',
                 emitter=f'family:{family}:{mode}',genome=genome,parent=parent_id,
                 ancestry={'entity':FAMILY_ENTITIES[family],
-                    'family':family,'component_parent':parent_id,
+                    'family':family,
+                    'component_parent':primary['id'] if primary else 'original-seed',
                     'collaborators':collaborators,
                     'generation':generation,'mode':mode,
                     'transfer':dict(active_transfer) if active_transfer else None,
