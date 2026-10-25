@@ -65,7 +65,7 @@ def test_operator_attention_masks_bound_to_exact_source_and_view(tmp_path):
     file=tmp_path/'upper.png'
     Image.fromarray(mask,'L').save(file)
     source_hash='a'*64
-    payload={'schema':'projection-loom/feature-evidence/v1',
+    payload={'schema':'projection-loom/feature-evidence',
         'source_sha256':source_hash,'evidence_state':'operator-annotated',
         'regions':{'Fortress':{'path':'upper.png','sha256':hashlib.sha256(file.read_bytes()).hexdigest()}}}
     manifest=tmp_path/'evidence.json'
