@@ -61,7 +61,7 @@ class FeatureEvidence:
                 'sha256':sha256(stored.read_bytes()).hexdigest()}
         source_sha256=sha256(project.reference.read_bytes()).hexdigest()
         view_sha256=cls.view_identity(project,score_size)
-        manifest={'schema':'projection-loom/feature-evidence/v1',
+        manifest={'schema':'projection-loom/feature-evidence',
             'source_sha256':source_sha256,'view_sha256':view_sha256,
             'evidence_state':'operator-annotated','regions':copied}
         target.write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n',encoding='utf8')
@@ -72,7 +72,7 @@ class FeatureEvidence:
     def load(cls,path,*,source_sha256,score_size,view_sha256=None):
         path=Path(path)
         data=json.loads(path.read_text(encoding='utf8'))
-        if data.get('schema')!='projection-loom/feature-evidence/v1':
+        if data.get('schema')!='projection-loom/feature-evidence':
             raise ValueError('Unsupported feature evidence schema')
         if data.get('source_sha256')!=source_sha256:
             raise ValueError('Feature evidence source digest mismatch')
