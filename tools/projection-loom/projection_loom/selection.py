@@ -130,18 +130,19 @@ def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None
             rotation = emitter_turn % len(methods)
             by_turn = methods[rotation:] + methods[:rotation]
             # For subsequent rounds, prefer a different source variation method.
-            if level==0:
-                method=by_turn[0]
-            else:
-                # Reward measured novelty and improvements while preferring
-                # under-tested methods. Guarantees at least one family seat
-                # before learned weights affect surplus capacity.
-                method=min(by_turn,key=lambda m: (
-                    -float(performance.get('family:'+family+':'+m,{})
-                           .get('exploration_value',0.)),
-                    float(performance.get('family:'+family+':'+m,{})
-                          .get('scored',0)),
-                    by_turn.index(m)))
+            available_methods=[m for m in by_turn if any(
+                p.id not in used for p in choices[(family,m)])]
+            if not available_methods:
+                continue
+            # Preserve one evaluated seat per observed family/method before
+            # adapting surplus. Learned reward never erases a fair rotation.
+            method=min(available_methods,key=lambda m: (
+                any(p.emitter=='family:'+family+':'+m for p in chosen),
+                -float(performance.get('family:'+family+':'+m,{})
+                       .get('exploration_value',0.)),
+                float(performance.get('family:'+family+':'+m,{})
+                      .get('scored',0)),
+                by_turn.index(m)))
             available = choices[(family,method)]
             candidate = next((p for p in available if p.id not in used),None)
             if candidate is not None:
