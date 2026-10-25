@@ -42,7 +42,7 @@ def visual_descriptor(mask):
         region_widths.append(int(occupied_x[-1] - occupied_x[0] + 1)
                              if len(occupied_x) else 0)
         region_centers.append(float(occupied_x.mean()) / width if len(occupied_x) else 0.)
-        region_coverage.append(float(band.sum()) / band.size)
+        region_coverage.append(float(band.sum()) / band.size if band.size else 0.0)
     region_niche = '-'.join(str(min(15, int(16 * span / width)))
                             for span in region_widths)
     if area == 0:
