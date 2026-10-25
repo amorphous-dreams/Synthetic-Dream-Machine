@@ -39,6 +39,7 @@ class Proposal:
     emitter: str
     genome: dict[str,float]
     parent: str | None = None
+    ancestry: dict | None = None
 
     def __post_init__(self):
         if not self.id or not self.emitter or not self.genome:
