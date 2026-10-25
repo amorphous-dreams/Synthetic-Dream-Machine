@@ -1,0 +1,110 @@
+"""Source-bound search policies; no authority to run phases or certify geometry."""
+from __future__ import annotations
+from collections import Counter
+import math
+import numpy as np
+
+FAMILY_REGIONS = {
+    'needle':(3,4,5), 'fractured':(3,4,5), 'crystal':(3,4,5),
+    'terraces':(1,2,3,4), 'crown':(0,1,2), 'keep':(0,1,2),
+}
+
+def regional_loss(source, candidate, family):
+    """Small regional feedback term; fixed artwork view, not surveyed component evidence."""
+    if family not in FAMILY_REGIONS:
+        raise ValueError('Unknown architectural family')
+    a,b=np.asarray(source),np.asarray(candidate)
+    if a.dtype!=np.dtype('bool') or b.dtype!=np.dtype('bool') or a.shape!=b.shape or a.ndim!=2:
+        raise ValueError('Regional loss needs matching binary source-view masks')
+    bands=np.array_split(np.arange(a.shape[0]),6)
+    rows=np.concatenate([bands[n] for n in FAMILY_REGIONS[family]])
+    u=np.logical_or(a[rows],b[rows]).sum()
+    return float(.04*(1-float(np.logical_and(a[rows],b[rows]).sum()/u))) if u else 0.
+
+def pareto_front(rows):
+    """Keep nondominated audited observations; hard native gates happen upstream."""
+    rows=list(rows)
+    if not rows:return []
+    keys=sorted(set.intersection(*(set(r.get('losses',{})) for r in rows)))
+    def vector(r):
+        return tuple(float(r['losses'][k]) for k in keys) if keys else (float(r['combined_loss']),)
+    observations=[(r,vector(r)) for r in rows]
+    if any(not all(math.isfinite(x) and x>=0 for x in v) for _,v in observations):
+        raise ValueError('Pareto observations need nonnegative finite losses')
+    return sorted((r for r,v in observations if not any(
+        o is not r and all(x<=y for x,y in zip(w,v)) and any(x<y for x,y in zip(w,v))
+        for o,w in observations)),key=lambda r:(r['combined_loss'],r['id']))
+
+def diversity_parents(rows,limit,*,specialist=False):
+    """Retain the global champion, niche specialists, Pareto survivors, other masks."""
+    if type(limit) is not int or not 1<=limit<=20:
+        raise ValueError('Parent limit must lie in 1..20')
+    ranked=sorted(rows,key=lambda r:(r.get('specialist_loss',r['combined_loss'])
+          if specialist else r['combined_loss'],r['combined_loss'],r['id']))
+    unique={}
+    for row in ranked:unique.setdefault(row['mask_sha256'],row)
+    candidates=list(unique.values())
+    if not candidates:return []
+    selected=[min(candidates,key=lambda r:(r['combined_loss'],r['id']))]
+    def add(row):
+        if row['mask_sha256'] not in {v['mask_sha256'] for v in selected}:
+            selected.append(row)
+    for row in candidates:
+        if len(selected)>=limit:break
+        if row['niche'] not in {v['niche'] for v in selected}:add(row)
+    for row in pareto_front(candidates):
+        if len(selected)>=limit:break
+        add(row)
+    for row in candidates:
+        if len(selected)>=limit:break
+        add(row)
+    return selected[:limit]
+
+class SurrogatePreview:
+    """Uncertainty/novelty-aware *ordering* only. No model may waive an exact audit."""
+    def __init__(self,bounds,archive,*,min_samples=12):
+        self.keys=list(bounds)
+        self.low=np.array([bounds[k][0] for k in self.keys],dtype=float)
+        self.spread=np.array([bounds[k][1]-bounds[k][0] for k in self.keys],dtype=float)
+        if np.any(self.spread<=0):raise ValueError('Invalid surrogate bounds')
+        rows=sorted(archive.data['members'].values(),key=lambda r:r['id']) if archive else []
+        self.x=np.array([[r['genome'][k] for k in self.keys] for r in rows],dtype=float).reshape((-1,len(self.keys)))
+        self.x=(self.x-self.low)/self.spread
+        self.y=np.array([r['losses']['silhouette'] for r in rows],dtype=float)
+        self.ready=len(rows)>=min_samples
+    def predict(self,genome):
+        x=(np.array([genome[k] for k in self.keys],dtype=float)-self.low)/self.spread
+        if not np.isfinite(x).all():raise ValueError('Invalid candidate vector')
+        if not len(self.y):return {'predicted_loss':None,'novelty':1.,'neighbors':0}
+        dist=np.sqrt(np.mean((self.x-x)**2,axis=1))
+        nearest=np.argsort(dist,kind='stable')[:min(5,len(dist))]
+        weights=1/np.maximum(dist[nearest],.015)
+        value=float(np.dot(weights,self.y[nearest])/weights.sum())
+        return {'predicted_loss':value if self.ready else None,
+                'novelty':float(dist.min()),'neighbors':len(nearest)}
+    def priority(self,genome):
+        result=self.predict(genome)
+        # Reserve family/method seats in the evaluator, independent of prediction.
+        if result['predicted_loss'] is None:return -min(.5,result['novelty'])
+        return result['predicted_loss']-.06*min(.5,result['novelty'])
+
+def searchability_census(bounds,archive,*,family_focus,activations=()):
+    """Distinguish syntactically reachable loci from actual observed variation."""
+    declared=set(bounds)
+    reachable=set().union(*(set(f) for f in family_focus.values()))
+    rows=list(archive.data['members'].values()) if archive is not None else []
+    observed={}
+    for key in sorted(declared):
+        v=sorted({float(r['genome'][key]) for r in rows})
+        observed[key]={'unique_observed':len(v),'range':[v[0],v[-1]] if v else None}
+    return {'schema':'projection-loom/searchability-census/v1',
+        'declared_loci':len(declared),'reachable_loci':len(reachable),
+        'unreachable_loci':sorted(declared-reachable),
+        'observed_constant_loci':sorted(k for k,v in observed.items() if v['unique_observed']==1),
+        'activation_loci':{k:{'threshold':.5,'active':sum(r['genome'][k]>=.5 for r in rows),
+                           'inactive':sum(r['genome'][k]<.5 for r in rows)} for k in activations if k in declared},
+        'scored_members':len(rows),'unique_masks':len({r['mask_sha256'] for r in rows}),
+        'niches':len({r['niche'] for r in rows}),
+        'families':{f:{'scored':sum(r['family']==f for r in rows),
+            'unique_masks':len({r['mask_sha256'] for r in rows if r['family']==f})} for f in family_focus},
+        'observed':observed}
