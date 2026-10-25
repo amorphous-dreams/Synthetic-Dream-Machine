@@ -85,6 +85,13 @@ def main(argv=None):
     group.add_argument('--name')
     group.add_argument('--branch')
     p.add_argument('--witness',type=Path,help='required for branch release')
+    p=commands.add_parser('feature-annotate',
+                          help='Snapshot operator-drawn image regions as source-bound provisional attention masks')
+    p.add_argument('--project',type=Path,required=True)
+    p.add_argument('--region',action='append',required=True,
+                   help='Entity=/path/to/annotation.png; repeat for Crystal, Joining, Fortress')
+    p.add_argument('--score-size',type=int,nargs=2,default=[128,192])
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('transfer-seed',help='Explicitly authorize proposal-only normalized gene transfer')
     p.add_argument('--source-recipe',type=Path,required=True)
     p.add_argument('--target-recipe',type=Path,required=True)
@@ -170,6 +177,24 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='feature-annotate':
+        from .feature_evidence import FeatureEvidence
+        parsed={}
+        for item in args.region:
+            if '=' not in item:
+                raise ValueError('Feature region must be Entity=/path/to/mask.png')
+            entity,file=item.split('=',1)
+            if entity in parsed:
+                raise ValueError('Duplicate source feature entity')
+            parsed[entity]=Path(file)
+        receipt=FeatureEvidence.author(Project.load(args.project),parsed,args.out,
+                                       score_size=tuple(args.score_size))
+        result={'manifest':str(args.out),'digest':receipt.digest,
+                'source_sha256':receipt.source_sha256,
+                'entities':sorted(receipt.masks),
+                'evidence_state':'operator-annotated'}
+        print(json.dumps(result,indent=2))
+        return result
     if args.command=='transfer-seed':
         from .capability_stack import CapabilityRecipe
         from .campaign import FAMILY_FOCUSES
