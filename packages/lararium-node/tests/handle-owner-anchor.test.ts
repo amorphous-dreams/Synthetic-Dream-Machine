@@ -12,6 +12,7 @@ import * as ed from "@noble/ed25519";
 import { hex, mintFaceAnchor, mintPersonaInception, type PersonaKelEvent } from "@lararium/mesh";
 import { readHandleOwnerOf } from "../src/commands/handle.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -24,6 +25,7 @@ async function standFace(handleIndex: number, byte: number, { anchor = true }: {
   const inception = mintPersonaInception(did, `${byte.toString(16).padStart(2, "0")}`.repeat(32));
   faces[handleIndex] = { did, chain: [inception], prefix: inception.prefix };
   const group = `GROUP-OF-FACE-${handleIndex}`;
+  await ensureFaceCustodyOfGroup(group);
   await persistIdentityAnchors({ personaGroupId: group, meshCabalDocIdHex: "ab".repeat(32) }, handleIndex);
   if (anchor) await keepFaceAnchorOfGroup(mintFaceAnchor({ personaGroup: group, personaKelPrefix: inception.prefix, personaRootDid: did, edge: { handleIndex }, leaseEpoch: 0 }));
 }
