@@ -16,7 +16,7 @@
  *     (`import type { Widget } from 'tiddlywiki';`).
  *   - The hand-rolled types here model exactly what our call sites use,
  *     including domain-specific shapes (filter operator `operand`/`suffix`
- *     access, `_larKukaliHook` extension slot) that tw5-typed's stricter
+ *     access) that tw5-typed's stricter
  *     coverage doesn't expose. Call sites use the local `TW5*` aliases.
  *   - Domain-specific extensions that belong on the upstream types use
  *     declaration merging per linonetwo's README:
@@ -29,8 +29,6 @@
  *     prototype chain, not ES6 class extends. Constructors are typed separately.
  *   - Filter `source` is the TW5 iterator protocol: a function that accepts a
  *     callback receiving (tiddler | undefined, title) for each input tiddler.
- *   - TW5Wiki carries an optional extension slot (_larKukaliHook) written by
- *     LarariumTW5.registerKukaliHook() so KukaliWidget can read it without a cast.
  */
 
 import type {

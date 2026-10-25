@@ -123,7 +123,7 @@ def _idle_ttl_seconds() -> float:
 # The `.structurepalace` is addressed by EXACT id (the structural hash) for put/get/kapae — we
 # never semantic-search it — so we supply our OWN vectors and NEVER invoke the palace's
 # embedding model (no model load, no download, no network). The vector is the STRUCTURE
-# PLANE's cohesion feed for the FFZ Measure servo (ffz-orchestrator, the 3rd quorum plane):
+# PLANE's cohesion feed for the FFZ Measure:
 # it must be COSINE-MEANINGFUL — two structurally-similar trees land NEAR, dissimilar trees
 # FAR. The retired hash-hex embedding could NOT do this (sibling trees hash to orthogonal
 # noise); this one captures the AST's SHAPE, so the geometry carries semantics.
@@ -578,7 +578,7 @@ def _serve(palace_path: str) -> None:
     )
 
 
-# ── The STRUCTURE-PLANE READER — the batch readback the FFZ Measure servo joins ──────
+# ── The STRUCTURE-PLANE READER — the batch readback the FFZ Measure joins ──────
 #
 # Mirrors `loci_io.py cmd_form_embeddings` (the FORM plane), one tier up: the FORM store
 # keys an entry BY the verbatim_sha (one vector per turn), so its readback is a 1:1 dump.

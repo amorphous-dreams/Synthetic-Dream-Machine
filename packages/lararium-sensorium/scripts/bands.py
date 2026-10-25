@@ -109,8 +109,8 @@ def cohesion_signal(planes: list[np.ndarray]) -> np.ndarray:
     For each plane's stacked embeddings `V` (N×dim, in corpus sequence order), the drift
     at chunk i is `1 − cosine(V[i], V[i-1])` (monotone: more drift = less cohesion; the
     first chunk opens at drift 0). This is the wavelet-over-COHESION signal (corpus.md's
-    NOVEL ground) — the SAME `1 − cosine` transform the Measure servo's centroidDriftStep
-    reads, here run against the PRIOR chunk (sequential) rather than a running centroid, so
+    NOVEL ground) — the `1 − cosine` transform,
+    here run against the PRIOR chunk (sequential) rather than a running centroid, so
     the wavelet sees the raw scale-structure of the drift, un-smoothed. Returns an N×P
     matrix; a single all-zero-length plane contributes a zero column (graceful)."""
     cols = []
@@ -238,7 +238,7 @@ def ridge_scales(signal: np.ndarray, n_ridges: int = 3) -> list[float]:
 def ewma_hysteresis(prev: float, target: float, evidence: float, threshold: float, alpha: float) -> float:
     """Move a boundary toward `target` by an EWMA step ONLY when the spectral `evidence`
     clears the damped `threshold`; otherwise HOLD (hysteresis). The damped step is the
-    Measure servo's EWMA lifted to the boundary domain — it tracks a drifting natural scale
+    EWMA lifted to the boundary domain — it tracks a drifting natural scale
     without chasing noise. Returns the nudged boundary."""
     if evidence <= threshold:
         return prev
