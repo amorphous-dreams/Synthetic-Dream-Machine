@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lararium/browser/pono-charter"
 ! lararium-browser Pono Charter
 
 Constitutional doc. Governs what code enters the package, how it survives, and what gets deleted.
-Code movement requires a matching entry in the ''migration allowlist'' (`deletion-map.md`).
+Code enters the package through the ''admission law'' below, and the adapter boundary in `deletion-map.md` names the DOM shores that stay host-side.
 
 <<~ ahu #/vessel-law>>
 
@@ -96,21 +96,19 @@ Three packages carry the browser vessel. Responsibility divides cleanly.
 | `@lararium/tw5` | TW5 engine wrapper, content-addressed boot artifacts, plugin build pipeline, projection-neutral render interfaces | Browser frame logic, IndexedDB, island spawn code, pool orchestration |
 | `@lararium/browser` | Browser vessel open/close, island pool orchestration, IndexedDB and local persistence, sync transport ownership, host frame manager, hot/admin wiki swap, browser-side projection adapters, browser plugin blob generation | Node-only APIs, piscina, filesystem, any server-side auth surface |
 
-The `@lararium/browser` package carries `BrowserVesselIslandPool`, `browser-wiki-worker.ts`, and the `BrowserAuthorityPool` implementation (S0–S3 landed; §8 gate closed). The open shore for S9 S4: real boot path — `IndexedDBStorageAdapter` per island Worker Repo, WebCrypto-derived operator keypair, `runFoundingCeremony` + `runApplyAdmitPayload` from `@lararium/keyhive`, presence via `broadcast()`. Island Sovereignty Law §1–§8 all hold gate proofs. New code enters by passing the migration allowlist check.
+The `@lararium/browser` package carries `BrowserVesselIslandPool`, `browser-wiki-worker.ts`, and the `BrowserAuthorityPool` implementation Island Sovereignty Law §1–§8 govern the package.
 
 <<~/ahu>>
 
-<<~ ahu #/migration-allowlist>>
+<<~ ahu #/admission-law>>
 
-!! Migration Allowlist
+!! Admission Law
 
-Code moves into `@lararium/browser` only when it satisfies ''all three'' tests:
+Code enters `@lararium/browser` only when it satisfies ''all three'' tests:
 
 # ''Law test.'' The code's responsibility belongs to one of the BV-1–BV-8 assignments above, and satisfies Island Sovereignty Law §1–§8 (`island-protocol.ts`).
 # ''Proof test.'' Moving this code makes a cheap-check falsifier pass, not merely easier to imagine passing.
-# ''Residue test.'' The code carries no unresolved web2 smell (see `deletion-map.md`). If it carries residue, the residue gets quarantined behind a named adapter boundary before migration.
-
-Code that passes all three gets a migration entry in `deletion-map.md#migration-log`.
+# ''Residue test.'' The code carries no unresolved web2 smell (see `deletion-map.md`). If it carries residue, the residue gets quarantined behind a named adapter boundary before it enters the package.
 
 <<~/ahu>>
 
@@ -139,6 +137,6 @@ These questions do not block charter adoption. They require measurement before r
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cdkAyGymavgFENwPZjUwUKY1RJn9rf5RHGLhLBYLAbM
+<<^ code="&#x0003;">>ni:///sha-256;oUGJI5H4PblBdHatA8z2rdv9jWunOQ1hGZuXBLdbUlM
 
 <<^ code="&#x0004;" -> to="?">>
