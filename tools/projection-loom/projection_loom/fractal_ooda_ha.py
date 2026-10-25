@@ -26,7 +26,7 @@ from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery, regrow_lineage_gallery
 from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor, validate_breeding_recipe
 from .search_strategy import SurrogatePreview, regional_loss, adaptive_priorities, emitter_performance, multiscale_source_loss
-from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
+from .phase_rules import PHASES, TERMINAL, STATES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
 
@@ -93,7 +93,7 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
             raise ValueError('Open inquiry requires a parent_loop and a bounded question')
     if action == 'advance-inquiry':
         if (set(parameters) != {'loop_id', 'phase', 'detail'} or
-                parameters['phase'] not in PHASES[1:] or
+                parameters['phase'] not in STATES[1:] or
                 not isinstance(parameters['detail'], dict) or
                 len(json.dumps(parameters['detail'], allow_nan=False)) > 8192):
             raise ValueError('Advance inquiry requires a next phase and a bounded detail dictionary')
@@ -266,7 +266,7 @@ class OODAHAJournal:
         node = self.data['loops'].get(loop_id)
         if node is None or node['scope'] != 'inquiry':
             raise ValueError('Only an inquiry may advance with inquiry controls')
-        if phase not in PHASES[1:]:
+        if phase not in STATES[1:]:
             raise ValueError('Inquiry phase must follow Observe')
         if node['phase'] == phase and node['receipts'].get(phase) == (detail or {}):
             # A crash between transition persistence and control acknowledgement

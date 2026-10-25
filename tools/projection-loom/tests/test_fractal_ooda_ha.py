@@ -1,4 +1,4 @@
-"""RED-first five-phase procedural law, physical module, and legacy API."""
+"""RED-first five-phase procedural law, physical module, and sole public API."""
 from importlib import import_module
 from pathlib import Path
 
@@ -13,8 +13,8 @@ def test_fractal_ooda_ha_owns_the_real_five_phase_engine():
     assert engine.OODAHAJournal is OODAHAJournal
     assert engine.run_ooda_ha_epochs is run_ooda_ha_epochs
     assert engine.submit_control is submit_control
-    assert engine.PHASES == (
-        'observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
+    assert engine.PHASES == ('observe', 'orient', 'decide', 'act', 'aftermath')
+    assert engine.TERMINAL == 'closed'
 
 
 def test_aftermath_inquiry_blocks_return_and_carries_own_aftermath(tmp_path):

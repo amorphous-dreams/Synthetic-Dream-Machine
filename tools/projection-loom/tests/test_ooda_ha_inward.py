@@ -12,8 +12,8 @@ def test_theme_public_ontology_exposes_only_ooda_ha_names():
     import projection_loom.fractal_ooda_ha as engine
     assert hasattr(engine, 'OODAHAJournal')
     assert hasattr(engine, 'run_ooda_ha_epochs')
-    assert not hasattr(engine, 'OODAHAJournal')
-    assert not hasattr(engine, 'run_ooda_ha_epochs')
+    assert not hasattr(engine, 'OODAJournal')
+    assert not hasattr(engine, 'run_ooda_epochs')
 
 
 @pytest.mark.parametrize('command',(
@@ -24,7 +24,7 @@ def test_theme_cli_names_the_five_phase_procedure(command, capsys):
     assert raised.value.code == 0
 
 
-@pytest.mark.parametrize('legacy',('ooda-ha-run','ooda-ha-status','ooda-ha-steer','ooda-ha-finalists'))
+@pytest.mark.parametrize('legacy',('ooda-run','ooda-status','ooda-steer','ooda-finalists'))
 def test_theme_refuses_four_phase_cli_aliases(legacy, capsys):
     with pytest.raises(SystemExit) as raised:
         cli.main([legacy,'--help'])

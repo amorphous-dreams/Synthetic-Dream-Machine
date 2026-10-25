@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from projection_loom.phase_rules import PHASES, next_phase_allowed, child_phase_anchor
+from projection_loom.phase_rules import PHASES, TERMINAL, STATES, next_phase_allowed, child_phase_anchor
 from projection_loom.fractal_ooda_ha import OODAHAJournal
 
 
@@ -17,16 +17,18 @@ def loop(phase='observe', *, children=(), depth=0):
 
 
 def test_five_phases_and_closed_boundary_are_explicit_and_pure():
-    assert PHASES == ('observe', 'orient', 'decide', 'act', 'aftermath', 'closed')
-    assert len(PHASES[:-1]) == 5
-    for index, current in enumerate(PHASES):
+    assert PHASES == ('observe', 'orient', 'decide', 'act', 'aftermath')
+    assert TERMINAL == 'closed'
+    assert STATES == (*PHASES, TERMINAL)
+    assert len(PHASES) == 5
+    for index, current in enumerate(STATES):
         loops = {'root':loop(current)}
         before = json.dumps(loops,sort_keys=True)
         assert next_phase_allowed(loops, 'root', current) is False
-        if index < len(PHASES)-1:
-            assert next_phase_allowed(loops, 'root', PHASES[index+1]) is True
-        for target in PHASES:
-            if target in (current, PHASES[min(index+1, len(PHASES)-1)]):
+        if index < len(STATES)-1:
+            assert next_phase_allowed(loops, 'root', STATES[index+1]) is True
+        for target in STATES:
+            if target in (current, STATES[min(index+1, len(STATES)-1)]):
                 continue
             with pytest.raises(ValueError,match='Illegal OODA-HA phase transition'):
                 next_phase_allowed(loops, 'root', target)
@@ -36,7 +38,7 @@ def test_five_phases_and_closed_boundary_are_explicit_and_pure():
 
 
 def test_child_at_each_parent_phase_blocks_departure_until_closed():
-    for current, target in zip(PHASES[:-1], PHASES[1:]):
+    for current, target in zip(PHASES, STATES[1:]):
         loops = {'root':loop(current,children=('inquiry',)),
                  'inquiry':loop('aftermath',depth=1)}
         with pytest.raises(ValueError,match='awaits child loops'):
