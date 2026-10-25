@@ -8,7 +8,7 @@ from .cameras import Camera
 from .solid import SolidAssembly
 from .render import silhouette, export_controls, light_vector
 
-SCHEMA='projection-loom/solid-project/v2'
+SCHEMA='projection-loom/solid-project'
 
 @dataclass
 class Project:
