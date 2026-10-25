@@ -14,7 +14,7 @@ import numpy as np
 from .epochs import _atomic, _hash
 from .search_strategy import diversity_parents, pareto_front, searchability_census, infer_locus_interactions, adaptive_foci
 
-SCHEMA = 'projection-loom/lineage-archive/v2'
+SCHEMA = 'projection-loom/lineage-archive'
 
 
 def visual_descriptor(mask):
