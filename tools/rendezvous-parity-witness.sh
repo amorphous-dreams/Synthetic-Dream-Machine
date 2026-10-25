@@ -5,10 +5,9 @@
 # py-side verb dial it from `lares_uds`. Nothing but agreement joins them: no import crosses the
 # seam, no type spans it, and the typechecker cannot see one half of it at all.
 #
-# Measured, that gap ran live. The socket moved out of `<dataDir>/lares.sock` and onto the rendezvous
-# — `/tmp/lares-<uid>/<sha256(root)[0:12]>.sock`, which holds a fixed 40 bytes however deep the root
-# runs — and the py side kept the retired spelling. The daemon served throughout. Every MCP verb met
-# a socket nothing had created since the move, and 20 witnesses stayed green over it.
+# The rendezvous stands at `/tmp/lares-<uid>/<sha256(root)[0:12]>.sock`, which holds a fixed 40 bytes
+# however deep the root runs. A py side that drifts from the TS derivation meets a socket nothing
+# created, while the daemon serves on and every other witness stays green.
 #
 # So this collides the two derivations directly, under BOTH root branches: the XDG default and an
 # isolated `LAR_ROOT`. A drift in either one is the whole surface going dark.
