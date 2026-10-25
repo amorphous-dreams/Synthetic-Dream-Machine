@@ -167,10 +167,12 @@ def allocate_detail_seats(scheduled, *, max_detail, emitter_turn=0, preview=None
             # adapting surplus. Learned reward never erases a fair rotation.
             method=min(available_methods,key=lambda m: (
                 any(p.emitter=='family:'+family+':'+m for p in chosen),
+                # Sampling a family method for the first time gives more
+                # information than repeatedly scoring a known success.
+                # Reward/curiosity only breaks ties in observed exposure.
+                int(performance.get('family:'+family+':'+m,{}).get('scored',0)),
                 -float(performance.get('family:'+family+':'+m,{})
                        .get('exploration_value',0.)),
-                float(performance.get('family:'+family+':'+m,{})
-                      .get('scored',0)),
                 by_turn.index(m)))
             available = choices[(family,method)]
             candidate = next((p for p in available if p.id not in used),None)
