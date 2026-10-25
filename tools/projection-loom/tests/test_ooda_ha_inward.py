@@ -103,3 +103,35 @@ def test_beat_operator_inquiry_controls_cannot_replace_returned_aftermath(tmp_pa
     with pytest.raises(ValueError,match='receipt|collision|conflict'):
         journal.advance_inquiry(child['id'],'closed',{'outcome':'new retrospective claim'})
     assert journal.path.read_bytes()==saved
+
+
+def test_beat_candidate_identity_and_aftermath_survive_retries(tmp_path):
+    from projection_loom.fractal_ooda_ha import OODAHAJournal
+    from projection_loom.epochs import Proposal
+    journal=OODAHAJournal(tmp_path/'session.json',identity={
+        'location':'candidate','score_state':'synthetic',
+        'ledger_path':str(tmp_path/'ledger.json')},initial={'x':.3})
+    journal.begin('epoch',parent='location',scope='epoch',evidence={'epoch':1})
+    for phase in ('orient','decide','act'):
+        journal.transition('epoch',phase,{'phase':phase})
+    original=Proposal('sample','sobol',{'x':.3},parent='initial')
+    journal.candidate_start('epoch',original)
+    journal.candidate_receipt('epoch',original,{'state':'scored','combined_loss':.4,
+                                             'audit':{'valid':True}})
+    saved=journal.path.read_bytes()
+    aftermath=journal.data['loops']['epoch/sample']['receipts']['aftermath']
+    assert aftermath['outcome']=='scored'
+    assert len(journal.data['loops']['epoch/sample']['receipts'])==6
+    journal.candidate_receipt('epoch',original,{'state':'scored','combined_loss':.4,
+                                             'audit':{'valid':True}})
+    assert journal.path.read_bytes()==saved
+    with pytest.raises(ValueError,match='candidate|Aftermath|receipt|collision'):
+        journal.candidate_receipt('epoch',original,{'state':'rejected',
+                                                   'reason':'changed witness'})
+    with pytest.raises(ValueError,match='Observe|candidate|collision'):
+        journal.candidate_start('epoch',Proposal('sample','sobol',{'x':.9},
+                                                parent='initial'))
+    with pytest.raises(ValueError,match='Observe|candidate|collision'):
+        journal.candidate_start('epoch',Proposal('sample','local',{'x':.3},
+                                                parent='initial'))
+    assert journal.path.read_bytes()==saved
