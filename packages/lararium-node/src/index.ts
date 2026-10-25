@@ -497,7 +497,9 @@ export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gat
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
-export { seatFaceRoute, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
+export { seatFaceAutoFounder } from "./custody-holder.js";
+export { faceDir, listFaceFiles, readFaceIndexSync } from "./face-index.js";
+export { faceRouteSeated, seatFaceRoute, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
 export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";

@@ -382,7 +382,7 @@ function buildTable(): readonly CarrierRow[] {
          writer: "none (reserved carrier)" }),
     id({ row: "admissions", target: tgt(["D"], LEAD), match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
-    id({ row: "anchors", target: tgt(["D"]), match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    faceRowOf({ row: "anchors", target: tgt(["D"]), inner: /^anchors-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
     id({ row: "anchor-roster", target: tgt(["D", "F"], LEAD), match: file("anchor-roster.json"), custody: "hot", keyClass: null,
          writer: "identity-anchors" }),
@@ -418,11 +418,11 @@ function buildTable(): readonly CarrierRow[] {
     // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
     // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
-    id({ row: "guardian-set", target: tgt(["D"]), match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    faceRowOf({ row: "guardian-set", target: tgt(["D"]), inner: /^guardian-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
     // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
-    id({ row: "face-provisional", target: tgt(["D"]), match: /^face-provisional-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    faceRowOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
     row({ row: "hosting-state", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
@@ -458,16 +458,16 @@ function buildTable(): readonly CarrierRow[] {
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
-    id({ row: "persona-root", target: tgt(["D"]), match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
-    id({ row: "face-proof-key", target: tgt(["D"]), match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "face-proof-key", target: tgt(["D"]), inner: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
     // A seat's own key, minted at random and apart from every root and leaf (`seat-key-store`). Its file names the
     // face whose seat claim stood for the chair and a digest of the seat's public key. It stays on its vessel: a
     // bundle carries no key of any seat.
-    id({ row: "seat-key", target: tgt(["D"]), match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "seat-key", target: tgt(["D"]), inner: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
@@ -477,7 +477,7 @@ function buildTable(): readonly CarrierRow[] {
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
     id({ row: "restore-pending", target: tgt(["D"]), match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
          writer: "face-bundle-restore" }),
-    id({ row: "device-share", target: tgt(["D"]), match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "device-share", target: tgt(["D"]), inner: DEVICE_SHARE_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
   ]);
 }
@@ -552,9 +552,27 @@ export function carrierCensus(homes: CustodyHomes): CarrierEntry[] {
 export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
   // The hot and cold rows alone get walked: a rotation and an unlock never list a subtree only a plain row names.
   const sealed = carrierTable().filter((r) => r.custody === "hot" || r.custody === "cold");
-  return (["identity", "storage", "seal"] as const)
-    .flatMap((home) => censusHome(home, homes[home], sealed))
-    .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }));
+  return [
+    ...(["identity", "storage", "seal"] as const)
+      .flatMap((home) => censusHome(home, homes[home], sealed))
+      .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass })),
+    ...flatFaceRowCarriers(homes.identity).map((e) => ({ name: `identity/${e.file}`, path: e.path, keyClass: e.keyClass })),
+  ];
+}
+
+/**
+ * A face row's file standing FLAT in the identity home: the spelling an earlier shape wrote. This build writes a face row only inside
+ * its face's directory, so a flat one is a carrier the build does not write: the shape reader and the founding census name it.
+ */
+export function flatFaceRowCarriers(identityDir: string): Array<{ readonly row: string; readonly file: string; readonly path: string; readonly keyClass: KeyClass | null }> {
+  let names: string[];
+  try { names = readdirSync(identityDir); } catch { return []; }
+  const out: Array<{ row: string; file: string; path: string; keyClass: KeyClass | null }> = [];
+  for (const file of names) {
+    const row = carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.inner.test(file));
+    if (row) out.push({ row: row.row, file, path: join(identityDir, file), keyClass: row.keyClass });
+  }
+  return out;
 }
 
 /**

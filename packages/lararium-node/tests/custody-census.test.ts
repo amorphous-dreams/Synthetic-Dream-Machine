@@ -71,7 +71,7 @@ describe("the node custody census (K15 step zero)", () => {
   });
 
   it("gives every hot, cold and outbox row a D part", () => {
-    const sealed = table.filter((r) => ["hot", "cold", "outbox"].includes(r.custody));
+    const sealed = table.filter((r) => ["hot", "cold", "outbox", "face-hot", "face-cold"].includes(r.custody));
     expect(sealed.length).toBeGreaterThan(20);
     for (const r of sealed) expect(r.target.classes).toContain("D");
   });
@@ -102,7 +102,7 @@ describe("the node custody census (K15 step zero)", () => {
       expect(refusals(retarget("sk-slots", { classes: ["S"], lead: false, joint: null }))).toContain("sk-slots: S row neither LEAD nor joint");
     });
     it("refuses a hot row that falls to F", () => {
-      expect(refusals(retarget("anchors", { classes: ["F"], lead: false, joint: null }))).toContain("anchors: hot row without a D part");
+      expect(refusals(retarget("anchors", { classes: ["F"], lead: false, joint: null }))).toContain("anchors: face-hot row without a D part");
     });
     it("refuses a table missing a spec row and one adding a row", () => {
       expect(refusals(table.filter((r) => r.row !== "device-share"))).toContain("device-share: spec row missing from the table");

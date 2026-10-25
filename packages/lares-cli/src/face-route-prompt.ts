@@ -7,7 +7,7 @@
  * `offline-custody`); with neither, the act refuses by name and founds nothing.
  */
 import type { SlotSpec } from "@lararium/mesh";
-import { seatFaceRoute } from "@lararium/node";
+import { faceRouteSeated, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { gatherFoundingRoute, requireTty } from "./custody-prompt.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
@@ -24,7 +24,7 @@ export async function gatherNewFaceRoute(face: { readonly label: string }): Prom
 }
 
 /** Seat the gatherer the face-founding acts of this process ask. */
-export function seatNewFaceRoute(): void { seatFaceRoute(gatherNewFaceRoute); }
+export function seatNewFaceRoute(): void { if (!faceRouteSeated()) seatFaceRoute(gatherNewFaceRoute); }
 
 /**
  * Hand a new face's route to the vessel standing on this store, over its custody door, before a face founds inside it.

@@ -18,6 +18,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
+import { appendFaceEntry } from "../src/face-index.js";
+import { handleRowPathIn } from "./face-paths.js";
 import { custodyRootPath, custodyDerive, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
   bindCustodySlot, custodyStatus, CustodyFoundingRefused, foundCustody, rotateCustody, unbindCustodySlot, unlockCustody,
@@ -70,13 +72,14 @@ describe("foundCustody", () => {
   });
 
   test("RED: over today's cleartext founding output it refuses OldShapeRefusal, the directory hash unchanged — CONTROL: a clean home founds", async () => {
-    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
+    // No face index stands: the helper resolves this legacy cleartext row to its old flat path.
+    writeFileSync(handleRowPathIn(homes.identity, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
     const before = hashes(root);
     await expect(foundCustody({ io, homes, slots: [TEST_SLOT] })).rejects.toBeInstanceOf(OldShapeRefusal);
     expect(hashes(root)).toEqual(before);
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
 
-    rmSync(join(homes.identity, "anchors-h0.json"));
+    rmSync(handleRowPathIn(homes.identity, "anchors-h0.json"));
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(true);
   });
@@ -224,7 +227,10 @@ describe("rotateCustody", () => {
 describe("custodyStatus", () => {
   test("opens nothing: names the slots and pin kinds, reads the sealed root `sealed` and an unconverted row `bare`", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
-    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"a":1}', { mode: 0o600 });
+    await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
+    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    mkdirSync(join(anchors, ".."), { recursive: true });
+    writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     const before = hashes(root);
     const s = await custodyStatus({ io, homes });
     expect(hashes(root)).toEqual(before);
@@ -234,12 +240,15 @@ describe("custodyStatus", () => {
     const byRow = new Map(s.rows.map((r) => [r.row, r]));
     expect(byRow.get("custody-root")?.reading).toBe("sealed");
     expect(byRow.get("anchors")?.reading).toBe("bare");
-    expect(byRow.get("anchors")?.custody).toBe("hot");
+    expect(byRow.get("anchors")?.custody).toBe("face-hot");
   });
   test("RED: one reading of one file: a floor row names the law it rests bare under, a bare hot row reads as a fault, and a private file no row names reads outside", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
-    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"a":1}', { mode: 0o600 });
+    await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
+    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    mkdirSync(join(anchors, ".."), { recursive: true });
+    writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
     const s = await custodyStatus({ io, homes });
     const byRow = new Map(s.rows.map((r) => [r.row, r]));
@@ -387,7 +396,7 @@ describe("runInit seals custody from birth", () => {
         mkdirSync(oStorage, { recursive: true });
         const oldHome = await withLarRoot(old, async () => larIdentityDir());
         mkdirSync(oldHome, { recursive: true });
-        writeFileSync(join(oldHome, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
+        writeFileSync(handleRowPathIn(oldHome, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
         const before = hashes(oldHome);
         const err = await withLarRoot(old, async () => {
           try { await foundDirect({ storageDir: oStorage, genesisDir: oGenesis }); return null; } catch (e) { return e; }

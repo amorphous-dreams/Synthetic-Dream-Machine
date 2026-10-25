@@ -52,8 +52,9 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, readdirSync, renameSync, openSync, writeSync, fsyncSync, closeSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import {
   generateOrLoadKeypair,
@@ -842,7 +843,7 @@ export async function orphanPersonaRoots(): Promise<number[]> {
   const escaped = (login ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const spelled = new RegExp(login ? `^\\.persona-group-root-${escaped}-h(0|[1-9]\\d*)\\.json$` : "^\\.persona-group-root-h(0|[1-9]\\d*)\\.json$");
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { return []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   const out: number[] = [];
   for (const name of names) {
     const m = spelled.exec(name);

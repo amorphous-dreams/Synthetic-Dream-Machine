@@ -19,16 +19,20 @@
  */
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintVk, readFckCarrier, readVkCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
+import { mintFck, mintVk, readFckCarrier, readVkCarrier, writeFaceCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
 import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, archivePath, type IdentityAnchors,
 } from "../src/identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
+import { faceCarrierFor } from "../src/face-custody.js";
+import { faceTreePath } from "../src/face-index.js";
+import { carrierTable } from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { handleRowPathIn } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -40,7 +44,7 @@ const edge: DeviceDelegationTiddler = {
 const bytesOf = (marker: string): Uint8Array => new TextEncoder().encode(`${marker}:${"x".repeat(64)}`);
 
 let c: SeatedScratchCustody;
-const at = (file: string): string => join(c.homes.identity, file);
+const at = (file: string): string => file.startsWith("anchors-h") ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 beforeEach(async () => { c = await seatScratchCustody("anchors"); });
 afterEach(async () => { await c.drop(); });
 
@@ -48,7 +52,7 @@ describe("the identity home's sealed family", () => {
   test("A1 an anchors row seals at rest and reads back whole", async () => {
     expect(await loadIdentityAnchors()).toBeNull();
     await persistIdentityAnchors(anchors);
-    expect(readVkCarrier(readFileSync(at("anchors-h0.json")))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(at("anchors-h0.json")))).toBe("sealed");
     expect(readFileSync(at("anchors-h0.json")).includes(Buffer.from("aa11"))).toBe(false);
     expect(await loadIdentityAnchors()).toEqual(anchors);
   });
@@ -117,8 +121,10 @@ describe("the identity home's sealed family", () => {
     await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil-under-A"), anchors.personaGroupId);
     await persistIdentityAnchors(anchors);
-    const files = ["keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId), "anchors-h0.json"];
+    const files = ["keyhive-archive.bin"];
     const standing = files.map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)));
+    const anchorStanding = readFileSync(at("anchors-h0.json"));
+    const veilStanding = readFileSync(veilArchivePath(anchors.personaGroupId));
 
     // Key B: a stranger vessel key the slot tree never committed to, held by a holder over the SAME homes. The
     // holder's own door refuses a key the custody root does not open under, so B writes through the sealed writer
@@ -132,8 +138,23 @@ describe("the identity home's sealed family", () => {
         carrier: { name: `identity/${f}`, path: at(f), keyClass: null }, plaintext: bytesOf("under-B"),
       })).rejects.toThrow(TreeVkRefusal);
     }
+    // A stranger face key cannot replace either face row under its own face tree.
+    for (const [file, path, rowName] of [
+      ["anchors-h0.json", at("anchors-h0.json"), "anchors"],
+      [veilArchiveFile(anchors.personaGroupId), veilArchivePath(anchors.personaGroupId), "veil-archive"],
+    ] as const) {
+      const fcid = basename(dirname(path));
+      const row = carrierTable().find((r) => r.row === rowName)!;
+      await expect(writeFaceCarrier({
+        io: c.io, key: mintFck(), treePath: faceTreePath(c.homes.identity, fcid),
+        carrier: faceCarrierFor(c.homes, fcid, file, row), plaintext: bytesOf("under-B"),
+      })).rejects.toThrow(TreeVkRefusal);
+    }
     await expect(makeCustodyHolder({ io: c.io, homes: c.homes }).adopt(keyB)).rejects.toThrow(/custody root reads key-fails/);
     files.forEach((f, i) => expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
+    expect(readFileSync(at("anchors-h0.json")).equals(anchorStanding), "the face row never moved").toBe(true);
+    expect(readFileSync(veilArchivePath(anchors.personaGroupId)).equals(veilStanding), "the veil row never moved").toBe(true);
+    expect(readFckCarrier(anchorStanding)).toBe("sealed");
     expect(Array.from((await loadIdentityArchive())!)).toEqual(Array.from(bytesOf("archive-under-A")));
     expect(Array.from((await loadVeilArchive(anchors.personaGroupId))!)).toEqual(Array.from(bytesOf("veil-under-A")));
     expect(await loadIdentityAnchors()).toEqual(anchors);

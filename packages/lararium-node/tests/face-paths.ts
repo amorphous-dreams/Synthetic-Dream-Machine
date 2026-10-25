@@ -9,3 +9,16 @@ export const groupRowPath = (group: string, file: string): string => faceFilePat
 export const askRowPath = (askDigest: string, file: string): string => faceFilePathSync(larIdentityDir(), { ask: askDigest }, file);
 /** Every file name resting in any face's directory, sorted and de-duplicated. */
 export const faceRowNames = (): string[] => faceFileNames(larIdentityDir());
+
+/** The path of a handle-index row (`anchors-h2.json`, `seat-key-h0-<hex>.bin`, ...): in the face at the ordinal its file name carries. */
+export const handleRowPath = (file: string): string => {
+  const m = /-h(\d+)(?=[-.])/.exec(file);
+  if (!m) throw new Error(`${file} names no handle index`);
+  return faceFilePathSync(larIdentityDir(), { ordinal: Number(m[1]) }, file);
+};
+/** As {@link handleRowPath}, over an identity home the caller names (a suite that holds its own homes). */
+export const handleRowPathIn = (identityDir: string, file: string): string => {
+  const m = /-h(\d+)(?=[-.])/.exec(file);
+  if (!m) throw new Error(`${file} names no handle index`);
+  return faceFilePathSync(identityDir, { ordinal: Number(m[1]) }, file);
+};

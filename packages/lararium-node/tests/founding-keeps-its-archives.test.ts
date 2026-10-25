@@ -49,6 +49,7 @@ import { ownedStore } from "../src/owned-store.js";
 import { faceDir, listFaceFiles, readFaceIndexSync } from "../src/face-index.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { foundDirect, seatSeedCharter, TEST_PASSPHRASE } from "./found-route.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
@@ -62,8 +63,9 @@ let archiveAbsentBefore = false;
 const sealedFiles = (): Record<string, Buffer> => {
   const out: Record<string, Buffer> = {};
   for (const f of readdirSync(larIdentityDir())) {
-    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+    if (/^(anchor-roster\.json|keyhive-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
   }
+  for (const f of faceRowNames().filter((name) => /^anchors-h\d+\.json$/.test(name))) out[f] = readFileSync(handleRowPath(f));
   for (const [fcid, f] of listFaceFiles(larIdentityDir(), readFaceIndexSync(larIdentityDir()))) {
     if (/^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)) out[f] = readFileSync(join(faceDir(larIdentityDir(), fcid), f));
   }
@@ -168,7 +170,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const bootstrapBefore = readFileSync(larBootstrapPath(), "utf8");
     await holder.lock();
     await expect(foundFace({ genesisDir, handleIndex: 3 })).rejects.toThrow(CustodyLocked);
-    expect(existsSync(join(larIdentityDir(), "anchors-h3.json"))).toBe(false);
+    expect(faceRowNames()).not.toContain("anchors-h3.json");
     expect(readFileSync(larBootstrapPath(), "utf8")).toBe(bootstrapBefore);
     const after = sealedFiles();
     expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
@@ -190,7 +192,7 @@ describe("a founding keeps its archives, sealed per face", () => {
       cpSync(REPO_GENESIS, join(second, "genesis"), { recursive: true });
       await foundDirect({ storageDir: larDataDir(), genesisDir: join(second, "genesis") });
       const holder = seatedCustody()!;
-      const roots = (): string[] => readdirSync(larIdentityDir()).filter((f) => f.startsWith(".persona-group-root"));
+      const roots = (): string[] => faceRowNames().filter((f) => f.startsWith(".persona-group-root"));
       await holder.lock();
       await expect(seatSeedCharter()).rejects.toThrow(CustodyLocked);
       expect(roots()).toEqual([]);

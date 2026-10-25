@@ -10,6 +10,7 @@ import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadIdentityAnchors, loadVeilArchive, veilArchivePath, type IdentityAnchors } from "../src/identity-anchors.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { handleRowPath } from "./face-paths.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
 const foundFace = direct(runFoundTheFace);
@@ -72,7 +73,7 @@ describe("the veil archive follows its group", () => {
       const aBytes = Buffer.from((await archiveOfGroup(a, inventory))!);
       expect(aBytes.length).toBeGreaterThan(0);
       // The old compartment leaves the roster's anchor row and bootstrap plane before a new ask lands there.
-      unlinkSync(join(larIdentityDir(), "anchors-h1.json"));
+      unlinkSync(handleRowPath("anchors-h1.json"));
       removePlaneEntry(a);
       const cFace = await foundFace({ genesisDir, handleIndex: 1 });
       const c = await remember(1, inventory);

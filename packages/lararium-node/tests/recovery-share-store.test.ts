@@ -1,9 +1,9 @@
 /**
- * recovery-share-store — the device recovery share rests as one cold row per face under the vessel key.
+ * recovery-share-store — the device recovery share rests as one cold row per face under its face key.
  *
- *   D1  a share persists as a VK-sealed row in the identity home and reads back identically; its plaintext
+ *   D1  a share persists as a FCK-sealed row in the face directory and reads back identically; its plaintext
  *       appears nowhere in the file.                          control: nothing at the path reads as none landed
- *   D2  RED: A WRONG KEY REPLACES NO SHARE. A row another vessel's key sealed stands at the path. The load refuses
+ *   D2  RED: A WRONG KEY REPLACES NO SHARE. A row another face's key sealed stands at the path. The load refuses
  *       by name, the write refuses by name, the standing bytes never move, and the vessel that sealed them
  *       still opens them.                                     control: under its own key the same write lands
  *   D3  RED: a row whose sealed bytes moved (one byte of the frame) refuses the read and the write, and nothing
@@ -18,12 +18,13 @@
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
-import { LARK_MAGIC, readVkCarrier, type RecoveryShare } from "@lararium/mesh";
+import { LARK_MAGIC, readFckCarrier, type RecoveryShare } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { seatCustody, writeCustodyRow } from "../src/custody-seat.js";
 import {
-  RecoveryShareStands, deviceShareFile, deviceSharePath, loadRecoveryDeviceShare, persistRecoveryDeviceShare,
+  RecoveryShareStands, deviceShareFile, loadRecoveryDeviceShare, persistRecoveryDeviceShare,
 } from "../src/recovery-share-store.js";
+import { handleRowPath } from "./face-paths.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const share = (seed: number, custodian: RecoveryShare["custodian"] = "device"): RecoveryShare => ({
@@ -43,38 +44,38 @@ async function custody(label: string): Promise<SeatedScratchCustody> {
 const refusal = async (act: Promise<unknown>): Promise<unknown> => act.then(() => "landed", (e: unknown) => e);
 
 describe("the device recovery share at rest", () => {
-  test("D1 — a share rests sealed under the vessel key and reads back identically", async () => {
+  test("D1 — a share rests sealed under its face key and reads back identically", async () => {
     await custody("share-d1");
     expect(await loadRecoveryDeviceShare(0)).toBeNull();                       // control: nothing landed
     await persistRecoveryDeviceShare(share(1), 0);
-    const file = readFileSync(deviceSharePath(0));
-    expect(readVkCarrier(file)).toBe("sealed");
+    const file = readFileSync(handleRowPath(deviceShareFile(0)));
+    expect(readFckCarrier(file)).toBe("sealed");
     expect(file.includes(Buffer.from('"custodian"'))).toBe(false);             // no plaintext field rests in the file
     expect(same(await loadRecoveryDeviceShare(0), share(1))).toBe(true);
   });
 
-  test("D2 — a wrong key replaces no share: another vessel's row refuses the read and the write, and stands untouched", async () => {
-    // Vessel B seals its own share, and that row file lands at vessel A's path.
+  test("D2 — a wrong key replaces no share: another face's row refuses the read and the write, and stands untouched", async () => {
+    // Face B seals its own share, and that row file lands at vessel A's path.
     const b = await custody("share-d2-b");
     await persistRecoveryDeviceShare(share(50), 0);
-    const foreign = readFileSync(deviceSharePath(0));
-    const bPath = deviceSharePath(0);
+    const foreign = readFileSync(handleRowPath(deviceShareFile(0)));
+    const bPath = handleRowPath(deviceShareFile(0));
     const a = await custody("share-d2-a");                                      // A's root and seat stand now
     await persistRecoveryDeviceShare(share(9), 0);
-    expect(readFileSync(deviceSharePath(0)).equals(foreign)).toBe(false);      // the encodings differ: two keys, two rows
-    copyFileSync(bPath, deviceSharePath(0));
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(foreign)).toBe(false);      // the encodings differ: two keys, two rows
+    copyFileSync(bPath, handleRowPath(deviceShareFile(0)));
     const read = await refusal(loadRecoveryDeviceShare(0));
     expect(read).toBeInstanceOf(CustodyRowUnavailable);
     expect(read).toMatchObject({ home: "identity", file: deviceShareFile(0) });
     const write = await refusal(persistRecoveryDeviceShare(share(77), 0));
     expect(write).toBeInstanceOf(CustodyRowUnavailable);
-    expect(readFileSync(deviceSharePath(0)).equals(foreign)).toBe(true);       // the standing bytes never moved
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(foreign)).toBe(true);       // the standing bytes never moved
     // The vessel that sealed them still opens them: nothing here re-sealed or wrapped the row.
-    const aRow = deviceSharePath(0);
+    const aRow = handleRowPath(deviceShareFile(0));
     await a.holder.lock();
     process.env["LAR_ROOT"] = b.root;
     seatCustody(b.holder);
-    copyFileSync(aRow, deviceSharePath(0));
+    copyFileSync(aRow, handleRowPath(deviceShareFile(0)));
     expect(same(await loadRecoveryDeviceShare(0), share(50))).toBe(true);
     // CONTROL: under its own key a write lands (a later generation of the share).
     await persistRecoveryDeviceShare({ ...share(77), recoveryEpoch: 2 }, 0);
@@ -85,34 +86,34 @@ describe("the device recovery share at rest", () => {
   test("D3 — a row whose sealed bytes moved, and bare bytes, refuse the read and the write", async () => {
     await custody("share-d3");
     await persistRecoveryDeviceShare(share(4), 0);
-    const sealed = readFileSync(deviceSharePath(0));
+    const sealed = readFileSync(handleRowPath(deviceShareFile(0)));
     const moved = Buffer.from(sealed);
     moved[moved.length - 1] = moved[moved.length - 1]! ^ 0x01;
     expect(moved.equals(sealed)).toBe(false);
     for (const standing of [moved, Buffer.from(JSON.stringify({ x: 3, ys: [1, 2, 3], custodian: "device", recoveryEpoch: 1 }))]) {
-      writeFileSync(deviceSharePath(0), standing);
+      writeFileSync(handleRowPath(deviceShareFile(0)), standing);
       expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyRowUnavailable);
       expect(await refusal(persistRecoveryDeviceShare(share(5), 0))).toBeInstanceOf(CustodyRowUnavailable);
-      expect(readFileSync(deviceSharePath(0)).equals(standing)).toBe(true);
+      expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(standing)).toBe(true);
     }
-    writeFileSync(deviceSharePath(0), sealed);                                   // control: the true row still opens
+    writeFileSync(handleRowPath(deviceShareFile(0)), sealed);                                   // control: the true row still opens
     expect(same(await loadRecoveryDeviceShare(0), share(4))).toBe(true);
   });
 
   test("D4 — a row that opens to another shape refuses malformed at the read and at the write", async () => {
     await custody("share-d4");
     await writeCustodyRow("identity", deviceShareFile(0), new TextEncoder().encode(JSON.stringify({ x: 3, ys: "not-a-list", custodian: "device", recoveryEpoch: 1 })));
-    const standing = readFileSync(deviceSharePath(0));
+    const standing = readFileSync(handleRowPath(deviceShareFile(0)));
     expect(await refusal(loadRecoveryDeviceShare(0))).toMatchObject({ reading: "malformed" });
     expect(await refusal(persistRecoveryDeviceShare(share(6), 0))).toMatchObject({ reading: "malformed" });
-    expect(readFileSync(deviceSharePath(0)).equals(standing)).toBe(true);
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(standing)).toBe(true);
   });
 
   test("D5 — one face, one row", async () => {
     await custody("share-d5");
     await persistRecoveryDeviceShare(share(10), 0);
     await persistRecoveryDeviceShare(share(20), 1);
-    expect(existsSync(deviceSharePath(1))).toBe(true);
+    expect(existsSync(handleRowPath(deviceShareFile(1)))).toBe(true);
     expect(same(await loadRecoveryDeviceShare(0), share(10))).toBe(true);
     expect(same(await loadRecoveryDeviceShare(1), share(20))).toBe(true);
     expect(await loadRecoveryDeviceShare(2)).toBeNull();
@@ -123,30 +124,30 @@ describe("the device recovery share at rest", () => {
     await c.holder.lock();
     expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(persistRecoveryDeviceShare(share(1), 0))).toBeInstanceOf(CustodyLocked);
-    expect(existsSync(deviceSharePath(0))).toBe(false);
+    expect(existsSync(handleRowPath(deviceShareFile(0)))).toBe(false);
     await c.holder.unlock([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     await persistRecoveryDeviceShare(share(1), 0);
-    const standing = readFileSync(deviceSharePath(0));
+    const standing = readFileSync(handleRowPath(deviceShareFile(0)));
     await c.holder.lock();
     expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyLocked);
     expect(await refusal(persistRecoveryDeviceShare({ ...share(2), recoveryEpoch: 2 }, 0))).toBeInstanceOf(CustodyLocked);
-    expect(readFileSync(deviceSharePath(0)).equals(standing)).toBe(true);
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(standing)).toBe(true);
   });
 
   test("D7 — a share lands once per generation", async () => {
     await custody("share-d7");
     await persistRecoveryDeviceShare({ ...share(10), recoveryEpoch: 2 }, 0);
-    const standing = readFileSync(deviceSharePath(0));
+    const standing = readFileSync(handleRowPath(deviceShareFile(0)));
     // A second split of the SAME generation, and one of an EARLIER generation, replace nothing.
     for (const arriving of [{ ...share(11), recoveryEpoch: 2 }, { ...share(12), recoveryEpoch: 1 }]) {
       const refused = await refusal(persistRecoveryDeviceShare(arriving, 0));
       expect(refused).toBeInstanceOf(RecoveryShareStands);
       expect(refused).toMatchObject({ handleIndex: 0, standing: 2, arriving: arriving.recoveryEpoch });
-      expect(readFileSync(deviceSharePath(0)).equals(standing)).toBe(true);
+      expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(standing)).toBe(true);
     }
     // The same share again writes nothing: the row's bytes stand as they stood.
     await persistRecoveryDeviceShare({ ...share(10), recoveryEpoch: 2 }, 0);
-    expect(readFileSync(deviceSharePath(0)).equals(standing)).toBe(true);
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(standing)).toBe(true);
     // CONTROL: a later generation replaces the row, and another face's row takes its first share freely.
     await persistRecoveryDeviceShare({ ...share(13), recoveryEpoch: 3 }, 0);
     expect(same(await loadRecoveryDeviceShare(0), { ...share(13), recoveryEpoch: 3 })).toBe(true);
@@ -157,10 +158,11 @@ describe("the device recovery share at rest", () => {
   test("D8 — a frame that opens with LARK at the path refuses the read and the write", async () => {
     await custody("share-d8");
     const envelope = Buffer.from(Uint8Array.from([...LARK_MAGIC, 0x01, 0x01, ...new Array(90).fill(7)]));
-    expect(readVkCarrier(envelope)).toBe("old-shape");                           // control: the reading that refuses
-    writeFileSync(deviceSharePath(0), envelope);
+    expect(readFckCarrier(envelope)).toBe("old-shape");                           // control: the reading that refuses
+    await writeCustodyRow("identity", deviceShareFile(0), share(1).bytes.ys);
+    writeFileSync(handleRowPath(deviceShareFile(0)), envelope);
     expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyRowUnavailable);
     expect(await refusal(persistRecoveryDeviceShare({ ...share(5), recoveryEpoch: 9 }, 0))).toBeInstanceOf(CustodyRowUnavailable);
-    expect(readFileSync(deviceSharePath(0)).equals(envelope)).toBe(true);
+    expect(readFileSync(handleRowPath(deviceShareFile(0))).equals(envelope)).toBe(true);
   });
 });

@@ -2,9 +2,9 @@
  * vault-carriers.test — THE ONE CARRIER TABLE names every carrier at rest, by home, by class and by writer,
  * and the census reads the table rather than a second list.
  *
- * Six custody classes: `floor` (outside the VK, the floor's own key material), `floor-plain` (plain bytes the
+ * Eight custody classes: `floor` (outside the VK, the floor's own key material), `floor-plain` (plain bytes the
  * floor reads, or public by construction), `serving` (under SK), `hot` (VK-sealed, opened at unlock), `cold`
- * (VK-sealed, opened per act) and `outbox` (under the outbox key the VK wraps in its own hot row). Rows span three homes: the identity home, the storage directory (its
+ * (VK-sealed, opened per act) `outbox` (under the outbox key the VK wraps in its own hot row), `face-hot` and `face-cold` (under a face key). Rows span three homes: the identity home, the storage directory (its
  * `hosting/` and `walk/` subtrees) and the seal home.
  */
 import { describe, test, expect } from "vitest";
@@ -78,10 +78,10 @@ const SOWN: Record<string, string> = {
   [`identity/faces/${FCID}/face-owner.bin`]: "x",
   [`identity/faces/${FCID}/fk-slots.bin`]: "tree",
   "identity/face-index.json":                    "{}",
-  "identity/.persona-group-root-joshua-h0.json": "{}",
-  "identity/recovery-device-share-h0.bin":      "x",
-  [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
-  [`identity/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
+  [`identity/faces/${FCID}/.persona-group-root-joshua-h0.json`]: "{}",
+  [`identity/faces/${FCID}/recovery-device-share-h0.bin`]:      "x",
+  [`identity/faces/${FCID}/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
+  [`identity/faces/${FCID}/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
   [`identity/cadence-key-${"7c".repeat(16)}.bin`]:       "x",
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
@@ -91,7 +91,7 @@ const SOWN: Record<string, string> = {
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
-  "identity/anchors-h0.json":                   "{}",
+  [`identity/faces/${FCID}/anchors-h0.json`]:                   "{}",
   "identity/anchor-roster.json":                "{}",
   "identity/.persona-roster-joshua.json":       "{}",
   "identity/.active-persona-joshua.json":       "{}",
@@ -99,8 +99,8 @@ const SOWN: Record<string, string> = {
   "identity/.persona-declarations-joshua.json": "{}",
   "identity/.persona-public-handles-joshua.json": "{}",
   "identity/.handle-book.json":                 "{}",
-  "identity/guardian-set-h0.json":              "{}",
-  "identity/face-provisional-h0.json":          "{}",
+  [`identity/faces/${FCID}/guardian-set-h0.json`]:              "{}",
+  [`identity/faces/${FCID}/face-provisional-h0.json`]:          "{}",
   [`vessel/hosting/${HOST}/state.json`]:        "{}",
   [`vessel/hosting/${HOST}/spent-bafyepoch`]:   "n a b\n",
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
@@ -132,18 +132,18 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-outbox": "outbox", "outbox-key": "hot",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "face-owner": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
-  "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
+  "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "face-hot", "admissions": "hot", "anchors": "face-hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot",
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
   "transition-pending": "hot", "transitions": "hot",
-  "persona-root": "cold", "device-share": "cold",
+  "persona-root": "face-cold", "device-share": "face-cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
-  "vessel-face-key": "hot", "face-proof-key": "cold", "face-provisional": "hot",
+  "vessel-face-key": "hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
   // The fleet-join door's two rows: a face's address secret on each of its vessels, and a join half done.
   "face-address-secret": "hot", "fleet-join-pending": "hot", "face-join-record": "hot",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
-  "seat-key": "cold",
+  "seat-key": "face-cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
   "cadence-key": "cold",
   // One joint founding's record: public material and the judged image, read at each joint signature.
@@ -205,7 +205,7 @@ describe("the carrier table", () => {
       expect(at("storage", "sealed/outbox/aa.bb")?.holds).not.toBeNull();
       expect(at("storage", "sealed/own/notes")?.holds).toBeNull();
       expect(at("storage", `sealed/keyhive-chunks/${"ab".repeat(8)}/${"cd".repeat(16)}`)?.row).toBe("sealed-chunk");
-      expect(at("identity", "anchors-h0.json")).toMatchObject({ row: "anchors", face: 0 });
+      expect(at("identity", `faces/${FCID}/anchors-h0.json`)).toMatchObject({ row: "anchors", face: 0 });
       expect(census.every((entry) => entry.face === "vessel" || typeof entry.face === "number" || entry.face.startsWith("group:") || entry.face.startsWith("fcid:"))).toBe(true);
       // Every sown file lands on exactly one row, and every row stands in the sowing.
       expect(census.length).toBe(Object.keys(SOWN).length);
@@ -277,7 +277,6 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
       custodyRootCarrier(homes.identity),
       { name: `storage/walk/${HOST}.json`, path: join(homes.storage, "walk", `${HOST}.json`) },
       { name: "seal/transitions.json", path: join(homes.seal, "transitions.json") },
-      { name: "identity/recovery-device-share-h1.bin", path: join(homes.identity, "recovery-device-share-h1.bin") },
     ];
     for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
     return { io, homes, vk, drop, sealed };

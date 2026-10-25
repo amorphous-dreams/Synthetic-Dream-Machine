@@ -23,7 +23,7 @@ import { basename, dirname, join, resolve, sep } from "node:path";
 import { beforeEach } from "vitest";
 import { FsCustodyIo } from "../../src/custody-io.js";
 import { custodyTreeStands, foundCustody } from "../../src/custody-session.js";
-import { makeCustodyHolder, type CustodyHolder } from "../../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../../src/custody-holder.js";
 import { seatCustodyWhenNeeded } from "../../src/custody-seat.js";
 import { vesselCustodyHomes } from "../../src/vault-carriers.js";
 
@@ -31,6 +31,10 @@ import { vesselCustodyHomes } from "../../src/vault-carriers.js";
 export const SCRATCH_PASSPHRASE = "fixture-custody-passphrase";
 /** The published test route a harness tool binds a staged root to (`tools/test-custody-route.mjs` spells it). */
 const STAGED_ROUTE_PASSPHRASE = "test-founding-passphrase";
+
+// A write to a face the floor index does not name founds that face under the scratch route, in every suite: the product
+// founds each face by its own act and seats no such policy.
+seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: SCRATCH_PASSPHRASE }] }]);
 
 /** Thrown when a suite reaches a sealed row outside a scratch root. */
 export class ScratchCustodyRefused extends Error {

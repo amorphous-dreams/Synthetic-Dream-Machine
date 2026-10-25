@@ -32,6 +32,7 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
@@ -251,8 +252,9 @@ describe("the rite arms its heads behind the door", () => {
     const one = (await seatChairs([1], { family: "a8" })).keys[0]!;
     expect(await seatKeysOfFace(0)).toEqual([zero.keys[0]]);
     expect(await seatKeysOfFace(1)).toEqual([one]);
-    const rows = readdirSync(larIdentityDir()).filter((f) => f.startsWith("seat-key-h0-"));
-    copyFileSync(join(larIdentityDir(), rows[0]!), join(larIdentityDir(), `seat-key-h2-${"0".repeat(32)}.bin`));
+    const rows = faceRowNames().filter((f) => f.startsWith("seat-key-h0-"));
+    await updateColdCustodyRow("identity", `seat-key-h2-${"0".repeat(32)}.bin`, () => ({ plaintext: chairSeed(2, 0, "a8"), value: undefined }));
+    copyFileSync(handleRowPath(rows[0]!), handleRowPath(`seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
     await updateColdCustodyRow("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);

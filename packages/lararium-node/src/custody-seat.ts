@@ -247,3 +247,7 @@ export async function retireFaceAskCustody(fcid: string): Promise<void> {
 export async function faceStandingCustody(face: FaceRef): ReturnType<CustodyHolder["faceStanding"]> {
   return (await openedCustody()).faceStanding(face);
 }
+/** A reserved face takes its founding ask. */
+export async function bindFaceAskCustody(fcid: string, askDigest: string): Promise<void> {
+  return (await openedCustody()).bindFaceAsk(fcid, askDigest);
+}

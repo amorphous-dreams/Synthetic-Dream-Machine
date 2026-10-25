@@ -38,8 +38,9 @@ import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
-import { openedCustody, seatCustody } from "../custody-seat.js";
-import { settleFaceCustody } from "../face-route.js";
+import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
+import { personaGroupDigest } from "../persona-group-file.js";
+import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
 import { ensurePlaceCard } from "../place-card.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -267,7 +268,9 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     const anchored = landsBeside ? await listAnchoredPersonas() : [];
     const stoodIndex = landsBeside ? (await Promise.all(anchored.map(async (index) => ({ index, anchors: await loadIdentityAnchors(index) }))))
       .find(({ anchors }) => anchors?.personaGroupId === payload.personaGroupId)?.index : undefined;
-    const handleIndex = stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
+    // A face's handle index IS its ordinal in the floor index: the joinee took it when its request founded the face's custody.
+    const standingFace = await faceStandingCustody({ group: personaGroupDigest(payload.personaGroupId) });
+    const handleIndex = standingFace?.ordinal ?? stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     if (stoodIndex !== undefined) {
@@ -582,14 +585,16 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
   // Individual. Each compartment carries its OWN sovereign signing key at its handle-index; the founding
   // face seats at h0.
-  await generateOrLoadPersonaGroupRoot(handleIndex);
-  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
-
   // The pending row keeps an interrupted ask. A completed group's atom stays with that group; only an
   // authenticated checkpoint can recover a seed after the ask row moves into a group row.
   const foundingAsk: FoundingAtomAsk = {
     hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex,
   };
+  // THE FACE'S CUSTODY STANDS BEFORE ITS ROOT: the root, like every private row of this face, rests under the face's own key,
+  // at the ordinal that is its handle index. The face asks the route it binds (never the vessel's).
+  await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex);
+  await generateOrLoadPersonaGroupRoot(handleIndex);
+  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);

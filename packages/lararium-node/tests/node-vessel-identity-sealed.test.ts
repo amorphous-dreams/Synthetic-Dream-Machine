@@ -49,6 +49,7 @@ import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { vkSlotsPath } from "../src/vault-carriers.js";
+import { handleRowPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -60,7 +61,7 @@ let priorHome: string | undefined;
 let priorXdg: string | undefined;
 let priorGlobal: string | undefined;
 let configHome: string;
-const at = (file: string): string => join(c.homes.identity, file);
+const at = (file: string): string => file.startsWith(".persona-group-root-") ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 const read = (file: string): Buffer => readFileSync(at(file));
 const sealed = (file: string): void => expect(readVkCarrier(read(file))).toBe("sealed");
 async function seedPublic(seed: Uint8Array): Promise<string> {
@@ -269,27 +270,27 @@ describe("sealed vessel identity family", () => {
     expect(await handles.load(1)).toEqual({ handleIndex: 1, contextIndex: 0, nym: "nym-1", glamour: "G", heads: [] });
   });
 
-  test("V11 retired and stranger keys cannot read or write sealed identity rows", async () => {
-    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0); const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
-    const files = [".persona-roster.json", ".active-persona.json", ".persona-petnames.json", rootFile(0)];
+  test("V11 VK rotation re-seals vessel rows while the face root keeps its own seal", async () => {
+    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);
+    const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
+    const vesselFiles = [".persona-roster.json", ".active-persona.json", ".persona-petnames.json"];
+    const rootBefore = read(rootFile(0));
     const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
-    const standing = files.map(read);
-    const reads = [() => listPersonaRoots(), () => loadActivePersonaIndex(), () => pets.get(0), () => loadPersonaGroupRootSeed(0)];
-    const writes = [() => generateOrLoadPersonaGroupRoot(0), () => wearPersona(0), () => pets.set(0, "changed"), () => generateOrLoadPersonaGroupRoot(0)];
-    for (const door of [...reads, ...writes]) await expect(Promise.resolve().then(door)).rejects.toThrow(/reads key-fails/);
-    // The root row's own doors, asked straight at the retired holder: the roster no longer stands in front of them.
-    await expect(cold(rootFile(0))).rejects.toThrow(/reads key-fails/);
-    // A decision that ignores the reading it got and a blind write both stop at the sealed writer: the tree commits to another key.
-    await expect(c.holder.updateColdRow("identity", rootFile(0), () => ({ plaintext: enc({ under: "retired" }), value: undefined }))).rejects.toThrow(TreeVkRefusal);
-    await expect(c.holder.writeRow("identity", rootFile(0), enc({ under: "retired" }))).rejects.toThrow(TreeVkRefusal);
+    const standing = vesselFiles.map(read);
+    expect(read(rootFile(0)).equals(rootBefore), "VK rotation leaves the face row byte-identical").toBe(true);
+    for (const door of [() => listPersonaRoots(), () => loadActivePersonaIndex(), () => pets.get(0)])
+      await expect(Promise.resolve().then(door)).rejects.toThrow(/reads key-fails/);
+    expect((await cold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
     const keyB = mintVk();
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]!;
+    for (let i = 0; i < vesselFiles.length; i++) {
+      const file = vesselFiles[i]!;
       await expect(writeSealedCarrier({ io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity), carrier: { name: `identity/${file}`, path: at(file), keyClass: null }, plaintext: enc({ under: "B" }) })).rejects.toThrow(TreeVkRefusal);
-      expect(read(file).equals(standing[i]!), `${file} never moved`).toBe(true); expect(existsSync(`${at(file)}.vk-sealing`)).toBe(false);
+      expect(read(file).equals(standing[i]!), `${file} never moved`).toBe(true);
     }
-    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.vk); seatCustody(fresh);
-    expect(await listPersonaRoots()).toEqual([0]); expect(await loadActivePersonaIndex()).toBe(0); expect(await pets.get(0)).toBe("private"); expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
+    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.vk);
+    await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]); seatCustody(fresh);
+    expect(await listPersonaRoots()).toEqual([0]); expect(await loadActivePersonaIndex()).toBe(0);
+    expect(await pets.get(0)).toBe("private"); expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
     await fresh.lock(); seatCustody(c.holder);
   });
 

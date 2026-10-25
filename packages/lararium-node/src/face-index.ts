@@ -89,19 +89,39 @@ export function faceFileNames(identityDir: string): string[] {
   return [...new Set(listFaceFiles(identityDir, readFaceIndexSync(identityDir)).map(([, name]) => name))].sort();
 }
 
-/** Add a face to the index (the caller holds the custody claim): a fresh fcid, with the founding ask or the group it stands under. */
+/**
+ * Add a face to the index (the caller holds the custody claim): a fresh fcid, with the founding ask or the group it stands under.
+ * A face's handle index IS its ordinal. `ordinal` names where the face lands: past the end pads the positions between with
+ * tombstones, and a position that stands (a face, or a retired tombstone) is never reused. Without `ordinal` the face takes the next position.
+ */
 export async function appendFaceEntry(
-  io: Pick<CustodyIo, "read" | "write">, identityDir: string, naming: { readonly ask?: string | null; readonly group?: string | null },
+  io: Pick<CustodyIo, "read" | "write">, identityDir: string,
+  naming: { readonly ask?: string | null; readonly group?: string | null; readonly ordinal?: number; readonly fillRetired?: boolean },
 ): Promise<{ readonly ordinal: number; readonly fcid: string }> {
   const index = await readFaceIndex(io, identityDir);
   const fcid = randomBytes(16).toString("hex");
   const entry: FaceIndexEntry = { fcid, group: naming.group ?? null, ask: naming.ask ?? null };
-  if (entry.group === null && entry.ask === null) throw new FaceIndexRefused("a face enters the index under a group digest or a founding ask");
+  // A face enters under a group digest or a founding ask; one founded AT a handle index may be RESERVED first, naming neither
+  // (the root of persona zero rests before the seed charter whose AID the ask digests), and takes its ask when that stands.
+  if (entry.group === null && entry.ask === null && naming.ordinal === undefined) throw new FaceIndexRefused("a face enters the index under a group digest or a founding ask, or at a handle index");
   if (index.faces.some((f) => "fcid" in f && ((entry.group !== null && f.group === entry.group) || (entry.ask !== null && f.ask === entry.ask)))) {
     throw new FaceIndexRefused("a face already stands in the index under this group or ask");
   }
-  await io.write(faceIndexPath(identityDir), encodeFaceIndex({ faces: [...index.faces, entry] }));
-  return { ordinal: index.faces.length, fcid };
+  const at = naming.ordinal ?? index.faces.length;
+  if (!Number.isSafeInteger(at) || at < 0) throw new FaceIndexRefused("a face lands at a whole, non-negative ordinal");
+  if (at < index.faces.length && naming.fillRetired === true && index.faces[at] && "tombstone" in index.faces[at]!) {
+    const filled = index.faces.map((f, i): FaceIndexEntry => (i === at ? entry : f));
+    await io.write(faceIndexPath(identityDir), encodeFaceIndex({ faces: filled }));
+    return { ordinal: at, fcid };
+  }
+  if (at < index.faces.length) {
+    throw new FaceIndexRefused(index.faces[at] && "tombstone" in index.faces[at]! ? `handle index ${at} is retired and never reused` : `handle index ${at} already holds a face`);
+  }
+  const padded: FaceIndexEntry[] = [...index.faces];
+  while (padded.length < at) padded.push({ tombstone: true });
+  padded.push(entry);
+  await io.write(faceIndexPath(identityDir), encodeFaceIndex({ faces: padded }));
+  return { ordinal: at, fcid };
 }
 
 /** Bind the group digest to a face the index names by fcid. The founding ask stays on the entry until `retireFaceAsk`, so the ask row can still be addressed while it moves. */
@@ -116,6 +136,22 @@ export async function bindFaceGroup(
   if (entry.group !== null && entry.group !== groupDigest) throw new FaceIndexRefused("this face already stands under another group");
   if (entry.group === groupDigest) return;
   const faces = index.faces.map((f, i): FaceIndexEntry => (i === at ? { fcid, group: groupDigest, ask: entry.ask } : f));
+  await io.write(faceIndexPath(identityDir), encodeFaceIndex({ faces }));
+}
+
+/** A reserved face (no group, no ask) takes the founding ask whose digest could not stand before its first row. */
+export async function bindFaceAsk(
+  io: Pick<CustodyIo, "read" | "write">, identityDir: string, fcid: string, askDigest: string,
+): Promise<void> {
+  if (!DIGEST.test(askDigest)) throw new FaceIndexRefused("an ask binds by its digest");
+  const index = await readFaceIndex(io, identityDir);
+  const at = index.faces.findIndex((f) => "fcid" in f && f.fcid === fcid);
+  if (at < 0) throw new FaceIndexRefused("no face stands under this custody id");
+  const entry = index.faces[at] as { fcid: string; group: string | null; ask: string | null };
+  if (entry.ask === askDigest) return;
+  if (entry.ask !== null || entry.group !== null) throw new FaceIndexRefused("only a reserved face takes a founding ask");
+  if (index.faces.some((f) => "fcid" in f && f.ask === askDigest)) throw new FaceIndexRefused("a face already stands under this ask");
+  const faces = index.faces.map((f, i): FaceIndexEntry => (i === at ? { fcid, group: null, ask: askDigest } : f));
   await io.write(faceIndexPath(identityDir), encodeFaceIndex({ faces }));
 }
 
@@ -168,7 +204,7 @@ export function findFace(index: FaceIndex, by: { readonly fcid?: string; readonl
 }
 
 /** Where one file of a face rests: `faces/<fcid>/<file>`, the face found by group or ask digest. A face the index does not name answers with a flat path under the identity home, where no file stands. Opens nothing. */
-export function faceFilePathSync(identityDir: string, by: { readonly group?: string; readonly ask?: string }, file: string): string {
+export function faceFilePathSync(identityDir: string, by: { readonly group?: string; readonly ask?: string; readonly ordinal?: number }, file: string): string {
   const found = findFace(readFaceIndexSync(identityDir), by);
   return found === null ? join(identityDir, file) : join(faceDir(identityDir, found.fcid), file);
 }

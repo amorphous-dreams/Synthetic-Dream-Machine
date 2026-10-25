@@ -51,6 +51,7 @@ import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from 
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
+import { faceRowNames } from "./face-paths.js";
 import { guardianOffer, guardianSetFile, readGuardianSet, runGuardianEnrolment } from "../src/guardian-enrolment.js";
 import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
@@ -248,7 +249,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
     const friend = (await loadNodeHandleBook()).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
-    expect(readdirSync(larIdentityDir()).filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
+    expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
     expect(pendingStands(), "the pending row leaves once the face stands lit").toBe(false);
 
     // R2: a second restore over it refuses, and moves nothing.

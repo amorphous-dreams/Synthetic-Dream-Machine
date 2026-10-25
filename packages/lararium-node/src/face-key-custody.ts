@@ -35,10 +35,11 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */
 import { createPrivateKey, createPublicKey, randomBytes, sign } from "node:crypto";
-import { mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openColdCustodyRow, readCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** ONE face at ONE Nexus, as the face proof's library spells it (`FaceScope`): the face's public key and the Nexus's AID. */
@@ -104,7 +105,7 @@ function standingOf(bytes: Uint8Array): Uint8Array | null {
 function rowsAtNexus(nexus: string): string[] {
   const name = nexusKeyRowName(nexus);
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { return []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   return names.filter((n) => FACE_PROOF_KEY_FILE.exec(n)?.[2] === name).sort();
 }
 
@@ -255,7 +256,7 @@ export async function readVesselFaceKeyPublic(scope: FaceKeyScope): Promise<stri
  */
 export async function listFaceProofKeys(handleIndex: number): Promise<Array<{ readonly scope: string; readonly secret: Uint8Array }>> {
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { names = []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { names = []; }
   const out: Array<{ scope: string; secret: Uint8Array }> = [];
   for (const file of names.sort()) {
     const m = FACE_PROOF_KEY_FILE.exec(file);
@@ -274,7 +275,7 @@ export async function faceProofKeyStanding(scope: string, secret: Uint8Array, ha
   assertSecret(secret);
   if (!/^[0-9a-f]{32}$/.test(scope)) throw new RangeError("face-key-custody: a scope's name reads as 32 lower hex");
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { names = []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { names = []; }
   const file = `face-proof-key-h${handleIndex}-${scope}.bin`;
   if (!names.includes(file)) return "absent";
   return openColdCustodyRow("identity", file, (bytes) => (bytesEqual(bytes, secret) ? "same" : "conflict"));

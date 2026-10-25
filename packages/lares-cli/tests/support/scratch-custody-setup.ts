@@ -19,10 +19,13 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { beforeEach } from "vitest";
 import {
-  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes,
+  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatFaceAutoFounder, vesselCustodyHomes,
   type CustodyHolder,
 } from "@lararium/node";
 import { TEST_PASSPHRASE } from "./found-route.js";
+
+// A write to a face the floor index does not name founds that face under the scratch route (the product seats no such policy).
+seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);
 
 /** Thrown when a suite reaches a sealed row outside a scratch root. */
 export class ScratchCustodyRefused extends Error {

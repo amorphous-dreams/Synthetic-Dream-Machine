@@ -28,13 +28,14 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { createHash } from "node:crypto";
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, vkEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type VesselKey,
 } from "@lararium/mesh";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
-import { appendFaceEntry, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
+import { appendFaceEntry, bindFaceAsk, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
@@ -180,13 +181,15 @@ export interface CustodyHolder {
    * fresh FCK is bound in the face's own slot tree under `slots`, and the face's `face-owner` row seals under it. The
    * founding hands the key straight in; the face stands unlocked.
    */
-  foundFace(args: { readonly ask?: string | null; readonly group?: string | null; readonly slots: readonly SlotSpec[] }): Promise<{ readonly ordinal: number; readonly fcid: string }>;
+  foundFace(args: { readonly ask?: string | null; readonly group?: string | null; readonly ordinal?: number; readonly slots: readonly SlotSpec[] }): Promise<{ readonly ordinal: number; readonly fcid: string }>;
   /** Bind the group's digest to a face founded under its ask: the index entry and the `face-owner` row take it together. */
   bindFace(fcid: string, groupDigest: string): Promise<void>;
   /** Open one face with the presented credentials. Spends one of the boot's attempts for that face on a miss. */
   unlockFace(face: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock>;
   /** Try the credentials against every face's tree and open each one they fit; a face they do not fit stays shut and spends nothing. */
   unlockFaces(credentials: readonly Credential[]): Promise<readonly FaceUnlock[]>;
+  /** A reserved face takes the founding ask whose digest could not stand before its first row. */
+  bindFaceAsk(fcid: string, askDigest: string): Promise<void>;
   /** The founding ask leaves a face's entry once its rows moved under the group. */
   retireFaceAsk(fcid: string): Promise<void>;
   /** What the floor index names for a face, and whether it stands unlocked here. Opens nothing. */
@@ -214,6 +217,14 @@ const heldPort = (io: CustodyIo): CustodyIo => ({
   read: (path) => io.read(path), write: (path, bytes) => io.write(path, bytes), rename: (from, to) => io.rename(from, to),
   remove: (path) => io.remove(path), list: () => io.list(), exclusive: (act) => act(),
 });
+
+/**
+ * A policy a test fixture seats so a WRITE to a row of a face the floor index does not name founds that face under the route
+ * the policy answers, instead of refusing `FaceCustodyAbsent`. The product seats none: it founds each face by its own act
+ * (`face-route`), and a write to an unfounded face refuses by name.
+ */
+let faceAutoFounder: ((selector: Exclude<FaceSelector, null>) => readonly SlotSpec[]) | null = null;
+export function seatFaceAutoFounder(policy: ((selector: Exclude<FaceSelector, null>) => readonly SlotSpec[]) | null): void { faceAutoFounder = policy; }
 
 export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: CustodyHomes }): CustodyHolder {
   let vk: VesselKey | null = null;
@@ -298,13 +309,13 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const index = await readFaceIndex(a.io, a.homes.identity);
     return findFace(index, "ordinal" in by ? { ordinal: by.ordinal } : "group" in by ? { group: by.group } : "ask" in by ? { ask: by.ask } : { fcid: by.fcid });
   };
-  const doFoundFace = async (args: { ask?: string | null; group?: string | null; slots: readonly SlotSpec[] }) => {
+  const doFoundFace = async (args: { ask?: string | null; group?: string | null; ordinal?: number; fillRetired?: boolean; slots: readonly SlotSpec[] }) => {
     if (!Array.isArray(args.slots) || args.slots.length === 0) {
       throw new Error("[custody-holder] a face founding seals its custody from birth and needs a human route to bind; none was given");
     }
     return a.io.exclusive(async () => {
       const held = heldPort(a.io);
-      const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null });
+      const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null, ...(args.ordinal !== undefined ? { ordinal: args.ordinal } : {}), ...(args.fillRetired ? { fillRetired: true } : {}) });
       const fck = mintFck();
       let tree = null as import("@lararium/mesh").SlotTree | null;
       for (const spec of args.slots) tree = bindSlot(tree, fck, spec);
@@ -348,6 +359,22 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     if (named === null) return refuse("the face-owner row is malformed");
     if (named.fcid !== fcid) return refuse("the face-owner row names another custody id");
     if (named.group !== found.group) return refuse("the face-owner row names another group than the floor index entry");
+    // ONCE THE FACE HOLDS ANCHORS, THEY AGREE TOO: the anchors row at the face's own handle index names a group, and that group
+    // answers the floor index entry. Either row disagreeing with the index refuses by name before anything seats.
+    const anchorsRow = carrierTable().find((r) => r.row === "anchors");
+    if (anchorsRow) {
+      const anchored = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: faceCarrierFor(a.homes, fcid, `anchors-h${ordinal}.json`, anchorsRow) });
+      if (anchored.reading === "opens") {
+        let group: unknown = null;
+        try { group = (JSON.parse(new TextDecoder().decode(anchored.plaintext)) as { personaGroupId?: unknown }).personaGroupId; } catch { /* unreadable */ }
+        anchored.plaintext.fill(0);
+        if (typeof group !== "string" || (found.group !== null && createHash("sha256").update(group).digest("hex") !== found.group)) {
+          return refuse("the anchors row names another group than the floor index entry");
+        }
+      } else if (anchored.reading !== "absent") {
+        return refuse(`the anchors row reads ${anchored.reading}`);
+      }
+    }
     faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
     return { reading: "opens", fcid, ordinal, slot: opened.slot };
   };
@@ -362,7 +389,7 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   };
 
   /** Resolve a logical `(home, file)` to the carrier that holds it and the key that opens it. */
-  const locate = async (home: CustodyHome, file: string, coldAllowed: boolean): Promise<Located> => {
+  const locate = async (home: CustodyHome, file: string, coldAllowed: boolean, forWrite = false): Promise<Located> => {
     const vkRow = carrierTable().find((r) => {
       if (r.home !== home || (r.custody !== "hot" && r.custody !== "cold")) return false;
       r.match.lastIndex = 0;
@@ -376,7 +403,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     if (!faceRow || faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
     if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRow");
     const selector = faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) as Exclude<FaceSelector, null>;
-    const found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
+    let found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
+    if (!found && forWrite && faceAutoFounder) {
+      await doFoundFace({ fillRetired: true, ...("group" in selector ? { group: selector.group } : "ask" in selector ? { ask: selector.ask } : { ordinal: selector.ordinal }), slots: faceAutoFounder(selector) });
+      found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
+    }
     if (!found) throw new FaceCustodyAbsent(file);
     const carrier = faceCarrierFor(a.homes, found.fcid, file, faceRow);
     return { kind: "face", row: faceRow, path: carrier.path, carrier, fcid: found.fcid, treePath: faceTreePath(a.homes.identity, found.fcid) };
@@ -478,7 +509,7 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       return operation(() => readLocated(target));
     },
     async writeRow(home, file, plaintext) {
-      const t = await locate(home, file, true);
+      const t = await locate(home, file, true, true);
       if (t.kind === "vk") {
         const key = needVk();
         return operation(() => writeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, plaintext }));
@@ -487,14 +518,22 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       return operation(() => writeFaceCarrier({ io: a.io, key, treePath: t.treePath, carrier: t.carrier, plaintext }));
     },
     async updateRow(home, file, decide) {
-      const t = await locate(home, file, false);
+      // A face the index does not name holds no row: a decision that writes nothing reads it absent; one that writes founds the face
+      // (a fixture's policy) or refuses `FaceCustodyAbsent`.
+      let t: Located;
+      try { t = await locate(home, file, false); } catch (err) {
+        if (!(err instanceof FaceCustodyAbsent)) throw err;
+        const probe = decide({ reading: "absent" });
+        if (probe.plaintext === null) return probe.value;
+        t = await locate(home, file, false, true);
+      }
       if (t.kind === "vk") needVk(); else keyOf(t);
       return operation(() => updateLocated(t, decide));
     },
     async moveRow(home, source, destination, expected) {
       if (source === destination) throw new Error("custody move names the same row twice");
-      const from = await locate(home, source, false);
-      const to = await locate(home, destination, false);
+      const from = await locate(home, source, false, true);
+      const to = await locate(home, destination, false, true);
       if (from.kind !== to.kind || (from.kind === "face" && to.kind === "face" && from.fcid !== to.fcid)) {
         throw new Error("custody move spans two keys; a row moves only inside one key's carriers");
       }
@@ -566,7 +605,13 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
     async updateColdRow(home, file, decide) {
-      const t = await locate(home, file, true);
+      let t: Located;
+      try { t = await locate(home, file, true); } catch (err) {
+        if (!(err instanceof FaceCustodyAbsent)) throw err;
+        const probe = decide({ reading: "absent" });
+        if (probe.plaintext === null) return probe.value;
+        t = await locate(home, file, true, true);
+      }
       if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "updateColdRow requires a cold row");
       if (t.kind === "vk") needVk(); else keyOf(t);
       return operation(() => updateLocated(t, (standing) => {
@@ -616,6 +661,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     },
     unlockFaces(credentials) {
       const run = unlockChain.then(() => doUnlockFaces(credentials), () => doUnlockFaces(credentials));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    bindFaceAsk(fcid, askDigest) {
+      const run = unlockChain.then(() => a.io.exclusive(() => bindFaceAsk(heldPort(a.io), a.homes.identity, fcid, askDigest)), () => a.io.exclusive(() => bindFaceAsk(heldPort(a.io), a.homes.identity, fcid, askDigest)));
       unlockChain = run.catch(() => undefined);
       return run;
     },

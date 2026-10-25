@@ -17,6 +17,7 @@ import { SEALING_SUFFIX } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown } from "../src/custody-holder.js";
 import { readCustodyRow, removeColdCustodyRow, removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { handleRowPathIn } from "./face-paths.js";
 
 const ROW = `hosting/${"a".repeat(32)}/spent-${"b".repeat(64)}-n-${"c".repeat(32)}`;
 const SIBLING = `hosting/${"a".repeat(32)}/spent-${"b".repeat(64)}-n-${"d".repeat(32)}`;
@@ -87,8 +88,8 @@ describe("the custody seat's removal door", () => {
   test("X4 — a cold row's removal reads the row first: a row it declines stays, and the one it accepts leaves", async () => {
     const c = await custody("remove-x4");
     const COLD = "recovery-device-share-h0.bin";
-    const cold = join(c.homes.identity, COLD);
     await c.holder.writeRow("identity", COLD, text("a cold share"));
+    const cold = handleRowPathIn(c.homes.identity, COLD);
     const standing = readFileSync(cold);
     const seen: string[] = [];
     expect(await removeColdCustodyRow("identity", COLD, (plaintext) => { seen.push(new TextDecoder().decode(plaintext)); return false; })).toBe(false);

@@ -8,7 +8,7 @@
  */
 import { assertFoundingRoute } from "./custody-session.js";
 import type { SlotSpec } from "@lararium/mesh";
-import { bindFaceCustody, faceStandingCustody, foundFaceCustody, retireFaceAskCustody } from "./custody-seat.js";
+import { bindFaceAskCustody, bindFaceCustody, faceStandingCustody, foundFaceCustody, retireFaceAskCustody } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
 export type FaceRouteGatherer = (face: { readonly label: string }) => Promise<readonly SlotSpec[]>;
@@ -16,6 +16,8 @@ export type FaceRouteGatherer = (face: { readonly label: string }) => Promise<re
 let gatherer: FaceRouteGatherer | null = null;
 
 /** Seat the act that gathers a new face's route; `null` clears it. */
+/** Whether a gatherer already sits (a host that seated its own keeps it). */
+export function faceRouteSeated(): boolean { return gatherer !== null; }
 export function seatFaceRoute(gather: FaceRouteGatherer | null): void { gatherer = gather; }
 
 let parked: readonly SlotSpec[] | null = null;
@@ -42,17 +44,36 @@ export async function gatherFaceRoute(label: string): Promise<readonly SlotSpec[
  * Make sure custody stands for the face of `group`: found it under a route the face asks for when the index names none.
  * A face that stands and rests locked refuses `FaceLocked` at its first row; this act never opens a face by guessing.
  */
-export async function ensureFaceCustodyOfGroup(group: string): Promise<void> {
+export async function ensureFaceCustodyOfGroup(group: string): Promise<{ readonly fcid: string; readonly ordinal: number }> {
   const digest = personaGroupDigest(group);
-  if (await faceStandingCustody({ group: digest }) !== null) return;
-  await foundFaceCustody({ group: digest, slots: await gatherFaceRoute(`g${digest.slice(0, 8)}`) });
+  const standing = await faceStandingCustody({ group: digest });
+  if (standing !== null) return { fcid: standing.fcid, ordinal: standing.ordinal };
+  // A joinee takes the next handle index at request time: its ordinal in the floor index.
+  return foundFaceCustody({ group: digest, slots: await gatherFaceRoute(`g${digest.slice(0, 8)}`) });
 }
 
 /** Found custody for a face that has no group yet, under its founding ask; the caller binds the group when it stands. */
-export async function ensureFaceCustodyOfAsk(askDigest: string, label: string): Promise<string> {
+export async function ensureFaceCustodyOfAsk(askDigest: string, label: string, handleIndex?: number): Promise<string> {
   const standing = await faceStandingCustody({ ask: askDigest });
   if (standing !== null) return standing.fcid;
-  return (await foundFaceCustody({ ask: askDigest, slots: await gatherFaceRoute(label) })).fcid;
+  // A face's handle index is its ordinal: a face already settled at this index (its ask retired) serves the re-entry.
+  if (handleIndex !== undefined) {
+    const there = await faceStandingCustody({ ordinal: handleIndex });
+    if (there !== null && there.group !== null) return there.fcid;
+    // A face RESERVED at this handle index (its first row rested before the ask could be named) takes the ask.
+    if (there !== null && there.ask === null) { await bindFaceAskCustody(there.fcid, askDigest); return there.fcid; }
+  }
+  return (await foundFaceCustody({ ask: askDigest, slots: await gatherFaceRoute(label), ...(handleIndex !== undefined ? { ordinal: handleIndex } : {}) })).fcid;
+}
+
+/**
+ * Make sure custody stands for the face at handle index `handleIndex`, RESERVED under no group and no ask: the root of persona zero
+ * rests before the seed charter whose AID the founding ask digests, so the face stands first and takes its ask when that stands.
+ */
+export async function ensureFaceCustodyAtHandle(handleIndex: number, label: string): Promise<string> {
+  const there = await faceStandingCustody({ ordinal: handleIndex });
+  if (there !== null) return there.fcid;
+  return (await foundFaceCustody({ ordinal: handleIndex, slots: await gatherFaceRoute(label) })).fcid;
 }
 
 /**

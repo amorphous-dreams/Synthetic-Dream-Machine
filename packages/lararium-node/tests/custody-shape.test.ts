@@ -21,6 +21,8 @@ const FIXTURE_MAGIC = Buffer.from("FIXTURE-VK-SEAL:");
 /** The fixture recognizer: bytes that open with the fixture magic read sealed. */
 const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subarray(0, FIXTURE_MAGIC.length).equals(FIXTURE_MAGIC) };
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
+/** A frame that reads sealed to the face-key reader: its magic over a body long enough to hold a nonce and a tag. */
+const fckSealedBytes = (body: string): Buffer => Buffer.concat([Buffer.from("lares-fck-seal"), Buffer.alloc(48, 5), Buffer.from(body)]);
 /** A seal of the house family under a scheme this build does not frame: the family prefix, a scheme name, a frame. */
 const otherSchemeBytes = (scheme: string): Buffer => Buffer.concat([Buffer.from(`lares-${scheme}-seal`), Buffer.alloc(48, 7)]);
 /** The house VK magic with two bytes damaged, over a frame long enough to hold a nonce and a tag. */
@@ -172,7 +174,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
         "identity/.vessel-key.json": "{}",
         "identity/vk-slots.bin": "slots",
         "identity/custody-root.bin": sealedBytes("root"),
-        "identity/.persona-group-root-h0.json": sealedBytes("seed"),
+        [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: fckSealedBytes("seed"),
         "identity/.handle-book.json": sealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
         "nexus/founding-roster.mem": "charter",

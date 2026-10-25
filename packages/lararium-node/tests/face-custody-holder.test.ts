@@ -2,7 +2,7 @@
  * Face custody at the holder (K15 Wave D, slice 1): each face's rows seal under that face's own custody key and rest in
  * that face's own directory. The floor index routes and never decides.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
@@ -90,5 +90,56 @@ describe("each face opens under its own route alone", () => {
     const read = await second.readRow("identity", faceAtomGroupFile(GROUP_A));
     expect(read.reading).toBe("opens");
     void identity; void join;
+  });
+});
+
+describe("a face's handle index is its ordinal", () => {
+  const anchorsOf = (group: string) => new TextEncoder().encode(JSON.stringify({ personaGroupId: group, meshCabalDocIdHex: "ab".repeat(32) }));
+
+  test("RED: an anchors row naming another group than the index entry refuses by name and seats no face; CONTROL: its own group seats", async () => {
+    const { holder, a, identity } = await twoLockedFaces();
+    void identity;
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    await holder.writeRow("identity", "anchors-h0.json", anchorsOf(GROUP_B));
+    await holder.lockFace(a.fcid);
+    const bad = await holder.unlockFace({ group: personaGroupDigest(GROUP_A) }, cred("route-a"));
+    expect(bad).toMatchObject({ reading: "index-mismatch" });
+    expect(holder.unlockedFaces()).toEqual([]);
+    // the honest row: lock was dropped, so rewrite under a fresh holder view of the same face
+    const second = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });
+    await second.adopt(seat!.vk);
+    // the index-mismatching row stays; swap in the honest one by reaching the face through its own key
+    expect((await second.unlockFace({ fcid: a.fcid }, cred("route-a"))).reading).toBe("index-mismatch");
+  });
+
+  test("CONTROL: an anchors row naming the index entry's group seats the face", async () => {
+    seat = await seatScratchCustody("face-ordinal");
+    const { holder } = seat;
+    const a = await holder.foundFace({ group: personaGroupDigest(GROUP_A), slots: [slot("route-a")] });
+    await holder.writeRow("identity", "anchors-h0.json", anchorsOf(GROUP_A));
+    await holder.lockFace(a.fcid);
+    expect((await holder.unlockFace({ fcid: a.fcid }, cred("route-a"))).reading).toBe("opens");
+  });
+
+  test("a founding at handle index 3 pads tombstones; a retired or held index never lands twice", async () => {
+    seat = await seatScratchCustody("face-ordinal");
+    const { holder } = seat;
+    const third = await holder.foundFace({ ask: "ab".repeat(32), ordinal: 3, slots: [slot("r3")] });
+    expect(third.ordinal).toBe(3);
+    const index = decodeFaceIndex(readFileSync(faceIndexPath(seat.homes.identity)));
+    expect(index.faces.map((f) => ("tombstone" in f ? "t" : "f")).join("")).toBe("ttt" + "f");
+    await expect(holder.foundFace({ ask: "cd".repeat(32), ordinal: 3, slots: [slot("x")] })).rejects.toBeInstanceOf(FaceIndexRefused);
+    await expect(holder.foundFace({ ask: "ef".repeat(32), ordinal: 1, slots: [slot("x")] })).rejects.toThrow(/retired and never reused/);
+    const next = await holder.foundFace({ ask: "12".repeat(32), slots: [slot("r4")] });
+    expect(next.ordinal).toBe(4);
+  });
+
+  test("a handle-index row rests in the face at that ordinal and no other face opens it", async () => {
+    const { holder, a, b } = await twoLockedFaces();
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    await holder.writeRow("identity", "guardian-set-h0.json", new TextEncoder().encode("{}"));
+    expect(existsSync(join(faceDir(seat!.homes.identity, a.fcid), "guardian-set-h0.json"))).toBe(true);
+    expect(existsSync(join(faceDir(seat!.homes.identity, b.fcid), "guardian-set-h0.json"))).toBe(false);
+    await expect(holder.writeRow("identity", "guardian-set-h1.json", new TextEncoder().encode("{}"))).rejects.toBeInstanceOf(FaceLocked);
   });
 });

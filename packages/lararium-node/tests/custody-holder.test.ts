@@ -8,6 +8,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
 import { vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { handleRowPathIn } from "./face-paths.js";
 
 // Every unlock runs the slot's own key derivation, priced to cost a guesser; the suite waits it out.
 vi.setConfig({ testTimeout: 180_000 });
@@ -98,14 +99,16 @@ describe("CustodyHolder", () => {
   test("H4 bare, absent and truncated rows keep distinct readings", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const file = "anchors-h0.json";
-    writeFileSync(join(homes.identity, file), '{"bare":true}');
+    await h.writeRow("identity", file, new TextEncoder().encode('{"whole":true}'));
+    writeFileSync(handleRowPathIn(homes.identity, file), '{"bare":true}');
     expect(await h.readRow("identity", file)).toEqual({ reading: "unavailable", why: "bare" });
+    await h.writeRow("identity", "guardian-set-h1.json", new TextEncoder().encode('{"whole":true}'));
     expect(await h.readRow("identity", "anchors-h1.json")).toEqual({ reading: "absent" });
     // A sealed row cut short: it bears the seal and no longer opens. It reads unavailable by the reader's own
     // name for it, never `opens` and never `absent`.
     await h.writeRow("identity", "anchors-h2.json", new TextEncoder().encode('{"whole":true}'));
-    const whole = readFileSync(join(homes.identity, "anchors-h2.json"));
-    writeFileSync(join(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
+    const whole = readFileSync(handleRowPathIn(homes.identity, "anchors-h2.json"));
+    writeFileSync(handleRowPathIn(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
     const cut = await h.readRow("identity", "anchors-h2.json");
     expect(cut.reading).toBe("unavailable");
     expect(["torn", "key-fails", "unopenable"]).toContain((cut as { why: string }).why);

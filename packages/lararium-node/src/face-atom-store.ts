@@ -128,7 +128,7 @@ export async function loadFaceAtom(handleIndex: number): Promise<Uint8Array | nu
 /** Mint or read the seed for this exact founding ask before a group exists. */
 export async function standPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uint8Array> {
   // THE FACE'S CUSTODY STANDS BEFORE ITS FIRST ROW, under the route the face asks for; the ask names it until a group exists.
-  await ensureFaceCustodyOfAsk(foundingAskDigest(ask), `h${ask.handleIndex}`);
+  await ensureFaceCustodyOfAsk(foundingAskDigest(ask), `h${ask.handleIndex}`, ask.handleIndex);
   return updateCustodyRow("identity", pendingFoundingFile(ask), (standing) => {
     if (standing) {
       if (standing.length !== 32) throw new Error("pending founding atom holds no 32-byte seed");

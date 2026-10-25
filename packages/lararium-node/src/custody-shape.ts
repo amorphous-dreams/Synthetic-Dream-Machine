@@ -23,8 +23,8 @@
  */
 
 import { closeSync, openSync, readSync } from "node:fs";
-import { readVkCarrier } from "@lararium/mesh";
-import { carrierCensus, type CarrierEntry, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
+import { readFckCarrier, readVkCarrier } from "@lararium/mesh";
+import { carrierCensus, flatFaceRowCarriers, type CarrierEntry, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
 /** Where the fresh start's by-hand move stands written. */
 export const FRESH_START_RUNBOOK = "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start";
@@ -69,12 +69,12 @@ function headOf(path: string): Uint8Array {
 }
 
 /** A frame no unlock of this build opens: anything the envelope reader reads other than sealed, torn or bare. */
-function opensWithUnknownEnvelope(head: Uint8Array): boolean {
-  const r = readVkCarrier(head);
+function opensWithUnknownEnvelope(head: Uint8Array, face = false): boolean {
+  const r = face ? readFckCarrier(head) : readVkCarrier(head);
   return r !== "sealed" && r !== "torn" && r !== "bare" && r !== "absent";
 }
 
-const isSecret = (e: CarrierEntry): boolean => e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
+const isSecret = (e: CarrierEntry): boolean => e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || e.custody === "face-hot" || e.custody === "face-cold";
 
 /** Read the shape every home stands in. Reads only. */
 export function readCustodyShape(homes: CustodyHomes, reading: CustodyShapeReading): CustodyShape {
@@ -86,10 +86,16 @@ export function readCustodyShape(homes: CustodyHomes, reading: CustodyShapeReadi
   };
   for (const e of census) {
     const head = headOf(e.path);
-    if (opensWithUnknownEnvelope(head)) { offend(e, "unknown-envelope"); continue; }
+    const face = e.custody === "face-hot" || e.custody === "face-cold";
+    if (opensWithUnknownEnvelope(head, face)) { offend(e, "unknown-envelope"); continue; }
     if (!isSecret(e)) continue;
     if (!tree) offend(e, "unslotted-secret");
-    else if (!reading.sealed(head)) offend(e, "cleartext-beside-tree");
+    else if (!(face ? readFckCarrier(head) === "sealed" : reading.sealed(head))) offend(e, "cleartext-beside-tree");
+  }
+  // A face row standing FLAT in the identity home is the spelling an earlier shape wrote.
+  for (const f of flatFaceRowCarriers(homes.identity)) {
+    const head = headOf(f.path);
+    offenders.push({ home: "identity", file: f.file, row: f.row, reason: opensWithUnknownEnvelope(head) ? "unknown-envelope" : tree ? "cleartext-beside-tree" : "unslotted-secret" });
   }
   if (offenders.length > 0) return { kind: "old-shape", offenders };
   if (tree) return { kind: "slotted" };
