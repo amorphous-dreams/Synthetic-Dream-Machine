@@ -48,7 +48,7 @@ def test_budget_depth_mesh_and_overscan_guards():
     too_many_faces = TriMesh(seed.vertices, faces=[(0, 1, 2)] * 101)
     with pytest.raises(ValueError, match="triangle"):
         audit_envelope(too_many_faces, c, seed, replace(budget, max_faces=100))
-    with pytest.raises(ValueError, match="overscan"):
+    with pytest.raises(ValueError, match="Overscan"):
         overscan_camera(c, 3)
 
 
