@@ -10,8 +10,8 @@ import math
 import re
 from .provenance_encoding import canonical_json_sha256
 
-TRANSFER_SEED="projection-loom/transfer-seed/v1"
-TRANSFER_BUNDLE="projection-loom/transfer-bundle/v1"
+TRANSFER_SEED="projection-loom/transfer-seed"
+TRANSFER_BUNDLE="projection-loom/transfer-bundle"
 
 
 def _digest(value):
