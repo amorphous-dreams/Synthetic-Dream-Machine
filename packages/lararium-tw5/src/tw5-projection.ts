@@ -38,6 +38,7 @@ import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camer
 import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
 import { installLarFieldEngine, larFieldEngineOf } from "./lar-field-engine.js";
+import type { RestDoor } from "./rest-door.js";
 import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
   LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
@@ -99,6 +100,7 @@ const ridMap = new Map<string, RidNode>();
 
 /** One mounted story camera: the roots it paints, the ids it painted, and its epoch, senses and answers. */
 interface CameraScope {
+  readonly rest?: RestDoor;
   readonly wikiUri: string;
   readonly cameraId: string;
   readonly popupRoot: RidNode;
@@ -591,7 +593,11 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       status, ...(reason !== undefined ? { reason } : {}), ...(want !== undefined ? { want } : {}),
     });
     if (scope && ev.mountEpoch === scope.mountEpoch) remember(scope, result);
-    if (scope) scope.post(result);
+    // A confirmed act answers once its writes rest: the result waits on the rest door, so a page that reads
+    // `applied` holds an edit the vessel's store keeps.
+    const resting = scope && !sense && status === "applied" ? scope.rest?.held() ?? null : null;
+    if (scope && resting) void resting.then(() => scope.post(result));
+    else if (scope) scope.post(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
     return result;
   };
@@ -639,6 +645,10 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   switch (ev.action) {
     case "lar:click": {
       if (!claims(el, "click")) return answer("refused", "unclaimed");
+      // A binding that declares `click:ordinary` cancels only the ordinary click: a modified or middle click leaves
+      // the browser's default standing (a new tab), so the island dispatches nothing for it and still answers.
+      const held = ev.modifiers;
+      if ((el as { getAttribute?(n: string): string | null }).getAttribute?.("data-lar-cancel") === "click:ordinary" && ((held?.button ?? 0) !== 0 || held?.ctrl || held?.meta)) return applied();
       const g = ev.geometry;
       if (g) {
         // TW5 Popup reads the fake node's bounding box and offset dimensions while opening a popup; these whole
@@ -899,6 +909,7 @@ export function mountProjection(ctx: IslandContext): () => void {
     wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
     renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
     mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(), services: new Set(LAR_SURFACE_DEFAULT_SERVICES),
+    ...(ctx.rest ? { rest: ctx.rest } : {}),
     post: (msg) => postLar(ctx, msg),
     mark: () => gate.mark(),
     // A new epoch: every act the page made under the old one now answers stale-target, the old answers leave

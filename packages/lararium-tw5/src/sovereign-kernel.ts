@@ -74,6 +74,7 @@ import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
+import { makeRestDoor, type RestDoor } from "./rest-door.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 
 // ── The host shore — platform divergence as composition ──────────────────────
@@ -106,7 +107,7 @@ const BREATH_INTERVAL_MS = 1_000;
 export function runSovereignKernel(
   host: IslandHostShore,
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
-  opts?: { breathEveryMs?: number },
+  opts?: { breathEveryMs?: number; restDoor?: boolean },
 ): void {
   const breathEveryMs = opts?.breathEveryMs ?? BREATH_INTERVAL_MS;
   const _post = (msg: IslandToVesselMsg) => host.post(msg);
@@ -124,6 +125,7 @@ export function runSovereignKernel(
   let _repo:      Repo | null                    = null;
   let _ownedRepo: Repo | null                   = null;
   let _handles:   Map<string, DocHandle<LarDoc>> = new Map();
+  let _rest:      RestDoor | null = null;
   let _composite: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
@@ -142,6 +144,7 @@ export function runSovereignKernel(
   host.listen((raw: unknown) => {
     if (!isVesselToIslandMsg(raw)) return;
     if (_view?.settleAnswer(raw)) return;
+    if (_rest?.answer(raw)) return;
 
     if (raw.type === "manifest") {
       void _handleManifest(raw as IslandMsg_Manifest);
@@ -447,6 +450,14 @@ export function runSovereignKernel(
       floorRows,
     });
     _adaptor = adaptor;
+    // THE REST DOOR, for a host whose vessel answers it. A save act's result waits for the vessel to hold and flush
+    // what the act wrote; a session island keeps no store and settles through its view at teardown instead.
+    _rest = view || !opts?.restDoor ? null : makeRestDoor({
+      post: _post,
+      handles: () => _handles,
+      flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
+    });
+    adaptor.restDoor = _rest;
     // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
     _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
     // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
@@ -459,7 +470,7 @@ export function runSovereignKernel(
     // reconciling the SAME path boot just walked.
     // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
     // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, ...(_rest ? { rest: _rest } : {}), catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
     // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
     // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
     // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
@@ -516,6 +527,8 @@ export function runSovereignKernel(
 
     _view?.close();
     _view = null;
+    _rest?.close();
+    _rest = null;
     _handles.clear();
     _composite = null;
     _ctx       = null;

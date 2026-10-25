@@ -870,6 +870,11 @@ export interface IslandMsg_DocRest {
   type: "doc:rest";
   requestId: string;
   documentIds: string[];
+  /**
+   * The heads the island holds of each named document, keyed by document id. A wiki island that lays its own bag
+   * documents asks with them: the vessel answers only once its own Repo holds every head, then flushes.
+   */
+  heads?: Record<string, string[]>;
 }
 
 /** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
@@ -879,6 +884,8 @@ export interface IslandMsg_DocRested {
   rested: boolean;
   /** The vessel names the documents its rest door finished flushing before this acknowledgment. */
   proof?: { documentIds: string[] };
+  /** True when the vessel's copy changed `REST_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
+  stalled?: boolean;
   why?: string;
 }
 

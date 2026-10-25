@@ -151,6 +151,30 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
+  test("RED: y's landed base does not stand while its landing is held — CONTROL: it stands, distinct from x's, once landingIdle resolves", async () => {
+    const timers = new ManualTimers();
+    let hold = false;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const r = await shoreRig({ timers, yieldHost: async () => { if (hold) await held; } });
+    const x = "lar:///t/road/T2-ledger-from";
+    const y = "lar:///t/road/T2-ledger-to";
+    await seedRecords(r, [{ title: x, text: "landed x" }]);
+    await r.adaptor.armSeedCheckpoint();
+    await r.adaptor.landingIdle();
+    const xBase = r.adaptor.ledger.landedOf(x)!.heads!;
+    hold = true;
+    await r.working.put({ tiddler: { title: y, text: "landed y" } }, remote);
+    expect(r.adaptor.ledger.landedOf(y)?.heads, "the landing is held: the ledger holds no base for y yet").toBeUndefined();
+    hold = false;
+    release();
+    await r.adaptor.landingIdle();
+    const yBase = r.adaptor.ledger.landedOf(y)?.heads;
+    expect(yBase, "after landingIdle y's base stands").toBeDefined();
+    expect(yBase).not.toEqual(xBase);
+    await r.stop();
+  }, 120_000);
+
   test("T2 + control: a rename onto a standing title proceeds on Y's landed base; a Y that moved surfaces both values", async () => {
     for (const moved of [false, true]) {
       const timers = new ManualTimers();
@@ -165,7 +189,9 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
       await r.adaptor.landingIdle();
       expect(r.adaptor.ledger.landedOf(x)).toBeDefined();
       await r.working.put({ tiddler: { title: y, text: "landed y" } }, remote);
-      await turns(16);
+      // The base is read once the landing ledger says every queued landing finished, never after a fixed count of turns.
+      await r.adaptor.landingIdle();
+      await turns(2);
       const xBase = r.adaptor.ledger.landedOf(x)!.heads!;
       const yBase = r.adaptor.ledger.landedOf(y)!.heads!;
       expect(yBase).not.toEqual(xBase);

@@ -81,9 +81,10 @@ test("B9 an empty corpus fails: a zero from no reading proves nothing", () => {
   assert.equal(r.status, 1);
   assert.match(r.stderr, /read nothing/);
 });
-test("B10 the span stands at its ceiling: every named allowance carries a reason and an owner", () => {
+test("B10 the span stands at its ceiling: every named allowance carries a reason and an owner, and none stands once its lane lands", () => {
   for (const a of ALLOWANCES) { assert.ok(a.reason.trim() && a.owner.trim() && a.file && a.test, JSON.stringify(a)); }
-  assert.ok(ALLOWANCES.some((a) => a.owner === "dreamdom-rest-before-reload" && /golden-whole-road/.test(a.file)));
+  assert.equal(CEILING, 0, "the golden's three absence reads each stand behind a sentinel act: the ceiling reads zero");
+  assert.equal(ALLOWANCES.length, 0, "the rest-before-reload lane cured W4 with a sentinel, so its allowance is gone");
   const r = spawnSync(process.execPath, [cli], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, new RegExp(`backlog ${CEILING}/${CEILING} · allowed ${ALLOWANCES.length}`));

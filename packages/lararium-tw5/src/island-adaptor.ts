@@ -73,6 +73,7 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle 
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import type { RestDoor } from "./rest-door.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
@@ -234,6 +235,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * engine's door: a second shore on the same engine refuses by `LandingDoorOccupiedError`. A shore that
    * stopped installs a fresh queue and its door again.
    */
+  /** The rest door a save act waits on before its result leaves; absent where no vessel answers one. */
+  restDoor: RestDoor | null = null;
+
   installLandingQueue(yieldHost?: () => Promise<void>): void {
     if (this.landing) return;
     const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
@@ -1071,9 +1075,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     for (const [title, value] of sentValues) this.sent.set(title, value);
     const ackBefore = new Map([...sentValues.keys()].map((title) => [title, this.writeAcks.get(title) ?? 0]));
     // Every store call of the act is issued here, before the first await.
+    const hold = groups.length > 0 ? this.restDoor?.begin() : undefined;   // in the turn of the dispatch, so the act's result can wait
     const issued = groups.map((g) => this._issueGroup(g.bag, g.base, g.puts, g.deletes, origin));
     const issuedStrays = strays.map(({ slot, uri }) => this.store.tombstoneInBag(slot, uri, origin));
     const settled = await Promise.allSettled([...issued, ...issuedStrays, ...(surfaced ? [surfaced] : [])]);
+    let handBags: string[] = [];
+    if (hold) {
+      // The act's result waits on the rest door, so the hands the act's dispatch left marked on the gate (the story
+      // list the navigator rewrote, for one) leave now and rest with it: a reload that follows reads the story the
+      // person left, never the one from before the confirm.
+      const others = this.gate.titles().filter((title) => !members.includes(title));
+      await Promise.allSettled(others.map((title) => this._leaveNow(title)));
+      handBags = others.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined);
+    }
+    hold?.done([...new Set([...groups.filter((_, index) => settled[index]!.status === "fulfilled").map((g) => g.bag), ...handBags])]);
     let fault: Error | null = null;
     const asError = (reason: unknown): Error => reason instanceof Error ? reason : new Error(String(reason));
     const refused = new Set<string>();
