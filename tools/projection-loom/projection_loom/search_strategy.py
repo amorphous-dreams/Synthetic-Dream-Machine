@@ -110,7 +110,7 @@ def searchability_census(bounds,archive,*,family_focus,activations=()):
     for key in sorted(declared):
         v=sorted({float(r['genome'][key]) for r in rows})
         observed[key]={'unique_observed':len(v),'range':[v[0],v[-1]] if v else None}
-    return {'schema':'projection-loom/searchability-census/v1',
+    return {'schema':'projection-loom/searchability-census',
         'declared_loci':len(declared),'reachable_loci':len(reachable),
         'unreachable_loci':sorted(declared-reachable),
         'observed_constant_loci':sorted(k for k,v in observed.items() if v['unique_observed']==1),
