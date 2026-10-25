@@ -37,11 +37,38 @@ def schedule_candidates(proposals, *, preview=None, max_exact, reserve_emitter=T
         if len(methods) <= max_exact:
             # Preserve the established complete method-seat ordering.
             reserved = sorted(methods)
+        elif all(method.startswith('family:') and len(method.split(':')) == 3
+                 for method in methods):
+            # Keep family fairness independent of incidental lexical names.
+            # With 12 seats and 18 family/method emitters, a flat lexical
+            # prefix used to fill four families and starve the other two.
+            # Interleave families first, then rotate their methods across
+            # generations. The preview still only ranks candidates *within*
+            # each method's reserved audition seat.
+            by_family = {}
+            for method in methods:
+                _, family, variant = method.split(':')
+                by_family.setdefault(family, []).append((variant, method))
+            families = sorted(by_family)
+            for family in families:
+                by_family[family].sort()
+            family_count = len(families)
+            family_offset = (emitter_turn * max_exact) % family_count
+            family_ring = families[family_offset:] + families[:family_offset]
+            turns_per_family = max(1, math.ceil(family_count / max_exact))
+            seats_per_family = max(1, max_exact // family_count)
+            method_offset = (emitter_turn // turns_per_family) * seats_per_family
+            ring = []
+            for level in range(max(len(variants) for variants in by_family.values())):
+                for family in family_ring:
+                    variants = by_family[family]
+                    if level < len(variants):
+                        ring.append(variants[(method_offset + level) %
+                                             len(variants)][1])
+            reserved = ring[:max_exact]
         else:
-            # Overflow rotates a STABLE emitter ring. A preview may choose
-            # the best proposal within a method but must not reorder the
-            # ring itself, or changing previews can cancel the rotation and
-            # starve the same families indefinitely.
+            # Ordinary method rings retain their existing behavior.
+            # Preview cannot reorder the reserved method rotation.
             ordered_methods = sorted(methods)
             offset = emitter_turn % len(ordered_methods)
             reserved = (ordered_methods[offset:] + ordered_methods[:offset])[:max_exact]
