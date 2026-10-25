@@ -432,29 +432,40 @@ class OODAJournal:
                 self.data['status'] = 'running'
             elif action in ('pet-name','o-takiage'):
                 from .relations import PetNameLedger, RelationWitness
-                review = self.data['loops'][waiting['loop']].get('options', [])
-                match = next((o for o in review if o['proposal_id']==args.get('proposal_id')), None)
-                witness = RelationWitness.load(match['witness']) if match is not None else None
-                if action == 'pet-name' and witness is None:
-                    raise ValueError('Pet-name needs an audited proposal preview witness')
-                if action == 'o-takiage' and args.get('branch') and witness is None:
-                    raise ValueError('Branch release needs an audited proposal witness')
                 path = Path(self.data['identity']['ledger_path'])
                 ledger = PetNameLedger.load(path) if path.exists() else PetNameLedger(
                     location=self.data['identity']['location'])
                 if ledger.location != self.data['identity']['location']:
                     raise ValueError('Pet-name ledger belongs to another location')
-                if action == 'pet-name':
-                    claim = ledger.pet_name(args['name'],args['target'],witness,
-                        mode=args.get('mode','entity'), has=args.get('has',()),
-                        member_has=args.get('member_has',()), retain=args.get('retain',.4))
-                    outcome = {'claim_id':claim['claim_id'],'name':claim['name']}
+                committed = ledger.control_receipt(key, digest)
+                if committed is not None:
+                    # A crash after ledger persistence but before journal
+                    # acknowledgement must never re-execute the operator action.
+                    if committed['action'] != action:
+                        raise ValueError('Operator control action mismatch on replay')
+                    outcome = committed['control_outcome']
+                    witness_id = committed.get('witness_id')
                 else:
-                    outcome = ledger.o_takiage(name=args.get('name'),
-                                              branch=args.get('branch'),witness=witness)
-                ledger.save(path)
+                    review = self.data['loops'][waiting['loop']].get('options', [])
+                    match = next((o for o in review if o['proposal_id']==args.get('proposal_id')), None)
+                    witness = RelationWitness.load(match['witness']) if match is not None else None
+                    if action == 'pet-name' and witness is None:
+                        raise ValueError('Pet-name needs an audited proposal preview witness')
+                    if action == 'o-takiage' and args.get('branch') and witness is None:
+                        raise ValueError('Branch release needs an audited proposal witness')
+                    if action == 'pet-name':
+                        claim = ledger.pet_name(args['name'],args['target'],witness,
+                            mode=args.get('mode','entity'), has=args.get('has',()),
+                            member_has=args.get('member_has',()), retain=args.get('retain',.4))
+                        outcome = {'claim_id':claim['claim_id'],'name':claim['name']}
+                    else:
+                        outcome = ledger.o_takiage(name=args.get('name'),
+                                                  branch=args.get('branch'),witness=witness)
+                    witness_id = witness.witness_id if witness else None
+                    ledger.commit_control(key,digest,outcome)
+                    ledger.save(path)
                 self.event('lineage-intervention',waiting['loop'],action=action,
-                           result=outcome, witness_id=witness.witness_id if witness else None)
+                           result=outcome, witness_id=witness_id)
             elif action == 'choose':
                 if waiting is None or waiting['kind'] != 'review':
                     raise ValueError('No preview review awaits an operator choice')
