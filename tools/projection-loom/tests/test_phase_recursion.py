@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from projection_loom.ooda import OODAJournal, submit_control, run_ooda_epochs
+from projection_loom.fractal_ooda_ha import OODAJournal, submit_control, run_ooda_epochs
 from projection_loom.pipeline import Project
 
 BASE=Path(__file__).resolve().parents[1]

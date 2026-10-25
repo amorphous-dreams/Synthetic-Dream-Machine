@@ -7,7 +7,7 @@ from .location_stack import LocationStack, Frame, Source, Element, Relation, Reg
 from .grammar import grow_program
 from .rewriting import apply_rewrite, RewriteReceipt
 from .epochs import WideEpoch, Proposal, propose_methods, run_project_epochs
-from .ooda import OODAJournal, run_ooda_epochs, submit_control, control_mode
+from .fractal_ooda_ha import OODAJournal, run_ooda_epochs, submit_control, control_mode
 from .geospatial import inspect_dem, sample_dem, project_xy
 from .registration3d import register_control_csv, register_landmarks, fit_rigid
 from .surface_witness import load_xyz, sample_mesh, sampled_surface_distance

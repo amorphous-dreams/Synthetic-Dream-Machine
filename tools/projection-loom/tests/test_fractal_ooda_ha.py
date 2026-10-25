@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from projection_loom.ooda import OODAJournal, run_ooda_epochs, submit_control
+from projection_loom.fractal_ooda_ha import OODAJournal, run_ooda_epochs, submit_control
 
 
 def test_fractal_ooda_ha_owns_the_real_five_phase_engine():
-    engine = import_module('projection_loom.fractal-ooda-ha')
-    assert Path(engine.__file__).name == 'fractal-ooda-ha.py'
+    engine = import_module('projection_loom.fractal_ooda_ha')
+    assert Path(engine.__file__).name == 'fractal_ooda_ha.py'
     assert engine.OODAJournal is OODAJournal
     assert engine.run_ooda_epochs is run_ooda_epochs
     assert engine.submit_control is submit_control

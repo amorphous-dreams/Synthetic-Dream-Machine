@@ -5,7 +5,7 @@ import json
 import pytest
 from PIL import Image
 
-from projection_loom.ooda import (OODAJournal, run_ooda_epochs, submit_control,
+from projection_loom.fractal_ooda_ha import (OODAJournal, run_ooda_epochs, submit_control,
                                   control_mode, single_runner)
 from projection_loom.pipeline import Project
 from projection_loom.relations import PetNameLedger, RelationWitness

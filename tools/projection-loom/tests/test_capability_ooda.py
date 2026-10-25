@@ -7,7 +7,7 @@ import pytest
 
 from projection_loom.capability_stack import Capability, CapabilityRecipe, CapabilityCompositor, default_registry
 from projection_loom.pipeline import Project
-from projection_loom.ooda import run_ooda_epochs, submit_control
+from projection_loom.fractal_ooda_ha import run_ooda_epochs, submit_control
 from projection_loom.relations import PetNameLedger, RelationWitness
 
 ROOT=Path(__file__).resolve().parents[1]

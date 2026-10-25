@@ -146,7 +146,7 @@ def main(argv=None):
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
     if args.command in ('ooda-run','wide-epoch'):
-        from .ooda import run_ooda_epochs
+        from .fractal_ooda_ha import run_ooda_epochs
         from .location_stack import LocationStack
         presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
         project=Project.load(args.project)
@@ -181,7 +181,7 @@ def main(argv=None):
                           'gallery':str(args.out/'contact_sheet.png')}))
         return result
     if args.command=='ooda-status':
-        from .ooda import OODAJournal
+        from .fractal_ooda_ha import OODAJournal
         session=OODAJournal(args.session)
         state=session.summary()
         state['open_loops']=[{'id':n['id'],'phase':n['phase'],'scope':n['scope'],
@@ -189,7 +189,7 @@ def main(argv=None):
             for n in session.data['loops'].values() if n['phase']!='closed']
         print(json.dumps(state,indent=2));return state
     if args.command=='ooda-steer':
-        from .ooda import submit_control
+        from .fractal_ooda_ha import submit_control
         parameters={}
         if args.action=='set-autonomy':
             if args.autonomy is None:parser.error('set-autonomy needs --autonomy')

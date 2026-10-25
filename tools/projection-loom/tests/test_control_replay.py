@@ -7,7 +7,7 @@ import json
 
 import pytest
 
-from projection_loom.ooda import OODAJournal, submit_control
+from projection_loom.fractal_ooda_ha import OODAJournal, submit_control
 from projection_loom.relations import Occurrence, PetNameLedger, RelationWitness
 
 
