@@ -133,7 +133,7 @@ export interface LarDiskProjectorOptions {
   /**
    * True where the island's own replica of the bag's document holds every named head. Heads the replica holds
    * reach the view through the island's own pipeline, whatever the link does, so a close never ends a word for
-   * a carrier whose heads the replica holds: only heads the replica lacks can no longer arrive. Absent, a close
+   * a carrier whose heads the replica holds: only heads the replica lacks fail to arrive. Absent, a close
    * reads every named head as absent.
    */
   readonly docHolds?: (bagId: string, heads: readonly string[]) => boolean;

@@ -10,7 +10,7 @@
  * Controls: a store with no history names none; a bag the shore landed nothing of covers nothing; heads of a
  * write the shore has not landed yet cover nothing.
  */
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { AutomergeDocStore, CompositeStore, emptyLarDoc, type Verb } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -59,6 +59,24 @@ describe("the ingest row names the heads it landed", () => {
     const [row] = await ingest(composite, meme("the prose"));
     expect(row!["decision"]).toBe("ingest");
     expect(row).not.toHaveProperty("heads");
+  });
+});
+
+describe("landing stays cheap", () => {
+  test("a bulk landing asks the store for no causal comparison: the comparison waits for a settle word's look", async () => {
+    // A corpus LOAD lands thousands of changes. A comparison per landing (`getChangesSince` over a growing
+    // document) outlasted the LOAD verb's own budget on the shard runners ("wiki:place-verb timeout").
+    const r = await shoreRig();
+    try {
+      const covers = vi.spyOn(r.working, "coversHeads");
+      for (let i = 0; i < 40; i++) await r.working.put({ tiddler: { title: `lar:///t.ingest.heads/bulk-${i}`, text: `bulk ${i}` } }, remote);
+      await turns(48);
+      await r.adaptor.landingIdle();
+      expect(r.wiki.getTiddler("lar:///t.ingest.heads/bulk-39"), "the landing ran").toBeDefined();
+      expect(covers, "landing asked for no causal comparison").not.toHaveBeenCalled();
+      expect(r.adaptor.landedCovers(workingBag, [...r.working.headsNow()!])).toBe(true);
+      expect(covers, "the look asks once").toHaveBeenCalledTimes(1);
+    } finally { await r.stop(); }
   });
 });
 

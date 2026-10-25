@@ -773,10 +773,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // Bases and the cross-bag check
   // ---------------------------------------------------------------------------
 
-  /** Keep the latest heads this shore landed for `bag`; a landing whose heads do not cover the kept ones leaves them. */
+  /**
+   * Keep the heads of the last change this shore landed for `bag`. The landing queue lands waves in the order the
+   * store raised them, so the latest landing carries the latest heads; the note costs one map write per landing,
+   * and the causal comparison waits for a settle word's look (`landedCovers`).
+   */
   private _noteLanded(bag: string, heads: readonly string[]): void {
-    const kept = this.landedHeads.get(bag);
-    if (kept !== undefined && !this._storeFor(bag)?.coversHeads?.(heads, kept)) return;
     this.landedHeads.set(bag, heads);
   }
 

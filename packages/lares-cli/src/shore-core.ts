@@ -121,7 +121,7 @@ export interface SettleReading {
  * the causal heads it landed where the island's store keeps history; the island answers once the projection
  * those records cause has run (`settle`, `shore-verb.ts`), so a scan that follows reads what the projection
  * left. The island holds no clock for it. A word that named heads ends by name (`far-side-closed`) when the
- * link that would carry them closes first, so the caller's own wait no longer stands as its only bound.
+ * link that would carry them closes first, so the caller's own wait stands as one bound among others.
  */
 export async function askSettle(
   ask: (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>,
