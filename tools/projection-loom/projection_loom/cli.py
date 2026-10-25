@@ -147,6 +147,18 @@ def main(argv=None):
                    help='generations between compatible cross-family locus grafts')
     p.add_argument('--mutation-scale',type=float,default=.16,
                    help='relative spread for local breeding (0,.4]')
+    p.add_argument('--explore-overscan',type=int,choices=[1,2],
+                   help='opt-in reference-anchored exploration, 2 recommended')
+    p.add_argument('--explore-depth',type=float,default=2.)
+    p.add_argument('--explore-max-vertices',type=int,default=150000)
+    p.add_argument('--explore-max-faces',type=int,default=200000)
+    p.add_argument('--explore-review-seats',type=int,default=6)
+    p=commands.add_parser('experiment-zero-select',
+                          help='Record separately attributed Operator or adviser review choice')
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--proposal',required=True)
+    p.add_argument('--actor',choices=['operator','adviser'],required=True)
+    p.add_argument('--reason',required=True)
     p=commands.add_parser('campaign-readiness',
                           help='Run complete bounded native evidence, comparison, replay and sealing')
     p.add_argument('--project',type=Path,required=True)
@@ -192,6 +204,11 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='experiment-zero-select':
+        from .experiment_zero import select_survivor
+        result=select_survivor(args.out,proposal=args.proposal,actor=args.actor,
+                               rationale=args.reason)
+        print(json.dumps(result,indent=2));return result
     if args.command=='campaign-readiness':
         from .pre_campaign_readiness import run_readiness
         result=run_readiness(args.project,args.capability_recipe,args.out,
@@ -273,6 +290,13 @@ def main(argv=None):
             from .llm_helm import HelmLLM
             model_advice=HelmLLM(args.llm_provider,args.llm_model,endpoint=args.llm_endpoint,
                                  api_key_env=args.llm_key_env,timeout=args.llm_timeout)
+        exploration_budget=None
+        if args.command=='ooda-ha-run' and args.explore_overscan is not None:
+            from .exploration import ExplorationBudget
+            exploration_budget=ExplorationBudget(
+                overscan=args.explore_overscan,depth_multiplier=args.explore_depth,
+                max_vertices=args.explore_max_vertices,max_faces=args.explore_max_faces,
+                score_size=tuple(args.score_size))
         result=run_ooda_ha_epochs(project,args.out,passes=args.passes,
             candidates=args.candidates,exact_budget=args.exact_budget,
             detail_budget=args.detail_budget,seed=args.seed,
@@ -288,7 +312,13 @@ def main(argv=None):
             migration_every=getattr(args,'migration_every',4),
             mutation_scale=getattr(args,'mutation_scale',.16),
             feature_evidence_path=getattr(args,'feature_evidence',None),
-            transfer_bundle_path=getattr(args,'transfer_bundle',None))
+            transfer_bundle_path=getattr(args,'transfer_bundle',None),
+            exploration_budget=exploration_budget)
+        if exploration_budget is not None and result.get('status')=='completed':
+            from .experiment_zero import write_review
+            record=write_review(project,recipe,args.out,exploration_budget,
+                                passes=args.passes,seats=args.explore_review_seats)
+            result['experiment_zero_review_sha256']=record['sha256']
         print(json.dumps(result,indent=2));return result
     if args.command=='ooda-ha-finalists':
         from .finalists import export_finalists

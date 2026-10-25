@@ -354,3 +354,11 @@ Run `campaign-readiness` for matched source-bound control/candidate campaigns,
 independent topology activation controls, replay equivalence and a sealed file manifest.
 `campaign-verify --out <directory>` checks the entire archive. See the
 [evergreen runbook](docs/HANDOFF.md) for parameters and evidence limitations.
+
+
+### Experiment Zero · bounded novelty and multi-view reviews
+
+The OODA-HA run command supports optional --explore-overscan, depth, mesh limits and
+review seats. The source crop stays fixed inside the extra frame. Native-screened
+and scored lineages receive multi-view evidence and independently attributable
+Operator/adviser selection. See [Experiment Zero](docs/EXPERIMENT_ZERO.md).
