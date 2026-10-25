@@ -5,28 +5,28 @@
       0.3
     ],
     "crown_taper": [
-      0,
+      0.0,
       0.24
     ],
     "crystal.fracture": [
-      0,
+      0.0,
       0.26
     ],
     "crystal.guide": [
-      0,
+      0.0,
       0.25
     ],
     "crystal.relief": [
-      0,
+      0.0,
       0.31
     ],
     "crystal.seed": [
-      0,
-      99
+      0.0,
+      99.0
     ],
     "crystal.wave": [
-      3,
-      15
+      3.0,
+      15.0
     ],
     "fortress_width": [
       4.4,
@@ -40,28 +40,44 @@
       0.52,
       0.82
     ],
+    "grammar.brace_span": [
+      0.7,
+      1.8
+    ],
+    "grammar.buttress": [
+      0.0,
+      1.0
+    ],
+    "grammar.gallery": [
+      0.0,
+      1.0
+    ],
+    "grammar.gallery_span": [
+      0.8,
+      2.3
+    ],
     "join.enable": [
-      0,
-      1
+      0.0,
+      1.0
     ],
     "join.fracture": [
-      0,
+      0.0,
       0.16
     ],
     "join.relief": [
-      0,
+      0.0,
       0.22
     ],
     "join.seed": [
-      0,
-      99
+      0.0,
+      99.0
     ],
     "join.wave": [
-      3,
-      12
+      3.0,
+      12.0
     ],
     "keep_taper": [
-      0,
+      0.0,
       0.2
     ],
     "parapet_fraction": [
@@ -77,16 +93,16 @@
       0.17
     ],
     "shaft_length": [
-      19,
-      27
+      19.0,
+      27.0
     ],
     "shaft_width": [
       2.7,
       3.8
     ],
     "spire_segmentation": [
-      0,
-      1
+      0.0,
+      1.0
     ],
     "terrace_offset": [
       -0.4,
@@ -99,22 +115,6 @@
     "tower_height": [
       2.4,
       3.7
-    ],
-    "grammar.gallery": [
-      0,
-      1
-    ],
-    "grammar.buttress": [
-      0,
-      1
-    ],
-    "grammar.gallery_span": [
-      0.8,
-      2.3
-    ],
-    "grammar.brace_span": [
-      0.7,
-      1.8
     ]
   },
   "cad_keys": [
@@ -139,44 +139,65 @@
     "grammar.brace_span"
   ],
   "initial": {
-    "crown_offset": 0,
-    "crown_taper": 0,
+    "crown_offset": 0.0,
+    "crown_taper": 0.0,
     "crystal.fracture": 0.1,
-    "crystal.guide": 0,
+    "crystal.guide": 0.0,
     "crystal.relief": 0.14,
-    "crystal.seed": 13,
-    "crystal.wave": 7,
+    "crystal.seed": 13.0,
+    "crystal.wave": 7.0,
     "fortress_width": 4.9,
-    "gallery_reach": 1,
+    "gallery_reach": 1.0,
     "gate_width": 0.66,
+    "grammar.brace_span": 1.15,
+    "grammar.buttress": 0.2,
+    "grammar.gallery": 0.2,
+    "grammar.gallery_span": 1.45,
     "join.enable": 0.2,
     "join.fracture": 0.05,
     "join.relief": 0.06,
-    "join.seed": 11,
-    "join.wave": 5,
-    "keep_taper": 0,
+    "join.seed": 11.0,
+    "join.wave": 5.0,
+    "keep_taper": 0.0,
     "parapet_fraction": 0.68,
-    "shaft_asymmetry": 0,
+    "shaft_asymmetry": 0.0,
     "shaft_jaggedness": 0.05,
-    "shaft_length": 22,
+    "shaft_length": 22.0,
     "shaft_width": 3.1,
-    "spire_segmentation": 0,
-    "terrace_offset": 0,
+    "spire_segmentation": 0.0,
+    "terrace_offset": 0.0,
     "terrace_overhang": 1.32,
-    "tower_height": 2.9,
-    "grammar.gallery": 0.2,
-    "grammar.buttress": 0.2,
-    "grammar.gallery_span": 1.45,
-    "grammar.brace_span": 1.15
+    "tower_height": 2.9
   },
   "location": "necrospire",
   "pet_name": "Necrospire: A Crystal Bearing a Fortress",
   "provenance": "provisional",
   "schema": "projection-loom/capability-recipe",
+  "seed_entity_sha256": "f3763c590f9972e5879dee9df22877e11136ba80e918d77990e51ffd40776c1c",
+  "sha256": "5f45dcc273b203521faa42abb9b1575f7a51d2971a96d69df788e8adbaec0fd2",
   "source_hashes": {
-    "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
+    "image": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7",
+    "seed:appearance": "80e1d0ee8ae4bda505c053b42ea1d1f661d71ed4c174f57c15423027872c4f89",
+    "seed:entity": "f3763c590f9972e5879dee9df22877e11136ba80e918d77990e51ffd40776c1c",
+    "seed:silhouette": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7"
   },
   "steps": [
+    {
+      "activation": null,
+      "depends_on": [],
+      "entity": "Oblique Seed",
+      "has": [
+        "#has/source-silhouette",
+        "#has/source-appearance"
+      ],
+      "id": "seed.oblique",
+      "layer": null,
+      "operator": "seed-cue",
+      "params": {},
+      "part": null,
+      "role": "sculptural",
+      "socket": null
+    },
     {
       "activation": null,
       "depends_on": [],
@@ -195,6 +216,7 @@
     {
       "activation": null,
       "depends_on": [
+        "seed.oblique",
         "crystal.cad"
       ],
       "entity": "Crystal",
@@ -267,6 +289,7 @@
     {
       "activation": "join.enable",
       "depends_on": [
+        "seed.oblique",
         "join.cad"
       ],
       "entity": "Joining",
@@ -367,6 +390,5 @@
       "role": "sculptural",
       "socket": null
     }
-  ],
-  "sha256": "2c60b211cb4b21c6bf85761f9cb1fb91d3510b20b78607dbfe73fba074397074"
+  ]
 }
