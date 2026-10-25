@@ -30,8 +30,10 @@ requires a **fresh output directory**, not replay into an earlier journal.
 * The existing `WideEpoch` audits a fused BRep and its authored voids before
   any candidate is scored. Compounds also pass independent polygon and socket
   gates. Candidate errors are reported as evaluator errors, not bad geometry.
-* The source-fixed binary silhouette receives an exact pixel hash and coarse
-  geometry-based niche (area/extent/asymmetry). `lineage_archive.json` retains
+* The source-fixed binary silhouette receives an exact pixel hash and a
+  phenotype niche combining area/extent/asymmetry with six quantized horizontal
+  silhouette-width bands. This intentionally tolerates one-pixel fringe noise
+  but separates different vertical terrace/crown profiles. `lineage_archive.json` retains
   family champions, distinct niche elites, parentage and every generation's
   scored/rejected/audited/deferred/error counts. Numeric genome differences
   alone do not make a new visible phenotype.
@@ -61,7 +63,44 @@ finalists. Best silhouette IoU: **0.721470**, against the old **~0.7045**
 fixed-view provisional baseline. These observations are *not* survey/engineering
 certificates and have not yet demonstrated independent generalization.
 
-## Six-generation pilot — requested capacity, not a result until measured
+## Six-generation pilot — completed, audited pre-regional-niche baseline
+
+The full source-fixed, seed-41, 128×192 experiment **completed with exit code 0**,
+its single OODA-HA location and all child loops closed, and
+`scripts/check_compound_epoch.py` passed. Results below are from the frozen
+run **before** the six-band regional-niche correction, so the archive remains
+an honest same-code checkpoint and is not relabeled retroactively.
+
+| Measure | Observed |
+|---|---:|
+| Births / native CAD auditions | **432 / 216** |
+| Scored / exact-audited without detail / deferred | **108 / 108 / 216** |
+| Rejected / evaluator errors | **0 / 0** |
+| Distinct source-view silhouette SHA-256 masks | **89** |
+| Coarse global phenotype niches (old descriptor) | **2** |
+| Surviving family champions | **6 of 6** |
+| Finalists / family review masks | **3 / 12** |
+| OODA candidate / capability child loops | **216 / 1,944** |
+| Best silhouette IoU | **0.738410** (`needle-006-004`, generation 6, Sobol) |
+
+The original fixed-view three-epoch seed score was ~0.7045 IoU, so the absolute
+same-reference improvement is ~0.0339 IoU. The source image, alpha, camera
+and native CAD/void and mesh/socket audit boundaries were unchanged. All six
+families earned scored Sobol, local and topology descendants; deferred proposals
+were not silently called structural failures. Generated preview or model validity
+is not authenticated survey registration, structural engineering certification
+or a proved cross-kernel Boolean union.
+
+**Re-entry boundary:** This completed baseline was run with the previous coarse
+phenotype descriptor (commit ancestry through RED `e3c6dce`, no source behavior
+change from `619c20c`). The next GREEN commit `42e62f2` changes measured
+niche semantics. It MUST use a separate output directory, never resume or
+relabel the old archive's niche identifiers. On 12 exact distinct previously
+rendered family-survivor silhouettes, the six-band profile distinguished **four**
+regional niches versus **one** coarse global niche. That is an offline diagnostic
+of the descriptor; a new-code campaign needs its own receipts.
+
+## Six-generation pilot — reproducible command
 
 ```sh
 python -m projection_loom ooda-run \
@@ -73,10 +112,11 @@ python -m projection_loom ooda-run \
   --score-size 128 192 --finalists 3
 ```
 
-This budgets 432 births, at most 216 native exact audits and 108 detailed
-scores, retaining all deferred and failed attempts as separate counts.
-Compare actual masks under the *same* source and fixed viewport. Report
-absolute IoU, family survival and unique visible niches independently;
+This produced 432 births, 216 native exact audits and 108 detailed scores
+under the *pre-regional-correction* code and source-bound recipe. It retains
+deferred and failed attempts as separate counts. Compare actual masks under the
+same source and fixed viewport. Report absolute IoU, family survival and unique
+visible niches independently;
 do not collapse them into one generic success label. Never change a previous
 checkpoint's experiment parameters to force resumption.
 
@@ -88,6 +128,8 @@ mutation scale, source-vs-model region residuals, and fairness before buying
 more generations. A coarse niche can contain multiple distinct exact masks:
 report both counts. Other kernel or source authentication must not be inferred.
 
-`ooda-ha="closed 4↺"` denotes the four *implementation* waves, subject to
-completed regression verification at the actual code head. Experiment Aftermath
-continues per generation; a pending run is not a completed loop.
+`ooda-ha="closed 5↺"` denotes RED→GREEN implementation waves XX–XXIV,
+with fresh-code regression verification required at the latest head. The
+six-generation *pre-correction* experiment is complete and independently audited.
+Experiment Aftermath closes per generation and per gallery; no automated culling
+may exercise Operator pet-name or o-takiage authority.
