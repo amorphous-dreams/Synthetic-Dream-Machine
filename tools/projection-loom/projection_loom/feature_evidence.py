@@ -79,6 +79,8 @@ class FeatureEvidence:
             if relative.is_absolute() or '..' in relative.parts:
                 raise ValueError('Feature evidence must stay beside its manifest')
             file=(path.parent/relative).resolve()
+            if not file.is_relative_to(path.parent.resolve()):
+                raise ValueError('Feature mask symlink escapes its evidence directory')
             if not file.is_file() or sha256(file.read_bytes()).hexdigest()!=record.get('sha256'):
                 raise ValueError('Feature evidence mask digest mismatch')
             with Image.open(file) as image:
