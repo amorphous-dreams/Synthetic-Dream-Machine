@@ -20,7 +20,7 @@ from .hybrid import HybridLocation, derived_cad_surface, semantic_cad_point
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import CapabilityStepReceipt, CompoundAuditReceipt
 
-SCHEMA='projection-loom/capability-recipe/v1'
+SCHEMA='projection-loom/capability-recipe'
 
 
 def digest(obj):
@@ -59,30 +59,31 @@ class Capability:
 
 
 class OperatorRegistry:
-    """Explicit, trusted, versioned callbacks; no imports or code from recipe JSON."""
+    """Explicit trusted callbacks; fingerprint their implementation, not release labels."""
     def __init__(self):self._items={}
 
-    def register(self,name,version,callback):
-        if not re.fullmatch(r'[a-z][a-z0-9-]*',name) or not version or not callable(callback):
-            raise ValueError('Trusted operators need a stable name, version, and callable')
+    def register(self,name,callback):
+        if not re.fullmatch(r'[a-z][a-z0-9-]*',name) or not callable(callback):
+            raise ValueError('Trusted operators need a stable name and callable')
         if name in self._items:raise ValueError('Duplicate operator')
-        self._items[name]=(str(version),callback)
+        self._items[name]=callback
 
     def fingerprint(self):
         import inspect
         fingerprints={}
-        for name,(version,callback) in sorted(self._items.items()):
+        for name,callback in sorted(self._items.items()):
             try:source=inspect.getsource(callback)
             except (OSError,TypeError):
                 # Interactive plugin functions still participate in identity.
                 source=callback.__code__.co_code.hex()+repr(callback.__code__.co_consts)
-            fingerprints[name]={'version':version,'module':callback.__module__,
+            fingerprints[name]={'module':callback.__module__,
+                               'callable':callback.__qualname__,
                                'implementation_sha256':sha256(source.encode()).hexdigest()}
         return digest(fingerprints)
 
     def invoke(self,name,context,step):
         if name not in self._items:raise ValueError(f'Untrusted capability operator {name}')
-        return self._items[name][1](context,step)
+        return self._items[name](context,step)
 
     def knows(self,name):return name in self._items
 
@@ -90,7 +91,7 @@ class OperatorRegistry:
 class CapabilityRecipe:
     """Immutable plan + mutable, bounded numeric loci; one named location."""
     def __init__(self,*,location,pet_name,steps,bounds,initial,cad_keys,
-                 source_hashes=None,version=1,provenance='provisional'):
+                 source_hashes=None,provenance='provisional'):
         self.location=str(location)
         self.pet_name=pet_name
         self.steps=tuple(Capability.from_dict(x) if isinstance(x,dict) else x for x in steps)
@@ -98,7 +99,6 @@ class CapabilityRecipe:
         self.initial={str(k):float(v) for k,v in initial.items()}
         self.cad_keys=tuple(cad_keys)
         self.source_hashes=dict(source_hashes or {})
-        self.version=int(version)
         self.provenance=provenance
         self._validate()
 
@@ -112,7 +112,7 @@ class CapabilityRecipe:
         return obj
 
     def _validate(self):
-        if not self.location or not self.steps or self.version<1 or self.provenance not in ('synthetic','provisional','verified'):
+        if not self.location or not self.steps or self.provenance not in ('synthetic','provisional','verified'):
             raise ValueError('Recipe requires location, capabilities and explicit evidence status')
         if set(self.initial)!=set(self.bounds):raise ValueError('Every locus requires initial value and bounds')
         if not set(self.cad_keys).issubset(self.bounds):raise ValueError('CAD loci missing')
@@ -136,7 +136,7 @@ class CapabilityRecipe:
 
     def to_dict(self):
         obj={'schema':SCHEMA,'location':self.location,'pet_name':self.pet_name,
-             'version':self.version,'provenance':self.provenance,
+             'provenance':self.provenance,
              'steps':[step.to_dict() for step in self.steps],
              'bounds':{k:list(v) for k,v in self.bounds.items()},
              'initial':self.initial,'cad_keys':list(self.cad_keys),
@@ -231,10 +231,10 @@ def _socket(ctx,step):
 
 def default_registry():
     reg=OperatorRegistry()
-    for name,ver,fn in [('cad','1',_cad),('cad-contact','1',_contact),
-                        ('cad-polymesh','2',_cad_mesh),('standalone-polymesh','1',_standalone_mesh),
-                        ('semantic-socket','1',_socket)]:
-        reg.register(name,ver,fn)
+    for name,fn in [('cad',_cad),('cad-contact',_contact),
+                    ('cad-polymesh',_cad_mesh),('standalone-polymesh',_standalone_mesh),
+                    ('semantic-socket',_socket)]:
+        reg.register(name,fn)
     return reg
 
 
