@@ -82,7 +82,12 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
 CAD-derived meshes and semantic sockets; `fractal_ooda_ha.py` executes the single
 recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
-provides the underlying strict CAD audition. The original Necrospire RGBA and
+provides the strict CAD audition. `selection.py` chooses bounded candidate
+auditions and already scored review options; `review.py` regrows native-audited
+CAD/compound previews and their same-construction relation witnesses; and
+`gallery.py` regrows compound finalists during the controller's location
+Aftermath. These renderers MUST NOT independently steer operator choices,
+claim cross-kernel fusion, or turn an output image into source evidence. The original Necrospire RGBA and
 alpha, an under-specified visual witness, remain authoritative reference
 bytes, not a calibrated survey.
 
@@ -101,6 +106,6 @@ examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h1WzMvpes-mlmj3IQwrEIU0MvaTTajRU0LwK2guny9o
+<<^ code="&#x0003;">>ni:///sha-256;nO-FMk7V1eBRPN_ACFsGsnMpBHOLs6oygrSwFEgqVN8
 
 <<^ code="&#x0004;" -> to="?">>

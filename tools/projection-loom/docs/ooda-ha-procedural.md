@@ -23,6 +23,25 @@ The pure `selection.py` exposes two distinct decisions: exact candidate
 scheduling and scored review selection. A preview is never structural evidence,
 and the two native geometry auditors retain separate truth scopes.
 
+## Rendering and review stay beneath the helm
+
+`review.py` regrows only scored CAD and compound candidates for operator
+review. It writes PNG previews, a genome receipt, and a relational witness
+from the very construction it renders; `selection.py` admits only already
+scored alternatives. The CAD renderer checks exact fused-solid validity,
+while the compound renderer checks its separate `composite_valid_for_render`
+audit and recipe fingerprint. Neither renderer can promote an artwork to
+independent survey evidence.
+
+`gallery.py` regrows distinct compound finalists across completed epoch
+records. Only the one `fractal_ooda_ha.run_ooda_epochs` helm opens its
+gallery child loop in location Aftermath, records the real Act, reviews native
+CAD and polymesh receipts, and closes it. The renderer supplies artifacts and
+results, never phase transitions. `tests/test_presentation_boundary.py`
+verifies the new port, with full nested-epoch tests retaining behavior
+witnesses. Run a new output directory after this code move because the
+construction fingerprint necessarily changes.
+
 ## One location, nested loops, five guarded phases
 
 The machine advances `observe -> orient -> decide -> act -> aftermath -> closed`.

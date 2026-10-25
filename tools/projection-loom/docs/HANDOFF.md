@@ -4,6 +4,34 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XV — review/gallery separation with no second controller
+
+**Observe / RED:** `tests/test_presentation_boundary.py` imports the absent
+`review.py` and `gallery.py` ports and asserts independently regrown CAD and
+compound review artifacts, recipe fingerprints, real relational witnesses,
+operator-choice eligibility, and provisional/synthetic evidence labels.
+The existing full nested OODA-HA integration tests still exercise actual gallery
+regrowth, independent CAD and polymesh gates, and location Aftermath closure.
+
+**Act:** Commit `f268a55` moves the two scored review renderers into
+`projection_loom/review.py` and compound finalist regrowth/export into
+`projection_loom/gallery.py`. The single `fractal_ooda_ha.py` controller keeps
+all phase transitions, review and operator decisions, and the gallery child
+loop. Its body shrinks by roughly 9.4 KB (~177 lines). The new modules do not
+own operator controls or phase progression. `selection.py` still supplies
+distinct candidate scheduling and operator-review selection policies.
+
+**Aftermath / negative claims:** A generated preview never certifies geometry
+or becomes new source evidence. The CAD review path independently re-audits
+BRep and void integrity; the compound path re-audits the capability-built scene,
+without claiming cross-kernel fusion. Finalists still regrow from recipes and
+report independent CAD/polygon authority. No historical checkpoint may be
+resumed under a new construction-code fingerprint; fork its output.
+
+**Live gate:** These new tests and the extracted source require completed
+new-head Loom CI, repository CI and held-out witness receipts before claiming
+GREEN. Do not infer results from a queued or cancelled workflow.
+
 ## Wave XIV — causal replay recovery and canonical alpha names
 
 On the current alpha branch, `fractal_ooda_ha.py` holds the single OODA-HA
