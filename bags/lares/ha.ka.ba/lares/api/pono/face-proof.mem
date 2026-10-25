@@ -369,7 +369,7 @@ The design names that unavailability and does not cure it. A recovery authority 
 ''Unproven, and each blocks the part that rests on it'':
 
 * ''The envelope beyond the measured run'': through TLS, through HTTP/2, on a phone's own engine and behind other proxies (#/the-browser-envelope). The token's syntax, its bound and the terminator's log stand measured and fixed.
-* ''The sealed frames' layout'': the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it. They ride binary WebSocket messages no proxy reads; the layout in `gate-exchange.ts` stands as the house's own, and the cutover may move it.
+* ''The sealed frames' layout'': the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it. They ride binary WebSocket messages no proxy reads; the layout in `gate-exchange.ts` stands as the house's own; the cutover has landed, and roadmap row `W28` freezes it before the founding bake.
 * ''The withdrawal proof under a live partition.'' The fold and the six verdicts stand proven as pure functions over synthetic histories, and the six answers stand proven at one gate against a dialer in the same process, partitioned by hand. No two gates and no real herm have yet carried one.
 
 ''OWED ~ seven debts, each resting on the one before it.''
@@ -398,6 +398,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hnmg-zRDjiJInjua3qiC45f5VweS9aC93kHWCxUL1aM
+<<^ code="&#x0003;">>ni:///sha-256;EeVAcEAUgGMyc2eMdntwVkMzxULog0-w8Q0Gm050iTE
 
 <<^ code="&#x0004;" -> to="?">>
