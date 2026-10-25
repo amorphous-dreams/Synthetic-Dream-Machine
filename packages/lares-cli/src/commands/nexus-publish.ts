@@ -60,7 +60,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
 
   if (args.flags["apply"]) {
     try {
-      const result = (await storeVerb("nexus-publish", { source }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
+      const result = (await storeVerb("nexus-publish", { source, ...(typeof args.options["face"] === "string" ? { handleIndex: Number(args.options["face"]) } : {}) }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
       emit(args, {
         ok: true,
         data: {
