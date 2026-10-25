@@ -279,7 +279,7 @@ class WideEpoch:
                         result={'state':'audited','reason':'detail budget','audit':audit}
                         if screening is not None:result['screening']=screening
                     else:
-                            losses=score(p.genome,assembly)
+                        losses=score(p.genome,assembly)
                         if set(losses)!=set(self.objectives):
                             raise ValueError('Every scored model needs every declared loss')
                         losses={k:float(losses[k]) for k in self.objectives}

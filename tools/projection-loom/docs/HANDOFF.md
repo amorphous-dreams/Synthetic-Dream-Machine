@@ -4,6 +4,33 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Experiment Zero spatial and scientific capability integration
+
+Opt-in Experiment Zero has a physically larger (2x width/height) camera frame
+that does NOT stretch the source or silently raise source-scoring resolution.
+An anchored depth limit, bounded triangle/vertex counts and staged native
+audit admissions constrain search cost. Source-view silhouette objectives
+remain unchanged. Per-scored-candidate outer-field observations are archived
+independently; reviewed descendants are re-grown under fixed orthographic
+cameras seeded from the same initial construction.
+
+The existing OODA-HA controller and Operator/AI review boundaries remain
+authoritative. Completed experiments offer source-bound multiview evidence
+and separately attributed Operator/adviser review choices. See
+docs/EXPERIMENT_ZERO.md for invocation and caveats.
+
+The statistical fracture-pattern capability (docs/FRACTURE_PATTERNS.md) uses
+published size-law exponents, finite small-fragment cutoffs and a synthetic
+2D tessellation/crack network. It does NOT claim mechanically simulated
+collapse or a realized structural damage pass. Its reusable priors are
+downstream ingredients after the base survivor selection.
+
+The dedicated experiment-zero-native.yml witness runs the new utilities and
+native bounded OODA-HA end to end. Freeze historical pilot data; all changes
+here are additive source-bound experimental policy, not retrospective scoring.
+
+---
+
 ## Implemented pre-campaign integrated evidence path
 
 The new `campaign-readiness` CLI supplies an immutable source/camera/recipe/code/

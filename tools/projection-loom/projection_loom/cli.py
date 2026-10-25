@@ -153,6 +153,19 @@ def main(argv=None):
     p.add_argument('--explore-max-vertices',type=int,default=150000)
     p.add_argument('--explore-max-faces',type=int,default=200000)
     p.add_argument('--explore-review-seats',type=int,default=6)
+    p=commands.add_parser('fracture-pattern',
+                          help='Generate bounded statistical fragment sizes and 2D crack hypotheses')
+    p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--size',type=int,nargs=2,default=[128,192])
+    p.add_argument('--cells',type=int,default=36)
+    p.add_argument('--seed',type=int,default=41)
+    p.add_argument('--anisotropy',type=float,default=1.)
+    p.add_argument('--line-width',type=int,default=1)
+    p.add_argument('--dimension',type=int,choices=[1,2,3],default=3)
+    p.add_argument('--fragments',type=int,default=64)
+    p.add_argument('--min-size',type=float,default=1.)
+    p.add_argument('--max-size',type=float,default=64.)
+    p.add_argument('--max-total-measure',type=float)
     p=commands.add_parser('experiment-zero-select',
                           help='Record separately attributed Operator or adviser review choice')
     p.add_argument('--out',type=Path,required=True)
@@ -204,6 +217,15 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='fracture-pattern':
+        from .fracture_patterns import export_pattern
+        record=export_pattern(args.out,size=tuple(args.size),cells=args.cells,
+                              seed=args.seed,anisotropy=args.anisotropy,
+                              width_px=args.line_width,dimension=args.dimension,
+                              fragments=args.fragments,min_size=args.min_size,
+                              max_size=args.max_size,
+                              max_total_measure=args.max_total_measure)
+        print(json.dumps(record,indent=2));return record
     if args.command=='experiment-zero-select':
         from .experiment_zero import select_survivor
         result=select_survivor(args.out,proposal=args.proposal,actor=args.actor,
