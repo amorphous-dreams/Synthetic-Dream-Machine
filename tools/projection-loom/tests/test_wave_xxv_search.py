@@ -182,3 +182,23 @@ def test_v3_recipe_is_regenerated_without_modifying_source_bound_v2():
     assert generated.sha256==committed.sha256
     assert generated.sha256!=legacy.sha256
     assert generated.source_hashes==legacy.source_hashes
+
+def test_feature_annotation_authors_immutable_local_masks_without_source_promotion(tmp_path):
+    project=Project.load(EXAMPLES/'project_alpha.json')
+    annotated=np.zeros((96,64),dtype=np.uint8)
+    annotated[1:30,:]=255
+    supplied=tmp_path/'operator-input.png'
+    Image.fromarray(annotated,'L').save(supplied)
+    witness=tmp_path/'submitted'/'features.json'
+    receipt=FeatureEvidence.author(project,{'Fortress':supplied},
+                                   witness,score_size=(64,96))
+    assert witness.is_file()
+    assert receipt.mask_for('crown').shape==(96,64)
+    assert receipt.source_sha256==hashlib.sha256(project.reference.read_bytes()).hexdigest()
+    assert 'features.json' not in str(project.reference)
+    reread=FeatureEvidence.load(witness,source_sha256=receipt.source_sha256,
+                                 score_size=(64,96))
+    assert reread.digest==receipt.digest
+    with pytest.raises(ValueError,match='dimensions'):
+        FeatureEvidence.author(project,{'Fortress':supplied},
+            tmp_path/'invalid.json',score_size=(128,192))
