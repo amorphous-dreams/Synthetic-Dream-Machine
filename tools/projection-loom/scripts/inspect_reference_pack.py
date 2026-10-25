@@ -54,7 +54,7 @@ def inspect(receipt_file, *, compile_scad=False, limit=6):
                 witness=sample_mesh(stack,source.id,count=48,seed=41)
                 build.update({'surface_sample_count':len(witness.points),
                               'sha256':source.sha256, 'cad_validity':'not-inferred'})
-    return {'schema':'projection-loom/external-reference-evidence/v1',
+    return {'schema':'projection-loom/external-reference-evidence',
             'source':receipt['source'],'original_sha256':receipt['sha256'],
             'locked':receipt['locked'],'license':receipt['license'],
             'sampled_stls':findings,'openscad':build,
