@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from .epochs import _atomic, _hash
-from .search_strategy import diversity_parents, pareto_front, searchability_census
+from .search_strategy import diversity_parents, pareto_front, searchability_census, infer_locus_interactions, adaptive_foci
 
 SCHEMA = 'projection-loom/lineage-archive/v2'
 
@@ -228,7 +228,8 @@ FAMILY_FOCUSES = {
                  'join.enable','join.relief','join.fracture','join.seed','join.wave'),
     'crown': ('crown_taper','crown_offset','parapet_fraction','tower_height'),
     'keep': ('keep_taper','tower_height','spire_segmentation','gate_width'),
-    'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed'),
+    'crystal': ('crystal.relief','crystal.guide','crystal.fracture','crystal.seed',
+                'grammar.gallery','grammar.buttress','grammar.gallery_span','grammar.brace_span'),
 }
 # Search populations and operator-given pet-names have separate authority.
 # An entity may have several distinct reproductive search islands.
@@ -238,7 +239,8 @@ FAMILY_ENTITIES = {
 }
 
 def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_family,
-               migration_every=4, mutation_scale=.16):
+               migration_every=4, mutation_scale=.16, transfer_seeds=(),
+               interaction_min_samples=24):
     """Evolve family-owned gene blocks semi-independently in distinct collaborators.
 
     A family inherits its own measured fragment, not its whole old context.
@@ -257,14 +259,27 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
         raise ValueError('Mutation scale must lie within (0,.4]')
     if set(initial)!=set(bounds):
         raise ValueError('Source genome and declared bounds differ')
-    if set().union(*(set(v) for v in FAMILY_FOCUSES.values())) != set(bounds):
+    focus_map={family:tuple(k for k in loci if k in bounds)
+               for family,loci in FAMILY_FOCUSES.items()}
+    if set().union(*(set(v) for v in focus_map.values())) != set(bounds):
         raise ValueError('Breeding families must cover every declared locus')
+    interactions=infer_locus_interactions(bounds,archive,before_generation=generation,
+                                          min_samples=interaction_min_samples)
+    focus_map=adaptive_foci(focus_map,interactions,max_extra=2)
+    transfer_by_family={}
+    for transfer in transfer_seeds:
+        family=transfer['family']
+        if family not in focus_map or transfer.get('authority')!='proposal-only' or not transfer.get('operator_authorized'):
+            raise ValueError('Transfer seeds must be authorized and family-bound')
+        if any(k not in focus_map[family] or not 0<=v<=1 for k,v in transfer['loci'].items()):
+            raise ValueError('Invalid normalized transfer locus')
+        transfer_by_family.setdefault(family,[]).append(transfer)
     families=list(FAMILY_FOCUSES)
     ancestry={f:archive.component_parents(f,limit=3,before_generation=generation)
               for f in families}
     brood=[]
     for family_index,family in enumerate(families):
-        focus=FAMILY_FOCUSES[family]
+        focus=focus_map[family]
         rng=np.random.default_rng(seed+generation*1009+family_index*7919)
         sobol=qmc.Sobol(len(focus),scramble=True,
             seed=seed+generation*1013+family_index*65521).random_base2(
@@ -288,7 +303,7 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                     pick=0
                 if pick==len(donors):continue
                 donor=donors[pick]
-                for key in FAMILY_FOCUSES[donor_family]:
+                for key in focus_map[donor_family]:
                     if key not in focus:
                         genome[key]=float(donor['component_genome'].get(key,donor['genome'][key]))
                 collaborators[donor_family]=donor['id']
@@ -296,9 +311,18 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                 for key in focus:
                     genome[key]=float(primary['component_genome'].get(key,primary['genome'][key]))
             parent_id=primary['id'] if primary else 'original-seed'
+            imported=transfer_by_family.get(family,())
+            active_transfer=imported[0] if imported and j==1 and not primary else None
+            if active_transfer is not None:
+                for key,value in active_transfer['loci'].items():
+                    lo,hi=bounds[key]
+                    genome[key]=float(lo+value*(hi-lo))
+                parent_id='transfer:'+active_transfer['donor_id']
             for k,key in enumerate(focus):
                 lo,hi=bounds[key]
-                if mode=='sobol':
+                if active_transfer is not None and key in active_transfer['loci']:
+                    value=genome[key]
+                elif mode=='sobol':
                     value=lo+float(sobol[j,k])*(hi-lo)
                 elif mode=='local':
                     value=genome[key]+float(rng.normal(0,mutation_scale))*(hi-lo)
@@ -315,5 +339,7 @@ def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_fami
                 ancestry={'entity':FAMILY_ENTITIES[family],
                     'family':family,'component_parent':parent_id,
                     'collaborators':collaborators,
-                    'generation':generation,'mode':mode}))
+                    'generation':generation,'mode':mode,
+                    'transfer':dict(active_transfer) if active_transfer else None,
+                    'interaction_pairs':interactions[:8]}))
     return brood
