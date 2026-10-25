@@ -8,6 +8,7 @@ on:
       - 'tools/projection-loom/projection_loom/**'
       - 'tools/projection-loom/examples/necrospire/**'
       - 'tools/projection-loom/tests/test_wave_xxv_search.py'
+      - 'tools/projection-loom/tests/test_evergreen_five_loops.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,7 +38,7 @@ jobs:
           python -m pip check
       - name: RED contracts now green
         run: |
-          python -m pytest -q tests/test_wave_xxv_search.py tests/test_open_topology.py tests/test_search_strategy_alpha.py
+          python -m pytest -q tests/test_wave_xxv_search.py tests/test_open_topology.py tests/test_search_strategy_alpha.py tests/test_evergreen_five_loops.py
       - name: Fresh v3 generation with native CAD and independently regrown gallery
         run: |
           python -m projection_loom ooda-run \
@@ -65,6 +66,62 @@ jobs:
           assert census['scored_members']>0
           assert json.loads(Path('out/necrospire-v3-feature-grammar-witness/session.json').read_text())['status']=='completed'
           PY
+      - name: Close annotated source and authorized donor route through one native OODA helm
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          from projection_loom.capability_stack import CapabilityRecipe
+          out=Path('out/operator-source-witness')
+          out.mkdir(parents=True,exist_ok=True)
+          Image.new('L',(128,192),255).save(out/'fortress-attention.png')
+          recipe=CapabilityRecipe.load('examples/necrospire/hybrid/recipe_breeding.json')
+          donor=dict(recipe.initial)
+          donor['shaft_width']=3.6
+          (out/'donor.json').write_text(json.dumps({'genome':donor}))
+          PY
+          python -m projection_loom feature-annotate \
+            --project examples/necrospire/project_alpha.json \
+            --region Fortress=out/operator-source-witness/fortress-attention.png \
+            --score-size 128 192 \
+            --out out/operator-source-witness/features.json
+          python -m projection_loom transfer-seed \
+            --source-recipe examples/necrospire/hybrid/recipe_breeding.json \
+            --target-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --donor-genome out/operator-source-witness/donor.json \
+            --donor-id donor-campaign/needle --family needle \
+            --focus shaft_width --authorize \
+            --out out/operator-source-witness/transfer.json
+          python -m projection_loom ooda-run \
+            --project examples/necrospire/project_alpha.json \
+            --capability-recipe examples/necrospire/hybrid/recipe_alpha.json \
+            --out out/operator-source-witness/audited-campaign \
+            --feature-evidence out/operator-source-witness/features.json \
+            --transfer-bundle out/operator-source-witness/transfer.json \
+            --control full-speed --breeding --passes 1 \
+            --offspring-per-family 3 --exact-budget 12 --detail-budget 6 \
+            --seed 43 --score-size 128 192 --finalists 3 \
+            | tee out-alpha-annotated-run.log
+          python scripts/check_compound_epoch.py \
+            --out out/operator-source-witness/audited-campaign \
+            | tee out-alpha-annotated-native-audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('out/operator-source-witness')
+          source=json.loads((root/'features.json').read_text())
+          donor=json.loads((root/'transfer.json').read_text())
+          journal=json.loads((root/'audited-campaign/session.json').read_text())
+          epoch=json.loads((root/'audited-campaign/epoch_001.json').read_text())
+          identity=journal['identity']
+          assert journal['status']=='completed'
+          assert identity['feature_evidence_sha256']
+          assert identity['transfer_bundle_sha256']==donor['sha256']
+          assert any(p.get('ancestry',{}).get('transfer',{}).get('donor_id')=='donor-campaign/needle'
+                     for p in epoch['proposals'].values() if p.get('ancestry',{}).get('transfer'))
+          assert source['view_sha256']
+          PY
       - name: Preserve independent source-bound receipts
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,5 +132,8 @@ jobs:
             tools/projection-loom/out-alpha-grammar-run.log
             tools/projection-loom/out-alpha-grammar-native-audit.json
             tools/projection-loom/out-alpha-grammar-census.json
+            tools/projection-loom/out/operator-source-witness/
+            tools/projection-loom/out-alpha-annotated-run.log
+            tools/projection-loom/out-alpha-annotated-native-audit.json
           if-no-files-found: warn
           retention-days: 30
