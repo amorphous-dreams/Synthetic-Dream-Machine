@@ -282,6 +282,26 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
 
+  /**
+   * Resolves once every hand the wiki raised before this call rests in the store. The wiki's own pending
+   * `change` dispatch runs first, so every edit made so far has marked its title; each marked title then leaves
+   * at once, since the pacing gate's timers decide when a hand leaves in service and never whether a caller
+   * waits for them; and the flushes, acts and parallel-draft persistence those start run to their end. A
+   * fault in a flush rejects the call. A test or a teardown asks this in place of waiting out the pacing window.
+   */
+  async handsRested(): Promise<void> {
+    await this.awaitWikiDispatch();
+    const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
+    await Promise.all([...marked].map(async (title) => {
+      if (this.gate.has(title)) await this.gate.flush(title);
+      else if (!this.activeFlushCounts.has(title)) await this._flushHand(title);
+    }));
+    while (this.gate.titles().length > 0 || this.flushes.size > 0 || this.acts.size > 0 || this.surfacings.size > 0) {
+      await this.gate.flushAll();
+      await Promise.allSettled([...this.flushes, ...this.acts, ...this.surfacings]);
+    }
+  }
+
   isResident(): boolean { return this.resident; }
 
   /** True when a wiki notification repeats the value the last wave left. */
