@@ -71,7 +71,7 @@ class RigidFit:
 
     def to_dict(self):
         obj=asdict(self)
-        obj['schema']='projection-loom/measured-rigid-registration/v1'
+        obj['schema']='projection-loom/measured-rigid-registration'
         payload=json.dumps(obj,sort_keys=True,separators=(',',':')).encode()
         obj['sha256']=sha256(payload).hexdigest()
         return obj
