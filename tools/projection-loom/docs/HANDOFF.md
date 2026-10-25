@@ -12,7 +12,7 @@
 
 **Acted refactors** (new RED regression suite: `tests/test_pre_campaign_hardening.py`):
 
-- **Stable exact audition fairness.** Overflow now rotates across a fixed, sorted family-emitter ring. A cheap preview still chooses the strongest proposal *within* each emitter; changing preview order can no longer cancel across-generation turns. The exact CAD gate remains mandatory.
+- **Stable exact audition fairness.** With more family/method emitters than exact seats, the scheduler interleaves families and rotates *their mutation methods* across generations, rather than favoring a lexical prefix of families. A cheap preview chooses candidates only *within* the emitter's assigned seat; no preview replaces an exact native CAD gate. Non-family emitters retain the documented stable ring.
 - **Native-scoring backfill.** The declared detailed-scoring seats are evaluated first, and native-valid alternatives may fill **remaining** scoring capacity after a primary candidate fails geometry or scoring. Backfill candidates retain `detail_role='backfill'` in the durable checkpoint; no invalid geometry enters scoring or ancestry. Deterministic retries produce byte-identical checkpoints.
 - **Reproductive champion preservation.** Specialist-parent mask deduplication now first protects the globally lowest-loss whole-location genome. A different specialist sharing the exact silhouette cannot silently replace it. Other niches remain candidates.
 - **Comparable Pareto axes.** A mixture of scored rows with inconsistent comparable objectives now fails clearly instead of silently dropping an axis through set intersection.
@@ -22,6 +22,28 @@
 **Comparisons after this cut:** global combined-loss values from older runs included family-local image residuals and **must not be compared as if they used the same fitness definition**. Separately report fixed-source IoU, native validity, exact-mask novelty, niche coverage, scoring utilization, and family survival. Fresh test campaigns require fresh checkpoint directories; the frozen pre-regional pilot remains attributed to its historical source/code/recipe. Use matched native-audition budgets for a causal A/B rather than claiming improvements from a change in objective units.
 
 **CI gates:** the general Projection Loom pytest suite and both native witness workflows now explicitly run the hardening test file. Treat each latest-head completion as evidence; pending, cancelled, earlier-head green, or synthetic tests do not certify the new changes.
+
+---
+
+## Pre-campaign possibility-space research and verified search fixes · 2026-10-25
+
+**✶ Observe → ⏿ Orient → ◇ Decide → ▶ Act → ↺ Hoʻoko:** audited the live source on PR #84, then compared the control paths with research on quality-diversity search, multi-fidelity evaluation, and exposure fairness. These are *engineering motivations*, not imported authority or proof that this algorithm is optimal:
+
+- Mouret & Clune, [Illuminating search spaces by mapping elites](https://arxiv.org/abs/1504.04909) — maintain a repertoire of distinct, measured high-quality forms rather than letting a single global champion monopolize reproduction.
+- Wang et al., [Fairness of Exposure in Stochastic Bandits](https://proceedings.mlr.press/v139/wang21b.html) — distinguish resource allocation fairness from performance, motivating guaranteed emitter opportunities before adaptive rewards.
+- Li & Li, [Multi-Fidelity Methods for Optimization: A Survey](https://doi.org/10.1145/3801959) — model errors and evaluation-cost distinctions demand that cheap surrogates do not certify expensive native geometry.
+
+**High-confidence implementation now landed:**
+
+1. **Cross-generation family/method exposure.** The exact-audition scheduler now interleaves the six families, then rotates their `sobol`, `local`, and `topology` methods. At the 18-emitter/12-seat example budget, both generations together expose every method instead of excluding families at the end of a lexical ring. Detail-score scheduling reserves under-tested methods before exploiting prior rewards.
+2. **Source-bound activation truth.** The lineage archive now retains proposed, exact-attempted, native-valid, scored, rejected, audited-only, deferred and error outcomes for each declared constructive switch, separately from its scored elite population. No active but unscored feature is called genetically unreachable, and no syntactically reachable feature is called native-valid without a CAD audit.
+3. **Attributable discrete topology.** The topology emitter flips one selected switch at a time, including Joining and optional structural grammar choices, allowing a failure to be attributed to a real capability rather than a bundle of simultaneous switches.
+4. **Model abstention for sparse evidence.** The surrogate needs a dimension-aware sample floor; interaction inference refuses underdetermined or rank-deficient additive baselines. A prediction at an unseen combination of conditional activation states abstains rather than borrowing loss estimates from a structurally different topology. Its threshold uses the actual CAD semantic value `0.5`, not the numerical midpoint of the bounds. Surrogate priority remains advisory; source-bound construction and native audit remain mandatory.
+5. **Regression and native probes.** `tests/test_pre_campaign_audit.py`, `tests/test_pre_campaign_search_research.py` and `tests/test_pre_campaign_hardening.py` cover exposure, funnel accounting, source-local elites, underdetermined learning, topology cohorts, activation thresholds, and rejection/backfill. A directed source-bound Joining test builds the optional native surface and socket without depending on random breeding or scoring-seat assignment.
+
+**Actual native receipt:** implementation head `71950b7372f7f558226575e401d0dbf828e0f9b9`, [two-generation coevolution #40228420157](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40228420157) **success**. It generated **36** candidates, exact-audited **24**, scored **12**, and its focused test stage passed **44** tests. It generated **3 Joining-active** proposals; **1** was exact-audited, **1** native-valid, and **1** scored. Two were deferred by the finite exact budget; none was spuriously labeled invalid. The independent OODA-HA audit returned completed with **3** finalists, and 25 declared loci remain family-reachable. The [grammar + annotation witness #40228420149](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40228420149) and [Projection Loom CI #40228420151](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40228420151) also **passed** on that implementation SHA. Check the latest-head held-out and whole-repository gates independently; do not inherit an earlier result.
+
+**↺ Limits not promoted into claims:** the short fixed-budget control does not prove improved ultimate silhouette IoU, six-generation lineage survival, universally viable Joining geometries, multi-view registration, or CAD/poly Boolean fusion. The old frozen pilot in `experiments/breeding_20261025/` remains untouched. The eventual full-generation comparison MUST keep native audit budgets, source pose and recipe identity explicit; comparison of raw combined losses across the earlier objective-policy change is invalid. No new generation beyond the bounded two-epoch witnesses has been authorized or run.
 
 ---
 
