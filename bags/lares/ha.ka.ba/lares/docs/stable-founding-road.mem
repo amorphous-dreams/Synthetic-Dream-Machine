@@ -533,6 +533,7 @@ The one labelled re-bake and rename, followed by the founding format cut.
 
 * ''Integrity owed: the bake's cross-product'' (`X0`, touching `K15` step 6, `W26`, `G37`). Its witness: one matrix over the pre-bake and post-bake artifacts, every old CID refused after the bake and a fresh two-of-two founding standing, rather than greens read row by row.
 * ''Integrity owed: the refold's bound'' (`G15`). Its witness: a roll storm that completes in bounded passes, one holder at a time, with no overlap and no starved holder.
+* ''Integrity owed: the habit flip at the bake'' (`X0`, `G37`). Before the bake the house runs re-genesis freely, since no CRDT document survives; after it, a re-genesis costs every CID a second operator pins. Its witness: a census of each instrument, fixture, brief and runbook line that assumes a free re-genesis, each named to flip or retire inside the bake's own commit, never after it.
 
 !!! The rows
 
@@ -627,6 +628,7 @@ Rows awaiting the operator’s ruling or hand; the first five gate shapes or thr
 !!! Seven-league stride notes
 
 * ''Research pair: device unlock and the passkey's lifecycle'' (`B3`, the operator's device measures). Its question: which lifecycle events keep or void an unlock across the tablet and both phones, and which guards a passkey slot needs before it leaves experiment. Lenses: web platform behaviour / human factors and recovery.
+* ''The bake's critical path in the operator's hands'' (`X0`). Once strides 1 to 3 stand built, these gate the ceremony and no lane can supply them: guardian count and threshold (`K18`, #/open); the domain and its two credential files (`A2`); one run on the real LAN (`A4`); the device measures (`B3`); the second machine and its operator for the fresh start (`X3`). The operator gathers them at their own pace; none blocks a lane today.
 
 !!! The rows
 
@@ -900,6 +902,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dZNkzxDpN-zIWyPGG3Y-aECSmOo77Dm8svEzbGwqbfg
+<<^ code="&#x0003;">>ni:///sha-256;Fca3b9jNgSwaGw9uD7-zQAuqZA1G2BXEmgMISyeRn8M
 
 <<^ code="&#x0004;" -> to="?">>
