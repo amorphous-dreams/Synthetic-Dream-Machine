@@ -24,8 +24,10 @@ def test_architecture_witness_rejects_retired_name_and_second_helm(tmp_path):
     package = tmp_path / 'projection_loom'
     shutil.copytree(ROOT / 'projection_loom', package)
     (package / 'ooda.py').write_text('def run_ooda_epochs(): pass\n')
+    (package / 'second_helm.py').write_text('def run_ooda_ha_epochs(): pass\n')
     issues = inspect_source_tree(tmp_path)
     assert any('Retired module' in item for item in issues)
+    assert any('Retired four-phase OODA entrypoint' in item for item in issues)
     assert any('More than one OODA-HA controller' in item for item in issues)
 
 
