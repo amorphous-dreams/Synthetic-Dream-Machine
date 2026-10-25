@@ -127,3 +127,21 @@ def test_candidate_proposal_rejects_untyped_genomes_before_native_audition():
         WideEpoch(location="demo",source_digests={},construction_digest="c"*64,
              objectives=("silhouette",),score_state="synthetic",
              checkpoint="/dev/null",max_exact=True,max_detail=1)
+
+
+def test_detail_slots_try_unscored_family_methods_before_exploiting_incumbents():
+    from projection_loom.epochs import Proposal
+    from projection_loom.selection import allocate_detail_seats
+    from projection_loom.campaign import FAMILY_FOCUSES
+    proposals=[
+        Proposal(f"{family}-{mode}",f"family:{family}:{mode}",{"x":.5})
+        for family in FAMILY_FOCUSES
+        for mode in ("local","sobol","topology")]
+    rewards={f"family:{family}:local":{
+        "scored":12,"exploration_value":10.0}
+        for family in FAMILY_FOCUSES}
+    chosen=allocate_detail_seats(proposals,max_detail=6,
+                                 emitter_turn=0,emitter_performance=rewards)
+    assert len(chosen)==6
+    assert {p.emitter.split(":")[1] for p in chosen}==set(FAMILY_FOCUSES)
+    assert all(not p.emitter.endswith(":local") for p in chosen)
