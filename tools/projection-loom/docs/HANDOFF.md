@@ -4,6 +4,27 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Pre-campaign search hardening · 2026-10-25
+
+**Bearing:** improve source-bound search integrity and native-evaluation yield *before* authorizing a full multi-epoch Necrospire campaign. These are high-confidence corrections to the existing single OODA-HA helm; no full six-generation campaign, source promotion, external registration claim, or CAD/polymesh Boolean fusion follows from them.
+
+**Research boundary:** the public [pyribs scheduler/archive documentation](https://docs.pyribs.org/en/latest/api/ribs.schedulers.Scheduler.html) separates emitter proposals, expensive evaluations, and measured archive updates; the [pyribs bandit scheduler](https://docs.pyribs.org/en/latest/api/ribs.schedulers.BanditScheduler.html) distinguishes measured exploration rewards from evaluation truth. NumPy's [random generator policy](https://numpy.org/neps/nep-0019-rng-policy.html) supports separate deterministic generators. Those are outside conceptual references, not canon or direct algorithmic dependencies. The concrete repairs below were derived from **live Loom source code**, not assumed pyribs behavior.
+
+**Acted refactors** (new RED regression suite: `tests/test_pre_campaign_hardening.py`):
+
+- **Stable exact audition fairness.** Overflow now rotates across a fixed, sorted family-emitter ring. A cheap preview still chooses the strongest proposal *within* each emitter; changing preview order can no longer cancel across-generation turns. The exact CAD gate remains mandatory.
+- **Native-scoring backfill.** The declared detailed-scoring seats are evaluated first, and native-valid alternatives may fill **remaining** scoring capacity after a primary candidate fails geometry or scoring. Backfill candidates retain `detail_role='backfill'` in the durable checkpoint; no invalid geometry enters scoring or ancestry. Deterministic retries produce byte-identical checkpoints.
+- **Reproductive champion preservation.** Specialist-parent mask deduplication now first protects the globally lowest-loss whole-location genome. A different specialist sharing the exact silhouette cannot silently replace it. Other niches remain candidates.
+- **Comparable Pareto axes.** A mixture of scored rows with inconsistent comparable objectives now fails clearly instead of silently dropping an axis through set intersection.
+- **Native evidence admission.** The lineage archive refuses scored candidates without a valid, single-solid native CAD/void audit, named witness, attributed evidence state, finite nonnegative losses, and an exact SHA-256 visual mask. Refusal leaves the archive and generation history untouched.
+- **Local ≠ global fitness.** The family-specific `regional` image residual remains available to specialization but is excluded from the shared whole-location `combined_loss`. The objective partition is part of the immutable epoch identity, and reentry with different partitions fails. Global rankings now compare the same source-view measurements across families.
+
+**Comparisons after this cut:** global combined-loss values from older runs included family-local image residuals and **must not be compared as if they used the same fitness definition**. Separately report fixed-source IoU, native validity, exact-mask novelty, niche coverage, scoring utilization, and family survival. Fresh test campaigns require fresh checkpoint directories; the frozen pre-regional pilot remains attributed to its historical source/code/recipe. Use matched native-audition budgets for a causal A/B rather than claiming improvements from a change in objective units.
+
+**CI gates:** the general Projection Loom pytest suite and both native witness workflows now explicitly run the hardening test file. Treat each latest-head completion as evidence; pending, cancelled, earlier-head green, or synthetic tests do not certify the new changes.
+
+---
+
 ## Five inward OODA-HA loops · 2026-10-25
 
 **Live working branch:** `feature/green-jello-dinosaur-5--projection-loom` (PR #84), boot `feature/green-jello-dinosaur-5` at `bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem`. **Inspected implementation head before this documentary commit:** `3927d4327f22a997ce24f4531e6e058b8562a2e3`. Never infer CI success for a newer SHA from an older green run. Preserve the frozen pre-regional Necrospire archive and its historical schema/source receipts; new runs use new output directories.

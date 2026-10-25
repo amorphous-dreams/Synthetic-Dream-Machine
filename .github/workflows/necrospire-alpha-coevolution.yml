@@ -8,6 +8,7 @@ on:
       - '.github/workflows/necrospire-alpha-coevolution.yml'
       - 'tools/projection-loom/projection_loom/**'
       - 'tools/projection-loom/tests/test_search_strategy_alpha.py'
+      - 'tools/projection-loom/tests/test_pre_campaign_hardening.py'
       - 'tools/projection-loom/examples/necrospire/**'
   workflow_dispatch:
 
@@ -43,7 +44,8 @@ jobs:
           python scripts/check_env.py | tee out-alpha-env.json
       - name: Verify source-bound breeding contracts
         run: |
-          python -m pytest -q tests/test_search_strategy_alpha.py \
+          python -m pytest -q tests/test_pre_campaign_hardening.py \
+            tests/test_search_strategy_alpha.py \
             tests/test_campaign_archive.py \
             tests/test_campaign_breeding.py \
             tests/test_campaign_controller.py \
