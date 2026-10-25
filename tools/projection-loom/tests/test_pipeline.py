@@ -33,7 +33,7 @@ def test_genome_file_holds_no_triangle_mesh(tmp_path):
     a=p.grow()
     summary=p.export(a,tmp_path,p.initial,size=(64,96))
     stored=json.loads((tmp_path/'genome.json').read_text())
-    assert stored['schema']=='projection-loom/genome/v2'
+    assert stored['schema']=='projection-loom/genome'
     assert 'vertices' not in stored and 'faces' not in stored
     assert summary['contacts']['valid']
     assert (tmp_path/'solid.step').stat().st_size>1000
