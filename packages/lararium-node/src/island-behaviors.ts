@@ -13,7 +13,7 @@
 import { mkWikiVerbResult } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
-import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
+import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
@@ -72,6 +72,22 @@ export function carrierFileOf(exportFn: (uri: string) => CarrierFile | null): (u
   };
 }
 
+/**
+ * THE FAR SIDE CLOSES: a watch that resolves once the island's Repo holds no sync peer, at once where it holds
+ * none now, else when its last peer disconnects. The event is the link's own; no clock decides.
+ */
+export function farSideClosedOf(repo: Pick<IslandContext["repo"], "peers" | "networkSubsystem">): { readonly promise: Promise<void>; readonly cancel: () => void } {
+  const net = repo.networkSubsystem;
+  let cancel = (): void => {};
+  const promise = new Promise<void>((resolve) => {
+    if (repo.peers.length === 0) { resolve(); return; }
+    const onGone = (): void => { if (repo.peers.length === 0) { cancel(); resolve(); } };
+    cancel = () => { net.off("peer-disconnected", onGone); };
+    net.on("peer-disconnected", onGone);
+  });
+  return { promise, cancel: () => cancel() };
+}
+
 /** The carrier door a projector mounts over an island's own VM. */
 export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (uri: string) => Promise<CarrierFile | null> {
   return carrierFileOf((uri) => exportCarrierFile(tw5, uri));
@@ -121,6 +137,11 @@ export function mountDiskProjection(
   // Where a bag stands in this island's composition: the settle word tells a carrier a higher bag shadows from one
   // whose records have not reached the view yet.
   layerIndexOf: (bagId) => ctx.composite.layerIndexOf(bagId),
+  // THE SETTLE WORD FOLLOWS HEADS: the wiki has landed a bag's document up to the heads a gesture named
+  // (`wikiLandedCovers`), and the far side has closed when the island's Repo holds no sync peer: no record
+  // comes through a link that closed (`farSideClosedOf`).
+  viewHolds: (bagId, _uri, heads) => wikiLandedCovers(ctx.tw5, bagId, heads),
+  farSideClosed: () => farSideClosedOf(ctx.repo),
   // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.

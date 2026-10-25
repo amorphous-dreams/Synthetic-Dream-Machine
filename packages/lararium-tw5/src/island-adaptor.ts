@@ -196,6 +196,12 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
 export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   readonly name = "lararium-island";
   readonly ledger = new LandedLedger();
+  /**
+   * The heads of each bag's document this shore has landed in the wiki, from the envelope of the last change it
+   * landed (the heads AT that change, never the layer's heads when the shore looked). The settle word follows
+   * the heads a gesture landed through this account (`landedCovers`).
+   */
+  private readonly landedHeads = new Map<string, readonly string[]>();
   private readonly gate: HandGate;
   private landing: WaveLanding | null = null;
   private engineApply: ((change: LarTiddlerChange) => void) | null = null;
@@ -301,6 +307,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
     const title = change.title;
     const wiki = this.tw5.$tw.wiki;
+    const envelopeHeads = change.heads;
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
@@ -359,6 +366,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
+    if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
     this.sent.delete(title);
     this.handBase.delete(title);
@@ -721,6 +729,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
     this.resident = false;
     this.ledger.clear();
+    this.landedHeads.clear();
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
@@ -743,6 +752,23 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
   // Bases and the cross-bag check
   // ---------------------------------------------------------------------------
+
+  /** Keep the latest heads this shore landed for `bag`; a landing whose heads do not cover the kept ones leaves them. */
+  private _noteLanded(bag: string, heads: readonly string[]): void {
+    const kept = this.landedHeads.get(bag);
+    if (kept !== undefined && !this._storeFor(bag)?.coversHeads?.(heads, kept)) return;
+    this.landedHeads.set(bag, heads);
+  }
+
+  /**
+   * True where this shore has landed, in the wiki, every change of `bag`'s document up to `named`: the heads of
+   * its last landed change cover them. A store with no causal history, and a bag this shore landed nothing of,
+   * answer false.
+   */
+  landedCovers(bag: string, named: readonly string[]): boolean {
+    const have = this.landedHeads.get(bag);
+    return have !== undefined && this._storeFor(bag)?.coversHeads?.(have, named) === true;
+  }
 
   /** The store of any layer for `bag`, or null when the composite offers none (a double without layers). */
   private _storeFor(bag: string): LarTiddlerStore | null {

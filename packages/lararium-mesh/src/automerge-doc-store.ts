@@ -27,7 +27,7 @@
 
 import { assertStorableTitle } from "./title-law.js";
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
-import { hasHeads } from "@automerge/automerge";
+import { decodeChange, getChangesSince, hasHeads } from "@automerge/automerge";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
@@ -279,6 +279,23 @@ export class AutomergeDocStore implements LarTiddlerStore {
   headsNow(): readonly string[] | null {
     if (!this.handle.doc()) return null;
     return Object.freeze([...decodeHeads(this.handle.heads())]);
+  }
+
+  /**
+   * True where the document, read as of the heads `have`, holds every head in `named`: the named changes sit in
+   * the causal past of `have`. A reader that landed this document's state at `have` (the wiki's landed ledger)
+   * asks whether it landed the changes `named` too. A heads list this document never saw, or a document that
+   * has not hydrated, answers false.
+   */
+  coversHeads(have: readonly string[], named: readonly string[]): boolean {
+    try {
+      const standing = this.handle.doc();
+      // Both lists name changes this document holds; `have` covers `named` where no named change lies beyond
+      // `have` (the changes since `have` are exactly the ones outside its causal past).
+      if (!standing || !hasHeads(standing, have as string[]) || !hasHeads(standing, named as string[])) return false;
+      const beyond = new Set(getChangesSince(standing, have as string[]).map((change) => decodeChange(change).hash));
+      return named.every((head) => !beyond.has(head));
+    } catch { return false; }
   }
 
   /** Attach the handle's causal snapshot to its state envelope when its API exposes heads. */

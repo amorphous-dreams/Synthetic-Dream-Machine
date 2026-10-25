@@ -115,6 +115,21 @@ export interface LarDiskProjectorOptions {
    * one whose records have not reached the view yet. Absent, the word reads every other origin as not arrived.
    */
   readonly layerIndexOf?: (bagId: string) => number;
+  /**
+   * THE VIEW FOLLOWS HEADS. True where the wiki's view of `uri` has landed a record of `bagId` whose causal
+   * heads include every head in `heads` (the island's landed ledger, read against the bag's document). A
+   * settle word that names the heads its gesture landed reads the arrival here and not in the bytes alone, so
+   * a view that moved past the named records still settles the word. Absent, the word follows the render
+   * hash alone.
+   */
+  readonly viewHolds?: (bagId: string, uri: string, heads: readonly string[]) => boolean;
+  /**
+   * THE FAR SIDE CLOSES. A watch that resolves once the bag's document can receive nothing more from where
+   * the named heads would come from (the island's last sync peer disconnected). A settle word that names
+   * heads and waits for them ends on this event, naming the carriers that never arrived. `cancel` drops the
+   * watch when the word ends first. Absent, only the arrival of the records, a later word or a stop ends a word.
+   */
+  readonly farSideClosed?: (bagId: string) => { readonly promise: Promise<void>; readonly cancel: () => void };
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
   /**
@@ -352,6 +367,8 @@ export class LarDiskProjector {
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
   private readonly layerIndexOf: ((bagId: string) => number) | undefined;
+  private readonly viewHolds: ((bagId: string, uri: string, heads: readonly string[]) => boolean) | undefined;
+  private readonly farSideClosed: ((bagId: string) => { readonly promise: Promise<void>; readonly cancel: () => void }) | undefined;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
   private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
@@ -391,6 +408,8 @@ export class LarDiskProjector {
     this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
     this.layerIndexOf = opts.layerIndexOf;
+    this.viewHolds = opts.viewHolds;
+    this.farSideClosed = opts.farSideClosed;
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.onConflictResolved = opts.onConflictResolved;
@@ -1114,7 +1133,18 @@ export class LarDiskProjector {
    *              gave up on never pile; a word that already marked the carrier's reconcile waits for that
    *              reconcile alone;
    *   stopped    the projector stopped before the records arrived, or before the reconcile marked for them ran;
+   *   closed     the far side closed while the named heads (below) had not arrived: the records can never come
+   *              through the link that carried the gesture, and the word ends naming the carrier;
    *   failed     the reconcile marked for them threw: the file stands as the failure left it.
+   *
+   * THE WORD FOLLOWS THE HEADS IT NAMES. A gesture that landed records also names, per carrier, the causal
+   * heads of the bag's document it landed (`heads`). The word then reads the arrival from the view's own
+   * ledger (`viewHolds`): once the view holds those heads, the records have arrived, whether or not the bytes
+   * still render to the named hash, and the word marks the reconcile that projects the state the view holds
+   * (the named records or a later one). Without a hash match the heads alone end the wait, so a view that
+   * moved past the named records never keeps a word waiting. A word that names heads also listens for the far
+   * side to close (`farSideClosed`): the close brings one last look, and a carrier the look still finds
+   * absent reads `closed`. A word with no heads claims nothing about the link and follows the hash alone.
    *
    * A HANDSHAKE, NO CLOCK. Records a gesture landed elsewhere reach this wiki by sync, at no instant a caller
    * can name, and the wiki raises its change event on a later tick than the view moves. So the word never
@@ -1135,15 +1165,17 @@ export class LarDiskProjector {
    * reads what the projection left. A carrier whose records never moved settles at the first look, at the
    * cost of one reconcile that writes nothing.
    */
-  async settled(bagId: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string }>): Promise<
+  async settled(bagId: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>): Promise<
     | { readonly mirrored: false }
     | {
         readonly mirrored: true; readonly settled: readonly string[]; readonly elsewhere: readonly string[];
         readonly superseded: readonly string[]; readonly stopped: readonly string[]; readonly failed: readonly string[];
+        readonly closed: readonly string[];
       }
   > {
     if (!this.mirrors.some((m) => m.bagId === bagId)) return { mirrored: false };
     const waiting = new Map(carriers.map((c) => [c.uri, c.records] as const));
+    const named = new Map(carriers.filter((c) => c.heads !== undefined && c.heads.length > 0).map((c) => [c.uri, c.heads!] as const));
     const marked: string[] = [];
     const elsewhere: string[] = [];
     const failed: string[] = [];
@@ -1159,10 +1191,16 @@ export class LarDiskProjector {
     }
     this.settleInboxes.add(inbox);
     if (took) this.wakeWaiters(new Set());
+    // THE FAR SIDE'S CLOSE ends a word that named heads: no record comes through a link that closed. The close
+    // brings one more look of every carrier (`afterClose`), and what that look still finds absent reads `closed`.
+    const far = named.size > 0 ? this.farSideClosed?.(bagId) ?? null : null;
+    let closed = false as boolean;
+    const farClosed = far === null ? null : far.promise.then(() => { closed = true; inbox.all = true; });
     try {
       for (;;) {
         // Arm the wake BEFORE the look, so an event that comes while the look awaits a render wakes the next look.
         const wake = this.nextWake();
+        const afterClose = closed;
         try {
           const look = inbox.all ? null : new Set(inbox.roots);
           inbox.roots.clear(); inbox.all = false;
@@ -1174,6 +1212,17 @@ export class LarDiskProjector {
             if (origin !== bagId && this.ranksAbove(origin, bagId)) { waiting.delete(uri); elsewhere.push(uri); continue; }
             // Only this bag's own records can settle the word: a view another bag answers renders nothing here.
             if (origin !== bagId) continue;
+            // THE VIEW HOLDS THE NAMED HEADS: the records arrived (the bytes may render a later state, which the
+            // marked reconcile projects), so no render decides this carrier.
+            const heads = named.get(uri);
+            if (heads !== undefined && this.viewHolds?.(bagId, uri, heads) === true) {
+              waiting.delete(uri);
+              marked.push(uri);
+              watches.set(uri, this.watchReconcile(uri));
+              if (this.gate !== null) this.gate.mark(uri);
+              else await this.reconcileWatched(uri).catch(() => undefined);
+              continue;
+            }
             let hash: string;
             try {
               const file = await this.carrierFileFn(uri);
@@ -1203,26 +1252,32 @@ export class LarDiskProjector {
             }
           }
           if (waiting.size === 0 || this.stopping) break;
+          // A look that followed the close ends the word: what it found absent can never come.
+          if (afterClose) break;
           if (inbox.all || inbox.roots.size > 0) continue;   // a change came during the look: look again now
-          await wake.promise;
+          await (farClosed === null ? wake.promise : Promise.race([wake.promise, farClosed]));
         } finally {
           wake.cancel();
         }
       }
       await this.idle();
     } finally {
+      far?.cancel();
       this.settleInboxes.delete(inbox);
       for (const [uri, watch] of watches) this.releaseWatch(uri, watch);
     }
     const settled: string[] = [];
-    const stopped = [...waiting.keys()];
+    // What still waits when the loop ends: the far side's close names it `closed`; a stop names it `stopped`.
+    const left = [...waiting.keys()];
+    const stopped = closed && !this.stopping ? [] : left;
+    const closedUris = closed && !this.stopping ? left : [];
     for (const uri of marked) {
       const watch = watches.get(uri)!;
       if (watch.threw) failed.push(uri);
       else if (watch.ran) settled.push(uri);
       else stopped.push(uri);   // the projector stopped before the marked reconcile ran
     }
-    return { mirrored: true, settled, elsewhere, superseded: inbox.superseded, stopped, failed };
+    return { mirrored: true, settled, elsewhere, superseded: inbox.superseded, stopped, failed, closed: closedUris };
   }
 
   /** True where the composition ranks `origin` above `bagId`; false where below, unmounted or unknown. */

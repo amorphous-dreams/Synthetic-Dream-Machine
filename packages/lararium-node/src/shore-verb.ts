@@ -12,7 +12,8 @@
  *                  cursor); `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
  *   settle         answer once the projection that landed records cause has run (`lares ingest --apply`
- *                  names each carrier it landed and the hash its records render)
+ *                  names each carrier it landed, the hash its records render and the causal heads it landed;
+ *                  the word ends when the wiki holds them, or by name when the far side closes first)
  *   take-records   take the records' side of one standoff, named by its key
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
@@ -141,11 +142,15 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
   if (op === "settle") {
     // THE SETTLE WORD: answer once the projection the named records cause has run (`settled`). A bag that no
     // mirror of this island holds answers at once (`mirrored: false`): this island projects nothing of it.
+    // A carrier may name the causal heads its gesture landed (`heads`: a list of head hashes). The word follows
+    // them through the view, and it ends by name when the far side closes before they arrive.
+    const headsOf = (c: Record<string, unknown>): readonly string[] | null | undefined =>
+      c["heads"] === undefined ? undefined : Array.isArray(c["heads"]) && (c["heads"] as unknown[]).every((h) => typeof h === "string" && h !== "") ? (c["heads"] as string[]) : null;
     const carriers = Array.isArray(args["carriers"])
-      && (args["carriers"] as unknown[]).every((c) => c !== null && typeof c === "object" && text((c as Record<string, unknown>)["uri"]) !== null && text((c as Record<string, unknown>)["records"]) !== null)
-      ? (args["carriers"] as Array<{ uri: string; records: string }>).map((c) => ({ uri: c.uri, records: c.records }))
+      && (args["carriers"] as unknown[]).every((c) => c !== null && typeof c === "object" && text((c as Record<string, unknown>)["uri"]) !== null && text((c as Record<string, unknown>)["records"]) !== null && headsOf(c as Record<string, unknown>) !== null)
+      ? (args["carriers"] as Array<Record<string, unknown>>).map((c) => { const heads = headsOf(c); return { uri: c["uri"] as string, records: c["records"] as string, ...(heads ? { heads } : {}) }; })
       : null;
-    if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records }`)" };
+    if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records, heads? }`, `heads` a list of head hashes)" };
     const answer = await projector.settled(bag, carriers);
     if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 };
     // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32). A
@@ -155,6 +160,9 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     const counts = { settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length, supersededCount: answer.superseded.length, settled: answer.settled, elsewhere: answer.elsewhere, superseded: answer.superseded };
     if (answer.failed.length > 0) {
       return { ok: false, op, bag, refusal: "projection-failed", why: `the reconcile threw for ${answer.failed.length} carrier(s); their files stand as the failure left them`, failed: answer.failed, failedCount: answer.failed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
+    }
+    if (answer.closed.length > 0) {
+      return { ok: false, op, bag, refusal: "far-side-closed", why: `the far side closed before the heads of ${answer.closed.length} carrier(s) arrived; their records can no longer come through that link`, closed: answer.closed, closedCount: answer.closed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
     }
     return answer.stopped.length > 0
       ? { ok: false, op, bag, refusal: "projector-stopped", why: `the projection stopped before ${answer.stopped.length} carrier(s) settled`, stopped: answer.stopped, stoppedCount: answer.stopped.length, ...counts }

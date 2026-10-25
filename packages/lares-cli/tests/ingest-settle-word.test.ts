@@ -45,12 +45,14 @@ function seed(n: number): ScanRow[] {
 }
 
 const islandRender = (c: ScanRow): string => `sha256:${"a".repeat(60)}${c.uri.slice(-3)}r`;
-function island(decide: (c: ScanRow) => Record<string, unknown>) {
+function island(decide: (c: ScanRow) => Record<string, unknown>, extra: Record<string, unknown> = {}) {
   return async (opts: SubmitIngestOpts): Promise<SubmitResult> => {
     const carriers = opts.candidates.map((c) => ({ uri: c.uri, ...decide(c) }));
-    return { status: "done", requestId: "req-1", results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput({ carriers }) } } } as SubmitResult;
+    return { status: "done", requestId: "req-1", results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput({ carriers, ...extra }) } } } as SubmitResult;
   };
 }
+const HEAD_A = "a".repeat(64);
+const HEAD_W = "b".repeat(64);
 const opts = (candidates: ScanRow[]): SubmitIngestOpts => ({ source: "file:///scratch", toBag: BAG, candidates, did: "did:test" });
 
 describe("the gesture names what its records moved", () => {
@@ -70,6 +72,27 @@ describe("the gesture names what its records moved", () => {
     expect(settled.rendered).toHaveLength(40);
     const one = candidates.find((c) => c.uri === uriOf(7))!;
     expect(settled.rendered.find((r) => r.uri === uriOf(7))?.records).toBe(carrierHash(canonicalizeCarrierText(one.uri, one.text)!));
+  });
+});
+
+describe("the gesture names the heads that carried its records (G36)", () => {
+  test("under the cap: a row's own heads ride its rendered entry; a row that names none rides the wave's heads; a store with no history names none", async () => {
+    const candidates = seed(3);
+    const tree = new SyncedTree(join(root, "synced"));
+    const settled = await settleIngest(opts(candidates), tree, island((c) =>
+      c.uri === uriOf(0) ? { decision: "ingest", canonicalHash: islandRender(c), heads: [HEAD_A] } : { decision: "ingest", canonicalHash: islandRender(c) }, { heads: [HEAD_W] }));
+    expect(settled.rendered.find((r) => r.uri === uriOf(0))?.heads).toEqual([HEAD_A]);
+    expect(settled.rendered.find((r) => r.uri === uriOf(1))?.heads).toEqual([HEAD_W]);
+    const bare = await settleIngest(opts(candidates), new SyncedTree(join(root, "synced-2")), island((c) => ({ decision: "ingest", canonicalHash: islandRender(c) })));
+    expect(bare.rendered.every((r) => r.heads === undefined)).toBe(true);
+  });
+
+  test("past the cap: a carrier no row named rides the wave's heads", async () => {
+    const candidates = seed(40);
+    const tree = new SyncedTree(join(root, "synced"));
+    const settled = await settleIngest(opts(candidates), tree, island(() => ({ decision: "ingest" }), { heads: [HEAD_W] }));
+    expect(settled.rendered).toHaveLength(40);
+    expect(settled.rendered.every((r) => r.heads?.[0] === HEAD_W)).toBe(true);
   });
 });
 
@@ -105,6 +128,18 @@ describe("the gesture asks the settle word", () => {
       BAG, [{ uri: "u1", records: "h1" }, { uri: "u2", records: "h2" }]);
     expect(sent).toEqual([{ op: "settle", bag: BAG, carriers: [{ uri: "u1", records: "h1" }, { uri: "u2", records: "h2" }] }]);
     expect(read).toEqual({ settled: true, shore: true, mirrored: true, settledCount: 2, elsewhereCount: 1, supersededCount: 0 });
+  });
+
+  test("it sends the heads a carrier named, and none for a carrier that named none", async () => {
+    const sent: Array<Readonly<Record<string, unknown>>> = [];
+    await askSettle(async (a) => { sent.push(a); return answer(true, { ok: true, op: "settle", mirrored: true, settledCount: 2 }); },
+      BAG, [{ uri: "u1", records: "h1", heads: [HEAD_A] }, { uri: "u2", records: "h2" }]);
+    expect(sent[0]!["carriers"]).toEqual([{ uri: "u1", records: "h1", heads: [HEAD_A] }, { uri: "u2", records: "h2" }]);
+  });
+
+  test("a far side that closed reads as no word, under its own name", async () => {
+    expect(await askSettle(async () => answer(false, { ok: false, refusal: "far-side-closed", why: "the far side closed" }), BAG, [{ uri: "u", records: "h", heads: [HEAD_A] }]))
+      .toMatchObject({ settled: false, refusal: "far-side-closed" });
   });
 
   test("CONTROL: an island's refusal reads as no word, under its own name; a bag no mirror holds reads as settled with nothing to wait on", async () => {

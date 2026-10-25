@@ -1029,6 +1029,18 @@ function recordsSide(canonicalHash: string | undefined): { canonicalHash?: strin
   return canonicalHash ? { canonicalHash } : {};
 }
 
+/**
+ * The causal heads of the target bag's document NOW, named on an `ingest` row after its records landed. The
+ * settle word follows them through the wiki's view: the row names the changes that carried THIS carrier's
+ * records, so a view that holds them has the records or a later state. A store with no causal history names
+ * none, and the word then follows the render hash alone.
+ */
+async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: string[] }> {
+  const store = await access.write(bag);
+  const heads = typeof store?.getHeads === "function" ? await store.getHeads() : null;
+  return heads !== null && heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {};
+}
+
 /** True when a carrier's `.meta` sidecar text declares the per-record disk opt-out (`disk-projection: no`). */
 function declaresNoProjection(meta: string | undefined): boolean {
   return meta !== undefined && /^disk-projection:[ \t]*no[ \t]*$/m.test(meta);
@@ -1192,7 +1204,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // it laid, which a bag sink has no rail to raise. An `ingest` and a `noop` row each carry the hash
       // of the render the records hold after the decision: the records side of the base the gesture pins.
       results.push(
-        placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash) }, placed.warnings) :
+        placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash), ...(await landedHeads(access, action.toBag)) }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :
         placed.decision === "refuse"  ? { uri, decision: "refuse", grade: placed.grade, warnings: [...placed.warnings] } :
                                         { uri, decision: "conflict", reason: placed.reason, grade: placed.grade, warnings: [...placed.warnings] },
@@ -1446,7 +1458,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     }
     // A PACK never reaches this shared tail — it reconciles per-member and records BOTH
     // aside maps above, then `continue`s. Only memetic + single-native carriers land here.
-    results.push({ ...receipt, landed: freshTitles.size, tombstoned });
+    results.push({ ...receipt, landed: freshTitles.size, tombstoned, ...(await landedHeads(access, action.toBag)) });
   }
 
   // ── apply the re-links ───────────────────────────────────────────────────
@@ -1483,6 +1495,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
+    // THE WAVE'S HEADS: the target bag's document after every carrier of this wave landed. Rows that stay behind
+    // the audit cap name no heads of their own; the gesture follows these through the view for them.
+    ...(await landedHeads(access, action.toBag)),
   };
 }
 
