@@ -42,6 +42,27 @@ verifies the new port, with full nested-epoch tests retaining behavior
 witnesses. Run a new output directory after this code move because the
 construction fingerprint necessarily changes.
 
+## Typed evidence and capability receipts
+
+The frozen views in evidence_receipts.py recognize native BRep material,
+polygon surfaces, CAD/mesh socket proximity, compound rendering, registered
+source frames, operator preferences and capability execution states. A
+presentation envelope carries a domain and a status; it cannot provide a
+universal validity, structural certificate or source-authenticity flag.
+
+Only CAD audits can admit a fused BRep. Only independent polygon/socket
+audits can admit visual compound rendering. Native location-stack
+registration validates frames and stated anchors, not actual survey
+authenticity. Only an Operator can submit steering preferences, which do
+not override geometry. Trusted capability execution receipts have their
+own complete/inactive/inactive-dependency/error states, distinct from
+candidate scores and visual fitness.
+
+review.py, gallery.py, capability_stack.py and fractal_ooda_ha.py call the
+matching typed views at their existing authority boundaries. Native
+receipts and persisted schema versions remain unchanged. See the
+red-first negative controls in tests/test_evidence_receipts.py.
+
 ## Canonical encoding without a universal evidence identity
 
 `provenance_encoding.canonical_json_sha256()` captures only one existing

@@ -4,6 +4,33 @@
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
 
+## Wave XVIII — typed native receipt views, distinct truth scopes
+
+**Observe/Orient:** Native CAD, polygon, socket, frame-registration, operator
+preference and trusted capability execution each have different gates.
+A shared renderer MUST NOT treat their valid/verified/complete/requested labels
+as comparable certificates.
+
+**RED:** Commit b496238 adds tests/test_evidence_receipts.py against an
+initially absent evidence_receipts module. It has negative controls for
+CAD/mesh category swaps, false cross-kernel fusion, misrepresented socket
+distances, unanchored registration, advisory versus operator authority and
+capability execution being confused with candidate scoring.
+
+**Act:** Commit 5452e1f adds immutable typed native receipt views and a
+domain/status presentation envelope WITHOUT any generic "valid" boolean.
+The review and gallery renderers use the CAD and compound views for
+admission, the capability runner validates step-state receipts, and
+fractal_ooda_ha keeps sole operator preference authority. Existing
+wire schemas, source hashes, kernels and durable OODA records are not
+rewritten. The isolated negative-control tests pass locally.
+
+**Aftermath:** A declared verified control fit is NOT proof of survey
+authenticity. Socket proximity is NOT structural CAD+mesh fusion. A completed
+capability is NOT a scored geometric candidate. All independent native
+audit gates remain in force. Require green dedicated Loom, general CI and
+held-out witnesses at the published PR head before this wave closes.
+
 ## Wave XVII — canonical JSON encoding only, no common evidence authority
 
 **✶ Observe / ⏿ Orient.** Phase-law extraction earned green dedicated Loom
