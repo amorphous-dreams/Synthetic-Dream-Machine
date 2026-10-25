@@ -27,7 +27,10 @@ def make():
         Capability('fortress.buttress','Fortress','cad',depends_on=('fortress.cad',),
                    part='crown brace',activation='grammar.buttress',
                    has=('#has/brace','#has/fortification')))
-    assert bounds==project.bounds and initial==project.initial
+    # A compound recipe also holds polygon-only loci. The CAD project
+    # owns exactly its own subset of the version-three constructive genome.
+    assert {k:bounds[k] for k in project.bounds}==project.bounds
+    assert {k:initial[k] for k in project.initial}==project.initial
     return CapabilityRecipe(location=base.location,pet_name=base.pet_name,
         steps=steps,bounds=bounds,initial=initial,cad_keys=tuple(project.initial),
         source_hashes=base.source_hashes,version=3,provenance=base.provenance)
