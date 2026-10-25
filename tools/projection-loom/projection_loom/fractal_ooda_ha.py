@@ -890,7 +890,9 @@ def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                 if not runner.completed(batch, preview=preview):
                     break
                 if archive is not None and not node.get('archive_assimilated'):
-                    culling = archive.assimilate(i+1,data)
+                    culling = archive.assimilate(i+1,data,activations=tuple(
+                        dict.fromkeys(step.activation for step in recipe.steps
+                                      if step.activation)))
                     node['archive_assimilated']=True
                     journal.event('lineage-culling',loop_id,generation=i+1,
                                   counts=culling,niches=len(archive.elites()),

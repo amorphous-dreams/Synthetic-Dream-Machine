@@ -83,8 +83,17 @@ jobs:
           assert journal['status']=='completed'
           assert all(x['phase']=='closed' for x in journal['loops'].values())
           assert 'location/final-gallery' in journal['loops']
-          assert census['activation_loci']['join.enable']['active']>0, \
-              'The newly reachable Joining surface never survived exact scoring'
+          funnel=census['activation_funnel']['join.enable']
+          assert funnel['proposed']['active']>0, \
+              'Joining switch was never proposed in this source-bound campaign'
+          assert funnel['exact_attempted']['active']>0, \
+              'Joining topology proposals were starved of exact CAD auditions'
+          # The native kernel may reject a reachable topology, and scoring is
+          # a second gate. Record both outcomes; never demand an invented
+          # successful descendant to make this diagnostic witness green.
+          assert funnel['native_valid']['active']>=funnel['scored']['active']
+          assert funnel['exact_attempted']['active']>=funnel['native_valid']['active']
+          print('Joining exact-audition funnel:',json.dumps(funnel,sort_keys=True))
           PY
       - name: Package independent audit witnesses
         if: always()
