@@ -30,8 +30,8 @@ from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
 
-SCHEMA = 'projection-loom/ooda-ha-session/v2'
-CONTROL_SCHEMA = 'projection-loom/ooda-ha-control/v2'
+SCHEMA = 'projection-loom/ooda-ha-session'
+CONTROL_SCHEMA = 'projection-loom/ooda-ha-control'
 DEFAULT_MAX_DEPTH = 12
 DEFAULT_MAX_LOOPS = 4096
 
