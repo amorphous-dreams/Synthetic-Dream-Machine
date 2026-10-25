@@ -108,3 +108,53 @@ def searchability_census(bounds,archive,*,family_focus,activations=()):
         'families':{f:{'scored':sum(r['family']==f for r in rows),
             'unique_masks':len({r['mask_sha256'] for r in rows if r['family']==f})} for f in family_focus},
         'observed':observed}
+
+
+def emitter_performance(archive):
+    """Measured quality/diversity gain per family/method; never native validity."""
+    if archive is None:
+        return {}
+    rows=sorted(archive.data['members'].values(),key=lambda x:x['id'])
+    best={}
+    seen=set()
+    score={}
+    for row in rows:
+        key=row['emitter']
+        state=score.setdefault(key,{'scored':0,'new_masks':0,'improvements':0,
+                                    'best_loss':None})
+        state['scored']+=1
+        if row['mask_sha256'] not in seen:
+            state['new_masks']+=1
+            seen.add(row['mask_sha256'])
+        previous=best.get(row['family'])
+        if previous is None or row['combined_loss']<previous:
+            state['improvements']+=1
+            best[row['family']]=row['combined_loss']
+        state['best_loss']=row['combined_loss'] if state['best_loss'] is None else min(
+            state['best_loss'],row['combined_loss'])
+    for key,row in score.items():
+        n=row['scored']
+        row['exploration_value']=(row['new_masks']+row['improvements'])/max(1,n)
+    return score
+
+
+def adaptive_priorities(proposals, archive):
+    """Bounded secondary ordering, preserving mandatory emitter reservations.
+
+    Smaller score means earlier audition *within a reserved method/priority
+    stratum*. No unseen candidate is marked invalid; under-tested methods
+    receive optimistic uncertainty credit.
+    """
+    performance=emitter_performance(archive)
+    all_seen=sum(x['scored'] for x in performance.values())
+    value={}
+    for proposal in proposals:
+        state=performance.get(proposal.emitter)
+        if state is None:
+            value[proposal.id]=-.2
+        else:
+            n=state['scored']
+            reward=state['exploration_value']
+            confidence=(2*math.log(all_seen+2)/max(1,n))**.5
+            value[proposal.id]=-min(1.,reward+.15*confidence)
+    return value
