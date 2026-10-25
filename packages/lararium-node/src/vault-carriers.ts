@@ -18,6 +18,9 @@
  *                   that key to the daemon island, which seals and opens the parcels for the life of the unlock. The
  *                   bytes frame as the outbox seal and never as the VK's, so no VK rotation re-seals one: it re-seals
  *                   the outbox key's row alone (custody#/the-table, the outbox).
+ *   `face-hot`    — a D row sealed under ONE face's custody key (FCK) and resting in that face's own directory
+ *                   (`faces/<fcid>/`). Opened once when its face unlocks, held while the face stays unlocked.
+ *   `face-cold`   — as `face-hot`, opened for one act and then dropped.
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
  * at rest (petnames, the handle book, the anchors).
  *
@@ -78,12 +81,13 @@ import {
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
+import { FACES_DIR, FACE_INDEX_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { outboxKeyPath } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
-export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox"] as const;
+export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold"] as const;
 export type CustodyClass = (typeof CUSTODY_CLASSES)[number];
 
 /** The homes a row may name. */
@@ -119,7 +123,18 @@ export function vesselCustodyHomes(): CustodyHomes {
 }
 
 /** Whose a carrier is: a handle index, a group digest, or the vessel. */
-export type CarrierFace = number | "vessel" | `group:${string}`;
+export type CarrierFace = number | "vessel" | `group:${string}` | `fcid:${string}`;
+
+/** How a face row names the face it belongs to, read off the row's own file name: by group digest, founding-ask digest or ordinal. */
+export type FaceSelector = { readonly group: string } | { readonly ask: string } | { readonly ordinal: number } | null;
+
+/** The part of a face row the holder resolves a logical `(home, file)` by: the file's own spelling inside the face's directory. */
+export interface FaceRowAddress {
+  /** Matched against the file name inside `faces/<fcid>/` (what callers pass as `file`). */
+  readonly inner:  RegExp;
+  /** Which face the matched file names; `null` marks a row only the holder addresses, by the directory it already stands in. */
+  readonly select: (m: RegExpExecArray) => FaceSelector;
+}
 
 /**
  * How a face's backup bundle treats a row (custody#/the-table): `whole`, the row rides as it rests; `lines`, the
@@ -180,6 +195,8 @@ export interface CarrierRow {
    * every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
+  /** Present on a `face-hot` or `face-cold` row: how a logical file name resolves to its face's directory. */
+  readonly faceRow?: FaceRowAddress;
   /**
    * How a face's backup bundle treats this row. A row that names none `stays`. The bundle's cut and the restore's
    * check both derive from this column (`bundleRows`), so no hand picks the rows a bundle carries.
@@ -223,8 +240,8 @@ const HOSTING = "hosting/[0-9a-f]{32}/";
  * A row as its line of the table spells it. The custody class decides the `bare` column at the type: a row
  * outside the vessel key states its law, and a row under it states none.
  */
-type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds">>
-  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" });
+type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds" | "faceRow"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds" | "faceRow">>
+  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" | "face-hot" | "face-cold" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
 type IdentityRowSpec = RowSpec extends infer R ? (R extends unknown ? Omit<R, "home" | "under"> : never) : never;
@@ -257,6 +274,31 @@ export const RESTORE_PENDING_FILE = ".restore-pending.json";
 /** The face a per-face filename names: its first capture, a handle-index. */
 const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
 
+/**
+ * A D row: sealed under its face's custody key and resting in `faces/<fcid>/<file>`. `inner` spells the file as callers name it;
+ * the row's census match spells the whole path under the identity home. `select` names the face the file belongs to.
+ */
+function faceRowOf(spec: {
+  readonly row: string; readonly inner: RegExp; readonly select: FaceRowAddress["select"]; readonly custody: "face-hot" | "face-cold";
+  readonly keyClass: KeyClass | null; readonly writer: string; readonly target: CustodyTarget; readonly bundle?: BundleTreatment;
+  readonly name: (m: RegExpExecArray) => string; readonly face?: (m: RegExpExecArray) => CarrierFace;
+}): CarrierRow {
+  const body = spec.inner.source.replace(/^\^/, "").replace(/\$$/, "");
+  const match = new RegExp(`^${FACES_DIR}/([0-9a-f]{32})/(${body})$`);
+  /** The census match, re-read as the inner file's own match: the captures after the directory and the file. */
+  const innerOf = (m: RegExpExecArray): RegExpExecArray => {
+    const view = [m[2]!, ...m.slice(3)] as unknown as RegExpExecArray;
+    view.index = 0; view.input = m[2]!;
+    return view;
+  };
+  return row({
+    row: spec.row, home: "identity", under: FACES_DIR, match, custody: spec.custody, keyClass: spec.keyClass, writer: spec.writer, target: spec.target,
+    name: (m) => spec.name(innerOf(m)), face: (m) => (spec.face ? spec.face(innerOf(m)) : (`fcid:${m[1]}` as const)),
+    faceRow: { inner: new RegExp(`^(?:${body})$`), select: spec.select },
+    ...(spec.bundle ? { bundle: spec.bundle } : {}),
+  });
+}
+
 function buildTable(): readonly CarrierRow[] {
   const id = (r: IdentityRowSpec): CarrierRow => row({ home: "identity", under: "", ...r });
   return Object.freeze([
@@ -274,7 +316,14 @@ function buildTable(): readonly CarrierRow[] {
          writer: "custody-session (founding)",
          bare: "the serving tree wraps the serving key under the vessel key's entry, so the key it wraps cannot seal it, and a raise reads it before any key opens" }),
 
+    row({ row: "fk-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/fk-slots\\.bin$`),
+          custody: "floor", keyClass: null, writer: "face-custody (founding)",
+          bare: "a face's slot tree wraps the face custody key under each human route of that face, so the key it wraps cannot seal it" }),
+
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
+    id({ row: "face-index", target: tgt(["F"]), match: file(FACE_INDEX_FILE), custody: "floor-plain", keyClass: null,
+         writer: "face-index",
+         bare: "the node names the faces it can unlock before any face opens; the index holds the count of faces, each group's digest, each founding ask's digest and each random directory name, and no other byte" }),
     id({ row: "vessel-card", target: tgt(["F"]), match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
          writer: "node-vessel-identity (founding)",
          bare: "a contact card holds public keys alone, and the vessel hands it to every peer it meets" }),
@@ -313,16 +362,19 @@ function buildTable(): readonly CarrierRow[] {
          writer: "custody-root (founding)" }),
     id({ row: "keyhive-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors" }),
-    id({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
+    faceRowOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A group digest owns this local atom row; bundles leave its seed on this vessel.
-    id({ row: "face-atom", target: tgt(["D"]), match: FACE_ATOM_GROUP_FILE, custody: "hot", keyClass: "device-minted",
+    faceRowOf({ row: "face-atom", target: tgt(["D"]), inner: FACE_ATOM_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
-    id({ row: "face-anchor", target: tgt(["D"]), match: FACE_ANCHOR_GROUP_FILE, custody: "hot", keyClass: "device-minted",
+    faceRowOf({ row: "face-anchor", target: tgt(["D"]), inner: FACE_ANCHOR_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-anchor-store", name: (m) => `face-anchor-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A founding ask holds a seed until its group row keeps it.
-    id({ row: "face-atom-ask", target: tgt(["D"]), match: FACE_ATOM_ASK_FILE, custody: "hot", keyClass: "device-minted",
+    faceRowOf({ row: "face-atom-ask", target: tgt(["D"]), inner: FACE_ATOM_ASK_FILE, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
+    // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
+    faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+         writer: "custody-holder", name: () => "face-owner" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),

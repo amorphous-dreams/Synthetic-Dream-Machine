@@ -34,6 +34,7 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
 import { requireTty } from "../custody-prompt.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
@@ -338,6 +339,7 @@ let readGuardianCard: () => Promise<string> = async () => {
 export function setGuardianCardPrompt(read: () => Promise<string>): void { readGuardianCard = read; }
 
 async function personaNew(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   const index = parseIndex(args.positional[1]);
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   if (name.length === 0) throw new UsageError("`persona new` needs a private label: --name '<petname>'");
@@ -376,6 +378,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   if (index !== 0 && !faceStands()) {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
   }
+  // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
+  if (!(index === 0 && faceStands()) && (await vesselStanding()).reading === "vessel") await handFaceRouteToVessel(`h${index}`);
   const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares

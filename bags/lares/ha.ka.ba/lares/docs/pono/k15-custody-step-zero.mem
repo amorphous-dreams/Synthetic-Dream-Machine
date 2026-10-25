@@ -47,6 +47,8 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `vessel-kel` `:243-245` | floor | ''F:'' public inception/signature, node place principal. |
 | `vk-slots` `:246-248` | floor | ''D/S split:'' retire the omnibus VK tree. Each face gets its own FCK tree; a node S tree exists only for named S rows. No face FCK wrapper under a node key. |
 | `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current VK-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
+| `fk-slots` `face-custody.ts` | floor | ''D (the face's own tree):'' one tree per face at `faces/<fcid>/fk-slots.bin`, wrapping that face's random custody key under each human route that face asked for. No VK wraps it and no sibling face's route opens it; the face's rows and this tree rest in one directory, so a bundle or a removal moves them together. |
+| `face-index` `face-index.ts` | floor-plain | ''F:'' the one floor row that names the faces a node can unlock before any face opens: the count of faces (tombstones included), each group's digest, each founding ask's digest and each random directory name, and no other byte. It routes and never decides; see #/the-floor-index. |
 | `vessel-card` `:254-256` | floor-plain | ''F:'' public node contact card. |
 | `charter` `:257-259` | floor-plain | ''F:'' signed public founding charter. |
 | `carried-charter` `:260-262` | floor-plain | ''F:'' signed public carried charter. |
@@ -58,9 +60,10 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `sealed-chunk` `:283-285` | floor-plain | ''F carriage:'' Keyhive ciphertext under opaque addresses; its content key and identity remain D. |
 | `custody-root` `:288-289` | hot | ''D:'' partition any face-bearing derivation/root by PersonaGroup. ''LEAD:'' prove every remaining use; a node-only secret may enter S only as a separately named row, never by retaining this generic root. |
 | `keyhive-archive` `:290-291` | hot | ''D:'' split the vessel archive into one identity/archive per PersonaGroup, with no identity above them (`stable-founding-road.mem:203,459`). Node archive row selection is an OPEN JOINT below. |
-| `veil-archive` `:292-293` | hot | ''D:'' the node rests each face's archive at `veil-archive-g<digest of its PersonaGroup>`, so no free index selects it; its FCK arrives with the K15.6 fence. |
-| `face-atom` `face-atom-store.ts` | hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
-| `face-atom-ask` `face-atom-store.ts` | hot | ''D:'' the seed a founding rests before its PersonaGroup exists, named by the digest of the founding's own ask (hearth true name, binding mode, mount flag and compartment); the group row keeps the seed once the group stands and the ask row retires with the bootstrap entry. Same key class and fence as `face-atom`; it never rides a bundle. |
+| `veil-archive` `:292-293` | face-hot | ''D:'' the node rests each face's archive at `veil-archive-g<digest of its PersonaGroup>`, so no free index selects it; its FCK arrives with the K15.6 fence. |
+| `face-atom` `face-atom-store.ts` | face-hot | ''D:'' the face's random atom seed, one per (vessel, PersonaGroup), the device edge's delegate and countersigner and the face's Keyhive Individual. The row's file name carries the SHA-256 digest of its PersonaGroup, so no clear file names a face, and the face-atom custody contract of `@lararium/mesh` (`face-atom-custody.ts`) holds stand, read and keep: absent mints, the same bytes read as a no-op, other bytes refuse as `FaceAtomConflict`. It rests under the vessel key until the K15.6 fence moves it under that face's FCK; it never rides a bundle, a wire or a board. |
+| `face-atom-ask` `face-atom-store.ts` | face-hot | ''D:'' the seed a founding rests before its PersonaGroup exists, named by the digest of the founding's own ask (hearth true name, binding mode, mount flag and compartment); the group row keeps the seed once the group stands and the ask row retires with the bootstrap entry. Same key class and fence as `face-atom`; it never rides a bundle. |
+| `face-owner` `custody-holder.ts` | face-hot | ''D:'' the face's own label, sealed under its custody key: its custody id and the digest of its PersonaGroup. After a face unlocks, the holder compares this row with the floor index entry and refuses by name on a mismatch before it seats anything. Never rides a bundle. |
 | `enroll-pending` `:295-296` | hot, reserved | ''D, LEAD:'' if materialized, bind each pending enrolment to its target face; reject a row with no target. There is no current writer. |
 | `grant-pending` `:297-298` | hot, reserved | ''D, LEAD:'' split per granting/target face and bind the authority relation; reject an unassigned pending secret. There is no current writer. |
 | `admissions` `:299-300` | hot, reserved | ''D, LEAD:'' confidential admission state partitions by owning face; public signed proof may be F after payload audit. There is no current writer. |
@@ -228,6 +231,6 @@ The reds: the index of two founded faces carries no field beyond the entries' tr
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;t22wWELPq4SmGZnbsoos3mwyCmTtHXXUQXh3pt169-M
+<<^ code="&#x0003;">>ni:///sha-256;nR8YIPCOFlec24XWxGcZyHfKdz26Cjejnn4vFF9u9HU
 
 <<^ code="&#x0004;" -> to="?">>

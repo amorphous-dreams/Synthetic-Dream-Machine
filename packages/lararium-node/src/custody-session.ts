@@ -32,7 +32,7 @@
 import { mkdirSync } from "node:fs";
 import {
   assertNoOldCustodyShape, bindSlot, commitSlotTree, decodeServingTree, decodeSlotTree, encodeServingTree, foundServingTree, mintServingKey, mintVk,
-  openServingKey, openVk, readVkCarrier, ROTATING_SUFFIX, settleRotation, unbindSlot,
+  openServingKey, openVk, readFckCarrier, readVkCarrier, ROTATING_SUFFIX, settleRotation, unbindSlot,
   type Credential, type CustodyIo, type ServingKey, type SlotSpec, type SlotTree, type VesselKey, type VkCarrierReading,
 } from "@lararium/mesh";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
@@ -388,8 +388,9 @@ export async function custodyStatus(args: { readonly io: CustodyIo; readonly hom
   const opaque = new Set(carrierTable().filter((r) => r.writer === "sealed-store-fs").map((r) => r.row));
   for (const e of carrierCensus(args.homes)) {
     const bytes = await args.io.read(e.path);
-    const reading = readVkCarrier(bytes);
-    const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
+    const faceRow = e.custody === "face-hot" || e.custody === "face-cold";
+    const reading = faceRow ? readFckCarrier(bytes) : readVkCarrier(bytes);
+    const underKey = e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || faceRow;
     // An outbox parcel rests under the outbox key's own seal, never the vessel key's: its row's check reads that seal.
     const failsHolds = e.holds !== null && bytes !== null && !e.holds(e.file, bytes);
     const fault = underKey

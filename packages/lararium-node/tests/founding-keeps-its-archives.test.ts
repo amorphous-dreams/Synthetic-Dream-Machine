@@ -35,7 +35,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed from "@noble/ed25519";
 import {
-  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, vesselDyads, type LarDoc,
+  DAEMON_BAG_ID, faceAtomKeyFromSeed, didFromVerifyingKey, hex, personaScopedBagIds, readVkCarrier, readFckCarrier, vesselDyads, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -46,6 +46,7 @@ import {
 } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
+import { faceDir, listFaceFiles, readFaceIndexSync } from "../src/face-index.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter, TEST_PASSPHRASE } from "./found-route.js";
@@ -61,7 +62,10 @@ let archiveAbsentBefore = false;
 const sealedFiles = (): Record<string, Buffer> => {
   const out: Record<string, Buffer> = {};
   for (const f of readdirSync(larIdentityDir())) {
-    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin|veil-archive-g[0-9a-f]{64}\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+    if (/^(anchors-h\d+\.json|anchor-roster\.json|keyhive-archive\.bin)$/.test(f)) out[f] = readFileSync(join(larIdentityDir(), f));
+  }
+  for (const [fcid, f] of listFaceFiles(larIdentityDir(), readFaceIndexSync(larIdentityDir()))) {
+    if (/^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)) out[f] = readFileSync(join(faceDir(larIdentityDir(), fcid), f));
   }
   return out;
 };
@@ -110,7 +114,7 @@ describe("a founding keeps its archives, sealed per face", () => {
       const face = await foundFace({ genesisDir, handleIndex: n });
       expect(face.alreadyStood).toBe(false);
       groups.push(face.personaGroupId);
-      expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
+      expect(readFckCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
       kept.push(readFileSync(veilArchivePath(face.personaGroupId)));
       for (let earlier = 0; earlier < n; earlier++) {
         expect(readFileSync(veilArchivePath(groups[earlier]!)).equals(kept[earlier]!), `h${earlier}'s row never moved while h${n} founded`).toBe(true);
@@ -174,7 +178,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
     const face = await foundFace({ genesisDir, handleIndex: 3 });
     expect(face.alreadyStood).toBe(false);
-    expect(readVkCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
     expect(await listAnchoredPersonas()).toEqual([0, 1, 2, 3]);
   });
 

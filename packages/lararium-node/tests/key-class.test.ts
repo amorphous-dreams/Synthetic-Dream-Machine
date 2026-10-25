@@ -13,7 +13,7 @@
 import { describe, test, expect } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { isKeyClass } from "@lararium/mesh";
 import { carrierTable, type CustodyHomes } from "../src/vault-carriers.js";
 import { FsCustodyIo } from "../src/custody-io.js";
@@ -27,14 +27,14 @@ function scratch(): { homes: CustodyHomes; drop: () => void } {
 }
 
 async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8Array>): Promise<Map<string, CustodyStatusRow>> {
-  for (const [name, body] of Object.entries(files)) writeFileSync(join(homes.identity, name), body);
+  for (const [name, body] of Object.entries(files)) { mkdirSync(dirname(join(homes.identity, name)), { recursive: true }); writeFileSync(join(homes.identity, name), body); }
   const status = await custodyStatus({ io: new FsCustodyIo(homes), homes });
   return new Map(status.rows.map((r) => [r.name, r]));
 }
 
 describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
-    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", [`veil-archive-g${"a".repeat(64)}.bin`]: "x",
+    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
     ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x",
     ".vessel-card-joshua.json": "{}",
   };
@@ -45,7 +45,7 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
       const rows = await rowsOf(v.homes, SOWN);
       expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
         "vessel-key": "device-minted floor", "vessel-card": "- floor-plain",
-        "keyhive-archive": "device-minted hot", [`veil-archive-g${"a".repeat(64)}`]: "device-minted hot",
+        "keyhive-archive": "device-minted hot", [`veil-archive-g${"a".repeat(64)}`]: "device-minted face-hot",
         "persona-root-h0": "seed cold", "recovery-device-share-h0": "seed cold",
       });
       for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);

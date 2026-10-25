@@ -13,6 +13,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
+import { seatFaceRoute } from "../src/face-route.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 
 /** The fixed test passphrase. It guards nothing: every founding here lives under a scratch root. */
@@ -22,6 +23,9 @@ export const TEST_PASSPHRASE = "test-founding-passphrase";
 export const TEST_SLOT: SlotSpec = { t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] };
 
 export const TEST_CUSTODY = { slots: [TEST_SLOT] } as const;
+
+// A face asks its own route when it founds; every test founding of a face answers with the test passphrase.
+seatFaceRoute(async () => [TEST_SLOT]);
 
 /** `runInit` over the direct holder, with the test route unless the suite names its own. */
 export function foundDirect(opts: Omit<InitOptions, "repo" | "custody"> & { readonly custody?: InitOptions["custody"] }) {

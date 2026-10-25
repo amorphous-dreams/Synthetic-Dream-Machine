@@ -38,6 +38,7 @@ import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "..
 import { restoreLines, type RestoreLanded } from "../vault-restore.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
+import { seatNewFaceRoute } from "../face-route-prompt.js";
 
 /**
  * The founding route: the human route (a passphrase or paper pin) the custody binds at birth.
@@ -88,6 +89,7 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
 }
 
 export async function cmdFound(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.

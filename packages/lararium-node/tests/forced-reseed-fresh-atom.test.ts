@@ -1,4 +1,5 @@
 /** A completed face's orphan keeps its atom and archive; an interrupted founding keeps its checkpoint. */
+import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -56,7 +57,7 @@ function removePlaneEntry(group: string): void {
 }
 
 async function groupRows(): Promise<Array<{ file: string; seed: Uint8Array }>> {
-  const files = readdirSync(larIdentityDir()).filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name));
+  const files = faceRowNames().filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name));
   return Promise.all(files.map(async (file) => {
     const seed = await readCustodyRow("identity", file);
     expect(seed, `${file} opens through custody`).toHaveLength(32);
@@ -82,7 +83,7 @@ describe("a forced re-seed mints a fresh atom", () => {
       const orphan = first.personaGroupId;
       const orphanSeed = (await loadFaceAtomOfGroup(orphan))!;
       const orphanKey = faceAtomKeyFromSeed(orphanSeed, orphan).key;
-      const atomBytes = readFileSync(join(larIdentityDir(), faceAtomGroupFile(orphan)));
+      const atomBytes = readFileSync(groupRowPath(orphan, faceAtomGroupFile(orphan)));
       const archiveBytes = readFileSync(veilArchivePath(orphan));
       removePlaneEntry(orphan);
 
@@ -93,7 +94,7 @@ describe("a forced re-seed mints a fresh atom", () => {
       const freshSeed = (await loadFaceAtomOfGroup(fresh))!;
       expect(faceAtomKeyFromSeed(freshSeed, fresh).key, "the new group mints a fresh atom key").not.toBe(orphanKey);
       expect((await loadIdentityAnchors(1))?.personaGroupId).toBe(fresh);
-      expect(readFileSync(join(larIdentityDir(), faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
+      expect(readFileSync(groupRowPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(orphan)).equals(archiveBytes), "the orphan's archive keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(fresh)).equals(archiveBytes), "the new archive belongs to its group").toBe(false);
 

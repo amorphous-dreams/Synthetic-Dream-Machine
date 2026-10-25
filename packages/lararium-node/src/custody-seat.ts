@@ -37,7 +37,7 @@
  * Node-main only: a worker never imports this module.
  */
 import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type RowUpdate } from "./custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate } from "./custody-holder.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -115,7 +115,7 @@ export async function readCustodyRow(home: CustodyHome, file: string): Promise<U
   const r = await (await openedCustody()).readRow(home, file);
   if (r.reading === "opens") return r.plaintext;
   if (r.reading === "absent") return null;
-  if (r.reading === "locked") throw new CustodyLocked();
+  if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
   throw new CustodyRowUnavailable(home, file, r.why);
 }
 
@@ -134,7 +134,7 @@ export async function updateCustodyRow<T>(
   return (await openedCustody()).updateRow(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
-    if (r.reading === "locked") throw new CustodyLocked();
+    if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
     throw new CustodyRowUnavailable(home, file, r.why);
   });
 }
@@ -194,7 +194,7 @@ export async function updateColdCustodyRow<T>(
   return (await openedCustody()).updateColdRow(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
-    if (r.reading === "locked") throw new CustodyLocked();
+    if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
     throw new CustodyRowUnavailable(home, file, r.why);
   });
 }
@@ -227,4 +227,23 @@ export function custodyGateDoor(): CustodyRootDoor {
       return holder.derive(domain);
     },
   });
+}
+
+// ── faces: the founding and opening acts a face's custody takes through this home's seated holder ──────────────
+
+/** Found one face's custody on the seated holder (the VK layer must stand open: the founding act reads it). */
+export async function foundFaceCustody(args: Parameters<CustodyHolder["foundFace"]>[0]): ReturnType<CustodyHolder["foundFace"]> {
+  return (await openedCustody()).foundFace(args);
+}
+/** Bind a founded face to its group's digest. */
+export async function bindFaceCustody(fcid: string, groupDigest: string): Promise<void> {
+  return (await openedCustody()).bindFace(fcid, groupDigest);
+}
+/** Retire a bound face's founding ask from the floor index. */
+export async function retireFaceAskCustody(fcid: string): Promise<void> {
+  return (await openedCustody()).retireFaceAsk(fcid);
+}
+/** What the floor index names for a face and whether it stands unlocked. Null when the index names none. */
+export async function faceStandingCustody(face: FaceRef): ReturnType<CustodyHolder["faceStanding"]> {
+  return (await openedCustody()).faceStanding(face);
 }

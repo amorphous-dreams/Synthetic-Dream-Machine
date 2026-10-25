@@ -39,6 +39,7 @@ import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
 import { openedCustody, seatCustody } from "../custody-seat.js";
+import { settleFaceCustody } from "../face-route.js";
 import { ensurePlaceCard } from "../place-card.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -589,6 +590,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   const foundingAsk: FoundingAtomAsk = {
     hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex,
   };
+  // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
+  // an interrupted founding re-enters the face it already holds.
+  const askDigest = foundingAskDigest(foundingAsk);
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
     ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
@@ -624,7 +628,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
-  await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+  await settleFaceCustody(askDigest, face.personaGroupId, () => keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed));
   await keepFaceAnchorOfGroup(mintFaceAnchor({
     personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
     personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,

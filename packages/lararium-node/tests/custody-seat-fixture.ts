@@ -15,10 +15,14 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatFaceRoute } from "../src/face-route.js";
 import { vesselCustodyHomes, type CustodyHomes } from "../src/vault-carriers.js";
 
 /** The synthetic route every fixture custody founds under. */
 export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
+
+// A face founded under this fixture asks its own route; the fixture answers with the same synthetic passphrase.
+seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
 
 export interface SeatedScratchCustody {
   readonly root:   string;

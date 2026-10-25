@@ -1,3 +1,4 @@
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -120,6 +121,7 @@ describe("a node holds A while B lands", () => {
 
       const founder = await founderForB();
       const groupB = founder.groupB;
+      await ensureFaceCustodyOfGroup(groupB);
       const seedB = await standFaceAtom(groupB);
       const atomB = faceAtomKeyFromSeed(seedB, groupB);
       const payload = await founder.admit(atomB.key);
@@ -159,6 +161,7 @@ describe("a node holds A while B lands", () => {
       await foundDirect({ storageDir: larDataDir(), genesisDir });
       const payload = sharedPayload;
       if (!payload || !sharedSeedB) throw new Error("the B admit did not stand in the first case");
+      await ensureFaceCustodyOfGroup(payload.personaGroupId);
       await keepFaceAtom(payload.personaGroupId, sharedSeedB);
       await land({ storageDir: larDataDir(), genesisDir, force: true, admitPayload: payload, custody: { slots: [] } });
       expect((await loadIdentityAnchors(0))?.personaGroupId).toBe(payload.personaGroupId);

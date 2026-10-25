@@ -1,11 +1,13 @@
 /** Each face's atom rests in an identity row named by its PersonaGroup digest. */
 import { createHash } from "node:crypto";
-import { readdirSync } from "node:fs";
 import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRows, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow, withCustodyRows } from "./custody-seat.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
+import { FaceLocked } from "./custody-holder.js";
+import { ensureFaceCustodyOfAsk } from "./face-route.js";
 import { personaGroupDigest } from "./persona-group-file.js";
+import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 import { resolveFace } from "./face-selector.js";
@@ -45,22 +47,21 @@ export async function sweepFoundingSeeds(): Promise<void> {
       groups.add(faceAtomGroupFile(anchors.personaGroupId));
       groupsByAsk.set(anchors.foundingAskDigest, groups);
     }
-    let names: string[];
-    try { names = readdirSync(larIdentityDir()); }
-    catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
-      throw error;
-    }
+    const names = faceFileNames(larIdentityDir());
     const held = new Map<string, Uint8Array>();
+    // A face that rests unopened holds its rows shut: the sweep walks the faces standing open and leaves the rest alone.
+    const readOpen = async (file: string): Promise<Uint8Array | null> => {
+      try { return await rows.read("identity", file); } catch (err) { if (err instanceof FaceLocked) return null; throw err; }
+    };
     for (const file of names.filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
-      const seed = await rows.read("identity", file);
+      const seed = await readOpen(file);
       if (seed) {
         if (seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
         held.set(file, seed);
       }
     }
     for (const file of names.filter((name) => FACE_ATOM_ASK_FILE.test(name))) {
-      const seed = await rows.read("identity", file);
+      const seed = await readOpen(file);
       if (seed && seed.length !== 32) throw new Error(`pending founding atom ${file} holds no 32-byte seed`);
       const digest = FACE_ATOM_ASK_FILE.exec(file)?.[1];
       if (!seed || !digest || ![...(groupsByAsk.get(digest) ?? [])].some((group) => {
@@ -126,6 +127,8 @@ export async function loadFaceAtom(handleIndex: number): Promise<Uint8Array | nu
 
 /** Mint or read the seed for this exact founding ask before a group exists. */
 export async function standPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uint8Array> {
+  // THE FACE'S CUSTODY STANDS BEFORE ITS FIRST ROW, under the route the face asks for; the ask names it until a group exists.
+  await ensureFaceCustodyOfAsk(foundingAskDigest(ask), `h${ask.handleIndex}`);
   return updateCustodyRow("identity", pendingFoundingFile(ask), (standing) => {
     if (standing) {
       if (standing.length !== 32) throw new Error("pending founding atom holds no 32-byte seed");
@@ -166,7 +169,7 @@ export async function recoverFoundingSeedFromGroup(
     if (anchors) anchored.add(anchors.personaGroupId);
   }
   let matched: Uint8Array | null = null;
-  for (const file of readdirSync(larIdentityDir()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
+  for (const file of faceFileNames(larIdentityDir()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
     const seed = await readCustodyRow("identity", file);
     if (!seed || seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
     for (const body of bodies) {

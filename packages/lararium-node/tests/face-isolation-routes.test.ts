@@ -6,7 +6,7 @@
  * unchanged, and every accessor A wears resolves A's atom and never B's. What it CANNOT measure yet is the key
  * class: today every hot row seals under the one vessel key, so the key that unlocks A opens B's row. Those two
  * readings stand as expected failures that name their cure, Wave D (k15-wave-d-lane: each face's custody rows seal under its
- * own face custody key, landed whole). The day Wave D lands they turn green and the `test.fails` marks come off.
+ * own face custody key). Both readings stand as plain tests now.
  */
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -16,6 +16,9 @@ import { FaceAtomConflict, mintFaceAtomSeed } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { readCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
 import { faceAtomGroupFile, keepFaceAtom, loadFaceAtom, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
+import { FaceLocked } from "../src/custody-holder.js";
+import { faceDir } from "../src/face-index.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { sealTestCustody } from "./found-route.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom } from "./atom-fixture.js";
@@ -25,21 +28,25 @@ const GROUP_A = "group-isolation-a";
 const GROUP_B = "group-isolation-b";
 
 afterAll(async () => {
-  await withLarRoot(root, async () => {
-    const holder = seatedCustody();
-    if (holder) { await holder.lock(); unseatCustody(holder); }
-  });
   rmSync(root, { recursive: true, force: true });
 });
 
-/** A vessel that holds A at h0 and B at h1, both atoms resting under the one vessel key. */
-async function twoFaces(act: (b: { rowB: string; bytesB: Buffer; seedB: Uint8Array }) => Promise<void>): Promise<void> {
-  await withLarRoot(root, async () => {
+/**
+ * A vessel that holds A at h0 and B at h1, each atom resting under its own face's custody key. With `onlyA`, B rests
+ * unopened afterwards: the vessel stands as it does once A alone has unlocked.
+ */
+async function twoFaces(act: (b: { rowB: string; bytesB: Buffer; seedB: Uint8Array }) => Promise<void>, onlyA = false): Promise<void> {
+  const scratch = mkdtempSync(join(root, "vessel-"));
+  await withLarRoot(scratch, async () => {
     await sealTestCustody();
     await seedFaceAtom(0, GROUP_A);
     await seedFaceAtom(1, GROUP_B);
-    const rowB = join(larIdentityDir(), faceAtomGroupFile(GROUP_B));
-    await act({ rowB, bytesB: readFileSync(rowB), seedB: await atomSeedOf(1) });
+    const holder = seatedCustody()!;
+    const standingB = (await holder.faceStanding({ group: personaGroupDigest(GROUP_B) }))!;
+    const rowB = join(faceDir(larIdentityDir(), standingB.fcid), faceAtomGroupFile(GROUP_B));
+    const seedB = await atomSeedOf(1);
+    if (onlyA) await holder.lockFace(standingB.fcid);
+    try { await act({ rowB, bytesB: readFileSync(rowB), seedB }); } finally { await holder.lock(); unseatCustody(holder); }
   });
 }
 
@@ -56,16 +63,16 @@ describe("face isolation at the node's routes", () => {
     });
   });
 
-  test.fails("Wave D owes: the key that unlocks A refuses to open B's atom row (every hot row seals under one vessel key today)", async () => {
+  test("the key that unlocks A refuses to open B's atom row (each face's rows seal under its own custody key)", async () => {
     await twoFaces(async () => {
-      await expect(readCustodyRow("identity", faceAtomGroupFile(GROUP_B))).rejects.toBeDefined();
-    });
+      await expect(readCustodyRow("identity", faceAtomGroupFile(GROUP_B))).rejects.toBeInstanceOf(FaceLocked);
+    }, true);
   });
 
-  test.fails("Wave D owes: the key that unlocks A refuses to replace B's atom row around the face-atom door", async () => {
+  test("the key that unlocks A refuses to replace B's atom row around the face-atom door", async () => {
     await twoFaces(async ({ rowB, bytesB }) => {
-      await expect(writeCustodyRow("identity", faceAtomGroupFile(GROUP_B), mintFaceAtomSeed())).rejects.toBeDefined();
+      await expect(writeCustodyRow("identity", faceAtomGroupFile(GROUP_B), mintFaceAtomSeed())).rejects.toBeInstanceOf(FaceLocked);
       expect(readFileSync(rowB)).toEqual(bytesB);
-    });
+    }, true);
   });
 });

@@ -17,10 +17,11 @@
  *   A8  an archive written through the family never rests in the clear: the file carries the vessel key's seal
  *       and none of the plaintext.
  */
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintVk, readVkCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
+import { mintVk, readFckCarrier, readVkCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
 import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, archivePath, type IdentityAnchors,
@@ -90,8 +91,9 @@ describe("the identity home's sealed family", () => {
   test("A5 at the floor every reader and writer refuses CustodyLocked and no file moves", async () => {
     await persistIdentityAnchors(anchors);
     await persistIdentityArchive(bytesOf("archive"));
+    await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil"), anchors.personaGroupId);
-    const before = ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(at(f)));
+    const before = ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)));
     await c.holder.lock();
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
     await expect(listAnchoredPersonas()).rejects.toThrow(CustodyLocked);
@@ -102,7 +104,7 @@ describe("the identity home's sealed family", () => {
     await expect(persistVeilArchive(bytesOf("floor"), anchors.personaGroupId)).rejects.toThrow(CustodyLocked);
     expect(existsSync(at("anchors-h1.json"))).toBe(false);
     ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
-      expect(readFileSync(at(f)).equals(before[i]!), f).toBe(true);
+      expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)).equals(before[i]!), f).toBe(true);
     });
     // no seat at all reads the same floor: every seat cleared, the suites' when-needed seat among them
     seatCustody(null);
@@ -112,10 +114,11 @@ describe("the identity home's sealed family", () => {
 
   test("A6 TAMPER PROBE: a holder over another key lands no write; the standing bytes still open under the first", async () => {
     await persistIdentityArchive(bytesOf("archive-under-A"));
+    await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil-under-A"), anchors.personaGroupId);
     await persistIdentityAnchors(anchors);
     const files = ["keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId), "anchors-h0.json"];
-    const standing = files.map((f) => readFileSync(at(f)));
+    const standing = files.map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)));
 
     // Key B: a stranger vessel key the slot tree never committed to, held by a holder over the SAME homes. The
     // holder's own door refuses a key the custody root does not open under, so B writes through the sealed writer
@@ -130,16 +133,17 @@ describe("the identity home's sealed family", () => {
       })).rejects.toThrow(TreeVkRefusal);
     }
     await expect(makeCustodyHolder({ io: c.io, homes: c.homes }).adopt(keyB)).rejects.toThrow(/custody root reads key-fails/);
-    files.forEach((f, i) => expect(readFileSync(at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
+    files.forEach((f, i) => expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
     expect(Array.from((await loadIdentityArchive())!)).toEqual(Array.from(bytesOf("archive-under-A")));
     expect(Array.from((await loadVeilArchive(anchors.personaGroupId))!)).toEqual(Array.from(bytesOf("veil-under-A")));
     expect(await loadIdentityAnchors()).toEqual(anchors);
   });
 
   test("A7 three faces keep three veil archives and none opens at another's path", async () => {
+    for (const n of [0, 1, 2]) await ensureFaceCustodyOfGroup(`group-${n}`);
     for (const n of [0, 1, 2]) await persistVeilArchive(bytesOf(`veil-of-face-${n}`), `group-${n}`);
     for (const n of [0, 1, 2]) {
-      expect(readVkCarrier(readFileSync(veilArchivePath(`group-${n}`)))).toBe("sealed");
+      expect(readFckCarrier(readFileSync(veilArchivePath(`group-${n}`)))).toBe("sealed");
       expect(Array.from((await loadVeilArchive(`group-${n}`))!)).toEqual(Array.from(bytesOf(`veil-of-face-${n}`)));
     }
     expect(await loadVeilArchive("group-3")).toBeNull();

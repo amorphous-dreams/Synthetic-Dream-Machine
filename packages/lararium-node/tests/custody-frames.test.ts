@@ -31,6 +31,11 @@
  *   B5  a cut that refuses answers its own name; a custody fault answers the row it met.
  *   B6  the door logs how the cut ended and never the route, the bundle key or the sealed body.
  *   B7  a door with no cut wired refuses `backup-unavailable`.
+ *
+ * The `face-route` frame: the human route the next new face binds, parked for one founding.
+ *   R1  a passphrase route parks, and the next face founding takes it once; a second founding finds none.   control: nothing parked refuses by name
+ *   R2  a frame missing its shape, carrying a stray key, or carrying a paper pin refuses whole and parks nothing.
+ *   R3  the door logs that a route parked and never the route.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
@@ -39,6 +44,7 @@ import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
+import { FaceRouteAbsent, gatherFaceRoute, parkFaceRoute, seatFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
 
@@ -404,5 +410,41 @@ describe("the custody door's backup frame", () => {
     await h.send(unlockFrame(RIGHT)).answer;
     expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "backup-unavailable" } });
     expect(h.proved).toEqual([]);
+  });
+});
+
+describe("the face-route frame", () => {
+  const ROUTE = { op: "face-route", slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "face-route-secret" }] }] };
+
+  test("R1 — a parked route serves the next founding once; CONTROL: with nothing parked or seated the founding refuses by name", async () => {
+    seatFaceRoute(null); parkFaceRoute(null);
+    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    const h = harness();
+    expect(await h.send(ROUTE).answer).toEqual({ op: "face-route", parked: true });
+    const slots = await gatherFaceRoute("h1");
+    expect(slots).toEqual(ROUTE.slots);
+    await expect(gatherFaceRoute("h2")).rejects.toBeInstanceOf(FaceRouteAbsent);
+  });
+
+  test("R2 — a bad shape, a stray key or a paper pin refuses whole and parks nothing", async () => {
+    seatFaceRoute(null); parkFaceRoute(null);
+    const h = harness();
+    for (const bad of [
+      { op: "face-route" }, { op: "face-route", slots: [] }, { ...ROUTE, credentials: [] },
+      { op: "face-route", slots: [{ t: 1, pins: [{ kind: "paper", sheets: ["a"] }] }] },
+      { op: "face-route", slots: [{ t: 0, pins: [{ kind: "passphrase", passphrase: "x" }] }] },
+    ]) {
+      expect(await h.send(bad).answer).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+    }
+    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+  });
+
+  test("R3 — the log names that a route parked and never the route", async () => {
+    seatFaceRoute(null); parkFaceRoute(null);
+    const h = harness();
+    await h.send(ROUTE).answer;
+    expect(h.logs.join("\n")).toContain("face-route: parked");
+    expect(h.logs.join("\n")).not.toContain("face-route-secret");
+    parkFaceRoute(null);
   });
 });

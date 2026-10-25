@@ -7,7 +7,7 @@
  * no digest, receipt or outcome behind. This module never logs what it sends.
  */
 import { createConnection } from "node:net";
-import type { Credential } from "@lararium/mesh";
+import type { Credential, SlotSpec } from "@lararium/mesh";
 import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =
@@ -17,7 +17,9 @@ export type CustodyFrame =
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
-  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string };
+  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
+  /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] };
 
 /** The daemon's answer, as the door spells it (`custody-frames` in the node package). */
 export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string };

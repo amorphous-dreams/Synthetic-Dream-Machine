@@ -25,6 +25,7 @@
 
 import { mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { faceFilePathSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
 import { identityHomeClosure } from "./identity-home-closure.js";
@@ -141,7 +142,7 @@ export function veilArchiveFile(personaGroup: string): string {
 
 /** One face's veil archive path. */
 export function veilArchivePath(personaGroup: string): string {
-  return join(larIdentityDir(), veilArchiveFile(personaGroup));
+  return faceFilePathSync(larIdentityDir(), { group: personaGroupDigest(personaGroup) }, veilArchiveFile(personaGroup));
 }
 
 /**

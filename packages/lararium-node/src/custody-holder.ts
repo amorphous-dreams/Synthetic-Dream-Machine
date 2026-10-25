@@ -30,11 +30,14 @@
  */
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, vkEquals,
-  type Credential, type CustodyIo, type ServingKey, type VesselKey,
+  openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
+  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type VesselKey,
 } from "@lararium/mesh";
+import { faceCarrierFor, openFaceTree } from "./face-custody.js";
+import { appendFaceEntry, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
-import { carrierTable, vkSlotsPath, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
+import { carrierTable, vkSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
 
 export type HolderUnlock =
   | { readonly reading: "opens"; readonly slot: string }
@@ -49,7 +52,7 @@ export type HolderUnlock =
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
 export type HolderProof =
   | { readonly reading: "proves" }
-  | { readonly reading: "locked" }
+  | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
   | { readonly reading: "tree-absent" }
@@ -58,15 +61,27 @@ export type HolderProof =
 export type RowReading =
   | { readonly reading: "opens"; readonly plaintext: Uint8Array }
   | { readonly reading: "absent" }
-  | { readonly reading: "locked" }
+  | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "unavailable"; readonly why: string };
 
 /** What `updateRow`'s decision answers: the row's next plaintext (`null` writes nothing) and the caller's answer. */
 export interface RowUpdate<T> { readonly plaintext: Uint8Array | null; readonly value: T }
 
 export class CustodyLocked extends Error {
-  override readonly name = "CustodyLocked";
-  constructor() { super("this vessel's key rests unopened, so its sealed rows stay shut: open it with `lares vault unlock`"); }
+  override readonly name: string = "CustodyLocked";
+  constructor(message = "this vessel's key rests unopened, so its sealed rows stay shut: open it with `lares vault unlock`") { super(message); }
+}
+/** A face's rows were asked for while that face rests unopened: the other faces' keys open none of them. */
+export class FaceLocked extends CustodyLocked {
+  override readonly name = "FaceLocked";
+  constructor(readonly fcid: string) {
+    super(`face ${fcid.slice(0, 8)} rests unopened, so its sealed rows stay shut: open it with \`lares vault unlock --face <N>\``);
+  }
+}
+/** A face row was asked for and the floor index names no face that owns it. */
+export class FaceCustodyAbsent extends Error {
+  override readonly name = "FaceCustodyAbsent";
+  constructor(file: string) { super(`custody row identity/${file} names a face this node holds no custody for; found or admit the face first`); }
 }
 /** A cold row that stands and does not open: the act never runs over anything but the row's own plaintext. */
 export class CustodyRowUnavailable extends Error {
@@ -81,6 +96,23 @@ export class CustodyRowUnknown extends Error {
     super(`custody row ${home}/${file}: ${detail}`);
   }
 }
+
+/** Which face a call means: its local ordinal in the floor index, its group's digest, or its custody id. */
+export type FaceRef = { readonly ordinal: number } | { readonly group: string } | { readonly fcid: string } | { readonly ask: string };
+
+export type FaceUnlock =
+  | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string }
+  | { readonly reading: "already-unlocked"; readonly fcid: string; readonly ordinal: number }
+  | { readonly reading: "no-slot-opens"; readonly fcid: string; readonly attemptsLeft: number }
+  | { readonly reading: "attempts-spent"; readonly fcid: string }
+  | { readonly reading: "face-absent" }
+  | { readonly reading: "tree-absent"; readonly fcid: string }
+  | { readonly reading: "tree-unreadable"; readonly fcid: string; readonly why: string }
+  /** The floor index routed to a tree whose own D `face-owner` row names another face (or none): nothing seats. */
+  | { readonly reading: "index-mismatch"; readonly fcid: string; readonly why: string };
+
+/** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
+export interface FaceOwnerRow { readonly fcid: string; readonly group: string | null }
 
 export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
 
@@ -142,7 +174,27 @@ export interface CustodyHolder {
    */
   exclusive<T>(act: () => Promise<T>): Promise<T>;
   derive(domain: string): Uint8Array;
-  /** The dyad veil for `groupTag`, derived from the custody root. */
+  // ── faces: each face's custody key (FCK) opens that face's rows alone ─────────────────────────────
+  /**
+   * Found one face's custody: a fresh custody id enters the floor index (under the group's digest or the founding's ask), a
+   * fresh FCK is bound in the face's own slot tree under `slots`, and the face's `face-owner` row seals under it. The
+   * founding hands the key straight in; the face stands unlocked.
+   */
+  foundFace(args: { readonly ask?: string | null; readonly group?: string | null; readonly slots: readonly SlotSpec[] }): Promise<{ readonly ordinal: number; readonly fcid: string }>;
+  /** Bind the group's digest to a face founded under its ask: the index entry and the `face-owner` row take it together. */
+  bindFace(fcid: string, groupDigest: string): Promise<void>;
+  /** Open one face with the presented credentials. Spends one of the boot's attempts for that face on a miss. */
+  unlockFace(face: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock>;
+  /** Try the credentials against every face's tree and open each one they fit; a face they do not fit stays shut and spends nothing. */
+  unlockFaces(credentials: readonly Credential[]): Promise<readonly FaceUnlock[]>;
+  /** The founding ask leaves a face's entry once its rows moved under the group. */
+  retireFaceAsk(fcid: string): Promise<void>;
+  /** What the floor index names for a face, and whether it stands unlocked here. Opens nothing. */
+  faceStanding(face: FaceRef): Promise<{ readonly ordinal: number; readonly fcid: string; readonly group: string | null; readonly ask: string | null; readonly unlocked: boolean } | null>;
+  lockFace(fcid: string): Promise<void>;
+  /** The custody ids of the faces standing unlocked. */
+  unlockedFaces(): readonly string[];
+  isFaceUnlocked(face: FaceRef): Promise<boolean>;
 }
 
 /** A key handed to `adopt` that the custody root does not open under. */
@@ -150,6 +202,18 @@ export class CustodyAdoptRefused extends Error {
   override readonly name = "CustodyAdoptRefused";
   constructor(reading: string) { super(`the custody root reads ${reading} under the key handed in; nothing is held`); }
 }
+
+/** Where a `(home, file)` row lives and which key opens it. */
+type Located =
+  | { readonly kind: "vk"; readonly row: CarrierRow; readonly path: string; readonly name: string }
+  | { readonly kind: "face"; readonly row: CarrierRow; readonly path: string; readonly carrier: FaceCarrier; readonly fcid: string; readonly treePath: string };
+
+interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number }
+
+const heldPort = (io: CustodyIo): CustodyIo => ({
+  read: (path) => io.read(path), write: (path, bytes) => io.write(path, bytes), rename: (from, to) => io.rename(from, to),
+  remove: (path) => io.remove(path), list: () => io.list(), exclusive: (act) => act(),
+});
 
 export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: CustodyHomes }): CustodyHolder {
   let vk: VesselKey | null = null;
@@ -159,6 +223,8 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   let root: CustodyRoot | null = null;
   let slot: string | null = null;
   let spent = 0;
+  const faceSpent = new Map<string, number>();
+  const faces = new Map<string, FaceSeat>();
   let unlockChain: Promise<unknown> = Promise.resolve();
   let accepting = true;
   const active = new Set<Promise<unknown>>();
@@ -187,6 +253,8 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     sk = result.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = result.slot;
+    // The faces the same route fits open beside the vessel layer; one it does not fit stays shut and costs nothing.
+    await doUnlockFaces(credentials);
     return { reading: "opens", slot };
   };
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
@@ -206,22 +274,121 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {
-    if (!accepting || vk === null) return Promise.reject(new CustodyLocked());
+    if (!accepting) return Promise.reject(new CustodyLocked());
     let tracked!: Promise<T>;
     tracked = fn().finally(() => active.delete(tracked));
     active.add(tracked);
     return tracked;
   };
-  const address = (home: CustodyHome, file: string, coldAllowed: boolean) => {
-    const row = carrierTable().find((r) => {
+
+  // ── the faces ───────────────────────────────────────────────────────────────────────────────────
+  const ownerCarrier = (fcid: string): FaceCarrier => {
+    const row = carrierTable().find((r) => r.row === "face-owner")!;
+    return faceCarrierFor(a.homes, fcid, "face-owner.bin", row);
+  };
+  const encodeOwner = (owner: FaceOwnerRow): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
+  const decodeOwner = (bytes: Uint8Array): FaceOwnerRow | null => {
+    try {
+      const v = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
+      if (Object.keys(v).sort().join(",") !== "fcid,group" || typeof v["fcid"] !== "string" || !(v["group"] === null || typeof v["group"] === "string")) return null;
+      return { fcid: v["fcid"], group: v["group"] as string | null };
+    } catch { return null; }
+  };
+  const resolveFace = async (by: FaceRef) => {
+    const index = await readFaceIndex(a.io, a.homes.identity);
+    return findFace(index, "ordinal" in by ? { ordinal: by.ordinal } : "group" in by ? { group: by.group } : "ask" in by ? { ask: by.ask } : { fcid: by.fcid });
+  };
+  const doFoundFace = async (args: { ask?: string | null; group?: string | null; slots: readonly SlotSpec[] }) => {
+    if (!Array.isArray(args.slots) || args.slots.length === 0) {
+      throw new Error("[custody-holder] a face founding seals its custody from birth and needs a human route to bind; none was given");
+    }
+    return a.io.exclusive(async () => {
+      const held = heldPort(a.io);
+      const { ordinal, fcid } = await appendFaceEntry(held, a.homes.identity, { ask: args.ask ?? null, group: args.group ?? null });
+      const fck = mintFck();
+      let tree = null as import("@lararium/mesh").SlotTree | null;
+      for (const spec of args.slots) tree = bindSlot(tree, fck, spec);
+      await commitFaceTree({ io: held, path: faceTreePath(a.homes.identity, fcid), expected: null, key: fck, tree: tree!, carriers: [] });
+      await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
+      faces.set(fcid, { fck, slot: null, ordinal });
+      return { ordinal, fcid };
+    });
+  };
+  const doBindFace = async (fcid: string, groupDigest: string): Promise<void> => {
+    const seat = faces.get(fcid);
+    if (!seat) throw new FaceLocked(fcid);
+    await a.io.exclusive(async () => {
+      const held = heldPort(a.io);
+      await bindFaceGroup(held, a.homes.identity, fcid, groupDigest);
+      await updateFaceCarrier({
+        io: held, key: seat.fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid),
+        decide: () => ({ plaintext: encodeOwner({ fcid, group: groupDigest }), value: undefined }),
+      });
+    });
+  };
+  const doUnlockFace = async (by: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock> => {
+    const found = await resolveFace(by);
+    if (!found) return { reading: "face-absent" };
+    const { fcid, ordinal } = found;
+    if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
+    const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials });
+    if (opened.reading === "no-slot-opens") {
+      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + 1);
+      return { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
+    }
+    if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
+    if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
+    // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
+    const owner = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: ownerCarrier(fcid) });
+    const refuse = (why: string): FaceUnlock => { opened.fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
+    if (owner.reading !== "opens") return refuse(`the face-owner row reads ${owner.reading}`);
+    const named = decodeOwner(owner.plaintext);
+    owner.plaintext.fill(0);
+    if (named === null) return refuse("the face-owner row is malformed");
+    if (named.fcid !== fcid) return refuse("the face-owner row names another custody id");
+    if (named.group !== found.group) return refuse("the face-owner row names another group than the floor index entry");
+    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
+    return { reading: "opens", fcid, ordinal, slot: opened.slot };
+  };
+  const doUnlockFaces = async (credentials: readonly Credential[]): Promise<FaceUnlock[]> => {
+    const index = await readFaceIndex(a.io, a.homes.identity);
+    const out: FaceUnlock[] = [];
+    for (let ordinal = 0; ordinal < index.faces.length; ordinal++) {
+      if (!("fcid" in index.faces[ordinal]!)) continue;
+      out.push(await doUnlockFace({ ordinal }, credentials));
+    }
+    return out;
+  };
+
+  /** Resolve a logical `(home, file)` to the carrier that holds it and the key that opens it. */
+  const locate = async (home: CustodyHome, file: string, coldAllowed: boolean): Promise<Located> => {
+    const vkRow = carrierTable().find((r) => {
       if (r.home !== home || (r.custody !== "hot" && r.custody !== "cold")) return false;
       r.match.lastIndex = 0;
       return r.match.test(file);
     });
-    if (!row || (row.custody === "cold" && !coldAllowed)) {
-      throw new CustodyRowUnknown(home, file, row?.custody === "cold" ? "cold rows require openColdRow" : undefined);
+    if (vkRow) {
+      if (vkRow.custody === "cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRow");
+      return { kind: "vk", row: vkRow, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
     }
-    return { row, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
+    const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.select !== null && r.faceRow.inner.test(file)) : undefined;
+    if (!faceRow || faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
+    if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRow");
+    const selector = faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) as Exclude<FaceSelector, null>;
+    const found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
+    if (!found) throw new FaceCustodyAbsent(file);
+    const carrier = faceCarrierFor(a.homes, found.fcid, file, faceRow);
+    return { kind: "face", row: faceRow, path: carrier.path, carrier, fcid: found.fcid, treePath: faceTreePath(a.homes.identity, found.fcid) };
+  };
+  const keyOf = (target: Located & { kind: "face" }): FaceCustodyKey => {
+    const seat = faces.get(target.fcid);
+    if (!seat || !accepting) throw new FaceLocked(target.fcid);
+    return seat.fck;
+  };
+  const needVk = (): VesselKey => {
+    if (vk === null || !accepting) throw new CustodyLocked();
+    return vk;
   };
 
   const doAdopt = async (handed: VesselKey): Promise<void> => {
@@ -234,6 +401,36 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     sk = served.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = null;
+  };
+
+  const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RowReading =>
+    standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext! }
+      : standing.reading === "absent" ? { reading: "absent" }
+        : { reading: "unavailable", why: standing.reading };
+
+  /** One read of one located row. */
+  const readLocated = async (t: Located): Promise<RowReading> => {
+    if (t.kind === "vk") {
+      const result = await openSealedCarrier({ io: a.io, vk: needVk(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } });
+      return asReading(result);
+    }
+    return asReading(await openFaceCarrier({ io: a.io, key: keyOf(t), carrier: t.carrier }));
+  };
+  const updateLocated = <T>(t: Located, decide: (standing: RowReading) => RowUpdate<T>): Promise<T> => {
+    if (t.kind === "vk") {
+      return updateSealedCarrier({ io: a.io, vk: needVk(), treePath: vkSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, decide: (standing) => decide(asReading(standing)) });
+    }
+    return updateFaceCarrier({ io: a.io, key: keyOf(t), treePath: t.treePath, carrier: t.carrier, decide: (standing) => decide(asReading(standing)) });
+  };
+  const removeLocated = async (t: Located, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> => {
+    if (t.kind === "vk") {
+      return removeSealedCarrier({ io: a.io, vk: needVk(), treePath: vkSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, ...(when ? { when } : {}) });
+    }
+    return removeFaceCarrier({ io: a.io, key: keyOf(t), treePath: t.treePath, carrier: t.carrier, ...(when ? { when } : {}) });
+  };
+  const refusedAs = (home: CustodyHome, file: string, err: unknown): never => {
+    if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
+    throw err;
   };
 
   return {
@@ -258,6 +455,8 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
         vk?.fill(0);
         sk?.fill(0);
         root?.bytes.fill(0);
+        for (const seat of faces.values()) seat.fck.fill(0);
+        faces.clear();
         vk = null;
         sk = null;
         root = null;
@@ -272,163 +471,177 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     attemptsLeft: () => UNLOCK_ATTEMPTS_PER_BOOT - spent,
     openedSlot: () => slot,
     async readRow(home, file) {
-      if (vk === null || !accepting) return { reading: "locked" };
-      const { row, path, name } = address(home, file, false);
-      return operation(async () => {
-        const result = await openSealedCarrier({ io: a.io, vk: vk!, carrier: { name, path, keyClass: row.keyClass } });
-        if (result.reading === "opens") return { reading: "opens", plaintext: result.plaintext };
-        if (result.reading === "absent") return { reading: "absent" };
-        return { reading: "unavailable", why: result.reading };
-      });
+      if (!accepting) return { reading: "locked" };
+      let target: Located;
+      try { target = await locate(home, file, false); } catch (err) { if (err instanceof FaceCustodyAbsent) return { reading: "absent" }; throw err; }
+      if (target.kind === "vk" ? vk === null : !faces.has(target.fcid)) return target.kind === "face" ? { reading: "locked", fcid: target.fcid } : { reading: "locked" };
+      return operation(() => readLocated(target));
     },
     async writeRow(home, file, plaintext) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, true);
-      const key = vk;
-      return operation(() => writeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass }, plaintext }));
+      const t = await locate(home, file, true);
+      if (t.kind === "vk") {
+        const key = needVk();
+        return operation(() => writeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, plaintext }));
+      }
+      const key = keyOf(t);
+      return operation(() => writeFaceCarrier({ io: a.io, key, treePath: t.treePath, carrier: t.carrier, plaintext }));
     },
     async updateRow(home, file, decide) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, false);
-      const key = vk;
-      return operation(() => updateSealedCarrier({
-        io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass },
-        decide: (standing) => decide(
-          standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
-            : standing.reading === "absent" ? { reading: "absent" }
-              : { reading: "unavailable", why: standing.reading }),
-      }));
+      const t = await locate(home, file, false);
+      if (t.kind === "vk") needVk(); else keyOf(t);
+      return operation(() => updateLocated(t, decide));
     },
     async moveRow(home, source, destination, expected) {
-      if (vk === null || !accepting) throw new CustodyLocked();
       if (source === destination) throw new Error("custody move names the same row twice");
-      const from = address(home, source, false);
-      const to = address(home, destination, false);
-      const key = vk;
+      const from = await locate(home, source, false);
+      const to = await locate(home, destination, false);
+      if (from.kind !== to.kind || (from.kind === "face" && to.kind === "face" && from.fcid !== to.fcid)) {
+        throw new Error("custody move spans two keys; a row moves only inside one key's carriers");
+      }
+      if (from.kind === "vk") needVk(); else keyOf(from);
       return operation(() => a.io.exclusive(async () => {
         // The outer claim spans both sealed steps; the inner writer receives a claim already held.
-        const io: CustodyIo = {
-          read: (path) => a.io.read(path), write: (path, bytes) => a.io.write(path, bytes),
-          rename: (aPath, bPath) => a.io.rename(aPath, bPath), remove: (path) => a.io.remove(path),
-          list: () => a.io.list(), exclusive: (act) => act(),
-        };
-        const carrier = (row: typeof from) => ({ name: row.name, path: row.path, keyClass: row.row.keyClass });
-        const opened = async (file: string, row: typeof from) => {
-          const reading = await openSealedCarrier({ io, vk: key, carrier: carrier(row) });
-          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRowUnavailable(home, file, reading.reading);
+        const io = heldPort(a.io);
+        const equals = (bytes: Uint8Array) => bytes.length === expected.length && bytes.every((byte, i) => byte === expected[i]);
+        const open = async (t: Located, file: string): Promise<RowReading> => {
+          const reading = t.kind === "vk"
+            ? asReading(await openSealedCarrier({ io, vk: needVk(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } }))
+            : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
+          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           return reading;
         };
-        const standingSource = await opened(source, from);
-        const standingDestination = await opened(destination, to);
-        const equals = (bytes: Uint8Array) => bytes.length === expected.length && bytes.every((byte, i) => byte === expected[i]);
+        const standingSource = await open(from, source);
+        const standingDestination = await open(to, destination);
         if (standingSource.reading === "opens" && !equals(standingSource.plaintext)) throw new Error("custody source row holds other bytes");
         if (standingDestination.reading === "opens" && !equals(standingDestination.plaintext)) throw new Error("custody destination row holds other bytes");
         // A source already gone (a re-entered founding recovered its seed from an earlier group row) still keeps the destination.
         if (standingDestination.reading === "absent") {
-          await writeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(to), plaintext: expected });
+          if (to.kind === "vk") await writeSealedCarrier({ io, vk: needVk(), treePath: vkSlotsPath(a.homes.identity), carrier: { name: to.name, path: to.path, keyClass: to.row.keyClass }, plaintext: expected });
+          else await writeFaceCarrier({ io, key: keyOf(to), treePath: to.treePath, carrier: to.carrier, plaintext: expected });
         }
         // Only these back-to-back steps expose two rows to a crash; re-entry removes the source.
         if (standingSource.reading === "opens") {
-          await removeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(from) });
+          if (from.kind === "vk") await removeSealedCarrier({ io, vk: needVk(), treePath: vkSlotsPath(a.homes.identity), carrier: { name: from.name, path: from.path, keyClass: from.row.keyClass } });
+          else await removeFaceCarrier({ io, key: keyOf(from), treePath: from.treePath, carrier: from.carrier });
         }
       }));
     },
     withRows(act) {
-      if (vk === null || !accepting) return Promise.reject(new CustodyLocked());
-      const key = vk;
+      if (!accepting) return Promise.reject(new CustodyLocked());
       return operation(() => a.io.exclusive(async () => {
-        const io: CustodyIo = {
-          read: (path) => a.io.read(path), write: (path, bytes) => a.io.write(path, bytes),
-          rename: (from, to) => a.io.rename(from, to), remove: (path) => a.io.remove(path),
-          list: () => a.io.list(), exclusive: (inside) => inside(),
-        };
-        const carrier = (home: CustodyHome, file: string) => {
-          const found = address(home, file, false);
-          return { name: found.name, path: found.path, keyClass: found.row.keyClass };
-        };
+        const io = heldPort(a.io);
         return act({
           async read(home, file) {
-            const reading = await openSealedCarrier({ io, vk: key, carrier: carrier(home, file) });
+            const t = await locate(home, file, false);
+            const reading = t.kind === "vk"
+              ? asReading(await openSealedCarrier({ io, vk: needVk(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } }))
+              : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
             if (reading.reading === "opens") return reading.plaintext;
             if (reading.reading === "absent") return null;
-            throw new CustodyRowUnavailable(home, file, reading.reading);
+            throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           },
           async remove(home, file, when) {
-            try { return await removeSealedCarrier({ io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: carrier(home, file), ...(when ? { when } : {}) }); }
-            catch (error) {
-              if (error instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, error.reading);
-              throw error;
-            }
+            const t = await locate(home, file, false);
+            try {
+              return t.kind === "vk"
+                ? await removeSealedCarrier({ io, vk: needVk(), treePath: vkSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, ...(when ? { when } : {}) })
+                : await removeFaceCarrier({ io, key: keyOf(t), treePath: t.treePath, carrier: t.carrier, ...(when ? { when } : {}) });
+            } catch (error) { return refusedAs(home, file, error); }
           },
         });
       }));
     },
     async removeRow(home, file, when) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, false);
-      const key = vk;
-      return operation(async () => {
-        try {
-          return await removeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass }, ...(when ? { when } : {}) });
-        } catch (err) {
-          if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
-          throw err;
-        }
-      });
+      // A face this node holds no custody for holds no row to remove.
+      let t: Located;
+      try { t = await locate(home, file, false); } catch (err) { if (err instanceof FaceCustodyAbsent) return false; throw err; }
+      if (t.kind === "vk") needVk(); else keyOf(t);
+      return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
     async removeColdRow(home, file, when) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, true);
-      if (row.custody !== "cold") throw new CustodyRowUnknown(home, file, "removeColdRow requires a cold row");
-      const key = vk;
-      return operation(async () => {
-        try {
-          return await removeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass }, ...(when ? { when } : {}) });
-        } catch (err) {
-          if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
-          throw err;
-        }
-      });
+      let t: Located;
+      try { t = await locate(home, file, true); } catch (err) { if (err instanceof FaceCustodyAbsent) return false; throw err; }
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "removeColdRow requires a cold row");
+      if (t.kind === "vk") needVk(); else keyOf(t);
+      return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
     async updateColdRow(home, file, decide) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, true);
-      if (row.custody !== "cold") throw new CustodyRowUnknown(home, file, "updateColdRow requires a cold row");
-      const key = vk;
-      return operation(() => updateSealedCarrier({
-        io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass },
-        decide: (standing) => {
-          try {
-            const next = decide(
-              standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
-                : standing.reading === "absent" ? { reading: "absent" }
-                  : { reading: "unavailable", why: standing.reading });
-            // A decision that hands the standing buffer back as the next plaintext gets its own copy, so the
-            // zero-fill below never reaches the bytes about to seal.
-            return next.plaintext !== null && standing.reading === "opens" && next.plaintext.buffer === standing.plaintext.buffer
-              ? { ...next, plaintext: Uint8Array.from(next.plaintext) } : next;
-          } finally {
-            if (standing.reading === "opens") standing.plaintext.fill(0);
-          }
-        },
+      const t = await locate(home, file, true);
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "updateColdRow requires a cold row");
+      if (t.kind === "vk") needVk(); else keyOf(t);
+      return operation(() => updateLocated(t, (standing) => {
+        try {
+          const next = decide(standing);
+          // A decision that hands the standing buffer back as the next plaintext gets its own copy, so the
+          // zero-fill below never reaches the bytes about to seal.
+          return next.plaintext !== null && standing.reading === "opens" && next.plaintext.buffer === standing.plaintext.buffer
+            ? { ...next, plaintext: Uint8Array.from(next.plaintext) } : next;
+        } finally {
+          if (standing.reading === "opens") standing.plaintext.fill(0);
+        }
       }));
     },
     async openColdRow(home, file, act) {
-      if (vk === null || !accepting) throw new CustodyLocked();
-      const { row, path, name } = address(home, file, true);
-      if (row.custody !== "cold") throw new CustodyRowUnknown(home, file, "openColdRow requires a cold row");
+      const t = await locate(home, file, true);
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "openColdRow requires a cold row");
+      if (t.kind === "vk") needVk(); else keyOf(t);
       return operation(async () => {
-        const opened = await openSealedCarrier({ io: a.io, vk: vk!, carrier: { name, path, keyClass: row.keyClass } });
-        if (opened.reading !== "opens") throw new CustodyRowUnavailable(home, file, opened.reading);
+        const opened = await readLocated(t);
+        if (opened.reading !== "opens") throw new CustodyRowUnavailable(home, file, opened.reading === "unavailable" ? opened.why : opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       });
     },
     exclusive(act) {
+      if (vk === null || !accepting) return Promise.reject(new CustodyLocked());
       return operation(() => a.io.exclusive(act));
     },
     derive(domain) {
       if (!accepting || root === null) throw new CustodyLocked();
       return custodyDerive(root, domain);
+    },
+    foundFace(args) {
+      const run = unlockChain.then(() => doFoundFace(args), () => doFoundFace(args));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    bindFace(fcid, groupDigest) {
+      const run = unlockChain.then(() => doBindFace(fcid, groupDigest), () => doBindFace(fcid, groupDigest));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    unlockFace(face, credentials) {
+      const run = unlockChain.then(() => doUnlockFace(face, credentials), () => doUnlockFace(face, credentials));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    unlockFaces(credentials) {
+      const run = unlockChain.then(() => doUnlockFaces(credentials), () => doUnlockFaces(credentials));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    retireFaceAsk(fcid) {
+      const run = unlockChain.then(() => a.io.exclusive(() => retireFaceAsk(heldPort(a.io), a.homes.identity, fcid)), () => a.io.exclusive(() => retireFaceAsk(heldPort(a.io), a.homes.identity, fcid)));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    async faceStanding(face) {
+      const found = await resolveFace(face);
+      return found === null ? null : { ...found, unlocked: faces.has(found.fcid) };
+    },
+    lockFace(fcid) {
+      const drop = async (): Promise<void> => {
+        await Promise.allSettled([...active]);
+        faces.get(fcid)?.fck.fill(0);
+        faces.delete(fcid);
+      };
+      const run = unlockChain.then(drop, drop);
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    unlockedFaces: () => [...faces.keys()],
+    async isFaceUnlocked(face) {
+      const found = await resolveFace(face);
+      return found !== null && faces.has(found.fcid);
     },
   };
 }

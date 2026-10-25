@@ -26,6 +26,7 @@ import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRowUnavailable } from "@lararium/node";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
+import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { cmdHerm }                    from "../commands/herm.js";
 import { cmdHost }                    from "../commands/host-cmd.js";
 import { cmdWalk }                    from "../commands/walk-cmd.js";
@@ -325,6 +326,7 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   // THE COMMAND'S OWN KEY SESSION. A command that acts in this process seats a holder that opens at the first
   // sealed row it touches (`offline-custody`); a verb routed through a standing vessel never touches it.
   seatOfflineCustody();
+  seatNewFaceRoute();
   try {
     return await cmd.handler(args);
   } catch (err) {
