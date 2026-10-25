@@ -192,10 +192,17 @@ class OODAHAJournal:
         """
         if not isinstance(loop_id, str) or not loop_id or not isinstance(scope, str) or not scope:
             raise ValueError('Every loop needs a nonempty identifier and scope')
+        # The Observe testimony is immutable even on an idempotent restart.
+        # Hash before looking up the loop so replay cannot bypass validation.
+        _hash(evidence)
         existing = self.data['loops'].get(loop_id)
         if existing is not None:
             if existing['parent'] != parent or existing['scope'] != scope:
                 raise ValueError('Loop id already names another parent or scope')
+            if existing['receipts'].get('observe') != evidence:
+                raise ValueError('OODA-HA Observe evidence collision on loop re-entry')
+            if parent_phase is not None and existing['parent_phase'] != parent_phase:
+                raise ValueError('OODA-HA parent-phase anchor collision on loop re-entry')
             return existing
         if len(self.data['loops']) >= self.data['limits']['max_loops']:
             raise ValueError('OODA-HA loop budget reached; choose a new bounded session')
@@ -217,11 +224,15 @@ class OODAHAJournal:
 
     def transition(self, loop_id, phase, detail=None):
         """Advance only after every child anchored to this phase has closed."""
-        if not next_phase_allowed(self.data['loops'], loop_id, phase):
-            return False
-        node = self.data['loops'][loop_id]
         receipt = detail if detail is not None else {}
         _hash(receipt)
+        node = self.data['loops'][loop_id]
+        if node['phase'] == phase:
+            if node['receipts'].get(phase) != receipt:
+                raise ValueError('OODA-HA phase receipt collision on replay')
+            return False
+        if not next_phase_allowed(self.data['loops'], loop_id, phase):
+            return False
         node['phase'] = phase
         node['receipts'][phase] = receipt
         self.event('phase', loop_id, phase=phase, detail=receipt)
@@ -268,7 +279,9 @@ class OODAHAJournal:
             raise ValueError('Only an inquiry may advance with inquiry controls')
         if phase not in STATES[1:]:
             raise ValueError('Inquiry phase must follow Observe')
-        if node['phase'] == phase and node['receipts'].get(phase) == (detail or {}):
+        if node['phase'] == phase:
+            if node['receipts'].get(phase) != (detail if detail is not None else {}):
+                raise ValueError('OODA-HA inquiry receipt collision on replay')
             # A crash between transition persistence and control acknowledgement
             # must not duplicate the operation or replay the side effect.
             return node

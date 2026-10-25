@@ -83,7 +83,9 @@ def test_single_journal_keeps_real_receipt_order_and_crash_reentry(tmp_path):
     assert session.read_bytes() == original
     for phase in ('orient','decide','act','aftermath'):
         assert j.transition('child',phase,{'proof':phase}) is True
-    assert j.transition('child','aftermath',{'proof':'ignored'}) is False
+    assert j.transition('child','aftermath',{'proof':'aftermath'}) is False
+    with pytest.raises(ValueError,match='receipt collision'):
+        j.transition('child','aftermath',{'proof':'ignored'})
     with pytest.raises(ValueError,match='awaits child'):
         j.transition('location','aftermath')
     assert j.transition('child','closed') is True
