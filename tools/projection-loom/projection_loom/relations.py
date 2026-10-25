@@ -222,6 +222,31 @@ class PetNameLedger:
         self.history.append(e)
         return e
 
+    def control_receipt(self, control_id, command_digest):
+        """Recover a durable operator result or refuse a changed command."""
+        matches = [event for event in self.history
+                   if event.get('control_id') == control_id]
+        if len(matches) > 1:
+            raise ValueError('Duplicate durable operator control ID in ledger')
+        if not matches:
+            return None
+        receipt = matches[0]
+        if receipt.get('command_digest') != command_digest:
+            raise ValueError('Operator control digest mismatch after ledger commit')
+        if 'control_outcome' not in receipt:
+            raise ValueError('Ledger control receipt lacks committed outcome')
+        return receipt
+
+    def commit_control(self, control_id, command_digest, outcome):
+        """Bind control ID, digest and outcome in the next atomic ledger save."""
+        if self.control_receipt(control_id, command_digest) is not None:
+            raise ValueError('Operator control already committed')
+        if not self.history or self.history[-1].get('control_id') is not None:
+            raise ValueError('No fresh ledger event for operator control')
+        self.history[-1].update(control_id=control_id,
+                                command_digest=command_digest,
+                                control_outcome=outcome)
+
     def pet_name(self, name, handle, witness, *, mode='entity', has=(), member_has=(), retain=0.4):
         name = str(name).strip()
         if not name:
