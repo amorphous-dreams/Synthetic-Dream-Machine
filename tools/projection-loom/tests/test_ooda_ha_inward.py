@@ -135,3 +135,41 @@ def test_beat_candidate_identity_and_aftermath_survive_retries(tmp_path):
         journal.candidate_start('epoch',Proposal('sample','local',{'x':.3},
                                                 parent='initial'))
     assert journal.path.read_bytes()==saved
+
+
+def test_pulse_in_memory_receipts_cannot_be_mutated_through_caller_objects(tmp_path):
+    from projection_loom.fractal_ooda_ha import OODAHAJournal
+    journal=OODAHAJournal(tmp_path/'session.json',identity={
+        'location':'pulse','score_state':'synthetic',
+        'ledger_path':str(tmp_path/'ledger.json')},initial={'x':.3})
+    observed={'nested':{'source':'painting'}}
+    journal.begin('child',parent='location',scope='inquiry',evidence=observed)
+    observed['nested']['source']='untrusted mutation'
+    assert journal.data['loops']['child']['receipts']['observe']['nested']['source']=='painting'
+    detail={'observations':['original']}
+    journal.transition('child','orient',detail)
+    detail['observations'].append('untrusted mutation')
+    assert journal.data['loops']['child']['receipts']['orient']=={'observations':['original']}
+    assert journal.data['events'][-1]['detail']=={'observations':['original']}
+    response=[]
+    def adviser(context):
+        context['evidence']['observations'].append('callback mutation')
+        response.append(context['phase'])
+        return None
+    journal.consult_phase('child',adviser)
+    assert response==['orient']
+    assert journal.data['loops']['child']['receipts']['orient']=={'observations':['original']}
+    loaded=OODAHAJournal(journal.path)
+    assert loaded.data['loops']['child']['receipts']['orient']=={'observations':['original']}
+
+
+def test_pulse_architecture_rejects_a_four_phase_regression(tmp_path):
+    import shutil
+    from scripts.check_architecture import inspect_source_tree
+    root=Path(__file__).resolve().parents[1]
+    shutil.copytree(root/'projection_loom',tmp_path/'projection_loom')
+    law=tmp_path/'projection_loom/phase_rules.py'
+    law.write_text(law.read_text().replace(
+        "PHASES = ('observe', 'orient', 'decide', 'act', 'aftermath')",
+        "PHASES = ('observe', 'orient', 'decide', 'act')"))
+    assert any('five active phases' in issue for issue in inspect_source_tree(tmp_path))
