@@ -4,6 +4,46 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Fresh Necrospire lineages · original proxy versus pinned nosycat CC0
+
+The original six-generation pilot remains frozen and unrelated to both fresh
+three-generation Experiment Zero lineages. Do not backfill or compare its
+earlier score policy. Both fresh runs use the original RGBA artwork, matching
+independent L8 oblique alpha, the interpretive Ur ziggurat massing proxy,
+the same fixed source camera, 64x96 score, 2x visual overscan and 12 exact /
+6 detail auditions per generation.
+
+- **First fresh lineage:** source-bound authored brutalist proxy,
+  seed `58321`, native Actions [40241612373](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40241612373),
+  archive `examples/necrospire/lineages/four_attractor_fresh/`.
+- **Second fresh lineage:** actual nosycat CC0 OpenSCAD source archive,
+  source SHA-256 `8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3`,
+  pinned in `third_party/nosycat-brutalism2.json`. The 8 upstream
+  authored `.scad` examples produce a compilable external reference witness;
+  their repeated facade bands and vertical piers inform native CadQuery
+  capabilities with conditional, inherited loci. No STL enters the native
+  BRep construction gate. Seed `58363`, native Actions
+  [40242446361](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40242446361),
+  archive `examples/necrospire/lineages/nosycat_cc0_fresh/`.
+
+**Matched observational measurements across six regrown reviewers each**:
+best fixed-source IoU `0.689775 -> 0.694517` (+0.004742);
+mean fixed-source IoU `0.665765 -> 0.672200` (+0.006436);
+best global loss `0.325695 -> 0.320470` (-0.005225);
+mean overscan occupied fraction `0.003122 -> 0.003326`.
+Five of six reviewed new survivors retained the source-derived facade-band
+capability; six of six retained the piers.
+
+**Claim boundary:** changed random seed and extended genome space prevent a
+causal claim that the upstream grammar alone improved the results. The two
+review policies preserve common source-global metrics, but new-locus advisory
+scores cannot compare directly to the older advisor. This remains
+operator-unapproved, provisional source-art geometry. The full archives hold
+native checkpoints, reviews, PNG contact sheets and exact upstream source.
+See `docs/NOSYCAT_BRUTALISM.md`.
+
+---
+
 ## Experiment Zero spatial and scientific capability integration
 
 Opt-in Experiment Zero has a physically larger (2x width/height) camera frame
