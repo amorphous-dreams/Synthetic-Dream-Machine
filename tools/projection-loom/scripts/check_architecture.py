@@ -51,10 +51,12 @@ def inspect_source_tree(root):
             errors.append(f'Python source cannot be parsed: {path.name}: {exc}')
             continue
 
-        if _definitions(tree, ast.FunctionDef, 'run_ooda_epochs'):
+        if _definitions(tree, ast.FunctionDef, 'run_ooda_ha_epochs'):
             runners.append(path.name)
-        if _definitions(tree, ast.ClassDef, 'OODAJournal'):
+        if _definitions(tree, ast.ClassDef, 'OODAHAJournal'):
             journals.append(path.name)
+        if _definitions(tree, ast.FunctionDef, 'run_ooda_epochs') or _definitions(tree, ast.ClassDef, 'OODAJournal'):
+            errors.append(f'Retired four-phase OODA entrypoint in {path.name}')
 
         for node in tree.body:
             if isinstance(node, (ast.Assign, ast.AnnAssign)):
@@ -74,11 +76,11 @@ def inspect_source_tree(root):
             for module in imported:
                 if module in ('ooda', 'projection_loom.ooda',
                               'fractal-ooda-ha', 'projection_loom.fractal-ooda-ha'):
-                    errors.append(f'Retired OODA import in {path.name}: {module}')
+                    errors.append(f'Retired OODA-HA import in {path.name}: {module}')
                 if path.name in PURE_PORTS and module in (
                     'fractal_ooda_ha', 'projection_loom.fractal_ooda_ha'):
                     errors.append(
-                        f'Renderer and pure policy cannot import the OODA helm: {path.name}')
+                        f'Renderer and pure policy cannot import the OODA-HA helm: {path.name}')
                 if (path.name == 'phase_rules.py' and
                     module.split('.')[0] in PHASE_IO_IMPORTS):
                     errors.append(f'Phase-law module cannot import {module}')

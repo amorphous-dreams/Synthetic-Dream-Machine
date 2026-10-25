@@ -55,7 +55,7 @@ def main(argv=None):
     p.add_argument('--control', choices=['manual','co-pilot','auto-nav','full-speed'],default='auto-nav')
     p.add_argument('--autonomy',type=float)
     p.add_argument('--capability-recipe',type=Path,
-                   help='optional per-entity CAD/mesh capability genome; same OODA helm')
+                   help='optional per-entity CAD/mesh capability genome; same OODA-HA helm')
     p.add_argument('--score-size',type=int,nargs=2,default=[128,192],
                    metavar=('WIDTH','HEIGHT'),help='fixed compound evidence viewport')
     p.add_argument('--finalists',type=int,choices=[3,4,5],default=3,
@@ -105,7 +105,7 @@ def main(argv=None):
     p.add_argument('--archive',type=Path,required=True)
     p.add_argument('--capability-recipe',type=Path,required=True)
     p.add_argument('--out',type=Path,help='optional JSON witness path')
-    p=commands.add_parser('ooda-run', help='Run nested OODA-HA with durable operator steering')
+    p=commands.add_parser('ooda-ha-run', help='Run nested OODA-HA with durable operator steering')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--passes',type=int,default=3)
@@ -147,16 +147,16 @@ def main(argv=None):
                    help='generations between compatible cross-family locus grafts')
     p.add_argument('--mutation-scale',type=float,default=.16,
                    help='relative spread for local breeding (0,.4]')
-    p=commands.add_parser('ooda-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
+    p=commands.add_parser('ooda-ha-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--epochs',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--count',type=int,choices=[3,4,5],default=4)
     p.add_argument('--size',type=int,nargs=2,default=[384,576])
     p.add_argument('--no-production',action='store_true',help='preview gallery only; still CAD audited')
-    p=commands.add_parser('ooda-status',help='Inspect the phase tree and operator checkpoints')
+    p=commands.add_parser('ooda-ha-status',help='Inspect the phase tree and operator checkpoints')
     p.add_argument('--session',type=Path,required=True)
-    p=commands.add_parser('ooda-steer',help='Queue a control, applied at the next safe boundary')
+    p=commands.add_parser('ooda-ha-steer',help='Queue a control, applied at the next safe boundary')
     p.add_argument('--session',type=Path,required=True)
     p.add_argument('--action',choices=['pause','resume','review','set-autonomy','approve-plan','choose',
                             'prefer-emitter','pet-name','o-takiage',
@@ -229,8 +229,8 @@ def main(argv=None):
         if args.out:_save(args.out,result)
         print(json.dumps(result,indent=2))
         return result
-    if args.command in ('ooda-run','wide-epoch'):
-        from .fractal_ooda_ha import run_ooda_epochs
+    if args.command in ('ooda-ha-run','wide-epoch'):
+        from .fractal_ooda_ha import run_ooda_ha_epochs
         from .location_stack import LocationStack
         presets={'manual':0.,'co-pilot':.40,'auto-nav':.75,'full-speed':1.}
         project=Project.load(args.project)
@@ -245,7 +245,7 @@ def main(argv=None):
             from .llm_helm import HelmLLM
             model_advice=HelmLLM(args.llm_provider,args.llm_model,endpoint=args.llm_endpoint,
                                  api_key_env=args.llm_key_env,timeout=args.llm_timeout)
-        result=run_ooda_epochs(project,args.out,passes=args.passes,
+        result=run_ooda_ha_epochs(project,args.out,passes=args.passes,
             candidates=args.candidates,exact_budget=args.exact_budget,
             detail_budget=args.detail_budget,seed=args.seed,
             topology_loci=args.topology_locus,
@@ -262,7 +262,7 @@ def main(argv=None):
             feature_evidence_path=getattr(args,'feature_evidence',None),
             transfer_bundle_path=getattr(args,'transfer_bundle',None))
         print(json.dumps(result,indent=2));return result
-    if args.command=='ooda-finalists':
+    if args.command=='ooda-ha-finalists':
         from .finalists import export_finalists
         project=Project.load(args.project)
         result=export_finalists(project,args.epochs,args.out,count=args.count,
@@ -270,15 +270,15 @@ def main(argv=None):
         print(json.dumps({'actual_count':result['actual_count'],
                           'gallery':str(args.out/'contact_sheet.png')}))
         return result
-    if args.command=='ooda-status':
-        from .fractal_ooda_ha import OODAJournal
-        session=OODAJournal(args.session)
+    if args.command=='ooda-ha-status':
+        from .fractal_ooda_ha import OODAHAJournal
+        session=OODAHAJournal(args.session)
         state=session.summary()
         state['open_loops']=[{'id':n['id'],'phase':n['phase'],'scope':n['scope'],
                               'parent_phase':n.get('parent_phase')}
             for n in session.data['loops'].values() if n['phase']!='closed']
         print(json.dumps(state,indent=2));return state
-    if args.command=='ooda-steer':
+    if args.command=='ooda-ha-steer':
         from .fractal_ooda_ha import submit_control
         parameters={}
         if args.action=='set-autonomy':

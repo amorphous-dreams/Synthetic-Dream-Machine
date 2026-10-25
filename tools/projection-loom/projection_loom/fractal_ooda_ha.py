@@ -99,12 +99,12 @@ def submit_control(session_path, action, *, actor='operator', **parameters):
             raise ValueError('Advance inquiry requires a next phase and a bounded detail dictionary')
     base = Path(session_path)
     if not base.exists():
-        raise FileNotFoundError('Initialize the OODA run before sending controls')
+        raise FileNotFoundError('Initialize the OODA-HA run before sending controls')
     snapshot = json.loads(base.read_text(encoding='utf8'))
     if snapshot.get('schema') != SCHEMA:
         raise ValueError('Not an OODA-HA session')
     if snapshot.get('status') == 'completed':
-        raise ValueError('This OODA session has completed; start a new location epoch')
+        raise ValueError('This OODA-HA session has completed; start a new location epoch')
     request = {'schema': CONTROL_SCHEMA, 'id': f'{time_ns():020d}-{uuid4().hex}',
                'run_id': snapshot['run_id'], 'actor': actor, 'action': action,
                'parameters': parameters}
@@ -124,7 +124,7 @@ def single_runner(session_path):
     try:
         fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     except FileExistsError as exc:
-        raise RuntimeError('This OODA session already has a runner; do not concurrently resume') from exc
+        raise RuntimeError('This OODA-HA session already has a runner; do not concurrently resume') from exc
     try:
         with os.fdopen(fd, 'w') as f:
             f.write(str(os.getpid()))
@@ -133,26 +133,26 @@ def single_runner(session_path):
         lock.unlink(missing_ok=True)
 
 
-class OODAJournal:
+class OODAHAJournal:
     """Persist validated transitions, nested loops and operator interventions."""
     def __init__(self, path, *, identity=None, initial=None, autonomy=.70,
                  max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS):
         if (isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1 or
                 isinstance(max_loops, bool) or not isinstance(max_loops, int) or max_loops < 1):
-            raise ValueError('Finite positive OODA depth and loop budgets are required')
+            raise ValueError('Finite positive OODA-HA depth and loop budgets are required')
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if self.path.exists():
             data = json.loads(self.path.read_text(encoding='utf8'))
             signature = data.get('snapshot_sha256')
             if signature != _hash({k:v for k,v in data.items() if k != 'snapshot_sha256'}):
-                raise ValueError('OODA journal digest mismatch')
+                raise ValueError('OODA-HA journal digest mismatch')
             if data.get('schema') != SCHEMA:
-                raise ValueError('Unknown OODA session schema')
+                raise ValueError('Unknown OODA-HA session schema')
             if identity is not None and data['identity'] != identity:
-                raise ValueError('Incompatible OODA session; fork to change sources, code or budgets')
+                raise ValueError('Incompatible OODA-HA session; fork to change sources, code or budgets')
             if data.get('limits') != {'max_depth': max_depth, 'max_loops': max_loops}:
-                raise ValueError('OODA recursion budget changed; fork rather than replay')
+                raise ValueError('OODA-HA recursion budget changed; fork rather than replay')
             self.data = data
         else:
             if identity is None or initial is None:
@@ -198,7 +198,7 @@ class OODAJournal:
                 raise ValueError('Loop id already names another parent or scope')
             return existing
         if len(self.data['loops']) >= self.data['limits']['max_loops']:
-            raise ValueError('OODA loop budget reached; choose a new bounded session')
+            raise ValueError('OODA-HA loop budget reached; choose a new bounded session')
         parent_phase, depth = child_phase_anchor(
             self.data['loops'], parent, parent_phase=parent_phase,
             max_depth=self.data['limits']['max_depth'])
@@ -516,7 +516,7 @@ def _preferred_choice(options, preferred_emitter, autonomy):
     return champion['proposal_id']
 
 
-def run_ooda_epochs(project, output, *, passes=3, candidates=9,
+def run_ooda_ha_epochs(project, output, *, passes=3, candidates=9,
                     exact_budget=6, detail_budget=3, seed=41,
                     topology_loci=(), autonomy=.70, ledger_path=None,
                     location_stack=None, adviser=None, phase_adviser=None,
@@ -533,7 +533,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
     *suggestion* from reviewed valid options, never a CAD validity override.
     """
     if passes < 1 or candidates < 1 or exact_budget < 1 or detail_budget < 1:
-        raise ValueError('All OODA budgets must be positive')
+        raise ValueError('All OODA-HA budgets must be positive')
     if detail_budget > exact_budget:
         raise ValueError('Detail budget cannot exceed exact audit budget')
     if breeding:
@@ -652,7 +652,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
     with single_runner(out/'session.json'):
         archive = (LineageArchive(out/'lineage_archive.json',identity=archive_identity)
                    if breeding else None)
-        journal = OODAJournal(out/'session.json', identity=identity,
+        journal = OODAHAJournal(out/'session.json', identity=identity,
                               initial=initial, autonomy=autonomy,
                               max_depth=max_depth, max_loops=max_loops)
         def status_with_archive():
