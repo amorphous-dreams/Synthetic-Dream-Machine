@@ -112,10 +112,10 @@ class Project:
         pet_receipt = ledger.resolve(witness) if ledger is not None else []
         if ledger is not None:
             (out/'pet_name_receipt.json').write_text(json.dumps(
-                {'schema':'projection-loom/pet-name-receipt/v1',
+                {'schema':'projection-loom/pet-name-receipt',
                  'witness_id': witness.witness_id, 'resolutions':pet_receipt,
                  'soft_loss':ledger.soft_loss(witness)},indent=2))
-        summary={'schema':'projection-loom/solid-model/v2',
+        summary={'schema':'projection-loom/solid-model',
                  'project':str(self.file),'genome':{k:float(v) for k,v in genome.items()},
                  'geometry':'solid.step','contacts':audit,'relations':'relations.json',
                  'pet_name_receipt':'pet_name_receipt.json' if ledger is not None else None,
@@ -125,5 +125,5 @@ class Project:
                  'reference_registration':'provisional-unverified' if self.reference else None,
                  'authority':'BRep solid union; triangle mesh is export-only and cannot seed growth'}
         (out/'manifest.json').write_text(json.dumps(summary,indent=2))
-        (out/'genome.json').write_text(json.dumps({'schema':'projection-loom/genome/v2','genome':summary['genome']},indent=2))
+        (out/'genome.json').write_text(json.dumps({'schema':'projection-loom/genome','genome':summary['genome']},indent=2))
         return summary
