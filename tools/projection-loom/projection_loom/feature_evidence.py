@@ -16,6 +16,48 @@ class FeatureEvidence:
         self.digest=digest
         self.source_sha256=source_sha256
     @classmethod
+    def author(cls,project,regions,out,*,score_size):
+        """Snapshot Operator supplied PNG regions with exact source/image digests.
+
+        No region is inferred from the painting and no registration is created.
+        The resulting manifest is a local annotation receipt only.
+        """
+        from shutil import copyfile
+        if project.reference is None or not project.reference.is_file():
+            raise ValueError('Feature annotation requires an actual source image')
+        if not isinstance(regions,dict) or not regions or set(regions)-set(FAMILY_ENTITY.values()):
+            raise ValueError('Feature annotations require known entity names')
+        target=Path(out)
+        if target.exists():
+            raise ValueError('Feature annotation manifest already exists')
+        entries={}
+        for entity,file in sorted(regions.items()):
+            original=Path(file)
+            if not original.is_file():
+                raise FileNotFoundError(original)
+            with Image.open(original) as img:
+                if img.size!=tuple(score_size):
+                    raise ValueError('Feature mask dimensions differ from scoring camera')
+                if not (np.asarray(img.convert('L'))>127).any():
+                    raise ValueError('Empty feature attention mask')
+            entries[entity]=original
+        target.parent.mkdir(parents=True,exist_ok=True)
+        copied={}
+        for entity,original in entries.items():
+            stored=target.parent/('feature-'+entity.lower()+'.png')
+            if stored.exists():
+                raise ValueError('Feature mask snapshot already exists')
+            copyfile(original,stored)
+            copied[entity]={'path':stored.name,
+                'sha256':sha256(stored.read_bytes()).hexdigest()}
+        source_sha256=sha256(project.reference.read_bytes()).hexdigest()
+        manifest={'schema':'projection-loom/feature-evidence/v1',
+            'source_sha256':source_sha256,'evidence_state':'operator-annotated',
+            'regions':copied}
+        target.write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n',encoding='utf8')
+        return cls.load(target,source_sha256=source_sha256,score_size=score_size)
+
+    @classmethod
     def load(cls,path,*,source_sha256,score_size):
         path=Path(path)
         data=json.loads(path.read_text(encoding='utf8'))
