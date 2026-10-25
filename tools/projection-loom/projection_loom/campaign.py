@@ -172,3 +172,87 @@ class LineageArchive:
     def elites(self):
         return sorted((copy.deepcopy(x) for x in self.data['elites'].values()),
                       key=lambda x: (x['combined_loss'], x['id']))
+
+
+# These are anonymous search families, not Operator pet-names. Every family
+# shares the same source-bound recipe and native CAD / polygon audit rules.
+FAMILY_FOCUSES = {
+    'needle': ('shaft_width', 'shaft_length', 'shaft_asymmetry', 'shaft_jaggedness'),
+    'fractured': ('shaft_jaggedness', 'spire_segmentation', 'crystal.fracture', 'crystal.wave'),
+    'terraces': ('terrace_overhang', 'terrace_offset', 'gallery_reach', 'fortress_width'),
+    'crown': ('crown_taper', 'crown_offset', 'parapet_fraction', 'tower_height'),
+    'keep': ('keep_taper', 'tower_height', 'spire_segmentation', 'gate_width'),
+    'crystal': ('crystal.relief', 'crystal.guide', 'crystal.fracture', 'join.relief'),
+}
+
+
+def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_family,
+               migration_every=4, mutation_scale=.16):
+    """Deterministic Sobol/local/topology variations of durable family parents.
+
+    This is only a proposal generator, never a second OODA-HA executor. A
+    compatible immigrant may lend loci every N generations; no family gets
+    deleted because its global fitness is temporarily worse than the seed.
+    """
+    from scipy.stats import qmc
+    from .epochs import Proposal
+    if type(generation) is not int or generation < 1:
+        raise ValueError('Breeding generation must be a positive integer')
+    if type(offspring_per_family) is not int or not 1 <= offspring_per_family <= 32:
+        raise ValueError('Offspring per family must lie within 1..32')
+    if type(migration_every) is not int or migration_every < 2:
+        raise ValueError('Migration cadence must be at least two generations')
+    if not np.isfinite(mutation_scale) or not 0 < mutation_scale <= .4:
+        raise ValueError('Mutation scale must lie within (0, .4]')
+    if set(initial) != set(bounds):
+        raise ValueError('Brood genome must match declared bounds')
+    if any(not set(keys).issubset(bounds) for keys in FAMILY_FOCUSES.values()):
+        raise ValueError('Breeding family loci absent from compound recipe')
+    families = list(FAMILY_FOCUSES)
+    brood = []
+    for family_index, family in enumerate(families):
+        focus = FAMILY_FOCUSES[family]
+        rng = np.random.default_rng(seed + generation*1009 + family_index*7919)
+        sobol = qmc.Sobol(len(focus), scramble=True,
+                          seed=seed+generation*1013+family_index*65521).random_base2(
+                              max(1, int(np.ceil(np.log2(offspring_per_family)))))
+        parents = archive.parents(family, limit=3)
+        for j in range(offspring_per_family):
+            mode = ('sobol', 'local', 'topology')[j % 3]
+            primary = parents[j % len(parents)] if parents else None
+            anchor = dict(primary['genome'] if primary else initial)
+            parent_id = primary['id'] if primary else 'original-seed'
+            # Migrations are compatible because all islands share the recipe;
+            # the donor contributes only focus loci and remains attributable.
+            if parents and generation % migration_every == 0 and j == 0:
+                donor_family = families[(family_index-1) % len(families)]
+                donor = archive.best(donor_family)
+                if donor is not None:
+                    for k in focus[::2]:
+                        anchor[k] = float(donor['genome'][k])
+                    parent_id = f'{primary["id"]}+migration:{donor["id"]}'
+            if len(parents) > 1 and j % 4 == 3:
+                donor = parents[(j+1) % len(parents)]
+                for k in focus[::2]:
+                    anchor[k] = float(donor['genome'][k])
+                parent_id = f'{parent_id}+cross:{donor["id"]}'
+            for k, key in enumerate(focus):
+                lo, hi = bounds[key]
+                if mode == 'sobol':
+                    value = lo + float(sobol[j, k]) * (hi-lo)
+                elif mode == 'local':
+                    value = anchor[key] + float(rng.normal(0, mutation_scale)) * (hi-lo)
+                else:
+                    value = anchor[key]
+                    # Toggle one explicit grammar branch. Nonbranch topology
+                    # families perturb their most descriptive constructive locus.
+                    if key in ('spire_segmentation','join.enable'):
+                        value = (lo + .75*(hi-lo) if value < (lo+hi)/2
+                                 else lo + .25*(hi-lo))
+                    elif k == j//3 % len(focus):
+                        value += (.22 if generation % 2 else -.22)*(hi-lo)
+                anchor[key] = float(np.clip(value, lo, hi))
+            brood.append(Proposal(
+                id=f'{family}-{generation:03d}-{j+1:03d}',
+                emitter=f'family:{family}:{mode}', genome=anchor, parent=parent_id))
+    return brood
