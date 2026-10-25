@@ -90,6 +90,7 @@ def test_seed_cue_never_grants_cad_or_survey_authority():
     # A second recipe may not secretly claim a different content-addressed seed.
     mutated=recipe.to_dict()
     mutated.pop("sha256")
+    mutated.pop("schema")
     mutated["seed_entity_sha256"]="0"*64
     other=CapabilityRecipe(**mutated)
     with pytest.raises(ValueError,match="seed identity"):

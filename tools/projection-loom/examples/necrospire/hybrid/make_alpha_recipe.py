@@ -20,7 +20,6 @@ def make():
     }
     bounds={**base.bounds,**{k:(v[0],v[1]) for k,v in extra.items()}}
     initial={**base.initial,**{k:v[2] for k,v in extra.items()}}
-    from projection_loom.capability_stack import Capability
     seed_step=Capability('seed.oblique','Oblique Seed','seed-cue',
         has=('#has/source-silhouette','#has/source-appearance'))
     steps=(seed_step,*base.steps,
