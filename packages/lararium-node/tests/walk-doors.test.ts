@@ -15,20 +15,20 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
-import { mkdtempSync, rmSync, mkdirSync, chmodSync, statSync, existsSync, readdirSync } from "node:fs";
+import { mkdtempSync, rmSync, chmodSync, statSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   encodeInvite, decodeInvite, mintHostToken, mintHostingAct, tokenVerifiesAt, type HostingEpoch,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
-import { larDataDir } from "../src/vessel-paths.js";
 import { handleRowPath, faceRowNames } from "./face-paths.js";
 import { walkRowFile } from "../src/node-walk-store.js";
 import { dirname } from "node:path";
 import { nexusLeafFor, wornNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
-import { rollHosting, hostingDir } from "../src/hosting-store.js";
+import { rollHosting } from "../src/hosting-store.js";
+import { hostingDirPath } from "../src/hosting-face.js";
 import { runWalkTake, runWalkInvite, runWalkState, WalkRefusal } from "../src/commands/walk.js";
 
 const AID = "nexus-" + "a".repeat(64);
@@ -155,13 +155,14 @@ describe("the walk and hosting stores stand owner-only", () => {
     await wearPersona(0);
     await runWalkTake({ carried: await invite() });
     expect(mode(walkDirOf())).toBe(0o700); // the face directory was founded owner-only
-    mkdirSync(join(larDataDir(), "hosting"), { recursive: true });
-    chmodSync(join(larDataDir(), "hosting"), 0o755);
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
+    const hostingRoot = dirname(hostingDirPath(0, AID)!);
+    chmodSync(hostingRoot, 0o755);
     await runWalkTake({ carried: await invite() });
     await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
     expect(mode(walkDirOf())).toBe(0o700);
-    expect(mode(join(larDataDir(), "hosting"))).toBe(0o700);
-    expect(mode(await hostingDir(AID))).toBe(0o700);
+    expect(mode(hostingRoot)).toBe(0o700);
+    expect(mode(hostingDirPath(0, AID)!)).toBe(0o700);
     expect(readdirSync(walkDirOf()).filter((n) => n.startsWith("walk-"))).toHaveLength(1);                     // CONTROL: the record landed
   });
 });

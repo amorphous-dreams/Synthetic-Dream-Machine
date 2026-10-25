@@ -79,16 +79,16 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the worn face's book; a vessel wearing none recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
 | `guardian-set` `:337-338` | face-hot | ''D:'' each face's guardian/recovery commitments under that face; its intended local row rides its one-face bundle. Guardians keep their own secret shares. |
 | `face-provisional` `:341-342` | face-hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
-| `hosting-state` `:343-344` | hot | ''D/F split, LEAD:'' assign confidential hosting state to the authorizing face; public hosting advertisements may be F. A proven irreducible node service secret needs a new named S row, not this catchall. |
-| `hosting-spent` `:345-346` | hot | ''D/F split, LEAD:'' per-face replay/spend authority D; public nonsecret replay markers F only after payload audit. |
-| `hosting-carry` `:347-348` | hot | ''D/F split, LEAD:'' ciphertext carriage may be F; any private plaintext/key or relation goes to owning face D. Inspect payload before migration. |
+| `hosting-state` `hosting-store.ts` | face-hot | ''D:'' the hosting face is the face whose hosting leaf authorizes the service. Its state rests in that face, `hosting-h<N>/<aid digest>/state.json`; the Nexus AID proves no face, so the binding is the face's own directory for that AID (never the floor index), found by directory name across the face directories. The first roll founds it under the face the vessel wears and refuses by name (`HostingFaceAbsent`) where it wears none. |
+| `hosting-spent` `hosting-store.ts` | face-hot | ''D:'' per-face replay and spend authority beside its state, `hosting-h<N>/<aid digest>/spent-*`. |
+| `hosting-carry` `hosting-carry.ts` | face-hot | ''D:'' the hosting face's rhythm records and the guests' sealed ciphertext rest in that face, `hosting-h<N>/<aid digest>/carry/...`; the walker, a different face, owns the inner ciphertext's content key, and no guest key lands at the host. |
 | `walk` `node-walk-store.ts` | face-hot | ''D:'' the walking face owns its private walk record, `walk-h<N>-<gate digest>.json` in that face; a vessel still walks at one hearth (every face's names are read), and the daemon lists only the unlocked faces' walks. |
 | `gate-memory` `gate-memory-rows.ts` | face-hot | ''D:'' a gate's withdrawal memory rests in the face whose gate learned it, `gate-memory-h<N>-<subject digest>.bin`; each gate reads and writes only its own face's rows, and another unlocked face's withdrawal reads absent through it. |
 | `transition-pending` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: a crossing in progress holds public key-sets, signatures and witnesses and no secret, so it rests in the clear in the seal home (`plain-rows.ts`), readable with no key, written under the custody claim. |
 | `transitions` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: each sealed crossing record is a verified public record (key-sets, signatures, witnesses), so it rests in the clear beside the charter and verifies from the charter alone. |
 | `cofound` `cofound-record.ts` | face-hot | ''D:'' the acting face's record of a joint founding, `cofound-h<N>-<offer fingerprint>.json` in that face; the jointly signed image is public and rides the offer and join files. |
 | `outbox-key` `outbox-key.ts` | face-hot | ''D:'' one outbox key per sending face, `outbox-key-h<N>.bin` in that face. A flat `outbox-key.bin` reads as an earlier shape. The parcels partition by the sending face's key (a parcel sealed under another face's key never opens). |
-| `sealed-outbox` `:373-374` | outbox | ''D:'' local sealed parcels partition by sending face and its outbox key. Wire ciphertext can be copied as F carriage; the local outbox key and reader relation do not become floor authority. |
+| `sealed-outbox` `sealed-store-fs.ts` | outbox | ''D:'' parcels seal under the sending face's own outbox key (`outbox-key-h<N>`), so a parcel sealed under another face's key never opens; wire ciphertext copied as F carriage is separate. The singleton parcels an earlier shape wrote under the one outbox key refuse by name. |
 | `persona-root` `:377-378` | face-cold | ''D:'' face root under that face's FCK; one-face bundle includes it. |
 | `face-proof-key` `:381-382` | face-cold | ''D:'' per-face Nexus proof key under that FCK; bundle selection remains face-specific. |
 | `seat-key` `:386-387` | face-cold | ''D:'' face's local seat key; stays on its vessel, not in a face bundle. |
@@ -248,6 +248,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;PdAbhbUI9Y0pjCF_3LE-EPF53crLfWQQMUNdu8H8Ejc
+<<^ code="&#x0003;">>ni:///sha-256;5H_pPDWYyyLXzemsMdFVfZo6GElrAYws8TRIs6BcRY4
 
 <<^ code="&#x0004;" -> to="?">>

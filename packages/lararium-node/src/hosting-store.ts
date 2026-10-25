@@ -52,6 +52,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
 import { ownerOnlyDir } from "./fs-atomic.js";
 
 /** The allowance cap a hearth hosts under until its operator names another. */
@@ -68,27 +69,18 @@ export interface HostingState {
 
 const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("storage", file, "malformed");
+const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
 
-/** One Nexus's hosting directory, relative to the storage home. */
-export function hostingRowDir(nexusAid: string): string {
-  return `hosting/${sha256HexSync(nexusAid.trim().toLowerCase()).slice(0, 32)}`;
-}
-
-/** The directory one Nexus's hosting rows rest in, under the storage home of the custody this vessel holds open. */
-export async function hostingDir(nexusAid: string): Promise<string> {
-  return join((await openedCustody()).homes.storage, ...hostingRowDir(nexusAid).split("/"));
-}
-
-/** Stand one Nexus's hosting directory, and the `hosting/` root above it, at the owner-only mode. */
-export async function standHostingDir(nexusAid: string): Promise<string> {
-  ownerOnlyDir(join((await openedCustody()).homes.storage, "hosting"));
-  const dir = await hostingDir(nexusAid);
+/** Stand one Nexus's hosting directory in face `face` at the owner-only mode. */
+export async function standHostingDir(face: number, nexusAid: string): Promise<string> {
+  const dir = hostingDirPath(face, nexusAid);
+  if (dir === null) throw new HostingFaceAbsent();
+  ownerOnlyDir(join(dir, ".."));
   ownerOnlyDir(dir);
   return dir;
 }
 
-const stateFile = (nexusAid: string): string => `${hostingRowDir(nexusAid)}/state.json`;
+const stateFile = (face: number, nexusAid: string): string => `${hostingRowDir(face, nexusAid)}/state.json`;
 
 function parseState(bytes: Uint8Array, file: string): HostingState {
   let raw: unknown;
@@ -112,8 +104,10 @@ function parseState(bytes: Uint8Array, file: string): HostingState {
  * read whole refuses by name: a hearth never reads a torn state as "hosts nowhere" and never rolls over it.
  */
 export async function readHostingState(nexusAid: string): Promise<HostingState | null> {
-  const file = stateFile(nexusAid);
-  const bytes = await readCustodyRow("storage", file);
+  const face = await hostingFaceOf(nexusAid, false);
+  if (face === null) { await openedCustody(); return null; }
+  const file = stateFile(face, nexusAid);
+  const bytes = await readCustodyRow("identity", file);
   return bytes === null ? null : parseState(bytes, file);
 }
 
@@ -131,12 +125,13 @@ export function liveEpochs(state: HostingState, leafSeed: Uint8Array): { readonl
 const SPEND_FILE = /^spent-([0-9a-f]{64})-([nm])-([0-9a-f]{32})$/;
 
 /** The spend rows standing in one Nexus's directory, by file name. No directory holds none; any other fault refuses. */
-async function spendNames(nexusAid: string): Promise<string[]> {
-  const dir = await hostingDir(nexusAid);
+async function spendNames(face: number, nexusAid: string): Promise<string[]> {
+  const dir = hostingDirPath(face, nexusAid);
+  if (dir === null) return [];
   try { return readdirSync(dir).filter((n) => SPEND_FILE.test(n)); }
   catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw new CustodyRowUnavailable("storage", hostingRowDir(nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+    throw new CustodyRowUnavailable("identity", hostingRowDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
   }
 }
 
@@ -157,24 +152,25 @@ export class HostingStateMoved extends Error {
 export async function rollHosting(opts: {
   readonly nexusAid: string; readonly leafSeed: Uint8Array; readonly cap?: number;
 }): Promise<{ readonly act: HostingAct; readonly state: HostingState; readonly unswept: readonly string[] }> {
-  const file = stateFile(opts.nexusAid);
+  const face = (await hostingFaceOf(opts.nexusAid, true))!;
+  const file = stateFile(face, opts.nexusAid);
   const prior = await readHostingState(opts.nexusAid);
   const priorCid = prior ? hostingActCid(prior.current) : null;
   const cap = opts.cap ?? prior?.current.cap ?? DEFAULT_HOSTING_CAP;
   const minted = await mintHostingAct({ leafSeed: opts.leafSeed, nexusAid: opts.nexusAid, prev: priorCid, cap });
   const state: HostingState = { current: minted.act, previous: prior?.current ?? null, depth: (prior?.depth ?? 0) + 1 };
-  await standHostingDir(opts.nexusAid);
-  await updateCustodyRow("storage", file, (standing) => {
+  await standHostingDir(face, opts.nexusAid);
+  await updateCustodyRow("identity", file, (standing) => {
     const held = standing === null ? null : parseState(standing, file);
     if ((held ? hostingActCid(held.current) : null) !== priorCid) throw new HostingStateMoved();
     return { plaintext: utf8.encode(JSON.stringify(state)), value: undefined };
   });
   const live = new Set([minted.cid, ...(state.previous ? [hostingActCid(state.previous)] : [])]);
   const unswept: string[] = [];
-  for (const name of await spendNames(opts.nexusAid)) {
+  for (const name of await spendNames(face, opts.nexusAid)) {
     if (live.has(SPEND_FILE.exec(name)![1]!)) continue;
-    const row = `${hostingRowDir(opts.nexusAid)}/${name}`;
-    try { await removeCustodyRow("storage", row); }
+    const row = `${hostingRowDir(face, opts.nexusAid)}/${name}`;
+    try { await removeCustodyRow("identity", row); }
     catch (err) { if (err instanceof CustodyRowUnavailable) unswept.push(row); else throw err; }
   }
   return { act: minted.act, state, unswept };
@@ -183,21 +179,22 @@ export async function rollHosting(opts: {
 /** The outcome of a burn: first of its kind, the same claim/batch again, or a different one on a burned entry. */
 export type SpendOutcome = "fresh" | "retry" | "spent-other";
 
-function spendFile(nexusAid: string, epochCid: string, tag: "n" | "m", key: string): string {
+function spendFile(face: number, nexusAid: string, epochCid: string, tag: "n" | "m", key: string): string {
   const epoch = epochCid.toLowerCase();
   if (!HEX64.test(epoch)) throw new Error("[hosting-store] a spend names its epoch by a 64-hex act id");
   // The tag in the name keeps a nonce's row and a marker's row apart; the digest hides the value itself.
-  return `${hostingRowDir(nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
+  return `${hostingRowDir(face, nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
 }
 
 /** Read one spend row, decide and write it under one custody holder: the row's presence IS the burn. */
 async function burn(nexusAid: string, epochCid: string, tag: "n" | "m", key: string, value: string): Promise<SpendOutcome> {
   if (!/^\S+$/.test(key) || !/^\S+$/.test(value)) throw new Error("[hosting-store] a spend's key and value each stand as one word");
-  const file = spendFile(nexusAid, epochCid, tag, key);
-  await standHostingDir(nexusAid);
+  const face = (await hostingFaceOf(nexusAid, true))!;
+  const file = spendFile(face, nexusAid, epochCid, tag, key);
+  await standHostingDir(face, nexusAid);
   // The row binds its own key beside its value: a digest collision in the name never reads as that key's burn.
   const line = `${tag} ${key} ${value}`;
-  return updateCustodyRow<SpendOutcome>("storage", file, (standing) => {
+  return updateCustodyRow<SpendOutcome>("identity", file, (standing) => {
     if (standing === null) return { plaintext: utf8.encode(line), value: "fresh" };
     let held: string;
     try { held = new TextDecoder("utf-8", { fatal: true }).decode(standing); } catch { throw malformed(file); }
@@ -223,7 +220,9 @@ export function spendMintMarker(opts: {
 
 async function countSpends(nexusAid: string, epochCid: string, tag: "n" | "m"): Promise<number> {
   const epoch = epochCid.toLowerCase();
-  return (await spendNames(nexusAid)).filter((name) => { const m = SPEND_FILE.exec(name)!; return m[1] === epoch && m[2] === tag; }).length;
+  const face = await hostingFaceOf(nexusAid, false);
+  if (face === null) return 0;
+  return (await spendNames(face, nexusAid)).filter((name) => { const m = SPEND_FILE.exec(name)!; return m[1] === epoch && m[2] === tag; }).length;
 }
 
 /** How many tokens were redeemed at `epochCid` — the count the hearth's operator reads, never a row. */

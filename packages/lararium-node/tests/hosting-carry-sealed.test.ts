@@ -1,15 +1,15 @@
 /**
  * hosting-carry-sealed — a hearth's carriage rests as custody rows, and its count reads the rows standing.
  *
- *   K1  RED: EVERY CARRIAGE ROW RESTS SEALED. The guest's rhythm row and each blob row read as VK-sealed frames;
+ *   K1  RED: EVERY CARRIAGE ROW RESTS SEALED. The guest's rhythm row and each blob row read as face-key-sealed frames;
  *       no file's bytes spell the walker's ciphertext or the rhythm's fields; a blob's name carries its address
  *       digest and its length. The parent commit's store wrote the ciphertext as it arrived and the record as JSON.
  *                                                 control: the fetch answers the deposited bytes
  *   K2  THE BLOB ROW COMMITS, AND THE COUNT RE-DERIVES. A deposit that stood its rhythm row and stopped before its
  *       blob counts nothing, and the same deposit again lands; a blob that leaves lowers the count with no record
  *       write; no counter stands ahead of the rows.
- *   K3  RED: A WRONG KEY CARRIES NOTHING AND HANDS OUT NOTHING. A rhythm row another vessel sealed refuses the
- *       contact, the deposit and the read by name; a blob row another vessel sealed refuses the fetch by name (it
+ *   K3  RED: A WRONG KEY CARRIES NOTHING AND HANDS OUT NOTHING. A rhythm row another face sealed refuses the
+ *       contact, the deposit and the read by name; a blob row another face sealed refuses the fetch by name (it
  *       never reads as "carries nothing"); the bytes stay.
  *   K4  RED: a rhythm row that opens to another shape refuses by name.
  *   K5  RED: THE FLOOR READS NO CARRIAGE ROW: a locked seat refuses the read, the contact, the deposit and the fetch.
@@ -23,12 +23,13 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { carryRecordKey, ciphertextCid, readVkCarrier } from "@lararium/mesh";
+import { carryRecordKey, ciphertextCid, readFckCarrier } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRow } from "../src/custody-seat.js";
 import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
-import { hostingDir, hostingRowDir } from "../src/hosting-store.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+
+import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(61);
@@ -41,18 +42,18 @@ function blob(n: number, fill: number): { cid: string; ciphertext: Uint8Array } 
 }
 const put = (b: { cid: string; ciphertext: Uint8Array }, depth = 1, limits = ROOMY, key = KEY) =>
   depositCarried({ nexusAid: AID, key, depth, ...b, limits });
-const rhythmRow = (key = KEY): string => `${hostingRowDir(AID)}/carry/${key}/record.json`;
+const rhythmRow = (key = KEY): string => `${hostingRowDir(0, AID)}/carry/${key}/record.json`;
 const enc = (v: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(v));
 
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
 async function custody(label: string): Promise<SeatedScratchCustody> {
-  const c = await seatScratchCustody(label);
+  const c = await seatHostingCustody(label);
   drops.push(() => c.drop());
   return c;
 }
 const refusal = async (act: Promise<unknown>): Promise<unknown> => act.then((v) => `landed ${String(v)}`, (e: unknown) => e);
-const guestDir = async (key = KEY): Promise<string> => join(await hostingDir(AID), "carry", key);
+const guestDir = async (key = KEY): Promise<string> => join(hostingDirPath(0, AID)!, "carry", key);
 const blobNames = async (): Promise<string[]> => readdirSync(join(await guestDir(), "blobs")).sort();
 async function filesUnder(dir: string): Promise<string[]> {
   const out: string[] = [];
@@ -70,7 +71,7 @@ describe("the carriage at rest", () => {
     expect(files.map((f) => f.slice((dirname(f)).length + 1)).sort()).toEqual([`${a.cid.slice("blake3:".length)}.96`, "record.json"].sort());
     for (const f of files) {
       const bytes = readFileSync(f);
-      expect(readVkCarrier(bytes), f).toBe("sealed");
+      expect(readFckCarrier(bytes), f).toBe("sealed");
       expect(bytes.includes(Buffer.from(a.ciphertext.subarray(0, 32))), "the ciphertext as it arrived").toBe(false);
       for (const field of ["lastSeen", "pending", "gap"]) expect(bytes.includes(Buffer.from(field)), field).toBe(false);
     }
@@ -90,7 +91,7 @@ describe("the carriage at rest", () => {
     await custody("carry-k2");
     // A deposit stood its rhythm row and stopped before its blob: it counts nothing, and no value answers.
     mkdirSync(join(await guestDir(), "blobs"), { recursive: true });
-    await writeCustodyRow("storage", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
+    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
     const a = blob(60, 1), b = blob(30, 2);
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 0 });
     expect(await fetchCarried(AID, KEY, a.cid)).toBeNull();
@@ -123,7 +124,7 @@ describe("the carriage at rest", () => {
     copyFileSync(join(bDir, "blobs", name), join(aDir, "blobs", name));
     const fetched = await refusal(fetchCarried(AID, KEY, doc.cid));
     expect(fetched).toBeInstanceOf(CustodyRowUnavailable);
-    expect(fetched).toMatchObject({ home: "storage", file: `${hostingRowDir(AID)}/carry/${KEY}/blobs/${name}` });
+    expect(fetched).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // B's rhythm row at A's path: nothing reads, counts a contact or lands a deposit over it.
     copyFileSync(join(bDir, "record.json"), join(aDir, "record.json"));
     const foreign = readFileSync(join(aDir, "record.json"));
@@ -139,11 +140,11 @@ describe("the carriage at rest", () => {
     expect(await put(blob(10, 1))).toBe("held");
     for (const shape of [{ lastSeen: 1, gap: 0 }, { lastSeen: -1, gap: 0, pending: null }, { lastSeen: 1, gap: "0", pending: null },
       { lastSeen: 1, gap: 0, pending: 1.5 }, { lastSeen: 1, gap: 0, pending: null, bytes: 10 }, [1], "x"]) {
-      await writeCustodyRow("storage", rhythmRow(), enc(shape));
+      await writeCustodyRow("identity", rhythmRow(), enc(shape));
       expect(await refusal(readCarryRecord(AID, KEY)), JSON.stringify(shape)).toMatchObject({ reading: "malformed" });
       expect(await refusal(noteContact(AID, KEY, 2))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("storage", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
+    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 10 });
   });
 
@@ -183,13 +184,13 @@ describe("the carriage at rest", () => {
     process.env["LAR_ROOT"] = a.root;
     expect(await put(doc)).toBe("held");
     expect(await put(doc)).toBe("held");                                            // CONTROL: its own row answers held
-    copyFileSync(bBlob, join(await guestDir(), "blobs", name));                     // a row another vessel sealed, under the same name
+    copyFileSync(bBlob, join(await guestDir(), "blobs", name));                     // a row another face sealed, under the same name
     const again = await refusal(put(doc));
     expect(again).toBeInstanceOf(CustodyRowUnavailable);
-    expect(again).toMatchObject({ home: "storage", file: `${hostingRowDir(AID)}/carry/${KEY}/blobs/${name}` });
+    expect(again).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // A row this vessel's key opens to OTHER bytes than its address names refuses too.
     rmSync(join(await guestDir(), "blobs", name));
-    await writeCustodyRow("storage", `${hostingRowDir(AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
+    await writeCustodyRow("identity", `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
     expect(await refusal(put(doc))).toMatchObject({ reading: "holds other bytes than its address names" });
   });
 
@@ -216,6 +217,6 @@ describe("the carriage at rest", () => {
     }
     expect(await fetchCarried(AID, "../escape", doc.cid)).toBeNull();
     expect(String(await refusal(put(doc, 1, ROOMY, "../escape")))).toMatch(/names no carriage row/);
-    expect(existsSync(join(await hostingDir(AID), "carry"))).toBe(false);
+    expect(existsSync(join(hostingDirPath(0, AID)!, "carry"))).toBe(false);
   });
 });

@@ -222,7 +222,7 @@ export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim,
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
-  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir, hostingRowDir, HostingStateMoved,
+  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, HostingStateMoved,
   DEFAULT_HOSTING_CAP,
 } from "./hosting-store.js";
 export type { HostingState, SpendOutcome } from "./hosting-store.js";

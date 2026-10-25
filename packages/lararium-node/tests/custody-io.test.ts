@@ -277,7 +277,7 @@ async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; 
   const sealed: SealedCarrier[] = [
     { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     { name: "identity/custody-root.bin", path: join(homes.identity, "custody-root.bin"), keyClass: "device-minted" },
-    { name: `storage/hosting/${"ab".repeat(16)}/state.json`, path: join(homes.storage, "hosting", "ab".repeat(16), "state.json") },
+    { name: "identity/.persona-grant-pending.json", path: join(homes.identity, ".persona-grant-pending.json"), keyClass: "relation" },
   ];
   for (const c of sealed) await writeSealedCarrier({ io, vk, treePath, carrier: c, plaintext: text(`${c.name}-v1`) });
   await io.write(join(homes.seal, "transition-pending.json"), text("{}"));
@@ -377,7 +377,7 @@ describe("the relation refusal — no rotation regenerates it", () => {
   test("a write over a relation row the VK cannot open says only the other party re-issues it; a non-relation carrier says nothing of the kind", async () => {
     const io = new FsCustodyIo(homes);
     const f = await found(io);
-    const [pending, , walk] = f.sealed as [SealedCarrier, SealedCarrier, SealedCarrier];
+    const [pending, walk] = f.sealed as [SealedCarrier, SealedCarrier, SealedCarrier];   // a relation row, and a device-minted one that is no relation
     // Replace both with bytes sealed under a DIFFERENT vk (same carrier name, so only the key differs).
     const altRoot = join(root, "alt");
     const altIo = new FsCustodyIo({ identity: join(altRoot, "i"), storage: join(altRoot, "s"), seal: join(altRoot, "n") });

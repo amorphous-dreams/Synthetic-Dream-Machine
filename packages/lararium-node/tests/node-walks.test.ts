@@ -45,9 +45,9 @@ async function invite(): Promise<() => string> {
 
 describe("N — a node vessel walks like any leaf", () => {
   it("walking grants no carry duty: the carried set and the node's own charter stand as before", async () => {
-    const mint = await invite();
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    const mint = await invite();
     const sealHome = join(root, "state", "nexus");
     const before = await carriedSet(sealHome);
     await takeInvite(nodeWalkStore({ face: 0 }), mint());

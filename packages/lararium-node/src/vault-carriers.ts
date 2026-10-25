@@ -235,8 +235,6 @@ const loginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-
 const faceLoginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+?)?-h(0|[1-9]\\d*)\\.json$`);
 /** A plain filename. */
 const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
-/** A hosting directory: `hosting/<the 32-hex digest of a Nexus AID>/`. */
-const HOSTING = "hosting/[0-9a-f]{32}/";
 
 /**
  * A row as its line of the table spells it. The custody class decides the `bare` column at the type: a row
@@ -427,12 +425,12 @@ function buildTable(): readonly CarrierRow[] {
     // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
     faceRowOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
-    row({ row: "hosting-state", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
-          custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-spent", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
-          custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-carry", target: tgt(["D", "F"], LEAD), home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}carry/.+$`),
-          custody: "hot", keyClass: null, writer: "hosting-carry" }),
+    faceRowOf({ row: "hosting-state", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/state\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-store", name: (m) => `hosting-state-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRowOf({ row: "hosting-spent", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/spent-[^/]+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-store", name: (m) => `hosting-spent-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRowOf({ row: "hosting-carry", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/carry\/.+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-carry", name: (m) => `hosting-carry-h${m[1]}-${m[2]}`, face: faceOf }),
     faceRowOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-walk-store", name: (m) => `walk-h${m[1]}-${m[2]}`, face: faceOf }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
