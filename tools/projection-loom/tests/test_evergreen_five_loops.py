@@ -161,3 +161,33 @@ def test_measure_topology_emitter_crosses_new_discrete_grammar_switches(tmp_path
     for family, switch in (("terraces","grammar.gallery"),("crown","grammar.buttress")):
         topology=next(p for p in rows if p.emitter==f"family:{family}:topology")
         assert topology.genome[switch]>=.5, (family,switch,topology.genome[switch])
+
+
+def test_arc_feature_mask_receipt_binds_fixed_view_not_just_source_bytes(tmp_path):
+    from projection_loom.pipeline import Project
+    from projection_loom.provenance_encoding import canonical_json_sha256
+    examples=Path(__file__).resolve().parents[1]/"examples/necrospire"
+    project=Project.load(examples/"project_alpha.json")
+    image=tmp_path/"fortress.png"
+    Image.fromarray(np.full((96,64),255,dtype=np.uint8),"L").save(image)
+    saved=tmp_path/"features.json"
+    evidence=FeatureEvidence.author(project,{"Fortress":image},saved,
+                                    score_size=(64,96))
+    expected=canonical_json_sha256({
+        "reference_view":project.reference_view,
+        "camera":project.cameras[project.reference_view].to_dict(),
+        "score_size":[64,96],
+    })
+    assert json.loads(saved.read_text())["view_sha256"]==expected
+    assert evidence.view_sha256==expected
+    assert FeatureEvidence.load(saved,source_sha256=evidence.source_sha256,
+        score_size=(64,96),view_sha256=expected).digest==evidence.digest
+    with pytest.raises(ValueError,match="view|camera"):
+        FeatureEvidence.load(saved,source_sha256=evidence.source_sha256,
+            score_size=(64,96),view_sha256="f"*64)
+    forged=json.loads(saved.read_text())
+    forged.pop("view_sha256")
+    saved.write_text(json.dumps(forged))
+    with pytest.raises(ValueError,match="view|camera"):
+        FeatureEvidence.load(saved,source_sha256=evidence.source_sha256,
+            score_size=(64,96),view_sha256=expected)
