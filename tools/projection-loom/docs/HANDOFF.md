@@ -1,8 +1,49 @@
-# Projection Loom — Evergreen Handoff (Wave XII)
+# Projection Loom — Evergreen Handoff (Waves XII–XIX)
 
 **As-of source:** PR #84, branch `feature/green-jello-dinosaur-5--projection-loom`, inspected at prior handoff head `8fdc71d` (2026-10-23, America/Los_Angeles). **This document travels with the branch; check the live PR head on re-entry.** A later commit supersedes the snapshot. Do not mistake a fixed SHA for the latest state.
 
 **Start here:** [PR #84](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/pull/84) · [Noosphere boot](../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) · [Capability-composition meme](../../../bags/lares/ha.ka.ba/lares/api/projection-loom-capability-composition.mem) · [OODA-HA procedural contract](ooda-ha-procedural.md) · [Compound integration](capability-ooda-integration.md).
+
+## Wave XIX — one helm, one phase law, dependency and syntax gates
+
+**✶ Observe / ⏿ Orient:** Waves XIV–XVIII retired compatibility OODA
+modules, extracted pure phase rules and CAD/compound presentation ports,
+made control-ledger replay recoverable, and gave evidence each native truth
+scope. A refactor could nevertheless reintroduce a second controller or
+silent import shim; direct test dependencies were pinned but their resolved
+transitive set was only recorded in artifacts.
+
+**◇ Decide / RED:** Commit `3ccc34b` adds
+`tests/test_architecture_contract.py`: an initially absent static
+`scripts.check_architecture` and missing
+`check_env.verify_direct_pins` are the red contracts. Tests include
+negative controls for a retired `ooda.py`, duplicate OODA controller,
+phase-law filesystem writes, rendering-to-controller back-edges, unpinned
+or omitted direct dependencies, and a required CI hygiene stage.
+
+**▶ Act:** Commit `d69002d` adds the AST-only architecture audit and
+checks direct pinned versions against `pyproject.toml` and the running
+CI environment; commit `391d681` adds `pip check`, `compileall`,
+and the source architecture check before expensive CAD regression runs.
+These gates add no geometry, calibration or source authority. The one
+execution owner remains `fractal_ooda_ha.OODAJournal`; pure
+`phase_rules.py` and renderers have no scheduling power.
+
+**↺ Aftermath / honesty:** CI `requirements-ci.txt` pins direct inputs;
+`pip freeze` in the workflow artifact records the actual transitive
+environment, but is NOT a fully hermetic, wheel-hashed lockfile. The
+checks prevent unnoticed package inconsistency and a second OODA helm.
+Do not claim Wave XIX or whole PR green until the final published head
+passes dedicated Loom, whole-repository and held-out witnesses. If
+something fails, inspect its code/receipt, identify the first bad
+commit in this linear test→implementation→CI→evergreen chain, and
+repair it rather than weakening the source/geometry gates.
+
+**Next re-entry:** Current alpha truth is the live PR #84 head, NOT
+historical SHAs in the Wave XII handoff. The only planned work after
+this wave is failure triage revealed by actual final CI; the external
+source/reference review remains a separately held operator dependency,
+not a surprise source promotion.
 
 ## Wave XVIII — typed native receipt views, distinct truth scopes
 

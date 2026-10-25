@@ -66,6 +66,28 @@ nested-inquiry suggestions. No provider receives authority over CAD gates. Read
 [the OODA-HA procedural contract](docs/ooda-ha-procedural.md) for the exact
 operator pairing, pet-name/o-takiage flow, and limitations.
 
+## Alpha architecture and CI verification
+
+The canonical controller is `projection_loom.fractal_ooda_ha`.
+A lightweight static guard refuses retired OODA aliases, duplicate
+controllers, impure phase-law code and dependency back-edges from
+renderers to the helm. Check it independently with:
+
+```bash
+python scripts/check_architecture.py
+python -m compileall -q projection_loom scripts
+python -m pip check
+python -m pytest -q tests
+```
+
+CI uses `requirements-ci.txt` for exact **direct** dependency pins,
+checks them against `pyproject.toml` and installed versions, and
+records `pip freeze` and tested modeling kernels as artifacts. This
+is an inspected environment, **not** an exhaustive transitive wheel-
+hash lock. Each commit in the refactoring sequence is independently
+bisectable; only the final branch head is eligible for all-three-gate
+GREEN claims. See [the evergreen handoff](docs/HANDOFF.md).
+
 ## Run the current package
 
 Install Python 3.12+ and CadQuery/OpenCascade, NumPy, SciPy, Pillow, OpenCV,

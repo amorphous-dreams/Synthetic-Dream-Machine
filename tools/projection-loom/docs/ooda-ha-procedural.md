@@ -2,6 +2,29 @@
 
 **Authority:** `projection_loom.fractal_ooda_ha` owns the single nested five-phase controller; `WideEpoch` carries bounded CAD candidate evaluations. The noosphere boot governs Observe → Orient → Decide → Act → Hoʻoko/Aftermath, with `closed` marking the boundary after the fifth phase.
 
+## Architecture hygiene is a witness, not another helm
+
+`scripts/check_architecture.py` statically inspects the Python module
+tree: `fractal_ooda_ha.py` alone may define `run_ooda_epochs` and
+`OODAJournal`; `phase_rules.py` alone owns the PHASES sequence and
+must not gain filesystem side effects. Rendering, evidence and pure
+selection modules may not import the controller. Retired alpha aliases
+(`ooda.py`, `fractal-ooda-ha.py`) are refused, not silently preserved.
+
+In CI, `pip check` verifies the installed dependency graph,
+`compileall` guards syntax, `scripts/check_env.py` confirms the
+pinned *direct* packages and records actual kernels, and
+`scripts/check_architecture.py` guards these responsibility edges.
+`tests/test_architecture_contract.py` contains negative controls that
+would fail if these checks became inert. The artifact's `pip freeze`
+captures transitive resolution for audit; it is not a complete
+cryptographic supply-chain lock.
+
+These checks govern code structure and software reproducibility. They
+cannot convert a pixel reference into a survey, a socket into a fused
+solid, or an adviser into an Operator. OODA-HA still executes five
+ordered phases and Aftermath remains mandatory.
+
 ## Canonical alpha entrypoint and recoverability
 
 The only runtime Python module name now reads `fractal_ooda_ha.py`.
