@@ -31,7 +31,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, catalogNamedBags, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
+import { PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets } from "@lararium/mesh";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;
@@ -53,17 +53,18 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
 }
 
 /**
- * The documents the worn face's bridge may read beyond its own view: every document the catalog names under a bag id that is NOT
- * face-scoped (a wiki, a draft, the catalog, the oracle: the vessel's books), as document IDs. An ALLOW-LIST: a document the catalog
- * does not name as a book reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or
- * renamed is shut out by default and never let in by an omission. The worn face's own four planes ride its view.
+ * The documents the worn face's bridge may read beyond its own view: every document the catalog points at (`automerge:` text) under a
+ * title that is NOT a face-scoped bag id: the vessel's books (a wiki, a draft, the catalog, the oracle) and the pointers its planes
+ * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
+ * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
+ * default and never let in by an omission. The worn face's own four planes ride its view.
  */
 export function bridgeBooks(catalog: LarDoc | undefined | null): ReadonlySet<string> {
   const out = new Set<string>();
-  for (const bag of catalogNamedBags(catalog)) {
-    if (isFaceScopedBag(bag)) continue;
-    const url = tiddlerText(catalog?.tiddlers?.[bag]);
-    if (!url) continue;
+  for (const [title, record] of Object.entries(catalog?.tiddlers ?? {})) {
+    if (isFaceScopedBag(title)) continue;
+    const url = tiddlerText(record);
+    if (!url || !url.startsWith("automerge:")) continue;
     try { out.add(interpretAsDocumentId(url as AutomergeUrl)); } catch { /* a malformed url names nothing */ }
   }
   return out;

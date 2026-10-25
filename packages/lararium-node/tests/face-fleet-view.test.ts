@@ -127,6 +127,11 @@ describe("the worn face's books: the bridge until O1 (an allow-list the catalog 
     } } as never;
     const allowed = bridgeBooks(catalog);
     expect(allowed.has(String(idOf(WIKI))), "a non-face book").toBe(true);
+    // A pointer the vessel's planes stand on (a realm's doc) crosses beside the books; a face-scoped title never does.
+    const REALM = generateAutomergeUrl();
+    const withRealm = { tiddlers: { ...(catalog as { tiddlers: object }).tiddlers, "lar:///ha.ka.ba/lares/api/realm/doc/nexus-x": { tiddler: { title: "lar:///ha.ka.ba/lares/api/realm/doc/nexus-x", text: REALM } } } } as never;
+    expect(bridgeBooks(withRealm).has(String(idOf(REALM))), "a realm's doc pointer").toBe(true);
+    expect(bridgeBooks(withRealm).has(String(idOf(TWO.persona))), "CONTROL: a face-scoped row stays out").toBe(false);
     for (const face of [TWO.persona, TWO.circles, ONE.persona]) expect(allowed.has(String(idOf(face))), "face-scoped rows are never books").toBe(false);
     const onlyWorn = { ...bootstrap(ONE), [PERSONA_GROUP_ID_TIDDLER]: { text: G1 } };    // the bootstrap forgets face two
     const views = faceFleetViews(() => onlyWorn, () => G1, () => allowed);
