@@ -115,36 +115,26 @@ propagate to slot 1 — the wiki event buses are per-VM, not shared.
 
 <<~/ahu>>
 
-<<~ ahu #/migration-from-hook>>
+<<~ ahu #/per-vm-registration>>
 
-!! Migration from `_larKukaliHook`
+!! Per-VM Registration
 
-The old pattern:
-
-```typescript
-// ✗ web2 pattern — global singleton, reverse dependency
-TW5Engine._larKukaliHook = (uri, trigger) => {
-  reactionEngine.handleKukali(uri, trigger);
-};
-```
-
-Problems with this pattern:
-# Global mutable state — breaks with multiple VMs in the pool
-# Reverse dependency direction — TW5Engine references ReactionEngine type
-# Not isomorphic — browser and node had different hook installation sites
-# Non-cancellable — no teardown path; leaked on VM disposal
-
-The pattern:
+A reaction engine registers on each VM it serves:
 
 ```typescript
-// ✓ web3 pattern — per-VM registration, correct dependency direction
+// per-VM registration, correct dependency direction
 const teardown = vm.onVerseEvent(reactionEngine);
 // ... later, on pool slot deactivation:
 teardown();
 ```
 
-''MUST:'' `_larKukaliHook` MUST NOT exist in any non-web2 file.
-Any file referencing `_larKukaliHook` outside a `*.web2.*` path FAILS FPI-1.
+Properties of the registration:
+# Per-VM state — each VM in the pool holds its own registration
+# The dependency points from the reaction engine to the VM; `TW5Engine` references no `ReactionEngine` type
+# Isomorphic — browser and node install it through the same call
+# Cancellable — `teardown()` ends it on VM disposal
+
+''MUST:'' a VM's verse events reach the reaction engine through `vm.onVerseEvent(...)`, never through a global mutable hook on `TW5Engine`.
 
 <<~/ahu>>
 
@@ -185,6 +175,6 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fNar_xFHgtnqv6wY7kI9eYf0w5h715Z4Z2mZy_nnKwc
+<<^ code="&#x0003;">>ni:///sha-256;X1kCh18Ss3rxxOQxvRd5CDeBQBbGjMUAOelWkAtUyzs
 
 <<^ code="&#x0004;" -> to="?">>
