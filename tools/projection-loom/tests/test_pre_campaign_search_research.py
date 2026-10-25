@@ -106,3 +106,21 @@ def test_directed_joining_surface_passes_native_composition_without_selection_lo
     assert build.audit["cad_valid"]
     assert build.audit["composite_valid_for_render"]
     assert build.audit["composite_cad_union_verified"] is False
+
+
+def test_activation_cohort_uses_physical_switch_threshold_not_normalized_midpoint():
+    # The constructive activation is value >= 0.5, irrespective of the
+    # source-bound locus interval. A normalized midpoint can mean 0.8 here.
+    bounds={"join.enable":(.2,1.2),"shaft_width":(0.,1.)}
+    rows={}
+    for i in range(26):
+        rows[str(i)]={"id":f"0001/off-{i:03d}",
+                      "genome":{"join.enable":.4,"shaft_width":i/25.},
+                      "losses":{"silhouette":.18+i*.001}}
+    class Archive:
+        data={"members":rows}
+    predictor=SurrogatePreview(bounds,Archive(),activation_loci=("join.enable",))
+    assert predictor.predict({"join.enable":.4,"shaft_width":.5})["predicted_loss"] is None or predictor.ready
+    active=predictor.predict({"join.enable":.6,"shaft_width":.5})
+    assert active["predicted_loss"] is None
+    assert active["neighbors"]==0
