@@ -85,6 +85,15 @@ def main(argv=None):
     group.add_argument('--name')
     group.add_argument('--branch')
     p.add_argument('--witness',type=Path,help='required for branch release')
+    p=commands.add_parser('transfer-seed',help='Explicitly authorize proposal-only normalized gene transfer')
+    p.add_argument('--source-recipe',type=Path,required=True)
+    p.add_argument('--target-recipe',type=Path,required=True)
+    p.add_argument('--donor-genome',type=Path,required=True)
+    p.add_argument('--donor-id',required=True)
+    p.add_argument('--family',required=True)
+    p.add_argument('--focus',action='append',required=True)
+    p.add_argument('--authorize',action='store_true',help='operator authorizes this donor/target/focus')
+    p.add_argument('--out',type=Path,required=True)
     p=commands.add_parser('search-census',help='Inspect measured source-bound lineage reachability; never generate geometry')
     p.add_argument('--archive',type=Path,required=True)
     p.add_argument('--capability-recipe',type=Path,required=True)
@@ -161,6 +170,24 @@ def main(argv=None):
                    help='next phase of an active inquiry')
     p.add_argument('--note',help='operator/AI observation, rationale, action or aftermath receipt')
     args=parser.parse_args(argv)
+    if args.command=='transfer-seed':
+        from .capability_stack import CapabilityRecipe
+        from .campaign import FAMILY_FOCUSES
+        from .genetic_transfer import build_transfer_seed,bundle_transfers
+        source=CapabilityRecipe.load(args.source_recipe)
+        target=CapabilityRecipe.load(args.target_recipe)
+        if args.family not in FAMILY_FOCUSES or not set(args.focus).issubset(FAMILY_FOCUSES[args.family]):
+            raise ValueError('Transfer focus must be within its search family')
+        data=json.loads(args.donor_genome.read_text())
+        donor=data.get('genome',data)
+        seed=build_transfer_seed(source.bounds,target.bounds,
+            family=args.family,source_recipe_sha256=source.sha256,
+            target_recipe_sha256=target.sha256,donor_id=args.donor_id,
+            donor_genome=donor,focus=tuple(args.focus),authorized=args.authorize)
+        result=bundle_transfers([seed],target_recipe_sha256=target.sha256)
+        _save(args.out,result)
+        print(json.dumps(result,indent=2))
+        return result
     if args.command=='search-census':
         from .campaign import LineageArchive
         from .capability_stack import CapabilityRecipe
