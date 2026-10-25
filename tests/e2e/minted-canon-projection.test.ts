@@ -20,8 +20,9 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync, readdirSync, statSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, unlockStaged, type LarInstance } from "../harness/instance.js";
+import { targetInstance, unlockStaged, stopChild, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
+import { expectEntry } from "../harness/journal-expect.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
@@ -29,8 +30,7 @@ const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
 const SLUG      = "my-world";
 const WORKING   = `lar:///ha.ka.ba/wikis/${SLUG}/working`;
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const CANON_BAG = `lar:///ha.ka.ba/bags/${SLUG}`;
 
 let lar: LarInstance;
 let second: ChildProcess | null = null;
@@ -44,11 +44,7 @@ function walk(dir: string): string[] {
   });
 }
 
-/** True once `port` accepts a bind — the old daemon released it. The reboot
- *  reuses lar.port (lar.cli targets it), so we MUST wait for release after
- *  stopDaemonOnly (which only sleeps 800ms) before spawning the second daemon —
- *  else it dies fast on EADDRINUSE under suite load (the dev-loop-restart cure:
- *  wait-for-port-free, never a fixed sleep). */
+/** True where `port` accepts a bind. */
 function portFree(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const srv = createServer();
@@ -57,27 +53,10 @@ function portFree(port: number): Promise<boolean> {
   });
 }
 
-async function awaitPortFree(port: number, timeoutMs = 20_000): Promise<void> {
-  const start = Date.now();
-  while (!(await portFree(port))) {
-    if (Date.now() - start > timeoutMs) throw new Error(`port ${port} never freed after stopDaemonOnly`);
-    await sleep(300);
-  }
-}
-
-async function awaitCarrier(dir: string, timeoutMs = 60_000): Promise<boolean> {
-  const start = Date.now();
-  for (;;) {
-    if (walk(dir).some((f) => f.endsWith("noosphere-boot.mem"))) return true;
-    if (Date.now() - start > timeoutMs) return false;
-    await sleep(500);
-  }
-}
-
 beforeAll(async () => { lar = await targetInstance(); }, 180_000);
 afterAll(async () => {
-  second?.kill();
-  await sleep(500);
+  // The second daemon's own exit event ends the wait (`stopChild`), never a pause after the signal.
+  if (second) await stopChild(second);
   if (lar.mode === "staged") rmSync(lar.root, { recursive: true, force: true });
   await lar.stop();
 });
@@ -93,8 +72,10 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     expect(opened.json?.["ok"] ?? true).not.toBe(false);
 
     // 3) REBOOT — the active-wiki marker only takes on boot (open does not remount)
+    // `stopDaemonOnly` returns on the old daemon's own `exit` event (`stopChild`): every descriptor it held, the
+    // port included, went with the process. The reboot reuses lar.port, so a port still held reads here by name.
     await lar.stopDaemonOnly();
-    await awaitPortFree(lar.port);   // the reboot reuses lar.port — wait for the old daemon to release it
+    expect(await portFree(lar.port), `port ${lar.port} still held after the old daemon exited`).toBe(true);
     second = spawn(process.execPath, [NODE_MAIN, "--root", lar.root, "--port", String(lar.port)], {
       cwd: NODE_CWD,
       env: { ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) },
@@ -108,13 +89,19 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     // `main.ts` prints that line straight after the ACTIVE-WIKI-MARKER line (naming which wiki activated), so
     // its presence proves the activation decision already stands in the log: a causal marker, never a timing
     // guess, and never the hearth's own `phase → live`, which prints before the marker line.
+    // Each wait rides the child's own output and exit events. One budget alarms; it decides nothing.
     const awaitLogLine = (line: string, what: string): Promise<void> => new Promise<void>((resolve, reject) => {
-      const t0 = performance.now();
-      const poll = setInterval(() => {
-        if (secondLog.includes(line)) { clearInterval(poll); resolve(); }
-        else if (second!.exitCode !== null) { clearInterval(poll); reject(new Error(`reboot exited ${second!.exitCode} before ${what}:\n${secondLog.slice(-800)}`)); }
-        else if (performance.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached ${what}:\n${secondLog.slice(-800)}`)); }
-      }, 500);
+      const child = second!;
+      if (secondLog.includes(line)) { resolve(); return; }
+      const finish = (settle: () => void): void => {
+        clearTimeout(alarm);
+        child.stdout?.off("data", onData); child.stderr?.off("data", onData); child.off("exit", onExit);
+        settle();
+      };
+      const onData = (): void => { if (secondLog.includes(line)) finish(resolve); };
+      const onExit = (code: number | null): void => finish(() => reject(new Error(`reboot exited ${code} before ${what}:\n${secondLog.slice(-800)}`)));
+      const alarm = setTimeout(() => finish(() => reject(new Error(`reboot never reached ${what}:\n${secondLog.slice(-800)}`))), 120_000);
+      child.stdout?.on("data", onData); child.stderr?.on("data", onData); child.once("exit", onExit);
     });
     await awaitLogLine("phase → live", "the floor's live phase");
     unlockStaged(lar.root);
@@ -129,8 +116,11 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     expect(r.json?.["ok"], `LOAD --to ${WORKING} failed: ${JSON.stringify(r.json)}`).toBe(true);
     await promoteLoadedTitles(lar, r.json, SLUG);
 
-    // 5) the self-canon mirror projects @{slug} canon to bags/{slug}
-    const projected = await awaitCarrier(join(lar.root, `bags/${SLUG}`));
+    // 5) the self-canon mirror projects @{slug} canon to bags/{slug}. barrier: the projector journals
+    // `bag-projected` once the first file of the bag stands (it writes the file, then appends the entry), so the
+    // entry is the far-side event; the carrier reads present the moment it comes.
+    await expectEntry(lar, { kind: "bag-projected", match: (e) => (e.data as Record<string, unknown>)["bagId"] === CANON_BAG }, { budgetMs: 90_000 });
+    const projected = walk(join(lar.root, `bags/${SLUG}`)).some((f) => f.endsWith("noosphere-boot.mem"));
     expect(projected, `minted canon never projected to bags/${SLUG}`).toBe(true);
   }, 300_000);
 });

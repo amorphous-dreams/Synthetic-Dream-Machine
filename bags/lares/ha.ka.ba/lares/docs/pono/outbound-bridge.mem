@@ -132,6 +132,8 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 ''RULED: Road B'' (`scale-stories-basket-one#/the-bridge`): `outbound-bridge.ts` carries it, with the echo law read from the landed ledger. Road A stays costed above as the road not taken; the witnesses in #/reds hold the five-clause contract either road would owe.
 
+''VERIFIED (`G10`): every leaked change routes as a save.'' `wiki-shore-echo-law.test.ts` reads an inbound landing's echo as zero store calls, behind a barrier (the dispatch, the gate's fire, the landing queue's idle), and proves that zero with a known positive in the same dispatch: four leaked titles and a hand edit over the inbound title each route as a save into the working layer, and a vanished title routes as a tombstone. Foam routes nothing; a leak always routes.
+
 <<~/ahu>>
 
 <<~ ahu #/daemon-mirror>>
@@ -202,6 +204,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oj9RDk6rkKTVoHIyhnyP8w_MzsIpDLdK253bux90XWc
+<<^ code="&#x0003;">>ni:///sha-256;6tyCZixuU_RFB2oOozg2DVfnJwjxN5F5KRpfUyu5464
 
 <<^ code="&#x0004;" -> to="?">>

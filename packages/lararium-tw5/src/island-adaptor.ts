@@ -196,6 +196,12 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
 export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   readonly name = "lararium-island";
   readonly ledger = new LandedLedger();
+  /**
+   * The heads of each bag's document this shore has landed in the wiki, from the envelope of the last change it
+   * landed (the heads AT that change, never the layer's heads when the shore looked). The settle word follows
+   * the heads a gesture landed through this account (`landedCovers`).
+   */
+  private readonly landedHeads = new Map<string, readonly string[]>();
   private readonly gate: HandGate;
   private landing: WaveLanding | null = null;
   private engineApply: ((change: LarTiddlerChange) => void) | null = null;
@@ -276,6 +282,26 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
 
+  /**
+   * Resolves once every hand the wiki raised before this call rests in the store. The wiki's own pending
+   * `change` dispatch runs first, so every edit made so far has marked its title; each marked title then leaves
+   * at once, since the pacing gate's timers decide when a hand leaves in service and never whether a caller
+   * waits for them; and the flushes, acts and parallel-draft persistence those start run to their end. A
+   * fault in a flush rejects the call. A test or a teardown asks this in place of waiting out the pacing window.
+   */
+  async handsRested(): Promise<void> {
+    await this.awaitWikiDispatch();
+    const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
+    await Promise.all([...marked].map(async (title) => {
+      if (this.gate.has(title)) await this.gate.flush(title);
+      else if (!this.activeFlushCounts.has(title)) await this._flushHand(title);
+    }));
+    while (this.gate.titles().length > 0 || this.flushes.size > 0 || this.acts.size > 0 || this.surfacings.size > 0) {
+      await this.gate.flushAll();
+      await Promise.allSettled([...this.flushes, ...this.acts, ...this.surfacings]);
+    }
+  }
+
   isResident(): boolean { return this.resident; }
 
   /** True when a wiki notification repeats the value the last wave left. */
@@ -301,6 +327,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
     const title = change.title;
     const wiki = this.tw5.$tw.wiki;
+    const envelopeHeads = change.heads;
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
@@ -359,6 +386,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
+    if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
     this.sent.delete(title);
     this.handBase.delete(title);
@@ -721,6 +749,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
     this.resident = false;
     this.ledger.clear();
+    this.landedHeads.clear();
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
@@ -743,6 +772,25 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
   // Bases and the cross-bag check
   // ---------------------------------------------------------------------------
+
+  /**
+   * Keep the heads of the last change this shore landed for `bag`. The landing queue lands waves in the order the
+   * store raised them, so the latest landing carries the latest heads; the note costs one map write per landing,
+   * and the causal comparison waits for a settle word's look (`landedCovers`).
+   */
+  private _noteLanded(bag: string, heads: readonly string[]): void {
+    this.landedHeads.set(bag, heads);
+  }
+
+  /**
+   * True where this shore has landed, in the wiki, every change of `bag`'s document up to `named`: the heads of
+   * its last landed change cover them. A store with no causal history, and a bag this shore landed nothing of,
+   * answer false.
+   */
+  landedCovers(bag: string, named: readonly string[]): boolean {
+    const have = this.landedHeads.get(bag);
+    return have !== undefined && this._storeFor(bag)?.coversHeads?.(have, named) === true;
+  }
 
   /** The store of any layer for `bag`, or null when the composite offers none (a double without layers). */
   private _storeFor(bag: string): LarTiddlerStore | null {

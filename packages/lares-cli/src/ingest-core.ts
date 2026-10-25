@@ -353,7 +353,7 @@ export interface IngestSettlement {
   /** Each carrier whose records the gesture moved (`ingest`), with the hash its records render as the island
    *  named it, or as the one pure door read it where the rows stayed behind the cap. The settle word asks the
    *  projection after exactly these (`settle`, `shore-verb.ts`). */
-  readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string }>;
+  readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>;
   /** A later wave that ended in an error: the gesture stops there and names what stays unread. */
   readonly pageError?: { readonly message: string; readonly unread: number };
 }
@@ -504,6 +504,7 @@ export async function settleIngest(
   }
 
   const summary = summaryOutput(first) ?? {};
+  const waveHeads = headsNamed((summary as { heads?: unknown }).heads);
   const deletions = (summary as { deletions?: Record<string, unknown> }).deletions;
   const answer = readCarrierAnswer((summary as { carriers?: unknown }).carriers);
   const byUri = new Map(opts.candidates.map((c) => [c.uri, c] as const));
@@ -512,7 +513,9 @@ export async function settleIngest(
   const pages: SubmitResult[] = [];
   let recorded = 0;
   /** The records sides the pure door read for landed carriers no row named. */
-  const ownRendered: Array<{ uri: string; records: string }> = [];
+  const ownRendered: Array<{ uri: string; records: string; heads?: readonly string[] }> = [];
+  /** The wave heads each later page's summary named, by carrier: a row that names none rides its page's. */
+  const pageHeads = new Map<string, readonly string[]>();
   /** The carriers a later wave asked again: the first wave may have landed them, so their `noop` names a render. */
   const askedAgain = new Set<string>();
   let pageError: IngestSettlement["pageError"];
@@ -540,7 +543,7 @@ export async function settleIngest(
       for (const c of unnamed) {
         const records = ownRecordsSide(c);
         if (records === null) askAgain.push(c);
-        else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records }); }
+        else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records, ...(waveHeads !== undefined ? { heads: waveHeads } : {}) }); }
       }
       recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, own);
     }
@@ -554,8 +557,10 @@ export async function settleIngest(
         pageError = { message: result.errorMessage ?? "the daemon refused and named no reason", unread: askAgain.length - at };
         break;
       }
-      const rows = readCarrierAnswer((summaryOutput(result) as { carriers?: unknown } | undefined)?.carriers).rows;
-      for (const row of rows) named.set(String(row["uri"]), row);
+      const pageOut = summaryOutput(result) as { carriers?: unknown; heads?: unknown } | undefined;
+      const rows = readCarrierAnswer(pageOut?.carriers).rows;
+      const heads = headsNamed(pageOut?.heads);
+      for (const row of rows) { named.set(String(row["uri"]), row); if (heads !== undefined) pageHeads.set(String(row["uri"]), heads); }
       recorded += recordLandedCarriers(tree, opts.toBag, page, rows);
     }
   }
@@ -591,19 +596,28 @@ export async function settleIngest(
   }
   const askingUris = new Set([...refused, ...conflicts].map((r) => r.uri));
   const unanswered = asked.filter((uri) => !landed.has(uri) && !askingUris.has(uri));
-  const rendered = [...ownRendered];
+  const rendered: Array<{ uri: string; records: string; heads?: readonly string[] }> = [...ownRendered];
   for (const [uri, row] of named) {
     const records = row["canonicalHash"];
     // A later wave reads against the records the first wave left: a carrier the first wave landed answers
     // `noop` there, and its records moved all the same.
     const moved = row["decision"] === "ingest" || (row["decision"] === "noop" && askedAgain.has(uri));
-    if (moved && byUri.has(uri) && typeof records === "string" && records !== "") rendered.push({ uri, records });
+    // The row names the causal heads that carried the carrier's records when the island's store keeps history:
+    // the settle word follows them through the view and ends on the far side's close (G36).
+    // A row behind the audit cap names none of its own: it rides its page's wave heads, else the first wave's.
+    const rowHeads = headsNamed(row["heads"]) ?? pageHeads.get(uri) ?? waveHeads;
+    if (moved && byUri.has(uri) && typeof records === "string" && records !== "") rendered.push({ uri, records, ...(rowHeads !== undefined ? { heads: rowHeads } : {}) });
   }
   return {
     first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
     named, refused, conflicts, tallies, deletions, recorded, rendered,
     ...(pageError !== undefined ? { pageError } : {}),
   };
+}
+
+/** The heads a row or a summary names: a whole list of head hashes, or none. */
+function headsNamed(value: unknown): readonly string[] | undefined {
+  return Array.isArray(value) && value.length > 0 && value.every((h) => typeof h === "string" && h !== "") ? (value as string[]) : undefined;
 }
 
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
