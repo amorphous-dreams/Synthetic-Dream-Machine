@@ -38,4 +38,23 @@ def grow(p):
     a.add_void('great-hall',box((0,0,2.48),(room_w,room_w,1.13)),kind='room',connects=('guarded-gate','upper-shaft'))
     a.add_void('guarded-gate',box((0,-fort*.45,2.42),(gate,fort*.81,1.00)),kind='doorway',connects=('great-hall',),exterior=True)
     a.add_void('upper-shaft',box((0,0,3.2),(min(gate*.7,.62),min(gate*.7,.62),1.6)),kind='shaft',connects=('great-hall',))
+    # Alpha grammar choices extend the same native assembly, never create a
+    # secondary geometry authority. Source artwork is not a genotype.
+    if 'grammar.gallery' in p and 'grammar.buttress' in p:
+        from projection_loom.grammar import grow_program
+        grammar=[
+            {'key':'east gallery','op':'box','parents':['lower terrace'],
+             'center':[fort*.48,0,1.6],
+             'size':[{'param':'grammar.gallery_span','factor':1.0},1.25,.64],
+             'role':'secondary','has':['#has/gallery','#has/extension'],
+             'slot':'east-gallery',
+             'when':{'param':'grammar.gallery','min':.5}},
+            {'key':'crown brace','op':'box','parents':['upper keep'],
+             'center':[fort*.23,0,3.2+tower*.72],
+             'size':[{'param':'grammar.brace_span'},.92,1.4],
+             'role':'secondary','has':['#has/brace','#has/fortification'],
+             'slot':'crown-brace',
+             'when':{'param':'grammar.buttress','min':.5}},
+        ]
+        grow_program(grammar,p,assembly=a)
     return a
