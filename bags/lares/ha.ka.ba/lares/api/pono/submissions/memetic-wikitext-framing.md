@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;tuhGoJHsntprW6TJfwJwy_rL8r5sTGdPXvj2fdzvirg"
+source-check: "ni:///sha-256;HqH4JMwWA3F0_GeIl_xmkj5-CmACrFSvMjmBO6Txkbc"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -867,13 +867,9 @@ belongs to what the check protects — and that choice obliges a canonical spell
 ### One mouth
 
 These laws describe what the emitter already enacts, and stating them here serves a second reader —
-the one writing a migration, a sweep, or an independent implementation. Such a writer SHOULD route
+the one writing a sweep or an independent implementation. Such a writer SHOULD route
 through the emitter rather than reproduce it: the projection path already does, and every carrier in
 this corpus that failed to render back came from a hand that went around it.
-
-A migration stands as the honest exception. A writer that knows only the current shape cannot rewrite a document
-standing in a shape the current grammar never emits, so a migration reads with the
-reader, and writes with the emitter, and never composes bytes of its own.
 
 <a id="the-woven-dialect"></a>
 
