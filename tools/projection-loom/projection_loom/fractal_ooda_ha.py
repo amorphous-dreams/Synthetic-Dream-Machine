@@ -25,6 +25,7 @@ from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
 from .gallery import regrow_compound_gallery, regrow_lineage_gallery
 from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor
+from .search_strategy import SurrogatePreview, regional_loss
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
@@ -588,7 +589,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
         bounds = recipe.bounds
         score_state = 'provisional' if project.reference is not None else 'synthetic'
         construction_digest = compositor.construction_digest()
-        objectives = ('silhouette','prior')
+        objectives = ('silhouette','prior','regional') if breeding else ('silhouette','prior')
         extra_topology = [step.activation for step in recipe.steps if step.activation]
         topology_loci = tuple(dict.fromkeys([*topology_loci,*extra_topology]))
     else:
@@ -633,7 +634,9 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 result.update(archive_identity=archive.identity,
                               archive_generation_count=archive.generation_count,
                               archive_unique_niches=len(archive.elites()),
-                              lineage_gallery=journal.data.get('lineage_gallery'))
+                              lineage_gallery=journal.data.get('lineage_gallery'),
+                              searchability=archive.census(bounds,activations=tuple(
+                                  step.activation for step in recipe.steps if step.activation)))
             return result
         journal.poll()
         if journal.data['status'] == 'completed':
@@ -718,7 +721,10 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 builds = {}
                 visual_index = {}
                 from .capability_stack import digest as genome_digest
+                surrogate=SurrogatePreview(bounds,archive) if breeding else None
                 def preview(genome):
+                    if surrogate is not None:
+                        return surrogate.priority(genome)
                     return float(np.mean([((genome[k]-current[k]) / (hi-lo))**2
                                     for k,(lo,hi) in bounds.items()]))
                 def before(proposal):
@@ -765,8 +771,12 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                         visual_index[genome_digest(genome)]=visual_descriptor(mask)
                     normalized=np.array([(genome[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
                     origin=np.array([(recipe.initial[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
-                    return {'silhouette':float(1-iou(source_mask,mask)),
-                            'prior':float(.008*np.mean((normalized-origin)**2))}
+                    loss={'silhouette':float(1-iou(source_mask,mask)),
+                          'prior':float(.008*np.mean((normalized-origin)**2))}
+                    if breeding:
+                        family=(running_id[0] or '').split('-')[0]
+                        loss['regional']=regional_loss(source_mask,mask,family)
+                    return loss
                 def features(genome,assembly):
                     build=builds[genome_digest(genome)]
                     traits={f'{row["entity"]}:{row["operator"]}:{row["id"]}'
