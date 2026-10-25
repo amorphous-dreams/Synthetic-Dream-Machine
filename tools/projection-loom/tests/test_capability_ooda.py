@@ -114,7 +114,7 @@ def test_recipe_or_operator_changes_reject_resume_checkpoint(tmp_path):
         run_ooda_epochs(project,tmp_path/'original',recipe=different,autonomy=0,**args)
     original=default_registry()
     shifted=default_registry()
-    shifted.register('new-safely-versioned-op','2',lambda ctx,step:{'kind':'test'})
+    shifted.register('new-source-bound-op',lambda ctx,step:{'kind':'test'})
     with pytest.raises(ValueError,match='Incompatible'):
         run_ooda_epochs(project,tmp_path/'original',recipe=recipe,registry=shifted,
                         autonomy=0,**args)
