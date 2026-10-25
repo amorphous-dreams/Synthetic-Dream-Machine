@@ -121,3 +121,31 @@ def test_lineage_archive_rejects_false_native_evidence_without_partial_write(tmp
     assert archive.generation_count==0
     assert not archive.data["members"]
     assert (tmp_path/"lineage.json").read_bytes()==before
+
+
+def test_local_family_residual_never_distorts_global_quality_ranking(tmp_path):
+    checkpoint=tmp_path/"comparability.json"
+    choices=[Proposal("a","sobol",{"x":1.0}),
+             Proposal("b","local",{"x":2.0})]
+    settings={"location":"source-view","source_digests":{},
+              "construction_digest":"a"*64,
+              "objectives":("silhouette","prior","regional"),
+              "local_objectives":("regional",),
+              "score_state":"synthetic","checkpoint":checkpoint,
+              "max_exact":2,"max_detail":2}
+    def score(genome,assembly):
+        x=genome["x"]
+        return {"silhouette":.10 if x==1 else .12,"prior":0.,
+                "regional":.04 if x==1 else 0.}
+    runner=WideEpoch(**settings)
+    data=runner.run(choices,grow=_valid_root,score=score)
+    assert data["results"]["a"]["combined_loss"]==pytest.approx(.10)
+    assert data["results"]["b"]["combined_loss"]==pytest.approx(.12)
+    assert data["results"]["a"]["losses"]["regional"]==pytest.approx(.04)
+    assert any(x["proposal_id"]=="a" for x in data["archive"].values())
+    unchanged=checkpoint.read_bytes()
+    assert WideEpoch(**settings).run(choices,grow=_valid_root,score=score)==data
+    assert checkpoint.read_bytes()==unchanged
+    changed=dict(settings,local_objectives=())
+    with pytest.raises(ValueError,match="checkpoint"):
+        WideEpoch(**changed)
