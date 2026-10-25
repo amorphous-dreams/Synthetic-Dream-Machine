@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { assertDestination, provision } from './provision-worktree.mjs';
 import { stampWasm } from './stamp-build.mjs';
+
+const noGuard = () => {};
 
 function fixture() {
   const base = mkdtempSync(join(tmpdir(), 'provision-test-'));
@@ -69,7 +71,7 @@ test('refuses overlap, occupied destination and symlink escape', () => {
 test('fresh source builds pinned TW5 and web outputs, then stamps workspace', () => {
   const f = fixture();
   try {
-    provision({ source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
     assert.equal(readFileSync(join(f.destination, 'TiddlyWiki5/tiddlywiki.js'), 'utf8'), 'pinned');
     assert.equal(readFileSync(join(f.destination, 'mempalace/pinned.txt'), 'utf8'), 'pinned');
     assert.equal(readFileSync(join(f.destination, 'packages/lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js'), 'utf8'), 'rendered');
@@ -100,7 +102,7 @@ test('copied module links target the destination, while external links stay exte
     writeFileSync(outside, 'outside');
     symlinkSync(outside, join(rootModules, 'external'));
 
-    provision({ source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
     for (const rel of ['node_modules/@lararium/mesh', 'node_modules/.bin/mesh', 'packages/lararium-tw5/node_modules/@lararium/mesh']) {
       const link = join(f.destination, rel);
       assert.equal(readlinkSync(link), relative(join(link, '..'), join(f.destination, 'packages/lararium-mesh')));
@@ -115,7 +117,7 @@ test('a module link that names its own parent directory relinks to ".", never an
   try {
     const rootModules = join(f.source, 'node_modules');
     symlinkSync(rootModules, join(rootModules, 'node_modules'));
-    provision({ source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: line => f.logs.push(line) });
     assert.equal(readlinkSync(join(f.destination, 'node_modules/node_modules')), '.');
   } finally { f.close(); }
 });
@@ -130,7 +132,7 @@ test('refuses to finish when a later step leaves a link into the source', () => 
       }
       return result;
     };
-    assert.throws(() => provision({ source: f.source, destination: f.destination, run, log: () => {} }), /destination symlink.*source tree/);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /destination symlink.*source tree/);
     assert.equal(existsSync(f.destination), false);
   } finally { f.close(); }
 });
@@ -139,7 +141,7 @@ test('failed build stops before its stamp', () => {
   const f = fixture();
   try {
     const run = (...args) => { if (String(args[0]).endsWith('/tsc')) throw new Error('build failed'); return f.run(...args); };
-    assert.throws(() => provision({ source: f.source, destination: f.destination, run, log: () => {} }), /build failed/);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /build failed/);
     assert.equal(f.calls.some(([, args]) => args.includes('--pkg')), false);
     assert.equal(f.calls.some(([, args]) => args.includes('remove')), true);
     assert.equal(existsSync(f.destination), false);
@@ -154,7 +156,7 @@ test('a failed cleanup reports the plain remove refusal beside the build failure
       if (args[0] === 'git' && args[1].includes('remove')) throw new Error('remove refused');
       return f.run(...args);
     };
-    assert.throws(() => provision({ source: f.source, destination: f.destination, run, log: () => {} }), /build failed.*remove refused/s);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /build failed.*remove refused/s);
     assert.equal(f.calls.some(([, args]) => args.includes('--force')), false);
   } finally { f.close(); }
 });
@@ -165,7 +167,7 @@ test('older source build bytes never enter the destination', () => {
     f.put('packages/lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js', 'old core');
     f.put('packages/lararium-web/dist/index.html', 'old web');
     f.put('.pronaos-build/pronaos-artifact.json', 'old record');
-    provision({ source: f.source, destination: f.destination, run: f.run, log: () => {} });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: () => {} });
     assert.equal(readFileSync(join(f.destination, 'packages/lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js'), 'utf8'), 'rendered');
     assert.equal(readFileSync(join(f.destination, 'packages/lararium-web/dist/index.html'), 'utf8'), 'built');
     assert.equal(readFileSync(join(f.destination, '.pronaos-build/pronaos-artifact.json'), 'utf8'), '{}');
@@ -179,7 +181,7 @@ test('web build failure removes the added worktree before a workspace stamp', ()
       if (args[0] === 'npm' && args[2].endsWith('lararium-web')) throw new Error('web failed');
       return f.run(...args);
     };
-    assert.throws(() => provision({ source: f.source, destination: f.destination, run, log: () => {} }), /web failed/);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: () => {} }), /web failed/);
     assert.equal(existsSync(f.destination), false);
     assert.equal(f.calls.some(([, args]) => args.length === 2 && args[0]?.endsWith('stamp-build.mjs')), false);
   } finally { f.close(); }
@@ -189,6 +191,64 @@ test('stale grammar provenance refuses before a copied wasm claim', () => {
   const f = fixture();
   try {
     f.put('packages/tree-sitter-memetic-wikitext/src/parser.c', 'changed');
-    assert.throws(() => provision({ source: f.source, destination: f.destination, run: f.run, log: () => {} }), /provenance/);
+    assert.throws(() => provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: () => {} }), /provenance/);
+  } finally { f.close(); }
+});
+
+test('the disk guard runs before git worktree add, and a refusal stops the add', () => {
+  const f = fixture();
+  try {
+    const order = [];
+    const run = (cmd, args, cwd) => { if (cmd === 'git' && args.includes('add')) order.push('add'); return f.run(cmd, args, cwd); };
+    assert.throws(() => provision({ guard: () => { order.push('guard'); throw new Error('disk-guard refuses: C: has 59.0G available, under the 60G floor'); }, source: f.source, destination: f.destination, run, log: () => {} }), /disk-guard refuses.*C:/);
+    assert.deepEqual(order, ['guard']);
+    assert.equal(existsSync(f.destination), false);
+    provision({ guard: () => { order.push('guard'); }, source: f.source, destination: f.destination, run, log: () => {} });
+    assert.deepEqual(order, ['guard', 'guard', 'add']);
+  } finally { f.close(); }
+});
+
+test('a pnpm offline frozen install fills node_modules, and the source node_modules never copies', () => {
+  const f = fixture();
+  try {
+    f.put('node_modules/source-only-marker', 'marker');
+    const run = (cmd, args, cwd) => {
+      if (cmd === 'pnpm') {
+        for (const bin of ['tsc', 'tsx']) { mkdirSync(join(f.destination, 'node_modules/.bin'), { recursive: true }); writeFileSync(join(f.destination, 'node_modules/.bin', bin), 'bin'); }
+      }
+      return f.run(cmd, args, cwd);
+    };
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
+    const install = f.calls.filter(([cmd]) => cmd === 'pnpm');
+    assert.deepEqual(install.map(([, args, cwd]) => [args, cwd]), [[['install', '--offline', '--frozen-lockfile'], f.destination]]);
+    assert.equal(existsSync(join(f.destination, 'node_modules/source-only-marker')), false);
+    assert.equal(f.logs.some(line => /INSTALLED node_modules/.test(line)), true);
+  } finally { f.close(); }
+});
+
+test('when pnpm cannot install offline, node_modules hardlinks from the source and links still relink', () => {
+  const f = fixture();
+  try {
+    f.put('node_modules/real-file.js', 'shared');
+    const rootModules = join(f.source, 'node_modules');
+    symlinkSync(join(f.source, 'packages/lararium-mesh'), join(rootModules, 'mesh-link'));
+    const run = (cmd, args, cwd) => { if (cmd === 'pnpm') throw new Error('ERR_PNPM_NO_OFFLINE_TARBALL'); return f.run(cmd, args, cwd); };
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
+    assert.equal(statSync(join(f.destination, 'node_modules/real-file.js')).ino, statSync(join(rootModules, 'real-file.js')).ino);
+    assert.equal(readlinkSync(join(f.destination, 'node_modules/mesh-link')), relative(join(f.destination, 'node_modules'), join(f.destination, 'packages/lararium-mesh')));
+    assert.equal(f.logs.some(line => /pnpm offline install refused.*ERR_PNPM_NO_OFFLINE_TARBALL/.test(line)), true);
+  } finally { f.close(); }
+});
+
+test('submodules clone against the main checkout objects only where its module directory stands', () => {
+  const f = fixture();
+  try {
+    mkdirSync(join(f.source, '.git/modules/TiddlyWiki5/objects'), { recursive: true });
+    provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: () => {} });
+    const updates = f.calls.filter(([cmd, args]) => cmd === 'git' && args.includes('submodule')).map(([, args]) => args.slice(args.indexOf('submodule')));
+    assert.deepEqual(updates, [
+      ['submodule', 'update', '--init', '--reference', join(f.source, '.git/modules/TiddlyWiki5'), '--', 'TiddlyWiki5'],
+      ['submodule', 'update', '--init', '--', 'mempalace'],
+    ]);
   } finally { f.close(); }
 });

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, linkSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { assertDisk } from './disk-guard.mjs';
 import { wasmStampBody } from './stamp-build.mjs';
 
 export const USAGE = 'usage: provision-worktree.mjs <empty-dir>';
@@ -41,6 +42,19 @@ function copy(source, destination, rel, log, options = {}) {
   mkdirSync(dirname(to), { recursive: true });
   cpSync(from, to, { recursive: true, force: true, dereference: false, ...options });
   log(`COPIED ${rel} from ${from}`);
+}
+/** Mirror a tree with hardlinked files: a real file costs one inode, never a second copy of its bytes. */
+function hardlinkTree(from, to) {
+  mkdirSync(to, { recursive: true });
+  for (const entry of readdirSync(from, { withFileTypes: true })) {
+    const a = join(from, entry.name), b = join(to, entry.name);
+    if (entry.isSymbolicLink()) symlinkSync(readlinkSync(a), b);
+    else if (entry.isDirectory()) hardlinkTree(a, b);
+    else {
+      try { linkSync(a, b); }
+      catch { copyFileSync(a, b); } // a different filesystem or a refused link still yields the file
+    }
+  }
 }
 function* linksUnder(path) {
   if (!existsSync(path)) return;
@@ -94,11 +108,12 @@ function packageOrder(destination) {
   return ordered;
 }
 
-/** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. */
-export function provision({ source = ROOT, destination, run = defaultRun, log = console.log }) {
+/** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. `guard` reads the disk before any bulk lands. */
+export function provision({ source = ROOT, destination, run = defaultRun, log = console.log, guard = assertDisk }) {
   if (!destination) throw new Error(USAGE);
   source = realpathSync(source);
   destination = assertDestination(source, destination);
+  guard();
   const bare = () => run('git', ['-C', source, 'config', '--get', 'core.bare'], source).trim();
   if (bare() !== 'false') throw new Error('core.bare must read false before worktree add');
   run('git', ['-C', source, 'worktree', 'add', '--detach', destination, 'HEAD'], source);
@@ -106,7 +121,15 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   if (bare() !== 'false') throw new Error('core.bare must read false after worktree add');
   const head = run('git', ['-C', destination, 'rev-parse', 'HEAD'], destination).trim();
   log(`HEAD ${head}`);
-  run('git', ['-C', destination, 'submodule', 'update', '--init', '--', 'TiddlyWiki5', 'mempalace'], destination);
+  // Borrow the objects the source already holds (its own .git, or the common dir when the source is a linked tree),
+  // so a new tree does not clone them again.
+  let common = join(source, '.git');
+  try { common = resolve(source, run('git', ['-C', source, 'rev-parse', '--git-common-dir'], source).trim()); } catch { /* the plain .git stands in */ }
+  for (const name of ['TiddlyWiki5', 'mempalace']) {
+    const objects = [join(source, '.git/modules', name), join(common, 'modules', name)].find(dir => existsSync(join(dir, 'objects')));
+    const reference = objects ? ['--reference', objects] : [];
+    run('git', ['-C', destination, 'submodule', 'update', '--init', ...reference, '--', name], destination);
+  }
   for (const name of ['TiddlyWiki5/tiddlywiki.js', 'mempalace']) {
     if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
   }
@@ -118,11 +141,27 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
     if (existsSync(join(source, rel))) modulePaths.push(rel);
   }
   let rewritten = 0;
-  for (const rel of modulePaths) if (existsSync(join(source, rel))) {
-    copy(source, destination, rel, log);
-    const count = relinkModules(source, destination, rel);
-    rewritten += count;
-    log(`RELINKED ${count} symlinks in ${rel}`);
+  let installed = false;
+  try {
+    // The workspace's lockfile and the pnpm store already hold every package, so an offline frozen install hardlinks
+    // them into the new tree: no second copy of node_modules lands on the disk.
+    run('pnpm', ['install', '--offline', '--frozen-lockfile'], destination);
+    installed = existsSync(join(destination, 'node_modules'));
+    if (installed) log('INSTALLED node_modules by pnpm install --offline --frozen-lockfile (hardlinks from the store)');
+    else log('pnpm install left no root node_modules; falling back to a hardlink copy');
+  } catch (error) {
+    log(`pnpm offline install refused: ${error.message.split('\n')[0]}; falling back to a hardlink copy`);
+  }
+  if (!installed) {
+    for (const rel of modulePaths) {
+      rmSync(join(destination, rel), { recursive: true, force: true });
+      if (!existsSync(join(source, rel))) continue;
+      hardlinkTree(join(source, rel), join(destination, rel));
+      log(`HARDLINKED ${rel} from ${join(source, rel)}`);
+      const count = relinkModules(source, destination, rel);
+      rewritten += count;
+      log(`RELINKED ${count} symlinks in ${rel}`);
+    }
   }
   log(`RELINKED ${rewritten} node_modules symlinks`);
   assertNoSourceLinks(source, destination);
