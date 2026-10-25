@@ -71,7 +71,7 @@ def run(out, *, epochs=2, per_epoch=6, seed=31, size=(192,288)):
             survivors.append(row)
         if len(survivors)==3:break
     output=Path(out);output.mkdir(parents=True,exist_ok=True)
-    report={'schema':'projection-loom/hybrid-mesh-trial/v1',
+    report={'schema':'projection-loom/hybrid-mesh-trial',
             'evidence_status':'provisional-unregistered-artwork',
             'source_sha256':sha256(project.reference.read_bytes()).hexdigest(),
             'epochs':epochs,'per_epoch':per_epoch,'evaluated':len(candidates),
