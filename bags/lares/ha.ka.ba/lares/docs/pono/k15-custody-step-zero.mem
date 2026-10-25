@@ -208,6 +208,23 @@ The reds: the index of two founded faces carries no field beyond the entries' tr
 
 <<~/ahu>>
 
+<<~ ahu #/custody-derive-audit>>
+
+!! The custody root and the Keyhive archive: the owner audit
+
+Wave D audit of every child the sealed custody root derives and of the vessel's Keyhive archive, read off the code (slice 2, ruling 7).
+
+; The custody root's children
+: ''One child derives today.'' The only call that reaches `holder.derive` is `custodyGateDoor` (`custody-seat.ts`), and its only consumers are `hearthSovereignPin`, `stoodSovereignPin` and the gate composition in `open-node-vessel.ts`: each derives the SOVEREIGN GATE BUNDLE (`GATE_BUNDLE_INFO`) of one Nexus and route. The registry (`ALL_DOMAINS`) declares other domains, and the door derives under any of them, but no other caller derives. The veil, Keyhive signer and hosting key named in the root's header derive from the vessel key, a face's atom or their own rows, never from this root.
+: ''Owner: the node, not a face.'' The bundle keys the hearth's gate at a Nexus: the node's seat in that Nexus, apart from any PersonaGroup. It is a NODE-ONLY service secret and enters S as the separately named row `gate-root` (the custody root renamed for what it derives). It is never retained as a generic root, and no face derivation hangs from it.
+: ''Required before the VK tree drops.'' `gate-root` rests under the node's S key (the node route), and a derivation under any other domain refuses by name at the door.
+
+; The vessel's Keyhive archive (`keyhive-archive`)
+: ''Owner: the place, not a face.'' The archive is minted at the place card (`ensurePlaceCard`, `init`) from the vessel's own seed before any face stands; a faceless or joinee place holds one. It carries the place Individual's membership and prekey secrets and its contact card. It is a NODE-ONLY secret and enters S as the separately named row `place-archive`. Each face's own archive already rests per PersonaGroup as `veil-archive-g<digest>` (D, ''face-hot'').
+: ''No identity above the faces.'' The place Individual signs no face's act and holds no face's key; the daemon island restores each face's own veil from that face's FCK row.
+
+<<~/ahu>>
+
 <<~ ahu #/open-joints>>
 
 !!! The place seed's reach (ruled 2026-10-19)
@@ -231,6 +248,6 @@ The reds: the index of two founded faces carries no field beyond the entries' tr
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hl4-hgcYrTOXFwBlMU3J_tOrFrKlzakyg8ayS5SUy4M
+<<^ code="&#x0003;">>ni:///sha-256;zSgFD8bFEEfBa4qF12roeeKrEdu5wrX20weKvkIH4go
 
 <<^ code="&#x0004;" -> to="?">>
