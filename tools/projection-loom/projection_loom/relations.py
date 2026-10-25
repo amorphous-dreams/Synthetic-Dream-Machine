@@ -15,8 +15,8 @@ import os
 from pathlib import Path
 from .provenance_encoding import canonical_json_sha256
 
-SCHEMA = 'projection-loom/relational-ledger/v1'
-WITNESS = 'projection-loom/relational-witness/v1'
+SCHEMA = 'projection-loom/relational-ledger'
+WITNESS = 'projection-loom/relational-witness'
 
 
 def capabilities(values):
