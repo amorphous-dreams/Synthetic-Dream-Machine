@@ -19,7 +19,7 @@ test('the witness reads green under loose limits, and prints the counts it weigh
   const r = run(loose);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /VHD size:/);
-  assert.match(r.stdout, /house worktrees \d+\/100000 · Codex worktrees \d+ \(warn over 100000\) · prunable records \d+/);
+  assert.match(r.stdout, /house worktrees \d+\/100000 · Codex worktrees \d+\/100000 · prunable records \d+/);
   assert.match(r.stdout, /disk-guard: ok/);
 });
 

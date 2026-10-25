@@ -53,19 +53,18 @@ test('seven trees elsewhere plus one house tree pass, and list the elsewhere one
   assert.match(render(r), /not the house's: \/home\/u\/\.worktrees\/e0/);
 });
 
-test('thirteen non-empty Codex dirs warn with count and oldest date, and pass', () => {
+test('thirteen non-empty Codex dirs refuse with count and oldest date; twelve pass', () => {
   const r = checkDisk(reading({ codex: 13 }));
-  assert.equal(r.ok, true);
-  assert.deepEqual(r.reasons, []);
-  assert.match(r.warnings.join('\n'), /WARN: 13 Codex worktrees stand, oldest 2026-10-10, over the 12 warning threshold/);
-  assert.match(render(r), /WARN: 13 Codex/);
-  assert.deepEqual(checkDisk(reading({ codex: 12 })).warnings, []);
+  assert.equal(r.ok, false);
+  assert.match(r.reasons.join('\n'), /13 Codex worktrees stand, oldest 2026-10-10, over the 12 cap/);
+  assert.equal(checkDisk(reading({ codex: 12 })).ok, true);
 });
 
-test('99 Codex dirs of which 63 stand empty count as 36', () => {
+test('99 Codex dirs of which 63 stand empty count as 36 and refuse; 12 plus 87 empty pass', () => {
   const r = checkDisk(reading({ codex: 36, codexEmpty: 63 }));
   assert.equal(r.codex.length, 36);
-  assert.equal(r.ok, true);
+  assert.equal(r.ok, false);
+  assert.equal(checkDisk(reading({ codex: 12, codexEmpty: 87 })).ok, true);
 });
 
 test('Codex-home worktrees in the git list never count as house or elsewhere', () => {
@@ -95,13 +94,13 @@ test('limits come from env; defaults hold without it', () => {
   assert.deepEqual(readLimits({ LARES_DISK_MIN_C_GB: '10', LARES_DISK_MIN_ROOT_GB: '5', LARES_DISK_MAX_WORKTREES: '2', LARES_DISK_MAX_CODEX: '3' }), { minC: 10, minRoot: 5, maxBuilt: 2, maxCodex: 3 });
   assert.equal(checkDisk(reading({ c: 59, env: { LARES_DISK_MIN_C_GB: '50' } })).ok, true);
   assert.equal(checkDisk(reading({ built: 3, env: { LARES_DISK_MAX_WORKTREES: '2' } })).ok, false);
-  assert.equal(checkDisk(reading({ codex: 5, env: { LARES_DISK_MAX_CODEX: '3' } })).warnings.length, 1);
+  assert.equal(checkDisk(reading({ codex: 5, env: { LARES_DISK_MAX_CODEX: '3' } })).ok, false);
   assert.throws(() => readLimits({ LARES_DISK_MIN_C_GB: 'lots' }), /LARES_DISK_MIN_C_GB/);
 });
 
 test('several reds all name themselves', () => {
   const r = checkDisk(reading({ c: 1, root: 1, built: 9, codex: 20 }));
-  assert.equal(r.reasons.length, 3);
+  assert.equal(r.reasons.length, 4);
 });
 
 test('parseWorktrees drops the first record (the main checkout) and separates prunable', () => {
