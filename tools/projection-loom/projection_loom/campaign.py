@@ -239,6 +239,16 @@ FAMILY_ENTITIES = {
     'terraces':'Joining','crown':'Fortress','keep':'Fortress',
 }
 
+def validate_breeding_recipe(recipe):
+    """Admit by required source-held loci, not a release or schema ordinal."""
+    required={key for genes in FAMILY_FOCUSES.values()
+              for key in genes if not key.startswith('grammar.')}
+    if (recipe is None or not required.issubset(recipe.bounds)
+            or not recipe.source_hashes or not recipe.cad_keys):
+        raise ValueError('Breeding requires a source-bound structural recipe with all required loci')
+    return recipe
+
+
 def make_brood(bounds, initial, archive, *, seed, generation, offspring_per_family,
                migration_every=4, mutation_scale=.16, transfer_seeds=(),
                interaction_min_samples=24):
