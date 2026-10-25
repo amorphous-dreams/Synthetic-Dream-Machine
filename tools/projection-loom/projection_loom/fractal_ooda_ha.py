@@ -23,7 +23,8 @@ import numpy as np
 from .epochs import CandidateAdapter, WideEpoch, propose_methods, project_code_digest, project_silhouette_score
 from .epochs import _hash, _atomic
 from .review import render_cad_review, render_compound_review
-from .gallery import regrow_compound_gallery
+from .gallery import regrow_compound_gallery, regrow_lineage_gallery
+from .campaign import FAMILY_FOCUSES, LineageArchive, make_brood, visual_descriptor
 from .phase_rules import PHASES, next_phase_allowed, child_phase_anchor
 from .provenance_encoding import canonical_json_sha256
 from .evidence_receipts import OperatorPreferenceReceipt
@@ -519,7 +520,9 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     topology_loci=(), autonomy=.70, ledger_path=None,
                     location_stack=None, adviser=None, phase_adviser=None,
                     max_depth=DEFAULT_MAX_DEPTH, max_loops=DEFAULT_MAX_LOOPS,
-                    recipe=None, registry=None, score_size=(128,192), finalists=3):
+                    recipe=None, registry=None, score_size=(128,192), finalists=3,
+                    breeding=False, offspring_per_family=6,
+                    migration_every=4, mutation_scale=.16):
     """One fractal OODA-HA controller for CAD and compound-capability epochs.
 
     Re-enter using precisely the same evidence, code and budgets.  The journal
@@ -531,6 +534,17 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
         raise ValueError('All OODA budgets must be positive')
     if detail_budget > exact_budget:
         raise ValueError('Detail budget cannot exceed exact audit budget')
+    if breeding:
+        if recipe is None or not set().union(*FAMILY_FOCUSES.values()).issubset(recipe.bounds):
+            raise ValueError('Breeding requires a source-bound structural family recipe with all loci')
+        if type(offspring_per_family) is not int or not 1 <= offspring_per_family <= 32:
+            raise ValueError('Breeding offspring budget must be 1..32 per family')
+        if type(migration_every) is not int or migration_every < 2:
+            raise ValueError('Breeding migration interval must be at least two')
+        if not math.isfinite(mutation_scale) or not 0 < mutation_scale <= .4:
+            raise ValueError('Breeding mutation scale must be within (0,.4]')
+        # The family population, not --candidates, determines birth count.
+        candidates = len(FAMILY_FOCUSES) * offspring_per_family
     out = Path(output)
     out.mkdir(parents=True, exist_ok=True)
     # The ledger path belongs to the run identity even before a pet-name is
@@ -594,15 +608,38 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
         identity.update(capability_recipe_sha256=recipe.sha256,
               capability_operator_sha256=compositor.registry.fingerprint(),
               score_size=list(score_size),finalists=finalists)
+    archive_identity = None
+    if breeding:
+        identity['breeding'] = {'families': list(FAMILY_FOCUSES),
+                'offspring_per_family':offspring_per_family,
+                'migration_every':migration_every,
+                'mutation_scale':mutation_scale}
+        archive_identity = {
+            'source_digests':dict(source_hashes),
+            'construction_digest':construction_digest,
+            'recipe_sha256':recipe.sha256,
+            'score_size':list(score_size),
+            'seed':seed, 'breeding':identity['breeding'],
+            'location':project.location}
     with single_runner(out/'session.json'):
+        archive = (LineageArchive(out/'lineage_archive.json',identity=archive_identity)
+                   if breeding else None)
         journal = OODAJournal(out/'session.json', identity=identity,
                               initial=initial, autonomy=autonomy,
                               max_depth=max_depth, max_loops=max_loops)
+        def status_with_archive():
+            result = journal.summary()
+            if archive is not None:
+                result.update(archive_identity=archive.identity,
+                              archive_generation_count=archive.generation_count,
+                              archive_unique_niches=len(archive.elites()),
+                              lineage_gallery=journal.data.get('lineage_gallery'))
+            return result
         journal.poll()
         if journal.data['status'] == 'completed':
-            return journal.summary()
+            return status_with_archive()
         if journal.data['status'] != 'running':
-            return journal.summary()
+            return status_with_archive()
         for i in range(journal.data['current_epoch'], passes):
             if not journal.poll():
                 break
@@ -618,7 +655,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 if not journal.consult_phase(loop_id, phase_adviser):
                     break
                 journal.transition(loop_id, 'orient', {
-                    'available_methods': ['sobol', 'local', 'topology'],
+                    'available_methods': (list(FAMILY_FOCUSES) if breeding else
+                                          ['sobol', 'local', 'topology']),
                     'capability_recipe':recipe.sha256 if recipe else None,
                     'budgets': {'exact': exact_budget, 'detail': detail_budget},
                     'registration': identity['score_state']})
@@ -627,6 +665,7 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     break
                 journal.transition(loop_id, 'decide', {
                     'sampling_seed': seed + i, 'candidates': candidates,
+                    'family_breeding':identity.get('breeding'),
                     'topology_loci': list(topology_loci),
                     'recommendation': 'bounded multi-emitter CAD and capability auditions' if compositor else 'bounded multi-emitter CAD auditions'})
             if node['phase'] == 'decide':
@@ -653,13 +692,16 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     raise ValueError('Pet-name ledger changed during epoch Act; apply updates after review')
                 node['ledger_digest'] = frozen
                 journal.save()
-                batch = propose_methods(bounds, current, seed=seed+i, count=candidates,
-                                        topology_loci=topology_loci)
+                batch = (make_brood(bounds, initial, archive, seed=seed,
+                              generation=i+1,offspring_per_family=offspring_per_family,
+                              migration_every=migration_every,mutation_scale=mutation_scale)
+                         if breeding else propose_methods(bounds,current,seed=seed+i,
+                             count=candidates,topology_loci=topology_loci))
                 # The selected parent gets a distinct seat; never sacrifice
                 # Sobol exploration to make room for inheritance. Every
                 # emitter keeps its own bounded proposals and the lineage
                 # seed competes under the exact same mandatory CAD gates.
-                if compositor is not None:
+                if compositor is not None and not breeding:
                     from .epochs import Proposal
                     batch.insert(0,Proposal('lineage-seed','lineage',dict(current),'selected-parent'))
                 solid_score, state = (project_silhouette_score(project) if compositor is None
@@ -670,9 +712,11 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                                    objectives=objectives,score_state=state,
                                    checkpoint=out/f'epoch_{i+1:03d}.json',
                                    max_exact=exact_budget,max_detail=detail_budget,
-                                   seed=seed+i,pet_ledger=ledger)
+                                   seed=seed+i,pet_ledger=ledger,
+                                   emitter_turn=i)
                 running_id = [None]
                 builds = {}
+                visual_index = {}
                 from .capability_stack import digest as genome_digest
                 def preview(genome):
                     return float(np.mean([((genome[k]-current[k]) / (hi-lo))**2
@@ -717,6 +761,8 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     from .evolution import iou
                     build=builds[genome_digest(genome)]
                     mask=silhouette(build.scene.render_mesh(),compositor.camera,score_size)>96
+                    if breeding:
+                        visual_index[genome_digest(genome)]=visual_descriptor(mask)
                     normalized=np.array([(genome[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
                     origin=np.array([(recipe.initial[k]-lo)/(hi-lo) for k,(lo,hi) in bounds.items()])
                     return {'silhouette':float(1-iou(source_mask,mask)),
@@ -725,6 +771,10 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                     build=builds[genome_digest(genome)]
                     traits={f'{row["entity"]}:{row["operator"]}:{row["id"]}'
                             for row in build.steps if row['state']=='complete'}
+                    if breeding:
+                        visual = visual_index[genome_digest(genome)]
+                        traits.add('visual:'+visual['mask_sha256'])
+                        traits.add('visual-niche:'+visual['niche'])
                     for key,value in genome.items():
                         if key in recipe.cad_keys or key.endswith('seed'):continue
                         lo,hi=bounds[key]
@@ -761,6 +811,13 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 # persistent result; a pause leaves it open for reentry.
                 if not runner.completed(batch, preview=preview):
                     break
+                if archive is not None and not node.get('archive_assimilated'):
+                    culling = archive.assimilate(i+1,data)
+                    node['archive_assimilated']=True
+                    journal.event('lineage-culling',loop_id,generation=i+1,
+                                  counts=culling,niches=len(archive.elites()),
+                                  surviving_families=sorted(archive.data['champions']))
+                    journal.save()
                 options = (render_compound_review(compositor,runner,i,
                                 out/f'previews/epoch_{i+1:03d}',
                                 limit=4 if journal.autonomy<.9 else 2)
@@ -852,15 +909,21 @@ def run_ooda_epochs(project, output, *, passes=3, candidates=9,
                 if gallery_node['phase']=='decide':
                     journal.transition(gallery_id,'act',{'operation':'regrow exact CAD and polygon witnesses'})
                 if gallery_node['phase']=='act':
-                    gallery=regrow_compound_gallery(compositor,out,passes=passes,count=finalists)
+                    gallery=regrow_compound_gallery(compositor,out,passes=passes,
+                                                     count=finalists,unique_visual=breeding)
                     journal.data['gallery']=gallery
+                    if archive is not None:
+                        journal.data['lineage_gallery']=regrow_lineage_gallery(
+                            compositor,archive,out,limit_per_family=2)
                     journal.transition(gallery_id,'aftermath',{
                         'actual_count':gallery['actual_count'],
+                        'lineage_count':journal.data.get('lineage_gallery',{}).get('actual_count'),
                         'requested':finalists,'cad_mesh_union_verified':False})
                 if gallery_node['phase']=='aftermath':
                     journal.transition(gallery_id,'closed',{'result':'audited composite gallery'})
             journal.transition('location', 'closed')
             journal.data['status']='completed'
             journal.save()
-        _atomic(out/'status.json',journal.summary())
-        return journal.summary()
+        result=status_with_archive()
+        _atomic(out/'status.json',result)
+        return result

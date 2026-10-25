@@ -1,0 +1,10 @@
+{
+  "status": "completed",
+  "location": "necrospire",
+  "epochs": 1,
+  "candidates_evaluated": 12,
+  "capability_loops": 108,
+  "finalists": 3,
+  "evidence_state": "provisional",
+  "events": 862
+}

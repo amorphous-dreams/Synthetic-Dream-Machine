@@ -115,6 +115,14 @@ def main(argv=None):
                    metavar=('WIDTH','HEIGHT'),help='fixed compound evidence viewport')
     p.add_argument('--finalists',type=int,choices=[3,4,5],default=3,
                    help='regrow distinct compound finalists inside location Aftermath')
+    p.add_argument('--breeding',action='store_true',
+                   help='six-family quality-diversity campaign using a versioned structural recipe')
+    p.add_argument('--offspring-per-family',type=int,default=6,
+                   help='bounded 1..32 offspring per family per generation')
+    p.add_argument('--migration-every',type=int,default=4,
+                   help='generations between compatible cross-family locus grafts')
+    p.add_argument('--mutation-scale',type=float,default=.16,
+                   help='relative spread for local breeding (0,.4]')
     p=commands.add_parser('ooda-finalists',help='Regrow 3-5 distinct CAD-valid survivors across epochs')
     p.add_argument('--project',type=Path,required=True)
     p.add_argument('--epochs',type=Path,required=True)
@@ -170,7 +178,11 @@ def main(argv=None):
             max_depth=args.max_depth,max_loops=args.max_loops,
             adviser=model_advice.choose if model_advice else None,
             phase_adviser=model_advice.phase if model_advice and args.llm_phases else None,
-            recipe=recipe,score_size=tuple(args.score_size),finalists=args.finalists)
+            recipe=recipe,score_size=tuple(args.score_size),finalists=args.finalists,
+            breeding=getattr(args,'breeding',False),
+            offspring_per_family=getattr(args,'offspring_per_family',6),
+            migration_every=getattr(args,'migration_every',4),
+            mutation_scale=getattr(args,'mutation_scale',.16))
         print(json.dumps(result,indent=2));return result
     if args.command=='ooda-finalists':
         from .finalists import export_finalists

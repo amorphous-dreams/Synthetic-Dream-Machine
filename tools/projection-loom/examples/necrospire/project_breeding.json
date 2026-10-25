@@ -1,0 +1,143 @@
+{
+  "schema": "projection-loom/solid-project/v2",
+  "builder": "grow.py:grow",
+  "cameras": {
+    "front": {
+      "azimuth": 0,
+      "elevation": 0,
+      "fit": "bounds"
+    },
+    "l-side": {
+      "azimuth": 270,
+      "elevation": 0,
+      "fit": "bounds"
+    },
+    "back": {
+      "azimuth": 180,
+      "elevation": 0,
+      "fit": "bounds"
+    },
+    "r-side": {
+      "azimuth": 90,
+      "elevation": 0,
+      "fit": "bounds"
+    },
+    "top": {
+      "azimuth": 0,
+      "elevation": 90,
+      "fit": "bounds"
+    },
+    "oblique": {
+      "azimuth": 42.0,
+      "elevation": 17.0,
+      "roll": 0.0,
+      "fit": "fixed",
+      "margin": 0.02,
+      "pixel_scale": 51.71930758824003,
+      "world_anchor": [
+        0,
+        0,
+        0
+      ],
+      "pixel_center": [
+        524.8549372075925,
+        415.8641142558465
+      ],
+      "reference_size": [
+        1024,
+        1536
+      ]
+    }
+  },
+  "initial": {
+    "shaft_width": 3.1,
+    "shaft_length": 22,
+    "fortress_width": 4.9,
+    "tower_height": 2.9,
+    "gallery_reach": 1.0,
+    "gate_width": 0.66,
+    "shaft_asymmetry": 0.0,
+    "shaft_jaggedness": 0.05,
+    "terrace_overhang": 1.32,
+    "terrace_offset": 0.0,
+    "crown_offset": 0.0,
+    "crown_taper": 0.0,
+    "keep_taper": 0.0,
+    "parapet_fraction": 0.68,
+    "spire_segmentation": 0.0
+  },
+  "bounds": {
+    "shaft_width": [
+      2.7,
+      3.8
+    ],
+    "shaft_length": [
+      19,
+      27
+    ],
+    "fortress_width": [
+      4.4,
+      5.7
+    ],
+    "tower_height": [
+      2.4,
+      3.7
+    ],
+    "gallery_reach": [
+      0.9,
+      1.15
+    ],
+    "gate_width": [
+      0.52,
+      0.82
+    ],
+    "shaft_asymmetry": [
+      -0.4,
+      0.4
+    ],
+    "shaft_jaggedness": [
+      0.015,
+      0.17
+    ],
+    "terrace_overhang": [
+      1.04,
+      1.38
+    ],
+    "terrace_offset": [
+      -0.4,
+      0.4
+    ],
+    "crown_offset": [
+      -0.3,
+      0.3
+    ],
+    "crown_taper": [
+      0.0,
+      0.24
+    ],
+    "keep_taper": [
+      0.0,
+      0.2
+    ],
+    "parapet_fraction": [
+      0.54,
+      0.74
+    ],
+    "spire_segmentation": [
+      0.0,
+      1.0
+    ]
+  },
+  "reference": "source_alpha_8bit.png",
+  "reference_view": "oblique",
+  "light_angles": [
+    -80,
+    40
+  ],
+  "render": {
+    "linework_mode": "semantic",
+    "work_width": 192,
+    "presentation_width": 420
+  },
+  "location": "necrospire"
+}

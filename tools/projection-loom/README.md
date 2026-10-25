@@ -7,6 +7,8 @@ intentional negative volumes. Every production artifact originates from a valida
 material body. The construction genome, not a triangulated export, supplies the
 next evolutionary generation.
 
+**Quality-diversity breeding:** see [Necrospire lineage campaign](docs/BREEDING_CAMPAIGN.md) for the version-2 recipe, fairness gates, durable archives, reproducible pilot commands, and provisional evidence boundaries.
+
 ## Operating contract
 
 * A rooted construction graph specifies valid positive-volume parent-child joins.
