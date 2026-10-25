@@ -9,6 +9,10 @@ on:
       - 'tools/projection-loom/examples/necrospire/**'
       - 'tools/projection-loom/tests/test_wave_xxv_search.py'
       - 'tools/projection-loom/tests/test_evergreen_five_loops.py'
+      - 'tools/projection-loom/tests/test_ooda_ha_inward.py'
+      - 'tools/projection-loom/tests/test_phase_rules.py'
+      - 'tools/projection-loom/tests/test_ooda_ha.py'
+      - 'tools/projection-loom/tests/test_capability_ooda_ha.py'
       - 'tools/projection-loom/scripts/**'
       - 'tools/projection-loom/spec/**'
   workflow_dispatch:
@@ -40,7 +44,10 @@ jobs:
           python -m pip check
       - name: RED contracts now green
         run: |
-          python -m pytest -q tests/test_wave_xxv_search.py tests/test_open_topology.py tests/test_search_strategy_alpha.py tests/test_evergreen_five_loops.py
+          python -m pytest -q tests/test_wave_xxv_search.py \
+            tests/test_open_topology.py tests/test_search_strategy_alpha.py \
+            tests/test_evergreen_five_loops.py tests/test_ooda_ha_inward.py \
+            tests/test_phase_rules.py
       - name: Fresh source-bound generation with native CAD and independently regrown gallery
         run: |
           python -m projection_loom ooda-ha-run \
