@@ -159,5 +159,6 @@
     "work_width": 192,
     "presentation_width": 420
   },
-  "location": "necrospire"
+  "location": "necrospire",
+  "seed_entity": "seed_oblique.json"
 }

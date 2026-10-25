@@ -23,6 +23,7 @@ class Project:
     light_angles: tuple
     render_style: dict
     location: str = 'untitled-location'
+    seed_entity: object | None = None
 
     @classmethod
     def load(cls,path):
@@ -56,8 +57,17 @@ class Project:
         settings={'linework_mode':'semantic','line_supersample':1,'presentation_width':540,
                   'supersample':1,'work_width':300,'material_gray':{0:.17,1:.70,2:.55},**settings}
         location = str(conf.get('location') or (f.parent.name if f.stem == 'project' else f.stem))
+        seed_entity = None
+        if conf.get('seed_entity') is not None:
+            from .seed_entity import SeedEntity
+            relative = Path(conf['seed_entity'])
+            if relative.is_absolute() or '..' in relative.parts:
+                raise ValueError('Source seed path must remain beside the project')
+            seed_entity = SeedEntity.load(f.parent / relative, location=location,
+                                          reference=ref_path, reference_view=reference_view)
         return cls(f,builder_path,builder,cameras,initial,bounds,ref_path,
-                   reference_view,tuple(conf.get('light_angles',[-80,35])),settings,location)
+                   reference_view,tuple(conf.get('light_angles',[-80,35])),settings,location,
+                   seed_entity)
 
     def grow(self,genome=None):
         pars=dict(self.initial)
@@ -77,6 +87,8 @@ class Project:
         return obj.get('genome',obj)
 
     def source_mask(self,size):
+        if self.seed_entity is not None:
+            return self.seed_entity.mask(size)
         if self.reference is None:return None
         import cv2
         from PIL import Image
