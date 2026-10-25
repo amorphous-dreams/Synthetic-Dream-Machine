@@ -15,7 +15,7 @@ import re
 from collections import defaultdict
 from .provenance_encoding import canonical_json_sha256
 
-SCHEMA = 'projection-loom/location-stack/v1'
+SCHEMA = 'projection-loom/location-stack'
 HEX_SHA256 = re.compile(r'^[0-9a-f]{64}$')
 SOURCE_KINDS = frozenset({
     'single_image', 'image_set', 'dem', 'point_cloud', 'photogrammetry_mesh',
