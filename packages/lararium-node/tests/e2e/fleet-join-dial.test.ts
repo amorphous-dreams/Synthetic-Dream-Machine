@@ -137,6 +137,7 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
     });
     await expect(as(B, () => direct(runFleetJoinLand)({ storageDir: B.storage, answer: forged }))).rejects.toMatchObject({ refusal: expect.stringMatching(/^admit-/) });
     await as(B, async () => {
+      // barrier: both runFleetJoinLand refusals answered, awaited through rejects above, before the store read
       expect(readCarriedCharters(larSealHome()).size).toBe(0);
       expect(readKeptAdmitBundles(larSealHome())).toEqual([]);
       expect(await readFaceJoinRecord(groupA)).toBeNull();

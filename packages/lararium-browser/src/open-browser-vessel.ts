@@ -18,7 +18,7 @@ import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
-  emptyLarDoc, storedLarRecord, storedRecord,
+  emptyLarDoc, storedLarRecord,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID,
   resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
@@ -32,7 +32,7 @@ import {
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsPointer,
-  personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
+  personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
@@ -1641,26 +1641,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }
         return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
       };
-      // The daemon doc the publish core reads for the owner prefix — the persona-KEL prefix IS the only field
-      // it consults, and `social` carries it authoritatively; a faceless boot has none, so publish fails closed.
-      const ownerDaemonDoc = (): LarDoc => {
-        const d: LarDoc = { tiddlers: {} } as LarDoc;
-        if (social.personaKelPrefix) {
-          d.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
-            tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: social.personaKelPrefix, kind: "persona-kel-prefix" },
-          });
-        }
-        return d;
-      };
+      // The owner of a face rides its SEALED ANCHOR through `readFace`'s door (`readFaceOwner`): the publish and burn adapters load
+      // the selected persona's anchor from the origin's custody and read its chain off this per-Nexus persona-KEL board.
+      const resolveKelBoard = (): Promise<DocHandle<LarDoc>> =>
+        materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
 
-      // face-publish — announce a persona-anchored glamour onto the WHO board (fail-closed on absent prefix,
+      // face-publish — announce a persona-anchored glamour onto the WHO board (fail-closed on an absent anchor or chain,
       // in the shared core). Returns the announced card for the UI to reflect.
       registry.register("face-publish", async (args) => {
         const glamour = String(args["glamour"] ?? "").trim();
         if (!glamour) throw new Error("face-publish: a `glamour` (display name) is required");
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("publish");
-        const card = await publishHandleBrowser({ daemonDoc: ownerDaemonDoc(), board, handleIndex, glamour, idbName });
+        const card = await publishHandleBrowser({ board, kelBoard: await resolveKelBoard(), handleIndex, glamour, idbName });
         return { verb: "face-publish", nym: card.nym, glamour: card.glamour, actCid: card.actCid, parents: card.parents };
       });
 
@@ -1673,8 +1666,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName };
         if (fromPersona) {
           burnOpts.fromPersona = true;
-          burnOpts.daemonDoc   = ownerDaemonDoc();
-          burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+          burnOpts.kelBoard    = await resolveKelBoard();
         }
         const card = await burnFaceBrowser(burnOpts);
         return { verb: "face-burn", nym: card.nym, actCid: card.actCid, parents: card.parents, burned: true, hand: fromPersona ? "owner" : "self" };
