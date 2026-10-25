@@ -4,6 +4,20 @@
 
 **Alpha code law:** no application release ordinals, compatibility shims or numeric schema migration ladders. Live project, recipe, and result formats use semantic `projection-loom/...` type identifiers. Recipe SHA-256, source bytes, camera, operator implementation fingerprints, and checkpoint digests carry identity. Git holds earlier behavior. External Python packaging metadata and fixed CI dependency pins serve tooling/reproducibility, not Loom release governance.
 
+## Native proof · Oblique Seed
+
+The one-generation named-source witness passed in
+[Actions #40245719198](https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40245719198).
+It regenerated and committed the live recipe, verified both independent file
+digests and one-image/channel identity, passed the named entity and capability
+tests, and completed bounded native OODA-HA with a source-held pet-name claim.
+Current live recipe SHA-256:
+`5f45dcc273b203521faa42abb9b1575f7a51d2971a96d69df788e8adbaec0fd2`.
+The earlier frozen pilot remains read-only. Project-level named seed metadata
+never grants native geometry or survey authority.
+
+---
+
 ## Oblique Seed · single pet-named source entity
 
 Original RGBA and separately stored L8 alpha now form **one**
