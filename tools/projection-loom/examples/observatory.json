@@ -1,5 +1,5 @@
 {
-  "schema":"projection-loom/solid-project/v2",
+  "schema":"projection-loom/solid-project",
   "builder":"observatory_grow.py:grow",
   "cameras":{
     "front":{"azimuth":0,"elevation":0,"fit":"bounds"},
