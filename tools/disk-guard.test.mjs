@@ -11,13 +11,14 @@ const reading = (over = {}) => ({
     return { bavail: Math.floor(gb(over.root ?? 800) / 4096), bsize: 4096 };
   },
   worktreeList: () => over.porcelain ?? porcelain(over.built ?? 0, over.prunable ?? 0),
-  codexDirs: () => Array.from({ length: over.codex ?? 0 }, (_, i) => `c${i}`),
-  env: over.env ?? {},
+  codexDirs: () => Array.from({ length: (over.codex ?? 0) + (over.codexEmpty ?? 0) }, (_, i) => ({ name: `c${i}`, empty: i >= (over.codex ?? 0), mtimeMs: Date.UTC(2026, 9, 10 + (i % 5)) })),
+  env: { HOME: '/home/u', ...(over.env ?? {}) },
   ...over.extra,
 });
-function porcelain(built, prunable) {
+function porcelain(built, prunable, root = '/home/u/.lares-scratch/wt') {
+  const over_root = root;
   const out = ['worktree /main', 'HEAD aaa', 'branch refs/heads/x', ''];
-  for (let i = 0; i < built; i++) out.push(`worktree /wt/${i}`, 'HEAD bbb', 'detached', '');
+  for (let i = 0; i < built; i++) out.push(`worktree ${over_root}/${i}`, 'HEAD bbb', 'detached', '');
   for (let i = 0; i < prunable; i++) out.push(`worktree /gone/${i}`, 'HEAD ccc', 'detached', 'prunable gitdir file points to non-existent location', '');
   return out.join('\n');
 }
@@ -36,21 +37,42 @@ test('/ at 39G refuses; 41G passes', () => {
   assert.equal(checkDisk(reading({ root: 41 })).ok, true);
 });
 
-test('seven built worktrees refuse; six pass; the main checkout never counts', () => {
-  assert.match(checkDisk(reading({ built: 7 })).reasons.join('\n'), /7 built worktrees stand, over the 6 cap/);
+test('seven house trees refuse; six pass; the main checkout never counts', () => {
+  assert.match(checkDisk(reading({ built: 7 })).reasons.join('\n'), /7 house worktrees stand, over the 6 cap/);
   assert.equal(checkDisk(reading({ built: 6 })).ok, true);
   assert.equal(checkDisk(reading({ built: 0 })).built.length, 0);
 });
 
-test('thirteen Codex worktrees refuse; twelve pass', () => {
-  assert.match(checkDisk(reading({ codex: 13 })).reasons.join('\n'), /13 Codex worktrees stand, over the 12 cap/);
-  assert.equal(checkDisk(reading({ codex: 12 })).ok, true);
+test('seven trees elsewhere plus one house tree pass, and list the elsewhere ones as not the house\'s', () => {
+  const elsewhere = Array.from({ length: 7 }, (_, i) => `/home/u/.worktrees/e${i}`);
+  const text = ['worktree /main', 'HEAD a', 'detached', '', ...elsewhere.flatMap(p => [`worktree ${p}`, 'HEAD b', 'detached', '']), 'worktree /home/u/.lares-scratch/x/wt', 'HEAD c', 'detached', ''].join('\n');
+  const r = checkDisk(reading({ porcelain: text }));
+  assert.equal(r.ok, true);
+  assert.equal(r.built.length, 1);
+  assert.deepEqual(r.notHouse, elsewhere);
+  assert.match(render(r), /not the house's: \/home\/u\/\.worktrees\/e0/);
 });
 
-test('Codex-home worktrees in the git list count once, as Codex, never as built', () => {
+test('thirteen non-empty Codex dirs warn with count and oldest date, and pass', () => {
+  const r = checkDisk(reading({ codex: 13 }));
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.reasons, []);
+  assert.match(r.warnings.join('\n'), /WARN: 13 Codex worktrees stand, oldest 2026-10-10, over the 12 warning threshold/);
+  assert.match(render(r), /WARN: 13 Codex/);
+  assert.deepEqual(checkDisk(reading({ codex: 12 })).warnings, []);
+});
+
+test('99 Codex dirs of which 63 stand empty count as 36', () => {
+  const r = checkDisk(reading({ codex: 36, codexEmpty: 63 }));
+  assert.equal(r.codex.length, 36);
+  assert.equal(r.ok, true);
+});
+
+test('Codex-home worktrees in the git list never count as house or elsewhere', () => {
   const text = ['worktree /main', 'HEAD a', 'branch refs/heads/x', '', 'worktree /home/u/.codex/worktrees/ab12/R', 'HEAD b', 'detached', ''].join('\n');
   const r = checkDisk(reading({ porcelain: text, env: { HOME: '/home/u' } }));
   assert.equal(r.built.length, 0);
+  assert.equal(r.notHouse.length, 0);
 });
 
 test('prunable records list by path, stay out of the built count, and do not by themselves refuse', () => {
@@ -73,16 +95,17 @@ test('limits come from env; defaults hold without it', () => {
   assert.deepEqual(readLimits({ LARES_DISK_MIN_C_GB: '10', LARES_DISK_MIN_ROOT_GB: '5', LARES_DISK_MAX_WORKTREES: '2', LARES_DISK_MAX_CODEX: '3' }), { minC: 10, minRoot: 5, maxBuilt: 2, maxCodex: 3 });
   assert.equal(checkDisk(reading({ c: 59, env: { LARES_DISK_MIN_C_GB: '50' } })).ok, true);
   assert.equal(checkDisk(reading({ built: 3, env: { LARES_DISK_MAX_WORKTREES: '2' } })).ok, false);
+  assert.equal(checkDisk(reading({ codex: 5, env: { LARES_DISK_MAX_CODEX: '3' } })).warnings.length, 1);
   assert.throws(() => readLimits({ LARES_DISK_MIN_C_GB: 'lots' }), /LARES_DISK_MIN_C_GB/);
 });
 
 test('several reds all name themselves', () => {
   const r = checkDisk(reading({ c: 1, root: 1, built: 9, codex: 20 }));
-  assert.equal(r.reasons.length, 4);
+  assert.equal(r.reasons.length, 3);
 });
 
 test('parseWorktrees drops the first record (the main checkout) and separates prunable', () => {
   const p = parseWorktrees(porcelain(2, 1));
-  assert.deepEqual(p.built, ['/wt/0', '/wt/1']);
+  assert.deepEqual(p.built, ['/home/u/.lares-scratch/wt/0', '/home/u/.lares-scratch/wt/1']);
   assert.deepEqual(p.prunable, ['/gone/0']);
 });
