@@ -67,7 +67,7 @@ def test_material_cache_is_invalidated_by_authored_void():
 def test_external_reference_rejects_candidate_fitting_camera(tmp_path):
     (tmp_path/'grow.py').write_text('def grow(params):\n    return None\n')
     Image.fromarray(np.zeros((32,32),dtype=np.uint8)).save(tmp_path/'reference.png')
-    cfg = {'schema': 'projection-loom/solid-project/v2',
+    cfg = {'schema': 'projection-loom/solid-project',
            'builder':'grow.py:grow',
            'cameras':{'oblique':{'fit':'bounds','azimuth':30}},
            'initial':{'width':1.0}, 'bounds':{'width':[.8,1.2]},
