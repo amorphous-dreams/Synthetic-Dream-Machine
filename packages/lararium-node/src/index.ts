@@ -464,14 +464,14 @@ export type { KeyClass } from "@lararium/mesh";
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
   CUSTODY_CLASSES, CUSTODY_PARTS, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
-  vkSlotsPath, skSlotsPath, vkSealedCarriers, rotateVesselVk,
+  vkSlotsPath, skSlotsPath, vkSealedCarriers, occupantCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {
   CustodyClass, CustodyPart, CustodyTarget, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
 } from "./vault-carriers.js";
-// The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
-export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";
-export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReason } from "./custody-shape.js";
+// The custody shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
+export { readCustodyShape, occupiedStoreRefusal } from "./custody-shape.js";
+export type { CustodyShape, CustodyShapeReading, OccupantOffender, OccupantReason } from "./custody-shape.js";
 // The custody root: the hot carrier every sovereign derivation stands on, apart from the floor key — see `custody-root`.
 export {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, mintCustodyRoot, custodyRootFromBytes, isCustodyRoot, custodyRootPath,

@@ -179,12 +179,12 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
-    for (const file of ["custody-root.bin", ".vessel-key-x.json", "keyhive-archive.bin", "vk-slots.bin"]) {
+    for (const file of ["custody-root.bin", ".vessel-key-x.json", "keyhive-archive.bin", "s-slots.bin"]) {
       expect(lines.filter((l) => l.includes(file)), file).toHaveLength(1);
     }
     expect(lines.find((l) => l.includes("custody-root.bin"))).toMatch(/hot\s+device-minted\s+sealed/);
     expect(lines.find((l) => l.includes(".vessel-key-x.json"))).toMatch(/floor\s+device-minted\s+bare\s+\S+\s+by law: /);
-    expect(lines.find((l) => l.includes("vk-slots.bin"))).toMatch(/bare\s+vk-slots\.bin\s+by law: /);
+    expect(lines.find((l) => l.includes("s-slots.bin"))).toMatch(/bare\s+s-slots\.bin\s+by law: /);
     expect(lines.find((l) => l.includes("keyhive-archive.bin"))).toMatch(/bare\s+keyhive-archive\.bin\s+FAULT/);
     expect(lines.find((l) => l.includes("side-key.json"))).toMatch(/OUTSIDE THE TABLE.*owner-only/);
     // the json answer carries the one custody reading, and no second table of the same files
@@ -211,7 +211,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const io = new FsCustodyIo(homes);
     const u = await unlockCustody({ io, homes, credentials: [{ kind: "passphrase", passphrase: PW }] });
     if (u.reading !== "opens") throw new Error("the fixture's own route opens");
-    await writeSealedCarrier({ io, vk: u.vk, treePath: join(homes.identity, "vk-slots.bin"), carrier: { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") }, plaintext: new TextEncoder().encode("x") });
+    await writeSealedCarrier({ io, vk: u.vk, treePath: join(homes.identity, "s-slots.bin"), carrier: { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") }, plaintext: new TextEncoder().encode("x") });
     const before = tree(root);
     out.length = 0;
     answers.push("p", PW, "n", PW);

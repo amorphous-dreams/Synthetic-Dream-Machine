@@ -73,7 +73,7 @@ class MemoryIo implements CustodyIo {
   }
 }
 
-const TREE = "/id/vk-slots.json";
+const TREE = "/id/s-slots.json";
 const CARRIERS: SealedCarrier[] = [
   { name: "keyring", path: "/id/keyring.sealed" },
   { name: "walk", path: "/store/walk.sealed" },

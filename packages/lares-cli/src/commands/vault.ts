@@ -35,7 +35,7 @@ class UsageError extends Error {}
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
-  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
+  "OccupiedStoreRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
   "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationSlotsRefused",
 ]);
 
@@ -126,7 +126,7 @@ function rowLine(r: CustodyStatusRow): string {
  */
 function printCustody(c: CustodyStatus): void {
   console.log("custody (VK):");
-  if (c.tree.reading === "absent") console.log("  slot tree      absent — no vk-slots.bin stands (a founding seals custody from birth)");
+  if (c.tree.reading === "absent") console.log("  slot tree      absent — no s-slots.bin stands (a founding seals custody from birth)");
   else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
   else {
     console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
@@ -163,7 +163,6 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   const why =
     u.reading === "no-slot-opens" ? `no slot opens under what was presented${u.notes.length ? ` (${u.notes.join("; ")})` : ""} — nothing was changed`
     : u.reading === "tree-absent"  ? "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth)"
-    : u.reading === "serving-unopenable" ? `the vessel key opened and the serving key did not (${u.why}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds`
     : `the slot tree reads unreadable: ${u.why} — a torn tree is not a credential error; nothing was changed`;
   emit(args, { ok: false, error: { code: u.reading, message: why }, data: { reading: u.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
   return null;
@@ -178,12 +177,13 @@ function unlockLine(a: CustodyDoorAnswer): string {
       ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}`
       : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
     case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
+    case "face-refused":     return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.`;
+    case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
     case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
-    case "serving-unopenable": return `the vessel key opened and the serving key did not (${String(a["why"])}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds.`;
     default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
   }
 }
@@ -201,7 +201,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
   if (daemonUp) {
     const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
     if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
-    const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}) });
+    const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}), ...(args.flags["all"] === true ? { all: true } : {}) });
     if (a === null) {
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
       return 1;
@@ -368,7 +368,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     const status = await custodyStatus({ io, homes });
     if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
     if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
-    const tree = decodeSlotTree(await io.read(`${homes.identity}/vk-slots.bin`));
+    const tree = decodeSlotTree(await io.read(`${homes.identity}/s-slots.bin`));
     staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);

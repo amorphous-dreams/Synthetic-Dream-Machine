@@ -14,7 +14,7 @@ import {
 } from "../src/keyslot.js";
 import { mintVk, vkEquals, type VesselKey } from "../src/vk.js";
 import {
-  commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateVk, OldShapeRefusal, CustodyRefusal,
+  commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateVk, OccupiedStoreRefusal, CustodyRefusal,
   type CustodyIo, type SealedCarrier,
 } from "../src/sealed-writer.js";
 import { LARK_MAGIC } from "../src/vk-envelope.js";
@@ -291,20 +291,20 @@ class ScratchIo implements CustodyIo {
   exclusive<T>(fn: () => Promise<T>): Promise<T> { const r = this.chain.then(fn, fn); this.chain = r.catch(() => undefined); return r; }
 }
 
-const TREE = "/scratch/vk-slots.bin";
+const TREE = "/scratch/s-slots.bin";
 const KEYRING: SealedCarrier = { name: "keyring", path: "/scratch/keyring.bin", keyClass: "relation" };
 const ROOT: SealedCarrier = { name: "custody-root", path: "/scratch/custody-root.bin", keyClass: "device-minted" };
 const text = (s: string) => new TextEncoder().encode(s);
 
-describe("the old shape refuses BEFORE any write", () => {
+describe("an occupied store refuses BEFORE any write", () => {
   test("RED: founding the tree over a CLEARTEXT root refuses by name, and the store sees no mutation", async () => {
     const io = new ScratchIo();
     io.files.set(ROOT.path, text("a cleartext custody root, as the old build kept it"));
     const vk = mintVk();
     const tree = bindSlot(null, vk, { t: 1, pins: [right] });
     const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
     expect(io.mutations).toEqual([]);
     expect(io.files.has(TREE)).toBe(false);
     expect(new TextDecoder().decode(io.files.get(ROOT.path)!)).toMatch(/cleartext custody root/);
@@ -316,9 +316,9 @@ describe("the old shape refuses BEFORE any write", () => {
     const vk = mintVk();
     const tree = bindSlot(null, vk, { t: 1, pins: [right] });
     const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
-    expect((err as OldShapeRefusal).message).toMatch(/fresh-start/);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
+    expect((err as OccupiedStoreRefusal).message).toMatch(/empty root/);
     expect(io.mutations).toEqual([]);
   });
 
@@ -333,8 +333,8 @@ describe("the old shape refuses BEFORE any write", () => {
     const vk = mintVk();
     const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: [ROOT] })
       .catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).unlisted).toEqual(["/scratch/stray.bin"]);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).unlisted).toEqual(["/scratch/stray.bin"]);
     expect(io.mutations).toEqual([]);
   });
 
@@ -350,11 +350,11 @@ describe("the old shape refuses BEFORE any write", () => {
     expect(decodeSlotTree(await io.read(TREE)).reading).toBe("readable");
   }, 30_000);
 
-  test("RED: a write to a carrier with NO tree standing refuses before any byte, naming the old shape when cleartext stands", async () => {
+  test("RED: a write to a carrier with NO tree standing refuses before any byte, naming the occupant when cleartext stands", async () => {
     const io = new ScratchIo();
     io.files.set(KEYRING.path, text("{\"cleartext\":true}"));
     const err = await writeSealedCarrier({ io, vk: mintVk(), treePath: TREE, carrier: KEYRING, plaintext: text("x") }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
     expect(io.mutations).toEqual([]);
     expect(new TextDecoder().decode(io.files.get(KEYRING.path)!)).toBe('{"cleartext":true}');
   });

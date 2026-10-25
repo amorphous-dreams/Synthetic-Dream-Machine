@@ -93,7 +93,7 @@ describe("CustodyHolder", () => {
     writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(b.homes.identity)));
     await expect(h.writeRow("identity", file, new TextEncoder().encode('{"second":true}'))).rejects.toBeInstanceOf(TreeVkRefusal);
     expect(readFileSync(path).equals(kept)).toBe(true);
-    expect(existsSync(`${path}.vk-sealing`)).toBe(false);
+    expect(existsSync(`${path}.s-sealing`)).toBe(false);
     writeFileSync(vkSlotsPath(homes.identity), tree);
     const fresh = makeCustodyHolder({ io, homes });
     await fresh.unlock([pass(RIGHT)]);

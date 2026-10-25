@@ -16,7 +16,7 @@ const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 
 describe("the frame", () => {
   test("the magic names the scheme and the frame carries no version byte: magic ‖ nonce ‖ ciphertext", () => {
-    expect(new TextDecoder().decode(VK_SEAL_MAGIC)).toBe("lares-vk-seal");
+    expect(new TextDecoder().decode(VK_SEAL_MAGIC)).toBe("lares-s-seal");
     const vk = mintVk();
     const sealed = sealUnderVk(vk, "keyring", text("{}"));
     expect(Array.from(sealed.subarray(0, VK_SEAL_MAGIC.length))).toEqual(Array.from(VK_SEAL_MAGIC));

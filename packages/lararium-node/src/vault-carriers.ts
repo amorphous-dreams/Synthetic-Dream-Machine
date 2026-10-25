@@ -102,7 +102,7 @@ export interface CustodyHomes {
 
 /** The slot tree's path: the one file outside the VK that wraps it. */
 export function vkSlotsPath(identityDir: string = larIdentityDir()): string {
-  return join(identityDir, "vk-slots.bin");
+  return join(identityDir, "s-slots.bin");
 }
 
 /** The serving tree's path: the one file outside every key that wraps SK (ember#/the-serving-key). */
@@ -113,7 +113,7 @@ export function skSlotsPath(identityDir: string = larIdentityDir()): string {
 /**
  * The suffix of the serving tree a VK rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
  * and the next opening of SK settles it (`openServingTree`). Its own suffix: the VK rotation's settle sweeps every
- * `.vk-rotating` file, and this one must outlive that sweep.
+ * `.s-rotating` file, and this one must outlive that sweep.
  */
 export const SK_REWRAP_SUFFIX = ".sk-rewrap";
 
@@ -311,7 +311,7 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vessel-kel", target: tgt(["F"]), match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding)",
          bare: "the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks" }),
-    id({ row: "vk-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "s-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
     id({ row: "sk-slots", target: tgt(["S"], LEAD), match: exact(skSlotsPath()), custody: "floor", keyClass: null,
@@ -560,33 +560,16 @@ export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
     ...(["identity", "storage", "seal"] as const)
       .flatMap((home) => censusHome(home, homes[home], sealed))
       .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass })),
-    ...flatFaceRowCarriers(homes.identity).map((e) => ({ name: `identity/${e.file}`, path: e.path, keyClass: e.keyClass })),
   ];
 }
 
 /**
- * A face row's file standing FLAT in the identity home: the spelling an earlier shape wrote. This build writes a face row only inside
- * its face's directory, so a flat one is a carrier the build does not write: the shape reader and the founding census name it.
+ * Every carrier whose standing, with no slot tree, makes a store occupied: the VK-sealed rows plus the face rows. A founding
+ * over any of them refuses before a byte lands; the face rows ride this list and no rotation, since a face key seals them.
  */
-export function flatFaceRowCarriers(identityDir: string): Array<{ readonly row: string; readonly file: string; readonly path: string; readonly keyClass: KeyClass | null }> {
-  let names: string[];
-  try { names = readdirSync(identityDir); } catch { return []; }
-  const out: Array<{ row: string; file: string; path: string; keyClass: KeyClass | null }> = [];
-  // The shared files an earlier shape kept for ALL faces at once (one roster, one map per family): no face owns them now.
-  const earlier: ReadonlyArray<readonly [string, RegExp]> = [
-    ["anchor-roster", /^anchor-roster\.json$/], ["outbox-key", /^outbox-key\.bin$/], ["cadence-key", /^cadence-key-[0-9a-f]{32}\.bin$/],
-    ["vessel-face-key", /^vessel-face-key-[0-9a-f]{32}\.bin$/], ["face-address-secret", /^face-address-secret-[0-9a-f]{32}\.bin$/],
-    ["fleet-join-pending", /^fleet-join-pending-[0-9a-f]{32}\.json$/], ["face-join-record", /^face-join-record-[0-9a-f]{32}\.json$/], ["active-persona", /^\.active-persona(?:-[^./]+)?\.json$/], ["handle-book", /^\.handle-book\.json$/], ["persona-roster", /^\.persona-roster(?:-[^./]+)?\.json$/],
-    ["persona-petnames", /^\.persona-petnames(?:-[^./]+)?\.json$/], ["persona-declarations", /^\.persona-declarations(?:-[^./]+)?\.json$/],
-    ["public-handles", /^\.persona-public-handles(?:-[^./]+)?\.json$/],
-  ];
-  for (const file of names) {
-    const row = carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.inner.test(file));
-    if (row) { out.push({ row: row.row, file, path: join(identityDir, file), keyClass: row.keyClass }); continue; }
-    const old = earlier.find(([, rx]) => rx.test(file));
-    if (old) out.push({ row: old[0], file, path: join(identityDir, file), keyClass: null });
-  }
-  return out;
+export function occupantCarriers(homes: CustodyHomes): SealedCarrier[] {
+  const faceRows = carrierCensus(homes).filter((e) => e.custody === "face-hot" || e.custody === "face-cold");
+  return [...vkSealedCarriers(homes), ...faceRows.map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }))];
 }
 
 /**

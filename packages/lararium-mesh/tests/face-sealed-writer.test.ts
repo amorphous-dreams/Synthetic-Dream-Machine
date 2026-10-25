@@ -3,7 +3,7 @@ import { bindSlot, decodeSlotTree } from "../src/keyslot.js";
 import { mintFck, sealUnderFck, type FaceCarrier } from "../src/fck.js";
 import { mintVk, sealUnderVk } from "../src/vk.js";
 import { writeSealedCarrier, commitSlotTree, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier,
-  rotateFck, settleFaceRotation, commitFaceTree, assertNoOldFaceShape, CensusRefusal, OldShapeRefusal,
+  rotateFck, settleFaceRotation, commitFaceTree, assertFaceStoreUnoccupied, CensusRefusal, OccupiedStoreRefusal,
   ROTATING_SUFFIX, SEALING_SUFFIX, type CustodyIo } from "../src/sealed-writer.js";
 
 const text = (s: string) => new TextEncoder().encode(s);
@@ -156,8 +156,8 @@ describe("face sealed writer", () => {
   });
   test("RED: founding refuses a standing face row and names it", async () => {
     const io = new MemoryIo(); io.files.set(a.path, sealUnderFck(mintFck(), a, text("x")));
-    await expect(assertNoOldFaceShape({ io, treePath: "/faces/a/tree", carriers: [a] })).rejects.toBeInstanceOf(OldShapeRefusal);
+    await expect(assertFaceStoreUnoccupied({ io, treePath: "/faces/a/tree", carriers: [a] })).rejects.toBeInstanceOf(OccupiedStoreRefusal);
     await expect(commitFaceTree({ io, path: "/faces/a/tree", expected: null, key: mintFck(), tree: bindSlot(null, mintFck(), pin), carriers: [a] }))
-      .rejects.toBeInstanceOf(OldShapeRefusal);
+      .rejects.toBeInstanceOf(OccupiedStoreRefusal);
   });
 });

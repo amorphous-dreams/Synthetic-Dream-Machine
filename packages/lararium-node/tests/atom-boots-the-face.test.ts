@@ -58,6 +58,7 @@ describe("the atom boots the face", () => {
     await holder.lock();
     await expect(loadFaceAtomOfGroup(group)).rejects.toThrow(/CustodyLocked|locked|rests unopened/i);
     await holder.unlock([{ kind: "passphrase", passphrase: "test-founding-passphrase" }]);
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: "test-founding-passphrase" }]);
   });
 
   test("a worn face with no atom refuses by name; the row present opens", async () => {

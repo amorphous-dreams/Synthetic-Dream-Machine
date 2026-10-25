@@ -79,12 +79,12 @@ test("C5 — each file outside the table reads outside, with its reason", () => 
   c.outside = [
     { home: "identity", file: "side-key.json", why: "owner-only" },
     { home: "storage", file: "stray.bin", why: "vk-seal" },
-    { home: "seal", file: "transitions.json.vk-sealing", why: "sidecar" },
+    { home: "seal", file: "transitions.json.s-sealing", why: "sidecar" },
   ];
   assert.deepEqual(custodyBreaches(c), [
     "outside: identity/side-key.json (owner-only)",
     "outside: storage/stray.bin (vk-seal)",
-    "outside: seal/transitions.json.vk-sealing (sidecar)",
+    "outside: seal/transitions.json.s-sealing (sidecar)",
   ]);
 });
 

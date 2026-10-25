@@ -103,7 +103,7 @@ try {
   step("the reading holds rows under the vessel key and rows outside it by law", sealed.length >= 8 && byLaw.length >= 4 && sealed.length + byLaw.length === clean.rows.length,
     `${sealed.length} sealed, ${byLaw.length} by law, ${clean.rows.length} rows`);
   step("each bare row names its law: the vessel key, its log, the slot tree, the serving tree, the contact card",
-    ["vessel-key", "vessel-kel", "vk-slots", "sk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
+    ["vessel-key", "vessel-kel", "s-slots", "sk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
     byLaw.map((r) => r.row).join(", "));
 
   // ── RED: an owner-only file no row names ──────────────────────────────────────────────────────────────────
@@ -114,10 +114,10 @@ try {
   rmSync(sideKey);
 
   // ── RED: an orphan sidecar ────────────────────────────────────────────────────────────────────────────────
-  const sidecar = join(identity, "custody-root.bin.vk-sealing");
+  const sidecar = join(identity, "custody-root.bin.s-sealing");
   copyFileSync(join(identity, "custody-root.bin"), sidecar);
   got = breaches(census(root));
-  step("RED: an orphan sidecar reads outside the table", got.length === 1 && got[0] === "outside: identity/custody-root.bin.vk-sealing (sidecar)", got.join("; "));
+  step("RED: an orphan sidecar reads outside the table", got.length === 1 && got[0] === "outside: identity/custody-root.bin.s-sealing (sidecar)", got.join("; "));
   rmSync(sidecar);
 
   // ── RED: a file spelled like a plain row answers to that row's law ────────────────────────────────────────

@@ -45,7 +45,7 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | Current row and code line | Current | Owner / target and required cut |
 | `vessel-key` `:240-242` | floor | ''S, OPEN JOINT:'' private place signing seed owned by this node. Its public verifying key belongs in F. The signer options appear below; it is never a custody VK or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
 | `vessel-kel` `:243-245` | floor | ''F:'' public inception/signature, node place principal. |
-| `vk-slots` `:246-248` | floor | ''D/S split:'' retire the omnibus VK tree. Each face gets its own FCK tree; a node S tree exists only for named S rows. No face FCK wrapper under a node key. |
+| `s-slots` `:246-248` | floor | ''D/S split:'' retire the omnibus VK tree. Each face gets its own FCK tree; a node S tree exists only for named S rows. No face FCK wrapper under a node key. |
 | `sk-slots` `:249-251` | floor | ''S conditional, node:'' retire current VK-to-SK wrapping. No serving row exists today (`:12-14`). A future serving payload gets its own named S key and boot rule before this tree survives. |
 | `fk-slots` `face-custody.ts` | floor | ''D (the face's own tree):'' one tree per face at `faces/<fcid>/fk-slots.bin`, wrapping that face's random custody key under each human route that face asked for. No VK wraps it and no sibling face's route opens it; the face's rows and this tree rest in one directory, so a bundle or a removal moves them together. |
 | `face-index` `face-index.ts` | floor-plain | ''F:'' the one floor row that names the faces a node can unlock before any face opens: the count of faces (tombstones included), each group's digest, each founding ask's digest and each random directory name, and no other byte. It routes and never decides; see #/the-floor-index. |
@@ -248,6 +248,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;5H_pPDWYyyLXzemsMdFVfZo6GElrAYws8TRIs6BcRY4
+<<^ code="&#x0003;">>ni:///sha-256;Rjubhnpb-_VVFcgpg-atndZ5B7DkgTzPBTJVfD09Pfk
 
 <<^ code="&#x0004;" -> to="?">>

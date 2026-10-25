@@ -85,9 +85,9 @@ const VK_SEAL: CarrierSeal<SealedCarrier> = {
 const FACE_SEAL: CarrierSeal<FaceCarrier> = { open: openUnderFck, seal: sealUnderFck, read: readFckCarrier };
 
 /** The sidecar of a single write. A stray one never committed; settling removes it. */
-export const SEALING_SUFFIX = ".vk-sealing";
+export const SEALING_SUFFIX = ".s-sealing";
 /** The sidecar of a VK rotation. The tree's rotating sidecar marks the rotation committed. */
-export const ROTATING_SUFFIX = ".vk-rotating";
+export const ROTATING_SUFFIX = ".s-rotating";
 
 type RefusedReading = Exclude<VkOpening["reading"], "opens" | "absent">;
 
@@ -162,32 +162,31 @@ export interface StandingCarrier { readonly carrier: SealedCarrier; readonly rea
  * envelope, or a seal no tree commits to) and no slot tree does. Nothing was written. `standing` names the listed
  * carriers met; `unlisted` the paths that bear the VK seal's magic yet no listed carrier names.
  */
-export class OldShapeRefusal extends Error {
+export class OccupiedStoreRefusal extends Error {
   constructor(readonly standing: readonly StandingCarrier[], readonly unlisted: readonly string[], readonly treePath: string) {
     super(
       `sealed-writer: refusing — no slot tree stands at ${treePath}, yet ${standing.length + unlisted.length} ` +
       `carrier(s) already stand: ${[...standing.map((s) => `${s.carrier.name} (${s.reading})`), ...unlisted].join(", ")}. ` +
-      `This is the old shape: a fresh founding seals from birth and nothing wraps cleartext in place; ` +
-      `the fresh-start runbook (stable-founding-road #/fresh-start) answers it`,
+      `A founding seals from birth and nothing wraps cleartext in place; found into an empty root`,
     );
-    this.name = "OldShapeRefusal";
+    this.name = "OccupiedStoreRefusal";
   }
 }
 
 /**
- * THE FOUNDING'S OWN CHECK, AS A READ. Throws `OldShapeRefusal` when any carrier of `carriers` stands while no slot
+ * THE FOUNDING'S OWN CHECK, AS A READ. Throws `OccupiedStoreRefusal` when any carrier of `carriers` stands while no slot
  * tree stands at `treePath`, or when an unlisted file bears the VK seal's magic. It reads and lists alone: it takes
  * no custody claim and writes nothing, so a command may ask it before it gathers a human route. The founding runs
  * the same check again under its claim (`commitSlotTree`).
  */
-export async function assertNoOldCustodyShape(args: {
+export async function assertStoreUnoccupied(args: {
   readonly io: Pick<CustodyIo, "read" | "list">; readonly treePath: string; readonly carriers: readonly SealedCarrier[];
 }): Promise<void> {
-  return refuseOldShape(args.io, args.treePath, args.carriers);
+  return refuseOccupiedStore(args.io, args.treePath, args.carriers);
 }
 
-/** Read the store for the old shape. Throws `OldShapeRefusal` when any carrier stands with no tree; writes nothing. */
-async function refuseOldShape<C extends SealedCarrier>(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly C[], seal: CarrierSeal<C> = VK_SEAL as CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
+/** Read the store for occupants. Throws `OccupiedStoreRefusal` when any carrier stands with no tree; writes nothing. */
+async function refuseOccupiedStore<C extends SealedCarrier>(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly C[], seal: CarrierSeal<C> = VK_SEAL as CarrierSeal<C>, scope?: (path: string) => boolean): Promise<void> {
   const standing: StandingCarrier[] = [];
   for (const carrier of carriers) {
     const reading = seal.read(await io.read(carrier.path));
@@ -199,9 +198,9 @@ async function refuseOldShape<C extends SealedCarrier>(io: Pick<CustodyIo, "read
     if (scope && !scope(path)) continue;
     if (path === treePath || isSidecar(path) || named.has(path)) continue;
     const reading = seal.read(await io.read(path));
-    if (reading === "sealed" || reading === "torn") unlisted.push(path);
+    if (reading === "sealed" || reading === "torn" || reading === "old-shape") unlisted.push(path);
   }
-  if (standing.length > 0 || unlisted.length > 0) throw new OldShapeRefusal(standing, unlisted.sort(), treePath);
+  if (standing.length > 0 || unlisted.length > 0) throw new OccupiedStoreRefusal(standing, unlisted.sort(), treePath);
 }
 
 /** Prove `vk` against the tree standing at `treePath`. Returns the standing bytes, or throws `TreeVkRefusal`. */
@@ -338,7 +337,7 @@ async function writeHeld<C extends SealedCarrier>(args: WriteSealedCarrierArgs &
   try {
     await proveAgainstTree(io, args.treePath, vk);
   } catch (err) {
-    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOldShape(io, args.treePath, [carrier], seal, scope);
+    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOccupiedStore(io, args.treePath, [carrier], seal, scope);
     throw err;
   }
   const standing = seal.open(vk, carrier, await io.read(carrier.path));
@@ -380,10 +379,10 @@ export async function commitFaceTree(args: CommitFaceTreeArgs): Promise<void> {
   return args.io.exclusive(() => commitHeld({ ...args, vk: args.key }, FACE_SEAL, facePathScope(args.path)));
 }
 
-export async function assertNoOldFaceShape(args: {
+export async function assertFaceStoreUnoccupied(args: {
   readonly io: Pick<CustodyIo, "read" | "list">; readonly treePath: string; readonly carriers: readonly FaceCarrier[];
 }): Promise<void> {
-  return refuseOldShape(args.io, args.treePath, args.carriers, FACE_SEAL, facePathScope(args.treePath));
+  return refuseOccupiedStore(args.io, args.treePath, args.carriers, FACE_SEAL, facePathScope(args.treePath));
 }
 
 export interface CommitSlotTreeArgs {
@@ -395,7 +394,7 @@ export interface CommitSlotTreeArgs {
   readonly tree:     SlotTree;
   /**
    * Every VK-sealed carrier the vessel keeps (the carrier table's hot and cold rows). A founding (nothing standing
-   * at `path`) refuses with `OldShapeRefusal`, before any write, when any of them already stands or when an
+   * at `path`) refuses with `OccupiedStoreRefusal`, before any write, when any of them already stands or when an
    * unlisted file bears the VK seal's magic.
    */
   readonly carriers: readonly SealedCarrier[];
@@ -409,7 +408,7 @@ async function commitHeld<C extends SealedCarrier>(args: CommitSlotTreeArgs & { 
     throw new Error(`sealed-writer: the slot tree at ${path} moved since it was read; read it again before binding`);
   }
   if (standing !== null) await proveAgainstTree(io, path, args.vk);
-  else await refuseOldShape(io, path, args.carriers, seal, scope);
+  else await refuseOccupiedStore(io, path, args.carriers, seal, scope);
   if (!vkAnswersCheck(args.vk, args.tree.vkCheck)) throw new TreeVkRefusal("vk-mismatch", path);
   const bytes = encodeSlotTree(args.tree);
   const reading = decodeSlotTree(bytes);

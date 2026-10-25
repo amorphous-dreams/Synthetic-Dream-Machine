@@ -70,7 +70,7 @@ export async function unlockTestCustody(root, act = "unlock", face = undefined) 
   refuseUnmarked(dir);
   const frame = act === "lock" ? { op: "lock" }
     : act === "status" ? { op: "custody" }
-    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], ...(face !== undefined ? { face } : {}) };
+    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], all: true, ...(face !== undefined ? { face } : {}) };
   return await sendCustodyFrame(dir, frame);
 }
 

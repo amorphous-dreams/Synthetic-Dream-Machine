@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  CustodyRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintVk,
+  CustodyRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintVk,
   openSealedCarrier, openVk, readVkCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
@@ -246,7 +246,7 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
 
   test("a stale file naming pid 1 at the old .lock path changes nothing", async () => {
     const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
-    const stale = join(homes.identity, "vk-slots.bin.lock");
+    const stale = join(homes.identity, "s-slots.bin.lock");
     writeFileSync(stale, "1 stale-holder");
     await expect(io.exclusive(async () => "entered")).resolves.toBe("entered");
     expect(readFileSync(stale, "utf8")).toBe("1 stale-holder");
@@ -323,7 +323,7 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
 });
 
 describe("PROOF 3 — the old-shape refusal fires before any write", () => {
-  test("a standing cleartext pending-enrollment row and no slot tree: the founding refuses as the old shape, and every byte stands", async () => {
+  test("a standing cleartext pending-enrollment row and no slot tree: the founding refuses as an occupied store, and every byte stands", async () => {
     const io = new FsCustodyIo(homes);
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{\"cleartext\":true}");
     writeFileSync(join(homes.identity, "custody-root.bin"), "bare-root");
@@ -333,9 +333,9 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
       io, path: vkSlotsPath(homes.identity), expected: null, vk,
       tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes),
     }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/custody-root.bin"]);
-    expect((err as OldShapeRefusal).standing.find((s) => s.carrier.keyClass === "relation")).toBeDefined();   // the table's class rides the list
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/custody-root.bin"]);
+    expect((err as OccupiedStoreRefusal).standing.find((s) => s.carrier.keyClass === "relation")).toBeDefined();   // the table's class rides the list
     expect(treeHash(root)).toBe(before);
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
     expect(existsSync(`${vkSlotsPath(homes.identity)}${SEALING_SUFFIX}`)).toBe(false);
@@ -360,8 +360,8 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
     const vk = mintVk();
     const args = { path: vkSlotsPath(homes.identity), expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) };
     const err = await commitSlotTree({ io, ...args }).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).unlisted).toEqual([stray.path]);
+    expect(err).toBeInstanceOf(OccupiedStoreRefusal);
+    expect((err as OccupiedStoreRefusal).unlisted).toEqual([stray.path]);
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
 
     const blind: CustodyIo = {
@@ -382,7 +382,7 @@ describe("the relation refusal — no rotation regenerates it", () => {
     const altRoot = join(root, "alt");
     const altIo = new FsCustodyIo({ identity: join(altRoot, "i"), storage: join(altRoot, "s"), seal: join(altRoot, "n") });
     const other = mintVk();
-    const altTree = join(altRoot, "i", "vk-slots.bin");
+    const altTree = join(altRoot, "i", "s-slots.bin");
     await commitSlotTree({ io: altIo, path: altTree, expected: null, vk: other, tree: bindSlot(null, other, { t: 1, pins: [pass] }), carriers: [] });
     for (const c of [pending, walk]) {
       const alt = { ...c, path: join(altRoot, "c", c.name.replace(/\//g, "_")) };

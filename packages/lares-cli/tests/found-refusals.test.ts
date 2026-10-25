@@ -39,16 +39,18 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
 
 describe("vessel found — the store's shape is read before any route is asked", () => {
-  it("★ an earlier-shape store refuses OldShapeRefusal by name, asks for NO route, prints no stack, writes nothing ★", async () => {
+  it("★ an earlier-shape store refuses OccupiedStoreRefusal by name, asks for NO route, prints no stack, writes nothing ★", async () => {
     const homes = vesselCustodyHomes();
     mkdirSync(homes.identity, { recursive: true });
-    writeFileSync(join(homes.identity, "anchor-roster.json"), "{}");     // a hot carrier with no slot tree
+    const face = join(homes.identity, "faces", "ab".repeat(16));
+    mkdirSync(face, { recursive: true });
+    writeFileSync(join(face, "anchors-h0.json"), "{}");     // a face row with no slot tree
     let asked = 0;
     setFoundingRoute(async () => { asked++; return [{ t: 1, pins: [{ kind: "passphrase", passphrase: "never-asked" }] }]; });
     const before = snapshot(root);
     expect(await cmdFound(parseArgs(["vessel", "found"]))).toBe(1);
     expect(asked).toBe(0);
-    expect(err[0]).toMatch(/^\[lares vessel found\] refused: OldShapeRefusal: /);
+    expect(err[0]).toMatch(/^\[lares vessel found\] refused: OccupiedStoreRefusal: /);
     expect(err.join("\n")).not.toMatch(/\n\s+at /);
     expect(snapshot(root)).toBe(before);
   });

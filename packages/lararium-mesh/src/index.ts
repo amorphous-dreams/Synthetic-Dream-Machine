@@ -547,9 +547,9 @@ export type { FaceCustodyKey, FaceCarrier, FckOpening } from "./fck.js";
 // The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
 // proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
-  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation, assertNoOldCustodyShape,
-  CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
-  writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertNoOldFaceShape, commitFaceTree,
+  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation, assertStoreUnoccupied,
+  CustodyRefusal, TreeVkRefusal, CensusRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertFaceStoreUnoccupied, commitFaceTree,
 } from "./sealed-writer.js";
 export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
@@ -559,8 +559,8 @@ export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPape
 export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintVk, vkEquals } from "./vk.js";
 // The serving key and the serving tree that wraps it under the VK's entry — see `serving-key`.
-export { mintServingKey, foundServingTree, openServingKey, encodeServingTree, decodeServingTree, skCheckOf, SK_LENGTH } from "./serving-key.js";
-export type { ServingKey, ServingTree, ServingVkEntry, ServingKeyOpening, ServingTreeReading } from "./serving-key.js";
+export { mintServingKey, SK_LENGTH } from "./serving-key.js";
+export type { ServingKey } from "./serving-key.js";
 export type { VesselKey, VkOpening } from "./vk.js";
 // The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
 export { VK_SEAL_MAGIC, LARK_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";

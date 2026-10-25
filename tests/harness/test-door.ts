@@ -52,6 +52,7 @@ export async function seatStagedCustody(root: string): Promise<{ drop(): Promise
   const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
   const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   if (opened.reading !== "opens") throw new Error(`the staged custody at ${root} reads ${opened.reading} under the test route`);
+  await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   seatCustody(holder);
   return { async drop() { await holder.lock(); unseatCustody(holder); } };
 }

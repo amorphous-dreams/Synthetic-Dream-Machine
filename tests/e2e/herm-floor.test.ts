@@ -284,7 +284,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // home, each under a name the carrier table spells; a floor that never lit a face holds neither.
     const rowsNamed = (dir: string, name: RegExp): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
       e.isDirectory() ? rowsNamed(join(dir, e.name), name) : name.test(e.name) ? [join(dir, e.name)] : []);
-    expect(rowsNamed(root, /^vk-slots\.bin$/).length, "the walk found no founded identity home to read").toBe(1);   // CONTROL: the walk reads the founded custody
+    expect(rowsNamed(root, /^s-slots\.bin$/).length, "the walk found no founded identity home to read").toBe(1);   // CONTROL: the walk reads the founded custody
     expect(rowsNamed(root, /persona-group-root|^anchors-h\d+\.json$/), "a face stands on the floor rig — every vector below measures a hearth, not a floor").toEqual([]);
     // And the locked floor says so when asked: a sealed read beside it refuses and names the unlock, where it
     // once opened a second key session of its own.

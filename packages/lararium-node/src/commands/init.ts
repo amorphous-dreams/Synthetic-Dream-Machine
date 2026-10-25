@@ -211,7 +211,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   // ── CUSTODY SEALS FROM BIRTH, BEFORE THE FIRST IDENTITY FILE ─────────────────────────────────
   // The slot tree and the custody root land first, so a store that already holds a carrier refuses
-  // (`OldShapeRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
+  // (`OccupiedStoreRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
   // sealed custody: the VK stays, and nothing here re-mints it.
   //
   // THE FOUNDING HOLDS THE KEY IT MINTED. Every identity row this act writes rests sealed under the vessel key,
@@ -222,7 +222,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // THE KEY COMES FIRST: this act seals rows under the standing key, so it opens the seat before it mints or
     // writes anything. A vessel whose key stays shut refuses here, by name, with the identity home untouched.
     await openedCustody();
-    console.log("[lares vessel found] custody already sealed (vk-slots.bin stands) — the VK and its slots stay as they are.");
+    console.log("[lares vessel found] custody already sealed (s-slots.bin stands) — the VK and its slots stay as they are.");
     // A FRESH BOOTSTRAP NAMES NO FACE, AND `faceStands` READS ONLY THE BOOTSTRAP. So re-seeding over a vessel
     // whose persona roots stand drops it to the waking floor while every other reading still answers that the
     // face stands — `persona list` reads the ROSTER and keeps naming it. The root stays held (`persona new <i>`
@@ -241,7 +241,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     await holder.adopt(founded.vk);
     founded.vk.fill(0);
     seatCustody(holder);
-    console.log("[lares vessel found] custody sealed from birth: vk-slots.bin and the custody root.");
+    console.log("[lares vessel found] custody sealed from birth: s-slots.bin and the custody root.");
   }
 
   const operatorIdentity = await generateOrLoadVesselIdentity();

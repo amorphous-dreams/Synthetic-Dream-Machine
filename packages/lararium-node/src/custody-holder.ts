@@ -37,7 +37,7 @@ import {
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
 import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
-import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
+import { openCustodyVk, unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
 
 export type HolderUnlock =
@@ -47,7 +47,6 @@ export type HolderUnlock =
   | { readonly reading: "attempts-spent" }
   | { readonly reading: "tree-absent" }
   | { readonly reading: "tree-unreadable"; readonly why: string }
-  | { readonly reading: "serving-unopenable"; readonly why: string }
   | { readonly reading: "root-unopenable"; readonly why: string };
 
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
@@ -257,15 +256,14 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const opened = await openCustodyRootCarrier({ io: a.io, vk: result.vk, identityDir: a.homes.identity });
     if (opened.reading !== "opens") {
       result.vk.fill(0);
-      result.sk.fill(0);
+      result.sk?.fill(0);
       return { reading: "root-unopenable", why: opened.reading };
     }
     vk = result.vk;
     sk = result.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = result.slot;
-    // The faces the same route fits open beside the vessel layer; one it does not fit stays shut and costs nothing.
-    await doUnlockFaces(credentials);
+    // The node key opens alone: no face key hangs from it. A face opens by its own unlock (`unlockFace`, `unlockFaces`).
     return { reading: "opens", slot };
   };
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
@@ -428,10 +426,8 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     if (vk !== null) return;
     const opened = await openCustodyRootCarrier({ io: a.io, vk: handed, identityDir: a.homes.identity });
     if (opened.reading !== "opens") throw new CustodyAdoptRefused(opened.reading);
-    const served = await openServingTree({ io: a.io, homes: a.homes, vk: handed });
-    if (served.reading !== "opens") throw new CustodyAdoptRefused(`${served.reading} at the serving tree`);
     vk = Uint8Array.from(handed) as VesselKey;
-    sk = served.sk;
+    sk = null;                       // the serving tree opens under its own route, never under the node key handed in
     root = custodyRootFromBytes(opened.opened);
     slot = null;
   };

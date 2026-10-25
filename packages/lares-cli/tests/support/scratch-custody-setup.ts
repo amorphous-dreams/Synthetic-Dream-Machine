@@ -72,6 +72,7 @@ async function openScratch(holder: CustodyHolder): Promise<void> {
   if (u.reading !== "opens" && u.reading !== "already-unlocked") {
     throw new ScratchCustodyRefused(`the custody standing at ${identity} reads ${u.reading} under the suites' founding route`);
   }
+  await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);   // the route tries every face tree too (`--all`)
 }
 
 function arm(): void {

@@ -185,7 +185,7 @@ describe("sealed vessel identity family", () => {
         await expect(Promise.resolve().then(readDoor), `${file} ${label} read name`).rejects.toThrow(reading);
         await expect(Promise.resolve().then(writeDoor), `${file} ${label} write`).rejects.toThrow(CustodyRowUnavailable);
         expect(read(file).equals(damaged), `${file} ${label} unchanged`).toBe(true);
-        expect(existsSync(`${at(file)}.vk-sealing`), `${file} ${label} leaves no sidecar`).toBe(false);
+        expect(existsSync(`${at(file)}.s-sealing`), `${file} ${label} leaves no sidecar`).toBe(false);
       }
       // control: the sealed bytes back at the path, both doors answer again
       writeFileSync(at(file), intact);

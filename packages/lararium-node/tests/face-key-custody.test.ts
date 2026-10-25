@@ -168,7 +168,7 @@ describe("the face proof's custody rows and signing doors", () => {
     }
     files.forEach((f, i) => {
       expect(readFileSync(at(f)).equals(standing[i]!), `${f} never moved`).toBe(true);
-      expect(existsSync(`${at(f)}.vk-sealing`)).toBe(false);
+      expect(existsSync(`${at(f)}.s-sealing`)).toBe(false);
     });
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
     await fresh.adopt(rotated.vk);

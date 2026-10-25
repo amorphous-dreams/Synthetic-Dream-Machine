@@ -85,7 +85,7 @@ import {
 } from "../src/browser-custody.js";
 
 const STORE = "keystore";
-const MAGIC = new TextEncoder().encode("lares-vk-seal");
+const MAGIC = new TextEncoder().encode("lares-s-seal");
 const PASS = { kind: "passphrase", passphrase: "the hearth keeps its fire" } as const;
 const WRONG = { kind: "passphrase", passphrase: "wrong" } as const;
 const CUSTODY_ROWS = ["keyhive-archive", "veil-archive-ggroup-a", "vessel-key"] as const;

@@ -60,6 +60,7 @@ export async function openTestCustody(): Promise<void> {
   const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
   const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   if (opened.reading !== "opens") throw new Error(`the test route did not open this root's custody: ${opened.reading}`);
+  await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   seatCustody(holder);
 }
 

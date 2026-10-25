@@ -178,6 +178,7 @@ describe("a founding keeps its archives, sealed per face", () => {
 
     // control: unlocked by the founding route, the same founding lands its rows
     expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     const face = await foundFace({ genesisDir, handleIndex: 3 });
     expect(face.alreadyStood).toBe(false);
     expect(readFckCarrier(readFileSync(veilArchivePath(face.personaGroupId)))).toBe("sealed");
@@ -198,6 +199,7 @@ describe("a founding keeps its archives, sealed per face", () => {
       expect(roots()).toEqual([]);
       // control
       expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
       await seatSeedCharter();
       expect((await foundFace({ genesisDir: join(second, "genesis"), handleIndex: 0 })).alreadyStood).toBe(false);
       expect(roots().length).toBe(1);
@@ -244,7 +246,8 @@ describe("a founding keeps its archives, sealed per face", () => {
   test("F8 removing a completed face's bootstrap entry founds a fresh group", async () => {
     const genesisDir = join(root, "genesis");
     const holder = seatedCustody()!;
-    if (!holder.isUnlocked()) expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+    if (!holder.isUnlocked()) { expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens"); await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]); }
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     const before = (await loadIdentityAnchors(2))!;
     const atomBefore = (await loadFaceAtomOfGroup(before.personaGroupId))!;
     const orphanArchive = readFileSync(veilArchivePath(before.personaGroupId));

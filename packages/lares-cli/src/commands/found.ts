@@ -28,10 +28,10 @@
  */
 
 import { readFileSync } from "node:fs";
-import { OldShapeRefusal, assertNoOldCustodyShape, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
+import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
-  CustodyLockRefused, HearthFoundingRefused, NameTooLong, vkSealedCarriers, vkSlotsPath,
+  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, vkSlotsPath,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
 import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "../custody-prompt.js";
@@ -69,8 +69,8 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
   if (err instanceof StoreHeld) {
     return { name: "StoreHeld", advice: "a founding runs with no vessel standing — stop the standing vessel, then found." };
   }
-  if (err instanceof OldShapeRefusal) {
-    return { name: "OldShapeRefusal", advice: "nothing was written and no route was asked. This store holds carriers from an earlier shape; found into an empty root (LAR_ROOT) or follow the fresh-start runbook." };
+  if (err instanceof OccupiedStoreRefusal) {
+    return { name: "OccupiedStoreRefusal", advice: "nothing was written and no route was asked. This store holds carriers no slot tree commits to; found into an empty root (LAR_ROOT)." };
   }
   if (err instanceof CustodyLockRefused) {
     return { name: "CustodyLockRefused", advice: "another process holds this custody; let it finish, then found again." };
@@ -102,9 +102,9 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     let slots: readonly SlotSpec[] = [];
     if (!(await custodyTreeStands(io, homes))) {
       // THE STORE'S SHAPE, READ BEFORE ANY ROUTE GETS ASKED: the sealed writer's own founding check, as a read. A
-      // store that holds a carrier and no tree refuses `OldShapeRefusal` here, before the operator types anything;
+      // store that holds a carrier and no tree refuses `OccupiedStoreRefusal` here, before the operator types anything;
       // the founding itself runs the same check again under its custody claim.
-      await assertNoOldCustodyShape({ io, treePath: vkSlotsPath(homes.identity), carriers: vkSealedCarriers(homes) });
+      await assertStoreUnoccupied({ io, treePath: vkSlotsPath(homes.identity), carriers: occupantCarriers(homes) });
       slots = await gatherRoute();
     }
     if (args.flags["hearth"] === true) return await foundHearth(args, { storageDir, genesisDir, slots });

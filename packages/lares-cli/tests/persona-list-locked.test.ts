@@ -41,7 +41,9 @@ describe("a locked persona list", () => {
     expect(locked).toContain('"locked":[0]');
     expect(locked).not.toContain("private-label");
     wire.length = 0;
-    expect((await holder.unlock([{ kind: "passphrase", passphrase: "test-founding-passphrase" }])).reading).toBe("opens");
+    const route = [{ kind: "passphrase" as const, passphrase: "test-founding-passphrase" }];
+    expect((await holder.unlock(route)).reading).toBe("opens");
+    await holder.unlockFaces(route);
     expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(0);
     expect(wire.join("")).toContain("private-label");
   });

@@ -233,7 +233,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     }
     // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.
     expect(custody.rows.some((r) => r.row === "device-share" && r.reading === "sealed")).toBe(true);
-    expect(custody.rows.some((r) => r.row === "vk-slots" && r.reading === "bare")).toBe(true);
+    expect(custody.rows.some((r) => r.row === "s-slots" && r.reading === "bare")).toBe(true);
     expect(readFckCarrier(readFileSync(SHARE()))).toBe("sealed");
   }, 120_000);
 

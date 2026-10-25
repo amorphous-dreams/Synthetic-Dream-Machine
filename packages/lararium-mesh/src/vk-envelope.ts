@@ -1,7 +1,7 @@
 /**
  * vk-envelope — the frame of a carrier sealed under the vessel's VK, and the readings a writer keeps apart.
  *
- * THE FRAME: `magic ‖ nonce(24) ‖ ciphertext‖tag(16)`. The magic NAMES the scheme ("lares-vk-seal") and no version
+ * THE FRAME: `magic ‖ nonce(24) ‖ ciphertext‖tag(16)`. The magic NAMES the scheme ("lares-s-seal", the node S key) and no version
  * byte follows it. One scheme, one mode, fixed widths: nothing in the frame negotiates. A change of scheme mints a
  * new magic, the way a change of protocol mints a new domain name, because a version byte invites the shredder this
  * frame exists to end — a vessel that cannot decode version N+1 reading it as "not sealed" and writing over it.
@@ -13,7 +13,7 @@
  *  · `torn`       — the house magic over a frame too short to hold them, or a file cut inside the magic itself (its
  *                   bytes a proper prefix of the magic). The bytes never framed, so no key is at fault; the route
  *                   out is a backup, never a re-typed credential.
- *  · `old-shape`  — the four bytes `LARK` lead the file. No custody of this house writes that frame and no
+ *  · `old-shape`  — the four bytes `LARK` or the earlier magic `lares-vk-seal` lead the file. No custody of this house writes that frame and no
  *                   reader here opens it; the fresh-start runbook answers it, and no write here replaces it.
  *  · `unopenable` — a seal stands that this build cannot frame: the house magic with damaged bytes, or another
  *                   scheme of the house family (`lares-…`) at any length. No key can be judged against it, so none
@@ -25,7 +25,7 @@
  */
 
 /** The magic that names the VK seal scheme. */
-export const VK_SEAL_MAGIC: Uint8Array = new TextEncoder().encode("lares-vk-seal");
+export const VK_SEAL_MAGIC: Uint8Array = new TextEncoder().encode("lares-s-seal");
 /** The four bytes a frame of the `old-shape` reading opens with ("LARK"). The house writes no such frame and opens none. */
 export const LARK_MAGIC: Uint8Array = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b]);
 /** The house family prefix: a magic that opens with it names a house seal scheme, known to this build or not. */

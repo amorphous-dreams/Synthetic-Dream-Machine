@@ -1,22 +1,22 @@
 /**
  * custody-session — THE CUSTODY SESSION: the acts that found, open, change and read the vessel's key custody.
  *
- * One vessel key (VK) rests inside the keyslot tree (`vk-slots.bin`); the custody root rests sealed under that VK.
+ * One vessel key (VK) rests inside the keyslot tree (`s-slots.bin`); the custody root rests sealed under that VK.
  * This module composes the mesh's sealed writer and the carrier table into the six acts a founding and the
  * `vault` door share, and holds no state of its own: every act takes the port (`CustodyIo`) and the homes.
  *
  * ── A FOUNDING SEALS FROM BIRTH ─────────────────────────────────────────────────────────────────
  * `foundCustody` mints the VK, binds every slot, commits the tree through `commitSlotTree` (so a store that already
- * holds a carrier refuses `OldShapeRefusal` before a byte lands), then mints the serving key (SK) and writes the
- * serving tree that wraps it under the VK's entry (`sk-slots.bin`), then mints the custody root and seals it. It
+ * holds a carrier refuses `OccupiedStoreRefusal` before a byte lands), then mints the serving key (SK) and writes the
+ * serving tree that wraps it under its own slots (`sk-slots.bin`), then mints the custody root and seals it. It
  * refuses a founding with no slot: a VK with no human route is a vessel nobody can open. The slot specs bind a
  * passphrase or paper route; the tree refuses a spec with neither.
  *
  * ── AN UNLOCK NEVER THROWS ON A CREDENTIAL ──────────────────────────────────────────────────────
  * `unlockCustody` settles a rotation a fault left behind (independent of any credential), reads the tree, and
- * opens the VK, then SK through the serving tree's VK entry (ember#/the-serving-key). A wrong credential reads
- * `no-slot-opens`; an absent or torn tree reads by name; a VK that opens no SK reads `serving-unopenable` and
- * drops the VK. Nothing is written on a reading other than the settle.
+ * opens the VK, then SK through the serving tree's own slots (ember#/the-serving-key). A wrong credential reads
+ * `no-slot-opens`; an absent or torn tree reads by name; a route the serving tree does not take leaves `sk` null
+ * while the VK stands open. Nothing is written on a reading other than the settle.
  *
  * ── AN UNBIND THAT ROTATES RUNS AS ONE ACT ──────────────────────────────────────────────────────
  * `unbindCustodySlot` with `rotate` hands the staying slots to the VK rotation and writes no tree of its own: the
@@ -31,13 +31,13 @@
 
 import { mkdirSync } from "node:fs";
 import {
-  assertNoOldCustodyShape, bindSlot, commitSlotTree, decodeServingTree, decodeSlotTree, encodeServingTree, foundServingTree, mintServingKey, mintVk,
-  openServingKey, openVk, readFckCarrier, readVkCarrier, ROTATING_SUFFIX, settleRotation, unbindSlot,
+  assertStoreUnoccupied, bindSlot, commitSlotTree, decodeSlotTree, mintServingKey, mintVk,
+  openVk, readFckCarrier, readVkCarrier, settleRotation, unbindSlot,
   type Credential, type CustodyIo, type ServingKey, type SlotSpec, type SlotTree, type VesselKey, type VkCarrierReading,
 } from "@lararium/mesh";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
 import {
-  carrierCensus, carrierTable, outsideTheTable, rotateVesselVk, SK_REWRAP_SUFFIX, skSlotsPath, vkSealedCarriers, vkSlotsPath,
+  carrierCensus, carrierTable, outsideTheTable, rotateVesselVk, skSlotsPath, vkSealedCarriers, occupantCarriers, vkSlotsPath,
   type CarrierEntry, type CustodyHomes, type OutsideFile,
 } from "./vault-carriers.js";
 
@@ -95,11 +95,14 @@ export async function foundCustody(args: {
   for (const spec of args.slots) tree = bindSlot(tree, vk, spec);
   const path = vkSlotsPath(homes.identity);
   const sk = mintServingKey();
-  // ONE CLAIM, AND THE SERVING TREE LANDS FIRST. The store's shape gets read before any write, so an old-shape store
-  // refuses with nothing written; the serving tree then lands under the VK about to commit, and the slot tree
-  // commits that VK last. A fault between the two leaves a serving tree beside no slot tree: it wraps SK under a VK
-  // no tree holds, opens for nobody, and the next founding replaces it whole. No fault leaves a slot tree whose VK
-  // reaches no SK.
+  // THE SERVING TREE STANDS ON ITS OWN. SK wraps under its own slots, bound over the same founding route but with their own
+  // wrapped key, salt and slot ids, so the S key wraps nothing of it (ember#/the-serving-key): a second device lifts a resting
+  // hearth to SERVING without the route the S key needs.
+  let skTree: SlotTree | null = null;
+  for (const spec of args.slots) skTree = bindSlot(skTree, sk as unknown as VesselKey, spec);
+  // ONE CLAIM. The store's shape gets read before any write, so an occupied store refuses with nothing written; the
+  // serving tree then lands, and the node tree commits last. A fault between the two leaves a serving tree beside no node
+  // tree, which the next founding replaces whole.
   await io.exclusive(async () => {
     const held = heldIo(io);
     const carriers = vkSealedCarriers(homes);
@@ -107,8 +110,10 @@ export async function foundCustody(args: {
     if ((await held.read(path)) !== null) {
       throw new CustodyFoundingRefused(`a slot tree already stands at ${path}; a founding seals custody once, and nothing was written`);
     }
-    await assertNoOldCustodyShape({ io: held, treePath: path, carriers });
-    await held.write(skSlotsPath(homes.identity), encodeServingTree(foundServingTree(sk, vk)));
+    await assertStoreUnoccupied({ io: held, treePath: path, carriers: occupantCarriers(homes) });
+    // A serving tree beside no node tree stands from a founding a fault cut short; this founding replaces it whole.
+    await held.remove(skSlotsPath(homes.identity));
+    await commitSlotTree({ io: held, path: skSlotsPath(homes.identity), expected: null, vk: sk as unknown as VesselKey, tree: skTree!, carriers: [] });
     await commitSlotTree({ io: held, path, expected: null, vk, tree: tree!, carriers });
   });
   const root = mintCustodyRoot();
@@ -132,80 +137,41 @@ function heldIo(io: CustodyIo): CustodyIo {
   };
 }
 
-/** Why a VK that opened reaches no SK: no serving tree, a torn one, or one whose VK entry this VK does not open. */
-export type ServingUnopenable = "serving-tree-absent" | "serving-tree-unreadable" | "vk-entry-refuses" | "check-fails";
+/** What the serving tree reads when the presented credentials open no SK. */
+export type ServingUnopenable = "serving-tree-absent" | "serving-tree-unreadable" | "no-slot-opens";
 
 /** Two readings of one file hold the same bytes, absence included. */
-function bytesSame(a: Uint8Array | null, b: Uint8Array | null): boolean {
-  if (a === null || b === null) return a === b;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
-}
-
-/** The serving tree a VK rotation re-wraps, written before the rotation commits and settled after it. */
-const servingNextPath = (homes: CustodyHomes): string => `${skSlotsPath(homes.identity)}${SK_REWRAP_SUFFIX}`;
 
 /**
- * Open SK through the serving tree's VK entry, settling a VK rotation's re-wrap first: where the standing tree's
- * entry opens under `vk`, a leftover re-wrap never committed and leaves; where only the re-wrap's entry opens, the
- * rotation committed and the re-wrap takes the tree's place. Never throws on a VK no entry opens.
+ * Open SK through the serving tree's own slots with the presented credentials. The tree stands apart from the node tree: a
+ * route the node tree takes may not be one the serving tree takes, and then SK stays shut while the node key opens.
  */
 export async function openServingTree(args: {
-  readonly io:    CustodyIo;
-  readonly homes: CustodyHomes;
-  readonly vk:    VesselKey;
+  readonly io:          CustodyIo;
+  readonly homes:       CustodyHomes;
+  readonly credentials: readonly Credential[];
 }): Promise<{ readonly reading: "opens"; readonly sk: ServingKey } | { readonly reading: ServingUnopenable; readonly why: string }> {
-  return args.io.exclusive(() => openServingHeld(heldIo(args.io), args.homes, args.vk));
-}
-
-/** `openServingTree` inside a claim the caller holds. Any SK it opened zero-fills when a later step throws. */
-async function openServingHeld(
-  io: CustodyIo, homes: CustodyHomes, vk: VesselKey,
-): Promise<{ readonly reading: "opens"; readonly sk: ServingKey } | { readonly reading: ServingUnopenable; readonly why: string }> {
-  const path = skSlotsPath(homes.identity);
-  const next = servingNextPath(homes);
-  const t = decodeServingTree(await io.read(path));
+  const path = skSlotsPath(args.homes.identity);
+  const t = decodeSlotTree(await args.io.read(path));
   if (t.reading === "absent") return { reading: "serving-tree-absent", why: `no serving tree stands at ${path}` };
   if (t.reading === "unreadable") return { reading: "serving-tree-unreadable", why: t.why };
-  const nextBytes = await io.read(next);
-  const o = openServingKey(t.tree, vk);
-  if (o.reading === "opens") {
-    try {
-      if (nextBytes !== null) await io.remove(next);
-    } catch (err) { o.sk.fill(0); throw err; }
-    return o;
-  }
-  if (nextBytes !== null) {
-    const n = decodeServingTree(nextBytes);
-    const on = n.reading === "readable" && n.tree.skCheck === t.tree.skCheck ? openServingKey(n.tree, vk) : null;
-    if (on?.reading === "opens") {
-      try { await io.rename(next, path); } catch (err) { on.sk.fill(0); throw err; }
-      return on;
-    }
-  }
-  return {
-    reading: o.reading,
-    why: o.reading === "vk-entry-refuses"
-      ? "the serving tree's VK entry does not open under this vessel's key"
-      : "the serving tree's VK entry opens to a key its own check does not name",
-  };
+  const o = openVk(t.tree, args.credentials);
+  if (o.reading !== "opens") return { reading: "no-slot-opens", why: "no slot of the serving tree opens under what was presented" };
+  return { reading: "opens", sk: o.vk as unknown as ServingKey };
 }
 
 export type CustodyUnlock =
-  | { readonly reading: "opens"; readonly vk: VesselKey; readonly sk: ServingKey; readonly slot: string }
+  | { readonly reading: "opens"; readonly vk: VesselKey; readonly sk: ServingKey | null; readonly slot: string }
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] }
   | { readonly reading: "tree-absent" }
-  | { readonly reading: "tree-unreadable"; readonly why: string }
-  /** The VK opened and reached no SK; the VK got dropped. */
-  | { readonly reading: "serving-unopenable"; readonly why: string };
+  | { readonly reading: "tree-unreadable"; readonly why: string };
 
-/** What a route opens at the slot tree alone: the VK, or the reading that names why not. */
-export type CustodyVkOpening = Exclude<CustodyUnlock, { reading: "opens" } | { reading: "serving-unopenable" }>
+/** What a route opens at the slot tree alone: the node key, or the reading that names why not. */
+export type CustodyVkOpening = Exclude<CustodyUnlock, { reading: "opens" }>
   | { readonly reading: "opens"; readonly vk: VesselKey; readonly slot: string };
 
 /**
- * Open the VK alone with the presented credentials, settling a left-behind rotation first; never throws on a
+ * Open the node key (S) alone with the presented credentials, settling a left-behind rotation first; never throws on a
  * credential. A proof that a person holds a route of this vessel reads here (`CustodyHolder.proves`): it asks which
  * key the route opens, and opens nothing beyond it.
  */
@@ -224,7 +190,7 @@ export async function openCustodyVk(args: {
   return { reading: "opens", vk: o.vk, slot: o.slot };
 }
 
-/** Open the VK with the presented credentials, then SK through the serving tree. Never throws on a credential. */
+/** Open the node key with the presented credentials, then the serving key if the same route fits its tree. Never throws on a credential. */
 export async function unlockCustody(args: {
   readonly io:          CustodyIo;
   readonly homes:       CustodyHomes;
@@ -233,13 +199,8 @@ export async function unlockCustody(args: {
   const { io, homes } = args;
   const o = await openCustodyVk(args);
   if (o.reading !== "opens") return o;
-  let s: Awaited<ReturnType<typeof openServingTree>>;
-  try { s = await openServingTree({ io, homes, vk: o.vk }); } catch (err) { o.vk.fill(0); throw err; }
-  if (s.reading !== "opens") {
-    o.vk.fill(0);
-    return { reading: "serving-unopenable", why: `${s.reading}: ${s.why}` };
-  }
-  return { reading: "opens", vk: o.vk, sk: s.sk, slot: o.slot };
+  const s = await openServingTree({ io, homes, credentials: args.credentials });
+  return { reading: "opens", vk: o.vk, sk: s.reading === "opens" ? s.sk : null, slot: o.slot };
 }
 
 /** Bind one more slot over the standing tree's own VK. Returns the new tree and the new slot's id. */
@@ -297,14 +258,8 @@ export async function unbindCustodySlot(args: {
 }
 
 /**
- * Mint a new VK and re-seal every carrier under it, binding `slots` over it. Returns the new VK and tree.
- *
- * THE SERVING TREE'S VK ENTRY RE-WRAPS, AND NO SERVING ROW MOVES (ember#/the-serving-key). SK opens under the old VK
- * first, so a rotation over a tree whose SK it cannot reach refuses before any byte moves. The re-wrap lands beside
- * the tree before the rotation commits; the next opening settles it (`openServingTree`), so a fault between the two
- * commits strands no SK. The whole act holds ONE claim, so no other holder's opening settles the re-wrap away while
- * the rotation stands between its two commits. A fault after the re-wrap lands and before the rotation commits
- * leaves the re-wrap as a sidecar the census names until the next opening removes it.
+ * Mint a new node key and re-seal every carrier under it, binding `slots` over it. Returns the new key and tree. The serving
+ * tree stands apart (its own slots, wrapped by no other key), so a rotation of the node key moves no byte of it.
  */
 export async function rotateCustody(args: {
   readonly io:    CustodyIo;
@@ -314,31 +269,9 @@ export async function rotateCustody(args: {
 }): Promise<{ vk: VesselKey; tree: SlotTree }> {
   return args.io.exclusive(async () => {
     const io = heldIo(args.io);
-    const served = await openServingHeld(io, args.homes, args.oldVk);
-    if (served.reading !== "opens") {
-      throw new CustodyFoundingRefused(`a rotation re-wraps the serving key under the new vessel key, and none opens (${served.reading}: ${served.why}); nothing was changed`);
-    }
-    try {
-      const vk = mintVk();
-      const next = servingNextPath(args.homes);
-      const treePath = vkSlotsPath(args.homes.identity);
-      const treeBefore = await io.read(treePath);
-      await io.write(next, encodeServingTree(foundServingTree(served.sk, vk)));
-      let tree: SlotTree;
-      try {
-        tree = await rotateVesselVk({ io, homes: args.homes, oldVk: args.oldVk, newVk: vk, slots: args.slots });
-      } catch (err) {
-        // A rotation that refused before its commit leaves the slot tree as it stood and no rotating sidecar beside
-        // it: then the re-wrap never committed, and it leaves so no byte moved. Any other fault keeps it for the settle.
-        const standing = await io.read(treePath);
-        if (bytesSame(standing, treeBefore) && (await io.read(`${treePath}${ROTATING_SUFFIX}`)) === null) await io.remove(next);
-        throw err;
-      }
-      await io.rename(next, skSlotsPath(args.homes.identity));
-      return { vk, tree };
-    } finally {
-      served.sk.fill(0);
-    }
+    const vk = mintVk();
+    const tree = await rotateVesselVk({ io, homes: args.homes, oldVk: args.oldVk, newVk: vk, slots: args.slots });
+    return { vk, tree };
   });
 }
 

@@ -69,7 +69,7 @@ const SOWN: Record<string, string> = {
   "identity/.vessel-key-joshua.json":           "{}",
   "identity/.vessel-kel-joshua.json":           "{}",
   "identity/.vessel-card-joshua.json":          "{}",
-  "identity/vk-slots.bin":                      "slots",
+  "identity/s-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/custody-root.bin":                  "root",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
@@ -124,7 +124,7 @@ const SOWN: Record<string, string> = {
 
 /** The ruled class of every row (refound K7, K12, K15 and the custody plan's hot and cold lists). */
 const RULED: Record<string, CustodyClass> = {
-  "vessel-key": "floor", "vessel-kel": "floor", "vk-slots": "floor", "sk-slots": "floor",
+  "vessel-key": "floor", "vessel-kel": "floor", "s-slots": "floor", "sk-slots": "floor",
   "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
@@ -432,10 +432,10 @@ describe("the census names every private file outside the table", () => {
     const { homes, root } = freshHomes();
     try {
       sownOwnerOnly(homes);
-      sow(homes, { "identity/custody-root.bin.vk-sealing": "x", [`identity/faces/${FCID}/hosting-h0/${HOST}/state.json.vk-rotating`]: "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
+      sow(homes, { "identity/custody-root.bin.s-sealing": "x", [`identity/faces/${FCID}/hosting-h0/${HOST}/state.json.s-rotating`]: "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
       expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([
-        ["identity", "custody-root.bin.vk-sealing", "sidecar"],
-        ["identity", `faces/${FCID}/hosting-h0/${HOST}/state.json.vk-rotating`, "sidecar"],
+        ["identity", "custody-root.bin.s-sealing", "sidecar"],
+        ["identity", `faces/${FCID}/hosting-h0/${HOST}/state.json.s-rotating`, "sidecar"],
         ["storage", "sealed/lockbox/TMP-00aa", "sidecar"],
       ]);
     } finally { rmSync(root, { recursive: true, force: true }); }

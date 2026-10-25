@@ -13,7 +13,7 @@ class MemoryIo implements CustodyIo {
   async list() { return [...this.files.keys()]; }
   async exclusive<T>(fn: () => Promise<T>) { return fn(); }
 }
-const tree = "/id/vk-slots.bin";
+const tree = "/id/s-slots.bin";
 const listed: SealedCarrier[] = [{ name: "y", path: "/id/y.bin" }];
 
 describe("orphan sidecar sweep", () => {
