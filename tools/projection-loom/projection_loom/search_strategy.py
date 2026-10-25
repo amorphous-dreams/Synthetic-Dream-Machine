@@ -101,6 +101,11 @@ class SurrogatePreview:
         self.low=np.array([bounds[k][0] for k in self.keys],dtype=float)
         self.spread=np.array([bounds[k][1]-bounds[k][0] for k in self.keys],dtype=float)
         if np.any(self.spread<=0):raise ValueError('Invalid surrogate bounds')
+        # CAD's activation rule is value >= 0.5 in *source units*.
+        # A normalized midpoint would silently change the operator's
+        # topology semantics whenever a location uses shifted bounds.
+        self.activation_cutoffs=tuple((.5-self.low[index])/self.spread[index]
+                                      for index in self.activation_indices)
         rows=sorted((r for r in archive.data['members'].values()
             if before_generation is None or int(r['id'].split('/')[0])<before_generation),
             key=lambda r:r['id']) if archive else []
@@ -117,8 +122,8 @@ class SurrogatePreview:
         # activated geometry. Preserve new structural branches as high-
         # uncertainty exploration until their own native scores exist.
         cohort=np.ones(len(self.y),dtype=bool)
-        for index in self.activation_indices:
-            cohort &= (self.x[:,index]>=.5)==(x[index]>=.5)
+        for index,cutoff in zip(self.activation_indices,self.activation_cutoffs):
+            cohort &= (self.x[:,index]>=cutoff)==(x[index]>=cutoff)
         if not cohort.any():
             return {'predicted_loss':None,'novelty':1.,'neighbors':0}
         members=self.x[cohort]

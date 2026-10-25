@@ -120,7 +120,7 @@ def test_activation_cohort_uses_physical_switch_threshold_not_normalized_midpoin
     class Archive:
         data={"members":rows}
     predictor=SurrogatePreview(bounds,Archive(),activation_loci=("join.enable",))
-    assert predictor.predict({"join.enable":.4,"shaft_width":.5})["predicted_loss"] is None or predictor.ready
+    assert predictor.predict({"join.enable":.4,"shaft_width":.5})["predicted_loss"] is not None
     active=predictor.predict({"join.enable":.6,"shaft_width":.5})
     assert active["predicted_loss"] is None
     assert active["neighbors"]==0
