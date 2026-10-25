@@ -103,12 +103,14 @@ def prepare(out, archive):
                    activation="brutalist.piers",has=("#has/modular-piers",))
     ])
     original_sha=sha256((HERE/"grow.py").read_bytes()).hexdigest()
+    if PIN not in (HERE/"grow_nosycat.py").read_text():
+        raise ValueError("The native builder lost its pinned upstream dependency identity")
     r=CapabilityRecipe(location=recipe.location,pet_name=recipe.pet_name,
         steps=steps,bounds=bounds,initial=initial,
         cad_keys=tuple(new_project["initial"]),
-        source_hashes={**recipe.source_hashes,
-                       "external_brutalism2":PIN,
-                       "pristine_builder":original_sha},
+        # OODA-HA source witnesses hold only registered project/image evidence;
+        # external CC0 dependencies retain an independently pinned manifest.
+        source_hashes=dict(recipe.source_hashes),
         provenance=recipe.provenance)
     project_path=HERE/"project_nosycat.generated.json"
     recipe_path=HERE/"hybrid"/"recipe_nosycat.generated.json"

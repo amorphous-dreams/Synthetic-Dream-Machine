@@ -7,6 +7,8 @@ altering the pristine Necrospire source constructor.
 from pathlib import Path
 from importlib.util import spec_from_file_location, module_from_spec
 
+UPSTREAM_ARCHIVE_SHA256 = "8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3"
+
 _SOURCE = Path(__file__).with_name("grow.py")
 _spec = spec_from_file_location("necrospire_pristine_builder", _SOURCE)
 _module = module_from_spec(_spec)
