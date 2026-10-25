@@ -25,7 +25,11 @@ def pareto_front(rows):
     """Keep nondominated audited observations; hard native gates happen upstream."""
     rows=list(rows)
     if not rows:return []
-    keys=sorted(set.intersection(*(set(r.get('losses',{})) for r in rows)))
+    # Family-local regional penalties describe DIFFERENT source-image bands.
+    # They are meaningful only within the same family, never as cross-family
+    # coordinates of a supposedly global Pareto front.
+    comparable={'silhouette','prior','macro','contour'}
+    keys=sorted(set.intersection(*(set(r.get('losses',{})) for r in rows)) & comparable)
     def vector(r):
         return tuple(float(r['losses'][k]) for k in keys) if keys else (float(r['combined_loss']),)
     observations=[(r,vector(r)) for r in rows]
