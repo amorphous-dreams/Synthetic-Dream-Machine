@@ -66,7 +66,7 @@ const PLAIN: Record<string, string> = {};
 
 const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
 /** The rows this witness watches at rest: the vessel-key family the founding seals, and the face rows beside it. */
-const SEALED_ROWS = ["keyhive-archive.bin", "anchor-roster.json"] as const;
+const SEALED_ROWS = ["keyhive-archive.bin"] as const;
 /** A face's row rests in that face's own directory: the file, found in whichever face holds it. */
 const faceDirs = (): string[] => { try { return readdirSync(identity("faces")); } catch { return []; } };
 const faceRowFile = (file: string): string => {
@@ -76,12 +76,19 @@ const faceRowFile = (file: string): string => {
 };
 /** The face's veil archive rests under a name that carries its PersonaGroup's digest, so the witness finds it by its family. */
 const veilArchiveRows = (): string[] => faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`)).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)));
+/** The face's own roster line: its name carries the login hint when the host has one. */
+const rosterRow = (): string => {
+  const name = faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`))).find((f) => /^\.persona-roster(?:-[^./]+?)?-h0\.json$/.test(f));
+  if (!name) throw new Error("CONTROL: the founded face holds no roster line at rest");
+  return name;
+};
 const rowsAtRest = (): Record<string, Buffer> => {
   const veil = veilArchiveRows();
   if (veil.length === 0) throw new Error("CONTROL: the founded face holds no veil archive at rest");
   return Object.fromEntries([
     ...SEALED_ROWS.map((f) => [f, readFileSync(identity(f))] as const),
     ["anchors-h0.json", readFileSync(faceRowFile("anchors-h0.json"))] as const,
+    [rosterRow(), readFileSync(faceRowFile(rosterRow()))] as const,
     ...veil.map((f) => [f, readFileSync(faceRowFile(f))] as const),
   ]);
 };

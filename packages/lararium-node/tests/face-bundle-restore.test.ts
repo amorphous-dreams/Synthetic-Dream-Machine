@@ -156,7 +156,7 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   const friend = await cardOf(11, "a-friend");
   await book.ingest(friend, undefined, rootKey);
   book.setPetname(friend.nym, "Ana", rootKey);
-  await saveNodeHandleBook(book);
+  await saveNodeHandleBook(0, book);
   const anchors = (await loadIdentityAnchors(0))!;
   let enrolled: Cut["enrolled"];
   if (guardians > 0) {
@@ -247,7 +247,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // THE CARRIED ROWS LANDED: the names, the record under the face's own tag, the proof key. The seat claim and the chair label stayed behind.
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBe("the gardener");
     expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
-    const friend = (await loadNodeHandleBook()).snapshotFor(a.rootKey).records;
+    const friend = (await loadNodeHandleBook(1)).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
     expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
     expect(pendingStands(), "the pending row leaves once the face stands lit").toBe(false);
@@ -401,7 +401,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // AN ORPHAN ROOT under another key: a root row with no roster line (an act that stopped between its two writes).
     await foundVessel("orphan", "charter");
-    expect(await removeCustodyRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-roster/.test(n))!)).toBe(true);
+    expect(await removeCustodyRow("identity", ".persona-roster-h0.json")).toBe(true);
     expect(await listPersonaRosterLines()).toEqual([]);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("orphan-names-another-key");
@@ -410,7 +410,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A NAMES ROW THAT STANDS AND DOES NOT READ WHOLE refuses by its own name before the commit row: the landing
     // meets no row the preflight has not already read.
     await foundVessel("torn");
-    await seatedCustody()!.writeRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-petnames/.test(n)) ?? ".persona-petnames.json", new TextEncoder().encode("{ this row reads as no map"));
+    await seatedCustody()!.writeRow("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);

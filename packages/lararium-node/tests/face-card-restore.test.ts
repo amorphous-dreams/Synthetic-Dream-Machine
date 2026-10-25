@@ -167,7 +167,7 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(restored.holds, "the memory section holds no key version").toEqual([]);
     expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(0);
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBeUndefined();
-    expect((await loadNodeHandleBook()).snapshotFor(face.rootKey).records).toEqual([]);
+    expect((await loadNodeHandleBook(1)).snapshotFor(face.rootKey).records).toEqual([]);
 
     // THE LINEAGE RETURNED: the same root, the same fixed prefix, the same signer name, at a NEW seat.
     expect(await listPersonaRosterLines()).toEqual([own, { handleIndex: 1, verifyingKey: face.rootKey }]);

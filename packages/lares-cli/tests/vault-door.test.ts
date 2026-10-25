@@ -174,18 +174,18 @@ describe("vault door — status, unlock, bind, unbind", () => {
   it("★ status gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
     const homes = vesselCustodyHomes();
     writeFileSync(join(homes.identity, ".vessel-key-x.json"), "{}", { mode: 0o600 });
-    writeFileSync(join(homes.identity, "anchor-roster.json"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, "keyhive-archive.bin"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
     expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
-    for (const file of ["custody-root.bin", ".vessel-key-x.json", "anchor-roster.json", "vk-slots.bin"]) {
+    for (const file of ["custody-root.bin", ".vessel-key-x.json", "keyhive-archive.bin", "vk-slots.bin"]) {
       expect(lines.filter((l) => l.includes(file)), file).toHaveLength(1);
     }
     expect(lines.find((l) => l.includes("custody-root.bin"))).toMatch(/hot\s+device-minted\s+sealed/);
     expect(lines.find((l) => l.includes(".vessel-key-x.json"))).toMatch(/floor\s+device-minted\s+bare\s+\S+\s+by law: /);
     expect(lines.find((l) => l.includes("vk-slots.bin"))).toMatch(/bare\s+vk-slots\.bin\s+by law: /);
-    expect(lines.find((l) => l.includes("anchor-roster.json"))).toMatch(/bare\s+anchor-roster\.json\s+FAULT/);
+    expect(lines.find((l) => l.includes("keyhive-archive.bin"))).toMatch(/bare\s+keyhive-archive\.bin\s+FAULT/);
     expect(lines.find((l) => l.includes("side-key.json"))).toMatch(/OUTSIDE THE TABLE.*owner-only/);
     // the json answer carries the one custody reading, and no second table of the same files
     out.length = 0;
@@ -193,7 +193,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const j = JSON.parse(out.join("").trim().split("\n").pop()!);
     expect(Object.keys(j.data).sort()).toEqual(["custody", "door"]);
     expect(j.data.custody.outside.map((o: { file: string }) => o.file)).toEqual(["side-key.json"]);
-    expect(j.data.custody.rows.filter((r: { fault: boolean }) => r.fault).map((r: { row: string }) => r.row)).toEqual(["anchor-roster"]);
+    expect(j.data.custody.rows.filter((r: { fault: boolean }) => r.fault).map((r: { row: string }) => r.row)).toEqual(["keyhive-archive"]);
   });
 
   it("★ CONTROL: a clean custody home reads no fault and nothing outside the table ★", async () => {

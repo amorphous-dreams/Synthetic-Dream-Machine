@@ -107,10 +107,10 @@ describe("the relation class — a secret only the other party re-issues", () =>
     } finally { v.drop(); }
   });
 
-  test("CONTROL: a non-relation hot row (the handle-book) names no key class", async () => {
+  test("CONTROL: a non-relation face-hot row (the handle-book) names no key class", async () => {
     const v = scratch();
     try {
-      expect((await rowsOf(v.homes, { ".handle-book.json": "{}" })).get("handle-book")?.keyClass).toBeNull();
+      expect((await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.handle-book-h0.json`]: "{}" })).get("handle-book-h0")?.keyClass).toBeNull();
     } finally { v.drop(); }
   });
 

@@ -85,7 +85,7 @@ import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import {
-  openedCustody, exclusiveCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
 } from "./custody-seat.js";
 
 /**
@@ -549,15 +549,10 @@ function personaGroupRootFileName(login: string | null, handleIndex: number): st
   return login ? `.persona-group-root-${login}-h${handleIndex}.json` : `.persona-group-root-h${handleIndex}.json`;
 }
 
-/** The active-persona selector filename — one pointer per vessel, login-scoped. */
-function activePersonaFileName(login: string | null): string {
-  return login ? `.active-persona-${login}.json` : ".active-persona.json";
-}
-
 /** The persona-root ROSTER filename — the EXPLICIT written record of every handle-index this vessel
  *  holds a root for, each beside its root's public key. */
-function personaRosterFileName(login: string | null): string {
-  return login ? `.persona-roster-${login}.json` : ".persona-roster.json";
+function personaRosterFileName(login: string | null, handleIndex: number): string {
+  return login ? `.persona-roster-${login}-h${handleIndex}.json` : `.persona-roster-h${handleIndex}.json`;
 }
 
 /** One held root, as the roster records it: its handle-index and its public verifying key. */
@@ -584,9 +579,20 @@ function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[
   return out.sort((a, b) => a.handleIndex - b.handleIndex);
 }
 
+/** One face's roster line (its own row, in its own directory); null where it holds none. */
+async function readRosterLine(login: string | null, handleIndex: number): Promise<PersonaRosterLine | null> {
+  const file = personaRosterFileName(login, handleIndex);
+  return parseRoster(await readCustodyRow("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
+}
+
+/** The roster of the faces standing UNLOCKED, ascending: each face keeps its own line, so a locked face names itself by the floor index alone. */
 async function readRoster(login: string | null): Promise<PersonaRosterLine[]> {
-  const file = personaRosterFileName(login);
-  return parseRoster(await readCustodyRow("identity", file), file);
+  const out: PersonaRosterLine[] = [];
+  for (const handleIndex of await unlockedFaceOrdinals()) {
+    const line = await readRosterLine(login, handleIndex);
+    if (line) out.push(line);
+  }
+  return out;
 }
 
 /** The Ed25519 public key (hex) a 32-byte signing seed (hex) derives. */
@@ -637,7 +643,7 @@ async function commitRoot(login: string | null, handleIndex: number, keypair: Pe
     const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(login ? { gitEmail: login } : {}) };
     return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
   });
-  const rosterFile = personaRosterFileName(login);
+  const rosterFile = personaRosterFileName(login, handleIndex);
   await updateCustodyRow("identity", rosterFile, (bytes) => {
     const roster = parseRoster(bytes, rosterFile);
     const standing = roster.find((l) => l.handleIndex === handleIndex);
@@ -663,7 +669,7 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
   if (!HEX64.test(keypair.signingKey) || !HEX64.test(keypair.verifyingKey) || verifyingKeyOfSeed(keypair.signingKey) !== keypair.verifyingKey) throw malformed(file);
   // EVERY STANDING ROW READS BEFORE ANY WRITE: a roster line or an orphan root under another key refuses here, so
   // a refused landing adopts no orphan and records no line.
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(login, handleIndex) ?? undefined;
   if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
   const orphan = line ? null : await orphanPersonaRootKey(handleIndex);
   if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
@@ -682,24 +688,22 @@ export async function orphanPersonaRootKey(handleIndex: number): Promise<string 
   return openColdCustodyRow("identity", file, (bytes) => parseRootRow(bytes, file).verifyingKey);
 }
 
-/** The sealed ActivePersonaStore — one pointer row, read whole or refused. */
-function nodeActivePersonaStore(login: string | null): ActivePersonaStore {
-  const file = activePersonaFileName(login);
-  const parse = (bytes: Uint8Array | null): number | undefined => {
-    if (bytes === null) return undefined;   // no inference: an unset selector reads undefined
-    const handleIndex = objectOf(parseRow(bytes, file), file)["handleIndex"];
-    if (!isIndex(handleIndex)) throw malformed(file);
-    return handleIndex;
-  };
+/**
+ * The worn face is SESSION STATE, never a pointer at rest. A running vessel wears the face its unlock named; nothing persists a choice
+ * across a restart, so the person names the face again at each boot (`lares vault unlock --face N`). With no choice recorded and
+ * exactly one face standing unlocked, that face is the one worn.
+ */
+let wornInSession: number | undefined;
+export function setWornFaceInSession(handleIndex: number | undefined): void { wornInSession = handleIndex; }
+
+function nodeActivePersonaStore(_login: string | null): ActivePersonaStore {
   return {
-    async load() { return parse(await readCustodyRow("identity", file)); },
-    async save(handleIndex) {
-      mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-      await updateCustodyRow("identity", file, (bytes) => {
-        parse(bytes);   // a selector that stands and reads another shape refuses before anything lands over it
-        return { plaintext: encodeRow({ handleIndex }), value: undefined };
-      });
+    async load() {
+      if (wornInSession !== undefined) return wornInSession;
+      const open = await unlockedFaceOrdinals();
+      return open.length === 1 ? open[0] : undefined;   // no inference beyond the one face standing open
     },
+    async save(handleIndex) { wornInSession = handleIndex; },
   };
 }
 
@@ -716,7 +720,7 @@ export async function makeNodeFsPersonaVault(): Promise<PersonaVault> {
     rootSlot(handleIndex) {
       return {
         async load() {
-          const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+          const line = await readRosterLine(login, handleIndex) ?? undefined;
           return line ? openCommittedRoot(login, line) : undefined;
         },
         async save(keypair) {
@@ -728,7 +732,7 @@ export async function makeNodeFsPersonaVault(): Promise<PersonaVault> {
       };
     },
     async listRoots() { return (await readRoster(login)).map((l) => l.handleIndex); },
-    async hasRoot(handleIndex) { return (await readRoster(login)).some((l) => l.handleIndex === handleIndex); },
+    async hasRoot(handleIndex) { return (await readRosterLine(login, handleIndex)) !== null; },
     selector: nodeActivePersonaStore(login),
     anchors:  nodeAnchorStore,
     recovery: nodeRecoveryShareStore,
@@ -754,7 +758,7 @@ export type PersonaGroupRoot = PersonaRoot;
 export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<PersonaGroupRoot> {
   assertHandleIndex(handleIndex);
   const login = await loginHint();
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(login, handleIndex) ?? undefined;
   if (line) {
     await openCommittedRoot(login, line);
     console.log(`[vessel-identity] loaded PersonaGroup root (persona h${handleIndex})`);
@@ -778,7 +782,7 @@ export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<P
 export async function loadPersonaGroupRootSeed(handleIndex = 0): Promise<Uint8Array> {
   assertHandleIndex(handleIndex);
   const login = await loginHint();
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(login, handleIndex) ?? undefined;
   if (!line) {
     throw new Error(
       `[persona-vault] no persona-root at h${handleIndex} — mint it via the founding ceremony first ` +
@@ -798,13 +802,13 @@ export async function loadPersonaGroupRootVerifyingKey(
   handleIndex = 0,
 ): Promise<string | undefined> {
   assertHandleIndex(handleIndex);
-  return (await readRoster(await loginHint())).find((l) => l.handleIndex === handleIndex)?.verifyingKey;
+  return (await readRosterLine(await loginHint(), handleIndex))?.verifyingKey;
 }
 
 /** True when this vessel HOLDS a persona-root at `handleIndex` (founder-side custody). A joinee holds none. */
 export async function personaRootExists(handleIndex: number): Promise<boolean> {
   assertHandleIndex(handleIndex);
-  return (await readRoster(await loginHint())).some((l) => l.handleIndex === handleIndex);
+  return (await readRosterLine(await loginHint(), handleIndex)) !== null;
 }
 
 /** Load the active-persona handle-index the vessel currently WEARS, or undefined when it wears none yet
@@ -865,13 +869,13 @@ export async function orphanPersonaRoots(): Promise<number[]> {
 // entry and writes it, so two acts in two processes never drop each other's entry.
 
 /** The private pet-name map filename — login-scoped. */
-function personaPetnameFileName(login: string | null): string {
-  return login ? `.persona-petnames-${login}.json` : ".persona-petnames.json";
+function personaPetnameFileName(login: string | null, handleIndex: number): string {
+  return login ? `.persona-petnames-${login}-h${handleIndex}.json` : `.persona-petnames-h${handleIndex}.json`;
 }
 
 /** The public published-face record filename — login-scoped. */
-function personaPublicHandleFileName(login: string | null): string {
-  return login ? `.persona-public-handles-${login}.json` : ".persona-public-handles.json";
+function personaPublicHandleFileName(login: string | null, handleIndex: number): string {
+  return login ? `.persona-public-handles-${login}-h${handleIndex}.json` : `.persona-public-handles-h${handleIndex}.json`;
 }
 
 /** A `{ <field>: { handleIndex -> entry } }` map row: nothing standing reads as an empty map, and a row that
@@ -912,14 +916,22 @@ const isLabel = (entry: unknown): entry is string => typeof entry === "string";
  * stays structural — no board write exists in this shore).
  */
 export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameStore> {
-  const file = personaPetnameFileName(await loginHint());
-  const read = async (): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", file), file, "names", isLabel);
+  const login = await loginHint();
+  const fileOf = (handleIndex: number): string => personaPetnameFileName(login, handleIndex);
+  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
   return {
-    async get(handleIndex) { return (await read())[String(handleIndex)]; },
-    set(handleIndex, petname) { return changeIndexMap(file, "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
-    clear(handleIndex) { return changeIndexMap(file, "names", isLabel, (names) => { delete names[String(handleIndex)]; }); },
-    async entries() { return sortedEntries(await read()); },
+    async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
+    set(handleIndex, petname) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
+    clear(handleIndex) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { delete names[String(handleIndex)]; }); },
+    async entries() { return gatherEntries(read); },
   };
+}
+
+/** The entries of the faces standing unlocked, each read from its own face's row, ascending by handle-index. */
+async function gatherEntries<T>(read: (handleIndex: number) => Promise<Record<string, T>>): Promise<Array<readonly [number, T]>> {
+  const out: Array<readonly [number, T]> = [];
+  for (const handleIndex of await unlockedFaceOrdinals()) out.push(...sortedEntries(await read(handleIndex)));
+  return out.sort((a, b) => a[0] - b[0]);
 }
 
 // ── The DECLARATION store — what a persona declares outward, before any announce ─────────────────────
@@ -929,8 +941,8 @@ export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameSt
 // declared Handle stays a private intent until an announce binds it (the binding law).
 
 /** The declaration map filename — login-scoped, beside the pet-name map. */
-function personaDeclarationFileName(login: string | null): string {
-  return login ? `.persona-declarations-${login}.json` : ".persona-declarations.json";
+function personaDeclarationFileName(login: string | null, handleIndex: number): string {
+  return login ? `.persona-declarations-${login}-h${handleIndex}.json` : `.persona-declarations-h${handleIndex}.json`;
 }
 
 /** A declaration's shape: an object whose `handle` and `chair`, where present, read as strings and whose `seat` reads as a boolean. */
@@ -948,14 +960,15 @@ const isDeclaration = (entry: unknown): entry is PersonaDeclaration => {
  * binds a persona to a public glamour.
  */
 export async function makeNodePersonaDeclarationStore(): Promise<PersonaDeclarationStore> {
-  const file = personaDeclarationFileName(await loginHint());
-  const read = async (): Promise<Record<string, PersonaDeclaration>> =>
-    parseIndexMap(await readCustodyRow("identity", file), file, "declarations", isDeclaration);
+  const login = await loginHint();
+  const fileOf = (handleIndex: number): string => personaDeclarationFileName(login, handleIndex);
+  const read = async (handleIndex: number): Promise<Record<string, PersonaDeclaration>> =>
+    parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
   return {
-    async get(handleIndex) { return (await read())[String(handleIndex)]; },
-    set(handleIndex, declaration) { return changeIndexMap(file, "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
-    clear(handleIndex) { return changeIndexMap(file, "declarations", isDeclaration, (all) => { delete all[String(handleIndex)]; }); },
-    async entries() { return sortedEntries(await read()); },
+    async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
+    set(handleIndex, declaration) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
+    clear(handleIndex) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { delete all[String(handleIndex)]; }); },
+    async entries() { return gatherEntries(read); },
   };
 }
 
@@ -974,16 +987,17 @@ const isPublicHandle = (entry: unknown): entry is PersonaPublicHandleRecord => {
  * extending the causal frontier a peer's HandleBook holds to.
  */
 export async function makeNodePublicHandleStore(): Promise<OwnPublicHandleStore> {
-  const file = personaPublicHandleFileName(await loginHint());
-  const keyed = (map: Record<string, PersonaPublicHandleRecord>): Record<string, PersonaPublicHandleRecord> => {
+  const login = await loginHint();
+  const fileOf = (handleIndex: number): string => personaPublicHandleFileName(login, handleIndex);
+  const keyed = (map: Record<string, PersonaPublicHandleRecord>, file: string): Record<string, PersonaPublicHandleRecord> => {
     for (const [key, record] of Object.entries(map)) if (String(record.handleIndex) !== key) throw malformed(file);
     return map;
   };
-  const read = async (): Promise<Record<string, PersonaPublicHandleRecord>> =>
-    keyed(parseIndexMap(await readCustodyRow("identity", file), file, "handles", isPublicHandle));
+  const read = async (handleIndex: number): Promise<Record<string, PersonaPublicHandleRecord>> =>
+    keyed(parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
   return {
-    async load(handleIndex) { return (await read())[String(handleIndex)] ?? null; },
-    save(record) { return changeIndexMap(file, "handles", isPublicHandle, (handles) => { keyed(handles); handles[String(record.handleIndex)] = record; }); },
-    async list() { return sortedEntries(await read()).map(([k]) => k); },
+    async load(handleIndex) { return (await read(handleIndex))[String(handleIndex)] ?? null; },
+    save(record) { return changeIndexMap(fileOf(record.handleIndex), "handles", isPublicHandle, (handles) => { keyed(handles, fileOf(record.handleIndex)); handles[String(record.handleIndex)] = record; }); },
+    async list() { return (await gatherEntries(read)).map(([k]) => k); },
   };
 }

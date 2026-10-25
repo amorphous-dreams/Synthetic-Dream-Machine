@@ -56,7 +56,8 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdCircle } from "../src/commands/circle.js";
 import { larIdentityDir } from "../src/env.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, readVkCarrier } from "@lararium/mesh";
+import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, readFckCarrier } from "@lararium/mesh";
+import { generateOrLoadPersonaGroupRoot, wearPersona, faceFileNames, faceFilePathSync } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -88,8 +89,10 @@ async function cardFile(dir: string, seedByte: number, glamour: string): Promise
 /** Every file under the identity home — the LOCAL footprint (now only the handle-book, never the graph). */
 function identityFootprint(): string[] {
   const dir = larIdentityDir();
-  return existsSync(dir) ? readdirSync(dir).sort() : [];
+  return existsSync(dir) ? [...readdirSync(dir), ...faceFileNames(dir)].sort() : [];
 }
+/** The worn face's book rests in its own directory (face 0). */
+const handBookPath = (): string => faceFilePathSync(larIdentityDir(), { ordinal: 0 }, ".handle-book-h0.json");
 const verbsSent = (): string[] => h.calls.map((c) => c.verb);
 
 describe("lares circle — the follow verb over the circles doc (fleet-synced, traceless)", () => {
@@ -108,10 +111,10 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
   });
   // The handle-book rests sealed under the vessel key, so each test stands on a founded custody.
   let custody: ScratchCustody;
-  beforeEach(async () => { custody = await seatScratchCustody(); });
+  beforeEach(async () => { custody = await seatScratchCustody(); await generateOrLoadPersonaGroupRoot(0); await wearPersona(0); });
   afterEach(async () => { await custody.drop(); });
   const openBook = async (): Promise<{ records: Array<{ nym: string; petname?: string }> }> => {
-    const row = await custody.holder.readRow("identity", ".handle-book.json");
+    const row = await custody.holder.readRow("identity", ".handle-book-h0.json");
     if (row.reading !== "opens") throw new Error(`the handle-book reads ${row.reading}`);
     return JSON.parse(new TextDecoder().decode(row.plaintext));
   };
@@ -127,12 +130,12 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
 
     // LOCAL footprint: ONLY the handle-book (recognition + petname) — no `.circles-follow.json`, no board artifact.
     const foot = identityFootprint();
-    expect(foot).toContain(".handle-book.json");
+    expect(foot).toContain(".handle-book-h0.json");
     expect(foot).not.toContain(".circles-follow.json");
     expect(foot.some((f) => /crossroad|board|announce|glamour|public/i.test(f))).toBe(false);
 
-    const atRest = readFileSync(join(larIdentityDir(), ".handle-book.json"));
-    expect(readVkCarrier(atRest)).toBe("sealed");
+    const atRest = readFileSync(handBookPath());
+    expect(readFckCarrier(atRest)).toBe("sealed");
     expect(atRest.includes(Buffer.from("my-eris"))).toBe(false);
     expect((await openBook()).records.find((r) => r.nym === nym)?.petname).toBe("my-eris");
   });
@@ -160,7 +163,7 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
   test("THE FLOOR — with the vessel key unopened the follow and the list refuse, and nothing moves", async () => {
     const { nym, path } = await cardFile(root, 9, "Floor");
     expect(await cmdCircle(circleArgs(["add", nym], { to: "following", card: path }))).toBe(0);   // control
-    const standing = readFileSync(join(larIdentityDir(), ".handle-book.json"));
+    const standing = readFileSync(handBookPath());
     h.calls.length = 0;
     await custody.holder.lock();
     const other = await cardFile(root, 11, "Other");
@@ -170,6 +173,6 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
     const said = [...wire.mock.calls.map((c) => String(c[0])), ...(console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.map((c) => String(c[0]))].join("\n");
     expect(said).toMatch(/lares vault unlock/);
     expect(verbsSent()).not.toContain("circle-add");
-    expect(readFileSync(join(larIdentityDir(), ".handle-book.json")).equals(standing)).toBe(true);
+    expect(readFileSync(handBookPath()).equals(standing)).toBe(true);
   });
 });

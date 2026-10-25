@@ -62,12 +62,12 @@ export async function sendCustodyFrame(root, frame) {
 }
 
 /** The door's whole act, exported so a harness drives it in-process: refuses an unmarked root before any socket opens. */
-export async function unlockTestCustody(root, act = "unlock") {
+export async function unlockTestCustody(root, act = "unlock", face = undefined) {
   const dir = resolve(root);
   refuseUnmarked(dir);
   const frame = act === "lock" ? { op: "lock" }
     : act === "status" ? { op: "custody" }
-    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] };
+    : { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], ...(face !== undefined ? { face } : {}) };
   return await sendCustodyFrame(dir, frame);
 }
 

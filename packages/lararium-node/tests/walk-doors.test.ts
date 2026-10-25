@@ -21,7 +21,7 @@ import { join } from "node:path";
 import {
   encodeInvite, decodeInvite, mintHostToken, mintHostingAct, tokenVerifiesAt, type HostingEpoch,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { nexusLeafFor, wornNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
@@ -37,6 +37,7 @@ const HEARTH = new Uint8Array(32).fill(91);
 let root: string;
 let priorLarRoot: string | undefined;
 beforeEach(() => {
+  setWornFaceInSession(undefined);
   root = mkdtempSync(join(tmpdir(), "lares-walk-doors-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
@@ -57,6 +58,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
   it("RED: a vessel wearing no face takes no invite and writes nothing; CONTROL: worn, the take keeps it as that face", async () => {
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
     await expect(runWalkTake({ carried: await invite() })).rejects.toThrow(/wears no face/);
     expect(existsSync(walkDirOf())).toBe(false);
     await wearPersona(0);

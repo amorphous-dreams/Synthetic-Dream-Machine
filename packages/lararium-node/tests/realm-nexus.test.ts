@@ -36,6 +36,7 @@ import {
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey, wearPersona,
+  setWornFaceInSession,
 } from "../src/node-vessel-identity.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
@@ -64,6 +65,7 @@ let primary: { aid: string; doc: NexusDoc; seat: { signer: string; sign: (b: Uin
 let carried: { aid: string; doc: NexusDoc };
 
 beforeEach(async () => {
+  setWornFaceInSession(undefined);
   root = mkdtempSync(join(tmpdir(), "lares-realm-nexus-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;

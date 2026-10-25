@@ -41,6 +41,7 @@ import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, t
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
+import { readFaceIndexSync } from "./face-index.js";
 
 /** Gathers a human route and unlocks the seated holder. Throws when it cannot (no terminal, no route that opens). */
 export type CustodyOpener = (holder: CustodyHolder) => Promise<void>;
@@ -250,4 +251,17 @@ export async function faceStandingCustody(face: FaceRef): ReturnType<CustodyHold
 /** A reserved face takes its founding ask. */
 export async function bindFaceAskCustody(fcid: string, askDigest: string): Promise<void> {
   return (await openedCustody()).bindFaceAsk(fcid, askDigest);
+}
+
+/**
+ * The handle indices of the faces standing UNLOCKED on this home's seated holder, ascending. A face's handle index is its ordinal in
+ * the floor index; a locked face stays out, so a reader that lists faces lists the ones it can open.
+ */
+export async function unlockedFaceOrdinals(): Promise<number[]> {
+  const holder = await openedCustody();
+  const open = new Set(holder.unlockedFaces());
+  const index = readFaceIndexSync(larIdentityDir());
+  const out: number[] = [];
+  index.faces.forEach((f, ordinal) => { if ("fcid" in f && open.has(f.fcid)) out.push(ordinal); });
+  return out;
 }

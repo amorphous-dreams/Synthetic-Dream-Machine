@@ -11,7 +11,7 @@ import type { Credential, SlotSpec } from "@lararium/mesh";
 import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =
-  | { readonly op: "unlock"; readonly credentials: readonly Credential[] }
+  | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number }
   | { readonly op: "lock" }
   | { readonly op: "custody" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */

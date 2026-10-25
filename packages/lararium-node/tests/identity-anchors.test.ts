@@ -65,7 +65,9 @@ describe("the identity home's sealed family", () => {
     await persistIdentityAnchors(withMount, 2);
     expect(await loadIdentityAnchors(2)).toEqual(withMount);
     expect(await listAnchoredPersonas()).toEqual([0, 2]);
-    expect(readVkCarrier(readFileSync(at("anchor-roster.json")))).toBe("sealed");
+    // no shared roster names the faces: each anchors row rests in its own face, sealed under that face's key
+    expect(readFckCarrier(readFileSync(handleRowPathIn(c.homes.identity, "anchors-h2.json")))).toBe("sealed");
+    expect(existsSync(at("anchor-roster.json"))).toBe(false);
   });
 
   test("A3 a row that opens and holds another shape refuses by name", async () => {
@@ -97,7 +99,7 @@ describe("the identity home's sealed family", () => {
     await persistIdentityArchive(bytesOf("archive"));
     await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil"), anchors.personaGroupId);
-    const before = ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)));
+    const before = ["anchors-h0.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
     await c.holder.lock();
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
     await expect(listAnchoredPersonas()).rejects.toThrow(CustodyLocked);
@@ -107,8 +109,8 @@ describe("the identity home's sealed family", () => {
     await expect(persistIdentityArchive(bytesOf("floor"))).rejects.toThrow(CustodyLocked);
     await expect(persistVeilArchive(bytesOf("floor"), anchors.personaGroupId)).rejects.toThrow(CustodyLocked);
     expect(existsSync(at("anchors-h1.json"))).toBe(false);
-    ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
-      expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)).equals(before[i]!), f).toBe(true);
+    ["anchors-h0.json", "keyhive-archive.bin", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
+      expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)).equals(before[i]!), f).toBe(true);
     });
     // no seat at all reads the same floor: every seat cleared, the suites' when-needed seat among them
     seatCustody(null);
@@ -122,7 +124,7 @@ describe("the identity home's sealed family", () => {
     await persistVeilArchive(bytesOf("veil-under-A"), anchors.personaGroupId);
     await persistIdentityAnchors(anchors);
     const files = ["keyhive-archive.bin"];
-    const standing = files.map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)));
+    const standing = files.map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
     const anchorStanding = readFileSync(at("anchors-h0.json"));
     const veilStanding = readFileSync(veilArchivePath(anchors.personaGroupId));
 
@@ -151,7 +153,7 @@ describe("the identity home's sealed family", () => {
       })).rejects.toThrow(TreeVkRefusal);
     }
     await expect(makeCustodyHolder({ io: c.io, homes: c.homes }).adopt(keyB)).rejects.toThrow(/custody root reads key-fails/);
-    files.forEach((f, i) => expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
+    files.forEach((f, i) => expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
     expect(readFileSync(at("anchors-h0.json")).equals(anchorStanding), "the face row never moved").toBe(true);
     expect(readFileSync(veilArchivePath(anchors.personaGroupId)).equals(veilStanding), "the veil row never moved").toBe(true);
     expect(readFckCarrier(anchorStanding)).toBe("sealed");

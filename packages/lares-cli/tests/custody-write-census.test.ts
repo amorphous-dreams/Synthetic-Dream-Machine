@@ -245,7 +245,7 @@ function violations(text: string): string[] {
 
 describe("the custody write census", () => {
   test("K1 — the instrument sees: every sealed row yields a name, every writer module a writer function, and the doors hold the seat's own", () => {
-    expect(SEALED_ROWS.length).toBeGreaterThan(20);
+    expect(SEALED_ROWS.length).toBeGreaterThan(15);
     expect(SEALED_ROWS.filter((r) => rowName(r) === null).map((r) => r.row)).toEqual([]);
     expect(HOLDER_WRITES.length).toBeGreaterThanOrEqual(3);
     expect(SEAT_DOORS.length).toBeGreaterThanOrEqual(HOLDER_WRITES.length);

@@ -242,7 +242,7 @@ async function preflight(body: FaceBundleBody, target: number, founding = false)
   // refuses here, by its own name, before the commit row. The landing then meets no row it has not already read.
   await (await makeNodePersonaPetnameStore()).get(target);
   await (await makeNodePersonaDeclarationStore()).get(target);
-  await loadNodeHandleBook();
+  await loadNodeHandleBook(target);
   for (const key of body.faceProofKeys) {
     const secret = Uint8Array.from(Buffer.from(key.secret, "hex"));
     try {
@@ -287,9 +287,9 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
     const standing = await store.get(target);
     if (standing?.handle === undefined) { await store.set(target, { ...(standing ?? {}), handle: body.names.handle }); handle = true; }
   }
-  const book = await loadNodeHandleBook();
+  const book = await loadNodeHandleBook(target);
   const handleBook = await book.landFor(body.root.verifyingKey, { era: HANDLE_BOOK_SNAPSHOT_ERA, records: body.handleBook.records });
-  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(book);
+  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(target, book);
   // THE GUARDIAN SET lands where none stands; the same set there stays as it stands.
   let guardianSet: "landed" | "held" | null = null;
   const record = guardianRecordOf(body);

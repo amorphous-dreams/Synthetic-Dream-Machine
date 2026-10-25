@@ -25,12 +25,12 @@
 
 import { mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { faceFilePathSync } from "./face-index.js";
+import { faceFilePathSync, readFaceIndexSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
 import { identityHomeClosure } from "./identity-home-closure.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, writeCustodyRow } from "./custody-seat.js";
+import { readCustodyRow, unlockedFaceOrdinals, writeCustodyRow } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
@@ -44,34 +44,13 @@ export type { IdentityAnchors } from "@lararium/mesh";
 // anchors, no matching root.
 const anchorsFile = (handleIndex: number): string => `anchors-h${handleIndex}.json`;
 
-/** The anchored-persona ROSTER filename: the EXPLICIT written record of every index this vessel anchors. */
-const ANCHOR_ROSTER_FILE = "anchor-roster.json";
-
+type RowReader = typeof readCustodyRow;
 const utf8 = new TextEncoder();
 const text = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
 /** A row that opened and does not hold its own shape: named, never read as absent. */
 function malformed(file: string): CustodyRowUnavailable {
   return new CustodyRowUnavailable("identity", file, "malformed");
-}
-
-/** The anchor roster's explicit record (ascending); `[]` when no roster stands. */
-type RowReader = typeof readCustodyRow;
-async function readAnchorRoster(read: RowReader = readCustodyRow): Promise<number[]> {
-  const bytes = await read("identity", ANCHOR_ROSTER_FILE);
-  if (bytes === null) return [];
-  let raw: { anchors?: unknown };
-  try { raw = JSON.parse(text(bytes)) as { anchors?: unknown }; } catch { throw malformed(ANCHOR_ROSTER_FILE); }
-  if (!Array.isArray(raw.anchors)) throw malformed(ANCHOR_ROSTER_FILE);
-  return [...new Set(raw.anchors.filter((n): n is number => Number.isSafeInteger(n) && n >= 0))].sort((x, y) => x - y);
-}
-
-/** Record an anchored handle-index into the roster: the explicit written mark, never a dir-scan. */
-async function recordAnchor(handleIndex: number): Promise<void> {
-  const anchors = new Set(await readAnchorRoster());
-  if (anchors.has(handleIndex)) return;
-  anchors.add(handleIndex);
-  await writeCustodyRow("identity", ANCHOR_ROSTER_FILE, utf8.encode(JSON.stringify({ anchors: [...anchors].sort((x, y) => x - y) }, null, 2)));
 }
 
 /**
@@ -102,7 +81,6 @@ export async function persistIdentityAnchors(anchors: IdentityAnchors, handleInd
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   warnIfIdentityHomeOpen();
   await writeCustodyRow("identity", anchorsFile(handleIndex), utf8.encode(JSON.stringify(anchors, null, 2)));
-  await recordAnchor(handleIndex);
 }
 
 /** Read ONE persona's anchor set back, or null when the index holds no persona. `handleIndex` selects which
@@ -118,10 +96,24 @@ export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = rea
   return anchors;
 }
 
-/** The anchored-persona ROSTER: every handle-index whose veiled-Handle anchors this vessel holds, ascending,
- *  from the explicit written record (never a dir-scan). A one-persona vessel returns `[0]`. */
-export function listAnchoredPersonas(read: RowReader = readCustodyRow): Promise<number[]> {
-  return readAnchorRoster(read);
+/**
+ * The anchored faces: every handle-index of a face standing UNLOCKED whose anchors row stands, ascending. Each face's anchors rest in
+ * that face's own directory, so no shared roster names them; a face that rests locked names itself through the floor index alone
+ * (`listFaceOrdinals`) and its anchors read once it unlocks.
+ */
+export async function listAnchoredPersonas(read: RowReader = readCustodyRow): Promise<number[]> {
+  const out: number[] = [];
+  for (const handleIndex of await unlockedFaceOrdinals()) {
+    if (await read("identity", anchorsFile(handleIndex)) !== null) out.push(handleIndex);
+  }
+  return out;
+}
+
+/** Every handle index the floor index names a standing face at, ascending: the public list. Opens nothing. */
+export function listFaceOrdinals(): number[] {
+  const out: number[] = [];
+  readFaceIndexSync(larIdentityDir()).faces.forEach((f, ordinal) => { if ("fcid" in f) out.push(ordinal); });
+  return out;
 }
 
 /** The vessel's own keyhive Archive row. */
@@ -172,8 +164,8 @@ export function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null
   return readCustodyRow("identity", veilArchiveFile(personaGroup));
 }
 
-/** The node AnchorStore: the shore the PersonaVault carries. `save` records the index into the explicit roster;
- *  `list` reads it back. Every call reads or writes through the custody seat. */
+/** The node AnchorStore: the shore the PersonaVault carries. `save` writes the face's own anchors row;
+ *  `list` names the unlocked faces that hold one. Every call reads or writes through the custody seat. */
 export const nodeAnchorStore: AnchorStore = {
   load: (handleIndex) => loadIdentityAnchors(handleIndex),
   save: (handleIndex, anchors) => persistIdentityAnchors(anchors, handleIndex),

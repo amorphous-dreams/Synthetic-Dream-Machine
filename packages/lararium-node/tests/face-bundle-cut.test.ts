@@ -90,9 +90,11 @@ beforeEach(async () => {
   const book = new HandleBook();
   const mine = await cardOf(11, "friend-of-zero"), theirs = await cardOf(12, "FRIEND-OF-ONE"), nobodys = await cardOf(13, "UNTAGGED-FRIEND");
   await book.ingest(mine, undefined, keys.face0); book.setPetname(mine.nym, "Ana", keys.face0);
-  await book.ingest(theirs, undefined, keys.face1); book.setPetname(theirs.nym, "LABEL-OF-FACE-ONE", keys.face1);
-  await book.ingest(nobodys); book.setPetname(nobodys.nym, "LABEL-OF-NOBODY");
-  await saveNodeHandleBook(book);
+  await saveNodeHandleBook(0, book);
+  const book1 = new HandleBook();
+  await book1.ingest(theirs, undefined, keys.face1); book1.setPetname(theirs.nym, "LABEL-OF-FACE-ONE", keys.face1);
+  await book1.ingest(nobodys); book1.setPetname(nobodys.nym, "LABEL-OF-NOBODY");
+  await saveNodeHandleBook(1, book1);
 });
 afterEach(async () => { await seat.drop(); });
 
@@ -190,8 +192,8 @@ describe("the table picks the rows a bundle carries", () => {
     expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
     // The law's table (custody#/the-table): three rows ride whole, five ride as one face's lines, the rest stay.
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
-    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "persona-root"]);
-    expect(by("lines")).toEqual(["anchors", "handle-book", "persona-declarations", "persona-petnames", "persona-roster"]);
+    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "handle-book", "persona-root"]);
+    expect(by("lines")).toEqual(["anchors", "persona-declarations", "persona-petnames", "persona-roster"]);
     for (const stays of ["face-atom", "veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
     }

@@ -27,7 +27,7 @@ import {
   tokenVerifiesAt, redeemClaim, claimDigest, type NexusDoc,
 } from "@lararium/mesh";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldNexusLeaves, mintNexusLeaf, mintWornNexusLeaf, nexusLeafFor } from "../src/nexus-leaf.js";
@@ -45,6 +45,7 @@ let priorLarRoot: string | undefined;
 const sealHome = (): string => larSealHome();
 
 beforeEach(() => {
+  setWornFaceInSession(undefined);
   root = mkdtempSync(join(tmpdir(), "lares-host-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;

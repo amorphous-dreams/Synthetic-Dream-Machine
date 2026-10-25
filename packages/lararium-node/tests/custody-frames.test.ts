@@ -44,6 +44,7 @@ import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
+import { loadActivePersonaIndex, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { FaceRouteAbsent, gatherFaceRoute, parkFaceRoute, seatFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -446,5 +447,19 @@ describe("the face-route frame", () => {
     expect(h.logs.join("\n")).toContain("face-route: parked");
     expect(h.logs.join("\n")).not.toContain("face-route-secret");
     parkFaceRoute(null);
+  });
+});
+
+describe("the unlock frame names the worn face", () => {
+  test("U1 — an unlock that opens and names a face wears it for the session; CONTROL: an unlock naming none wears nothing; a bad index refuses before the holder hears", async () => {
+    setWornFaceInSession(undefined);
+    const h = harness();
+    await h.send({ ...unlockFrame(RIGHT), face: 2 }).answer;
+    expect(await loadActivePersonaIndex()).toBe(2);
+    setWornFaceInSession(undefined);
+    const bad = await harness().send({ ...unlockFrame(RIGHT), face: -1 }).answer;
+    expect(bad).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+    expect(await loadActivePersonaIndex().catch(() => undefined)).toBeUndefined();
+    setWornFaceInSession(undefined);
   });
 });

@@ -1604,15 +1604,17 @@ run_seal() {
 
   # ★ THE READING. Each row of the founding's sealed family carries the vessel key's seal frame at rest: the
   # frame's own magic leads the file. A bare archive would lead with keyhive's bytes.
-  step "★ the keyhive archive and the roster lead with the vessel key's seal, the anchors and the veil archive with their face's ★"
+  step "★ the keyhive archive leads with the vessel key's seal, the anchors, the roster line and the veil archive with their face's ★"
   local ROW HEAD BARE="" VEIL_ROWS
   VEIL_ROWS=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^veil-archive-g[0-9a-f]{64}\.bin$' || true)
   [ -n "$VEIL_ROWS" ] || BARE=" veil-archive-g<64 lowercase hex>.bin (missing)"
-  for ROW in keyhive-archive.bin anchor-roster.json; do
+  for ROW in keyhive-archive.bin; do
     HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 13 /state/data/lares/identity/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
     [ "$HEAD" = "lares-vk-seal" ] || BARE="$BARE $ROW"
   done
-  for ROW in anchors-h0.json $VEIL_ROWS; do
+  ROSTER_ROW=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^\.persona-roster(-[^./]+)?-h0\.json$' | head -1 || true)
+  [ -n "$ROSTER_ROW" ] || BARE="$BARE persona-roster-h0 (missing)"
+  for ROW in anchors-h0.json $ROSTER_ROW $VEIL_ROWS; do
     HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 14 /state/data/lares/identity/faces/*/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
     [ "$HEAD" = "lares-fck-seal" ] || BARE="$BARE $ROW"
   done

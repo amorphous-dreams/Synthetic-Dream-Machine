@@ -68,17 +68,15 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `grant-pending` `:297-298` | hot, reserved | ''D, LEAD:'' split per granting/target face and bind the authority relation; reject an unassigned pending secret. There is no current writer. |
 | `admissions` `:299-300` | hot, reserved | ''D, LEAD:'' confidential admission state partitions by owning face; public signed proof may be F after payload audit. There is no current writer. |
 | `anchors` `:301-302` | face-hot | ''D:'' face-indexed anchor lines and private identity state under that face. Current `bundle: lines` is an export selector, not key separation. |
-| `anchor-roster` `:303-304` | hot | ''D/F split, LEAD:'' face-specific anchor mapping D; only minimum reviewed public lookup F. |
-| `persona-roster` `:305-306` | hot | ''D/F split:'' each face's root/labels/identity line D; a minimum opaque routing index F only if existence leakage is accepted. Current `bundle: lines` does not isolate at rest. |
-| `active-persona` `:307-308` | hot | ''D/F split, LEAD:'' a session's selected face is session state; any private persisted preference belongs to that face. An explicitly public chooser hint may be F after leakage review. No global active face confers authority. |
-| `persona-petnames` `:309-310` | hot | ''D:'' per-face private names; split current line carrier. |
-| `persona-declarations` `:311-312` | hot | ''D/F split, LEAD:'' private per-face declaration D; signed intentionally public declaration F only after field audit. |
-| `public-handles` `:313-314` | hot | ''D/F split, LEAD:'' public handle bytes may be F; private owner mapping and recognition remain D. Audit before exposing the current whole row. |
+| `persona-roster` `node-vessel-identity.ts` | face-hot | ''D:'' each face keeps its own root line at `faces/<fcid>/.persona-roster-h<N>.json`, selected by handle index (= ordinal). No shared roster stands: the floor index names the faces, and a locked `persona list` prints those public indices alone. `bundle: lines` carries the one line that names the face's root. |
+| `persona-petnames` `node-vessel-identity.ts` | face-hot | ''D:'' per-face private name in the face's own row (`.persona-petnames-h<N>.json`); it appears only after that face unlocks. |
+| `persona-declarations` `node-vessel-identity.ts` | face-hot | ''D:'' each face's private declaration (handle, seat claim, chair) in its own row (`.persona-declarations-h<N>.json`). A signed, intentionally public declaration travels by its own published record and never by this row. |
+| `public-handles` `node-vessel-identity.ts` | face-hot | ''D:'' the owner mapping of a face's own published record in its own row (`.persona-public-handles-h<N>.json`); public handle bytes ride their own signed record. |
 | `vessel-face-key` `:317-318` | hot | ''D:'' private face-scoped vessel key belongs to the PersonaGroup named by its proof relation. Current digest filename has no `face` selector; add an authenticated mapping. It stays local, outside a face bundle. |
 | `face-address-secret` `:322-323` | hot | ''D:'' face's fleet address secret; digest-to-PersonaGroup mapping is required. It stays local unless a defined face recovery route includes it. |
 | `fleet-join-pending` `:326-327` | hot | ''D:'' split the single pending file into target-face rows, including its X25519 secret/request; bind target before writing. Public signed offer/answer transport is F. A pending join with no proven target refuses. |
 | `face-join-record` `:330-331` | hot | ''D:'' joined face's private record/grants; digest-to-face mapping is required. Public certificates may be copied at F only as separately defined fields. |
-| `handle-book` `:332-333` | hot | ''D/F split:'' private per-face recognition graph and petnames D; only minimum opaque public routing F after leakage review. Current `bundle: lines` is not a seal boundary. |
+| `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own row (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the worn face's book; a vessel wearing none recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
 | `guardian-set` `:337-338` | face-hot | ''D:'' each face's guardian/recovery commitments under that face; its intended local row rides its one-face bundle. Guardians keep their own secret shares. |
 | `face-provisional` `:341-342` | face-hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
 | `hosting-state` `:343-344` | hot | ''D/F split, LEAD:'' assign confidential hosting state to the authorizing face; public hosting advertisements may be F. A proven irreducible node service secret needs a new named S row, not this catchall. |
@@ -97,6 +95,8 @@ This table covers every `buildTable()` row in `packages/lararium-node/src/vault-
 | `cadence-key` `:390-391` | cold | ''D/F split, LEAD:'' private hearth cadence authority must map to the authorizing face if it is face authority; its public half is F. If genuinely node-only, specify a new named S principal/opener before assigning it. The current digest filename does not settle this. |
 | `restore-pending` `:394-395` | cold | ''D:'' one target-face restore transaction; split the global file, authenticate its target before staging, and never stage sibling material. |
 | `device-share` `:396-397` | face-cold | ''D:'' face-indexed recovery device share, not a common device share. |
+
+The worn face is SESSION state: no `active-persona` row rests (the person names the face at each unlock, `lares vault unlock --face N`, and a flat `.active-persona*.json` reads as an earlier shape).
 
 Rows whose class includes ''LEAD'' block byte movement until their payload and owning principal are proved. Current `face` and `bundle` fields describe filename/export selection only (`vault-carriers.ts:119-165`); they never confer cryptographic separation. The existing VK rotation sweeps all hot/cold rows (`:64-68,477-510`), so K15 replaces it with per-face and named-S rotation.
 
@@ -231,6 +231,6 @@ The reds: the index of two founded faces carries no field beyond the entries' tr
 <<~ loulou "lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 
-<<^ code="&#x0003;">>ni:///sha-256;ykYLJ_rZZI1lHjhxo8TwSa3AFL8e82JzMtPjyePs1sw
+<<^ code="&#x0003;">>ni:///sha-256;Hl4-hgcYrTOXFwBlMU3J_tOrFrKlzakyg8ayS5SUy4M
 
 <<^ code="&#x0004;" -> to="?">>

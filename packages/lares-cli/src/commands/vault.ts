@@ -199,7 +199,9 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const io = new FsCustodyIo(homes);
   const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
   if (daemonUp) {
-    const a = await sendCustodyFrame({ op: "unlock", credentials: creds });
+    const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
+    if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
+    const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}) });
     if (a === null) {
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
       return 1;

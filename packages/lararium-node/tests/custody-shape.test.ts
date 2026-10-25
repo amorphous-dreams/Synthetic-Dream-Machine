@@ -175,7 +175,7 @@ describe("readCustodyShape — the custody shape refusal reads before any write"
         "identity/vk-slots.bin": "slots",
         "identity/custody-root.bin": sealedBytes("root"),
         [`identity/faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: fckSealedBytes("seed"),
-        "identity/.handle-book.json": sealedBytes("book"),
+        [`identity/faces/${"ab".repeat(16)}/.handle-book-h0.json`]: fckSealedBytes("book"),
         "vessel/hosting/0123456789abcdef0123456789abcdef/state.json": sealedBytes("state"),
         "nexus/founding-roster.mem": "charter",
         "nexus/transitions.json": sealedBytes("[]"),

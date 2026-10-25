@@ -34,7 +34,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRow } from "../src/custody-seat.js";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona, setWornFaceInSession } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { larDataDir } from "../src/vessel-paths.js";
@@ -182,8 +182,10 @@ describe("a walk record at rest", () => {
 
   test("W6 — the walk acts keep, answer and re-present through the door's context", async () => {
     await custody("walk-w6");
+    setWornFaceInSession(undefined);
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
     const epoch = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });
     const invite = (gate = GATE): string => encodeInvite({ nexusAid: AID, gatePubKey: gate, token: mintHostToken(epoch), relay: RELAY });
     let represented = 0;

@@ -231,6 +231,8 @@ const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const exact = (path: string): RegExp => new RegExp(`^${escape(basename(path))}$`);
 /** A login-keyed identity filename: `.<stem>.json` or `.<stem>-<login>.json`. */
 const loginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+)?\\.json$`);
+/** A face's own login-keyed row: `.<stem>[-login]-h<N>.json`, the handle index in the first capture. */
+const faceLoginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+?)?-h(0|[1-9]\\d*)\\.json$`);
 /** A plain filename. */
 const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
 /** A hosting directory: `hosting/<the 32-hex digest of a Nexus AID>/`. */
@@ -386,18 +388,16 @@ function buildTable(): readonly CarrierRow[] {
          writer: "none (reserved carrier)" }),
     faceRowOf({ row: "anchors", target: tgt(["D"]), inner: /^anchors-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    id({ row: "anchor-roster", target: tgt(["D", "F"], LEAD), match: file("anchor-roster.json"), custody: "hot", keyClass: null,
-         writer: "identity-anchors" }),
-    id({ row: "persona-roster", target: tgt(["D", "F"]), match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "active-persona", target: tgt(["D", "F"], LEAD), match: loginKeyed("active-persona"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
-    id({ row: "persona-petnames", target: tgt(["D"]), match: loginKeyed("persona-petnames"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "persona-declarations", target: tgt(["D", "F"], LEAD), match: loginKeyed("persona-declarations"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "public-handles", target: tgt(["D", "F"], LEAD), match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
+    // The roster of a vessel's roots, its pet-names, declarations and published records: one row per face, in that face's own
+    // directory, named by the handle index. No shared roster names the faces: the floor index does, by ordinal alone.
+    faceRowOf({ row: "persona-roster", target: tgt(["D"]), inner: faceLoginKeyed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-roster-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceLoginKeyed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-petnames-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceLoginKeyed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-declarations-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "public-handles", target: tgt(["D"]), inner: faceLoginKeyed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-public-handles-h${m[1]}`, face: faceOf }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
     id({ row: "vessel-face-key", target: tgt(["D"]), match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
@@ -415,8 +415,9 @@ function buildTable(): readonly CarrierRow[] {
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
     id({ row: "face-join-record", target: tgt(["D"]), match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-join-record-${m[1]}` }),
-    id({ row: "handle-book", target: tgt(["D", "F"]), match: file(".handle-book.json"), custody: "hot", keyClass: null,
-         writer: "node-circle-store", bundle: "lines" }),
+    // One face's recognition book, in that face's own row: the nyms it recognised and the private labels it keeps for them.
+    faceRowOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-circle-store", name: (m) => `handle-book-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
     // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
@@ -570,9 +571,17 @@ export function flatFaceRowCarriers(identityDir: string): Array<{ readonly row: 
   let names: string[];
   try { names = readdirSync(identityDir); } catch { return []; }
   const out: Array<{ row: string; file: string; path: string; keyClass: KeyClass | null }> = [];
+  // The shared files an earlier shape kept for ALL faces at once (one roster, one map per family): no face owns them now.
+  const earlier: ReadonlyArray<readonly [string, RegExp]> = [
+    ["anchor-roster", /^anchor-roster\.json$/], ["active-persona", /^\.active-persona(?:-[^./]+)?\.json$/], ["handle-book", /^\.handle-book\.json$/], ["persona-roster", /^\.persona-roster(?:-[^./]+)?\.json$/],
+    ["persona-petnames", /^\.persona-petnames(?:-[^./]+)?\.json$/], ["persona-declarations", /^\.persona-declarations(?:-[^./]+)?\.json$/],
+    ["public-handles", /^\.persona-public-handles(?:-[^./]+)?\.json$/],
+  ];
   for (const file of names) {
     const row = carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.inner.test(file));
-    if (row) out.push({ row: row.row, file, path: join(identityDir, file), keyClass: row.keyClass });
+    if (row) { out.push({ row: row.row, file, path: join(identityDir, file), keyClass: row.keyClass }); continue; }
+    const old = earlier.find(([, rx]) => rx.test(file));
+    if (old) out.push({ row: old[0], file, path: join(identityDir, file), keyClass: null });
   }
   return out;
 }

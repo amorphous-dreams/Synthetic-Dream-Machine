@@ -45,12 +45,13 @@
 import type { Socket } from "node:net";
 import type { Credential, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
+import { setWornFaceInSession } from "./node-vessel-identity.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
 export type CustodyFrame =
-  | { readonly op: "unlock"; readonly credentials: readonly Credential[] }
+  | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number }
   | { readonly op: "lock" }
   | { readonly op: "custody" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
@@ -167,13 +168,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     try { sock.end(JSON.stringify(a) + "\n"); } catch { /* the caller went away */ }
   };
 
-  const unlock = async (credentials: readonly Credential[]): Promise<CustodyAnswer> => {
+  const unlock = async (credentials: readonly Credential[], face?: number): Promise<CustodyAnswer> => {
     const u = await holder.unlock(credentials);
     if (u.reading !== "opens") {
       deps.onLog(`unlock: ${u.reading}${u.reading === "no-slot-opens" ? ` (${u.attemptsLeft} attempt(s) left this boot)` : ""}`);
       return { op: "unlock", ...u, standing: deps.standing() };
     }
     deps.onLog(`unlocked: slot ${u.slot} opened the vessel key`);
+    // The unlock NAMES the face this vessel wears for the life of the unlock: session state, never a pointer at rest.
+    if (face !== undefined) setWornFaceInSession(face);
     const stood = await deps.recompose(true);
     // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
     // stands at the floor and the holder drops what it opened: held and standing never disagree.
@@ -281,7 +284,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
         answer(sock, { op, status: "error", errorMessage: "an unlock frame carries one or more credentials (a passphrase or paper sheets)", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = () => unlock(credentials);
+      const named = (parsed as { face?: unknown }).face;
+      if (named !== undefined && (!Number.isSafeInteger(named) || (named as number) < 0)) {
+        answer(sock, { op, status: "error", errorMessage: "an unlock frame's `face` names a handle index (a whole number from 0)", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = () => unlock(credentials, named as number | undefined);
     } else if (op === "lock") {
       act = lock;
     } else {
