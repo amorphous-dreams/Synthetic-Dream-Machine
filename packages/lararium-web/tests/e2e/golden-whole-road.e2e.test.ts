@@ -37,6 +37,7 @@ const WAIT = 120_000;
 
 const ALPHA = golden.world.tiddlers[0]!.title;
 const BETA = golden.world.tiddlers[1]!.title;
+let sentinelCount = 0;
 
 let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
@@ -76,6 +77,17 @@ async function makeTiddler(title: string, text: string): Promise<void> {
   await wiki().locator('button[title="Confirm changes to this tiddler"]').click();
   await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
     ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`), title, { timeout: WAIT });
+}
+
+/**
+ * A barrier behind every act relayed so far. The island answers acts in the order they left the page, so a throwaway
+ * tiddler made through the page's editor paints only after each earlier act ran; an absence read after it has waited
+ * on the island's side of the wire, never on the page's alone.
+ */
+async function raiseSentinel(): Promise<void> {
+  const title = `lar:///t/link/sentinel-${++sentinelCount}`;
+  await makeTiddler(title, "a barrier behind the relayed clicks");
+  await closeTiddler(title);
 }
 
 async function closeTiddler(title: string): Promise<void> {
@@ -185,6 +197,7 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     await link.click({ button: "middle" });
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 2);
     expect(await lastClick()).toMatchObject({ prevented: false, button: 1 });
+    await raiseSentinel();
     expect(await story()).toEqual([ALPHA]);
   });
 
@@ -193,13 +206,16 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     await wiki().locator(".tc-story-river a.tc-tiddlylink-external").first().click();
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 1);
     expect((await lastClick()).prevented).toBe(false);
+    await raiseSentinel();
     expect(await story()).toEqual([ALPHA]);
   });
 
   test("W6 — an unbound span raises no act: the default stands and the story holds", async () => {
     const before = opened.length;
     await wiki().locator(".tc-story-river span.plain").first().click();
-    expect((await lastClick()).prevented).toBe(false);
+    const clicked = await lastClick();   // the sentinel's own clicks come after: read this one's verdict first
+    await raiseSentinel();
+    expect(clicked.prevented).toBe(false);
     expect(opened.length).toBe(before);
     expect(await story()).toEqual([ALPHA]);
   });

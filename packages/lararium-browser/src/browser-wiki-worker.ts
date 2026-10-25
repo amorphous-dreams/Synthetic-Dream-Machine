@@ -31,4 +31,4 @@ runBrowserSovereignWorker(makeWikiBehavior({
     return () => { stopCoherence(); stopRender(); };
   },
   caps: [hasWikiSensorium()],
-}));
+}), undefined, { restDoor: true });

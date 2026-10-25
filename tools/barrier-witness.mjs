@@ -30,11 +30,8 @@ import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** Today's measured open backlog on the span. RATCHET: it may only ever come DOWN. */
-export const CEILING = 3;
-export const ALLOWANCES = [
-  { file: "packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts", test: "W4 —", owner: "dreamdom-rest-before-reload",
-    reason: "W4 reads the story right after a modified and a middle click, before the acts relayed across the page-to-island wire can land; its polls wait on the near-shore tab count, never on the island. The rest-before-reload lane cures it with a sentinel tiddler behind the relayed clicks, and this allowance dies when that lane lands." },
-];
+export const CEILING = 0;
+export const ALLOWANCES = [];
 
 const REPO = fileURLToPath(new URL("../", import.meta.url));
 const TEST_LINE = /^\s*(?:test|it)(?:\.\w+)?\(\s*(["'`])(.*?)\1/;

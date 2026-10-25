@@ -19,6 +19,7 @@
 import type { DocHandle }                        from "@lararium/mesh";
 import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
+import type { RestDoor }                        from "./rest-door.js";
 
 export interface IslandContext {
   wikiUri:   string;
@@ -72,6 +73,8 @@ export interface IslandContext {
    * `cid == hash(bytes)` — content-addressed trust, never host trust.
    */
   resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
+  /** The island's half of the vessel's rest door: a save act's result and the coherence fold wait on it. Absent where no vessel answers it. */
+  rest?: RestDoor;
   /**
    * True when this island mounted from a RESOLVED recipe (a session surface): every slot arrived with its
    * absolute id, the island reaches no catalog, and its composition never changes while it stands. A recipe
