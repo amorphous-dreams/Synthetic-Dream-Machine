@@ -80,7 +80,7 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 
 `tools/projection-loom/projection_loom/capability_stack.py` registers a
 trusted, versioned DAG of capability operators; `hybrid.py` grows bounded
-CAD-derived meshes and semantic sockets; `ooda.py` executes the single
+CAD-derived meshes and semantic sockets; `fractal_ooda_ha.py` executes the single
 recursive location/epoch/candidate/capability/gallery controller; `epochs.py`
 provides the underlying strict CAD audition. The original Necrospire RGBA and
 alpha, an under-specified visual witness, remain authoritative reference
@@ -101,6 +101,6 @@ examples/necrospire/hybrid/recipe.json --control full-speed --passes 3
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_TN_qDeYxALTlkoVRMUlRTo1U0HgGOBK_HUTk20OXvg
+<<^ code="&#x0003;">>ni:///sha-256;h1WzMvpes-mlmj3IQwrEIU0MvaTTajRU0LwK2guny9o
 
 <<^ code="&#x0004;" -> to="?">>
